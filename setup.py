@@ -19,7 +19,7 @@ setup (
     description = "Ralph, the responsible leader of the children in `Lord " \
                   "of the Flies`.",
     long_description = long_description,
-    url = 'http://packages.python.org/ralph/',
+    url = 'http://ralph.allegrogroup.com/',
     keywords = '',
     platforms = ['any'],
     license = 'Apache Software License v2.0',

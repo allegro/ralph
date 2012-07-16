@@ -112,7 +112,7 @@ html_theme_path = ['../doc/theme']
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-#html_title = None
+html_title = "Ralph"
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 html_short_title = "Ralph"
