@@ -34,6 +34,8 @@ html:
 	DJANGO_SETTINGS_MODULE="ralph.settings" $(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+	@cd $(BUILDDIR)/../../doc && make clean html
+	@ln -s $(BUILDDIR)/html $(BUILDDIR)/../../doc/_build/html
 
 dirhtml:
 	DJANGO_SETTINGS_MODULE="ralph.settings" $(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) $(BUILDDIR)/dirhtml
