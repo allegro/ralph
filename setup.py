@@ -66,7 +66,7 @@ setup (
     classifiers = [
         'Development Status :: 4 - Beta',
         'Framework :: Django',
-        'Intended Audience :: Developers',
+        'Intended Audience :: System Administrators',
         'License :: OSI Approved :: Apache Software License',
         'Natural Language :: English',
         'Operating System :: POSIX',
@@ -76,6 +76,5 @@ setup (
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 2 :: Only',
         'Topic :: Internet :: WWW/HTTP',
-        'Topic :: Software Development :: Libraries :: Python Modules',
         ]
     )
