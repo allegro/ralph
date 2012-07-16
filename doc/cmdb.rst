@@ -57,13 +57,13 @@ is faulty without a known reason:
 * CMDB will enable assessment of impact of the failure,
 * it will list a number of events and relate one to another,
 * based on the above and the financial information (costs of maintenance,
-costs of system administrator work, costs of unavailability) it will
-support decisions about planning changes.
+  costs of system administrator work, costs of unavailability) it will
+  support decisions about planning changes.
 
 
 
 System architecture overview
----------------
+----------------------------
 
 CMDB (Configuration Management DataBase) maintains a complete Assets
 information for the Change Management Process. In order to do it, it
