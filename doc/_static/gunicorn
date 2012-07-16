@@ -1,0 +1,74 @@
+#!/bin/sh -e
+
+### BEGIN INIT INFO
+# Provides:       ralph on gunicorn 
+# Required-Start: $local_fs $syslog
+# Required-Stop:  $local_fs $syslog
+# Default-Start:  2 3 4 5
+# Default-Stop:   0 1 6
+# Short-Description: Gunicorn processes for Ralph 
+### END INIT INFO
+
+# www-data is the default www user on debian
+USER=ralph
+NAME="ralph"
+
+### CONFIGURATION
+# Path to the Django project inside the virtualenv
+CONFDIR="/home/ralph/project/src/ralph"
+# Path to the `activate` script of the virtualenv
+VENV_ACTIVATE="/home/ralph/bin/activate"
+# Path to the PID file
+PID="$CONFDIR/gunicorn_$NAME.pid"
+# Gunicorn start script within the virtualenv
+GUNICORN_RUN="gunicorn_django"
+# Gunicorn start script options
+GUNICORN_OPTS="--daemon -p $PID -w 8"
+
+# source function library
+. /lib/lsb/init-functions
+
+RETVAL=0
+
+start()
+{
+    echo -n "Starting $NAME... "
+    cd $CONFDIR;
+    su -c "source $VENV_ACTIVATE; $GUNICORN_RUN $GUNICORN_OPTS" $USER && echo "OK" || { echo "failed"; RETVAL=1; }
+}
+
+stop()
+{
+    echo -n "Stopping $NAME... "
+    kill -QUIT `cat $PID 2>/dev/null` 2>/dev/null && echo "OK" || { echo "failed"; RETVAL=1; }
+}
+
+reload()
+{
+    echo -n "Reloading $NAME... "
+    kill -HUP `cat $PID 2>/dev/null` 2>/dev/null && echo "OK" || { echo "failed"; RETVAL=1; }
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    restart)
+        reload
+        ;;
+    reload)
+        reload
+        ;;
+    force-reload)
+        stop && start
+        ;;
+    *)
+        echo $"Usage: $0 {start|stop|restart}"
+        RETVAL=1
+esac
+exit $RETVAL
+
+

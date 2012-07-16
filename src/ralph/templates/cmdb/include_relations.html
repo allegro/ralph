@@ -1,0 +1,62 @@
+<div class='span{{span_number}}'>
+    <div class='alert alert-info' >{{ label }} </div>
+    <table class='table table-striped table-bordered table-condensed'>
+        {% if relations %}
+        <tr>
+            <th> CI UID </th>
+            <th> CI Name </th>
+            <th> CI Type </th>
+            <th sytle='width:10px'> Edit </th>
+
+                {% if editable %}
+                    <th> Operations </th>
+                {% endif %}
+            </tr>
+            {% else %}
+            No relations.
+            {% endif %}
+        {% for rel in relations %}
+        <tr>
+            <td> 
+                {% if editable and not rel.0.readonly %}
+                    <a href="/cmdb/ci/edit/{{rel.1.id}}"> {{ rel.1.uid}} </a>
+                {% else %}
+                    <a href="/cmdb/ci/view/{{rel.1.id}}"> {{ rel.1.uid}} </a>
+                {% endif %}
+
+            </td>
+            <td>
+                <i class='fugue-icon {{ rel.2 }}'></i>
+                {% if editable and not rel.0.readonly %}
+                    <a href="/cmdb/ci/edit/{{rel.1.id}}"> {{ rel.1.name}}  </a>
+                {% else %}
+                    <a href="/cmdb/ci/view/{{rel.1.id}}"> {{ rel.1.name}} </a>
+                {% endif %}
+
+            </td>
+            <td> 
+                {{ rel.1.type }}
+
+            </td>
+            <td>
+                {% if rel.0.readonly %}
+                    <i class='icon-ban-circle' ></i>
+                {% else %}
+                    <i class='icon-check' ></i>
+                {% endif %}
+            </td>
+
+            {% if editable %}
+            <td>
+                {% if rel.0.readonly %}
+                -
+                {% else %}
+                    <a href="/cmdb/relation/edit/{{rel.0.id}}"> Edit  </a>
+                    <!-- <a href="/cmdb/relation/remove/{{rel.0.id}}"> Remove </a> !-->
+                {% endif %}
+            </td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </table>
+</div>

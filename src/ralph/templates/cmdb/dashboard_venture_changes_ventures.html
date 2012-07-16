@@ -1,0 +1,40 @@
+{%extends 'cmdb/base.html'%}
+
+
+{% load icons %}
+{% load query %}
+
+{% block content %}
+
+
+
+<style type="text/css" media="screen">
+
+    form.form-inline select
+    {
+        width: auto;
+    }
+
+    table.dboard td
+    {
+            border: solid #000 1px;
+            padding: 6px;
+    }
+
+</style>
+<div class='span12'>
+<h3> CMDB Dashboard  </h3>
+             <table class='dboard' style='margin: 10px; border-collapse: collapse; border: solid 1px blue; ' >
+                     <tr style='background-color:blue; color: white'><th> Venture </th><th> Count </th> <th> Options </th>
+                {% for data in statistics %}
+                            <tr>
+                                <td>{{ data.1 }}  </td>
+                                <td>{% if data.0 %} {{ data.0 }} {% else %} All {% endif %}  </td>
+                                <td><a href='ci?venture_id={{data.1}}'> View </a>   </td>
+
+                            </tr>
+                {% endfor %}
+                </table>
+
+</div>
+{% endblock %}

@@ -1,0 +1,93 @@
+{% extends "ui/catalog.html" %}
+
+{% load url from future %}
+{% load icons %}
+{% load bob %}
+
+{% block contentarea %}
+<div class="span5">
+    {% block content %}
+    <table class="table table-striped table-bordered table-list model-group-table">
+        <thead><tr>
+                <th>Group name</th>
+                <th>Count</th>
+                <th>Price</th>
+        </tr></thead>
+        <tbody>
+            <tr {% if group = None %}class="active"{% endif %} >
+                <td class="column-name"><a
+                        href="{% url 'catalog' kind model_type_id '' %}"
+                    >{% icon 'fugue-prohibition' %}&nbsp;Unassigned components</a></td>
+            <td class="column-count count"><a href="#" class="badge">{{ unassigned_count }}</a></td>
+                <td class="column-price currency"></td>
+            </tr>
+            {% for g in groups.all %}
+            <tr {% if group = g %}class="active"{% endif %} >
+                <td class="column-name"><a
+                        href="{% url 'catalog' kind model_type_id g.id %}"
+                    >{{ g.type|component_model_type_icon }}&nbsp;{{ g.name }}</a></td>
+            <td class="column-count count"><a href="{% url 'search' 'components' '' %}?component_group={{ g.id }}" class="badge">{{ g.get_count }}</a></td>
+                <td class="column-price currency">
+                    {{ g.price }}&nbsp;{{ CURRENCY }}
+                    {% if g.per_size %}/{{ g.size_modifier}}&nbsp;{{ g.size_unit }}{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endblock %}
+</div>
+<div class="span7">
+    {% block info %}
+    {% if group %}
+    {% include 'ui/base-form.html' %}
+    {% endif %}
+
+    <form class="form-inline" method="POST">
+    {% csrf_token %}
+    <table class="table table-striped table-bordered table-condensed table-list model-group-table">
+        <thead><tr>
+            {% spaceless %}
+            {% include 'ui/column-header.html' with label='Components' name='name' always=1 %}
+            {% include 'ui/column-header.html' with label='Count' name='count' type='quantity'%}
+            <td width="14"></td>
+            {% endspaceless %}
+        </tr></thead>
+        <tbody>
+            {% for m in items.object_list %}
+            <tr>
+                <td class="column-name">
+                    {% if m.extra %}
+                    <div  class="add-popover" title="{{ m.name }}"
+                        data-content="<pre>{{ m.extra|default:'' }}</pre>">
+                        {{ m.type|component_model_type_icon }}&nbsp;{{ m.name|default:'' }}&nbsp;{% icon 'fugue-information-small-white' %}
+
+                    </div>
+                    {% else %}
+                        {{ m.type|component_model_type_icon }}&nbsp;{{ m.name|default:'' }}
+                    {% endif %}
+                </td>
+                {% if 'count' in columns %}<td class="column-count count"><span class="badge">{{ m.count }}</span></td>{% endif %}
+                <td class="column-actions"><input type="checkbox" name="items" value="{{ m.id }}"></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% pagination items fugue_icons=1 url_query=url_query %}
+    <div class="form-actions">
+        <label for="select-target">Move selected items to:</label>
+        <select name="target" id="select-target">
+            <option value="none">No group</option>
+            <option value="new">Newly created group</option>
+            <optgroup label=""></optgroup>
+            {% for g in groups.all %}
+            <option {% if g == group %}selected="selected"{% endif %} value="{{ g.id }}">
+            {{ g.name }}
+            </option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-primary pull-right" name="move">{% icon 'fugue-paper-bag--arrow' %}&nbsp;Move</button>
+    </div>
+    </form>
+    {% endblock %}
+{% endblock %}

@@ -1,0 +1,34 @@
+{% load url from future %}
+{% load icons %}
+{% load query %}
+
+<div class="pagination pagination-centered">
+{% if page.has_other_pages %}
+<ul>
+    {% if page.has_previous %}
+    <li><a href="?{{ url_query|query_page:page.previous_page_number }}">{% icon 'fugue-blue-document-page-previous' %}</a></li>
+    {% else %}
+    <li class="disabled"><a href="#">{% icon 'fugue-document-page-previous' %}</a></li>
+    {% endif %}
+    {% for p in pages %}
+    {%  if p == '...' %}
+    <li class="disabled"><a href="#">&hellip;</a></li>
+    {%  else %}
+    <li
+    {%   if p == page.number %}
+        class="active"
+    {%   endif %}
+    ><a href="?{{ url_query|query_page:p }}">{{ p }}</a></li>
+    {%  endif %}
+    {% endfor %}
+    {% if page.has_next %}
+    <li><a href="?{{ url_query|query_page:page.next_page_number }}">{% icon 'fugue-blue-document-page-next' %}</a></li>
+    {% else %}
+    <li class="disabled" ><a href="#">{% icon 'fugue-document-page-next' %}</a></li>
+    {% endif %}
+</ul>
+{% endif %}
+<ul>
+    <li><a href="?{{ url_query|query_page:0 }}" rel="tooltip" title="Show all items on a single page">{% icon 'fugue-blue-documents-stack' %} {{ page.paginator.count }} items</a></li>
+    <li><a href="?{{ url_query|query_export:'csv' }}" rel="tooltip" title="Export as CSV">{% icon 'fugue-blue-document-excel-csv' %} CSV</a></li>
+</ul></div>

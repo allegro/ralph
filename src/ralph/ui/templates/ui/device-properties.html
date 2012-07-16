@@ -1,0 +1,9 @@
+{% extends 'ui/base-form.html' %}
+
+{% load url from future %}
+{% load icons %}
+
+{% block formbuttons %}
+    <button class="btn btn-primary" type="submit" name="propertiessave">{% icon 'fugue-tick' %}&nbsp;Update</button>
+    <button class="btn" type="reset">{% icon 'fugue-cross' %}&nbsp;Cancel</button>
+{% endblock %}

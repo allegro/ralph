@@ -1,0 +1,10 @@
+{% extends "ui/ventures.html" %}
+
+{% load url from future %}
+{% load icons %}
+
+{% block contentarea %}
+<div class="span7">
+    {% include '../templates/cmdb/edit_contents.html' with noheader=1%}
+</div>
+{% endblock %}

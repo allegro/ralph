@@ -1,0 +1,96 @@
+{% extends "ui/base-devices.html" %}
+{% load url from future %}
+{% load icons %}
+
+{% block content %}
+<div class="row-fluid">
+<div class="span6">
+{% include 'ui/device-form.html' with form=form %}
+
+</div>
+<div class="span6">
+
+<form class="form well well-small" method="POST">
+    {% csrf_token %}
+    <button class="btn btn-mini pull-right" type="submit" name="save-tags">
+        {% icon 'fugue-tag-small' %} Save tags
+    </button>
+    <label for="tags-text">Tags</label>
+    <textarea id='tags-text' style="width:97%" name="tags">{{ tags }}</textarea>
+</form>
+
+{% if property_form %}
+{% include 'ui/device-properties.html' with form=property_form %}
+{% endif %}
+
+<table class="table table-striped table-bordered details-info-owners">
+    <thead><tr>
+        <th width="16"></th>
+        <th>Owner</th>
+    </tr></thead>
+    <tbody>
+        {% for o in device.venture.ventureowner_set.all %}
+            <tr>
+                <td>{{ o|owner_icon }}</td>
+                <td>{{ o.name }}</td>
+            </tr>
+        {% endfor %}
+        {% if device.venture.department %}
+            <tr>
+                <td>{{ device.venture|venture_icon }}</td>
+                <td>{{ device.venture.department }}</td>
+            </tr>
+        {% endif %}
+    </tbody>
+</table>
+
+<table class="table table-striped table-bordered details-info-virtual">
+    <tbody>
+        {% if device.model.type == dt.blade_server.id %}
+        <tr>
+            <th>Blade System</th>
+            <td><a href="{{ device.parent.id }}"
+                 >{{ device.parent|device_icon }}
+                  {{ device.parent.name }}</a></td>
+        </tr>
+        {%  if device.parent.management %}
+        <tr>
+            <th>Blade System Management Address</th>
+            <td><a href="https://{{ device.parent.management.address }}"
+                 >{{ device.parent.management|address_icon }}
+                  {{ device.parent.management }}</a></td>
+        </tr>
+        {%  endif %}
+        {% endif %}
+
+        {% if device.model.type == dt.virtual_server.id %}
+        <tr>
+            <th>Virtual Server Hypervisor</th>
+            <td><a href="{{ device.parent.id }}"
+                 >{{ device.parent|device_icon }}
+                  {{ device.parent.name }}</a></td>
+        </tr>
+        {%  if device.management %}
+        <tr>
+            <th>Head Node Management Address</th>
+            <td><a href="https://{{ device.management.address }}"
+                 >{{ device.management|address_icon }}
+                  {{ device.management }}</a></td>
+        </tr>
+        {%  endif %}
+        {% else %}
+        {%  if device.find_management %}
+        <tr>
+            <th>Server Management Address</th>
+            <td><a href="https://{{ device.find_management.address }}"
+                 >{{ device.find_management|address_icon }}
+                  {{ device.find_management }}</a></td>
+        </tr>
+        {%  endif %}
+        {% endif %}
+
+
+    </tbody>
+</table>
+</div>
+{% endblock content %}

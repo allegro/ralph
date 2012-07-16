@@ -1,0 +1,25 @@
+{% load icons %}
+{% load query %}
+
+<table class="table table-bordered table-striped table-properties">
+<tr>
+    <th> ID </th>
+    <th> File Paths </th>
+    <th> Comment </th>
+    <th> Author </th>
+    <th> Changeset</th>
+</tr>
+{% for f in git_changes  %}
+<tr> 
+    <td>  {{ f.id }}  </td>
+    <td style='max-width: 355px; overflow: hidden;' >  {{ f.file_paths}}  </td>
+    <td>  {{ f.comment}}  </td>
+    <td>  {{ f.author}}  </td>
+    <td style='width: 300px'>  <a href='{{fisheye_url}}/changelog/{{fisheye_project}}?cs={{ f.changeset}}'> {{ f.changeset }} </a></td>
+</tr>
+
+{% endfor %}
+</table>
+
+
+            

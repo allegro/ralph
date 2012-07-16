@@ -1,0 +1,117 @@
+{% extends "ui/base-devices.html" %}
+
+{% load url from future %}
+{% load icons %}
+{% load formats %}
+
+{% block contentarea %}
+
+<div class="span7">
+<table class="table table-striped table-bordered table-condensed">
+    <thead><tr>
+        <th>Category</th>
+        <th>Device count</th>
+        <th>Total cost</th>
+    </tr></thead>
+    <tbody>
+        {% for i in items %}
+        {% if i.name %}
+        <tr>
+            <td class="column-category">{{ i.name }}</td>
+            <td class="column-count count">
+              {%if i.url%}
+                <a href="{{ i.url }}" class="badge">{{ i.count|default:"0" }}</a></td>
+              {%else%}
+                {%if i.count%}
+                  <span class="badge">{{i.count}}</span>
+                {%endif%}
+              {%endif%}
+            <td class="column-cost currency">{{ i.cost|currency }}</td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+    </tbody>
+</table>
+</div><div class="span5">
+{% block info %}
+<table class="table table-striped table-bordered details-info-owners">
+    <thead><tr>
+        <th width="16"></th>
+        <th>Owner</th>
+    </tr></thead>
+    <tbody>
+        {% for o in venture.ventureowner_set.all %}
+            <tr>
+                <td>{{ o|owner_icon }}</td>
+                <td>{{ o.name }}</td>
+            </tr>
+        {% endfor %}
+        {% if venture.department %}
+            <tr>
+                <td>{{ venture|venture_icon }}</td>
+                <td>{{ venture.department }}</td>
+            </tr>
+        {% endif %}
+    </tbody>
+</table>
+{% endblock %}
+</div>
+
+
+</div>
+<div id="plot-placeholder" style="width:720px;height:300px">x</div>
+<form class="form form-inline">
+<div class="form-actions">
+    {% for f in form %}
+        <div style="display:inline-block; vertical-align:top" class="control-group {% if f.errors %}error{% endif %}" >
+            {{ f }}
+            {% if f.errors %}
+                <span class="help-block">
+                    {% for e in f.errors %}{{ e }}{% endfor %}
+                </span>
+            {% endif %}
+        </div>
+    {% endfor %}
+    <button type="submit" class="btn">
+        {% icon 'fugue-calendar-search-result' %} Update
+    </button>
+</div>
+</form>
+<div class="row-fluid">
+
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+<script src="{{ STATIC_URL }}jquery.flot.js"></script>
+<script>
+$(function () {
+    $.plot($('#plot-placeholder'), [
+        {
+            label: 'Daily total cost',
+            color: '#08c',
+            lines: { show: true, steps: true },
+            points: { show: true, steps: true },
+            data: {{ cost_data|safe }},
+            yaxis: 1
+        },
+        {
+            label: 'Device count',
+            color: '#f62',
+            lines: { show: true, steps: true },
+            points: { show: true, steps: true },
+            data: {{ count_data|safe }},
+            yaxis: 2
+        }
+    ], {
+        xaxis: { mode: 'time' },
+        legend: { position: 'sw' },
+        yaxes: [
+            { position: 'left', color: '#08c', min: 0 },
+            { position: 'right', color: '#f62', min: 0 }
+        ]
+    });
+});
+</script>
+{% endblock %}
+

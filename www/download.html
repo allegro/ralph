@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+
+{% block sidebar1 %}{% endblock %}
+{% block bsrelbar1 %}{% endblock %}
+{% block bsrelbar2 %}{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="page-header">
+            <h1>Ralph <small>Version 1.0.0</small></h1>
+        </div>
+        <div class="row">
+            <div class="span8">
+                <p>This is the first release of Ralph.</p>
+                <p>Read the <a href="{{ pathto('installation') }}">installation instructions</a> in the documentation for help with installing it.</p>
+            </div>
+            <div class="span4">
+                <p><a href="#" class="btn btn-warning btn-large">
+                    <i class="icon-download-alt icon-white"></i>
+                    Download version 1.0.0</a></p>
+            </div>
+        </div>
+    </div> <!-- /container -->
+{% endblock %}

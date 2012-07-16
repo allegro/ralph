@@ -1,0 +1,105 @@
+{%extends 'cmdb/base.html'%}
+   
+{% load bob %}
+{% load icons %}
+{% load query %}
+
+{% block content %}
+<style type="text/css" media="screen">
+    form.form-inline input[type=text]
+    {
+        width: 90px; 
+    }
+
+    form.form-inline select
+    {
+        width: auto;
+    }
+</style>
+
+<form class="form-inline well">
+{% for f in form %}
+        {{ f.label_tag }}
+        {{ f }}
+{% endfor %}
+    <button type="submit" class="btn btn-primary">{% icon 'fugue-magnifier' %}&nbsp;Search</button>
+</form>
+
+
+<div class='span12'>
+<h3> Changes </h3>
+
+<p>
+<table class="table table-striped table-bordered table-condensed ">
+    <thead><tr>
+        {% spaceless %}
+            {% include 'cmdb/column-header.html' with label='Time' name='time' always=1 %}
+            {% include 'cmdb/column-header.html' with label='Comment' name='comment' always=1%}
+            {% include 'cmdb/column-header.html' with label='Configuration Item' name='ci' always=1%}
+            {% include 'cmdb/column-header.html' with label='Priority' name='priority'  always=1%}
+            {% include 'cmdb/column-header.html' with label='Type' name='type' always=1%}
+            {% include 'cmdb/column-header.html' with label='Acknowledged' name='acknowledge' always=1%}
+            {% include 'cmdb/column-header.html' with label='Jira Ticket' name='ticket' always=1%}
+            {% include 'cmdb/column-header.html' with label='Details' name='details' always=1%}
+        {% endspaceless %}
+
+    </tr></thead>
+    <tbody>
+        {% for change in changes %}
+        <tr>
+            <td>
+                {{ change.0.time|timesince_limited }}
+            </td>
+            <td>
+                {{ change.0.message }}
+            </td>
+            <td>
+                <a href='/cmdb/ci/view/{{ change.0.ci.id }}' target='_noblank'> 
+                    {% if change.1 %}
+                    {% icon change.1 %}
+                    {% endif %}
+                    {{ change.0.ci.name}} 
+                </a>
+            </td>
+            <td>
+                {% if change.0.priority == 4 %}
+                {% icon 'fugue-exclamation-red' %}
+                {% elif change.0.priority == 3 %}
+                {% icon 'fugue-exclamation' %}
+                {% elif change.0.priority == 2 %}
+                {% icon 'fugue-exclamation-white' %} 
+                {% else %}
+                {% endif %}
+                {{ change.0.get_priority_display}}
+            </td>
+            <td>
+                {% if change.0.type == 2  %}
+                {% icon 'fugue-disc--arrow' %}
+                {% elif change.0.type == 1  %}
+                {% icon 'fugue-blue-document-node' %}
+                {% elif change.0.type == 3  %}
+                {% icon 'fugue-computer' %}
+                {% endif %}
+                {{ change.0.get_type_display}}
+            </td>
+            <td>
+            </td>
+            <td>
+            </td>
+            <td>
+                {% icon 'fugue-report' %}
+                {% if change.0.type == 4 %}
+                <a href='https://zabbix.office/events.php?triggerid={{ change.0.content_object.trigger_id }}&nav_time=1340101543'  target='_noblank'> View in Zabbix </a>
+                {% elif change.0.type == 5 %}
+                <a href='http://t10750.te2/'  target='_noblank'> View in SO </a>
+                {% else %}
+                <a href='/cmdb/changes/change/{{ change.0.id }}' target='_noblank'> View </a>
+                {% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</p>
+{% include 'cmdb/include_pagination.html' %}
+</div>
+{% endblock %}

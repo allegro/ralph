@@ -1,0 +1,37 @@
+
+{% load bob %}
+<style type="text/css" media="screen">
+    .puppet_error
+    {
+/*        background-color: #FFD6D6; */
+    }
+    .puppet_warn
+    {
+        /* background-color: #FFE4C7;  */
+    }
+    .puppet_notice
+    {
+    }
+
+</style>
+<table class="table table-bordered table-striped table-properties">
+<tr>
+    <th> Date </th>
+    <th> User </th>
+    <th> Field name</th>
+    <th> Old value</th>
+    <th> New value</th>
+</tr>
+{% for f in device_attributes_changes %}
+
+<tr> 
+    <td>  {{ f.date|timesince_limited }}  </td>
+    <td>  {{ f.user }} </td>
+    <td>  {{ f.field_name }} </td>
+    <td>  {{ f.old_value}}  </td>
+    <td>  {{ f.new_value }}  </td>
+</tr>
+
+{% endfor %}
+</table>
+            

@@ -1,0 +1,294 @@
+{% block contentarea %}
+
+{% load icons %}
+{% load query %}
+
+<script type="text/javascript" charset="utf-8">
+      $.get("/cmdb/ci/get_last_changes/{{uid}}", function(data)
+      {
+        $("#jira_placeholder").html(data);
+      });
+</script>
+
+
+  {% if ci_id %} {{ breadcrumb }} {% endif %} 
+
+  {% if not iframe %}
+        <h3> {{ label }}  </h3>
+        <br>
+  {% endif %}
+
+  <form id='edit_form' class="form form-inline" method="POST">
+      {% if tabs_left %}
+          <div class='tabbable tabs-left'>
+      {% else %}
+      {% endif %}
+
+      {% if cmdb_messages %}
+      {% for message in cmdb_messages %}
+      <div class="alert {{ message.type }}">
+                <button class="close" data-dismiss="alert">×</button>
+                <strong>{{message.title}}</strong> {{ message.message }}
+                </div>
+      {% endfor %}
+  {% endif %}
+
+  {% if ci_id %}
+      <ul class="nav nav-pills">
+                    {% if not tabs_left %}
+                        <li class='dropdown'>
+                        <a href='#' class='dropdown-toggle' data-toggle='dropdown'> Show all Ci info<b class='caret'> </b> </a>
+                        <ul class='dropdown-menu'>
+                    {% endif %}
+                    <li class='active'><a href="#main" data-toggle="tab">Basic Info</a></li>
+                    <li><a href="#relations" data-toggle="tab">Relations</a></li>
+
+                    {% if read_configuration_item_info_git_perm  %}
+                        <li><a href="#git" data-toggle="tab">{% if git_changes %} {% icon 'fugue-new' %} {% endif %} Repo changes</a></li>
+                    {% endif %}
+
+                    {% if read_configuration_item_info_puppet_perm %}
+                        <li><a href="#puppet" data-toggle="tab">{% if puppet_reports %} {% icon 'fugue-new' %} {% endif %} Agent events</a></li>
+                    {% endif %}
+
+                    {% if read_configuration_item_info_jira_perm %}
+                        <li><a href="#ralph" data-toggle="tab">{% if device_attributes_changes %} {% icon 'fugue-new' %} {% endif %}  Asset attr. changes</a></li>
+                    {% endif %}
+
+                    {% if read_configuration_item_info_jira_perm %}
+                        <li><a href="#zabbix" data-toggle="tab">{% if zabbix_triggers %}{% icon 'fugue-new' %}{% endif %}Monitoring events</a></li>
+                    {% endif %}
+
+                    {% if read_configuration_item_info_jira_perm %}
+                     <li><a href="#problems" data-toggle="tab">{% if problems %} {% icon 'fugue-new' %} {% endif %}  Problems</a></li>
+                    {% endif %}
+
+                    {% if read_configuration_item_info_jira_perm %}
+                     <li><a href="#incidents" data-toggle="tab">{% if incidents %} {% icon 'fugue-new' %} {% endif %}  Incidents </a></li>
+                    {% endif %}
+
+                    {% if read_configuration_item_info_jira_perm %}
+                        <li><a href="#planned" data-toggle="tab">{% if planned %} {% icon 'fugue-new' %} {% endif %} Planned Changes</a></li>
+                    {% endif %}
+
+                    {% if read_configuration_item_info_generic_perm %}
+                        <li><a href="#so" data-toggle="tab">{% if so_events %} {% icon 'fugue-new' %} {% endif %} SO Events</a></li>
+                    {% endif %}
+
+          {% if not tabs_left %}
+                </ul>
+                </li>
+          {% endif %}
+      </ul>
+
+      {% endif %}
+        <div class="tab-content"> 
+                <div class="tab-pane active" id="main">
+
+<div class='span6'>
+    <p style='height: 10px;'></p>
+
+    {% if editable %}
+        {% csrf_token %}
+    {% endif %}
+    {% for f in form.hidden_fields %}{{ f }}{% endfor %}
+    <table class="table table-bordered table-striped table-properties">
+        <tbody>
+            {% if service_name %}
+        <tr>
+                <td colspan=4>
+                    <p> <span style='font-size: 15px' class="label label-success">Service : {{ service_name }}</span> </p> 
+                </td>
+            </tr>
+            {% endif %}
+
+        {% for f in form.visible_fields %}
+        <tr class="control-group 
+                {{ f.css_classes }}
+                {% if f.errors %}error{% endif %}
+            ">
+                <td width="16">{{ f|field_icon:form }}</td>
+                <th class="form-label">
+                    {{ f.label_tag }}
+                </th>
+                <td class="form-field controls">
+                    {{ f }}
+                    {% for e in f.errors %}
+                        <div class="help-block">{{ e }}</div>
+                    {% empty %}
+                    {%  if f.help_text %}
+                        <div class="help-block">{{ f.help_text }}</div>
+                    {%  endif %}
+                    {% endfor %}
+                </td>
+            </tr>
+            {% endfor %}
+           </tbody>
+    </table>
+
+    {% if ci_id %}
+         <span><h3>Custom Attributes</h3> </span>
+            {% include 'cmdb/include_attributes.html' %}
+            <hr> 
+
+            {% if not iframe and ci and ci.content_object and ci.content_type.name == 'device' %}
+                <a href='#asset_info' data-toggle="modal" class='btn btn-success btn-large' href='#'><i class='icon-white icon-eye-open'></i> Asset details</a>
+            {% endif %}
+    {% endif %}
+
+    {% if editable %}
+        <button class="btn btn-primary" type="submit">{% icon 'fugue-tick' %}&nbsp;Save</button>
+        <button class="btn" type="reset">{% icon 'fugue-broom' %}&nbsp;Clean</button>
+        {% else %}
+        {% if not iframe %}
+            <a class='btn btn-info btn-large' href='/cmdb/ci/edit/{{ ci_id}}'> Edit this CI </a>
+        {% endif %}
+    {% endif %}
+
+</div> <!-- span6 !-->
+
+</div> <!-- main !-->
+
+<div class="tab-pane" id="ralph"> 
+    <span><h3> Asset attr. changes</h3> </span>
+    <br>
+{% include 'cmdb/include_attributechange.html' %}
+</div>
+
+<div class="tab-pane" id="problems"> 
+<span><h3> Problems </h3> </span>
+    <br>
+{% include 'cmdb/include_events.html' with rows=problems%}
+</div>
+
+<div class="tab-pane" id="incidents"> 
+<span><h3>{% if incidents %} {% icon 'fugue-new' %} {% endif %} Incidents</h3> </span>
+    <br>
+{% include 'cmdb/include_events.html' with rows=incidents%}
+</div>
+
+<div class="tab-pane" id="planned"> 
+    <span><h3>{% if planned %} {% icon 'fugue-new' %} {% endif %} Planned changes</h3> </span>
+    <br>
+{% include 'cmdb/include_events.html' with rows=planned%}
+</div>
+
+<div class="tab-pane" id="so"> 
+    <span><h3>{% if so_events %} {% icon 'fugue-new' %} {% endif %} SO Events</h3> </span>
+    <br>
+    {% include 'cmdb/include_so_events.html' with rows=so_events%}
+</div>
+
+<div class="tab-pane" id="zabbix"> 
+    <span><h3> Monitoring events</h3> </span>
+        <br>
+    {% include 'cmdb/include_zabbix.html' with rows=zabbix_triggers%}
+</div>
+<div class="tab-pane" id="relations">
+    <div class='span10' style='padding-top: 4px;margin-top: 10px; '>
+        <div class='span{{span_number}}'  >
+                <table style='cell-padding: 10px'>
+                    <tr>
+                    </tr>
+                    <tr>
+                        <td style='vertical-align: top; padding-right: 10px'>
+                            {% include 'cmdb/include_relations.html' with span_number=span_number label='Contains' relations=relations_contains editable=editable %}
+                            {% include 'cmdb/include_relations.html' with span_number=span_number label='Has roles' relations=relations_hasrole editable=editable %}
+                            {% include 'cmdb/include_relations.html' with span_number=span_number label='Requires' relations=relations_requires editable=editable %}
+
+                       {% if editable and edit_configuration_item_relations_perm and ci_id %} 
+                       <p>
+                                <a class='btn btn-primary'
+                                    href="/cmdb/relation/add/{{ ci_id }}?rel_child={{ ci_id }}"> 
+                                   <i class='icon-edit icon-white'></i> 
+                                   Add new parent relation
+                               </a> 
+                       </p>
+                       {% endif %}
+                        </td>
+
+                    <td style='vertical-align: top;'>
+                        {% include 'cmdb/include_relations.html' with span_number=span_number label='Is part of' relations=relations_parts editable=editable %}
+                        {% include 'cmdb/include_relations.html' with span_number=span_number label='Is role for' relations=relations_isrole editable=editable %}
+                        {% include 'cmdb/include_relations.html' with span_number=span_number label='Is required by' relations=relations_isrequired editable=editable %}
+
+                       {% if editable and edit_configuration_item_relations_perm and ci_id %} 
+                       <p>
+                                <a class='btn btn-primary'
+                                    href="/cmdb/relation/add/{{ ci_id }}?rel_parent={{ ci_id }}"> 
+                                   <i class='icon-edit icon-white'></i> 
+                                   Add new child relation
+                               </a> 
+                       </p>
+                       {% endif %}
+
+                    </td>
+                </tr>
+
+                </table>
+
+            </div>
+        </div>
+    </div>
+
+        {% if read_configuration_item_info_puppet_perm %}
+            <div class="tab-pane" id="puppet">
+                <div class='span12'>
+                <span><h3> Agent configuration log</h3> </span>
+                <p>
+                    {% include 'cmdb/include_puppet.html' %}
+                </p>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if read_configuration_item_info_jira_perm %}
+        <div class="tab-pane" id="jira">
+            <div class='span12'>
+               <span><h3> Last Jira Issues</h3> </span>
+               <p> 
+                   <div id='jira_placeholder'> </div>
+                </p> 
+            </div>
+        </div>
+        {% endif %}
+
+
+{% if read_configuration_item_info_git_perm  %}
+    <div class="tab-pane" id="git">
+        <div class='span12'>
+            <span><h3> Last Repo changes </h3> </span>
+            <p> 
+                {% include 'cmdb/include_git.html' %}
+            </p> 
+        </div> <!-- span12 !-->
+    </div> <!-- tab change !-->
+{% endif %}
+
+        
+</div> <!-- tab-contents !-->
+
+{% if tabs_left %}
+    </div> <!-- tabbable tab-left !-->
+{% endif %}
+
+</form>
+
+<hr>
+{% if ci and ci.content_object and ci.content_type.name == 'device' %}
+    <div class='modal hide fade' id='asset_info' style='width: 1040px' >
+        <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">×</button>
+                    <h3>Asset information</h3>
+                </div>
+        <div class='modal-body' style='width:1040px' >
+            <iframe src='/cmdb/ci/ralph_view/{{ci_id}}' style='border: 0; width:1040px;height:800px'> 
+            </iframe>
+        </div>
+        <div class="modal-footer">
+            <a href="#" class="btn" data-dismiss="modal">Close</a>
+        </div>
+    </div>
+{% endif %}
+
+{% endblock %}

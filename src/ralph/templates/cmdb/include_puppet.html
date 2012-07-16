@@ -1,0 +1,72 @@
+{% load icons %}
+{% load query %}
+
+
+<style type="text/css" media="screen">
+    .puppet_error
+    {
+/*        background-color: #FFD6D6; */
+    }
+    .puppet_warn
+    {
+        /* background-color: #FFE4C7;  */
+    }
+    .puppet_notice
+    {
+    }
+
+</style>
+{% for r in puppet_reports %}
+<div style=' '> 
+    <ul>
+        <li/>Kind: <b>{{ r.report.kind }}</b>
+        <li/>Report number: <b>{{ r.report.configuration_version }} </b>
+        <li/>Host : <b>{{ r.report.host }}</b>
+        <li/>Time: <b>{{ r.time }}</b>
+        <li/>Status: <b>{{ r.status}}</b>
+    </ul>
+</div>
+<p></p>
+<table class="table table-bordered table-striped table-properties">
+    <tr>
+        <th>
+
+        </th>
+        <th>
+
+        </th>
+<tr>
+    <th></th>
+    <th> Level </th>
+    <th style='width: 30%;'> Source </th>
+    <th> Message </th>
+    <th> Tags </th>
+    <th> Time </th>
+    <th> Status </th>
+</tr>
+{% for f in r.logs  %}
+<tr class='puppet_{{f.level}}'> 
+    {% if f.level == 'err' %}
+    <td>  {% icon 'fugue-exclamation-red' %} </td> 
+    {% elif f.level == 'notice' %}
+    <td>  {% icon 'fugue-exclamation-white' %} </td>
+    {% elif f.level == 'warning' %}
+    <td>  {% icon 'fugue-exclamation' %} </td>
+    {% else %}
+    {% endif %}
+    <td> 
+    {{ f.level }}
+    </td>
+    <td>  {{ f.source }}  </td>
+    <td>  <pre>{{ f.message }}</pre>  </td>
+    <td>  {{ f.tags }}  </td>
+    <td>  {{ f.time }}  </td>
+    <td>  {{ f.status }}  </td>
+</tr>
+
+{% endfor %}
+</table>
+{% endfor %}
+
+
+            

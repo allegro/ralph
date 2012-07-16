@@ -1,0 +1,30 @@
+- model: cmdb.CIAttribute
+  pk: 1
+  fields:
+    name: Documentation Link
+    attribute_type: 2
+    ci_types: [3]
+
+- model: cmdb.CIAttribute
+  pk: 2
+  fields:
+    name: Responsible Person Name
+    attribute_type: 2
+    ci_types: [3]
+
+- model: cmdb.CIAttribute
+  pk: 3
+  fields:
+    name: Expiration day
+    attribute_type: 3
+    ci_types: [2]
+
+
+- model: cmdb.CIAttribute
+  pk: 4
+  fields:
+    name: SLA value
+    attribute_type: 4
+    ci_types: [2,1]
+
+

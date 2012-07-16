@@ -1,0 +1,28 @@
+{% load url from future %}
+{% load icons %}
+{% load query %}
+{% if page.has_other_pages %}
+<div class="pagination pagination-centered"><ul>
+    {% if page.has_previous %}
+    <li><a href="?{{ url_query|query_page:page.previous_page_number }}">{% icon 'fugue-blue-document-page-previous' %}</a></li>
+    {% else %}
+    <li class="disabled"><a href="#">{% icon 'fugue-document-page-previous' %}</a></li>
+    {% endif %}
+    {% for p in pages %}
+    {%  if p == '...' %}
+    <li class="disabled"><a href="#">&hellip;</a></li>
+    {%  else %}
+    <li
+    {%   if p == page.number %}
+        class="active"
+    {%   endif %}
+    ><a href="?{{ url_query|query_page:p }}">{{ p }}</a></li>
+    {%  endif %}
+    {% endfor %}
+    {% if page.has_next %}
+    <li><a href="?{{ url_query|query_page:page.next_page_number }}">{% icon 'fugue-blue-document-page-next' %}</a></li>
+    {% else %}
+    <li class="disabled" ><a href="#">{% icon 'fugue-document-page-next' %}</a></li>
+    {% endif %}
+</ul></div>
+{% endif %}

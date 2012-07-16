@@ -1,0 +1,68 @@
+{% extends "ui/base.html" %}
+{% load url from future %}
+{% load icons %}
+{% load formats %}
+{% load bob %}
+
+{% block sidebar %}
+{% if sidebar_items %}    
+{% sidebar_menu sidebar_items sidebar_selected %}
+{% endif %}
+
+{% if searchform %}    
+<form class="form search-form well well-small"
+{% if not searchform_filter %}action="{% url 'search' details '' %}"{% endif %} >
+{% for f in searchform %}
+<div class="control-group {{ f.css_classes }} {% if f.errors %}error{% endif %}">
+{{ f.label_tag }}
+{{ f }}
+{%  for e in f.errors %}
+<div class="help-block">{{ e }}</div>
+{%  empty %}
+{%   if f.help_text %}
+<div class="help-block">{{ f.help_text }}</div>
+{%   endif %}
+{%  endfor %}
+</div>
+{% endfor %}
+{% if searchform_filter %}
+<button type="submit" class="btn btn-primary">
+    {% icon 'fugue-funnel' %}&nbsp;Filter
+</button>
+{% else %}
+<button type="submit" class="btn btn-primary">
+    {% icon 'fugue-magnifier' %}&nbsp;Search
+</button>
+{% endif %}
+</form>
+{% endif %}
+{% endblock %}
+
+
+{% block titlesubsection %}{% if subsection %}
+{%   if details %}
+{{ details.title }} - 
+{%   endif %}
+{%   if device %}
+{{ device.name }} - 
+{%   endif %}
+{{ subsection.title }} -
+{% endif %}{% endblock %}
+
+
+{% block tabs %}
+{%   if subsection != None %}
+{%     tab_menu tab_items details %}
+{%   endif %}
+{% endblock %}
+
+{% block breadcrumbs %}
+{% if subsection or subsection == '' %}
+<ul class="breadcrumb">
+    <li><a href="../..">{{ section }}</a> <span class="divider">/</span></li>
+    <li><a href="../{{ details }}?{{ url_query.urlencode }}">{{ subsection|default:'unknown' }}</a> <span class="divider">/</span></li>
+  <li class="active">{{ device.name }}</li>
+</ul>
+{% endif %}
+{% endblock %}
+

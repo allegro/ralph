@@ -1,0 +1,87 @@
+{% extends "ui/base-devices.html" %}
+{% load url from future %}
+{% load icons %}
+{% load formats %}
+
+{% block content %}
+<div class="row-fluid">
+<div class="span6">
+
+<table class="table table-striped table-bordered details-costs">
+    <tbody><tr>
+        <td width="16">{% icon 'fugue-store' %}</td>
+        <th>Venture</th>
+        <td>{{ device.venture.name }}</td>
+    </tr><tr>
+        <td>{% icon 'fugue-mask' %}</td>
+        <th>Role</th>
+        <td>{{ device.venture_role.name }}</td>
+    </tr><tr>
+        <td width="16">{% icon 'fugue-receipt-text' %}</td>
+        <th>Monthly Cost</th>
+        <td class="currency">{{ device.cached_cost|currency }}</td>
+    </tr></tbody>
+</table>
+<table class="table table-striped table-bordered details-costs-owners">
+    <thead><tr>
+        <th width="16"></th>
+        <th>Owner</th>
+    </tr></thead>
+    <tbody>
+        {% for o in device.venture.ventureowner_set.all %}
+            <tr>
+                <td>{{ o|owner_icon }}</td>
+                <td>{{ o.name }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+<div class="span6">
+<table class="table table-striped table-bordered details-costs-hostory">
+    <thead><tr>
+        <th>Start</th>
+        <th>End</th>
+        <th>Days</th>
+        <th>Venture</th>
+        <th>Daily Cost</th>
+    </tr></thead>
+    <tbody>
+        {% for h in history %}
+        <tr>
+            <td>
+                {% if h.start.year != 0 %}
+                    {{ h.start|date:'Y-m-d' }}
+                {% endif %}
+            </td>
+            <td>
+                {% if h.end.year != 9999 %}
+                    {{ h.end|date:'Y-m-d' }}
+                {% endif %}
+            </td>
+            <td>{{ h.span }}</td>
+            <td>{{ h.venture.name }}</td>
+            <td class="currency">{{ h.daily_cost|currency:2 }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% if splunk_size %}
+<table class="table table-striped table-bordered details-costs-hostory">
+    <thead><tr>
+        <th>Splunk Usage (MiBs)</th>
+        <th>Monthly Cost</th>
+        <th>Daily Cost</th>
+    </tr></thead>
+    <tbody>
+        <tr>
+            <td>{{ splunk_size }}</td>
+            <td>{{ splunk_monthly_cost|currency:2 }}</td>
+            <td>{{ splunk_daily_cost|currency:2 }}</td>
+            <td class="currency">{{ h.daily_cost|currency:2 }}</td>
+        </tr>
+    </tbody>
+</table>
+{% endif %}
+</div>
+{% endblock content %}

@@ -1,0 +1,17 @@
+<changeset displayId="8f67138" date="2012-05-29T14:03:16+02:00" csid="8f67138416247824ceeb3d5fa1a1470261fa71ac" branch="zabbix" author="Johny Test &lt;johny.test@test.pl&gt;">
+        <branches>
+            <branch>zabbix</branch>
+            <branch>cmdb</branch>
+            <branch>master</branch>
+        </branches>
+        <children>
+            <child>d223c3355d05201ba97c919d27d676275f1d63bb</child>
+        </children>
+        <comment>
+            Custom fields moved to module, uid prefixes initials
+        </comment>
+        <fileRevisionKey rev="8f67138416247824ceeb3d5fa1a1470261fa71ac" path="modules/ventures/test_venture/manifests/test_role.pp"/>
+        <parents>
+            <parent>17b8cade4da145a9e07026522e2e2643779ec8e8</parent>
+        </parents>
+</changeset>

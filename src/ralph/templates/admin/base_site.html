@@ -1,0 +1,43 @@
+{% extends "admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{{ title }} | {% trans 'Ralph' %}{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">{% trans 'Ralph' %}</h1>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}
+
+{% block extrastyle %}
+<style>
+#header{ background-color: #333940; border-bottom: solid 3px #999; }
+ 
+#branding h1{ color: #fff; }
+.module h2, .module caption, .inline-group h2 { background:#ccc url({{STATIC_URL}}admin/img/nav-bg.gif) bottom left repeat-x; color: #333940; }
+a.section:link, a.section:visited { color: #666666; }
+
+a:link, a:visited {
+    color: #FF9900;
+    text-decoration: none;
+}
+a:hover {
+    color: #FF0022;
+}
+#header {
+    color: #FF9900;
+}
+#changelist-filter li.selected a.allegro {
+    color: #FF8800 !important;
+}
+.form-row.raw p {
+    white-space: pre;
+    font-family: monospace;
+}
+</style>
+{% endblock %}
+{% block closingscript %}
+<script>
+  django.jQuery('#changelist-filter li.selected a').addClass('allegro');
+</script>
+{% endblock %}

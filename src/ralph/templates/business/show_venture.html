@@ -1,0 +1,78 @@
+{%extends 'business/base_ventures.html'%}
+{% load i18n %}
+
+{%block pageattrib%}class="type-interior"{%endblock%}
+{%block header%}<h1>{%trans 'List of ventures'%}</h1>
+		<a href="/business/ventures/" data-icon="home" data-iconpos="notext" data-ajax="false" class="ui-btn-right mnm-home">{%trans "Main page" %}</a>
+{%endblock%}
+
+{%block content%}		
+<div class="content-primary">
+  <p style="float: right; font-size: 12px;"><a href="/admin/business/venture/{{venture.id}}/">edytuj</a></p>
+  <h2>{{venture.name}}</h2>
+  {%if venture.parent%}<h3>Część serwisu <a href="{{venture.parent.get_absolute_url}}">{{venture.parent}}</a></h3>{%endif%}
+  <h3>Data center: {{venture.get_data_center|default:"nieokreślone"}}</h3>
+  <h3>{%trans 'department'|title%}: {{venture.get_department|default:"nieznane"}}</h3>
+  <div data-role="collapsible-set">
+    <div data-collapsed="false" data-role="collapsible" data-content-theme="d">
+      <h3>{%trans 'Main owners'%}</h3>
+      <p><b>{%trans 'Technical owners:'%}</b>
+      {%for owner in venture.technical_owners%}
+      {%if owner.synergy_id%}
+      <a target="_blank" href="{{synergy_url_base}}docs/HRMResourceCard.aspx?ID={{owner.synergy_id}}">{{owner.name}}</a>{%if not forloop.last%}, {%endif%}
+      {%else%}
+      {{owner.name}}{%if not forloop.last%}, {%endif%}
+      {%endif%}
+      {%empty%}
+      {%trans 'none'%}
+      {%endfor%}
+      <p><b>{%trans 'Business owners:'%}</b>
+      {%for owner in venture.business_owners%}
+      {%if owner.synergy_id%}
+      <a target="_blank" href="{{synergy_url_base}}docs/HRMResourceCard.aspx?ID={{owner.synergy_id}}">{{owner.name}}</a>{%if not forloop.last%}, {%endif%}
+      {%else%}
+      {{owner.name}}{%if not forloop.last%}, {%endif%}
+      {%endif%}
+      {%empty%}
+      {%trans 'none'%}
+      {%endfor%}
+    </div>
+    {%for sv in subventures%}
+    <div data-role="collapsible" data-content-theme="d">
+      <p style="float: right; font-size: 12px;"><a href="/admin/business/venture/{{sv.id}}/">edytuj</a></p>
+      <h3>{{sv.name}}</h3>
+      <p><b>{%trans 'Technical owners:'%}</b>
+      {%for owner in sv.technical_owners%}
+      {%if owner.synergy_id%}
+      <a target="_blank" href="{{synergy_url_base}}docs/HRMResourceCard.aspx?ID={{owner.synergy_id}}">{{owner.name}}</a>{%if not forloop.last%}, {%endif%}
+      {%else%}
+      {%if owner.synergy_id%}
+      <a target="_blank" href="{{synergy_url_base}}docs/HRMResourceCard.aspx?ID={{owner.synergy_id}}">{{owner.name}}</a>{%if not forloop.last%}, {%endif%}
+      {%else%}
+      {{owner.name}}{%if not forloop.last%}, {%endif%}
+      {%endif%}
+      {%endif%}
+      {%empty%}
+      {%trans 'none'%}
+      {%endfor%}
+      <p><b>{%trans 'Business owners:'%}</b>
+      {%for owner in sv.business_owners%}
+      {%if owner.synergy_id%}
+      <a target="_blank" href="{{synergy_url_base}}docs/HRMResourceCard.aspx?ID={{owner.synergy_id}}">{{owner.name}}</a>{%if not forloop.last%}, {%endif%}
+      {%else%}
+      {{owner.name}}{%if not forloop.last%}, {%endif%}
+      {%endif%}
+      {%empty%}
+      {%trans 'none'%}
+      {%endfor%}
+    </div>
+    {%endfor%}
+  </div>
+</div>
+<div class="content-secondary">			
+    <div data-role="collapsible" data-collapsed="true" data-theme="a">
+        <h3>{%trans "More in this section" %}</h3>
+        {%include 'business/side_ventures.html'%}
+      </div>
+</div>
+{%endblock%}

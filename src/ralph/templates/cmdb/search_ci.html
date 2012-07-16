@@ -1,0 +1,95 @@
+{%extends 'cmdb/base.html'%}
+   
+{% load icons %}
+{% load query %}
+
+{% block content %}
+<style type="text/css" media="screen">
+    form.form-inline select
+    {
+        width: auto;
+    }
+
+    #id_uid
+    {
+        width: 80px;
+    }
+
+</style>
+
+<div class='span12'>
+
+<form class="form-inline well">
+{% for f in form %}
+        {{ f.label_tag }}
+        {{ f }}
+{% endfor %}
+    <button type="submit" class="btn btn-primary">{% icon 'fugue-funnel' %}&nbsp;Filter</button>
+</form>
+
+<table class="table table-striped table-bordered table-condensed ">
+    <thead><tr>
+
+        {% spaceless %}
+
+            {% include 'cmdb/column-header.html' with sortable=1 label='Name' name='uid' always=1 %}
+            {% include 'cmdb/column-header.html' with sortable=1 label='Type' name='type' always=1%}
+            {% include 'cmdb/column-header.html' with label='Layer' name='layer' always=1%}
+            <!--
+            {% include 'cmdb/column-header.html' with label='State' name='state'  always=1%}
+            {% include 'cmdb/column-header.html' with label='Change status' name='status' always=1%}
+            !-->
+            {% include 'cmdb/column-header.html' with label='Operations' name='operations' always=1%}
+
+        {% endspaceless %}
+
+    </tr></thead>
+    <tbody>
+        {% for d in rows %}
+        <tr>
+            <td>
+                {% if d.count %}
+                <a href="./search?parent={{ d.id|default:''}}"> 
+                    <b><i class='fugue-icon {{ d.icon }}'></i> {{ d.name }} ({{ d.count }}) &gt;&gt;</b> </a>
+                {% else %}
+                <a href="./ci/view/{{ d.id|default:''}}"> <i class='fugue-icon {{ d.icon }}'></i> {{ d.name }} </a>
+                {% endif %}
+
+            </td>
+            <td>
+                {{ d.ci_type }}
+            </td>
+       
+            <td>
+                {{ d.layers }}
+            </td>
+
+            <!--
+            <td>
+                <i class='fugue-icon {% if d.state_id == 2 %} fugue-status-busy
+                    {% elif d.state_id == 1  %} fugue-status
+                    {% else %} fugue-status-offline
+                    {% endif %}' > </i>
+{{ d.state }}
+            </td>
+            <td>
+                {{ d.status}}
+            </td>
+            !-->
+            <td>
+                        {% if edit_configuration_item_info_generic_perm  %}
+                            <a href="./ci/edit/{{ d.id|default:''}}?{{url_query.urlencode }}"> Edit </a> | 
+                        {% endif %}
+
+                        {% if read_configuration_item_info_generic_perm  %}
+                            <a href="./ci/view/{{ d.id|default:''}}?{{url_query.urlencode }}"> View</a>
+                        {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% include 'cmdb/include_pagination.html' %}
+</div>
+{% endblock %}

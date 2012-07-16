@@ -1,0 +1,11 @@
+{% extends "ui/base-devices.html" %}
+{% load url from future %}
+{% load icons %}
+
+{% block content %}
+<div class="row-fluid">
+<div class="span6">
+    {% include 'ui/device-form.html' with form=form %}
+</div>
+</div>
+{% endblock content %}

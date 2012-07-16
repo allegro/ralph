@@ -1,0 +1,25 @@
+<!doctype html>
+<html><head>
+    <title>Ralph Business</title>
+    <link rel="stylesheet" type="text/css"
+    href="{{ STATIC_URL }}/ext-4.0/resources/css/ext-all.css">
+    <link rel="stylesheet" type="text/css"
+    href="{{ STATIC_URL }}/fugue-icons-important.css">
+    <link rel="stylesheet" type="text/css"
+    href="{{ STATIC_URL }}/business/custom.css">
+    <link rel="stylesheet" type="text/css"
+    href="{{ STATIC_URL }}/ext-4.0/ux/grid/css/GridFilters.css">
+    <link rel="stylesheet" type="text/css"
+    href="{{ STATIC_URL }}/ext-4.0/ux/grid/css/RangeMenu.css"> 
+    <script><!--
+        var CURRENCY = "{{ CURRENCY }}";
+    //--></script>
+    <script type="text/javascript" 
+        src="{{ STATIC_URL }}/ext-4.0/ext-all-debug.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}/business/app.js"></script>
+</head><body>
+    <form id="history-form" class="x-hide-display">
+        <input type="hidden" id="x-history-field" />
+        <iframe id="x-history-frame"></iframe>
+    </form>
+</body></html>

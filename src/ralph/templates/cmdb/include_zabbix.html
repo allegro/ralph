@@ -1,0 +1,35 @@
+   
+{% load icons %}
+{% load query %}
+
+{% block content %}
+
+<div class='span12'>
+<table class="table table-striped table-bordered table-condensed ">
+    <thead><tr>
+        {% spaceless %}
+            {% include 'cmdb/column-header.html' with label='Description' name='time'  always=1%}
+            {% include 'cmdb/column-header.html' with label='Priority' name='time'  always=1%}
+            {% include 'cmdb/column-header.html' with label='Last changed' name='time'  always=1%}
+            {% include 'cmdb/column-header.html' with label='Trigger ID' name='time' always=1%}
+
+        {% endspaceless %}
+
+    </tr></thead>
+    <tbody>
+        {% for d in rows%}
+        <tr>
+            <td> {{ d.1.description}} </td>
+            <td> {{ d.1.priority}} </td>
+            <td> {{ d.0}} </td>
+            <td>  
+                <a href='https://zabbix.office/events.php?triggerid={{ d.1.triggerid}}&nav_time=1340101543'  target='_noblank'> View in Zabbix </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% include 'cmdb/include_pagination.html' %}
+</div>
+{% endblock %}

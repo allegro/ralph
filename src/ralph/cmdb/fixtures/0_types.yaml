@@ -1,0 +1,51 @@
+- model: cmdb.CIType
+  pk: 1
+  fields:
+    name: Application
+
+- model: cmdb.CIType
+  pk: 2
+  fields:
+    name: Device
+
+- model: cmdb.CIType
+  pk: 3
+  fields:
+    name: Procedure
+
+- model: cmdb.CIType
+  pk: 4
+  fields:
+    name: Venture
+
+- model: cmdb.CIType
+  pk: 5
+  fields:
+    name: VentureRole
+
+- model: cmdb.CIType
+  pk: 6
+  fields:
+    name: BusinessLine
+
+- model: cmdb.CIType
+  pk: 7
+  fields:
+    name: Service
+
+- model: cmdb.CIType
+  pk: 8 
+  fields:
+    name: Network
+
+- model: cmdb.CIType
+  pk: 9 
+  fields:
+    name: Data Center
+
+- model: cmdb.CIType
+  pk: 10 
+  fields:
+    name: NetworkTerminator
+
+
