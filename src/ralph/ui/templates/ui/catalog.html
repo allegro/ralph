@@ -1,0 +1,31 @@
+{% extends "ui/base.html" %}
+
+{% load url from future %}
+{% load icons %}
+
+{% block sidebar %}
+<div class="well side-nav">
+<ul class="nav nav-list">
+    <li class="nav-header">Components</li>
+    {% for mt in component_model_types %}
+    <li
+        {% if model_type_id == mt.id and kind == 'component' %}
+        class="active"
+        {% endif %}
+    >
+    <a href="{% url 'catalog' 'component' mt.id %}">{{ mt.id|component_model_type_icon }}&nbsp;{{ mt.raw|title }}</a>
+    </li>
+    {% endfor %}
+    <li class="nav-header">Devices</li>
+    {% for mt in device_model_types %}
+    <li
+        {% if model_type_id == mt.id and kind == 'device' %}
+        class="active"
+        {% endif %}
+    >
+    <a href="{% url 'catalog' 'device' mt.id %}">{{ mt.id|device_model_type_icon }}&nbsp;{{ mt.raw|title }}</a>
+    </li>
+    {% endfor %}
+</ul>
+</div>
+{% endblock %}

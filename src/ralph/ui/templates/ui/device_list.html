@@ -1,0 +1,68 @@
+{% extends "ui/base-devices.html" %}
+{% load url from future %}
+{% load icons %}
+{% load bob %}
+
+{% block contentarea %}
+<form 
+    method="POST" 
+    class="form form-inline" 
+    action="../bulkedit/?{{ url_query.urlencode }}"
+>
+<table class="table table-striped table-bordered table-condensed table-list device-list">
+    <thead><tr>
+        {% spaceless %}
+        {% if show_bulk %}
+        <th width="16"><div class="dropdown">
+            <a href="#" data-toggle="dropdown" class="dropdown-toggle">{% icon 'fugue-ui-check-boxes-series' %}</a>
+            <ul class="dropdown-menu">
+                <li><a href="#" class="select-all">{% icon 'fugue-ui-check-box' %}&nbsp;Select all on this page</a></li>
+                <li><a href="#" class="select-toggle">{% icon 'fugue-ui-check-box-mix' %}&nbsp;Reverse selection</a></li>
+                <li><a href="#" class="select-none">{% icon 'fugue-ui-check-box-uncheck' %}&nbsp;Deselect all</a></li>
+            </ul>
+        </div></th>
+        {% endif %}
+        {% include 'ui/column-header.html' with label='Name' name='name' always=1 %}
+        {% include 'ui/column-header.html' with label='Venture/Role' name='venture' %}
+        {% include 'ui/column-header.html' with label='Model' name='model' %}
+        {% include 'ui/column-header.html' with label='Margin' name='margin' type='quantity' %}
+        {% include 'ui/column-header.html' with label='Deprecation' name='deprecation' type='quantity' %}
+        {% include 'ui/column-header.html' with label='Price' name='price' type='price' %}
+        {% include 'ui/column-header.html' with label='Monthly Cost' name='cost' type='price' %}
+        {% include 'ui/column-header.html' with label='Barcode' name='barcode' %}
+        {% include 'ui/column-header.html' with label='Position' name='position' type='number' %}
+        {% include 'ui/column-header.html' with label='IP Addresses' name='ips' %}
+        {% include 'ui/column-header.html' with label='Management' name='management' %}
+        {% include 'ui/column-header.html' with label='Created' name='created' type='date' %}
+        {% include 'ui/column-header.html' with label='Last Seen' name='lastseen' type='date' %}
+        {% include 'ui/column-header.html' with label='Remarks' name='remarks' %}
+        {% include 'ui/column-header.html' with label='Purchase Date' name='purchase' type='date' %}
+        {% include 'ui/column-header.html' with label='Warranty Expiration' name='warranty' type='date' %}
+        {% include 'ui/column-header.html' with label='Support Expiration' name='support' type='date' %}
+        {% endspaceless %}
+    </tr></thead>
+    <tbody>
+        {% if is_paginated %}
+            {% for d in page_obj.object_list %}
+                {% include 'ui/device_row.html' with d=d columns=columns show_bulk=show_bulk %}
+            {% endfor %}
+        {% else %}
+            {% for d in object_list %}
+                {% include 'ui/device_row.html' with d=d columns=columns show_bulk=show_bulk %}
+            {% endfor %}
+        {% endif %}
+    </tbody>
+</table>
+{% pagination page_obj url_query=url_query show_all=1 show_csv=1 fugue_icons=1 %}
+{% if show_bulk %}
+<div class="form-actions bulk-edit">
+    {% csrf_token %}
+    <div class="controls">
+        <button type="submit" class="btn" name="bulk">
+            {% icon 'fugue-pencil-field' %} Bulk edit
+        </button>
+    </div>
+</div>
+{% endif %}
+</form>
+{% endblock contentarea %}

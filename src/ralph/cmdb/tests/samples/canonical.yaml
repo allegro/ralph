@@ -1,0 +1,444 @@
+--- !ruby/object:Puppet::Transaction::Report
+  configuration_version: 1293756667
+  host: s11401.dc2
+  kind: apply
+  logs: 
+    - !ruby/object:Puppet::Util::Log
+      level: !ruby/sym debug
+      message: Using cached certificate for ca
+      source: Puppet
+      tags: 
+        - debug
+      time: 2010-12-30 16:56:37.290413 -08:00
+    - !ruby/object:Puppet::Util::Log
+      level: !ruby/sym debug
+      message: Using cached certificate for paul-berrys-macbook-pro-3.local
+      source: Puppet
+      tags: 
+        - debug
+      time: 2010-12-30 16:56:37.291081 -08:00
+    - !ruby/object:Puppet::Util::Log
+      level: !ruby/sym debug
+      message: Using cached certificate_revocation_list for ca
+      source: Puppet
+      tags: 
+        - debug
+      time: 2010-12-30 16:56:37.292402 -08:00
+    - !ruby/object:Puppet::Util::Log
+      level: !ruby/sym debug
+      message: "catalog supports formats: b64_zlib_yaml dot marshal pson raw 
+aml; using pson"
+      source: Puppet
+      tags: 
+        - debug
+      time: 2010-12-30 16:56:37.293879 -08:00
+    - !ruby/object:Puppet::Util::Log
+      level: !ruby/sym info
+      message: Caching catalog for paul-berrys-macbook-pro-3.local
+      source: Puppet
+      tags: 
+        - info
+      time: 2010-12-30 16:56:37.351517 -08:00
+    - !ruby/object:Puppet::Util::Log
+      level: !ruby/sym error
+      message: Script died ! 
+      source: Puppet
+      tags: 
+        - debug
+      time: 2010-12-30 16:56:37.425154 -08:00
+    - !ruby/object:Puppet::Util::Log
+      level: !ruby/sym debug
+      message: Loaded state in 0.00 seconds
+      source: Puppet
+      tags: 
+        - debug
+      time: 2010-12-30 16:56:37.432343 -08:00
+    - !ruby/object:Puppet::Util::Log
+      level: !ruby/sym info
+      message: Applying configuration version '1293756667'
+      source: Puppet
+      tags: 
+        - info
+      time: 2010-12-30 16:56:37.434292 -08:00
+    - !ruby/object:Puppet::Util::Log
+      file: &id001 /Users/pberry/puppet_labs/test_data/master/manifests/site.pp
+      level: !ruby/sym notice
+      line: 7
+      message: &id002 "audit change: previously recorded value pberry has been hanged to root"
+      source: "/Stage[main]//File[/tmp/unchanged]/owner"
+      tags: 
+        - notice
+        - file
+        - class
+      time: 2010-12-30 16:56:37.436286 -08:00
+    - !ruby/object:Puppet::Util::Log
+      file: *id001
+      level: !ruby/sym notice
+      line: 7
+      message: &id005 mode changed '640' to '644'
+      source: "/Stage[main]//File[/tmp/changed]/mode"
+      tags: 
+        - notice
+        - file
+        - class
+      time: 2010-12-30 16:56:37.438225 -08:00
+    - !ruby/object:Puppet::Util::Log
+      level: !ruby/sym debug
+      message: Finishing transaction 2166421680
+      source: Puppet
+      tags: 
+        - debug
+      time: 2010-12-30 16:56:37.442001 -08:00
+    - !ruby/object:Puppet::Util::Log
+      level: !ruby/sym info
+      message: "FileBucket got a duplicate file /private/tmp/removed {md5}d41d8cd98f00b204e9800998ecf8427e)"
+      source: Puppet
+      tags: 
+        - info
+      time: 2010-12-30 16:56:37.442516 -08:00
+    - !ruby/object:Puppet::Util::Log
+      file: *id001
+      level: !ruby/sym info
+      line: 7
+      message: Filebucketed /tmp/removed to puppet with sum 41d8cd98f00b204e9800998ecf8427e
+      source: "/Stage[main]//File[/tmp/removed]"
+      tags: 
+        - info
+        - file
+        - class
+      time: 2010-12-30 16:56:37.442920 -08:00
+    - !ruby/object:Puppet::Util::Log
+      file: *id001
+      level: !ruby/sym debug
+      line: 7
+      message: Removing existing file for replacement with absent
+      source: "/Stage[main]//File[/tmp/removed]"
+      tags: 
+        - debug
+        - file
+        - class
+      time: 2010-12-30 16:56:37.443198 -08:00
+    - !ruby/object:Puppet::Util::Log
+      file: *id001
+      level: !ruby/sym notice
+      line: 7
+      message: &id003 removed
+      source: "/Stage[main]//File[/tmp/removed]/ensure"
+      tags: 
+        - notice
+        - file
+        - class
+      time: 2010-12-30 16:56:37.443617 -08:00
+    - !ruby/object:Puppet::Util::Log
+      file: *id001
+      level: !ruby/sym notice
+      line: 7
+      message: &id004 created
+      source: "/Stage[main]//File[/tmp/created]/ensure"
+      tags: 
+        - notice
+        - file
+        - class
+      time: 2010-12-30 16:56:37.445352 -08:00
+  metrics: 
+    time: !ruby/object:Puppet::Util::Metric
+      label: Time
+      name: time
+      values: 
+        - - config_retrieval
+          - Config retrieval
+          - 0.0729589462280273
+        - - schedule
+          - Schedule
+          - 0.001619
+        - - total
+          - Total
+          - 0.0830139462280273
+        - - file
+          - File
+          - 0.008153
+        - - filebucket
+          - Filebucket
+          - 0.000283
+    resources: !ruby/object:Puppet::Util::Metric
+      label: Resources
+      name: resources
+      values: 
+        - - changed
+          - Changed
+          - 3
+        - - total
+          - Total
+          - 12
+        - - out_of_sync
+          - Out of sync
+          - 4
+    events: !ruby/object:Puppet::Util::Metric
+      label: Events
+      name: events
+      values: 
+        - - total
+          - Total
+          - 4
+        - - audit
+          - Audit
+          - 1
+        - - success
+          - Success
+          - 3
+    changes: !ruby/object:Puppet::Util::Metric
+      label: Changes
+      name: changes
+      values: 
+        - - total
+          - Total
+          - 3
+  puppet_version: 2.6.4
+  report_format: 2
+  resource_statuses: 
+    "Filebucket[puppet]": !ruby/object:Puppet::Resource::Status
+      change_count: 0
+      changed: false
+      evaluation_time: 0.000283
+      events: []
+      file: 
+      line: 
+      out_of_sync: false
+      out_of_sync_count: 0
+      resource: "Filebucket[puppet]"
+      resource_type: Filebucket
+      tags: 
+        - filebucket
+        - puppet
+      time: 2010-12-30 16:56:37.445939 -08:00
+      title: puppet
+    "Schedule[monthly]": !ruby/object:Puppet::Resource::Status
+      change_count: 0
+      changed: false
+      evaluation_time: 0.000258
+      events: []
+      file: 
+      line: 
+      out_of_sync: false
+      out_of_sync_count: 0
+      resource: "Schedule[monthly]"
+      resource_type: Schedule
+      tags: 
+        - schedule
+        - monthly
+      time: 2010-12-30 16:56:37.447343 -08:00
+      title: monthly
+    "File[/tmp/unchanged]": !ruby/object:Puppet::Resource::Status
+      change_count: 0
+      changed: false
+      evaluation_time: 0.001123
+      events: 
+        - !ruby/object:Puppet::Transaction::Event
+          audited: true
+          desired_value: 
+          historical_value: 501
+          message: *id002
+          name: !ruby/sym owner_changed
+          previous_value: 0
+          property: owner
+          status: audit
+          time: 2010-12-30 16:56:37.436191 -08:00
+      file: *id001
+      line: 7
+      out_of_sync: false
+      out_of_sync_count: 0
+      resource: "File[/tmp/unchanged]"
+      resource_type: File
+      tags: 
+        - file
+        - class
+      time: 2010-12-30 16:56:37.435405 -08:00
+      title: /tmp/unchanged
+    "File[/tmp/noop]": !ruby/object:Puppet::Resource::Status
+      change_count: 0
+      changed: false
+      evaluation_time: 0.000527
+      events: 
+        - !ruby/object:Puppet::Transaction::Event
+          audited: false
+          desired_value: "644"
+          historical_value: 
+          message: *id001
+          name: !ruby/sym mode_changed
+          previous_value: "640"
+          property: mode
+          status: noop
+          time: 2010-12-30 17:13:28.925582 -08:00
+      file: *id001
+      line: 7
+      out_of_sync: true
+      out_of_sync_count: 1
+      resource: "File[/tmp/noop]"
+      resource_type: File
+      tags: 
+        - file
+        - class
+      time: 2010-12-30 16:56:37.438844 -08:00
+      title: /tmp/noop
+    "Schedule[never]": !ruby/object:Puppet::Resource::Status
+      change_count: 0
+      changed: false
+      evaluation_time: 0.000256
+      events: []
+      file: 
+      line: 
+      out_of_sync: false
+      out_of_sync_count: 0
+      resource: "Schedule[never]"
+      resource_type: Schedule
+      tags: 
+        - schedule
+        - never
+      time: 2010-12-30 16:56:37.446889 -08:00
+      title: never
+    "Schedule[weekly]": !ruby/object:Puppet::Resource::Status
+      change_count: 0
+      changed: false
+      evaluation_time: 0.00027
+      events: []
+      file: 
+      line: 
+      out_of_sync: false
+      out_of_sync_count: 0
+      resource: "Schedule[weekly]"
+      resource_type: Schedule
+      tags: 
+        - schedule
+        - weekly
+      time: 2010-12-30 16:56:37.436824 -08:00
+      title: weekly
+    "File[/tmp/removed]": !ruby/object:Puppet::Resource::Status
+      change_count: 1
+      changed: true
+      evaluation_time: 0.00391
+      events: 
+        - !ruby/object:Puppet::Transaction::Event
+          audited: false
+          desired_value: !ruby/sym absent
+          historical_value: 
+          message: *id003
+          name: !ruby/sym file_removed
+          previous_value: !ruby/sym file
+          property: ensure
+          status: success
+          time: 2010-12-30 16:56:37.440618 -08:00
+      file: *id001
+      line: 7
+      out_of_sync: true
+      out_of_sync_count: 1
+      resource: "File[/tmp/removed]"
+      resource_type: File
+      tags: 
+        - file
+        - class
+      time: 2010-12-30 16:56:37.440078 -08:00
+      title: /tmp/removed
+    "File[/tmp/created]": !ruby/object:Puppet::Resource::Status
+      change_count: 1
+      changed: true
+      evaluation_time: 0.001365
+      events: 
+        - !ruby/object:Puppet::Transaction::Event
+          audited: false
+          desired_value: !ruby/sym present
+          historical_value: 
+          message: *id004
+          name: !ruby/sym file_created
+          previous_value: !ruby/sym absent
+          property: ensure
+          status: success
+          time: 2010-12-30 16:56:37.445044 -08:00
+      file: *id001
+      line: 7
+      out_of_sync: true
+      out_of_sync_count: 1
+      resource: "File[/tmp/created]"
+      resource_type: File
+      tags: 
+        - file
+        - class
+      time: 2010-12-30 16:56:37.444322 -08:00
+      title: /tmp/created
+    "Schedule[puppet]": !ruby/object:Puppet::Resource::Status
+      change_count: 0
+      changed: false
+      evaluation_time: 0.000264
+      events: []
+      file: 
+      line: 
+      out_of_sync: false
+      out_of_sync_count: 0
+      resource: "Schedule[puppet]"
+      resource_type: Schedule
+      tags: 
+        - schedule
+        - puppet
+      time: 2010-12-30 16:56:37.446426 -08:00
+      title: puppet
+    "Schedule[daily]": !ruby/object:Puppet::Resource::Status
+      change_count: 0
+      changed: false
+      evaluation_time: 0.00031
+      events: []
+      file: 
+      line: 
+      out_of_sync: false
+      out_of_sync_count: 0
+      resource: "Schedule[daily]"
+      resource_type: Schedule
+      tags: 
+        - schedule
+        - daily
+      time: 2010-12-30 16:56:37.434845 -08:00
+      title: daily
+    "File[/tmp/changed]": !ruby/object:Puppet::Resource::Status
+      change_count: 1
+      changed: true
+      evaluation_time: 0.001228
+      events: 
+        - !ruby/object:Puppet::Transaction::Event
+          audited: false
+          desired_value: "644"
+          historical_value: 
+          message: *id005
+          name: !ruby/sym mode_changed
+          previous_value: "640"
+          property: mode
+          status: success
+          time: 2010-12-30 16:56:37.438029 -08:00
+      file: *id001
+      line: 7
+      out_of_sync: true
+      out_of_sync_count: 1
+      resource: "File[/tmp/changed]"
+      resource_type: File
+      tags: 
+        - file
+        - class
+      time: 2010-12-30 16:56:37.437332 -08:00
+      title: /tmp/changed
+    "Schedule[hourly]": !ruby/object:Puppet::Resource::Status
+      change_count: 0
+      changed: false
+      evaluation_time: 0.000261
+      events: []
+      file: 
+      line: 
+      out_of_sync: false
+      out_of_sync_count: 0
+      resource: "Schedule[hourly]"
+      resource_type: Schedule
+      tags: 
+        - schedule
+        - hourly
+      time: 2010-12-30 16:56:37.439586 -08:00
+      title: hourly
+  status: changed
+  time: 2010-12-30 16:56:36.718334 -08:00
+
+

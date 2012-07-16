@@ -1,0 +1,108 @@
+{% extends "ui/base-devices.html" %}
+{% load url from future %}
+{% load icons %}
+
+{% block content %}
+<div class="row-fluid">
+<div class="span6">
+
+<table class="table table-striped table-bordered details-addresses">
+    <thead><tr>
+        <th width="16"></th>
+        <th>Hostname</th>
+        <th>Address</th>
+        <th>Last Ping</th>
+    </tr></thead>
+    <tbody>
+        {% for item in device.ipaddress_set.all %}
+        <tr>
+            <td>{{ item|address_icon }}</td>
+            <td>{{ item.hostname }}</td>
+            <td><a href="https://{{ item.address }}">{{ item.address }}</a></td>
+            <td>{{ item.last_seen|date:'Y-m-d H:i' }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<table class="table table-striped table-bordered details-dns">
+    <thead><tr>
+        <th width="16"></th>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Content</th>
+        <th>TTL</th>
+        <th>Priority</th>
+    </tr></thead>
+    <tbody>
+        {% for item in dns %}
+        <tr>
+            <td>{% icon 'fugue-price-tag' %}</td>
+            <td>{{ item.name }}</td>
+            <td style="text-align:center">{{ item.type }}</td>
+            <td>{{ item.content }}</td>
+            <td style="text-align:right">{{ item.ttl }}</td>
+            <td>{{ item.prio|default:'' }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<table class="table table-striped table-bordered details-dhcp">
+    <thead><tr>
+        <th width="16"></th>
+        <th>IP Address</th>
+        <th>MAC Address</th>
+    </tr></thead>
+    <tbody>
+        {% for item in dhcp %}
+        <tr>
+            <td>{% icon 'fugue-network-ethernet' %}</td>
+            <td>{{ item.ip }}</td>
+            <td>{{ item.mac }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+<div class="span6">
+
+{% if balancers %}
+<table class="table table-striped table-bordered details-balancers">
+    <thead><tr>
+            <th width="16"></th>
+        <th>Load Balancer</th>
+        <th>Pool</th>
+        <th>Port</th>
+    </tr></thead>
+    <tbody>
+        {% for item in balancers %}
+        <tr>
+            <td>
+                {% if item.server %}
+                    {% icon 'fugue-balance' %}
+                {% else %}
+                {%  if item.enabled %}
+                    {% icon 'fugue-tick-circle' %}
+                {%  else %}
+                    {% icon 'fugue-cross-circle' %}
+                {%  endif %}
+                {% endif %}
+            </td>
+            <td>
+                {% if item.server %}
+                    {{ item.server }}
+                {% else %}
+                    {{ item.balancer }}
+                {% endif %}
+            </td>
+            <td>{{ item.pool }}</td>
+            <td>{{ item.port }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+</div>
+{% endblock content %}

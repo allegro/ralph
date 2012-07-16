@@ -1,0 +1,35 @@
+   
+{% load icons %}
+{% load query %}
+
+{% block content %}
+
+<div class='span12'>
+<table class="table table-striped table-bordered table-condensed ">
+    <thead><tr>
+
+        {% spaceless %}
+
+            {% include 'cmdb/column-header.html' with label='CI' name='ci' always=1%}
+            {% include 'cmdb/column-header.html' with label='Description' name='description' always=1%}
+            {% include 'cmdb/column-header.html' with label='Time' name='time' always=1%}
+
+        {% endspaceless %}
+
+    </tr></thead>
+    <tbody>
+        {% for d in rows%}
+        <tr>
+            <td>
+                <a href='/cmdb/ci/view/{{ d.ci.id }}' target='_noblank'> {{ d.ci.name}} </a>
+            </td>
+            <td> {{ d.message }} </td>
+            <td> {{ d.time }} </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% include 'cmdb/include_pagination.html' %}
+</div>
+{% endblock %}

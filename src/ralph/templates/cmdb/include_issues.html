@@ -1,0 +1,38 @@
+  <table class='table table-striped table-bordered table-condensed'>
+          <tr>
+              <th style='width: 100px'> Issue</th>
+              <th> Description</th>
+              <th> Summary </th>
+              <th> Assignee </th>
+              <th> Priority </th>
+              <th> Status </th>
+          </tr>
+
+        {% for c in last_changes%}
+        <tr>
+            <td> 
+                <a href="http://localhost:8080/browse/{{c.key}}"> 
+                    {{ c.key }}
+                </a>
+            </td>
+            <td> 
+                <a href="http://localhost:8080/browse/{{c.key}}"> 
+                    {{ c.summary }}
+                </a>
+            </td>
+            <td>
+                {{ c.description }}
+            </td>
+            <td>
+                {{ c.assignee}}
+            </td>
+            <td>
+                CRITICAL
+            </td>
+            <td>
+                {{ c.status}}
+            </td>
+        </tr>
+    {% endfor %}
+</table>
+

@@ -1,0 +1,35 @@
+{% load i18n %}
+{% load git %}
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1"> 
+    <title>{%trans 'List of ventures'%}</title>
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.0rc3/jquery.mobile-1.0rc3.min.css" />
+    <link rel="stylesheet" href="{{STATIC_URL}}css/ventures.css" />
+    <script src="http://code.jquery.com/jquery-1.6.2.min.js"></script>
+    <script>
+       $(document).bind('mobileinit',function(){
+         $.mobile.selectmenu.prototype.options.nativeMenu = false;
+         $.mobile.ajaxEnabled = false;
+       });
+    </script>
+    <script src="http://code.jquery.com/mobile/1.0rc3/jquery.mobile-1.0rc3.min.js"></script>
+  </head>
+  <body>
+    <div data-role="page" {%block pageattrib%}{%endblock%}>
+      <div data-role="header" data-theme="f">
+        {%block header%}{%endblock%}
+      </div>
+
+	    <div data-role="content">
+        {%block content%}{%endblock%}
+      </div>
+      <div data-role="footer" class="footer-docs" data-theme="c">
+        <p>&copy; 2011 Grupa Allegro.<br><small>{%git_version%}</small></p>
+      </div>	
+    </div>
+  </body>
+</html>
+

@@ -1,0 +1,7 @@
+{% load i18n %}
+<ul data-role="listview" {%if side_inset%}data-inset="true" data-dividertheme="f"{%else%}data-dividertheme="d"{%endif%} data-theme="c">
+    <li data-role="list-divider">{%trans "Menu" %}</li>
+    {%for venture in side_ventures%} 
+    <li {%if venture.is_active%}data-theme="a"{%endif%}><a href="{{venture.get_absolute_url}}">{{venture.name}}</a></li>
+    {%endfor%}
+</ul>

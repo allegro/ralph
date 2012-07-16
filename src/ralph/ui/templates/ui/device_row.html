@@ -1,0 +1,89 @@
+{% load url from future %}
+{% load icons %}
+{% load query %}
+{% load formats %}
+
+<tr>
+    {% if show_bulk %}
+    <td class="column-checkbox"><input type="checkbox" name="select" value="{{ d.id }}"></td>
+    {% endif %}
+    <td class="column-name"><a
+            href="{{ d.id|default:'' }}?{{ url_query.urlencode }}"
+        >{%  for i in d.padding %}&nbsp;&nbsp;&nbsp;&nbsp;{%  endfor %}{{ d|device_icon }}&nbsp;{{ d.name|default:'unknown' }}
+    </a>
+    </td>
+    {% if 'venture' in columns %}
+    <td>
+        {% if d.venture %}
+            <a href="{% url 'ventures' d.venture.symbol details '' %}"
+                >{{ d.venture.name }}</a>{% endif %}{% if d.venture_role %}/{{ d.venture_role.full_name }}{% endif %}
+    </td>
+    {% endif %}
+    {% if 'model' in columns %}
+    <td>
+        {% if d.model.group %}
+        <a 
+            href="{% url 'search' 'components' '' %}?device_group={{ d.model.group.id }}"
+        >{{ d.get_model_name }}</a>
+        {% else %}
+            {{ d.get_model_name }}
+        {% endif %} 
+    </td>
+    {% endif %}
+    {% if 'margin' in columns %}
+    <td>{{ d.get_margin|default:'0' }}%</td>
+    {% endif %}
+    {% if 'deprecation' in columns %}
+    <td>{{ d.deprecation_kind|default:'' }}</td>
+    {% endif %}
+    {% if 'price' in columns %}
+    <td class="currency">{{ d.cached_price|currency }}</td>
+    {% endif %}
+    {% if 'cost' in columns %}
+    <td class="currency">{{ d.cached_cost|currency }}</td>
+    {% endif %}
+    {% if 'barcode' in columns %}
+    <td>{{ d.barcode|default:'' }}</td>
+    {% endif %}
+    {% if 'position' in columns %}
+    <td>
+        {% if d.dc %}<a href="{% url 'racks' d.dc|slugify details '' %}">{{ d.dc }}</a>/{% endif %}{% if d.rack %}<a href="{% url 'racks' d.rack|slugify details '' %}">{{ d.rack }}</a>/{% endif %}<b>{{ d.position|default:d.chassis_position|default:'-' }}</b>
+    </td>
+    {% endif %}
+    {% if 'ips' in columns %}
+    <td class="column-ips">
+        {% for ip in d.ipaddress_set.all %}
+        {% if ip in network %}
+            <b>{{ ip.address }}</b>
+        {% else %}
+            {{ ip.address }}
+        {% endif %}
+        {% endfor %}
+    </td>
+    {% endif %}
+    {% if 'management' in columns %}
+    {%  if d.management %}
+    <td><a href="https://{{ d.management.address }}">{{ d.management.hostname|default:d.management.address }}</a></td>
+    {%  else %}
+    <td></td>
+    {%  endif %}
+    {% endif %}
+    {% if 'created' in columns %}
+    <td>{{ d.created|date:'Y-m-d H:i' }}</td>
+    {% endif %}
+    {% if 'lastseen' in columns %}
+    <td>{{ d.last_seen|date:'Y-m-d H:i' }}</td>
+    {% endif %}
+    {% if 'remarks' in columns %}
+    <td class="column-remarks">{{ d.remarks }}</td>
+    {% endif %}
+    {% if 'purchase' in columns %}
+    <td>{{ d.purchase_date|date:'Y-m-d H:i'|default:'' }}</td>
+    {% endif %}
+    {% if 'warranty' in columns %}
+    <td>{{ d.warranty_expiration_date|date:'Y-m-d H:i'|default:'' }}</td>
+    {% endif %}
+    {% if 'support' in columns %}
+    <td>{{ d.support_expiration_date|date:'Y-m-d H:i'|default:'' }}</td>
+    {% endif %}
+</tr>

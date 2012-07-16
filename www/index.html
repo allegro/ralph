@@ -1,0 +1,41 @@
+{% extends "layout.html" %}
+
+{% block sidebar1 %}{% endblock %}
+{% block bsrelbar1 %}{% endblock %}
+{% block bsrelbar2 %}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="document">
+      <div class="hero-unit">
+            <p class="pull-right">
+                <a href="{{ pathto('_static/shot0-full.png', 1) }}">
+                    <img src="{{ pathto('_static/shot0-thumb.png', 1) }}" alt="Screenshot">
+                </a>
+            </p>
+        <h1>Ralph</h1>
+        <p>Ralph is an <strong>asset management system</strong> for your <strong>data center</strong>. <br>It lets you see <strong>what hardware</strong> and <strong>software</strong> is installed. It also lets you keep track of <strong>who is using</strong> every device, <strong>for what</strong>, and <strong>how much it costs</strong>.</p>
+      </div>
+
+      <!-- Example row of columns -->
+      <div class="row">
+        <div class="span4">
+          <h2>Read more</h2>
+          <p>Ralph was initially created in the <a href="http://allegro.pl/country_pages/1/0/marketing/about.php">Allegro Group</a> for internal use. See <strong>what it does</strong> already and what is <strong>planned</strong> for the nearest future.</p>
+          <p><a class="btn btn-warning" href="about.html">See description <i class="icon-chevron-right icon-white"></i></a></p>
+        </div>
+        <div class="span4">
+          <h2>Download it</h2>
+          <p>Download the <strong>current version</strong>, or any of the previous versions. Read the <strong>changelog</strong> and see what is new.</p>
+          <p><a class="btn btn-warning" href="download.html">Download <i class="icon-chevron-right icon-white"></i></a></p>
+       </div>
+        <div class="span4">
+          <h2>Get involved</h2>
+          <p>Ralph is developed as an <strong>open source</strong> project. We welcome anybody who wants to <strong>report bugs</strong>, help <strong>testing</strong> and, last but not least, write <strong>code</strong>.</p>
+          <p><a class="btn btn-warning" href="devel.html">Get involved <i class="icon-chevron-right icon-white"></i></a></p>
+        </div>
+      </div>
+    </div>
+    {{ footer() }}
+</div> <!-- /container -->
+{% endblock %}

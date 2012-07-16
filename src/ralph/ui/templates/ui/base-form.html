@@ -1,0 +1,54 @@
+{% load url from future %}
+{% load icons %}
+{% load formats %}
+
+{% block form %}
+<form class="form form-horizontal" method="POST">
+    {% csrf_token %}
+    {% block formfields %}
+    <div class="well">
+        {% for f in form.hidden_fields %}{{ f }}{% endfor %}
+            {% for f in form.visible_fields %}
+            {% if f.name != 'save_comment' %}
+            <div class="control-group 
+                    {{ f.css_classes }}
+                    {% if f.errors %}error{% endif %}
+                ">
+                    <label class="control-label">
+                        {{ f.label }}
+                        {% if f.name in form.manual_fields %}
+                        <a href="#" class="fugue-icon fugue-hand"
+                            data-clear-field="{{ f.name }}" data-device-id="{{ device.id }}"
+                            rel="tooltip" title="Unlock automated updates"></a>
+                        {% endif %}
+                    </label>
+                    <div class="form-field controls">
+                        {% if editable %}
+                            {{ f }}
+                        {% else %}
+                        <div class="input uneditable-input">{{ f|field_value }}</div>
+                        {% endif %}
+                        {% for e in f.errors %}
+                            <div class="help-block">{{ e }}</div>
+                        {% empty %}
+                        {%  if f.help_text %}
+                            <div class="help-block">{{ f.help_text }}</div>
+                        {%  endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+            {% endfor %}
+    </div>
+    {% endblock %}
+{% if editable %}
+    {% block formbuttons %}
+        <button class="btn btn-primary" type="submit" name="save">{% icon 'fugue-tick' %}&nbsp;Save</button>
+        <button class="btn" type="reset">{% icon 'fugue-cross' %}&nbsp;Cancel</button>
+        {% if form.has_delete %}
+            <button class="btn btn-danger pull-right" type="submit" name="delete">{% icon 'fugue-skull' %}&nbsp;Delete</button>
+        {% endif %}
+    {% endblock %}
+{% endif %}
+</form>
+{% endblock %}

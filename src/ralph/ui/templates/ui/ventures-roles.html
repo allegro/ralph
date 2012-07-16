@@ -1,0 +1,60 @@
+{% extends "ui/base-devices.html" %}
+
+{% load url from future %}
+{% load icons %}
+
+{% block contentarea %}
+<div class="span7">
+<table class="table table-striped table-bordered table-list device-list">
+    <thead><tr>
+        <th>Role</th>
+        <th>Count</th>
+    </tr></thead>
+    <tbody>
+        {% for r in items %}
+        <tr
+            {% if r == role %}
+                class="active"
+            {% endif %}
+            >
+            <td class="column-name"><a
+                href="{{ r.id|default:'' }}?{{ url_query.urlencode }}"
+                >{%  for i in r.padding %}&nbsp;&nbsp;&nbsp;&nbsp;{%  endfor %}
+                {% icon 'fugue-mask' %}&nbsp;{{ r.full_name }}
+            </a>
+            </td>
+            <td class="count">
+                <a class="badge" href="{% url 'search' %}?role={{r.venture}}%2f{{r.full_name}}">{{ r.device_set.count }}</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+<div class="span5">
+{% block info %}
+{% if role %}
+<table class="table table-striped table-bordered details-role-properties">
+    <thead><tr>
+        <th width="16"></th>
+        <th>Property</th>
+        <th>Type</th>
+    </tr></thead>
+    <tbody>
+        {% for p in role.roleproperty_set.all %}
+            <tr>
+                <td>{% icon 'fugue-property' %}</td>
+                <td>{{ p.symbol }}</td>
+                <td>{{ p.type.symbol }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{%  if editable %}
+ <p>Create a new property for this role.</p>
+ {% include 'ui/base-form.html' %}
+{%  endif %}
+{% endif %}
+{% endblock %}
+</div>
+{% endblock %}

@@ -1,0 +1,109 @@
+{% extends "layout.html" %}
+
+{% block sidebar1 %}{% endblock %}
+{% block bsrelbar1 %}{% endblock %}
+{% block bsrelbar2 %}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="document">
+<div class="row">
+    <div class="span8">
+        <div class="page-header">
+            <h1>About Ralph <small>Features and plans</small></h1>
+        </div>
+        <section id="rationale"><h2>Rationale<a class="headerlink" href="#rationale" title="Permalink to this headline">¶</a></h2>
+            <p>As your data center grows, it gets increasingly harder to keep
+            track of everyting it contains. Paper invoices, spreadsheet files,
+            wiki pages, etc. quickly get outdated and give you contradicting
+            information. You can't afford checking everything in nature every
+            time. You need a central place for all that information. This is
+            what Ralph is for.</p>
+        </section>
+        <section id="components"><h2>Components<a class="headerlink" href="#components" title="Permalink to this headline">¶</a></h2>
+            <p>At present, Ralph consists of three parts: the database of hardware
+            installed in your data center, the discovery script that updates that
+            database automatically, and the web application that lets you browse,
+            search and manually update the database.</p>
+
+            <section id="database"><h3>Database<a class="headerlink" href="#database" title="Permalink to this headline">¶</a></h3>
+                <p>The database is relatively uninteresting part, although it's the
+                core of the application. It stores all the information that discovery
+                collects, as well as everything that the users input. Among other things,
+                the database stores for every device:</p>
+                <ul>
+                    <li>Its model and components</li>
+                    <li>Serial numbers of the device and its components</li>
+                    <li>Prices and costs</li>
+                    <li>Position and size</li>
+                    <li>Purchase date and warranty details</li>
+                    <li>Ownership and role</li>
+                    <li>Use of external resources such as load balancers and storage</li>
+                    <li>Network addresses and subnetworks</li>
+                    <li>Versions of important software installed</li>
+                </ul>
+                <p>This database
+                is also available to external applications through a RESTful API.</p>
+            </section>
+
+            <section id="discovery"><h3>Discovery<a class="headerlink" href="#discovery" title="Permalink to this headline">¶</a></h3>
+            <p>In order to minimize the manual labor required, as well as make
+            sure that the information about your assets is as close to the reality
+            as possible, Ralph has an application that scans your network, probing
+            all the devices and collecting information about them. This process can
+            be distributed over several worker nodes, each with access to a different
+            part of your data center.</p>
+            <p>The probing is done by a number of different plugins, one for every
+            way that information can be collected, such as:</p>
+            <ul>
+                <li>The API of your manageable servers</li>
+                <li>The facts collected by Puppet</li>
+                <li>Console access of your network equipment</li>
+                <li>SNMP</li>
+                <li>Configuration files of your installed programs</li>
+                <li>Custom checks written by users</li>
+            </ul>
+            </section>
+
+            <section id="interface"><h3>User interface<a class="headerlink" href="#interface" title="Permalink to this headline">¶</a></h3>
+            <p>The bulk of interaction with Ralph and its database is happening
+            through the user interface implemented as a web application. This
+            application lets you browse the hardware, correct and update the
+            collected data, enter the pricing details for various device models
+            and components, generate reports from the database and search for
+            specific information. Some rarely performed changes have to be done
+            through a web admin application idrectly in the database.</p>
+            </section>
+        </section>
+        <section id="future"><h2>Future<a class="headerlink" href="#future" title="Permalink to this headline">¶</a></h2>
+        <p>An application like this has a lot of possible uses and can easily grow
+        to fulfill additional needs. Development of Ralph is mainly driven by the
+        needs of our company. The next few steps on our roadmap include:</p>
+        <ul>
+            <li>Integration with a DNS server</li>
+            <li>Integration with Zabbix monitoring</li>
+            <li>A component for automating deployment of new hardware</li>
+            <li>Change management tools</li>
+        </ul>
+        </section>
+    </div>
+    <div class="span4">
+        <ul class="thumbnails">
+            <li><a href="{{ pathto('_static/shot1-full.png', 1) }}" class="thumbnail"><img
+                src="{{ pathto('_static/shot1-thumb.png', 1) }}"
+            ></a></li>
+            <li><a href="{{ pathto('_static/shot2-full.png', 1) }}" class="thumbnail"><img
+                src="{{ pathto('_static/shot2-thumb.png', 1) }}"
+            ></a></li>
+            <li><a href="{{ pathto('_static/shot3-full.png', 1) }}" class="thumbnail"><img
+                src="{{ pathto('_static/shot3-thumb.png', 1) }}"
+            ></a></li>
+            <li><a href="{{ pathto('_static/shot4-full.png', 1) }}" class="thumbnail"><img
+                src="{{ pathto('_static/shot4-thumb.png', 1) }}"
+            ></a></li>
+        </ul>
+    </div>
+</div></div>
+    {{ footer() }}
+</div> <!-- /container -->
+{% endblock %}

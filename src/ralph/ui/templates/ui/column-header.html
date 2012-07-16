@@ -1,0 +1,16 @@
+{% spaceless %}
+{% load url from future %}
+{% load icons %}
+{% load query %}
+{% if always or name in columns %}
+<th class="column-head-{{ name }}">{% if sort == name %}<a
+        href="?{{ url_query|query_sort_desc:name }}"
+        class="fugue-icon fugue-sort-{{ type|default:'alphabet' }}"
+    ></a>{% else %}{%  if sort|cut:'-' == name %}<a
+        href="?{{ url_query|query_sort:name }}"
+        class="fugue-icon fugue-sort-{{ type|default:'alphabet' }}-descending"
+    ></a>{%  else %}<a
+        href="?{{ url_query|query_sort:name }}"
+        class="fugue-icon fugue-sort"
+    ></a>{%  endif %}{% endif %}{{ label }}</th>{% endif %}
+{% endspaceless %}

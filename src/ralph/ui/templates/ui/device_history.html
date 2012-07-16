@@ -1,0 +1,29 @@
+{% extends "ui/base-devices.html" %}
+{% load url from future %}
+{% load icons %}
+{% load bob %}
+
+{% block content %}
+<table class="table table-striped table-bordered details-history">
+    <thead><tr>
+        <th>Date</th>
+        <th>User</th>
+        <th>Field</th>
+        <th>Before</th>
+        <th>After</th>
+        <th>Comment</th>
+    </tr></thead>
+    <tbody>
+        {% for h in history %}
+            <tr>
+                <td>{{ h.date|timesince_limited }}</td>
+                <td>{{ h.user|default:'' }}</td>
+                <td>{{ h.component }}.{{ h.field_name }}</td>
+                <td>{{ h.old_value }}</td>
+                <td>{{ h.new_value }}</td>
+                <td>{{ h.comment|default:'' }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock content %}

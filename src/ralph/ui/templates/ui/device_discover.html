@@ -1,0 +1,25 @@
+{% extends "ui/base-devices.html" %}
+{% load url from future %}
+{% load icons %}
+
+
+{% block content %}
+<form method="POST" class="form form-inline" id="disco-form" action="/ui/discover/">
+{% csrf_token %}
+<textarea id="disco-console" class="disco-console" disabled></textarea>
+<div class="form-actions">
+    <div class="input-append control-group">
+        <input class="span4" name="ip" type="text"
+            autocomplete="off"
+            data-provide="typeahead"
+            data-source="{{ addresses }}"
+            value="{{ address }}"
+         ><button class="btn btn-primary">
+            {% icon 'fugue-flashlight' %} Discover
+        </button>
+    </div>
+</div>
+</form>
+
+
+{% endblock content %}

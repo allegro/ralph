@@ -1,0 +1,25 @@
+{%extends 'cmdb/base.html'%}
+   
+{% load icons %}
+{% load query %}
+
+{% block content %}
+<h3> View change : {{ change.id }} </h3>
+<hr>
+<p>
+<ul>
+    <li>Comment: {{ change.message}}
+    <li>Time: {{ change.time}}
+    <li>Type: {{ change.type}}
+    <li>Priority: {{ change.priority}}
+</ul>
+</p>
+<hr>
+{% if change.type ==  3 %}
+    {% include 'cmdb/include_attributechange.html' %}
+{% elif change.type == 2 %}
+    {% include 'cmdb/include_puppet.html' %}
+{% elif change.type == 1 %}
+    {% include 'cmdb/include_git.html' %}
+{% endif %}
+{% endblock %}

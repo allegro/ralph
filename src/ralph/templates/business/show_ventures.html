@@ -1,0 +1,29 @@
+{%extends 'business/base_ventures.html'%}
+{% load i18n %}
+
+{%block pageattrib%}id="mnm-home" class="type-home"{%endblock%}
+{%block header%}<h1>{%trans 'Ralph: List of Ventures'%}</h1>{%endblock%}
+
+{%block content%}		
+  <div class="content-secondary">
+    <div id="mnm-homeheader">
+      <h1 id="mnm-logo"><img src="{{STATIC_URL}}img/logo_business_vo.png" alt="{%trans 'List of venture owners'%}" /></h1>
+      <p>{%trans "Contact technical or business owners" %}</p>
+      <p id="mnm-version">{%trans "Beta Release" %}</p>
+    </div>
+    <p class="intro">{%blocktrans%}<strong>Welcome.</strong> This tool is a part of Ralph. If anything doesn't work or you miss a feature please <a target="_blank" href="http://ralph.office/trac">use the bug tracker</a> or <a href="mailto:lukasz.langa@allegro.pl">send me an email</a>.{%endblocktrans%}</p>
+  </div>
+<div class="content-primary">
+  <form action="/business/ventures/search/" method="post">
+    {%csrf_token%}
+    <label class="ui-hidden-accessible" for="search-basic">Search Input:</label>
+    <input type="search" name="search" id="searc-basic" value="{{search}}"/>
+  </form>
+  <ul data-role="listview" data-inset="true" data-theme="c" data-dividertheme="a">
+    <li data-role="list-divider">{%trans "List of ventures" %}</li>
+    {%for venture in ventures%}
+    <li><a href="{{venture.get_absolute_url}}">{{venture.name}}{%if venture.parent%}<br><span style="font-size:small;font-weight:normal;">Część serwisu {{venture.parent}}</span>{%endif%} {%if venture.get_data_center%}<span class="ui-li-count">{{venture.get_data_center}}</span>{%endif%}</a></li>
+    {%endfor%}
+  </ul>
+</div>
+{%endblock%}

@@ -1,0 +1,690 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2011-12-15 13:58+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
+"|| n%100>=20) ? 1 : 2)\n"
+
+#: business/admin.py:67
+msgid "technical owners"
+msgstr "właściciele techniczni"
+
+#: business/admin.py:74
+msgid "business owners"
+msgstr "właściciele biznesowi"
+
+#: business/models.py:43 discovery/models.py:38 discovery/models.py:115
+#: discovery/models.py:170
+msgid "data center"
+msgstr "Data Center"
+
+#: business/models.py:45
+msgid "parent venture"
+msgstr "serwis nadrzędny"
+
+#: business/models.py:47 business/models.py:88 business/models.py:110
+msgid "symbol"
+msgstr "symbol"
+
+#: business/models.py:49
+msgid "show in ralph"
+msgstr "pokaż w Ralphie"
+
+#: business/models.py:53 business/models.py:77 business/models.py:147
+#: discovery/models.py:292
+msgid "venture"
+msgstr "serwis"
+
+#: business/models.py:54
+msgid "ventures"
+msgstr "serwisy"
+
+#: business/models.py:78
+#, fuzzy
+msgid "parent role"
+msgstr "serwis nadrzędny"
+
+#: business/models.py:83 discovery/models.py:301
+msgid "venture role"
+msgstr "rola w serwisie"
+
+#: business/models.py:84
+msgid "venture roles"
+msgstr "role w serwisach"
+
+#: business/models.py:95
+msgid "property type"
+msgstr "typ własnośći"
+
+#: business/models.py:96
+msgid "property types"
+msgstr "typy własności"
+
+#: business/models.py:100 business/models.py:114 business/models.py:148
+msgid "type"
+msgstr "typ"
+
+#: business/models.py:102 business/models.py:131
+msgid "value"
+msgstr "wartość"
+
+#: business/models.py:105
+msgid "property type value"
+msgstr "wartość typu własności"
+
+#: business/models.py:106
+msgid "property type values"
+msgstr "wartości typów własności"
+
+#: business/models.py:112
+msgid "role"
+msgstr "rola"
+
+#: business/models.py:122 business/models.py:127 business/models.py:129
+msgid "property"
+msgstr "własność"
+
+#: business/models.py:123
+msgid "properties"
+msgstr "własności"
+
+#: business/models.py:135
+msgid "property value"
+msgstr "wartość własności"
+
+#: business/models.py:136
+msgid "property values"
+msgstr "wartości własności"
+
+#: business/models.py:142
+msgid "technical owner"
+msgstr "właściciel techniczny"
+
+#: business/models.py:143
+msgid "business owner"
+msgstr "właściciel biznesowy"
+
+#: business/models.py:150
+msgid "Synergy ID"
+msgstr "Synergy ID"
+
+#: business/models.py:154
+msgid "venture owner"
+msgstr "właściciel serwisu"
+
+#: business/models.py:155
+msgid "venture owners"
+msgstr "właściciele serwisów"
+
+#: discovery/admin.py:26 discovery/models.py:111 discovery/models.py:164
+msgid "network terminators"
+msgstr "zakończenia sieci"
+
+#: discovery/admin.py:60
+msgid "Either address or hostname must be provided."
+msgstr "Adres lub nazwa hosta muszą być podane."
+
+#: discovery/admin.py:164 discovery/models.py:557 discovery/models.py:560
+#: discovery/models.py:580
+msgid "IP address"
+msgstr "adres IP"
+
+#: discovery/models.py:34
+msgid "rack"
+msgstr "Szafa"
+
+#: discovery/models.py:35
+msgid "blade system"
+msgstr "Blade System"
+
+#: discovery/models.py:36
+msgid "management"
+msgstr "Zarządzanie"
+
+#: discovery/models.py:37
+msgid "power distribution unit"
+msgstr "Power Distribution Unit"
+
+#: discovery/models.py:41
+msgid "switch"
+msgstr "Switch"
+
+#: discovery/models.py:42
+msgid "router"
+msgstr "Router"
+
+#: discovery/models.py:43
+msgid "load balancer"
+msgstr "Load Balancer"
+
+#: discovery/models.py:44
+msgid "firewall"
+msgstr "Firewall"
+
+#: discovery/models.py:45
+msgid "SMTP gateway"
+msgstr "bramka SMTP"
+
+#: discovery/models.py:48
+msgid "rack server"
+msgstr "Serwer rackowy"
+
+#: discovery/models.py:49
+msgid "blade server"
+msgstr "Serwer blade'owy"
+
+#: discovery/models.py:50 discovery/models.py:431
+msgid "virtual server"
+msgstr "Serwer wirtualny"
+
+#: discovery/models.py:53
+msgid "storage"
+msgstr "Storage"
+
+#: discovery/models.py:54
+msgid "fibre channel switch"
+msgstr "Switch FC"
+
+#: discovery/models.py:57 discovery/models.py:465
+msgid "unknown"
+msgstr "Nieznany"
+
+#: discovery/models.py:91
+msgid "10 Mbps"
+msgstr "10 Mbps"
+
+#: discovery/models.py:92
+msgid "100 Mbps"
+msgstr "100 Mbps"
+
+#: discovery/models.py:93
+msgid "1 Gbps"
+msgstr "1 Gbps"
+
+#: discovery/models.py:94
+msgid "10 Gbps"
+msgstr "10 Gbps"
+
+#: discovery/models.py:97
+msgid "unknown speed"
+msgstr "prędkość nieznana"
+
+#: discovery/models.py:101
+msgid "Network address"
+msgstr "Adres sieci"
+
+#: discovery/models.py:102 discovery/models.py:105 discovery/models.py:558
+msgid "Presented as string."
+msgstr "Jako łańcuch znaków."
+
+#: discovery/models.py:104
+msgid "gateway address"
+msgstr "Adres bramy"
+
+#: discovery/models.py:107
+msgid "Remarks"
+msgstr "Uwagi"
+
+#: discovery/models.py:108 discovery/models.py:260
+msgid "Additional information."
+msgstr "Dodatkowe informacje."
+
+#: discovery/models.py:112
+msgid "VLAN number"
+msgstr "numer VLAN"
+
+#: discovery/models.py:116
+msgid "Smallest IP number"
+msgstr "Najniższy numer IP"
+
+#: discovery/models.py:118
+msgid "Largest IP number"
+msgstr "Najwyższy numer IP"
+
+#: discovery/models.py:148
+msgid "The address value specified is not a valid network."
+msgstr "Wartość podana w polu adresu nie jest prawidłową siecią."
+
+#: discovery/models.py:153
+msgid "network"
+msgstr "sieć"
+
+#: discovery/models.py:154
+msgid "networks"
+msgstr "sieci"
+
+#: discovery/models.py:163
+msgid "network terminator"
+msgstr "zakończenie sieci"
+
+#: discovery/models.py:171
+msgid "data centers"
+msgstr "Data Centers"
+
+#: discovery/models.py:181
+msgid "last seen"
+msgstr "ostatnio widziany"
+
+#: discovery/models.py:193
+msgid "deprecation time in months"
+msgstr "czas amortyzacji w miesiącach"
+
+#: discovery/models.py:195 discovery/models.py:207 discovery/models.py:259
+msgid "remarks"
+msgstr "uwagi"
+
+#: discovery/models.py:196 discovery/models.py:208
+msgid "additional information."
+msgstr "dodatkowe informacje"
+
+#: discovery/models.py:200 discovery/models.py:284
+msgid "deprecation kind"
+msgstr "amortyzacja"
+
+#: discovery/models.py:201
+msgid "deprecation kinds"
+msgstr "amortyzacje"
+
+#: discovery/models.py:205
+msgid "margin in percents"
+msgstr "marża w procentach"
+
+#: discovery/models.py:212 discovery/models.py:286
+msgid "margin kind"
+msgstr "rodzaj marży"
+
+#: discovery/models.py:213
+msgid "margin kinds"
+msgstr "rodzaje marży"
+
+#: discovery/models.py:217 discovery/models.py:273 discovery/models.py:479
+msgid "purchase price"
+msgstr "kwota zakupu"
+
+#: discovery/models.py:221
+msgid "group of device models"
+msgstr "grupa modeli urządzeń"
+
+#: discovery/models.py:222
+msgid "groups of device models"
+msgstr "grupy modeli urządzeń"
+
+#: discovery/models.py:226 discovery/models.py:245 discovery/models.py:415
+#: discovery/models.py:508 discovery/models.py:526 discovery/models.py:544
+msgid "name"
+msgstr "nazwa"
+
+#: discovery/models.py:227
+msgid "device type"
+msgstr "typ urządzania"
+
+#: discovery/models.py:229
+msgid "number of slots"
+msgstr "liczba slotów"
+
+#: discovery/models.py:230 discovery/models.py:495
+msgid "group"
+msgstr "grupa"
+
+#: discovery/models.py:235
+msgid "device model"
+msgstr "model urządzania"
+
+#: discovery/models.py:236
+msgid "device models"
+msgstr "modele urządzeń"
+
+#: discovery/models.py:246
+msgid "extra name"
+msgstr "dodatkowa nazwa"
+
+#: discovery/models.py:248
+msgid "parent device"
+msgstr "urządzenie nadrzędne"
+
+#: discovery/models.py:250 discovery/models.py:515 discovery/models.py:533
+msgid "model"
+msgstr "model"
+
+#: discovery/models.py:253
+msgid "vendor UUID"
+msgstr "UUID producenta"
+
+#: discovery/models.py:255
+msgid "vendor SN"
+msgstr "SN producenta"
+
+#: discovery/models.py:257
+msgid "barcode number"
+msgstr "kod kreskowy"
+
+#: discovery/models.py:262
+msgid "raw info"
+msgstr "surowe dane"
+
+#: discovery/models.py:263
+msgid "Response information as received."
+msgstr "Nieprzetworzone informacje odpowiedzi."
+
+#: discovery/models.py:265
+msgid "boot firmware"
+msgstr "firmware systemu"
+
+#: discovery/models.py:267
+msgid "hardware firmware"
+msgstr "firmware sprzętu"
+
+#: discovery/models.py:269
+msgid "diagnostics firmware"
+msgstr "firmaware diagnostyki"
+
+#: discovery/models.py:271
+msgid "management firmware"
+msgstr "firmware managementu"
+
+#: discovery/models.py:275
+msgid "purchase date"
+msgstr "data zakupu"
+
+#: discovery/models.py:278
+msgid "warranty expiration date"
+msgstr "data wygaśnięcia gwarancji"
+
+#: discovery/models.py:280
+msgid "support expiration date"
+msgstr "data wygaśnięcia wsparcia"
+
+#: discovery/models.py:281
+msgid "support kind"
+msgstr "rodzaj wsparcia"
+
+#: discovery/models.py:289
+msgid "chassis size"
+msgstr "rozmiar kasty"
+
+#: discovery/models.py:291
+msgid "chassis position"
+msgstr "pozycja kasty"
+
+#: discovery/models.py:295
+msgid "management address"
+msgstr "adres managementu"
+
+#: discovery/models.py:298
+msgid "old role"
+msgstr "stara rola"
+
+#: discovery/models.py:304 discovery/models.py:416 discovery/models.py:446
+#: discovery/models.py:569
+msgid "device"
+msgstr "urządzenie"
+
+#: discovery/models.py:305
+msgid "devices"
+msgstr "urządzenia"
+
+#: discovery/models.py:417
+msgid "default pool"
+msgstr "domyślna pula"
+
+#: discovery/models.py:418 discovery/models.py:432
+msgid "address"
+msgstr "adres"
+
+#: discovery/models.py:419 discovery/models.py:433
+msgid "port"
+msgstr "port"
+
+#: discovery/models.py:422
+msgid "load balancer virtual server"
+msgstr "serwer wirtualny loadbalancera"
+
+#: discovery/models.py:423
+msgid "load balancer virtual servers"
+msgstr "serwery wirtualne loadbalancera"
+
+#: discovery/models.py:434
+msgid "enabled state"
+msgstr "stan włączony"
+
+#: discovery/models.py:437
+msgid "load balancer pool membership"
+msgstr "przynależność do puli loadbalancera"
+
+#: discovery/models.py:438
+msgid "load balancer pool memberships"
+msgstr "przynależności do puli loadbalancera"
+
+#: discovery/models.py:460 discovery/models.py:519
+msgid "processor"
+msgstr "procesor"
+
+#: discovery/models.py:461 discovery/models.py:537
+msgid "memory"
+msgstr "pamięć"
+
+#: discovery/models.py:462
+msgid "disk"
+msgstr "dysk"
+
+#: discovery/models.py:463 discovery/models.py:551
+msgid "ethernet"
+msgstr "ethernet"
+
+#: discovery/models.py:464
+msgid "expansion card"
+msgstr "karta rozszerzeń"
+
+#: discovery/models.py:483
+msgid "group of component models"
+msgstr "grupa modeli komponentów"
+
+#: discovery/models.py:484
+msgid "groups of component models"
+msgstr "grupy modeli komponentów"
+
+#: discovery/models.py:487 discovery/models.py:509 discovery/models.py:529
+msgid "speed (MHz)"
+msgstr "prędkość (MHz)"
+
+#: discovery/models.py:489 discovery/models.py:511
+msgid "number of cores"
+msgstr "liczba rdzeni"
+
+#: discovery/models.py:491 discovery/models.py:527
+msgid "size (MiB)"
+msgstr "rozmiar (MiB)"
+
+#: discovery/models.py:493
+msgid "component type"
+msgstr "typ komponentu"
+
+#: discovery/models.py:500
+msgid "component model"
+msgstr "model komponentu"
+
+#: discovery/models.py:501
+msgid "component models"
+msgstr "modele komponentów"
+
+#: discovery/models.py:513 discovery/models.py:531
+msgid "slot number"
+msgstr "numer slotu"
+
+#: discovery/models.py:520
+msgid "processors"
+msgstr "procesory"
+
+#: discovery/models.py:538
+msgid "memories"
+msgstr "pamięci"
+
+#: discovery/models.py:545
+msgid "MAC address"
+msgstr "adres MAC"
+
+#: discovery/models.py:546
+msgid "speed"
+msgstr "prędkość"
+
+#: discovery/models.py:552
+msgid "ethernets"
+msgstr "ethernety"
+
+#: discovery/models.py:561
+msgid "Presented as int."
+msgstr "Jako liczba całkowita."
+
+#: discovery/models.py:562
+msgid "hostname"
+msgstr "nazwa hosta"
+
+#: discovery/models.py:565
+msgid "name from SNMP"
+msgstr "nazwa z SNMP"
+
+#: discovery/models.py:567
+msgid "SNMP community"
+msgstr "Community SNMP"
+
+#: discovery/models.py:571
+msgid "family from HTTP"
+msgstr "rodzina HTTP"
+
+#: discovery/models.py:574
+msgid "This is a management address"
+msgstr "To jest adres managementu"
+
+#: discovery/models.py:576
+msgid "information from DNS TXT fields"
+msgstr "informacja z DNS TXT"
+
+#: discovery/models.py:581
+msgid "IP addresses"
+msgstr "adresy IP"
+
+#: templates/admin/base.html:28
+msgid "Welcome,"
+msgstr "Witaj,"
+
+#: templates/admin/base.html:32
+msgid "Documentation"
+msgstr "Dokumentacja"
+
+#: templates/admin/base.html:40
+msgid "Change password"
+msgstr "Zmień hasło"
+
+#: templates/admin/base.html:47
+msgid "Log out"
+msgstr "Wyloguj"
+
+#: templates/admin/base.html:54
+msgid "Home"
+msgstr "Strona główna"
+
+#: templates/admin/base_site.html:4 templates/admin/base_site.html.py:7
+msgid "Ralph"
+msgstr "Ralph"
+
+#: templates/admin/edit_inline/stacked.html:10
+#: templates/admin/edit_inline/tabular.html:29
+msgid "View on site"
+msgstr "Zobacz na stronie"
+
+#: templates/admin/edit_inline/stacked.html:72
+#: templates/admin/edit_inline/tabular.html:114
+#, python-format
+msgid "Add another %(verbose_name)s"
+msgstr "Dodaj jeszcze jedno %(verbose_name)s"
+
+#: templates/admin/edit_inline/stacked.html:75
+#: templates/admin/edit_inline/tabular.html:117
+msgid "Remove"
+msgstr "Usuń"
+
+#: templates/admin/edit_inline/tabular.html:16
+msgid "Delete?"
+msgstr "Usunąć?"
+
+#: templates/business/base_ventures.html:8
+#: templates/business/show_venture.html:5
+#: templates/business/show_ventures.html:23
+msgid "List of ventures"
+msgstr "Lista serwisów"
+
+#: templates/business/show_venture.html:6
+msgid "Main page"
+msgstr "Strona główna"
+
+#: templates/business/show_venture.html:17
+msgid "Main owners"
+msgstr "Główni właściciele"
+
+#: templates/business/show_venture.html:18
+#: templates/business/show_venture.html:43
+msgid "Technical owners:"
+msgstr "Właściciele techniczni:"
+
+#: templates/business/show_venture.html:26
+#: templates/business/show_venture.html:36
+#: templates/business/show_venture.html:55
+#: templates/business/show_venture.html:65
+msgid "none"
+msgstr "brak"
+
+#: templates/business/show_venture.html:28
+#: templates/business/show_venture.html:57
+msgid "Business owners:"
+msgstr "Właściciele biznesowi:"
+
+#: templates/business/show_venture.html:73
+msgid "More in this section"
+msgstr "Więcej"
+
+#: templates/business/show_ventures.html:5
+msgid "Ralph: List of Ventures"
+msgstr "Ralph: Lista Serwisów"
+
+#: templates/business/show_ventures.html:10
+msgid "List of venture owners"
+msgstr "Lista właścicieli serwisów"
+
+#: templates/business/show_ventures.html:11
+msgid "Contact technical or business owners"
+msgstr "Kontakt do właścicieli technicznych i biznesowych"
+
+#: templates/business/show_ventures.html:12
+msgid "Beta Release"
+msgstr "Wersja eta"
+
+#: templates/business/show_ventures.html:14
+msgid ""
+"<strong>Welcome.</strong> This tool is a part of Ralph. If anything doesn't "
+"work or you miss a feature please <a target=\"_blank\" href=\"http://ralph."
+"office/trac\">use the bug tracker</a> or <a href=\"mailto:lukasz."
+"langa@allegro.pl\">send me an email</a>."
+msgstr ""
+"<strong>Witaj.</strong> To narzędzie jest częścią Ralpha. Jeżeli cokolwiek "
+"nie działa lub brakuje funkcjonalności, <a target=\"_blank\" href=\"http://"
+"ralph.office/trac\">zgłoś problem</a> lub <a href=\"mailto:lukasz."
+"langa@allegro.pl\">wyślij mi e-mail</a>."
+
+#: templates/business/side_ventures.html:3
+msgid "Menu"
+msgstr "Menu"
+

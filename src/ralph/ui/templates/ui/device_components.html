@@ -1,0 +1,43 @@
+{% extends "ui/base-devices.html" %}
+{% load icons %}
+{% load url from future %}
+
+{% block content %}
+<table class="table table-striped table-bordered details-components">
+    <thead><tr>
+            <th width="16"></th>
+        <th>Label</th>
+        <th>Model</th>
+        <th>Serial Number</th>
+        <th>Speed</th>
+        <th>Size</th>
+        <th>Count</th>
+    </tr></thead>
+    <tbody>
+        {% for item in components %}
+        <tr>
+            <td><i class="fugue-icon {{ item.icon }}"></i></td>
+            <td>{{ item.label }}</td>
+            <td>
+                {% if item.modelgroup %}
+                    {% if item.group == 'dev' %}
+                        <a href="{% url 'search' 'components' '' %}?device_group={{ item.modelgroup.id }}"
+                         >{{ item.model }}</a>
+                    {% else %}
+                        <a href="{% url 'search' 'components' '' %}?component_group={{ item.modelgroup.id }}"
+                         >{{ item.model }}</a>
+                    {% endif %}
+                {% else %}
+                    {{ item.model }}
+                {% endif %}
+            </td>
+            <td>{{ item.serial }}</td>
+            <td>{{ item.speed|default:'' }}</td>
+            <td>{{ item.size|default:'' }}</td>
+            <td>{{ item.count|default:'' }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock content %}

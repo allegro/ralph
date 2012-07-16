@@ -1,0 +1,51 @@
+{%extends 'cmdb/base.html'%}
+
+{% load icons %}
+{% load query %}
+
+{% block content %}
+<h3> Edit relation </h3>
+
+<form id='edit_form' class="form form-inline" method="POST">
+
+<div class='span10'>
+    <h3> {{ label }}</h3>
+    <p style='height: 10px;'></p>
+    {% csrf_token %}
+    {% for f in form.hidden_fields %}{{ f }}{% endfor %}
+    <table class="table table-bordered table-striped table-properties">
+        <tbody>
+        {% for f in form.visible_fields %}
+        <tr class="control-group 
+                {{ f.css_classes }}
+                {% if f.errors %}error{% endif %}
+            ">
+                <td width="16">{{ f|field_icon:form }}</td>
+                <th class="form-label">
+                    {{ f.label_tag }}
+                </th>
+                <td class="form-field controls">
+                    {{ f }}
+                    {% for e in f.errors %}
+                        <div class="help-block">{{ e }}</div>
+                    {% empty %}
+                    {%  if f.help_text %}
+                        <div class="help-block">{{ f.help_text }}</div>
+                    {%  endif %}
+                    {% endfor %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<span class='span10'> 
+    <button class="btn btn-primary" type="submit">{% icon 'fugue-tick' %}&nbsp;Save</button>
+    <button class="btn" type="reset">{% icon 'fugue-clean' %}&nbsp;Clean fields</button>
+</span>
+
+
+</form>
+
+{% endblock %}

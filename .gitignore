@@ -1,0 +1,7 @@
+/doc/_build/
+/www/_build/
+/src/ralph/runtime.log*
+/src/ralph/settings-local.py
+/src/ralph/static
+/src/ralph/fabconf.py
+/src/ralph/logs

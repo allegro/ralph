@@ -1,0 +1,36 @@
+- model: cmdb.CIContentTypePrefix
+  pk: 1
+  fields:
+    content_type_name: discovery.device
+    prefix: dd
+    
+- model: cmdb.CIContentTypePrefix
+  pk: 2
+  fields:
+    prefix: dc
+    content_type_name: discovery.data_center
+ 
+- model: cmdb.CIContentTypePrefix
+  pk: 3
+  fields:
+    prefix: bv
+    content_type_name: business.venture
+    
+- model: cmdb.CIContentTypePrefix
+  pk: 4
+  fields:
+    prefix: br
+    content_type_name: business.venturerole
+    
+- model: cmdb.CIContentTypePrefix
+  pk: 5 
+  fields:
+    prefix: dn 
+    content_type_name: discovery.network
+    
+- model: cmdb.CIContentTypePrefix
+  pk: 6
+  fields:
+    prefix: dt
+    content_type_name: discovery.network_terminator
+

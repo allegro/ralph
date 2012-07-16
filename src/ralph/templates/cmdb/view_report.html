@@ -1,0 +1,47 @@
+{%extends 'cmdb/base.html'%}
+   
+{% load icons %}
+{% load query %}
+
+{% block content %}
+<style type="text/css" media="screen">
+    form.form-inline select
+    {
+        width: auto;
+    }
+</style>
+<div class='span12'>
+    <h3> CMDB Reports</h3>
+    <hr>
+
+    {% if report_kind == 'top_changes' %}
+    <p>
+        <h4> Top CI Changes </h4>
+        {% include 'cmdb/reports/top-ci-changes.html' with rows=top_ci_changes %}
+    </p>
+    <hr>
+
+    {% elif report_kind == 'top_problems' %}
+    <p>
+    <h3> Top CI Problems  </h3>
+        {% include 'cmdb/reports/top-ci-problems.html' with rows=top_ci_problems %}
+    </p>
+
+        <hr>
+    <p>
+    {% elif report_kind == 'top_incidents' %}
+    <h3> Top CI Incidents </h3>
+        {% include 'cmdb/reports/top-ci-incidents.html' with rows=top_ci_incidents %}
+    </p>
+
+    <hr>
+    {% elif report_kind == 'usage' %}
+    <p>
+    <h3> Unchanged Configuration Items </h3>
+        {% include 'cmdb/reports/least-ci-changes.html' with rows=least_ci_changes %}
+    </p>
+    {% endif %}
+
+</div>
+
+{% endblock %}

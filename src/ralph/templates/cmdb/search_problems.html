@@ -1,0 +1,15 @@
+{%extends 'cmdb/base.html'%}
+   
+{% load icons %}
+{% load query %}
+{% block content %}
+
+<style type="text/css" media="screen">
+    form.form-inline select
+    {
+        width: auto;
+    }
+</style>
+
+{% include 'cmdb/include_events.html' with rows=problems%}
+{% endblock %}

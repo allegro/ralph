@@ -1,0 +1,45 @@
+{% extends "ui/base-devices.html" %}
+{% load url from future %}
+{% load icons %}
+{% load formats %}
+
+{% block content %}
+<div class="row-fluid">
+<div class="span6">
+
+{% include 'ui/device-form.html' with form=form %}
+
+</div>
+<div class="span6">
+
+<table class="table table-striped table-bordered details-prices-components">
+    <thead><tr>
+            <th width="16"></th>
+        <th>Label</th>
+        <th>Model</th>
+        <th>Price</th>
+    </tr></thead>
+    <tbody>
+        {% for item in components %}
+        <tr>
+            <td><i class="fugue-icon {{ item.icon }}"></i></td>
+            <td>{{ item.label }}</td>
+            <td>
+                {% if item.modelgroup %}
+                    {% if item.group == 'dev' %}
+                        <a href="{% url 'catalog' 'device' item.modelgroup.type|slugify item.modelgroup.id|slugify %}">{{ item.model }}</a>
+                    {% else %}
+                        <a href="{% url 'catalog' 'component' item.modelgroup.type|slugify item.modelgroup.id|slugify %}">{{ item.model }}</a>
+                    {% endif %}
+                {% else %}
+                    {{ item.model }}
+                {% endif %}
+            </td>
+            <td class="currency">{{ item.price|currency }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+</div>
+{% endblock content %}

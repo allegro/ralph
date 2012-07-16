@@ -1,0 +1,57 @@
+{%extends 'cmdb/base.html'%}
+
+
+{% load icons %}
+{% load query %}
+
+{% block content %}
+
+<style type="text/css" media="screen">
+
+    form.form-inline select
+    {
+        width: auto;
+    }
+
+    table.dboard td,table.dboard th
+    {
+            border: solid #000 1px;
+            padding: 6px;
+    }
+
+</style>
+<div class='span12'>
+<h3> CMDB Dashboard  </h3>
+
+
+{% for type,prios in statistics.items%}
+<hr>
+<h4> Type: {{ type }} </h4>
+<ul>
+                {% for prio,priovalues in prios.items %}
+                <table>
+                    <tr><td style='padding: 10px'>
+                             <span class='label label-info'> Level: {{ prio }} </span>
+                             <table class='dboard' style='margin: 10px; border-collapse: collapse; border: solid 1px blue; ' >
+                                     <tr style='background-color:#05c; color: white'><th> Month</th><th> Count </th><th colspan=2>Options</th>
+                            {% for month,data in priovalues.items %}
+                            <tr>
+                                <td style='padding: 6px'>{{ data.0 }}  </td>
+                                <td><b>{{ data.1 }}</b></td>
+                                <td>
+                                        <a href='/cmdb/changes/dashboard_venture/{{data.2}}/{{ data.3 }}/{{month}}/ci'> View by CI  </td>
+                                <td><a href='/cmdb/changes/dashboard_venture/{{data.2}}/{{ data.3 }}/{{month}}/ventures'> View by Ventures  </td>
+                            </tr>
+                            {% endfor %}
+                </table>
+                </tr></td>
+                </table>
+                {% endfor %}
+            </td>
+        </tr>
+    </table>
+</ul>
+{% endfor %}
+
+</div>
+{% endblock %}

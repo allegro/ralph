@@ -1,0 +1,120 @@
+{%extends 'ui/base.html'%}
+{%block extra_headers %}
+{% load bob %}
+{% load icons %}
+<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}/filtered_widget/style.css" />
+
+<script src="{{ STATIC_URL }}jquery-1.7.2.min.js"></script>
+{# - weird jquery.init.js from admin with isolated jquery... #}
+<script type="text/javascript" src="/static/admin/js/jquery.init.js"></script>
+{# - and another jquery (?) #}
+<script src="{{ STATIC_URL }}jquery-1.7.2.min.js"></script>
+
+<script src="{{ STATIC_URL }}bootstrap/js/bootstrap.min.js"></script>
+<script src="{{ STATIC_URL }}cmdb/common.js"></script>
+<script src="{{ STATIC_URL }}ui/main.js"></script>
+<script src="{{ STATIC_URL }}jit/jit.js"></script>
+<script type="text/javascript" src="/static/admin/js/core.js"></script>
+<script type="text/javascript" src="/static/admin/js/getElementsBySelector.js"></script>
+<script type="text/javascript" src="/static/admin/js/actions.js"></script>
+<script type="text/javascript" src="/static/admin/js/SelectBox.js"></script>
+<script type="text/javascript" src="/static/admin/js/SelectFilter2.js"></script>
+
+<script type="text/javascript" src="{{ STATIC_URL }}filtered_widget/jsi18n.js"></script>
+<script type="text/javascript" charset="utf-8" src="{{ STATIC_URL }}bootstrap/js/bootstrap-dropdown.js"> </script>
+
+{% endblock %}
+
+{% block breadcrumbs %}
+{% if breadcrumbs %}
+<div class='span10'> 
+    <ul class='breadcrumb'> 
+        {% for segment in breadcrumbs %}
+        <li>
+        <a href='/cmdb/search?parent={{ segment.id }}'> {{ segment.name }}</a> &gt; 
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block contentarea %}
+    <div class='span10'> 
+        {% block content %}
+        {% endblock %}
+    </div>
+{% endblock %}
+
+{% block sidebar%}
+
+<style type="text/css" media="screen">
+
+    .navi-header
+    {
+        background-color: 
+        #0074CC;
+        color: white;
+        padding: 5px 0px 5px 0px;
+        border-radius: 8px 8px 0px 0px;
+        text-align: center;
+    }
+
+</style>
+
+<div class='span2'> 
+    <div class='navi-header' > Configuraton Items </div>
+    <div class='well side-nav'> 
+        <ul class='nav nav-list '>
+            <li> <a href="/cmdb/search">{% icon 'fugue-magnifier' %} All CIs </a> </li>
+            <li> <a href="/cmdb/search?layer=7&top_level=1">{% icon 'fugue-disc-share' %} Services </a> </li>
+            <li> <a href="/cmdb/add"> {% icon 'fugue-block--plus' %} Add CI </a> </li>
+            <li> <a href="/cmdb/changes/dashboard">{% icon 'fugue-dashboard' %} Dashboard </a> </li>
+            <li> <a href="/admin/cmdb"> {% icon 'fugue-toolbox' %} CMDB Admin </a> </li>
+        </ul>
+    </div>
+</div>
+<div class='span2'> 
+    <div class='navi-header'> Reports </div>
+    <div class='well side-nav'> 
+        <ul class='nav nav-list '>
+            <li> <a href="/cmdb/changes/reports?kind=top_changes">{% icon 'fugue-reports' %} Top CI changes</a> </li>
+            <li> <a href="/cmdb/changes/reports?kind=top_problems">{% icon 'fugue-reports' %} Top CI problems </a> </li>
+            <li> <a href="/cmdb/changes/reports?kind=top_incidents">{% icon 'fugue-reports' %} Top CI incidents</a> </li>
+            <li> <a href="/cmdb/changes/reports?kind=usage">{% icon 'fugue-reports' %} Cis w/o changes </a> </li>
+        </ul>
+    </div>
+</div>
+
+<!--
+<div class='span2'> 
+    <div class='navi-header'> People </div>
+    <div class='well side-nav'> 
+        <ul class='nav nav-list '>
+            <li> <a href="/cmdb/search?uid=&layer=8">{% icon 'fugue-magnifier' %} Ventures </a> </li>
+        </ul>
+    </div>
+</div>
+
+!-->
+
+<div class='span2'> 
+    <div class='navi-header'> Events &amp; Issues </div>
+    <div class='well side-nav'> 
+        <ul class='nav nav-list '>
+            <li> <a href="/cmdb/changes/changes">{% icon 'fugue-arrow' %} All Events</a> </li>
+            <li> <a href="">{% icon 'fugue-envelope--arrow' %} Planned changes</a> </li>
+            <li> <a href="/cmdb/changes/changes?type=3">{% icon 'fugue-wooden-box--arrow' %} Asset attr. changes </a> </li>
+            <li> <a href="/cmdb/changes/changes?type=4">{% icon 'fugue-thermometer' %} Monitoring events </a> </li>
+            <li> <a href="/cmdb/changes/changes?type=1">{% icon 'fugue-git' %} Repo changes </a> </li>
+            <li> <a href="/cmdb/changes/changes?type=2">{% icon 'fugue-flask' %} Agent events </a> </li>
+            <li> <a href="/cmdb/changes/changes?type=5">{% icon 'fugue-plug' %} Status Office events</a> </li>
+            <li> <a href="/cmdb/changes/incidents">{% icon 'fugue-question' %} Incidents </a> </li>
+            <li> <a href="/cmdb/changes/problems">{% icon 'fugue-bomb' %} Problems </a> </li>
+        </ul>
+    </div>
+</div>
+
+
+{% endblock %}
+  

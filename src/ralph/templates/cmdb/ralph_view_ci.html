@@ -1,0 +1,23 @@
+{% extends "ui/base-devices.html" %}
+{% load url from future %}
+{% load icons %}
+{% load query %}
+{% block header %}
+{% endblock %}
+
+
+{% block content %}
+{% if ci %}
+<iframe style='width:1000px; height:1300px; border: 0' src='/cmdb/ci/view_iframe/{{ci.id}}' style='width:100%; height:100%' >
+
+Loading data ...
+</iframe>
+{% else %}
+<span class="label label-important">No CMDB data for this Asset</span>
+
+{% endif %}
+
+{% endblock %}
+
+
+

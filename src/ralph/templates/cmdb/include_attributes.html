@@ -1,0 +1,32 @@
+{% load icons %}
+{% load query %}
+
+{% csrf_token %}
+
+<table class="table table-bordered table-striped table-properties">
+{% for f in form_attributes.visible_fields %}
+
+        <tr class="control-group 
+                {{ f.css_classes }}
+                {% if f.errors %}error{% endif %}
+            ">
+                <td width="16">{{ f|field_icon:form }}</td>
+                <th class="form-label">
+                    {{ f.label }}
+                </th>
+                <td class="form-field controls">
+                    {{ f }}
+                    {% for e in f.errors %}
+                        <div class="help-block">{{ e }}</div>
+                    {% empty %}
+                    {%  if f.help_text %}
+                        <div class="help-block">{{ f.help_text }}</div>
+                    {%  endif %}
+                    {% endfor %}
+                </td>
+
+            </tr>
+
+            {% endfor %}
+        </table>
+            

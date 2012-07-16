@@ -1,0 +1,113 @@
+table.table-list tr.active > td {
+    background-color: #eee;
+}
+
+ul.side-list > .active:hover > a,
+ul.rack-list > .active:hover > a,
+ul.venture-list > .active:hover > a {
+    background-color: #ddd;
+}
+
+ul.side-list > .active > a,
+ul.rack-list > .active > a,
+ul.venture-list > .active > a {
+    background-color: #eee;
+}
+
+td.currency,
+.currency {
+    text-align: right;
+}
+
+td.count {
+    text-align: center;
+}
+
+.table-properties th > label {
+    font-weight: bold;
+}
+.table-properties th > a.fugue-icon {
+    margin-top: 0;
+}
+
+.table-properties td,
+.table-properties th {
+    vertical-align: middle;
+}
+
+form div.readonly {
+    width: 210px;
+}
+
+.table-properties td.controls > textarea,
+.table-properties td.controls > div.readonly,
+.table-properties td.controls > select,
+.table-properties td.controls > input {
+    margin: auto;
+    width: 160px;
+}
+
+.table-properties td.controls {
+    width: 170px;
+}
+.table-list td {
+    max-width: 20em;
+    overflow: hidden;
+}
+
+.table-list th {
+    white-space: nowrap;
+}
+.table-list th a.fugue-icon {
+    margin: 0;
+    float: right;
+}
+
+.table-list .column-name a {
+    display: block;
+    width: 100%;
+    height: 100%;
+    white-space: nowrap;
+    text-decoration: none;
+}
+
+.fugue-icon {
+    margin-top: -6px;
+    margin-bottom: -2px;
+    white-space: nowrap;
+}
+
+.side-nav {
+    padding: 9px 0;
+}
+
+.error-text {
+    color: #B94A48;
+}
+
+td.column-checkbox {
+    vertical-align: middle;
+    text-align: center;
+}
+
+.side-nav .nav-list a {
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.disco-console {
+    min-height: 30em;
+    width: 98%;
+}
+
+html .loading {
+    background-image: url('loading.gif');
+    background-repeat: no-repeat;
+    background-position: 50% 50% !important;
+}
+
+.dashboard-form {
+    text-align: center;
+    margin: 20em 4em;
+    width: 100%;
+}
