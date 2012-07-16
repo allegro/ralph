@@ -4,7 +4,7 @@
 {% block bsrelbar1 %}{% endblock %}
 {% block bsrelbar2 %}{% endblock %}
 {% block sidebarsearch %}{% endblock %}
-{% set title = 'Development' %}
+{% set title = 'Development and Support' %}
 
 {% block content %}
     <div class="container">
@@ -13,7 +13,24 @@
         </div>
         <div class="row">
             <div class="span8">
-                <p>The main Ralph repository is published on Github.</p>
+              <p>The main Ralph repository is published on Github. The project is
+              licensed under the <a href="doc/{{ pathto('license') }}">Apache
+                License, Version 2.0</a>. It's very easy to step up and help with
+              developing future versions of Ralph. Everybody can contribute by:</p>
+              <ul>
+                <li>writing code, especially plugins for hardware we don't use
+                ourselves
+                <li>writing documentation
+                <li>creating translations
+                <li>testing
+                <li>reporting bugs
+              </ul>
+              <p>In each case, contributors remain copyright holders. We only ask
+              them to formally confirm the terms under which they made their
+              contribution available by signing a Contributor Agreement
+              (<a href="{{ pathto('_static/ralph_cla.pdf', 1) }}">PDF</a>, 
+              <a href="{{ pathto('_static/ralph_cla.docx', 1) }}">Microsoft
+                Word</a>).
             </div>
             <div class="span4">
                 <p><a href="https://github.com/allegro/ralph" class="btn btn-warning btn-large"><i class="icon-random icon-white"></i> Fork us on Github</a></p>
@@ -21,13 +38,15 @@
         </div>
 
         <div class="page-header">
-            <h1>Community <small>Contact the developers</small></h1>
+          <h1>Getting Help <small>Contact the developers</small></h1>
         </div>
         <div class="row">
             <div class="span8">
-                <p>There are several ways to contact the people who are involved in Ralph developemnt:</p><ul>
+              <p>There are several ways to contact the people involved in Ralph developemnt:</p>
+              <ul>
                 <li><a href="https://github.com/allegro/ralph/wiki">Wiki</a></li>
                 <li><a href="https://github.com/allegro/ralph/issues">Bug tracker</a></li>
+                <li>#ralph IRC channel on FreeNode</li>
             </ul>
             </div>
         </div>
