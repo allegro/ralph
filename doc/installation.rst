@@ -252,16 +252,14 @@ that.
 
     $ sudo setcap cap_net_raw=ep /home/ralph/bin/python
 
-pycontrol
-~~~~~~~~~
+Installing from pip
+~~~~~~~~~~~~~~~~~~~
 
-For F5 load balancer support, Ralph requires ``pycontrol`` which is not yet
-available on the Python Package Index.  You need to download it from
-http://devcentral.f5.com/Default.aspx?tabid=2230 and install it manually. It
-also requires `SUDS <https://fedorahosted.org/suds/>`_ which can be installed by
-issuing::
+Simply invoke::
 
-  $ pip install suds
+  (ralph)$ pip install ralph
+
+That's it.
 
 Installing from sources
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -282,7 +280,7 @@ dependencies installed.
 
 .. note::
 
-  If your PIL installation on Ubuntu 11.04 ends up telling::
+  If your PIL installation on Ubuntu 12.04 ends up telling::
 
       *** TKINTER support not available
       *** JPEG support not available
@@ -297,7 +295,7 @@ dependencies installed.
       $ sudo ln -s x86_64-linux-gnu/libz.so libz.so
       $ sudo ln -s x86_64-linux-gnu/libfreetype.so libfreetype.so
       $ popd
-      $ pip install -U PIL
+      $ pip install -U Pillow
 
   Now PIL should at least tell you this much::
 
@@ -306,6 +304,10 @@ dependencies installed.
       --- ZLIB (PNG/ZIP) support available
       --- FREETYPE2 support available
       --- LITTLECMS support available
+
+  Note that we are not using the default ``PIL`` package from PyPI but the
+  friendly ``Pillow`` fork which is actively maintained by the Plone
+  community.
 
 Once installed, we can synchronize the database from sources by running the
 standard ``syncdb`` management command::
@@ -371,7 +373,7 @@ Back-end web server
 
 From the project directory run::
 
-  (ralph)ralph@s10821:~/project/src/ralph $ python manage.py run_gunicorn
+  (ralph)$ python manage.py run_gunicorn
   Validating models...
   0 errors found
 
@@ -389,8 +391,8 @@ production use however, configure a front-end Web server (like Apache described
 above) and run Gunicorn as a daemon. You may find example Gunicorn ``init.d``
 scripts in the :ref:`FAQ <faq>`.
 
-rabbitmq
-~~~~~~~~
+Message queue
+~~~~~~~~~~~~~
 
 From the project directory run::
 
