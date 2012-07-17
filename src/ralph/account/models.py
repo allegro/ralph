@@ -157,8 +157,11 @@ def user_post_save(sender, instance, created, **kwargs):
 
 
 # ensure at start no user comes without a profile
-for u in User.objects.order_by('id'):
-    create_a_user_profile_ignoring_dberrors(u)
+try:
+    for u in User.objects.order_by('id'):
+        create_a_user_profile_ignoring_dberrors(u)
+except DatabaseError:
+    pass # no such table yet, first syncdb
 
 
 class BoundPerm(TimeTrackable, EditorTrackable):
