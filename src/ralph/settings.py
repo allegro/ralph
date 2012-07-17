@@ -194,22 +194,23 @@ AJAX_SELECT_BOOTSTRAP = True
 AJAX_SELECT_INLINES = 'inline'
 
 #
-# stuff that should be customized in settings_local.py
+# stuff that should be customized in local settings
 #
+
+# <template>
 SECRET_KEY = 'CHANGE ME'
 DEBUG = True#False
 TEMPLATE_DEBUG = DEBUG
-DUMMY_SEND_MAIL = DEBUG
 SEND_BROKEN_LINK_EMAILS = DEBUG
 ADMINS = (
     ('Webmaster', 'ralph@localhost'),
 )
-CURRENCY = 'PLN'
 MANAGERS = ADMINS
 DEFAULT_FROM_EMAIL = 'ralph@localhost'
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 TIME_ZONE = 'Europe/Warsaw'
 LANGUAGE_CODE = 'en-us'
+CURRENCY = 'PLN'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -269,6 +270,7 @@ SPLUNK_USER = None
 SPLUNK_PASSWORD = None
 PUPPET_DB_URL = None
 BUGTRACKER_URL = None
+# </template>
 
 #
 # programmatic stuff that need to be at the end of the file
@@ -276,5 +278,22 @@ BUGTRACKER_URL = None
 import djcelery
 djcelery.setup_loader()
 
-from lck.django import profile_support
-execfile(profile_support)
+import os
+local_profile = os.environ.get('DJANGO_SETTINGS_PROFILE', 'local')
+
+if SETTINGS_PATH_MODE == 'flat':
+    local_settings = '%s-%s.py' % (SETTINGS_PATH_PREFIX, local_profile)
+elif SETTINGS_PATH_MODE == 'nested':
+    local_settings = '%s%s%s.py' % (SETTINGS_PATH_PREFIX, os.sep,
+                                    local_profile)
+else:
+    raise ValueError, ("Unsupported settings path mode '%s'"
+                       "" % SETTINGS_PATH_MODE)
+
+for cfg_loc in [CURRENT_DIR + local_settings,
+                '~/.ralph/settings',
+                '/etc/ralph/settings']:
+    cfg_loc = os.path.expanduser(cfg_loc)
+    if os.path.exists(cfg_loc):
+        execfile(cfg_loc)
+        break
