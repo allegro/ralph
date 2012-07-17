@@ -185,8 +185,8 @@ class HistoryCost(db.Model):
     never overlap.
     """
 
-    start = db.DateField(default='0000-1-1', null=True)
-    end = db.DateField(default='9999-1-1')
+    start = db.DateField(default='0001-1-1', null=True)
+    end = db.DateField(default='2199-1-1')
     daily_cost = db.FloatField(default=0)
     device = db.ForeignKey('Device', null=True, blank=True,
                            default=None, on_delete=db.SET_NULL)
