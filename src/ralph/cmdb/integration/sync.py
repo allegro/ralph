@@ -17,6 +17,7 @@ from ralph.cmdb.integration.ralph import AssetChangeImporter
 from ralph.cmdb.integration.puppet import PuppetGitImporter
 from ralph.cmdb import models as db
 
+
 logger = logging.getLogger(__name__)
 
 class ZabbixImporter(BaseImporter):
@@ -133,18 +134,12 @@ class JiraEventsImporter(BaseImporter):
 
 def integrate_main():
     from optparse import OptionParser
-    usage = "usage: %prog --so --git --jira --zabbix_hosts --zabbix_triggers --ralph"
+    usage = "usage: %prog --git --jira --zabbix_hosts --zabbix_triggers --ralph"
     parser = OptionParser(usage)
     parser.add_option('--ralph',
             dest="ralph",
             action="store_true",
             help="Ralph.",
-            default=False,
-    )
-    parser.add_option('--so',
-            dest="so",
-            action="store_true",
-            help="Status office.",
             default=False,
     )
     parser.add_option('--git',
@@ -174,14 +169,8 @@ def integrate_main():
     (options, args) = parser.parse_args()
     import_classes=[]
     """ Fetch all new data from remote services """
-    if options.so:
-        try:
-            from allegro_plugins.statusoffice import StatusOfficeImporter
-        except ImportError:
-            raise "Plugin not available in Open Source version"
-        import_classes.append([StatusOfficeImporter, 'import_so'])
 
-    elif options.zabbix_hosts:
+    if options.zabbix_hosts:
         import_classes.append([ZabbixImporter, 'import_hosts'])
     elif options.zabbix_triggers:
         import_classes.append([ZabbixImporter, 'import_triggers'])
