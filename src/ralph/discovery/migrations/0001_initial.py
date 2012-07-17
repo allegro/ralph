@@ -475,8 +475,8 @@ class Migration(SchemaMigration):
         # Adding model 'HistoryCost'
         db.create_table('discovery_historycost', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('start', self.gf('django.db.models.fields.DateField')(default=u'0000-1-1', null=True)),
-            ('end', self.gf('django.db.models.fields.DateField')(default=u'9999-1-1')),
+            ('start', self.gf('django.db.models.fields.DateField')(default=u'0001-1-1', null=True)),
+            ('end', self.gf('django.db.models.fields.DateField')(default=u'2199-1-1')),
             ('daily_cost', self.gf('django.db.models.fields.FloatField')(default=0)),
             ('device', self.gf('django.db.models.fields.related.ForeignKey')(default=None, to=orm['discovery.Device'], null=True, on_delete=models.SET_NULL, blank=True)),
             ('extra', self.gf('django.db.models.fields.related.ForeignKey')(default=None, to=orm['business.VentureExtraCost'], null=True, on_delete=models.SET_NULL, blank=True)),
