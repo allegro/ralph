@@ -3,7 +3,7 @@ Device discovery
 
 Ralph is able to automatically scan your data center and detect what hardware
 is present, where it is and what software is installed on it. However, that
-ability is limited to the cases coverd by various discovery plugins -- if there
+ability is limited to the cases covered by various discovery plugins -- if there
 is a plugin for the specific kind of hardware or software -- Ralph will use it
 to gather the information. If the hardware or software is not supported, you
 will have to enter the information manually, in whole or in part.
@@ -39,8 +39,8 @@ work failed.
 -------------------------
 
 You can add the ``--remote`` parameter to the discovery command to make the
-discovery happen asynchronously, done by sever configured "worker" servers. Of
-course, in order to do that, you need to have to start the worker applications
+discovery happen asynchronously, done by several configured "worker" servers. Of
+course, in order to do that, you need to have the worker applications started
 on those servers. You do that with the command::
 
     python manage.py celeryd
