@@ -45,7 +45,7 @@ You can also create your configuration in ``/etc`` by adding ``--global`` to
    The ``settings`` file will contain passwords and other sensitive information.
    Therefore by default ``makeconf`` ensures your configuration directory as
    well as the ``settings`` file are only accessible by the current user
-   invokign ``makeconf``.
+   invoking ``makeconf``.
 
 Secret key
 ----------
