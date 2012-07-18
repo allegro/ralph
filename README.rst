@@ -11,5 +11,3 @@ through command line tools, the most important of which is the discovery
 command, which lets Ralph gather information about your data center
 automatically. You can also export and import parts of the database into
 different formats.
-
-.. include:: CHANGES.rst
