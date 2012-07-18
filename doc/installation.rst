@@ -12,7 +12,7 @@ How to install
    writes which are very common on a distributed queue-based architecture.
    
    **If you happen to use another setup**, please take a moment to write down
-   what you were doing and send it over. This way I can add examples for your
+   what you were doing and send it over. This way we can add examples for your
    system as well.
 
 Installing Python
