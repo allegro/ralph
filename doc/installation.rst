@@ -326,7 +326,7 @@ Initial setup
 
 Once installed, we can create a configuration file template::
 
-  (ralph)$ python -m ralph makeconf
+  (ralph)$ ralph makeconf
 
 This will create a ``.ralph/settings`` file in the current user's home
 directory. You can also create these settings in ``/etc`` by providing the
@@ -341,7 +341,7 @@ zero configuration options.
 After creating the default config file, let's synchronize the database from
 sources by running the standard ``syncdb`` management command::
 
-  (ralph)$ python -m ralph syncdb
+  (ralph)$ ralph syncdb
 
 Django will create all tables, setup some default values and ask whether you
 want to create a superuser. Do so, you will use the credentials given to test
@@ -352,7 +352,7 @@ to a common place so the front-end Web server can pick them up. That way the
 back-end doesn't have to deal with static files. The command to do that is
 simple::
 
-  (ralph)$ python -m ralph collectstatic -l
+  (ralph)$ ralph collectstatic -l
 
 By default the ``collectstatic`` command copies the files. The ``-l`` option
 creates symlinks instead.
@@ -368,7 +368,7 @@ Python and setcap
 
 From the project directory run::
 
-  $ python -m ralph test util
+  $ ralph test util
   Creating test database for alias 'default'...
   ..
   ----------------------------------------------------------------------
@@ -382,7 +382,7 @@ Back-end web server
 
 From the project directory run::
 
-  (ralph)$ python -m ralph run_gunicorn
+  (ralph)$ ralph run_gunicorn
   Validating models...
   0 errors found
 
@@ -405,7 +405,7 @@ Message queue
 
 From the project directory run::
 
-  (ralph)$ python -m ralph celeryd -l info
+  (ralph)$ ralph celeryd -l info
   [2011-04-11 14:41:22,958: WARNING/MainProcess]  
 
   -------------- celery@Macallan.local v2.2.5
@@ -437,7 +437,7 @@ Ralph tasks
 
 First let's try interactively to discover a single host::
 
-  (ralph)$ python -m ralph discover 127.0.0.1
+  (ralph)$ ralph discover 127.0.0.1
   127.0.0.1... up!
 
 Should the discovery show that 127.0.0.1 is down, check whether your Python
@@ -445,7 +445,7 @@ binary has been ``setcap``'ed. Did the ``util`` unit tests succeed?
 
 If everything's alright, let's try to run the discovery remotely::
 
-  $ python -m ralph discover --remote 127.0.0.1
+  $ ralph discover --remote 127.0.0.1
   
 This won't return anything on stdout but on your Celeryd console you should
 see::

@@ -2,10 +2,13 @@
 import os
 import sys
 
-if __name__ == "__main__":
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ralph.settings")
+def main():
+    os.environ["DJANGO_SETTINGS_MODULE"] = "ralph.settings"
 
     from django.core.management import execute_from_command_line
 
-    sys.argv[0] = 'python -m ralph'
+    sys.argv[0] = 'ralph'
     execute_from_command_line(sys.argv)
+
+if __name__ == "__main__":
+    main()

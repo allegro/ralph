@@ -31,7 +31,7 @@ Creating a default configuration file
 
 A default configuration file can be created by invoking::
 
-  (ralph)$ python -m ralph makeconf
+  (ralph)$ ralph makeconf
 
 This will create the ``~/.ralph/settings`` file with default values. Ralph will
 not overwrite existing configuration, you can change that by adding ``--force``

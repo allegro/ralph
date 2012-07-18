@@ -14,8 +14,8 @@ Running discovery
 You can run :index:`discovery` on a specified IP address or whole network with the
 "discover" management command::
 
-    (ralph)$ python -m ralph discover '127.0.0.1'
-    (ralph)$ python -m ralph discover '127.0.0.1/24'
+    (ralph)$ ralph discover '127.0.0.1'
+    (ralph)$ ralph discover '127.0.0.1/24'
 
 This will attempt to invoke each of the discovery plugins on all the specified
 addresses -- the plugins themselves will fill in all the information they can
@@ -43,7 +43,7 @@ discovery happen asynchronously, done by several configured "worker" servers. Of
 course, in order to do that, you need to have the worker applications started
 on those servers. You do that with the command::
 
-    (ralph)$ python -m ralph celeryd
+    (ralph)$ ralph celeryd
 
 It's possible to make some workers only process the addresses from certain
 networks. The network definitions have a ``queue`` parameter which tells to
@@ -83,13 +83,13 @@ that make this easier.
 
 You can export data from ralph in form of a CSV file by running::
 
-    (ralph)$ python -m ralph report inventory --output=report.csv
+    (ralph)$ ralph report inventory --output=report.csv
 
 Importing a CSV file is also easy. For example, if you have generated a
 :index:`report` with the above command and changed the name and remarks of some
 of the devices, you can import those changes by running::
 
-    (ralph)$ python -m ralph import --fields=id,,,,,name,,,,remarks report.csv
+    (ralph)$ ralph import --fields=id,,,,,name,,,,remarks report.csv
 
 The ``--fields`` parameter tells which columns of the CSV file should be used
 for which fields of the imported devices.
