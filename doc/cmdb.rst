@@ -104,18 +104,19 @@ Installation
 ------------
 
 The CMDB module is included in Ralph right out of the box.  Make sure the
-``cmdb`` app is activated in your configuration (``settings.py``) by
+``cmdb`` app is activated in your :ref:`configuration <configuration>` by
 checking if ``cmdb`` is listed in ``INSTALLED_APPS``::
 
     INSTALLED_APPS=[
-    'cmdb',
+    'ralph.cmdb',
     ...
     ...
     ]
 
 .. note::  
 
-    CMDB module requires MySQL database as backend.
+    Currently the CMDB module requires MySQL database as backend. We accept
+    patches.
 
 
 Federating the data
