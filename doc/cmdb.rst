@@ -104,18 +104,19 @@ Installation
 ------------
 
 The CMDB module is included in Ralph right out of the box.  Make sure the
-``cmdb`` app is activated in your configuration (``settings.py``) by
-checking if ``cmdb`` is listen in ``INSTALLED_APPS``::
+``cmdb`` app is activated in your :ref:`configuration <configuration>` by
+checking if ``cmdb`` is listed in ``INSTALLED_APPS``::
 
     INSTALLED_APPS=[
-    'cmdb',
+    'ralph.cmdb',
     ...
     ...
     ]
 
 .. note::  
 
-    CMDB module requires MySQL database as backend.
+    Currently the CMDB module requires MySQL database as backend. We accept
+    patches.
 
 
 Federating the data
@@ -128,7 +129,7 @@ must be imported at some interval in order to show up in CMDB.
 Two different commandline scripts are used to populate CMDB database -- 
 ``cmdb_sync`` and ``cmdb_integration``.
 
-* To populate database with assets from Ralph CMDB, use ``cmdb_sync``.
+* To populate database with assets coming from Ralph CMDB, use ``cmdb_sync``.
 * To fill database with third party services data, use ``cmdb_integration``.
 
 
@@ -167,13 +168,12 @@ cmdb_integration
 
 Federating data from third party services (choose one or all)::
 
-    $ cmdb_integration --so --git --jira --zabbix_hosts --zabbix_triggers --ralph
+    $ cmdb_integration --git --jira --zabbix_hosts --zabbix_triggers --ralph
 
     Usage: cmdb_integration --so --git --jira --zabbix_hosts --zabbix_triggers --ralph
     Options:
      -h, --help         show this help message and exit
      --ralph            Ralph.
-     --so               Status office.
      --git              Git.
      --jira             Jira.
      --zabbix_hosts     Zabbix.
@@ -182,7 +182,7 @@ Federating data from third party services (choose one or all)::
 
 Zabbix integration
 ------------------
-Events triggered from Zabbix give us information about for example:
+Events triggered from Zabbix give us information about, for example:
 
 - processor usage is to high,
 - free RAM is too low,
@@ -228,7 +228,7 @@ the puppet reports URL to the CMDB URL::
         report = true
         reporturl = http://your_cmdb_url/cmdb/rest/notify_puppet_agent
 
-Every puppet report is saved in the database. You can see it from CI View tab
+Every puppet report is saved into the database. You can see it from CI View tab
 called 'Agent events'. 
 
 If you use Puppet Dashboard and have already specified ``reporturl``, there is
@@ -297,10 +297,10 @@ repository by running::
 Future Releases
 ---------------
 
-For future releases we plan to add:
+There are following features planned for future releases:
 
-1) autodection of Applications  and Databases used on hosts,
+1) autodection of Applications and Databases used on hosts,
 2) reports/dashboards for Management use,
 3) visualization of CMDB data,
-4) integrations with more systems, including security testing.
+4) integration with more systems, including security testing.
 
