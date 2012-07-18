@@ -16,6 +16,7 @@ This documentation
    discovery
    cmdb
    faq
+   changes
    license
 
 Indices and tables
