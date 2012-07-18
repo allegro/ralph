@@ -9,6 +9,10 @@ import collections
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from bob.menu import MenuItem
+from django.views.generic import CreateView
+from django.http import HttpResponseForbidden
+from django.http import HttpResponseRedirect
+from django.contrib import messages
 
 from ralph.discovery.models import ReadOnlyDevice, Device, DeviceType
 from ralph.ui.views.common import (Info, Prices, Addresses, Costs,
@@ -18,6 +22,8 @@ from ralph.util import presentation
 from ralph.ui.views.common import BaseMixin
 from ralph.ui.views.devices import BaseDeviceList
 from ralph.ui.views.common import CMDB, DeviceDetailView
+from ralph.util import pricing
+from ralph.ui.forms import DeviceCreateForm
 
 
 class SidebarRacks(object):
@@ -162,10 +168,68 @@ class RacksDeviceList(SidebarRacks, BaseMixin, BaseDeviceList):
 
     def get_context_data(self, **kwargs):
         ret = super(RacksDeviceList, self).get_context_data(**kwargs)
+        profile = self.request.user.get_profile()
+        has_perm = profile.has_perm
+        tab_items = ret['tab_items']
+        self.set_rack()
+        if has_perm(Perm.create_device, self.rack.venture if self.rack else None):
+            tab_items.append(MenuItem('Add Device', fugue_icon='fugue-wooden-box--plus',
+                            name='add_device',
+                            href='../add_device/?%s' % self.request.GET.urlencode()))
         ret.update({
             'subsection': self.rack.name if self.rack else self.rack,
             'subsection_slug': self.rack.sn if self.rack else self.rack,
         })
         return ret
 
+class DeviceCreateView(CreateView):
+    model = Device
+    slug_field = 'id'
+    slig_url_kwarg = 'device'
+
+    def get_success_url(self):
+        return self.request.path
+
+    def get_template_names(self):
+        return [self.template_name]
+
+    def form_valid(self, form):
+        self.set_rack()
+        model = form.save(commit=False)
+        model.parent = self.rack
+        model.dc = self.rack.dc
+        model.rack = self.rack.rack
+        model.save(priority=0, user=self.request.user)
+        pricing.device_update_cached(model)
+        messages.success(self.request, "Device created.")
+        return HttpResponseRedirect(self.request.path + '../info/%d' % model.id)
+
+    def get(self, *args, **kwargs):
+        self.set_rack()
+        has_perm = self.request.user.get_profile().has_perm
+        if not has_perm(Perm.create_device, self.rack.venture):
+            return HttpResponseForbidden(
+                    "You don't have permission to create devices here.")
+        return super(DeviceCreateView, self).get(*args, **kwargs)
+
+    def post(self, *args, **kwargs):
+        self.set_rack()
+        has_perm = self.request.user.get_profile().has_perm
+        if not has_perm(Perm.create_device, self.rack.venture):
+            return HttpResponseForbidden(
+                    "You don't have permission to create devices here.")
+        return super(DeviceCreateView, self).post(*args, **kwargs)
+
+
+class RacksAddDevice(Racks, DeviceCreateView):
+    template_name = 'ui/racks-add-device.html'
+    form_class = DeviceCreateForm
+
+    def get_context_data(self, **kwargs):
+        ret = super(RacksAddDevice, self).get_context_data(**kwargs)
+        tab_items = ret['tab_items']
+        tab_items.append(MenuItem('Add Device', name='add_device',
+                            fugue_icon='fugue-wooden-box--plus',
+                            href='../add_device/?%s' % self.request.GET.urlencode()))
+        return ret
 

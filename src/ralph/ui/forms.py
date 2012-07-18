@@ -262,8 +262,8 @@ class DeviceForm(forms.ModelForm):
         return sn or None
 
     def clean_venture_role(self):
-        role = self.cleaned_data['venture_role']
-        venture = self.cleaned_data['venture']
+        role = self.cleaned_data.get('venture_role')
+        venture = self.cleaned_data.get('venture')
         if role and venture and role.venture == venture:
             return role
         if role is not None:
@@ -289,6 +289,41 @@ class DeviceForm(forms.ModelForm):
             ]
         roles.insert(0, ('', '---------'))
         return roles
+
+class DeviceCreateForm(DeviceForm):
+    class Meta(DeviceForm.Meta):
+        widgets = {
+            'model': None,
+        }
+        fields = (
+            'name',
+            'venture',
+            'venture_role',
+            'barcode',
+            'position',
+            'remarks',
+
+            'margin_kind',
+            'deprecation_kind',
+            'price',
+
+            'model',
+            'sn',
+            'barcode',
+            'purchase_date',
+            'warranty_expiration_date',
+            'support_expiration_date',
+            'support_kind',
+        )
+
+    def __init__(self, *args, **kwargs):
+        super(DeviceCreateForm, self).__init__(*args, **kwargs)
+        self.fields['venture'].choices = self._all_ventures()
+        self.fields['venture_role'].choices = self._all_roles()
+        self.fields['sn'].required = True
+        self.fields['venture'].required = True
+        self.fields['model'].required = True
+        del self.fields['save_comment']
 
 class DeviceBulkForm(DeviceForm):
     class Meta(DeviceForm.Meta):
