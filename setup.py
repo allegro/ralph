@@ -6,8 +6,10 @@ from setuptools import setup, find_packages
 
 assert sys.version_info >= (2, 7), "Python 2.7+ required."
 
-with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as ld_file:
-    long_description = ld_file.read()
+current_dir = os.path.dirname(__file__)
+with open(os.path.join(current_dir, 'README.rst')) as readme_file:
+    with open(os.path.join(current_dir, 'CHANGES.rst')) as changes_file:
+        long_description = readme_file.read() + '\n' + changes_file.read()
 
 from doc.conf import release
 
