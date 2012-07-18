@@ -196,11 +196,15 @@ class DeviceCreateView(CreateView):
     def form_valid(self, form):
         self.set_rack()
         model = form.save(commit=False)
+        macs = [('', mac, 0) for mac in form.cleaned_data['macs'].split()]
+        dev = Device.create(ethernets=macs, sn=form.cleaned_data['sn'],
+                            model=form.cleaned_data['model'], priority=1)
+        form.instance = dev
+        model = form.save(commit=False)
         model.parent = self.rack
         model.dc = self.rack.dc
         model.rack = self.rack.rack
-        model.save(priority=0, user=self.request.user)
-        pricing.device_update_cached(model)
+        model.save(priority=1, user=self.request.user)
         messages.success(self.request, "Device created.")
         return HttpResponseRedirect(self.request.path + '../info/%d' % model.id)
 

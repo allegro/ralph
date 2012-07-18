@@ -7,12 +7,15 @@ from __future__ import unicode_literals
 from django import forms
 from django.utils.safestring import mark_safe
 from django.conf import settings
+from django.contrib.admin.widgets import FilteredSelectMultiple
+from bob.forms import AutocompleteWidget
+from lck.django.common.models import MACAddressField
 
 from ralph.discovery.models import (Device, ComponentModelGroup,
                                     DeviceModelGroup, DeviceType)
 from ralph.business.models import Venture, RoleProperty, VentureRole
-from django.contrib.admin.widgets import FilteredSelectMultiple
-from bob.forms import AutocompleteWidget
+from ralph.discovery.models_component import is_mac_valid
+from ralph.util import Eth
 
 
 class ReadOnlySelectWidget(forms.Select):
@@ -315,15 +318,34 @@ class DeviceCreateForm(DeviceForm):
             'support_expiration_date',
             'support_kind',
         )
+    macs = forms.CharField(widget=forms.Textarea, required=False)
 
     def __init__(self, *args, **kwargs):
         super(DeviceCreateForm, self).__init__(*args, **kwargs)
         self.fields['venture'].choices = self._all_ventures()
         self.fields['venture_role'].choices = self._all_roles()
-        self.fields['sn'].required = True
         self.fields['venture'].required = True
         self.fields['model'].required = True
         del self.fields['save_comment']
+
+    def clean_macs(self):
+        sn = self.cleaned_data['sn']
+        macs_text = self.cleaned_data['macs']
+        macs = []
+        for mac in macs_text.split(' \r\n\t,;'):
+            try:
+                eth = Eth('', MACAddressField.normalize(mac), 0)
+                if is_mac_valid(eth):
+                    macs.append(eth.mac)
+            except ValueError as e:
+                raise forms.ValidationError(e)
+        if not (macs or sn):
+            raise forms.ValidationError("Either MACs or serial number required.")
+        return ' '.join(macs)
+
+    def clean_model(self):
+        return self.cleaned_data['model']
+
 
 class DeviceBulkForm(DeviceForm):
     class Meta(DeviceForm.Meta):
