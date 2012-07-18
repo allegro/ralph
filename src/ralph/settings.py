@@ -290,7 +290,7 @@ else:
     raise ValueError, ("Unsupported settings path mode '%s'"
                        "" % SETTINGS_PATH_MODE)
 
-for cfg_loc in [CURRENT_DIR + local_settings,
+for cfg_loc in [local_settings,
                 '~/.ralph/settings',
                 '/etc/ralph/settings']:
     cfg_loc = os.path.expanduser(cfg_loc)
