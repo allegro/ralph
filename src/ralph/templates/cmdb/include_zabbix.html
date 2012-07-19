@@ -23,7 +23,7 @@
             <td> {{ d.1.priority}} </td>
             <td> {{ d.0}} </td>
             <td>  
-                <a href='https://zabbix.office/events.php?triggerid={{ d.1.triggerid}}&nav_time=1340101543'  target='_noblank'> View in Zabbix </a>
+                <a href='{{ZABBIX_URL}}/events.php?triggerid={{ d.1.triggerid}}&nav_time=1340101543'  target='_noblank'> View in Zabbix </a>
             </td>
         </tr>
         {% endfor %}
