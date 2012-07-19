@@ -1,7 +1,7 @@
 Catalog of prices
 =================
 
-In order to be able to calculate costs and prices of devices, Ralph needs to
+In order to be able to calculate the costs and prices of devices, Ralph needs to
 have a database of different device and component models together with their
 purchase prices. That catalog is accessible to everyone who have the permission
 to edit financial data, and it can be reached via the "Catalog" main menu
