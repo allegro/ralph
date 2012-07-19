@@ -19,18 +19,18 @@
         <tr>
             <td> 
                 {% if editable and not rel.0.readonly %}
-                    <a href="/cmdb/ci/edit/{{rel.1.id}}"> {{ rel.1.uid}} </a>
+                    <a target="{{target}}" href="/cmdb/ci/edit/{{rel.1.id}}"> {{ rel.1.uid}} </a>
                 {% else %}
-                    <a href="/cmdb/ci/view/{{rel.1.id}}"> {{ rel.1.uid}} </a>
+                    <a target="{{target}}" href="/cmdb/ci/view/{{rel.1.id}}"> {{ rel.1.uid}} </a>
                 {% endif %}
 
             </td>
             <td>
                 <i class='fugue-icon {{ rel.2 }}'></i>
                 {% if editable and not rel.0.readonly %}
-                    <a href="/cmdb/ci/edit/{{rel.1.id}}"> {{ rel.1.name}}  </a>
+                    <a target="{{target}}" href="/cmdb/ci/edit/{{rel.1.id}}"> {{ rel.1.name}}  </a>
                 {% else %}
-                    <a href="/cmdb/ci/view/{{rel.1.id}}"> {{ rel.1.name}} </a>
+                    <a target="{{target}}" href="/cmdb/ci/view/{{rel.1.id}}"> {{ rel.1.name}} </a>
                 {% endif %}
 
             </td>
@@ -51,7 +51,7 @@
                 {% if rel.0.readonly %}
                 -
                 {% else %}
-                    <a href="/cmdb/relation/edit/{{rel.0.id}}"> Edit  </a>
+                    <a target="{{target}}" href="/cmdb/relation/edit/{{rel.0.id}}"> Edit  </a>
                     <!-- <a href="/cmdb/relation/remove/{{rel.0.id}}"> Remove </a> !-->
                 {% endif %}
             </td>
