@@ -3,14 +3,6 @@
 {% load icons %}
 {% load query %}
 
-<script type="text/javascript" charset="utf-8">
-      $.get("/cmdb/ci/get_last_changes/{{uid}}", function(data)
-      {
-        $("#jira_placeholder").html(data);
-      });
-</script>
-
-
   {% if ci_id %} {{ breadcrumb }} {% endif %} 
 
   {% if not iframe %}
@@ -29,7 +21,7 @@
       <div class="alert {{ message.type }}">
                 <button class="close" data-dismiss="alert">×</button>
                 <strong>{{message.title}}</strong> {{ message.message }}
-                </div>
+      </div>
       {% endfor %}
   {% endif %}
 
@@ -40,6 +32,7 @@
                         <a href='#' class='dropdown-toggle' data-toggle='dropdown'> Show all Ci info<b class='caret'> </b> </a>
                         <ul class='dropdown-menu'>
                     {% endif %}
+
                     <li class='active'><a href="#main" data-toggle="tab">Basic Info</a></li>
                     <li><a href="#relations" data-toggle="tab">Relations</a></li>
 

@@ -36,6 +36,7 @@ urlpatterns = patterns('',
     (r'^changes/incidents$', login_required(Incidents.as_view())),
     (r'^changes/problems$', login_required(Problems.as_view())),
     (r'^changes/dashboard$', login_required(Dashboard.as_view())),
+    (r'^changes/dashboard_ajax$', login_required(Dashboard.get_ajax)),
     (r'^changes/dashboard_venture/(?P<prio>[0-9]+)/(?P<type>[0-9]+)/'
     '(?P<month>[0-9]+)/(?P<report_type>\w+)$', \
             login_required(DashboardVenture.as_view())),

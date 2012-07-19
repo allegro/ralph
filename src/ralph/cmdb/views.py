@@ -10,12 +10,12 @@ from django.core.paginator import Paginator,PageNotAnInteger,EmptyPage
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
 from django.http import HttpResponseRedirect
+from django.http import HttpResponseForbidden
 from django.utils.translation import ugettext_lazy as _
 from ralph.cmdb.forms import CISearchForm, CIEditForm, CIViewForm, CIRelationEditForm
 import ralph.cmdb.models  as db
 from ralph.cmdb.customfields import EditAttributeFormFactory
 from ralph.account.models import Perm
-from django.http import HttpResponseForbidden
 from ralph.cmdb.integration import zabbix
 from ralph.ui.views.common import Base
 
@@ -49,16 +49,14 @@ class BaseCMDBView(Base):
         if not parent:
             return []
         list = []
-
         counter = 0
         while parent and counter<100:
             ci = db.CI.objects.filter(id=parent).all()[0]
-            list.insert(0,ci)
+            list.insert(0, ci)
             try:
                 parent = db.CI.objects.filter(parent__child=parent).all()[0].id
             except:
                 parent = None
-
             if parent == ci.id:
                 parent = None
             counter+=1
@@ -66,7 +64,8 @@ class BaseCMDBView(Base):
 
     def get_permissions(self):
         has_perm = self.request.user.get_profile().has_perm
-        ci_perms = ['create_configuration_item',
+        ci_perms = [
+                'create_configuration_item',
                 'edit_configuration_item_info_generic',
                 'edit_configuration_item_relations',
                 'read_configuration_item_info_generic',
@@ -193,7 +192,6 @@ class AddRelation(BaseCMDBView):
         self.form = self.Form(**self.form_options)
         return super(AddRelation, self).get(*args, **kwargs)
 
-
     def post(self, *args, **kwargs):
         self.form = None
         self.rel = None
@@ -309,7 +307,7 @@ class Edit(BaseCMDBView):
         counter = 0
         while parent and counter<100:
             ci = db.CI.objects.filter(id=parent).all()[0]
-            list.insert(0,ci)
+            list.insert(0, ci)
             try:
                 parent = db.CI.objects.filter(parent__child=parent).all()[0].id
             except:
@@ -334,7 +332,6 @@ class Edit(BaseCMDBView):
                 ci=self.ci,
         ).count()
         messages=[]
-
         if last_week_puppet_errors:
             messages.append(dict(
                 message="Puppet reported %d errors since last week." % ( last_week_puppet_errors ),
@@ -388,7 +385,6 @@ class Edit(BaseCMDBView):
     def custom_form_initial(self, ci):
         data = dict()
         objs = db.CIAttributeValue.objects.filter(ci=ci)
-        #FIXME: DRY
         for obj in objs:
             field_type = obj.attribute.attribute_type
             if field_type == db.CI_ATTRIBUTE_TYPES.INTEGER.id:
@@ -414,7 +410,6 @@ class Edit(BaseCMDBView):
                 technical_owner = ', '.join(ci.get_technical_owners()),
                 ci=self.ci,
         )
-        #data.update(self.custom_form_initial(ci))
         return data
 
     def check_perm(self):
@@ -429,7 +424,6 @@ class Edit(BaseCMDBView):
         except Exception,e:
             return []
 
-
     def calculate_relations(self, ci_id):
         self.relations_contains = [ (x,x.child, get_icon_for(x.child)) \
                     for x in db.CIRelation.objects.filter(
@@ -437,7 +431,8 @@ class Edit(BaseCMDBView):
         ]
         self.relations_parts= [ (x,x.parent, get_icon_for(x.parent)) \
                 for x in db.CIRelation.objects.filter( child=ci_id,
-                type=db.CI_RELATION_TYPES.CONTAINS.id)]
+                type=db.CI_RELATION_TYPES.CONTAINS.id)
+        ]
         self.relations_requires = [ (x,x.child, get_icon_for(x.parent)) \
                 for x in db.CIRelation.objects.filter( parent=ci_id,
                 type=db.CI_RELATION_TYPES.REQUIRES.id)
@@ -448,10 +443,12 @@ class Edit(BaseCMDBView):
         ]
         self.relations_hasrole= [ (x,x.child, get_icon_for(x.parent)) \
                 for x in db.CIRelation.objects.filter( parent=ci_id,
-                type=db.CI_RELATION_TYPES.HASROLE.id)]
+                type=db.CI_RELATION_TYPES.HASROLE.id)
+        ]
         self.relations_isrole= [ (x,x.parent, get_icon_for(x.parent)) \
                 for x in db.CIRelation.objects.filter( child=ci_id,
-                type=db.CI_RELATION_TYPES.HASROLE.id)]
+                type=db.CI_RELATION_TYPES.HASROLE.id)
+        ]
 
     def get_ci_id(self):
         """ 2 types of id can land here. """
@@ -471,7 +468,6 @@ class Edit(BaseCMDBView):
         except:
             # editing/viewing Ci which doesn's exists.
             return HttpResponseRedirect('/cmdb/ci/jira_ci_unknown')
-
         if ci_id:
             self.service_name = self.get_first_parent_venture_name(ci_id)
             self.ci = get_object_or_404(db.CI, id=ci_id)
@@ -481,11 +477,10 @@ class Edit(BaseCMDBView):
                     ci=self.ci).order_by('-time').all()
             self.git_changes  = [ x.content_object \
                     for x in db.CIChange.objects.filter(
-                        ci=self.ci,type=db.CI_CHANGE_TYPES.CONF_GIT.id)]
+                        ci=self.ci, type=db.CI_CHANGE_TYPES.CONF_GIT.id)]
             self.device_attributes_changes  = [ x.content_object \
                     for x in db.CIChange.objects.filter(
                         ci=self.ci, type=db.CI_CHANGE_TYPES.DEVICE.id) ]
-
             if self.ci.zabbix_id:
                 self.zabbix_triggers = self.get_zabbix_data()
             reps = db.CIChangePuppet.objects.filter(ci=self.ci).all()
@@ -498,10 +493,8 @@ class Edit(BaseCMDBView):
                     ci=self.ci).all()
 
             self.calculate_relations(ci_id)
-
             self.form_options['instance'] = self.ci
             self.form_options['initial'] = self.form_initial( self.ci)
-
             self.form_attributes_options['initial'] = self.custom_form_initial( self.ci)
             self.form_attributes = EditAttributeFormFactory(ci=self.ci).factory(
                     **self.form_attributes_options
@@ -539,8 +532,6 @@ class Edit(BaseCMDBView):
         self.so_events = []
         self.problems = []
         self.incidents = []
-
-
 
     def post(self, *args, **kwargs):
         self.initialize_vars()
@@ -587,11 +578,17 @@ class View(Edit):
         """ Overwrite parent class post """
         return HttpResponseForbidden()
 
+
 class ViewIframe(View):
     template_name = 'cmdb/view_ci_iframe.html'
 
+    def get_context_data(self, **kwargs):
+        ret = super(ViewIframe, self).get_context_data(**kwargs)
+        ret.update({'target' : '_blank' })
+        return ret
 
-class ViewJira(View):
+
+class ViewJira(ViewIframe):
     template_name = 'cmdb/view_ci_iframe.html'
 
     def get_ci_id(self):
@@ -601,8 +598,8 @@ class ViewJira(View):
         return ci.id
 
     def get_context_data(self, **kwargs):
-        ret = super(View, self).get_context_data(**kwargs)
-        ret.update({'span_number' : '4' }) #high of screen
+        ret = super(ViewJira, self).get_context_data(**kwargs)
+        ret.update({'span_number' : '4' }) #heigh of screen
         return ret
 
 
@@ -709,6 +706,5 @@ class RalphView(Info):
         self.ci_id = self.kwargs.get('ci_id')
         content_object = db.CI.objects.get(id=self.ci_id).content_object
         return content_object
-
 
 
