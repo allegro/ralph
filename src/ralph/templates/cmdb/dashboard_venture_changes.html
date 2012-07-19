@@ -17,7 +17,6 @@
 
     table.dboard td
     {
-            border: solid #000 1px;
             padding: 6px;
     }
 
@@ -26,18 +25,22 @@
 <h3> CMDB Dashboard  </h3>
 
 
-                             <table class='dboard' style='margin: 10px; border-collapse: collapse; border: solid 1px blue; ' >
-                                     <tr style='background-color:blue; color: white'><th> Count </th><th> CI Name </th> <th> Venture </th>
+         <table class='table table-striped table-bordered table-list dboard' style='margin: 10px; ' >
+             <tr><th> Count </th><th> CI Name </th> <th> Venture </th></tr>
                 {% for data in statistics %}
                             <tr>
-                                <td style='padding: 6px'>{{ data.0 }}  </td>
                                 <td>
-                                    <a href='/cmdb/changes/changes?uid={{data.1}}&priority={{data.4}}&type={{data.5}}'> {{ data.1 }}  </td>
-                                    <td>{{ data.3 }}  
+                                    {{ data.0 }}  
+                                </td>
+                                <td>
+                                    <a href='/cmdb/changes/changes?uid={{data.1}}&priority={{data.4}}&type={{data.5}}'> {{ data.1 }}  
+                                </td>
+                                <td>
+                                    {{ data.3 }}  
                                 </td>
                             </tr>
                 {% endfor %}
-                </table>
-
-</div>
+          </table>
+      {% include 'cmdb/include_pagination.html' %}
+      </div>
 {% endblock %}

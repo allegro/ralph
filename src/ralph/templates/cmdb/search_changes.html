@@ -51,7 +51,7 @@
                 {{ change.0.time|timesince_limited }}
             </td>
             <td>
-                {{ change.0.message }}
+                {{ change.0.message|truncatechars:40 }}
             </td>
             <td>
                 <a href='/cmdb/ci/view/{{ change.0.ci.id }}' target='_noblank'> 
@@ -74,11 +74,11 @@
             </td>
             <td>
                 {% if change.0.type == 2  %}
-                {% icon 'fugue-disc--arrow' %}
+                    {% icon 'fugue-disc--arrow' %}
                 {% elif change.0.type == 1  %}
-                {% icon 'fugue-blue-document-node' %}
+                    {% icon 'fugue-blue-document-node' %}
                 {% elif change.0.type == 3  %}
-                {% icon 'fugue-computer' %}
+                    {% icon 'fugue-computer' %}
                 {% endif %}
                 {{ change.0.get_type_display}}
             </td>
@@ -87,13 +87,18 @@
             <td>
             </td>
             <td>
-                {% icon 'fugue-report' %}
                 {% if change.0.type == 4 %}
-                <a href='https://zabbix.office/events.php?triggerid={{ change.0.content_object.trigger_id }}&nav_time=1340101543'  target='_noblank'> View in Zabbix </a>
+                <a href='{{ZABBIX_URL}}/events.php?triggerid={{ change.0.content_object.trigger_id }}&nav_time=1340101543'  target='_noblank'> 
+                    {% icon 'fugue-report' %} View in Zabbix 
+                </a>
                 {% elif change.0.type == 5 %}
-                <a href='http://t10750.te2/'  target='_noblank'> View in SO </a>
+                <a href='{{SO_URL}}'  target='_noblank'> 
+                    {% icon 'fugue-report' %} View in SO 
+                </a>
                 {% else %}
-                <a href='/cmdb/changes/change/{{ change.0.id }}' target='_noblank'> View </a>
+                <a href='/cmdb/changes/change/{{ change.0.id }}' target='_noblank'> 
+                   {% icon 'fugue-report' %}  View 
+                </a>
                 {% endif %}
         </tr>
         {% endfor %}
