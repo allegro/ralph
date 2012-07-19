@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 from django.conf.urls.defaults import patterns, url
 from django.contrib.auth.decorators import login_required
-from django.views.generic import RedirectView
 
 from ralph.ui.views import typeahead_roles, unlock_field, logout, discover
 from ralph.ui.views.common import Home, BulkEdit
@@ -17,6 +16,7 @@ from ralph.ui.views.ventures import (VenturesRoles, VenturesVenture,
 from ralph.ui.views.racks import (
         RacksInfo, RacksComponents, RacksAddresses, RacksPrices,
         RacksCosts, RacksHistory, RacksPurchase, RacksDiscover, RacksCMDB,
+        RacksAddDevice,
         )
 from ralph.ui.views.search import (SearchDeviceList,
         SearchInfo, SearchComponents, SearchAddresses, SearchPrices,
@@ -85,15 +85,17 @@ urlpatterns = patterns('',
         login_required(VenturesPurchase.as_view()), {}, 'ventures'),
     url(r'^ventures/(?P<venture>[.\w*-]*)/(?P<details>discover)/(?P<device>\d+)$',
         login_required(VenturesDiscover.as_view()), {}, 'ventures'),
+    url(r'^ventures/(?P<venture>[.\w*-]*)/(?P<details>cmdb)/(?P<device>\w+)$',
+        login_required(VenturesCMDB.as_view()), {}, 'ventures'),
     url(r'^ventures/(?P<venture>[.\w*-]*)/(?P<details>roles)/(?P<role>[-\w]*)$',
         login_required(VenturesRoles.as_view()), {}, 'ventures'),
     url(r'^ventures/(?P<venture>[.\w*-]*)/(?P<details>venture)/(?P<device>)$',
         login_required(VenturesVenture.as_view()), {}, 'ventures'),
-    url(r'^ventures/(?P<venture>[.\w*-]*)/(?P<details>cmdb)/(?P<device>\w+)$',
-        login_required(VenturesCMDB.as_view()), {}, 'ventures'),
 
     url(r'^racks/$',
         login_required(RacksDeviceList.as_view()), {}, 'racks'),
+    url(r'^racks/(?P<rack>[-\w]*)/(?P<details>add_device)/(?P<device>)$',
+        login_required(RacksAddDevice.as_view()), {}, 'racks'),
     url(r'^racks/(?P<rack>[-\w]*)/(?P<details>\w+)/(?P<device>)$',
         login_required(RacksDeviceList.as_view()), {}, 'racks'),
     url(r'^racks/(?P<rack>[-\w]*)/(?P<details>info)/(?P<device>\d+)$',
@@ -112,10 +114,9 @@ urlpatterns = patterns('',
         login_required(RacksPurchase.as_view()), {}, 'racks'),
     url(r'^racks/(?P<rack>[-\w]*)/(?P<details>discover)/(?P<device>\d+)$',
         login_required(RacksDiscover.as_view()), {}, 'racks'),
-    url(r'^(?P<section>racks)/(?P<rack>[-\w]*)/(?P<details>bulkedit)/$',
-        login_required(BulkEdit.as_view()), {}, 'racks'),
     url(r'^racks/(?P<rack>[-\w]*)/(?P<details>cmdb)/(?P<device>\d+)$',
         login_required(RacksCMDB.as_view()), {}, 'racks'),
+
     url(r'^networks/$',
         login_required(NetworksDeviceList.as_view()), {}, 'networks'),
     url(r'^networks/(?P<network>[^/]*)/(?P<details>\w+)/(?P<device>)$',
