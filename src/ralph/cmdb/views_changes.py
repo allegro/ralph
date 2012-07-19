@@ -9,14 +9,46 @@ from __future__ import unicode_literals
 from django.core.paginator import Paginator,PageNotAnInteger,EmptyPage
 from django.shortcuts import get_object_or_404
 import ralph.cmdb.models  as db
-from ralph.cmdb.views import BaseCMDBView,ROWS_PER_PAGE, _get_pages, get_icon_for
+from ralph.cmdb.views import BaseCMDBView, _get_pages, get_icon_for
 from ralph.cmdb.forms import CIChangeSearchForm
 from django.conf import settings
 from django.db import connection
+from django.http import HttpResponse
 import calendar
 
 class ChangesBase(BaseCMDBView):
-    pass
+    def get_context_data(self, **kwargs):
+        ret = super(ChangesBase, self).get_context_data(**kwargs)
+        ret.update({
+            'ZABBIX_URL': settings.SO_URL,
+            'SO_URL': settings.ZABBIX_URL,
+        })
+        return ret
+
+class PaginatedView(BaseCMDBView):
+    def get_context_data(self, **kwargs):
+        ret = super(PaginatedView, self).get_context_data(**kwargs)
+        ret.update({
+            'page': self.page_contents,
+            'pages': _get_pages(self.paginator, self.page_number),
+        })
+        return ret
+
+    def paginate(self, queryset):
+        ROWS_PER_PAGE=20
+        page = self.request.GET.get('page') or 1
+        self.page_number = int(page)
+        self.paginator = Paginator(queryset, ROWS_PER_PAGE)
+        try:
+            self.page_contents = self.paginator.page(page)
+        except PageNotAnInteger:
+            self.page_contents = self.paginator.page(1)
+            page=1
+        except EmptyPage:
+            self.page_contents = self.paginator.page(self.paginator.num_pages)
+            page = self.paginator.num_pages
+        return page
+
 
 class Change(ChangesBase):
     template_name = 'cmdb/view_change.html'
@@ -33,7 +65,6 @@ class Change(ChangesBase):
             })
         return ret
 
-
     def get(self, *args, **kwargs):
         change_id = kwargs.get('change_id')
         change = get_object_or_404(db.CIChange, id=change_id)
@@ -46,21 +77,25 @@ class Change(ChangesBase):
             puppet_logs = db.PuppetLog.objects.filter(cichange=report).all()
             self.puppet_reports.append(dict(report=report,logs=puppet_logs))
         elif change.type == db.CI_CHANGE_TYPES.CONF_GIT.id:
-            self.git_changes = [report]
+            self.git_changes = [dict(
+                id=report.id,
+                file_paths=', '.join(report.file_paths.split('#')),
+                comment=report.comment,
+                author=report.author,
+                changeset=report.changeset,
+            )]
         elif change.type == db.CI_CHANGE_TYPES.DEVICE.id:
             self.device_attributes_changes  = [ report ]
         return super(Change, self).get(*args, **kwargs)
 
 
-class Changes(ChangesBase):
+class Changes(ChangesBase, PaginatedView):
     template_name = 'cmdb/search_changes.html'
 
     def get_context_data(self, **kwargs):
         ret = super(Changes, self).get_context_data(**kwargs)
         ret.update({
             'changes': [ (x,get_icon_for(x.ci)) for x in self.changes ],
-            'page': self.page,
-            'pages' : _get_pages(self.paginator, self.page_number),
             'statistics' : self.data,
             'form' : self.form,
         })
@@ -77,18 +112,8 @@ class Changes(ChangesBase):
         if values.get('uid'):
             changes = changes.filter(ci__name=values.get('uid'))
         changes = changes.order_by('-time').all()
-        page = self.request.GET.get('page') or 1
-        self.page_number = int(page)
-        self.paginator = Paginator(changes, ROWS_PER_PAGE)
-        try:
-            self.page = self.paginator.page(page)
-        except PageNotAnInteger:
-            self.page = self.paginator.page(1)
-            page=1
-        except EmptyPage:
-            self.page = self.paginator.page(self.paginator.num_pages)
-            page = self.paginator.num_pages
-        self.changes = self.page
+        self.paginate(changes)
+        self.changes = self.page_contents
         cursor = connection.cursor()
         cursor.execute('''
             SELECT
@@ -96,7 +121,7 @@ class Changes(ChangesBase):
             FROM cmdb_ci cc
             INNER JOIN cmdb_cichange ch ON (cc.id = ch.ci_id)
             WHERE YEAR(ch.time)=YEAR(NOW())
-            GROUP BY type,priority,MONTH(ch.time)
+            GROUP BY type, priority, MONTH(ch.time)
             ORDER BY DATE(ch.time) DESC
         ''')
         self.data= dict()
@@ -136,8 +161,8 @@ class Incidents(ChangesBase):
     def get_context_data(self, **kwargs):
         ret = super(Incidents, self).get_context_data(**kwargs)
         ret.update({
-            'incidents': self.incidents,
-            'jira_url': settings.JIRA_URL + '/browse/'
+            'incidents' : self.incidents,
+            'jira_url': settings.JIRA_URL + '/browse/',
         })
         return ret
 
@@ -145,7 +170,7 @@ class Incidents(ChangesBase):
         self.incidents = db.CIIncident.objects.order_by('-time').all()
         return super(Incidents, self).get(*args, **kwargs)
 
-class DashboardVenture(ChangesBase):
+class DashboardVenture(ChangesBase, PaginatedView):
     template_name = 'cmdb/dashboard_venture_changes.html'
 
     def get_context_data(self, **kwargs):
@@ -170,7 +195,7 @@ class DashboardVenture(ChangesBase):
             WHERE type=%s AND priority=%s AND MONTH(ch.time)=%s
             AND YEAR(ch.time)=YEAR(NOW())
             GROUP BY cc.id DESC
-            ORDER BY COUNT(*) DESC
+            ORDER BY COUNT(*) DESC, cc.name ASC
         ''', [ type, prio, month] )
         if report_type == 'ci':
             self.data= []
@@ -182,13 +207,29 @@ class DashboardVenture(ChangesBase):
                 ci_id = r[2]
                 if ci_id:
                     ci = db.CI.objects.get(id=ci_id)
-                    if ci and ci_id and ci.content_object and getattr(ci.content_object, 'venture',None) :
+                    if ci and ci_id and ci.content_object and \
+                            getattr(ci.content_object, 'venture', None):
                         venture=db.CI.get_by_content_object(ci.content_object.venture)
                 if venture_id:
                     if venture and venture.name == venture_id:
-                        self.data.append([count,name,ci_id,venture,prio,type])
+                        self.data.append(dict(
+                            count=count,
+                            name=name,
+                            ci_id=ci_id,
+                            venture=venture,
+                            prio=prio,
+                            type=type))
                 else:
-                    self.data.append([count,name,ci_id,venture,prio,type])
+                    self.data.append(dict(
+                        count=count,
+                        name=name,
+                        ci_id=ci_id,
+                        venture=venture,
+                        prio=prio,
+                        type=type,
+                    ))
+            self.paginate(self.data)
+            self.data = self.page_contents
         else:
             self.template_name = 'cmdb/dashboard_venture_changes_ventures.html'
             self.data_dict = {}
@@ -200,17 +241,22 @@ class DashboardVenture(ChangesBase):
                 ci_id = r[2]
                 if ci_id:
                     ci = db.CI.objects.get(id=ci_id)
-                    if ci and ci_id and ci.content_object and getattr(ci.content_object, 'venture',None) :
+                    if ci and ci_id and ci.content_object and \
+                            getattr(ci.content_object, 'venture',None) :
                         venture=db.CI.get_by_content_object(ci.content_object.venture)
-                if not self.data_dict.get(venture,None):
+                if not self.data_dict.get(venture, None):
                     self.data_dict[venture] = count
                 else:
                     self.data_dict[venture] +=count
-            self.data = [ (self.data_dict[x],x) for x in self.data_dict]
-            self.data = sorted(self.data,reverse=True)
+            self.data = [ (self.data_dict[x], x) for x in self.data_dict]
+            self.data = sorted(self.data, reverse=True)
+
+            self.paginate(self.data)
+            self.data = self.page_contents
 
         return super(DashboardVenture, self).get(*args)
 
+from django.utils import simplejson
 
 class Dashboard(ChangesBase):
     template_name = 'cmdb/dashboard_changes.html'
@@ -222,7 +268,37 @@ class Dashboard(ChangesBase):
         })
         return ret
 
+    @classmethod
+    def get_ajax(cls, *args):
+        data={}
+        data_gen = cls.get_generic_data()
+        for r in data_gen:
+            month = r[3]
+            count = r[0]
+            type_id = r[1]
+            priority_id = r[2]
+            month_name =calendar.month_name[month]
+            if not (data.get("%d_%d" % (type_id, priority_id))):
+                data["%d_%d" % (type_id, priority_id)] = {}
+
+            data["%d_%d" % (type_id, priority_id)][month] = dict(
+                    month_name=month_name,
+                    count=count,
+                    priority=r[2],
+                    type=r[1],
+            )
+        response_dict={'data' : data}
+        return HttpResponse(
+                simplejson.dumps(response_dict),
+                mimetype='application/json',
+        )
+
     def get(self, *args, **kwargs):
+        self.data = self.calculate_dashboard()
+        return super(Dashboard, self).get(*args)
+
+    @classmethod
+    def get_generic_data(cls):
         cursor = connection.cursor()
         cursor.execute('''
             SELECT
@@ -233,20 +309,30 @@ class Dashboard(ChangesBase):
             GROUP BY type,priority,MONTH(ch.time)
             ORDER BY DATE(ch.time) DESC
         ''')
-        self.data= dict()
         rows = cursor.fetchall()
+        return rows
+
+    @classmethod
+    def calculate_dashboard(cls):
+        data = dict()
+        rows = cls.get_generic_data()
         for r in rows:
             month = r[3]
             month_name = calendar.month_name[r[3]]
             count = r[0]
             type = dict(db.CI_CHANGE_TYPES())[r[1]]
             priority = dict(db.CI_CHANGE_PRIORITY_TYPES())[r[2]]
-            if not self.data.get(type):
-                self.data[type] = {}
-            if not self.data.get(type).get(priority):
-                self.data[type][priority] = {}
-            self.data[type][priority][month] = [month_name, count, r[2],r[1]]
-        return super(Dashboard, self).get(*args)
+            if not data.get(type):
+                data[type] = {}
+            if not data.get(type).get(priority):
+                data[type][priority] = {}
+            data[type][priority][month] = dict(
+                    month_name=month_name,
+                    count=count,
+                    priority=r[2],
+                    type=r[1],
+            )
+        return data
 
 
 class Reports(ChangesBase):

@@ -166,7 +166,6 @@ class CIValueDate(models.Model):
         return "%s" %  self.value
 
 
-
 class CIValueInteger(models.Model):
     value = models.IntegerField(verbose_name=_("value"), null = True, blank=True)
 
@@ -194,6 +193,7 @@ class CIValueString(models.Model):
     def __unicode__(self):
             return "%s" %  self.value
 
+
 class CIValueChoice(models.Model):
     value = models.IntegerField(
             verbose_name=_("value"),
@@ -203,6 +203,7 @@ class CIValueChoice(models.Model):
 
     def __unicode__(self):
             return "%s" %  self.value
+
 
 class CIChangeZabbixTrigger(models.Model):
     ci = models.ForeignKey('CI', null = True)
@@ -215,12 +216,14 @@ class CIChangeZabbixTrigger(models.Model):
     lastchange = models.CharField(max_length=1024)
     comments = models.CharField(max_length=1024)
 
+
 class CIChangeStatusOfficeIncident(models.Model):
     ci = models.ForeignKey('CI', null = True)
     time = models.DateTimeField()
     status = models.IntegerField(max_length=11,null=False )
     subject = models.CharField(max_length=1024)
     incident_id= models.IntegerField(max_length=11,null=False )
+
 
 class CIChange(models.Model):
     ci = models.ForeignKey('CI', null = True, blank=True)
@@ -246,7 +249,6 @@ class CIChange(models.Model):
         return CIChange.objects.get(object_id=content_object.id,
                 content_type=ct)
 
-
     class Meta:
         unique_together = ('content_type', 'object_id')
 
@@ -256,6 +258,7 @@ class CIChangeGit(models.Model):
     comment = models.CharField(max_length=1000, null = False)
     author = models.CharField(max_length = 200, null = False)
     changeset = models.CharField(max_length=80, null = False)
+
 
 class CIChangePuppet(models.Model):
     ci = models.ForeignKey('CI',
@@ -268,6 +271,7 @@ class CIChangePuppet(models.Model):
     time = models.DateTimeField()
     status = models.CharField(max_length=30)
 
+
 class PuppetLog(models.Model):
     cichange = models.ForeignKey('CIChangePuppet')
     source = models.CharField(max_length=100)
@@ -275,6 +279,7 @@ class PuppetLog(models.Model):
     tags = models.CharField(max_length=100)
     time = models.DateTimeField()
     level = models.CharField(max_length=100)
+
 
 class PuppetResourceStatus(models.Model):
     cichange= models.ForeignKey('CIChangePuppet')
@@ -289,15 +294,16 @@ class PuppetResourceStatus(models.Model):
     time = models.DateTimeField()
     title = models.CharField(max_length=100)
 
+
 class CI(models.Model):
     uid = models.CharField(
             max_length=100,
             verbose_name=_("CI UID"),
-            null=True, blank=True,
+            null=True,
+            blank=True,
     )
     # not required, since auto-save
     name = models.CharField(max_length=256, verbose_name=_("CI name"))
-    # not required, since auto-save
     business_service = models.BooleanField(verbose_name=_("Business service"),
             default=False)
     technical_service = models.BooleanField(verbose_name=_("Technical service"),
@@ -371,6 +377,7 @@ class CI(models.Model):
     class Meta:
         unique_together = ('content_type', 'object_id')
 
+
 class CIAttributeValue(models.Model):
     ci = models.ForeignKey('CI')
     attribute = models.ForeignKey(CIAttribute)
@@ -398,6 +405,7 @@ class CIAttributeValue(models.Model):
             blank = True,
             verbose_name=_("choice value"))
 
+
 class CIEvent(models.Model):
     ''' Abstract for CIProblem/CIIncident '''
     ci = models.ForeignKey('CI',
@@ -414,8 +422,10 @@ class CIEvent(models.Model):
     class Meta:
         abstract = True
 
+
 class CIProblem(CIEvent):
     pass
+
 
 class CIIncident(CIEvent):
     pass

@@ -15,26 +15,26 @@
         width: auto;
     }
 
-    table.dboard td
-    {
-            border: solid #000 1px;
-            padding: 6px;
-    }
 
 </style>
-<div class='span12'>
-<h3> CMDB Dashboard  </h3>
-             <table class='dboard' style='margin: 10px; border-collapse: collapse; border: solid 1px blue; ' >
-                     <tr style='background-color:blue; color: white'><th> Venture </th><th> Count </th> <th> Options </th>
-                {% for data in statistics %}
-                            <tr>
-                                <td>{{ data.1 }}  </td>
-                                <td>{% if data.0 %} {{ data.0 }} {% else %} All {% endif %}  </td>
-                                <td><a href='ci?venture_id={{data.1}}'> View </a>   </td>
 
-                            </tr>
-                {% endfor %}
-                </table>
+<div class='span5'>
+    <h3> CMDB Dashboard  </h3>
+    <table class='table table-striped table-bordered ' >
+        <tr>
+            <th> Venture </th>
+            <th> Count </th>
+            <th> Options </th>
+        </tr>
 
+       {% for data in statistics %}
+         <tr>
+             <td>{{ data.1 }}  </td>
+             <td>{% if data.0 %} {{ data.0 }} {% else %} All {% endif %}  </td>
+             <td><a href='ci?venture_id={{data.1}}'> View </a>   </td>
+         </tr>
+       {% endfor %}
+     </table>
+     {% include 'cmdb/include_pagination.html' %}
 </div>
 {% endblock %}
