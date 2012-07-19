@@ -394,7 +394,7 @@ def _get_summaries(query, start, end, overlap=True, venture=None):
         extra = VentureExtraCost.objects.get(id=extra_id)
         cost, count = _total_cost_count(query.filter(extra=extra), start, end)
         yield {
-            'name': extra.name,
+            'name': extra.name + ' (from %s)' % extra.venture.name,
             'count': 'expires %s' % extra.expire.strftime(
                 '%Y-%m-%d') if extra.expire else '',
             'cost': cost,

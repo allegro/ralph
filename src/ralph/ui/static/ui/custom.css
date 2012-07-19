@@ -111,3 +111,5 @@ html .loading {
     margin: 20em 4em;
     width: 100%;
 }
+
+label.required { font-weight: bold }
