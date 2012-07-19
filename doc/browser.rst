@@ -1,8 +1,9 @@
 The device browser
 ==================
 
-The main feature of the Ralph web interface is browsing your discovered devices.
-Depending on your needs and permissions, you can browse them in five ways:
+The main feature of the Ralph web interface is the browser for your discovered
+devices. Depending on your needs and permissions, you can browse them
+in five ways:
 
 * The "racks" browser lets you see the physical organisation of your
   datacenter, indicating where every device is located.
@@ -105,7 +106,7 @@ defined in that venture.
 
 Only displayed in the "Ventures" section, shows information about the currently
 selected venture. You can see a summary of costs for selected time period,
-together with a graph showing how the costs chnaged in time.
+together with a graph showing how the costs changed in time.
 
 
 :index:`CMDB`
