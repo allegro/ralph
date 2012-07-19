@@ -20,8 +20,8 @@ class ChangesBase(BaseCMDBView):
     def get_context_data(self, **kwargs):
         ret = super(ChangesBase, self).get_context_data(**kwargs)
         ret.update({
-            'ZABBIX_URL': settings.SO_URL,
-            'SO_URL': settings.ZABBIX_URL,
+            'ZABBIX_URL': settings.ZABBIX_URL,
+            'SO_URL': settings.SO_URL,
         })
         return ret
 
