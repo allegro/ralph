@@ -219,7 +219,8 @@ DATABASES = {
         'PASSWORD': '',
         'HOST': '',
         'PORT': '',
-        'OPTIONS': {'timeout': 30},
+        'OPTIONS': dict(
+        ),
     },
 }
 CACHES = dict(
