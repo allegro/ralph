@@ -8,6 +8,8 @@ Change Log
 
 * fixed regression from 1.0.1: ``settings-local.py`` works correctly again
 
+* ability to create new devices from the web application
+
 1.0.1
 ~~~~~
 
