@@ -1,6 +1,15 @@
 Change Log
 ----------
 
+1.0.2
+~~~~~
+
+* ``ralph chains`` command to list available plug-in chains
+
+* fixed regression from 1.0.1: ``settings-local.py`` works correctly again
+
+* ability to create new devices from the web application
+
 1.0.1
 ~~~~~
 
