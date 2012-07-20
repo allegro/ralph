@@ -1,6 +1,7 @@
 {%extends 'cmdb/base.html'%}
    
 {% load icons %}
+{% load bob %}
 {% load query %}
 
 {% block content %}
@@ -19,13 +20,13 @@
 
 <div class='span12'>
 
-<form class="form-inline well">
-{% for f in form %}
-        {{ f.label_tag }}
-        {{ f }}
-{% endfor %}
-    <button type="submit" class="btn btn-primary">{% icon 'fugue-funnel' %}&nbsp;Filter</button>
-</form>
+    <form class="form-inline well">
+    {% for f in form %}
+            {{ f.label_tag }}
+            {{ f }}
+    {% endfor %}
+        <button type="submit" class="btn btn-primary">{% icon 'fugue-funnel' %}&nbsp;Filter</button>
+    </form>
 
 <table class="table table-striped table-bordered table-condensed ">
     <thead><tr>
@@ -89,7 +90,6 @@
         {% endfor %}
     </tbody>
 </table>
-
-{% include 'cmdb/include_pagination.html' %}
+{% pagination page url_query=url_query show_all=0 show_csv=0 fugue_icons=1 %}
 </div>
 {% endblock %}
