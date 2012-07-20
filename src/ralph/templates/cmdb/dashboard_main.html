@@ -53,8 +53,6 @@
 
 <div class='span12'>
 <h3> CMDB Dashboard  </h3>
-
-
 {% for type,prios in statistics.items%}
 <hr>
 <h4> Type: {{ type }} </h4>
@@ -75,9 +73,9 @@
                                 <td style='padding: 6px'>{{ data.month_name}}  </td>
                                 <td><b>{{ data.count}}</b></td>
                                 <td>
-                                        <a href='/cmdb/changes/dashboard_venture/{{data.type}}/{{ data.priority }}/{{month}}/ci'> View by CI  </td>
+                                        <a href='/cmdb/changes/dashboard_details/{{data.type}}/{{ data.priority }}/{{month}}/ci'> View by CI  </td>
                                 <td>
-                                        <a href='/cmdb/changes/dashboard_venture/{{data.type}}/{{ data.priority}}/{{month}}/ventures'> View by Ventures  </td>
+                                        <a href='/cmdb/changes/dashboard_details/{{data.type}}/{{ data.priority}}/{{month}}/ventures'> View by Ventures  </td>
                             </tr>
                             {% endfor %}
                         </table>

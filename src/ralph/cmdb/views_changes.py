@@ -10,11 +10,19 @@ from django.core.paginator import Paginator,PageNotAnInteger,EmptyPage
 from django.shortcuts import get_object_or_404
 import ralph.cmdb.models  as db
 from ralph.cmdb.views import BaseCMDBView, _get_pages, get_icon_for
-from ralph.cmdb.forms import CIChangeSearchForm
+from ralph.cmdb.forms import CIChangeSearchForm,CIReportsParamsForm
+from ralph.util import csvutil
+
 from django.conf import settings
 from django.db import connection
 from django.http import HttpResponse
+from django.utils import simplejson
+
+from django.db.models import Avg, Max, Min, Count
+
+import cStringIO as StringIO
 import calendar
+import datetime
 
 class ChangesBase(BaseCMDBView):
     def get_context_data(self, **kwargs):
@@ -49,6 +57,28 @@ class PaginatedView(BaseCMDBView):
             page = self.paginator.num_pages
         return page
 
+    def get(self, *args, **kwargs):
+        export = self.request.GET.get('export')
+        if export == 'csv':
+            return self.handle_csv_export()
+        return super(BaseCMDBView, self).get(*args)
+
+    def get_csv_data(self):
+        raise NotImplementedError("No get_csv_data implemented in child class.")
+
+    def handle_csv_export(self):
+        """
+        Can overwite this for your needs
+        """
+        return self.do_csv_export()
+
+    def do_csv_export(self):
+        f = StringIO.StringIO()
+        data = self.get_csv_data()
+        csvutil.UnicodeWriter(f).writerows(data)
+        response = HttpResponse(f.getvalue(), content_type="application/csv")
+        response['Content-Disposition'] = 'attachment; filename=ralph.csv'
+        return response
 
 class Change(ChangesBase):
     template_name = 'cmdb/view_change.html'
@@ -170,15 +200,25 @@ class Incidents(ChangesBase):
         self.incidents = db.CIIncident.objects.order_by('-time').all()
         return super(Incidents, self).get(*args, **kwargs)
 
-class DashboardVenture(ChangesBase, PaginatedView):
-    template_name = 'cmdb/dashboard_venture_changes.html'
+class DashboardDetails(ChangesBase, PaginatedView):
+    template_name = 'cmdb/dashboard_details_ci.html'
 
     def get_context_data(self, **kwargs):
-        ret = super(DashboardVenture, self).get_context_data(**kwargs)
+        ret = super(DashboardDetails, self).get_context_data(**kwargs)
         ret.update({
             'statistics' : self.data,
         })
         return ret
+
+    def get_csv_data(self):
+        report_type = self.kwargs.get('report_type')
+        if report_type == 'ci':
+            self.csv_data = [(unicode(x['name']),
+                unicode(x['count']),
+                unicode(x['venture'])) for x in self.data ]
+        else:
+            self.csv_data = [ (unicode(x[0]), unicode(x[1])) for x in self.data ]
+        return self.csv_data
 
     def get(self, *args, **kwargs):
         type = kwargs.get('type')
@@ -198,7 +238,7 @@ class DashboardVenture(ChangesBase, PaginatedView):
             ORDER BY COUNT(*) DESC, cc.name ASC
         ''', [ type, prio, month] )
         if report_type == 'ci':
-            self.data= []
+            self.data = []
             rows = cursor.fetchall()
             for r in rows:
                 venture=None
@@ -231,7 +271,7 @@ class DashboardVenture(ChangesBase, PaginatedView):
             self.paginate(self.data)
             self.data = self.page_contents
         else:
-            self.template_name = 'cmdb/dashboard_venture_changes_ventures.html'
+            self.template_name = 'cmdb/dashboard_details_venture.html'
             self.data_dict = {}
             rows = cursor.fetchall()
             for r in rows:
@@ -253,13 +293,13 @@ class DashboardVenture(ChangesBase, PaginatedView):
 
             self.paginate(self.data)
             self.data = self.page_contents
+        #import pdb; pdb.set_trace()
 
-        return super(DashboardVenture, self).get(*args)
+        return super(DashboardDetails, self).get(*args)
 
-from django.utils import simplejson
 
 class Dashboard(ChangesBase):
-    template_name = 'cmdb/dashboard_changes.html'
+    template_name = 'cmdb/dashboard_main.html'
 
     def get_context_data(self, **kwargs):
         ret = super(Dashboard, self).get_context_data(**kwargs)
@@ -334,73 +374,107 @@ class Dashboard(ChangesBase):
             )
         return data
 
-
-class Reports(ChangesBase):
+class Reports(ChangesBase, PaginatedView):
     template_name = 'cmdb/view_report.html'
+    exporting_csv_file = False
 
     def get_context_data(self, **kwargs):
         ret = super(Reports, self).get_context_data(**kwargs)
         ret.update({
-            'top_ci_changes' : self.top_ci_changes(),
-            'top_ci_problems' : self.top_ci_problems(),
-            'top_ci_incidents' : self.top_ci_incidents(),
-            'least_ci_changes' : self.least_ci_changes(),
+            'data' : self.data,
+            'form' : self.form,
             'report_kind' : self.request.GET.get('kind','top'),
+            'report_name' : self.report_name,
         })
         return ret
 
-    def top_ci_problems(self, *args, **kwargs):
-        cursor = connection.cursor()
-        cursor.execute('''
-            SELECT
-            COUNT(*) as cnt, cc.id
-            FROM cmdb_ciproblem cp
-            INNER JOIN cmdb_ci cc ON (cc.id = cp.ci_id)
-            GROUP BY cc.id
-            ORDER BY COUNT(*) ASC LIMIT 10
-        ''')
-        rows = [ (x[0], db.CI.objects.filter(id=x[1]).all()[0]) for x in cursor.fetchall()]
+    def first_day_of_month(self, dt):
+        ddays = int(dt.strftime("%d"))-1
+        delta = datetime.timedelta(days= ddays)
+        return dt - delta
+
+    def handle_params(self, queryset):
+        beginning = self.first_day_of_month(datetime.date.today())
+        beginning = beginning.strftime("%Y-%m-%d")
+        if self.request.GET.get('this_month'):
+            queryset = queryset.filter(cichange__time__gt=beginning)
+        return queryset
+
+    def top_ci_problems(self):
+        queryset = db.CI.objects.annotate(num=Count('ciproblem')).order_by('-num')
+        queryset = self.handle_params(queryset)
+        queryset = self.paginate_query(queryset)
+        rows = [ (x.num, x) for x in queryset]
         return rows
 
-    def top_ci_incidents(self, *args, **kwargs):
-        cursor = connection.cursor()
-        cursor.execute('''
-            SELECT
-            COUNT(*) as cnt, cc.id as id
-            FROM cmdb_ciincident ci
-            INNER JOIN cmdb_ci cc ON (cc.id = ci.ci_id)
-            GROUP BY cc.id
-            ORDER BY COUNT(*) ASC LIMIT 10
-        ''')
-        rows = [ (x[0], db.CI.objects.filter(id=x[1]).all()[0]) for x in cursor.fetchall()]
+    def top_ci_incidents(self):
+        queryset = db.CI.objects.annotate(num=Count('ciincident')).order_by('-num')
+        queryset = self.handle_params(queryset)
+        queryset = self.paginate_query(queryset)
+        rows = [ (x.num, x) for x in queryset]
         return rows
 
-    def least_ci_changes(self, *args, **kwargs):
-        cursor = connection.cursor()
-        cursor.execute('''
-            SELECT * FROM (SELECT COUNT(ch.id) count,cc.id id
-            FROM cmdb_ci cc
-            LEFT JOIN cmdb_cichange ch ON (cc.id = ch.ci_id)
-            GROUP BY cc.id) x  WHERE x.count = 0 LIMIT 30
-        ''')
-        rows = cursor.fetchall()
-        rows = [ (x,db.CI.objects.filter(id=x[1]).all()[0]) for x in rows ]
+    def least_ci_changes(self):
+        queryset = db.CI.objects.annotate(num=Count('cichange')).filter(num=0).order_by('num')
+        queryset = self.handle_params(queryset)
+        queryset = self.paginate_query(queryset)
+        rows = [ (x.num, x) for x in queryset]
         return rows
 
-    def top_ci_changes(self, *args, **kwargs):
-        cursor = connection.cursor()
-        cursor.execute('''
-            SELECT
-            COUNT(*) as cnt, cc.id
-            FROM cmdb_ci cc
-            INNER JOIN cmdb_cichange ch ON (cc.id = ch.ci_id)
-            GROUP BY cc.id
-            ORDER BY COUNT(*) DESC LIMIT 10
-        ''')
-        rows = cursor.fetchall()
-        rows = [ (x,db.CI.objects.filter(id=x[1]).all()[0]) for x in rows ]
+    def top_ci_changes(self):
+        queryset = db.CI.objects.annotate(num=Count('cichange')).order_by('-num')
+        queryset = self.handle_params(queryset)
+        queryset = self.paginate_query(queryset)
+        rows = [ (x.num, x) for x in queryset]
         return rows
+
+    def paginate_query(self, queryset):
+        if self.exporting_csv_file:
+            return queryset
+        else:
+            self.paginate(queryset)
+            return self.page_contents
+
+    def get_csv_data(self):
+        self.csv_data = [ (unicode(x[0]), unicode(x[1])) for x in self.data ]
+        return self.csv_data
+
+    def handle_csv_export(self):
+        self.exporting_csv_file = True
+        # go on now, but remember to disable pagination while exporting.
+
+    def populate_data(self, *args, **kwargs):
+        report_type = self.request.GET.get('kind','top')
+        if report_type == 'top_changes':
+            self.data = self.top_ci_changes()
+            self.report_name = 'Top CI Changes'
+        elif report_type == 'top_problems':
+            self.data = self.top_ci_problems()
+            self.report_name = 'Top CI Problems'
+        elif report_type == 'top_incidents':
+            self.data = self.top_ci_incidents()
+            self.report_name = 'Top CI Incidents'
+        elif report_type == 'usage':
+            self.report_name = 'Top CI Incidents'
+            self.data = self.least_ci_changes()
+        else:
+            raise UserWarning("Unknown report type %s " % report_type)
 
     def get(self, *args, **kwargs):
+        values = self.request.GET
+        self.form = CIReportsParamsForm(initial=values)
+        changes  = db.CIChange.objects.filter()
+        if values.get('type'):
+            changes = changes.filter(type__icontains=values.get('type'))
+        if values.get('priority'):
+            changes = changes.filter(priority__icontains=values.get('priority'))
+        if values.get('uid'):
+            changes = changes.filter(ci__name=values.get('uid'))
+        changes = changes.order_by('-time').all()
+        self.populate_data()
+        if self.request.GET.get('export') == 'csv':
+            # return different http response
+            return self.do_csv_export()
+
         return super(Reports, self).get(*args)
 
