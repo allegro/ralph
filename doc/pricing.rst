@@ -58,9 +58,10 @@ is used to calculate the monthly cost of the device.
 :index:`Monthly cost`
 ---------------------
 
-This is calculated from the *quoted price* increased by *price margin* and divided
-by *deprecation time*. This :index:`cost` is then used everywhere to calculate
-the device's usage costs. It's what your customers will see.
+This is calculated from the device's *quoted price* increased by its *price
+margin* and divided by its *deprecation time*. This :index:`cost` is then used
+everywhere to calculate the usage costs for the device. It's what your customers
+will see.
 
 Device pricing details
 **********************
