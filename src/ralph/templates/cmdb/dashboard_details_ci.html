@@ -1,0 +1,41 @@
+{%extends 'cmdb/base.html'%}
+{% load icons %}
+{% load query %}
+{% load bob %}
+
+{% block content %}
+
+<style type="text/css" media="screen">
+    form.form-inline select
+    {
+        width: auto;
+    }
+
+    table.dboard td
+    {
+            padding: 6px;
+    }
+</style>
+
+<div class='span12'>
+    <h3> CMDB Dashboard  </h3>
+    <hr>
+         <table class='table table-striped table-bordered table-list dboard' style='margin: 10px; ' >
+             <tr><th> Count </th><th> CI Name </th> <th> Venture </th></tr>
+                {% for data in statistics %}
+                        <tr>
+                            <td>
+                                {{ data.count }}  
+                            </td>
+                            <td>
+                                <a
+                                    href='/cmdb/changes/changes?uid={{data.name}}&priority={{data.prio}}&type={{data.type}}'>{{ data.name }}  </td>
+                            <td>
+                                {{ data.venture }}  
+                            </td>
+                        </tr>
+                {% endfor %}
+            </table>
+        {% pagination page url_query=url_query show_all=0 show_csv=1 fugue_icons=1 %}
+      </div>
+{% endblock %}
