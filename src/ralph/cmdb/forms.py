@@ -20,17 +20,31 @@ from ajax_select import make_ajax_field
 class CISearchForm(forms.Form):
     uid = forms.CharField(label = ' CI UID ', max_length=100)
     layer = forms.ModelChoiceField(label = 'Layer',
-            queryset = CILayer.objects.all(),empty_label='----')
+            queryset = CILayer.objects.all(),
+            empty_label='----'
+    )
     type = forms.ModelChoiceField(
-            label = 'CI Type',
-            queryset = CIType.objects.all(),empty_label='----')
+           label = 'CI Type',
+           queryset = CIType.objects.all(),
+           empty_label='----',
+    )
     top_level = forms.BooleanField(label = 'Top lev.')
-    parent = forms.CharField(label='',widget=forms.HiddenInput())
+    parent = forms.CharField(label='',
+            widget=forms.HiddenInput()
+    )
 
 class CIChangeSearchForm(forms.Form):
     type = forms.ChoiceField(choices=[['','------']] + db.CI_CHANGE_TYPES())
     priority = forms.ChoiceField(choices = [['','------']] + db.CI_CHANGE_PRIORITY_TYPES() )
     uid = forms.CharField(label = 'CI name', max_length=100)
+
+class CIReportsParamsForm(forms.Form):
+    this_month = forms.BooleanField()
+    #date_start = forms.DateField(widget=forms.TextInput(attrs={'class': 'datepicker'}),
+    #        label = 'Date start')
+    #date_end = forms.DateField(widget=forms.TextInput(attrs={'class' : 'datepicker'}),
+    #        label = 'Date end')
+    kind = forms.CharField(label = '', widget=forms.HiddenInput())
 
 class CIEditForm(forms.ModelForm):
     class Meta:
