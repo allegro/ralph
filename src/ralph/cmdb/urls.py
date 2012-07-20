@@ -13,7 +13,7 @@ from django.contrib.auth.decorators import login_required
 
 from ralph.cmdb.views import Index, Search, Edit, Add, View,ViewIframe, EditRelation, LastChanges, AddRelation, \
 RalphView, ViewJira, ViewUnknown
-from ralph.cmdb.views_changes import  Changes, Problems, Incidents, Change, Dashboard, Reports, DashboardVenture
+from ralph.cmdb.views_changes import  Changes, Problems, Incidents, Change, Dashboard, Reports, DashboardDetails
 from django.conf.urls.defaults import include
 
 urlpatterns = patterns('',
@@ -37,8 +37,8 @@ urlpatterns = patterns('',
     (r'^changes/problems$', login_required(Problems.as_view())),
     (r'^changes/dashboard$', login_required(Dashboard.as_view())),
     (r'^changes/dashboard_ajax$', login_required(Dashboard.get_ajax)),
-    (r'^changes/dashboard_venture/(?P<prio>[0-9]+)/(?P<type>[0-9]+)/'
+    (r'^changes/dashboard_details/(?P<type>[0-9]+)/(?P<prio>[0-9]+)/'
     '(?P<month>[0-9]+)/(?P<report_type>\w+)$', \
-            login_required(DashboardVenture.as_view())),
+            login_required(DashboardDetails.as_view())),
     (r'^changes/reports$', login_required(Reports.as_view())),
 )
