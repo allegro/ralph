@@ -17,7 +17,7 @@ from ralph.util import plugin
 class Command(BaseCommand):
     """Lists all plugin chains available."""
     help = textwrap.dedent(__doc__).strip()
-    requires_model_validation = False
+    requires_model_validation = True
 
     def handle(self, *args, **options):
         """Dispatches the request to either direct, interactive execution

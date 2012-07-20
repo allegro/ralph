@@ -43,6 +43,8 @@ from __future__ import unicode_literals
 
 import os
 os.environ['DJANGO_SETTINGS_MODULE'] = "ralph.settings"
+from django.utils.translation import ugettext
+ugettext('Force initializing all apps by Django to prevent import cycles.')
 
 from django.contrib.contenttypes.models import ContentType
 import logging
