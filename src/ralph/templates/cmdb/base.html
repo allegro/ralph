@@ -21,15 +21,27 @@
     <script type="text/javascript" src="/static/admin/js/SelectFilter2.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}filtered_widget/jsi18n.js"></script>
     <script type="text/javascript" charset="utf-8" src="{{ STATIC_URL }}bootstrap/js/bootstrap-dropdown.js"> </script>
+    <script type="text/javascript" charset="utf-8" src="{{ STATIC_URL }}bootstrap-datepicker.js"> </script>
 
     <!-- additional scripts !-->
     <script src="{{ STATIC_URL }}ui/main.js"></script>
     <script src="{{ STATIC_URL }}jit/jit.js"></script>
+
+    <script type='text/javascript'> 
+        $(document).ready(function()
+                {
+                
+                $(".datepicker").datepicker(
+                    format='yyyy/mm/dd'
+                    );
+                });
+    </script>
 {% endblock %}
 
 {% block extra_headers %}
     <!-- django admin wigets css !-->
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}/filtered_widget/style.css" />
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}/ui/datepicker.css" />
 {% endblock %}
 
 {% block breadcrumbs %}

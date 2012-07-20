@@ -25,24 +25,15 @@ class ZabbixImporter(BaseImporter):
         """
         Create/update zabbix IDn for all matched CI's
         """
+        logger.debug('Zabbix hosts import started.')
         hosts = zabbix.get_all_hosts()
-        matched = 0
-        not_matched = 0
-        list_not_matched = []
         for h in hosts:
-            cis = db.CI.objects.filter(name=h.get('host')).all()
-            cnt = len(cis)
-            if cnt!=1:
-                not_matched+=1
-                s = 'Host not matched in CMDB: name=%s, id=%s' % (
-                        h.get('host'), h.get('hostid'))
-                list_not_matched.append(s)
-                logger.debug(s)
-            else:
-                ci = cis[0]
-                ci.zabbix_id=h.get('hostid')
-                ci.save()
-                matched+=1
+            # base method
+            ci = self.get_ci_by_name(h.get('host'))
+            if not ci:
+                continue
+            ci.zabbix_id=h.get('hostid')
+            ci.save()
         logger.debug('Finshed')
 
     def import_triggers(self):
@@ -51,14 +42,18 @@ class ZabbixImporter(BaseImporter):
         for h in triggers:
             existing = db.CIChangeZabbixTrigger.objects.filter(
                     trigger_id=h.get('triggerid')).all()
-            if existing:
-                continue
-            logger.debug('Integrate %s' % h.get('triggerid'))
-            c = db.CIChange()
-            c.type = db.CI_CHANGE_TYPES.ZABBIX_TRIGGER.id
-            c.priority = db.CI_CHANGE_PRIORITY_TYPES.ERROR.id
-            #create zabbix type change as container
-            ch = db.CIChangeZabbixTrigger()
+
+            if not existing:
+                logger.debug('Integrate %s' % h.get('triggerid'))
+                c = db.CIChange()
+                c.type = db.CI_CHANGE_TYPES.ZABBIX_TRIGGER.id
+                c.priority = db.CI_CHANGE_PRIORITY_TYPES.ERROR.id
+                #create zabbix type change as container
+                ch = db.CIChangeZabbixTrigger()
+            else:
+                ch = existing[0]
+                c = db.CIChange.objects.get(type=db.CI_CHANGE_TYPES.ZABBIX_TRIGGER.id,object_id=ch.id)
+
             ch.ci = self.get_ci_by_name(h.get('host'))
             ch.trigger_id = h.get('triggerid')
             ch.host = h.get('host')
@@ -66,7 +61,6 @@ class ZabbixImporter(BaseImporter):
             ch.status = h.get('status')
             ch.priority = h.get('priority')
             ch.description = h.get('description')
-            lastchange = h.get('lastchange')
             ch.lastchange = datetime.datetime.fromtimestamp(
                     float(h.get('lastchange')))
             ch.comments = h.get('comments')
@@ -76,7 +70,6 @@ class ZabbixImporter(BaseImporter):
             c.time = datetime.datetime.fromtimestamp(float(h.get('lastchange')))
             c.message = ch.description
             c.save()
-
 
 
 class JiraEventsImporter(BaseImporter):

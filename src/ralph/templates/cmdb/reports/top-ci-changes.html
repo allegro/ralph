@@ -1,7 +1,12 @@
+{% load icons %}
+{% load query %}
+{% load bob %}
+
+{% include 'cmdb/reports/include_params.html' %}
+
 <table class="table table-striped table-bordered table-condensed ">
     <thead><tr>
         {% spaceless %}
-            {% include 'cmdb/column-header.html' with label='no.' name='ciname' always=1 %}
             {% include 'cmdb/column-header.html' with label='changes count' name='ciname' always=1 %}
             {% include 'cmdb/column-header.html' with label='configuration item' name='count' always=1%}
         {% endspaceless %}
@@ -11,17 +16,27 @@
         {% for change in rows %}
         <tr>
             <td>
-                {{ forloop.counter }}
-            </td>
-            <td>
-                {{ change.0.0 }}
+                {{ change.0 }}
             </td>
             <td>
                 <a href='/cmdb/ci/view/{{ change.1.id }}'>  
                     {{ change.1.name}} 
                 </a>
             </td>
+            <td>
+                {% for t in change.1.get_technical_owners %}
+                    {{ t }} 
+                {% endfor %}
+
+            </td>
+            <td>
+                {% for t in change.1.get_business_owners %}
+                    {{ t }} 
+                {% endfor %}
+            </td>
+
         </tr>
         {% endfor %}
     </tbody>
 </table>
+{% pagination page url_query=url_query show_all=0 show_csv=1 fugue_icons=1 %}
