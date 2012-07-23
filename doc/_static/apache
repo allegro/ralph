@@ -1,0 +1,36 @@
+<VirtualHost *:80>
+  ServerName ralph.local 
+  ServerAlias www.ralph.local 
+  ProxyPass /static !
+  ProxyPass / http://127.0.0.1:8000/
+  ProxyPassReverse / http://127.0.0.1:8000/
+  # This is all there is to it. You should NOT use ProxyRequests On.
+
+  Alias /robots.txt /home/ralph/project/src/ralph/media/robots.txt
+  Alias /favicon.ico /home/ralph/project/src/ralph/media/img/favicon.ico
+
+  Alias /doc /home/ralph/project/doc/_build/html/
+  Alias /git /home/ambv/git-tutorial/project/_build/html/
+  Alias /static /home/ralph/project/src/ralph/static/
+
+  ErrorDocument 500 /static/500.html 
+  ErrorDocument 503 /static/503.html
+
+  <Directory /home/ralph/project/doc/_build/html>
+    Order deny,allow
+    Allow from all
+  </Directory>
+
+  <Directory /home/ralph/project/src/ralph/static>
+    Order deny,allow
+    Allow from all
+  </Directory>
+
+	ErrorLog ${APACHE_LOG_DIR}/error.log
+
+	# Possible values include: debug, info, notice, warn, error, crit,
+	# alert, emerg.
+	LogLevel warn
+
+	CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
