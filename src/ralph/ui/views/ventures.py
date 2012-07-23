@@ -51,6 +51,31 @@ def collect_ventures(parent, ventures, items, depth=0):
         items.append((icon, v.name, symbol, indent, v))
         collect_ventures(v, ventures, items, depth + 1)
 
+def venture_tree_menu(ventures, details, show_all=False):
+    items = []
+    if not show_all:
+        ventures = ventures.filter(show_in_ralph=True)
+    for v in ventures.order_by('-is_infrastructure', 'name'):
+        symbol = _normalize_venture(v.symbol)
+        icon = presentation.get_venture_icon(v)
+        item = MenuItem(
+            v.name, name=symbol,
+            fugue_icon=icon,
+            view_name='ventures',
+            view_args=[symbol, details, ''],
+            indent = ' ',
+            collapsed = True,
+            collapsible = True,
+        )
+        item.venture_id = v.id
+        item.subitems = venture_tree_menu(
+                v.child_set.all(), details, show_all)
+        for subitem in item.subitems:
+            subitem.parent = item
+        items.append(item)
+    return items
+
+
 class SidebarVentures(object):
     def __init__(self, *args, **kwargs):
         super(SidebarVentures, self).__init__(*args, **kwargs)
@@ -73,24 +98,34 @@ class SidebarVentures(object):
     def get_context_data(self, **kwargs):
         ret = super(SidebarVentures, self).get_context_data(**kwargs)
         self.set_venture()
+        details = ret['details']
         profile = self.request.user.get_profile()
         has_perm = profile.has_perm
         ventures = profile.perm_ventures(Perm.list_devices_generic)
-        if not self.request.GET.get('show_all'):
-            ventures = ventures.filter(show_in_ralph=True)
+        show_all = self.request.GET.get('show_all')
         ventures = ventures.order_by('-is_infrastructure', 'name')
 
-        items = [
-            ('fugue-prohibition', "Unknown", '-', '', None),
-            ('fugue-asterisk', "All ventures", '*', '', None)
+        sidebar_items = [
+            MenuItem(fugue_icon='fugue-prohibition', label="Unknown",
+                     name='-', view_name='ventures',
+                     view_args=['-', details, '']),
+            MenuItem(fugue_icon='fugue-asterisk', label="All ventures",
+                     name='*', view_name='ventures',
+                     view_args=['*', details, ''])
         ]
-        indents = {}
-        collect_ventures(None, ventures, items)
-        sidebar_items = [MenuItem(
-            label, name=symbol, fugue_icon=icon, indent=indent,
-            view_name='ventures', view_args=[symbol, ret['details'], ''])
-            for (icon, label, symbol, indent, venture) in items
-        ]
+        sidebar_items.extend(venture_tree_menu(
+                ventures.filter(parent=None), details, show_all))
+        if self.venture and self.venture != '*':
+            stack = list(sidebar_items)
+            while stack:
+                item = stack.pop()
+                if getattr(item, 'venture_id', None) == self.venture.id:
+                    parent = getattr(item, 'parent', None)
+                    while parent:
+                        parent.kwargs['collapsed'] = False
+                        parent = getattr(parent, 'parent', None)
+                    break
+                stack.extend(getattr(item, 'subitems', []))
 
         self.set_venture()
         tab_items = ret['tab_items']
@@ -102,10 +137,7 @@ class SidebarVentures(object):
                             href='../venture/?%s' % self.request.GET.urlencode()))
         ret.update({
             'sidebar_items': sidebar_items,
-            'sidebar_selected': _normalize_venture(self.venture.symbol) if self.venture and self.venture != '*' else self.venture,
-            'sidebar_expanded': [],
-            'sidebar_subitems': [],
-            'sidebar_indents': indents,
+            'sidebar_selected': _normalize_venture(self.venture.symbol) if self.venture and self.venture != '*' else self.venture or '-',
             'section': 'ventures',
             'subsection': _normalize_venture(
                 self.venture.symbol) if self.venture and self.venture != '*' else self.venture,
