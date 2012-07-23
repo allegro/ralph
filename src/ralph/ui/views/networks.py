@@ -4,8 +4,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from django.shortcuts import get_object_or_404
+import collections
 
+from django.shortcuts import get_object_or_404
 from bob.menu import MenuItem
 
 from ralph.discovery.models_network import Network, IPAddress
@@ -17,6 +18,22 @@ from ralph.ui.views.common import BaseMixin,DeviceDetailView, CMDB
 from ralph.ui.views.devices import BaseDeviceList
 from ralph.util import presentation
 
+def network_tree_menu(networks, details, children):
+    icon = presentation.get_network_icon
+    items = []
+    for n in networks:
+        items.append(MenuItem(
+            n.name,
+            fugue_icon=icon(n),
+            view_name='networks',
+            indent=' ',
+            view_args=[n.name, details, ''],
+            subitems = network_tree_menu(children[n.id], details, children),
+            collapsible=True,
+            collapsed=not getattr(n, 'expanded', False),
+        ))
+    return items
+
 
 class SidebarNetworks(object):
     def __init__(self, *args, **kwargs):
@@ -25,7 +42,9 @@ class SidebarNetworks(object):
 
     def set_network(self):
         network_symbol = self.kwargs.get('network')
-        if network_symbol:
+        if network_symbol == '-':
+            self.network = ''
+        elif network_symbol:
             self.network = get_object_or_404(Network, name__iexact=network_symbol)
         else:
             self.network = None
@@ -35,11 +54,13 @@ class SidebarNetworks(object):
         self.set_network()
         self.networks = list(Network.objects.all().order_by('min_ip', 'max_ip'))
         stack = []
+        children = collections.defaultdict(list)
         for network in self.networks:
             network.parent = None
             while stack:
                 if network in stack[-1]:
                     network.parent = stack[-1]
+                    children[stack[-1].id].append(network)
                     break
                 else:
                     stack.pop()
@@ -49,13 +70,18 @@ class SidebarNetworks(object):
                 network.depth = 0
             network.indent = ' ' * network.depth
             stack.append(network)
-        icon = presentation.get_network_icon
-        sidebar_items = [('fugue-prohibition', "Unknown", '')]
-        for n in self.networks:
-            sidebar_items.append(
-                MenuItem(n.name, fugue_icon=icon(n), view_name='networks',
-                         indent = n.indent,
-                         view_args=[n.name, ret['details'], '']))
+            if network == self.network:
+                parent = getattr(network, 'parent', None)
+                while parent:
+                    parent.expanded = True
+                    parent = getattr(parent, 'parent', None)
+        sidebar_items = [MenuItem(fugue_icon='fugue-prohibition',
+                                  label="None", name='',
+                                  view_name='networks',
+                                  view_args=['-', ret['details'],''])]
+        sidebar_items.extend(network_tree_menu(
+            [n for n in self.networks if n.parent is None],
+            ret['details'], children))
         ret.update({
             'sidebar_items': sidebar_items,
             'sidebar_selected': self.network.name if self.network else self.network,

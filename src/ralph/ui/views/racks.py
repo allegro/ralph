@@ -59,17 +59,21 @@ class SidebarRacks(object):
         ]
         for dc in Device.objects.filter(
                 model__type=DeviceType.data_center.id).order_by('name'):
+            subitems = []
             sidebar_items.append(
                 MenuItem(dc.name, name=slug(dc.sn), fugue_icon=icon(dc),
-                         view_name='racks',
-                         view_args=[slug(dc.sn), ret['details'], ''])
+                         view_name='racks', subitems=subitems, indent=' ',
+                         view_args=[slug(dc.sn), ret['details'], ''],
+                         collapsible=True, collapsed=not (
+                             self.rack and (self.rack==dc or
+                                            self.rack.parent==dc)))
             )
             for r in Device.objects.filter(
                         model__type=DeviceType.rack.id
                     ).filter(
                         parent=dc
                     ).order_by('name'):
-                sidebar_items.append(
+                subitems.append(
                     MenuItem(r.name, name=slug(r.sn), indent=' ',
                          fugue_icon=icon(r),
                          view_name='racks',
