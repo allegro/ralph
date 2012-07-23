@@ -1,16 +1,12 @@
+WSGIPythonHome /home/ralph
+
 <VirtualHost *:80>
   ServerName ralph.local 
   ServerAlias www.ralph.local 
-  ProxyPass /static !
-  ProxyPass / http://127.0.0.1:8000/
-  ProxyPassReverse / http://127.0.0.1:8000/
-  # This is all there is to it. You should NOT use ProxyRequests On.
-
+  
   Alias /robots.txt /home/ralph/project/src/ralph/media/robots.txt
   Alias /favicon.ico /home/ralph/project/src/ralph/media/img/favicon.ico
 
-  Alias /doc /home/ralph/project/doc/_build/html/
-  Alias /git /home/ambv/git-tutorial/project/_build/html/
   Alias /static /home/ralph/project/src/ralph/static/
 
   ErrorDocument 500 /static/500.html 
@@ -33,4 +29,8 @@
 	LogLevel warn
 
 	CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+  WSGIScriptAlias / /home/ralph/project/src/ralph/scripts/ralph.wsgi
+  WSGIDaemonProcess ralph user=ralph group=ralph processes=5 threads=3 display-name=ralph
+  WSGIProcessGroup ralph
 </VirtualHost>

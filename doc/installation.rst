@@ -202,7 +202,8 @@ To use Apache as the front-end Web server for Ralph, install it::
   $ sudo a2enmod proxy_http
 
 Now add the Ralph site configuration to `/etc/apache2/sites-enabled/ralph
-<_static/apache>`_, restart Apache and you're done.
+<_static/apache>`_, restart Apache and you're done. Alternatively, you can check
+out `configuration for usage with modwsgi <_static/apache-wsgi>`_.
 
 Ralph
 -----
