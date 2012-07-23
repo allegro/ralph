@@ -35,13 +35,14 @@ def _connect_ssh(ip):
 
 @nested_commit_on_success
 def _save_shares(dev, luns, mounts):
-    DiskShareMount.objects.filter(server=dev).delete()
+    wwns = []
     for lun, volume in luns.iteritems():
         rest, wwn_end = lun.rsplit('_', 1)
         try:
             share = DiskShare.objects.get(wwn__endswith=wwn_end)
         except DiskShare.DoesNotExist:
             continue
+        wwns.append(share.wwn)
         clients = mounts.get(volume, [])
         for client in clients:
             ipaddr, ip_created = IPAddress.concurrent_get_or_create(address=client)
@@ -54,6 +55,12 @@ def _save_shares(dev, luns, mounts):
                     address=None, device=None, share=share, server=dev)
             mount.volume = volume
             mount.save(update_last_seen=True)
+    for mount in DiskShareMount.objects.filter(
+                server=dev
+            ).exclude(
+                wwn__in=wwns
+            ):
+        mount.delete()
 
 
 @nested_commit_on_success
