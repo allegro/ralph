@@ -1,30 +1,13 @@
-WSGIPythonHome /home/trac/virtualenv
+WSGIPythonHome /home/ralph
 
 <VirtualHost *:80>
-  ServerName ralph.dc2 
-  ServerAlias s10821.dc2 
+  ServerName ralph.local 
+  ServerAlias www.ralph.local 
   
-#  ProxyPass /doc !
-#  ProxyPass /git !
-#  ProxyPass /static !
-#  ProxyPass /trac/chrome/common !
-#  ProxyPass /trac !
-#  ProxyPass /ralph !
-#  ProxyPass /trac http://127.0.0.1:8008/trac
-#  ProxyPassReverse /trac http://127.0.0.1:8008/trac
-#  ProxyPass /paste http://127.0.0.1:5000/
-#  ProxyPassReverse /paste http://127.0.0.1:5000/
-#  ProxyPass / http://127.0.0.1:8000/ retry=3
-#  ProxyPassReverse / http://127.0.0.1:8000/ retry=3
-  # This is all there is to it. You should NOT use ProxyRequests On.
-
   Alias /robots.txt /home/ralph/project/src/ralph/media/robots.txt
   Alias /favicon.ico /home/ralph/project/src/ralph/media/img/favicon.ico
 
-  Alias /doc /home/ralph/project/doc/_build/html/
-  Alias /git /home/ambv/git-tutorial/project/_build/html/
   Alias /static /home/ralph/project/src/ralph/static/
-  Alias /trac/chrome/common /home/ralph/lib/python2.7/site-packages/trac/htdocs/
 
   ErrorDocument 500 /static/500.html 
   ErrorDocument 503 /static/503.html
@@ -47,35 +30,7 @@ WSGIPythonHome /home/trac/virtualenv
 
 	CustomLog ${APACHE_LOG_DIR}/access.log combined
 
-  WSGIScriptAlias /trac /var/www/redirect.wsgi
-  SetEnv redirect.to http://jira.office/browse/RALPH
-
-  WSGIScriptAlias /trac-old /home/trac/ralph/trac.wsgi
-  WSGIDaemonProcess trac-old user=trac group=trac processes=1 threads=3 display-name=trac
-
   WSGIScriptAlias / /home/ralph/project/src/ralph/scripts/ralph.wsgi
   WSGIDaemonProcess ralph user=ralph group=ralph processes=5 threads=3 display-name=ralph
   WSGIProcessGroup ralph
-
-  <Location /trac-off>
-    WSGIProcessGroup trac
-    RewriteEngine on
-    RewriteRule .* - [E=RU:%{REMOTE_USER}]
-    RequestHeader set REMOTE_USER %{RU}e
-    AuthBasicProvider ldap
-    AuthType Basic
-    # można ustawić na on, wtedy LDAP będzie ostatecznym źródłem autoryzacji (tak jest najczęściej)
-    AuthzLDAPAuthoritative on
-    # nazwa dowolna, najlepiej opis systemu
-    AuthName "trac"
-    # podajemy 3 kontrolery (HA)
-    AuthLDAPURL "ldap://10.245.0.100:3268 10.245.0.101:3268 10.7.14.11:3268/DC=allegrogroup,DC=internal?sAMAccountName?sub?(objectClass=*)" NONE
-    AuthLDAPBindDN "ALLEGROGROUP\ldapbind"
-    AuthLDAPBindPassword qwqwqw01
-    # jeżeli wystarczy, że użytkownik jest aktywny w AD
-    Require valid-user
-    # jeżeli musi byc członkiem grupy
-    # Require ldap-group CN=ldapauth_test,OU=NixGroups,OU=Allegro-Nix,DC=allegrogroup,DC=internal
-  </Location>
-
 </VirtualHost>
