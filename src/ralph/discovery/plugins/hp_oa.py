@@ -27,7 +27,10 @@ def _get_ethernets(data):
             ports = [ports]
         for port in ports:
             if port['TYPE'] == 'INTERCONNECT_TYPE_ETH':
-                mac=MACAddressField.normalize(port['WWPN'])
+                try:
+                    mac = MACAddressField.normalize(port['WWPN'])
+                except ValueError:
+                    continue
                 yield Eth(name, mac, speed=None)
 
 
