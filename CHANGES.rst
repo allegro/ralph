@@ -10,6 +10,8 @@ Change Log
 
 * ability to create new devices from the web application
 
+* several minor bugfixes
+
 1.0.1
 ~~~~~
 
