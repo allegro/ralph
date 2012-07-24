@@ -15,7 +15,7 @@ from ralph.util import network
 from ralph.util import plugin
 from ralph.discovery.models import (DeviceType, DeviceModel, Device, IPAddress,
                                     DiskShare, ComponentModel, ComponentType)
-from ralph.discovery.storage import normalize_wwn
+from ralph.discovery.hardware import normalize_wwn
 
 
 SSH_3PAR_USER = settings.SSH_3PAR_USER

@@ -22,7 +22,7 @@ from ralph.util import network, plugin, units
 from ralph.discovery.models import (IPAddress, ComponentModel, ComponentType,
     Storage, DiskShare, DiskShareMount, DISK_VENDOR_BLACKLIST,
     DISK_PRODUCT_BLACKLIST)
-from ralph.discovery.storage import normalize_wwn
+from ralph.discovery.hardware import normalize_wwn
 
 from .facts import parse_facts
 from .lshw import parse_lshw
