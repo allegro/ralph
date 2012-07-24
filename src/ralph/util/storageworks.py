@@ -102,11 +102,18 @@ def run(ssh, ip):
     vendor = system_xml.xpath('OBJECT/PROPERTY[@name="vendor-name"]/text()')[0]
     model = system_xml.xpath('OBJECT/PROPERTY[@name="product-id"]/text()')[0]
     brand = system_xml.xpath('OBJECT/PROPERTY[@name="product-brand"]/text()')[0]
-    name = system_xml.xpath('OBJECT/PROPERTY[@name="system-name"]/text()')[0]
+    try:
+        name = system_xml.xpath(
+                'OBJECT/PROPERTY[@name="system-name"]/text()')[0]
+    except IndexError:
+        name = None
     model_name = '%s %s %s' % (vendor, brand, model)
-    sn = frus_xml.xpath(
+    try:
+        sn = frus_xml.xpath(
             'OBJECT[PROPERTY[@name="name"]/text()="CHASSIS_MIDPLANE"]'
             '/PROPERTY[@name="serial-number"]/text()')[0]
+    except IndexError:
+        sn = None
     macs = network_xml.xpath('OBJECT/PROPERTY[@name="mac-address"]/text()')
     dev = _save_device(ip, name, model_name, sn, macs)
     _save_shares(dev, volumes)

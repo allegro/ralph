@@ -538,6 +538,7 @@ def bulk_update(devices, fields, data, user):
             setattr(d, name, data[name])
         d.save_comment = data.get('save_comment')
         d.save(priority=SAVE_PRIORITY, user=user)
+        pricing.device_update_cached(d)
 
 
 class BulkEdit(BaseMixin, TemplateView):

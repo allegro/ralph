@@ -89,7 +89,7 @@ class IPMI(object):
 
     def get_mac(self):
         data = self.get_lan()
-        mac = data['MAC Address']
+        mac = data.get('MAC Address')
         return mac
 
 
@@ -195,11 +195,14 @@ def _run_ipmi(ip):
     sn, sn_clean = _clean(top['Product Serial'])
     if sn in SERIAL_BLACKLIST:
         sn = None
-    mac = ipmi.get_mac()
     model_type = DeviceType.rack_server
     if name.lower().startswith('ipmi'):
         model_type = DeviceType.unknown
-    ethernets = [Eth(label='IPMI MAC', mac=mac, speed=0)]
+    mac = ipmi.get_mac()
+    if mac:
+        ethernets = [Eth(label='IPMI MAC', mac=mac, speed=0)]
+    else:
+        ethernets = []
     ethernets.extend(_get_ipmi_ethernets(fru))
     dev = Device.create(ethernets=ethernets, priority=SAVE_PRIORITY,
                         sn=sn, model_name=name.title(), model_type=model_type)
