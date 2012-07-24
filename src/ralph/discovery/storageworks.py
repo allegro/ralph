@@ -14,7 +14,7 @@ from lxml import etree as ET
 from ralph.util import Eth
 from ralph.discovery.models import (DeviceType, Device, IPAddress,
                                     DiskShare, ComponentModel, ComponentType)
-from ralph.discovery.storage import normalize_wwn
+from ralph.discovery.hardware import normalize_wwn
 
 class Error(Exception):
     pass

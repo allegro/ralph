@@ -14,7 +14,7 @@ from lck.django.common import nested_commit_on_success
 from ralph.util import network, Eth
 from ralph.util import plugin
 from ralph.discovery import guessmodel
-from ralph.dicovery.storage import normalize_wwn
+from ralph.discovery.hardware import normalize_wwn
 from ralph.discovery.models import (
     Device, DeviceType, DiskShareMount, DiskShare,
     ComponentType, ComponentModel, Storage,

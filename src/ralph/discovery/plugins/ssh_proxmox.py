@@ -19,7 +19,7 @@ from ralph.util import network
 from ralph.util import plugin, Eth
 from ralph.discovery.models import (DeviceType, Device, IPAddress, Software,
         DiskShare, DiskShareMount, ComponentModel, Processor, ComponentType)
-from ralph.discovery.storage import normalize_wwn
+from ralph.discovery.hardware import normalize_wwn
 
 
 class Error(Exception):
