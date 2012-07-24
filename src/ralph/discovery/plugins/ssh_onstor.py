@@ -58,7 +58,7 @@ def _save_shares(dev, luns, mounts):
     for mount in DiskShareMount.objects.filter(
                 server=dev
             ).exclude(
-                wwn__in=wwns
+                share__wwn__in=wwns
             ):
         mount.delete()
 
@@ -111,9 +111,9 @@ def _run_ssh_onstor(ip):
         mac = pairs['--------']['MAC addr'].upper().replace(':', '')
 
         dev = _save_device(ip, name, model_name, sn, mac)
-        first_ip = dev.ipaddress_set.order_by('address')[0]
+        first_ip = dev.ipaddress_set.order_by('address')[0].address
         if ip != first_ip:
-            raise SkipError('multipe addresses.')
+            raise SkipError('multiple addresses (will check %s).' % first_ip)
 
         stdin, stdout, stderr = ssh.exec_command("lun show all -P1 -S10000")
         in_table = False
