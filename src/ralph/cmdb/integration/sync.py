@@ -10,17 +10,25 @@ import logging
 import datetime
 from django.conf import settings
 
+from ralph.util import plugin
 from ralph.cmdb.integration.base import BaseImporter
-from ralph.cmdb.integration import zabbix
+from ralph.cmdb.integration.lib import zabbix
+from ralph.cmdb.integration.lib.jira import Jira
 from ralph.cmdb.integration.util import strip_timezone
-from ralph.cmdb.integration.ralph import AssetChangeImporter
-from ralph.cmdb.integration.puppet import PuppetGitImporter
 from ralph.cmdb import models as db
 
+# hook git plugins
+from ralph.cmdb.integration.puppet import PuppetGitImporter
+from optparse import OptionParser
+
+import re
 
 logger = logging.getLogger(__name__)
 
 class ZabbixImporter(BaseImporter):
+    """
+    Zabbix importer
+    """
     def import_hosts(self):
         """
         Create/update zabbix IDn for all matched CI's
@@ -36,13 +44,24 @@ class ZabbixImporter(BaseImporter):
             ci.save()
         logger.debug('Finshed')
 
+    @staticmethod
+    @plugin.register(chain='cmdb')
+    def zabbix_hosts(context):
+        x = ZabbixImporter()
+        x.import_hosts()
+
+    @staticmethod
+    @plugin.register(chain='cmdb', requires=['zabbix_hosts'])
+    def zabbix_triggers(context):
+        x = ZabbixImporter()
+        x.import_triggers()
+
     def import_triggers(self):
         ''' Create/update zabbix IDn for all matched CI's '''
         triggers = zabbix.get_all_triggers()
         for h in triggers:
             existing = db.CIChangeZabbixTrigger.objects.filter(
                     trigger_id=h.get('triggerid')).all()
-
             if not existing:
                 logger.debug('Integrate %s' % h.get('triggerid'))
                 c = db.CIChange()
@@ -53,7 +72,6 @@ class ZabbixImporter(BaseImporter):
             else:
                 ch = existing[0]
                 c = db.CIChange.objects.get(type=db.CI_CHANGE_TYPES.ZABBIX_TRIGGER.id,object_id=ch.id)
-
             ch.ci = self.get_ci_by_name(h.get('host'))
             ch.trigger_id = h.get('triggerid')
             ch.host = h.get('host')
@@ -71,8 +89,22 @@ class ZabbixImporter(BaseImporter):
             c.message = ch.description
             c.save()
 
-
 class JiraEventsImporter(BaseImporter):
+    """
+    Jira integration  - Incidents/Problems importing as CI events.
+    """
+    @staticmethod
+    @plugin.register(chain='cmdb')
+    def jira_problems(context):
+        x = JiraEventsImporter()
+        x.import_problem()
+
+    @staticmethod
+    @plugin.register(chain='cmdb')
+    def jira_incidents(context):
+        x = JiraEventsImporter()
+        x.import_incident()
+
     def import_obj(self, issue, classtype):
         logger.debug(issue)
         try:
@@ -105,12 +137,11 @@ class JiraEventsImporter(BaseImporter):
             self.import_obj(issue, db.CIIncident)
 
     def fetch_all(self, type):
-        from ralph.cmdb.integration.jira import Jira
         ci_fieldname = settings.JIRA_CI_CUSTOM_FIELD_NAME
         params = dict(jql='project = AGS and type=%s' % type, maxResults=1024)
-        xxx=Jira().find_issue(params)
+        issues = Jira().find_issue(params)
         items_list = []
-        for i in xxx.get('issues'):
+        for i in issues.get('issues'):
             f = i.get('fields')
             ci_id = f.get(ci_fieldname)
             assignee = f.get('assignee')
@@ -121,68 +152,53 @@ class JiraEventsImporter(BaseImporter):
                 summary=f.get('summary'),
                 status=f.get('status').get('name'),
                 time=f.get('updated') or f.get('created'),
-                assignee=assignee.get('displayName') if assignee else ''))
+                assignee=assignee.get('displayName') if assignee else '')
+            )
         return items_list
 
-
 def integrate_main():
-    from optparse import OptionParser
-    usage = "usage: %prog --git --jira --zabbix_hosts --zabbix_triggers --ralph"
-    parser = OptionParser(usage)
-    parser.add_option('--ralph',
-            dest="ralph",
-            action="store_true",
-            help="Ralph.",
-            default=False,
-    )
-    parser.add_option('--git',
-            dest="git",
-            action="store_true",
-            help="Git.",
-            default=False,
-    )
-    parser.add_option('--jira',
-            dest='jira',
-            default=False,
-            action="store_true",
-            help="Jira.",
-    )
-    parser.add_option('--zabbix_hosts',
-            dest='zabbix_hosts',
-            action="store_true",
-            help="Zabbix.",
-            default=False,
-    )
-    parser.add_option('--zabbix_triggers',
-            dest='zabbix_triggers',
-            help="Zabbix.",
-            action="store_true",
-            default=False,
-    )
-    (options, args) = parser.parse_args()
-    import_classes=[]
-    """ Fetch all new data from remote services """
+    """
+    From now, collect all plugins, add to the commandline, and
+    run if required. May be multiple specified options.
+    """
+    required_plugin_name = re.compile('[^-]+')
+    usage = "usage: %prog "
 
-    if options.zabbix_hosts:
-        import_classes.append([ZabbixImporter, 'import_hosts'])
-    elif options.zabbix_triggers:
-        import_classes.append([ZabbixImporter, 'import_triggers'])
-    elif options.jira:
-        import_classes.append([JiraEventsImporter, 'import_problem'])
-        import_classes.append([JiraEventsImporter, 'import_incident'])
-    elif options.git:
-        import_classes.append([PuppetGitImporter, 'import_git'])
-    elif options.ralph:
-        import_classes.append([AssetChangeImporter, 'import_change'])
-    else:
+    # Populate usage cmdline
+    cmdb_plugins = plugin.BY_NAME['cmdb'].iteritems()
+    for p in cmdb_plugins :
+        plugin_name = p[0]
+        usage = "%s--%s " % (usage, plugin_name)
+    parser = OptionParser(usage)
+
+    # Populate OptionParser with options
+    cmdb_plugins = plugin.BY_NAME['cmdb'].iteritems()
+    for p in cmdb_plugins:
+        plugin_name = p[0]
+        if not required_plugin_name.match(plugin_name):
+            raise UserWarning("Invalid plugin name: %s " % plugin_name)
+
+        parser.add_option('--%s' % plugin_name,
+                dest="%s" % plugin_name,
+                action="store_true",
+                help="Trigger %s plugin" % plugin_name,
+                default=False,
+        )
+
+    context=dict(parser=parser)
+    specified_option = False
+    (options, args) = parser.parse_args()
+    # Run enabled plugins in CMDB chain
+    cmdb_plugins = plugin.BY_NAME['cmdb'].iteritems()
+    for p in cmdb_plugins:
+        if getattr(options,p[0]):
+            func_name = p[1]
+            logger.debug('Executing %s plugin.' % p[0])
+            func_name(context)
+            logger.debug('Finished executing %s plugin.' % p[0])
+            specified_option = True
+
+    if not specified_option:
         parser.error("Specify valid option.")
+    logger.debug('All done')
     # Instantiate importers, and gracefully handle error
-    for cl in import_classes:
-        classname, methodname = cl
-        obj = classname()
-        method = getattr(obj,  methodname)
-        try:
-            method()
-        except Exception,e:
-            obj.handle_integration_error(classname, methodname, e)
-            raise

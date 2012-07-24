@@ -12,13 +12,20 @@ from ralph.cmdb import models as db
 from ralph.discovery.models_history import HistoryChange
 from django.db import IntegrityError
 from ralph.cmdb.integration.base import BaseImporter
+from ralph.util import plugin
 
 logger = logging.getLogger(__name__)
 
 class AssetChangeImporter(BaseImporter):
     """ Ralph changes made by humans(manual) are registered as changes """
 
-    def import_change(self):
+    @staticmethod
+    @plugin.register(chain='cmdb')
+    def ralph(context):
+        x = AssetChangeImporter()
+        x.import_changes()
+
+    def import_changes(self):
         from django.contrib.contenttypes.models import ContentType
         device_type = ContentType.objects.get(app_label="discovery", model="device")
         for x in HistoryChange.objects.filter(user_id__gt = 0, device__gt=0):
