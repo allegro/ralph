@@ -1,6 +1,25 @@
 Change Log
 ----------
 
+
+Development
+~~~~~~~~~~~
+
+* make subitems in the sidebar menu collapsible
+
+
+1.0.2
+~~~~~
+
+* ``ralph chains`` command to list available plug-in chains
+
+* fixed regression from 1.0.1: ``settings-local.py`` works correctly again
+
+* ability to create new devices from the web application
+
+* several minor bugfixes
+
+
 1.0.1
 ~~~~~
 
@@ -14,6 +33,7 @@ Change Log
 * minor fixes for the SQLite backend
 
 * minor documentation fixes and updates
+
 
 1.0.0
 ~~~~~

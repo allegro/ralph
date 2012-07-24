@@ -202,7 +202,8 @@ To use Apache as the front-end Web server for Ralph, install it::
   $ sudo a2enmod proxy_http
 
 Now add the Ralph site configuration to `/etc/apache2/sites-enabled/ralph
-<_static/apache>`_, restart Apache and you're done.
+<_static/apache>`_, restart Apache and you're done. Alternatively, you can check
+out `configuration for usage with modwsgi <_static/apache-wsgi>`_.
 
 Ralph
 -----
@@ -343,9 +344,11 @@ sources by running the standard ``syncdb`` management command::
 
   (ralph)$ ralph syncdb
 
-Django will create all tables, setup some default values and ask whether you
+Django will create some tables, setup some default values and ask whether you
 want to create a superuser. Do so, you will use the credentials given to test
-whether the setup worked.
+whether the setup worked. Then migrate the rest of the tables::
+
+  (ralph)$ ralph migrate
 
 Lastly, we need to link the static images, CSS files, JavaScript sources, etc.
 to a common place so the front-end Web server can pick them up. That way the

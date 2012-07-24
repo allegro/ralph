@@ -20,7 +20,7 @@ prices of any mounted disk shares and installed software.
 ---------------------
 
 Sometimes the automatically calculated price is not right. You can override it
-by setting a manual price on the device -- it will be then used in place of
+by setting a manual price on the device -- it will then be used in place of
 the *auto price*.
 
 :index:`Quoted price`
@@ -36,7 +36,7 @@ a full blade system chassis should have price of 0. Another special case is a
 virtual server hypervisor, which has the prices of its virtual server instances
 subtracted from its own price.
 
-For details see the descriptiosn of pricing of specific kinds of devices below.
+For details see the descriptions of pricing of specific kinds of devices below.
 
 :index:`Price margin`
 ---------------------
@@ -58,9 +58,10 @@ is used to calculate the monthly cost of the device.
 :index:`Monthly cost`
 ---------------------
 
-This is calculated from *quoted price* increased by *price margin* and divided
-by *deprecation time*. This :index:`cost` is then used everywhere to calculate
-the device's usage costs. It's what your customers will see.
+This is calculated from the device's *quoted price* increased by its *price
+margin* and divided by its *deprecation time*. This :index:`cost` is then used
+everywhere to calculate the usage costs for the device. It's what your customers
+will see.
 
 Device pricing details
 **********************
@@ -77,7 +78,7 @@ in the chassis.
 :index:`Blade servers`
 ----------------------
 
-For a blade system, the process is similar. First, the price of the system is
+For a blade server, the process is similar. First, the price of the server is
 calculated as normal, and then the *m/n* of the chassis price is added to it.
 
 
