@@ -104,9 +104,6 @@ def connect_ssh(ip, username, password=None, client=paramiko.SSHClient, key=None
         raise AuthError(str(e))
     return ssh
 
-def prtconf(as_string):
-    return None, as_string
-
 def smbios(as_string):
     if not as_string.startswith(SMBIOS_BANNER):
         raise ValueError("Incompatible SMBIOS answer.")
