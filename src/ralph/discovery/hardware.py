@@ -7,6 +7,9 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 
+SMBIOS_BANNER = 'ID    SIZE TYPE'
+
+
 def normalize_wwn(wwn):
     """
     >>> normalize_wwn('50002ac2859a04c1') # 3PAR
@@ -54,4 +57,29 @@ def normalize_wwn(wwn):
         raise ValueError('Unknown WWN format %r' % wwn)
     return wwn
 
+
+def smbios(as_string):
+    if not as_string.startswith(SMBIOS_BANNER):
+        raise ValueError("Incompatible SMBIOS answer.")
+    smb = {}
+    current = None
+    for line in as_string.split('\n'):
+        if line == SMBIOS_BANNER:
+            if current:
+                ctype = current['__TYPE__']
+                del current['__TYPE__']
+                smb.setdefault(ctype, []).append(current)
+                current = None
+        elif current is None:
+            for token in line.split():
+                if token.startswith('SMB_TYPE_'):
+                    current = {'__TYPE__': token[9:]}
+                    break
+        else:
+            if ':' in line:
+                key, value = line.split(':', 1)
+                current[key.strip()] = value.strip()
+            else:
+                current.setdefault('capabilities', []).append(line)
+    return smb, as_string
 

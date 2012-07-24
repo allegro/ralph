@@ -30,7 +30,6 @@ class ConnectError(Error):
 class AuthError(Error):
     pass
 
-SMBIOS_BANNER = 'ID    SIZE TYPE'
 
 @memoize
 def hostname(ip, reverse=False):
@@ -104,31 +103,6 @@ def connect_ssh(ip, username, password=None, client=paramiko.SSHClient, key=None
     except (paramiko.AuthenticationException, EOFError) as e:
         raise AuthError(str(e))
     return ssh
-
-def smbios(as_string):
-    if not as_string.startswith(SMBIOS_BANNER):
-        raise ValueError("Incompatible SMBIOS answer.")
-    smb = {}
-    current = None
-    for line in as_string.split('\n'):
-        if line == SMBIOS_BANNER:
-            if current:
-                ctype = current['__TYPE__']
-                del current['__TYPE__']
-                smb.setdefault(ctype, []).append(current)
-                current = None
-        elif current is None:
-            for token in line.split():
-                if token.startswith('SMB_TYPE_'):
-                    current = {'__TYPE__': token[9:]}
-                    break
-        else:
-            if ':' in line:
-                key, value = line.split(':', 1)
-                current[key.strip()] = value.strip()
-            else:
-                current.setdefault('capabilities', []).append(line)
-    return smb, as_string
 
 def validate_ip(address):
     ip = ipaddr.IPAddress(address)
