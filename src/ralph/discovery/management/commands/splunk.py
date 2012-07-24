@@ -15,7 +15,7 @@ from django.core.management.base import BaseCommand
 
 from ralph.discovery.models import (IPAddress, SplunkUsage,
     ComponentModel, ComponentType)
-from ralph.util.splunk import Splunk
+from ralph.discovery.splunk import Splunk
 
 
 class Command(BaseCommand):
