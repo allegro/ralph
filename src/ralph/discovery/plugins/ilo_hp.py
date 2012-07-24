@@ -13,7 +13,8 @@ import hashlib
 from django.conf import settings
 from lck.django.common import nested_commit_on_success
 
-from ralph.util import hp_ilo, plugin, Eth
+from ralph.util import plugin, Eth
+from ralph.discovery import hp_ilo
 from ralph.discovery.models import (Device, Processor, Memory,
         IPAddress, ComponentModel, ComponentType, DeviceType)
 

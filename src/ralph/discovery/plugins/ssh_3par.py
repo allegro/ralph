@@ -15,6 +15,7 @@ from ralph.util import network
 from ralph.util import plugin
 from ralph.discovery.models import (DeviceType, DeviceModel, Device, IPAddress,
                                     DiskShare, ComponentModel, ComponentType)
+from ralph.discovery.hardware import normalize_wwn
 
 
 SSH_3PAR_USER = settings.SSH_3PAR_USER
@@ -33,7 +34,7 @@ def _save_shares(dev, shares):
     wwns = []
     for share_id, (label, wwn, snapshot_size, size, type,
                    speed, full) in shares.iteritems():
-        wwn = network.normalize_wwn(wwn)
+        wwn = normalize_wwn(wwn)
         wwns.append(wwn)
         model, created = ComponentModel.concurrent_get_or_create(
             name='3PAR %s disk share' % type, type=ComponentType.share.id,
