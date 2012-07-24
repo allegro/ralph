@@ -14,6 +14,7 @@ from lck.django.common import nested_commit_on_success
 from ralph.util import network, Eth
 from ralph.util import plugin
 from ralph.discovery import guessmodel
+from ralph.dicovery.storage import normalize_wwn
 from ralph.discovery.models import (
     Device, DeviceType, DiskShareMount, DiskShare,
     ComponentType, ComponentModel, Storage,
@@ -104,7 +105,7 @@ def run_ssh_aix(ip):
             share = DiskShare.objects.get(wwn=wwn)
         except DiskShare.DoesNotExist:
             continue
-        wwn = network.normalize_wwn(sn[-4:] + sn[:-4])
+        wwn = normalize_wwn(sn[-4:] + sn[:-4])
         mount, created = DiskShareMount.concurrent_get_or_create(
                 share=share, device=dev, is_virtual=False)
         mount.volume = disk
