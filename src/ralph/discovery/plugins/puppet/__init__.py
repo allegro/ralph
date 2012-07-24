@@ -22,6 +22,7 @@ from ralph.util import network, plugin, units
 from ralph.discovery.models import (IPAddress, ComponentModel, ComponentType,
     Storage, DiskShare, DiskShareMount, DISK_VENDOR_BLACKLIST,
     DISK_PRODUCT_BLACKLIST)
+from ralph.discovery.hardware import normalize_wwn
 
 from .facts import parse_facts
 from .lshw import parse_lshw
@@ -130,7 +131,7 @@ def parse_wwn(facts, dev):
     for key, wwn in facts.iteritems():
         if not key.startswith('wwn_mpath'):
             continue
-        wwns.append(network.normalize_wwn(wwn))
+        wwns.append(normalize_wwn(wwn))
     for wwn in wwns:
         mount = make_mount(wwn)
         if not mount:
