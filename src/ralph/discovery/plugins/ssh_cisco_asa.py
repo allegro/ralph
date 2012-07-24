@@ -15,7 +15,8 @@ import time
 from django.conf import settings
 from lck.django.common import nested_commit_on_success
 
-from ralph.util import network, parse, plugin, Eth, guessmodel
+from ralph.util import network, parse, plugin, Eth
+from ralph.discovery import guessmodel
 from ralph.discovery.cisco import cisco_component, cisco_inventory
 from ralph.discovery.models import DeviceType, Device, Ethernet, IPAddress
 
