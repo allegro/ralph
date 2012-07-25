@@ -90,6 +90,13 @@ For example, setting up Redis could look like this::
 
   BROKER_URL = "redis://127.0.0.1:6379/4"
 
+.. note::
+
+  For Redis support you will also need to install a connector library. Simply
+  type::
+
+    $ pip install redis
+
 Cache
 -----
 
