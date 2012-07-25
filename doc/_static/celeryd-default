@@ -1,0 +1,34 @@
+# Put this in /etc/default/celeryd
+
+# Name of nodes to start
+CELERYD_NODES="worker email"
+
+# Where to chdir at start.
+CELERYD_BASE="/home/ralph"
+CELERYD_CHDIR="$CELERYD_BASE"
+
+# Python interpreter from environment.
+ENV_PYTHON="$CELERYD_BASE/bin/python"
+
+# How to call "manage.py celeryd_multi"
+CELERYD_MULTI="$ENV_PYTHON -m ralph celeryd_multi"
+
+# How to call "manage.py celeryctl"
+CELERYCTL="$ENV_PYTHON -m ralph celeryctl"
+
+# Extra arguments to celeryd
+CELERYD_OPTS="-Q:worker celery,dc2 -Q:email email"
+
+# Name of the celery config module.
+CELERY_CONFIG_MODULE="celeryconfig"
+
+# %n will be replaced with the nodename.
+CELERYD_LOG_FILE="/var/log/celery/%n.log"
+CELERYD_PID_FILE="/var/run/celery/%n.pid"
+
+# Workers should run as an unprivileged user.
+CELERYD_USER="ralph"
+CELERYD_GROUP="ralph"
+
+# Name of the projects settings module.
+export DJANGO_SETTINGS_MODULE="ralph.settings"

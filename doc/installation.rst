@@ -50,7 +50,7 @@ For Ubuntu Server it is available by installing::
 The capability we're after is ``CAP_NET_RAW`` which enables a binary to use raw
 and packet sockets. To enable this for every system user, type::
 
-  $ sudo setcap cap_net_raw=ep /usr/local/bin/python2.7
+  $ sudo setcap cap_net_raw=ep /usr/bin/python2.7
 
 Please note that we set caps directly on the binary (e.g. **not on a symlink**).
 
