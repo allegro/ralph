@@ -33,6 +33,8 @@ class DCRouter(object):
        Use the default queue if no network matches the IP address."""
 
     def route_for_task(self, task, args=None, kwargs=None):
+        if task == 'ralph.discovery.tasks.run_chain':
+            return args[1] or 'celery'
         if task != 'ralph.discovery.tasks.discover_single':
             return 'celery'
         try:
@@ -74,7 +76,7 @@ def _run_plugin(context, chain, plugin_name, requirements, interactive,
         stdout_verbose = output.get(interactive, verbose=True)
         stderr = output.get(interactive, err=True)
 
-    message = "[{}] {}... ".format(plugin_name, context['ip'])
+    message = "[{}] {}... ".format(plugin_name, context.get('ip', ''))
     pad = output.WIDTH - len(message)
     stdout(message, end='')
     try:
@@ -90,7 +92,7 @@ def _run_plugin(context, chain, plugin_name, requirements, interactive,
         stdout('', end='\r')
         stderr("Exception in plugin '{}' for '{}': {}".format(
             plugin_name,
-            context['ip'],
+            context.get('ip', 'none'),
             traceback.format_exc()),
             end='\n')
     else:
@@ -141,6 +143,24 @@ def dummy_horde(interactive=False, how_many=1000):
     else:
         for i in xrange(how_many):
             dummy_task.delay(interactive=interactive, index=i+1)
+
+
+@task(ignore_result=True)
+def run_chain(context, chain_name, requirements=None, interactive=False,
+              clear_down=True, done_requirements=None, outputs=None):
+    if requirements is None:
+        requirements = set()
+    if done_requirements is None:
+        done_requirements = set()
+    to_run = plugin.next(chain_name, requirements) - done_requirements
+    if not to_run:
+        return
+    plugin_name = plugin.highest_priority(chain_name, to_run)
+    _run_plugin(context, chain_name, plugin_name, requirements, interactive,
+            clear_down, done_requirements, outputs)
+    run_chain(context, chain_name, requirements, interactive, clear_down,
+              done_requirements, outputs)
+
 
 @task(ignore_result=True, expires=SINGLE_DISCOVERY_TIMEOUT)
 def discover_single(context, plugin_name='ping', requirements=None,
