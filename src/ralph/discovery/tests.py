@@ -3963,22 +3963,22 @@ class SnmpPluginTest(TestCase):
     def test_name(self):
         ip = IPAddress(address='127.0.0.1')
         ip.save()
-        with mock.patch('ralph.util.network.snmp') as network_snmp:
-            network_snmp.return_value = [[None, b'Testing name']]
+        with mock.patch('ralph.discovery.plugins.snmp.snmp_command') as snmp_command:
+            snmp_command.return_value = [[None, b'Testing name']]
             is_up, message = snmp._snmp('127.0.0.1', 'public', (1,3,6,1,2,1,1,1,0))
         self.assertEqual(message, 'Testing name')
         self.assertEqual(is_up, True)
 
     def test_noip(self):
-        with mock.patch('ralph.util.network.snmp') as network_snmp:
-            network_snmp.return_value = [[None, b'Testing name']]
+        with mock.patch('ralph.discovery.plugins.snmp.snmp_command') as snmp_command:
+            snmp_command.return_value = [[None, b'Testing name']]
             is_up, message = snmp._snmp('127.0.0.1', 'public', (1,3,6,1,2,1,1,1,0))
         self.assertEqual(message, 'IP address not present in DB.')
         self.assertEqual(is_up, False)
 
     def test_silent(self):
-        with mock.patch('ralph.util.network.snmp') as network_snmp:
-            network_snmp.return_value = None
+        with mock.patch('ralph.discovery.plugins.snmp.snmp_command') as snmp_command:
+            snmp_command.return_value = None
             is_up, message = snmp._snmp('127.0.0.1', 'public', (1,3,6,1,2,1,1,1,0))
         self.assertEqual(message, 'silent.')
         self.assertEqual(is_up, False)
@@ -4005,8 +4005,8 @@ class SnmpMacPluginTest(TestCase):
         self.ip.delete()
 
     def test_windows(self):
-        with mock.patch('ralph.util.network.snmp_macs') as network_snmp_macs:
-            network_snmp_macs.return_value = ['001A643320EA']
+        with mock.patch('ralph.discovery.plugins.snmp.snmp_macs') as snmp_macs:
+            snmp_macs.return_value = ['001A643320EA']
             ethernets = snmp.do_snmp_mac(self.ip.snmp_name,
                                          self.ip.snmp_community,
                                          self.ip.snmp_version, self.ip.address,
@@ -4023,8 +4023,8 @@ class SnmpMacPluginTest(TestCase):
         self.assertEquals(macs, ['001A643320EA'])
 
     def test_windows_empty(self):
-        with mock.patch('ralph.util.network.snmp_macs') as network_snmp_macs:
-            network_snmp_macs.return_value = []
+        with mock.patch('ralph.discovery.plugins.snmp.snmp_macs') as snmp_macs:
+            snmp_macs.return_value = []
             with self.assertRaises(snmp.Error) as raised:
                 snmp.do_snmp_mac(self.ip.snmp_name, self.ip.snmp_community,
                                  self.ip.snmp_version, self.ip.address,
@@ -4041,14 +4041,14 @@ class SnmpMacPluginTest(TestCase):
                 return [[None, 'F5 BIG-IP 8400']]
             elif oid == '1.3.6.1.4.1.3375.2.1.3.3.3.0':
                 return [[None, 'bip241990s']]
-        with mock.patch('ralph.util.network.snmp_macs') as network_snmp_macs:
-            network_snmp_macs.return_value = ['0001D76A7852', '0001D76A7846',
+        with mock.patch('ralph.discovery.plugins.snmp.snmp_macs') as snmp_macs:
+            snmp_macs.return_value = ['0001D76A7852', '0001D76A7846',
                 '0001D76A784A', '0001D76A784E', '0001D76A7843', '0001D76A7847',
                 '0001D76A784B', '0001D76A784F', '0001D76A7844', '0001D76A7848',
                 '0001D76A784C', '0001D76A7850', '00D06814F5F6', '0001D76A7845',
                 '0001D76A7849', '0001D76A784D', '0001D76A7851', '0201D76A7851']
-            with mock.patch('ralph.util.network.snmp') as network_snmp:
-                network_snmp.side_effect = snmp_side
+            with mock.patch('ralph.discovery.plugins.snmp.snmp_command') as snmp_command:
+                snmp_command.side_effect = snmp_side
                 snmp.do_snmp_mac(self.ip.snmp_name, self.ip.snmp_community,
                                  self.ip.snmp_version, self.ip.address,
                                  self.kwargs)
@@ -4067,8 +4067,8 @@ class SnmpMacPluginTest(TestCase):
                 return ['000C2942346D']
             return ['1CC1DEEC0FEC', '1CC1DEEC0FE8']
 
-        with mock.patch('ralph.util.network.snmp_macs') as network_snmp_macs:
-            network_snmp_macs.side_effect = macs_side
+        with mock.patch('ralph.discovery.plugins.snmp.snmp_macs') as snmp_macs:
+            snmp_macs.side_effect = macs_side
             snmp.do_snmp_mac(self.ip.snmp_name, self.ip.snmp_community,
                              self.ip.snmp_version, self.ip.address, self.kwargs)
         ip = IPAddress.objects.get(address=self.ip.address)
@@ -4104,10 +4104,10 @@ class SnmpMacPluginTest(TestCase):
                     6: set([u'001E670C5960', u'001E670C5961'])
                 }[oid[-1]]
             return ['001E6712C2E6', '001E6712C2E7']
-        with mock.patch('ralph.util.network.snmp_macs') as network_snmp_macs:
-            network_snmp_macs.side_effect = macs_side
-            with mock.patch('ralph.util.network.snmp') as network_snmp:
-                network_snmp.return_value = [[None, 6]]
+        with mock.patch('ralph.discovery.plugins.snmp.snmp_macs') as snmp_macs:
+            snmp_macs.side_effect = macs_side
+            with mock.patch('ralph.discovery.plugins.snmp.snmp_command') as snmp_command:
+                snmp_command.return_value = [[None, 6]]
                 snmp.do_snmp_mac(self.ip.snmp_name, self.ip.snmp_community,
                              self.ip.snmp_version, self.ip.address, self.kwargs)
         self.maxDiff = None

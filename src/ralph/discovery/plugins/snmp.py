@@ -10,9 +10,10 @@ import re
 
 from django.conf import settings
 
-from ralph.util import network, plugin, Eth
+from ralph.util import plugin, Eth
 from ralph.discovery.models import DeviceType, Device, IPAddress, Software
 from ralph.discovery.models import MAC_PREFIX_BLACKLIST
+from ralph.discovery.snmp import snmp_command, snmp_macs, check_snmp_port
 
 
 SNMP_PLUGIN_COMMUNITIES = getattr(settings, 'SNMP_PLUGIN_COMMUNITIES',
@@ -52,7 +53,7 @@ class Error(Exception):
 
 def _snmp(ip, community, oid, attempts=2, timeout=3, snmp_version='2c'):
     is_up = False
-    result = network.snmp(str(ip), community, oid, attempts=attempts,
+    result = snmp_command(str(ip), community, oid, attempts=attempts,
         timeout=timeout, snmp_version=snmp_version)
     if result is None:
         message = 'silent.'
@@ -78,7 +79,7 @@ def snmp(**kwargs):
     ip = str(kwargs['ip'])
     if http_family not in ('Microsoft-IIS', 'Unspecified', 'RomPager'):
         # Windows hosts always say that the port is closed, even when it's open
-        if not network.check_snmp_port(ip):
+        if not check_snmp_port(ip):
             return False, 'port closed.', kwargs
     community = kwargs.get('community')
     oids = [
@@ -112,12 +113,12 @@ def snmp(**kwargs):
 
 def _snmp_modular(ip, community, parent):
     oid = (1, 3, 6, 1, 4, 1, 343, 2, 19, 1, 2, 10, 12, 0) # Max blades
-    message = network.snmp(ip, community, oid, attempts=1, timeout=0.5)
+    message = snmp_command(ip, community, oid, attempts=1, timeout=0.5)
     max_blades = int(message[0][1])
     blades_macs = {}
     for blade_no in range(1, max_blades + 1):
         oid = (1, 3, 6, 1, 4, 1, 343, 2, 19, 1, 2, 10, 202, 3, 1, 1, blade_no)
-        blades_macs[blade_no] =  set(network.snmp_macs(ip, community, oid,
+        blades_macs[blade_no] =  set(snmp_macs(ip, community, oid,
                                                        attempts=1, timeout=0.5))
     for i, macs in blades_macs.iteritems():
         unique_macs = macs
@@ -143,10 +144,10 @@ def _snmp_modular(ip, community, parent):
 def snmp_f5(**kwargs):
     ip = str(kwargs['ip'])
     community = str(kwargs['community'])
-    model = str(network.snmp(ip, community,
+    model = str(snmp_command(ip, community,
         [int(i) for i in '1.3.6.1.4.1.3375.2.1.3.5.2.0'.split('.')],
         attempts=1, timeout=0.5)[0][1])
-    sn = str(network.snmp(ip, community,
+    sn = str(snmp_command(ip, community,
         [int(i) for i in '1.3.6.1.4.1.3375.2.1.3.3.3.0'.split('.')],
         attempts=1, timeout=0.5)[0][1])
     return 'F5 %s' % model, sn
@@ -156,7 +157,7 @@ def snmp_vmware(parent, ipaddr, **kwargs):
     community = str(kwargs['community'])
     oid = (1,3,6,1,4,1,6876,2,4,1,7)
     snmp_version = 1
-    for mac in network.snmp_macs(ip, community, oid, attempts=2,
+    for mac in snmp_macs(ip, community, oid, attempts=2,
                                  timeout=3, snmp_version=snmp_version):
         dev = Device.create(parent=parent, management=ipaddr,
                 ethernets=[Eth(mac=mac, label='Virtual MAC', speed=0)],
@@ -241,7 +242,7 @@ def do_snmp_mac(snmp_name, community, snmp_version, ip, kwargs):
         model_type = DeviceType.unknown
         raise Error('no match.')
     ethernets = []
-    for mac in network.snmp_macs(ip, community, oid, attempts=2,
+    for mac in snmp_macs(ip, community, oid, attempts=2,
                                  timeout=3, snmp_version=snmp_version):
         # Skip virtual devices
         if mac[0:6] in MAC_PREFIX_BLACKLIST:
@@ -291,8 +292,8 @@ def do_snmp_mac(snmp_name, community, snmp_version, ip, kwargs):
 def _cisco_snmp_model(model_oid, sn_oid, **kwargs):
     ip = str(kwargs['ip'])
     community = str(kwargs['community'])
-    model = network.snmp(ip, community, model_oid, attempts=2, timeout=3)
-    sn = network.snmp(ip, community, sn_oid, attempts=2, timeout=3)
+    model = snmp_command(ip, community, model_oid, attempts=2, timeout=3)
+    sn = snmp_command(ip, community, sn_oid, attempts=2, timeout=3)
     if not (model and sn):
         return False, "silent.", kwargs
     sn = unicode(sn[0][1])
@@ -324,8 +325,8 @@ def nortel_snmp(**kwargs):
         return False, "no match.", kwargs
     ip = str(kwargs['ip'])
     community = str(kwargs['community'])
-    sn = network.snmp(ip, community, sn_oid, attempts=2, timeout=3) or \
-         network.snmp(ip, community, uuid_oid, attempts=2, timeout=3)
+    sn = (snmp_command(ip, community, sn_oid, attempts=2, timeout=3) or
+          snmp_command(ip, community, uuid_oid, attempts=2, timeout=3))
     if not sn:
         return False, "silent.", kwargs
     sn = unicode(sn[0][1])

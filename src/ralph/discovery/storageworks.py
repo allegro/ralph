@@ -11,9 +11,10 @@ import ssh as paramiko
 from lck.django.common import nested_commit_on_success
 from lxml import etree as ET
 
-from ralph.util import Eth, network
+from ralph.util import Eth
 from ralph.discovery.models import (DeviceType, Device, IPAddress,
                                     DiskShare, ComponentModel, ComponentType)
+from ralph.discovery.hardware import normalize_wwn
 
 class Error(Exception):
     pass
@@ -123,7 +124,7 @@ def run(ssh, ip):
 def _save_shares(dev, volumes):
     wwns = []
     for (label, serial, size, type, speed) in volumes:
-        wwn = network.normalize_wwn(serial)
+        wwn = normalize_wwn(serial)
         wwns.append(wwn)
         model, created = ComponentModel.concurrent_get_or_create(
             name='MSA %s disk share' % type, type=ComponentType.share.id,

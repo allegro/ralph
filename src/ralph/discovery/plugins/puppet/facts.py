@@ -13,6 +13,7 @@ import zlib
 from lck.django.common import nested_commit_on_success
 
 from ralph.util import network, units, Eth
+from ralph.discovery import hardware
 from ralph.discovery.models import (DeviceType, Device, Memory, Processor,
     ComponentModel, ComponentType, Storage, SERIAL_BLACKLIST,
     DISK_VENDOR_BLACKLIST, DISK_PRODUCT_BLACKLIST)
@@ -78,13 +79,16 @@ def parse_facts(facts, is_virtual):
     handle_facts_disks(dev, facts, is_virtual=is_virtual)
     return dev, dev_name
 
+def network_prtconf(as_string):
+    return None, as_string
+
 def _parse_prtconf(dev, prtconf, facts, is_virtual):
-    prtconf, _ = network.prtconf(as_string=zlib.decompress(prtconf))
+    prtconf, _ = network_prtconf(as_string=zlib.decompress(prtconf))
 
 DENSE_SPEED_REGEX = re.compile(r'(\d+)\s*([GgHhKkMmZz]+)')
 
 def _parse_smbios(dev, smbios, facts, is_virtual):
-    smbios, _ = network.smbios(as_string=zlib.decompress(smbios))
+    smbios, _ = hardware.smbios(as_string=zlib.decompress(smbios))
     # memory
     for memory in smbios.get('MEMDEVICE', ()):
         try:

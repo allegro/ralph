@@ -8,7 +8,8 @@ from __future__ import unicode_literals
 
 import ssh as paramiko
 
-from ralph.util import plugin, network, storageworks
+from ralph.util import plugin, network
+from ralph.discovery import storageworks
 from django.conf import settings
 
 SSH_P2000_USER = settings.SSH_P2000_USER

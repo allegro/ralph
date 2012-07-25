@@ -17,7 +17,7 @@ from django.conf import settings
 from ralph.discovery.models import (Device, DeviceType, GenericComponent,
     ComponentModel, ComponentType)
 from ralph.discovery.models_history import HistoryCost
-from ralph.util.openstack import OpenStack
+from ralph.discovery.openstack import OpenStack
 
 
 class Command(BaseCommand):
