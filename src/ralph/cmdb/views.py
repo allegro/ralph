@@ -16,8 +16,9 @@ from ralph.cmdb.forms import CISearchForm, CIEditForm, CIViewForm, CIRelationEdi
 import ralph.cmdb.models  as db
 from ralph.cmdb.customfields import EditAttributeFormFactory
 from ralph.account.models import Perm
-from ralph.cmdb.integration import zabbix
+from ralph.cmdb.integration.lib import zabbix
 from ralph.ui.views.common import Base
+from lck.django.common import nested_commit_on_success
 
 import datetime
 
@@ -134,6 +135,7 @@ class EditRelation(BaseCMDBView):
         self.rel = rel
         return super(EditRelation, self).get(*args, **kwargs)
 
+    @nested_commit_on_success
     def post(self, *args, **kwargs):
         self.form = None
         self.rel = None
@@ -192,6 +194,7 @@ class AddRelation(BaseCMDBView):
         self.form = self.Form(**self.form_options)
         return super(AddRelation, self).get(*args, **kwargs)
 
+    @nested_commit_on_success
     def post(self, *args, **kwargs):
         self.form = None
         self.rel = None
@@ -233,6 +236,7 @@ class Add(BaseCMDBView):
         self.form = self.Form(**self.form_options)
         return super(Add, self).get(*args, **kwargs)
 
+    @nested_commit_on_success
     def post(self, *args, **kwargs):
         self.form = None
         self.ci = None
@@ -533,6 +537,7 @@ class Edit(BaseCMDBView):
         self.problems = []
         self.incidents = []
 
+    @nested_commit_on_success
     def post(self, *args, **kwargs):
         self.initialize_vars()
         ci_id = self.kwargs.get('ci_id')
@@ -546,9 +551,9 @@ class Edit(BaseCMDBView):
                                 **self.form_attributes_options
                         )
                 if self.form.is_valid() and self.form_attributes.is_valid():
-                    uid = self.ci.uid
-                    model = self.form.save(commit=True)
-                    model.uid = uid
+                    self.form.data['base-id'] = self.ci.id
+                    model = self.form.save(commit=False)
+                    model.uid = self.ci.uid
                     model.save()
                     self.form_attributes.ci = model
                     model_attributes = self.form_attributes.save()
