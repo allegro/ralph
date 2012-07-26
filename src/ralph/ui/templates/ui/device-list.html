@@ -36,6 +36,7 @@
         {% include 'ui/column-header.html' with label='Management' name='management' %}
         {% include 'ui/column-header.html' with label='Created' name='created' type='date' %}
         {% include 'ui/column-header.html' with label='Last Seen' name='lastseen' type='date' %}
+        {% include 'ui/column-header.html' with label='Reports' name='reports' %}
         {% include 'ui/column-header.html' with label='Remarks' name='remarks' %}
         {% include 'ui/column-header.html' with label='Purchase Date' name='purchase' type='date' %}
         {% include 'ui/column-header.html' with label='Warranty Expiration' name='warranty' type='date' %}
@@ -118,6 +119,9 @@
             {% endif %}
             {% if 'lastseen' in columns %}
             <td>{{ d.last_seen|date:'Y-m-d H:i' }}</td>
+            {% endif %}
+            {% if 'reports' in columns %}
+            <td>{%icon 'fugue-fingerprint'%}</td>
             {% endif %}
             {% if 'remarks' in columns %}
             <td class="column-remarks">{{ d.remarks }}</td>

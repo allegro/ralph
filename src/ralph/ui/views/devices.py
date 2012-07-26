@@ -37,6 +37,7 @@ DEVICE_SORT_COLUMNS = {
     'purchase_date': ('purchase_date',),
     'warranty': ('warranty_expiration_date',),
     'support': ('support_expiration_date', 'support_kind'),
+    'reports': ('remarks',), # FIXME: create a column for affected reports quantity
 }
 
 
@@ -75,9 +76,10 @@ class BaseDeviceList(ListView):
         'addresses': ['ips', 'management'],
         'costs': ['venture', 'cost'],
         'history': ['created', 'lastseen'],
-        'purchase': ['pucrhase', 'warranty', 'support'],
+        'purchase': ['purchase', 'warranty', 'support'],
         'discover': ['lastseen'],
         'cmdb': [],
+        'reports': ['venture', 'reports', 'remarks'],
         None: [],
     }
 

@@ -115,6 +115,10 @@ class BaseMixin(object):
                 MenuItem('CMDB', fugue_icon='fugue-thermometer',
                          href='/cmdb/changes/dashboard')
             )
+        if has_perm(Perm.read_device_info_reports):
+            mainmenu_items.append(
+                MenuItem('Reports', fugue_icon='fugue-reports-stack',
+                         view_name='reports'))
         if self.request.user.is_staff:
             mainmenu_items.append(
                 MenuItem('Admin', fugue_icon='fugue-toolbox', href='/admin'))
@@ -179,9 +183,11 @@ class BaseMixin(object):
                 MenuItem('CMDB', fugue_icon='fugue-thermometer',
                          href=tab_href('cmdb')),
             ])
-
-
-
+        if has_perm(Perm.read_device_info_reports, venture):
+            tab_items.extend([
+                MenuItem('Reports', fugue_icon='fugue-reports-stack',
+                         href=tab_href('reports')),
+            ])
         if details == 'bulkedit':
             tab_items.extend([
                 MenuItem('Bulk edit', fugue_icon='fugue-pencil-field',
@@ -526,6 +532,15 @@ class Discover(DeviceDetailView):
             'address': addresses[0] if addresses else '',
             'addresses': json.dumps(addresses)
         })
+        return ret
+
+
+class Reports(DeviceDetailView):
+    template_name = 'ui/device_reports.html'
+    read_perm = Perm.read_device_info_history
+
+    def get_context_data(self, **kwargs):
+        ret = super(Reports, self).get_context_data(**kwargs)
         return ret
 
 

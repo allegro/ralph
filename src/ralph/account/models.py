@@ -54,6 +54,7 @@ class Perm(Choices):
     read_device_info_financial = _("read financial device info")
     read_device_info_support = _("read device purchase info")
     read_device_info_history = _("read device history info")
+    read_device_info_reports = _("read device reports")
 
 
 class Profile(BasicInfo, ActivationSupport, GravatarSupport,
