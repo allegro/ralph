@@ -78,6 +78,8 @@ class CIEditForm(forms.ModelForm):
             self.data = self.data.copy()
             if self.initial.get('uid',None):
                 self.data['uid'] = self.initial['uid']
+            if self.initial.get('id',None):
+                self.data['id'] = self.initial['id']
             if self.initial.get('name',None):
                 self.data['name'] = self.initial['name']
 
