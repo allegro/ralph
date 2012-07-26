@@ -11,6 +11,7 @@ from django.contrib.contenttypes import generic
 from django.utils.translation import ugettext_lazy as _
 from django.core.exceptions import ValidationError
 
+
 from lck.django.choices import Choices
 
 class CI_RELATION_TYPES(Choices):
@@ -25,7 +26,7 @@ class CI_STATE_TYPES(Choices):
 
     ACTIVE = _(u'Active')
     INACTIVE = _(u'Inactive')
-    WAITING = _(u'Waiting')
+    WAITING = _(u'Waiting for deactivation')
 
 class CI_STATUS_TYPES(Choices):
     _ = Choices.Choice
@@ -298,6 +299,7 @@ class PuppetResourceStatus(models.Model):
 class CI(models.Model):
     uid = models.CharField(
             max_length=100,
+            unique=True,
             verbose_name=_("CI UID"),
             null=True,
             blank=True,
@@ -338,6 +340,8 @@ class CI(models.Model):
     )
     relations = models.ManyToManyField("self", symmetrical=False,
             through='CIRelation')
+
+    added_manually = models.BooleanField(default=False)
 
     def __unicode__(self):
         return "%s" %  self.name
@@ -429,5 +433,20 @@ class CIProblem(CIEvent):
 
 class CIIncident(CIEvent):
     pass
+
+
+class JiraService(models.Model):
+    """ Very thin layer around Jira information """
+    name = models.CharField(max_length=255, null=False, db_index=True)
+    jira_key = models.CharField(max_length=100, null=False, unique=True,db_index=True)
+    location = models.CharField(max_length=255, null=False)
+    state = models.CharField(max_length=100)
+    it_person = models.CharField(max_length=255)
+    it_person_mail = models.CharField(max_length=255)
+    business_line = models.CharField(max_length=255)
+
+
+class JiraBusinessLine(models.Model):
+    name = models.CharField(max_length=255, null=False,db_index=True, unique=True)
 
 
