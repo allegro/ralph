@@ -8,7 +8,7 @@
   pk: 2
   fields:
     prefix: dc
-    content_type_name: discovery.data_center
+    content_type_name: discovery.datacenter
  
 - model: cmdb.CIContentTypePrefix
   pk: 3
@@ -32,5 +32,17 @@
   pk: 6
   fields:
     prefix: dt
-    content_type_name: discovery.network_terminator
+    content_type_name: discovery.networkterminator
+
+- model: cmdb.CIContentTypePrefix
+  pk: 7
+  fields:
+    prefix: cs
+    content_type_name: cmdb.jiraservice
+
+- model: cmdb.CIContentTypePrefix
+  pk: 8
+  fields:
+    prefix: cb
+    content_type_name: cmdb.jirabusinessline
 
