@@ -15,15 +15,17 @@ NAME="ralph"
 
 ### CONFIGURATION
 # Path to the Django project inside the virtualenv
-CONFDIR="/home/ralph/project/src/ralph"
+CONFDIR="/home/ralph"
 # Path to the `activate` script of the virtualenv
 VENV_ACTIVATE="/home/ralph/bin/activate"
 # Path to the PID file
 PID="$CONFDIR/gunicorn_$NAME.pid"
+ACCESSLOG="$CONFDIR/gunicorn_$NAME.access.log"
+ERRORLOG="$CONFDIR/gunicorn_$NAME.error.log"
 # Gunicorn start script within the virtualenv
-GUNICORN_RUN="gunicorn_django"
+GUNICORN_RUN="ralph run_gunicorn"
 # Gunicorn start script options
-GUNICORN_OPTS="--daemon -p $PID -w 8"
+GUNICORN_OPTS="--daemon -p $PID -w 12 -b 0.0.0.0:8000 -t 600 --access-logfile $ACCESSLOG --error-logfile $ERRORLOG"
 
 # source function library
 . /lib/lsb/init-functions
