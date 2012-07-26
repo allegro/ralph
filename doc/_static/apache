@@ -4,6 +4,8 @@
   ProxyPass /static !
   ProxyPass / http://127.0.0.1:8000/
   ProxyPassReverse / http://127.0.0.1:8000/
+  ProxyTimeout 600
+  TimeOut 600
   # This is all there is to it. You should NOT use ProxyRequests On.
 
   Alias /robots.txt /home/ralph/project/src/ralph/media/robots.txt
