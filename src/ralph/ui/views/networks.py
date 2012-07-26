@@ -14,7 +14,7 @@ from ralph.ui.views.common import (Info, Prices, Addresses, Costs,
     Purchase, Components, History, Discover)
 from ralph.discovery.models import ReadOnlyDevice
 from ralph.account.models import Perm
-from ralph.ui.views.common import BaseMixin,DeviceDetailView, CMDB
+from ralph.ui.views.common import BaseMixin, DeviceDetailView, CMDB, Reports
 from ralph.ui.views.devices import BaseDeviceList
 from ralph.util import presentation
 
@@ -159,3 +159,5 @@ class NetworksCMDB(Networks, CMDB,DeviceDetailView ):
     pass
 
 
+class NetworksReports(Networks, Reports):
+    pass

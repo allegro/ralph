@@ -15,7 +15,7 @@ from django.core.urlresolvers import reverse
 
 from ralph.discovery.models import ReadOnlyDevice, Device
 from ralph.ui.views.common import (BaseMixin, Info, Prices, Addresses, Costs,
-    Purchase, Components, History, Discover)
+    Purchase, Components, History, Discover, Reports)
 from ralph.ui.forms import SearchForm
 from ralph.account.models import Perm
 from ralph.ui.views.devices import BaseDeviceList
@@ -262,23 +262,34 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
 class SearchInfo(Search, Info):
     pass
 
+
 class SearchAddresses(Search, Addresses):
     pass
+
 
 class SearchComponents(Search, Components):
     pass
 
+
 class SearchPrices(Search, Prices):
     pass
+
 
 class SearchCosts(Search, Costs):
     pass
 
+
 class SearchHistory(Search, History):
     pass
+
 
 class SearchPurchase(Search, Purchase):
     pass
 
+
 class SearchDiscover(Search, Discover):
+    pass
+
+
+class SearchReports(Search, Reports):
     pass

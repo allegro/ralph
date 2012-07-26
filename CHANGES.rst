@@ -7,6 +7,8 @@ Development
 
 * make subitems in the sidebar menu collapsible
 
+* a rudimentary reports view
+
 
 1.0.2
 ~~~~~
