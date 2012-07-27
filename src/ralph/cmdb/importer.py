@@ -43,8 +43,6 @@ from __future__ import unicode_literals
 
 import os
 os.environ['DJANGO_SETTINGS_MODULE'] = "ralph.settings"
-from django.utils.translation import ugettext
-ugettext('Force initializing all apps by Django to prevent import cycles.')
 
 from django.contrib.contenttypes.models import ContentType
 import logging
@@ -58,7 +56,10 @@ from django.db import IntegrityError
 from lck.django.common import nested_commit_on_success
 
 class UnknownCTException(Exception):
-    pass
+    def __init__(self, value):
+        self.parameter = value
+    def __str__(self):
+        return repr("Unknown content type : %s" % self.parameter)
 
 class CIImporter(object):
     @classmethod
@@ -93,7 +94,7 @@ class CIImporter(object):
         prefix = cdb.CIContentTypePrefix.objects.filter(
                 content_type_name=asset_content_type.app_label \
                         + '.' \
-                + asset_content_type.model
+                + asset_content_type.model.replace(' ','')
         )
         if not prefix:
             raise TypeError('Unknown prefix for Content Type %s' \
@@ -197,10 +198,13 @@ class CIImporter(object):
                     cls.import_venture_relations(obj=obj, d=d)
                 elif content_type == cls.venture_role_content_type:
                     cls.import_role_relations(obj=obj, d=d)
+                elif content_type == cls.data_center_content_type:
+                    # top level Ci without parent relations.
+                    pass
                 elif content_type == cls.jira_service_content_type:
                     cls.import_jira_service_relations(obj=obj, d=d)
                 else:
-                    raise UnknownCTException
+                    raise UnknownCTException(content_type)
             except IntegrityError:
                 pass
 
@@ -407,84 +411,3 @@ class CIImporter(object):
             ret.extend(cls.import_assets_by_contenttype(assetClass, type_, layer, asset_id))
         return ret
 
-def importer_main():
-    '''
-    Warning. This command purges CMDB and makes CI/Relations from Ralph database.
-    '''
-    content_types = [
-        ContentType.objects.get(app_label='discovery', model='device'),
-        ContentType.objects.get(app_label='business', model='venture'),
-        ContentType.objects.get(app_label='business', model='venturerole'),
-        ContentType.objects.get(app_label='discovery', model='datacenter'),
-        ContentType.objects.get(app_label='discovery', model='network'),
-        ContentType.objects.get(app_label='discovery', model='networkterminator'),
-    ]
-    actions = ['purge','import']
-    kinds = ['ci','user-relations','all-relations', 'system-relations']
-
-    from optparse import OptionParser
-    usage = "usage: %prog --action=[purge|import] \
-            --kind=[ci/user-relations/all-relations/system-relations] \
-            --content-types"
-    parser = OptionParser(usage)
-    parser.add_option('--action',
-            dest='action',
-            help="Purge all CI and Relations."
-    )
-    parser.add_option('--kind',
-            dest='kind',
-            help="Choose import kind.",
-    )
-    parser.add_option('--ids',
-            dest='ids',
-            help="Choose ids to import.",
-    )
-    parser.add_option('--content-types',
-            dest='content_types',
-            help="Type of content to reimport.",
-            default=[],
-    )
-    (options, args) = parser.parse_args()
-    if not options.action or options.action not in actions:
-        parser.error("Specify valid action: " + ','.join(actions))
-        return
-    if not options.kind or options.kind not in kinds:
-        parser.error("You must specify valid kind: " + '|'.join(kinds))
-        return
-    content_types_names = dict([ (x.app_label + '.' + x.model,x)
-        for x in content_types ])
-    content_types_to_import = []
-    id_to_import = None
-    if options.ids:
-        id_to_import = int(options.ids)
-    if options.content_types:
-        t = options.content_types.split(',')
-        for ct in t:
-            if not content_types_names.get(ct,None):
-                parser.error("Invalid content type: %s: " % ct)
-            else:
-                content_types_to_import.append(content_types_names.get(ct,None))
-    else:
-        content_types_to_import = content_types
-    if raw_input('Are you sure, to reimport all data ? \
-            All existing Ci/relations will be deleted. (y/n) >') != 'y':
-        print('Aborted')
-        return
-    if options.action == 'purge':
-        if options.kind == 'ci':
-            CIImporter.purge_all_ci(content_types_to_import)
-        elif options.kind == 'all-relations':
-            CIImporter.purge_all_relations()
-        elif options.kind == 'user-relations':
-            CIImporter.purge_user_relations()
-        elif options.kind == 'system-relations':
-            CIImporter.purge_system_relations()
-    elif options.action == 'import':
-        if options.kind == 'ci':
-            CIImporter.import_all_ci(content_types_to_import, id_to_import)
-        elif options.kind == 'all-relations':
-            for content_type in content_types_to_import:
-                CIImporter.import_relations(content_type, id_to_import)
-        else:
-            parser.error("Invalid kind for this action")
-    logger.info('Ready.')
