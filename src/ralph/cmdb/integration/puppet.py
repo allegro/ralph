@@ -7,11 +7,12 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import logging
-from ralph.cmdb.integration.fisheye import Fisheye
-from ralph.cmdb.integration.puppet_yaml import  load
+from ralph.cmdb.integration.lib.fisheye import Fisheye
+from ralph.cmdb.integration.lib.puppet_yaml import  load
 from ralph.cmdb import models as db
 from ralph.business.models import Venture
 from ralph.cmdb.integration.base import BaseImporter
+from ralph.util import plugin
 
 import re
 from ralph.cmdb.integration.util import strip_timezone
@@ -131,6 +132,12 @@ class PuppetGitImporter(BaseImporter):
     def __init__(self, fisheye_class=Fisheye):
         self.fisheye = fisheye_class()
 
+    @staticmethod
+    @plugin.register(chain='cmdb')
+    def git(context):
+        x = PuppetGitImporter()
+        x.import_git()
+
     def is_imported(self, changeset):
         objects = db.CIChangeGit.objects.filter(changeset=changeset).count()
         if objects>0:
@@ -181,6 +188,7 @@ class PuppetGitImporter(BaseImporter):
             ch.save()
 
     def import_git(self):
+
         self.core_ci = db.CI.objects.filter(name='Allegro')[0]
         ret = self.fisheye.get_changes()
         for changeset in ret.getchildren():

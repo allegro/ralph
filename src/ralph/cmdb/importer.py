@@ -55,12 +55,14 @@ import ralph.discovery.models_network as ndb
 import ralph.business.models as bdb
 import ralph.cmdb.models as cdb
 from django.db import IntegrityError
+from lck.django.common import nested_commit_on_success
 
 class UnknownCTException(Exception):
     pass
 
 class CIImporter(object):
     @classmethod
+    @nested_commit_on_success
     def store_asset(cls, asset, type_, layer_id, uid_prefix):
         """Store given asset as  CI  """
         logger.debug('Saving: %s' % asset)
@@ -160,6 +162,14 @@ class CIImporter(object):
                     app_label='discovery',
                     model='device',
         )
+        cls.jira_service_content_type = ContentType.objects.get(
+                    app_label='cmdb',
+                    model='jiraservice',
+        )
+        cls.jira_business_line_content_type = ContentType.objects.get(
+                    app_label='cmdb',
+                    model='jirabusinessline',
+        )
 
     @classmethod
     def import_relations(cls, content_type, asset_id=None):
@@ -177,20 +187,41 @@ class CIImporter(object):
             ).order_by('id').all()
         for d in all_ciis:
             obj = d.content_object
-            if content_type == cls.network_content_type:
-                cls.import_network_relations(network=d,
-                )
-            elif content_type == cls.device_content_type:
-                cls.import_device_relations(obj=obj, d=d)
-            elif content_type == cls.venture_content_type:
-                cls.import_venture_relations(obj=obj, d=d)
-            elif content_type == cls.venture_role_content_type:
-                cls.import_role_relations(obj=obj, d=d)
-            else:
-                raise UnknownCTException
+            try:
+                if content_type == cls.network_content_type:
+                    cls.import_network_relations(network=d,
+                    )
+                elif content_type == cls.device_content_type:
+                    cls.import_device_relations(obj=obj, d=d)
+                elif content_type == cls.venture_content_type:
+                    cls.import_venture_relations(obj=obj, d=d)
+                elif content_type == cls.venture_role_content_type:
+                    cls.import_role_relations(obj=obj, d=d)
+                elif content_type == cls.jira_service_content_type:
+                    cls.import_jira_service_relations(obj=obj, d=d)
+                else:
+                    raise UnknownCTException
+            except IntegrityError:
+                pass
 
 
     @classmethod
+    @nested_commit_on_success
+    def import_jira_service_relations(cls, obj, d):
+        if obj.business_line:
+            bline = cdb.CI.objects.get(
+                    content_type=cls.jira_business_line_content_type,
+                    name=obj.business_line,
+            )
+            cir = cdb.CIRelation()
+            cir.parent = bline
+            cir.child = d
+            cir.readonly = True
+            cir.type = cdb.CI_RELATION_TYPES.CONTAINS.id
+            cir.save()
+
+    @classmethod
+    @nested_commit_on_success
     def import_venture_relations(cls, obj, d):
         """ Must be called after datacenter """
         if obj.data_center_id:
@@ -202,7 +233,11 @@ class CIImporter(object):
                 cir.parent = datacenter_ci
                 cir.child = d
                 cir.type = cdb.CI_RELATION_TYPES.REQUIRES.id
-                cir.save()
+                try:
+                    cir.save()
+                except IntegrityError:
+                    pass
+
         if obj.parent:
                 logger.info('Saving relation: %s' % obj)
                 cir = cdb.CIRelation()
@@ -212,9 +247,13 @@ class CIImporter(object):
                         content_type_id=cls.venture_content_type,
                         object_id=obj.parent.id)[0]
                 cir.type = cdb.CI_RELATION_TYPES.CONTAINS.id
-                cir.save()
+                try:
+                    cir.save()
+                except IntegrityError:
+                    pass
 
     @classmethod
+    @nested_commit_on_success
     def import_role_relations(cls, obj, d):
         if obj.venture_id:
                 # first venturerole in hierarchy, connect it to venture
@@ -226,7 +265,10 @@ class CIImporter(object):
                 cir.parent = venture_ci
                 cir.child = d
                 cir.type = cdb.CI_RELATION_TYPES.HASROLE.id
-                cir.save()
+                try:
+                    cir.save()
+                except IntegrityError:
+                    pass
         if obj.parent:
                 cir = cdb.CIRelation()
                 cir.readonly = True
@@ -235,9 +277,13 @@ class CIImporter(object):
                         content_type_id=cls.venture_role_content_type,
                         object_id=obj.parent.id)[0]
                 cir.type = cdb.CI_RELATION_TYPES.CONTAINS.id
-                cir.save()
+                try:
+                    cir.save()
+                except IntegrityError:
+                    pass
 
     @classmethod
+    @nested_commit_on_success
     def import_device_relations(cls, obj, d):
         """ Must be called after ventures """
         for x in cdb.CIRelation.objects.filter(
@@ -253,7 +299,11 @@ class CIImporter(object):
                 cir.parent = venture_ci
                 cir.child = d
                 cir.type = cdb.CI_RELATION_TYPES.CONTAINS.id
-                cir.save()
+                try:
+                    cir.save()
+                except IntegrityError:
+                    pass
+
         if obj.venture_role_id and not obj.parent:
                 venture_role_ci = cdb.CI.objects.get(
                         content_type=cls.venture_role_content_type,
@@ -263,7 +313,12 @@ class CIImporter(object):
                 cir.parent = venture_role_ci
                 cir.child = d
                 cir.type = cdb.CI_RELATION_TYPES.HASROLE.id
-                cir.save()
+                try:
+                    cir.save()
+                except IntegrityError:
+                    pass
+
+
         if obj.parent:
             logger.info('Saving relation: %s' % obj)
             cir = cdb.CIRelation()
@@ -273,9 +328,13 @@ class CIImporter(object):
                     content_type=cls.device_content_type,
                     object_id=obj.parent.id)
             cir.type = cdb.CI_RELATION_TYPES.CONTAINS.id
-            cir.save()
+            try:
+                cir.save()
+            except IntegrityError:
+                pass
 
     @classmethod
+    @nested_commit_on_success
     def import_network_relations(cls, network):
         """ Must be called after device_relations! """
         """ Make relations using network->ipaddresses->device """
@@ -287,17 +346,34 @@ class CIImporter(object):
                     content_type=cls.device_content_type,
                     object_id=ip.device.id,
             )
-            #remove old relations with networks only!
-            for x in cdb.CIRelation.objects.filter(child=ci_device,
-                    readonly=True,
-                    parent__content_type_id=cls.network_content_type).all():
-                x.delete()
             cir = cdb.CIRelation()
             cir.readonly = True
             cir.parent = network
             cir.child = ci_device
             cir.type = cdb.CI_RELATION_TYPES.CONTAINS.id
-            cir.save()
+            try:
+                cir.save()
+            except IntegrityError:
+                pass
+
+    @classmethod
+    def import_single_object_relations(cls, content_object):
+        """
+        Fasade for single Asset
+        """
+        ct = ContentType.objects.get_for_model(content_object)
+        object_id=content_object.id
+        return cls.import_relations(ct, asset_id=object_id)
+
+
+    @classmethod
+    def import_single_object(cls, content_object):
+        """
+        Fasade for single Asset
+        """
+        ct = ContentType.objects.get_for_model(content_object)
+        object_id=content_object.id
+        return cls.import_all_ci([ct], asset_id=object_id)
 
     @classmethod
     def import_all_ci(cls, content_types, asset_id=None):
@@ -309,6 +385,8 @@ class CIImporter(object):
                 ndb.Network: cdb.CI_TYPES.NETWORK.id,
                 ndb.NetworkTerminator: cdb.CI_TYPES.NETWORKTERMINATOR.id,
                 db.DataCenter: cdb.CI_TYPES.DATACENTER.id,
+                cdb.JiraService : cdb.CI_TYPES.SERVICE.id,
+                cdb.JiraBusinessLine : cdb.CI_TYPES.BUSINESSLINE.id,
         }
         layers={
                 db.Device: 5,
@@ -317,6 +395,8 @@ class CIImporter(object):
                 ndb.Network:  6,
                 ndb.NetworkTerminator: 6,
                 db.DataCenter: 5,
+                cdb.JiraBusinessLine: 7,
+                cdb.JiraService: 7,
         }
         for i in content_types:
             assetClass  = i.model_class()
