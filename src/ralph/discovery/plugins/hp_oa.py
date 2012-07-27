@@ -7,16 +7,49 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import hashlib
+from urllib2 import urlopen, URLError
+import httplib
 
 from lck.django.common import nested_commit_on_success
 from lck.django.common.models import MACAddressField
+from lck.lang import Null, nullify
+from lck.xml import etree_to_dict
+import lck.xml.converters
 
 from ralph.discovery.models import (IPAddress, Device, DeviceType,
         SERIAL_BLACKLIST, ComponentType, GenericComponent, ComponentModel)
 from ralph.util import network, plugin, Eth
 
 
+
 SAVE_PRIORITY = 5
+
+
+def _nullify(value):
+    if value is not None:
+        raise ValueError
+    return Null
+
+def hp_xmldata(hostname, timeout=10):
+    try:
+        url = urlopen("https://{}/xmldata?item=all".format(hostname),
+            timeout=timeout)
+        try:
+            data = url.read()
+        finally:
+            url.close()
+    except (URLError, httplib.InvalidURL, httplib.BadStatusLine):
+        return None, ''
+    else:
+        if not url.info().get('Content-Type', '').startswith('text/xml'):
+            return None, ''
+        data = data.decode('utf-8', 'replace').encode('utf-8')
+        rimp = ET.fromstring(data)
+        if rimp.tag.upper() != 'RIMP':
+            return None, data
+        return nullify(etree_to_dict(rimp, _converters=[_nullify, int, float,
+            lck.xml.converters._datetime,
+            lck.xml.converters._datetime_strip_tz]))[1], data
 
 
 def _get_ethernets(data):
@@ -146,7 +179,7 @@ def hp_oa_xml(**kwargs):
     if kwargs.get('http_family', '') not in ('Unspecified', 'RomPager', 'HP'):
         return False, 'no match.', kwargs
     ip = str(kwargs['ip'])
-    data, raw = network.hp_xmldata(ip, timeout=30)
+    data, raw = hp_xmldata(ip, timeout=30)
     if not data:
         return False, 'silent.', kwargs
     name = data['MP']['PN'].strip()

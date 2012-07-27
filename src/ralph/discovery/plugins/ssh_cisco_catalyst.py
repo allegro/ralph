@@ -13,7 +13,7 @@ from django.conf import settings
 from lck.django.common import nested_commit_on_success
 
 from ralph.util import network, plugin
-from ralph.util.cisco import cisco_component, cisco_inventory
+from ralph.discovery.cisco import cisco_component, cisco_inventory
 from ralph.discovery.models import DeviceType, Device, IPAddress
 
 
