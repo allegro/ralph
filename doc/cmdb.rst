@@ -127,7 +127,7 @@ However, CMDB is not a real-time database. Instead, assets and integration data
 must be imported at some interval in order to show up in CMDB. 
 
 Two different commandline scripts are used to populate CMDB database -- 
-``cmdb_sync`` and ``cmdb_integration``.
+``ralph cmdb_sync`` and ``ralph cmdb_integration``.
 
 * To populate database with assets coming from Ralph CMDB, use ``cmdb_sync``.
 * To fill database with third party services data, use ``cmdb_integration``.
@@ -139,16 +139,16 @@ cmdb_sync
 This command line utility is used to create CI/Relations/Layers data from Ralph
 Assets Management Database.  Every Device, Network, Venture, etc. must have its
 own counterpart in the CMDB database.  To keep assets in sync with Ralph core
-you should run ``cmdb_sync`` at some interval, e.g. once per day.  If you need
+you should run ``ralph cmdb_sync`` at some interval, e.g. once per day.  If you need
 more accurate data, set up a cron job for more frequent invocations.
 
 Populating the CMDB database with assets::
 
-    $ cmdb_sync --action=import --kind=ci
+    $ ralph cmdb_sync --action=import --kind=ci
 
 Populating the CMDB database with asset relations::
 
-    $ cmdb_sync --action=import --kind=all-relations
+    $ ralph cmdb_sync --action=import --kind=all-relations
 
 For help use ``--help``::
  
@@ -168,7 +168,7 @@ cmdb_integration
 
 Federating data from third party services (choose one or all)::
 
-    $ cmdb_integration --git --jira --zabbix_hosts --zabbix_triggers --ralph
+    $ ralph cmdb_integration --git --jira --zabbix_hosts --zabbix_triggers --ralph 
 
     Usage: cmdb_integration --so --git --jira --zabbix_hosts --zabbix_triggers --ralph
     Options:
@@ -207,7 +207,7 @@ Add to settings::
 
 and run::
 
-    $ cmdb_integration --zabbix_hosts --zabbix_triggers 
+    $ jira cmdb_integration --zabbix_hosts --zabbix_triggers 
 
 to create Zabbix relations and download trigger data.
 
@@ -279,7 +279,7 @@ Jira, which contains CI UID key.
 
 Then run (or add a cron job)::
 
-    $ cmdb_integration --jira
+    $ ralph cmdb_integration --jira
 
 to download all Problems/Incidents from remote Jira server into the CMDB
 database.
@@ -291,7 +291,7 @@ Fisheye Integration
 You can track changes in Puppet configurations stored in Fisheye/GIT/SVN/
 repository by running::
 
-    $ cmdb_integration --git
+    $ ralph cmdb_integration --git
 
 
 Future Releases

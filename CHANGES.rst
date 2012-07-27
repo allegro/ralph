@@ -7,6 +7,11 @@ Development
 
 * make subitems in the sidebar menu collapsible
 
+* cmdb integration scripts integrated into framework 
+
+* new plugins architecture for CMDB
+
+* minor fixes in the CMDB views  
 
 1.0.2
 ~~~~~
@@ -19,6 +24,7 @@ Development
 
 * several minor bugfixes
 
+* added cmdb charts for dashboard
 
 1.0.1
 ~~~~~
