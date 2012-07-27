@@ -97,7 +97,11 @@ class BaseDeviceList(ListView):
              'Warranty Expiration', 'Support Expiration', 'Support Kind',
              'Serial Number', 'Remarks'],
         ]
-        for dev in query.all():
+        try:
+            items = query.all()
+        except AttributeError:
+            items = query
+        for dev in items:
             show_tabs = set(_get_show_tabs(self.request, None, dev))
             row = [
                 str(dev.id),
