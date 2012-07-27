@@ -11,7 +11,6 @@ import logging
 from django.core.mail import mail_admins
 from ralph.cmdb import models as db
 
-
 logger = logging.getLogger(__name__)
 
 class BaseImporter(object):
