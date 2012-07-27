@@ -57,7 +57,9 @@ from lck.django.common import nested_commit_on_success
 
 class UnknownCTException(Exception):
     def __init__(self, value):
+        Exception.__init__(self, value)
         self.parameter = value
+
     def __str__(self):
         return repr("Unknown content type : %s" % self.parameter)
 
