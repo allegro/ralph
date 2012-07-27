@@ -58,7 +58,10 @@ from django.db import IntegrityError
 from lck.django.common import nested_commit_on_success
 
 class UnknownCTException(Exception):
-    pass
+    def __init__(self, value):
+        self.parameter = value
+    def __str__(self):
+        return repr("Unknown content type : %s" % self.parameter)
 
 class CIImporter(object):
     @classmethod
@@ -93,7 +96,7 @@ class CIImporter(object):
         prefix = cdb.CIContentTypePrefix.objects.filter(
                 content_type_name=asset_content_type.app_label \
                         + '.' \
-                + asset_content_type.model
+                + asset_content_type.model.replace(' ','')
         )
         if not prefix:
             raise TypeError('Unknown prefix for Content Type %s' \
@@ -197,10 +200,12 @@ class CIImporter(object):
                     cls.import_venture_relations(obj=obj, d=d)
                 elif content_type == cls.venture_role_content_type:
                     cls.import_role_relations(obj=obj, d=d)
+                elif content_type == cls.data_center_content_type:
+                    cls.import_role_relations(obj=obj, d=d)
                 elif content_type == cls.jira_service_content_type:
                     cls.import_jira_service_relations(obj=obj, d=d)
                 else:
-                    raise UnknownCTException
+                    raise UnknownCTException(content_type)
             except IntegrityError:
                 pass
 
