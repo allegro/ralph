@@ -9,7 +9,7 @@ from __future__ import unicode_literals
 
 import logging
 from django.core.mail import mail_admins
-from ralph.cmdb.models import db
+from ralph.cmdb import models as db
 
 logger = logging.getLogger(__name__)
 
