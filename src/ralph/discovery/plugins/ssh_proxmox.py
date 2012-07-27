@@ -19,6 +19,7 @@ from ralph.util import network
 from ralph.util import plugin, Eth
 from ralph.discovery.models import (DeviceType, Device, IPAddress, Software,
         DiskShare, DiskShareMount, ComponentModel, Processor, ComponentType)
+from ralph.discovery.hardware import normalize_wwn
 
 
 class Error(Exception):
@@ -44,7 +45,7 @@ def _get_disk_shares(ssh):
         except ValueError:
             wwn, pv, model = line.strip().split(None, 2)
             path = None
-        wwn  = network.normalize_wwn(wwn.strip('()'))
+        wwn  = normalize_wwn(wwn.strip('()'))
         pvs['/dev/%s' % pv] = wwn
         if path:
             pvs['/dev/mapper/%s' % path] = wwn

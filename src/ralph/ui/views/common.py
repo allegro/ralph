@@ -356,7 +356,7 @@ class Info(DeviceUpdateView):
             return HttpResponseForbidden("You don't have permission to edit this.")
         self.property_form = self.get_property_form()
         if 'propertiessave' in self.request.POST:
-            properties = list(self.dev.venture_role.roleproperty_set.all())
+            properties = list(self.object.venture_role.roleproperty_set.all())
             self.property_form = PropertyForm(properties, self.request.POST)
             if self.property_form.is_valid():
                 messages.success(self.request, "Properties updated.")

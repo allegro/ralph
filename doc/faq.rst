@@ -66,6 +66,15 @@ restart is necessary, use the ``service gunicorn force-restart`` command.
 If you happen to have a script like this for another operating system, contact
 us so to include it here.
 
+Celery
+------
+
+Can I start Celery using the traditional start-stop-daemon?
+
+Sure, here is the ``init.d`` recipe for Debian/Ubuntu: `/etc/init.d/celeryd
+<_static/celeryd>`_. Put your project-specific configuration in
+`/etc/default/celeryd <_static/celeryd-default>`_.
+
 MySQL
 -----
 
@@ -78,6 +87,45 @@ and InnoDB storage engine. Example::
 
   mysql> alter table TABLENAME engine=innodb;
   mysql> alter table TABLENAME convert to character set utf8 collate utf8_polish_ci;
+
+My worker creates a new database connection on each task.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This is `a known limitation of Django
+<https://code.djangoproject.com/ticket/11798>`_. The best solution is to set up
+a ``mysql-proxy`` instance which will reuse actual database connections and set
+up Ralph to use that. First install ``mysql-proxy``::
+
+  $ sudo apt-get install mysql-proxy
+
+Then edit ``/etc/default/mysql-proxy`` so it says::
+
+  ENABLED="true"
+  OPTIONS="--proxy-backend-addresses=mysqlserverhost.local:3306 --log-level=info --log-use-syslog --proxy-address=127.0.0.1:4041 --admin-username=ralph --admin-password=ralph --admin-lua-script=/usr/lib/mysql-proxy/lua/admin.lua"
+
+Start the proxy::
+
+  $ sudo service mysql-proxy start
+
+In ``/var/log/syslog`` you should see::
+
+  Jul 25 10:44:14 s10337 mysql-proxy: 2012-07-25 10:44:14: (message) mysql-proxy 0.8.1 started
+  Jul 25 10:44:14 s10337 mysql-proxy: 2012-07-25 10:44:14: (message) proxy listening on port 127.0.0.1:4041
+  Jul 25 10:44:14 s10337 mysql-proxy: 2012-07-25 10:44:14: (message) added read/write backend: mysqlserverhost.local:3306
+
+Then alter your settings so the ``DATABASES`` dictionary points at the proxy
+address and not at the actual database, restart Ralph and you're done.
+
+The web app creates a new database connection on each request.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+See above.
+
+My worker leaves too many connections to the database open.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+See above.
+
 
 Rabbit
 ------
