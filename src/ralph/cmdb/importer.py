@@ -43,8 +43,6 @@ from __future__ import unicode_literals
 
 import os
 os.environ['DJANGO_SETTINGS_MODULE'] = "ralph.settings"
-from django.utils.translation import ugettext
-ugettext('Force initializing all apps by Django to prevent import cycles.')
 
 from django.contrib.contenttypes.models import ContentType
 import logging
@@ -201,7 +199,8 @@ class CIImporter(object):
                 elif content_type == cls.venture_role_content_type:
                     cls.import_role_relations(obj=obj, d=d)
                 elif content_type == cls.data_center_content_type:
-                    cls.import_role_relations(obj=obj, d=d)
+                    # top level Ci without parent relations.
+                    pass
                 elif content_type == cls.jira_service_content_type:
                     cls.import_jira_service_relations(obj=obj, d=d)
                 else:
