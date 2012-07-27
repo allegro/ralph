@@ -17,22 +17,22 @@ from lck.django.choices import Choices
 class CI_RELATION_TYPES(Choices):
     _ = Choices.Choice
 
-    CONTAINS = _(u'Contains')
-    REQUIRES = _( u'Requires')
-    HASROLE =_(u'Has role')
+    CONTAINS = _('Contains')
+    REQUIRES = _( 'Requires')
+    HASROLE =_('Has role')
 
 class CI_STATE_TYPES(Choices):
     _ = Choices.Choice
 
-    ACTIVE = _(u'Active')
-    INACTIVE = _(u'Inactive')
-    WAITING = _(u'Waiting for deactivation')
+    ACTIVE = _('Active')
+    INACTIVE = _('Inactive')
+    WAITING = _('Waiting for deactivation')
 
 class CI_STATUS_TYPES(Choices):
     _ = Choices.Choice
 
-    CHANGED = _( u'Changed')
-    REFERENCE = _( u'Reference')
+    CHANGED = _('Changed')
+    REFERENCE = _('Reference')
 
 class CI_ATTRIBUTE_TYPES(Choices):
     _ = Choices.Choice
