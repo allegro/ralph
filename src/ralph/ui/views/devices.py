@@ -162,28 +162,12 @@ class BaseDeviceList(ListView):
             queryset = super(BaseDeviceList, self).get_queryset()
         return self.sort_queryset(queryset, columns=DEVICE_SORT_COLUMNS)
 
-    def get_paginator_links(self, paginator, page_no):
-        pages = paginator.page_range[max(0, page_no - 2):
-                                     min(paginator.num_pages, page_no + 1)]
-        if 1 not in pages:
-            pages.insert(0, 1)
-            pages.insert(1, '...')
-        if paginator.num_pages not in pages:
-            pages.append('...')
-            pages.append(paginator.num_pages)
-        return pages
-
     def get_context_data(self, **kwargs):
         ret = super(BaseDeviceList, self).get_context_data(**kwargs)
         details = self.kwargs.get('details', 'info')
-        if ret['is_paginated']:
-            paginator_links = self.get_paginator_links(ret['paginator'],
-                                                        ret['page_obj'].number)
-        else:
-            paginator_links = []
         ret.update({
-            'paginator_links': paginator_links,
-            'columns': self.details_columns.get(details, self.details_columns[None]),
+            'columns': self.details_columns.get(details,
+                                                self.details_columns[None]),
             'show_tabs': _get_show_tabs(self.request, self.venture, None),
             'sort': self.sort,
         })
