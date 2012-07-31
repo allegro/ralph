@@ -441,9 +441,15 @@ class JiraService(models.Model):
     jira_key = models.CharField(max_length=100, null=False, unique=True,db_index=True)
     location = models.CharField(max_length=255, null=False)
     state = models.CharField(max_length=100)
-    it_person = models.CharField(max_length=255)
-    it_person_mail = models.CharField(max_length=255)
-    business_line = models.CharField(max_length=255)
+    it_person = models.CharField(max_length=255, null=False,
+            blank=True, default='')
+    it_person_mail = models.CharField(max_length=255, null=False,
+            blank=True, default='')
+    business_person = models.CharField(max_length=255, null=False,
+            blank=True, default='')
+    business_person_mail = models.CharField(max_length=255, null=False,
+            blank=True, default='')
+    business_line = models.CharField(max_length=255, null=False, blank=False)
 
 
 class JiraBusinessLine(models.Model):
