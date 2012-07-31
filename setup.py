@@ -57,7 +57,6 @@ setup (
         'SQLAlchemy==0.7.8',
         'ssh==1.7.14',
         'pytz',
-        'jira-python',
         ],
     entry_points={
         'console_scripts': [
