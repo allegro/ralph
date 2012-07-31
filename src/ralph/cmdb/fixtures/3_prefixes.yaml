@@ -37,12 +37,12 @@
 - model: cmdb.CIContentTypePrefix
   pk: 7
   fields:
-    prefix: cs
-    content_type_name: cmdb.jiraservice
+    prefix: bs
+    content_type_name: business.service
 
 - model: cmdb.CIContentTypePrefix
   pk: 8
   fields:
-    prefix: cb
-    content_type_name: cmdb.jirabusinessline
+    prefix: bl
+    content_type_name: business.businessline
 
