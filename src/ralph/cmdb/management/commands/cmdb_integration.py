@@ -12,6 +12,8 @@ from ralph.util import plugin
 from functools import partial
 from optparse import make_option
 from ralph.discovery.tasks import run_chain
+# hook plugins
+import ralph.cmdb.integration.sync
 
 logger = logging.getLogger(__name__)
 
