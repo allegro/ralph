@@ -164,6 +164,10 @@ try:
         create_a_user_profile_ignoring_dberrors(u)
 except DatabaseError:
     pass # no such table yet, first syncdb
+except Exception as e:
+    import traceback
+    traceback.print_exc()
+    raise SystemExit
 
 
 class BoundPerm(TimeTrackable, EditorTrackable):
