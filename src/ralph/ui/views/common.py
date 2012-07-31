@@ -20,15 +20,14 @@ from lck.django.tags.models import Language, TagStem
 from bob.menu import MenuItem
 from powerdns.models import Record
 
+from ralph.account.models import Perm
+from ralph.business.models import RolePropertyValue
+from ralph.cmdb import models as cdb
 from ralph.dnsedit.models import DHCPEntry
 from ralph.discovery.models import Device, DeviceType
-from ralph.business.models import RolePropertyValue
 from ralph.util import presentation, pricing
 from ralph.ui.forms import (DeviceInfoForm, DevicePricesForm, DevicePurchaseForm,
                             PropertyForm, DeviceBulkForm)
-from ralph.account.models import Perm
-
-from ralph.cmdb import models as cdb
 
 
 SAVE_PRIORITY = 200
@@ -115,7 +114,7 @@ class BaseMixin(object):
                 MenuItem('CMDB', fugue_icon='fugue-thermometer',
                          href='/cmdb/changes/dashboard')
             )
-        if has_perm(Perm.read_device_info_reports):
+        if has_perm(Perm.read_device_info_reports) and False: # FIXME: not ready yet
             mainmenu_items.append(
                 MenuItem('Reports', fugue_icon='fugue-reports-stack',
                          view_name='reports'))
@@ -391,10 +390,6 @@ class Components(DeviceDetailView):
         return ret
 
 
-
-
-
-
 class Prices(DeviceUpdateView):
     form_class = DevicePricesForm
     template_name = 'ui/device_prices.html'
@@ -532,15 +527,6 @@ class Discover(DeviceDetailView):
             'address': addresses[0] if addresses else '',
             'addresses': json.dumps(addresses)
         })
-        return ret
-
-
-class Reports(DeviceDetailView):
-    template_name = 'ui/device_reports.html'
-    read_perm = Perm.read_device_info_history
-
-    def get_context_data(self, **kwargs):
-        ret = super(Reports, self).get_context_data(**kwargs)
         return ret
 
 

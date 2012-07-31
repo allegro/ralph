@@ -13,12 +13,13 @@ from django.http import HttpResponseRedirect
 from powerdns.models import Record
 from django.core.urlresolvers import reverse
 
-from ralph.discovery.models import ReadOnlyDevice, Device
-from ralph.ui.views.common import (BaseMixin, Info, Prices, Addresses, Costs,
-    Purchase, Components, History, Discover, Reports)
-from ralph.ui.forms import SearchForm
 from ralph.account.models import Perm
+from ralph.discovery.models import ReadOnlyDevice, Device
+from ralph.ui.forms import SearchForm
+from ralph.ui.views.common import (BaseMixin, Info, Prices, Addresses, Costs,
+    Purchase, Components, History, Discover)
 from ralph.ui.views.devices import BaseDeviceList
+from ralph.ui.views.reports import Reports, ReportDeviceList
 
 
 def _search_fields_or(fields, values):
@@ -292,4 +293,8 @@ class SearchDiscover(Search, Discover):
 
 
 class SearchReports(Search, Reports):
+    pass
+
+
+class ReportSearchDeviceList(ReportDeviceList, SearchDeviceList):
     pass

@@ -2,12 +2,15 @@ Change Log
 ----------
 
 
-Development
-~~~~~~~~~~~
+1.0.3 
+~~~~~
 
 * make subitems in the sidebar menu collapsible
 
-* a rudimentary reports view
+* a rudimentary reports tab on device lists to filter devices according to
+  specified rules
+
+* venture tree collapsible
 
 
 1.0.2
