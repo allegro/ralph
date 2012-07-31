@@ -42,7 +42,7 @@ setup (
         'ipaddr==2.1.7',
         'iscconf==1.0.0dev3',
         'jpath==1.2',
-        'lck.django>=0.7.12',
+        'lck.django==0.7.12',
         'lxml>=2.3.3',
         'mock==0.8.0',
         'MySQL-python==1.2.3',
