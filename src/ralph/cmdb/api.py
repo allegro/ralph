@@ -13,28 +13,38 @@ from __future__ import unicode_literals
 from tastypie.authentication import ApiKeyAuthentication
 from tastypie.authorization import DjangoAuthorization
 from tastypie.resources import ModelResource as MResource
-from ralph.cmdb.models import CI, CIRelation,JiraService,JiraBusinessLine
+from ralph.cmdb.models import CI, CIRelation
 from ralph.cmdb import models as db
+from ralph.business.models import Service, BusinessLine
 
 
-class JiraBusinessLineResource(MResource):
+class BusinessLineResource(MResource):
     class Meta:
-        queryset = JiraBusinessLine.objects.all()
-        #not sure if needed instead -
-        #queryset = CI.objects.filter(type=db.CI_TYPES.BUSINESSLINE.id).all()
+        # has only name, so skip content_object info
+        queryset = BusinessLine.objects.all()
+        queryset = CI.objects.filter(type=db.CI_TYPES.BUSINESSLINE.id).all()
         authentication = ApiKeyAuthentication()
         authorization = DjangoAuthorization()
         resource_name = 'businessline'
 
 
-class JiraServiceResource(MResource):
+class ServiceResource(MResource):
     class Meta:
-        queryset = JiraService.objects.all()
-        #not sure if needed instead -
-        #queryset = CI.objects.filter(type=db.CI_TYPES.SERVICE.id).all()
+        queryset = Service.objects.all()
+        queryset = CI.objects.filter(type=db.CI_TYPES.SERVICE.id).all()
         authentication = ApiKeyAuthentication()
         authorization = DjangoAuthorization()
         resource_name = 'service'
+
+    def dehydrate(self, bundle):
+        # CMDB base info completed with content_object info
+        attrs = ('external_key', 'location', 'state', \
+                'it_person','it_person_mail', 'business_person', \
+                'business_person_mail', 'business_line')
+        ci = CI.objects.get(uid=bundle.data.get('uid'))
+        for attr in attrs:
+            bundle.data[attr] = getattr(ci.content_object, attr, '')
+        return bundle
 
 
 class CIRelationResource(MResource):
