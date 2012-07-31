@@ -14,16 +14,14 @@ from django.http import HttpResponseForbidden
 from django.http import HttpResponseRedirect
 from django.contrib import messages
 
-from ralph.discovery.models import ReadOnlyDevice, Device, DeviceType
-from ralph.ui.views.common import (Info, Prices, Addresses, Costs,
-    Purchase, Components, History, Discover, Reports)
 from ralph.account.models import Perm
-from ralph.util import presentation
-from ralph.ui.views.common import BaseMixin
-from ralph.ui.views.devices import BaseDeviceList
-from ralph.ui.views.common import CMDB, DeviceDetailView
-from ralph.util import pricing
+from ralph.discovery.models import ReadOnlyDevice, Device, DeviceType
 from ralph.ui.forms import DeviceCreateForm
+from ralph.ui.views.common import (Info, Prices, Addresses, Costs,
+    Purchase, Components, History, Discover, BaseMixin, CMDB, DeviceDetailView)
+from ralph.ui.views.devices import BaseDeviceList
+from ralph.ui.views.reports import Reports, ReportDeviceList
+from ralph.util import presentation
 
 
 class SidebarRacks(object):
@@ -257,3 +255,6 @@ class RacksAddDevice(Racks, DeviceCreateView):
                             href='../add_device/?%s' % self.request.GET.urlencode()))
         return ret
 
+
+class ReportRacksDeviceList(ReportDeviceList, RacksDeviceList):
+    pass

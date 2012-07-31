@@ -68,6 +68,7 @@ def _get_show_tabs(request, venture, device):
 
 
 class BaseDeviceList(ListView):
+    template_name = 'ui/device_list.html'
     paginate_by = PAGE_SIZE
     details_columns = {
         'info': ['venture', 'model', 'position', 'remarks'],
@@ -79,7 +80,7 @@ class BaseDeviceList(ListView):
         'purchase': ['purchase', 'warranty', 'support'],
         'discover': ['lastseen'],
         'cmdb': [],
-        'reports': ['venture', 'reports', 'remarks'],
+        'reports': ['venture', 'remarks'],
         None: [],
     }
 
@@ -192,7 +193,7 @@ class BaseDeviceList(ListView):
         return ret
 
     def get_template_names(self):
-        return ['ui/device_list.html']
+        return [self.template_name]
 
     def paginate_queryset(self, queryset, page_size):
         """
