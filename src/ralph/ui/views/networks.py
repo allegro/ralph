@@ -14,9 +14,11 @@ from ralph.ui.views.common import (Info, Prices, Addresses, Costs,
     Purchase, Components, History, Discover)
 from ralph.discovery.models import ReadOnlyDevice
 from ralph.account.models import Perm
-from ralph.ui.views.common import BaseMixin,DeviceDetailView, CMDB
+from ralph.ui.views.common import BaseMixin, DeviceDetailView, CMDB
 from ralph.ui.views.devices import BaseDeviceList
+from ralph.ui.views.reports import Reports, ReportDeviceList
 from ralph.util import presentation
+
 
 def network_tree_menu(networks, details, children):
     icon = presentation.get_network_icon
@@ -130,32 +132,46 @@ class NetworksDeviceList(SidebarNetworks, BaseMixin, BaseDeviceList):
         })
         return ret
 
+
 class NetworksInfo(Networks, Info):
     pass
+
 
 class NetworksComponents(Networks, Components):
     pass
 
+
 class NetworksPrices(Networks, Prices):
     pass
+
 
 class NetworksAddresses(Networks, Addresses):
     pass
 
+
 class NetworksCosts(Networks, Costs):
     pass
+
 
 class NetworksHistory(Networks, History):
     pass
 
+
 class NetworksPurchase(Networks, Purchase):
     pass
+
 
 class NetworksDiscover(Networks, Discover):
     pass
 
 
-class NetworksCMDB(Networks, CMDB,DeviceDetailView ):
+class NetworksCMDB(Networks, CMDB, DeviceDetailView):
     pass
 
 
+class NetworksReports(Networks, Reports):
+    pass
+
+
+class ReportNetworksDeviceList(ReportDeviceList, NetworksDeviceList):
+    pass
