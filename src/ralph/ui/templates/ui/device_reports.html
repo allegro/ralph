@@ -1,0 +1,15 @@
+{% extends "ui/base-devices.html" %}
+{% load url from future %}
+{% load bob %}
+{% load icons %}
+
+{% block content %}
+  <div class="row-fluid">
+    <div class="span10">
+      <h1>Elo</h1>
+    </div>
+    <div class="span2">
+      {% sidebar_menu sidebar_items sidebar_selected %}
+    </div>
+  </div>
+{% endblock content %}

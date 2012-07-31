@@ -14,16 +14,14 @@ from django.http import HttpResponseForbidden
 from django.http import HttpResponseRedirect
 from django.contrib import messages
 
-from ralph.discovery.models import ReadOnlyDevice, Device, DeviceType
-from ralph.ui.views.common import (Info, Prices, Addresses, Costs,
-    Purchase, Components, History, Discover)
 from ralph.account.models import Perm
-from ralph.util import presentation
-from ralph.ui.views.common import BaseMixin
-from ralph.ui.views.devices import BaseDeviceList
-from ralph.ui.views.common import CMDB, DeviceDetailView
-from ralph.util import pricing
+from ralph.discovery.models import ReadOnlyDevice, Device, DeviceType
 from ralph.ui.forms import DeviceCreateForm
+from ralph.ui.views.common import (Info, Prices, Addresses, Costs,
+    Purchase, Components, History, Discover, BaseMixin, CMDB, DeviceDetailView)
+from ralph.ui.views.devices import BaseDeviceList
+from ralph.ui.views.reports import Reports, ReportDeviceList
+from ralph.util import presentation
 
 
 class SidebarRacks(object):
@@ -87,35 +85,50 @@ class SidebarRacks(object):
         })
         return ret
 
+
 class Racks(SidebarRacks, BaseMixin):
     pass
+
 
 class RacksInfo(Racks, Info):
     pass
 
+
 class RacksAddresses(Racks, Addresses):
     pass
+
 
 class RacksComponents(Racks, Components):
     pass
 
+
 class RacksCMDB(Racks, CMDB,DeviceDetailView ):
     pass
+
 
 class RacksPrices(Racks, Prices):
     pass
 
+
 class RacksCosts(Racks, Costs):
     pass
+
 
 class RacksHistory(Racks, History):
     pass
 
+
 class RacksPurchase(Racks, Purchase):
     pass
 
+
 class RacksDiscover(Racks, Discover):
     pass
+
+
+class RacksReports(Racks, Reports):
+    pass
+
 
 class RacksDeviceList(SidebarRacks, BaseMixin, BaseDeviceList):
     def user_allowed(self):
@@ -186,6 +199,7 @@ class RacksDeviceList(SidebarRacks, BaseMixin, BaseDeviceList):
         })
         return ret
 
+
 class DeviceCreateView(CreateView):
     model = Device
     slug_field = 'id'
@@ -241,3 +255,6 @@ class RacksAddDevice(Racks, DeviceCreateView):
                             href='../add_device/?%s' % self.request.GET.urlencode()))
         return ret
 
+
+class ReportRacksDeviceList(ReportDeviceList, RacksDeviceList):
+    pass

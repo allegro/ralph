@@ -1,0 +1,16 @@
+{% extends 'ui/device_list.html' %}
+{% load url from future %}
+{% load icons %}
+{% load bob %}
+
+{% block contentarea %}
+  <div class="row-fluid">
+    <div class="span10">
+      {{ block.super }}
+    </div>
+    <div class="span2">
+      {% tab_menu report_menu_items report_selected side='right' %}
+    </div>
+  </div>
+{% endblock %}
+

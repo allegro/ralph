@@ -8,27 +8,27 @@ import re
 import datetime
 import calendar
 
-from django.shortcuts import get_object_or_404
-from django.db import models as db
 from django.contrib import messages
+from django.db import models as db
+from django.db.models.sql.aggregates import Aggregate
 from django.http import HttpResponseRedirect
 from django.http import HttpResponseForbidden
+from django.shortcuts import get_object_or_404
 from django.utils import simplejson as json
 
 from bob.menu import MenuItem
 
+from ralph.account.models import Perm
 from ralph.business.models import Venture, VentureRole, VentureExtraCost
-from ralph.ui.views.common import (Info, Prices, Addresses, Costs,
-    Purchase, Components, History, Discover)
-from ralph.ui.forms import RolePropertyForm, DateRangeForm
 from ralph.discovery.models import (ReadOnlyDevice, DeviceType, DataCenter,
     Device, DeviceModelGroup, HistoryCost, SplunkUsage)
-from ralph.account.models import Perm
-from ralph.ui.views.common import BaseMixin, Base
+from ralph.ui.forms import RolePropertyForm, DateRangeForm, VentureFilterForm
+from ralph.ui.views.common import (Info, Prices, Addresses, Costs,
+    Purchase, Components, History, Discover, BaseMixin, Base, DeviceDetailView,
+    CMDB)
 from ralph.ui.views.devices import BaseDeviceList
+from ralph.ui.views.reports import Reports, ReportDeviceList
 from ralph.util import presentation
-from ralph.ui.views.common import DeviceDetailView, CMDB
-from ralph.ui.forms import VentureFilterForm
 
 
 def _normalize_venture(symbol):
@@ -150,29 +150,42 @@ class SidebarVentures(object):
 class Ventures(SidebarVentures, BaseMixin):
     pass
 
+
 class VenturesInfo(Ventures, Info):
     pass
+
 
 class VenturesComponents(Ventures, Components):
     pass
 
+
 class VenturesPrices(Ventures, Prices):
     pass
+
 
 class VenturesAddresses(Ventures, Addresses):
     pass
 
+
 class VenturesCosts(Ventures, Costs):
     pass
+
 
 class VenturesHistory(Ventures, History):
     pass
 
+
 class VenturesPurchase(Ventures, Purchase):
     pass
 
+
 class VenturesDiscover(Ventures, Discover):
     pass
+
+
+class VenturesReports(Ventures, Reports):
+    pass
+
 
 class VenturesRoles(Ventures, Base):
     template_name = 'ui/ventures-roles.html'
@@ -218,7 +231,6 @@ class VenturesRoles(Ventures, Base):
         })
         return ret
 
-from django.db.models.sql.aggregates import Aggregate
 
 class SpanSum(Aggregate):
     sql_function = "SUM"
@@ -533,7 +545,10 @@ class VenturesDeviceList(SidebarVentures, BaseMixin, BaseDeviceList):
         })
         return ret
 
-class VenturesCMDB(Ventures, CMDB,DeviceDetailView):
+
+class VenturesCMDB(Ventures, CMDB, DeviceDetailView):
     pass
 
 
+class ReportVenturesDeviceList(ReportDeviceList, VenturesDeviceList):
+    pass
