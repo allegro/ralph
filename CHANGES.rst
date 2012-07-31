@@ -12,6 +12,11 @@ Change Log
 
 * venture tree collapsible
 
+* CMDB integration scripts integrated into framework 
+
+* CMDB supports distributed plugins
+
+* minor fixes in the Web app  
 
 1.0.2
 ~~~~~
@@ -24,6 +29,7 @@ Change Log
 
 * several minor bugfixes
 
+* added cmdb charts for dashboard
 
 1.0.1
 ~~~~~

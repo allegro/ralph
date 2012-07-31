@@ -61,8 +61,6 @@ setup (
     entry_points={
         'console_scripts': [
             'pping = ralph.util.network:ping_main',
-            'cmdb_sync = ralph.cmdb.importer:importer_main',
-            'cmdb_integration = ralph.cmdb.integration.sync:integrate_main',
             'ralph = ralph.__main__:main',
         ],
     },
