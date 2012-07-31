@@ -200,7 +200,7 @@ class CIImporter(object):
                     cls.import_venture_relations(obj=obj, d=d)
                 elif content_type == cls.venture_role_content_type:
                     cls.import_role_relations(obj=obj, d=d)
-                elif content_type == cls.data_center_content_type:
+                elif content_type == cls.datacenter_content_type:
                     # top level Ci without parent relations.
                     pass
                 elif content_type == cls.jira_service_content_type:

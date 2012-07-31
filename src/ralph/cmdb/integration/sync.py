@@ -19,6 +19,7 @@ from ralph.cmdb import models as db
 
 # hook git plugins
 from ralph.cmdb.integration.puppet import PuppetGitImporter
+from ralph.cmdb.integration.ralph import AssetChangeImporter
 from optparse import OptionParser
 
 import re
@@ -45,16 +46,18 @@ class ZabbixImporter(BaseImporter):
         logger.debug('Finshed')
 
     @staticmethod
-    @plugin.register(chain='cmdb')
+    @plugin.register(chain='cmdb_zabbix')
     def zabbix_hosts(context):
         x = ZabbixImporter()
         x.import_hosts()
+        return [True, 'Done', context]
 
     @staticmethod
-    @plugin.register(chain='cmdb', requires=['zabbix_hosts'])
+    @plugin.register(chain='cmdb_zabbix', requires=['zabbix_hosts'])
     def zabbix_triggers(context):
         x = ZabbixImporter()
         x.import_triggers()
+        return [True, 'Done' ,context]
 
     def import_triggers(self):
         ''' Create/update zabbix IDn for all matched CI's '''
@@ -94,13 +97,13 @@ class JiraEventsImporter(BaseImporter):
     Jira integration  - Incidents/Problems importing as CI events.
     """
     @staticmethod
-    @plugin.register(chain='cmdb')
+    @plugin.register(chain='cmdb_jira')
     def jira_problems(context):
         x = JiraEventsImporter()
         x.import_problem()
 
     @staticmethod
-    @plugin.register(chain='cmdb')
+    @plugin.register(chain='cmdb_jira')
     def jira_incidents(context):
         x = JiraEventsImporter()
         x.import_incident()
