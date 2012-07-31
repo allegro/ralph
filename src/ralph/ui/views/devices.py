@@ -37,6 +37,7 @@ DEVICE_SORT_COLUMNS = {
     'purchase_date': ('purchase_date',),
     'warranty': ('warranty_expiration_date',),
     'support': ('support_expiration_date', 'support_kind'),
+    'reports': ('remarks',), # FIXME: create a column for affected reports quantity
 }
 
 
@@ -67,6 +68,7 @@ def _get_show_tabs(request, venture, device):
 
 
 class BaseDeviceList(ListView):
+    template_name = 'ui/device_list.html'
     paginate_by = PAGE_SIZE
     details_columns = {
         'info': ['venture', 'model', 'position', 'remarks'],
@@ -75,9 +77,10 @@ class BaseDeviceList(ListView):
         'addresses': ['ips', 'management'],
         'costs': ['venture', 'cost'],
         'history': ['created', 'lastseen'],
-        'purchase': ['pucrhase', 'warranty', 'support'],
+        'purchase': ['purchase', 'warranty', 'support'],
         'discover': ['lastseen'],
         'cmdb': [],
+        'reports': ['venture', 'remarks'],
         None: [],
     }
 
@@ -174,7 +177,7 @@ class BaseDeviceList(ListView):
         return ret
 
     def get_template_names(self):
-        return ['ui/device_list.html']
+        return [self.template_name]
 
     def paginate_queryset(self, queryset, page_size):
         """

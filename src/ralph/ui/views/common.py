@@ -20,15 +20,14 @@ from lck.django.tags.models import Language, TagStem
 from bob.menu import MenuItem
 from powerdns.models import Record
 
+from ralph.account.models import Perm
+from ralph.business.models import RolePropertyValue
+from ralph.cmdb import models as cdb
 from ralph.dnsedit.models import DHCPEntry
 from ralph.discovery.models import Device, DeviceType
-from ralph.business.models import RolePropertyValue
 from ralph.util import presentation, pricing
 from ralph.ui.forms import (DeviceInfoForm, DevicePricesForm, DevicePurchaseForm,
                             PropertyForm, DeviceBulkForm)
-from ralph.account.models import Perm
-
-from ralph.cmdb import models as cdb
 
 
 SAVE_PRIORITY = 200
@@ -115,6 +114,10 @@ class BaseMixin(object):
                 MenuItem('CMDB', fugue_icon='fugue-thermometer',
                          href='/cmdb/changes/dashboard')
             )
+        if has_perm(Perm.read_device_info_reports) and False: # FIXME: not ready yet
+            mainmenu_items.append(
+                MenuItem('Reports', fugue_icon='fugue-reports-stack',
+                         view_name='reports'))
         if self.request.user.is_staff:
             mainmenu_items.append(
                 MenuItem('Admin', fugue_icon='fugue-toolbox', href='/admin'))
@@ -179,9 +182,11 @@ class BaseMixin(object):
                 MenuItem('CMDB', fugue_icon='fugue-thermometer',
                          href=tab_href('cmdb')),
             ])
-
-
-
+        if has_perm(Perm.read_device_info_reports, venture):
+            tab_items.extend([
+                MenuItem('Reports', fugue_icon='fugue-reports-stack',
+                         href=tab_href('reports')),
+            ])
         if details == 'bulkedit':
             tab_items.extend([
                 MenuItem('Bulk edit', fugue_icon='fugue-pencil-field',
@@ -383,10 +388,6 @@ class Components(DeviceDetailView):
             'components': _get_details(self.object, purchase_only=False),
         })
         return ret
-
-
-
-
 
 
 class Prices(DeviceUpdateView):
