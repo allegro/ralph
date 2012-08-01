@@ -20,7 +20,7 @@ from ralph.cmdb import models as db
 class BusinessLineResource(MResource):
     class Meta:
         # has only name, so skip content_object info
-        queryset = CI.objects.filter(type=db.CI_TYPES.BUSINESSLINE.id).all()
+        queryset = CI.objects.filter(type__id=db.CI_TYPES.BUSINESSLINE.id).all()
         authentication = ApiKeyAuthentication()
         authorization = DjangoAuthorization()
         resource_name = 'businessline'
@@ -28,7 +28,7 @@ class BusinessLineResource(MResource):
 
 class ServiceResource(MResource):
     class Meta:
-        queryset = CI.objects.filter(type=db.CI_TYPES.SERVICE.id).all()
+        queryset = CI.objects.filter(type__id=db.CI_TYPES.SERVICE.id).all()
         authentication = ApiKeyAuthentication()
         authorization = DjangoAuthorization()
         resource_name = 'service'
