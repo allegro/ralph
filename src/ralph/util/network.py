@@ -17,11 +17,6 @@ from dns.exception import DNSException
 from lck.cache import memoize
 import dns.resolver
 import ipaddr
-from lck.lang import Null, nullify
-from lck.cache import memoize
-from lck.xml import etree_to_dict
-import lck.xml.converters
-from lxml import etree as ET
 import ssh as paramiko
 from ping import do_one
 
@@ -88,58 +83,13 @@ def ping_main(hostname=None, timeout=0.2, attempts=2):
     sys.exit(0 if bool(ping(hostname, timeout, attempts)) else 1)
 
 
-_tag_translation_pairs = set([
-    ('node', 'class'), ('capability', 'id'), ('setting', 'id'),
-    ('resource', 'type'),
-])
-
-_text_translation_pairs = set([
-    ('setting', 'value'),
-])
-
-def _nullify(value):
-    if value is not None:
-        raise ValueError
-    return Null
-
-def lshw(as_string):
-    parser = ET.ETCompatXMLParser(recover=True)
-    response = ET.fromstring(as_string, parser=parser)
-    if response.tag.upper() != 'NODE':
-        return None, as_string
-    for element in response.findall('.//'):
-        for k in element.attrib.keys():
-            try:
-                v = element.attrib[k]
-            except UnicodeDecodeError:
-                continue # value has bytes not possible to decode with UTF-8
-            if (element.tag, k) in _tag_translation_pairs:
-                try:
-                    element.tag = v
-                except ValueError:
-                    pass
-                continue
-            if (element.tag, k) in _text_translation_pairs:
-                element.text = v
-                continue
-            if k == 'units':
-                value = ET.Element(b'value')
-                value.text = element.text
-                element.text = ''
-                element.append(value)
-            child = ET.Element(k)
-            child.text = v
-            element.append(child)
-    return nullify(etree_to_dict(response, _converters=[_nullify, int, float,
-        lck.xml.converters._datetime,
-        lck.xml.converters._datetime_strip_tz]))[1], as_string
-
 def check_tcp_port(ip, port, timeout=1):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.settimeout(timeout)
     result = s.connect_ex((ip, port))
     s.close()
     return result == 0
+
 
 def connect_ssh(ip, username, password=None, client=paramiko.SSHClient, key=None):
     ssh = client()
@@ -156,10 +106,10 @@ def connect_ssh(ip, username, password=None, client=paramiko.SSHClient, key=None
         raise AuthError(str(e))
     return ssh
 
+
 def validate_ip(address):
     ip = ipaddr.IPAddress(address)
     if ip.is_unspecified or ip.is_loopback or ip.is_link_local:
         raise ValueError("Local, unspecified or loopback address: {}"
             "".format(address))
     return unicode(ip)
-
