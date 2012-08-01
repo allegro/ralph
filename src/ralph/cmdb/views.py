@@ -90,7 +90,7 @@ class BaseCMDBView(Base):
         ret = super(BaseCMDBView, self).get_context_data(**kwargs)
         ret.update(self.get_permissions())
         ret.update({'breadcrumbs' : self.generate_breadcrumb()})
-        ret.update({ 'url_query': self.request.GET, })
+        ret.update({'url_query': self.request.GET, })
         ret.update({'span_number' : '6' }) #high of screen
         return ret
 

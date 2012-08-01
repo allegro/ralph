@@ -12,11 +12,17 @@ from django.contrib import admin
 from ajax_select import urls as ajax_select_urls
 admin.autodiscover()
 
+from ralph.cmdb.api import BusinessLineResource, ServiceResource,\
+        CIRelationResource, CIResource
+
 v09_api = Api(api_name='v0.9')
 for r in (VentureResource, VentureLightResource, RoleResource,
     IPAddressResource, ModelGroupResource, ModelResource,
     PhysicalServerResource, RackServerResource, BladeServerResource,
     VirtualServerResource, DevResource):
+    v09_api.register(r())
+
+for r in (BusinessLineResource, ServiceResource, CIResource, CIRelationResource):
     v09_api.register(r())
 
 class VhostRedirectView(RedirectView):
