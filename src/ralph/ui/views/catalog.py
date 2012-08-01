@@ -25,17 +25,6 @@ PAGE_SIZE = 25
 MAX_PAGE_SIZE = 65535
 
 
-def _get_pages(paginator, page):
-    pages = paginator.page_range[max(0, page - 2):
-                                 min(paginator.num_pages, page + 1)]
-    if 1 not in pages:
-        pages.insert(0, 1)
-        pages.insert(1, '...')
-    if paginator.num_pages not in pages:
-        pages.append('...')
-        pages.append(paginator.num_pages)
-    return pages
-
 
 def _prepare_query(request, query, tree=False, columns={}, default_sort=''):
     if query:
@@ -73,7 +62,6 @@ def _prepare_model_groups(request, query, tree=False):
         items = pages.page(page)
     return {
         'sort': sort,
-        'pages': _get_pages(pages, page),
         'items': items,
     }
 
