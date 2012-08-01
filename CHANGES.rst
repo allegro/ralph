@@ -1,6 +1,11 @@
 Change Log
 ----------
 
+1.0.4
+~~~~~
+
+* added a "zabbixregister" command for automatically creating hosts and
+  host templates in Zabbix
 
 1.0.3 
 ~~~~~
