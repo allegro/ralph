@@ -490,8 +490,13 @@ class History(DeviceDetailView):
 
     def get_context_data(self, **kwargs):
         ret = super(History, self).get_context_data(**kwargs)
+        history = self.object.historychange_set.order_by('-date')
+        show_all = bool(self.request.GET.get('all', ''))
+        if not show_all:
+            history = history.exclude(user=None)
         ret.update({
-            'history': self.object.historychange_set.order_by('-date'),
+            'history': history,
+            'show_all': show_all,
         })
         return ret
 
