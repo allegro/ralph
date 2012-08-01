@@ -11,7 +11,8 @@ with open(os.path.join(current_dir, 'README.rst')) as readme_file:
     with open(os.path.join(current_dir, 'CHANGES.rst')) as changes_file:
         long_description = readme_file.read() + '\n' + changes_file.read()
 
-from doc.conf import release
+from ralph import VERSION
+release = ".".join(str(num) for num in VERSION)
 
 setup (
     name = 'ralph',
