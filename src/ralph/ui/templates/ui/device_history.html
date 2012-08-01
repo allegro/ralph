@@ -21,7 +21,7 @@
         <th>Comment</th>
     </tr></thead>
     <tbody>
-        {% for h in history %}
+        {% for h in history_page.object_list %}
             <tr>
                 <td>{{ h.date|timesince_limited }}</td>
                 <td>{{ h.user|default:'' }}</td>
@@ -33,4 +33,5 @@
         {% endfor %}
     </tbody>
 </table>
+{% pagination history_page fugue_icons=1 show_all=1 url_query=url_query %}
 {% endblock content %}

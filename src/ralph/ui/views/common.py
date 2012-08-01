@@ -9,6 +9,7 @@ import datetime
 from django.conf import settings
 from django.contrib import messages
 from django.core.urlresolvers import reverse
+from django.core.paginator import Paginator
 from django.db import models as db
 from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.utils import simplejson as json
@@ -30,6 +31,8 @@ from ralph.ui.forms import (DeviceInfoForm, DevicePricesForm,
 
 
 SAVE_PRIORITY = 200
+HISTORY_PAGE_SIZE = 25
+MAX_PAGE_SIZE = 65535
 
 
 def _get_balancers(dev):
@@ -494,8 +497,19 @@ class History(DeviceDetailView):
         show_all = bool(self.request.GET.get('all', ''))
         if not show_all:
             history = history.exclude(user=None)
+        try:
+            page = int(self.request.GET.get('page', 1))
+        except ValueError:
+            page = 1
+        if page == 0:
+            page = 1
+            page_size = MAX_PAGE_SIZE
+        else:
+            page_size = HISTORY_PAGE_SIZE
+        history_page = Paginator(history, page_size).page(page)
         ret.update({
             'history': history,
+            'history_page': history_page,
             'show_all': show_all,
         })
         return ret
