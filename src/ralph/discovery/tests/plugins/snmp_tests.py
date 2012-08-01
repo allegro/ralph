@@ -82,7 +82,7 @@ class SnmpMacPluginTest(TestCase):
                 snmp.do_snmp_mac(self.ip.snmp_name, self.ip.snmp_community,
                                  self.ip.snmp_version, self.ip.address,
                                  self.kwargs)
-            self.assertEquals(raised.exception.message, 'no MAC.')
+            self.assertEquals(raised.exception.args[0], 'no MAC.')
 
     def test_f5(self):
         self.ip.snmp_name = ('Linux f5-2a.dc2 2.6.18-164.11.1.el5.1.0.f5app #1 '
