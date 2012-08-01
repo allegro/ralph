@@ -28,15 +28,16 @@
     <script src="{{ STATIC_URL }}jit/jit.js"></script>
 
     <script type='text/javascript'> 
-                 /* Commented out until bugfix for datepicker land.
+        /* FIXME: datepicker plugin has some problem with hooking elements by class.
+           It works only for first element - to be fixed */
+        /*
         $(document).ready(function()
-                {
-                   $(".datepicker").datepicker(
-                    format='yyyy/mm/dd'
-                    );
-                    });
-
-                */
+        {
+           $(".datepicker").datepicker(
+            format='yyyy/mm/dd'
+            );
+        });
+        */
     </script>
 {% endblock %}
 
