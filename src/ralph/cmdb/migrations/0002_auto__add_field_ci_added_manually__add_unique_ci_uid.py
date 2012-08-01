@@ -28,7 +28,6 @@ class Migration(SchemaMigration):
     models = {
         'cmdb.ci': {
             'Meta': {'unique_together': "((u'content_type', u'object_id'),)", 'object_name': 'CI'},
-            'added_manually': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'barcode': ('django.db.models.fields.CharField', [], {'default': 'None', 'max_length': '255', 'unique': 'True', 'null': 'True'}),
             'business_service': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'content_type': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['contenttypes.ContentType']", 'null': 'True', 'blank': 'True'}),
