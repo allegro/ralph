@@ -4,6 +4,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from bob.menu import MenuItem, MenuHeader
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.http import HttpResponseForbidden, HttpResponseRedirect
@@ -15,6 +16,7 @@ from ralph.discovery.models import (DeviceType, ComponentType, DeviceModel,
                                     ComponentModel)
 from ralph.ui.forms import ComponentModelGroupForm, DeviceModelGroupForm
 from ralph.ui.views.common import Base
+from ralph.util.presentation import COMPONENT_ICONS, DEVICE_ICONS
 
 
 MODEL_GROUP_SORT_COLUMNS = {
@@ -83,8 +85,29 @@ class Catalog(Base):
             model_type_id = int(self.kwargs.get('type', ''))
         except ValueError:
             model_type_id = None
+        kind = self.kwargs.get('kind')
+        sidebar_items = (
+            [MenuHeader('Components')] +
+            [MenuItem(
+                    label=t.raw.title(),
+                    name='component-%d' % t.id,
+                    fugue_icon = COMPONENT_ICONS[t.id],
+                    view_name='catalog',
+                    view_args=('component', t.id),
+                ) for t in ComponentType(item=lambda t: t)] +
+            [MenuHeader('Devices')] +
+            [MenuItem(
+                        label=t.raw.title(),
+                        name='device-%d' % t.id,
+                        fugue_icon = DEVICE_ICONS[t.id],
+                        view_name='catalog',
+                        view_args=('device', t.id),
+                    ) for t in DeviceType(item=lambda t: t)]
+        )
         ret.update({
-            'kind': self.kwargs.get('kind'),
+            'sidebar_items': sidebar_items,
+            'sidebar_selected': '%s-%d' % (kind, model_type_id),
+            'kind': kind,
             'component_model_types': ComponentType(item=lambda a: a),
             'device_model_types': DeviceType(item=lambda a: a),
             'model_type_id': model_type_id,
