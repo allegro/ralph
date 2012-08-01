@@ -5,7 +5,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import datetime
-import os
 
 from django.conf import settings
 from django.test import TestCase
@@ -15,7 +14,7 @@ from lxml import objectify
 from ralph.cmdb.importer import CIImporter
 from ralph.cmdb.models import CI, CIRelation, CI_RELATION_TYPES, CIChange, CI_TYPES, \
     CIChangePuppet, CIChangeGit, CI_CHANGE_TYPES
-from ralph.discovery.models import Device, DeviceType, DataCenter, DeviceModel
+from ralph.discovery.models import Device, DeviceType, DeviceModel
 from ralph.business.models import Venture,VentureRole
 from django.contrib.contenttypes.models import ContentType
 from ralph.cmdb.integration.puppet import PuppetAgentsImporter
@@ -114,7 +113,9 @@ class CIImporterTest(TestCase):
         self.assertEqual(chg.type, 2)
         # check parsed logs
         self.assertEqual(len(logs), 16)
-        self.assertEqual(logs[0].time, datetime.datetime(2010, 12, 31, 0, 56, 37))
+        time_iso = logs[0].time.isoformat().split('.')[0]
+        self.assertEqual(time_iso, datetime.datetime(2010, 12, 31, 0, 56,
+            37).isoformat())
         # should not import puppet report which has 'unchanged' status
         self.assertEqual(CIChangePuppet.objects.filter(status='unchanged').count(), 0)
 
