@@ -105,3 +105,52 @@ commands respectively.  You can export the DHCP server configuration with
 ``dhcpexport``. The DNS server configuration can be used directly by PowerDNS
 server, if you point it to use Ralph's database.
 
+
+Integration with external services
+----------------------------------
+
+Ralph can communicate with some external services.
+
+OpenStack
+~~~~~~~~~
+
+If you configure the variables ``OPENSTACK_URL``, ``OPENSTACK_USER`` and
+``OPENSTACK_PASSWORD`` to point to the nova API of your OpenStack instance,
+then you can use the command::
+
+    (ralph)$ ralph openstack
+
+To pull in the billing information for OpenStack tennants for the previous day.
+New "openstack" components will be then created in the catalog, where you can
+set the prices for them.  That information is then displayed in the "Venture"
+tab summary.
+
+You can add an optional ``--remote`` parameter to make the command run on any
+celery worker that listens on the ``openstack`` queue.
+
+Zabbix
+~~~~~~
+
+If you configure ``ZABBIX_URL``, ``ZABBIX_USER`` and ``ZABBIX_PASSWORD``, with
+the addition of ``ZABBIX_DEFAULT_GROUP``, then you can use the command::
+
+    (ralph)$ ralph zabbixregister
+
+To automatically create Zabbix hosts and host templates for all the devices
+that have a zabbix integration "template" variable set in their roles.
+
+You can add an optional ``--remote`` parameter to make the command run on any
+celery worker that listens on the ``zabbix`` queue.
+
+Splunk
+~~~~~~
+
+If you configure ``SPLUNK_URL``, ``SPLUNK_USER`` and ``SPLUNK_PASSWORD``, then
+you can use the command:
+
+    (ralph)$ ralph splunk
+
+To download usage information about all the hosts from Splunk. New components
+will be created in the catalog, where you can set their prices. That
+information is then displayed in the "Venture" tab summary.
+
