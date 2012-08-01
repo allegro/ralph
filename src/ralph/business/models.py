@@ -94,6 +94,26 @@ class Venture(Named, TimeTrackable):
     def venturerole(self):
         return self.venturerole_set
 
+class Service(db.Model):
+    name = db.CharField(max_length=255, db_index=True)
+    external_key = db.CharField(max_length=100,
+            unique=True,
+            db_index=True
+    )
+    location = db.CharField(max_length=255)
+    state = db.CharField(max_length=100)
+    it_person = db.CharField(max_length=255,
+            blank=True, default='')
+    it_person_mail = db.CharField(max_length=255,
+            blank=True, default='')
+    business_person = db.CharField(max_length=255,
+            blank=True, default='')
+    business_person_mail = db.CharField(max_length=255,
+            blank=True, default='')
+    business_line = db.CharField(max_length=255, blank=False)
+
+class BusinessLine(db.Model):
+    name = db.CharField(max_length=255, db_index=True, unique=True)
 
 class VentureRole(Named.NonUnique, TimeTrackable):
     venture = db.ForeignKey(Venture, verbose_name=_("venture"))
@@ -289,3 +309,4 @@ def cost_post_save(sender, instance, raw, using, **kwargs):
 @receiver(pre_delete, sender=VentureExtraCost, dispatch_uid='ralph.costhistory')
 def cost_pre_delete(sender, instance, using, **kwargs):
     HistoryCost.end_span(extra=instance)
+

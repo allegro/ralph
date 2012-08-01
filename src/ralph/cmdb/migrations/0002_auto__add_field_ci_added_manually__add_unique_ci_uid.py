@@ -8,15 +8,21 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding field 'JiraService.business_line'
-        db.add_column('cmdb_jiraservice', 'business_line',
-                      self.gf('django.db.models.fields.CharField')(default='default_businessline', max_length=255),
+        # Adding field 'CI.added_manually'
+        db.add_column('cmdb_ci', 'added_manually',
+                      self.gf('django.db.models.fields.BooleanField')(default=False),
                       keep_default=False)
+
+        # Adding unique constraint on 'CI', fields ['uid']
+        db.create_unique('cmdb_ci', ['uid'])
 
 
     def backwards(self, orm):
-        # Deleting field 'JiraService.business_line'
-        db.delete_column('cmdb_jiraservice', 'business_line')
+        # Removing unique constraint on 'CI', fields ['uid']
+        db.delete_unique('cmdb_ci', ['uid'])
+
+        # Deleting field 'CI.added_manually'
+        db.delete_column('cmdb_ci', 'added_manually')
 
 
     models = {
@@ -178,22 +184,6 @@ class Migration(SchemaMigration):
             'Meta': {'object_name': 'CIValueString'},
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'value': ('django.db.models.fields.CharField', [], {'max_length': '1024', 'null': 'True', 'blank': 'True'})
-        },
-        'cmdb.jirabusinessline': {
-            'Meta': {'object_name': 'JiraBusinessLine'},
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '255', 'db_index': 'True'})
-        },
-        'cmdb.jiraservice': {
-            'Meta': {'object_name': 'JiraService'},
-            'business_line': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'it_person': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'it_person_mail': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'jira_key': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '100', 'db_index': 'True'}),
-            'location': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '255', 'db_index': 'True'}),
-            'state': ('django.db.models.fields.CharField', [], {'max_length': '100'})
         },
         'cmdb.puppetlog': {
             'Meta': {'object_name': 'PuppetLog'},
