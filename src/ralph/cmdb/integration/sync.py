@@ -50,14 +50,14 @@ class ZabbixImporter(BaseImporter):
     def zabbix_hosts(context):
         x = ZabbixImporter()
         x.import_hosts()
-        return [True, 'Done', context]
+        return (True, 'Done', context)
 
     @staticmethod
     @plugin.register(chain='cmdb_zabbix', requires=['zabbix_hosts'])
     def zabbix_triggers(context):
         x = ZabbixImporter()
         x.import_triggers()
-        return [True, 'Done' ,context]
+        return (True, 'Done' ,context)
 
     def import_triggers(self):
         ''' Create/update zabbix IDn for all matched CI's '''
@@ -101,12 +101,14 @@ class JiraEventsImporter(BaseImporter):
     def jira_problems(context):
         x = JiraEventsImporter()
         x.import_problem()
+        return (True, 'Done' ,context)
 
     @staticmethod
     @plugin.register(chain='cmdb_jira')
     def jira_incidents(context):
         x = JiraEventsImporter()
         x.import_incident()
+        return (True, 'Done' ,context)
 
     def import_obj(self, issue, classtype):
         logger.debug(issue)
