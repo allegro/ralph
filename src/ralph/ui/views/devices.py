@@ -6,13 +6,12 @@ from __future__ import unicode_literals
 
 import cStringIO as StringIO
 
-from django.views.generic import ListView
 from django.contrib import messages
-from django.http import HttpResponseRedirect
-from django.http import HttpResponse
 from django.core.paginator import InvalidPage
 from django.http import Http404
+from django.http import HttpResponseRedirect, HttpResponse
 from django.utils.translation import ugettext as _
+from django.views.generic import ListView
 
 from ralph.account.models import Perm
 from ralph.util import csvutil
@@ -37,7 +36,8 @@ DEVICE_SORT_COLUMNS = {
     'purchase_date': ('purchase_date',),
     'warranty': ('warranty_expiration_date',),
     'support': ('support_expiration_date', 'support_kind'),
-    'reports': ('remarks',), # FIXME: create a column for affected reports quantity
+    # FIXME: create a column for affected reports quantity
+    'reports': ('remarks',),
 }
 
 
@@ -61,7 +61,6 @@ def _get_show_tabs(request, venture, device):
         tabs.extend(['history'])
     if has_perm(Perm.run_discovery, venture):
         tabs.extend(['discover'])
-    #if has_perm(Perm.read_configuration_item_info_generic):
     tabs.extend(['cmdb'])
 
     return tabs
@@ -105,7 +104,8 @@ class BaseDeviceList(ListView):
             row = [
                 str(dev.id),
                 dev.name or '' if 'info' in show_tabs else '',
-                dev.venture.symbol if dev.venture and 'info' in show_tabs else '',
+                dev.venture.symbol if
+                    dev.venture and 'info' in show_tabs else '',
                 (dev.venture_role.full_name if dev.venture_role and
                     'info' in show_tabs else ''),
                 dev.get_model_name() or '' if 'info' in show_tabs else '',
@@ -124,8 +124,10 @@ class BaseDeviceList(ListView):
                 dev.created or '' if 'history' in show_tabs else '',
                 dev.last_seen or '' if 'history' in show_tabs else '',
                 dev.purchase_date or '' if 'purchase' in show_tabs else '',
-                dev.warranty_expiration_date or ''if 'purchase' in show_tabs else '',
-                dev.support_expiration_date or '' if 'purchase' in show_tabs else '',
+                dev.warranty_expiration_date or '' if
+                    'purchase' in show_tabs else '',
+                dev.support_expiration_date or '' if
+                    'purchase' in show_tabs else '',
                 dev.support_kind or '' if 'purchase' in show_tabs else '',
                 dev.sn or '' if 'purchase' in show_tabs else '',
                 dev.remarks or '' if 'info' in show_tabs else '',
@@ -142,7 +144,8 @@ class BaseDeviceList(ListView):
 
     def get(self, *args, **kwargs):
         if not self.user_allowed():
-            messages.error(self.request, _("You don't have permission to view this."))
+            messages.error(self.request,
+                    _("You don't have permission to view this."))
             return HttpResponseRedirect('..')
         export = self.request.GET.get('export')
         if export == 'csv':
