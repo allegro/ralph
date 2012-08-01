@@ -28,7 +28,8 @@ class Command(BaseCommand):
             ContentType.objects.get(app_label='business', model='venturerole'),
             ContentType.objects.get(app_label='discovery', model='datacenter'),
             ContentType.objects.get(app_label='discovery', model='network'),
-            ContentType.objects.get(app_label='discovery', model='networkterminator'),
+            # not used as for now.
+            # ContentType.objects.get(app_label='discovery', model='networkterminator'),
         ]
         self.actions = ['purge','import']
         self.kinds = ['ci','user-relations','all-relations', 'system-relations']

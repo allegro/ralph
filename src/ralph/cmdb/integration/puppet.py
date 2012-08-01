@@ -133,10 +133,11 @@ class PuppetGitImporter(BaseImporter):
         self.fisheye = fisheye_class()
 
     @staticmethod
-    @plugin.register(chain='cmdb')
+    @plugin.register(chain='cmdb_git')
     def git(context):
         x = PuppetGitImporter()
         x.import_git()
+        return (True, 'Done', context)
 
     def is_imported(self, changeset):
         objects = db.CIChangeGit.objects.filter(changeset=changeset).count()

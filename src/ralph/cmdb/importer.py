@@ -165,13 +165,13 @@ class CIImporter(object):
                     app_label='discovery',
                     model='device',
         )
-        cls.jira_service_content_type = ContentType.objects.get(
-                    app_label='cmdb',
-                    model='jiraservice',
+        cls.service_content_type = ContentType.objects.get(
+                    app_label='business',
+                    model='service',
         )
-        cls.jira_business_line_content_type = ContentType.objects.get(
-                    app_label='cmdb',
-                    model='jirabusinessline',
+        cls.business_line_content_type = ContentType.objects.get(
+                    app_label='business',
+                    model='businessline',
         )
 
     @classmethod
@@ -200,11 +200,11 @@ class CIImporter(object):
                     cls.import_venture_relations(obj=obj, d=d)
                 elif content_type == cls.venture_role_content_type:
                     cls.import_role_relations(obj=obj, d=d)
-                elif content_type == cls.data_center_content_type:
+                elif content_type == cls.datacenter_content_type:
                     # top level Ci without parent relations.
                     pass
-                elif content_type == cls.jira_service_content_type:
-                    cls.import_jira_service_relations(obj=obj, d=d)
+                elif content_type == cls.service_content_type:
+                    cls.import_service_relations(obj=obj, d=d)
                 else:
                     raise UnknownCTException(content_type)
             except IntegrityError:
@@ -213,10 +213,10 @@ class CIImporter(object):
 
     @classmethod
     @nested_commit_on_success
-    def import_jira_service_relations(cls, obj, d):
+    def import_service_relations(cls, obj, d):
         if obj.business_line:
             bline = cdb.CI.objects.get(
-                    content_type=cls.jira_business_line_content_type,
+                    content_type=cls.business_line_content_type,
                     name=obj.business_line,
             )
             cir = cdb.CIRelation()
@@ -391,8 +391,8 @@ class CIImporter(object):
                 ndb.Network: cdb.CI_TYPES.NETWORK.id,
                 ndb.NetworkTerminator: cdb.CI_TYPES.NETWORKTERMINATOR.id,
                 db.DataCenter: cdb.CI_TYPES.DATACENTER.id,
-                cdb.JiraService : cdb.CI_TYPES.SERVICE.id,
-                cdb.JiraBusinessLine : cdb.CI_TYPES.BUSINESSLINE.id,
+                bdb.Service : cdb.CI_TYPES.SERVICE.id,
+                bdb.BusinessLine : cdb.CI_TYPES.BUSINESSLINE.id,
         }
         layers={
                 db.Device: 5,
@@ -401,8 +401,8 @@ class CIImporter(object):
                 ndb.Network:  6,
                 ndb.NetworkTerminator: 6,
                 db.DataCenter: 5,
-                cdb.JiraBusinessLine: 7,
-                cdb.JiraService: 7,
+                bdb.BusinessLine: 7,
+                bdb.Service: 7,
         }
         for i in content_types:
             assetClass  = i.model_class()
