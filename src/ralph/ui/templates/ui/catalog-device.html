@@ -60,7 +60,7 @@
             {% for m in items.object_list %}
             <tr>
                 <td class="column-name">{{ m.type|device_model_type_icon }}&nbsp;{{ m.name }}</td>
-                {% if 'count' in columns %}<td class="column-count count"><span class="badge">{{ m.count }}</span></td>{% endif %}
+                {% if 'count' in columns %}<td class="column-count count"><a href="{% url 'search' 'components' '' %}?component={{ m.name }}" class="badge">{{ m.count }}</a></td>{% endif %}
                 {% if 'size' in columns %}<td class="column-size">{{ m.chassis_size|default:'' }}</td>{% endif %}
                 <td class="column-actions"><input type="checkbox" name="items" value="{{ m.id }}"></td>
             </tr>
