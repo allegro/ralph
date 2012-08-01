@@ -113,3 +113,10 @@ html .loading {
 }
 
 label.required { font-weight: bold }
+
+div.report-tabs div.tabs-right,
+div.report-tabs ul.nav-tabs {
+    width: 100%;
+    float: none;
+    margin: 0;
+}
