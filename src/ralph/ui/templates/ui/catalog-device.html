@@ -23,12 +23,12 @@
                 <td class="column-slots"></td>
                 <td class="column-price currency"></td>
             </tr>
-            {% for g in groups.all %}
+            {% for g in groups %}
             <tr {% if group = g %}class="active"{% endif %} >
                 <td class="column-name"><a
                         href="{% url 'catalog' kind model_type_id g.id %}"
                     >{{ g.type|device_model_type_icon }}&nbsp;{{ g.name }}</a></td>
-                <td class="column-count count"><a href="{% url 'search' 'components' '' %}?device_group={{ g.id }}" class="badge">{{ g.get_count }}</a></td>
+                <td class="column-count count"><a href="{% url 'search' 'components' '' %}?device_group={{ g.id }}" class="badge">{{ g.count }}</a></td>
                 <td class="column-slots">{{ g.slots }}</td>
                 <td class="column-price currency">
                     {{ g.price }}&nbsp;{{ CURRENCY }}

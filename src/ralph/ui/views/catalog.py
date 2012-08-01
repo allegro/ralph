@@ -58,6 +58,7 @@ def _prepare_model_groups(request, query, tree=False):
             MODEL_GROUP_SORT_COLUMNS, default_sort='-count')
     for g in query:
         g.count = g.get_count()
+    query = [g for g in query if g.count]
     if sort in ('count', '-count'):
         query = list(query)
         if sort.startswith('-'):
@@ -191,7 +192,11 @@ class CatalogDevice(Catalog):
             ).filter(
                 group=None
             ).count()
-        self.groups = DeviceModelGroup.objects.filter(type=self.model_type_id)
+        self.groups = list(DeviceModelGroup.objects.filter(
+            type=self.model_type_id))
+        for g in self.groups:
+            g.count = g.get_count()
+        self.groups = [g for g in self.groups if g.count]
         if not self.form:
             self.form = DeviceModelGroupForm(instance=self.group)
         return super(CatalogDevice, self).get(*args, **kwargs)
@@ -295,8 +300,11 @@ class CatalogComponent(Catalog):
             ).filter(
                 group=None
             ).count()
-        self.groups = ComponentModelGroup.objects.filter(
-                type=self.model_type_id)
+        groups = list(ComponentModelGroup.objects.filter(
+                type=self.model_type_id))
+        for g in groups:
+            g.count = g.get_count()
+        self.groups = [g for g in groups if g.count]
         if not self.form:
             self.form = ComponentModelGroupForm(instance=self.group)
         return super(CatalogComponent, self).get(*args, **kwargs)
