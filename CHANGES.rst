@@ -4,6 +4,8 @@ Change Log
 1.0.4
 ~~~~~
 
+* small usability improvements in the history user interface
+
 * added a "zabbixregister" command for automatically creating hosts and
   host templates in Zabbix
 
