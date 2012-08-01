@@ -5,8 +5,6 @@ Change Log
 1.0.3 
 ~~~~~
 
-* make subitems in the sidebar menu collapsible
-
 * a rudimentary reports tab on device lists to filter devices according to
   specified rules
 
