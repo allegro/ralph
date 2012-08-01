@@ -15,13 +15,11 @@ from tastypie.authorization import DjangoAuthorization
 from tastypie.resources import ModelResource as MResource
 from ralph.cmdb.models import CI, CIRelation
 from ralph.cmdb import models as db
-from ralph.business.models import Service, BusinessLine
 
 
 class BusinessLineResource(MResource):
     class Meta:
         # has only name, so skip content_object info
-        queryset = BusinessLine.objects.all()
         queryset = CI.objects.filter(type=db.CI_TYPES.BUSINESSLINE.id).all()
         authentication = ApiKeyAuthentication()
         authorization = DjangoAuthorization()
@@ -30,7 +28,6 @@ class BusinessLineResource(MResource):
 
 class ServiceResource(MResource):
     class Meta:
-        queryset = Service.objects.all()
         queryset = CI.objects.filter(type=db.CI_TYPES.SERVICE.id).all()
         authentication = ApiKeyAuthentication()
         authorization = DjangoAuthorization()
