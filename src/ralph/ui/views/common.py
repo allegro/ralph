@@ -8,12 +8,11 @@ import datetime
 
 from django.conf import settings
 from django.contrib import messages
+from django.core.urlresolvers import reverse
 from django.db import models as db
-from django.http import HttpResponseRedirect
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.utils import simplejson as json
 from django.views.generic import UpdateView, DetailView, TemplateView
-from django.core.urlresolvers import reverse
 
 from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Language, TagStem
@@ -26,8 +25,8 @@ from ralph.cmdb import models as cdb
 from ralph.dnsedit.models import DHCPEntry
 from ralph.discovery.models import Device, DeviceType
 from ralph.util import presentation, pricing
-from ralph.ui.forms import (DeviceInfoForm, DevicePricesForm, DevicePurchaseForm,
-                            PropertyForm, DeviceBulkForm)
+from ralph.ui.forms import (DeviceInfoForm, DevicePricesForm,
+                            DevicePurchaseForm, PropertyForm, DeviceBulkForm)
 
 
 SAVE_PRIORITY = 200

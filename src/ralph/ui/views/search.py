@@ -7,17 +7,17 @@ from __future__ import unicode_literals
 import ipaddr
 import re
 
-from django.db.models import Q
 from django.contrib import messages
+from django.core.urlresolvers import reverse
+from django.db.models import Q
 from django.http import HttpResponseRedirect
 from powerdns.models import Record
-from django.core.urlresolvers import reverse
 
 from ralph.account.models import Perm
 from ralph.discovery.models import ReadOnlyDevice, Device
 from ralph.ui.forms import SearchForm
 from ralph.ui.views.common import (BaseMixin, Info, Prices, Addresses, Costs,
-    Purchase, Components, History, Discover)
+                                   Purchase, Components, History, Discover)
 from ralph.ui.views.devices import BaseDeviceList
 from ralph.ui.views.reports import Reports, ReportDeviceList
 
@@ -31,6 +31,7 @@ def _search_fields_or(fields, values):
         for field in fields:
             q |= Q(**{field: value})
     return q
+
 
 def _search_fields_and(fields, values):
     q = Q()
@@ -124,7 +125,9 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                     ], data['address'].split(' '))
                     self.query = self.query.filter(q).distinct()
             if data['remarks']:
-                self.query = self.query.filter(remarks__icontains=data['remarks'])
+                self.query = self.query.filter(
+                        remarks__icontains=data['remarks']
+                    )
             if data['model']:
                 q = _search_fields_or([
                     'model__name__icontains',
@@ -164,7 +167,9 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                 ], data['serial'].split(' '))
                 self.query = self.query.filter(q).distinct()
             if data['barcode']:
-                self.query = self.query.filter(barcode__icontains=data['barcode'])
+                self.query = self.query.filter(
+                        barcode__icontains=data['barcode']
+                    )
             if data['position']:
                 q = Q()
                 for part in data['position'].split(' '):
@@ -210,7 +215,9 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                             ], [str(role_id)])
                     self.query = self.query.filter(q).distinct()
             if data['device_group']:
-                self.query = self.query.filter(model__group_id=data['device_group'])
+                self.query = self.query.filter(
+                        model__group_id=data['device_group']
+                    )
             if data['component_group']:
                 q = _search_fields_or([
                     'genericcomponent__model__group_id',
@@ -223,7 +230,9 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                 ], [str(data['component_group'])])
                 self.query = self.query.filter(q).distinct()
             if data['device_type']:
-                self.query = self.query.filter(model__type__in=data['device_type'])
+                self.query = self.query.filter(
+                        model__type__in=data['device_type']
+                    )
         profile = self.request.user.get_profile()
         if not profile.has_perm(Perm.read_dc_structure):
             self.query = profile.filter_by_perm(self.query,
@@ -250,7 +259,8 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
         query = self.get_queryset()
         if query.count() == 1:
             messages.info(self.request, "Found only one result.")
-            url = '%s%d?%s' % (search_url, query[0].id, self.request.GET.urlencode())
+            url = '%s%d?%s' % (search_url, query[0].id,
+                               self.request.GET.urlencode())
             return HttpResponseRedirect(url)
         return ret
 
