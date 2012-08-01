@@ -25,7 +25,7 @@ class AssetChangeImporter(BaseImporter):
     def assets(context):
         x = AssetChangeImporter()
         x.import_changes()
-        return [True, 'Done', context]
+        return (True, 'Done', context)
 
     def import_changes(self):
         device_type = ContentType.objects.get(app_label="discovery", model="device")
