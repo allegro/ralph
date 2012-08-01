@@ -128,7 +128,7 @@ class CIImporterTest(TestCase):
 
         CIImporter.import_relations(ContentType.objects.get_for_model(y),asset_id=y.id)
 
-        with mock.patch('ralph.cmdb.integration.fisheye.Fisheye') as Fisheye:
+        with mock.patch('ralph.cmdb.integration.lib.fisheye.Fisheye') as Fisheye:
             Fisheye.side_effect = MockFisheye
             x = pgi(fisheye_class=Fisheye)
             x.import_git()
