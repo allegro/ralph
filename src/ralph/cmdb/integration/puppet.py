@@ -137,7 +137,7 @@ class PuppetGitImporter(BaseImporter):
     def git(context):
         x = PuppetGitImporter()
         x.import_git()
-        return [True, 'Done', context]
+        return (True, 'Done', context)
 
     def is_imported(self, changeset):
         objects = db.CIChangeGit.objects.filter(changeset=changeset).count()
