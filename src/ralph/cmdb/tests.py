@@ -64,19 +64,29 @@ class CIImporterTest(TestCase):
         )
         self.child_role.save()
         dm = self.add_model('DC model sample', DeviceType.data_center.id)
-        self.dc = Device.create(sn='sn1', name='Rack 1', model=dm)
+        self.dc = Device.create(
+                sn='sn1',
+                model=dm
+        )
+        self.dc.name = 'dc'
+        self.dc.save()
         dm = self.add_model('Rack model sample', DeviceType.rack_server.id)
-        self.rack = Device.create(venture=self.child_venture, sn='sn2', name='DC', model=dm)
+        self.rack = Device.create(
+                venture=self.child_venture,
+                sn='sn2',
+                model=dm
+        )
         self.rack.parent=self.dc
+        self.rack.name = 'rack'
         self.rack.save()
         dm = self.add_model('Blade model sample', DeviceType.blade_server.id)
         self.blade = Device.create(
                 venture=self.child_venture,
                 venturerole=self.child_role,
                 sn='sn3',
-                name='blade1',
                 model=dm
         )
+        self.blade.name = 'blade'
         self.blade.parent=self.rack
         self.blade.save()
 
@@ -86,7 +96,6 @@ class CIImporterTest(TestCase):
         dm.name=name
         dm.save()
         return dm
-
 
     def test_puppet_parser(self):
         hostci = CI(name='s11401.dc2', uid='mm-1')
@@ -98,14 +107,14 @@ class CIImporterTest(TestCase):
         yaml = open(CURRENT_DIR + 'cmdb/tests/samples/canonical_unchanged.yaml').read()
         p.import_contents(yaml)
         chg = CIChange.objects.all()[0]
-        logs = PuppetLog.objects.filter(cichange=chg).order_by('id')
+        logs = PuppetLog.objects.filter(cichange__host='s11401.dc2').order_by('id')
         self.assertEqual(chg.content_object.host, u's11401.dc2')
         self.assertEqual(chg.content_object.kind, u'apply')
         self.assertEqual(chg.ci,hostci)
         self.assertEqual(chg.type, 2)
         # check parsed logs
         self.assertEqual(len(logs), 16)
-        self.assertEqual(logs[0].time, datetime.datetime(2010, 12, 31, 0, 56, 37, 290413))
+        self.assertEqual(logs[0].time, datetime.datetime(2010, 12, 31, 0, 56, 37))
         # should not import puppet report which has 'unchanged' status
         self.assertEqual(CIChangePuppet.objects.filter(status='unchanged').count(), 0)
 
@@ -190,9 +199,9 @@ class CIImporterTest(TestCase):
             CIImporter.import_relations(ct, asset_id=o.id)
 
         # All ci should be in Hardware layer
-        ci_dc = CI.objects.get(uid='dd-1')
-        ci_rack = CI.objects.get(uid='dd-2')
-        ci_blade = CI.objects.get(uid='dd-3')
+        ci_dc = CI.objects.get(name='dc')
+        ci_rack = CI.objects.get(name='rack')
+        ci_blade = CI.objects.get(name='blade')
 
         self.assertEqual(ci_dc.layers.select_related()[0].name, 'Hardware')
         self.assertEqual(ci_rack.layers.select_related()[0].name, 'Hardware')
