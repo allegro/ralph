@@ -18,6 +18,7 @@ import re
 import textwrap
 import sys
 
+from django.conf import settings
 from django.test import TestCase
 from unittest import skipIf
 
@@ -27,12 +28,12 @@ from ralph.discovery.models import MarginKind, DeprecationKind
 from ralph.util import pricing
 
 
-EXISTING_DOMAIN = 'www.allegro.pl'
+EXISTING_DOMAIN = settings.SANITY_CHECK_PING_ADDRESS
 NON_EXISTENT_DOMAIN = 'nxdomain.allegro.pl'
 NON_EXISTENT_HOST_IP = '11.255.255.254'
 
-IP2HOST_IP = '8.8.8.8'
-IP2HOST_HOSTNAME_REGEX = r'.*google.*'
+IP2HOST_IP = settings.SANITY_CHECK_IP2HOST_IP
+IP2HOST_HOSTNAME_REGEX = settings.SANITY_CHECK_IP2HOST_HOSTNAME_REGEX
 
 
 class NetworkTest(TestCase):
