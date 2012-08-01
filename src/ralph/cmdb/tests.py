@@ -4,7 +4,13 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import datetime
+import os
+
+from django.conf import settings
 from django.test import TestCase
+import mock
+from lxml import objectify
 
 from ralph.cmdb.importer import CIImporter
 from ralph.cmdb.models import CI, CIRelation, CI_RELATION_TYPES, CIChange, CI_TYPES, \
@@ -16,10 +22,9 @@ from ralph.cmdb.integration.puppet import PuppetAgentsImporter
 from ralph.cmdb.models import PuppetLog
 from ralph.cmdb.integration.puppet import PuppetGitImporter as pgi
 
-import datetime
-import os
-import mock
-from lxml import objectify
+
+CURRENT_DIR = settings.CURRENT_DIR
+
 
 class MockFisheye(object):
 
@@ -33,14 +38,12 @@ class MockFisheye(object):
         return mock.Mock()
 
     def get_changes(self, *args, **kwargs):
-        xml = open(os.getcwd()+'/cmdb/tests/samples/fisheye_changesets.xml').read()
+        xml = open(CURRENT_DIR + 'cmdb/tests/samples/fisheye_changesets.xml').read()
         return objectify.fromstring(xml)
 
     def get_details(self, *args, **kwargs):
-        xml = open(os.getcwd()+'/cmdb/tests/samples/fisheye_details.xml').read()
+        xml = open(CURRENT_DIR + 'cmdb/tests/samples/fisheye_details.xml').read()
         return objectify.fromstring(xml)
-
-
 
 
 class CIImporterTest(TestCase):
@@ -90,9 +93,9 @@ class CIImporterTest(TestCase):
         hostci.type_id = CI_TYPES.DEVICE.id
         hostci.save()
         p = PuppetAgentsImporter()
-        yaml = open(os.getcwd()+'/cmdb/tests/samples/canonical.yaml').read()
+        yaml = open(CURRENT_DIR + 'cmdb/tests/samples/canonical.yaml').read()
         p.import_contents(yaml)
-        yaml = open(os.getcwd()+'/cmdb/tests/samples/canonical_unchanged.yaml').read()
+        yaml = open(CURRENT_DIR + 'cmdb/tests/samples/canonical_unchanged.yaml').read()
         p.import_contents(yaml)
         chg = CIChange.objects.all()[0]
         logs = PuppetLog.objects.filter(cichange=chg).order_by('id')
