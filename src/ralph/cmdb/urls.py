@@ -14,13 +14,6 @@ from ralph.cmdb.views import Index, Search, Edit, Add, View,ViewIframe, EditRela
 RalphView, ViewJira, ViewUnknown
 from ralph.cmdb.views_changes import  Changes, Problems, Incidents, Change, Dashboard, Reports, DashboardDetails
 from django.conf.urls.defaults import include
-from ralph.cmdb.api import CIResource, CIRelationResource, \
-        ServiceResource, BusinessLineResource
-
-v09_api = Api(api_name='v0.9')
-for r in (CIResource, CIRelationResource, ServiceResource, \
-        BusinessLineResource):
-    v09_api.register(r())
 
 urlpatterns = patterns('',
     (r'^$', login_required(Index.as_view())),
