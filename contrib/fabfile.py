@@ -6,13 +6,11 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from time import sleep
-
 from fabric import colors
-from fabric.api import cd, get, env, local, run, settings
+from fabric.api import cd, get, env, local, run
 from fabric.context_managers import hide
 from fabric.decorators import hosts, parallel
-from fabric.utils import puts, abort, warn
+from fabric.utils import abort
 
 import fabconf
 
