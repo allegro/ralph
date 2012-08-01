@@ -8,35 +8,21 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Deleting model 'JiraService'
-        db.delete_table('cmdb_jiraservice')
+        # Adding field 'CI.added_manually'
+        db.add_column('cmdb_ci', 'added_manually',
+                      self.gf('django.db.models.fields.BooleanField')(default=False),
+                      keep_default=False)
 
-        # Deleting model 'JiraBusinessLine'
-        db.delete_table('cmdb_jirabusinessline')
+        # Adding unique constraint on 'CI', fields ['uid']
+        db.create_unique('cmdb_ci', ['uid'])
 
 
     def backwards(self, orm):
-        # Adding model 'JiraService'
-        db.create_table('cmdb_jiraservice', (
-            ('jira_key', self.gf('django.db.models.fields.CharField')(max_length=100, unique=True, db_index=True)),
-            ('it_person_mail', self.gf('django.db.models.fields.CharField')(default=u'', max_length=255, blank=True)),
-            ('business_line', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('business_person', self.gf('django.db.models.fields.CharField')(default=u'', max_length=255, blank=True)),
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('it_person', self.gf('django.db.models.fields.CharField')(default=u'', max_length=255, blank=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=255, db_index=True)),
-            ('state', self.gf('django.db.models.fields.CharField')(max_length=100)),
-            ('business_person_mail', self.gf('django.db.models.fields.CharField')(default=u'', max_length=255, blank=True)),
-            ('location', self.gf('django.db.models.fields.CharField')(max_length=255)),
-        ))
-        db.send_create_signal('cmdb', ['JiraService'])
+        # Removing unique constraint on 'CI', fields ['uid']
+        db.delete_unique('cmdb_ci', ['uid'])
 
-        # Adding model 'JiraBusinessLine'
-        db.create_table('cmdb_jirabusinessline', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=255, unique=True, db_index=True)),
-        ))
-        db.send_create_signal('cmdb', ['JiraBusinessLine'])
+        # Deleting field 'CI.added_manually'
+        db.delete_column('cmdb_ci', 'added_manually')
 
 
     models = {
