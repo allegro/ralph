@@ -469,8 +469,14 @@ class Costs(DeviceDetailView):
                 h.span = (h.end - h.start).days
             elif h.start:
                 h.span = (datetime.date.today() - h.start).days
+        try:
+            page = max(1, int(self.request.GET.get('page', 1)))
+        except ValueError:
+            page = 1
+        history_page = Paginator(history, HISTORY_PAGE_SIZE).page(page)
         ret.update({
             'history': history,
+            'history_page': history_page,
         })
         last_month = datetime.date.today() - datetime.timedelta(days=31)
         splunk = self.object.splunkusage_set.filter(
