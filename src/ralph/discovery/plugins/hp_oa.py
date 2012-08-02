@@ -15,6 +15,7 @@ from lck.django.common.models import MACAddressField
 from lck.lang import Null, nullify
 from lck.xml import etree_to_dict
 import lck.xml.converters
+from lxml import etree as ET
 
 from ralph.discovery.models import (IPAddress, Device, DeviceType,
         SERIAL_BLACKLIST, ComponentType, GenericComponent, ComponentModel)
