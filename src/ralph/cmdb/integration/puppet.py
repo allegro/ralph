@@ -59,7 +59,7 @@ class PuppetAgentsImporter(BaseImporter):
                 type = resource_status.resource_type
                 time = resource_status.time
                 logger.debug('Resource status  %s %s %s %s %s' % (
-                   key, change_count, changed, type,time
+                   key, change_count, changed, type, time
                 ))
                 obj = db.PuppetResourceStatus()
                 obj.change_count = change_count
@@ -189,7 +189,6 @@ class PuppetGitImporter(BaseImporter):
             ch.save()
 
     def import_git(self):
-
         self.core_ci = db.CI.objects.filter(name='Allegro')[0]
         ret = self.fisheye.get_changes()
         for changeset in ret.getchildren():
@@ -218,12 +217,12 @@ class PuppetGitImporter(BaseImporter):
         role = role[1]
         v = self.find_venture(venture)
         if not v:
-            v = self.find_venture(venture.replace('-','_'))
+            v = self.find_venture(venture.replace('-', '_'))
             if not v:
                 return None
-        r = self.find_role(v, role.replace('.pp',''))
+        r = self.find_role(v, role.replace('.pp', ''))
         if not r:
-            r = self.find_role(v, role.replace('.pp','').replace('__','_'))
+            r = self.find_role(v, role.replace('.pp', '').replace('__', '_'))
             if not r:
                 # can't find role. assign none for now.
                 return None
