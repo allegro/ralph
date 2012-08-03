@@ -6,19 +6,19 @@ from __future__ import unicode_literals
 
 import collections
 
-from django.shortcuts import get_object_or_404
-from django.db.models import Q
 from bob.menu import MenuItem
-from django.views.generic import CreateView
-from django.http import HttpResponseForbidden
-from django.http import HttpResponseRedirect
 from django.contrib import messages
+from django.db.models import Q
+from django.http import HttpResponseForbidden, HttpResponseRedirect
+from django.shortcuts import get_object_or_404
+from django.views.generic import CreateView
 
 from ralph.account.models import Perm
 from ralph.discovery.models import ReadOnlyDevice, Device, DeviceType
 from ralph.ui.forms import DeviceCreateForm
-from ralph.ui.views.common import (Info, Prices, Addresses, Costs,
-    Purchase, Components, History, Discover, BaseMixin, CMDB, DeviceDetailView)
+from ralph.ui.views.common import (Info, Prices, Addresses, Costs, Purchase,
+                                   Components, History, Discover, BaseMixin,
+                                   CMDB, DeviceDetailView)
 from ralph.ui.views.devices import BaseDeviceList
 from ralph.ui.views.reports import Reports, ReportDeviceList
 from ralph.util import presentation
@@ -179,7 +179,8 @@ class RacksDeviceList(SidebarRacks, BaseMixin, BaseDeviceList):
                     Q(parent__parent__parent__parent=self.rack)
                 ).select_related(depth=3)
         queryset = self.sort_queryset(queryset.order_by('model__type'))
-        if self.rack and self.rack.model and self.rack.model.type == DeviceType.rack.id:
+        if (self.rack and self.rack.model and
+            self.rack.model.type == DeviceType.rack.id):
             queryset = list(self.sort_tree(queryset, self.sort))
         return queryset
 
@@ -189,10 +190,14 @@ class RacksDeviceList(SidebarRacks, BaseMixin, BaseDeviceList):
         has_perm = profile.has_perm
         tab_items = ret['tab_items']
         self.set_rack()
-        if has_perm(Perm.create_device, self.rack.venture if self.rack else None):
-            tab_items.append(MenuItem('Add Device', fugue_icon='fugue-wooden-box--plus',
+        if has_perm(Perm.create_device, self.rack.venture if
+                    self.rack else None):
+            tab_items.append(MenuItem('Add Device',
+                            fugue_icon='fugue-wooden-box--plus',
                             name='add_device',
-                            href='../add_device/?%s' % self.request.GET.urlencode()))
+                            href='../add_device/?%s' % (
+                                self.request.GET.urlencode(),)
+                        ))
         ret.update({
             'subsection': self.rack.name if self.rack else self.rack,
             'subsection_slug': self.rack.sn if self.rack else self.rack,
@@ -252,7 +257,9 @@ class RacksAddDevice(Racks, DeviceCreateView):
         tab_items = ret['tab_items']
         tab_items.append(MenuItem('Add Device', name='add_device',
                             fugue_icon='fugue-wooden-box--plus',
-                            href='../add_device/?%s' % self.request.GET.urlencode()))
+                            href='../add_device/?%s' % (
+                                self.request.GET.urlencode(),)
+                        ))
         return ret
 
 

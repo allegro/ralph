@@ -4,17 +4,20 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from django.shortcuts import get_object_or_404
-from django.core.paginator import Paginator
-from django.http import HttpResponseRedirect
-from django.http import HttpResponseForbidden
+from bob.menu import MenuItem, MenuHeader
 from django.contrib import messages
+from django.core.paginator import Paginator
+from django.http import HttpResponseForbidden, HttpResponseRedirect
+from django.shortcuts import get_object_or_404
 
-from ralph.ui.views.common import Base
-from ralph.discovery.models import (DeviceType, ComponentType, DeviceModel,
-        DeviceModelGroup, ComponentModelGroup, ComponentModel)
-from ralph.ui.forms import ComponentModelGroupForm, DeviceModelGroupForm
 from ralph.account.models import Perm
+from ralph.discovery.models import (DeviceType, ComponentType, DeviceModel,
+                                    DeviceModelGroup, ComponentModelGroup,
+                                    ComponentModel)
+from ralph.ui.forms import ComponentModelGroupForm, DeviceModelGroupForm
+from ralph.ui.views.common import Base
+from ralph.util.presentation import COMPONENT_ICONS, DEVICE_ICONS
+
 
 MODEL_GROUP_SORT_COLUMNS = {
     'name': ('name',),
@@ -24,15 +27,6 @@ PAGE_SIZE = 25
 MAX_PAGE_SIZE = 65535
 
 
-def _get_pages(paginator, page):
-    pages = paginator.page_range[max(0, page - 2):min(paginator.num_pages, page + 1)]
-    if 1 not in pages:
-        pages.insert(0, 1)
-        pages.insert(1, '...')
-    if paginator.num_pages not in pages:
-        pages.append('...')
-        pages.append(paginator.num_pages)
-    return pages
 
 def _prepare_query(request, query, tree=False, columns={}, default_sort=''):
     if query:
@@ -49,11 +43,13 @@ def _prepare_query(request, query, tree=False, columns={}, default_sort=''):
         query = query.order_by(*sort_columns)
     return query, sort, page
 
+
 def _prepare_model_groups(request, query, tree=False):
     query, sort, page = _prepare_query(request, query, tree,
             MODEL_GROUP_SORT_COLUMNS, default_sort='-count')
     for g in query:
         g.count = g.get_count()
+    query = [g for g in query if g.count]
     if sort in ('count', '-count'):
         query = list(query)
         if sort.startswith('-'):
@@ -68,9 +64,9 @@ def _prepare_model_groups(request, query, tree=False):
         items = pages.page(page)
     return {
         'sort': sort,
-        'pages': _get_pages(pages, page),
         'items': items,
     }
+
 
 class Catalog(Base):
     section = 'catalog'
@@ -89,8 +85,30 @@ class Catalog(Base):
             model_type_id = int(self.kwargs.get('type', ''))
         except ValueError:
             model_type_id = None
+        kind = self.kwargs.get('kind')
+        sidebar_items = (
+            [MenuHeader('Components')] +
+            [MenuItem(
+                    label=t.raw.title(),
+                    name='component-%d' % t.id,
+                    fugue_icon = COMPONENT_ICONS[t.id],
+                    view_name='catalog',
+                    view_args=('component', t.id),
+                ) for t in ComponentType(item=lambda t: t)] +
+            [MenuHeader('Devices')] +
+            [MenuItem(
+                        label=t.raw.title(),
+                        name='device-%d' % t.id,
+                        fugue_icon = DEVICE_ICONS[t.id],
+                        view_name='catalog',
+                        view_args=('device', t.id),
+                    ) for t in DeviceType(item=lambda t: t)]
+        )
         ret.update({
-            'kind': self.kwargs.get('kind'),
+            'sidebar_items': sidebar_items,
+            'sidebar_selected': '%s-%d' % (kind,
+                    model_type_id) if model_type_id else '',
+            'kind': kind,
             'component_model_types': ComponentType(item=lambda a: a),
             'device_model_types': DeviceType(item=lambda a: a),
             'model_type_id': model_type_id,
@@ -99,6 +117,7 @@ class Catalog(Base):
             'editable': True,
         })
         return ret
+
 
 class CatalogDevice(Catalog):
     template_name = 'ui/catalog-device.html'
@@ -110,7 +129,8 @@ class CatalogDevice(Catalog):
     def post(self, *args, **kwargs):
         if not self.request.user.get_profile().has_perm(
                 Perm.edit_device_info_financial):
-            raise HttpResponseForbidden('You have no permission to edit catalog')
+            raise HttpResponseForbidden(
+                    "You have no permission to edit catalog")
         if 'move' in self.request.POST:
             items = self.request.POST.getlist('items')
             if not items:
@@ -137,8 +157,10 @@ class CatalogDevice(Catalog):
             except ValueError:
                 messages.error(self.request, "No such group.")
             else:
-                self.group = get_object_or_404(DeviceModelGroup, id=self.group_id)
-                messages.warning(self.request, "Group '%s' deleted." % self.group.name)
+                self.group = get_object_or_404(DeviceModelGroup,
+                                               id=self.group_id)
+                messages.warning(self.request,
+                                 "Group '%s' deleted." % self.group.name)
                 self.group.delete()
             return HttpResponseRedirect(self.request.path+'..')
         else:
@@ -148,8 +170,10 @@ class CatalogDevice(Catalog):
                 self.group_id = None
                 self.group = None
             else:
-                self.group = get_object_or_404(DeviceModelGroup, id=self.group_id)
-            self.form = DeviceModelGroupForm(self.request.POST, instance=self.group)
+                self.group = get_object_or_404(DeviceModelGroup,
+                                               id=self.group_id)
+            self.form = DeviceModelGroupForm(self.request.POST,
+                                             instance=self.group)
             if self.form.is_valid():
                 self.form.save()
                 messages.success(self.request, "Changes saved.")
@@ -180,7 +204,11 @@ class CatalogDevice(Catalog):
             ).filter(
                 group=None
             ).count()
-        self.groups = DeviceModelGroup.objects.filter(type=self.model_type_id)
+        self.groups = list(DeviceModelGroup.objects.filter(
+            type=self.model_type_id))
+        for g in self.groups:
+            g.count = g.get_count()
+        self.groups = [g for g in self.groups if g.count]
         if not self.form:
             self.form = DeviceModelGroupForm(instance=self.group)
         return super(CatalogDevice, self).get(*args, **kwargs)
@@ -207,7 +235,8 @@ class CatalogComponent(Catalog):
     def post(self, *args, **kwargs):
         if not self.request.user.get_profile().has_perm(
                 Perm.edit_device_info_financial):
-            raise HttpResponseForbidden('You have no permission to edit catalog')
+            raise HttpResponseForbidden(
+                    "You have no permission to edit catalog")
         if 'move' in self.request.POST:
             items = self.request.POST.getlist('items')
             if not items:
@@ -234,8 +263,10 @@ class CatalogComponent(Catalog):
             except ValueError:
                 messages.error(self.request, "No such group.")
             else:
-                self.group = get_object_or_404(ComponentModelGroup, id=self.group_id)
-                messages.warning(self.request, "Group '%s' deleted." % self.group.name)
+                self.group = get_object_or_404(ComponentModelGroup,
+                                               id=self.group_id)
+                messages.warning(self.request,
+                                 "Group '%s' deleted." % self.group.name)
                 self.group.delete()
             return HttpResponseRedirect(self.request.path+'..')
         else:
@@ -245,8 +276,10 @@ class CatalogComponent(Catalog):
                 self.group_id = None
                 self.group = None
             else:
-                self.group = get_object_or_404(ComponentModelGroup, id=self.group_id)
-            self.form = ComponentModelGroupForm(self.request.POST, instance=self.group)
+                self.group = get_object_or_404(ComponentModelGroup,
+                                               id=self.group_id)
+            self.form = ComponentModelGroupForm(self.request.POST,
+                                                instance=self.group)
             if self.form.is_valid():
                 self.form.save()
                 messages.success(self.request, "Changes saved.")
@@ -267,7 +300,8 @@ class CatalogComponent(Catalog):
             self.group_id = None
             self.group = None
         else:
-            self.group = get_object_or_404(ComponentModelGroup, id=self.group_id)
+            self.group = get_object_or_404(ComponentModelGroup,
+                                           id=self.group_id)
         if self.group:
             self.query = self.group.componentmodel_set.all()
         else:
@@ -278,7 +312,11 @@ class CatalogComponent(Catalog):
             ).filter(
                 group=None
             ).count()
-        self.groups = ComponentModelGroup.objects.filter(type=self.model_type_id)
+        groups = list(ComponentModelGroup.objects.filter(
+                type=self.model_type_id))
+        for g in groups:
+            g.count = g.get_count()
+        self.groups = [g for g in groups if g.count]
         if not self.form:
             self.form = ComponentModelGroupForm(instance=self.group)
         return super(CatalogComponent, self).get(*args, **kwargs)
@@ -294,3 +332,4 @@ class CatalogComponent(Catalog):
         })
         ret.update(_prepare_model_groups(self.request, self.query))
         return ret
+

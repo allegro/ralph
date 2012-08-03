@@ -24,7 +24,7 @@
             </a>
             </td>
             <td class="count">
-                <a class="badge" href="{% url 'search' %}?role={{r.venture}}%2f{{r.full_name}}">{{ r.device_set.count }}</a>
+                <a class="badge badge-info" href="{% url 'search' %}?role={{r.venture}}%2f{{r.full_name}}">{{ r.device_set.count }}</a>
             </td>
         </tr>
         {% endfor %}
