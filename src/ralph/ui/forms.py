@@ -94,9 +94,18 @@ class DateRangeForm(forms.Form):
     start = forms.DateField(widget=DateWidget)
     end = forms.DateField(widget=DateWidget)
 
+
 class VentureFilterForm(forms.Form):
     show_all = forms.BooleanField(required=False,
             label="Show all ventures")
+
+
+class NetworksFilterForm(forms.Form):
+    show_ip = forms.BooleanField(required=False,
+            label="Show as addresses")
+    contains = forms.CharField(required=False, label="Contains",
+            widget=forms.TextInput(attrs={'class':'span2'}))
+
 
 class SearchForm(forms.Form):
     name = forms.CharField(required=False,
