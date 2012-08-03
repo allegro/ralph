@@ -6,6 +6,11 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from lck.lang import Null, nullify
+from lck.xml import etree_to_dict
+import lck.xml.converters
+from lxml import etree as ET
+
 
 SMBIOS_BANNER = 'ID    SIZE TYPE'
 
@@ -83,3 +88,49 @@ def smbios(as_string):
                 current.setdefault('capabilities', []).append(line)
     return smb, as_string
 
+
+_tag_translation_pairs = set([
+    ('node', 'class'), ('capability', 'id'), ('setting', 'id'),
+    ('resource', 'type'),
+])
+
+_text_translation_pairs = set([
+    ('setting', 'value'),
+])
+
+def _nullify(value):
+    if value is not None:
+        raise ValueError
+    return Null
+
+def lshw(as_string):
+    parser = ET.ETCompatXMLParser(recover=True)
+    response = ET.fromstring(as_string, parser=parser)
+    if response.tag.upper() != 'NODE':
+        return None, as_string
+    for element in response.findall('.//'):
+        for k in element.attrib.keys():
+            try:
+                v = element.attrib[k]
+            except UnicodeDecodeError:
+                continue # value has bytes not possible to decode with UTF-8
+            if (element.tag, k) in _tag_translation_pairs:
+                try:
+                    element.tag = v
+                except ValueError:
+                    pass
+                continue
+            if (element.tag, k) in _text_translation_pairs:
+                element.text = v
+                continue
+            if k == 'units':
+                value = ET.Element(b'value')
+                value.text = element.text
+                element.text = ''
+                element.append(value)
+            child = ET.Element(k)
+            child.text = v
+            element.append(child)
+    return nullify(etree_to_dict(response, _converters=[_nullify, int, float,
+        lck.xml.converters._datetime,
+        lck.xml.converters._datetime_strip_tz]))[1], as_string

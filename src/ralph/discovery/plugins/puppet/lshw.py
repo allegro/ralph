@@ -16,7 +16,8 @@ from lck.django.common.models import MACAddressField
 from ralph.discovery.models import DeviceType, Device,  EthernetSpeed, Memory,\
     Processor, ComponentModel, ComponentType, Storage, SERIAL_BLACKLIST,\
     DISK_VENDOR_BLACKLIST, DISK_PRODUCT_BLACKLIST, FibreChannel
-from ralph.util import network, units, Eth, untangle
+from ralph.util import units, Eth, untangle
+from ralph.discovery import hardware
 
 from .facts import handle_facts_ethernets
 from .util import assign_ips, get_logical_name
@@ -31,7 +32,7 @@ def parse_lshw(lshw, facts, is_virtual):
         lshw = zlib.decompress(lshw)
     except zlib.error:
         return False, "lshw decompression error."
-    lshw, _ = network.lshw(as_string=lshw)
+    lshw, _ = hardware.lshw(as_string=lshw)
     prod_name = lshw['product']
     manufacturer = lshw['vendor'].replace(', Inc.', '')
     if prod_name.endswith(' ()'):
