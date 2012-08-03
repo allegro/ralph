@@ -111,7 +111,6 @@ class EditRelation(BaseCMDBView):
         ret = super(EditRelation, self).get_context_data(**kwargs)
         ret.update({
             'form' : self.form,
-            'url_query': self.request.GET,
         })
         return ret
 
@@ -160,7 +159,6 @@ class AddRelation(BaseCMDBView):
         ret = super(AddRelation, self).get_context_data(**kwargs)
         ret.update({
             'form' : self.form,
-            'url_query': self.request.GET,
             'relations_parent' : self.relations_parent,
             'relations_child' : self.relations_child,
         })
@@ -222,7 +220,6 @@ class Add(BaseCMDBView):
         ret = super(Add, self).get_context_data(**kwargs)
         ret.update({
             'form' : self.form,
-            'url_query': self.request.GET,
             'label' : 'Add CI',
         })
         return ret
@@ -357,7 +354,6 @@ class Edit(BaseCMDBView):
         ret.update({
             'form' : self.form,
             'form_attributes' : self.form_attributes,
-            'url_query': self.request.GET,
             'ci' : self.ci,
             'ci_id' : self.ci.id,
             'uid' : self.ci.uid,
@@ -615,7 +611,6 @@ class Search(BaseCMDBView):
             'pages' : _get_pages(self.paginator, self.page_number),
             'sort': self.request.GET.get('sort', ''),
             'form' : self.form,
-            'url_query': self.request.GET,
         })
         return ret
 
