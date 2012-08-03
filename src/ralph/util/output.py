@@ -15,6 +15,8 @@ from django.conf import settings
 from django.core.mail import mail_admins
 from lck import git
 
+import ralph
+
 
 BOILERPLATE = 20
 try:
@@ -26,6 +28,8 @@ else:
     WIDTH = COLUMNS - BOILERPLATE
 HOSTNAME = subprocess.check_output(['hostname', '-f']).strip()
 GIT_VERSION = git.get_version(os.path.dirname(__file__))
+RELEASE_VERSION = ".".join(str(num) for num in ralph.VERSION)
+VERSION = GIT_VERSION or RELEASE_VERSION
 CELERY_SEND_TASK_ERROR_EMAILS = getattr(settings,
     'CELERY_SEND_TASK_ERROR_EMAILS', False)
 
@@ -48,7 +52,7 @@ def get(interactive, err=False, verbose=False):
                 if CELERY_SEND_TASK_ERROR_EMAILS:
                     subject = '[{}] {}'.format(HOSTNAME,
                         message.split(':', 1)[0])
-                    mail_admins(subject, message + '\t \n\t \n' + GIT_VERSION)
+                    mail_admins(subject, message + '\t \n\t \n' + VERSION)
             elif verbose:
                 logger.debug(message)
             else:

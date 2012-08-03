@@ -158,6 +158,9 @@ LOGIN_REDIRECT_URL = '/browse/'
 LOGIN_URL = '/login/'
 LOGOUT_URL = '/logout/'
 SANITY_CHECK_PING_ADDRESS = 'www.allegro.pl'
+SANITY_CHECK_IP2HOST_IP = '8.8.8.8'
+SANITY_CHECK_IP2HOST_HOSTNAME_REGEX = r'.*google.*'
+
 SINGLE_DISCOVERY_TIMEOUT = 43200 # 12 hours
 NETWORK_TASK_DELEGATION_TIMEOUT = 7200 # 2 hours
 # django.contrib.messages settings
@@ -270,7 +273,9 @@ SPLUNK_HOST = None
 SPLUNK_USER = None
 SPLUNK_PASSWORD = None
 PUPPET_DB_URL = None
-BUGTRACKER_URL = None
+BUGTRACKER_URL = 'https://github.com/allegro/ralph/issues'
+ZABBIX_URL = None
+SO_URL = None
 # </template>
 
 #

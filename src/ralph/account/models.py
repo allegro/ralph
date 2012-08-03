@@ -54,6 +54,7 @@ class Perm(Choices):
     read_device_info_financial = _("read financial device info")
     read_device_info_support = _("read device purchase info")
     read_device_info_history = _("read device history info")
+    read_device_info_reports = _("read device reports")
 
 
 class Profile(BasicInfo, ActivationSupport, GravatarSupport,
@@ -163,6 +164,10 @@ try:
         create_a_user_profile_ignoring_dberrors(u)
 except DatabaseError:
     pass # no such table yet, first syncdb
+except Exception as e:
+    import traceback
+    traceback.print_exc()
+    raise SystemExit
 
 
 class BoundPerm(TimeTrackable, EditorTrackable):
