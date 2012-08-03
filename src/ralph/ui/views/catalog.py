@@ -51,7 +51,6 @@ def _prepare_model_groups(request, query, tree=False):
         g.count = g.get_count()
     query = [g for g in query if g.count]
     if sort in ('count', '-count'):
-        query = list(query)
         if sort.startswith('-'):
             query.sort(key=lambda g: -g.count)
         else:
