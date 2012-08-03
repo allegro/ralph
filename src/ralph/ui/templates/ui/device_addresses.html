@@ -12,6 +12,9 @@
         <th>Hostname</th>
         <th>Address</th>
         <th>Last Ping</th>
+        {% if user.is_staff %}
+        <th>Action</th>
+        {% endif %}
     </tr></thead>
     <tbody>
         {% for item in device.ipaddress_set.all %}
@@ -20,6 +23,11 @@
             <td>{{ item.hostname }}</td>
             <td><a href="https://{{ item.address }}">{{ item.address }}</a></td>
             <td>{{ item.last_seen|date:'Y-m-d H:i' }}</td>
+            {% if user.is_staff %}
+            <td><a href="/admin/discovery/ipaddress/{{ item.id }}/">
+                {% icon 'fugue-toolbox--pencil' %} Edit
+            </a></td>
+            {% endif %}
         </tr>
         {% endfor %}
     </tbody>
@@ -33,6 +41,9 @@
         <th>Content</th>
         <th>TTL</th>
         <th>Priority</th>
+        {% if user.is_staff %}
+        <th>Action</th>
+        {% endif %}
     </tr></thead>
     <tbody>
         {% for item in dns %}
@@ -43,6 +54,11 @@
             <td>{{ item.content }}</td>
             <td style="text-align:right">{{ item.ttl }}</td>
             <td>{{ item.prio|default:'' }}</td>
+            {% if user.is_staff %}
+            <td><a href="/admin/powerdns/record/{{ item.id }}/">
+                {% icon 'fugue-toolbox--pencil' %} Edit
+            </a></td>
+            {% endif %}
         </tr>
         {% endfor %}
     </tbody>
@@ -53,6 +69,9 @@
         <th width="16"></th>
         <th>IP Address</th>
         <th>MAC Address</th>
+        {% if user.is_staff %}
+        <th>Action</th>
+        {% endif %}
     </tr></thead>
     <tbody>
         {% for item in dhcp %}
@@ -60,6 +79,11 @@
             <td>{% icon 'fugue-network-ethernet' %}</td>
             <td>{{ item.ip }}</td>
             <td>{{ item.mac }}</td>
+            {% if user.is_staff %}
+            <td><a href="/admin/dnsedit/dhcpentry/{{ item.id }}/">
+                {% icon 'fugue-toolbox--pencil' %} Edit
+            </a></td>
+            {% endif %}
         </tr>
         {% endfor %}
     </tbody>

@@ -9,6 +9,8 @@ from __future__ import unicode_literals
 import hashlib
 from urllib2 import urlopen, URLError
 import httplib
+import xml.etree.ElementTree as ET
+
 
 from lck.django.common import nested_commit_on_success
 from lck.django.common.models import MACAddressField
