@@ -8,12 +8,12 @@ import datetime
 
 from django.conf import settings
 from django.contrib import messages
+from django.core.urlresolvers import reverse
+from django.core.paginator import Paginator
 from django.db import models as db
-from django.http import HttpResponseRedirect
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.utils import simplejson as json
 from django.views.generic import UpdateView, DetailView, TemplateView
-from django.core.urlresolvers import reverse
 
 from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Language, TagStem
@@ -26,11 +26,13 @@ from ralph.cmdb import models as cdb
 from ralph.dnsedit.models import DHCPEntry
 from ralph.discovery.models import Device, DeviceType
 from ralph.util import presentation, pricing
-from ralph.ui.forms import (DeviceInfoForm, DevicePricesForm, DevicePurchaseForm,
-                            PropertyForm, DeviceBulkForm)
+from ralph.ui.forms import (DeviceInfoForm, DevicePricesForm,
+                            DevicePurchaseForm, PropertyForm, DeviceBulkForm)
 
 
 SAVE_PRIORITY = 200
+HISTORY_PAGE_SIZE = 25
+MAX_PAGE_SIZE = 65535
 
 
 def _get_balancers(dev):
@@ -467,8 +469,14 @@ class Costs(DeviceDetailView):
                 h.span = (h.end - h.start).days
             elif h.start:
                 h.span = (datetime.date.today() - h.start).days
+        try:
+            page = max(1, int(self.request.GET.get('page', 1)))
+        except ValueError:
+            page = 1
+        history_page = Paginator(history, HISTORY_PAGE_SIZE).page(page)
         ret.update({
             'history': history,
+            'history_page': history_page,
         })
         last_month = datetime.date.today() - datetime.timedelta(days=31)
         splunk = self.object.splunkusage_set.filter(
@@ -491,8 +499,24 @@ class History(DeviceDetailView):
 
     def get_context_data(self, **kwargs):
         ret = super(History, self).get_context_data(**kwargs)
+        history = self.object.historychange_set.order_by('-date')
+        show_all = bool(self.request.GET.get('all', ''))
+        if not show_all:
+            history = history.exclude(user=None)
+        try:
+            page = int(self.request.GET.get('page', 1))
+        except ValueError:
+            page = 1
+        if page == 0:
+            page = 1
+            page_size = MAX_PAGE_SIZE
+        else:
+            page_size = HISTORY_PAGE_SIZE
+        history_page = Paginator(history, page_size).page(page)
         ret.update({
-            'history': self.object.historychange_set.order_by('-date'),
+            'history': history,
+            'history_page': history_page,
+            'show_all': show_all,
         })
         return ret
 

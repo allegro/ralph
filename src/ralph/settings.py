@@ -273,8 +273,11 @@ SPLUNK_HOST = None
 SPLUNK_USER = None
 SPLUNK_PASSWORD = None
 PUPPET_DB_URL = None
-BUGTRACKER_URL = 'https://github.com/allegro/ralph/issues'
 ZABBIX_URL = None
+ZABBIX_USER = None
+ZABBIX_PASSWORD = None
+ZABBIX_DEFAULT_GROUP = 'test'
+BUGTRACKER_URL = 'https://github.com/allegro/ralph/issues'
 SO_URL = None
 # </template>
 
