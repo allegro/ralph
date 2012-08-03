@@ -106,7 +106,8 @@ class Catalog(Base):
         )
         ret.update({
             'sidebar_items': sidebar_items,
-            'sidebar_selected': '%s-%d' % (kind, model_type_id) if model_type_id else '',
+            'sidebar_selected': '%s-%d' % (kind,
+                    model_type_id) if model_type_id else '',
             'kind': kind,
             'component_model_types': ComponentType(item=lambda a: a),
             'device_model_types': DeviceType(item=lambda a: a),
