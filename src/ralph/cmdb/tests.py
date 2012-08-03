@@ -4,22 +4,26 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import datetime
+
+from django.conf import settings
 from django.test import TestCase
+import mock
+from lxml import objectify
 
 from ralph.cmdb.importer import CIImporter
 from ralph.cmdb.models import CI, CIRelation, CI_RELATION_TYPES, CIChange, CI_TYPES, \
     CIChangePuppet, CIChangeGit, CI_CHANGE_TYPES
-from ralph.discovery.models import Device, DeviceType, DataCenter, DeviceModel
+from ralph.discovery.models import Device, DeviceType, DeviceModel
 from ralph.business.models import Venture,VentureRole
 from django.contrib.contenttypes.models import ContentType
 from ralph.cmdb.integration.puppet import PuppetAgentsImporter
 from ralph.cmdb.models import PuppetLog
 from ralph.cmdb.integration.puppet import PuppetGitImporter as pgi
 
-import datetime
-import os
-import mock
-from lxml import objectify
+
+CURRENT_DIR = settings.CURRENT_DIR
+
 
 class MockFisheye(object):
 
@@ -33,11 +37,11 @@ class MockFisheye(object):
         return mock.Mock()
 
     def get_changes(self, *args, **kwargs):
-        xml = open(os.getcwd()+'/cmdb/tests/samples/fisheye_changesets.xml').read()
+        xml = open(CURRENT_DIR + 'cmdb/tests/samples/fisheye_changesets.xml').read()
         return objectify.fromstring(xml)
 
     def get_details(self, *args, **kwargs):
-        xml = open(os.getcwd()+'/cmdb/tests/samples/fisheye_details.xml').read()
+        xml = open(CURRENT_DIR + 'cmdb/tests/samples/fisheye_details.xml').read()
         return objectify.fromstring(xml)
 
 
@@ -97,9 +101,9 @@ class CIImporterTest(TestCase):
         hostci.type_id = CI_TYPES.DEVICE.id
         hostci.save()
         p = PuppetAgentsImporter()
-        yaml = open(os.getcwd()+'/cmdb/tests/samples/canonical.yaml').read()
+        yaml = open(CURRENT_DIR + 'cmdb/tests/samples/canonical.yaml').read()
         p.import_contents(yaml)
-        yaml = open(os.getcwd()+'/cmdb/tests/samples/canonical_unchanged.yaml').read()
+        yaml = open(CURRENT_DIR + 'cmdb/tests/samples/canonical_unchanged.yaml').read()
         p.import_contents(yaml)
         chg = CIChange.objects.all()[0]
         logs = PuppetLog.objects.filter(cichange__host='s11401.dc2').order_by('id')
@@ -109,7 +113,9 @@ class CIImporterTest(TestCase):
         self.assertEqual(chg.type, 2)
         # check parsed logs
         self.assertEqual(len(logs), 16)
-        self.assertEqual(logs[0].time, datetime.datetime(2010, 12, 31, 0, 56, 37))
+        time_iso = logs[0].time.isoformat().split('.')[0]
+        self.assertEqual(time_iso, datetime.datetime(2010, 12, 31, 0, 56,
+            37).isoformat())
         # should not import puppet report which has 'unchanged' status
         self.assertEqual(CIChangePuppet.objects.filter(status='unchanged').count(), 0)
 

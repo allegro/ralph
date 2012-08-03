@@ -2,16 +2,19 @@ Change Log
 ----------
 
 
-Development
-~~~~~~~~~~~
+1.0.3 
+~~~~~
 
-* make subitems in the sidebar menu collapsible
+* a rudimentary reports tab on device lists to filter devices according to
+  specified rules
 
-* cmdb integration scripts integrated into framework 
+* venture tree collapsible
 
-* new plugins architecture for CMDB
+* CMDB integration scripts integrated into framework 
 
-* minor fixes in the CMDB views  
+* CMDB supports distributed plugins
+
+* minor fixes in the Web app  
 
 1.0.2
 ~~~~~
