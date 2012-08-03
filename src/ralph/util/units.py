@@ -6,6 +6,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+
 size_divisor = dict(
     bytes = 1024 * 1024,
     B = 1024 * 1024,
@@ -27,4 +28,3 @@ speed_divisor = dict(
     MHz = 1,
     GHz = 1/1024,
 )
-
