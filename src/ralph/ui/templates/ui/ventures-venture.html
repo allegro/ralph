@@ -38,16 +38,16 @@
         <tr>
             <td class="column-category">{{ i.name }}</td>
             <td class="column-count count">
-              {%if i.url%}
+              {% if i.url %}
                 <a href="{{ i.url }}" class="badge badge-info">{{ i.count|default:"0" }}</a>
-              {%else%}
-                {%if i.count_now %}
+              {% else %}
+                {% if i.count_now %}
                   <span class="badge">{{i.count_now}}</span>
-                {%endif%}
-              {%endif%}
-              {%if i.count%}
+                {% endif %}
+              {% endif %}
+              {% if i.count %}
                   / <span class="badge">{{i.count}}</span>
-              {%endif%}
+              {% endif %}
             </td>
             <td class="column-cost currency">{{ i.cost|currency }}</td>
         </tr>
