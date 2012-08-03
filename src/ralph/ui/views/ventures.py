@@ -268,17 +268,21 @@ def _total_cost_count(query, start, end):
         )
     count = HistoryCost.filter_span(start, end, query).values_list(
             'device').distinct().count()
-    return total['spansum'], count
+    now = datetime.datetime.now()
+    count_now = HistoryCost.filter_span(now, now, query).values_list(
+            'device').distinct().count()
+    return total['spansum'], count, count_now
 
 
 def _total_dict(name, query, start, end, url=None):
-    cost, count = _total_cost_count(query, start, end)
+    cost, count, count_now = _total_cost_count(query, start, end)
     if not count:
         return None
     return {
         'name': name,
         'count': count,
         'cost': cost,
+        'count_now': count_now,
         'url': url,
     }
 
@@ -455,12 +459,14 @@ def _get_summaries(query, start, end, overlap=True, venture=None):
         if extra_id is None:
             continue
         extra = VentureExtraCost.objects.get(id=extra_id)
-        cost, count = _total_cost_count(query.filter(extra=extra), start, end)
+        cost, count, count_now = _total_cost_count(
+                query.filter(extra=extra), start, end)
         yield {
             'name': extra.name + ' (from %s)' % extra.venture.name,
             'count': 'expires %s' % extra.expire.strftime(
                 '%Y-%m-%d') if extra.expire else '',
             'cost': cost,
+            'count_now': count_now,
         }
     if overlap:
         yield _total_dict('Total', query, start, end,
@@ -529,7 +535,7 @@ class VenturesVenture(SidebarVentures, Base):
                              date in datapoints)
             for date in sorted(datapoints):
                 timestamp = calendar.timegm(date.timetuple()) * 1000
-                total_cost, total_count  = _total_cost_count(
+                total_cost, total_count, now_count  = _total_cost_count(
                         query.all(), date, date+one_day)
                 cost_data.append([timestamp, total_cost])
                 count_data.append([timestamp, total_count])
