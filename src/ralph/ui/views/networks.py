@@ -6,15 +6,14 @@ from __future__ import unicode_literals
 
 import collections
 
-from django.shortcuts import get_object_or_404
 from bob.menu import MenuItem
+from django.shortcuts import get_object_or_404
 
-from ralph.discovery.models_network import Network, IPAddress
-from ralph.ui.views.common import (Info, Prices, Addresses, Costs,
-    Purchase, Components, History, Discover)
-from ralph.discovery.models import ReadOnlyDevice
 from ralph.account.models import Perm
-from ralph.ui.views.common import BaseMixin, DeviceDetailView, CMDB
+from ralph.discovery.models import ReadOnlyDevice, Network, IPAddress
+from ralph.ui.views.common import (BaseMixin, DeviceDetailView, CMDB, Info,
+                                   Prices, Addresses, Costs, Purchase,
+                                   Components, History, Discover)
 from ralph.ui.views.devices import BaseDeviceList
 from ralph.ui.views.reports import Reports, ReportDeviceList
 from ralph.util import presentation
@@ -47,7 +46,8 @@ class SidebarNetworks(object):
         if network_symbol == '-':
             self.network = ''
         elif network_symbol:
-            self.network = get_object_or_404(Network, name__iexact=network_symbol)
+            self.network = get_object_or_404(Network,
+                                             name__iexact=network_symbol)
         else:
             self.network = None
 
@@ -86,7 +86,8 @@ class SidebarNetworks(object):
             ret['details'], children))
         ret.update({
             'sidebar_items': sidebar_items,
-            'sidebar_selected': self.network.name if self.network else self.network,
+            'sidebar_selected': (self.network.name if
+                                 self.network else self.network),
             'section': 'networks',
             'subsection': self.network.name if self.network else self.network,
         })
@@ -175,3 +176,4 @@ class NetworksReports(Networks, Reports):
 
 class ReportNetworksDeviceList(ReportDeviceList, NetworksDeviceList):
     pass
+

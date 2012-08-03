@@ -23,12 +23,12 @@
                 <td class="column-slots"></td>
                 <td class="column-price currency"></td>
             </tr>
-            {% for g in groups.all %}
+            {% for g in groups %}
             <tr {% if group = g %}class="active"{% endif %} >
                 <td class="column-name"><a
                         href="{% url 'catalog' kind model_type_id g.id %}"
                     >{{ g.type|device_model_type_icon }}&nbsp;{{ g.name }}</a></td>
-                <td class="column-count count"><a href="{% url 'search' 'components' '' %}?device_group={{ g.id }}" class="badge">{{ g.get_count }}</a></td>
+                <td class="column-count count"><a href="{% url 'search' 'components' '' %}?device_group={{ g.id }}" class="badge badge-info">{{ g.count }}</a></td>
                 <td class="column-slots">{{ g.slots }}</td>
                 <td class="column-price currency">
                     {{ g.price }}&nbsp;{{ CURRENCY }}
@@ -60,7 +60,7 @@
             {% for m in items.object_list %}
             <tr>
                 <td class="column-name">{{ m.type|device_model_type_icon }}&nbsp;{{ m.name }}</td>
-                {% if 'count' in columns %}<td class="column-count count"><span class="badge">{{ m.count }}</span></td>{% endif %}
+                {% if 'count' in columns %}<td class="column-count count"><a href="{% url 'search' 'components' '' %}?component={{ m.name }}" class="badge badge-info">{{ m.count }}</a></td>{% endif %}
                 {% if 'size' in columns %}<td class="column-size">{{ m.chassis_size|default:'' }}</td>{% endif %}
                 <td class="column-actions"><input type="checkbox" name="items" value="{{ m.id }}"></td>
             </tr>
