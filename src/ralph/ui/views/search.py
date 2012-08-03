@@ -201,17 +201,15 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                                 'venture_role__parent__name__icontains',
                                 'venture_role__parent__parent__name__icontains',
                                 'venture__name__icontains',
-                                'venture__parent__name__icontains',
-                                'venture__parent__parent__name__icontains',
                                 'venture__symbol__icontains',
-                                'venture__parent__symbol__icontains',
-                                'venture__parent__parent__symbol__icontains',
                             ], part.split('/'))
                         else:
                             q |= _search_fields_or([
                                 'venture__id',
                                 'venture__parent__id',
                                 'venture__parent__parent__id',
+                                'venture__parent__parent__parent__id',
+                                'venture__parent__parent__parent__parent__id',
                             ], [str(role_id)])
                     self.query = self.query.filter(q).distinct()
             if data['device_group']:
