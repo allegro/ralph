@@ -120,7 +120,7 @@ then you can use the command::
 
     (ralph)$ ralph openstack
 
-To pull in the billing information for OpenStack tennants for the previous day.
+to pull in the billing information for OpenStack tennants for the previous day.
 New "openstack" components will be then created in the catalog, where you can
 set the prices for them.  That information is then displayed in the "Venture"
 tab summary.
@@ -136,7 +136,7 @@ the addition of ``ZABBIX_DEFAULT_GROUP``, then you can use the command::
 
     (ralph)$ ralph zabbixregister
 
-To automatically create Zabbix hosts and host templates for all the devices
+to automatically create Zabbix hosts and host templates for all the devices
 that have a zabbix integration "template" variable set in their roles.
 
 You can add an optional ``--remote`` parameter to make the command run on any
@@ -146,11 +146,11 @@ Splunk
 ~~~~~~
 
 If you configure ``SPLUNK_URL``, ``SPLUNK_USER`` and ``SPLUNK_PASSWORD``, then
-you can use the command:
+you can use the command::
 
     (ralph)$ ralph splunk
 
-To download usage information about all the hosts from Splunk. New components
+to download usage information about all the hosts from Splunk. New components
 will be created in the catalog, where you can set their prices. That
 information is then displayed in the "Venture" tab summary.
 
