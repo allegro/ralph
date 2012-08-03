@@ -11,8 +11,7 @@ import calendar
 from django.contrib import messages
 from django.db import models as db
 from django.db.models.sql.aggregates import Aggregate
-from django.http import HttpResponseRedirect
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.shortcuts import get_object_or_404
 from django.utils import simplejson as json
 
@@ -21,11 +20,12 @@ from bob.menu import MenuItem
 from ralph.account.models import Perm
 from ralph.business.models import Venture, VentureRole, VentureExtraCost
 from ralph.discovery.models import (ReadOnlyDevice, DeviceType, DataCenter,
-    Device, DeviceModelGroup, HistoryCost, SplunkUsage)
+                                    Device, DeviceModelGroup, HistoryCost,
+                                    SplunkUsage)
 from ralph.ui.forms import RolePropertyForm, DateRangeForm, VentureFilterForm
-from ralph.ui.views.common import (Info, Prices, Addresses, Costs,
-    Purchase, Components, History, Discover, BaseMixin, Base, DeviceDetailView,
-    CMDB)
+from ralph.ui.views.common import (Info, Prices, Addresses, Costs, Purchase,
+                                   Components, History, Discover, BaseMixin,
+                                   Base, DeviceDetailView, CMDB)
 from ralph.ui.views.devices import BaseDeviceList
 from ralph.ui.views.reports import Reports, ReportDeviceList
 from ralph.util import presentation
@@ -37,6 +37,7 @@ def _normalize_venture(symbol):
     u'w.gielek.ziew'
     """
     return re.sub(r'[^\w]', '.', symbol).lower()
+
 
 def collect_ventures(parent, ventures, items, depth=0):
     for v in ventures.filter(parent=parent):
@@ -50,6 +51,7 @@ def collect_ventures(parent, ventures, items, depth=0):
                 icon = 'fugue-store-small'
         items.append((icon, v.name, symbol, indent, v))
         collect_ventures(v, ventures, items, depth + 1)
+
 
 def venture_tree_menu(ventures, details, show_all=False):
     items = []
@@ -129,18 +131,22 @@ class SidebarVentures(object):
 
         self.set_venture()
         tab_items = ret['tab_items']
-        if has_perm(Perm.read_device_info_generic, self.venture if self.venture and self.venture != '*' else None):
+        if has_perm(Perm.read_device_info_generic, self.venture if
+                    self.venture and self.venture != '*' else None):
             tab_items.append(MenuItem('Roles', fugue_icon='fugue-mask',
                             href='../roles/?%s' % self.request.GET.urlencode()))
-        if has_perm(Perm.list_devices_financial, self.venture if self.venture and self.venture != '*' else None):
+        if has_perm(Perm.list_devices_financial, self.venture if
+                    self.venture and self.venture != '*' else None):
             tab_items.append(MenuItem('Venture', fugue_icon='fugue-store',
-                            href='../venture/?%s' % self.request.GET.urlencode()))
+                            href='../venture/?%s' %
+                            self.request.GET.urlencode()))
         ret.update({
             'sidebar_items': sidebar_items,
-            'sidebar_selected': _normalize_venture(self.venture.symbol) if self.venture and self.venture != '*' else self.venture or '-',
+            'sidebar_selected': (_normalize_venture(self.venture.symbol) if
+                self.venture and self.venture != '*' else self.venture or '-'),
             'section': 'ventures',
-            'subsection': _normalize_venture(
-                self.venture.symbol) if self.venture and self.venture != '*' else self.venture,
+            'subsection': (_normalize_venture(self.venture.symbol) if
+                self.venture and self.venture != '*' else self.venture),
             'searchform': VentureFilterForm(self.request.GET),
             'searchform_filter': True,
         })
@@ -197,7 +203,8 @@ class VenturesRoles(Ventures, Base):
     def post(self, *args, **kwargs):
         self.set_venture()
         has_perm = self.request.user.get_profile().has_perm
-        if not has_perm(Perm.edit_ventures_roles, self.venture if self.venture and self.venture != '*' else None):
+        if not has_perm(Perm.edit_ventures_roles, self.venture if
+                        self.venture and self.venture != '*' else None):
             messages.error(self.request, "No permission to edit that role.")
         else:
             self.form = RolePropertyForm(self.request.POST)
@@ -224,17 +231,21 @@ class VenturesRoles(Ventures, Base):
         self.set_venture()
         has_perm = self.request.user.get_profile().has_perm
         ret.update({
-            'items': self.venture.venturerole_set.all() if self.venture and self.venture != '*' else [],
+            'items': (self.venture.venturerole_set.all() if
+                      self.venture and self.venture != '*' else []),
             'role': self.role,
             'form': self.form,
-            'editable': has_perm(Perm.edit_ventures_roles, self.venture if self.venture and self.venture != '*' else None),
+            'editable': has_perm(Perm.edit_ventures_roles, self.venture if
+                               self.venture and self.venture != '*' else None),
         })
         return ret
 
 
 class SpanSum(Aggregate):
     sql_function = "SUM"
-    sql_template = "%(function)s(GREATEST(0, DATEDIFF(LEAST(end, DATE('%(end)s')),GREATEST(start, DATE('%(start)s')))) * %(field)s)"
+    sql_template = ("%(function)s(GREATEST(0, "
+                    "DATEDIFF(LEAST(end, DATE('%(end)s')),"
+                    "GREATEST(start, DATE('%(start)s')))) * %(field)s)")
     default_alias = 'spansum'
 
     def __init__(self, lookup, **extra):
@@ -257,19 +268,24 @@ def _total_cost_count(query, start, end):
         )
     count = HistoryCost.filter_span(start, end, query).values_list(
             'device').distinct().count()
-    return total['spansum'], count
-    #total['device__count']
+    now = datetime.datetime.now()
+    count_now = HistoryCost.filter_span(now, now, query).values_list(
+            'device').distinct().count()
+    return total['spansum'], count, count_now
+
 
 def _total_dict(name, query, start, end, url=None):
-    cost, count = _total_cost_count(query, start, end)
+    cost, count, count_now = _total_cost_count(query, start, end)
     if not count:
         return None
     return {
         'name': name,
         'count': count,
         'cost': cost,
+        'count_now': count_now,
         'url': url,
     }
+
 
 def _get_search_url(venture, dc=None, type=(), model_group=None):
     if venture == '':
@@ -291,6 +307,7 @@ def _get_search_url(venture, dc=None, type=(), model_group=None):
         params.append(('position', dc.name))
     return '/ui/search/info/?%s' % '&'.join('%s=%s' % p for p in params)
 
+
 def _get_summaries(query, start, end, overlap=True, venture=None):
     if overlap:
         yield _total_dict('Servers', query.filter(
@@ -307,43 +324,49 @@ def _get_summaries(query, start, end, overlap=True, venture=None):
             _get_search_url(venture, dc=dc, type=(201, 202, 203))
             )
         if overlap:
-            yield _total_dict('    ∙ Rack servers in %s' % dc.name, query.filter(
-                device__model__type=DeviceType.rack_server.id,
-                ).filter(device__dc__iexact=dc.name), start, end,
-                _get_search_url(venture, dc=dc, type=(201,))
-                )
+            yield _total_dict(
+                '    ∙ Rack servers in %s' % dc.name, query.filter(
+                        device__model__type=DeviceType.rack_server.id,
+                    ).filter(device__dc__iexact=dc.name), start, end,
+                        _get_search_url(venture, dc=dc, type=(201,))
+                    )
             for mg in DeviceModelGroup.objects.filter(
                     type=DeviceType.rack_server.id).order_by('name'):
-                yield _total_dict('        %s in %s' % (mg, dc.name), query.filter(
-                        device__model__group=mg,
+                yield _total_dict(
+                    '        %s in %s' % (mg, dc.name), query.filter(
+                            device__model__group=mg,
+                        ).filter(device__dc__iexact=dc.name), start, end,
+                        _get_search_url(venture, dc=dc, type=(201,),
+                                        model_group=mg.id)
+                        )
+            yield _total_dict(
+                '    ∙ Blade servers in %s' % dc.name, query.filter(
+                        device__model__type=DeviceType.blade_server.id,
                     ).filter(device__dc__iexact=dc.name), start, end,
-                    _get_search_url(venture, dc=dc, type=(201,), model_group=mg.id)
+                        _get_search_url(venture, dc=dc, type=(202,))
                     )
-            yield _total_dict('    ∙ Blade servers in %s' % dc.name, query.filter(
-                device__model__type=DeviceType.blade_server.id,
-                ).filter(device__dc__iexact=dc.name), start, end,
-                _get_search_url(venture, dc=dc, type=(202,))
-                )
             for mg in DeviceModelGroup.objects.filter(
                     type=DeviceType.blade_server.id).order_by('name'):
-                yield _total_dict('        %s in %s' % (mg, dc.name), query.filter(
-                        device__model__group=mg,
+                yield _total_dict(
+                    '        %s in %s' % (mg, dc.name), query.filter(
+                            device__model__group=mg,
+                        ).filter(device__dc__iexact=dc.name), start, end,
+                            _get_search_url(venture, dc=dc, type=(202,),
+                                            model_group=mg.id)
+                        )
+            yield _total_dict(
+                '    ∙ Virtual servers in %s' % dc.name, query.filter(
+                        device__model__type=DeviceType.virtual_server.id,
                     ).filter(device__dc__iexact=dc.name), start, end,
-                    _get_search_url(venture, dc=dc, type=(202,), model_group=mg.id)
+                        _get_search_url(venture, dc=dc, type=(203,))
                     )
-            yield _total_dict('    ∙ Virtual servers in %s' % dc.name, query.filter(
-                device__model__type=DeviceType.virtual_server.id,
-                ).filter(device__dc__iexact=dc.name), start, end,
-                _get_search_url(venture, dc=dc, type=(203,))
-                )
     if overlap:
         yield _total_dict('Loadbalancers', query.filter(
-            device__model__type__in=(DeviceType.load_balancer.id,)), start, end,
-                _get_search_url(venture, type=(103,))
-            )
+                device__model__type__in=(DeviceType.load_balancer.id,)
+            ), start, end, _get_search_url(venture, type=(103,)))
     for dc in DataCenter.objects.all():
         yield _total_dict(' • Loadbalancers in %s' % dc.name, query.filter(
-            device__model__type__in=(DeviceType.load_balancer.id,)
+                device__model__type__in=(DeviceType.load_balancer.id,)
             ).filter(device__dc__iexact=dc.name), start, end,
                 _get_search_url(venture, dc=dc, type=(103,))
             )
@@ -436,12 +459,14 @@ def _get_summaries(query, start, end, overlap=True, venture=None):
         if extra_id is None:
             continue
         extra = VentureExtraCost.objects.get(id=extra_id)
-        cost, count = _total_cost_count(query.filter(extra=extra), start, end)
+        cost, count, count_now = _total_cost_count(
+                query.filter(extra=extra), start, end)
         yield {
             'name': extra.name + ' (from %s)' % extra.venture.name,
             'count': 'expires %s' % extra.expire.strftime(
                 '%Y-%m-%d') if extra.expire else '',
             'cost': cost,
+            'count_now': count_now,
         }
     if overlap:
         yield _total_dict('Total', query, start, end,
@@ -471,8 +496,10 @@ class VenturesVenture(SidebarVentures, Base):
             self.form.is_valid()
         self.set_venture()
         has_perm = self.request.user.get_profile().has_perm
-        if not has_perm(Perm.list_devices_financial, self.venture if self.venture and self.venture != '*' else None):
-            return HttpResponseForbidden("You don't have permission to see this.")
+        if not has_perm(Perm.list_devices_financial, self.venture if
+                        self.venture and self.venture != '*' else None):
+            return HttpResponseForbidden(
+                    "You don't have permission to see this.")
         return super(VenturesVenture, self).get(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -499,13 +526,17 @@ class VenturesVenture(SidebarVentures, Base):
             cost_data = []
             count_data = []
             one_day = datetime.timedelta(days=1)
-            datapoints = set(dp for dp, in query.values_list('start').distinct())
-            datapoints |= set(dp for dp, in query.values_list('end').distinct())
+            datapoints = set(dp for dp, in
+                             query.values_list('start').distinct())
+            datapoints |= set(dp for dp, in
+                              query.values_list('end').distinct())
             datapoints |= set([start, end])
-            datapoints = set(min(max(start, date or start), end) for date in datapoints)
+            datapoints = set(min(max(start, date or start), end) for
+                             date in datapoints)
             for date in sorted(datapoints):
                 timestamp = calendar.timegm(date.timetuple()) * 1000
-                total_cost, total_count  = _total_cost_count(query.all(), date, date+one_day)
+                total_cost, total_count, now_count  = _total_cost_count(
+                        query.all(), date, date+one_day)
                 cost_data.append([timestamp, total_cost])
                 count_data.append([timestamp, total_count])
         ret.update({
@@ -524,7 +555,8 @@ class VenturesDeviceList(SidebarVentures, BaseMixin, BaseDeviceList):
     def user_allowed(self):
         self.set_venture()
         has_perm = self.request.user.get_profile().has_perm
-        return has_perm(Perm.list_devices_generic, self.venture if self.venture and self.venture != '*' else None)
+        return has_perm(Perm.list_devices_generic, self.venture if
+                        self.venture and self.venture != '*' else None)
 
     def get_queryset(self):
         if self.venture is None:
@@ -532,16 +564,28 @@ class VenturesDeviceList(SidebarVentures, BaseMixin, BaseDeviceList):
         elif self.venture == '*':
             queryset = Device.objects.all()
         elif self.venture == '':
-            queryset = ReadOnlyDevice.objects.filter(venture=None).select_related(depth=3)
+            queryset = ReadOnlyDevice.objects.filter(
+                    venture=None
+                ).select_related(depth=3)
         else:
-            queryset = self.venture.device_set.select_related(depth=3)
+            queryset = ReadOnlyDevice.objects.filter(
+                    db.Q(venture=self.venture) |
+                    db.Q(venture__parent=self.venture) |
+                    db.Q(venture__parent__parent=self.venture) |
+                    db.Q(venture__parent__parent__parent=self.venture) |
+                    db.Q(venture__parent__parent__parent__parent=self.venture) |
+                    db.Q(venture__parent__parent__parent__parent__parent=
+                         self.venture)
+                ).select_related(depth=3)
         return self.sort_queryset(queryset)
 
     def get_context_data(self, **kwargs):
         ret = super(VenturesDeviceList, self).get_context_data(**kwargs)
         ret.update({
-            'subsection': self.venture.name if self.venture and self.venture != '*' else self.venture,
-            'subsection_slug': _normalize_venture(self.venture.symbol) if self.venture and self.venture != '*' else self.venture,
+            'subsection': (self.venture.name if
+                self.venture and self.venture != '*' else self.venture),
+            'subsection_slug': (_normalize_venture(self.venture.symbol) if
+                self.venture and self.venture != '*' else self.venture),
         })
         return ret
 
@@ -552,3 +596,4 @@ class VenturesCMDB(Ventures, CMDB, DeviceDetailView):
 
 class ReportVenturesDeviceList(ReportDeviceList, VenturesDeviceList):
     pass
+
