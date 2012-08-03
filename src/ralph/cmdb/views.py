@@ -12,24 +12,20 @@ from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.http import HttpResponseForbidden
 from django.utils.translation import ugettext_lazy as _
+from django.conf import settings
+from lck.django.common import nested_commit_on_success
+import datetime
 from ralph.cmdb.forms import CISearchForm, CIEditForm, CIViewForm, CIRelationEditForm
 import ralph.cmdb.models  as db
 from ralph.cmdb.customfields import EditAttributeFormFactory
 from ralph.account.models import Perm
 from ralph.cmdb.integration.lib import zabbix
 from ralph.ui.views.common import Base
-from lck.django.common import nested_commit_on_success
-
-import datetime
-
 from ralph.util.presentation import get_device_icon, get_venture_icon, get_network_icon
 from ralph.ui.views.common import Info
 
 ROWS_PER_PAGE=20
 SAVE_PRIORITY = 200
-
-from django import template
-register = template.Library()
 
 def get_icon_for(ci):
     if not ci or not ci.content_object:
@@ -77,21 +73,18 @@ class BaseCMDBView(Base):
         ret = {}
         for perm in ci_perms:
             ret.update({ perm + '_perm' : has_perm(getattr(Perm, perm))})
-        # layout
-        ret.update({
-            'read_dc_structure_perm': has_perm(Perm.read_dc_structure),
-            'read_device_info_management_perm': has_perm(Perm.read_device_info_management),
-            'edit_device_info_financial_perm': has_perm(Perm.edit_device_info_financial),
-            'read_network_structure_perm': has_perm(Perm.read_network_structure),
-        })
         return ret
 
     def get_context_data(self, **kwargs):
         ret = super(BaseCMDBView, self).get_context_data(**kwargs)
         ret.update(self.get_permissions())
         ret.update({'breadcrumbs' : self.generate_breadcrumb()})
-        ret.update({'url_query': self.request.GET, })
+        ret.update({'url_query': self.request.GET })
         ret.update({'span_number' : '6' }) #high of screen
+        ret.update({
+            'ZABBIX_URL': settings.ZABBIX_URL,
+            'SO_URL': settings.SO_URL,
+        })
         return ret
 
 def _get_pages(paginator, page):
