@@ -12,6 +12,9 @@
         <th>Speed</th>
         <th>Size</th>
         <th>Count</th>
+        {% if user.is_staff %}
+        <th>Action</th>
+        {% endif %}
     </tr></thead>
     <tbody>
         {% for item in components %}
@@ -35,6 +38,15 @@
             <td>{{ item.speed|default:'' }}</td>
             <td>{{ item.size|default:'' }}</td>
             <td>{{ item.count|default:'' }}</td>
+            {% if user.is_staff %}
+            <td>
+                {% if item.href %}
+                <a href="{{ item.href }}" style="white-space:nowrap">
+                    {% icon 'fugue-toolbox--pencil' %} Edit
+                </a>
+                {% endif %}
+            </td>
+            {% endif %}
         </tr>
         {% endfor %}
     </tbody>

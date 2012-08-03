@@ -197,7 +197,8 @@ def details_dev(dev, purchase_only=False):
         'label': 'Device',
         'model': dev.model,
         'serial': dev.sn,
-        'price': dev.price or dev.model.get_price() if dev.model else 0
+        'price': dev.price or dev.model.get_price() if dev.model else 0,
+        'href': '/admin/discovery/device/%d/' % dev.id,
     }
     if purchase_only:
         return
@@ -224,6 +225,7 @@ def details_dev(dev, purchase_only=False):
                 'price': chassis_price,
                 'icon': 'fugue-servers',
                 'serial': dev.parent.sn,
+                'href': '/admin/discovery/device/%d/' % dev.parent.id,
             }
 
 def details_cpu(dev, purchase_only=False):
@@ -314,6 +316,7 @@ def details_disk(dev, purchase_only=False):
             'serial': mount.share.wwn,
             'count': total,
             'price': mount.get_price(),
+            'href': '/admin/discovery/diskshare/%d/' % mount.share.id,
         }
     if purchase_only:
         return
@@ -346,6 +349,7 @@ def details_disk(dev, purchase_only=False):
             'model': share.model,
             'serial': share.wwn,
             'icon': icon,
+            'href': '/admin/discovery/diskshare/%d/' % share.id,
         }
     # Exported network shares
     for mount in dev.servermount_set.distinct().values('volume', 'share', 'size'):
@@ -358,6 +362,7 @@ def details_disk(dev, purchase_only=False):
             'serial': share.wwn,
             'model': share.model,
             'icon': 'fugue-globe-share',
+            'href': '/admin/discovery/diskshare/%d/' % share.id,
         }
 
 def details_other(dev, purchase_only=False):
@@ -375,6 +380,7 @@ def details_other(dev, purchase_only=False):
                 'model': c.model,
                 'serial': c.sn,
                 'price': c.get_price(),
+                'href': '/admin/discovery/genericcomponent/%d/' % c.id,
             }
     for eth in dev.ethernet_set.order_by('label'):
         yield {
