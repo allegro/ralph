@@ -14,6 +14,7 @@ from ralph.business.models import Venture, VentureRole, OwnerType, VentureOwner
 from ralph.business.models import VentureExtraCost
 from ralph.business.models import (RoleProperty, RolePropertyType,
         RolePropertyTypeValue, RolePropertyValue, Department)
+from ralph.integration.admin import RoleIntegrationInline
 
 
 class RolePropertyTypeValueInline(admin.TabularInline):
@@ -49,7 +50,7 @@ class VentureExtraCostInline(admin.TabularInline):
 
 
 class VentureRoleAdmin(ModelAdmin):
-    inlines = [RolePropertyInline]
+    inlines = [RolePropertyInline, RoleIntegrationInline]
     related_search_fields = {
         'venture': ['^name'],
         'parent': ['^parent'],
