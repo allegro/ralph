@@ -6,7 +6,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from django.core.paginator import Paginator,PageNotAnInteger,EmptyPage
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
 from django.http import HttpResponseRedirect
@@ -46,7 +46,7 @@ class BaseCMDBView(Base):
     Form = CIRelationEditForm
 
     def generate_breadcrumb(self):
-        parent = self.request.GET.get('parent','')
+        parent = self.request.GET.get('parent', '')
         if not parent:
             return []
         list = []
@@ -123,7 +123,8 @@ class EditRelation(BaseCMDBView):
         return ret
 
     def get(self, *args, **kwargs):
-        if not  self.get_permissions().get('edit_configuration_item_relations_perm',False):
+        if not  self.get_permissions().get('edit_configuration_item_relations_perm',
+                False):
             return HttpResponseForbidden()
         rel_id = kwargs.get('relation_id')
         rel = get_object_or_404(db.CIRelation, id=rel_id)
@@ -180,16 +181,17 @@ class AddRelation(BaseCMDBView):
         return data
 
     def get(self, *args, **kwargs):
-        if not  self.get_permissions().get('edit_configuration_item_relations_perm',False):
+        if not  self.get_permissions().get('edit_configuration_item_relations_perm',
+                False):
             return HttpResponseForbidden()
         self.rel_parent = self.request.GET.get('rel_parent')
         self.rel_child = self.request.GET.get('rel_child')
         ci_id = kwargs.get('ci_id')
         self.ci = get_object_or_404(db.CI, id=ci_id)
         self.relations_parent = [
-                x.child for x in  db.CIRelation.objects.filter( parent=ci_id,) ]
+                x.child for x in  db.CIRelation.objects.filter( parent=ci_id, ) ]
         self.relations_child = [
-                x.parent for x in db.CIRelation.objects.filter( child=ci_id,) ]
+                x.parent for x in db.CIRelation.objects.filter( child=ci_id, ) ]
         self.form_options['initial'] = self.form_initial()
         self.form = self.Form(**self.form_options)
         return super(AddRelation, self).get(*args, **kwargs)
@@ -278,7 +280,7 @@ class LastChanges(BaseCMDBView):
         return items_list
 
     def get(self, *args, **kwargs):
-        self.ci_uid = kwargs.get('ci_id',None)
+        self.ci_uid = kwargs.get('ci_id', None)
         self.last_changes = self.get_last_changes(self.ci_uid)
         return super(LastChanges, self).get(*args, **kwargs)
 
@@ -325,7 +327,7 @@ class Edit(BaseCMDBView):
         days=datetime.timedelta(days=7)
         last_week_puppet_errors = db.CIChangePuppet.objects.filter(
                 ci=self.ci,
-                time__range=(datetime.datetime.now(),datetime.datetime.now()-days)
+                time__range=(datetime.datetime.now(), datetime.datetime.now()-days)
         ).count()
 
         incidents = db.CIIncident.objects.filter(
@@ -417,39 +419,39 @@ class Edit(BaseCMDBView):
         return data
 
     def check_perm(self):
-        if not  self.get_permissions().get('edit_configuration_item_info_generic_perm',False):
+        if not  self.get_permissions().get('edit_configuration_item_info_generic_perm', False):
             return HttpResponseForbidden()
 
     def get_zabbix_data(self):
         try:
             fresh_triggers = zabbix.get_all_triggers(host=self.ci.zabbix_id)
             return [(datetime.datetime.utcfromtimestamp(
-                float(x.get('lastchange'))),x) for x in fresh_triggers ]
-        except Exception,e:
+                float(x.get('lastchange'))), x) for x in fresh_triggers ]
+        except Exception, e:
             return []
 
     def calculate_relations(self, ci_id):
-        self.relations_contains = [ (x,x.child, get_icon_for(x.child)) \
+        self.relations_contains = [ (x, x.child, get_icon_for(x.child)) \
                     for x in db.CIRelation.objects.filter(
                     parent=ci_id, type=db.CI_RELATION_TYPES.CONTAINS.id)
         ]
-        self.relations_parts= [ (x,x.parent, get_icon_for(x.parent)) \
+        self.relations_parts= [ (x, x.parent, get_icon_for(x.parent)) \
                 for x in db.CIRelation.objects.filter( child=ci_id,
                 type=db.CI_RELATION_TYPES.CONTAINS.id)
         ]
-        self.relations_requires = [ (x,x.child, get_icon_for(x.parent)) \
+        self.relations_requires = [ (x, x.child, get_icon_for(x.parent)) \
                 for x in db.CIRelation.objects.filter( parent=ci_id,
                 type=db.CI_RELATION_TYPES.REQUIRES.id)
         ]
-        self.relations_isrequired = [ (x,x.parent, get_icon_for(x.parent)) \
+        self.relations_isrequired = [ (x, x.parent, get_icon_for(x.parent)) \
                 for x in db.CIRelation.objects.filter( child=ci_id,
                 type=db.CI_RELATION_TYPES.REQUIRES.id)
         ]
-        self.relations_hasrole= [ (x,x.child, get_icon_for(x.parent)) \
+        self.relations_hasrole= [ (x, x.child, get_icon_for(x.parent)) \
                 for x in db.CIRelation.objects.filter( parent=ci_id,
                 type=db.CI_RELATION_TYPES.HASROLE.id)
         ]
-        self.relations_isrole= [ (x,x.parent, get_icon_for(x.parent)) \
+        self.relations_isrole= [ (x, x.parent, get_icon_for(x.parent)) \
                 for x in db.CIRelation.objects.filter( child=ci_id,
                 type=db.CI_RELATION_TYPES.HASROLE.id)
         ]
@@ -461,7 +463,7 @@ class Edit(BaseCMDBView):
             ci = db.CI.objects.get(uid=ci_id)
             return ci.id
         else:
-            return self.kwargs.get('ci_id',None)
+            return self.kwargs.get('ci_id', None)
 
     def get(self, *args, **kwargs):
         if self.check_perm():
@@ -490,7 +492,7 @@ class Edit(BaseCMDBView):
             reps = db.CIChangePuppet.objects.filter(ci=self.ci).all()
             for report in reps:
                 puppet_logs = db.PuppetLog.objects.filter(cichange=report).all()
-                self.puppet_reports.append(dict(report=report,logs=puppet_logs))
+                self.puppet_reports.append(dict(report=report, logs=puppet_logs))
             #self.last_changes = self.get_last_changes(self.ci)
             self.so_events = db.CIChange.objects.filter(
                     type=db.CI_CHANGE_TYPES.STATUSOFFICE.id,
@@ -576,7 +578,7 @@ class View(Edit):
 
     def check_perm(self):
         if not  self.get_permissions().get(
-                'read_configuration_item_info_generic_perm',False):
+                'read_configuration_item_info_generic_perm', False):
             return HttpResponseForbidden()
 
     def post(self, *args, **kwargs):
@@ -597,7 +599,7 @@ class ViewJira(ViewIframe):
     template_name = 'cmdb/view_ci_iframe.html'
 
     def get_ci_id(self):
-        ci_uid = self.kwargs.get('ci_uid',None)
+        ci_uid = self.kwargs.get('ci_uid', None)
         ci = db.CI.objects.get(uid=ci_uid)
         #raise 404 in case of missing CI
         return ci.id
@@ -618,7 +620,7 @@ class Search(BaseCMDBView):
             'rows': self.rows,
             'page': self.page,
             'pages' : _get_pages(self.paginator, self.page_number),
-            'sort': self.request.GET.get('sort',''),
+            'sort': self.request.GET.get('sort', ''),
             'form' : self.form,
             'url_query': self.request.GET,
         })
@@ -643,7 +645,7 @@ class Search(BaseCMDBView):
                 cis = cis.filter(layers=values.get('layer'))
             if values.get('parent'):
                 cis = cis.filter(child__parent=int(values.get('parent')))
-        sort = self.request.GET.get('sort','name')
+        sort = self.request.GET.get('sort', 'name')
         if sort:
             cis = cis.order_by(sort)
         #only top level CI's, not optimized
