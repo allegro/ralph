@@ -82,12 +82,14 @@ def ping_main(hostname=None, timeout=0.2, attempts=2):
     hostname = sys.argv[1]
     sys.exit(0 if bool(ping(hostname, timeout, attempts)) else 1)
 
+
 def check_tcp_port(ip, port, timeout=1):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.settimeout(timeout)
     result = s.connect_ex((ip, port))
     s.close()
     return result == 0
+
 
 def connect_ssh(ip, username, password=None, client=paramiko.SSHClient, key=None):
     ssh = client()
@@ -104,10 +106,10 @@ def connect_ssh(ip, username, password=None, client=paramiko.SSHClient, key=None
         raise AuthError(str(e))
     return ssh
 
+
 def validate_ip(address):
     ip = ipaddr.IPAddress(address)
     if ip.is_unspecified or ip.is_loopback or ip.is_link_local:
         raise ValueError("Local, unspecified or loopback address: {}"
             "".format(address))
     return unicode(ip)
-
