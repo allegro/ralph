@@ -6,23 +6,20 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from django.core.paginator import Paginator,PageNotAnInteger,EmptyPage
 from django.shortcuts import get_object_or_404
-import ralph.cmdb.models  as db
-from ralph.cmdb.views import BaseCMDBView, _get_pages, get_icon_for
-from ralph.cmdb.forms import CIChangeSearchForm,CIReportsParamsForm
-from ralph.util import csvutil
-
 from django.conf import settings
 from django.db import connection
 from django.http import HttpResponse
 from django.utils import simplejson
+from django.db.models import Count
 
-from django.db.models import Avg, Max, Min, Count
-
-import cStringIO as StringIO
 import calendar
 import datetime
+
+import ralph.cmdb.models  as db
+from ralph.cmdb.views import BaseCMDBView, get_icon_for
+from ralph.cmdb.forms import CIChangeSearchForm, CIReportsParamsForm
+from ralph.cmdb.util import PaginatedView
 
 class ChangesBase(BaseCMDBView):
     def get_context_data(self, **kwargs):
@@ -32,53 +29,6 @@ class ChangesBase(BaseCMDBView):
             'SO_URL': settings.SO_URL,
         })
         return ret
-
-class PaginatedView(BaseCMDBView):
-    def get_context_data(self, **kwargs):
-        ret = super(PaginatedView, self).get_context_data(**kwargs)
-        ret.update({
-            'page': self.page_contents,
-            'pages': _get_pages(self.paginator, self.page_number),
-        })
-        return ret
-
-    def paginate(self, queryset):
-        ROWS_PER_PAGE=20
-        page = self.request.GET.get('page') or 1
-        self.page_number = int(page)
-        self.paginator = Paginator(queryset, ROWS_PER_PAGE)
-        try:
-            self.page_contents = self.paginator.page(page)
-        except PageNotAnInteger:
-            self.page_contents = self.paginator.page(1)
-            page=1
-        except EmptyPage:
-            self.page_contents = self.paginator.page(self.paginator.num_pages)
-            page = self.paginator.num_pages
-        return page
-
-    def get(self, *args, **kwargs):
-        export = self.request.GET.get('export')
-        if export == 'csv':
-            return self.handle_csv_export()
-        return super(BaseCMDBView, self).get(*args)
-
-    def get_csv_data(self):
-        raise NotImplementedError("No get_csv_data implemented in child class.")
-
-    def handle_csv_export(self):
-        """
-        Can overwite this for your needs
-        """
-        return self.do_csv_export()
-
-    def do_csv_export(self):
-        f = StringIO.StringIO()
-        data = self.get_csv_data()
-        csvutil.UnicodeWriter(f).writerows(data)
-        response = HttpResponse(f.getvalue(), content_type="application/csv")
-        response['Content-Disposition'] = 'attachment; filename=ralph.csv'
-        return response
 
 class Change(ChangesBase):
     template_name = 'cmdb/view_change.html'
@@ -105,7 +55,7 @@ class Change(ChangesBase):
         report = change.content_object
         if change.type == db.CI_CHANGE_TYPES.CONF_AGENT.id:
             puppet_logs = db.PuppetLog.objects.filter(cichange=report).all()
-            self.puppet_reports.append(dict(report=report,logs=puppet_logs))
+            self.puppet_reports.append(dict(report=report, logs=puppet_logs))
         elif change.type == db.CI_CHANGE_TYPES.CONF_GIT.id:
             self.git_changes = [dict(
                 id=report.id,
@@ -169,35 +119,39 @@ class Changes(ChangesBase, PaginatedView):
         return super(Changes, self).get(*args)
 
 
-class Problems(ChangesBase):
+class Problems(ChangesBase, PaginatedView):
     template_name = 'cmdb/search_problems.html'
 
     def get_context_data(self, **kwargs):
         ret = super(Problems, self).get_context_data(**kwargs)
         ret.update({
-            'problems': self.problems,
+            'problems': self.data,
             'jira_url': settings.JIRA_URL + '/browse/'
         })
         return ret
 
     def get(self, *args, **kwargs):
-        self.problems = db.CIProblem.objects.order_by('-time').all()
+        queryset = db.CIProblem.objects.order_by('-time').all()
+        queryset = self.paginate_query(queryset)
+        self.data = queryset
         return super(Problems, self).get(*args, **kwargs)
 
 
-class Incidents(ChangesBase):
+class Incidents(ChangesBase, PaginatedView):
     template_name = 'cmdb/search_incidents.html'
 
     def get_context_data(self, **kwargs):
         ret = super(Incidents, self).get_context_data(**kwargs)
         ret.update({
-            'incidents' : self.incidents,
+            'incidents' : self.data,
             'jira_url': settings.JIRA_URL + '/browse/',
         })
         return ret
 
     def get(self, *args, **kwargs):
-        self.incidents = db.CIIncident.objects.order_by('-time').all()
+        queryset = db.CIIncident.objects.order_by('-time').all()
+        queryset = self.paginate_query(queryset)
+        self.data = queryset
         return super(Incidents, self).get(*args, **kwargs)
 
 class DashboardDetails(ChangesBase, PaginatedView):
@@ -290,11 +244,8 @@ class DashboardDetails(ChangesBase, PaginatedView):
                     self.data_dict[venture] +=count
             self.data = [ (self.data_dict[x], x) for x in self.data_dict]
             self.data = sorted(self.data, reverse=True)
-
             self.paginate(self.data)
             self.data = self.page_contents
-        #import pdb; pdb.set_trace()
-
         return super(DashboardDetails, self).get(*args)
 
 
@@ -383,7 +334,7 @@ class Reports(ChangesBase, PaginatedView):
         ret.update({
             'data' : self.data,
             'form' : self.form,
-            'report_kind' : self.request.GET.get('kind','top'),
+            'report_kind' : self.request.GET.get('kind', 'top'),
             'report_name' : self.report_name,
         })
         return ret
@@ -415,7 +366,8 @@ class Reports(ChangesBase, PaginatedView):
         return rows
 
     def least_ci_changes(self):
-        queryset = db.CI.objects.annotate(num=Count('cichange')).filter(num=0).order_by('num')
+        queryset = db.CI.objects.annotate(num=Count('cichange')).\
+                filter(num=0).order_by('num')
         queryset = self.handle_params(queryset)
         queryset = self.paginate_query(queryset)
         rows = [ (x.num, x) for x in queryset]
@@ -428,13 +380,6 @@ class Reports(ChangesBase, PaginatedView):
         rows = [ (x.num, x) for x in queryset]
         return rows
 
-    def paginate_query(self, queryset):
-        if self.exporting_csv_file:
-            return queryset
-        else:
-            self.paginate(queryset)
-            return self.page_contents
-
     def get_csv_data(self):
         self.csv_data = [ (unicode(x[0]), unicode(x[1])) for x in self.data ]
         return self.csv_data
@@ -444,7 +389,7 @@ class Reports(ChangesBase, PaginatedView):
         # go on now, but remember to disable pagination while exporting.
 
     def populate_data(self, *args, **kwargs):
-        report_type = self.request.GET.get('kind','top')
+        report_type = self.request.GET.get('kind', 'top')
         if report_type == 'top_changes':
             self.data = self.top_ci_changes()
             self.report_name = 'Top CI Changes'
