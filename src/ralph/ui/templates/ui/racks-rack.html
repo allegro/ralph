@@ -1,0 +1,33 @@
+{% extends 'ui/base-devices.html' %}
+{% load bob %}
+{% load formats %}
+{% load icons %}
+
+{% block content %}
+<div class="row-fluid">
+<div class="span4">
+{{ slots }}
+<table class="table table-bordered table-striped">
+    {% for slot, size, devs in iter_slots %}
+    {%   if size == -1 %}
+    <tr><td>{{ slot }}</td></tr>
+    {%   else %}
+    <tr>
+        <td>{{ slot }}</td>
+        <td rowspan="{{ size }}">
+        {% for dev in devs %}
+        <a href="../info/{{ dev.id }}">{{ dev|device_icon }} {{ dev.name }}</a>
+        {% endfor %}
+        </td>
+        <td rowspan="{{ size }}">
+        {% for dev in devs %}
+            {{ dev.position }}
+        {% endfor %}
+        </td>
+    </tr>
+    {%   endif %}
+    {% endfor %}
+</table>
+</div>
+</div>
+{% endblock %}
