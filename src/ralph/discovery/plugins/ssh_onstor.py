@@ -33,7 +33,7 @@ class SkipError(Error):
 def _connect_ssh(ip):
     return network.connect_ssh(ip, SSH_ONSTOR_USER, SSH_ONSTOR_PASSWORD)
 
-@nested_commit_on_success
+
 def _save_shares(dev, luns, mounts):
     wwns = []
     for lun, volume in luns.iteritems():
@@ -76,6 +76,7 @@ def _save_device(ip, name, model_name, sn, mac):
     dev.management = ipaddr
     dev.save(update_last_seen=True)
     return dev
+
 
 def _command(channel, command):
         #print('command', repr(command))
