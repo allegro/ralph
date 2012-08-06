@@ -238,6 +238,7 @@ class DeviceForm(forms.ModelForm):
         'sn': 'fugue-wooden-box-label',
         'support_expiration_date': 'fugue-hammer-screwdriver',
         'support_kind': 'fugue-hammer-screwdriver',
+        'deleted': 'fugue-skull',
     }
 
     def manual_fields(self):
