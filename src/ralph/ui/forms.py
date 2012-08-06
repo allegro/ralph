@@ -141,6 +141,8 @@ class SearchForm(forms.Form):
             widget=DeviceGroupWidget, label="")
     component_group = forms.IntegerField(required=False,
             widget=ComponentGroupWidget, label="")
+    deleted = forms.BooleanField(required=False,
+            label="Include deleted")
 
 class PropertyForm(forms.Form):
     icons = {}
