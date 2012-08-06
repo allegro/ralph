@@ -29,3 +29,7 @@ def field_value(f):
 @register.filter
 def range(n, s=0):
     return xrange(s, s + n)
+
+@register.filter
+def order_by(query, by):
+    return query.order_by(by)
