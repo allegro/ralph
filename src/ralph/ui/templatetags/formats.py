@@ -25,3 +25,7 @@ def key(d, key_name):
 @register.filter
 def field_value(f):
     return f.field.to_python(f.value())
+
+@register.filter
+def range(n, s=0):
+    return xrange(s, s + n)
