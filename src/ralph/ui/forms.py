@@ -375,6 +375,8 @@ class DeviceBulkForm(DeviceForm):
             'warranty_expiration_date',
             'support_expiration_date',
             'support_kind',
+
+            'deleted',
         )
 
     def __init__(self, *args, **kwargs):
@@ -396,6 +398,7 @@ class DeviceInfoForm(DeviceForm):
             'position',
             'parent',
             'remarks',
+            'deleted',
         )
 
     def __init__(self, *args, **kwargs):
