@@ -14,8 +14,8 @@ import re
 from django.db import models as db
 from django.db import IntegrityError, transaction
 from django.utils.translation import ugettext_lazy as _
-from lck.django.common.models import (Named,
-    WithConcurrentGetOrCreate, MACAddressField, SavePrioritized)
+from lck.django.common.models import (Named, WithConcurrentGetOrCreate,
+        MACAddressField, SavePrioritized, SoftDeletable)
 from lck.django.choices import Choices
 from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Taggable
@@ -42,6 +42,7 @@ DISK_VENDOR_BLACKLIST = set(['lsi', 'lsilogic', 'vmware', '3pardata'])
 DISK_PRODUCT_BLACKLIST = set(['mr9261-8i', '9750-4i', 'msa2324fc',
     'logical volume', 'virtualdisk', 'virtual-disk', 'multi-flex',
     '1815      fastt', 'comstar'])
+
 
 class DeviceType(Choices):
     _ = Choices.Choice
@@ -192,8 +193,9 @@ class UptimeSupport(db.Model):
         seconds = int(u.seconds) - 3600 * hours - 60 * minutes
         return msg + ", %02d:%02d:%02d" % (hours, minutes, seconds)
 
+
 class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
-    WithConcurrentGetOrCreate, UptimeSupport):
+    WithConcurrentGetOrCreate, UptimeSupport, SoftDeletable):
     name = db.CharField(verbose_name=_("name"), max_length=255)
     name2 = db.CharField(verbose_name=_("extra name"), max_length=255,
         null=True, blank=True, default=None)
@@ -276,16 +278,21 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
 
     @classmethod
     def create(cls, ethernets=None, sn=None, model=None,  model_name=None,
-            model_type=None, device=None, allow_stub=False, priority=0, **kwargs):
+               model_type=None, device=None, allow_stub=False, priority=0,
+               **kwargs):
         if 'parent' in kwargs and kwargs['parent'] is None:
             del kwargs['parent']
         if not model and (not model_name or not model_type):
-            raise ValueError('Either provide model or model_type and model_name.')
+            raise ValueError(
+                    'Either provide model or model_type and model_name.')
         dev = device
-        ethernets = [Eth(*e) for e in (ethernets or []) if is_mac_valid(Eth(*e))]
+        ethernets = [Eth(*e) for e in (ethernets or []) if
+                     is_mac_valid(Eth(*e))]
         if ethernets:
-            macs = set([MACAddressField.normalize(eth.mac) for eth in ethernets])
-            devs = Device.objects.filter(ethernet__mac__in=macs).distinct()
+            macs = set([MACAddressField.normalize(eth.mac) for
+                        eth in ethernets])
+            devs = Device.admin_objects.filter(
+                        ethernet__mac__in=macs).distinct()
             if len(devs) > 1:
                 raise ValueError('Multiple devices match MACs: %r' % macs)
             elif len(devs) == 1:
@@ -303,7 +310,7 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
                 "Use `allow_stub` to override.")
         if sn:
             try:
-                sndev = Device.objects.get(sn=sn)
+                sndev = Device.admin_objects.get(sn=sn)
             except Device.DoesNotExist:
                 pass
             else:
@@ -326,9 +333,10 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
                 name=model_name, type=model_type.id)
         if dev is None:
             dev, created = Device.concurrent_get_or_create(sn=sn, model=model)
+        elif dev.deleted:
+            dev.deleted = False
         if model and model.type != DeviceType.unknown.id:
             dev.model = model
-
         if not dev.sn and sn:
             dev.sn = sn
         for k, v in kwargs.iteritems():
