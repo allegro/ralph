@@ -213,7 +213,7 @@ class RacksRack(Racks, Base):
         slots = collections.defaultdict(lambda: [0, []])
         pos = rack.position
         if pos:
-            if pos.endswith('U'):
+            if pos.upper().endswith('U'):
                 pos = pos[:-1]
             max_slots = int(pos)
         else:
@@ -224,7 +224,7 @@ class RacksRack(Racks, Base):
                 size = (dev.model.chassis_size if dev.model else 1) or 1
                 pos = dev.position
                 if pos:
-                    if pos.endswith('U'):
+                    if pos.upper().endswith('U'):
                         pos = pos[:-1]
                     if '-' in pos:
                         try:
@@ -245,6 +245,8 @@ class RacksRack(Racks, Base):
                 slots[slot][1].append(dev)
                 for i in xrange(slot + 1, slot + size):
                     slots[i][0] = -1
+        else:
+            return [(0, 1, rack.child_set.all())]
         def iter_slots():
             for slot in range(0, max_slots+1):
                 size, devs = slots[slot]
