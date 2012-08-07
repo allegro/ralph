@@ -33,3 +33,8 @@ def range(n, s=0):
 @register.filter
 def order_by(query, by):
     return query.order_by(by)
+
+
+@register.filter
+def chassis_order(query):
+    return query.order_by('model__type', 'chassis_position', 'position')
