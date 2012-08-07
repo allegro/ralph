@@ -8,14 +8,15 @@ from django import forms
 from django.utils.safestring import mark_safe
 from django.conf import settings
 from django.contrib.admin.widgets import FilteredSelectMultiple
+from django.template.defaultfilters import slugify
 from bob.forms import AutocompleteWidget
 from lck.django.common.models import MACAddressField
 
-from ralph.discovery.models import (Device, ComponentModelGroup,
+from ralph.discovery.models import (Device, ComponentModelGroup, DeviceModel,
                                     DeviceModelGroup, DeviceType)
 from ralph.business.models import Venture, RoleProperty, VentureRole
 from ralph.discovery.models_component import is_mac_valid
-from ralph.util import Eth
+from ralph.util import Eth, presentation
 
 
 class ReadOnlySelectWidget(forms.Select):
@@ -50,6 +51,79 @@ class ReadOnlyMultipleChoiceWidget(FilteredSelectMultiple):
 class ReadOnlyWidget(forms.Widget):
     def render(self, name, value, attrs=None, choices=()):
         return mark_safe('<div class="input uneditable-input">%s</div>' % value)
+
+
+class DeviceModelWidget(forms.Widget):
+    def render(self, name, value, attrs=None, choices=()):
+        try:
+            dm = DeviceModel.objects.get(id=value)
+        except DeviceModel.DoesNotExist:
+            output = [
+                '<input type="hidden" name="%s" value="%s">' % (name, value),
+                '<div class="input uneditable-input">',
+                '<i class="fugue-icon %s"></i>&nbsp;%s</a>' % (
+                    presentation.get_device_model_icon(None), 'None'),
+                '</div>',
+            ]
+        else:
+            output = [
+                '<input type="hidden" name="%s" value="%s">' % (name, value),
+                '<div class="input uneditable-input">',
+                '<a href="/admin/discovery/devicemodel/%s">'
+                '<i class="fugue-icon %s"></i>&nbsp;%s</a>' % (dm.id,
+                    presentation.get_device_model_icon(dm), dm.name),
+                '</div>',
+            ]
+        return mark_safe('\n'.join(output))
+
+
+class DeviceWidget(forms.Widget):
+    def render(self, name, value, attrs=None, choices=()):
+        try:
+            dev = Device.objects.get(id=value)
+        except Device.DoesNotExist:
+            output = [
+                '<input type="hidden" name="%s" value="%s">' % (name, value),
+                '<div class="input uneditable-input">',
+                '<i class="fugue-icon %s"></i>&nbsp;%s</a>' % (
+                    presentation.get_device_icon(None), 'None'),
+                '</div>',
+            ]
+        else:
+            output = [
+                '<input type="hidden" name="%s" value="%s">' % (name, value),
+                '<div class="input uneditable-input">',
+                '<a href="%s">'
+                '<i class="fugue-icon %s"></i>&nbsp;%s</a>' % (dev.id,
+                    presentation.get_device_icon(dev), dev.name),
+                '</div>',
+            ]
+        return mark_safe('\n'.join(output))
+
+
+class RackWidget(forms.Widget):
+    def render(self, name, value, attrs=None, choices=()):
+        try:
+            dev = Device.objects.get(sn=value.lower())
+        except Device.DoesNotExist:
+            output = [
+                '<input type="hidden" name="%s" value="%s">' % (name, value),
+                '<div class="input uneditable-input">',
+                '<i class="fugue-icon %s"></i>&nbsp;%s</a>' % (
+                    presentation.get_device_icon(None), 'None'),
+                '</div>',
+            ]
+        else:
+            output = [
+                '<input type="hidden" name="%s" value="%s">' % (name, value),
+                '<div class="input uneditable-input">',
+                '<a href="/ui/racks/%s/info/">'
+                '<i class="fugue-icon %s"></i>&nbsp;%s</a>' % (slugify(dev.sn),
+                    presentation.get_device_icon(dev), dev.name),
+                '</div>',
+            ]
+        return mark_safe('\n'.join(output))
+
 
 
 class ComponentGroupWidget(forms.Widget):
@@ -198,8 +272,10 @@ class DeviceForm(forms.ModelForm):
     class Meta:
         model = Device
         widgets = {
-            'parent': ReadOnlySelectWidget,
-            'model': ReadOnlySelectWidget,
+            'parent': DeviceWidget,
+            'model': DeviceModelWidget,
+            'rack': RackWidget,
+            'dc': RackWidget,
             'cached_price': ReadOnlyPriceWidget,
             'cached_cost': ReadOnlyPriceWidget,
             'auto_price': ReadOnlyPriceWidget,
@@ -264,6 +340,12 @@ class DeviceForm(forms.ModelForm):
 
     def clean_model(self):
         return self.instance.model
+
+    def clean_dc(self):
+        return self.instance.dc
+
+    def clean_rack(self):
+        return self.instance.rack
 
     def clean_parent(self):
         return self.instance.parent
@@ -391,13 +473,13 @@ class DeviceInfoForm(DeviceForm):
     class Meta(DeviceForm.Meta):
         fields = (
             'name',
-            'model_name',
+            'model',
             'venture',
             'venture_role',
             'verified',
             'barcode',
-            'dc_name',
-            'rack_name',
+            'dc',
+            'rack',
             'position',
             'parent',
             'remarks',
@@ -413,10 +495,6 @@ class DeviceInfoForm(DeviceForm):
             self.data['dc_name'] = self.initial['dc_name']
         self.fields['venture'].choices = self._all_ventures()
         self.fields['venture_role'].choices = self._all_roles()
-
-    model_name = forms.CharField(label="Model", widget=ReadOnlyWidget, required=False)
-    rack_name = forms.CharField(label="Rack", widget=ReadOnlyWidget, required=False)
-    dc_name = forms.CharField(label="Data center", widget=ReadOnlyWidget, required=False)
 
 
 class DevicePricesForm(DeviceForm):
