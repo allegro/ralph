@@ -9,7 +9,7 @@
 <div class="span3">
 <table class="table table-bordered">
     <tr>
-        <th colspan="3"><a href="../../{{ rack.sn|slugify }}/rack/">{{ rack.name }}</a></th>
+        <th colspan="3"><a href="../info/{{ rack.id }}">{{ rack|device_icon }}&nbsp;{{ rack.name }}</a></th>
     </tr>
     {% for slot, size, devs in slots %}
     {%   if size == -1 %}
