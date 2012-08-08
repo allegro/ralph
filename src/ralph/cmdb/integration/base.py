@@ -6,10 +6,11 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-
 import logging
 from django.core.mail import mail_admins
+
 from ralph.cmdb import models as db
+
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +22,7 @@ class BaseImporter(object):
     matched=0
     not_matched=0
 
-    def handle_dupplicate_name(self, name):
+    def handle_duplicate_name(self, name):
         pass
 
     def do_summary(self):
@@ -69,7 +70,7 @@ class BaseImporter(object):
         if len(ci) == 1:
             return ci[0]
         elif len(ci)>1:
-            self.handle_dupplicate_name(name)
+            self.handle_duplicate_name(name)
             return None
         else:
             return None

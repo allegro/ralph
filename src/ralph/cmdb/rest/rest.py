@@ -16,7 +16,7 @@ def unique_file(file_name):
     file_name_parts = os.path.splitext(file_name) # returns ('/path/file', '.ext')
     while 1:
         try:
-            fd = open(file_name,'w')
+            fd = open(file_name, 'w')
             return fd
         except :
             pass
@@ -59,6 +59,7 @@ def notify_zabbix(request):
 @csrf_exempt
 @jsonify
 def commit_hook(request):
-    PuppetGitImporter()
+    p = PuppetGitImporter()
+    p.import_git()
     return dict(status='ok')
 
