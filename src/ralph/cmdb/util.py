@@ -5,6 +5,9 @@ from django.http import HttpResponse
 from ralph.util import csvutil
 from ralph.cmdb.views import BaseCMDBView, _get_pages
 
+
+ROWS_PER_PAGE=20
+
 class PaginatedView(BaseCMDBView):
     exporting_csv_file = False
     def get_context_data(self, **kwargs):
@@ -23,7 +26,6 @@ class PaginatedView(BaseCMDBView):
             return self.page_contents
 
     def paginate(self, queryset):
-        ROWS_PER_PAGE=20
         page = self.request.GET.get('page') or 1
         self.page_number = int(page)
         self.paginator = Paginator(queryset, ROWS_PER_PAGE)
@@ -42,9 +44,6 @@ class PaginatedView(BaseCMDBView):
         if export == 'csv':
             return self.handle_csv_export()
         return super(BaseCMDBView, self).get(*args)
-
-    def get_csv_data(self):
-        raise NotImplementedError("No get_csv_data implemented in child class.")
 
     def handle_csv_export(self):
         """
