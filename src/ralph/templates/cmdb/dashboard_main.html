@@ -1,17 +1,7 @@
 {%extends 'cmdb/base.html'%}
-
 {% load icons %}
 {% load query %}
 {% block content %}
-
-<style type='text/css'>
-    h3 
-    {
-        padding-bottom: 10px; 
-        padding-top: 10px; 
-    }
-
-</style>
 
 {% if not db_supported %}
 <div class="alert alert-error">
@@ -22,7 +12,6 @@
 {% block scripts %}
     {{ block.super }}
     <script type="text/javascript">
-        var values = new Array();
         $(function () {
              var options = {
                  series: {
@@ -37,7 +26,6 @@
                  xaxis: {
                      mode: 'time',
                      timeformat: "%b",
-                   
                      minTickSize: [1, "month"],
                      tickSize: [1, "month"],
                  }
