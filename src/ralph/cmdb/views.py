@@ -23,6 +23,7 @@ from ralph.cmdb.integration.lib import zabbix
 from ralph.ui.views.common import Base
 from ralph.util.presentation import get_device_icon, get_venture_icon, get_network_icon
 from ralph.ui.views.common import Info
+from bob.menu import MenuItem, MenuHeader
 
 ROWS_PER_PAGE=20
 SAVE_PRIORITY = 200
@@ -75,12 +76,72 @@ class BaseCMDBView(Base):
             ret.update({ perm + '_perm' : has_perm(getattr(Perm, perm))})
         return ret
 
+    def get_sidebar_items(self):
+        ci = (
+                ('/cmdb/search', 'All Cis', 'fugue-magnifier'),
+                ('/cmdb/search?layer=7&top_level=1', 'Services', 'fugue-disc-share'),
+                ('/cmdb/add', 'Add CI', 'fugue-block--plus'),
+                ('/cmdb/changes/dashboard', 'Dashboard', 'fugue-dashboard'),
+                ('/admin/cmdb', 'Admin', 'fugue-toolbox'),
+        )
+        reports = (
+                ('/cmdb/changes/reports?kind=top_changes',
+                    'Top CI changes', 'fugue-reports'),
+                ('/cmdb/changes/reports?kind=top_problems',
+                    'Top CI problems', 'fugue-reports'),
+                ('/cmdb/changes/reports?kind=top_incidents',
+                    'Top CI incidents', 'fugue-reports'),
+                ('/cmdb/changes/reports?kind=usage',
+                    'Cis w/o changes', 'fugue-reports'),
+        )
+        events = (
+                ('/cmdb/changes/changes', 'All Events',
+                    'fugue-arrow' ),
+                ('/cmdb/changes/changes?type=3', 'Asset attr. changes',
+                    'fugue-wooden-box--arrow'),
+                ('/cmdb/changes/changes?type=4', 'Monitoring events',
+                    'fugue-thermometer'),
+                ('/cmdb/changes/changes?type=1', 'Repo changes',
+                    'fugue-git'),
+                ('/cmdb/changes/changes?type=2', 'Agent events',
+                    'fugue-flask'),
+                ('/cmdb/changes/changes?type=5', 'Status Office events',
+                    'fugue-plug'),
+                ('/cmdb/changes/incidents', 'Incidents',
+                    'fugue-question'),
+                ('/cmdb/changes/problems', 'Problems',
+                    'fugue-bomb')
+        )
+        sidebar_items = (
+            [MenuHeader('Configuration Items')] +
+            [MenuItem(
+                    label=t[1],
+                    fugue_icon=t[2],
+                    href=t[0]
+                ) for t in ci] +
+            [MenuHeader('Reports')] +
+            [MenuItem(
+                    label=t[1],
+                    fugue_icon=t[2],
+                    href=t[0]
+                ) for t in reports] +
+            [MenuHeader('Events and  Changes')] +
+            [MenuItem(
+                    label=t[1],
+                    fugue_icon=t[2],
+                    href=t[0]
+                ) for t in events ]
+        )
+        return dict(sidebar_items = sidebar_items)
+
     def get_context_data(self, **kwargs):
         ret = super(BaseCMDBView, self).get_context_data(**kwargs)
         ret.update(self.get_permissions())
+        ret.update(self.get_sidebar_items())
         ret.update({'breadcrumbs' : self.generate_breadcrumb()})
         ret.update({'url_query': self.request.GET })
         ret.update({'span_number' : '6' }) #high of screen
+
         ret.update({
             'ZABBIX_URL': settings.ZABBIX_URL,
             'SO_URL': settings.SO_URL,
