@@ -19,7 +19,6 @@ from ralph.cmdb.forms import CISearchForm, CIEditForm, CIViewForm, CIRelationEdi
 import ralph.cmdb.models  as db
 from ralph.cmdb.customfields import EditAttributeFormFactory
 from ralph.account.models import Perm
-from ralph.cmdb.integration.lib import zabbix
 from ralph.ui.views.common import Base
 from ralph.util.presentation import get_device_icon, get_venture_icon, get_network_icon
 from ralph.ui.views.common import Info
@@ -73,7 +72,7 @@ class BaseCMDBView(Base):
         ]
         ret = {}
         for perm in ci_perms:
-            ret.update({ perm + '_perm' : has_perm(getattr(Perm, perm))})
+            ret.update({ perm + '_perm': has_perm(getattr(Perm, perm))})
         return ret
 
     def get_sidebar_items(self):
@@ -170,7 +169,7 @@ class EditRelation(BaseCMDBView):
     def get_context_data(self, **kwargs):
         ret = super(EditRelation, self).get_context_data(**kwargs)
         ret.update({
-            'form' : self.form,
+            'form': self.form,
         })
         return ret
 
@@ -218,16 +217,16 @@ class AddRelation(BaseCMDBView):
     def get_context_data(self, **kwargs):
         ret = super(AddRelation, self).get_context_data(**kwargs)
         ret.update({
-            'form' : self.form,
-            'relations_parent' : self.relations_parent,
-            'relations_child' : self.relations_child,
+            'form': self.form,
+            'relations_parent': self.relations_parent,
+            'relations_child': self.relations_child,
         })
         return ret
 
     def form_initial(self):
         data = {
-                'parent' : self.rel_parent,
-                'child' : self.rel_child,
+                'parent': self.rel_parent,
+                'child': self.rel_child,
         }
         return data
 
@@ -279,8 +278,8 @@ class Add(BaseCMDBView):
     def get_context_data(self, **kwargs):
         ret = super(Add, self).get_context_data(**kwargs)
         ret.update({
-            'form' : self.form,
-            'label' : 'Add CI',
+            'form': self.form,
+            'label': 'Add CI',
         })
         return ret
 
@@ -311,7 +310,7 @@ class LastChanges(BaseCMDBView):
     def get_context_data(self, **kwargs):
         ret = super(LastChanges, self).get_context_data(**kwargs)
         ret.update({
-            'last_changes' : self.last_changes,
+            'last_changes': self.last_changes,
         })
         return ret
 
@@ -412,27 +411,27 @@ class Edit(BaseCMDBView):
     def get_context_data(self, **kwargs):
         ret = super(Edit, self).get_context_data(**kwargs)
         ret.update({
-            'form' : self.form,
-            'form_attributes' : self.form_attributes,
-            'ci' : self.ci,
-            'ci_id' : self.ci.id,
-            'uid' : self.ci.uid,
-            'label' : 'Edit CI - ' + self.ci.uid,
-            'relations_contains' : self.relations_contains,
-            'relations_requires' : self.relations_requires,
-            'relations_isrequired' : self.relations_isrequired,
-            'relations_parts' : self.relations_parts,
-            'relations_hasrole' : self.relations_hasrole,
-            'relations_isrole' : self.relations_isrole,
-            'puppet_reports' : self.puppet_reports,
+            'form': self.form,
+            'form_attributes': self.form_attributes,
+            'ci': self.ci,
+            'ci_id': self.ci.id,
+            'uid': self.ci.uid,
+            'label': 'Edit CI - ' + self.ci.uid,
+            'relations_contains': self.relations_contains,
+            'relations_requires': self.relations_requires,
+            'relations_isrequired': self.relations_isrequired,
+            'relations_parts': self.relations_parts,
+            'relations_hasrole': self.relations_hasrole,
+            'relations_isrole': self.relations_isrole,
+            'puppet_reports': self.puppet_reports,
             'git_changes': self.git_changes,
-            'device_attributes_changes' : self.device_attributes_changes,
-            'problems' : self.problems,
-            'incidents' : self.incidents,
-            'zabbix_triggers' : self.zabbix_triggers,
-            'service_name' : self.service_name,
-            'so_events' : self.so_events,
-            'cmdb_messages' : self.get_messages(),
+            'device_attributes_changes': self.device_attributes_changes,
+            'problems': self.problems,
+            'incidents': self.incidents,
+            'zabbix_triggers': self.zabbix_triggers,
+            'service_name': self.service_name,
+            'so_events': self.so_events,
+            'cmdb_messages': self.get_messages(),
         })
         return ret
 
@@ -471,36 +470,28 @@ class Edit(BaseCMDBView):
         if not  self.get_permissions_dict().get('edit_configuration_item_info_generic_perm', False):
             return HttpResponseForbidden()
 
-    def get_zabbix_data(self):
-        try:
-            fresh_triggers = zabbix.get_all_triggers(host=self.ci.zabbix_id)
-            return [(datetime.datetime.utcfromtimestamp(
-                float(x.get('lastchange'))), x) for x in fresh_triggers ]
-        except Exception, e:
-            return []
-
     def calculate_relations(self, ci_id):
-        self.relations_contains = [ (x, x.child, get_icon_for(x.child)) \
+        self.relations_contains = [ (x, x.child, get_icon_for(x.child))
                     for x in db.CIRelation.objects.filter(
                     parent=ci_id, type=db.CI_RELATION_TYPES.CONTAINS.id)
         ]
-        self.relations_parts= [ (x, x.parent, get_icon_for(x.parent)) \
+        self.relations_parts = [(x, x.parent, get_icon_for(x.parent))
                 for x in db.CIRelation.objects.filter( child=ci_id,
                 type=db.CI_RELATION_TYPES.CONTAINS.id)
         ]
-        self.relations_requires = [ (x, x.child, get_icon_for(x.parent)) \
+        self.relations_requires = [(x, x.child, get_icon_for(x.parent))
                 for x in db.CIRelation.objects.filter( parent=ci_id,
                 type=db.CI_RELATION_TYPES.REQUIRES.id)
         ]
-        self.relations_isrequired = [ (x, x.parent, get_icon_for(x.parent)) \
+        self.relations_isrequired = [(x, x.parent, get_icon_for(x.parent))
                 for x in db.CIRelation.objects.filter( child=ci_id,
                 type=db.CI_RELATION_TYPES.REQUIRES.id)
         ]
-        self.relations_hasrole= [ (x, x.child, get_icon_for(x.parent)) \
+        self.relations_hasrole = [(x, x.child, get_icon_for(x.parent))
                 for x in db.CIRelation.objects.filter( parent=ci_id,
                 type=db.CI_RELATION_TYPES.HASROLE.id)
         ]
-        self.relations_isrole= [ (x, x.parent, get_icon_for(x.parent)) \
+        self.relations_isrole = [(x, x.parent, get_icon_for(x.parent))
                 for x in db.CIRelation.objects.filter( child=ci_id,
                 type=db.CI_RELATION_TYPES.HASROLE.id)
         ]
@@ -530,23 +521,21 @@ class Edit(BaseCMDBView):
                     ci=self.ci).order_by('-time').all()
             self.incidents = db.CIIncident.objects.filter(
                     ci=self.ci).order_by('-time').all()
-            self.git_changes  = [ x.content_object \
+            self.git_changes  = [ x.content_object
                     for x in db.CIChange.objects.filter(
                         ci=self.ci, type=db.CI_CHANGE_TYPES.CONF_GIT.id)]
-            self.device_attributes_changes  = [ x.content_object \
+            self.device_attributes_changes  = [ x.content_object
                     for x in db.CIChange.objects.filter(
                         ci=self.ci, type=db.CI_CHANGE_TYPES.DEVICE.id) ]
-            if self.ci.zabbix_id:
-                self.zabbix_triggers = self.get_zabbix_data()
             reps = db.CIChangePuppet.objects.filter(ci=self.ci).all()
             for report in reps:
                 puppet_logs = db.PuppetLog.objects.filter(cichange=report).all()
                 self.puppet_reports.append(dict(report=report, logs=puppet_logs))
             #self.last_changes = self.get_last_changes(self.ci)
+            self.zabbix_triggers = db.CIChangeZabbixTrigger.objects.filter(ci=self.ci)
             self.so_events = db.CIChange.objects.filter(
                     type=db.CI_CHANGE_TYPES.STATUSOFFICE.id,
                     ci=self.ci).all()
-
             self.calculate_relations(ci_id)
             self.form_options['instance'] = self.ci
             self.form_options['initial'] = self.form_initial( self.ci)
@@ -576,7 +565,7 @@ class Edit(BaseCMDBView):
 
         self.relations_contains = []
         self.relations_requires= []
-        self.relations_parts= []
+        self.relations_parts = []
         self.relations_hasrole= []
         self.relations_isrole= []
         self.relations_isrequired = []
@@ -621,7 +610,7 @@ class View(Edit):
     def get_context_data(self, **kwargs):
         ret = super(View, self).get_context_data(**kwargs)
         ret.update({
-            'label' : 'View CI:  ' + self.ci.name
+            'label': 'View CI:  ' + self.ci.name
         })
         return ret
 
@@ -640,7 +629,7 @@ class ViewIframe(View):
 
     def get_context_data(self, **kwargs):
         ret = super(ViewIframe, self).get_context_data(**kwargs)
-        ret.update({'target' : '_blank' })
+        ret.update({'target': '_blank' })
         return ret
 
 
@@ -655,7 +644,7 @@ class ViewJira(ViewIframe):
 
     def get_context_data(self, **kwargs):
         ret = super(ViewJira, self).get_context_data(**kwargs)
-        ret.update({'span_number' : '4' }) #heigh of screen
+        ret.update({'span_number': '4' }) #heigh of screen
         return ret
 
 
@@ -668,9 +657,9 @@ class Search(BaseCMDBView):
         ret.update({
             'rows': self.rows,
             'page': self.page,
-            'pages' : _get_pages(self.paginator, self.page_number),
+            'pages': _get_pages(self.paginator, self.page_number),
             'sort': self.request.GET.get('sort', ''),
-            'form' : self.form,
+            'form': self.form,
         })
         return ret
 
@@ -715,17 +704,17 @@ class Search(BaseCMDBView):
         for i in cis:
             icon = get_icon_for(i)
             rows.append({
-                'count' : i.relations.count(),
-                'uid' : i.uid,
-                'name' : i.name,
-                'ci_type' : i.type.name,
-                'id' : i.id,
-                'icon' : icon,
-                'venture' : '',
-                'layers' : ','.join([x[1] for x in i.layers.values_list()]),
-                'state' : i.get_state_display(),
-                'state_id' : i.state,
-                'status' : i.get_status_display(),
+                'coun': i.relations.count(),
+                'uid': i.uid,
+                'name': i.name,
+                'ci_type': i.type.name,
+                'id': i.id,
+                'icon': icon,
+                'venture': '',
+                'layers': ','.join([x[1] for x in i.layers.values_list()]),
+                'state': i.get_state_display(),
+                'state_id': i.state,
+                'status': i.get_status_display(),
             })
         self.rows = rows
         form_options = dict(
@@ -747,7 +736,7 @@ class ViewUnknown(BaseCMDBView):
 
     def get_context_data(self, **kwargs):
         ret = super(ViewUnknown, self).get_context_data(**kwargs)
-        ret.update({'error_message' :
+        ret.update({'error_message':
             'This Configuration Item cannot be found in the CMDB.' })
         return ret
 
