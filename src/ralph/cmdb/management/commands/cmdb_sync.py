@@ -31,8 +31,8 @@ class Command(BaseCommand):
             # not used as for now.
             # ContentType.objects.get(app_label='discovery', model='networkterminator'),
         ]
-        self.actions = ['purge','import']
-        self.kinds = ['ci','user-relations','all-relations', 'system-relations']
+        self.actions = ['purge', 'import']
+        self.kinds = ['ci', 'user-relations', 'all-relations', 'system-relations']
         self.option_list = []
         self.option_list.extend(BaseCommand.option_list)
         self.option_list.extend([
@@ -67,8 +67,8 @@ class Command(BaseCommand):
             print(usage)
             print("You must specify valid kind: " + '|'.join(self.kinds))
             return
-        content_types_names = dict([ (x.app_label + '.' + x.model,x)
-            for x in self.content_types ])
+        content_types_names = dict([(x.app_label + '.' + x.model, x)
+            for x in self.content_types])
         content_types_to_import = []
         id_to_import = None
         if options.get('ids'):
@@ -76,11 +76,11 @@ class Command(BaseCommand):
         if options.get('content_types'):
             t = options.get('content_types').split(',')
             for ct in t:
-                if not content_types_names.get(ct,None):
+                if not content_types_names.get(ct, None):
                     print("Invalid content type: %s: " % ct)
                     return
                 else:
-                    content_types_to_import.append(content_types_names.get(ct,None))
+                    content_types_to_import.append(content_types_names.get(ct, None))
         else:
             content_types_to_import = self.content_types
         if options.get('action') == 'purge':
