@@ -8,7 +8,7 @@ Change Log
 
 * soft-deletable devices
 
-* first version of a view showing physical layout of racks
+* a view showing physical layout of racks
 
 * add a filter form in the networks view
 
@@ -18,6 +18,8 @@ Change Log
   host templates in Zabbix
 
 * bugfixes in the CMDB
+
+* bugfixes in the discovery plugins
 
 1.0.3 
 ~~~~~
