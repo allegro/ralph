@@ -7,14 +7,14 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import logging
+import re
+
+from ralph.business.models import Venture
+from ralph.util import plugin
 from ralph.cmdb.integration.lib.fisheye import Fisheye
 from ralph.cmdb.integration.lib.puppet_yaml import  load
 from ralph.cmdb import models as db
-from ralph.business.models import Venture
 from ralph.cmdb.integration.base import BaseImporter
-from ralph.util import plugin
-
-import re
 from ralph.cmdb.integration.util import strip_timezone
 
 logger = logging.getLogger(__name__)
@@ -36,7 +36,12 @@ class PuppetAgentsImporter(BaseImporter):
             raise UserWarning('No content to import!')
         yaml = load(contents)
         host = yaml.host
-        status = yaml.status
+        try:
+            status = yaml.status
+        except AttributeError:
+            logger.warning("Got unknown report status from host %s, skipped!"  % host)
+            return
+
         if status == 'unchanged':
             # skip it, we import only changed/failed
             return
@@ -59,7 +64,7 @@ class PuppetAgentsImporter(BaseImporter):
                 type = resource_status.resource_type
                 time = resource_status.time
                 logger.debug('Resource status  %s %s %s %s %s' % (
-                   key, change_count, changed, type,time
+                   key, change_count, changed, type, time
                 ))
                 obj = db.PuppetResourceStatus()
                 obj.change_count = change_count
@@ -189,7 +194,6 @@ class PuppetGitImporter(BaseImporter):
             ch.save()
 
     def import_git(self):
-
         self.core_ci = db.CI.objects.filter(name='Allegro')[0]
         ret = self.fisheye.get_changes()
         for changeset in ret.getchildren():
@@ -218,12 +222,12 @@ class PuppetGitImporter(BaseImporter):
         role = role[1]
         v = self.find_venture(venture)
         if not v:
-            v = self.find_venture(venture.replace('-','_'))
+            v = self.find_venture(venture.replace('-', '_'))
             if not v:
                 return None
-        r = self.find_role(v, role.replace('.pp',''))
+        r = self.find_role(v, role.replace('.pp', ''))
         if not r:
-            r = self.find_role(v, role.replace('.pp','').replace('__','_'))
+            r = self.find_role(v, role.replace('.pp', '').replace('__', '_'))
             if not r:
                 # can't find role. assign none for now.
                 return None

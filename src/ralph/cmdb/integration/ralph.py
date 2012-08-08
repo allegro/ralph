@@ -15,6 +15,7 @@ from ralph.util import plugin
 from ralph.cmdb import models as db
 from ralph.discovery.models_history import HistoryChange
 
+
 logger = logging.getLogger(__name__)
 
 class AssetChangeImporter(BaseImporter):

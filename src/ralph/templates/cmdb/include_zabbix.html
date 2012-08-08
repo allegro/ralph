@@ -1,6 +1,6 @@
-   
 {% load icons %}
 {% load query %}
+{% load bob %}
 
 {% block content %}
 
@@ -17,19 +17,17 @@
 
     </tr></thead>
     <tbody>
-        {% for d in rows%}
+        {% for trigger in rows%}
         <tr>
-            <td> {{ d.1.description}} </td>
-            <td> {{ d.1.priority}} </td>
-            <td> {{ d.0}} </td>
+            <td> {{ trigger.description }} </td>
+            <td> {{ trigger.priority }} </td>
+            <td> {{ trigger.lastchange }} </td>
             <td>  
-                <a href='{{ZABBIX_URL}}/events.php?triggerid={{ d.1.triggerid}}&nav_time=1340101543'  target='_noblank'> View in Zabbix </a>
+                <a href='{{ZABBIX_URL}}/events.php?triggerid={{ trigger.trigger_id}}'  target='_noblank'> View in Zabbix </a>
             </td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
-
-{% include 'cmdb/include_pagination.html' %}
 </div>
 {% endblock %}
