@@ -7,10 +7,12 @@ from __future__ import unicode_literals
 import collections
 
 from bob.menu import MenuItem
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 
 from ralph.account.models import Perm
 from ralph.discovery.models import ReadOnlyDevice, Network, IPAddress
+from ralph.ui.forms import NetworksFilterForm
 from ralph.ui.views.common import (BaseMixin, DeviceDetailView, CMDB, Info,
                                    Prices, Addresses, Costs, Purchase,
                                    Components, History, Discover)
@@ -19,17 +21,18 @@ from ralph.ui.views.reports import Reports, ReportDeviceList
 from ralph.util import presentation
 
 
-def network_tree_menu(networks, details, children):
+def network_tree_menu(networks, details, children, show_ip):
     icon = presentation.get_network_icon
     items = []
     for n in networks:
         items.append(MenuItem(
-            n.name,
+            n.address if show_ip else n.name,
             fugue_icon=icon(n),
             view_name='networks',
             indent=' ',
+            name=n.name,
             view_args=[n.name, details, ''],
-            subitems = network_tree_menu(children[n.id], details, children),
+            subitems = network_tree_menu(children[n.id], details, children, show_ip),
             collapsible=True,
             collapsed=not getattr(n, 'expanded', False),
         ))
@@ -54,7 +57,14 @@ class SidebarNetworks(object):
     def get_context_data(self, **kwargs):
         ret = super(SidebarNetworks, self).get_context_data(**kwargs)
         self.set_network()
-        self.networks = list(Network.objects.all().order_by('min_ip', 'max_ip'))
+        networks = Network.objects.all()
+        contains =  self.request.GET.get('contains')
+        if contains:
+            networks = networks.filter(
+                    Q(name__contains=contains) |
+                    Q(address__contains=contains)
+                )
+        self.networks = list(networks.order_by('min_ip', 'max_ip'))
         stack = []
         children = collections.defaultdict(list)
         for network in self.networks:
@@ -83,13 +93,15 @@ class SidebarNetworks(object):
                                   view_args=['-', ret['details'],''])]
         sidebar_items.extend(network_tree_menu(
             [n for n in self.networks if n.parent is None],
-            ret['details'], children))
+            ret['details'], children, show_ip=self.request.GET.get('show_ip')))
         ret.update({
             'sidebar_items': sidebar_items,
             'sidebar_selected': (self.network.name if
                                  self.network else self.network),
             'section': 'networks',
             'subsection': self.network.name if self.network else self.network,
+            'searchform': NetworksFilterForm(self.request.GET),
+            'searchform_filter': True,
         })
         return ret
 

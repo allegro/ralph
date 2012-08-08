@@ -268,10 +268,15 @@ class HistoryCost(db.Model):
 def cost_post_save(sender, instance, raw, using, **kwargs):
     """
     A hook that updates the HistoryCost spans whenever a cost or venture
-    changes on a device.
+    changes on a device, or a device is soft-deleted/undeleted.
     """
 
+    if instance.deleted:
+        HistoryCost.end_span(device=instance)
+        return
     changed = False
+    if 'deleted' in instance.dirty_fields:
+        changed = True
     if 'venture_id' in instance.dirty_fields:
         changed = True
     if 'cached_cost' in instance.dirty_fields:

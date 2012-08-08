@@ -121,6 +121,11 @@ div.report-tabs ul.nav-tabs {
     margin: 0;
 }
 
+html a.nolink,
+html .nolink {
+    cursor: text !important;
+}
+
 h3 {
     padding-bottom: 10px; 
     padding-top: 10px; 

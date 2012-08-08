@@ -7,6 +7,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import datetime
+import collections
 
 from django.conf import settings
 from lck.django.common import nested_commit_on_success
@@ -56,17 +57,9 @@ def make_tenant(tenant):
                    'total_local_gb_usage', 1, 'Disk')
     make_component('OpenStack 10000 Volume GiB Hours', 'openstackvolume',
                    'total_volume_gb_usage', 1, 'Volume')
-    yesterday = datetime.date.today() - datetime.timedelta(days=1)
-    today = datetime.date.today()
-    dev.historycost_set.filter(start=yesterday).delete()
-    hc = HistoryCost(
-        device=dev,
-        venture=dev.venture,
-        start=yesterday,
-        end=today,
-        daily_cost=total_daily_cost[0],
-    )
-    hc.save()
+    make_component('OpenStack 10000 Images GiB Hours', 'openstackimages',
+                   'total_images_gb_usage', 1, 'Images')
+    return dev, total_daily_cost[0]
 
 
 @plugin.register(chain='openstack')
@@ -81,6 +74,21 @@ def openstack(**kwargs):
     end = kwargs.get('end') or datetime.datetime.today().replace(
                 hour=0, minute=0, second=0, microsecond=0)
     start = kwargs.get('start') or end - datetime.timedelta(days=1)
-    for tenant in stack.simple_tenant_usage(start, end):
-        make_tenant(tenant)
+    tenants = collections.defaultdict(dict)
+    for data in stack.simple_tenant_usage(start, end):
+        tenants[data['tenant_id']].update(data)
+    for url, query in getattr(settings, 'OPENSTACK_EXTRA_QUERIES', []):
+        for data in stack.query(query, url=url, start=start, end=end):
+            tenants[data['tenant_id']].update(data)
+    for tenant_id, data in tenants.iteritems():
+        dev, cost = make_tenant(data)
+        dev.historycost_set.filter(start=start).delete()
+        hc = HistoryCost(
+            device=dev,
+            venture=dev.venture,
+            start=start,
+            end=end,
+            daily_cost=cost,
+        )
+        hc.save()
     return True, 'loaded from %s to %s.' % (start, end), kwargs
