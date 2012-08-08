@@ -1,5 +1,6 @@
 include README.rst CHANGES.rst LICENSE NOTICE
 recursive-include doc *.py *.rst *.txt *.html *.css *.js *.png *.git *.jpg *.conf *.bat *.pdf *.docx Makefile 
+recursive-include src/ralph/cmdb/fixtures *
 recursive-include src/ralph/locale *.*
 recursive-include src/ralph/media *.*
 recursive-include src/ralph/templates *.*
