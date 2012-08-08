@@ -1,95 +1,111 @@
 {%extends 'cmdb/base.html'%}
 
-
 {% load icons %}
 {% load query %}
-
 {% block content %}
 
-<style type="text/css" media="screen">
-    form.form-inline select
+<style type='text/css'>
+    h3 
     {
-        width: auto;
-    }
-    table.dboard td,table.dboard th
-    {
-            padding: 6px;
-    }
-    .placeholder
-    {
-        margin: 10px; 
+        padding-bottom: 10px; 
+        padding-top: 10px; 
     }
 
 </style>
 
+{% if not db_supported %}
+<div class="alert alert-error">
+    CMDB module requires MySQL database backend.
+</div>
+{% else %}
 
 {% block scripts %}
     {{ block.super }}
     <script type="text/javascript">
         var values = new Array();
-
         $(function () {
+             var options = {
+                 series: {
+                     lines: {
+                         show: true,
+                         steps: true
+                     },
+                 },
+                 yaxes: {
+                     min: 0
+                 },
+                 xaxis: {
+                     mode: 'time',
+                     timeformat: "%b",
+                   
+                     minTickSize: [1, "month"],
+                     tickSize: [1, "month"],
+                 }
+             };
             var data_ready=[];
-
             $.get("/cmdb/changes/dashboard_ajax", function(data)
             {
+                var year = new Date().getYear();
                 $.each(data.data, function(index, value)
                 {
-                    var ph = $("#placeholder_"+index);
+                    var ph = $("#placeholder_" + index);
                     var d1 = [];
-                        $.each(value, function(index,value)
-                        {
-                            //console.log(index,value);
-                            d1.push([index, value['count']]);
-                        }
-                        );
-                        jQuery.plot(ph, [ d1 ]);
+                    $.each(value, function(index, value)
+                    {
+                        d1.push([new Date(year+'-'+index).getTime(), value['count']]);
+                    });
+                    jQuery.plot(ph, [ d1 ], options);
                 });
-
             });
             });
     </script>
 {% endblock %}
 
 <div class='span12'>
-<h3> CMDB Dashboard  </h3>
-{% for type,prios in statistics.items%}
-<hr>
-<h4> Type: {{ type }} </h4>
-<ul>
-                {% for prio,priovalues in prios.items %}
-                <table>
-                    <tr>
-                    <td style='padding: 10px'>
-                         <span class='label label-info'> Level: {{ prio }} </span>
-                         <table class='dboard' style='margin: 10px; border-collapse: collapse; border: solid 1px blue; ' >
-                             <tr style='background-color:#05c; color: white'>
+    {% for report in reports%}
+    {% if report.has_subreports %}
+        <h2> Type: {{ report.report_type_str }} </h2>
+    {% endif %}
+
+    {% for subreport in report.subreports %}
+            {% if subreport.data %}
+                   <div class='row-fluid'>
+                       <h3> Level: {{ subreport.priority_str }} </h3>
+                    </div>
+                   <div class='row-fluid'>
+                   <div class='span6'>
+                         <table class='dboard table table-bordered' >
+                             <tr>
                                  <th> Month</th>
                                  <th> Count </th>
                                  <th colspan=2>Options</th>
-                            </tr>
-                            {% for month,data in priovalues.items %}
+                             </tr>
+                            {% for data  in subreport.data %}
                             <tr>
-                                <td style='padding: 6px'>{{ data.month_name}}  </td>
-                                <td><b>{{ data.count}}</b></td>
+                                <td> {{ data.month_name}}  </td>
+                                <td><b> {{ data.count}} </b></td>
                                 <td>
-                                        <a href='/cmdb/changes/dashboard_details/{{data.type}}/{{ data.priority }}/{{month}}/ci'> View by CI  </td>
+                                        <a
+                                            href='/cmdb/changes/dashboard_details/{{report.report_type_int}}/{{subreport.priority_int }}/{{data.month}}/ci'> View by CI  </td>
                                 <td>
-                                        <a href='/cmdb/changes/dashboard_details/{{data.type}}/{{ data.priority}}/{{month}}/ventures'> View by Ventures  </td>
+                                    <a href='/cmdb/changes/dashboard_details/{{report.report_type_int}}/{{ subreport.priority_int}}/{{data.month}}/ventures'> View by Ventures  
+                                </td>
                             </tr>
                             {% endfor %}
                         </table>
-                    </td>
-                    <td>
-                        <div class='placeholder' id='placeholder_{{priovalues.items.1.1.type}}_{{priovalues.items.1.1.priority}}'
-                            style='display: inline-block; float: left; height: 100px;width: 200px;'> 
-                        </div>
-                    </td>
-                    </tr>
-                </table>
+                    </div>
+                    <div class='span6'>
+                        <div class='placeholder'
+                            id='placeholder_{{subreport.report_type_int}}_{{subreport.priority_int}}'
+                            style=' height: 150px;width: 300px;'> 
+                        </div> <!-- placeholder !-->
+                    </div><!-- span6 !-->
+                    </div> <!-- row-fluid !-->
+                    {% endif %}
                 {% endfor %}
-</ul>
-{% endfor %}
+                {% endfor %} <!-- reports !-->
+            </div> <!-- span12 !-->
 
-</div>
+{% endif %}
+
 {% endblock %}
