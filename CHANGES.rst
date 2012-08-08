@@ -9,7 +9,7 @@ Change Log
 * added a "zabbixregister" command for automatically creating hosts and
   host templates in Zabbix
 
-* bugfixes in CMDB
+* bugfixes in the CMDB
 
 1.0.3 
 ~~~~~
