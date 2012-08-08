@@ -241,9 +241,9 @@ class AddRelation(BaseCMDBView):
         ci_id = kwargs.get('ci_id')
         self.ci = get_object_or_404(db.CI, id=ci_id)
         self.relations_parent = [
-                x.child for x in  db.CIRelation.objects.filter( parent=ci_id, ) ]
+                x.child for x in  db.CIRelation.objects.filter(parent=ci_id)]
         self.relations_child = [
-                x.parent for x in db.CIRelation.objects.filter( child=ci_id, ) ]
+                x.parent for x in db.CIRelation.objects.filter(child=ci_id)]
         self.form_options['initial'] = self.form_initial()
         self.form = self.Form(**self.form_options)
         return super(AddRelation, self).get(*args, **kwargs)
@@ -378,7 +378,7 @@ class Edit(BaseCMDBView):
         days=datetime.timedelta(days=7)
         last_week_puppet_errors = db.CIChangePuppet.objects.filter(
                 ci=self.ci,
-                time__range=(datetime.datetime.now(), datetime.datetime.now()-days)
+                time__range=(datetime.datetime.now(), datetime.datetime.now() - days)
         ).count()
 
         incidents = db.CIIncident.objects.filter(
