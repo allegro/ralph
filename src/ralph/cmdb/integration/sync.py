@@ -22,7 +22,6 @@ from ralph.cmdb.integration.puppet import PuppetGitImporter
 from ralph.cmdb.integration.ralph import AssetChangeImporter
 from optparse import OptionParser
 
-import re
 
 logger = logging.getLogger(__name__)
 

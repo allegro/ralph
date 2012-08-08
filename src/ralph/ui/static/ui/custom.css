@@ -120,3 +120,8 @@ div.report-tabs ul.nav-tabs {
     float: none;
     margin: 0;
 }
+
+h3 {
+    padding-bottom: 10px; 
+    padding-top: 10px; 
+}
