@@ -60,7 +60,7 @@ class BaseCMDBView(Base):
             counter+=1
         return list
 
-    def get_permissions(self):
+    def get_permissions_dict(self):
         has_perm = self.request.user.get_profile().has_perm
         ci_perms = [
                 'create_configuration_item',
@@ -132,17 +132,16 @@ class BaseCMDBView(Base):
                     href=t[0]
                 ) for t in events ]
         )
-        return dict(sidebar_items = sidebar_items)
+        return sidebar_items
 
     def get_context_data(self, **kwargs):
         ret = super(BaseCMDBView, self).get_context_data(**kwargs)
-        ret.update(self.get_permissions())
-        ret.update(self.get_sidebar_items())
-        ret.update({'breadcrumbs' : self.generate_breadcrumb()})
-        ret.update({'url_query': self.request.GET })
-        ret.update({'span_number' : '6' }) #high of screen
-
+        ret.update(self.get_permissions_dict())
         ret.update({
+            'sidebar_items': self.get_sidebar_items(),
+            'breadcrumbs': self.generate_breadcrumb(),
+            'url_query': self.request.GET,
+            'span_number': '6',
             'ZABBIX_URL': settings.ZABBIX_URL,
             'SO_URL': settings.SO_URL,
         })
@@ -176,7 +175,7 @@ class EditRelation(BaseCMDBView):
         return ret
 
     def get(self, *args, **kwargs):
-        if not  self.get_permissions().get('edit_configuration_item_relations_perm',
+        if not  self.get_permissions_dict().get('edit_configuration_item_relations_perm',
                 False):
             return HttpResponseForbidden()
         rel_id = kwargs.get('relation_id')
@@ -233,7 +232,7 @@ class AddRelation(BaseCMDBView):
         return data
 
     def get(self, *args, **kwargs):
-        if not  self.get_permissions().get('edit_configuration_item_relations_perm',
+        if not  self.get_permissions_dict().get('edit_configuration_item_relations_perm',
                 False):
             return HttpResponseForbidden()
         self.rel_parent = self.request.GET.get('rel_parent')
@@ -469,7 +468,7 @@ class Edit(BaseCMDBView):
         return data
 
     def check_perm(self):
-        if not  self.get_permissions().get('edit_configuration_item_info_generic_perm', False):
+        if not  self.get_permissions_dict().get('edit_configuration_item_info_generic_perm', False):
             return HttpResponseForbidden()
 
     def get_zabbix_data(self):
@@ -627,7 +626,7 @@ class View(Edit):
         return ret
 
     def check_perm(self):
-        if not  self.get_permissions().get(
+        if not  self.get_permissions_dict().get(
                 'read_configuration_item_info_generic_perm', False):
             return HttpResponseForbidden()
 
