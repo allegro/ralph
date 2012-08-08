@@ -18,7 +18,7 @@ from ralph.discovery.models import ReadOnlyDevice, Device, DeviceType
 from ralph.ui.forms import DeviceCreateForm
 from ralph.ui.views.common import (Info, Prices, Addresses, Costs, Purchase,
                                    Components, History, Discover, BaseMixin,
-                                   CMDB, DeviceDetailView)
+                                   CMDB, DeviceDetailView, Base)
 from ralph.ui.views.devices import BaseDeviceList
 from ralph.ui.views.reports import Reports, ReportDeviceList
 from ralph.util import presentation
@@ -189,7 +189,8 @@ class RacksDeviceList(SidebarRacks, BaseMixin, BaseDeviceList):
         profile = self.request.user.get_profile()
         has_perm = profile.has_perm
         tab_items = ret['tab_items']
-        self.set_rack()
+        tab_items.append(MenuItem('Rack', fugue_icon='fugue-media-player-phone',
+                            href='../rack/?%s' % self.request.GET.urlencode()))
         if has_perm(Perm.create_device, self.rack.venture if
                     self.rack else None):
             tab_items.append(MenuItem('Add Device',
@@ -204,6 +205,73 @@ class RacksDeviceList(SidebarRacks, BaseMixin, BaseDeviceList):
         })
         return ret
 
+
+class RacksRack(Racks, Base):
+    template_name = 'ui/racks-rack.html'
+
+    def get_slots(self, rack):
+        slots = collections.defaultdict(lambda: [0, []])
+        pos = rack.position
+        if pos:
+            if pos.upper().endswith('U'):
+                pos = pos[:-1]
+            max_slots = int(pos)
+        else:
+            max_slots = 0
+        if max_slots:
+            for dev in rack.child_set.all():
+                slot = dev.chassis_position or 0
+                size = (dev.model.chassis_size if dev.model else 1) or 1
+                pos = dev.position
+                if pos:
+                    if pos.upper().endswith('U'):
+                        pos = pos[:-1]
+                    if '-' in pos:
+                        try:
+                            start, end = [int(p) for p in pos.split('-', 1)]
+                        except ValueError:
+                            pass
+                        else:
+                            slot = start
+                            size = end - start + 1
+                    else:
+                        try:
+                            slot = int(pos)
+                        except ValueError:
+                            pass
+                        else:
+                            size = 1
+                slots[slot][0] = size
+                slots[slot][1].append(dev)
+                for i in xrange(slot + 1, slot + size):
+                    slots[i][0] = -1
+        else:
+            return [(0, 1, rack.child_set.all())]
+        def iter_slots():
+            for slot in range(0, max_slots+1):
+                size, devs = slots[slot]
+                yield slot, size, devs
+        return iter_slots
+
+    def get_context_data(self, **kwargs):
+        ret = super(RacksRack, self).get_context_data(**kwargs)
+        self.set_rack()
+        tab_items = ret['tab_items']
+        tab_items.append(MenuItem('Rack', fugue_icon='fugue-media-player-phone',
+                            href='../rack/?%s' % self.request.GET.urlencode()))
+        if self.rack.model.type == DeviceType.rack.id:
+            slots_set = [
+                (self.rack, self.get_slots(self.rack))
+            ]
+        else:
+            slots_set = [(rack, self.get_slots(rack)) for
+                         rack in self.rack.child_set.filter(
+                             model__type=DeviceType.rack.id
+                         )]
+        ret.update({
+            'slots_set': slots_set,
+        })
+        return ret
 
 class DeviceCreateView(CreateView):
     model = Device

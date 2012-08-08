@@ -257,7 +257,10 @@ def discover_network(network, plugin_name='ping', requirements=None,
     dbnet = None
     if isinstance(network, (IPv4Network, IPv6Network)):
         net = network
-        dbnet = Network.objects.get(address=str(network))
+        try:
+            dbnet = Network.objects.get(address=str(network))
+        except Network.DoesNotExist:
+            pass
     elif isinstance(network, Network):
         net = network.network
         dbnet = network
@@ -279,7 +282,8 @@ def discover_network(network, plugin_name='ping', requirements=None,
         hosts = net.iterhosts()
     for index, host in enumerate(hosts):
         context = {'ip': host}
-        context['queue'] = dbnet.queue
+        if dbnet:
+            context['queue'] = dbnet.queue
 
         if interactive:
             discover_single(context, plugin_name=plugin_name,

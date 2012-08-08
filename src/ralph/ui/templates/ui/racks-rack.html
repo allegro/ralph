@@ -1,0 +1,49 @@
+{% extends 'ui/base-devices.html' %}
+{% load bob %}
+{% load formats %}
+{% load icons %}
+
+{% block content %}
+<div class="row">
+{% for rack, slots in slots_set %}
+<div class="span3">
+<table class="table table-bordered">
+    <tr>
+        <th colspan="3"><a href="../info/{{ rack.id }}">{{ rack|device_icon }}&nbsp;{{ rack.name }}</a></th>
+    </tr>
+    {% for slot, size, devs in slots %}
+    {%   if size == -1 %}
+    <tr><th width="16" style="text-align:right">{{ slot }}</th></tr>
+    {%   else %}
+    <tr>
+        <th width="16" style="text-align:right">{{ slot }}</th>
+        <td rowspan="{{ size }}">
+        {% for dev in devs %}
+        {% if dev.model.type == 2 %}
+            <table class="table table-bordered table-condensed">
+            <tr><th colspan="2">
+            <a href="../info/{{ dev.id }}">{{ dev|device_icon }} {{ dev.name }}</a> ({{ dev.position|default:'-' }})
+            </th></tr>
+            {% for child in dev.child_set.all|chassis_order %}
+                <tr>
+                    <th width="16" style="text-align:right">{{ child.chassis_position|default:child.position|default:'' }}</th>
+                    <td>
+                        <a href="../info/{{ child.id }}">{{ child|device_icon }} {{ child.name }}</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </table>
+        {% else %}
+        <a href="../info/{{ dev.id }}">{{ dev|device_icon }} {{ dev.name }}</a> ({{ dev.position|default:'-' }})
+        {% endif %}
+        <br>
+        {% endfor %}
+        </td>
+    </tr>
+    {%   endif %}
+    {% endfor %}
+</table>
+</div>
+{% endfor %}
+</div>
+{% endblock %}

@@ -88,7 +88,10 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
         self.set_searchform()
         if self.searchform.is_valid():
             data = self.searchform.cleaned_data
-            self.query = Device.objects.all()
+            if data['deleted']:
+                self.query = Device.admin_objects.all()
+            else:
+                self.query = Device.objects.all()
             if data['name']:
                 name = data['name'].strip()
                 names = set(n.strip('.') for (n,) in Record.objects.filter(
