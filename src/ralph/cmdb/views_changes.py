@@ -65,7 +65,7 @@ class Change(ChangesBase):
                 changeset=report.changeset,
             )]
         elif change.type == db.CI_CHANGE_TYPES.DEVICE.id:
-            self.device_attributes_changes  = [ report ]
+            self.device_attributes_changes  = [report]
         return super(Change, self).get(*args, **kwargs)
 
 
@@ -75,9 +75,9 @@ class Changes(ChangesBase, PaginatedView):
     def get_context_data(self, **kwargs):
         ret = super(Changes, self).get_context_data(**kwargs)
         ret.update({
-            'changes': [ (x, get_icon_for(x.ci)) for x in self.changes ],
-            'statistics' : self.data,
-            'form' : self.form,
+            'changes': [(x, get_icon_for(x.ci)) for x in self.changes],
+            'statistics': self.data,
+            'form': self.form,
         })
         return ret
 
@@ -143,7 +143,7 @@ class Incidents(ChangesBase, PaginatedView):
     def get_context_data(self, **kwargs):
         ret = super(Incidents, self).get_context_data(**kwargs)
         ret.update({
-            'incidents' : self.data,
+            'incidents': self.data,
             'jira_url': settings.JIRA_URL + '/browse/',
         })
         return ret
@@ -160,7 +160,7 @@ class DashboardDetails(ChangesBase, PaginatedView):
     def get_context_data(self, **kwargs):
         ret = super(DashboardDetails, self).get_context_data(**kwargs)
         ret.update({
-            'statistics' : self.data,
+            'statistics': self.data,
        })
         return ret
 
@@ -169,9 +169,9 @@ class DashboardDetails(ChangesBase, PaginatedView):
         if report_type == 'ci':
             self.csv_data = [(unicode(x['name']),
                 unicode(x['count']),
-                unicode(x['venture'])) for x in self.data ]
+                unicode(x['venture'])) for x in self.data]
         else:
-            self.csv_data = [ (unicode(x[0]), unicode(x[1])) for x in self.data ]
+            self.csv_data = [(unicode(x[0]), unicode(x[1])) for x in self.data]
         return self.csv_data
 
     def get(self, *args, **kwargs):
@@ -190,7 +190,7 @@ class DashboardDetails(ChangesBase, PaginatedView):
             AND YEAR(ch.time)=YEAR(NOW())
             GROUP BY cc.id DESC
             ORDER BY COUNT(*) DESC, cc.name ASC
-        ''', [ type, prio, month] )
+        ''', [type, prio, month] )
         if report_type == 'ci':
             self.data = []
             rows = cursor.fetchall()
@@ -236,13 +236,13 @@ class DashboardDetails(ChangesBase, PaginatedView):
                 if ci_id:
                     ci = db.CI.objects.get(id=ci_id)
                     if ci and ci_id and ci.content_object and \
-                            getattr(ci.content_object, 'venture', None) :
+                            getattr(ci.content_object, 'venture', None):
                         venture = db.CI.get_by_content_object(ci.content_object.venture)
                 if not self.data_dict.get(venture):
                     self.data_dict[venture] = count
                 else:
                     self.data_dict[venture] += count
-            self.data = [ (self.data_dict[x], x) for x in self.data_dict]
+            self.data = [(self.data_dict[x], x) for x in self.data_dict]
             self.data = sorted(self.data, reverse=True)
             self.paginate(self.data)
             self.data = self.page_contents
@@ -298,7 +298,7 @@ class DashReport(object):
     def __init__(self, report_type):
         self.subreports = []
         self.report_type = report_type
-        self.report_type_int,self.report_type_str = report_type
+        self.report_type_int, self.report_type_str = report_type
 
     def has_subreports(self):
         """ Return true if has some data """
@@ -324,9 +324,9 @@ class Dashboard(ChangesBase):
     def get_context_data(self, **kwargs):
         ret = super(Dashboard, self).get_context_data(**kwargs)
         ret.update({
-            'reports' : self.reports,
-            'db_supported' : self.db_supported,
-            'breadcrumb' : 'test',
+            'reports': self.reports,
+            'db_supported': self.db_supported,
+            'breadcrumb': 'test',
         })
         return ret
 
@@ -352,7 +352,7 @@ class Dashboard(ChangesBase):
                         priority=priority_id,
                         type=type_id,
                     )
-        response_dict={'data' : data}
+        response_dict={'data': data}
         return HttpResponse(
                 simplejson.dumps(response_dict),
                 mimetype='application/json',
@@ -380,10 +380,10 @@ class Reports(ChangesBase, PaginatedView):
     def get_context_data(self, **kwargs):
         ret = super(Reports, self).get_context_data(**kwargs)
         ret.update({
-            'data' : self.data,
-            'form' : self.form,
-            'report_kind' : self.request.GET.get('kind', 'top'),
-            'report_name' : self.report_name,
+            'data': self.data,
+            'form': self.form,
+            'report_kind': self.request.GET.get('kind', 'top'),
+            'report_name': self.report_name,
        })
         return ret
 
@@ -403,14 +403,14 @@ class Reports(ChangesBase, PaginatedView):
         queryset = db.CI.objects.annotate(num=Count('ciproblem')).order_by('-num')
         queryset = self.handle_params(queryset)
         queryset = self.paginate_query(queryset)
-        rows = [ (x.num, x) for x in queryset]
+        rows = [(x.num, x) for x in queryset]
         return rows
 
     def top_ci_incidents(self):
         queryset = db.CI.objects.annotate(num=Count('ciincident')).order_by('-num')
         queryset = self.handle_params(queryset)
         queryset = self.paginate_query(queryset)
-        rows = [ (x.num, x) for x in queryset]
+        rows = [(x.num, x) for x in queryset]
         return rows
 
     def least_ci_changes(self):
@@ -418,18 +418,18 @@ class Reports(ChangesBase, PaginatedView):
                 filter(num=0).order_by('num')
         queryset = self.handle_params(queryset)
         queryset = self.paginate_query(queryset)
-        rows = [ (x.num, x) for x in queryset]
+        rows = [(x.num, x) for x in queryset]
         return rows
 
     def top_ci_changes(self):
         queryset = db.CI.objects.annotate(num=Count('cichange')).order_by('-num')
         queryset = self.handle_params(queryset)
         queryset = self.paginate_query(queryset)
-        rows = [ (x.num, x) for x in queryset]
+        rows = [(x.num, x) for x in queryset]
         return rows
 
     def get_csv_data(self):
-        self.csv_data = [ (unicode(x[0]), unicode(x[1])) for x in self.data ]
+        self.csv_data = [(unicode(x[0]), unicode(x[1])) for x in self.data]
         return self.csv_data
 
     def handle_csv_export(self):
