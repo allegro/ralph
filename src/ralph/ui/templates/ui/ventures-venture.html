@@ -42,11 +42,11 @@
                 <a href="{{ i.url }}" class="badge badge-info">{{ i.count|default:"0" }}</a>
               {% else %}
                 {% if i.count_now %}
-                  <span class="badge">{{i.count_now}}</span>
+                  <span class="badge nolink">{{i.count_now}}</span>
                 {% endif %}
               {% endif %}
               {% if i.count %}
-                  / <span class="badge">{{i.count}}</span>
+                  / <span class="badge nolink">{{i.count}}</span>
               {% endif %}
             </td>
             <td class="column-cost currency">{{ i.cost|currency }}</td>

@@ -4,6 +4,14 @@ Change Log
 1.0.4
 ~~~~~
 
+* edit links for devices and components
+
+* soft-deletable devices
+
+* first version of a view showing physical layout of racks
+
+* add a filter form in the networks view
+
 * small usability improvements in the history user interface
 
 * added a "zabbixregister" command for automatically creating hosts and

@@ -18,7 +18,7 @@
                 <td class="column-name"><a
                         href="{% url 'catalog' kind model_type_id '' %}"
                     >{% icon 'fugue-prohibition' %}&nbsp;Unassigned components</a></td>
-            <td class="column-count count"><a href="#" class="badge">{{ unassigned_count }}</a></td>
+            <td class="column-count count"><a href="#" class="badge nolink">{{ unassigned_count }}</a></td>
                 <td class="column-price currency"></td>
             </tr>
             {% for g in groups %}
