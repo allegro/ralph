@@ -23,7 +23,7 @@ class Command(BaseCommand):
     requires_model_validation = True
 
     def get_cmdb_plugins(self):
-        return dict([(x,plugin.BY_NAME[x]) for x in plugin.BY_NAME.keys() if x.startswith('cmdb')])
+        return dict([(x, plugin.BY_NAME[x]) for x in plugin.BY_NAME.keys() if x.startswith('cmdb')])
 
     def __init__(self, *args, **kwargs):
         self.option_list = []
