@@ -25,7 +25,7 @@ class Fisheye(object):
         self.auth = BasicAuth(user, password)
         self.base_url = "%s/rest-service-fe" % jira_url
 
-    def get_resource(self,resource_name):
+    def get_resource(self, resource_name):
         complete_url= "%s/%s" % (self.base_url , resource_name)
         logger.error("Calling " + complete_url)
         resource = Resource(complete_url, pool_instance=self.pool, filters=[self.auth])
