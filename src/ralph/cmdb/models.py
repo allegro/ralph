@@ -156,7 +156,7 @@ class CIAttribute(models.Model):
                     for x in self.choices.split('|')])
                 if not len_checks:
                     raise ValidationError(validation_msg)
-            except Exception,e:
+            except Exception, e:
                     raise ValidationError(validation_msg)
 
 
@@ -306,6 +306,7 @@ class CI(models.Model):
     )
     # not required, since auto-save
     name = models.CharField(max_length=256, verbose_name=_("CI name"))
+    friendly_name = lambda self: self.name
     business_service = models.BooleanField(verbose_name=_("Business service"),
             default=False)
     technical_service = models.BooleanField(verbose_name=_("Technical service"),
@@ -344,7 +345,7 @@ class CI(models.Model):
     added_manually = models.BooleanField(default=False)
 
     def __unicode__(self):
-        return "%s" %  self.name
+        return "%s (%s)" %  (self.name, self.type)
 
     def get_service(self):
         """
