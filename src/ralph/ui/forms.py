@@ -296,6 +296,7 @@ class DeviceForm(forms.ModelForm):
         'name': 'fugue-network-ip',
         'barcode': 'fugue-barcode',
         'position': 'fugue-map',
+        'chassis_position': 'fugue-map-pin',
         'model': 'fugue-wooden-box',
         'model_name': 'fugue-wooden-box',
         'venture': 'fugue-store',
@@ -398,6 +399,7 @@ class DeviceCreateForm(DeviceForm):
             'venture_role',
             'barcode',
             'position',
+            'chassis_position',
             'remarks',
 
             'margin_kind',
@@ -448,6 +450,7 @@ class DeviceBulkForm(DeviceForm):
             'venture_role',
             'barcode',
             'position',
+            'chassis_position',
             'remarks',
 
             'margin_kind',
@@ -481,6 +484,7 @@ class DeviceInfoForm(DeviceForm):
             'dc',
             'rack',
             'position',
+            'chassis_position',
             'parent',
             'remarks',
             'deleted',
