@@ -432,6 +432,9 @@ class Edit(BaseCMDBView):
             'service_name': self.service_name,
             'so_events': self.so_events,
             'cmdb_messages': self.get_messages(),
+            'show_in_ralph': self.show_in_ralph,
+            'ralph_ci_link': self.ralph_ci_link,
+
         })
         return ret
 
@@ -515,8 +518,12 @@ class Edit(BaseCMDBView):
             # editing/viewing Ci which doesn's exists.
             return HttpResponseRedirect('/cmdb/ci/jira_ci_unknown')
         if ci_id:
-            self.service_name = self.get_first_parent_venture_name(ci_id)
             self.ci = get_object_or_404(db.CI, id=ci_id)
+            # preview only for devices
+            if self.ci.content_object and self.ci.content_type.name == 'device':
+                self.show_in_ralph = True
+                self.ralph_ci_link = "/ui/search/info/%d" % self.ci.content_object.id
+            self.service_name = self.get_first_parent_venture_name(ci_id)
             self.problems = db.CIProblem.objects.filter(
                     ci=self.ci).order_by('-time').all()
             self.incidents = db.CIIncident.objects.filter(
@@ -566,8 +573,8 @@ class Edit(BaseCMDBView):
         self.relations_contains = []
         self.relations_requires= []
         self.relations_parts = []
-        self.relations_hasrole= []
-        self.relations_isrole= []
+        self.relations_hasrole = []
+        self.relations_isrole = []
         self.relations_isrequired = []
         self.puppet_reports  = []
         self.git_changes = []
@@ -576,6 +583,8 @@ class Edit(BaseCMDBView):
         self.so_events = []
         self.problems = []
         self.incidents = []
+        self.show_in_ralph = False
+        self.ralph_ci_link = ""
 
     @nested_commit_on_success
     def post(self, *args, **kwargs):
@@ -739,16 +748,4 @@ class ViewUnknown(BaseCMDBView):
         ret.update({'error_message':
             'This Configuration Item cannot be found in the CMDB.' })
         return ret
-
-
-class RalphView(Info):
-    template_name = 'ui/device_info_iframe.html'
-    def __init__(self, *args, **kwargs):
-        super(Info, self).__init__(*args, **kwargs)
-
-    def get_object(self):
-        self.ci_id = self.kwargs.get('ci_id')
-        content_object = db.CI.objects.get(id=self.ci_id).content_object
-        return content_object
-
 
