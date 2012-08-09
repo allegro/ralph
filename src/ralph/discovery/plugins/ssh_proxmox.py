@@ -19,7 +19,8 @@ from lck.django.common import nested_commit_on_success
 from ralph.util import network
 from ralph.util import plugin, Eth
 from ralph.discovery.models import (DeviceType, Device, IPAddress, Software,
-        DiskShare, DiskShareMount, ComponentModel, Processor, ComponentType)
+        DiskShare, DiskShareMount, ComponentModel, Processor, ComponentType,
+        Storage)
 from ralph.discovery.hardware import get_disk_shares
 
 
@@ -37,13 +38,16 @@ def _connect_ssh(ip, username='root', password=''):
     return network.connect_ssh(ip, 'root', settings.SSH_PASSWORD)
 
 
-
 def _get_local_disk_size(ssh, disk):
-    path = os.path.join('/usr/lib/vz/images', disk)
+    """Return the size of a disk image file, in bytes"""
+
+    path = os.path.join('/var/lib/vz/images', disk)
     stdin, stdout, stderr = ssh.exec_command("du -m '%s'" % path)
     line = stdout.read().strip()
-    size = line.strip(None, 1)[0]
+    print('path=%r size=%r' % (path, line))
+    size = int(line.split(None, 1)[0])
     return size
+
 
 def _add_virtual_machine(ssh, vmid, parent, master, storage):
     stdin, stdout, stderr = ssh.exec_command(
@@ -87,17 +91,31 @@ def _add_virtual_machine(ssh, vmid, parent, master, storage):
         else:
             vg = ''
             lv = disk
+        if vg == 'local':
+            model, created = ComponentModel.concurrent_get_or_create(
+                type=ComponentType.disk.id, family='QEMU disk image')
+            if created:
+                model.save()
+            storage, created = Storage.concurrent_get_or_create(
+                device=dev, mount_point=lv)
+            storage.size = _get_local_disk_size(ssh, lv)
+            storage.model = model
+            storage.label = slot
+            storage.save()
+            continue
         if vg in ('', 'local', 'pve-local'):
             continue
         vol = '%s:%s' % (vg, lv)
         try:
             wwn, size = storage[lv]
         except KeyError:
+            logger.warning('Volume %r does not exist.' % lv)
             continue
         try:
             share = DiskShare.objects.get(wwn=wwn)
             wwns.append(wwn)
         except DiskShare.DoesNotExist:
+            logger.warning('A share with WWN %r does not exist.' % wwn)
             continue
         mount, created = DiskShareMount.concurrent_get_or_create(
                 share=share, device=dev)

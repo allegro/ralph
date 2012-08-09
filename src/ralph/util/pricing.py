@@ -137,8 +137,7 @@ def get_device_memory_price(device):
     return price
 
 def get_device_local_storage_price(device):
-    price = math.fsum(
-        m.model.get_price() for m in device.storage_set.all() if m.model)
+    price = math.fsum(s.get_price() for s in device.storage_set.all())
     if not price and device.model and device.model.type in (
             DeviceType.rack_server.id, DeviceType.blade_server.id):
         try:
@@ -290,10 +289,18 @@ def details_disk(dev, purchase_only=False):
     for disk in dev.storage_set.all():
         if disk.model:
             has_disk = True
+            size = '%d MiB' % disk.get_size()
+            if disk.model and disk.model.group:
+                g = disk.model.group
+                if g.per_size:
+                    size = '%.1f %s' % (float(disk.get_size())/(g.size_modifier or 1),
+                                      g.size_unit or '')
             yield {
                 'label': disk.label,
                 'model': disk.model,
-                'serial': disk.sn,
+                'serial': disk.sn or '',
+                'size': size,
+                'price': disk.get_price(),
             }
     for mount in dev.disksharemount_set.all():
         total = mount.get_total_mounts()
