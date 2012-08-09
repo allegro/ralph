@@ -11,6 +11,7 @@ from __future__ import unicode_literals
 
 import os
 import ssh as paramiko
+import logging
 
 from django.conf import settings
 from lck.django.common import nested_commit_on_success
@@ -19,7 +20,10 @@ from ralph.util import network
 from ralph.util import plugin, Eth
 from ralph.discovery.models import (DeviceType, Device, IPAddress, Software,
         DiskShare, DiskShareMount, ComponentModel, Processor, ComponentType)
-from ralph.discovery.hardware import normalize_wwn
+from ralph.discovery.hardware import get_disk_shares
+
+
+logger = logging.getLogger(__name__)
 
 
 class Error(Exception):
@@ -33,38 +37,6 @@ def _connect_ssh(ip, username='root', password=''):
     return network.connect_ssh(ip, 'root', settings.SSH_PASSWORD)
 
 
-def _get_disk_shares(ssh):
-    stdin, stdout, stderr = ssh.exec_command("multipath -l")
-    pvs = {}
-    for line in stdout.readlines():
-        line = line.strip()
-        if not line.startswith('mpath'):
-            continue
-        try:
-            path, wwn, pv, model = line.strip().split(None, 3)
-        except ValueError:
-            wwn, pv, model = line.strip().split(None, 2)
-            path = None
-        wwn  = normalize_wwn(wwn.strip('()'))
-        pvs['/dev/%s' % pv] = wwn
-        if path:
-            pvs['/dev/mapper/%s' % path] = wwn
-    stdin, stdout, stderr = ssh.exec_command("pvs --noheadings --units M")
-    vgs = {}
-    for line in stdout.readlines():
-        pv, vg, fmt, attr, psize, pfree = line.split(None, 5)
-        vgs[vg] = pv
-    stdin, stdout, stderr = ssh.exec_command("lvs --noheadings --units M")
-    storage = {}
-    for line in stdout.readlines():
-        lv, vg, attr, size, rest = (line + ' x').strip().split(None, 4)
-        size = int(float(size.strip('M')))
-        try:
-            wwn = pvs[vgs[vg]]
-        except KeyError:
-            continue
-        storage[lv] = (wwn, size)
-    return storage
 
 def _get_local_disk_size(ssh, disk):
     path = os.path.join('/usr/lib/vz/images', disk)
@@ -157,7 +129,7 @@ def _add_virtual_machine(ssh, vmid, parent, master, storage):
     return dev
 
 def _add_virtual_machines(ssh, parent, master):
-    storage = _get_disk_shares(ssh)
+    storage = get_disk_shares(ssh)
     stdin, stdout, stderr = ssh.exec_command("qm list")
     dev_ids = []
     for line in stdout:
@@ -173,7 +145,9 @@ def _add_virtual_machines(ssh, parent, master):
             continue
         dev_ids.append(dev.id)
     for child in parent.child_set.exclude(id__in=dev_ids):
-        child.delete()
+        logger.info('Deleting virtual server %r that no longer exists.' % child)
+        child.deleted = True
+        child.save()
 
 def _get_master(ssh, data=None):
     if data is None:
