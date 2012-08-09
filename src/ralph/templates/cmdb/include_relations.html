@@ -2,18 +2,18 @@
     <div class='alert alert-info' >{{ label }} </div>
     <table class='table table-striped table-bordered table-condensed'>
         {% if relations %}
-        <tr>
-            <th> CI UID </th>
-            <th> CI Name </th>
-            <th> CI Type </th>
-            <th sytle='width:10px'> Edit </th>
+            <tr>
+                <th> CI UID </th>
+                <th> CI Name </th>
+                <th> CI Type </th>
+                <th sytle='width:10px'> Edit </th>
 
                 {% if editable %}
                     <th> Operations </th>
                 {% endif %}
             </tr>
             {% else %}
-            No relations.
+                No relations.
             {% endif %}
         {% for rel in relations %}
         <tr>
