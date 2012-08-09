@@ -123,20 +123,7 @@
          <span><h3>Custom Attributes</h3> </span>
             {% include 'cmdb/include_attributes.html' %}
             <hr> 
-
-            {% if not iframe and ci and ci.content_object and ci.content_type.name == 'device' %}
-                <a href='#asset_info' data-toggle="modal" class='btn btn-success btn-large' href='#'><i class='icon-white icon-eye-open'></i> Asset details</a>
             {% endif %}
-    {% endif %}
-
-    {% if editable %}
-        <button class="btn btn-primary" type="submit">{% icon 'fugue-tick' %}&nbsp;Save</button>
-        <button class="btn" type="reset">{% icon 'fugue-broom' %}&nbsp;Clean</button>
-        {% else %}
-        {% if not iframe %}
-            <a class='btn btn-info btn-large' href='/cmdb/ci/edit/{{ ci_id}}'> Edit this CI </a>
-        {% endif %}
-    {% endif %}
 
 </div> <!-- span6 !-->
 
@@ -258,7 +245,6 @@
     </div> <!-- tab change !-->
 {% endif %}
 
-        
 </div> <!-- tab-contents !-->
 
 {% if tabs_left %}
@@ -268,20 +254,20 @@
 </form>
 
 <hr>
-{% if ci and ci.content_object and ci.content_type.name == 'device' %}
-    <div class='modal hide fade' id='asset_info' style='width: 1040px' >
-        <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">×</button>
-                    <h3>Asset information</h3>
-                </div>
-        <div class='modal-body' style='width:1040px' >
-            <iframe src='/cmdb/ci/ralph_view/{{ci_id}}' style='border: 0; width:1040px;height:800px'> 
-            </iframe>
-        </div>
-        <div class="modal-footer">
-            <a href="#" class="btn" data-dismiss="modal">Close</a>
-        </div>
-    </div>
-{% endif %}
+
+    {% if show_in_ralph %}
+        <a class='btn btn-info btn-large' href='{{ ralph_ci_link }}'> Asset details </a>
+    {% endif %}<br/>
+
+    {% if editable %}
+        <button class="btn btn-primary" type="submit">{% icon 'fugue-tick' %}&nbsp;Save</button>
+        <button class="btn" type="reset">{% icon 'fugue-broom' %}&nbsp;Clean</button>
+        {% else %}
+        {% if not iframe %}
+            <a class='btn btn-info btn-large' href='/cmdb/ci/edit/{{ ci_id}}'> Edit this CI </a>
+        {% endif %}
+    {% endif %}
+
+
 
 {% endblock %}
