@@ -6,6 +6,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import datetime
+
+from django.db.models import Q
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
@@ -14,14 +17,13 @@ from django.http import HttpResponseForbidden
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 from lck.django.common import nested_commit_on_success
-import datetime
+
 from ralph.cmdb.forms import CISearchForm, CIEditForm, CIViewForm, CIRelationEditForm
-import ralph.cmdb.models  as db
 from ralph.cmdb.customfields import EditAttributeFormFactory
 from ralph.account.models import Perm
 from ralph.ui.views.common import Base
 from ralph.util.presentation import get_device_icon, get_venture_icon, get_network_icon
-from ralph.ui.views.common import Info
+import ralph.cmdb.models  as db
 from bob.menu import MenuItem, MenuHeader
 
 ROWS_PER_PAGE=20
@@ -680,7 +682,8 @@ class Search(BaseCMDBView):
         cis = db.CI.objects.all()
         if values:
             if values.get('uid'):
-                cis = cis.filter(name__icontains=values.get('uid'))
+                cis = cis.filter(Q(name__icontains=values.get('uid'))
+                        | Q(uid=values.get('uid')))
             if values.get('state'):
                 cis = cis.filter(state=values.get('state'))
             if values.get('status'):
@@ -694,7 +697,6 @@ class Search(BaseCMDBView):
         sort = self.request.GET.get('sort', 'name')
         if sort:
             cis = cis.order_by(sort)
-        #only top level CI's, not optimized
         if values.get('top_level'):
             cis = cis.filter(child__parent=None)
         page = self.request.GET.get('page') or 1
