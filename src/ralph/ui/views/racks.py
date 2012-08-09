@@ -241,14 +241,14 @@ class RacksRack(Racks, Base):
                             pass
                         else:
                             size = 1
-                slots[slot][0] = size
-                slots[slot][1].append(dev)
-                for i in xrange(slot + 1, slot + size):
+                slots[slot + size - 1][0] = size
+                slots[slot + size - 1][1].append(dev)
+                for i in xrange(slot, slot + size - 1):
                     slots[i][0] = -1
         else:
             return [(0, 1, rack.child_set.all())]
         def iter_slots():
-            for slot in range(0, max_slots+1):
+            for slot in reversed(range(0, max_slots+1)):
                 size, devs = slots[slot]
                 yield slot, size, devs
         return iter_slots
