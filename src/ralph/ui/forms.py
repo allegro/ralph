@@ -104,7 +104,7 @@ class DeviceWidget(forms.Widget):
 class RackWidget(forms.Widget):
     def render(self, name, value, attrs=None, choices=()):
         try:
-            dev = Device.objects.get(sn=value.lower())
+            dev = Device.objects.get(sn=(value or '').lower())
         except Device.DoesNotExist:
             output = [
                 '<input type="hidden" name="%s" value="%s">' % (name, value),
