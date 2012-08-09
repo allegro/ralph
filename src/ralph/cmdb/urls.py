@@ -11,7 +11,7 @@ from django.contrib.auth.decorators import login_required
 
 from ralph.cmdb.views import (Index, Search, Edit, Add, View,
         ViewIframe, EditRelation, LastChanges, AddRelation,
-        RalphView, ViewJira, ViewUnknown)
+        ViewJira, ViewUnknown)
 from ralph.cmdb.views_changes import  (Changes, Problems, Incidents,
         Change, Dashboard, Reports, DashboardDetails)
 from django.conf.urls.defaults import include
@@ -26,7 +26,6 @@ urlpatterns = patterns('',
     (r'^ci/view_jira/(?P<ci_uid>.*)$', login_required(ViewJira.as_view())),
     (r'^ci/jira_ci_unknown/$', login_required(ViewUnknown.as_view())),
     (r'^ci/edit/(?P<ci_id>\w+)$', login_required(Edit.as_view())),
-    (r'^ci/ralph_view/(?P<ci_id>\w+)$', login_required(RalphView.as_view())),
     (r'^ci/get_last_changes/(?P<ci_id>.*)$', login_required(LastChanges.as_view())),
     (r'^relation/add/(?P<ci_id>\w+)$', login_required(AddRelation.as_view())),
     (r'^relation/edit/(?P<relation_id>\w+)$', login_required(EditRelation.as_view())),
