@@ -145,6 +145,7 @@ class BaseCMDBView(Base):
             'span_number': '6',
             'ZABBIX_URL': settings.ZABBIX_URL,
             'SO_URL': settings.SO_URL,
+            'tabs_left': False
         })
         return ret
 
@@ -175,17 +176,25 @@ class EditRelation(BaseCMDBView):
         })
         return ret
 
+
+
     def get(self, *args, **kwargs):
         if not  self.get_permissions_dict().get('edit_configuration_item_relations_perm',
                 False):
             return HttpResponseForbidden()
         rel_id = kwargs.get('relation_id')
+        ci_id = kwargs.get('ci_id')
+        if ci_id:
+            # remove relation
+            db.CIRelation.objects.get(id=rel_id).delete()
+            return HttpResponseRedirect('/cmdb/ci/edit/%s' % ci_id)
+
         rel = get_object_or_404(db.CIRelation, id=rel_id)
         self.form_options['instance'] = rel
         self.form = self.Form(**self.form_options)
         self.rel_parent = rel.parent
-        self.rel_child= rel.child
-        self.rel_type= rel.type
+        self.rel_child = rel.child
+        self.rel_type = rel.type
         self.rel = rel
         return super(EditRelation, self).get(*args, **kwargs)
 
@@ -199,9 +208,9 @@ class EditRelation(BaseCMDBView):
         if self.Form:
             self.form = self.Form(self.request.POST, **self.form_options)
             if self.form.is_valid():
-                model = self.form.save(commit=True)
-                messages.success(self.request, _("Changes saved."))
-                #return HttpResponseRedirect('/cmdb/edit/'+str(model.id))
+                ci_id = self.kwargs.get('ci_id')
+                self.form.save(commit=True)
+                return HttpResponseRedirect('/cmdb/edit/%s' % ci_id)
             else:
                 messages.error(self.request, _("Correct the errors."))
         return super(EditRelation, self).get(*args, **kwargs)
@@ -263,8 +272,9 @@ class AddRelation(BaseCMDBView):
         if self.Form:
             self.form = self.Form(self.request.POST, **self.form_options)
             if self.form.is_valid():
-                model = self.form.save(commit=True)
-                messages.success(self.request, _("Changes saved."))
+                ci_id = self.kwargs.get('ci_id')
+                self.form.save(commit=True)
+                return HttpResponseRedirect('/cmdb/ci/edit/%s' % ci_id)
             else:
                 messages.error(self.request, _("Correct the errors."))
         return super(AddRelation, self).get(*args, **kwargs)
