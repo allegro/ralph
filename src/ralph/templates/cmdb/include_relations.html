@@ -52,7 +52,11 @@
                 -
                 {% else %}
                     <a target="{{target}}" href="/cmdb/relation/edit/{{rel.0.id}}"> Edit  </a>
-                    <!-- <a href="/cmdb/relation/remove/{{rel.0.id}}"> Remove </a> !-->
+                    <!-- not a rocket science, but it does the job .--> 
+                    <a 
+                        onclick="if (confirm('Remove relation?')){ location.href='/cmdb/relation/delete/{{rel.0.id}}/{{ci.id}}' }"
+                        href="#"> Remove
+                    </a>
                 {% endif %}
             </td>
             {% endif %}
