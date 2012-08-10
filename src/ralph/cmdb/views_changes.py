@@ -97,7 +97,7 @@ class Changes(ChangesBase, PaginatedView):
         cursor = connection.cursor()
         cursor.execute('''
             SELECT
-            COUNT(*) as cnt,type,priority,MONTH(ch.time) as date
+            COUNT(*) as cnt, type, priority, MONTH(ch.time) as date
             FROM cmdb_ci cc
             INNER JOIN cmdb_cichange ch ON (cc.id = ch.ci_id)
             WHERE YEAR(ch.time)=YEAR(NOW())
