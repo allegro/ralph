@@ -24,9 +24,14 @@
             <td><a href="https://{{ item.address }}">{{ item.address }}</a></td>
             <td>{{ item.last_seen|date:'Y-m-d H:i' }}</td>
             {% if user.is_staff %}
-            <td><a href="/admin/discovery/ipaddress/{{ item.id }}/">
+            <td>
+                <a href="/admin/discovery/ipaddress/{{ item.id }}/">
                 {% icon 'fugue-toolbox--pencil' %} Edit
-            </a></td>
+                </a>
+                <a href="/admin/discovery/ipaddress/{{ item.id }}/delete">
+                {% icon 'fugue-skull' %} Delete
+                </a>
+            </td>
             {% endif %}
         </tr>
         {% endfor %}
