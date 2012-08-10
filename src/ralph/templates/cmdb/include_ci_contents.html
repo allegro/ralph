@@ -1,5 +1,12 @@
 {% block contentarea %}
+<style type="text/css" media="screen">
+    /* Set min height for tabs, for not looking stupid with bottom buttons*/
 
+    .tab-content > .tab-pane, .pill-content > .pill-pane {
+        min-height: 300px;
+    }
+
+</style>
 {% load icons %}
 {% load query %}
 
@@ -26,8 +33,8 @@
   {% endif %}
 
   {% if ci_id %}
-      <ul class="nav nav-pills">
-                    {% if not tabs_left %}
+      <ul class="nav nav-tabs">
+                    {% if iframe  %}
                         <li class='dropdown'>
                         <a href='#' class='dropdown-toggle' data-toggle='dropdown'> Show all Ci info<b class='caret'> </b> </a>
                         <ul class='dropdown-menu'>
@@ -68,7 +75,7 @@
                         <li><a href="#so" data-toggle="tab">{% if so_events %} {% icon 'fugue-new' %} {% endif %} SO Events</a></li>
                     {% endif %}
 
-          {% if not tabs_left %}
+          {% if not iframe %}
                 </ul>
                 </li>
           {% endif %}
@@ -123,9 +130,30 @@
          <span><h3>Custom Attributes</h3> </span>
             {% include 'cmdb/include_attributes.html' %}
             <hr> 
+    {% endif %}
+
+   <div class='row'>
+    {% if show_in_ralph %}
+        <div class='span2'>
+                <a class='btn btn-info btn-large' href='{{ ralph_ci_link }}'> Asset details </a>
+        </div>
+    {% endif %}
+    <div class='span2'>
+        {% if editable %}
+            <button class="btn btn-primary" type="submit">{% icon 'fugue-tick' %}&nbsp;Save</button>
+            <button class="btn" type="reset">{% icon 'fugue-broom' %}&nbsp;Clean</button>
+        {% else %}
+            {% if not iframe %}
+                <a class='btn btn-info btn-large' href='/cmdb/ci/edit/{{ ci_id}}'> Edit this CI </a>
             {% endif %}
+        {% endif %}
+    </div>
+</div>
+
 
 </div> <!-- span6 !-->
+
+
 
 </div> <!-- main !-->
 
@@ -179,9 +207,9 @@
                        {% if editable and edit_configuration_item_relations_perm and ci_id %} 
                        <p>
                                 <a class='btn btn-primary'
-                                    href="/cmdb/relation/add/{{ ci_id }}?rel_child={{ ci_id }}"> 
+                                    href="/cmdb/relation/add/{{ ci_id }}?rel_parent={{ ci_id }}"> 
                                    <i class='icon-edit icon-white'></i> 
-                                   Add new parent relation
+                                   Add new child relation
                                </a> 
                        </p>
                        {% endif %}
@@ -195,9 +223,9 @@
                        {% if editable and edit_configuration_item_relations_perm and ci_id %} 
                        <p>
                                 <a class='btn btn-primary'
-                                    href="/cmdb/relation/add/{{ ci_id }}?rel_parent={{ ci_id }}"> 
+                                    href="/cmdb/relation/add/{{ ci_id }}?rel_child={{ ci_id }}"> 
                                    <i class='icon-edit icon-white'></i> 
-                                   Add new child relation
+                                   Add new parent relation
                                </a> 
                        </p>
                        {% endif %}
@@ -233,7 +261,6 @@
         </div>
         {% endif %}
 
-
 {% if read_configuration_item_info_git_perm  %}
     <div class="tab-pane" id="git">
         <div class='span12'>
@@ -251,23 +278,11 @@
     </div> <!-- tabbable tab-left !-->
 {% endif %}
 
-</form>
+ </form>
 
 <hr>
-
-    {% if show_in_ralph %}
-        <a class='btn btn-info btn-large' href='{{ ralph_ci_link }}'> Asset details </a>
-    {% endif %}<br/>
-
-    {% if editable %}
-        <button class="btn btn-primary" type="submit">{% icon 'fugue-tick' %}&nbsp;Save</button>
-        <button class="btn" type="reset">{% icon 'fugue-broom' %}&nbsp;Clean</button>
-        {% else %}
-        {% if not iframe %}
-            <a class='btn btn-info btn-large' href='/cmdb/ci/edit/{{ ci_id}}'> Edit this CI </a>
-        {% endif %}
-    {% endif %}
-
+<div class='span6'>
+</div>
 
 
 {% endblock %}
