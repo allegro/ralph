@@ -24,8 +24,8 @@
 
        {% for data in statistics %}
          <tr>
-             <td>{{ data.1 }}  </td>
-             <td>{% if data.0 %} {{ data.0 }} {% else %} All {% endif %}  </td>
+             <td>{{ data.0.name }}  </td>
+             <td>{{ data.0.count }} </td>
              <td><a href='ci?venture_id={{data.1}}'> View </a>   </td>
          </tr>
        {% endfor %}
