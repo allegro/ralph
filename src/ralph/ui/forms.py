@@ -55,11 +55,15 @@ class ReadOnlyWidget(forms.Widget):
 
 class DeviceModelWidget(forms.Widget):
     def render(self, name, value, attrs=None, choices=()):
-        try:
-            dm = DeviceModel.objects.get(id=value)
-        except DeviceModel.DoesNotExist:
+        dm = None
+        if value:
+            try:
+                dm = DeviceModel.objects.get(id=value)
+            except DeviceModel.DoesNotExist:
+                pass
+        if dm is None:
             output = [
-                '<input type="hidden" name="%s" value="%s">' % (name, value),
+                '<input type="hidden" name="%s" value="">' % (name,),
                 '<div class="input uneditable-input">',
                 '<i class="fugue-icon %s"></i>&nbsp;%s</a>' % (
                     presentation.get_device_model_icon(None), 'None'),
@@ -79,11 +83,15 @@ class DeviceModelWidget(forms.Widget):
 
 class DeviceWidget(forms.Widget):
     def render(self, name, value, attrs=None, choices=()):
-        try:
-            dev = Device.objects.get(id=value)
-        except Device.DoesNotExist:
+        dev = None
+        if value:
+            try:
+                dev = Device.objects.get(id=value)
+            except Device.DoesNotExist:
+                pass
+        if dev is None:
             output = [
-                '<input type="hidden" name="%s" value="%s">' % (name, value),
+                '<input type="hidden" name="%s" value="">' % (name,),
                 '<div class="input uneditable-input">',
                 '<i class="fugue-icon %s"></i>&nbsp;%s</a>' % (
                     presentation.get_device_icon(None), 'None'),
@@ -103,11 +111,15 @@ class DeviceWidget(forms.Widget):
 
 class RackWidget(forms.Widget):
     def render(self, name, value, attrs=None, choices=()):
-        try:
-            dev = Device.objects.get(sn=(value or '').lower())
-        except Device.DoesNotExist:
+        dev = None
+        if value:
+            try:
+                dev = Device.objects.get(sn=(value or '').lower())
+            except Device.DoesNotExist:
+                pass
+        if dev is None:
             output = [
-                '<input type="hidden" name="%s" value="%s">' % (name, value),
+                '<input type="hidden" name="%s" value="">' % (name,),
                 '<div class="input uneditable-input">',
                 '<i class="fugue-icon %s"></i>&nbsp;%s</a>' % (
                     presentation.get_device_icon(None), 'None'),
