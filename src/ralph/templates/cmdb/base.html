@@ -3,25 +3,14 @@
 {% load icons %}
 
 {% block scripts %}
-    <!-- special isolated jquery for django admin widgets use. !-->
-    <script src="{{ STATIC_URL }}jquery-1.7.2.min.js"></script>
-    <script type="text/javascript" src="/static/admin/js/jquery.init.js"></script>
-
     <!-- from now, include parent jquery version for normal use. !-->
     {{ block.super }}
 
-    <script src="{{ STATIC_URL }}cmdb/common.js"></script>
-    <script src="{{ STATIC_URL }}jquery.flot.js"></script>
-
-    <!-- django admin widgets javascripts !-->
-    <script type="text/javascript" src="/static/admin/js/core.js"></script>
-    <script type="text/javascript" src="/static/admin/js/getElementsBySelector.js"></script>
-    <script type="text/javascript" src="/static/admin/js/actions.js"></script>
-    <script type="text/javascript" src="/static/admin/js/SelectBox.js"></script>
-    <script type="text/javascript" src="/static/admin/js/SelectFilter2.js"></script>
-    <script type="text/javascript" src="{{ STATIC_URL }}filtered_widget/jsi18n.js"></script>
     <script type="text/javascript" charset="utf-8" src="{{ STATIC_URL }}bootstrap/js/bootstrap-dropdown.js"> </script>
     <script type="text/javascript" charset="utf-8" src="{{ STATIC_URL }}bootstrap-datepicker.js"> </script>
+
+    <script src="{{ STATIC_URL }}cmdb/common.js"></script>
+    <script src="{{ STATIC_URL }}jquery.flot.js"></script>
 
     <!-- additional scripts !-->
     <script src="{{ STATIC_URL }}ui/main.js"></script>
@@ -42,7 +31,22 @@
 {% endblock %}
 
 {% block extra_headers %}
-    <!-- django admin wigets css !-->
+    <!-- This special resources are required for django filtered multiselect widget !-->
+    <!-- They must load before rendering admin widgets !-->
+    <!-- first, load jquery. for django admin widgets use. !-->
+    <script src="{{ STATIC_URL }}jquery-1.7.2.min.js"></script>
+    <!-- isolate jquery moving to own 'namespace' !-->
+    <script type="text/javascript" src="/static/admin/js/jquery.init.js"></script>
+
+    <!-- now load django admin widgets javascripts !-->
+    <script type="text/javascript" src="/static/admin/js/core.js"></script>
+    <script type="text/javascript" src="/static/admin/js/getElementsBySelector.js"></script>
+    <script type="text/javascript" src="/static/admin/js/actions.js"></script>
+    <script type="text/javascript" src="/static/admin/js/SelectBox.js"></script>
+    <script type="text/javascript" src="/static/admin/js/SelectFilter2.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}filtered_widget/jsi18n.js"></script>
+
+     <!-- django admin wigets css !-->
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}/filtered_widget/style.css" />
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}/ui/datepicker.css" />
 {% endblock %}
