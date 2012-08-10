@@ -550,8 +550,8 @@ class Edit(BaseCMDBView):
             for report in reps:
                 puppet_logs = db.PuppetLog.objects.filter(cichange=report).all()
                 self.puppet_reports.append(dict(report=report, logs=puppet_logs))
-            #self.last_changes = self.get_last_changes(self.ci)
-            self.zabbix_triggers = db.CIChangeZabbixTrigger.objects.filter(ci=self.ci)
+            self.zabbix_triggers = db.CIChangeZabbixTrigger.objects.filter(
+                    ci=self.ci).order_by('-lastchange')
             self.so_events = db.CIChange.objects.filter(
                     type=db.CI_CHANGE_TYPES.STATUSOFFICE.id,
                     ci=self.ci).all()
