@@ -103,12 +103,12 @@ class EditAttributeFormFactory(object):
             elif field.attribute_type == db.CI_ATTRIBUTE_TYPES.CHOICE.id:
                 field_type = 'choice'
                 form_field = forms.ChoiceField(
-                        choices = [(x.split('.')[0],x.split('.')[-1]) for x in field.choices.split('|')],
+                        choices = [(x.split('.')[0], x.split('.')[-1]) for x in field.choices.split('|')],
                 required = False,
                 label = field.name )
             #fixme - field_type do integera
-            form_fields['attribute_%s_%s' % (field_type,field.id)] = form_field
-        self.form = type(b'FieldForm', (CustomFieldForm,), {
+            form_fields['attribute_%s_%s' % (field_type, field.id)] = form_field
+        self.form = type(b'FieldForm', (CustomFieldForm, ), {
             b'base_fields': form_fields,
             b'icons' : {},
             })
