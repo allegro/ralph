@@ -124,9 +124,11 @@ def _add_virtual_machine(ssh, vmid, parent, master, storage):
         mount.size = size
         mount.volume = vol
         mount.save()
-    for ds in dev.disksharemount_set.filter(server=parent).exclude(share__wwn__in=wwns):
+    for ds in dev.disksharemount_set.filter(
+            server=parent).exclude(share__wwn__in=wwns):
         ds.delete()
-    for ds in dev.disksharemount_set.filter(is_virtual=True).exclude(share__wwn__in=wwns):
+    for ds in dev.disksharemount_set.filter(
+            is_virtual=True).exclude(share__wwn__in=wwns):
         ds.delete()
 
     cpu_model, cpu_model_created = ComponentModel.concurrent_get_or_create(
@@ -136,7 +138,8 @@ def _add_virtual_machine(ssh, vmid, parent, master, storage):
         cpu_model.name = 'QEMU Virtual CPU version 0.12.4'
         cpu_model.save()
     for i in range(cpu_count):
-        cpu, cpu_created = Processor.concurrent_get_or_create(device=dev, index=i+1)
+        cpu, cpu_created = Processor.concurrent_get_or_create(device=dev,
+                                                              index=i+1)
         if cpu_created:
             cpu.label = 'CPU {}'.format(i + 1)
             cpu.model = cpu_model
@@ -154,7 +157,8 @@ def _add_virtual_machines(ssh, parent, master):
         line = line.strip()
         if line.startswith('VMID'):
             continue
-        vmid, name, status, mem, bootdisk, pid = (v.strip() for v in line.split())
+        vmid, name, status, mem, bootdisk, pid = (v.strip() for
+                v in line.split())
         if status != 'running':
             continue
         vmid = int(vmid)
