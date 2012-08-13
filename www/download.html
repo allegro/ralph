@@ -9,17 +9,32 @@
 {% block content %}
     <div class="container">
         <div class="page-header">
+            <h1>Ralph <small>Version 1.0.5</small></h1>
+        </div>
+        <div class="row">
+            <div class="span8">
+                <p>This is a bugfix release. Includes fixes in CMDB, discovery and UI code, as well as the possibility to specify extra queries for OpenStack. Local storage costs are now also counted for Proxmox virtual machines.</p>
+                <p>Read the <a href="doc/{{ pathto('installation') }}">installation instructions</a> in the documentation for help with installing it.</p>
+                <p>A detailed <a href="doc/{{ pathto('changes') }}">change log</a> is available in the documentation.</p>
+            </div>
+            <div class="span4">
+                <p><a href="https://github.com/allegro/ralph/zipball/1.0.5" class="btn btn-warning btn-large">
+                    <i class="icon-download-alt icon-white"></i>
+                    Download version 1.0.5</a></p>
+            </div>
+        </div>
+
+
+        <div class="page-header">
             <h1>Ralph <small>Version 1.0.4</small></h1>
         </div>
         <div class="row">
             <div class="span8">
                 <p>This version has report and rack views, as well as some improvements in the user interface and important bug fixes in the discovery plugins. You can now delete from the database old devices that are no longer needed.</p>
-                <p>Read the <a href="doc/{{ pathto('installation') }}">installation instructions</a> in the documentation for help with installing it.</p>
-                <p>A detailed <a href="doc/{{ pathto('changes') }}">change log</a> is available in the documentation.</p>
             </div>
             <div class="span4">
-                <p><a href="https://github.com/allegro/ralph/zipball/1.0.4" class="btn btn-warning btn-large">
-                    <i class="icon-download-alt icon-white"></i>
+                <p><a href="https://github.com/allegro/ralph/zipball/1.0.4" class="btn">
+                    <i class="icon-download-alt"></i>
                     Download version 1.0.4</a></p>
             </div>
         </div>
