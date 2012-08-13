@@ -4,6 +4,9 @@ Change Log
 1.0.5
 ~~~~~
 
+* OpenStack plugin now accepts OPENSTACK_EXTRA_QUERIES setting, containing a
+  list of tuples in the form (url, query) of additional data sources to check.
+
 * make the discovery plugins use soft delete
 
 * the proxmox discovery plugin now counts local storage used
