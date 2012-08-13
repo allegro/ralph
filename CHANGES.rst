@@ -17,6 +17,8 @@ Change Log
 
 * bugfixes in the ui code
 
+* CMDB relations removing enabled, faster git handling, bugfixes
+
 
 
 1.0.4
