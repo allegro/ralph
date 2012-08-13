@@ -25,3 +25,16 @@ def key(d, key_name):
 @register.filter
 def field_value(f):
     return f.field.to_python(f.value())
+
+@register.filter
+def range(n, s=0):
+    return xrange(s, s + n)
+
+@register.filter
+def order_by(query, by):
+    return query.order_by(by)
+
+
+@register.filter
+def chassis_order(query):
+    return query.order_by('model__type', 'chassis_position', 'position')

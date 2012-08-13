@@ -279,6 +279,10 @@ ZABBIX_PASSWORD = None
 ZABBIX_DEFAULT_GROUP = 'test'
 BUGTRACKER_URL = 'https://github.com/allegro/ralph/issues'
 SO_URL = None
+OPENSTACK_URL = None
+OPENSTACK_USER = None
+OPENSTACK_PASS = None
+OPENSTACK_EXTRA_QUERIES = []
 # </template>
 
 #
