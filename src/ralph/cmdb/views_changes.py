@@ -8,6 +8,7 @@ from __future__ import unicode_literals
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.db import connection
+from django.db.models import Q
 from django.http import HttpResponse
 from django.utils import simplejson
 from django.db.models import Count
@@ -90,14 +91,15 @@ class Changes(ChangesBase, PaginatedView):
         if values.get('priority'):
             changes = changes.filter(priority__icontains=values.get('priority'))
         if values.get('uid'):
-            changes = changes.filter(ci__name=values.get('uid'))
+            changes = changes.filter(Q(ci__name__icontains=values.get('uid'))
+            | Q(ci__id=values.get('uid')))
         changes = changes.order_by('-time').all()
         self.paginate(changes)
         self.changes = self.page_contents
         cursor = connection.cursor()
         cursor.execute('''
             SELECT
-            COUNT(*) as cnt,type,priority,MONTH(ch.time) as date
+            COUNT(*) as cnt, type, priority, MONTH(ch.time) as date
             FROM cmdb_ci cc
             INNER JOIN cmdb_cichange ch ON (cc.id = ch.ci_id)
             WHERE YEAR(ch.time)=YEAR(NOW())
@@ -195,7 +197,7 @@ class DashboardDetails(ChangesBase, PaginatedView):
             self.data = []
             rows = cursor.fetchall()
             for r in rows:
-                venture=None
+                venture = None
                 count = r[0]
                 name = r[1]
                 ci_id = r[2]
@@ -205,7 +207,7 @@ class DashboardDetails(ChangesBase, PaginatedView):
                             getattr(ci.content_object, 'venture', None):
                         venture=db.CI.get_by_content_object(ci.content_object.venture)
                 if venture_id:
-                    if venture and venture.name == venture_id:
+                    if venture and venture.id == int(venture_id):
                         self.data.append(dict(
                             count=count,
                             name=name,
@@ -238,10 +240,20 @@ class DashboardDetails(ChangesBase, PaginatedView):
                     if ci and ci_id and ci.content_object and \
                             getattr(ci.content_object, 'venture', None):
                         venture = db.CI.get_by_content_object(ci.content_object.venture)
-                if not self.data_dict.get(venture):
-                    self.data_dict[venture] = count
+                if venture:
+                    if not self.data_dict.get(venture):
+                        self.data_dict[venture.id] = dict(count=count,
+                                name=venture.name)
+                    else:
+                        self.data_dict[venture.id]['count'] += count
                 else:
-                    self.data_dict[venture] += count
+                    if not self.data_dict.get(-1):
+                        self.data_dict[-1] = dict(count=count,
+                                name='Unassigned')
+                    else:
+                        self.data_dict[-1]['count']+=count
+
+
             self.data = [(self.data_dict[x], x) for x in self.data_dict]
             self.data = sorted(self.data, reverse=True)
             self.paginate(self.data)

@@ -34,8 +34,8 @@ class CISearchForm(forms.Form):
     )
 
 class CIChangeSearchForm(forms.Form):
-    type = forms.ChoiceField(choices=[['','------']] + db.CI_CHANGE_TYPES())
-    priority = forms.ChoiceField(choices = [['','------']] + db.CI_CHANGE_PRIORITY_TYPES() )
+    type = forms.ChoiceField(choices=[['', '------']] + db.CI_CHANGE_TYPES())
+    priority = forms.ChoiceField(choices = [['', '------']] + db.CI_CHANGE_PRIORITY_TYPES() )
     uid = forms.CharField(label = 'CI name', max_length=100)
 
 class CIReportsParamsForm(forms.Form):
@@ -76,11 +76,11 @@ class CIEditForm(forms.ModelForm):
         super(CIEditForm, self).__init__(*args, **kwargs)
         if self.data:
             self.data = self.data.copy()
-            if self.initial.get('uid',None):
+            if self.initial.get('uid', None):
                 self.data['uid'] = self.initial['uid']
-            if self.initial.get('id',None):
+            if self.initial.get('id', None):
                 self.data['id'] = self.initial['id']
-            if self.initial.get('name',None):
+            if self.initial.get('name', None):
                 self.data['name'] = self.initial['name']
 
 
@@ -137,8 +137,8 @@ class CIRelationEditForm(forms.ModelForm):
 
     icons={
     }
-    parent = make_ajax_field(models.CIRelation,'parent','ci',help_text=None)
-    child = make_ajax_field(models.CIRelation,'child','ci',help_text=None)
+    parent = make_ajax_field(models.CIRelation, 'parent', 'ci', help_text=None)
+    child = make_ajax_field(models.CIRelation, 'child', 'ci', help_text=None)
 
     def __init__(self, *args, **kwargs):
         super(CIRelationEditForm, self).__init__(*args, **kwargs)

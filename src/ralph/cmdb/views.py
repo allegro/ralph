@@ -6,6 +6,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import datetime
+
+from django.db.models import Q
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
@@ -14,14 +17,13 @@ from django.http import HttpResponseForbidden
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 from lck.django.common import nested_commit_on_success
-import datetime
+
 from ralph.cmdb.forms import CISearchForm, CIEditForm, CIViewForm, CIRelationEditForm
-import ralph.cmdb.models  as db
 from ralph.cmdb.customfields import EditAttributeFormFactory
 from ralph.account.models import Perm
 from ralph.ui.views.common import Base
 from ralph.util.presentation import get_device_icon, get_venture_icon, get_network_icon
-from ralph.ui.views.common import Info
+import ralph.cmdb.models  as db
 from bob.menu import MenuItem, MenuHeader
 
 ROWS_PER_PAGE=20
@@ -143,6 +145,7 @@ class BaseCMDBView(Base):
             'span_number': '6',
             'ZABBIX_URL': settings.ZABBIX_URL,
             'SO_URL': settings.SO_URL,
+            'tabs_left': False
         })
         return ret
 
@@ -178,12 +181,18 @@ class EditRelation(BaseCMDBView):
                 False):
             return HttpResponseForbidden()
         rel_id = kwargs.get('relation_id')
+        ci_id = kwargs.get('ci_id')
+        if ci_id:
+            # remove relation
+            db.CIRelation.objects.get(id=rel_id).delete()
+            return HttpResponseRedirect('/cmdb/ci/edit/%s' % ci_id)
+
         rel = get_object_or_404(db.CIRelation, id=rel_id)
         self.form_options['instance'] = rel
         self.form = self.Form(**self.form_options)
         self.rel_parent = rel.parent
-        self.rel_child= rel.child
-        self.rel_type= rel.type
+        self.rel_child = rel.child
+        self.rel_type = rel.type
         self.rel = rel
         return super(EditRelation, self).get(*args, **kwargs)
 
@@ -197,9 +206,9 @@ class EditRelation(BaseCMDBView):
         if self.Form:
             self.form = self.Form(self.request.POST, **self.form_options)
             if self.form.is_valid():
-                model = self.form.save(commit=True)
-                messages.success(self.request, _("Changes saved."))
-                #return HttpResponseRedirect('/cmdb/edit/'+str(model.id))
+                ci_id = self.kwargs.get('ci_id')
+                self.form.save()
+                return HttpResponseRedirect('/cmdb/edit/%s' % ci_id)
             else:
                 messages.error(self.request, _("Correct the errors."))
         return super(EditRelation, self).get(*args, **kwargs)
@@ -261,8 +270,9 @@ class AddRelation(BaseCMDBView):
         if self.Form:
             self.form = self.Form(self.request.POST, **self.form_options)
             if self.form.is_valid():
-                model = self.form.save(commit=True)
-                messages.success(self.request, _("Changes saved."))
+                ci_id = self.kwargs.get('ci_id')
+                self.form.save()
+                return HttpResponseRedirect('/cmdb/ci/edit/%s' % ci_id)
             else:
                 messages.error(self.request, _("Correct the errors."))
         return super(AddRelation, self).get(*args, **kwargs)
@@ -294,7 +304,7 @@ class Add(BaseCMDBView):
         if self.Form:
             self.form = self.Form(self.request.POST, **self.form_options)
             if self.form.is_valid():
-                model = self.form.save(commit=True)
+                model = self.form.save()
                 if not model.content_object:
                     model.uid = "%s-%s" % ('mm', model.id)
                     model.save()
@@ -432,6 +442,9 @@ class Edit(BaseCMDBView):
             'service_name': self.service_name,
             'so_events': self.so_events,
             'cmdb_messages': self.get_messages(),
+            'show_in_ralph': self.show_in_ralph,
+            'ralph_ci_link': self.ralph_ci_link,
+
         })
         return ret
 
@@ -515,8 +528,12 @@ class Edit(BaseCMDBView):
             # editing/viewing Ci which doesn's exists.
             return HttpResponseRedirect('/cmdb/ci/jira_ci_unknown')
         if ci_id:
-            self.service_name = self.get_first_parent_venture_name(ci_id)
             self.ci = get_object_or_404(db.CI, id=ci_id)
+            # preview only for devices
+            if self.ci.content_object and self.ci.content_type.name == 'device':
+                self.show_in_ralph = True
+                self.ralph_ci_link = "/ui/search/info/%d" % self.ci.content_object.id
+            self.service_name = self.get_first_parent_venture_name(ci_id)
             self.problems = db.CIProblem.objects.filter(
                     ci=self.ci).order_by('-time').all()
             self.incidents = db.CIIncident.objects.filter(
@@ -531,8 +548,8 @@ class Edit(BaseCMDBView):
             for report in reps:
                 puppet_logs = db.PuppetLog.objects.filter(cichange=report).all()
                 self.puppet_reports.append(dict(report=report, logs=puppet_logs))
-            #self.last_changes = self.get_last_changes(self.ci)
-            self.zabbix_triggers = db.CIChangeZabbixTrigger.objects.filter(ci=self.ci)
+            self.zabbix_triggers = db.CIChangeZabbixTrigger.objects.filter(
+                    ci=self.ci).order_by('-lastchange')
             self.so_events = db.CIChange.objects.filter(
                     type=db.CI_CHANGE_TYPES.STATUSOFFICE.id,
                     ci=self.ci).all()
@@ -566,8 +583,8 @@ class Edit(BaseCMDBView):
         self.relations_contains = []
         self.relations_requires= []
         self.relations_parts = []
-        self.relations_hasrole= []
-        self.relations_isrole= []
+        self.relations_hasrole = []
+        self.relations_isrole = []
         self.relations_isrequired = []
         self.puppet_reports  = []
         self.git_changes = []
@@ -576,6 +593,8 @@ class Edit(BaseCMDBView):
         self.so_events = []
         self.problems = []
         self.incidents = []
+        self.show_in_ralph = False
+        self.ralph_ci_link = ""
 
     @nested_commit_on_success
     def post(self, *args, **kwargs):
@@ -669,23 +688,29 @@ class Search(BaseCMDBView):
     def get(self, *args, **kwargs):
         values = self.request.GET
         cis = db.CI.objects.all()
+        uid = values.get('uid')
+        state = values.get('state')
+        status = values.get('status')
+        type_ = values.get('type')
+        layer = values.get('layer')
+        parent_id = int(values.get('parent', 0) or 0)
         if values:
-            if values.get('uid'):
-                cis = cis.filter(name__icontains=values.get('uid'))
-            if values.get('state'):
-                cis = cis.filter(state=values.get('state'))
-            if values.get('status'):
-                cis = cis.filter(status=values.get('status'))
-            if values.get('type'):
-                cis = cis.filter(type=values.get('type'))
-            if values.get('layer'):
-                cis = cis.filter(layers=values.get('layer'))
-            if values.get('parent'):
-                cis = cis.filter(child__parent=int(values.get('parent')))
+            if uid:
+                cis = cis.filter(Q(name__icontains=uid)
+                        | Q(uid=uid))
+            if state:
+                cis = cis.filter(state=state)
+            if status:
+                cis = cis.filter(status=status)
+            if type_:
+                cis = cis.filter(type=type_)
+            if layer:
+                cis = cis.filter(layers=layer)
+            if parent_id:
+                cis = cis.filter(child__parent__id=parent_id)
         sort = self.request.GET.get('sort', 'name')
         if sort:
             cis = cis.order_by(sort)
-        #only top level CI's, not optimized
         if values.get('top_level'):
             cis = cis.filter(child__parent=None)
         page = self.request.GET.get('page') or 1
@@ -739,16 +764,4 @@ class ViewUnknown(BaseCMDBView):
         ret.update({'error_message':
             'This Configuration Item cannot be found in the CMDB.' })
         return ret
-
-
-class RalphView(Info):
-    template_name = 'ui/device_info_iframe.html'
-    def __init__(self, *args, **kwargs):
-        super(Info, self).__init__(*args, **kwargs)
-
-    def get_object(self):
-        self.ci_id = self.kwargs.get('ci_id')
-        content_object = db.CI.objects.get(id=self.ci_id).content_object
-        return content_object
-
 
