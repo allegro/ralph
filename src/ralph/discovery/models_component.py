@@ -315,7 +315,8 @@ class Storage(Component):
             return 0
         if self.model.group.per_size:
             size = self.get_size()
-            return (size / 1024) * (self.model.group.price or 0)
+            return (size / (self.model.group.size_modifier or 1)
+                    ) * (self.model.group.price or 0)
         else:
             return self.model.group.price or 0
 
