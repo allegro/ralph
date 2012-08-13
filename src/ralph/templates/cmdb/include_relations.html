@@ -1,15 +1,15 @@
 <div class='span{{span_number}}'>
-    <div class='alert alert-info' >{{ label }} </div>
+    <div class='alert alert-info'>{{ label }}</div>
     <table class='table table-striped table-bordered table-condensed'>
         {% if relations %}
             <tr>
-                <th> CI UID </th>
-                <th> CI Name </th>
-                <th> CI Type </th>
-                <th sytle='width:10px'> Edit </th>
+                <th>CI UID</th>
+                <th>CI Name</th>
+                <th>CI Type</th>
+                <th style='width:10px'>Edit</th>
 
                 {% if editable %}
-                    <th> Operations </th>
+                    <th>Operations</th>
                 {% endif %}
             </tr>
             {% else %}
@@ -19,18 +19,18 @@
         <tr>
             <td> 
                 {% if editable and not rel.0.readonly %}
-                    <a target="{{target}}" href="/cmdb/ci/edit/{{rel.1.id}}"> {{ rel.1.uid}} </a>
+                    <a target="{{target}}" href="/cmdb/ci/edit/{{rel.1.id}}">{{ rel.1.uid}}</a>
                 {% else %}
-                    <a target="{{target}}" href="/cmdb/ci/view/{{rel.1.id}}"> {{ rel.1.uid}} </a>
+                    <a target="{{target}}" href="/cmdb/ci/view/{{rel.1.id}}">{{ rel.1.uid}}</a>
                 {% endif %}
 
             </td>
             <td>
                 <i class='fugue-icon {{ rel.2 }}'></i>
                 {% if editable and not rel.0.readonly %}
-                    <a target="{{target}}" href="/cmdb/ci/edit/{{rel.1.id}}"> {{ rel.1.name}}  </a>
+                    <a target="{{target}}" href="/cmdb/ci/edit/{{rel.1.id}}">{{ rel.1.name}}</a>
                 {% else %}
-                    <a target="{{target}}" href="/cmdb/ci/view/{{rel.1.id}}"> {{ rel.1.name}} </a>
+                    <a target="{{target}}" href="/cmdb/ci/view/{{rel.1.id}}">{{ rel.1.name}}</a>
                 {% endif %}
 
             </td>
@@ -40,9 +40,9 @@
             </td>
             <td>
                 {% if rel.0.readonly %}
-                    <i class='icon-ban-circle' ></i>
+                    <i class='icon-ban-circle'></i>
                 {% else %}
-                    <i class='icon-check' ></i>
+                    <i class='icon-check'></i>
                 {% endif %}
             </td>
 
@@ -51,11 +51,11 @@
                 {% if rel.0.readonly %}
                 -
                 {% else %}
-                    <a target="{{target}}" href="/cmdb/relation/edit/{{rel.0.id}}"> Edit  </a>
+                    <a target="{{target}}" href="/cmdb/relation/edit/{{rel.0.id}}">Edit</a>
                     <!-- not a rocket science, but it does the job .--> 
                     <a 
                         onclick="if (confirm('Remove relation?')){ location.href='/cmdb/relation/delete/{{rel.0.id}}/{{ci.id}}' }"
-                        href="#"> Remove
+                        href="#">Remove
                     </a>
                 {% endif %}
             </td>
