@@ -176,8 +176,6 @@ class EditRelation(BaseCMDBView):
         })
         return ret
 
-
-
     def get(self, *args, **kwargs):
         if not  self.get_permissions_dict().get('edit_configuration_item_relations_perm',
                 False):
@@ -209,7 +207,7 @@ class EditRelation(BaseCMDBView):
             self.form = self.Form(self.request.POST, **self.form_options)
             if self.form.is_valid():
                 ci_id = self.kwargs.get('ci_id')
-                self.form.save(commit=True)
+                self.form.save()
                 return HttpResponseRedirect('/cmdb/edit/%s' % ci_id)
             else:
                 messages.error(self.request, _("Correct the errors."))
@@ -273,7 +271,7 @@ class AddRelation(BaseCMDBView):
             self.form = self.Form(self.request.POST, **self.form_options)
             if self.form.is_valid():
                 ci_id = self.kwargs.get('ci_id')
-                self.form.save(commit=True)
+                self.form.save()
                 return HttpResponseRedirect('/cmdb/ci/edit/%s' % ci_id)
             else:
                 messages.error(self.request, _("Correct the errors."))
@@ -306,7 +304,7 @@ class Add(BaseCMDBView):
         if self.Form:
             self.form = self.Form(self.request.POST, **self.form_options)
             if self.form.is_valid():
-                model = self.form.save(commit=True)
+                model = self.form.save()
                 if not model.content_object:
                     model.uid = "%s-%s" % ('mm', model.id)
                     model.save()
@@ -690,20 +688,26 @@ class Search(BaseCMDBView):
     def get(self, *args, **kwargs):
         values = self.request.GET
         cis = db.CI.objects.all()
+        uid = values.get('uid')
+        state = values.get('state')
+        status = values.get('status')
+        type_ = values.get('type')
+        layer = values.get('layer')
+        parent_id = int(values.get('parent', 0) or 0)
         if values:
-            if values.get('uid'):
-                cis = cis.filter(Q(name__icontains=values.get('uid'))
-                        | Q(uid=values.get('uid')))
-            if values.get('state'):
-                cis = cis.filter(state=values.get('state'))
-            if values.get('status'):
-                cis = cis.filter(status=values.get('status'))
-            if values.get('type'):
-                cis = cis.filter(type=values.get('type'))
-            if values.get('layer'):
-                cis = cis.filter(layers=values.get('layer'))
-            if values.get('parent'):
-                cis = cis.filter(child__parent=int(values.get('parent')))
+            if uid:
+                cis = cis.filter(Q(name__icontains=uid)
+                        | Q(uid=uid))
+            if state:
+                cis = cis.filter(state=state)
+            if status:
+                cis = cis.filter(status=status)
+            if type_:
+                cis = cis.filter(type=type_)
+            if layer:
+                cis = cis.filter(layers=layer)
+            if parent_id:
+                cis = cis.filter(child__parent__id=parent_id)
         sort = self.request.GET.get('sort', 'name')
         if sort:
             cis = cis.order_by(sort)
