@@ -255,10 +255,11 @@ class CIChange(models.Model):
 
 
 class CIChangeGit(models.Model):
-    file_paths = models.CharField(max_length=3000, null = False)
-    comment = models.CharField(max_length=1000, null = False)
-    author = models.CharField(max_length = 200, null = False)
-    changeset = models.CharField(max_length=80, null = False)
+    file_paths = models.CharField(max_length=3000,
+            null=False)
+    comment = models.CharField(max_length=1000)
+    author = models.CharField(max_length=200)
+    changeset = models.CharField(max_length=80, unique=True)
 
 
 class CIChangePuppet(models.Model):
@@ -341,7 +342,6 @@ class CI(models.Model):
     )
     relations = models.ManyToManyField("self", symmetrical=False,
             through='CIRelation')
-
     added_manually = models.BooleanField(default=False)
 
     def __unicode__(self):
