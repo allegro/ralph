@@ -1,6 +1,21 @@
 Change Log
 ----------
 
+1.0.5
+~~~~~
+
+* make the discovery plugins use soft delete
+
+* the proxmox discovery plugin now counts local storage used
+
+* added a "delete" link in the addresses view
+
+* positions in racks are now numbered from the bottom
+
+* bugfixes in the ui code
+
+
+
 1.0.4
 ~~~~~
 

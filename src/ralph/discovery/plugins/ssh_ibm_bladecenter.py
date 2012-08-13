@@ -297,7 +297,10 @@ def _add_dev_blade(pairs, parent, raw, counts, dev_id):
         pos = None
     dev = _dev(DeviceType.blade_server, pairs, parent, raw)
     dev.chassis_position = pos
-    dev.position = '%02d' % pos
+    if pos:
+        dev.position = '%02d' % pos
+    else:
+        dev.position = ''
     counts.blade += 1
     dev.save(update_last_seen=True, priority=SAVE_PRIORITY)
     for i in range(1, 9):
