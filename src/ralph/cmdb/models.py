@@ -149,15 +149,12 @@ class CIAttribute(models.Model):
     def clean(self):
         validation_msg = 'Options: Invalid format! Valid  example is: 1.Option one|2.Option two'
         if self.choices:
-            try:
-                len_checks = min([ len(x.split('.'))==2 and
-                    x.split('.')[0].strip()
-                    and x.split('.')[1].strip()
-                    for x in self.choices.split('|')])
-                if not len_checks:
-                    raise ValidationError(validation_msg)
-            except Exception, e:
-                    raise ValidationError(validation_msg)
+            len_checks = min([len(x.split('.'))==2 and
+                x.split('.')[0].strip()
+                and x.split('.')[1].strip()
+                for x in self.choices.split('|')])
+            if not len_checks:
+                raise ValidationError(validation_msg)
 
 
 class CIValueDate(models.Model):
@@ -307,7 +304,6 @@ class CI(models.Model):
     )
     # not required, since auto-save
     name = models.CharField(max_length=256, verbose_name=_("CI name"))
-    friendly_name = lambda self: self.name
     business_service = models.BooleanField(verbose_name=_("Business service"),
             default=False)
     technical_service = models.BooleanField(verbose_name=_("Technical service"),
