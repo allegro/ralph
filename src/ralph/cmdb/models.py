@@ -148,12 +148,15 @@ class CIAttribute(models.Model):
 
     def clean(self):
         validation_msg = 'Options: Invalid format! Valid  example is: 1.Option one|2.Option two'
+        def valid_chunk(chunk):
+            try:
+                prefix, suffix = chunk.split('.', 1)
+            except ValueError:
+                return False
+            return bool(prefix.strip() and suffix.strip())
         if self.choices:
-            len_checks = min([len(x.split('.'))==2 and
-                x.split('.')[0].strip()
-                and x.split('.')[1].strip()
-                for x in self.choices.split('|')])
-            if not len_checks:
+            if not all(valid_chunk(chunk)
+                       for chunk in self.choices.split('|')):
                 raise ValidationError(validation_msg)
 
 
