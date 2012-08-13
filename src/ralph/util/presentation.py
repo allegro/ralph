@@ -38,6 +38,7 @@ DEVICE_ICONS = {
     'Windows': 'fugue-windows',
     'SunOs': 'fugue-weather',
     'Mac': 'fugue-mac-os',
+    'Deleted': 'fugue-skull',
 }
 
 COMPONENT_ICONS = {
@@ -82,6 +83,8 @@ def get_device_model_icon(model):
 def get_device_icon(device):
     if device is None or device.model is None:
         return DEVICE_ICONS[None]
+    if device.deleted:
+        return DEVICE_ICONS['Deleted']
     return (DEVICE_ICONS.get(device.model.name) or
             DEVICE_ICONS.get(device.model.type) or
             DEVICE_ICONS[None])

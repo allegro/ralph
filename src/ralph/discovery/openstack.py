@@ -47,7 +47,7 @@ class OpenStack(object):
         auth_token = auth_reply['access']['token']['id']
         return public_url, auth_token
 
-    def query(self, query, **kwargs):
+    def query(self, query, url=None, **kwargs):
         query_args = urllib.urlencode(kwargs)
         query_headers = {
             'Content-Type': 'application/json',
@@ -55,7 +55,10 @@ class OpenStack(object):
             'X-Auth-Project-Id': self.user,
             'X-Auth-Token': self.auth_token,
         }
-        query_url = '/'.join([self.public_url, query]) + '?' + query_args
+        query_url = '/'.join([
+                url or self.public_url,
+                query,
+            ]) + '?' + query_args
         request = urllib2.Request(query_url, headers=query_headers)
         return json.loads(urllib2.urlopen(request).read())
 
