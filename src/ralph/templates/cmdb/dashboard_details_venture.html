@@ -13,7 +13,7 @@
 </style>
 
 <div class='span5'>
-    <h3> CMDB Dashboard   - {{ report_name }}</h3>
+    <h3>CMDB Dashboard   - {{ report_name }}</h3>
     <hr>
     <table class='table table-striped table-bordered ' >
         <tr>
@@ -24,8 +24,8 @@
 
        {% for data in statistics %}
          <tr>
-             <td>{{ data.0.name }}  </td>
-             <td>{{ data.0.count }} </td>
+             <td>{{ data.0.name }}</td>
+             <td>{{ data.0.count }}</td>
              <td><a href='ci?venture_id={{data.1}}'> View </a>   </td>
          </tr>
        {% endfor %}
