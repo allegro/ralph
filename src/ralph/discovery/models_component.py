@@ -115,7 +115,8 @@ class ComponentModel(Named.NonUnique, SavePrioritized, WithConcurrentGetOrCreate
         if self.group.per_size:
             if not size:
                 size = self.size
-            return (size / 1024) * (self.group.price or 0)
+            return (size /
+                    (self.group.size_modifier or 1)) * (self.group.price or 0)
         else:
             return self.group.price or 0
 
@@ -290,6 +291,8 @@ class Storage(Component):
     label = db.CharField(verbose_name=_("name"), max_length=255)
     mount_point = db.CharField(verbose_name=_("mount point"), max_length=255,
         null=True, blank=True, default=None)
+    size = db.PositiveIntegerField(verbose_name=_("size (MiB)"),
+        null=True, blank=True)
 
     class Meta:
         verbose_name = _("storage")
@@ -301,6 +304,21 @@ class Storage(Component):
         if not self.mount_point:
             return '{} ({})'.format(self.label, self.model)
         return '{} at {} ({})'.format(self.label, self.mount_point, self.model)
+
+    def get_size(self):
+        if self.model and self.model.size:
+            return self.model.size
+        return self.size or 0
+
+    def get_price(self):
+        if not self.model or not self.model.group:
+            return 0
+        if self.model.group.per_size:
+            size = self.get_size()
+            return (size / (self.model.group.size_modifier or 1)
+                    ) * (self.model.group.price or 0)
+        else:
+            return self.model.group.price or 0
 
 
 class FibreChannel(Component):

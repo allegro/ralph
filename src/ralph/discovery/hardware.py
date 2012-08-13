@@ -134,3 +134,37 @@ def lshw(as_string):
     return nullify(etree_to_dict(response, _converters=[_nullify, int, float,
         lck.xml.converters._datetime,
         lck.xml.converters._datetime_strip_tz]))[1], as_string
+
+
+def get_disk_shares(ssh):
+    stdin, stdout, stderr = ssh.exec_command("multipath -l")
+    pvs = {}
+    for line in stdout.readlines():
+        line = line.strip()
+        if not line.startswith('mpath'):
+            continue
+        try:
+            path, wwn, pv, model = line.strip().split(None, 3)
+        except ValueError:
+            wwn, pv, model = line.strip().split(None, 2)
+            path = None
+        wwn  = normalize_wwn(wwn.strip('()'))
+        pvs['/dev/%s' % pv] = wwn
+        if path:
+            pvs['/dev/mapper/%s' % path] = wwn
+    stdin, stdout, stderr = ssh.exec_command("pvs --noheadings --units M")
+    vgs = {}
+    for line in stdout.readlines():
+        pv, vg, fmt, attr, psize, pfree = line.split(None, 5)
+        vgs[vg] = pv
+    stdin, stdout, stderr = ssh.exec_command("lvs --noheadings --units M")
+    storage = {}
+    for line in stdout.readlines():
+        lv, vg, attr, size, rest = (line + ' x').strip().split(None, 4)
+        size = int(float(size.strip('M')))
+        try:
+            wwn = pvs[vgs[vg]]
+        except KeyError:
+            continue
+        storage[lv] = (wwn, size)
+    return storage
