@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+
 from django.views.decorators.csrf import csrf_exempt
 from ralph.util.views import jsonify
 from ralph.util import plugin
@@ -33,12 +34,6 @@ def notify_puppet_agent(request):
     x = PuppetAgentsImporter()
     x.import_contents(contents)
     return {'ok' : True}
-
-@csrf_exempt
-@jsonify
-def notify_zabbix(request):
-    # to be continued
-    pass
 
 @csrf_exempt
 @jsonify
