@@ -148,16 +148,16 @@ class CIAttribute(models.Model):
 
     def clean(self):
         validation_msg = 'Options: Invalid format! Valid  example is: 1.Option one|2.Option two'
-        if self.choices:
+        def valid_chunk(chunk):
             try:
-                len_checks = min([ len(x.split('.'))==2 and
-                    x.split('.')[0].strip()
-                    and x.split('.')[1].strip()
-                    for x in self.choices.split('|')])
-                if not len_checks:
-                    raise ValidationError(validation_msg)
-            except Exception,e:
-                    raise ValidationError(validation_msg)
+                prefix, suffix = chunk.split('.', 1)
+            except ValueError:
+                return False
+            return bool(prefix.strip() and suffix.strip())
+        if self.choices:
+            if not all(valid_chunk(chunk)
+                       for chunk in self.choices.split('|')):
+                raise ValidationError(validation_msg)
 
 
 class CIValueDate(models.Model):
@@ -255,10 +255,11 @@ class CIChange(models.Model):
 
 
 class CIChangeGit(models.Model):
-    file_paths = models.CharField(max_length=3000, null = False)
-    comment = models.CharField(max_length=1000, null = False)
-    author = models.CharField(max_length = 200, null = False)
-    changeset = models.CharField(max_length=80, null = False)
+    file_paths = models.CharField(max_length=3000,
+            null=False)
+    comment = models.CharField(max_length=1000)
+    author = models.CharField(max_length=200)
+    changeset = models.CharField(max_length=80, unique=True)
 
 
 class CIChangePuppet(models.Model):
@@ -340,11 +341,10 @@ class CI(models.Model):
     )
     relations = models.ManyToManyField("self", symmetrical=False,
             through='CIRelation')
-
     added_manually = models.BooleanField(default=False)
 
     def __unicode__(self):
-        return "%s" %  self.name
+        return "%s (%s)" %  (self.name, self.type)
 
     def get_service(self):
         """

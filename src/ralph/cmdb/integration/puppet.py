@@ -17,6 +17,8 @@ from ralph.cmdb import models as db
 from ralph.cmdb.integration.base import BaseImporter
 from ralph.cmdb.integration.util import strip_timezone
 
+from lck.django.common import nested_commit_on_success
+
 logger = logging.getLogger(__name__)
 
 class PuppetAgentsImporter(BaseImporter):
@@ -151,6 +153,7 @@ class PuppetGitImporter(BaseImporter):
         else:
             return False
 
+    @nested_commit_on_success
     def import_changeset(self, changeset):
         x = self.fisheye
         details = x.get_details(changeset)
@@ -162,13 +165,12 @@ class PuppetGitImporter(BaseImporter):
             files = details.fileRevisionKey
             files_list = []
             for f in files:
-                path=(f.get('path'))
-                rev=(f.get('rev'))
+                path = (f.get('path'))
                 files_list.append(path)
             files_list_str = '#'.join(files_list)
         except AttributeError:
-            logger.warn('No files for %s' % unicode(c.comment))
-            return
+            files_list_str = ''
+            files_list = []
         c.file_paths = files_list_str[0:3000]
         c.author = details.get('author')
         c.ci = self.get_ci_by_path(files_list)

@@ -1,5 +1,12 @@
 {% block contentarea %}
+<style type="text/css" media="screen">
+    /* Set min height for tabs, for not looking stupid with bottom buttons*/
 
+    .tab-content > .tab-pane, .pill-content > .pill-pane {
+        min-height: 300px;
+    }
+
+</style>
 {% load icons %}
 {% load query %}
 
@@ -26,8 +33,8 @@
   {% endif %}
 
   {% if ci_id %}
-      <ul class="nav nav-pills">
-                    {% if not tabs_left %}
+      <ul class="nav nav-tabs">
+                    {% if iframe  %}
                         <li class='dropdown'>
                         <a href='#' class='dropdown-toggle' data-toggle='dropdown'> Show all Ci info<b class='caret'> </b> </a>
                         <ul class='dropdown-menu'>
@@ -68,7 +75,7 @@
                         <li><a href="#so" data-toggle="tab">{% if so_events %} {% icon 'fugue-new' %} {% endif %} SO Events</a></li>
                     {% endif %}
 
-          {% if not tabs_left %}
+          {% if not iframe %}
                 </ul>
                 </li>
           {% endif %}
@@ -123,22 +130,30 @@
          <span><h3>Custom Attributes</h3> </span>
             {% include 'cmdb/include_attributes.html' %}
             <hr> 
-
-            {% if not iframe and ci and ci.content_object and ci.content_type.name == 'device' %}
-                <a href='#asset_info' data-toggle="modal" class='btn btn-success btn-large' href='#'><i class='icon-white icon-eye-open'></i> Asset details</a>
-            {% endif %}
     {% endif %}
 
-    {% if editable %}
-        <button class="btn btn-primary" type="submit">{% icon 'fugue-tick' %}&nbsp;Save</button>
-        <button class="btn" type="reset">{% icon 'fugue-broom' %}&nbsp;Clean</button>
+   <div class='row'>
+    {% if show_in_ralph %}
+        <div class='span2'>
+                <a class='btn btn-info btn-large' href='{{ ralph_ci_link }}'> Asset details </a>
+        </div>
+    {% endif %}
+    <div class='span2'>
+        {% if editable %}
+            <button class="btn btn-primary" type="submit">{% icon 'fugue-tick' %}&nbsp;Save</button>
+            <button class="btn" type="reset">{% icon 'fugue-broom' %}&nbsp;Clean</button>
         {% else %}
-        {% if not iframe %}
-            <a class='btn btn-info btn-large' href='/cmdb/ci/edit/{{ ci_id}}'> Edit this CI </a>
+            {% if not iframe %}
+                <a class='btn btn-info btn-large' href='/cmdb/ci/edit/{{ ci_id}}'> Edit this CI </a>
+            {% endif %}
         {% endif %}
-    {% endif %}
+    </div>
+</div>
+
 
 </div> <!-- span6 !-->
+
+
 
 </div> <!-- main !-->
 
@@ -192,9 +207,9 @@
                        {% if editable and edit_configuration_item_relations_perm and ci_id %} 
                        <p>
                                 <a class='btn btn-primary'
-                                    href="/cmdb/relation/add/{{ ci_id }}?rel_child={{ ci_id }}"> 
+                                    href="/cmdb/relation/add/{{ ci_id }}?rel_parent={{ ci_id }}"> 
                                    <i class='icon-edit icon-white'></i> 
-                                   Add new parent relation
+                                   Add new child relation
                                </a> 
                        </p>
                        {% endif %}
@@ -208,9 +223,9 @@
                        {% if editable and edit_configuration_item_relations_perm and ci_id %} 
                        <p>
                                 <a class='btn btn-primary'
-                                    href="/cmdb/relation/add/{{ ci_id }}?rel_parent={{ ci_id }}"> 
+                                    href="/cmdb/relation/add/{{ ci_id }}?rel_child={{ ci_id }}"> 
                                    <i class='icon-edit icon-white'></i> 
-                                   Add new child relation
+                                   Add new parent relation
                                </a> 
                        </p>
                        {% endif %}
@@ -246,7 +261,6 @@
         </div>
         {% endif %}
 
-
 {% if read_configuration_item_info_git_perm  %}
     <div class="tab-pane" id="git">
         <div class='span12'>
@@ -258,30 +272,17 @@
     </div> <!-- tab change !-->
 {% endif %}
 
-        
 </div> <!-- tab-contents !-->
 
 {% if tabs_left %}
     </div> <!-- tabbable tab-left !-->
 {% endif %}
 
-</form>
+ </form>
 
 <hr>
-{% if ci and ci.content_object and ci.content_type.name == 'device' %}
-    <div class='modal hide fade' id='asset_info' style='width: 1040px' >
-        <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">×</button>
-                    <h3>Asset information</h3>
-                </div>
-        <div class='modal-body' style='width:1040px' >
-            <iframe src='/cmdb/ci/ralph_view/{{ci_id}}' style='border: 0; width:1040px;height:800px'> 
-            </iframe>
-        </div>
-        <div class="modal-footer">
-            <a href="#" class="btn" data-dismiss="modal">Close</a>
-        </div>
-    </div>
-{% endif %}
+<div class='span6'>
+</div>
+
 
 {% endblock %}
