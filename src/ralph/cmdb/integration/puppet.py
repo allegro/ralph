@@ -165,13 +165,12 @@ class PuppetGitImporter(BaseImporter):
             files = details.fileRevisionKey
             files_list = []
             for f in files:
-                path=(f.get('path'))
-                rev=(f.get('rev'))
+                path = (f.get('path'))
                 files_list.append(path)
             files_list_str = '#'.join(files_list)
         except AttributeError:
             files_list_str = ''
-            files_list=[]
+            files_list = []
         c.file_paths = files_list_str[0:3000]
         c.author = details.get('author')
         c.ci = self.get_ci_by_path(files_list)
