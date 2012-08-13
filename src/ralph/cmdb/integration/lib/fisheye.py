@@ -6,16 +6,12 @@ from django.conf import settings
 from restkit import Resource, SimplePool, BasicAuth
 from lxml import objectify
 import logging
+
+
 logger = logging.getLogger(__name__)
 
-class Fisheye(object):
-#    _instance = None
-#    def __new__(cls, *args, **kwargs):
-#        if not cls._instance:
-#            cls._instance = super(Fisheye, cls).__new__(
-#                                cls, *args, **kwargs)
-#        return cls._instance
 
+class Fisheye(object):
     def __init__(self):
         user = settings.FISHEYE_USER
         password = settings.FISHEYE_PASSWORD
@@ -27,7 +23,7 @@ class Fisheye(object):
 
     def get_resource(self, resource_name):
         complete_url= "%s/%s" % (self.base_url , resource_name)
-        logger.error("Calling " + complete_url)
+        logger.debug("Calling " + complete_url)
         resource = Resource(complete_url, pool_instance=self.pool, filters=[self.auth])
         return resource
 
