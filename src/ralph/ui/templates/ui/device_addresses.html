@@ -24,9 +24,14 @@
             <td><a href="https://{{ item.address }}">{{ item.address }}</a></td>
             <td>{{ item.last_seen|date:'Y-m-d H:i' }}</td>
             {% if user.is_staff %}
-            <td><a href="/admin/discovery/ipaddress/{{ item.id }}/">
-                {% icon 'fugue-toolbox--pencil' %} Edit
-            </a></td>
+            <td>
+                <a href="/admin/discovery/ipaddress/{{ item.id }}/">
+                {% icon 'fugue-toolbox--pencil' %}&nbsp;Edit
+                </a>
+                <a href="/admin/discovery/ipaddress/{{ item.id }}/delete">
+                {% icon 'fugue-skull' %}&nbsp;Delete
+                </a>
+            </td>
             {% endif %}
         </tr>
         {% endfor %}
@@ -56,7 +61,7 @@
             <td>{{ item.prio|default:'' }}</td>
             {% if user.is_staff %}
             <td><a href="/admin/powerdns/record/{{ item.id }}/">
-                {% icon 'fugue-toolbox--pencil' %} Edit
+                {% icon 'fugue-toolbox--pencil' %}&nbsp;Edit
             </a></td>
             {% endif %}
         </tr>
@@ -81,7 +86,7 @@
             <td>{{ item.mac }}</td>
             {% if user.is_staff %}
             <td><a href="/admin/dnsedit/dhcpentry/{{ item.id }}/">
-                {% icon 'fugue-toolbox--pencil' %} Edit
+                {% icon 'fugue-toolbox--pencil' %}&nbsp;Edit
             </a></td>
             {% endif %}
         </tr>

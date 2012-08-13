@@ -11,6 +11,7 @@ from __future__ import unicode_literals
 
 import os
 import ssh as paramiko
+import logging
 
 from django.conf import settings
 from lck.django.common import nested_commit_on_success
@@ -18,8 +19,12 @@ from lck.django.common import nested_commit_on_success
 from ralph.util import network
 from ralph.util import plugin, Eth
 from ralph.discovery.models import (DeviceType, Device, IPAddress, Software,
-        DiskShare, DiskShareMount, ComponentModel, Processor, ComponentType)
-from ralph.discovery.hardware import normalize_wwn
+        DiskShare, DiskShareMount, ComponentModel, Processor, ComponentType,
+        Storage)
+from ralph.discovery.hardware import get_disk_shares
+
+
+logger = logging.getLogger(__name__)
 
 
 class Error(Exception):
@@ -33,45 +38,16 @@ def _connect_ssh(ip, username='root', password=''):
     return network.connect_ssh(ip, 'root', settings.SSH_PASSWORD)
 
 
-def _get_disk_shares(ssh):
-    stdin, stdout, stderr = ssh.exec_command("multipath -l")
-    pvs = {}
-    for line in stdout.readlines():
-        line = line.strip()
-        if not line.startswith('mpath'):
-            continue
-        try:
-            path, wwn, pv, model = line.strip().split(None, 3)
-        except ValueError:
-            wwn, pv, model = line.strip().split(None, 2)
-            path = None
-        wwn  = normalize_wwn(wwn.strip('()'))
-        pvs['/dev/%s' % pv] = wwn
-        if path:
-            pvs['/dev/mapper/%s' % path] = wwn
-    stdin, stdout, stderr = ssh.exec_command("pvs --noheadings --units M")
-    vgs = {}
-    for line in stdout.readlines():
-        pv, vg, fmt, attr, psize, pfree = line.split(None, 5)
-        vgs[vg] = pv
-    stdin, stdout, stderr = ssh.exec_command("lvs --noheadings --units M")
-    storage = {}
-    for line in stdout.readlines():
-        lv, vg, attr, size, rest = (line + ' x').strip().split(None, 4)
-        size = int(float(size.strip('M')))
-        try:
-            wwn = pvs[vgs[vg]]
-        except KeyError:
-            continue
-        storage[lv] = (wwn, size)
-    return storage
-
 def _get_local_disk_size(ssh, disk):
-    path = os.path.join('/usr/lib/vz/images', disk)
+    """Return the size of a disk image file, in bytes"""
+
+    path = os.path.join('/var/lib/vz/images', disk)
     stdin, stdout, stderr = ssh.exec_command("du -m '%s'" % path)
     line = stdout.read().strip()
-    size = line.strip(None, 1)[0]
+    print('path=%r size=%r' % (path, line))
+    size = int(line.split(None, 1)[0])
     return size
+
 
 def _add_virtual_machine(ssh, vmid, parent, master, storage):
     stdin, stdout, stderr = ssh.exec_command(
@@ -115,17 +91,31 @@ def _add_virtual_machine(ssh, vmid, parent, master, storage):
         else:
             vg = ''
             lv = disk
+        if vg == 'local':
+            model, created = ComponentModel.concurrent_get_or_create(
+                type=ComponentType.disk.id, family='QEMU disk image')
+            if created:
+                model.save()
+            storage, created = Storage.concurrent_get_or_create(
+                device=dev, mount_point=lv)
+            storage.size = _get_local_disk_size(ssh, lv)
+            storage.model = model
+            storage.label = slot
+            storage.save()
+            continue
         if vg in ('', 'local', 'pve-local'):
             continue
         vol = '%s:%s' % (vg, lv)
         try:
             wwn, size = storage[lv]
         except KeyError:
+            logger.warning('Volume %r does not exist.' % lv)
             continue
         try:
             share = DiskShare.objects.get(wwn=wwn)
             wwns.append(wwn)
         except DiskShare.DoesNotExist:
+            logger.warning('A share with WWN %r does not exist.' % wwn)
             continue
         mount, created = DiskShareMount.concurrent_get_or_create(
                 share=share, device=dev)
@@ -134,9 +124,11 @@ def _add_virtual_machine(ssh, vmid, parent, master, storage):
         mount.size = size
         mount.volume = vol
         mount.save()
-    for ds in dev.disksharemount_set.filter(server=parent).exclude(share__wwn__in=wwns):
+    for ds in dev.disksharemount_set.filter(
+            server=parent).exclude(share__wwn__in=wwns):
         ds.delete()
-    for ds in dev.disksharemount_set.filter(is_virtual=True).exclude(share__wwn__in=wwns):
+    for ds in dev.disksharemount_set.filter(
+            is_virtual=True).exclude(share__wwn__in=wwns):
         ds.delete()
 
     cpu_model, cpu_model_created = ComponentModel.concurrent_get_or_create(
@@ -146,7 +138,8 @@ def _add_virtual_machine(ssh, vmid, parent, master, storage):
         cpu_model.name = 'QEMU Virtual CPU version 0.12.4'
         cpu_model.save()
     for i in range(cpu_count):
-        cpu, cpu_created = Processor.concurrent_get_or_create(device=dev, index=i+1)
+        cpu, cpu_created = Processor.concurrent_get_or_create(device=dev,
+                                                              index=i+1)
         if cpu_created:
             cpu.label = 'CPU {}'.format(i + 1)
             cpu.model = cpu_model
@@ -157,14 +150,15 @@ def _add_virtual_machine(ssh, vmid, parent, master, storage):
     return dev
 
 def _add_virtual_machines(ssh, parent, master):
-    storage = _get_disk_shares(ssh)
+    storage = get_disk_shares(ssh)
     stdin, stdout, stderr = ssh.exec_command("qm list")
     dev_ids = []
     for line in stdout:
         line = line.strip()
         if line.startswith('VMID'):
             continue
-        vmid, name, status, mem, bootdisk, pid = (v.strip() for v in line.split())
+        vmid, name, status, mem, bootdisk, pid = (v.strip() for
+                v in line.split())
         if status != 'running':
             continue
         vmid = int(vmid)
@@ -173,7 +167,9 @@ def _add_virtual_machines(ssh, parent, master):
             continue
         dev_ids.append(dev.id)
     for child in parent.child_set.exclude(id__in=dev_ids):
-        child.delete()
+        logger.info('Deleting virtual server %r that no longer exists.' % child)
+        child.deleted = True
+        child.save()
 
 def _get_master(ssh, data=None):
     if data is None:

@@ -47,7 +47,7 @@
     {% endif %}
     {% if 'position' in columns %}
     <td>
-        {% if d.dc %}<a href="{% url 'racks' d.dc|slugify details '' %}">{{ d.dc }}</a>/{% endif %}{% if d.rack %}<a href="{% url 'racks' d.rack|slugify details '' %}">{{ d.rack }}</a>/{% endif %}{% if d.parent and d.parent.model and d.parent.model.type == 2 %}{{ d.parent.position|default:d.parent.chassis_position }}/{% endif %}{% if d.model.type == 203 %}{% if d.parent and d.parent.parent and d.parent.parent.model and d.parent.parent.model.type == 2 %}{{ d.parent.parent.position|default:d.parent.parent.chassis_position }}/{% endif %}{{ d.parent.position|default:d.parent.chassis_position }}/{% endif %}<b>{{ d.position|default:d.chassis_position|default:'-' }}</b>
+        {% if d.dc %}<a href="{% url 'racks' d.dc|slugify details '' %}">{{ d.dc }}</a>/{% endif %}{% if d.rack %}<a href="{% url 'racks' d.rack|slugify details '' %}">{{ d.rack }}</a>/{% endif %}{% if d.parent and d.parent.model and d.parent.model.type == 2 %}{{ d.parent.chassis_position|default:'-' }}/{% endif %}{% if d.model.type == 203 %}{% if d.parent and d.parent.parent and d.parent.parent.model and d.parent.parent.model.type == 2 %}{{ d.parent.parent.get_position|default:'-' }}/{% endif %}{{ d.parent.get_position|default:'-' }}/{% endif %}<b>{{ d.get_position|default:'-' }}</b>
     </td>
     {% endif %}
     {% if 'ips' in columns %}

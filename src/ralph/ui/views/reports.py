@@ -69,6 +69,9 @@ class ReportType(Choices):
             columns=['venture', 'position', 'barcode', 'price', 'lastseen',
                 'remarks'],
             )
+    verified = _('Verified venture and role').extra(
+            filter=lambda device_list: device_list.filter(verified=True),
+            columns=['venture', 'remarks'])
 
 
 class Reports(DeviceDetailView):
