@@ -15,11 +15,9 @@ Change Log
 
 * positions in racks are now numbered from the bottom
 
-* bugfixes in the ui code
+* CMDB: enabled removing relations, faster git handling
 
-* CMDB relations removing enabled, faster git handling, bugfixes
-
-
+* bugfixes in CMDB and UI code
 
 1.0.4
 ~~~~~
@@ -81,7 +79,6 @@ Change Log
 * minor fixes for the SQLite backend
 
 * minor documentation fixes and updates
-
 
 1.0.0
 ~~~~~
