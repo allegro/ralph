@@ -45,3 +45,9 @@ database to the current version of Ralph::
 
 Once your code is upgraded and the database is migrated, you can start all your Ralph processes back and enjoy the new version.
 
+Update the settings
+-------------------
+
+Some new features added to Ralph may require additional settings to work
+properly. In order to enable them in your settings, follow the instructions in
+the :doc:`change log <changes>` for the version you installed. 
