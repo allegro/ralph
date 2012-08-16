@@ -11,6 +11,7 @@ from optparse import make_option
 from ralph.cmdb.importer import CIImporter
 from django.contrib.contenttypes.models import ContentType
 
+
 logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
@@ -83,21 +84,22 @@ class Command(BaseCommand):
                     content_types_to_import.append(content_types_names.get(ct, None))
         else:
             content_types_to_import = self.content_types
+        cimp = CIImporter()
         if options.get('action') == 'purge':
             if options.get('kind') == 'ci':
-                CIImporter.purge_all_ci(content_types_to_import)
+                cimp.purge_all_ci(content_types_to_import)
             elif options.get('kind') == 'all-relations':
-                CIImporter.purge_all_relations()
+                cimp.purge_all_relations()
             elif options.get('kind') == 'user-relations':
-                CIImporter.purge_user_relations()
+                cimp.purge_user_relations()
             elif options.get('kind') == 'system-relations':
-                CIImporter.purge_system_relations()
+                cimp.purge_system_relations()
         elif options.get('action') == 'import':
             if options.get('kind') == 'ci':
-                CIImporter.import_all_ci(content_types_to_import, id_to_import)
+                cimp.import_all_ci(content_types_to_import, id_to_import)
             elif options.get('kind') == 'all-relations':
                 for content_type in content_types_to_import:
-                    CIImporter.import_relations(content_type, id_to_import)
+                    cimp.import_relations(content_type, id_to_import)
             else:
                 print("Invalid kind for this action")
                 return
