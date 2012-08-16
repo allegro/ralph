@@ -14,6 +14,7 @@ from django.shortcuts import get_object_or_404
 from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.http import HttpResponseForbidden
+from django.http import HttpResponse
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 from lck.django.common import nested_commit_on_success
@@ -25,6 +26,7 @@ from ralph.ui.views.common import Base
 from ralph.util.presentation import get_device_icon, get_venture_icon, get_network_icon
 import ralph.cmdb.models  as db
 from bob.menu import MenuItem, MenuHeader
+
 
 ROWS_PER_PAGE=20
 SAVE_PRIORITY = 200
@@ -38,6 +40,7 @@ def get_icon_for(ci):
         return get_device_icon(ci.content_object)
     elif ci.content_type.name == 'network':
         return get_network_icon(ci.content_object)
+
 
 class BaseCMDBView(Base):
     template_name = 'nope.html'
@@ -145,7 +148,9 @@ class BaseCMDBView(Base):
             'span_number': '6',
             'ZABBIX_URL': settings.ZABBIX_URL,
             'SO_URL': settings.SO_URL,
-            'tabs_left': False
+            'tabs_left': False,
+            'fisheye_url': settings.FISHEYE_URL,
+            'fisheye_project': settings.FISHEYE_PROJECT_NAME,
         })
         return ret
 
@@ -158,6 +163,14 @@ def _get_pages(paginator, page):
         pages.append('...')
         pages.append(paginator.num_pages)
     return pages
+
+def get_error_title(form):
+    # check if specific field form errors
+    if form.errors and (not form.errors.get('__all__')):
+        return 'Correct the errors.'
+    # eg. Ci relation with this Parent, Child and Relation kind already exists.
+    generic_errors = ','.join(form.errors['__all__'])
+    return generic_errors
 
 
 class EditRelation(BaseCMDBView):
@@ -181,12 +194,6 @@ class EditRelation(BaseCMDBView):
                 False):
             return HttpResponseForbidden()
         rel_id = kwargs.get('relation_id')
-        ci_id = kwargs.get('ci_id')
-        if ci_id:
-            # remove relation
-            db.CIRelation.objects.get(id=rel_id).delete()
-            return HttpResponseRedirect('/cmdb/ci/edit/%s' % ci_id)
-
         rel = get_object_or_404(db.CIRelation, id=rel_id)
         self.form_options['instance'] = rel
         self.form = self.Form(**self.form_options)
@@ -203,6 +210,13 @@ class EditRelation(BaseCMDBView):
         rel_id = kwargs.get('relation_id')
         rel = get_object_or_404(db.CIRelation, id=rel_id)
         self.form_options['instance'] = rel
+
+        ci_id = kwargs.get('ci_id')
+        if ci_id:
+            # remove relation
+            ci_relation = db.CIRelation.objects.filter(id=rel_id).all()
+            ci_relation.delete()
+            return HttpResponse('ok')
         if self.Form:
             self.form = self.Form(self.request.POST, **self.form_options)
             if self.form.is_valid():
@@ -210,7 +224,8 @@ class EditRelation(BaseCMDBView):
                 self.form.save()
                 return HttpResponseRedirect('/cmdb/edit/%s' % ci_id)
             else:
-                messages.error(self.request, _("Correct the errors."))
+                error_title = get_error_title(self.form)
+                messages.error(self.request, _(error_title))
         return super(EditRelation, self).get(*args, **kwargs)
 
 
@@ -274,8 +289,10 @@ class AddRelation(BaseCMDBView):
                 self.form.save()
                 return HttpResponseRedirect('/cmdb/ci/edit/%s' % ci_id)
             else:
-                messages.error(self.request, _("Correct the errors."))
+                error_title = get_error_title(self.form)
+                messages.error(self.request, _(error_title))
         return super(AddRelation, self).get(*args, **kwargs)
+
 
 class Add(BaseCMDBView):
     template_name = 'cmdb/add_ci.html'
@@ -314,6 +331,7 @@ class Add(BaseCMDBView):
                 messages.error(self.request, _("Correct the errors."))
         return super(Add, self).get(*args, **kwargs)
 
+
 class LastChanges(BaseCMDBView):
     template_name = 'cmdb/search_changes.html'
 
@@ -342,6 +360,7 @@ class LastChanges(BaseCMDBView):
         self.ci_uid = kwargs.get('ci_id', None)
         self.last_changes = self.get_last_changes(self.ci_uid)
         return super(LastChanges, self).get(*args, **kwargs)
+
 
 class Edit(BaseCMDBView):
     template_name = 'cmdb/edit_ci.html'
@@ -549,7 +568,7 @@ class Edit(BaseCMDBView):
                 puppet_logs = db.PuppetLog.objects.filter(cichange=report).all()
                 self.puppet_reports.append(dict(report=report, logs=puppet_logs))
             self.zabbix_triggers = db.CIChangeZabbixTrigger.objects.filter(
-                    ci=self.ci).order_by('-lastchange')
+                    ci=self.ci).order_by('-last_changed')
             self.so_events = db.CIChange.objects.filter(
                     type=db.CI_CHANGE_TYPES.STATUSOFFICE.id,
                     ci=self.ci).all()
@@ -749,12 +768,14 @@ class Search(BaseCMDBView):
         self.form = self.Form(**form_options)
         return super(Search, self).get(*args, **kwargs)
 
+
 class Index(BaseCMDBView):
     template_name = 'cmdb/index.html'
 
     def get_context_data(self, **kwargs):
         ret = super(Index, self).get_context_data(**kwargs)
         return ret
+
 
 class ViewUnknown(BaseCMDBView):
     template_name = 'cmdb/view_ci_error.html'
