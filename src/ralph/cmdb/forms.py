@@ -10,7 +10,7 @@ from django import forms
 from ralph.cmdb import models
 from ralph.ui.forms import ReadOnlyWidget, \
     ReadOnlyMultipleChoiceWidget
-from ralph.cmdb.models import CILayer,CIType
+from ralph.cmdb.models import CILayer, CIType
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from ralph.ui.forms import ReadOnlySelectWidget
 from ralph.cmdb import models  as db
