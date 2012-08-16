@@ -8,6 +8,7 @@ This documentation
   
    overview
    installation
+   upgrade
    configuration
    permissions
    browser
