@@ -8,11 +8,11 @@
   TimeOut 600
   # This is all there is to it. You should NOT use ProxyRequests On.
 
-  Alias /robots.txt /home/ralph/project/src/ralph/media/robots.txt
-  Alias /favicon.ico /home/ralph/project/src/ralph/media/img/favicon.ico
+  Alias /robots.txt /home/ralph/lib/python2.7/site-packages/ralph/media/robots.txt
+  Alias /favicon.ico /home/ralph/lib/python2.7/site-packages/ralph/media/img/favicon.ico
 
   Alias /doc /home/ralph/project/doc/_build/html/
-  Alias /static /home/ralph/project/src/ralph/static/
+  Alias /static /home/ralph/lib/python2.7/site-packages/ralph/static/
 
   ErrorDocument 500 /static/500.html 
   ErrorDocument 503 /static/503.html
@@ -22,7 +22,7 @@
     Allow from all
   </Directory>
 
-  <Directory /home/ralph/project/src/ralph/static>
+  <Directory /home/ralph/lib/python2.7/site-packages/ralph/static/>
     Order deny,allow
     Allow from all
   </Directory>
