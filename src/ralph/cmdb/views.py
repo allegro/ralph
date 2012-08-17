@@ -27,6 +27,8 @@ from ralph.util.presentation import get_device_icon, get_venture_icon, get_netwo
 import ralph.cmdb.models  as db
 from bob.menu import MenuItem, MenuHeader
 
+import ralph.cmdb.models_signals
+
 
 ROWS_PER_PAGE=20
 SAVE_PRIORITY = 200
@@ -221,7 +223,8 @@ class EditRelation(BaseCMDBView):
             self.form = self.Form(self.request.POST, **self.form_options)
             if self.form.is_valid():
                 ci_id = self.kwargs.get('ci_id')
-                self.form.save()
+                model = self.form.save(commit=False)
+                model.save(user=self.request.user)
                 return HttpResponseRedirect('/cmdb/edit/%s' % ci_id)
             else:
                 error_title = get_error_title(self.form)
@@ -286,7 +289,8 @@ class AddRelation(BaseCMDBView):
             self.form = self.Form(self.request.POST, **self.form_options)
             if self.form.is_valid():
                 ci_id = self.kwargs.get('ci_id')
-                self.form.save()
+                model = self.form.save(commit=False)
+                model.save(user=self.request.user)
                 return HttpResponseRedirect('/cmdb/ci/edit/%s' % ci_id)
             else:
                 error_title = get_error_title(self.form)
@@ -324,7 +328,7 @@ class Add(BaseCMDBView):
                 model = self.form.save()
                 if not model.content_object:
                     model.uid = "%s-%s" % ('mm', model.id)
-                    model.save()
+                    model.save(user=self.request.user)
                 messages.success(self.request, _("Changes saved."))
                 return HttpResponseRedirect('/cmdb/ci/edit/'+str(model.id))
             else:
@@ -568,7 +572,7 @@ class Edit(BaseCMDBView):
                 puppet_logs = db.PuppetLog.objects.filter(cichange=report).all()
                 self.puppet_reports.append(dict(report=report, logs=puppet_logs))
             self.zabbix_triggers = db.CIChangeZabbixTrigger.objects.filter(
-                    ci=self.ci).order_by('-last_changed')
+                    ci=self.ci).order_by('-lastchange')
             self.so_events = db.CIChange.objects.filter(
                     type=db.CI_CHANGE_TYPES.STATUSOFFICE.id,
                     ci=self.ci).all()
@@ -632,7 +636,7 @@ class Edit(BaseCMDBView):
                     self.form.data['base-id'] = self.ci.id
                     model = self.form.save(commit=False)
                     model.uid = self.ci.uid
-                    model.save()
+                    model.save(user=self.request.user)
                     self.form_attributes.ci = model
                     model_attributes = self.form_attributes.save()
                     messages.success(self.request, "Changes saved.")
@@ -755,7 +759,7 @@ class Search(BaseCMDBView):
                 'id': i.id,
                 'icon': icon,
                 'venture': '',
-                'layers': ','.join([x[1] for x in i.layers.values_list()]),
+                'layers': ','.join("%s" % x for x in i.layers.select_related()),
                 'state': i.get_state_display(),
                 'state_id': i.state,
                 'status': i.get_status_display(),
