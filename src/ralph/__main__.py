@@ -9,18 +9,12 @@ def ubuntu_1020872_workaround():
     Ubuntu bug https://bugs.launchpad.net/libjpeg-turbo/+bug/1020872.
     """
     os.dup2(2, 3)
-    stderr = os.fdopen(2, 'a')
-    stderr.close()
-    e = None
+    os.close(2)
     try:
         import _imaging
-    except Exception as e:
-        pass
     finally:
         os.dup2(3, 2)
         sys.__stderr__ = sys.stderr = os.fdopen(2, 'a')
-    if e:
-        raise e
 
 def main():
     if sys.platform.startswith('linux'):
