@@ -205,6 +205,11 @@ Now add the Ralph site configuration to `/etc/apache2/sites-enabled/ralph
 <_static/apache>`_, restart Apache and you're done. Alternatively, you can check
 out `configuration for usage with modwsgi <_static/apache-wsgi>`_.
 
+.. note::
+
+  Remember to adapt the project and static paths in the Apache configuration
+  files to fit your actual system configuration.
+
 Ralph
 -----
 
