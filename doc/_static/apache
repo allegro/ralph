@@ -12,7 +12,6 @@
   Alias /favicon.ico /home/ralph/project/src/ralph/media/img/favicon.ico
 
   Alias /doc /home/ralph/project/doc/_build/html/
-  Alias /git /home/ambv/git-tutorial/project/_build/html/
   Alias /static /home/ralph/project/src/ralph/static/
 
   ErrorDocument 500 /static/500.html 
