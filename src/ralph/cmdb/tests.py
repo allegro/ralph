@@ -134,12 +134,12 @@ class CIImporterTest(TestCase):
         allegro_ci.save()
 
         ct=ContentType.objects.get_for_model(x)
-        test_venture, = CIImporter.import_all_ci([ct],asset_id=x.id)
+        test_venture, = CIImporter().import_all_ci([ct],asset_id=x.id)
 
         ct=ContentType.objects.get_for_model(y)
-        test_role, = CIImporter.import_all_ci([ct],asset_id=y.id)
+        test_role, = CIImporter().import_all_ci([ct],asset_id=y.id)
 
-        CIImporter.import_relations(ContentType.objects.get_for_model(y),asset_id=y.id)
+        CIImporter().import_relations(ContentType.objects.get_for_model(y),asset_id=y.id)
 
         with mock.patch('ralph.cmdb.integration.lib.fisheye.Fisheye') as Fisheye:
             Fisheye.side_effect = MockFisheye
@@ -180,11 +180,11 @@ class CIImporterTest(TestCase):
         objs = [ self.top_venture, self.child_venture, self.role, self.child_role ]
         for o in objs:
             ct=ContentType.objects.get_for_model(o)
-            CIImporter.import_all_ci([ct],asset_id=o.id)
+            CIImporter().import_all_ci([ct],asset_id=o.id)
 
         for o in objs:
             ct=ContentType.objects.get_for_model(o)
-            CIImporter.import_relations(ct, asset_id=o.id)
+            CIImporter().import_relations(ct, asset_id=o.id)
 
         # devices
         objs = [ self.dc, self.rack, self.blade ]
@@ -192,12 +192,12 @@ class CIImporterTest(TestCase):
         # create ci
         for o in objs:
             ct=ContentType.objects.get_for_model(o)
-            CIImporter.import_all_ci([ct],asset_id=o.id)
+            CIImporter().import_all_ci([ct],asset_id=o.id)
 
         # create relations
         for o in objs:
             ct=ContentType.objects.get_for_model(o)
-            CIImporter.import_relations(ct, asset_id=o.id)
+            CIImporter().import_relations(ct, asset_id=o.id)
 
         # All ci should be in Hardware layer
         ci_dc = CI.objects.get(name='dc')
@@ -212,7 +212,7 @@ class CIImporterTest(TestCase):
         cis=[]
         for o in objs:
             ct=ContentType.objects.get_for_model(o)
-            cis.extend(CIImporter.import_all_ci([ct],asset_id=o.id))
+            cis.extend(CIImporter().import_all_ci([ct],asset_id=o.id))
         # Rack should be inside DC
         try:
             CIRelation.objects.get(parent=ci_dc, child=ci_rack,type=CI_RELATION_TYPES.CONTAINS.id)
