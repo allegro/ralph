@@ -11,6 +11,11 @@ from django.contrib.contenttypes import generic
 from django.utils.translation import ugettext_lazy as _
 from django.core.exceptions import ValidationError
 
+from lck.django.common.models import TimeTrackable
+from datetime import datetime
+
+# run hooks
+
 
 from lck.django.choices import Choices
 
@@ -37,20 +42,21 @@ class CI_STATUS_TYPES(Choices):
 class CI_ATTRIBUTE_TYPES(Choices):
     _ = Choices.Choice
 
-    INTEGER=_('Integer')
-    STRING=_('String')
-    DATE=_('Date')
-    FLOAT=_('Real')
-    CHOICE=_('Choice List')
+    INTEGER = _('Integer')
+    STRING = _('String')
+    DATE = _('Date')
+    FLOAT = _('Real')
+    CHOICE = _('Choice List')
 
 class CI_CHANGE_TYPES(Choices):
     _ = Choices.Choice
 
-    CONF_GIT=_('Git Configuration')
-    CONF_AGENT=_('Services reconfiguration')
-    DEVICE=_('Device attribute change')
-    ZABBIX_TRIGGER=_('Zabbix trigger')
-    STATUSOFFICE=_('Status office service change')
+    CONF_GIT = _('Git Configuration')
+    CONF_AGENT = _('Services reconfiguration')
+    DEVICE = _('Device attribute change')
+    CI = _('CI attribute change')
+    ZABBIX_TRIGGER = _('Zabbix trigger')
+    STATUSOFFICE = _('Status office service change')
 
 
 class CI_CHANGE_PRIORITY_TYPES(Choices):
@@ -79,7 +85,7 @@ class CI_TYPES(Choices):
     NETWORKTERMINATOR = _('Network Terminator')
 
 
-class CIContentTypePrefix(models.Model):
+class CIContentTypePrefix(TimeTrackable):
     content_type_name = models.CharField(max_length=255, null=False, primary_key=True)
     prefix = models.SlugField()
 
@@ -96,13 +102,13 @@ class CIContentTypePrefix(models.Model):
         return ContentType.objects.get_by_natural_key(app, model)
 
 
-class CILayer(models.Model):
+class CILayer(TimeTrackable):
     name = models.SlugField()
 
     def __unicode__(self):
         return " %s " %  self.name
 
-class CIRelation(models.Model):
+class CIRelation(TimeTrackable):
     class Meta:
         unique_together = ('parent', 'child', 'type')
     readonly = models.BooleanField(default=False, null = False)
@@ -121,13 +127,19 @@ class CIRelation(models.Model):
                 self.child,
         )
 
-class CIType(models.Model):
+    def save(self, user=None, *args, **kwargs):
+        self.saving_user = user
+        return super(CIRelation, self).save(*args, **kwargs)
+
+
+
+class CIType(TimeTrackable):
     name = models.SlugField()
 
     def __unicode__(self):
         return "%s" %  self.name
 
-class CIAttribute(models.Model):
+class CIAttribute(TimeTrackable):
     name = models.CharField(max_length = 100, verbose_name=_("Name"))
     attribute_type = models.IntegerField(
             max_length=11,
@@ -160,20 +172,20 @@ class CIAttribute(models.Model):
                 raise ValidationError(validation_msg)
 
 
-class CIValueDate(models.Model):
+class CIValueDate(TimeTrackable):
     value = models.DateField(verbose_name=_("value"), null = True, blank=True)
 
     def __unicode__(self):
         return "%s" %  self.value
 
 
-class CIValueInteger(models.Model):
+class CIValueInteger(TimeTrackable):
     value = models.IntegerField(verbose_name=_("value"), null = True, blank=True)
 
     def __unicode__(self):
             return "%s" %  self.value
 
-class CIValueFloat(models.Model):
+class CIValueFloat(TimeTrackable):
     value = models.FloatField(
             verbose_name=_("value"),
             null = True,
@@ -183,7 +195,7 @@ class CIValueFloat(models.Model):
     def __unicode__(self):
             return "%s" %  self.value
 
-class CIValueString(models.Model):
+class CIValueString(TimeTrackable):
     value = models.CharField(
             max_length = 1024,
             verbose_name=_("value"),
@@ -195,7 +207,7 @@ class CIValueString(models.Model):
             return "%s" %  self.value
 
 
-class CIValueChoice(models.Model):
+class CIValueChoice(TimeTrackable):
     value = models.IntegerField(
             verbose_name=_("value"),
             null = True,
@@ -206,7 +218,7 @@ class CIValueChoice(models.Model):
             return "%s" %  self.value
 
 
-class CIChangeZabbixTrigger(models.Model):
+class CIChangeZabbixTrigger(TimeTrackable):
     ci = models.ForeignKey('CI', null = True)
     trigger_id = models.IntegerField(max_length=11,null=False )
     host = models.CharField(max_length=255,null=False )
@@ -218,15 +230,29 @@ class CIChangeZabbixTrigger(models.Model):
     comments = models.CharField(max_length=1024)
 
 
-class CIChangeStatusOfficeIncident(models.Model):
+class CIChangeStatusOfficeIncident(TimeTrackable):
     ci = models.ForeignKey('CI', null = True)
     time = models.DateTimeField()
     status = models.IntegerField(max_length=11,null=False )
     subject = models.CharField(max_length=1024)
     incident_id= models.IntegerField(max_length=11,null=False )
 
+class CIChangeCMDBHistory(TimeTrackable):
+    time = models.DateTimeField(verbose_name=_("date"), default=datetime.now)
+    ci = models.ForeignKey('CI')
+    user = models.ForeignKey('auth.User', verbose_name=_("user"), null=True,
+                           blank=True, default=None, on_delete=models.SET_NULL)
+    field_name = models.CharField(max_length=64, default='')
+    old_value = models.CharField(max_length=255, default='')
+    new_value = models.CharField(max_length=255, default='')
+    comment = models.CharField(max_length=255)
 
-class CIChange(models.Model):
+    class Meta:
+        verbose_name = _("CI history change")
+        verbose_name_plural = _("CI history changes")
+
+
+class CIChange(TimeTrackable):
     ci = models.ForeignKey('CI', null = True, blank=True)
     type = models.IntegerField(max_length=11, choices=CI_CHANGE_TYPES(),
             null=False )
@@ -254,7 +280,7 @@ class CIChange(models.Model):
         unique_together = ('content_type', 'object_id')
 
 
-class CIChangeGit(models.Model):
+class CIChangeGit(TimeTrackable):
     file_paths = models.CharField(max_length=3000,
             null=False)
     comment = models.CharField(max_length=1000)
@@ -262,7 +288,7 @@ class CIChangeGit(models.Model):
     changeset = models.CharField(max_length=80, unique=True)
 
 
-class CIChangePuppet(models.Model):
+class CIChangePuppet(TimeTrackable):
     ci = models.ForeignKey('CI',
             null=True,
             blank=True,
@@ -274,7 +300,7 @@ class CIChangePuppet(models.Model):
     status = models.CharField(max_length=30)
 
 
-class PuppetLog(models.Model):
+class PuppetLog(TimeTrackable):
     cichange = models.ForeignKey('CIChangePuppet')
     source = models.CharField(max_length=100)
     message =models.CharField(max_length=1024)
@@ -283,7 +309,7 @@ class PuppetLog(models.Model):
     level = models.CharField(max_length=100)
 
 
-class PuppetResourceStatus(models.Model):
+class PuppetResourceStatus(TimeTrackable):
     cichange= models.ForeignKey('CIChangePuppet')
     change_count = models.IntegerField()
     changed = models.BooleanField()
@@ -297,7 +323,7 @@ class PuppetResourceStatus(models.Model):
     title = models.CharField(max_length=100)
 
 
-class CI(models.Model):
+class CI(TimeTrackable):
     uid = models.CharField(
             max_length=100,
             unique=True,
@@ -343,6 +369,9 @@ class CI(models.Model):
             through='CIRelation')
     added_manually = models.BooleanField(default=False)
 
+    class Meta:
+        unique_together = ('content_type', 'object_id')
+
     def __unicode__(self):
         return "%s (%s)" %  (self.name, self.type)
 
@@ -374,15 +403,16 @@ class CI(models.Model):
         uid_prefix=prefix_record.prefix
         return CI.objects.get(uid='%s-%s' % (uid_prefix,content_object.id))
 
-#    @models.permalink
-#    def get_absolute_url(self):
-#        return "/cmdb/ci/view/%i" % self.id
+    @models.permalink
+    def get_absolute_url(self):
+        return "/cmdb/ci/view/%i" % self.id
 
-    class Meta:
-        unique_together = ('content_type', 'object_id')
+    def save(self, user=None, *args, **kwargs):
+        self.saving_user = user
+        return super(CI, self).save(*args, **kwargs)
 
 
-class CIAttributeValue(models.Model):
+class CIAttributeValue(TimeTrackable):
     ci = models.ForeignKey('CI')
     attribute = models.ForeignKey(CIAttribute)
 
@@ -410,7 +440,7 @@ class CIAttributeValue(models.Model):
             verbose_name=_("choice value"))
 
 
-class CIEvent(models.Model):
+class CIEvent(TimeTrackable):
     ''' Abstract for CIProblem/CIIncident '''
     ci = models.ForeignKey('CI',
             null = True,
