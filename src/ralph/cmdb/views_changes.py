@@ -513,7 +513,7 @@ class TimeLine(BaseCMDBView):
                     Q(time__lt=stop_date) &
                     Q(type=db.CI_CHANGE_TYPES.CONF_GIT.id)
                 )
-        ).all()
+        ).order_by('time').all()
         agent_changes_warnings = db.CIChange.objects.filter(
                 Q(
                     Q(time__gt=start_date) &
@@ -536,7 +536,7 @@ class TimeLine(BaseCMDBView):
                         # mentioned.
                     ])
                 )
-        ).all()
+        ).order_by('time').all()
         manual = []
         for change in manual_changes:
             manual.append(dict(
@@ -550,7 +550,6 @@ class TimeLine(BaseCMDBView):
             agent_warnings.append(dict(
                 id=change.id,
                 time=change.time.isoformat(),
-                #author=change.author,
                 comment=change.message,
         ))
         agent_errors=[]
@@ -558,7 +557,6 @@ class TimeLine(BaseCMDBView):
             agent_errors.append(dict(
                 id=change.id,
                 time=change.time.isoformat(),
-                #author=change.author,
                 comment=change.message,
         ))
         response_dict=dict(
