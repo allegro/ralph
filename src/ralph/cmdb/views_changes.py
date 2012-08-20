@@ -43,6 +43,8 @@ class Change(ChangesBase):
             'device_attributes_changes': self.device_attributes_changes,
             'fisheye_url': settings.FISHEYE_URL,
             'fisheye_project': settings.FISHEYE_PROJECT_NAME,
+            'puppet_feedback_errors' : self.puppet_feedback_errors,
+            'puppet_feedback_changes' : self.puppet_feedback_changes,
             })
         return ret
 
@@ -53,6 +55,8 @@ class Change(ChangesBase):
         self.puppet_reports = []
         self.git_changes = []
         self.device_attributes_changes  = []
+        self.puppet_feedback_errors = 0
+        self.puppet_feedback_changes = 0
         report = change.content_object
         if change.type == db.CI_CHANGE_TYPES.CONF_AGENT.id:
             puppet_logs = db.PuppetLog.objects.filter(cichange=report).all()
@@ -65,6 +69,15 @@ class Change(ChangesBase):
                 author=report.author,
                 changeset=report.changeset,
             )]
+            configuration_version=change.content_object.changeset[0:7]
+            self.puppet_feedback_changes = db.CIChangePuppet.objects.filter(
+                configuration_version=configuration_version,
+                status='changed',
+            ).count()
+            self.puppet_feedback_errors = db.CIChangePuppet.objects.filter(
+                configuration_version=configuration_version,
+                status='failed',
+            ).count()
         elif change.type == db.CI_CHANGE_TYPES.DEVICE.id:
             self.device_attributes_changes  = [report]
         return super(Change, self).get(*args, **kwargs)
@@ -207,7 +220,11 @@ class DashboardDetails(ChangesBase, PaginatedView):
                             getattr(ci.content_object, 'venture', None):
                         venture=db.CI.get_by_content_object(ci.content_object.venture)
                 if venture_id:
-                    if venture and venture.id == int(venture_id):
+                    if (venture) and (
+                            (venture.id == int(venture_id))
+                            or
+                            ((venture == None) and (int(venture_id) == -1))
+                            ):
                         self.data.append(dict(
                             count=count,
                             name=name,
@@ -483,3 +500,73 @@ class Reports(ChangesBase, PaginatedView):
 
         return super(Reports, self).get(*args)
 
+
+class TimeLine(BaseCMDBView):
+    template_name = 'cmdb/timeline.html'
+    @staticmethod
+    def get_ajax(self):
+        start_date = datetime.datetime.now() - datetime.timedelta(days=7)
+        stop_date = datetime.datetime.now()
+        manual_changes = db.CIChange.objects.filter(
+                Q(
+                    Q(time__gt=start_date) &
+                    Q(time__lt=stop_date) &
+                    Q(type=db.CI_CHANGE_TYPES.CONF_GIT.id)
+                )
+        ).all()
+        agent_changes_warnings = db.CIChange.objects.filter(
+                Q(
+                    Q(time__gt=start_date) &
+                    Q(time__lt=stop_date) &
+                    Q(type=db.CI_CHANGE_TYPES.CONF_AGENT.id) &
+                    Q(priority__in=[
+                        db.CI_CHANGE_PRIORITY_TYPES.NOTICE.id,
+                        db.CI_CHANGE_PRIORITY_TYPES.WARNING.id,
+                    ])
+                )
+        ).order_by('time').all()
+        agent_changes_errors = db.CIChange.objects.filter(
+                Q(
+                    Q(time__gt=start_date) &
+                    Q(time__lt=stop_date) &
+                    Q(type=db.CI_CHANGE_TYPES.CONF_AGENT.id) &
+                    Q(priority__in=[
+                        db.CI_CHANGE_PRIORITY_TYPES.ERROR.id,
+                        # critical is not used for puppet agents, though not
+                        # mentioned.
+                    ])
+                )
+        ).all()
+        manual = []
+        for change in manual_changes:
+            manual.append(dict(
+                id=change.id,
+                time=change.time.isoformat(),
+                author=change.content_object.author,
+                comment=change.content_object.comment,
+            ))
+        agent_warnings = []
+        for change in agent_changes_warnings:
+            agent_warnings.append(dict(
+                id=change.id,
+                time=change.time.isoformat(),
+                #author=change.author,
+                comment=change.message,
+        ))
+        agent_errors=[]
+        for change in agent_changes_errors:
+            agent_errors.append(dict(
+                id=change.id,
+                time=change.time.isoformat(),
+                #author=change.author,
+                comment=change.message,
+        ))
+        response_dict=dict(
+                manual=manual,
+                agent_warnings=agent_warnings,
+                agent_errors=agent_errors,
+        )
+        return HttpResponse(
+                simplejson.dumps(response_dict),
+                mimetype='application/json',
+        )

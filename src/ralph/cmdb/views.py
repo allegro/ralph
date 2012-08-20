@@ -88,6 +88,7 @@ class BaseCMDBView(Base):
                 ('/cmdb/search?layer=7&top_level=1', 'Services', 'fugue-disc-share'),
                 ('/cmdb/add', 'Add CI', 'fugue-block--plus'),
                 ('/cmdb/changes/dashboard', 'Dashboard', 'fugue-dashboard'),
+                ('/cmdb/changes/timeline', 'Timeline View', 'fugue-dashboard'),
                 ('/admin/cmdb', 'Admin', 'fugue-toolbox'),
         )
         reports = (
