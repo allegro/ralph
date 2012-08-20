@@ -1,6 +1,14 @@
 Change Log
 ----------
 
+NEXT
+----
+* CMDB timeline view added(initial)
+* bugfixes in the CMDB
+* Git configuration change now knows if change were successfull(from puppet agent)
+* Editing relations much more comfortable
+* minor bugfixes 
+
 1.0.5
 ~~~~~
 

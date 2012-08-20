@@ -64,9 +64,8 @@ class UnknownCTException(Exception):
         return repr("Unknown content type : %s" % self.parameter)
 
 class CIImporter(object):
-    @classmethod
     @nested_commit_on_success
-    def store_asset(cls, asset, type_, layer_id, uid_prefix):
+    def store_asset(self, asset, type_, layer_id, uid_prefix):
         """Store given asset as  CI  """
         logger.debug('Saving: %s' % asset)
         layer = cdb.CILayer.objects.get(id=layer_id)
@@ -87,8 +86,25 @@ class CIImporter(object):
         ci.save()
         return ci
 
-    @classmethod
-    def import_assets_by_contenttype(cls, asset_class,
+    def remove_moved_cis(self):
+        """
+        Some CI has missing assets.
+        This is the case, when Ralph deletes Asset(remove and re-add
+        with different ID)
+
+        CMDB has fixed uid relations schema, so CI has to be removed and
+        added again.
+        This is temporary bugfix, until Ralph fixed floating CI problem.
+        All CI related information are lost, though.
+        """
+        logger.debug('Analysing CIs with missing asset')
+        for x in cdb.CI.objects.all():
+            if x.content_type and x.object_id and (not x.content_object):
+                # id has changed
+                logger.debug('Delete CI %s with missing asset.' % x)
+                x.delete()
+
+    def import_assets_by_contenttype(self, asset_class,
             _type, layer_id, asset_id=None):
         ret=[]
         logger.info('Importing devices.')
@@ -109,12 +125,11 @@ class CIImporter(object):
         else:
             all_devices = asset_class.objects.order_by('id').all()
         for d in all_devices:
-            ret.append(cls.store_asset(d, _type, layer_id, uid_prefix))
+            ret.append(self.store_asset(d, _type, layer_id, uid_prefix))
         logger.info('Finished.')
         return ret
 
-    @classmethod
-    def purge_all_ci(cls, content_type=None):
+    def purge_all_ci(self, content_type=None):
         logger.info('Purging CIs')
         if content_type:
             for x in cdb.CI.objects.filter(
@@ -125,60 +140,55 @@ class CIImporter(object):
             for x in cdb.CI.objects.all().iterator():
                 x.delete()
 
-    @classmethod
-    def purge_all_relations(cls):
+    def purge_all_relations(self):
         logger.info('Puring Relations')
         for x in cdb.CIRelation.objects.all().iterator():
             x.delete()
 
-    @classmethod
-    def purge_system_relations(cls):
+    def purge_system_relations(self):
         logger.info('Purging relations')
         for x in cdb.CIRelation.objects.filter(readonly=True).iterator():
             x.delete()
 
-    @classmethod
-    def purge_user_relations(cls):
+    def purge_user_relations(self):
         logger.info('Purging relations')
         for x in cdb.CIRelation.objects.filter(readonly=False).iterator():
             x.delete()
 
-    @classmethod
-    def cache_content_types(cls):
-        cls.venture_content_type = ContentType.objects.get(
+    def cache_content_types(self):
+        self.venture_content_type = ContentType.objects.get(
                 app_label='business',
                 model='venture',
         )
-        cls.venture_role_content_type = ContentType.objects.get(
+        self.venture_role_content_type = ContentType.objects.get(
                 app_label='business',
                 model='venturerole',
         )
-        cls.datacenter_content_type = ContentType.objects.get(
+        self.datacenter_content_type = ContentType.objects.get(
                 app_label='discovery',
                 model='datacenter',
         )
-        cls.network_content_type = ContentType.objects.get(
+        self.network_content_type = ContentType.objects.get(
                 app_label='discovery',
                 model='network',
         )
-        cls.device_content_type = ContentType.objects.get(
+        self.device_content_type = ContentType.objects.get(
                     app_label='discovery',
                     model='device',
         )
-        cls.service_content_type = ContentType.objects.get(
+        self.service_content_type = ContentType.objects.get(
                     app_label='business',
                     model='service',
         )
-        cls.business_line_content_type = ContentType.objects.get(
+        self.business_line_content_type = ContentType.objects.get(
                     app_label='business',
                     model='businessline',
         )
 
-    @classmethod
-    def import_relations(cls, content_type, asset_id=None):
+    def import_relations(self, content_type, asset_id=None):
         """ Importing relations parent/child from Ralph  """
         content_id = content_type.id
-        cls.cache_content_types()
+        self.cache_content_types()
         if asset_id!=None:
             all_ciis = cdb.CI.objects.filter(
                     object_id=asset_id,
@@ -191,32 +201,31 @@ class CIImporter(object):
         for d in all_ciis:
             obj = d.content_object
             try:
-                if content_type == cls.network_content_type:
-                    cls.import_network_relations(network=d,
+                if content_type == self.network_content_type:
+                    self.import_network_relations(network=d,
                     )
-                elif content_type == cls.device_content_type:
-                    cls.import_device_relations(obj=obj, d=d)
-                elif content_type == cls.venture_content_type:
-                    cls.import_venture_relations(obj=obj, d=d)
-                elif content_type == cls.venture_role_content_type:
-                    cls.import_role_relations(obj=obj, d=d)
-                elif content_type == cls.datacenter_content_type:
+                elif content_type == self.device_content_type:
+                    self.import_device_relations(obj=obj, d=d)
+                elif content_type == self.venture_content_type:
+                    self.import_venture_relations(obj=obj, d=d)
+                elif content_type == self.venture_role_content_type:
+                    self.import_role_relations(obj=obj, d=d)
+                elif content_type == self.datacenter_content_type:
                     # top level Ci without parent relations.
                     pass
-                elif content_type == cls.service_content_type:
-                    cls.import_service_relations(obj=obj, d=d)
+                elif content_type == self.service_content_type:
+                    self.import_service_relations(obj=obj, d=d)
                 else:
                     raise UnknownCTException(content_type)
             except IntegrityError:
                 pass
 
 
-    @classmethod
     @nested_commit_on_success
-    def import_service_relations(cls, obj, d):
+    def import_service_relations(self, obj, d):
         if obj.business_line:
             bline = cdb.CI.objects.get(
-                    content_type=cls.business_line_content_type,
+                    content_type=self.business_line_content_type,
                     name=obj.business_line,
             )
             cir = cdb.CIRelation()
@@ -226,13 +235,12 @@ class CIImporter(object):
             cir.type = cdb.CI_RELATION_TYPES.CONTAINS.id
             cir.save()
 
-    @classmethod
     @nested_commit_on_success
-    def import_venture_relations(cls, obj, d):
+    def import_venture_relations(self, obj, d):
         """ Must be called after datacenter """
         if obj.data_center_id:
                 datacenter_ci = cdb.CI.objects.filter(
-                        content_type=cls.datacenter_content_type,
+                        content_type=self.datacenter_content_type,
                         object_id=obj.data_center_id).all()[0]
                 cir = cdb.CIRelation()
                 cir.readonly = True
@@ -250,7 +258,7 @@ class CIImporter(object):
                 cir.readonly = True
                 cir.child = d
                 cir.parent = cdb.CI.objects.filter(
-                        content_type_id=cls.venture_content_type,
+                        content_type_id=self.venture_content_type,
                         object_id=obj.parent.id)[0]
                 cir.type = cdb.CI_RELATION_TYPES.CONTAINS.id
                 try:
@@ -258,13 +266,12 @@ class CIImporter(object):
                 except IntegrityError:
                     pass
 
-    @classmethod
     @nested_commit_on_success
-    def import_role_relations(cls, obj, d):
+    def import_role_relations(self, obj, d):
         if obj.venture_id:
                 # first venturerole in hierarchy, connect it to venture
                 venture_ci = cdb.CI.objects.get(
-                        content_type=cls.venture_content_type,
+                        content_type=self.venture_content_type,
                         object_id=obj.venture_id)
                 cir = cdb.CIRelation()
                 cir.readonly = True
@@ -280,7 +287,7 @@ class CIImporter(object):
                 cir.readonly = True
                 cir.child = d
                 cir.parent = cdb.CI.objects.filter(
-                        content_type_id=cls.venture_role_content_type,
+                        content_type_id=self.venture_role_content_type,
                         object_id=obj.parent.id)[0]
                 cir.type = cdb.CI_RELATION_TYPES.CONTAINS.id
                 try:
@@ -288,9 +295,8 @@ class CIImporter(object):
                 except IntegrityError:
                     pass
 
-    @classmethod
     @nested_commit_on_success
-    def import_device_relations(cls, obj, d):
+    def import_device_relations(self, obj, d):
         """ Must be called after ventures """
         for x in cdb.CIRelation.objects.filter(
                 child=d,
@@ -298,7 +304,7 @@ class CIImporter(object):
             x.delete()
         if obj.venture_id and not obj.parent:
                 venture_ci = cdb.CI.objects.get(
-                        content_type=cls.venture_content_type,
+                        content_type=self.venture_content_type,
                         object_id=obj.venture_id)
                 cir = cdb.CIRelation()
                 cir.readonly = True
@@ -312,7 +318,7 @@ class CIImporter(object):
 
         if obj.venture_role_id and not obj.parent:
                 venture_role_ci = cdb.CI.objects.get(
-                        content_type=cls.venture_role_content_type,
+                        content_type=self.venture_role_content_type,
                         object_id=obj.venture_role_id)
                 cir = cdb.CIRelation()
                 cir.readonly = True
@@ -331,7 +337,7 @@ class CIImporter(object):
             cir.readonly = True
             cir.child = d
             cir.parent = cdb.CI.objects.get(
-                    content_type=cls.device_content_type,
+                    content_type=self.device_content_type,
                     object_id=obj.parent.id)
             cir.type = cdb.CI_RELATION_TYPES.CONTAINS.id
             try:
@@ -339,9 +345,8 @@ class CIImporter(object):
             except IntegrityError:
                 pass
 
-    @classmethod
     @nested_commit_on_success
-    def import_network_relations(cls, network):
+    def import_network_relations(self, network):
         """ Must be called after device_relations! """
         """ Make relations using network->ipaddresses->device """
         for ip in ndb.IPAddress.objects.filter(
@@ -349,7 +354,7 @@ class CIImporter(object):
                 network=network.content_object).all():
             # make relations network->device
             ci_device = cdb.CI.objects.get(
-                    content_type=cls.device_content_type,
+                    content_type=self.device_content_type,
                     object_id=ip.device.id,
             )
             cir = cdb.CIRelation()
@@ -362,27 +367,24 @@ class CIImporter(object):
             except IntegrityError:
                 pass
 
-    @classmethod
-    def import_single_object_relations(cls, content_object):
+    def import_single_object_relations(self, content_object):
+        """
+        Fasade for single Asset
+        """
+        ct = ContentType.objects.get_for_model(content_object)
+        object_id = content_object.id
+        return self.import_relations(ct, asset_id=object_id)
+
+
+    def import_single_object(self, content_object):
         """
         Fasade for single Asset
         """
         ct = ContentType.objects.get_for_model(content_object)
         object_id=content_object.id
-        return cls.import_relations(ct, asset_id=object_id)
+        return self.import_all_ci([ct], asset_id=object_id)
 
-
-    @classmethod
-    def import_single_object(cls, content_object):
-        """
-        Fasade for single Asset
-        """
-        ct = ContentType.objects.get_for_model(content_object)
-        object_id=content_object.id
-        return cls.import_all_ci([ct], asset_id=object_id)
-
-    @classmethod
-    def import_all_ci(cls, content_types, asset_id=None):
+    def import_all_ci(self, content_types, asset_id=None):
         ret=[]
         content_to_import={
                 db.Device: cdb.CI_TYPES.DEVICE.id,
@@ -404,12 +406,13 @@ class CIImporter(object):
                 bdb.BusinessLine: 7,
                 bdb.Service: 7,
         }
+        self.remove_moved_cis()
         for i in content_types:
             assetClass  = i.model_class()
             assetContentType = i
             logger.info('Importing content type : %s' % assetContentType)
             type_ = content_to_import[assetClass]
             layer = layers[assetClass]
-            ret.extend(cls.import_assets_by_contenttype(assetClass, type_, layer, asset_id))
+            ret.extend(self.import_assets_by_contenttype(assetClass, type_, layer, asset_id))
         return ret
 

@@ -160,7 +160,8 @@ class PuppetGitImporter(BaseImporter):
         logger.debug(details.comment)
         c = db.CIChangeGit()
         c.comment = unicode(details.comment)
-        files_list_str=""
+        c.time = strip_timezone(details.get('date'))
+        files_list_str = ""
         try:
             files = details.fileRevisionKey
             files_list = []
