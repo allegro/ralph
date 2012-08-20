@@ -85,7 +85,7 @@ class ComponentModelGroup(Named):
     def get_count(self):
         return sum(model.objects.filter(model__group=self).count()
             for model in (Storage, Memory, Processor, DiskShare, FibreChannel,
-                GenericComponent))
+                GenericComponent, Software))
 
 
 class ComponentModel(Named.NonUnique, SavePrioritized, WithConcurrentGetOrCreate):
@@ -155,7 +155,7 @@ class Component(SavePrioritized, WithConcurrentGetOrCreate):
     def get_price(self):
         if not self.model:
             return 0
-        return self.model.get_price()
+        return self.model.get_price(getattr(self, 'size', 0) or 0)
 
 
 class GenericComponent(Component):
@@ -309,16 +309,6 @@ class Storage(Component):
         if self.model and self.model.size:
             return self.model.size
         return self.size or 0
-
-    def get_price(self):
-        if not self.model or not self.model.group:
-            return 0
-        if self.model.group.per_size:
-            size = self.get_size()
-            return (size / (self.model.group.size_modifier or 1)
-                    ) * (self.model.group.price or 0)
-        else:
-            return self.model.group.price or 0
 
 
 class FibreChannel(Component):
