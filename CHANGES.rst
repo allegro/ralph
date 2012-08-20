@@ -4,6 +4,8 @@ Change Log
 1.0.6
 ~~~~~
 
+Released on August 20, 2012.
+
 * Pricing: cached prices updated after changes in the catalog; component price
   calculation includes custom sizes when relevant
 
@@ -22,6 +24,8 @@ Change Log
 1.0.5
 ~~~~~
 
+Released on August 13, 2012.
+
 * OpenStack plugin now accepts OPENSTACK_EXTRA_QUERIES setting, containing a
   list of tuples in the form (url, query) of additional data sources to check.
 
@@ -39,6 +43,8 @@ Change Log
 
 1.0.4
 ~~~~~
+
+Released on August 08, 2012.
 
 * edit links for devices and components
 
@@ -60,6 +66,8 @@ Change Log
 1.0.3 
 ~~~~~
 
+Released on August 01, 2012.
+
 * a rudimentary reports tab on device lists to filter devices according to
   specified rules
 
@@ -74,6 +82,8 @@ Change Log
 1.0.2
 ~~~~~
 
+Released on July 23, 2012.
+
 * ``ralph chains`` command to list available plug-in chains
 
 * fixed regression from 1.0.1: ``settings-local.py`` works correctly again
@@ -86,6 +96,8 @@ Change Log
 
 1.0.1
 ~~~~~
+
+Released on July 18, 2012.
 
 * ``ralph`` management command introduced as a shortcut to ``python manage.py``
 
@@ -100,5 +112,7 @@ Change Log
 
 1.0.0
 ~~~~~
+
+Released on July 16, 2012.
 
 * initial release
