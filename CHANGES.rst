@@ -1,13 +1,23 @@
 Change Log
 ----------
 
-NEXT
-----
-* CMDB timeline view added(initial)
-* bugfixes in the CMDB
-* Git configuration change now knows if change were successfull(from puppet agent)
-* Editing relations much more comfortable
-* minor bugfixes 
+1.0.6
+~~~~~
+
+* Pricing: cached prices updated after changes in the catalog; component price
+  calculation includes custom sizes when relevant
+
+* ``ralph`` commands no longer display the unhelpful "Error opening file for
+  reading: Permission denied" message
+
+* Usability improvements in editing CI relations
+
+* Preliminary timeline view for CMDB added
+
+* Git configuration change from Puppet agent now knows if a change was
+  successful
+
+* minor bugfixes
 
 1.0.5
 ~~~~~
