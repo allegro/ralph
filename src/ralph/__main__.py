@@ -8,12 +8,12 @@ def ubuntu_1020872_workaround():
     able to open /proc/self/auxv on a setcapped `python` process. Reported as
     Ubuntu bug https://bugs.launchpad.net/libjpeg-turbo/+bug/1020872.
     """
-    os.dup2(2, 3)
+    dup = os.dup(2)
     os.close(2)
     try:
         import _imaging
     finally:
-        os.dup2(3, 2)
+        os.dup2(dup, 2)
         sys.__stderr__ = sys.stderr = os.fdopen(2, 'a')
 
 def main():
