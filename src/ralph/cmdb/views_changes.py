@@ -508,34 +508,28 @@ class TimeLine(BaseCMDBView):
         start_date = datetime.datetime.now() - datetime.timedelta(days=7)
         stop_date = datetime.datetime.now()
         manual_changes = db.CIChange.objects.filter(
-                Q(
-                    Q(time__gt=start_date) &
-                    Q(time__lt=stop_date) &
-                    Q(type=db.CI_CHANGE_TYPES.CONF_GIT.id)
-                )
+                    time__gt=start_date,
+                    time__lt=stop_date,
+                    type=db.CI_CHANGE_TYPES.CONF_GIT.id,
         ).order_by('time')
         agent_changes_warnings = db.CIChange.objects.filter(
-                Q(
-                    Q(time__gt=start_date) &
-                    Q(time__lt=stop_date) &
-                    Q(type=db.CI_CHANGE_TYPES.CONF_AGENT.id) &
-                    Q(priority__in=[
+                    time__gt=start_date,
+                    time__lt=stop_date,
+                    type=db.CI_CHANGE_TYPES.CONF_AGENT.id,
+                    priority__in=[
                         db.CI_CHANGE_PRIORITY_TYPES.NOTICE.id,
                         db.CI_CHANGE_PRIORITY_TYPES.WARNING.id,
-                    ])
-                )
+                    ]
         ).order_by('time')
         agent_changes_errors = db.CIChange.objects.filter(
-                Q(
-                    Q(time__gt=start_date) &
-                    Q(time__lt=stop_date) &
-                    Q(type=db.CI_CHANGE_TYPES.CONF_AGENT.id) &
-                    Q(priority__in=[
+                    time__gt=start_date,
+                    time__lt=stop_date,
+                    type=db.CI_CHANGE_TYPES.CONF_AGENT.id,
+                    priority__in=[
                         db.CI_CHANGE_PRIORITY_TYPES.ERROR.id,
                         # critical is not used for puppet agents, though not
                         # mentioned.
-                    ])
-                )
+                    ]
         ).order_by('time')
         manual = []
         for change in manual_changes:
@@ -551,14 +545,14 @@ class TimeLine(BaseCMDBView):
                 id=change.id,
                 time=change.time.isoformat(),
                 comment=change.message,
-        ))
+            ))
         agent_errors=[]
         for change in agent_changes_errors:
             agent_errors.append(dict(
                 id=change.id,
                 time=change.time.isoformat(),
                 comment=change.message,
-        ))
+            ))
         response_dict=dict(
                 manual=manual,
                 agent_warnings=agent_warnings,
