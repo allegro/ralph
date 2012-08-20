@@ -125,7 +125,7 @@ def get_device_cpu_price(device):
 
 def get_device_memory_price(device):
     price = math.fsum(
-        m.model.get_price() for m in device.memory_set.all() if m.model)
+        m.get_price() for m in device.memory_set.all() if m.model)
     if not price and device.model and device.model.type in (
             DeviceType.rack_server.id, DeviceType.blade_server.id):
         try:
