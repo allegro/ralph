@@ -59,7 +59,7 @@ class Change(ChangesBase):
         self.puppet_feedback_changes = 0
         report = change.content_object
         if change.type == db.CI_CHANGE_TYPES.CONF_AGENT.id:
-            puppet_logs = db.PuppetLog.objects.filter(cichange=report).all()
+            puppet_logs = db.PuppetLog.objects.filter(cichange=report)
             self.puppet_reports.append(dict(report=report, logs=puppet_logs))
         elif change.type == db.CI_CHANGE_TYPES.CONF_GIT.id:
             self.git_changes = [dict(
@@ -106,7 +106,7 @@ class Changes(ChangesBase, PaginatedView):
         if values.get('uid'):
             changes = changes.filter(Q(ci__name__icontains=values.get('uid'))
             | Q(ci__id=values.get('uid')))
-        changes = changes.order_by('-time').all()
+        changes = changes.order_by('-time')
         self.paginate(changes)
         self.changes = self.page_contents
         cursor = connection.cursor()
@@ -146,7 +146,7 @@ class Problems(ChangesBase, PaginatedView):
         return ret
 
     def get(self, *args, **kwargs):
-        queryset = db.CIProblem.objects.order_by('-time').all()
+        queryset = db.CIProblem.objects.order_by('-time')
         queryset = self.paginate_query(queryset)
         self.data = queryset
         return super(Problems, self).get(*args, **kwargs)
@@ -164,7 +164,7 @@ class Incidents(ChangesBase, PaginatedView):
         return ret
 
     def get(self, *args, **kwargs):
-        queryset = db.CIIncident.objects.order_by('-time').all()
+        queryset = db.CIIncident.objects.order_by('-time')
         queryset = self.paginate_query(queryset)
         self.data = queryset
         return super(Incidents, self).get(*args, **kwargs)
@@ -492,7 +492,7 @@ class Reports(ChangesBase, PaginatedView):
             changes = changes.filter(priority__icontains=values.get('priority'))
         if values.get('uid'):
             changes = changes.filter(ci__name=values.get('uid'))
-        changes = changes.order_by('-time').all()
+        changes = changes.order_by('-time')
         self.populate_data()
         if self.request.GET.get('export') == 'csv':
             # return different http response
@@ -513,7 +513,7 @@ class TimeLine(BaseCMDBView):
                     Q(time__lt=stop_date) &
                     Q(type=db.CI_CHANGE_TYPES.CONF_GIT.id)
                 )
-        ).order_by('time').all()
+        ).order_by('time')
         agent_changes_warnings = db.CIChange.objects.filter(
                 Q(
                     Q(time__gt=start_date) &
@@ -524,7 +524,7 @@ class TimeLine(BaseCMDBView):
                         db.CI_CHANGE_PRIORITY_TYPES.WARNING.id,
                     ])
                 )
-        ).order_by('time').all()
+        ).order_by('time')
         agent_changes_errors = db.CIChange.objects.filter(
                 Q(
                     Q(time__gt=start_date) &
@@ -536,7 +536,7 @@ class TimeLine(BaseCMDBView):
                         # mentioned.
                     ])
                 )
-        ).order_by('time').all()
+        ).order_by('time')
         manual = []
         for change in manual_changes:
             manual.append(dict(
