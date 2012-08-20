@@ -6,7 +6,7 @@
 {% block content %}
 <form method="POST" class="form form-inline" id="disco-form" action="/ui/discover/">
 {% csrf_token %}
-<textarea id="disco-console" class="disco-console" disabled></textarea>
+<textarea id="disco-console" class="disco-console" readonly></textarea>
 <div class="form-actions">
     <div class="input-append control-group">
         <input class="span4" name="ip" type="text"
