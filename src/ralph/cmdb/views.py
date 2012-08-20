@@ -168,12 +168,7 @@ def _get_pages(paginator, page):
     return pages
 
 def get_error_title(form):
-    # check if specific field form errors
-    if form.errors and (not form.errors.get('__all__')):
-        return 'Correct the errors.'
-    # eg. Ci relation with this Parent, Child and Relation kind already exists.
-    generic_errors = ','.join(form.errors['__all__'])
-    return generic_errors
+    return ', '.join(form.errors['__all__']) or 'Correct the errors.' if form.errors else ''
 
 
 class EditRelation(BaseCMDBView):
@@ -760,7 +755,7 @@ class Search(BaseCMDBView):
                 'id': i.id,
                 'icon': icon,
                 'venture': '',
-                'layers': ','.join("%s" % x for x in i.layers.select_related()),
+                'layers': ', '.join(unicode(x) for x in i.layers.select_related()),
                 'state': i.get_state_display(),
                 'state_id': i.state,
                 'status': i.get_status_display(),
