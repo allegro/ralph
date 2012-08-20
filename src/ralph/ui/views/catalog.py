@@ -13,9 +13,12 @@ from django.shortcuts import get_object_or_404
 from ralph.account.models import Perm
 from ralph.discovery.models import (DeviceType, ComponentType, DeviceModel,
                                     DeviceModelGroup, ComponentModelGroup,
-                                    ComponentModel)
+                                    ComponentModel, Storage, Memory, Processor,
+                                    DiskShare, FibreChannel, GenericComponent,
+                                    Software, Device)
 from ralph.ui.forms import ComponentModelGroupForm, DeviceModelGroupForm
 from ralph.ui.views.common import Base
+from ralph.util import pricing
 from ralph.util.presentation import COMPONENT_ICONS, DEVICE_ICONS
 
 
@@ -125,6 +128,10 @@ class CatalogDevice(Catalog):
         super(CatalogDevice, self).__init__(*args, **kwargs)
         self.form = None
 
+    def update_cached(self, group):
+        for device in Device.objects.filter(model__group=group):
+            pricing.device_update_cached(device)
+
     def post(self, *args, **kwargs):
         if not self.request.user.get_profile().has_perm(
                 Perm.edit_device_info_financial):
@@ -148,6 +155,7 @@ class CatalogDevice(Catalog):
                 model = get_object_or_404(DeviceModel, id=item)
                 model.group = target
                 model.save()
+            self.update_cached(target)
             messages.success(self.request, "Items moved.")
             return HttpResponseRedirect(self.request.path)
         elif 'delete' in self.request.POST:
@@ -158,9 +166,12 @@ class CatalogDevice(Catalog):
             else:
                 self.group = get_object_or_404(DeviceModelGroup,
                                                id=self.group_id)
+                self.group.price = 0
+                self.group.save()
+                self.update_cached(self.group)
+                self.group.delete()
                 messages.warning(self.request,
                                  "Group '%s' deleted." % self.group.name)
-                self.group.delete()
             return HttpResponseRedirect(self.request.path+'..')
         else:
             try:
@@ -175,6 +186,7 @@ class CatalogDevice(Catalog):
                                              instance=self.group)
             if self.form.is_valid():
                 self.form.save()
+                self.update_cached(self.group)
                 messages.success(self.request, "Changes saved.")
                 return HttpResponseRedirect(self.request.path)
             else:
@@ -231,6 +243,15 @@ class CatalogComponent(Catalog):
         super(CatalogComponent, self).__init__(*args, **kwargs)
         self.form = None
 
+    def update_cached(self, group):
+        devices = set()
+        for _class in (Storage, Memory, Processor, DiskShare,
+                            FibreChannel, GenericComponent, Software):
+            for component in _class.objects.filter(model__group=group):
+                devices.add(component.device)
+        for device in devices:
+            pricing.device_update_cached(device)
+
     def post(self, *args, **kwargs):
         if not self.request.user.get_profile().has_perm(
                 Perm.edit_device_info_financial):
@@ -254,6 +275,7 @@ class CatalogComponent(Catalog):
                 model = get_object_or_404(ComponentModel, id=item)
                 model.group = target
                 model.save()
+            self.update_cached(target)
             messages.success(self.request, "Items moved.")
             return HttpResponseRedirect(self.request.path)
         elif 'delete' in self.request.POST:
@@ -264,9 +286,12 @@ class CatalogComponent(Catalog):
             else:
                 self.group = get_object_or_404(ComponentModelGroup,
                                                id=self.group_id)
+                self.group.price = 0
+                self.group.save()
+                self.update_cached(self.group)
+                self.group.delete()
                 messages.warning(self.request,
                                  "Group '%s' deleted." % self.group.name)
-                self.group.delete()
             return HttpResponseRedirect(self.request.path+'..')
         else:
             try:
@@ -281,6 +306,7 @@ class CatalogComponent(Catalog):
                                                 instance=self.group)
             if self.form.is_valid():
                 self.form.save()
+                self.update_cached(self.group)
                 messages.success(self.request, "Changes saved.")
                 return HttpResponseRedirect(self.request.path)
             else:
