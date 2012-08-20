@@ -61,7 +61,8 @@ def device_pre_save(sender, instance, raw, using, **kwargs):
     """A hook for creating ``HistoryChange`` entries when a device changes."""
 
     for field, orig in instance.dirty_fields.iteritems():
-        if field in ('last_seen', 'cached_cost', 'cached_price', 'raw'):
+        if field in ('last_seen', 'cached_cost', 'cached_price', 'raw',
+                     'uptime_seconds', 'uptime_timestamp'):
             continue
         if field in instance.insignificant_fields:
             continue
