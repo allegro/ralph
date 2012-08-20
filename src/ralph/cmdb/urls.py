@@ -14,6 +14,7 @@ from ralph.cmdb.views import (Index, Search, Edit, Add, View,
         ViewJira, ViewUnknown)
 from ralph.cmdb.views_changes import  (Changes, Problems, Incidents,
         Change, Dashboard, Reports, DashboardDetails)
+from ralph.cmdb.views_changes import TimeLine
 from django.conf.urls.defaults import include
 
 
@@ -36,6 +37,10 @@ urlpatterns = patterns('',
     (r'^changes/changes$', login_required(Changes.as_view())),
     (r'^changes/incidents$', login_required(Incidents.as_view())),
     (r'^changes/problems$', login_required(Problems.as_view())),
+
+    (r'^changes/timeline$', login_required(TimeLine.as_view())),
+    (r'^changes/timeline_ajax$', login_required(TimeLine.get_ajax)),
+
     (r'^changes/dashboard$', login_required(Dashboard.as_view())),
     (r'^changes/dashboard_ajax$', login_required(Dashboard.get_ajax)),
     (r'^changes/dashboard_details/(?P<type>[0-9]+)/(?P<prio>[0-9]+)/'
