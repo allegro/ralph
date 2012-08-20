@@ -31,7 +31,7 @@ def change_post_save(sender, instance, raw, using, **kwargs):
 @receiver(post_save, sender=cdb.CI, dispatch_uid='ralph.cmdb.history')
 @receiver(post_save, sender=cdb.CIRelation, dispatch_uid='ralph.cmdb.history')
 def ci_post_save(sender, instance, raw, using, **kwargs):
-    """A hook for creating ``HistoryChange`` entries when a device changes."""
+    """A hook for creating ``CIChangeCMDBHistory`` entries when a CI changes."""
     for field, orig in instance.dirty_fields.iteritems():
         if field in instance.insignificant_fields:
             continue
