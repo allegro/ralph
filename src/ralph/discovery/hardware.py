@@ -8,16 +8,24 @@ from __future__ import unicode_literals
 
 import hashlib
 import re
-import zlib
 
 from ralph.util import units
 from ralph.discovery.models import (Memory, Processor, ComponentModel,
-                                    ComponentType)
+    ComponentType, Storage, DISK_VENDOR_BLACKLIST, DISK_PRODUCT_BLACKLIST)
 
 
 
 SMBIOS_BANNER = 'ID    SIZE TYPE'
 DENSE_SPEED_REGEX = re.compile(r'(\d+)\s*([GgHhKkMmZz]+)')
+INQUIRY_REGEXES = (
+    re.compile(r'^(?P<vendor>OCZ)-(?P<sn>[a-zA-Z0-9]{16})OCZ-(?P<product>\S+)\s+.*$'),
+    re.compile(r'^(?P<vendor>(FUJITSU|TOSHIBA))\s+(?P<product>[a-zA-Z0-9]+)\s+(?P<sn>[a-zA-Z0-9]{16})$'),
+    re.compile(r'^(?P<vendor>SEAGATE)\s+(?P<product>ST[^G]+G)(?P<sn>[a-zA-Z0-9]+)$'),
+    re.compile(r'^(?P<sn>[a-zA-Z0-9]{18})\s+(?P<vendor>INTEL)\s+(?P<product>[a-zA-Z0-9]+)\s+.*$'),
+    re.compile(r'^(?P<vendor>IBM)-(?P<product>[a-zA-Z0-9]+)\s+(?P<sn>[a-zA-Z0-9]+)$'),
+    re.compile(r'^(?P<vendor>HP)\s+(?P<product>[a-zA-Z0-9]{11})\s+(?P<sn>[a-zA-Z0-9]{12})$'),
+    re.compile(r'^(?P<vendor>HITACHI)\s+(?P<product>[a-zA-Z0-9]{15})(?P<sn>[a-zA-Z0-9]{15})$'),
+)
 
 
 def normalize_wwn(wwn):
@@ -205,3 +213,140 @@ def get_disk_shares(ssh):
             continue
         storage[lv] = (wwn, size)
     return storage
+
+
+def handle_smartctl(dev, disks, priority=0):
+    for disk_handle, disk in disks.iteritems():
+        if not disk.get('serial_number') or disk.get('device_type') != 'disk':
+            continue
+        if {'user_capacity', 'vendor', 'product', 'transport_protocol'} - \
+                set(disk.keys()):
+            # not all required keys present
+            continue
+        if disk['vendor'].lower() in DISK_VENDOR_BLACKLIST:
+            continue
+        if disk['product'].lower() in DISK_PRODUCT_BLACKLIST:
+            continue
+        stor, created = Storage.concurrent_get_or_create(device=dev,
+            sn=disk['serial_number'])
+        stor.device = dev
+        size_value, size_unit, rest = disk['user_capacity'].split(' ', 2)
+        size_value = size_value.replace(',', '')
+        stor.size = int(int(size_value) / units.size_divisor[size_unit])
+        stor.speed = int(disk.get('rotational_speed', 0))
+        label_meta = [' '.join(disk['vendor'].split()), disk['product']]
+        if 'transport_protocol' in disk:
+            label_meta.append(disk['transport_protocol'])
+        stor.label = ' '.join(label_meta)
+        disk_default = dict(
+            vendor = 'unknown',
+            product = 'unknown',
+            revision = 'unknown',
+            transport_protocol = 'unknown',
+            user_capacity = 'unknown',
+        )
+        disk_default.update(disk)
+        extra = """Model: {vendor} {product}
+Firmware Revision: {revision}
+Interface: {transport_protocol}
+Size: {user_capacity}
+""".format(**disk_default)
+        stor.model, c = ComponentModel.concurrent_get_or_create(
+            size=stor.size, speed=stor.speed, type=ComponentType.disk.id,
+            family='', extra_hash=hashlib.md5(extra).hexdigest(), extra=extra)
+        stor.model.name =  '{} {}MiB'.format(stor.label, stor.size)
+        stor.model.save(priority=priority)
+        stor.save(priority=priority)
+
+
+def _handle_inquiry_data(raw, controller, disk):
+    for regex in INQUIRY_REGEXES:
+        m = regex.match(raw)
+        if m:
+            return m.group('vendor'), m.group('product'), m.group('sn')
+    raise ValueError("Incompatible inquiry_data for disk {}/{}: {}"
+        "".format(controller, disk, raw))
+
+
+def handle_megaraid(dev, disks, priority=0):
+    for (controller_handle, disk_handle), disk in disks.iteritems():
+        disk['vendor'], disk['product'], disk['serial_number'] = \
+                _handle_inquiry_data(disk.get('inquiry_data', ''),
+                        controller_handle, disk_handle)
+
+        if not disk.get('serial_number') or disk.get('media_type') not in ('Hard Disk Device',
+                'Solid State Device'):
+            continue
+        if {'coerced_size', 'vendor', 'product', 'pd_type'} - \
+                set(disk.keys()):
+            # not all required keys present
+            continue
+        if disk['vendor'].lower() in DISK_VENDOR_BLACKLIST:
+            continue
+        if disk['product'].lower() in DISK_PRODUCT_BLACKLIST:
+            continue
+        stor, created = Storage.concurrent_get_or_create(device=dev,
+            sn=disk['serial_number'])
+        stor.device = dev
+        size_value, size_unit, rest = disk['coerced_size'].split(' ', 2)
+        size_value = size_value.replace(',', '')
+        stor.size = int(float(size_value) / units.size_divisor[size_unit])
+        stor.speed = int(disk.get('rotational_speed', 0))
+        label_meta = [' '.join(disk['vendor'].split()), disk['product']]
+        if 'pd_type' in disk:
+            label_meta.append(disk['pd_type'])
+        stor.label = ' '.join(label_meta)
+        disk_default = dict(
+            vendor = 'unknown',
+            product = 'unknown',
+            device_firmware_level = 'unknown',
+            pd_type = 'unknown',
+            coerced_size = 'unknown',
+        )
+        disk_default.update(disk)
+        extra = """Model: {vendor} {product}
+Firmware Revision: {device_firmware_level}
+Interface: {pd_type}
+Size: {coerced_size}
+""".format(**disk_default)
+        stor.model, c = ComponentModel.concurrent_get_or_create(
+            size=stor.size, speed=stor.speed, type=ComponentType.disk.id,
+            family='', extra_hash=hashlib.md5(extra).hexdigest(), extra=extra)
+        stor.model.name =  '{} {}MiB'.format(stor.label, stor.size)
+        stor.model.save(priority=priority)
+        stor.save(priority=priority)
+
+def handle_hpacu(dev, disks, priority=0):
+    for disk_handle, disk in disks.iteritems():
+        if not disk.get('serial_number'):
+            continue
+        stor, created = Storage.concurrent_get_or_create(device=dev,
+            sn=disk['serial_number'])
+        stor.device = dev
+        size_value, size_unit = disk['size'].split()
+        stor.size = int(float(size_value) / units.size_divisor[size_unit])
+        stor.speed = int(disk.get('rotational_speed', 0))
+        stor.label = '{} {}'.format(' '.join(disk['model'].split()),
+            disk['interface_type'])
+        disk_default = dict(
+            model = 'unknown',
+            firmware_revision = 'unknown',
+            interface_type = 'unknown',
+            size = 'unknown',
+            rotational_speed = 'unknown',
+            status = 'unknown',
+        )
+        disk_default.update(disk)
+        extra = """Model: {model}
+Firmware Revision: {firmware_revision}
+Interface: {interface_type}
+Size: {size}
+Rotational Speed: {rotational_speed}
+Status: {status}""".format(**disk_default)
+        stor.model, c = ComponentModel.concurrent_get_or_create(
+            size=stor.size, speed=stor.speed, type=ComponentType.disk.id,
+            family='', extra_hash=hashlib.md5(extra).hexdigest(), extra=extra)
+        stor.model.name =  '{} {}MiB'.format(stor.label, stor.size)
+        stor.model.save(priority=priority)
+        stor.save(priority=priority)
+
