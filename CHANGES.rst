@@ -1,16 +1,30 @@
 Change Log
 ----------
 
-NEXT
-----
-* CMDB timeline view added(initial)
-* bugfixes in the CMDB
-* Git configuration change now knows if change were successfull(from puppet agent)
-* Editing relations much more comfortable
-* minor bugfixes 
+1.0.6
+~~~~~
+
+Released on August 20, 2012.
+
+* Pricing: cached prices updated after changes in the catalog; component price
+  calculation includes custom sizes when relevant
+
+* ``ralph`` commands no longer display the unhelpful "Error opening file for
+  reading: Permission denied" message
+
+* Usability improvements in editing CI relations
+
+* Preliminary timeline view for CMDB added
+
+* Git configuration change from Puppet agent now knows if a change was
+  successful
+
+* minor bugfixes
 
 1.0.5
 ~~~~~
+
+Released on August 13, 2012.
 
 * OpenStack plugin now accepts OPENSTACK_EXTRA_QUERIES setting, containing a
   list of tuples in the form (url, query) of additional data sources to check.
@@ -23,14 +37,14 @@ NEXT
 
 * positions in racks are now numbered from the bottom
 
-* bugfixes in the ui code
+* CMDB: enabled removing relations, faster git handling
 
-* CMDB relations removing enabled, faster git handling, bugfixes
-
-
+* bugfixes in CMDB and UI code
 
 1.0.4
 ~~~~~
+
+Released on August 08, 2012.
 
 * edit links for devices and components
 
@@ -52,6 +66,8 @@ NEXT
 1.0.3 
 ~~~~~
 
+Released on August 01, 2012.
+
 * a rudimentary reports tab on device lists to filter devices according to
   specified rules
 
@@ -66,6 +82,8 @@ NEXT
 1.0.2
 ~~~~~
 
+Released on July 23, 2012.
+
 * ``ralph chains`` command to list available plug-in chains
 
 * fixed regression from 1.0.1: ``settings-local.py`` works correctly again
@@ -79,6 +97,8 @@ NEXT
 1.0.1
 ~~~~~
 
+Released on July 18, 2012.
+
 * ``ralph`` management command introduced as a shortcut to ``python manage.py``
 
 * ``ralph makeconf`` management command introduced to create configuration from
@@ -90,8 +110,9 @@ NEXT
 
 * minor documentation fixes and updates
 
-
 1.0.0
 ~~~~~
+
+Released on July 16, 2012.
 
 * initial release

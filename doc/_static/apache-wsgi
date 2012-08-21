@@ -4,10 +4,10 @@ WSGIPythonHome /home/ralph
   ServerName ralph.local 
   ServerAlias www.ralph.local 
   
-  Alias /robots.txt /home/ralph/project/src/ralph/media/robots.txt
-  Alias /favicon.ico /home/ralph/project/src/ralph/media/img/favicon.ico
+  Alias /robots.txt /home/ralph/lib/python2.7/site-packages/ralph/media/robots.txt
+  Alias /favicon.ico /home/ralph/lib/python2.7/site-packages/ralph/media/img/favicon.ico
 
-  Alias /static /home/ralph/project/src/ralph/static/
+  Alias /static /home/ralph/lib/python2.7/site-packages/ralph/static/
 
   ErrorDocument 500 /static/500.html 
   ErrorDocument 503 /static/503.html
@@ -17,7 +17,7 @@ WSGIPythonHome /home/ralph
     Allow from all
   </Directory>
 
-  <Directory /home/ralph/project/src/ralph/static>
+  <Directory /home/ralph/lib/python2.7/site-packages/ralph/static>
     Order deny,allow
     Allow from all
   </Directory>
@@ -30,7 +30,7 @@ WSGIPythonHome /home/ralph
 
 	CustomLog ${APACHE_LOG_DIR}/access.log combined
 
-  WSGIScriptAlias / /home/ralph/project/src/ralph/scripts/ralph.wsgi
+  WSGIScriptAlias / /home/ralph/lib/python2.7/site-packages/ralph/scripts/ralph.wsgi
   WSGIDaemonProcess ralph user=ralph group=ralph processes=5 threads=3 display-name=ralph
   WSGIProcessGroup ralph
 </VirtualHost>
