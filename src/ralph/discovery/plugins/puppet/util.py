@@ -68,13 +68,6 @@ def assign_ips(dev, ip_addresses):
         addr.last_puppet = datetime.datetime.now()
         addr.save()
 
-def get_logical_name(arg):
-    l_name = arg['logicalname']
-    if isinstance(l_name, list):
-        return l_name[0]
-    else:
-        return l_name
-
 def get_id(arg):
     id = arg['id']
     if isinstance(id, list):

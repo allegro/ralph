@@ -47,8 +47,9 @@ def make_tenant(tenant):
         res.save()
         if model.group and model.group.price:
             value = tenant[key] / multiplier
-            cost = value * model.group.price / 10000
+            cost = value * model.group.price / (model.group.size_modifier or 1)
             total_daily_cost[0] += cost
+            print('tenant = %r, %s = %r, cost = %r' % (tenant['tenant_id'], key, value, cost))
     make_component('OpenStack 10000 Memory GiB Hours', 'openstackmem',
                    'total_memory_mb_usage', 1024, 'Memory')
     make_component('OpenStack 10000 CPU Hours', 'openstackcpu',
@@ -78,7 +79,10 @@ def openstack(**kwargs):
     for data in stack.simple_tenant_usage(start, end):
         tenants[data['tenant_id']].update(data)
     for url, query in getattr(settings, 'OPENSTACK_EXTRA_QUERIES', []):
-        for data in stack.query(query, url=url, start=start, end=end):
+        for data in stack.query(query, url=url,
+                start=start.strftime('%Y-%m-%dT%H:%M:%S'),
+                end=end.strftime('%Y-%m-%dT%H:%M:%S'),
+            ):
             tenants[data['tenant_id']].update(data)
     for tenant_id, data in tenants.iteritems():
         dev, cost = make_tenant(data)
