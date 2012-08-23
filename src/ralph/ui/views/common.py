@@ -114,7 +114,7 @@ class BaseMixin(object):
                 has_perm(Perm.read_configuration_item_info_generic)):
             mainmenu_items.append(
                 MenuItem('CMDB', fugue_icon='fugue-thermometer',
-                         href='/cmdb/changes/dashboard')
+                         href='/cmdb/changes/timeline')
             )
         if has_perm(Perm.read_device_info_reports) and False: # FIXME: not ready yet
             mainmenu_items.append(
