@@ -22,6 +22,7 @@ from ralph.business.models import Venture, VentureRole, VentureExtraCost
 from ralph.discovery.models import (ReadOnlyDevice, DeviceType, DataCenter,
                                     Device, DeviceModelGroup, HistoryCost,
                                     SplunkUsage)
+from ralph.discovery.models_history import FOREVER
 from ralph.ui.forms import RolePropertyForm, DateRangeForm, VentureFilterForm
 from ralph.ui.views.common import (Info, Prices, Addresses, Costs, Purchase,
                                    Components, History, Discover, BaseMixin,
@@ -268,7 +269,7 @@ def _total_cost_count(query, start, end):
         )
     count = HistoryCost.filter_span(start, end, query).values_list(
             'device').distinct().count()
-    count_now = query.filter(end='9999-1-1').values_list(
+    count_now = query.filter(end=FOREVER).values_list(
             'device').distinct().count()
     return total['spansum'], count, count_now
 

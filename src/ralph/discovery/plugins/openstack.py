@@ -49,7 +49,6 @@ def make_tenant(tenant):
             value = tenant[key] / multiplier
             cost = value * model.group.price / (model.group.size_modifier or 1)
             total_daily_cost[0] += cost
-            print('tenant = %r, %s = %r, cost = %r' % (tenant['tenant_id'], key, value, cost))
     make_component('OpenStack 10000 Memory GiB Hours', 'openstackmem',
                    'total_memory_mb_usage', 1024, 'Memory')
     make_component('OpenStack 10000 CPU Hours', 'openstackcpu',
