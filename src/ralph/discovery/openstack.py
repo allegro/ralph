@@ -59,6 +59,7 @@ class OpenStack(object):
                 url or self.public_url,
                 query,
             ]) + '?' + query_args
+        print(query_url)
         request = urllib2.Request(query_url, headers=query_headers)
         return json.loads(urllib2.urlopen(request).read())
 
