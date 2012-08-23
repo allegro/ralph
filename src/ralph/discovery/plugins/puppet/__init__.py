@@ -9,7 +9,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import datetime
-import hashlib
 import random
 import re
 import time
@@ -18,11 +17,9 @@ from lck.django.common import nested_commit_on_success
 import MySQLdb
 from django.conf import settings
 
-from ralph.util import network, plugin, units
-from ralph.discovery.models import (IPAddress, ComponentModel, ComponentType,
-    Storage, DiskShare, DiskShareMount, DISK_VENDOR_BLACKLIST,
-    DISK_PRODUCT_BLACKLIST)
-from ralph.discovery.hardware import normalize_wwn
+from ralph.util import network, plugin
+from ralph.discovery.models import IPAddress, DiskShare, DiskShareMount
+from ralph.discovery import hardware
 
 from .facts import parse_facts
 from .lshw import parse_lshw
@@ -131,7 +128,7 @@ def parse_wwn(facts, dev):
     for key, wwn in facts.iteritems():
         if not key.startswith('wwn_mpath'):
             continue
-        wwns.append(normalize_wwn(wwn))
+        wwns.append(hardware.normalize_wwn(wwn))
     for wwn in wwns:
         mount = make_mount(wwn)
         if not mount:
@@ -139,7 +136,10 @@ def parse_wwn(facts, dev):
         path = key.replace('wwn_', '')
         mount.volume = '/dev/mapper/%s' % path
         mount.save(priority=SAVE_PRIORITY)
-    dev.disksharemount_set.filter(server=None).exclude(share__wwn__in=wwns).delete()
+    for mount in dev.disksharemount_set.filter(
+            server=None).exclude(share__wwn__in=wwns):
+        mount.delete()
+
 
 HPACU_GENERAL_REGEX = re.compile(r'hpacu_([^_]+)__(.+)')
 HPACU_LOGICAL_PHYSICAL_REGEX = re.compile(r'([^_]+)__(.+)')
@@ -157,38 +157,7 @@ def parse_hpacu(facts, dev):
         if not physical_disk:
             continue
         disks.setdefault(physical_disk, {})[property] = value.strip()
-    for disk_handle, disk in disks.iteritems():
-        if not disk.get('serial_number'):
-            continue
-        stor, created = Storage.concurrent_get_or_create(device=dev,
-            sn=disk['serial_number'])
-        stor.device = dev
-        size_value, size_unit = disk['size'].split()
-        stor.size = int(float(size_value) / units.size_divisor[size_unit])
-        stor.speed = int(disk.get('rotational_speed', 0))
-        stor.label = '{} {}'.format(' '.join(disk['model'].split()),
-            disk['interface_type'])
-        disk_default = dict(
-            model = 'unknown',
-            firmware_revision = 'unknown',
-            interface_type = 'unknown',
-            size = 'unknown',
-            rotational_speed = 'unknown',
-            status = 'unknown',
-        )
-        disk_default.update(disk)
-        extra = """Model: {model}
-Firmware Revision: {firmware_revision}
-Interface: {interface_type}
-Size: {size}
-Rotational Speed: {rotational_speed}
-Status: {status}""".format(**disk_default)
-        stor.model, c = ComponentModel.concurrent_get_or_create(
-            size=stor.size, speed=stor.speed, type=ComponentType.disk.id,
-            family='', extra_hash=hashlib.md5(extra).hexdigest(), extra=extra)
-        stor.model.name =  '{} {}MiB'.format(stor.label, stor.size)
-        stor.model.save(priority=SAVE_PRIORITY)
-        stor.save(priority=SAVE_PRIORITY)
+    hardware.handle_hpacu(dev, disks, SAVE_PRIORITY)
 
 SMARTCTL_REGEX = re.compile(r'smartctl_([^_]+)__(.+)')
 
@@ -202,47 +171,7 @@ def parse_smartctl(facts, dev):
         disk = m.group(1)
         property = m.group(2)
         disks.setdefault(disk, {})[property] = value.strip()
-    for disk_handle, disk in disks.iteritems():
-        if not disk.get('serial_number') or disk.get('device_type') != 'disk':
-            continue
-        if {'user_capacity', 'vendor', 'product', 'transport_protocol'} - \
-                set(disk.keys()):
-            # not all required keys present
-            continue
-        if disk['vendor'].lower() in DISK_VENDOR_BLACKLIST:
-            continue
-        if disk['product'].lower() in DISK_PRODUCT_BLACKLIST:
-            continue
-        stor, created = Storage.concurrent_get_or_create(device=dev,
-            sn=disk['serial_number'])
-        stor.device = dev
-        size_value, size_unit, rest = disk['user_capacity'].split(' ', 2)
-        size_value = size_value.replace(',', '')
-        stor.size = int(int(size_value) / units.size_divisor[size_unit])
-        stor.speed = int(disk.get('rotational_speed', 0))
-        label_meta = [' '.join(disk['vendor'].split()), disk['product']]
-        if 'transport_protocol' in disk:
-            label_meta.append(disk['transport_protocol'])
-        stor.label = ' '.join(label_meta)
-        disk_default = dict(
-            vendor = 'unknown',
-            product = 'unknown',
-            revision = 'unknown',
-            transport_protocol = 'unknown',
-            user_capacity = 'unknown',
-        )
-        disk_default.update(disk)
-        extra = """Model: {vendor} {product}
-Firmware Revision: {revision}
-Interface: {transport_protocol}
-Size: {user_capacity}
-""".format(**disk_default)
-        stor.model, c = ComponentModel.concurrent_get_or_create(
-            size=stor.size, speed=stor.speed, type=ComponentType.disk.id,
-            family='', extra_hash=hashlib.md5(extra).hexdigest(), extra=extra)
-        stor.model.name =  '{} {}MiB'.format(stor.label, stor.size)
-        stor.model.save(priority=SAVE_PRIORITY)
-        stor.save(priority=SAVE_PRIORITY)
+    hardware.handle_smartctl(dev, disks, SAVE_PRIORITY)
 
 MEGARAID_REGEX = re.compile(r'megacli_([^_]+)_([^_]+)__(.+)')
 
@@ -258,52 +187,7 @@ def parse_megaraid(facts, dev):
         disk = m.group(2)
         property = m.group(3)
         disks.setdefault((controller, disk), {})[property] = value.strip()
-    for (controller_handle, disk_handle), disk in disks.iteritems():
-        disk['vendor'], disk['product'], disk['serial_number'] = \
-                _handle_inquiry_data(disk.get('inquiry_data', ''),
-                        controller_handle, disk_handle)
-
-        if not disk.get('serial_number') or disk.get('media_type') not in ('Hard Disk Device',
-                'Solid State Device'):
-            continue
-        if {'coerced_size', 'vendor', 'product', 'pd_type'} - \
-                set(disk.keys()):
-            # not all required keys present
-            continue
-        if disk['vendor'].lower() in DISK_VENDOR_BLACKLIST:
-            continue
-        if disk['product'].lower() in DISK_PRODUCT_BLACKLIST:
-            continue
-        stor, created = Storage.concurrent_get_or_create(device=dev,
-            sn=disk['serial_number'])
-        stor.device = dev
-        size_value, size_unit, rest = disk['coerced_size'].split(' ', 2)
-        size_value = size_value.replace(',', '')
-        stor.size = int(float(size_value) / units.size_divisor[size_unit])
-        stor.speed = int(disk.get('rotational_speed', 0))
-        label_meta = [' '.join(disk['vendor'].split()), disk['product']]
-        if 'pd_type' in disk:
-            label_meta.append(disk['pd_type'])
-        stor.label = ' '.join(label_meta)
-        disk_default = dict(
-            vendor = 'unknown',
-            product = 'unknown',
-            device_firmware_level = 'unknown',
-            pd_type = 'unknown',
-            coerced_size = 'unknown',
-        )
-        disk_default.update(disk)
-        extra = """Model: {vendor} {product}
-Firmware Revision: {device_firmware_level}
-Interface: {pd_type}
-Size: {coerced_size}
-""".format(**disk_default)
-        stor.model, c = ComponentModel.concurrent_get_or_create(
-            size=stor.size, speed=stor.speed, type=ComponentType.disk.id,
-            family='', extra_hash=hashlib.md5(extra).hexdigest(), extra=extra)
-        stor.model.name =  '{} {}MiB'.format(stor.label, stor.size)
-        stor.model.save(priority=SAVE_PRIORITY)
-        stor.save(priority=SAVE_PRIORITY)
+    hardware.handle_megaraid(dev, disks, SAVE_PRIORITY)
 
 @nested_commit_on_success
 def parse_uptime(facts, dev):
@@ -314,20 +198,3 @@ def parse_uptime(facts, dev):
     dev.uptime = uptime
     dev.save()
 
-INQUIRY_REGEXES = (
-    re.compile(r'^(?P<vendor>OCZ)-(?P<sn>[a-zA-Z0-9]{16})OCZ-(?P<product>\S+)\s+.*$'),
-    re.compile(r'^(?P<vendor>(FUJITSU|TOSHIBA))\s+(?P<product>[a-zA-Z0-9]+)\s+(?P<sn>[a-zA-Z0-9]{16})$'),
-    re.compile(r'^(?P<vendor>SEAGATE)\s+(?P<product>ST[^G]+G)(?P<sn>[a-zA-Z0-9]+)$'),
-    re.compile(r'^(?P<sn>[a-zA-Z0-9]{18})\s+(?P<vendor>INTEL)\s+(?P<product>[a-zA-Z0-9]+)\s+.*$'),
-    re.compile(r'^(?P<vendor>IBM)-(?P<product>[a-zA-Z0-9]+)\s+(?P<sn>[a-zA-Z0-9]+)$'),
-    re.compile(r'^(?P<vendor>HP)\s+(?P<product>[a-zA-Z0-9]{11})\s+(?P<sn>[a-zA-Z0-9]{12})$'),
-    re.compile(r'^(?P<vendor>HITACHI)\s+(?P<product>[a-zA-Z0-9]{15})(?P<sn>[a-zA-Z0-9]{15})$'),
-)
-
-def _handle_inquiry_data(raw, controller, disk):
-    for regex in INQUIRY_REGEXES:
-        m = regex.match(raw)
-        if m:
-            return m.group('vendor'), m.group('product'), m.group('sn')
-    raise ValueError("Incompatible inquiry_data for disk {}/{}: {}"
-        "".format(controller, disk, raw))
