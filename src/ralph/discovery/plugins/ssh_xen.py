@@ -10,7 +10,6 @@ import ssh as paramiko
 
 from django.conf import settings
 from lck.django.common import nested_commit_on_success
-from django.utils import simplejson as json
 
 from ralph.util import network, Eth
 from ralph.util import plugin
@@ -20,6 +19,7 @@ from ralph.discovery.models import Device, DeviceType
 
 XEN_USER = settings.XEN_USER
 XEN_PASSWORD = settings.XEN_PASSWORD
+SAVE_PRIORITY = 20
 
 
 class Error(Exception):
@@ -35,40 +35,69 @@ def _ssh_lines(ssh, command):
     for line in stdout.readlines():
         yield line
 
-@nested_commit_on_success
+def get_macs(ssh):
+    macs = {}
+    label = ''
+    for line in _ssh_lines(ssh, 'sudo xe vif-list params=vm-name-label,MAC'):
+        line = line.strip()
+        if not line:
+            continue
+        if line.startswith('vm-name-label'):
+            label = line.split(':', 1)[1].strip()
+        if label.startswith('Transfer VM for'):
+            continue
+        if line.startswith('MAC'):
+            mac = line.split(':', 1)[1].strip()
+            macs.setdefault(label, set()).add(mac)
+    return macs
+
+def get_running_vms(ssh):
+    vms = set()
+    label = ''
+    uuid = ''
+    for line in _ssh_lines(ssh,
+                       'sudo xe vm-list params=uuid,name-label,power-state'):
+        line = line.strip()
+        if not line:
+            continue
+        if line.startswith('name-label'):
+            label = line.split(':', 1)[1].strip()
+        if (label.startswith('Transfer VM for') or
+            label.startswith('Control domain on host:')):
+            continue
+        if line.startswith('uuid'):
+            uuid = line.split(':', 1)[1].strip()
+        if line.startswith('power-state'):
+            state = line.split(':', 1)[1].strip()
+            if state == 'running':
+                vms.add((label, uuid))
+    return vms
+
+
 def run_ssh_xen(ipaddr, parent):
     ssh = _connect_ssh(ipaddr.address)
     try:
-        command = ("""ovsdb-tool query /etc/openvswitch/conf.db """
-            """'["Open_vSwitch", {"""
-            """ "op": "select","""
-            """ "table": "Interface","""
-            """ "where": [],"""
-            """ "columns": ["external_ids"]"""
-            """}]'""")
-        # ovsdb-tool query /etc/openvswitch/conf.db '["Open_vSwitch", { "op": "select",  "table": "Interface", "where": [], "columns": ["external_ids"]}]'
-        stdin, stdout, stderr = ssh.exec_command(command)
-        data = json.loads(stdout.read())
-        vms = {}
-        for row in data[0]['rows']:
-            try:
-                ids = dict(row['external_ids'][1])
-                vm_id = ids['xs-vm-uuid']
-                mac = ids['attached-mac']
-            except KeyError:
-                continue
-            vms[vm_id] = Eth(label='Virtual MAC', mac=mac, speed=0)
+        vms = get_running_vms(ssh)
+        macs = get_macs(ssh)
     finally:
         ssh.close()
 
-    names = []
-    for vm_id, ethernet in vms.iteritems():
-        dev = Device.create(ethernets=[ethernet], parent=parent,
+    for dev in parent.child_set.exclude(
+            sn__in=[vm_uuid for (vm_name, vm_uuid) in vms]
+        ):
+        dev.deleted = True
+        dev.save()
+    for vm_name, vm_uuid in vms:
+        ethernets = [Eth(mac=mac) for mac in macs.get(vm_name, [])]
+        if not ethernets:
+            continue
+        dev = Device.create(ethernets=ethernets, parent=parent, sn=vm_uuid,
                 model_type=DeviceType.virtual_server,
-                model_name='XEN Virtual Server')
-        names.append(dev.name or ethernet.mac)
+                model_name='XEN Virtual Server', priority=SAVE_PRIORITY)
+        dev.name = vm_name
+        dev.save(priority=SAVE_PRIORITY)
+    return ', '.join(vm_name for (vm_name, vm_uuid) in vms)
 
-    return ', '.join(names)
 
 @plugin.register(chain='discovery', requires=['ping', 'snmp'])
 def ssh_xen(**kwargs):
