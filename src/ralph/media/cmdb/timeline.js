@@ -1,3 +1,40 @@
+/*
+ * JavaScript Pretty Date
+ * Copyright (c) 2011 John Resig (ejohn.org)
+ * Licensed under the MIT and GPL licenses.
+ */
+
+// Takes an ISO time and returns a string representing how
+// long ago the date represents.
+function prettyDate(time){
+    var date = new Date((time || "").replace(/-/g,"/").replace(/[TZ]/g," ")),
+        diff = (((new Date()).getTime() - date.getTime()) / 1000),
+        day_diff = Math.floor(diff / 86400);
+            
+    if ( isNaN(day_diff) || day_diff < 0 || day_diff >= 31 )
+        return;
+            
+    return day_diff == 0 && (
+            diff < 60 && "just now" ||
+            diff < 120 && "1 minute ago" ||
+            diff < 3600 && Math.floor( diff / 60 ) + " minutes ago" ||
+            diff < 7200 && "1 hour ago" ||
+            diff < 86400 && Math.floor( diff / 3600 ) + " hours ago") ||
+        day_diff == 1 && "Yesterday" ||
+        day_diff < 7 && day_diff + " days ago" ||
+        day_diff < 31 && Math.ceil( day_diff / 7 ) + " weeks ago";
+}
+
+// If jQuery is included in the page, adds a jQuery plugin to handle it as well
+if ( typeof jQuery != "undefined" )
+    jQuery.fn.prettyDate = function(){
+        return this.each(function(){
+            var date = prettyDate(this.title);
+            if ( date )
+                jQuery(this).text( date );
+        });
+    };
+
 
 function load_data(){
     $.get("/cmdb/changes/timeline_ajax", function(data){
@@ -22,9 +59,9 @@ function annotate_manual(plot, data, min, max){
     var d;
     var href_link;
     var point_text_template = '<div style="display:none">{{comment}}</div><div class="pointer" onclick="handle_manual_click()"> * </div>';
-    var row_template = '<tr><td>{{date}}</td><td>{{comment}}</td><td>{{author}}</td><td>{{{href_link}}}</td></tr>';
+    var row_template = '<tr class="{{row_class}}"><td>{{date}}</td><td>{{comment}}</td><td>{{author}}</td><td>{{{href_link}}}</td><td>{{external_key}}<td>{{changed_cis}}</td><td>{{failed_cis}}</tr>';
 
-    $("#changes_table").html('<tr><th>Time</th><th>Comment</th><th>Author</th><th>View</th></tr>');
+    $("#changes_table").html('<tr><th>Time</th><th>Comment</th><th>Author</th><th>View</th><th>External key</th><th>Changed CIs</th><th>Failed CI</th></tr>');
 
     for (var i=0; i<data.length; i++){
         obj = data[i];
@@ -43,12 +80,24 @@ function annotate_manual(plot, data, min, max){
                 '<a href="/cmdb/changes/change/{{id}}">View</a>',{
                     'id': obj['id']
         });
-
+        external_key = obj.external_key;
+        if(data[i].errors_count>0)
+        {
+            row_class='row_error'
+        }
+        else
+        {
+            row_class=''
+        }
         $("#changes_table").append(Mustache.render(row_template, {
-            'date': d,
+            'date': prettyDate(data[i].time),
             'comment': data[i].comment,
             'author': data[i].author,
             'href_link':  href_link,
+            'external_key' : external_key,
+            'failed_cis': data[i].errors_count,
+            'changed_cis': data[i].success_count,
+            'row_class': row_class
         }));
 
         $("#placeholder").append(Mustache.render('<div style="position:absolute;left:{{left_position}}px;top:{{top_position}}px">{{{point_content}}}</div>',{
