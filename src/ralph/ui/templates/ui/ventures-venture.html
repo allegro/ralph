@@ -39,7 +39,7 @@
             <td class="column-category">{{ i.name }}</td>
             <td class="column-count count">
               {% if i.url %}
-                <a href="{{ i.url }}" class="badge badge-info">{{ i.count|default:"0" }}</a>
+                <a href="{{ i.url }}" class="badge badge-info">{{ i.count_now|default:"0" }}</a>
               {% else %}
                 {% if i.count_now %}
                   <span class="badge nolink">{{i.count_now}}</span>
