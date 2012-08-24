@@ -90,8 +90,6 @@ def run_ssh_xen(ipaddr, parent):
     for vm_name, vm_uuid in vms:
         ethernets = [Eth('vif %d' % i, mac, 0) for
                      i, mac in enumerate(macs.get(vm_name, []))]
-        if not ethernets:
-            continue
         dev = Device.create(ethernets=ethernets, parent=parent, sn=vm_uuid,
                 model_type=DeviceType.virtual_server,
                 model_name='XEN Virtual Server', priority=SAVE_PRIORITY)
