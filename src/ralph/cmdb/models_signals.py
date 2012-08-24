@@ -22,16 +22,16 @@ from ralph.cmdb.integration.lib.jira import Jira, JiraException
 
 logger = logging.Logger(__file__)
 
-user_match = re.compile(r".*\<(.*)\>.*")
+user_match = re.compile(r".*\<(.*)@.*\>.*")
 ralph_change_link = settings.CMDB_VIEWCHANGE_LINK
 jira_op_template = settings.JIRA_OP_TEMPLATE
 default_assignee = settings.JIRA_CMDB_DEFAULT_ASSIGNEE
 
-def get_email_from_user(long_user_text):
+def get_login_from_user(long_user_text):
     """ Return email from 'username <email>'
 
     >>> re.compile(user_match).match('Unknown User <unknown@allegro.pl>').groups()[0]
-    'unknown@allegro.pl'
+    'unknown'
 
     """
     matches = user_match.match(long_user_text)
@@ -41,10 +41,12 @@ def get_email_from_user(long_user_text):
         return ''
 
 
-@receiver(post_save, sender=chdb.CIChangeCMDBHistory, dispatch_uid='ralph.cmdb.change_pre_save')
-@receiver(post_save, sender=chdb.CIChangeGit, dispatch_uid='ralph.cmdb.change_pre_save')
+@receiver(post_save, sender=chdb.CIChangeCMDBHistory, dispatch_uid='ralph.cmdb.change_post_save')
+@receiver(post_save, sender=chdb.CIChangePuppet, dispatch_uid='ralph.cmdb.change_post_save')
+@receiver(post_save, sender=chdb.CIChangeGit, dispatch_uid='ralph.cmdb.change_post_save')
 def post_create_change(sender, instance, raw, using, **kwargs):
     """ Classify change, and create record - CIChange """
+    logger.debug('Hooking post save CIChange creation.')
     if isinstance(instance, chdb.CIChangeGit):
         priority = chdb.CI_CHANGE_PRIORITY_TYPES.WARNING.id
         change_type = chdb.CI_CHANGE_TYPES.CONF_GIT.id
@@ -57,8 +59,20 @@ def post_create_change(sender, instance, raw, using, **kwargs):
         message = instance.comment
         time = instance.time
         ci = instance.ci
+    elif isinstance(instance, chdb.CIChangePuppet):
+        if instance.status == 'failed':
+            priority = chdb.CI_CHANGE_PRIORITY_TYPES.ERROR.id
+        elif instance.status == 'changed':
+            priority = chdb.CI_CHANGE_PRIORITY_TYPES.WARNING.id
+        else:
+            priority = chdb.CI_CHANGE_PRIORITY_TYPES.NOTICE.id
+        change_type = chdb.CI_CHANGE_TYPES.CONF_AGENT.id
+        time = instance.time
+        ci = instance.ci
+        message = 'Puppet log for %s (%s)' % (instance.host, instance.configuration_version)
+
     # now decide if this is a change included into the statistics
-    # if yest, create CIChange. Not sure now, so take all data.
+    # by default create for every hooke change
     ch = chdb.CIChange()
     ch.time = time
     ch.ci = ci
@@ -67,6 +81,7 @@ def post_create_change(sender, instance, raw, using, **kwargs):
     ch.content_object = instance
     ch.message = message
     ch.save()
+    logger.debug('Hook done.')
 
 @receiver(post_save, sender=cdb.CI, dispatch_uid='ralph.cmdb.history')
 @receiver(post_save, sender=cdb.CIRelation, dispatch_uid='ralph.cmdb.history')
@@ -100,29 +115,73 @@ def ci_post_save(sender, instance, raw, using, **kwargs):
         ch.save()
 
 @task
-def create_issue_for_git_change(change_id, retry_count=1):
+def create_issue(change_id, retry_count=1):
     ch = chdb.CIChange.objects.get(id=change_id)
-    summary = 'Config Change %s' % ch.message
-    description = '''
-    Changeset id: %(changeset)s
-    Source: GIT
-    Description: %(summary)s
-    CMDB link: %(change_link)s
-    Author: %(author)s
+    if ch.registration_type == chdb.CI_CHANGE_REGISTRATION_TYPES.CHANGE.id:
+        raise Exception('Already registered')
 
-    ''' % (dict(
-        changeset=ch.content_object.changeset,
-        summary=ch.message,
-        change_link=ralph_change_link % (ch.id),
-        author=ch.content_object.author,
-    ))
+    user=''
+    if ch.type == chdb.CI_CHANGE_TYPES.CONF_GIT.id:
+        user = get_login_from_user(ch.content_object.author)
+        summary = 'Config Change: %s' % ch.message
+        description = '''
+        Changeset id: %(changeset)s
+        Source: GIT
+        Description: %(summary)s
+        CMDB link: %(change_link)s
+        Author: %(author)s
+
+        ''' % (dict(
+            changeset=ch.content_object.changeset,
+            summary=ch.message,
+            change_link=ralph_change_link % (ch.id),
+            author=ch.content_object.author,
+        ))
+
+    elif ch.type == chdb.CI_CHANGE_TYPES.DEVICE.id:
+        user = unicode(ch.content_object.user)
+        summary = 'Asset attribute change: %s' % ch.message
+        description = '''
+        Old value: %(old_value)s
+        New value: %(new_value)s
+        Description: %(description)s
+        CMDB link: %(cmdb_link)s
+        Author: %(author)s
+
+        ''' % (dict(
+            old_value=ch.content_object.old_value,
+            new_value=ch.content_object.new_value,
+            description=ch.content_object.comment,
+            author=unicode(ch.content_object.user),
+            cmdb_link=ralph_change_link % (ch.id),
+        ))
+
+    elif ch.type == chdb.CI_CHANGE_TYPES.CI.id:
+        user = unicode(ch.content_object.user)
+        summary = 'CMDB attribute change: %s' % ch.message
+        description = '''
+        Old value: %(old_value)s
+        New value: %(new_value)s
+        Description: %(summary)s
+        CMDB link: %(cmdb_link)s
+        Author: %(author)s
+
+        ''' % (dict(
+            old_value=ch.content_object.old_value,
+            new_value=ch.content_object.new_value,
+            description=ch.content_object.comment,
+            author=unicode(ch.content_object.user),
+            cmdb_link=ralph_change_link % (ch.id),
+        ))
     try:
         j = Jira()
         if ch.ci:
             ci = ch.ci
         else:
             ci = None
-        user = get_email_from_user(ch.content_object.author)
+        if not j.user_exists(user):
+            user = default_assignee
+
         issue = j.create_issue(
                 description=description,
                 summary=summary,
@@ -136,86 +195,15 @@ def create_issue_for_git_change(change_id, retry_count=1):
         ch.external_key = issue.get('key')
         ch.save()
     except JiraException as e:
-        raise create_issue_for_git_change.retry(exc=e,args=[change_id,
-            retry_count + 1], countdown=60 * (2 ** retry_count),
-            max_retries=15) # 22 days
-
-
-@task
-def create_issue_for_cmdb_attribute_change(change_id, retry_count=1):
-    ch = chdb.CIChange.objects.get(id=change_id)
-    summary = 'CMDB attribute change: %s' % ch.message
-    description = '''
-    Event type - CMDB attribute change
-    Old value: %(old_value)s
-    New value: %(new_value)s
-    CMDB link: %(cmdb_link)s
-
-    ''' % (dict(paths=ch.content_object.file_paths,
-        old_value = ch.content_object.old_value,
-        new_value = ch.content_object.new_value,
-        cmdb_link=ralph_change_link % (ch.id),
-    ))
-
-    try:
-        j = Jira()
-        issue = j.create_issue(
-                description=description,
-                summary=summary,
-                ci=ch.ci,
-                assignee=ch.content_object.user or default_assignee,
-        )
-        ch.external_key = issue.get('key')
-        ch.registration_type = chdb.CI_CHANGE_REGISTRATION_TYPES.CHANGE.id
-        ch.save()
-    except JiraException as e:
-        raise create_issue_for_cmdb_attribute_change.retry(exc=e,args=[change_id,
-            retry_count + 1], countdown=60 * (2 ** retry_count),
-            max_retries=15) # 22 days
-
-@task
-def create_issue_for_ralph_attribute_change(change_id, retry_count):
-    ch = chdb.CIChange.objects.get(id=change_id)
-    summary = 'Ralph attribute change: %s' % ch.message
-    description = '''
-    Event type - Ralph attribute change
-    Old value: %(old_value)s
-    New value: %(new_value)s
-
-    CMDB link: %(cmdb_link)s
-
-    ''' % (dict(paths=ch.content_object.file_paths,
-        old_value = ch.content_object.old_value,
-        new_value = ch.content_object.new_value,
-        cmdb_link=ralph_change_link % (ch.id),
-    ))
-    try:
-        j = Jira()
-        issue = j.create_issue(
-                description=description,
-                summary=summary,
-                ci=ch.ci,
-                assignee=ch.content_object.user or default_assignee,
-        )
-        ch.registration_type = chdb.CI_CHANGE_REGISTRATION_TYPES.CHANGE.id
-        ch.external_key = issue.get('key')
-        ch.save()
-    except JiraException as e:
-        raise create_issue_for_ralph_attribute_change.retry(exc=e,args=[change_id,
+        raise create_issue.retry(exc=e, args=[change_id,
             retry_count + 1], countdown=60 * (2 ** retry_count),
             max_retries=15) # 22 days
 
 @receiver(post_save, sender=chdb.CIChange, dispatch_uid='ralph.cmdb.cichange')
 def change_post_save(sender, instance, raw, using, **kwargs):
-    if instance.type == chdb.CI_CHANGE_TYPES.CONF_GIT.id:
+    if instance.type in chdb.REGISTER_CHANGE_TYPES:
         if not instance.external_key:
-            getfunc(create_issue_for_git_change)(instance.id)
-    elif instance.type == chdb.CI_CHANGE_TYPES.DEVICE.id:
-        if not instance.external_key:
-            getfunc(create_issue_for_ralph_attribute_change)(instance.id)
-    elif instance.type == chdb.CI_CHANGE_TYPES.CI.id:
-        if not instance.external_key:
-            getfunc(create_issue_for_cmdb_attribute_change)(instance.id)
+            getfunc(create_issue)(instance.id)
 
 
 @receiver(post_delete, sender=chdb.CIChangeGit, dispatch_uid='ralph.cmdb.cichangedelete')
