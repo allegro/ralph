@@ -35,14 +35,15 @@ class AssetChangeImporter(BaseImporter):
                 ch = db.CIChange()
                 ch.content_object = x
                 ci = None
-                ci = db.CI.objects.filter(object_id=x.device.id,content_type=device_type).all()[0]
+                ci = db.CI.objects.filter(object_id=x.device.id,
+                        content_type=device_type).all()[0]
                 ch.ci = ci
                 ch.priority = db.CI_CHANGE_PRIORITY_TYPES.WARNING.id
                 ch.time = x.date
                 ch.message = x.comment or ''
                 ch.type = db.CI_CHANGE_TYPES.DEVICE.id
                 ch.save()
-            except IntegrityError,e:
+            except IntegrityError, e:
                 logger.debug('Skipping already imported: %s' % x)
 
 
