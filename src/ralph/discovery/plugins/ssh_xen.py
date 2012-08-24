@@ -88,12 +88,8 @@ def run_ssh_xen(ipaddr, parent):
         dev.deleted = True
         dev.save()
     for vm_name, vm_uuid in vms:
-<<<<<<< HEAD
         ethernets = [Eth('vif %d' % i, mac, 0) for
                      i, mac in enumerate(macs.get(vm_name, []))]
-=======
-        ethernets = [Eth(mac=mac) for mac in macs.get(vm_name, [])]
->>>>>>> 581e852e99304a6e3075595a30d02096fc77124d
         if not ethernets:
             continue
         dev = Device.create(ethernets=ethernets, parent=parent, sn=vm_uuid,
