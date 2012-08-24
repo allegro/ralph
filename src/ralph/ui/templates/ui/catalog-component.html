@@ -80,7 +80,7 @@
             <option value="none">No group</option>
             <option value="new">Newly created group</option>
             <optgroup label=""></optgroup>
-            {% for g in groups.all %}
+            {% for g in groups %}
             <option {% if g == group %}selected="selected"{% endif %} value="{{ g.id }}">
             {{ g.name }}
             </option>

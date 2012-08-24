@@ -25,6 +25,10 @@ from ralph.discovery.models_component import (
 from ralph.discovery.models_network import IPAddress
 
 
+FOREVER = '2199-1-1' # not all DB backends will accept '9999-1-1'
+ALWAYS = '0001-1-1' # not all DB backends will accept '0000-0-0'
+
+
 class HistoryChange(db.Model):
     """Represent a single change of a device or one of its components."""
 
@@ -186,8 +190,8 @@ class HistoryCost(db.Model):
     never overlap.
     """
 
-    start = db.DateField(default='0001-1-1', null=True)
-    end = db.DateField(default='2199-1-1')
+    start = db.DateField(default=ALWAYS, null=True)
+    end = db.DateField(default=FOREVER)
     daily_cost = db.FloatField(default=0)
     device = db.ForeignKey('Device', null=True, blank=True,
                            default=None, on_delete=db.SET_NULL)
@@ -219,7 +223,7 @@ class HistoryCost(db.Model):
         cls.end_span(device=device, extra=extra, end=start)
         span = cls(
                 start=start,
-                end=end or '9999-1-1',
+                end=end or FOREVER,
                 daily_cost=daily_cost,
                 device=device,
                 extra=extra,
