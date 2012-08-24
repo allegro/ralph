@@ -52,14 +52,24 @@ def _get_local_disk_size(ssh, disk):
 def _add_virtual_machine(ssh, vmid, parent, master, storage):
     stdin, stdout, stderr = ssh.exec_command(
             "cat /etc/qemu-server/%d.conf" % vmid)
+    lines = stdout.readlines()
+    if not lines:
+        # Proxmox 2 uses a different directory structure
+        stdin, stdout, stderr = ssh.exec_command(
+            "cat /etc/pve/nodes/*/qemu-server/%d.conf" % vmid)
+        lines = stdout.readlines()
     disks = {}
     lan_model = None
     name = 'unknown'
-    for line in stdout:
+    for line in lines:
         line = line.strip()
         key, value = line.split(':', 1)
         if key.startswith('vlan'):
             lan_model, lan_mac = value.split('=', 1)
+        elif key.startswith('net'):
+            lan_model, lan_mac = value.split('=', 1)
+            if ',' in lan_mac:
+                lan_mac = lan_mac.split(',', 1)[0]
         elif key == 'name':
             name = value.strip()
         elif key == 'sockets':
