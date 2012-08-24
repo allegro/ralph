@@ -32,18 +32,14 @@ def _connect_ssh(ip):
 
 def _ssh_lines(ssh, command):
     stdin, stdout, stderr = ssh.exec_command(command)
-    for line in stderr:
-        print(line)
     for line in stdout.readlines():
         yield line
 
 def get_macs(ssh):
     macs = {}
     label = ''
-    print('vm macs')
     for line in _ssh_lines(ssh, 'sudo xe vif-list params=vm-name-label,MAC'):
         line = line.strip()
-        print(line)
         if not line:
             continue
         if line.startswith('vm-name-label'):
@@ -59,11 +55,9 @@ def get_running_vms(ssh):
     vms = set()
     label = ''
     uuid = ''
-    print('running vms')
     for line in _ssh_lines(ssh,
                        'sudo xe vm-list params=uuid,name-label,power-state'):
         line = line.strip()
-        print(line)
         if not line:
             continue
         if line.startswith('name-label'):
@@ -94,8 +88,12 @@ def run_ssh_xen(ipaddr, parent):
         dev.deleted = True
         dev.save()
     for vm_name, vm_uuid in vms:
+<<<<<<< HEAD
         ethernets = [Eth('vif %d' % i, mac, 0) for
                      i, mac in enumerate(macs.get(vm_name, []))]
+=======
+        ethernets = [Eth(mac=mac) for mac in macs.get(vm_name, [])]
+>>>>>>> 581e852e99304a6e3075595a30d02096fc77124d
         if not ethernets:
             continue
         dev = Device.create(ethernets=ethernets, parent=parent, sn=vm_uuid,
