@@ -501,6 +501,9 @@ class Reports(ChangesBase, PaginatedView):
         return super(Reports, self).get(*args)
 
 
+def make_jira_url(external_key):
+    return 'test' + settings.JIRA_URL + '/' + external_key
+
 class TimeLine(BaseCMDBView):
     template_name = 'cmdb/timeline.html'
     @staticmethod
@@ -511,7 +514,7 @@ class TimeLine(BaseCMDBView):
                     time__gt=start_date,
                     time__lt=stop_date,
                     type=db.CI_CHANGE_TYPES.CONF_GIT.id,
-        ).order_by('time')
+        ).order_by('-time')
         agent_changes_warnings = db.CIChange.objects.filter(
                     time__gt=start_date,
                     time__lt=stop_date,
@@ -520,7 +523,7 @@ class TimeLine(BaseCMDBView):
                         db.CI_CHANGE_PRIORITY_TYPES.NOTICE.id,
                         db.CI_CHANGE_PRIORITY_TYPES.WARNING.id,
                     ]
-        ).order_by('time')
+        ).order_by('-time')
         agent_changes_errors = db.CIChange.objects.filter(
                     time__gt=start_date,
                     time__lt=stop_date,
@@ -530,14 +533,24 @@ class TimeLine(BaseCMDBView):
                         # critical is not used for puppet agents, though not
                         # mentioned.
                     ]
-        ).order_by('time')
+        ).order_by('-time')
         manual = []
         for change in manual_changes:
+            #number of ci affected - error/success
+            errors_count = db.CIChangePuppet.objects.filter(
+                    configuration_version=change.content_object.changeset[0:7],
+                    status='failed').aggregate(num_ci=Count('ci'))
+            success_count = db.CIChangePuppet.objects.filter(
+                    configuration_version=change.content_object.changeset[0:7],
+                    status='changed').aggregate(num_ci=Count('ci'))
             manual.append(dict(
                 id=change.id,
                 time=change.time.isoformat(),
                 author=change.content_object.author,
                 comment=change.content_object.comment,
+                external_key=change.external_key,
+                errors_count = errors_count.get('num_ci'),
+                success_count = success_count.get('num_ci'),
             ))
         agent_warnings = []
         for change in agent_changes_warnings:
@@ -545,6 +558,7 @@ class TimeLine(BaseCMDBView):
                 id=change.id,
                 time=change.time.isoformat(),
                 comment=change.message,
+                external_key=make_jira_url(change.external_key),
             ))
         agent_errors=[]
         for change in agent_changes_errors:
@@ -552,6 +566,7 @@ class TimeLine(BaseCMDBView):
                 id=change.id,
                 time=change.time.isoformat(),
                 comment=change.message,
+                external_key=make_jira_url(change.external_key),
             ))
         response_dict=dict(
                 manual=manual,
