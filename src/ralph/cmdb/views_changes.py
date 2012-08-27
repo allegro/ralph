@@ -549,8 +549,8 @@ class TimeLine(BaseCMDBView):
                 author=change.content_object.author,
                 comment=change.content_object.comment,
                 external_key=change.external_key,
-                errors_count = errors_count.get('num_ci'),
-                success_count = success_count.get('num_ci'),
+                errors_count=errors_count.get('num_ci'),
+                success_count=success_count.get('num_ci'),
             ))
         agent_warnings = []
         for change in agent_changes_warnings:
