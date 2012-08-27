@@ -12,7 +12,7 @@ import re
 
 from django.conf import settings
 from django.dispatch import receiver
-from django.db.models.signals import pre_save, post_save, post_delete
+from django.db.models.signals import post_save, post_delete
 from celery.task import task
 
 # using models_ci not models, for dependency chain.
@@ -72,7 +72,7 @@ def post_create_change(sender, instance, raw, using, **kwargs):
         message = 'Puppet log for %s (%s)' % (instance.host, instance.configuration_version)
 
     # now decide if this is a change included into the statistics
-    # by default create for every hooke change
+    # by default create for every hooked change type.
     ch = chdb.CIChange()
     ch.time = time
     ch.ci = ci
