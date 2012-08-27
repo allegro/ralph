@@ -21,9 +21,9 @@ class CI_CHANGE_TYPES(Choices):
     CONF_GIT = _('Git Configuration')
     CONF_AGENT = _('Services reconfiguration')
     DEVICE = _('Device attribute change')
-    CI = _('CI attribute change')
     ZABBIX_TRIGGER = _('Zabbix trigger')
     STATUSOFFICE = _('Status office service change')
+    CI = _('CI attribute change')
 
 
 class CI_CHANGE_PRIORITY_TYPES(Choices):
