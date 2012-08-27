@@ -8,15 +8,51 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
+        # Adding index on 'CIChangePuppet', fields ['configuration_version']
+        db.create_index('cmdb_cichangepuppet', ['configuration_version'])
+
+        # Adding field 'CIChange.external_key'
+        db.add_column('cmdb_cichange', 'external_key',
+                      self.gf('django.db.models.fields.CharField')(default='', max_length=60, blank=True),
+                      keep_default=False)
+
+        # Adding field 'CIChange.registration_type'
+        db.add_column('cmdb_cichange', 'registration_type',
+                      self.gf('django.db.models.fields.IntegerField')(default=4, max_length=11),
+                      keep_default=False)
+
         # Adding field 'CIChangeGit.ci'
         db.add_column('cmdb_cichangegit', 'ci',
                       self.gf('django.db.models.fields.related.ForeignKey')(to=orm['cmdb.CI'], null=True),
                       keep_default=False)
 
+        # Adding field 'CIChangeGit.time'
+        db.add_column('cmdb_cichangegit', 'time',
+                      self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime(2012, 8, 27, 0, 0)),
+                      keep_default=False)
+
+        # Adding index on 'CIChangeGit', fields ['changeset']
+        db.create_index('cmdb_cichangegit', ['changeset'])
+
 
     def backwards(self, orm):
+        # Removing index on 'CIChangeGit', fields ['changeset']
+        db.delete_index('cmdb_cichangegit', ['changeset'])
+
+        # Removing index on 'CIChangePuppet', fields ['configuration_version']
+        db.delete_index('cmdb_cichangepuppet', ['configuration_version'])
+
+        # Deleting field 'CIChange.external_key'
+        db.delete_column('cmdb_cichange', 'external_key')
+
+        # Deleting field 'CIChange.registration_type'
+        db.delete_column('cmdb_cichange', 'registration_type')
+
         # Deleting field 'CIChangeGit.ci'
         db.delete_column('cmdb_cichangegit', 'ci_id')
+
+        # Deleting field 'CIChangeGit.time'
+        db.delete_column('cmdb_cichangegit', 'time')
 
 
     models = {
