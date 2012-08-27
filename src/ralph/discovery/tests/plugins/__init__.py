@@ -5,3 +5,4 @@ from ralph.discovery.tests.plugins.hpoa_tests import HpOaPluginTest
 from ralph.discovery.tests.plugins.snmp_tests import SnmpPluginTest, SnmpMacPluginTest
 from ralph.discovery.tests.plugins.ssg_tests import SshSsgPluginTest
 from ralph.discovery.tests.plugins.aix_tests import SshAixPluginTest
+from ralph.discovery.tests.plugins.xen_tests import SshXENPluginTest
