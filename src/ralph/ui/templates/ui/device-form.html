@@ -20,10 +20,11 @@
     {% endfor %}
 </div>
 <div class="control-group pull-left">
-    {% if form.verified.value %}
+    {% if device.verified %}
     &nbsp;<a class="btn btn-inverse" href="../deploy/{{ device.id }}">
             {% icon 'fugue-wand-hat' %}&nbsp;Deploy
         </a>
+        <div class="help-block">Change venture or role</div>
     {% endif %}
 </div>
 {% endblock %}
