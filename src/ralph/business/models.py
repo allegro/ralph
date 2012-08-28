@@ -89,12 +89,13 @@ class Venture(Named, TimeTrackable):
     def check_ip(self, ip):
         node = self
         while node:
-            if hasattr(node, 'network'):
-                for network in node.network:
-                    if network.address == ip:
-                        return True
-                    node = node.parent
-    
+            for network in node.network:
+                if network.address == ip:
+                    return True
+                node = node.parent
+                if node is None:
+                    break
+
     @property
     def device(self):
         return self.device_set
@@ -146,11 +147,12 @@ class VentureRole(Named.NonUnique, TimeTrackable):
     def check_ip(self, ip):
         node = self
         while node:
-            if hasattr(node, 'network'):
-                for network in node.network:
-                    if network.address == ip:
-                        return True
-                    node = node.parent
+            for network in node.network:
+                if network.address == ip:
+                    return True
+                node = node.parent
+                if node is None:
+                    break
                 
         return self.venture.check_ip(ip)
 #        

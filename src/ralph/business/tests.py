@@ -60,7 +60,7 @@ class TestModels(TestCase):
         second_network.terminators = [terminator]
         second_network.save()
         
-        child_venture = Venture(name='Child Venture', parent_id=main_venture.id)
+        child_venture = Venture(name='Child Venture', parent=main_venture)
         child_venture.save()
         child_venture.network = [second_network]
         child_venture.save()
@@ -89,16 +89,10 @@ class TestModels(TestCase):
         venture_role_child.save()
         venture_role_child.network = [fourth_network]
         venture_role_child.save()
-        
+
         self.assertEqual(venture_role_child.check_ip("127.0.0.1"), True)
+
         self.assertEqual(venture_role_child.check_ip("127.0.0.2"), True)
         self.assertEqual(venture_role_child.check_ip("127.0.0.3"), True)
         self.assertEqual(venture_role_child.check_ip("127.0.0.4"), True)
-        self.assertEqual(venture_role_child.check_ip("127.0.0.5"), True)
-#        
-#        self.assertEqual(Network.check_ip("127.0.0.1", venture_role_child), True)
-#        self.assertEqual(Network.check_ip("127.0.0.2", venture_role_child), True)
-#        self.assertEqual(Network.check_ip("127.0.0.3", venture_role_child), True)
-#        self.assertEqual(Network.check_ip("127.0.0.4", venture_role_child), True)
-#        self.assertEqual(Network.check_ip("127.0.0.5", venture_role_child), False)
-#        self.assertEqual(Network.check_ip("127.0.0.6", venture_role_child), False)
+        self.assertEqual(venture_role_child.check_ip("127.0.0.5"), None)
