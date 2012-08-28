@@ -49,6 +49,12 @@ from ralph.cmdb.models_changes import (
     CIIncident
 )
 
+from ralph.cmdb.models_audits import (
+    Auditable,
+    AuditStatus,
+    Deployment,
+)
+
 __all__ = [
     # constants
     CI_RELATION_TYPES,
@@ -89,6 +95,11 @@ __all__ = [
     CIEvent,
     CIProblem,
     CIIncident,
+
+    #audit
+    Auditable,
+    AuditStatus,
+    Deployment,
 ]
 
 # hook signals, don't remove this.

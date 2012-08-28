@@ -59,4 +59,11 @@ class PaginatedView(BaseCMDBView):
         response['Content-Disposition'] = 'attachment; filename=ralph.csv'
         return response
 
+def getfunc(method):
+    """ Wrapper for calling methods - via celery or directly  """
+    celery = True
+    if celery:
+        return method.delay
+    else:
+        return method
 
