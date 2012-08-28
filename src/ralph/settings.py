@@ -285,6 +285,10 @@ OPENSTACK_PASS = None
 OPENSTACK_EXTRA_QUERIES = []
 # </template>
 
+# Venture config
+DEFAULT_ISO_PATH = '/simple/path'
+
+
 #
 # programmatic stuff that need to be at the end of the file
 #
