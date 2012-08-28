@@ -512,6 +512,21 @@ class DeviceInfoForm(DeviceForm):
         self.fields['venture'].choices = self._all_ventures()
         self.fields['venture_role'].choices = self._all_roles()
 
+class DeviceInfoVerifiedForm(DeviceInfoForm):
+    class Meta(DeviceInfoForm.Meta):
+        fields = [field for field in
+                  DeviceInfoForm.Meta.fields if field != 'verified']
+        widgets = {
+            'venture': ReadOnlySelectWidget,
+            'venture_role': ReadOnlySelectWidget,
+        }
+
+    def clean_venture(self):
+        return self.instance.venture
+
+    def clean_venture_role(self):
+        return self.instance.venture_role
+
 
 class DevicePricesForm(DeviceForm):
     class Meta(DeviceForm.Meta):
