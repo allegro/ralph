@@ -80,12 +80,12 @@ class CIChangeCMDBHistory(TimeTrackable):
 class CIChange(TimeTrackable):
     ci = models.ForeignKey('CI', null = True, blank=True)
     type = models.IntegerField(max_length=11, choices=CI_CHANGE_TYPES(),
-            null=False )
+            null=False)
     priority = models.IntegerField(max_length=11,
             choices=CI_CHANGE_PRIORITY_TYPES(),
-            null=False )
+            null=False)
     content_type = models.ForeignKey(ContentType, verbose_name=_("content type"),
-            null = True  )
+            null = True)
     object_id = models.PositiveIntegerField(
             verbose_name=_("object id"),
             null=True,

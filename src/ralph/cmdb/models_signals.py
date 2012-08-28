@@ -19,6 +19,7 @@ from celery.task import task
 from ralph.cmdb import models_ci as cdb
 from ralph.cmdb import models_changes as chdb
 from ralph.cmdb.integration.lib.jira import Jira, JiraException
+from ralph.cmdb.util import getfunc
 
 logger = logging.Logger(__file__)
 
@@ -229,11 +230,4 @@ def basechange_delete_post_save(sender, instance, **kwargs):
         content_object.delete()
 
 
-def getfunc(method):
-    """ Wrapper for calling methods - via celery or directly  """
-    celery = True
-    if celery:
-        return method.delay
-    else:
-        return method
 
