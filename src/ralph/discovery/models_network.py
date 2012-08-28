@@ -8,7 +8,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist 
 from django.db import models as db
 from django.db import IntegrityError
 from django.utils.translation import ugettext_lazy as _
@@ -18,7 +18,9 @@ from lck.django.common.models import (TimeTrackable, Named,
 
 from ralph.util import network
 from ralph.discovery.models_util import LastSeen
-
+import ralph.business.models 
+import pdb
+from sqlalchemy.sql.expression import except_
 
 class NetworkKind(Named):
     icon = db.CharField(verbose_name=_("Icon"),
@@ -81,6 +83,50 @@ class AbstractNetwork(db.Model):
             ip in ipaddr.IPNetwork('192.168.0.0/16')
         )
 
+    @classmethod
+    def check_ip(self, ip, role):
+        find = False
+        for network in role.network.all():
+            if network.address == ip:
+                return True
+    
+        if role.parent_id:
+            try:
+                venture_role_parent = ralph.business.models.VentureRole.objects.get(id__exact=role.parent_id)
+
+            except ObjectDoesNotExist:
+                return False
+                        
+            while True:    
+                for network in venture_role_parent.network.all():
+                    if network.address == ip:
+                        return True
+                if find is False:
+                    try:
+                        venture_role_parent = ralph.business.models.VentureRole.objects.get(id__exact=venture_role_parent.parent_id)
+                    except ObjectDoesNotExist:
+                        break
+
+            if venture_role_parent.venture_id:
+                try:
+                    venture = ralph.business.models.Venture.objects.get(id__exact=venture_role_parent.venture_id)
+                except ObjectDoesNotExist:
+                    return False
+                while True:    
+                    for network in venture.network.all():
+                        if network.address == ip:
+                            return True
+                    if find is False:
+                        try:
+                            venture = ralph.business.models.Venture.objects.get(id__exact=venture.parent_id)
+                        except ObjectDoesNotExist:
+                            break
+                return False        
+            else:
+                return False         
+           
+        else:
+            return False
 
     @classmethod
     def from_ip(cls, ip):

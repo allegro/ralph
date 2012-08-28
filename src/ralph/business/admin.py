@@ -55,6 +55,7 @@ class VentureRoleAdmin(ModelAdmin):
         'venture': ['^name'],
         'parent': ['^parent'],
     }
+    filter_horizontal = ('network',)
 
 admin.site.register(VentureRole, VentureRoleAdmin)
 
@@ -101,6 +102,7 @@ class VentureAdmin(ModelAdmin):
 
     list_display = ('name', 'path', 'data_center', members, technical_owners, business_owners)
     list_filter = ('data_center', 'show_in_ralph', 'parent')
+    filter_horizontal = ('network',)
     search_fields = ('name', 'ventureowner__name')
     save_on_top = True
 
