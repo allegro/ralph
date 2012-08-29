@@ -429,3 +429,77 @@ class IloHost(object):
             ])
             family = int(''.join(fields.get("Family", [])) or 0)
             yield fields['Label'][0], speed, cores, extra, CPU_FAMILY.get(family)
+            
+    def _raw_to_tree(self, raw):
+        xml = ('<?xml version="1.0"?><ROOT>%s</ROOT>' %
+               raw.replace('<?xml version="1.0"?>', ''))
+        
+        xml = xml.replace('<RIBCL VERSION="2.22"/>', '<RIBCL VERSION="2.22">')
+
+        try:
+            tree = elementtree.XML(xml)
+        except elementtree.ParseError:
+            raise ResponseError('Invalid XML in response.')
+        
+        return tree
+            
+    def is_server_power_on(self):
+        query = """<?xml version="1.0"?>
+    <RIBCL VERSION="2.0">
+        <LOGIN USER_LOGIN="%s" PASSWORD="%s">
+            <SERVER_INFO MODE="read">
+                <GET_HOST_POWER_STATUS/>
+            </SERVER_INFO>
+        </LOGIN>
+    </RIBCL>""" % (self.user, self.password)
+        
+        tree = self._raw_to_tree(self._get_ilo(query))
+
+        node = tree.find('RIBCL/GET_HOST_POWER')
+        if node is None:
+            raise ResponseError('Could not detect server power state.')
+        state = node.attrib.get('HOST_POWER')
+        return state == 'ON'
+
+    def power_on(self):
+        query = """<?xml version="1.0"?>
+    <RIBCL VERSION="2.0">
+        <LOGIN USER_LOGIN="%s" PASSWORD="%s">
+            <SERVER_INFO MODE="write">
+                <SET_HOST_POWER HOST_POWER="No"/>
+            </SERVER_INFO>
+        </LOGIN>
+    </RIBCL>""" % (self.user, self.password)
+    
+        tree = self._raw_to_tree(self._get_ilo(query))
+        
+        node = tree.find('RIBCL/RESPONSE')
+        if node is None:
+            raise ResponseError('Invalid XML in response.')
+        status = node.attrib.get('STATUS')
+        return int(status, 0) == 0
+
+    def reboot(self, power_on_if_disabled=False):
+        query = """<?xml version="1.0"?>
+    <RIBCL VERSION="2.0">
+        <LOGIN USER_LOGIN="%s" PASSWORD="%s">
+            <SERVER_INFO MODE="write">
+                <RESET_SERVER/>
+            </SERVER_INFO>
+        </LOGIN>
+    </RIBCL>""" % (self.user, self.password)
+
+        tree = self._raw_to_tree(self._get_ilo(query))
+        
+        node = tree.find('RIBCL/RESPONSE')
+        if node is None:
+            raise ResponseError('Invalid XML in response.')
+            
+        status = node.attrib.get('STATUS')
+        if int(status, 0) == 0:
+            return True
+        msg = node.attrib.get('MESSAGE')
+        if 'powered off' in msg and power_on_if_disabled:
+            return self.power_on()
+        
+        return False
