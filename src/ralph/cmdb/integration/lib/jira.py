@@ -174,10 +174,9 @@ class Jira(object):
         else:
             ci_value = ''
             ci_full_description = ''
-
         params={
                     'fields': {
-                        'issuetype': { 'name': issue_type },
+                        'issuetype': {'name': issue_type},
                         'summary': summary,
                         ci_field_name: ci_value,
                         template_field_name: template,
@@ -195,7 +194,6 @@ class Jira(object):
             params['fields'][towner_field_name] = {'name': technical_assignee}
         if business_assignee:
             params['fields'][bowner_field_name] = {'name': business_assignee}
-        import pdb; pdb.set_trace()
         try:
             call_result = self.call_resource('issue', params)
         except Exception as e:
