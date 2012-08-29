@@ -8,17 +8,19 @@ from __future__ import unicode_literals
 
 from django.conf import settings
 
-from ralph.cmdb.integration.jira import Jira
+from ralph.cmdb.integration.lib.jira import Jira
+
 
 class NullBugtracker(object):
     def create_issue(self, *args, **kwargs):
-        return None
+        return dict(key='#123456')
 
     def find_issuse(self, *args, **kwargs):
-        return None
+        return [{}]
 
     def user_exists(self, *args, **kwargs):
-        return None
+        # paranoia answer every time.
+        return True
 
 
 class Bugtracker(object):
@@ -26,16 +28,9 @@ class Bugtracker(object):
     def __init__(self):
         if settings.BUGTRACKER == 'JIRA':
             self.concrete = Jira()
-        else:
+        elif settings.BUGTRACKER == 'FAKE':
             self.concrete = NullBugtracker
 
-    def create_issue(self, *args, **kwargs):
-        return self.concrete.create_issue(args, kwargs)
-
-    def find_issuse(self, *args, **kwargs):
-        return self.concrete.find_issue(args, kwargs)
-
-    def user_exists(self, *args, **kwargs):
-        return self.concrete.user_exists(args, kwargs)
-
+    def __getattr__(self, name):
+        return getattr(self.concrete, name )
 
