@@ -94,13 +94,12 @@ class Auditable(TimeTrackable):
         transition_id = bugtracker_transition_ids.get(ch.name)
         getfunc(transition_issue)(type(self), self.id, transition_id)
 
-    def save(self, *args, **kwargs):
+    def save(self, user=None, *args, **kwargs):
+        self.user = user
         first_run = False
         if not self.id:
             first_run = True
         if self.status_changed():
-            #fixme - not new value really.
-            #new_status = self.dirty_fields.get('status', None)
             new_status = self._fields_as_dict().get('status')
             if new_status and not first_run:
                 self.synchronize_status(new_status)
