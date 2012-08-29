@@ -5,6 +5,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+
 from ralph.cmdb.models_ci import (
     # constants
     CI_RELATION_TYPES,
