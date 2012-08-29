@@ -7,7 +7,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import re
-import string
 
 from django.conf import settings
 from django.db import models as db
@@ -167,7 +166,7 @@ class VentureRole(Named.NonUnique, TimeTrackable):
             if node.iso_path:
                 return node.iso_path
             node = node.parent
-        return self.venture.get_iso_path
+        return self.venture.get_iso_path()
 
     def get_kickstart_path(self):
         node = self
@@ -176,7 +175,7 @@ class VentureRole(Named.NonUnique, TimeTrackable):
                 return node.kickstart_path
             node = node.parent
             
-        return self.venture.get_kickstart_path
+        return self.venture.get_kickstart_path()
 
     def __unicode__(self):
         return "{} / {}".format(self.venture.symbol if self.venture else '?',
