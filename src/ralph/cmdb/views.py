@@ -27,8 +27,6 @@ from ralph.util.presentation import get_device_icon, get_venture_icon, get_netwo
 import ralph.cmdb.models  as db
 from bob.menu import MenuItem, MenuHeader
 
-import ralph.cmdb.models_signals
-
 
 ROWS_PER_PAGE=20
 SAVE_PRIORITY = 200

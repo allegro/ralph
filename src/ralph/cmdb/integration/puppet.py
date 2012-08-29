@@ -16,6 +16,7 @@ from ralph.cmdb.integration.lib.puppet_yaml import  load
 from ralph.cmdb import models as db
 from ralph.cmdb.integration.base import BaseImporter
 from ralph.cmdb.integration.util import strip_timezone
+from jira.client import JIRA
 
 from lck.django.common import nested_commit_on_success
 
@@ -116,20 +117,8 @@ status=%s
 level=%s
 message=%s
 time=%s'''  % ( title(), host, status, level, message, time))
-        if status == 'failed':
-            priority = db.CI_CHANGE_PRIORITY_TYPES.ERROR.id
-        elif status == 'changed':
-            priority = db.CI_CHANGE_PRIORITY_TYPES.WARNING.id
-        else:
-            priority = db.CI_CHANGE_PRIORITY_TYPES.NOTICE.id
-        if status != 'unchanged':
-            c = db.CIChange()
-            c.type = db.CI_CHANGE_TYPES.CONF_AGENT.id
-            c.content_object = report
-            c.priority = priority
-            c.time = report.time
-            c.ci = report.ci
-            c.save()
+
+        
 
 class PuppetGitImporter(BaseImporter):
     """ Fetch changesets from fisheye repo.
@@ -159,7 +148,7 @@ class PuppetGitImporter(BaseImporter):
         details = x.get_details(changeset)
         logger.debug(details.comment)
         c = db.CIChangeGit()
-        c.comment = unicode(details.comment)
+        c.comment = unicode(details.comment)[0:999]
         c.time = strip_timezone(details.get('date'))
         files_list_str = ""
         try:
@@ -172,19 +161,11 @@ class PuppetGitImporter(BaseImporter):
         except AttributeError:
             files_list_str = ''
             files_list = []
-        c.file_paths = files_list_str[0:3000]
+        c.file_paths = unicode(files_list_str)[0:3000]
         c.author = details.get('author')
         c.ci = self.get_ci_by_path(files_list)
         c.changeset = changeset
         c.save()
-        ch = db.CIChange()
-        ch.type = db.CI_CHANGE_TYPES.CONF_GIT.id
-        ch.content_object = c
-        ch.ci = c.ci
-        ch.priority = db.CI_CHANGE_PRIORITY_TYPES.WARNING.id
-        ch.message = c.comment
-        ch.time = strip_timezone(details.get('date'))
-        ch.save()
 
     def reconcilate(self, ch):
         obj = db.CIChangeGit.objects.get(changeset=ch)
