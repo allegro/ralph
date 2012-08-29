@@ -45,7 +45,7 @@ class Venture(Named, TimeTrackable):
             on_delete=db.SET_NULL)
     path = db.TextField(verbose_name=_("symbol path"), blank=True,
             default="", editable=False)
-    network = db.ManyToManyField(Network, null=True, 
+    networks = db.ManyToManyField(Network, null=True, 
                                  verbose_name=_("networks list"))
 
     class Meta:
@@ -95,7 +95,8 @@ class Venture(Named, TimeTrackable):
             for network in node.network:
                 if ipaddr.IPAddress(ip) in ipaddr.IPNetwork(network.address):
                     return True
-                node = node.parent
+            node = node.parent
+        return False
 
     @property
     def device(self):
@@ -130,8 +131,9 @@ class VentureRole(Named.NonUnique, TimeTrackable):
     venture = db.ForeignKey(Venture, verbose_name=_("venture"))
     parent = db.ForeignKey('self', verbose_name=_("parent role"), null=True,
         blank=True, default=None, related_name="child_set")
-    network = db.ManyToManyField(Network, null=True, 
+    networks = db.ManyToManyField(Network, null=True, 
                                  verbose_name=_("networks list"))
+    
     class Meta:
         unique_together = ('name', 'venture')
         verbose_name = _("venture role")
@@ -152,7 +154,7 @@ class VentureRole(Named.NonUnique, TimeTrackable):
             for network in node.network:
                 if ipaddr.IPAddress(ip) in ipaddr.IPNetwork(network.address):
                     return True
-                node = node.parent
+            node = node.parent
         return self.venture.check_ip(ip)
 
     def __unicode__(self):
