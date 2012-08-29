@@ -38,15 +38,9 @@ class AuditStatus(Choices):
     rejected = _('rejected')
     closed = _('closed')
 
-
 """
-Connect to signal bugtracker_accepted to run deployment
-e.g
-@signal
-def bugtracker_accepted_handler(sender, data, **kwargs):
-    # start deployment code
-    pass
-
+This signal is fired, when deployment is accepted in Bugtracker.
+Note, that you should manually change deployment statuses.
 """
 deployment_accepted = Signal(providing_args=['deployment_id'])
 
@@ -100,12 +94,10 @@ class Auditable(TimeTrackable):
         transition_id = bugtracker_transition_ids.get(ch.name)
         getfunc(transition_issue)(type(self), self.id, transition_id)
 
-
     def save(self, *args, **kwargs):
         first_run = False
         if not self.id:
             first_run = True
-
         if self.status_changed():
             #fixme - not new value really.
             #new_status = self.dirty_fields.get('status', None)
@@ -170,11 +162,11 @@ def transition_issue(auditable_class, auditable_id, transition_id, retry_count=1
 
 @task
 def create_issue(auditable_class, auditable_id, params, retry_count=1):
-    """ 
+    """
     We create 2 Bugtracker requests for Bugtracker here.
     1) Check if assignee exists in Bugtracker
     2) Create issue with back-link for acceptance
-    3) #TODO: assignes needs to be set per subtask 
+    3) #TODO: assignes needs to be set per subtask
     """
     auditable_object = auditable_class.objects.get(id=auditable_id)
     default_assignee = settings.BUGTRACKER_CMDB_DEFAULT_ASSIGNEE
