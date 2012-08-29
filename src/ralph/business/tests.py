@@ -116,7 +116,6 @@ class TestModels(TestCase):
 
         self.assertEqual(venture_role_child.check_ip("111.11.11.1"), True)
         self.assertEqual(venture_role_child.check_ip("111.11.11.44"), False)
-        self.assertEqual(y.full_name, 'x / y')
 
     def test_get_iso_none(self):
         a = Venture(name='test1', symbol='test1')
