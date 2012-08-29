@@ -88,7 +88,8 @@ class Jira(object):
         return call_result
 
     def create_issue(self, summary, description, issue_type, ci, assignee,
-            template, start='', end=''):
+            template, start='', end='',
+            business_assignee=None, technical_assignee=None):
         """ Create new issue.
 
         Jira Rest accepts following fields:
@@ -164,6 +165,8 @@ class Jira(object):
         ci_name_field_name = settings.BUGTRACKER_CI_NAME_FIELD_NAME
         project = settings.BUGTRACKER_CMDB_PROJECT
         template_field_name = settings.BUGTRACKER_TEMPLATE_FIELD_NAME
+        bowner_field_name = settings.BUGTRACKER_BOWNER_FIELD_NAME
+        towner_field_name = settings.BUGTRACKER_TOWNER_FIELD_NAME
 
         if ci:
             ci_value = ci.uid
@@ -171,9 +174,8 @@ class Jira(object):
         else:
             ci_value = ''
             ci_full_description = ''
-        try:
-            call_result = self.call_resource('issue',
-                params={
+
+        params={
                     'fields': {
                         'issuetype': { 'name': issue_type },
                         'summary': summary,
@@ -188,8 +190,13 @@ class Jira(object):
                             'key': project
                             }
                         },
-                }
-        )
+        }
+        if technical_assignee:
+            params['fields'][towner_field_name] = technical_assignee
+        if business_assignee:
+            params['fields'][bowner_field_name] = business_assignee
+        try:
+            call_result = self.call_resource('issue', params)
         except Exception as e:
             # enclose exception as jira exception, for furter analysing
             raise BugtrackerException(e)
