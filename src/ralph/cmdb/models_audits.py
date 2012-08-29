@@ -15,32 +15,65 @@ from lck.django.choices import Choices
 from ralph.discovery.models import Device
 from ralph.cmdb.integration.bugtracker import Bugtracker
 from ralph.cmdb.models import CI
-from ralph.cmdb.util import  getfunc
+from ralph.cmdb.models_common import  getfunc
 from django.conf import settings
+from lck.django.common.models import MACAddressField
 
 from celery.task import task
+from ralph.cmdb.integration.exceptions import BugtrackerException
+from django.dispatch.dispatcher import Signal
+from django.dispatch import receiver
+
+
+ACTION_IN_PROGRESS=settings.BUGTRACKER_ACTION_IN_PROGRESS
+ACTION_IN_DEPLOYMENT=settings.BUGTRACKER_ACTION_IN_DEPLOYMENT
+ACTION_RESOLVED_FIXED=settings.BUGTRACKER_ACTION_RESOLVED_FIXED
+
 
 class AuditStatus(Choices):
     _ = Choices.Choice
 
     created = _('created')
-    waiting = _('waiting')
     accepted = _('accepted')
     rejected = _('rejected')
     closed = _('closed')
 
 
+"""
+Connect to signal bugtracker_accepted to run deployment
+e.g
+@signal
+def bugtracker_accepted_handler(sender, data, **kwargs):
+    # start deployment code
+    pass
+
+"""
+deployment_accepted = Signal(providing_args=['deployment_id'])
+
+
 class Auditable(TimeTrackable):
+    """ Base abstract class for keeping track of acceptation of change.
+    May be attribute change, or some custom workflow change.
+    Object, old value and new value is not stored here, giving ability to set it
+    according to custom neeeds.
+
+    If implementing attribute change, please do something like this:
+
+    class AttributeChange(Auditable):
+        object = ...
+        new_attribute =  ..
+        old_attribute = ...
+
+    """
     user = models.ForeignKey('auth.User',
            verbose_name=_("user"), null=True,
            blank=True, default=None,
            on_delete=models.SET_NULL
     )
-    status_lastchanged = models.DateTimeField(verbose_name=_("date"),
-            default=datetime.now)
-    status = models.IntegerField(max_length=11,
-            choices=AuditStatus())
-    external_key = models.CharField(verbose_name='External ticket key number',
+    status_lastchanged = models.DateTimeField(verbose_name=_("date"))
+    #status = models.IntegerField(max_length=11,
+    #        choices=AuditStatus(), default=AuditStatus.created.id)
+    issue_key = models.CharField(verbose_name='External ticket key number',
             max_length=30, blank=True,
             null=True, default=None)
 
@@ -48,32 +81,103 @@ class Auditable(TimeTrackable):
         abstract = True
         verbose_name = 'Auditable base class'
 
-
-class Deployment(Auditable):
-    device = models.ForeignKey(Device)
-
     def status_changed(self):
-        if not self.id or 'status_id' not in self.dirty_fields:
+        # newly created
+        if not self.id:
+            return True
+        # didnt change status
+        if 'status' not in self.dirty_fields:
             return False
-        dirty_statusid = self.dirty_fields['status_id']
-        if not dirty_statusid or dirty_statusid == self.status_id:
+        # changed status
+        dirty_statusid = self.dirty_fields['status']
+        if not dirty_statusid or dirty_statusid == self.status:
             return False
         else:
             return True
 
-    def save(self, *args, **kwargs):
-        if self.status_changed():
-            self.status_id = datetime.datetime.now()
-        if not self.id:
-            getfunc(create_issue)(Deployment, self.id)
-        return super(Deployment, self).save(*args, **kwargs)
+    def synchronize_status(self, new_status):
+        ch = DeploymentStatus.from_id(new_status)
+        transition_id = bugtracker_transition_ids.get(ch.name)
+        getfunc(transition_issue)(type(self), self.id, transition_id)
 
+
+    def save(self, *args, **kwargs):
+        first_run = False
+        if not self.id:
+            first_run = True
+
+        if self.status_changed():
+            #fixme - not new value really.
+            #new_status = self.dirty_fields.get('status', None)
+            new_status = self._fields_as_dict().get('status')
+            if new_status and not first_run:
+                self.synchronize_status(new_status)
+            self.status_lastchanged = datetime.now()
+        # we need change id
+        super(Auditable, self).save(*args, **kwargs)
+        # now fire celery task if just created
+        if first_run:
+            self.fire_issue()
+
+
+class DeploymentStatus(Choices):
+    _ = Choices.Choice
+
+    opened = _('open')
+    in_progress = _('in progress')
+    in_deployment = _('in deployment')
+    resolved_fixed = _('resolved fixed')
+
+bugtracker_transition_ids = dict(
+    opened=None,
+    in_progress=ACTION_IN_PROGRESS,
+    in_deployment=ACTION_IN_DEPLOYMENT,
+    resolved_fixed=ACTION_RESOLVED_FIXED,
+)
+
+class Deployment(Auditable):
+    device = models.ForeignKey(Device)
+    mac =  MACAddressField()
+    status = models.IntegerField(max_length=11,
+            choices=AuditStatus(), default=DeploymentStatus.opened.id)
+
+    def fire_issue(self):
+        ci = None
+        params = dict(
+            ci_uid = CI.get_by_content_object(self.device).uid,
+            description = 'Please accept',
+            summary = 'Summary',
+            ci=ci,
+            user='marcin.kliks',
+            template=settings.BUGTRACKER_OPA_TEMPLATE,
+            issue_type=settings.BUGTRACKER_OPA_ISSUETYPE
+        )
+        getfunc(create_issue)(type(self), self.id, params)
 
 @task
-def create_issue(auditable_class, auditable_id,
-        params,  retry_count=1):
-    default_assignee = settings.JIRA_OPA_DEFAULT_ASSIGNEE
-    jira_opa_template = settings.JIRA_OPA_TEMPLATE
+def transition_issue(auditable_class, auditable_id, transition_id, retry_count=1):
+    try:
+        auditable_object = auditable_class.objects.get(id=auditable_id)
+        tracker = Bugtracker()
+        tracker.transition_issue(
+            issue_key=auditable_object.issue_key,
+            transition_id=transition_id,
+        )
+    except BugtrackerException as e:
+        raise transition_issue.retry(exc=e, args=[auditable_class,
+            auditable_id, transition_id, retry_count + 1], countdown=60 * (2 ** retry_count),
+            max_retries=15) # up to 22 days
+
+@task
+def create_issue(auditable_class, auditable_id, params, retry_count=1):
+    """ 
+    We create 2 Bugtracker requests for Bugtracker here.
+    1) Check if assignee exists in Bugtracker
+    2) Create issue with back-link for acceptance
+    3) #TODO: assignes needs to be set per subtask 
+    """
+    auditable_object = auditable_class.objects.get(id=auditable_id)
+    default_assignee = settings.BUGTRACKER_CMDB_DEFAULT_ASSIGNEE
     try:
         tracker = Bugtracker()
         if params.get('ci_uid'):
@@ -84,21 +188,28 @@ def create_issue(auditable_class, auditable_id,
             user = default_assignee
         else:
             user = ''
-        auditable_object = auditable_class.objecs.get(id=auditable_id)
-        issue = tracker.create_audit_issue(
+        issue = tracker.create_issue(
+                issue_type=params.get('issue_type'),
                 description=params.get('description'),
                 summary=params.get('summary'),
                 ci=ci,
                 assignee=user,
                 start=auditable_object.created.isoformat(),
                 end='',
-                template=jira_opa_template,
+                template=params.get('template'),
         )
-        auditable_object.status = AuditStatus.waiting.id
-    except Exception as e:
+        auditable_object.status_lastchanged = datetime.now()
+        auditable_object.issue_key = issue.get('key')
+        auditable_object.save()
+        # fake acceptance - send signal of acceptance
+        deployment_accepted.send(sender=auditable_object, deployment_id=auditable_object.id)
+    except BugtrackerException as e:
         raise create_issue.retry(exc=e, args=[auditable_class,
             auditable_id, params, retry_count + 1], countdown=60 * (2 ** retry_count),
-            max_retries=15) # 22 days
+            max_retries=15) # up to 22 days
 
 
-
+@receiver(deployment_accepted, dispatch_uid='ralph.cmdb.deployment_accepted')
+def handle_deployment_accepted(sender, deployment_id, **kwargs):
+    # sample depoyment accepted signal code.
+    pass
