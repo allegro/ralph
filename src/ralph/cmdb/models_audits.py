@@ -117,7 +117,7 @@ class Auditable(TimeTrackable):
 class DeploymentStatus(Choices):
     _ = Choices.Choice
 
-    opened = _('open')
+    open = _('open')
     in_progress = _('in progress')
     in_deployment = _('in deployment')
     resolved_fixed = _('resolved fixed')
@@ -146,8 +146,16 @@ def get_business_owner(device):
 class Deployment(Auditable):
     device = models.ForeignKey(Device)
     mac =  MACAddressField()
-    status = models.IntegerField(max_length=11,
-            choices=AuditStatus(), default=DeploymentStatus.opened.id)
+    status = models.IntegerField(choices=AuditStatus(),
+                                 default=DeploymentStatus.open.id)
+    ip = models.IPAddressField(verbose_name=_("IP address"))
+    img_path = models.CharField(verbose_name=_("image path"), max_length=255)
+    kickstart_path = models.CharField(verbose_name=_("kickstart path"),
+                                      max_length=255)
+    venture = models.ForeignKey('business.Venture', verbose_name=_("venture"),
+                                null=True)
+    venture_role = models.ForeignKey('business.VentureRole', null=True,
+                                     verbose_name=_("role"))
 
     def fire_issue(self):
         ci = None

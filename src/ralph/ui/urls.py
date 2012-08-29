@@ -30,9 +30,11 @@ from ralph.ui.views.networks import (NetworksDeviceList, NetworksInfo,
         NetworksReports, ReportNetworksDeviceList,
         )
 from ralph.ui.views.catalog import (Catalog, CatalogDevice, CatalogComponent)
+from ralph.ui.views.deploy import Deployment
 from ralph.ui.views.ventures import VenturesDeviceList, VenturesCMDB
 from ralph.ui.views.racks import RacksDeviceList
 from ralph.ui.views.reports import ReportList
+
 
 urlpatterns = patterns('',
     url(r'^logout/$', login_required(logout), {}, 'logout'),
@@ -45,6 +47,8 @@ urlpatterns = patterns('',
             login_required(BulkEdit.as_view()), {}, 'bulkedit'),
     url(r'^(?P<section>\w+)/.*/(?P<details>bulkedit)/$',
             login_required(BulkEdit.as_view()), {}, 'bulkedit'),
+    url(r'^(?P<section>\w+)/(?P<details>deploy)/(?P<device>\d+)$',
+            login_required(Deployment.as_view()), {}, 'deploy'),
 
     url(r'^search/$',
             login_required(SearchDeviceList.as_view()), {}, 'search'),

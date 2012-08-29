@@ -116,7 +116,6 @@ class TestModels(TestCase):
 
         self.assertEqual(venture_role_child.check_ip("111.11.11.1"), True)
         self.assertEqual(venture_role_child.check_ip("111.11.11.44"), False)
-        self.assertEqual(y.full_name, 'x / y')
 
     def test_get_iso_none(self):
         a = Venture(name='test1', symbol='test1')
@@ -126,22 +125,22 @@ class TestModels(TestCase):
         c = Venture(name='test1 parent parent', symbol='test1_parent_parent', parent_id = b.id)
         c.save()
 
-        self.assertEqual(a.get_iso_path(), settings.DEFAULT_ISO_PATH)
-        self.assertEqual(c.get_iso_path(), settings.DEFAULT_ISO_PATH)
+        self.assertEqual(a.get_img_path(), settings.DEFAULT_ISO_PATH)
+        self.assertEqual(c.get_img_path(), settings.DEFAULT_ISO_PATH)
 
     def test_get_iso(self):
         iso = 'iso'
 
-        a = Venture(name='test1', symbol='test1', iso_path = iso)
+        a = Venture(name='test1', symbol='test1', img_path = iso)
         a.save()
         b = Venture(name='test1 parent', symbol='test1_parent', parent_id = a.id)
         b.save()
         c = Venture(name='test1 parent parent', symbol='test1_parent_parent', parent_id = b.id)
         c.save()
 
-        self.assertEqual(a.get_iso_path(), iso)
-        self.assertEqual(b.get_iso_path(), iso)
-        self.assertEqual(c.get_iso_path(), iso)
+        self.assertEqual(a.get_img_path(), iso)
+        self.assertEqual(b.get_img_path(), iso)
+        self.assertEqual(c.get_img_path(), iso)
 
     def get_kickstart_path_none(self):
         a = Venture(name='test1', symbol='test1')
@@ -179,25 +178,25 @@ class TestModels(TestCase):
         c = VentureRole(name='test1 parent parent', parent_id = b.id, venture_id = ven.id)
         c.save()
 
-        self.assertEqual(a.get_iso_path(), settings.DEFAULT_ISO_PATH)
-        self.assertEqual(b.get_iso_path(), settings.DEFAULT_ISO_PATH)
-        self.assertEqual(c.get_iso_path(), settings.DEFAULT_ISO_PATH)
+        self.assertEqual(a.get_img_path(), settings.DEFAULT_ISO_PATH)
+        self.assertEqual(b.get_img_path(), settings.DEFAULT_ISO_PATH)
+        self.assertEqual(c.get_img_path(), settings.DEFAULT_ISO_PATH)
 
     def test_get_iso_role(self):
         iso = 'iso'
-        ven = Venture(name='test1', symbol='test1', iso_path = iso)
+        ven = Venture(name='test1', symbol='test1', img_path = iso)
         ven.save()
 
-        a = VentureRole(name='test1', iso_path = iso, venture_id = ven.id)
+        a = VentureRole(name='test1', img_path = iso, venture_id = ven.id)
         a.save()
         b = VentureRole(name='test1 parent', parent_id = a.id, venture_id = ven.id)
         b.save()
         c = VentureRole(name='test1 parent parent', parent_id = b.id, venture_id = ven.id)
         c.save()
 
-        self.assertEqual(a.get_iso_path(), iso)
-        self.assertEqual(b.get_iso_path(), iso)
-        self.assertEqual(c.get_iso_path(), iso)
+        self.assertEqual(a.get_img_path(), iso)
+        self.assertEqual(b.get_img_path(), iso)
+        self.assertEqual(c.get_img_path(), iso)
 
     def test_get_kickstart_role_none(self):
         ven = Venture(name='test1', symbol='test1')
