@@ -44,10 +44,10 @@ class Venture(Named, TimeTrackable):
             on_delete=db.SET_NULL)
     path = db.TextField(verbose_name=_("symbol path"), blank=True,
             default="", editable=False)
-    iso_path = db.CharField(verbose_name=_("iso path"), blank=True,
-            default="", max_length=255)    
+    img_path = db.CharField(verbose_name=_("iso path"), blank=True,
+            default="", max_length=255)
     kickstart_path = db.CharField(verbose_name=_("kickstart path"), max_length=255,
-            blank=True, default='')        
+            blank=True, default='')
 
     class Meta:
         verbose_name = _("venture")
@@ -90,11 +90,11 @@ class Venture(Named, TimeTrackable):
         if self.parent:
             return self.parent.get_department()
         
-    def get_iso_path(self):
+    def get_img_path(self):
         node = self
         while node:
-            if node.iso_path:
-                return node.iso_path
+            if node.img_path:
+                return node.img_path
             node = node.parent
         if node is None:
             return settings.DEFAULT_ISO_PATH
@@ -141,7 +141,7 @@ class VentureRole(Named.NonUnique, TimeTrackable):
     parent = db.ForeignKey('self', verbose_name=_("parent role"), null=True,
         blank=True, default=None, related_name="child_set")
 
-    iso_path = db.CharField(verbose_name=_("iso path"), blank=True,
+    img_path = db.CharField(verbose_name=_("iso path"), blank=True,
             default="", max_length=255)    
     kickstart_path = db.CharField(verbose_name=_("kickstart path"), max_length=255,
             blank=True, default='')   
@@ -160,13 +160,13 @@ class VentureRole(Named.NonUnique, TimeTrackable):
             parents.append(obj.name)
         return " / ".join(reversed(parents))
 
-    def get_iso_path(self):
+    def get_img_path(self):
         node = self
         while node:
-            if node.iso_path:
-                return node.iso_path
+            if node.img_path:
+                return node.img_path
             node = node.parent
-        return self.venture.get_iso_path()
+        return self.venture.get_img_path()
 
     def get_kickstart_path(self):
         node = self
@@ -174,7 +174,6 @@ class VentureRole(Named.NonUnique, TimeTrackable):
             if node.kickstart_path:
                 return node.kickstart_path
             node = node.parent
-            
         return self.venture.get_kickstart_path()
 
     def __unicode__(self):
