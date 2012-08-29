@@ -43,7 +43,7 @@ class TestModels(TestCase):
         data_center = DataCenter(name='Test date_center')
         data_center.save()
         
-        network = Network(address='127.0.0.1',name='Test network', 
+        network = Network(address='192.168.1.0/24',name='Test network', 
                           data_center=data_center)
         network.save()
         network.terminators = [terminator]
@@ -54,7 +54,7 @@ class TestModels(TestCase):
         main_venture.network = [network]
         main_venture.save()
         
-        second_network = Network(address='127.0.0.2',name='Test secound_network', 
+        second_network = Network(address='172.16.0.0/28',name='Test secound_network', 
                           data_center=data_center)
         second_network.save()
         second_network.terminators = [terminator]
@@ -65,7 +65,7 @@ class TestModels(TestCase):
         child_venture.network = [second_network]
         child_venture.save()
         
-        third_network = Network(address='127.0.0.3',name='Test third_network', 
+        third_network = Network(address='66.6.6.0/29',name='Test third_network', 
                           data_center=data_center)
         third_network.save()
         third_network.terminators = [terminator]
@@ -77,7 +77,7 @@ class TestModels(TestCase):
         venture_role_main.network = [third_network]
         venture_role_main.save()
         
-        fourth_network = Network(address='127.0.0.4',name='Test fourth_network', 
+        fourth_network = Network(address='111.11.11.0/27',name='Test fourth_network', 
                           data_center=data_center)
         fourth_network.save()
         fourth_network.terminators = [terminator]
@@ -90,9 +90,14 @@ class TestModels(TestCase):
         venture_role_child.network = [fourth_network]
         venture_role_child.save()
 
-        self.assertEqual(venture_role_child.check_ip("127.0.0.1"), True)
+        self.assertEqual(venture_role_child.check_ip("192.168.1.15"), True)
+        self.assertEqual(venture_role_child.check_ip("192.168.2.15"), None)
 
-        self.assertEqual(venture_role_child.check_ip("127.0.0.2"), True)
-        self.assertEqual(venture_role_child.check_ip("127.0.0.3"), True)
-        self.assertEqual(venture_role_child.check_ip("127.0.0.4"), True)
-        self.assertEqual(venture_role_child.check_ip("127.0.0.5"), None)
+        self.assertEqual(venture_role_child.check_ip("172.16.0.10"), True)
+        self.assertEqual(venture_role_child.check_ip("172.16.0.22"), None)
+        
+        self.assertEqual(venture_role_child.check_ip("66.6.6.5"), True)
+        self.assertEqual(venture_role_child.check_ip("66.6.6.10"), None)
+        
+        self.assertEqual(venture_role_child.check_ip("111.11.11.1"), True)
+        self.assertEqual(venture_role_child.check_ip("111.11.11.44"), None)
