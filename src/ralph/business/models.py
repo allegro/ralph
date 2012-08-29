@@ -7,6 +7,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import re
+import ipaddr
 
 from django.conf import settings
 from django.db import models as db
@@ -20,7 +21,6 @@ from django.dispatch import receiver
 
 from ralph.discovery.models import DataCenter
 from ralph.discovery.models_history import HistoryCost
-import pdb
 
 SYNERGY_URL_BASE = settings.SYNERGY_URL_BASE
 
@@ -90,11 +90,9 @@ class Venture(Named, TimeTrackable):
         node = self
         while node:
             for network in node.network:
-                if network.address == ip:
+                if ipaddr.IPAddress(ip) in ipaddr.IPNetwork(network.address):
                     return True
                 node = node.parent
-                if node is None:
-                    break
 
     @property
     def device(self):
@@ -148,56 +146,10 @@ class VentureRole(Named.NonUnique, TimeTrackable):
         node = self
         while node:
             for network in node.network:
-                if network.address == ip:
+                if ipaddr.IPAddress(ip) in ipaddr.IPNetwork(network.address):
                     return True
                 node = node.parent
-                if node is None:
-                    break
-                
         return self.venture.check_ip(ip)
-#        
-#        find = False
-#        for network in role.network.all():
-#            if network.address == ip:
-#                return True
-#    
-#        if role.parent_id:
-#            try:
-#                venture_role_parent = ralph.business.models.VentureRole.objects.get(id__exact=role.parent_id)
-#
-#            except ObjectDoesNotExist:
-#                return False
-#                        
-#            while True:    
-#                for network in venture_role_parent.network.all():
-#                    if network.address == ip:
-#                        return True
-#                if find is False:
-#                    try:
-#                        venture_role_parent = ralph.business.models.VentureRole.objects.get(id__exact=venture_role_parent.parent_id)
-#                    except ObjectDoesNotExist:
-#                        break
-#
-#            if venture_role_parent.venture_id:
-#                try:
-#                    venture = ralph.business.models.Venture.objects.get(id__exact=venture_role_parent.venture_id)
-#                except ObjectDoesNotExist:
-#                    return False
-#                while True:    
-#                    for network in venture.network.all():
-#                        if network.address == ip:
-#                            return True
-#                    if find is False:
-#                        try:
-#                            venture = ralph.business.models.Venture.objects.get(id__exact=venture.parent_id)
-#                        except ObjectDoesNotExist:
-#                            break
-#                return False        
-#            else:
-#                return False         
-#           
-#        else:
-#            return False
 
     def __unicode__(self):
         return "{} / {}".format(self.venture.symbol if self.venture else '?',
