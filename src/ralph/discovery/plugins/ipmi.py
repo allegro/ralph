@@ -164,7 +164,7 @@ def _add_ipmi_components(device, data):
             mem, _ = Memory.concurrent_get_or_create(index=total_mem_index+1,
                 device=device)
             mem.label = memory['Product Name']
-            size = int(size_match.gropasswordup(1)) * 1024
+            size = int(size_match.group(1)) * 1024
             speed = 0
             mem.model, c = ComponentModel.concurrent_get_or_create(
                 name='RAM %s %dMiB' % (mem.label, size), size=size, speed=speed,
