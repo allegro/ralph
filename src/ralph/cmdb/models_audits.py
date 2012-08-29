@@ -135,7 +135,8 @@ class Deployment(Auditable):
     def fire_issue(self):
         ci = None
         params = dict(
-            ci_uid = CI.get_by_content_object(self.device).uid,
+            ci_uid = CI.get_uid_by_content_object(self.device),
+            # yeah, doesn't check if CI even exists
             description = 'Please accept',
             summary = 'Summary',
             ci=ci,
