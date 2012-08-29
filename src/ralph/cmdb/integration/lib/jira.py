@@ -192,9 +192,10 @@ class Jira(object):
                         },
         }
         if technical_assignee:
-            params['fields'][towner_field_name] = technical_assignee
+            params['fields'][towner_field_name] = {'name': technical_assignee}
         if business_assignee:
-            params['fields'][bowner_field_name] = business_assignee
+            params['fields'][bowner_field_name] = {'name': business_assignee}
+        import pdb; pdb.set_trace()
         try:
             call_result = self.call_resource('issue', params)
         except Exception as e:

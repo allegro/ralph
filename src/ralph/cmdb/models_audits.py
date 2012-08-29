@@ -142,6 +142,7 @@ def get_business_owner(device):
     if owners:
         return normalize_owner(owners[0])
 
+
 class Deployment(Auditable):
     device = models.ForeignKey(Device)
     mac =  MACAddressField()
@@ -205,13 +206,12 @@ def create_issue(auditable_class, auditable_id, params, retry_count=1):
             buser = default_assignee
         else:
             buser = params.get('business_assignee')
-
         issue = tracker.create_issue(
                 issue_type=params.get('issue_type'),
                 description=params.get('description'),
                 summary=params.get('summary'),
                 ci=ci,
-                assignee='',
+                assignee=default_assignee,
                 technical_assignee=tuser,
                 business_assignee=buser,
                 start=auditable_object.created.isoformat(),
