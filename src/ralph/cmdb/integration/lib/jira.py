@@ -154,6 +154,12 @@ class Jira(object):
         "customfield_50000": "this is a text area. big text.",
         "customfield_10000": "09/Jun/81"
         }"""
+
+        """
+        Note: CI Field name is custom field added to bugtracker,
+        allowing connection with CMDB. CI field ID is required here.
+        You can get it from API or directly inspecting Jira form's HTML.
+        """
         ci_field_name = settings.BUGTRACKER_CI_FIELD_NAME
         ci_name_field_name = settings.BUGTRACKER_CI_NAME_FIELD_NAME
         project = settings.BUGTRACKER_CMDB_PROJECT
