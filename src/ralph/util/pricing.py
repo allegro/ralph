@@ -204,7 +204,7 @@ def details_dev(dev, purchase_only=False):
     if dev.model is None:
         return
     if dev.model.type == DeviceType.blade_system.id:
-        for d in dev.child_set.filter(model__type=DeviceType.blade_server.id):
+        for d in dev.child_set.all():
             chassis_price = get_device_chassis_price(d)
             if chassis_price:
                 yield {
@@ -214,6 +214,12 @@ def details_dev(dev, purchase_only=False):
                     'icon': 'fugue-server-medium',
                     'serial': d.sn,
                 }
+            else:
+                yield {
+                    'label': d.name,
+                    'model': d.model,
+                    'serial': d.sn,
+                }   
     elif dev.model.type == DeviceType.blade_server.id:
         chassis_price = get_device_chassis_price(dev)
         if chassis_price:
