@@ -7,6 +7,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import re
+import ipaddr
 
 from django.conf import settings
 from django.db import models as db
@@ -20,7 +21,7 @@ from django.dispatch import receiver
 
 from ralph.discovery.models import DataCenter
 from ralph.discovery.models_history import HistoryCost
-
+from ralph.discovery.models_network import Network
 
 SYNERGY_URL_BASE = settings.SYNERGY_URL_BASE
 
@@ -44,6 +45,8 @@ class Venture(Named, TimeTrackable):
             on_delete=db.SET_NULL)
     path = db.TextField(verbose_name=_("symbol path"), blank=True,
             default="", editable=False)
+    networks = db.ManyToManyField(Network, null=True, 
+                                 verbose_name=_("networks list"))
 
     class Meta:
         verbose_name = _("venture")
@@ -85,6 +88,15 @@ class Venture(Named, TimeTrackable):
             return self.department
         if self.parent:
             return self.parent.get_department()
+    
+    def check_ip(self, ip):
+        node = self
+        while node:
+            for network in node.network:
+                if ipaddr.IPAddress(ip) in ipaddr.IPNetwork(network.address):
+                    return True
+            node = node.parent
+        return False
 
     @property
     def device(self):
@@ -119,7 +131,9 @@ class VentureRole(Named.NonUnique, TimeTrackable):
     venture = db.ForeignKey(Venture, verbose_name=_("venture"))
     parent = db.ForeignKey('self', verbose_name=_("parent role"), null=True,
         blank=True, default=None, related_name="child_set")
-
+    networks = db.ManyToManyField(Network, null=True, 
+                                 verbose_name=_("networks list"))
+    
     class Meta:
         unique_together = ('name', 'venture')
         verbose_name = _("venture role")
@@ -133,6 +147,15 @@ class VentureRole(Named.NonUnique, TimeTrackable):
             obj = obj.parent
             parents.append(obj.name)
         return " / ".join(reversed(parents))
+    
+    def check_ip(self, ip):
+        node = self
+        while node:
+            for network in node.network:
+                if ipaddr.IPAddress(ip) in ipaddr.IPNetwork(network.address):
+                    return True
+            node = node.parent
+        return self.venture.check_ip(ip)
 
     def __unicode__(self):
         return "{} / {}".format(self.venture.symbol if self.venture else '?',
