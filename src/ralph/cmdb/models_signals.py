@@ -18,15 +18,17 @@ from celery.task import task
 # using models_ci not models, for dependency chain.
 from ralph.cmdb import models_ci as cdb
 from ralph.cmdb import models_changes as chdb
-from ralph.cmdb.integration.lib.jira import Jira, JiraException
-from ralph.cmdb.util import getfunc
+from ralph.cmdb.integration.bugtracker import Bugtracker
+from ralph.cmdb.integration.exceptions import BugtrackerException
+from ralph.cmdb.models_common import getfunc
+
 
 logger = logging.Logger(__file__)
 
-user_match = re.compile(r".*\<(.*)@.*\>.*")
+user_match = re.compile(r".*\<(.*)@.*\>")
 ralph_change_link = settings.CMDB_VIEWCHANGE_LINK
-jira_op_template = settings.JIRA_OP_TEMPLATE
-default_assignee = settings.JIRA_CMDB_DEFAULT_ASSIGNEE
+jira_op_template = settings.BUGTRACKER_OP_TEMPLATE
+default_assignee = settings.BUGTRACKER_CMDB_DEFAULT_ASSIGNEE
 
 def get_login_from_user(long_user_text):
     """ Return email from 'username <email>'
@@ -175,7 +177,7 @@ def create_issue(change_id, retry_count=1):
             cmdb_link=ralph_change_link % (ch.id),
         ))
     try:
-        j = Jira()
+        j = Bugtracker()
         if ch.ci:
             ci = ch.ci
         else:
@@ -195,7 +197,7 @@ def create_issue(change_id, retry_count=1):
         ch.registration_type = chdb.CI_CHANGE_REGISTRATION_TYPES.CHANGE.id
         ch.external_key = issue.get('key')
         ch.save()
-    except JiraException as e:
+    except BugtrackerException as e:
         raise create_issue.retry(exc=e, args=[change_id,
             retry_count + 1], countdown=60 * (2 ** retry_count),
             max_retries=15) # 22 days
