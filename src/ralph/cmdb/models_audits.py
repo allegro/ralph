@@ -94,8 +94,9 @@ class Auditable(TimeTrackable):
         transition_id = bugtracker_transition_ids.get(ch.name)
         getfunc(transition_issue)(type(self), self.id, transition_id)
 
-    def save(self, user=None, *args, **kwargs):
-        self.user = user
+    def save(self, *args, **kwargs):
+        if kwargs.get('user'):
+            self.user = kwargs.get('user')
         first_run = False
         if not self.id:
             first_run = True
@@ -103,7 +104,7 @@ class Auditable(TimeTrackable):
             new_status = self._fields_as_dict().get('status')
             if new_status and not first_run:
                 self.synchronize_status(new_status)
-            self.status_lastchanged = datetime.now()
+            self.status_lastchanged=datetime.now()
         # we need change id
         super(Auditable, self).save(*args, **kwargs)
         # now fire celery task if just created
