@@ -8,8 +8,7 @@ from django.utils import simplejson as json
 import logging
 logger = logging.getLogger(__name__)
 
-class JiraException(Exception):
-    pass
+from ralph.cmdb.integration.exceptions import BugtrackerException
 
 class Jira(object):
     """ Simple JIRA wrapper around RestKit """
@@ -21,24 +20,33 @@ class Jira(object):
         return cls._instance
 
     def __init__(self):
-        user = settings.JIRA_USER
-        password = settings.JIRA_PASSWORD
-        jira_url = settings.JIRA_URL
+        user = settings.BUGTRACKER_USER
+        password = settings.BUGTRACKER_PASSWORD
+        jira_url = settings.BUGTRACKER_URL
         self.pool = SimplePool(keepalive=2)
         self.auth = BasicAuth(user, password)
         self.base_url = "%s/rest/api/latest" % jira_url
+        self.resource_headers = {'Content-type': 'application/json'}
 
-    def get_resource(self, resource_name):
+    def create_resource(self, resource_name):
         complete_url= "%s/%s" % (self.base_url , resource_name)
         resource = Resource(complete_url, pool_instance=self.pool, filters=[self.auth])
         return resource
 
     def call_resource(self, resource_name, params):
-       resource = self.get_resource(resource_name)
+       resource = self.create_resource(resource_name)
        response = resource.post(payload=json.dumps(params),
-               headers = {'Content-Type' : 'application/json'})
-       ret = json.loads(response.body_string())
+               headers = self.resource_headers)
+       if response:
+           ret = json.loads(response.body_string())
+       else:
+           ret = None
        return ret
+
+    def get_resource(self, resource_name):
+        resource = self.create_resource(resource_name)
+        response=resource.get(headers=self.resource_headers)
+        return json.loads(response.body_string())
 
     def find_issue(self, params):
        resource_name = "search"
@@ -46,14 +54,40 @@ class Jira(object):
 
     def user_exists(self, username):
         resource_name = "user?username=%s" % username
-        res = self.get_resource(resource_name)
         try:
-           res.get(headers={'Content-Type': 'application/json'})
+            self.get_resource(resource_name)
         except ResourceNotFound:
            return False
         return True
 
-    def create_issue(self, summary, description, ci, assignee,
+    def transition_issue(self, issue_key, transition_id):
+        try:
+            call_result = self.call_resource('issue/%s/transitions' % issue_key,
+                params={
+                    'update': {
+                        'comment': [
+                            {
+                                'add': {
+                                    'body': 'test transition',
+                                }
+                            }]
+                    },
+                    'fields': {
+#                            'resolution': {
+#                                'name' : 'fixed'
+#                            }
+                    },
+                    'transition': {
+                        'id': transition_id
+                    }
+                }
+            )
+        except Exception as e:
+            # enclose exception as jira exception, for furter analysing
+            raise BugtrackerException(e)
+        return call_result
+
+    def create_issue(self, summary, description, issue_type, ci, assignee,
             template, start='', end=''):
         """ Create new issue.
 
@@ -120,11 +154,10 @@ class Jira(object):
         "customfield_50000": "this is a text area. big text.",
         "customfield_10000": "09/Jun/81"
         }"""
-        ci_field_name = settings.JIRA_CI_FIELD_NAME
-        ci_name_field_name = settings.JIRA_CI_NAME_FIELD_NAME
-        op_issue_type = settings.JIRA_OP_ISSUETYPE
-        project = settings.JIRA_CMDB_PROJECT
-        template_field_name = settings.JIRA_TEMPLATE_FIELD_NAME
+        ci_field_name = settings.BUGTRACKER_CI_FIELD_NAME
+        ci_name_field_name = settings.BUGTRACKER_CI_NAME_FIELD_NAME
+        project = settings.BUGTRACKER_CMDB_PROJECT
+        template_field_name = settings.BUGTRACKER_TEMPLATE_FIELD_NAME
 
         if ci:
             ci_value = ci.uid
@@ -132,29 +165,28 @@ class Jira(object):
         else:
             ci_value = ''
             ci_full_description = ''
-
         try:
             call_result = self.call_resource('issue',
-                    params={
-                        'fields': {
-                            'issuetype': { 'name': op_issue_type },
-                            'summary': summary,
-                            ci_field_name: ci_value,
-                            template_field_name: template,
-                            ci_name_field_name: ci_full_description,
-                            'assignee': {
-                                'name': assignee
-                            },
-                            'description': description,
-                            'project': {
-                                'key': project
-                                }
-                            },
-                    }
-            )
+                params={
+                    'fields': {
+                        'issuetype': { 'name': issue_type },
+                        'summary': summary,
+                        ci_field_name: ci_value,
+                        template_field_name: template,
+                        ci_name_field_name: ci_full_description,
+                        'assignee': {
+                            'name': assignee
+                        },
+                        'description': description,
+                        'project': {
+                            'key': project
+                            }
+                        },
+                }
+        )
         except Exception as e:
             # enclose exception as jira exception, for furter analysing
-            raise JiraException(e)
+            raise BugtrackerException(e)
         return call_result
 
 
