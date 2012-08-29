@@ -9,8 +9,6 @@ from django.test import TestCase
 from django.conf import settings
 from ralph.business.models import Venture, VentureRole
 
-import pdb
-
 class TestModels(TestCase):
     def test_venture_path(self):
         a = Venture(name='A', symbol='a')
@@ -86,85 +84,67 @@ class TestModels(TestCase):
         self.assertEqual(a.get_kickstart_path(), kick_path)
         self.assertEqual(b.get_kickstart_path(), kick_path)    
         self.assertEqual(c.get_kickstart_path(), kick_path)        
-#
-#    def test_get_kickstart2(self):
-#        # if kick == None
-#        
-#        a = Venture(name='test1', symbol='test1')
-#        a.save()
-#        b = Venture(name='test1 parent', symbol='test1_parent', parent_id = a.id)
-#        b.save()
-#        c = Venture(name='test1 parent parent', symbol='test1_parent_parent', parent_id = b.id)
-#        c.save()
-#                         
-#        self.assertIsNone(a.get_kickstart_path())     
-#        self.assertIsNone(c.get_kickstart_path())      
-#
-#
-#    def test_get_iso_role(self):
-#        # if iso == None
-#        ven = Venture(name='test1', symbol='test1')
-#        ven.save()
-#
-#        a = VentureRole(name='test1', venture_id = ven.id)
-#        a.save()
-#        b = VentureRole(name='test1 parent', parent_id = a.id, venture_id = ven.id)
-#        b.save()
-#        c = VentureRole(name='test1 parent parent', parent_id = b.id, venture_id = ven.id)
-#        c.save()
-#
-#        self.assertEqual(a.get_iso_path_role(), settings.DEFAULT_ISO_PATH)
-#        self.assertEqual(b.get_iso_path_role(), settings.DEFAULT_ISO_PATH)         
-#        self.assertEqual(c.get_iso_path_role(), settings.DEFAULT_ISO_PATH)
-#    
-#    def test_get_iso_role2(self):
-#        # if iso != None
-#        iso = 'iso'
-#        ven = Venture(name='test1', symbol='test1', iso_path = iso)
-#        ven.save()
-#        
-#        a = VentureRole(name='test1', iso_path = iso, venture_id = ven.id)
-#        a.save()
-#        b = VentureRole(name='test1 parent', parent_id = a.id, venture_id = ven.id)
-#        b.save()
-#        c = VentureRole(name='test1 parent parent', parent_id = b.id, venture_id = ven.id)
-#        c.save()
-#                
-#        self.assertEqual(a.get_iso_path_role(), iso)
-#        self.assertEqual(b.get_iso_path_role(), iso)         
-#        self.assertEqual(c.get_iso_path_role(), iso)
-#
-#    def test_get_kickstart_role(self):
-#        # if kick == None
-#        ven = Venture(name='test1', symbol='test1')
-#        ven.save()
-#        
-#        a = VentureRole(name='test1', venture_id = ven.id)
-#        a.save()
-#        b = VentureRole(name='test1 parent', parent_id = a.id, venture_id = ven.id)
-#        b.save()
-#        c = VentureRole(name='test1 parent parent', parent_id = b.id, venture_id = ven.id)
-#        c.save()
-#                
-#        self.assertIsNone(a.get_kickstart_path_role())  
-#        self.assertIsNone(b.get_kickstart_path_role())  
-#        self.assertIsNone(c.get_kickstart_path_role()) 
-#
-#    def test_get_kickstart_role2(self):
-#        # if kick != None
-#        kick = '/path/to/kickstart'
-#        ven = Venture(name='test1', symbol='test1', kickstart_path = kick)
-#        ven.save()
-#        
-#        a = VentureRole(name='test1', venture_id = ven.id)
-#        a.save()
-#        b = VentureRole(name='test1 parent', parent_id = a.id, venture_id = ven.id)
-#        b.save()
-#        c = VentureRole(name='test1 parent parent', parent_id = b.id, venture_id = ven.id)
-#        c.save()
-# 
-#        self.assertEqual(a.get_kickstart_path_role(), kick)
-#        self.assertEqual(b.get_kickstart_path_role(), kick)         
-#        self.assertEqual(c.get_kickstart_path_role(), kick)
-#    
-#
+
+    def test_get_iso_role_none(self):
+        ven = Venture(name='test1', symbol='test1')
+        ven.save()
+
+        a = VentureRole(name='test1', venture_id = ven.id)
+        a.save()
+        b = VentureRole(name='test1 parent', parent_id = a.id, venture_id = ven.id)
+        b.save()
+        c = VentureRole(name='test1 parent parent', parent_id = b.id, venture_id = ven.id)
+        c.save()
+
+        self.assertEqual(a.get_iso_path(), settings.DEFAULT_ISO_PATH)
+        self.assertEqual(b.get_iso_path(), settings.DEFAULT_ISO_PATH)         
+        self.assertEqual(c.get_iso_path(), settings.DEFAULT_ISO_PATH)
+
+    def test_get_iso_role(self):
+        iso = 'iso'
+        ven = Venture(name='test1', symbol='test1', iso_path = iso)
+        ven.save()
+        
+        a = VentureRole(name='test1', iso_path = iso, venture_id = ven.id)
+        a.save()
+        b = VentureRole(name='test1 parent', parent_id = a.id, venture_id = ven.id)
+        b.save()
+        c = VentureRole(name='test1 parent parent', parent_id = b.id, venture_id = ven.id)
+        c.save()
+                
+        self.assertEqual(a.get_iso_path(), iso)
+        self.assertEqual(b.get_iso_path(), iso)         
+        self.assertEqual(c.get_iso_path(), iso)
+
+    def test_get_kickstart_role_none(self):
+        ven = Venture(name='test1', symbol='test1')
+        ven.save()
+        
+        a = VentureRole(name='test1', venture_id = ven.id)
+        a.save()
+        b = VentureRole(name='test1 parent', parent_id = a.id, venture_id = ven.id)
+        b.save()
+        c = VentureRole(name='test1 parent parent', parent_id = b.id, venture_id = ven.id)
+        c.save()
+                
+        self.assertIsNone(a.get_kickstart_path())  
+        self.assertIsNone(b.get_kickstart_path())  
+        self.assertIsNone(c.get_kickstart_path()) 
+
+    def test_get_kickstart_role(self):
+        kick = '/path/to/kickstart'
+        ven = Venture(name='test1', symbol='test1', kickstart_path = kick)
+        ven.save()
+        
+        a = VentureRole(name='test1', venture_id = ven.id)
+        a.save()
+        b = VentureRole(name='test1 parent', parent_id = a.id, venture_id = ven.id)
+        b.save()
+        c = VentureRole(name='test1 parent parent', parent_id = b.id, venture_id = ven.id)
+        c.save()
+ 
+        self.assertEqual(a.get_kickstart_path(), kick)
+        self.assertEqual(b.get_kickstart_path(), kick)         
+        self.assertEqual(c.get_kickstart_path(), kick)
+    
+
