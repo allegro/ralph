@@ -422,6 +422,4 @@ def ssh_ibm_reboot(ip, bay):
     ssh = _connect_ssh(ip)    
     command = "power -cycle -T system:blade[%s]" % bay
     result = ssh.ibm_command(command)
-    if result[1].strip().lower() == 'ok':
-        return True
-    return False
+    return len(result) > 1 and result[1] and result[1].strip().lower() == 'ok'

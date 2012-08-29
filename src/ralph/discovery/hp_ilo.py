@@ -456,15 +456,11 @@ class IloHost(object):
         tree = self._raw_to_tree(self._get_ilo(query))
 
         node = tree.find('RIBCL/GET_HOST_POWER')
-        if node is not None:
-            state = node.attrib.get('HOST_POWER')
-            if state == 'ON':
-                return True
-            else:
-                return False
-            
-        raise ResponseError('Could not detect server power state.')
-    
+        if node is None:
+            raise ResponseError('Could not detect server power state.')
+        state = node.attrib.get('HOST_POWER')
+        return state == 'ON'
+
     def power_on(self):
         query = """<?xml version="1.0"?>
     <RIBCL VERSION="2.0">
@@ -478,15 +474,11 @@ class IloHost(object):
         tree = self._raw_to_tree(self._get_ilo(query))
         
         node = tree.find('RIBCL/RESPONSE')
-        if node is not None:
-            status = node.attrib.get('STATUS')
-            if int(status, 0) == 0:
-                return True
-            else:
-                return False
-        
-        raise ResponseError('Invalid XML in response.')
-    
+        if node is None:
+            raise ResponseError('Invalid XML in response.')
+        status = node.attrib.get('STATUS')
+        return int(status, 0) == 0
+
     def reboot(self, power_on_if_disabled=False):
         query = """<?xml version="1.0"?>
     <RIBCL VERSION="2.0">
@@ -500,15 +492,14 @@ class IloHost(object):
         tree = self._raw_to_tree(self._get_ilo(query))
         
         node = tree.find('RIBCL/RESPONSE')
-        if node is not None:
-            status = node.attrib.get('STATUS')
-            if int(status, 0) == 0:
-                return True
-            else:
-                msg = node.attrib.get('MESSAGE')
-                if 'powered off' in msg and power_on_if_disabled:
-                    return self.power_on()
-                else:
-                    return False
+        if node is None:
+            raise ResponseError('Invalid XML in response.')
+            
+        status = node.attrib.get('STATUS')
+        if int(status, 0) == 0:
+            return True
+        msg = node.attrib.get('MESSAGE')
+        if 'powered off' in msg and power_on_if_disabled:
+            return self.power_on()
         
-        raise ResponseError('Invalid XML in response.')
+        return False

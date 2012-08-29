@@ -60,7 +60,7 @@ class IPMI(object):
     def tool(self, command, subcommand, param=None):
         command = ["ipmitool", "-H", self.host, "-U", self.user,
                    "-P", self.password, command, subcommand]
-        if param is not None:
+        if param:
             command.append(param)
         proc = subprocess.Popen(command, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
@@ -240,9 +240,7 @@ def ipmi(**kwargs):
 def ipmi_power_on(host, user=IPMI_USER, password=IPMI_PASSWORD):
     ipmi = IPMI(host, user, password)
     response = ipmi.tool('chassis', 'power', 'on')
-    if response.strip().lower().endswith('on'):
-        return True
-    return False
+    return response.strip().lower().endswith('on'):
 
 def ipmi_reboot(host, user=IPMI_USER, password=IPMI_PASSWORD, 
                 power_on_if_disabled=False):
