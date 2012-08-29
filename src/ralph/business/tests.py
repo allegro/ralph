@@ -91,13 +91,13 @@ class TestModels(TestCase):
         venture_role_child.save()
 
         self.assertEqual(venture_role_child.check_ip("192.168.1.15"), True)
-        self.assertEqual(venture_role_child.check_ip("192.168.2.15"), None)
+        self.assertEqual(venture_role_child.check_ip("192.168.2.15"), False)
 
         self.assertEqual(venture_role_child.check_ip("172.16.0.10"), True)
-        self.assertEqual(venture_role_child.check_ip("172.16.0.22"), None)
+        self.assertEqual(venture_role_child.check_ip("172.16.0.22"), False)
         
         self.assertEqual(venture_role_child.check_ip("66.6.6.5"), True)
-        self.assertEqual(venture_role_child.check_ip("66.6.6.10"), None)
+        self.assertEqual(venture_role_child.check_ip("66.6.6.10"), False)
         
         self.assertEqual(venture_role_child.check_ip("111.11.11.1"), True)
-        self.assertEqual(venture_role_child.check_ip("111.11.11.44"), None)
+        self.assertEqual(venture_role_child.check_ip("111.11.11.44"), False)

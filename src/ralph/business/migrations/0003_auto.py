@@ -8,29 +8,29 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding M2M table for field network on 'Venture'
-        db.create_table('business_venture_network', (
+        # Adding M2M table for field networks on 'Venture'
+        db.create_table('business_venture_networks', (
             ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
             ('venture', models.ForeignKey(orm['business.venture'], null=False)),
             ('network', models.ForeignKey(orm['discovery.network'], null=False))
         ))
-        db.create_unique('business_venture_network', ['venture_id', 'network_id'])
+        db.create_unique('business_venture_networks', ['venture_id', 'network_id'])
 
-        # Adding M2M table for field network on 'VentureRole'
-        db.create_table('business_venturerole_network', (
+        # Adding M2M table for field networks on 'VentureRole'
+        db.create_table('business_venturerole_networks', (
             ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
             ('venturerole', models.ForeignKey(orm['business.venturerole'], null=False)),
             ('network', models.ForeignKey(orm['discovery.network'], null=False))
         ))
-        db.create_unique('business_venturerole_network', ['venturerole_id', 'network_id'])
+        db.create_unique('business_venturerole_networks', ['venturerole_id', 'network_id'])
 
 
     def backwards(self, orm):
-        # Removing M2M table for field network on 'Venture'
-        db.delete_table('business_venture_network')
+        # Removing M2M table for field networks on 'Venture'
+        db.delete_table('business_venture_networks')
 
-        # Removing M2M table for field network on 'VentureRole'
-        db.delete_table('business_venturerole_network')
+        # Removing M2M table for field networks on 'VentureRole'
+        db.delete_table('business_venturerole_networks')
 
 
     models = {
@@ -136,7 +136,7 @@ class Migration(SchemaMigration):
             'margin_kind': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': "orm['discovery.MarginKind']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
             'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '75', 'db_index': 'True'}),
-            'network': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['discovery.Network']", 'null': 'True', 'symmetrical': 'False'}),
+            'networks': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['discovery.Network']", 'null': 'True', 'symmetrical': 'False'}),
             'parent': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'related_name': "u'child_set'", 'null': 'True', 'blank': 'True', 'to': "orm['business.Venture']"}),
             'path': ('django.db.models.fields.TextField', [], {'default': "u''", 'blank': 'True'}),
             'show_in_ralph': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
@@ -171,7 +171,7 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '75'}),
-            'network': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['discovery.Network']", 'null': 'True', 'symmetrical': 'False'}),
+            'networks': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['discovery.Network']", 'null': 'True', 'symmetrical': 'False'}),
             'parent': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'related_name': "u'child_set'", 'null': 'True', 'blank': 'True', 'to': "orm['business.VentureRole']"}),
             'venture': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['business.Venture']"})
         },

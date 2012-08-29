@@ -8,7 +8,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from django.core.exceptions import ValidationError, ObjectDoesNotExist 
+from django.core.exceptions import ValidationError 
 from django.db import models as db
 from django.db import IntegrityError
 from django.utils.translation import ugettext_lazy as _
@@ -18,7 +18,6 @@ from lck.django.common.models import (TimeTrackable, Named,
 
 from ralph.util import network
 from ralph.discovery.models_util import LastSeen
-import ralph.business.models 
 from sqlalchemy.sql.expression import except_
 
 class NetworkKind(Named):
