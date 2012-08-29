@@ -416,3 +416,10 @@ def ssh_ibm_bladecenter(**kwargs):
     except socket.error as e:
         return False, str(e), kwargs
     return True, name, kwargs
+
+
+def ssh_ibm_reboot(ip, bay):
+    ssh = _connect_ssh(ip)    
+    command = "power -cycle -T system:blade[%s]" % bay
+    result = ssh.ibm_command(command)
+    return len(result) > 1 and result[1] and result[1].strip().lower() == 'ok'
