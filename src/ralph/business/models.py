@@ -8,7 +8,6 @@ from __future__ import unicode_literals
 
 import re
 import string
-import pdb
 
 from django.conf import settings
 from django.db import models as db
@@ -93,20 +92,20 @@ class Venture(Named, TimeTrackable):
             return self.parent.get_department()
         
     def get_iso_path(self):
-        if self.iso_path:
-            return self.iso_path
-        if self.parent:
-            return self.parent.get_iso_path()
-        else:
+        node = self
+        while node:
+            if node.iso_path:
+                return node.iso_path
+            node = node.parent
+        if node is None:
             return settings.DEFAULT_ISO_PATH
         
     def get_kickstart_path(self):
-        if self.kickstart_path:
-            return self.kickstart_path
-        if self.parent:
-            return self.parent.get_kickstart_path()
-        else:
-            return None
+        node = self
+        while node:
+            if node.kickstart_path:
+                return node.kickstart_path
+            node = node.parent
         
     @property
     def device(self):
@@ -162,24 +161,22 @@ class VentureRole(Named.NonUnique, TimeTrackable):
             parents.append(obj.name)
         return " / ".join(reversed(parents))
 
-    def get_iso_path_role(self):
-        if self.iso_path:
-            return self.iso_path
-        if self.parent:
-            return self.parent.get_iso_path_role()
-        else:
-            obj = Venture.objects.get(id__exact=self.venture.id)
-            return obj.get_iso_path()
-        
-    def get_kickstart_path_role(self):
-        if self.kickstart_path:
-            return self.kickstart_path
-        if self.parent:
-            return self.parent.get_kickstart_path_role()
-        else:
-            obj = Venture.objects.get(id__exact=self.venture.id)
-            return obj.get_kickstart_path()
+    def get_iso_path(self):
+        node = self
+        while node:
+            if node.iso_path:
+                return node.iso_path
+            node = node.parent
+        return self.venture.get_iso_path
 
+    def get_kickstart_path(self):
+        node = self
+        while node:
+            if node.kickstart_path:
+                return node.kickstart_path
+            node = node.parent
+            
+        return self.venture.get_kickstart_path
 
     def __unicode__(self):
         return "{} / {}".format(self.venture.symbol if self.venture else '?',
