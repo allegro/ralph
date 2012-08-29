@@ -57,11 +57,13 @@ class IPMI(object):
         self.user = user
         self.password = password
 
-    def tool(self, command, subcommand):
+    def tool(self, command, subcommand, param=None):
         command = ["ipmitool", "-H", self.host, "-U", self.user,
                    "-P", self.password, command, subcommand]
+        if param:
+            command.append(param)
         proc = subprocess.Popen(command, stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE)
+                                stderr=subprocess.PIPE)
         out, err = proc.communicate()
         if proc.returncode and err:
             if err.startswith('Invalid user name'):
@@ -234,3 +236,21 @@ def ipmi(**kwargs):
         return False, str(e), kwargs
 
     return True, name, kwargs
+
+def ipmi_power_on(host, user=IPMI_USER, password=IPMI_PASSWORD):
+    ipmi = IPMI(host, user, password)
+    response = ipmi.tool('chassis', 'power', 'on')
+    return response.strip().lower().endswith('on'):
+
+def ipmi_reboot(host, user=IPMI_USER, password=IPMI_PASSWORD, 
+                power_on_if_disabled=False):
+    ipmi = IPMI(host, user, password)
+    
+    response = ipmi.tool('chassis', 'power', 'status')
+    if response.strip().lower().endswith('on'):
+        response = ipmi.tool('chassis', 'power', 'reset')
+        if response.strip().lower().endswith('reset'):
+            return True
+    elif power_on_if_disabled:
+        return ipmi_power_on(host, user, password)
+    return False
