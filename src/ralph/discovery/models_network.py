@@ -18,7 +18,6 @@ from lck.django.common.models import (TimeTrackable, Named,
 
 from ralph.util import network
 from ralph.discovery.models_util import LastSeen
-from sqlalchemy.sql.expression import except_
 
 class NetworkKind(Named):
     icon = db.CharField(verbose_name=_("Icon"),

@@ -48,10 +48,16 @@ class TestModels(TestCase):
         network.save()
         network.terminators = [terminator]
         network.save()
+        
+        subnetwork = Network(address='192.168.2.0/24',name='Test subnetwork', 
+                          data_center=data_center)
+        subnetwork.save()
+        subnetwork.terminators = [terminator]
+        subnetwork.save()
             
         main_venture = Venture(name='Main Venture')
         main_venture.save()
-        main_venture.network = [network]
+        main_venture.network = [network, subnetwork]
         main_venture.save()
         
         second_network = Network(address='172.16.0.0/28',name='Test secound_network', 
@@ -71,10 +77,16 @@ class TestModels(TestCase):
         third_network.terminators = [terminator]
         third_network.save()
         
+        third_subnetwork = Network(address='66.6.7.0/29',name='Test third_subnetwork', 
+                          data_center=data_center)
+        third_subnetwork.save()
+        third_subnetwork.terminators = [terminator]
+        third_subnetwork.save()
+        
         venture_role_main = VentureRole(name='Main Venture role', 
                                         venture=child_venture)
         venture_role_main.save()
-        venture_role_main.network = [third_network]
+        venture_role_main.network = [third_network, third_subnetwork]
         venture_role_main.save()
         
         fourth_network = Network(address='111.11.11.0/27',name='Test fourth_network', 
@@ -91,13 +103,15 @@ class TestModels(TestCase):
         venture_role_child.save()
 
         self.assertEqual(venture_role_child.check_ip("192.168.1.15"), True)
-        self.assertEqual(venture_role_child.check_ip("192.168.2.15"), False)
+        self.assertEqual(venture_role_child.check_ip("192.168.2.15"), True)
+        self.assertEqual(venture_role_child.check_ip("192.168.3.15"), False)
 
         self.assertEqual(venture_role_child.check_ip("172.16.0.10"), True)
         self.assertEqual(venture_role_child.check_ip("172.16.0.22"), False)
         
         self.assertEqual(venture_role_child.check_ip("66.6.6.5"), True)
-        self.assertEqual(venture_role_child.check_ip("66.6.6.10"), False)
+        self.assertEqual(venture_role_child.check_ip("66.6.7.5"), True)
+        self.assertEqual(venture_role_child.check_ip("66.6.8.10"), False)
         
         self.assertEqual(venture_role_child.check_ip("111.11.11.1"), True)
         self.assertEqual(venture_role_child.check_ip("111.11.11.44"), False)
