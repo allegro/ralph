@@ -4,21 +4,21 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from django import forms
-from django.utils.safestring import mark_safe
+from bob.forms import AutocompleteWidget
 from django.conf import settings
 from django.contrib.admin.widgets import FilteredSelectMultiple
+from django import forms
 from django.template.defaultfilters import slugify
-from bob.forms import AutocompleteWidget
-from lck.django.common.models import MACAddressField
 from django.utils.html import escape
+from django.utils.safestring import mark_safe
+from lck.django.common.models import MACAddressField
 
+from ralph.business.models import Venture, RoleProperty, VentureRole
+from ralph.deployment.models import Deployment
+from ralph.discovery.models_component import is_mac_valid
 from ralph.discovery.models import (Device, ComponentModelGroup, DeviceModel,
                                     DeviceModelGroup, DeviceType)
-from ralph.business.models import Venture, RoleProperty, VentureRole
-from ralph.cmdb.models_audits import Deployment
 from ralph.dnsedit.models import DHCPEntry
-from ralph.discovery.models_component import is_mac_valid
 from ralph.util import Eth, presentation
 
 
@@ -295,6 +295,7 @@ class DeploymentForm(forms.ModelForm):
                 'venture_role',
                 'mac',
                 'ip',
+                'hostname',
                 'img_path',
                 'kickstart_path',
             ]
@@ -337,7 +338,16 @@ class DeploymentForm(forms.ModelForm):
             'venture_role': device.venture_role,
             'image_path': device.venture_role.get_img_path() if device.venture_role else '',
             'kickstart_path': device.venture_role.get_kickstart_path() if device.venture_role else '',
+            'hostname': device.name,
         })
+
+    def clean_hostname(self):
+        hostname = self.cleaned_data['hostname'].strip().lower()
+        if '_' in hostname:
+            raise forms.ValidationError("Character '_' not allowed in hostnames.")
+        if '.' not in hostname:
+            raise forms.ValidationError("Hostname has to include the domain.")
+        return hostname
 
 
 class DeviceForm(forms.ModelForm):
