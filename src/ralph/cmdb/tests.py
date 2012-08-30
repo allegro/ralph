@@ -49,11 +49,13 @@ class DeploymentTest(object):
         dm.save()
         return dm
 
-
     def test_create(self):
+        # FIXME: decide
         settings.BUGTRACKER="FAKE"
         x = Deployment()
         x.device = self.blade
+        x.mac = '10:9a:dd:6d:a8:01'
+        x.device=Device.objects.all()[0]
         x.save()
 
 class MockFisheye(object):
