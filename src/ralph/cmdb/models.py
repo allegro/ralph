@@ -53,7 +53,6 @@ from ralph.cmdb.models_changes import (
 from ralph.cmdb.models_audits import (
     Auditable,
     AuditStatus,
-    Deployment,
 )
 
 __all__ = [
@@ -100,7 +99,6 @@ __all__ = [
     #audit
     Auditable,
     AuditStatus,
-    Deployment,
 ]
 
 # hook signals, don't remove this.
