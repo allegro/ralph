@@ -55,7 +55,7 @@ urlpatterns = patterns('',
     url(r'^robots\.txt$', RedirectView.as_view(url='/static/robots.txt')),
     (r'^static/(?P<path>.*)$', 'django.views.static.serve', {'document_root':
         settings.STATIC_ROOT, 'show_indexes': True}),
-    (r'^uploads/(?P<path>.*)$', 'django.views.static.serve',
+    (r'^u/(?P<path>.*)$', 'django.views.static.serve',
         {'document_root': settings.MEDIA_ROOT, 'show_indexes': True}),
     url(r'^login/', 'django.contrib.auth.views.login', {'template_name': 'admin/login.html'}),
     url(r'^logout/', 'django.contrib.auth.views.logout'),# {'template_name': 'admin/logout.html'}),

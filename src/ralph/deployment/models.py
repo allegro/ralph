@@ -6,6 +6,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import os
 import unicodedata
 
 from django.conf import settings
@@ -123,7 +124,7 @@ def handle_deployment_accepted(sender, deployment_id, **kwargs):
 
 class Preboot(Named, TimeTrackable):
     raw_config = db.TextField(verbose_name=_("raw config"))
-    files = db.ManyToManyField("deployment.PrebootFile", null=True,
+    files = db.ManyToManyField("deployment.PrebootFile", null=True, blank=True,
         verbose_name=_("files"))
 
     class Meta:
@@ -131,8 +132,12 @@ class Preboot(Named, TimeTrackable):
         verbose_name_plural = _("preboots")
 
 
+def preboot_file_name(instance, filename):
+    return os.sep.join(('pxe', instance.get_ftype_display(), instance.name))
+
+
 class PrebootFile(Named):
-    file = db.FileField(verbose_name=_("file"), upload_to='pxe')
+    file = db.FileField(verbose_name=_("file"), upload_to=preboot_file_name)
     ftype = ChoiceField(verbose_name=_("file type"),
         choices=FileType, default=FileType.other)
 
