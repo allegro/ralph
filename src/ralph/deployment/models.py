@@ -14,9 +14,10 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.dispatch import receiver
 from lck.django.common.models import MACAddressField
+from lck.django.choices import Choices
 
 from ralph.cmdb.models import CI
-from ralph.cmdb.models_audits import Auditable, DeploymentStatus, create_issue
+from ralph.cmdb.models_audits import Auditable, create_issue
 from ralph.cmdb.models_common import getfunc
 from ralph.discovery.models import Device
 
@@ -41,6 +42,15 @@ def get_business_owner(device):
         return normalize_owner(owners[0])
 
 
+class DeploymentStatus(Choices):
+    _ = Choices.Choice
+
+    open = _('open')
+    in_progress = _('in progress')
+    in_deployment = _('in deployment')
+    resolved_fixed = _('resolved fixed')
+
+
 class Deployment(Auditable):
     device = models.ForeignKey(Device)
     mac =  MACAddressField()
@@ -59,6 +69,7 @@ class Deployment(Auditable):
                                     blank=True, default='')
     is_running = models.BooleanField(verbose_name=_("is running"),
                                      default=False)
+    puppet_certificate_revoked = models.BooleanField(default=False)
 
     def fire_issue(self):
         s = settings.ISSUETRACKERS['default']['OPA']
