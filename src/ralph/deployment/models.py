@@ -57,6 +57,7 @@ class Deployment(Auditable):
                                      verbose_name=_("role"))
 
     def fire_issue(self):
+        s = settings.ISSUETRACKERS['default']['OPA']
         ci = None
         bowner = None
         towner = None
@@ -70,8 +71,8 @@ class Deployment(Auditable):
             ci=ci,
             technical_assigne=towner,
             business_assignee=bowner,
-            template=settings.BUGTRACKER_OPA_TEMPLATE,
-            issue_type=settings.BUGTRACKER_OPA_ISSUETYPE
+            template=s['TEMPLATE'],
+            issue_type=s['ISSUETYPE'],
         )
         getfunc(create_issue)(type(self), self.id, params)
 
