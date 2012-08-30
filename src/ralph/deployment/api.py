@@ -6,7 +6,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-
 from tastypie import fields
 from tastypie.authentication import ApiKeyAuthentication
 from tastypie.authorization import DjangoAuthorization
@@ -18,8 +17,10 @@ from ralph.deployment.models import Deployment
 
 
 class DeploymentResource(MResource):
-    venture = fields.ForeignKey('ralph.business.api.VentureResource', 'venture', null=True)
-    role = fields.ForeignKey('ralph.business.api.RoleResource', 'venture_role', null=True)
+    venture = fields.ForeignKey('ralph.business.api.VentureResource',
+                                'venture', null=True)
+    role = fields.ForeignKey('ralph.business.api.RoleResource',
+                             'venture_role', null=True)
     device = fields.ForeignKey('ralph.discovery.api.DevResource', 'device')
 
     class Meta:
@@ -46,3 +47,4 @@ class DeploymentResource(MResource):
         excludes = ('save_priorities', 'max_save_priority',)
         cache = SimpleCache()
         limit = 10
+
