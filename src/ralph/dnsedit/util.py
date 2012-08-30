@@ -5,9 +5,21 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import re
+
 from powerdns.models import Domain, Record
 from lck.django.common import nested_commit_on_success
 
+
+HOSTNAME_CHUNK_PATTERN = re.compile(r'^([A-Z\d][A-Z\d-]{0,61}[A-Z\d]|[A-Z\d])$',
+                                    re.IGNORECASE)
+
+def is_valid_hostname(hostname):
+    """Check if a hostname is valid"""
+    if len(hostname) > 255:
+        return False
+    hostname = hostname.rstrip('.')
+    return all(HOSTNAME_CHUNK_PATTERN.match(x) for x in hostname.split("."))
 
 def clean_dns_name(name):
     """Remove all entries for the specified name from the DNS."""
