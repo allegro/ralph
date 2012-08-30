@@ -61,6 +61,9 @@ class CI_TYPES(Choices):
     DATACENTER = _('Data Center')
     NETWORKTERMINATOR = _('Network Terminator')
 
+contenttype_mappings={
+        'discovery.device' : 'dd',
+}
 
 class CIContentTypePrefix(TimeTrackable):
     content_type_name = models.CharField(max_length=255, null=False, primary_key=True)
@@ -69,14 +72,26 @@ class CIContentTypePrefix(TimeTrackable):
     @classmethod
     def get_prefix_by_object(cls, content_object):
         content_type=ContentType.objects.get_for_model(content_object)
-        return CIContentTypePrefix.objects.get(content_type_name='%s.%s' % (
+        label =  '%s.%s' % (
                 content_type.app_label,
                 content_type.model,
-                ))
+        )
+        first_run = contenttype_mappings.get(label)
+        if first_run:
+            # dict lookup
+            return first_run
+        else:
+            # fixtures lookup
+            obj = CIContentTypePrefix.objects.get(content_type_name='%s.%s' % (
+                content_type.app_label,
+                content_type.model,
+            ))
+            return obj.prefix
 
     def get_content_type(self):
         app, model = self.content_type_name.split('.')
         return ContentType.objects.get_by_natural_key(app, model)
+
 
 
 class CILayer(TimeTrackable):
@@ -247,6 +262,10 @@ class CI(TimeTrackable):
     def __unicode__(self):
         return "%s (%s)" %  (self.name, self.type)
 
+    @classmethod
+    def get_uid_by_content_object(cls, obj):
+        return '%s-%s' % (CIContentTypePrefix.get_prefix_by_object(obj), obj.id)
+
     def get_jira_display(self):
         return "%(name)s %(uid)s - #%(barcode)s type: %(type)s" % (
                 dict(
@@ -281,9 +300,8 @@ class CI(TimeTrackable):
     @classmethod
     def get_by_content_object(self, content_object):
         # find CI using his content object
-        prefix_record = CIContentTypePrefix.get_prefix_by_object(content_object)
-        uid_prefix=prefix_record.prefix
-        return CI.objects.get(uid='%s-%s' % (uid_prefix, content_object.id))
+        prefix = CIContentTypePrefix.get_prefix_by_object(content_object)
+        return CI.objects.get(uid='%s-%s' % (prefix, content_object.id))
 
     @models.permalink
     def get_absolute_url(self):

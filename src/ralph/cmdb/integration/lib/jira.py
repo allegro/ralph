@@ -88,7 +88,8 @@ class Jira(object):
         return call_result
 
     def create_issue(self, summary, description, issue_type, ci, assignee,
-            template, start='', end=''):
+            template, start='', end='',
+            business_assignee=None, technical_assignee=None):
         """ Create new issue.
 
         Jira Rest accepts following fields:
@@ -154,10 +155,18 @@ class Jira(object):
         "customfield_50000": "this is a text area. big text.",
         "customfield_10000": "09/Jun/81"
         }"""
+
+        """
+        Note: CI Field name is custom field added to bugtracker,
+        allowing connection with CMDB. CI field ID is required here.
+        You can get it from API or directly inspecting Jira form's HTML.
+        """
         ci_field_name = settings.BUGTRACKER_CI_FIELD_NAME
         ci_name_field_name = settings.BUGTRACKER_CI_NAME_FIELD_NAME
         project = settings.BUGTRACKER_CMDB_PROJECT
         template_field_name = settings.BUGTRACKER_TEMPLATE_FIELD_NAME
+        bowner_field_name = settings.BUGTRACKER_BOWNER_FIELD_NAME
+        towner_field_name = settings.BUGTRACKER_TOWNER_FIELD_NAME
 
         if ci:
             ci_value = ci.uid
@@ -165,11 +174,9 @@ class Jira(object):
         else:
             ci_value = ''
             ci_full_description = ''
-        try:
-            call_result = self.call_resource('issue',
-                params={
+        params={
                     'fields': {
-                        'issuetype': { 'name': issue_type },
+                        'issuetype': {'name': issue_type},
                         'summary': summary,
                         ci_field_name: ci_value,
                         template_field_name: template,
@@ -182,8 +189,13 @@ class Jira(object):
                             'key': project
                             }
                         },
-                }
-        )
+        }
+        if technical_assignee:
+            params['fields'][towner_field_name] = {'name': technical_assignee}
+        if business_assignee:
+            params['fields'][bowner_field_name] = {'name': business_assignee}
+        try:
+            call_result = self.call_resource('issue', params)
         except Exception as e:
             # enclose exception as jira exception, for furter analysing
             raise BugtrackerException(e)

@@ -6,11 +6,12 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from django.conf import settings
 
 
 def getfunc(method):
-    """ Wrapper for calling methods - via celery or directly  """
-    celery = False
+    """ When debugging use direct method, in production deffer for celery  """
+    celery = not settings.DEBUG
     if celery:
         return method.delay
     else:

@@ -24,6 +24,8 @@ from ralph.cmdb.integration.exceptions import BugtrackerException
 from django.dispatch.dispatcher import Signal
 from django.dispatch import receiver
 
+import unicodedata
+
 
 ACTION_IN_PROGRESS=settings.BUGTRACKER_ACTION_IN_PROGRESS
 ACTION_IN_DEPLOYMENT=settings.BUGTRACKER_ACTION_IN_DEPLOYMENT
@@ -95,16 +97,16 @@ class Auditable(TimeTrackable):
         getfunc(transition_issue)(type(self), self.id, transition_id)
 
     def save(self, *args, **kwargs):
+        if kwargs.get('user'):
+            self.user = kwargs.get('user')
         first_run = False
         if not self.id:
             first_run = True
         if self.status_changed():
-            #fixme - not new value really.
-            #new_status = self.dirty_fields.get('status', None)
             new_status = self._fields_as_dict().get('status')
             if new_status and not first_run:
                 self.synchronize_status(new_status)
-            self.status_lastchanged = datetime.now()
+            self.status_lastchanged=datetime.now()
         # we need change id
         super(Auditable, self).save(*args, **kwargs)
         # now fire celery task if just created
@@ -126,6 +128,20 @@ bugtracker_transition_ids = dict(
     in_deployment=ACTION_IN_DEPLOYMENT,
     resolved_fixed=ACTION_RESOLVED_FIXED,
 )
+def normalize_owner(owner):
+    owner = owner.name.lower().replace(' ', '.')
+    return unicodedata.normalize('NFD', owner).encode('ascii', 'ignore')
+
+def get_technical_owner(device):
+    owners = device.venture.technical_owners()
+    if owners:
+        return normalize_owner(owners[0])
+
+def get_business_owner(device):
+    owners = device.venture.business_owners()
+    if owners:
+        return normalize_owner(owners[0])
+
 
 class Deployment(Auditable):
     device = models.ForeignKey(Device)
@@ -144,12 +160,18 @@ class Deployment(Auditable):
 
     def fire_issue(self):
         ci = None
+        bowner = None
+        towner = None
+        bowner = get_business_owner(self.device)
+        towner = get_technical_owner(self.device)
         params = dict(
-            ci_uid = CI.get_by_content_object(self.device).uid,
+            ci_uid = CI.get_uid_by_content_object(self.device),
+            # yeah, doesn't check if CI even exists
             description = 'Please accept',
             summary = 'Summary',
             ci=ci,
-            user='marcin.kliks',
+            technical_assigne=towner,
+            business_assignee=bowner,
             template=settings.BUGTRACKER_OPA_TEMPLATE,
             issue_type=settings.BUGTRACKER_OPA_ISSUETYPE
         )
@@ -185,16 +207,22 @@ def create_issue(auditable_class, auditable_id, params, retry_count=1):
             ci = CI.objects.get(uid=params.get('ci_uid'))
         else:
             ci = None
-        if not tracker.user_exists(params.get('user')):
-            user = default_assignee
+        if not tracker.user_exists(params.get('technical_assignee')):
+            tuser = default_assignee
         else:
-            user = ''
+            tuser = params.get('technical_assignee')
+        if not tracker.user_exists(params.get('business_assignee')):
+            buser = default_assignee
+        else:
+            buser = params.get('business_assignee')
         issue = tracker.create_issue(
                 issue_type=params.get('issue_type'),
                 description=params.get('description'),
                 summary=params.get('summary'),
                 ci=ci,
-                assignee=user,
+                assignee=default_assignee,
+                technical_assignee=tuser,
+                business_assignee=buser,
                 start=auditable_object.created.isoformat(),
                 end='',
                 template=params.get('template'),
