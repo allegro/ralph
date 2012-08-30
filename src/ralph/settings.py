@@ -81,6 +81,7 @@ INSTALLED_APPS = [
     'ralph.ui',
     'ralph.dnsedit',
     'ralph.util',
+    'ralph.deployment',
     'ajax_select',
     'powerdns',
 ]
@@ -284,25 +285,38 @@ OPENSTACK_URL = None
 OPENSTACK_USER = None
 OPENSTACK_PASS = None
 OPENSTACK_EXTRA_QUERIES = []
-BUGTRACKER=''
-BUGTRACKER_USER=''
-BUGTRACKER_PASSWORD=''
-BUGTRACKER_URL=''
-BUGTRACKER_CI_FIELD_NAME=''
-BUGTRACKER_CI_NAME_FIELD_NAME=''
-BUGTRACKER_TEMPLATE_FIELD_NAME=''
-BUGTRACKER_BOWNER_FIELD_NAME=''
-BUGTRACKER_TOWNER_FIELD_NAME=''
-BUGTRACKER_OP_ISSUETYPE=''
-BUGTRACKER_OP_TEMPLATE=''
-BUGTRACKER_OPA_TEMPLATE=''
-BUGTRACKER_OPA_ISSUETYPE=''
-BUGTRACKER_CMDB_PROJECT=''
-BUGTRACKER_CMDB_DEFAULT_ASSIGNEE=''
-BUGTRACKER_ACTION_IN_PROGRESS=1
-BUGTRACKER_ACTION_IN_DEPLOYMENT=2
-BUGTRACKER_ACTION_RESOLVED_FIXED=3
-CMDB_VIEWCHANGE_LINK=''
+
+ISSUETRACKERS = {
+    'default': {
+        'ENGINE': 'JIRA',
+        'USER': '',
+        'PASSWORD': '',
+        'URL': '',
+        'CI_FIELD_NAME': '',
+        'CI_NAME_FIELD_NAME': '',
+        'TEMPLATE_FIELD_NAME': '',
+        'CMDB_PROJECT': '',
+        'CMDB_VIEWCHANGE_LINK': '',
+        'OPA': {
+                'RSS_URL' : '',
+                'BOWNER_FIELD_NAME': '',
+                'TOWNER_FIELD_NAME': '',
+                'TEMPLATE': '',
+                'ISSUETYPE': '',
+                'DEFAULT_ASSIGNEE': '',
+                'ACTIONS': {
+                    'IN_PROGRESS': 1,
+                    'IN_DEPLOYMENT': 2,
+                    'RESOLVED_FIXED': 3,
+                },
+        },
+        'OP': {
+                'ISSUETYPE': '',
+                'TEMPLATE': '',
+                'DEFAULT_ASSIGNEE': '',
+        },
+    },
+}
 # </template>
 
 # Venture config
