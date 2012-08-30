@@ -77,6 +77,11 @@ class Deployment(Auditable):
         getfunc(create_issue)(type(self), self.id, params)
 
 
+class DeploymentPooler(models.Model):
+    key = models.CharField(max_length=255, null=False)
+    date = models.DateTimeField(null=False)
+    checked = models.BooleanField(default=False)
+
 @receiver(deployment_accepted, dispatch_uid='ralph.cmdb.deployment_accepted')
 def handle_deployment_accepted(sender, deployment_id, **kwargs):
     # sample depoyment accepted signal code.
