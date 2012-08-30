@@ -1,28 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 
 from django.views.decorators.csrf import csrf_exempt
 
 from ralph.cmdb.integration.puppet import PuppetAgentsImporter
 from ralph.discovery.tasks import run_chain
 from ralph.util.views import jsonify
-
-""" Web hooks from Jira lands here. """
-
-
-def unique_file(file_name):
-    counter = 1
-    file_name_parts = os.path.splitext(file_name) # returns ('/path/file', '.ext')
-    while 1:
-        try:
-            fd = open(file_name, 'w')
-            return fd
-        except :
-            pass
-        file_name = file_name_parts[0] + '_' + str(counter) + file_name_parts[1]
-        counter += 1
 
 @csrf_exempt
 @jsonify
