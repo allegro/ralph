@@ -24,7 +24,7 @@ class JiraRSS(object):
     def update_issues(self, issues):
         for item in issues:
             key = item
-            date = issue_keys[item]
+            date = issues[item]
             new_issue = DeploymentPooler(key=key, date=date)
             try:        
                 db_issue = DeploymentPooler.get(key=key, date__gte=date, checked=False)
@@ -39,7 +39,6 @@ class JiraRSS(object):
         for issue in issues:
             new_issues.append(issue)
         return new_issues
-    
     
     def parse_rss(self, rss_url):
         feed = feedparser.parse(rss_url)
@@ -57,7 +56,10 @@ class JiraRSS(object):
     def get_new_issues(self):
         issuetracker_url = settings.ISSUETRACKERS['default']['OPA']['RSS_URL']
         project = settings.ISSUETRACKERS['default']['OPA']['CMDB_PROJECT']
-        rss_url ='%s/activity?streams=key+IS+%s&os_authType=basic' % (issuetracker_url, project)
+        user = settings.ISSUETRACKERS['default']['OPA']['USER']
+        password = settings.ISSUETRACKERS['default']['OPA']['PASSWORD']
+        rss_url ='http://%s%s%s/activity?streams=key+IS+%s&os_authType=basic' % \
+                (user, password, issuetracker_url[7:], project)
         issues = self.parse_rss(rss_url)
         self.update_issues(issues)
         return self.get_issues() 
