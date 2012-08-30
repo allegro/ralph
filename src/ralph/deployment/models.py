@@ -48,7 +48,8 @@ class Deployment(Auditable):
                                 null=True)
     venture_role = models.ForeignKey('business.VentureRole', null=True,
                                      verbose_name=_("role"))
-    done_plugins = models.TextField(verbose_name=_("done plugins"))
+    done_plugins = models.TextField(verbose_name=_("done plugins"),
+                                    blank=True, default='')
 
     def fire_issue(self):
         ci = None
