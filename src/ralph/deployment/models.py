@@ -55,6 +55,10 @@ class Deployment(Auditable):
                                 null=True)
     venture_role = models.ForeignKey('business.VentureRole', null=True,
                                      verbose_name=_("role"))
+    done_plugins = models.TextField(verbose_name=_("done plugins"),
+                                    blank=True, default='')
+    is_running = models.BooleanField(verbose_name=_("is running"),
+                                     default=False)
 
     def fire_issue(self):
         s = settings.ISSUETRACKERS['default']['OPA']
@@ -65,7 +69,7 @@ class Deployment(Auditable):
         towner = get_technical_owner(self.device)
         params = dict(
             ci_uid = CI.get_uid_by_content_object(self.device),
-            # yeah, doesn't check if CI even exists
+            # FIXME: doesn't check if CI even exists
             description = 'Please accept',
             summary = 'Summary',
             ci=ci,
@@ -82,7 +86,12 @@ class DeploymentPooler(models.Model):
     date = models.DateTimeField(null=False)
     checked = models.BooleanField(default=False)
 
+
 @receiver(deployment_accepted, dispatch_uid='ralph.cmdb.deployment_accepted')
 def handle_deployment_accepted(sender, deployment_id, **kwargs):
-    # sample depoyment accepted signal code.
+    # sample deployment accepted signal code.
     pass
+
+
+# Import all the plugins
+import ralph.deployment.plugins

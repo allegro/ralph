@@ -17,12 +17,13 @@ from tastypie.authorization import DjangoAuthorization
 from tastypie.cache import SimpleCache
 from tastypie.constants import ALL, ALL_WITH_RELATIONS
 from tastypie.resources import ModelResource as MResource
-from ralph.business.models import Venture, VentureRole
+from ralph.business.models import Venture, VentureRole, Department
 
 
 class VentureResource(MResource):
     devices = fields.ToManyField('ralph.discovery.api.DevResource', 'device')
     roles = fields.ToManyField('ralph.business.api.RoleResource', 'venturerole')
+    department = fields.ForeignKey('ralph.business.api.DepartmentResource', 'department', full=True)
 
     class Meta:
         queryset = Venture.objects.all()
@@ -41,6 +42,7 @@ class VentureResource(MResource):
 
 
 class VentureLightResource(MResource):
+    department = fields.ForeignKey('ralph.business.api.DepartmentResource', 'department', full=True)
     class Meta:
         queryset = Venture.objects.all()
         authentication = ApiKeyAuthentication()
@@ -76,3 +78,16 @@ class RoleResource(MResource):
         }
         excludes = ('save_priorities', 'max_save_priority',)
         cache = SimpleCache()
+
+
+class DepartmentResource(MResource):
+    class Meta:
+        queryset = Department.objects.all()
+        authentication = ApiKeyAuthentication()
+        authorization = DjangoAuthorization()
+        filtering = {
+            'id': ALL,
+            'name': ALL,
+        }
+        cache = SimpleCache()
+        excludes = ('icon',)
