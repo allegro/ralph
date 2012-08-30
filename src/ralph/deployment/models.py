@@ -57,7 +57,7 @@ class Deployment(Auditable):
         towner = get_technical_owner(self.device)
         params = dict(
             ci_uid = CI.get_uid_by_content_object(self.device),
-            # yeah, doesn't check if CI even exists
+            # FIXME: doesn't check if CI even exists
             description = 'Please accept',
             summary = 'Summary',
             ci=ci,
