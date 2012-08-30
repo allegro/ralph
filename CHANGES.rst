@@ -1,6 +1,18 @@
 Change Log
 ----------
 
+1.1.0
+~~~~~
+
+Unreleased yet.
+
+* Deployment of new machines using PXE implemented
+
+* CMDB: change acceptance
+
+* DHCP can be served and reconfigured remotely
+
+
 1.0.6
 ~~~~~
 
