@@ -141,7 +141,7 @@ class Problems(ChangesBase, PaginatedView):
         ret = super(Problems, self).get_context_data(**kwargs)
         ret.update({
             'problems': self.data,
-            'jira_url': settings.JIRA_URL + '/browse/'
+            'jira_url': settings.ISSUETRACKERS['default']['URL'] + '/browse/'
         })
         return ret
 
@@ -159,7 +159,7 @@ class Incidents(ChangesBase, PaginatedView):
         ret = super(Incidents, self).get_context_data(**kwargs)
         ret.update({
             'incidents': self.data,
-            'jira_url': settings.JIRA_URL + '/browse/',
+            'jira_url': settings.ISSUETRACKERS['default']['URL'] + '/browse/',
         })
         return ret
 
@@ -502,7 +502,7 @@ class Reports(ChangesBase, PaginatedView):
 
 
 def make_jira_url(external_key):
-    return 'test' + settings.JIRA_URL + '/' + external_key
+    return settings.ISSUETRACKERS['default']['URL'] + '/' + external_key
 
 class TimeLine(BaseCMDBView):
     template_name = 'cmdb/timeline.html'
