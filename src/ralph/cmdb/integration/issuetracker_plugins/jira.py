@@ -13,7 +13,7 @@ from datetime import datetime
 from django.conf import settings
 from ralph.cmdb.integration.issuetracker import IssueTracker
 
-from ralph.deployment.models import (DeploymentStatus, Deployment,
+from ralph.deployment.models import (DeploymentStatus, 
         DeploymentPooler, deployment_accepted)
 
 
@@ -26,7 +26,7 @@ class JiraRSS(object):
             key = item
             date = issue_keys[item]
             new_issue = DeploymentPooler(key=key, date=date)
-            try:        
+            try:
                 db_issue = DeploymentPooler.get(key=key, date__gte=date, checked=False)
                 if db_issue.date <= new_issue.date:
                     new_issue.save()
@@ -35,17 +35,17 @@ class JiraRSS(object):
 
     def get_issues(self):
         issues = DeploymentPooler.filter(checked=False)
-        new_issues = []    
+        new_issues = []
         for issue in issues:
             new_issues.append(issue)
         return new_issues
-    
-    
+
+
     def parse_rss(self, rss_url):
         feed = feedparser.parse(rss_url)
         issues = {}
         for item in feed['entries']:
-            issue_key = item['link'].split("/")[-1] 
+            issue_key = item['link'].split("/")[-1]
             date_time = datetime.fromtimestamp(mktime(item['updated_parsed']))
             if issue_key in issues:
                 if issues[issue_key] <= date_time:
@@ -53,14 +53,18 @@ class JiraRSS(object):
             else:
                 issues[issue_key] = date_time
         return issues
-    
+
     def get_new_issues(self):
         issuetracker_url = settings.ISSUETRACKERS['default']['OPA']['RSS_URL']
         project = settings.ISSUETRACKERS['default']['OPA']['CMDB_PROJECT']
         rss_url ='%s/activity?streams=key+IS+%s&os_authType=basic' % (issuetracker_url, project)
         issues = self.parse_rss(rss_url)
         self.update_issues(issues)
-        return self.get_issues() 
+        return self.get_issues()
+
+
+class IntegrityError(Exception):
+    pass
 
 
 class JiraAcceptance(object):
@@ -70,18 +74,18 @@ class JiraAcceptance(object):
 
     def __init__(self):
         self.acceptance_status = 'accept'
+        self.tracker = IssueTracker()
+        # can move to IN_PROGRESS = Accepted
+        self.accepted_transition = settings.ISSUETRACKERS['default']['OPA']['ACTIONS']['IN_PROGRESS']
+
+    def deployment_accepted(self, deployment):
+        if deployment.status != DeploymentStatus.open.id:
+            raise IntegrityError("Expected status open, but got %r" % deployment.status)
+        issue_transitions = self.tracker.get_issue_transitions(deployment.issue_key).get('transitions')
+        issue_transitions_ids = [int(x.get('id')) for x in issue_transitions]
+        return self.accepted_transition  in issue_transitions_ids
 
     def run(self):
-        b = IssueTracker()
-        x = JiraRSS()
-        issues = x.get_new_issues()
-        for issue in issues:
-            exists = True
-            try:
-                d = Deployment.objects.get(issue_key=issue, status = DeploymentStatus.open.id)
-            except Deployment.DoesNotExist:
-                exists = False
-            if exists and d.status == DeploymentStatus.opened.id:
-                jira_issue = b.find_issue(params=({'key' : issue}))
-                if jira_issue.get('status') == self.acceptance_status:
-                    self.accept_deployment(issue)
+        # Unimplemented
+        pass
+
