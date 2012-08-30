@@ -49,10 +49,6 @@ class DeploymentTest(object):
         return dm
 
     def test_create(self):
-        # FIXME: decide
-        settings.BUGTRACKER="FAKE"
-        settings.BUGTRACKER_ACTION_IN_PROGRESS=""
-
         x = Deployment()
         x.device = self.blade
         x.mac = '10:9a:dd:6d:a8:01'

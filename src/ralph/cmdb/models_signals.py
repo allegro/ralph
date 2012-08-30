@@ -27,8 +27,8 @@ logger = logging.Logger(__file__)
 
 user_match = re.compile(r".*\<(.*)@.*\>")
 ralph_change_link = settings.CMDB_VIEWCHANGE_LINK
-jira_op_template = settings.BUGTRACKER_OP_TEMPLATE
-default_assignee = settings.BUGTRACKER_CMDB_DEFAULT_ASSIGNEE
+jira_op_template = settings.ISSUETRACKERS['default']['OP']['TEMPLATE']
+default_assignee = settings.ISSUETRACKERS['default']['OP']['DEFAULT_ASSIGNEE']
 
 def get_login_from_user(long_user_text):
     """ Return email from 'username <email>'

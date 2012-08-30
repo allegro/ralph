@@ -19,10 +19,10 @@ from ralph.cmdb.integration.exceptions import IssueTrackerException
 from ralph.cmdb.models_common import getfunc
 from ralph.cmdb.models import CI
 
-ACTION_IN_PROGRESS=settings.BUGTRACKER_ACTION_IN_PROGRESS
-ACTION_IN_DEPLOYMENT=settings.BUGTRACKER_ACTION_IN_DEPLOYMENT
-ACTION_RESOLVED_FIXED=settings.BUGTRACKER_ACTION_RESOLVED_FIXED
-
+ACTION_IN_PROGRESS=settings.ISSUETRACKERS['default']['OPA']['ACTION_IN_PROGRESS']
+ACTION_IN_DEPLOYMENT=settings.ISSUETRACKERS['default']['OPA']['ACTION_IN_DEPLOYMENT']
+ACTION_RESOLVED_FIXED=settings.ISSUETRACKERS['default']['OPA']['ACTION_RESOLVED_FIXED']
+DEFAULT_ASSIGNEE=settings.ISSUETRACKERS['default']['OPA']['DEFAULT_ASSIGNEE']
 
 class AuditStatus(Choices):
     _ = Choices.Choice
@@ -140,7 +140,6 @@ def create_issue(auditable_class, auditable_id, params, retry_count=1):
     3) #TODO: assignes needs to be set per subtask
     """
     auditable_object = auditable_class.objects.get(id=auditable_id)
-    default_assignee = settings.BUGTRACKER_CMDB_DEFAULT_ASSIGNEE
     try:
         tracker = IssueTracker()
         if params.get('ci_uid'):
@@ -148,11 +147,11 @@ def create_issue(auditable_class, auditable_id, params, retry_count=1):
         else:
             ci = None
         if not tracker.user_exists(params.get('technical_assignee')):
-            tuser = default_assignee
+            tuser = DEFAULT_ASSIGNEE
         else:
             tuser = params.get('technical_assignee')
         if not tracker.user_exists(params.get('business_assignee')):
-            buser = default_assignee
+            buser = DEFAULT_ASSIGNEE
         else:
             buser = params.get('business_assignee')
         issue = tracker.create_issue(
@@ -160,7 +159,7 @@ def create_issue(auditable_class, auditable_id, params, retry_count=1):
                 description=params.get('description'),
                 summary=params.get('summary'),
                 ci=ci,
-                assignee=default_assignee,
+                assignee=DEFAULT_ASSIGNEE,
                 technical_assignee=tuser,
                 business_assignee=buser,
                 start=auditable_object.created.isoformat(),
