@@ -190,7 +190,6 @@ def device_update_cached(device):
     for d in device.child_set.all():
         device_update_cached(d)
 
-
 def details_dev(dev, purchase_only=False):
     yield {
         'label': 'Device',
@@ -205,21 +204,22 @@ def details_dev(dev, purchase_only=False):
         return
     if dev.model.type == DeviceType.blade_system.id:
         for d in dev.child_set.all():
-            chassis_price = get_device_chassis_price(d)
-            if chassis_price:
-                yield {
-                    'label': escape('Blade server %s' % d.name),
-                    'model': d.model,
-                    'price': -chassis_price,
-                    'icon': 'fugue-server-medium',
-                    'serial': d.sn,
-                }
+            if d.model.type == DeviceType.blade_server.id:
+                chassis_price = get_device_chassis_price(d)
+                if chassis_price:
+                    yield {
+                        'label': escape('Blade server %s' % d.name),
+                        'model': d.model,
+                        'price': -chassis_price,
+                        'icon': 'fugue-server-medium',
+                        'serial': d.sn,
+                    }
             else:
                 yield {
                     'label': d.name,
                     'model': d.model,
                     'serial': d.sn,
-                }   
+                }
     elif dev.model.type == DeviceType.blade_server.id:
         chassis_price = get_device_chassis_price(dev)
         if chassis_price:
