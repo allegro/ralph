@@ -133,6 +133,7 @@ class Deployment(Auditable):
     status = models.IntegerField(choices=AuditStatus(),
                                  default=DeploymentStatus.open.id)
     ip = models.IPAddressField(verbose_name=_("IP address"))
+    hostname = models.CharField(verbose_name=_("hostname"), max_length=255)
     img_path = models.CharField(verbose_name=_("image path"), max_length=255)
     kickstart_path = models.CharField(verbose_name=_("kickstart path"),
                                       max_length=255)
