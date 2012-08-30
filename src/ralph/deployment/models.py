@@ -57,6 +57,8 @@ class Deployment(Auditable):
                                      verbose_name=_("role"))
     done_plugins = models.TextField(verbose_name=_("done plugins"),
                                     blank=True, default='')
+    is_running = models.BooleanField(verbose_name=_("is running"),
+                                     default=False)
 
     def fire_issue(self):
         s = settings.ISSUETRACKERS['default']['OPA']
