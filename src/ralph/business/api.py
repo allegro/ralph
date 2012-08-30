@@ -91,11 +91,3 @@ class DepartmentResource(MResource):
         }
         cache = SimpleCache()
         excludes = ('icon',)
-
-    def hydrate(self, bundle):
-        choice = super(VentureResource, self).hydrate(bundle)
-        return choice.replace('department', 'choices')
-
-    def dehydrate(self, bundle):
-        choice = super(VentureResource, self).dehydrate(bundle) 
-        return choice.replace('department', 'choices')
