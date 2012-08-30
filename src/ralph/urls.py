@@ -75,12 +75,10 @@ urlpatterns = patterns('',
     url(r'^cmdb/', include('ralph.cmdb.urls')),
     url(r'^api/', include(v09_api.urls)),
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^pxe/$', 'ralph.deployment.views.preboot_view', name='preboot-view'),
+
     # include the lookup urls
     (r'^admin/lookups/', include(ajax_select_urls)),
     (r'^admin/', include(admin.site.urls)),
 
 )
-
-
-
-
