@@ -29,7 +29,7 @@ class NullIssueTracker(object):
 class IssueTracker(object):
     """ Very simple fascade for bugtracker systems """
     def __init__(self):
-        engine = settings['ISSUETRACKERS']['default']['ENGINE']
+        engine = settings.ISSUETRACKERS['default']['ENGINE']
         if engine == 'JIRA':
             self.concrete = Jira()
         elif engine == '':

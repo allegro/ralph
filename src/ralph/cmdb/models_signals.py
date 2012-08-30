@@ -26,7 +26,7 @@ from ralph.cmdb.models_common import getfunc
 logger = logging.Logger(__file__)
 
 user_match = re.compile(r".*\<(.*)@.*\>")
-ralph_change_link = settings.CMDB_VIEWCHANGE_LINK
+ralph_change_link = settings.ISSUETRACKERS['default']['CMDB_VIEWCHANGE_LINK']
 jira_op_template = settings.ISSUETRACKERS['default']['OP']['TEMPLATE']
 default_assignee = settings.ISSUETRACKERS['default']['OP']['DEFAULT_ASSIGNEE']
 
