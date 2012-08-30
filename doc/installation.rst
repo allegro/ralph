@@ -197,7 +197,7 @@ Apache
 
 To use Apache as the front-end Web server for Ralph, install it::
 
-  $ sudo aptitude install apache2-mpm-worker libapache2-mod-proxy-html
+  $ sudo apt-get install apache2-mpm-worker libapache2-mod-proxy-html
   $ sudo a2enmod proxy
   $ sudo a2enmod proxy_http
 
