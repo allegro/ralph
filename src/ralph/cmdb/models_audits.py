@@ -19,9 +19,9 @@ from ralph.cmdb.integration.exceptions import IssueTrackerException
 from ralph.cmdb.models_common import getfunc
 from ralph.cmdb.models import CI
 
-ACTION_IN_PROGRESS=settings.ISSUETRACKERS['default']['OPA']['ACTION_IN_PROGRESS']
-ACTION_IN_DEPLOYMENT=settings.ISSUETRACKERS['default']['OPA']['ACTION_IN_DEPLOYMENT']
-ACTION_RESOLVED_FIXED=settings.ISSUETRACKERS['default']['OPA']['ACTION_RESOLVED_FIXED']
+ACTION_IN_PROGRESS=settings.ISSUETRACKERS['default']['OPA']['ACTIONS']['IN_PROGRESS']
+ACTION_IN_DEPLOYMENT=settings.ISSUETRACKERS['default']['OPA']['ACTIONS']['IN_DEPLOYMENT']
+ACTION_RESOLVED_FIXED=settings.ISSUETRACKERS['default']['OPA']['ACTIONS']['RESOLVED_FIXED']
 DEFAULT_ASSIGNEE=settings.ISSUETRACKERS['default']['OPA']['DEFAULT_ASSIGNEE']
 
 class AuditStatus(Choices):

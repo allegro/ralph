@@ -8,7 +8,7 @@ import logging
 from optparse import make_option
 
 from django.core.management.base import BaseCommand
-from ralph.cmdb.integration.bugtracker_plugins.jira import JiraAcceptance
+from ralph.cmdb.integration.issuetracker_plugins.jira import JiraAcceptance
 
 
 logger = logging.getLogger(__name__)
@@ -19,7 +19,7 @@ class Command(BaseCommand):
     requires_model_validation = True
 
     def __init__(self, *args, **kwargs):
-        self.option_list=[]
+        self.option_list = []
         self.option_list.extend(BaseCommand.option_list)
         self.option_list.append(make_option('--cmdb_acceptance_pool',
                 dest="cmdb_acceptance_pool",
