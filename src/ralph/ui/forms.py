@@ -346,6 +346,8 @@ class DeploymentForm(forms.ModelForm):
         hostname = self.cleaned_data['hostname'].strip().lower()
         if not is_valid_hostname(hostname):
             raise forms.ValidationError("Invalid hostname.")
+        if '.' not in hostname:
+            raise forms.ValidationError("Hostname has to include the domain.")
         return hostname
 
 
