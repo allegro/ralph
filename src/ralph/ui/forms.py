@@ -4,6 +4,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import ipaddr
 from django import forms
 from django.utils.safestring import mark_safe
 from django.conf import settings
@@ -295,6 +296,7 @@ class DeploymentForm(forms.ModelForm):
                 'venture_role',
                 'mac',
                 'ip',
+                'hostname',
                 'img_path',
                 'kickstart_path',
             ]
@@ -337,7 +339,16 @@ class DeploymentForm(forms.ModelForm):
             'venture_role': device.venture_role,
             'image_path': device.venture_role.get_img_path() if device.venture_role else '',
             'kickstart_path': device.venture_role.get_kickstart_path() if device.venture_role else '',
+            'hostname': device.name,
         })
+
+    def clean_hostname(self):
+        hostname = self.cleaned_data['hostname'].strip().lower()
+        if '_' in hostname:
+            raise forms.ValidationError("Character '_' not allowed in hostnames.")
+        if '.' not in hostname:
+            raise forms.ValidationError("Hostname has to include the domain.")
+        return hostname
 
 
 class DeviceForm(forms.ModelForm):
