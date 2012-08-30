@@ -76,6 +76,7 @@ INSTALLED_APPS = [
     'ralph.business',
     'ralph.cmdb',
     'ralph.discovery',
+    'ralph.deployment',
     'ralph.integration',
     'ralph.ui',
     'ralph.dnsedit',
