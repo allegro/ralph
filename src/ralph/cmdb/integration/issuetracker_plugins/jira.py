@@ -40,6 +40,5 @@ class JiraAcceptance(object):
                 exists = False
             if exists and d.status == DeploymentStatus.opened.id:
                 jira_issue = b.find_issue(params=({'key' : issue}))
-                import pdb; pdb.set_trace()
                 if jira_issue.get('status') == self.acceptance_status:
                     self.accept_deployment(issue)
