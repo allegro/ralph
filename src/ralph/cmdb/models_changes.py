@@ -15,6 +15,7 @@ from django.utils.translation import ugettext_lazy as _
 from lck.django.common.models import TimeTrackable
 from lck.django.choices import Choices
 
+
 class CI_CHANGE_TYPES(Choices):
     _ = Choices.Choice
 
@@ -34,6 +35,7 @@ class CI_CHANGE_PRIORITY_TYPES(Choices):
     ERROR = _('Error')
     CRITICAL = _('Critical')
 
+
 class CI_CHANGE_REGISTRATION_TYPES(Choices):
     _ = Choices.Choice
 
@@ -44,27 +46,28 @@ class CI_CHANGE_REGISTRATION_TYPES(Choices):
 
 
 class CIChangeZabbixTrigger(TimeTrackable):
-    ci = models.ForeignKey('CI', null = True)
-    trigger_id = models.IntegerField(max_length=11, null=False )
-    host = models.CharField(max_length=255, null=False )
-    host_id = models.IntegerField(max_length=11, null=False )
-    status = models.IntegerField(max_length=11, null=False )
-    priority = models.IntegerField(max_length=11, null=False )
+    ci = models.ForeignKey('CI', null=True)
+    trigger_id = models.IntegerField(max_length=11)
+    host = models.CharField(max_length=255)
+    host_id = models.IntegerField(max_length=11)
+    status = models.IntegerField(max_length=11)
+    priority = models.IntegerField(max_length=11)
     description = models.CharField(max_length=1024)
     lastchange = models.CharField(max_length=1024)
     comments = models.CharField(max_length=1024)
 
 
 class CIChangeStatusOfficeIncident(TimeTrackable):
-    ci = models.ForeignKey('CI', null = True)
-    time = models.DateTimeField()
-    status = models.IntegerField(max_length=11, null=False )
+    ci = models.ForeignKey('CI', null=True)
+    time = models.DateTimeField(verbose_name=_("timestamp"), default=datetime.now)
+    status = models.IntegerField(max_length=11)
     subject = models.CharField(max_length=1024)
-    incident_id= models.IntegerField(max_length=11, null=False )
+    incident_id= models.IntegerField(max_length=11)
+
 
 class CIChangeCMDBHistory(TimeTrackable):
-    time = models.DateTimeField(verbose_name=_("date"), default=datetime.now)
     ci = models.ForeignKey('CI')
+    time = models.DateTimeField(verbose_name=_("timestamp"), default=datetime.now)
     user = models.ForeignKey('auth.User', verbose_name=_("user"), null=True,
                            blank=True, default=None, on_delete=models.SET_NULL)
     field_name = models.CharField(max_length=64, default='')
@@ -78,21 +81,21 @@ class CIChangeCMDBHistory(TimeTrackable):
 
 
 class CIChange(TimeTrackable):
-    ci = models.ForeignKey('CI', null = True, blank=True)
+    ci = models.ForeignKey('CI', null=True, blank=True)
     type = models.IntegerField(max_length=11, choices=CI_CHANGE_TYPES(),
             null=False)
     priority = models.IntegerField(max_length=11,
             choices=CI_CHANGE_PRIORITY_TYPES(),
             null=False)
     content_type = models.ForeignKey(ContentType, verbose_name=_("content type"),
-            null = True)
+            null=True)
     object_id = models.PositiveIntegerField(
             verbose_name=_("object id"),
             null=True,
             blank=True,
     )
     content_object = generic.GenericForeignKey('content_type', 'object_id')
-    time = models.DateTimeField()
+    time = models.DateTimeField(verbose_name=_("timestamp"), default=datetime.now)
     message = models.CharField(max_length=1024)
     external_key = models.CharField(max_length=60, blank=True)
     registration_type = models.IntegerField(
@@ -112,24 +115,19 @@ class CIChange(TimeTrackable):
 
 
 class CIChangeGit(TimeTrackable):
-    ci = models.ForeignKey('CI', null = True)
-    file_paths = models.CharField(max_length=3000,
-            null=False)
+    ci = models.ForeignKey('CI', null=True)
+    file_paths = models.CharField(max_length=3000)
     comment = models.CharField(max_length=1000)
     author = models.CharField(max_length=200)
     changeset = models.CharField(max_length=80, unique=True, db_index=True)
-    time = models.DateTimeField()
 
 
 class CIChangePuppet(TimeTrackable):
-    ci = models.ForeignKey('CI',
-            null=True,
-            blank=True,
-    )
+    ci = models.ForeignKey('CI', null=True)
     configuration_version = models.CharField(max_length=30, db_index=True)
     host = models.CharField(max_length=100)
     kind = models.CharField(max_length=30)
-    time = models.DateTimeField()
+    time = models.DateTimeField(verbose_name=_("timestamp"), default=datetime.now)
     status = models.CharField(max_length=30)
 
 
@@ -187,4 +185,3 @@ REGISTER_CHANGE_TYPES=(
         CI_CHANGE_TYPES.DEVICE.id,
         CI_CHANGE_TYPES.CI.id,
 )
-
