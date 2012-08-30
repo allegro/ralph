@@ -152,7 +152,7 @@ class JiraEventsImporter(BaseImporter):
             items_list.append(dict(
                 ci=ci_id,
                 key=i.get('key'),
-                description=f.get('description',''),
+                description=f.get('description', ''),
                 summary=f.get('summary'),
                 status=f.get('status').get('name'),
                 time=f.get('updated') or f.get('created'),

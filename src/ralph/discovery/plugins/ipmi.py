@@ -242,10 +242,10 @@ def ipmi_power_on(host, user=IPMI_USER, password=IPMI_PASSWORD):
     response = ipmi.tool('chassis', 'power', 'on')
     return response.strip().lower().endswith('on')
 
-def ipmi_reboot(host, user=IPMI_USER, password=IPMI_PASSWORD, 
+def ipmi_reboot(host, user=IPMI_USER, password=IPMI_PASSWORD,
                 power_on_if_disabled=False):
     ipmi = IPMI(host, user, password)
-    
+
     response = ipmi.tool('chassis', 'power', 'status')
     if response.strip().lower().endswith('on'):
         response = ipmi.tool('chassis', 'power', 'reset')

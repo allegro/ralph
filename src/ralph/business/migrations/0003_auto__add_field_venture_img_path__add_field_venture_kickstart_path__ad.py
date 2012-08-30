@@ -8,8 +8,18 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding field 'VentureRole.iso_path'
-        db.add_column('business_venturerole', 'iso_path',
+        # Adding field 'Venture.img_path'
+        db.add_column('business_venture', 'img_path',
+                      self.gf('django.db.models.fields.CharField')(default=u'', max_length=255, blank=True),
+                      keep_default=False)
+
+        # Adding field 'Venture.kickstart_path'
+        db.add_column('business_venture', 'kickstart_path',
+                      self.gf('django.db.models.fields.CharField')(default=u'', max_length=255, blank=True),
+                      keep_default=False)
+
+        # Adding field 'VentureRole.img_path'
+        db.add_column('business_venturerole', 'img_path',
                       self.gf('django.db.models.fields.CharField')(default=u'', max_length=255, blank=True),
                       keep_default=False)
 
@@ -20,8 +30,14 @@ class Migration(SchemaMigration):
 
 
     def backwards(self, orm):
-        # Deleting field 'VentureRole.iso_path'
-        db.delete_column('business_venturerole', 'iso_path')
+        # Deleting field 'Venture.img_path'
+        db.delete_column('business_venture', 'img_path')
+
+        # Deleting field 'Venture.kickstart_path'
+        db.delete_column('business_venture', 'kickstart_path')
+
+        # Deleting field 'VentureRole.img_path'
+        db.delete_column('business_venturerole', 'img_path')
 
         # Deleting field 'VentureRole.kickstart_path'
         db.delete_column('business_venturerole', 'kickstart_path')
@@ -126,8 +142,8 @@ class Migration(SchemaMigration):
             'data_center': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['discovery.DataCenter']", 'null': 'True', 'blank': 'True'}),
             'department': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': "orm['business.Department']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'img_path': ('django.db.models.fields.CharField', [], {'default': "u''", 'max_length': '255', 'blank': 'True'}),
             'is_infrastructure': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'iso_path': ('django.db.models.fields.CharField', [], {'default': "u''", 'max_length': '255', 'blank': 'True'}),
             'kickstart_path': ('django.db.models.fields.CharField', [], {'default': "u''", 'max_length': '255', 'blank': 'True'}),
             'margin_kind': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': "orm['discovery.MarginKind']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
             'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
@@ -164,7 +180,7 @@ class Migration(SchemaMigration):
             'cache_version': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
             'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'iso_path': ('django.db.models.fields.CharField', [], {'default': "u''", 'max_length': '255', 'blank': 'True'}),
+            'img_path': ('django.db.models.fields.CharField', [], {'default': "u''", 'max_length': '255', 'blank': 'True'}),
             'kickstart_path': ('django.db.models.fields.CharField', [], {'default': "u''", 'max_length': '255', 'blank': 'True'}),
             'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '75'}),

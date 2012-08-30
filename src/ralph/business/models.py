@@ -47,7 +47,7 @@ class Venture(Named, TimeTrackable):
             default="", editable=False)
     networks = db.ManyToManyField(Network, null=True,
                                  verbose_name=_("networks list"))
-    iso_path = db.CharField(verbose_name=_("iso path"), blank=True,
+    img_path = db.CharField(verbose_name=_("iso path"), blank=True,
             default="", max_length=255)
     kickstart_path = db.CharField(verbose_name=_("kickstart path"), max_length=255,
             blank=True, default='')
@@ -102,11 +102,11 @@ class Venture(Named, TimeTrackable):
             node = node.parent
         return False
 
-    def get_iso_path(self):
+    def get_img_path(self):
         node = self
         while node:
-            if node.iso_path:
-                return node.iso_path
+            if node.img_path:
+                return node.img_path
             node = node.parent
         if node is None:
             return settings.DEFAULT_ISO_PATH
@@ -155,7 +155,7 @@ class VentureRole(Named.NonUnique, TimeTrackable):
         blank=True, default=None, related_name="child_set")
     networks = db.ManyToManyField(Network, null=True,
                                  verbose_name=_("networks list"))
-    iso_path = db.CharField(verbose_name=_("iso path"), blank=True,
+    img_path = db.CharField(verbose_name=_("iso path"), blank=True,
             default="", max_length=255)
     kickstart_path = db.CharField(verbose_name=_("kickstart path"), max_length=255,
             blank=True, default='')
@@ -183,13 +183,13 @@ class VentureRole(Named.NonUnique, TimeTrackable):
             node = node.parent
         return self.venture.check_ip(ip)
 
-    def get_iso_path(self):
+    def get_img_path(self):
         node = self
         while node:
-            if node.iso_path:
-                return node.iso_path
+            if node.img_path:
+                return node.img_path
             node = node.parent
-        return self.venture.get_iso_path()
+        return self.venture.get_img_path()
 
     def get_kickstart_path(self):
         node = self
