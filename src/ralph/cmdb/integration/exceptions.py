@@ -6,7 +6,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-class BugtrackerException(Exception):
+class IssueTrackerException(Exception):
     pass
 
 

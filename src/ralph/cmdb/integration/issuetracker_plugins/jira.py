@@ -6,16 +6,16 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from django.conf import settings
-from ralph.cmdb.integration.bugtracker import Bugtracker
+from ralph.cmdb.integration.issuetracker import IssueTracker
 
-from ralph.cmdb.models_audits import DeploymentStatus, Deployment, \
-        deployment_accepted
+from ralph.deployment.models import (DeploymentStatus, Deployment,
+        deployment_accepted)
 
 
 class JiraRSS(object):
     def __init__(self):
-        settings.BUGTRACKER_CMDB_PROJECT #'AGS'
-    
+        settings.ISSUETRACKERS['default']['CMDB_PROJECT']
+
     def update_issues(self, issues):
         for item in issue_keys:
             key = item
@@ -67,16 +67,16 @@ class JiraAcceptance(object):
         self.acceptance_status = 'accept'
 
     def run(self):
+        b = IssueTracker()
         x = JiraRSS()
         issues = x.get_new_issues()
         for issue in issues:
-            exists = False
+            exists = True
             try:
-                d = Deployment.objects.get(issue_key=issue, status = DeploymentStatus.opened.id)
+                d = Deployment.objects.get(issue_key=issue, status = DeploymentStatus.open.id)
             except Deployment.DoesNotExist:
-                exists = True
+                exists = False
             if exists and d.status == DeploymentStatus.opened.id:
-                b = Bugtracker()
-                jira_issue = b.find_issue(issue)
+                jira_issue = b.find_issue(params=({'key' : issue}))
                 if jira_issue.get('status') == self.acceptance_status:
                     self.accept_deployment(issue)
