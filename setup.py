@@ -39,6 +39,7 @@ setup (
         'django-tastypie==0.9.11',
         'django==1.4.1',
         'dnspython==1.10.0',
+        'feedparser==5.1.2'
         'fugue-icons==3.4.4',
         'gunicorn==0.14.6',
         'ipaddr==2.1.7',

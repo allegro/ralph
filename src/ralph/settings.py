@@ -81,6 +81,7 @@ INSTALLED_APPS = [
     'ralph.ui',
     'ralph.dnsedit',
     'ralph.util',
+    'ralph.deployment',
     'ajax_select',
     'powerdns',
 ]
@@ -284,6 +285,38 @@ OPENSTACK_URL = None
 OPENSTACK_USER = None
 OPENSTACK_PASS = None
 OPENSTACK_EXTRA_QUERIES = []
+
+ISSUETRACKERS = {
+    'default': {
+        'ENGINE': 'JIRA',
+        'USER': '',
+        'PASSWORD': '',
+        'URL': '',
+        'CI_FIELD_NAME': '',
+        'CI_NAME_FIELD_NAME': '',
+        'TEMPLATE_FIELD_NAME': '',
+        'CMDB_PROJECT': '',
+        'CMDB_VIEWCHANGE_LINK': '',
+        'OPA': {
+                'RSS_URL' : '',
+                'BOWNER_FIELD_NAME': '',
+                'TOWNER_FIELD_NAME': '',
+                'TEMPLATE': '',
+                'ISSUETYPE': '',
+                'DEFAULT_ASSIGNEE': '',
+                'ACTIONS': {
+                    'IN_PROGRESS': 1,
+                    'IN_DEPLOYMENT': 2,
+                    'RESOLVED_FIXED': 3,
+                },
+        },
+        'OP': {
+                'ISSUETYPE': '',
+                'TEMPLATE': '',
+                'DEFAULT_ASSIGNEE': '',
+        },
+    },
+}
 # </template>
 
 # Venture config
