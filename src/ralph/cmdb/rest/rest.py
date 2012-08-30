@@ -4,15 +4,10 @@
 import os
 
 from django.views.decorators.csrf import csrf_exempt
-from ralph.util.views import jsonify
 
 from ralph.cmdb.integration.puppet import PuppetAgentsImporter
 from ralph.discovery.tasks import run_chain
-from ralph.cmdb.integration.bugracker import Bugtracker
-from ralph.cmdb.models_common import getfunc
-from ralph.cmdb import models_audits as ma
-from django.conf import settings
-import json
+from ralph.util.views import jsonify
 
 """ Web hooks from Jira lands here. """
 

@@ -18,8 +18,8 @@ from celery.task import task
 # using models_ci not models, for dependency chain.
 from ralph.cmdb import models_ci as cdb
 from ralph.cmdb import models_changes as chdb
-from ralph.cmdb.integration.bugtracker import Bugtracker
-from ralph.cmdb.integration.exceptions import BugtrackerException
+from ralph.cmdb.integration.issuetracker import IssueTracker
+from ralph.cmdb.integration.exceptions import IssueTrackerException
 from ralph.cmdb.models_common import getfunc
 
 
@@ -177,7 +177,7 @@ def create_issue(change_id, retry_count=1):
             cmdb_link=ralph_change_link % (ch.id),
         ))
     try:
-        j = Bugtracker()
+        j = IssueTracker()
         if ch.ci:
             ci = ch.ci
         else:
@@ -197,7 +197,7 @@ def create_issue(change_id, retry_count=1):
         ch.registration_type = chdb.CI_CHANGE_REGISTRATION_TYPES.CHANGE.id
         ch.external_key = issue.get('key')
         ch.save()
-    except BugtrackerException as e:
+    except IssueTrackerException as e:
         raise create_issue.retry(exc=e, args=[change_id,
             retry_count + 1], countdown=60 * (2 ** retry_count),
             max_retries=15) # 22 days

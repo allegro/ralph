@@ -8,7 +8,7 @@ from django.utils import simplejson as json
 import logging
 logger = logging.getLogger(__name__)
 
-from ralph.cmdb.integration.exceptions import BugtrackerException
+from ralph.cmdb.integration.exceptions import IssueTrackerException
 
 class Jira(object):
     """ Simple JIRA wrapper around RestKit """
@@ -48,7 +48,12 @@ class Jira(object):
         response=resource.get(headers=self.resource_headers)
         return json.loads(response.body_string())
 
-    def find_issue(self, params):
+    def get_issue(self, issue_key):
+        resource_name = "issue/" + issue_key
+        return self.get_resource(resource_name)
+
+
+    def find_issues(self, params):
        resource_name = "search"
        return self.call_resource(resource_name, params)
 
@@ -84,7 +89,7 @@ class Jira(object):
             )
         except Exception as e:
             # enclose exception as jira exception, for furter analysing
-            raise BugtrackerException(e)
+            raise IssueTrackerException(e)
         return call_result
 
     def create_issue(self, summary, description, issue_type, ci, assignee,
@@ -198,7 +203,7 @@ class Jira(object):
             call_result = self.call_resource('issue', params)
         except Exception as e:
             # enclose exception as jira exception, for furter analysing
-            raise BugtrackerException(e)
+            raise IssueTrackerException(e)
         return call_result
 
 

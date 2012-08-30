@@ -11,25 +11,28 @@ from django.conf import settings
 from ralph.cmdb.integration.lib.jira import Jira
 
 
-class NullBugtracker(object):
+class NullIssueTracker(object):
     def create_issue(self, *args, **kwargs):
         return dict(key='#123456')
 
-    def find_issuse(self, *args, **kwargs):
+    def find_issuses(self, *args, **kwargs):
         return [{}]
+
+    def get_issue(self, issue_key):
+        return {}
 
     def user_exists(self, *args, **kwargs):
         # paranoia answer every time.
         return True
 
 
-class Bugtracker(object):
+class IssueTracker(object):
     """ Very simple fascade for bugtracker systems """
     def __init__(self):
-        if settings.BUGTRACKER == 'JIRA':
+        if settings.ISSUETRACKER == 'JIRA':
             self.concrete = Jira()
-        elif settings.BUGTRACKER == 'FAKE':
-            self.concrete = NullBugtracker
+        elif settings.ISSUETRACKER == '':
+            self.concrete = NullIssueTracker()
 
     def __getattr__(self, name):
         return getattr(self.concrete, name )
