@@ -5,11 +5,16 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import feedparser
+
+from time import mktime
+from datetime import datetime
+
 from django.conf import settings
 from ralph.cmdb.integration.issuetracker import IssueTracker
 
 from ralph.deployment.models import (DeploymentStatus, Deployment,
-        deployment_accepted)
+        DeploymentPooler, deployment_accepted)
 
 
 class JiraRSS(object):
@@ -17,13 +22,13 @@ class JiraRSS(object):
         settings.ISSUETRACKERS['default']['CMDB_PROJECT']
 
     def update_issues(self, issues):
-        for item in issue_keys:
+        for item in issues:
             key = item
             date = issue_keys[item]
             new_issue = DeploymentPooler(key=key, date=date)
             try:        
                 db_issue = DeploymentPooler.get(key=key, date__gte=date, checked=False)
-                if db_issue.date <= dp.date:
+                if db_issue.date <= new_issue.date:
                     new_issue.save()
             except DeploymentPooler.DoesNotExist:
                 new_issue.save()
@@ -53,9 +58,9 @@ class JiraRSS(object):
         issuetracker_url = settings.ISSUETRACKERS['default']['OPA']['RSS_URL']
         project = settings.ISSUETRACKERS['default']['OPA']['CMDB_PROJECT']
         rss_url ='%s/activity?streams=key+IS+%s&os_authType=basic' % (issuetracker_url, project)
-        issues = parse_rss(rss_url)
-        update_issues(issues)
-        return get_issues() 
+        issues = self.parse_rss(rss_url)
+        self.update_issues(issues)
+        return self.get_issues() 
 
 
 class JiraAcceptance(object):
