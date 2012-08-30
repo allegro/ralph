@@ -24,6 +24,7 @@ class VentureResource(MResource):
     devices = fields.ToManyField('ralph.discovery.api.DevResource', 'device')
     roles = fields.ToManyField('ralph.business.api.RoleResource', 'venturerole')
     department = fields.ForeignKey('ralph.business.api.DepartmentResource', 'department', full=True)
+
     class Meta:
         queryset = Venture.objects.all()
         authentication = ApiKeyAuthentication()
@@ -84,7 +85,12 @@ class DepartmentResource(MResource):
         queryset = Department.objects.all()
         authentication = ApiKeyAuthentication()
         authorization = DjangoAuthorization()
+        filtering = {
+            'id': ALL,
+            'name': ALL,
+        }
         cache = SimpleCache()
+        excludes = ('icon',)
 
     def hydrate(self, bundle):
         choice = super(VentureResource, self).hydrate(bundle)
