@@ -7,6 +7,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from django.contrib import admin
+from django.utils.translation import ugettext_lazy as _
 from lck.django.common.admin import ModelAdmin
 
 from ralph.deployment.models import Deployment, Preboot, PrebootFile
@@ -48,7 +49,7 @@ class PrebootFileAdmin(ModelAdmin):
             size=self.file.size/1024/1024,
         )
     file_with_size.short_description = _("name")
-    list_display = (file_with_size)
+    list_display = (file_with_size,)
     list_filter = ('ftype',)
     search_fields = ('name',)
     save_on_top = True
