@@ -65,6 +65,11 @@ class Jira(object):
            return False
         return True
 
+    def get_issue_transitions(self, issue_key):
+        resource_name = 'issue/%s/transitions' % issue_key
+        return self.get_resource(resource_name)
+
+
     def transition_issue(self, issue_key, transition_id):
         try:
             call_result = self.call_resource('issue/%s/transitions' % issue_key,
