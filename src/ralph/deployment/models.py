@@ -68,3 +68,7 @@ class Deployment(Auditable):
         )
         getfunc(create_issue)(type(self), self.id, params)
 
+class DeploymentPooler(models.Model):
+    key = models.CharField(max_length=255, null=False)
+    date = models.DateTimeField(null=False)
+    checked = models.BooleanField(default=False)
