@@ -10,7 +10,7 @@ from ralph.util import plugin
 from ralph.dnsedit.util import reset_dns
 
 
-@plugin.register('deployment', ['ticket'], 0)
+@plugin.register(chain='deployment', requires=['ticket'], priority=0)
 def dns(deployment):
     reset_dns(deployment.hostanme, deployment.ip)
     return True

@@ -2,7 +2,7 @@ from django.conf.urls.defaults import patterns, include, url
 from django.views.generic import RedirectView
 from tastypie.api import Api
 from ralph.business.api import VentureResource, VentureLightResource,\
-    RoleResource
+    RoleResource, DepartmentResource
 from ralph.deployment.api import DeploymentResource
 from ralph.discovery.api import IPAddressResource, ModelGroupResource,\
     ModelResource, PhysicalServerResource, RackServerResource,\
@@ -18,7 +18,8 @@ from ralph.cmdb.api import BusinessLineResource, ServiceResource,\
 
 v09_api = Api(api_name='v0.9')
 # business API
-for r in (VentureResource, VentureLightResource, RoleResource):
+for r in (VentureResource, VentureLightResource, RoleResource,
+          DepartmentResource):
     v09_api.register(r())
 
 # discovery API
