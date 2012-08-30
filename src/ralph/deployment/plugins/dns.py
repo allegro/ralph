@@ -7,7 +7,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from ralph.util import plugin
-from ralph.dnsedit import reset_dns
+from ralph.dnsedit.util import reset_dns
 
 
 @plugin.register('deployment', ['ticket'], 0)
