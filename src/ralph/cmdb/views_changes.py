@@ -159,7 +159,7 @@ class Incidents(ChangesBase, PaginatedView):
         ret = super(Incidents, self).get_context_data(**kwargs)
         ret.update({
             'incidents': self.data,
-            'jira_url': settings.issuetrackers['default']['URL'] + '/browse/',
+            'jira_url': settings.ISSUETRACKERS['default']['URL'] + '/browse/',
         })
         return ret
 
@@ -502,7 +502,7 @@ class Reports(ChangesBase, PaginatedView):
 
 
 def make_jira_url(external_key):
-    return settings.issuetrackers['default']['URL'] + '/' + external_key
+    return settings.ISSUETRACKERS['default']['URL'] + '/' + external_key
 
 class TimeLine(BaseCMDBView):
     template_name = 'cmdb/timeline.html'
