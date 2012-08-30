@@ -343,7 +343,7 @@ class LastChanges(BaseCMDBView):
     def get_last_changes(self, ci):
         from ralph.cmdb.integration.jira import Jira
         params = dict(jql='DB\\ CI="%s"' % self.ci_uid)
-        xxx=Jira().find_issue(params)
+        xxx=Jira().find_issues(params)
         items_list = []
         for i in xxx.get('issues'):
             f = i.get('fields')
