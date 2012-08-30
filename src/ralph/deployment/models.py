@@ -9,14 +9,21 @@ from __future__ import unicode_literals
 import unicodedata
 
 from django.conf import settings
+from django.dispatch.dispatcher import Signal
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
+from django.dispatch import receiver
 from lck.django.common.models import MACAddressField
 
 from ralph.cmdb.models import CI
 from ralph.cmdb.models_audits import Auditable, DeploymentStatus, create_issue
 from ralph.cmdb.models_common import getfunc
 from ralph.discovery.models import Device
+
+
+# This signal is fired, when deployment is accepted in Bugtracker.
+# note, that you should manually change deployment statuses.
+deployment_accepted = Signal(providing_args=['deployment_id'])
 
 
 def normalize_owner(owner):
@@ -68,3 +75,8 @@ class Deployment(Auditable):
         )
         getfunc(create_issue)(type(self), self.id, params)
 
+
+@receiver(deployment_accepted, dispatch_uid='ralph.cmdb.deployment_accepted')
+def handle_deployment_accepted(sender, deployment_id, **kwargs):
+    # sample depoyment accepted signal code.
+    pass
