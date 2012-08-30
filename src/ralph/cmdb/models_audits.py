@@ -7,25 +7,19 @@ from __future__ import unicode_literals
 
 from datetime import datetime
 
-from django.db import models
-from django.utils.translation import ugettext_lazy as _
-
-from lck.django.common.models import TimeTrackable
-from lck.django.choices import Choices
-from ralph.discovery.models import Device
-from ralph.cmdb.integration.bugtracker import Bugtracker
-from ralph.cmdb.models import CI
-from ralph.cmdb.models_common import  getfunc
-from django.conf import settings
-from lck.django.common.models import MACAddressField
-
 from celery.task import task
-from ralph.cmdb.integration.exceptions import BugtrackerException
+from django.conf import settings
+from django.db import models
 from django.dispatch.dispatcher import Signal
 from django.dispatch import receiver
+from django.utils.translation import ugettext_lazy as _
+from lck.django.choices import Choices
+from lck.django.common.models import TimeTrackable
 
-import unicodedata
-
+from ralph.cmdb.integration.bugtracker import Bugtracker
+from ralph.cmdb.integration.exceptions import BugtrackerException
+from ralph.cmdb.models_common import getfunc
+from ralph.cmdb.models import CI
 
 ACTION_IN_PROGRESS=settings.BUGTRACKER_ACTION_IN_PROGRESS
 ACTION_IN_DEPLOYMENT=settings.BUGTRACKER_ACTION_IN_DEPLOYMENT
@@ -117,10 +111,11 @@ class Auditable(TimeTrackable):
 class DeploymentStatus(Choices):
     _ = Choices.Choice
 
-    opened = _('open')
+    open = _('open')
     in_progress = _('in progress')
     in_deployment = _('in deployment')
     resolved_fixed = _('resolved fixed')
+
 
 bugtracker_transition_ids = dict(
     opened=None,
@@ -128,45 +123,7 @@ bugtracker_transition_ids = dict(
     in_deployment=ACTION_IN_DEPLOYMENT,
     resolved_fixed=ACTION_RESOLVED_FIXED,
 )
-def normalize_owner(owner):
-    owner = owner.name.lower().replace(' ', '.')
-    return unicodedata.normalize('NFD', owner).encode('ascii', 'ignore')
 
-def get_technical_owner(device):
-    owners = device.venture.technical_owners()
-    if owners:
-        return normalize_owner(owners[0])
-
-def get_business_owner(device):
-    owners = device.venture.business_owners()
-    if owners:
-        return normalize_owner(owners[0])
-
-
-class Deployment(Auditable):
-    device = models.ForeignKey(Device)
-    mac =  MACAddressField()
-    status = models.IntegerField(max_length=11,
-            choices=AuditStatus(), default=DeploymentStatus.opened.id)
-
-    def fire_issue(self):
-        ci = None
-        bowner = None
-        towner = None
-        bowner = get_business_owner(self.device)
-        towner = get_technical_owner(self.device)
-        params = dict(
-            ci_uid = CI.get_uid_by_content_object(self.device),
-            # yeah, doesn't check if CI even exists
-            description = 'Please accept',
-            summary = 'Summary',
-            ci=ci,
-            technical_assigne=towner,
-            business_assignee=bowner,
-            template=settings.BUGTRACKER_OPA_TEMPLATE,
-            issue_type=settings.BUGTRACKER_OPA_ISSUETYPE
-        )
-        getfunc(create_issue)(type(self), self.id, params)
 
 @task
 def transition_issue(auditable_class, auditable_id, transition_id, retry_count=1):

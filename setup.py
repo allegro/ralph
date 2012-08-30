@@ -59,6 +59,7 @@ setup (
         'splunk-sdk==0.8.0',
         'SQLAlchemy==0.7.8',
         'ssh==1.7.14',
+        'jira-python==0.12',
         ],
     entry_points={
         'console_scripts': [
