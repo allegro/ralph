@@ -11,7 +11,7 @@ from powerdns.models import Domain, Record
 from lck.django.common import nested_commit_on_success
 
 
-HOSTNAME_CHUNK_PATTERN = re.compile("^([A-Z\d][A-Z\d-]{0,61}[A-Z\d]|[A-Z\d])$",
+HOSTNAME_CHUNK_PATTERN = re.compile(r'^([A-Z\d][A-Z\d-]{0,61}[A-Z\d]|[A-Z\d])$',
                                     re.IGNORECASE)
 
 def is_valid_hostname(hostname):
