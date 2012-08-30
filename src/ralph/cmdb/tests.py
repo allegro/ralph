@@ -28,7 +28,6 @@ class DeploymentTest(object):
     def setUp(self):
         self.top_venture = Venture(name='top_venture')
         self.top_venture.save()
-
         self.role = VentureRole(name='role', venture=self.top_venture)
         self.role.save()
         dm = self.add_model('Blade model sample', DeviceType.blade_server.id)
@@ -52,6 +51,8 @@ class DeploymentTest(object):
     def test_create(self):
         # FIXME: decide
         settings.BUGTRACKER="FAKE"
+        settings.BUGTRACKER_ACTION_IN_PROGRESS=""
+
         x = Deployment()
         x.device = self.blade
         x.mac = '10:9a:dd:6d:a8:01'
