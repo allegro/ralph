@@ -26,8 +26,9 @@ from ralph.cmdb import models as cdb
 from ralph.dnsedit.models import DHCPEntry
 from ralph.discovery.models import Device, DeviceType
 from ralph.util import presentation, pricing
-from ralph.ui.forms import (DeviceInfoForm, DevicePricesForm,
-                            DevicePurchaseForm, PropertyForm, DeviceBulkForm)
+from ralph.ui.forms import (DeviceInfoForm, DeviceInfoVerifiedForm,
+                            DevicePricesForm, DevicePurchaseForm,
+                            PropertyForm, DeviceBulkForm)
 
 
 SAVE_PRIORITY = 200
@@ -302,10 +303,14 @@ class DeviceDetailView(DetailView):
 
 
 class Info(DeviceUpdateView):
-    form_class = DeviceInfoForm
     template_name = 'ui/device_info.html'
     read_perm = Perm.read_device_info_generic
     edit_perm = Perm.edit_device_info_generic
+
+    def get_form_class(self):
+        if self.object.verified:
+            return DeviceInfoVerifiedForm
+        return DeviceInfoForm
 
     def get_initial(self):
         return {

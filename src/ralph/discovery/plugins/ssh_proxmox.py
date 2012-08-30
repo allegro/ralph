@@ -12,9 +12,11 @@ from __future__ import unicode_literals
 import os
 import ssh as paramiko
 import logging
+import json
 
 from django.conf import settings
 from lck.django.common import nested_commit_on_success
+from lxml import etree as ET
 
 from ralph.util import network
 from ralph.util import plugin, Eth
@@ -52,14 +54,24 @@ def _get_local_disk_size(ssh, disk):
 def _add_virtual_machine(ssh, vmid, parent, master, storage):
     stdin, stdout, stderr = ssh.exec_command(
             "cat /etc/qemu-server/%d.conf" % vmid)
+    lines = stdout.readlines()
+    if not lines:
+        # Proxmox 2 uses a different directory structure
+        stdin, stdout, stderr = ssh.exec_command(
+            "cat /etc/pve/nodes/*/qemu-server/%d.conf" % vmid)
+        lines = stdout.readlines()
     disks = {}
     lan_model = None
     name = 'unknown'
-    for line in stdout:
+    for line in lines:
         line = line.strip()
         key, value = line.split(':', 1)
         if key.startswith('vlan'):
             lan_model, lan_mac = value.split('=', 1)
+        elif key.startswith('net'):
+            lan_model, lan_mac = value.split('=', 1)
+            if ',' in lan_mac:
+                lan_mac = lan_mac.split(',', 1)[0]
         elif key == 'name':
             name = value.strip()
         elif key == 'sockets':
@@ -171,10 +183,27 @@ def _add_virtual_machines(ssh, parent, master):
         child.deleted = True
         child.save()
 
-def _get_master(ssh, data=None):
+
+def _get_master(ssh, ip, data=None):
     if data is None:
         stdin, stdout, stderr = ssh.exec_command("cat /etc/pve/cluster.cfg")
         data = stdout.read()
+    if not data:
+        stdin, stdout, stderr = ssh.exec_command("pvesh get /nodes")
+        data = stdout.read()
+        if data:
+            nodes = json.loads(data)
+            for node in nodes:
+                node_name = node['node']
+                stdin, stdout, stderr = ssh.exec_command(
+                        'pvesh get "/nodes/%s/dns"' % node_name)
+                dns = json.loads(stdout.read())
+                ip = dns['dns1']
+                break
+    if not data:
+        ipaddr, ip_created = IPAddress.concurrent_get_or_create(address=ip)
+        ipaddr.save()
+        return ipaddr
     nodes = {}
     current_node = None
     for line in data.splitlines():
@@ -218,16 +247,15 @@ def _add_cluster_member(ssh, ip):
 def run_ssh_proxmox(ip):
     ssh = _connect_ssh(ip)
     try:
-        stdin, stdout, stderr = ssh.exec_command("cat /etc/pve/cluster.cfg")
-        data = stdout.read()
-        if data != '':
-            master = _get_master(ssh, data)
-        else:
-            stdin, stdout, stderr = ssh.exec_command("cat /etc/pve/storage.cfg")
+        for file_name in ('/etc/pve/cluster.cfg', '/etc/pve/cluster.conf',
+                          '/etc/pve/storage.cfg'):
+            stdin, stdout, stderr = ssh.exec_command('cat "%s"' % file_name)
             data = stdout.read()
-            if data == '':
-                raise NotProxmoxError('this is not a PROXMOX server.')
-            master, ip_created = IPAddress.concurrent_get_or_create(address=ip)
+            if data != '':
+                break
+        else:
+            raise NotProxmoxError('this is not a PROXMOX server.')
+        master = _get_master(ssh, ip)
         member = _add_cluster_member(ssh, ip)
         _add_virtual_machines(ssh, member, master)
     finally:

@@ -4,18 +4,21 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from django import forms
-from django.utils.safestring import mark_safe
+from bob.forms import AutocompleteWidget
 from django.conf import settings
 from django.contrib.admin.widgets import FilteredSelectMultiple
+from django import forms
 from django.template.defaultfilters import slugify
-from bob.forms import AutocompleteWidget
+from django.utils.html import escape
+from django.utils.safestring import mark_safe
 from lck.django.common.models import MACAddressField
 
+from ralph.business.models import Venture, RoleProperty, VentureRole
+from ralph.deployment.models import Deployment
+from ralph.discovery.models_component import is_mac_valid
 from ralph.discovery.models import (Device, ComponentModelGroup, DeviceModel,
                                     DeviceModelGroup, DeviceType)
-from ralph.business.models import Venture, RoleProperty, VentureRole
-from ralph.discovery.models_component import is_mac_valid
+from ralph.dnsedit.models import DHCPEntry
 from ralph.util import Eth, presentation
 
 
@@ -25,8 +28,8 @@ class ReadOnlySelectWidget(forms.Select):
 
     def render(self, name, value, attrs=None, choices=()):
         labels = dict(self.choices)
-        value = unicode(labels.get(value, ''))
-        return mark_safe('<div class="input uneditable-input">%s</div>' % value)
+        display = unicode(labels.get(value, ''))
+        return mark_safe('<div class="input uneditable-input"><input type="hidden" name="%s" value="%s">%s</div>' % (escape(name), escape(value), escape(display)))
 
 
 class ReadOnlyPriceWidget(forms.Widget):
@@ -37,7 +40,7 @@ class ReadOnlyPriceWidget(forms.Widget):
         except (ValueError, TypeError):
             pass
         return mark_safe(
-            '<div class="input uneditable-input currency">%s</div>' % value)
+            '<div class="input uneditable-input currency">%s</div>' % escape(value))
 
 class ReadOnlyMultipleChoiceWidget(FilteredSelectMultiple):
     def render(self, name, value, attrs=None, choices=()):
@@ -46,11 +49,11 @@ class ReadOnlyMultipleChoiceWidget(FilteredSelectMultiple):
         for v in value:
             output_values.append(choices.get(v,''))
         return mark_safe('<div class="input uneditable-input">%s</div>' %
-                ','.join(output_values))
+                escape(','.join(output_values)))
 
 class ReadOnlyWidget(forms.Widget):
     def render(self, name, value, attrs=None, choices=()):
-        return mark_safe('<div class="input uneditable-input">%s</div>' % value)
+        return mark_safe('<div class="input uneditable-input">%s</div>' % escape(value))
 
 
 class DeviceModelWidget(forms.Widget):
@@ -63,7 +66,7 @@ class DeviceModelWidget(forms.Widget):
                 pass
         if dm is None:
             output = [
-                '<input type="hidden" name="%s" value="">' % (name,),
+                '<input type="hidden" name="%s" value="">' % (escape(name),),
                 '<div class="input uneditable-input">',
                 '<i class="fugue-icon %s"></i>&nbsp;%s</a>' % (
                     presentation.get_device_model_icon(None), 'None'),
@@ -71,11 +74,11 @@ class DeviceModelWidget(forms.Widget):
             ]
         else:
             output = [
-                '<input type="hidden" name="%s" value="%s">' % (name, value),
+                '<input type="hidden" name="%s" value="%s">' % (escape(name), escape(value)),
                 '<div class="input uneditable-input">',
                 '<a href="/admin/discovery/devicemodel/%s">'
                 '<i class="fugue-icon %s"></i>&nbsp;%s</a>' % (dm.id,
-                    presentation.get_device_model_icon(dm), dm.name),
+                    presentation.get_device_model_icon(dm), escape(dm.name)),
                 '</div>',
             ]
         return mark_safe('\n'.join(output))
@@ -91,7 +94,7 @@ class DeviceWidget(forms.Widget):
                 pass
         if dev is None:
             output = [
-                '<input type="hidden" name="%s" value="">' % (name,),
+                '<input type="hidden" name="%s" value="">' % (escape(name),),
                 '<div class="input uneditable-input">',
                 '<i class="fugue-icon %s"></i>&nbsp;%s</a>' % (
                     presentation.get_device_icon(None), 'None'),
@@ -99,11 +102,11 @@ class DeviceWidget(forms.Widget):
             ]
         else:
             output = [
-                '<input type="hidden" name="%s" value="%s">' % (name, value),
+                '<input type="hidden" name="%s" value="%s">' % (escape(name), escape(value)),
                 '<div class="input uneditable-input">',
                 '<a href="%s">'
                 '<i class="fugue-icon %s"></i>&nbsp;%s</a>' % (dev.id,
-                    presentation.get_device_icon(dev), dev.name),
+                    presentation.get_device_icon(dev), escape(dev.name)),
                 '</div>',
             ]
         return mark_safe('\n'.join(output))
@@ -119,7 +122,7 @@ class RackWidget(forms.Widget):
                 pass
         if dev is None:
             output = [
-                '<input type="hidden" name="%s" value="">' % (name,),
+                '<input type="hidden" name="%s" value="">' % (escape(name),),
                 '<div class="input uneditable-input">',
                 '<i class="fugue-icon %s"></i>&nbsp;%s</a>' % (
                     presentation.get_device_icon(None), 'None'),
@@ -127,11 +130,11 @@ class RackWidget(forms.Widget):
             ]
         else:
             output = [
-                '<input type="hidden" name="%s" value="%s">' % (name, value),
+                '<input type="hidden" name="%s" value="%s">' % (escape(name), escape(value)),
                 '<div class="input uneditable-input">',
                 '<a href="/ui/racks/%s/info/">'
                 '<i class="fugue-icon %s"></i>&nbsp;%s</a>' % (slugify(dev.sn),
-                    presentation.get_device_icon(dev), dev.name),
+                    presentation.get_device_icon(dev), escape(dev.name)),
                 '</div>',
             ]
         return mark_safe('\n'.join(output))
@@ -256,6 +259,7 @@ class RolePropertyForm(forms.ModelForm):
         'type': 'fugue-property-blue',
     }
 
+
 class ComponentModelGroupForm(forms.ModelForm):
     class Meta:
         model = ComponentModelGroup
@@ -268,6 +272,7 @@ class ComponentModelGroupForm(forms.ModelForm):
     }
     has_delete = True
 
+
 class DeviceModelGroupForm(forms.ModelForm):
     class Meta:
         model = DeviceModelGroup
@@ -279,6 +284,71 @@ class DeviceModelGroupForm(forms.ModelForm):
         'slots': 'fugue-drawer',
     }
     has_delete = True
+
+
+class DeploymentForm(forms.ModelForm):
+    class Meta:
+        model = Deployment
+        fields = [
+                'device',
+                'venture',
+                'venture_role',
+                'mac',
+                'ip',
+                'hostname',
+                'img_path',
+                'kickstart_path',
+            ]
+        widgets = {
+            'device': DeviceWidget,
+            'mac': AutocompleteWidget,
+            'ip': AutocompleteWidget,
+            'img_path': AutocompleteWidget,
+            'kickstart_path': AutocompleteWidget,
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(DeploymentForm, self).__init__(*args, **kwargs)
+        device = self.initial['device']
+        macs = [e.mac for e in device.ethernet_set.all()]
+        self.fields['mac'].widget.choices = [(mac, mac) for mac in macs]
+        ips = [e.ip for e in DHCPEntry.objects.filter(mac__in=macs)]
+        self.fields['ip'].widget.choices = [(ip, ip) for ip in ips]
+        img_paths = [
+            path for path, in Venture.objects.values_list(
+                'img_path').distinct()
+        ] + [
+            path for path, in Venture.objects.values_list(
+                'img_path').distinct()
+        ]
+        self.fields['img_path'].widget.choices = [(p, p) for p in img_paths]
+        kickstart_paths = [
+            path for path, in Venture.objects.values_list(
+                'kickstart_path').distinct()
+        ] + [
+            path for path, in Venture.objects.values_list(
+                'kickstart_path').distinct()
+        ]
+        self.fields['kickstart_path'].widget.choices = [(p, p) for
+                                                        p in kickstart_paths]
+        self.initial.update({
+            'mac': macs[0] if macs else '',
+            'ip': ips[0] if ips else '',
+            'venture': device.venture,
+            'venture_role': device.venture_role,
+            'image_path': device.venture_role.get_img_path() if device.venture_role else '',
+            'kickstart_path': device.venture_role.get_kickstart_path() if device.venture_role else '',
+            'hostname': device.name,
+        })
+
+    def clean_hostname(self):
+        hostname = self.cleaned_data['hostname'].strip().lower()
+        if '_' in hostname:
+            raise forms.ValidationError("Character '_' not allowed in hostnames.")
+        if '.' not in hostname:
+            raise forms.ValidationError("Hostname has to include the domain.")
+        return hostname
+
 
 class DeviceForm(forms.ModelForm):
     class Meta:
@@ -511,6 +581,21 @@ class DeviceInfoForm(DeviceForm):
             self.data['dc_name'] = self.initial['dc_name']
         self.fields['venture'].choices = self._all_ventures()
         self.fields['venture_role'].choices = self._all_roles()
+
+class DeviceInfoVerifiedForm(DeviceInfoForm):
+    class Meta(DeviceInfoForm.Meta):
+        fields = [field for field in
+                  DeviceInfoForm.Meta.fields if field != 'verified']
+        widgets = {
+            'venture': ReadOnlySelectWidget,
+            'venture_role': ReadOnlySelectWidget,
+        }
+
+    def clean_venture(self):
+        return self.instance.venture
+
+    def clean_venture_role(self):
+        return self.instance.venture_role
 
 
 class DevicePricesForm(DeviceForm):

@@ -152,9 +152,18 @@ Sockets that are closed wait for 60 more seconds to handle possible duplicate
 packets and ensure the other party received the ACK. For massively concurrent
 workers this can lead to tens of thousands of sockets in the ``TIME_WAIT``
 state. The worker machines are dedicated to scan the local network so you can
-safely shorten the timeout interval to 30 seconds by issuing::
+safely shorten keepalive to 5 * 30 seconds and the timeout interval to 10
+seconds and by issuing::
 
-  $ sudo sysctl -w net.ipv4.tcp_fin_timeout=30
+$ sysctl -w net.ipv4.tcp_fin_timeout=10
+$ sysctl -w net.ipv4.tcp_keepalive_probes=5
+$ sysctl -w net.ipv4.tcp_keepalive_intvl=30
+
+Additionally, if you don't use a load balancer on the worker machine, you can
+safely recycle ``TIME_WAIT`` sockets::
+
+$ sysctl -w net.ipv4.tcp_tw_reuse=1
+$ sysctl -w net.ipv4.tcp_tw_recycle=1
 
 The current number of waiting connections can be checked by::
 

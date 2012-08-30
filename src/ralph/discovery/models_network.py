@@ -8,7 +8,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError 
 from django.db import models as db
 from django.db import IntegrityError
 from django.utils.translation import ugettext_lazy as _
@@ -18,7 +18,6 @@ from lck.django.common.models import (TimeTrackable, Named,
 
 from ralph.util import network
 from ralph.discovery.models_util import LastSeen
-
 
 class NetworkKind(Named):
     icon = db.CharField(verbose_name=_("Icon"),
@@ -80,7 +79,6 @@ class AbstractNetwork(db.Model):
             ip in ipaddr.IPNetwork('172.16.0.0/12') or
             ip in ipaddr.IPNetwork('192.168.0.0/16')
         )
-
 
     @classmethod
     def from_ip(cls, ip):
