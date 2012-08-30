@@ -14,7 +14,7 @@ from ralph.deployment.models import (DeploymentStatus, Deployment,
 
 class JiraRSS(object):
     def __init__(self):
-        settings.BUGTRACKER_CMDB_PROJECT #'AGS'
+        settings.ISSUETRACKERS['default']['CMDB_PROJECT'] 
 
     def get_new_issues(self):
         return ['AGS-18553']

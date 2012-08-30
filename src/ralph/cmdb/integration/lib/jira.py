@@ -20,9 +20,9 @@ class Jira(object):
         return cls._instance
 
     def __init__(self):
-        user = settings.BUGTRACKER_USER
-        password = settings.BUGTRACKER_PASSWORD
-        jira_url = settings.BUGTRACKER_URL
+        user = settings.ISSUETRACKERS['default']['USER']
+        password = settings.ISSUETRACKERS['default']['PASSWORD']
+        jira_url = settings.ISSUETRACKERS['default']['URL']
         self.pool = SimplePool(keepalive=2)
         self.auth = BasicAuth(user, password)
         self.base_url = "%s/rest/api/latest" % jira_url
@@ -166,12 +166,14 @@ class Jira(object):
         allowing connection with CMDB. CI field ID is required here.
         You can get it from API or directly inspecting Jira form's HTML.
         """
-        ci_field_name = settings.BUGTRACKER_CI_FIELD_NAME
-        ci_name_field_name = settings.BUGTRACKER_CI_NAME_FIELD_NAME
-        project = settings.BUGTRACKER_CMDB_PROJECT
-        template_field_name = settings.BUGTRACKER_TEMPLATE_FIELD_NAME
-        bowner_field_name = settings.BUGTRACKER_BOWNER_FIELD_NAME
-        towner_field_name = settings.BUGTRACKER_TOWNER_FIELD_NAME
+
+        s = settings.ISSUETRACKERS['default']
+        ci_field_name = s['CI_FIELD_NAME']
+        ci_name_field_name = s['CI_NAME_FIELD_NAME']
+        project = s['CMDB_PROJECT']
+        template_field_name = s['TEMPLATE_FIELD_NAME']
+        bowner_field_name = s['OPA']['BOWNER_FIELD_NAME']
+        towner_field_name = s['OPA']['TOWNER_FIELD_NAME']
 
         if ci:
             ci_value = ci.uid
