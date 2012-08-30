@@ -257,6 +257,10 @@ admin.site.register(ComponentModel, ComponentModelAdmin)
 class GenericComponentAdmin(ModelAdmin):
     search_fields = ('label', 'sn', 'model__name')
     list_display = ('label', 'model', 'sn')
+    related_search_fields = {
+        'device': ['^name'],
+        'model': ['^name']
+    }
 
 admin.site.register(GenericComponent, GenericComponentAdmin)
 
@@ -286,6 +290,10 @@ class DiskShareMountInline(admin.TabularInline):
 class DiskShareAdmin(ModelAdmin):
     inlines = [DiskShareMountInline]
     search_fields = ('wwn',)
+    related_search_fields = {
+        'device': ['^name'],
+        'model': ['^name']
+    }
 
 admin.site.register(DiskShare, DiskShareAdmin)
 
