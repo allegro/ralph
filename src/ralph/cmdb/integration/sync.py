@@ -141,9 +141,9 @@ class JiraEventsImporter(BaseImporter):
             self.import_obj(issue, db.CIIncident)
 
     def fetch_all(self, type):
-        ci_fieldname = settings.JIRA_CI_CUSTOM_FIELD_NAME
+        ci_fieldname = settings.ISSUETRACKERS['default']['CI_FIELD_NAME']
         params = dict(jql='project = AGS and type=%s' % type, maxResults=1024)
-        issues = Jira().find_issue(params)
+        issues = Jira().find_issues(params)
         items_list = []
         for i in issues.get('issues'):
             f = i.get('fields')

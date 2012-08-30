@@ -16,7 +16,6 @@ from ralph.cmdb.integration.lib.puppet_yaml import  load
 from ralph.cmdb import models as db
 from ralph.cmdb.integration.base import BaseImporter
 from ralph.cmdb.integration.util import strip_timezone
-from jira.client import JIRA
 
 from lck.django.common import nested_commit_on_success
 
