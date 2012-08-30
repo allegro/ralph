@@ -43,8 +43,8 @@ class DeploymentResource(MResource):
             'kickstart_path': ALL,
             'venture': ALL_WITH_RELATIONS,
             'venture_role': ALL_WITH_RELATIONS,
+            'puppet_certificate_revoked': ALL,
         }
         excludes = ('save_priorities', 'max_save_priority',)
         cache = SimpleCache()
         limit = 10
-
