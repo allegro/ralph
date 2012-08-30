@@ -18,12 +18,45 @@ from ralph.discovery.models import Device, DeviceType, DeviceModel
 from ralph.business.models import Venture,VentureRole
 from django.contrib.contenttypes.models import ContentType
 from ralph.cmdb.integration.puppet import PuppetAgentsImporter
-from ralph.cmdb.models import PuppetLog
+from ralph.cmdb.models import PuppetLog,Deployment
 from ralph.cmdb.integration.puppet import PuppetGitImporter as pgi
 
 
 CURRENT_DIR = settings.CURRENT_DIR
 
+class DeploymentTest(object):
+    def setUp(self):
+        self.top_venture = Venture(name='top_venture')
+        self.top_venture.save()
+
+        self.role = VentureRole(name='role', venture=self.top_venture)
+        self.role.save()
+        dm = self.add_model('Blade model sample', DeviceType.blade_server.id)
+        self.blade = Device.create(
+                venture=self.venture,
+                venturerole=self.role,
+                sn='sn3',
+                model=dm
+        )
+        self.blade.name = 'blade'
+        self.blade.parent=None
+        self.blade.save()
+
+    def add_model(self, name, device_type):
+        dm = DeviceModel();
+        dm.model_type=device_type,
+        dm.name=name
+        dm.save()
+        return dm
+
+    def test_create(self):
+        # FIXME: decide
+        settings.BUGTRACKER="FAKE"
+        x = Deployment()
+        x.device = self.blade
+        x.mac = '10:9a:dd:6d:a8:01'
+        x.device=Device.objects.all()[0]
+        x.save()
 
 class MockFisheye(object):
 
@@ -180,7 +213,7 @@ class CIImporterTest(TestCase):
         objs = [ self.top_venture, self.child_venture, self.role, self.child_role ]
         for o in objs:
             ct=ContentType.objects.get_for_model(o)
-            CIImporter().import_all_ci([ct],asset_id=o.id)
+            CIImporter().import_all_ci([ct], asset_id=o.id)
 
         for o in objs:
             ct=ContentType.objects.get_for_model(o)
@@ -192,7 +225,7 @@ class CIImporterTest(TestCase):
         # create ci
         for o in objs:
             ct=ContentType.objects.get_for_model(o)
-            CIImporter().import_all_ci([ct],asset_id=o.id)
+            CIImporter().import_all_ci([ct], asset_id=o.id)
 
         # create relations
         for o in objs:
