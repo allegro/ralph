@@ -48,6 +48,8 @@ class Deployment(Auditable):
                                 null=True)
     venture_role = models.ForeignKey('business.VentureRole', null=True,
                                      verbose_name=_("role"))
+    done_plugins = models.TextField(verbose_name=_("done plugins"),
+                                    blank=True, default='')
 
     def fire_issue(self):
         ci = None
@@ -67,4 +69,8 @@ class Deployment(Auditable):
             issue_type=settings.BUGTRACKER_OPA_ISSUETYPE
         )
         getfunc(create_issue)(type(self), self.id, params)
+
+
+# Import all the plugins
+import ralph.deployment.plugins
 

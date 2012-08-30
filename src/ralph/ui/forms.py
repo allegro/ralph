@@ -19,6 +19,7 @@ from ralph.discovery.models_component import is_mac_valid
 from ralph.discovery.models import (Device, ComponentModelGroup, DeviceModel,
                                     DeviceModelGroup, DeviceType)
 from ralph.dnsedit.models import DHCPEntry
+from ralph.dnsedit.util import is_valid_hostname
 from ralph.util import Eth, presentation
 
 
@@ -343,8 +344,8 @@ class DeploymentForm(forms.ModelForm):
 
     def clean_hostname(self):
         hostname = self.cleaned_data['hostname'].strip().lower()
-        if '_' in hostname:
-            raise forms.ValidationError("Character '_' not allowed in hostnames.")
+        if not is_valid_hostname(hostname):
+            raise forms.ValidationError("Invalid hostname.")
         if '.' not in hostname:
             raise forms.ValidationError("Hostname has to include the domain.")
         return hostname
