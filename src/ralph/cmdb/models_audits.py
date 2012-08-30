@@ -125,7 +125,6 @@ bugtracker_transition_ids = dict(
 )
 
 
-
 @task
 def transition_issue(auditable_class, auditable_id, transition_id, retry_count=1):
     try:

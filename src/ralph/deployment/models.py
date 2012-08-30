@@ -19,7 +19,6 @@ from ralph.cmdb.models_common import getfunc
 from ralph.discovery.models import Device
 
 
-
 def normalize_owner(owner):
     owner = owner.name.lower().replace(' ', '.')
     return unicodedata.normalize('NFD', owner).encode('ascii', 'ignore')
