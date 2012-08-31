@@ -34,6 +34,7 @@ STATICFILES_FINDERS = (
     'lck.django.staticfiles.LegacyAppDirectoriesFinder',
 )
 FILE_UPLOAD_TEMP_DIR = CURRENT_DIR + 'uploads-part'
+USE_XSENDFILE = False
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
@@ -285,7 +286,6 @@ OPENSTACK_URL = None
 OPENSTACK_USER = None
 OPENSTACK_PASS = None
 OPENSTACK_EXTRA_QUERIES = []
-
 ISSUETRACKERS = {
     'default': {
         'ENGINE': 'JIRA',
@@ -318,10 +318,6 @@ ISSUETRACKERS = {
     },
 }
 # </template>
-
-# Venture config
-DEFAULT_ISO_PATH = '/simple/path'
-
 
 #
 # programmatic stuff that need to be at the end of the file
