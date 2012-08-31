@@ -11,7 +11,7 @@ import textwrap
 from django.core.management.base import BaseCommand
 
 from ralph.deployment.models import Deployment, DeploymentStatus
-from ralph.deployment.taks import run_deployment
+from ralph.deployment.tasks import run_deployment
 
 
 class Command(BaseCommand):
@@ -24,7 +24,7 @@ class Command(BaseCommand):
         for d in Deployment.objects.filter(
             status__in=(
                 DeploymentStatus.open.id,
-                Deployment.status.in_progress.id,
-                Deployment.status.in_deployment.id,
+                DeploymentStatus.in_progress.id,
+                DeploymentStatus.in_deployment.id,
             )):
             run_deployment(d)
