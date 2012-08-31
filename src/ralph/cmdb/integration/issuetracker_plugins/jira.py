@@ -19,12 +19,17 @@ from ralph.deployment.models import (DeploymentStatus,
 
 class JiraRSS(object):
     def __init__(self):
-        settings.ISSUETRACKERS['default']['CMDB_PROJECT']
-
+        issuetracker_url = settings.ISSUETRACKERS['default']['OPA']['RSS_URL']
+        project = settings.ISSUETRACKERS['default']['OPA']['CMDB_PROJECT']
+        user = settings.ISSUETRACKERS['default']['OPA']['USER']
+        password = settings.ISSUETRACKERS['default']['OPA']['PASSWORD']
+        rss_url ='http://%s%s%s/activity?streams=key+IS+%s&os_authType=basic' % \
+                (user, password, issuetracker_url[7:], project)
+                
     def update_issues(self, issues):
         for item in issues:
             key = item
-            date = issue_keys[item]
+            date = issues[item]
             new_issue = DeploymentPooler(key=key, date=date)
             try:
                 db_issue = DeploymentPooler.get(key=key, date__gte=date, checked=False)
@@ -40,7 +45,6 @@ class JiraRSS(object):
             new_issues.append(issue)
         return new_issues
 
-
     def parse_rss(self, rss_url):
         feed = feedparser.parse(rss_url)
         issues = {}
@@ -55,10 +59,7 @@ class JiraRSS(object):
         return issues
 
     def get_new_issues(self):
-        issuetracker_url = settings.ISSUETRACKERS['default']['OPA']['RSS_URL']
-        project = settings.ISSUETRACKERS['default']['OPA']['CMDB_PROJECT']
-        rss_url ='%s/activity?streams=key+IS+%s&os_authType=basic' % (issuetracker_url, project)
-        issues = self.parse_rss(rss_url)
+        issues = self.parse_rss(self.rss_url)
         self.update_issues(issues)
         return self.get_issues()
 
