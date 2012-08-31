@@ -24,7 +24,7 @@ class JiraRSS(object):
         user = settings.ISSUETRACKERS['default']['OPA']['USER']
         password = settings.ISSUETRACKERS['default']['OPA']['PASSWORD']
         rss_url ='http://%s%s%s/activity?streams=key+IS+%s&os_authType=basic' % \
-                (self.user, self.password, self.issuetracker_url[7:], self.project)
+                (user, password, issuetracker_url[7:], project)
                 
     def update_issues(self, issues):
         for item in issues:
