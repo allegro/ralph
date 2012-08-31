@@ -79,7 +79,8 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
     url(r'^pxe/_(?P<file_type>[^/]+)$', 'ralph.deployment.views.preboot_type_view', name='preboot-type-view'),
     url(r'^pxe/(?P<file_name>[^_][^/]+)$', 'ralph.deployment.views.preboot_raw_view', name='preboot-raw-view'),
-    url(r'^pxe/$', 'ralph.deployment.views.preboot_raw_view', name='preboot-raw-view', kwargs={'file_name': 'boot'}),
+    url(r'^pxe/$', 'ralph.deployment.views.preboot_raw_view', name='preboot-default-view', kwargs={'file_name': 'boot'}),
+    url(r'^pxe/DONE/$', 'ralph.deployment.views.preboot_complete_view', name='preboot-complete-view'),
 
     # include the lookup urls
     (r'^admin/lookups/', include(ajax_select_urls)),
