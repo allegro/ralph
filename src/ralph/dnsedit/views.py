@@ -4,7 +4,12 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from django.http import HttpResponse
 from ralph.ui.views.common import Base
+from ralph.dnsedit.util import generate_dhcp_config
+
+def dhcpd_config(request):
+    return HttpResponse(generate_dhcp_config())
 
 class Index(Base):
     template_name = 'dnsedit/index.html'
