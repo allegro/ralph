@@ -8,7 +8,6 @@ from __future__ import unicode_literals
 from datetime import datetime
 
 from celery.task import task
-from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from lck.django.choices import Choices
@@ -16,13 +15,8 @@ from lck.django.common.models import TimeTrackable
 
 from ralph.cmdb.integration.issuetracker import IssueTracker
 from ralph.cmdb.integration.exceptions import IssueTrackerException
-from ralph.cmdb.models_common import getfunc
 from ralph.cmdb.models import CI
 
-ACTION_IN_PROGRESS=settings.ISSUETRACKERS['default']['OPA']['ACTIONS']['IN_PROGRESS']
-ACTION_IN_DEPLOYMENT=settings.ISSUETRACKERS['default']['OPA']['ACTIONS']['IN_DEPLOYMENT']
-ACTION_RESOLVED_FIXED=settings.ISSUETRACKERS['default']['OPA']['ACTIONS']['RESOLVED_FIXED']
-DEFAULT_ASSIGNEE=settings.ISSUETRACKERS['default']['OPA']['DEFAULT_ASSIGNEE']
 
 class AuditStatus(Choices):
     _ = Choices.Choice
@@ -38,6 +32,10 @@ class Auditable(TimeTrackable):
     May be attribute change, or some custom workflow change.
     Object, old value and new value is not stored here, giving ability to set it
     according to custom neeeds.
+
+    You must implement in subclass:
+        - status field
+        - synchronize_status(new_status) method
 
     If implementing attribute change, please do something like this:
 
@@ -71,9 +69,7 @@ class Auditable(TimeTrackable):
             return True
 
     def synchronize_status(self, new_status):
-        ch = DeploymentStatus.from_id(new_status)
-        transition_id = bugtracker_transition_ids.get(ch.name)
-        getfunc(transition_issue)(type(self), self.id, transition_id)
+        pass
 
     def save(self, *args, **kwargs):
         if kwargs.get('user'):
@@ -92,15 +88,6 @@ class Auditable(TimeTrackable):
         if first_run:
             self.fire_issue()
 
-
-bugtracker_transition_ids = dict(
-    opened=None,
-    in_progress=ACTION_IN_PROGRESS,
-    in_deployment=ACTION_IN_DEPLOYMENT,
-    resolved_fixed=ACTION_RESOLVED_FIXED,
-)
-
-
 @task
 def transition_issue(auditable_class, auditable_id, transition_id, retry_count=1):
     try:
@@ -116,7 +103,7 @@ def transition_issue(auditable_class, auditable_id, transition_id, retry_count=1
             max_retries=15) # up to 22 days
 
 @task
-def create_issue(auditable_class, auditable_id, params, retry_count=1):
+def create_issue(auditable_class, auditable_id, params, default_assignee, retry_count=1):
     """
     We create 2 IssueTracker requests for IssueTracker here.
     1) Check if assignee exists in IssueTracker
@@ -131,11 +118,11 @@ def create_issue(auditable_class, auditable_id, params, retry_count=1):
         else:
             ci = None
         if not tracker.user_exists(params.get('technical_assignee')):
-            tuser = DEFAULT_ASSIGNEE
+            tuser = default_assignee
         else:
             tuser = params.get('technical_assignee')
         if not tracker.user_exists(params.get('business_assignee')):
-            buser = DEFAULT_ASSIGNEE
+            buser = default_assignee
         else:
             buser = params.get('business_assignee')
         issue = tracker.create_issue(
@@ -143,7 +130,7 @@ def create_issue(auditable_class, auditable_id, params, retry_count=1):
                 description=params.get('description'),
                 summary=params.get('summary'),
                 ci=ci,
-                assignee=DEFAULT_ASSIGNEE,
+                assignee=default_assignee,
                 technical_assignee=tuser,
                 business_assignee=buser,
                 start=auditable_object.created.isoformat(),
