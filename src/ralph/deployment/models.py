@@ -33,15 +33,15 @@ def normalize_owner(owner):
     owner = owner.name.lower().replace(' ', '.')
     return unicodedata.normalize('NFD', owner).encode('ascii', 'ignore')
 
+
 def get_technical_owner(device):
     owners = device.venture.technical_owners()
-    if owners:
-        return normalize_owner(owners[0])
+    return normalize_owner(owners[0]) if owners else None
+
 
 def get_business_owner(device):
     owners = device.venture.business_owners()
-    if owners:
-        return normalize_owner(owners[0])
+    return normalize_owner(owners[0]) if owners else None
 
 
 class DeploymentStatus(Choices):
@@ -60,29 +60,63 @@ class FileType(Choices):
     kernel = _("kernel")
     initrd = _("initrd")
 
+    CONFIGURATION = Choices.Group(40)
+    boot_ipxe = _("boot_ipxe")
+    kickstart = _("kickstart")
+
     OTHER = Choices.Group(100)
     other = _("other")
+
+
+def preboot_file_name(instance, filename):
+    return os.sep.join(('pxe', instance.get_ftype_display(), instance.name))
+
+
+class PrebootFile(Named):
+    ftype = ChoiceField(verbose_name=_("file type"), choices=FileType,
+        default=FileType.other)
+    raw_config = db.TextField(verbose_name=_("raw config"), blank=True)
+    file = db.FileField(verbose_name=_("file"), upload_to=preboot_file_name,
+        null=True, blank=True, default=None)
+
+    class Meta:
+        verbose_name = _("preboot file")
+        verbose_name_plural = _("preboot files")
+
+    def get_filesize_display(self):
+        template = """binary {size:.2f} MB"""
+        return template.format(
+            size=self.file.size/1024/1024,
+        )
+
+
+class Preboot(Named, TimeTrackable):
+    files = db.ManyToManyField(PrebootFile, null=True, blank=True,
+        verbose_name=_("files"))
+
+    class Meta:
+        verbose_name = _("preboot")
+        verbose_name_plural = _("preboots")
 
 
 class Deployment(Auditable):
     device = db.ForeignKey(Device)
     mac =  MACAddressField()
     status = db.IntegerField(choices=DeploymentStatus(),
-                                 default=DeploymentStatus.open.id)
+        default=DeploymentStatus.open.id)
     ip = db.IPAddressField(verbose_name=_("IP address"))
     hostname = db.CharField(verbose_name=_("hostname"), max_length=255,
         unique=True)
-    img_path = db.CharField(verbose_name=_("image path"), max_length=255)
-    kickstart_path = db.CharField(verbose_name=_("kickstart path"),
-                                      max_length=255)
+    preboot = db.ForeignKey(Preboot, verbose_name=_("preboot"), null=True,
+        on_delete=db.SET_NULL)
     venture = db.ForeignKey('business.Venture', verbose_name=_("venture"),
-                                null=True)
+        null=True, on_delete=db.SET_NULL)
     venture_role = db.ForeignKey('business.VentureRole', null=True,
-                                     verbose_name=_("role"))
+        verbose_name=_("role"), on_delete=db.SET_NULL)
     done_plugins = db.TextField(verbose_name=_("done plugins"),
-                                    blank=True, default='')
+        blank=True, default='')
     is_running = db.BooleanField(verbose_name=_("is running"),
-                                     default=False)
+        default=False) # a database-level lock for deployment-related tasks
     puppet_certificate_revoked = db.BooleanField(default=False)
 
     class Meta:
@@ -92,8 +126,6 @@ class Deployment(Auditable):
     def fire_issue(self):
         s = settings.ISSUETRACKERS['default']['OPA']
         ci = None
-        bowner = None
-        towner = None
         bowner = get_business_owner(self.device)
         towner = get_technical_owner(self.device)
         params = dict(
@@ -110,9 +142,9 @@ class Deployment(Auditable):
         getfunc(create_issue)(type(self), self.id, params)
 
 
-class DeploymentPooler(db.Model):
-    key = db.CharField(max_length=255, null=False)
-    date = db.DateTimeField(null=False)
+class DeploymentPoll(db.Model):
+    key = db.CharField(max_length=255)
+    date = db.DateTimeField()
     checked = db.BooleanField(default=False)
 
 
@@ -120,30 +152,6 @@ class DeploymentPooler(db.Model):
 def handle_deployment_accepted(sender, deployment_id, **kwargs):
     # sample deployment accepted signal code.
     pass
-
-
-class Preboot(Named, TimeTrackable):
-    raw_config = db.TextField(verbose_name=_("raw config"))
-    files = db.ManyToManyField("deployment.PrebootFile", null=True, blank=True,
-        verbose_name=_("files"))
-
-    class Meta:
-        verbose_name = _("preboot")
-        verbose_name_plural = _("preboots")
-
-
-def preboot_file_name(instance, filename):
-    return os.sep.join(('pxe', instance.get_ftype_display(), instance.name))
-
-
-class PrebootFile(Named):
-    file = db.FileField(verbose_name=_("file"), upload_to=preboot_file_name)
-    ftype = ChoiceField(verbose_name=_("file type"),
-        choices=FileType, default=FileType.other)
-
-    class Meta:
-        verbose_name = _("preboot file")
-        verbose_name_plural = _("preboot files")
 
 
 # Import all the plugins
