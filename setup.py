@@ -39,12 +39,13 @@ setup (
         'django-tastypie==0.9.11',
         'django==1.4.1',
         'dnspython==1.10.0',
+        'feedparser==5.1.2',
         'fugue-icons==3.4.4',
         'gunicorn==0.14.6',
         'ipaddr==2.1.7',
         'iscconf==1.0.0dev3',
         'jpath==1.2',
-        'lck.django==0.7.12',
+        'lck.django==0.7.13',
         'lxml>=2.3.3',
         'mock==0.8.0',
         'MySQL-python==1.2.3',
@@ -59,6 +60,7 @@ setup (
         'splunk-sdk==0.8.0',
         'SQLAlchemy==0.7.8',
         'ssh==1.7.14',
+        'jira-python==0.12',
         ],
     entry_points={
         'console_scripts': [

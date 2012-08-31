@@ -2,7 +2,8 @@ from django.conf.urls.defaults import patterns, include, url
 from django.views.generic import RedirectView
 from tastypie.api import Api
 from ralph.business.api import VentureResource, VentureLightResource,\
-    RoleResource
+    RoleResource, DepartmentResource
+from ralph.deployment.api import DeploymentResource
 from ralph.discovery.api import IPAddressResource, ModelGroupResource,\
     ModelResource, PhysicalServerResource, RackServerResource,\
     VirtualServerResource, BladeServerResource, DevResource
@@ -16,13 +17,24 @@ from ralph.cmdb.api import BusinessLineResource, ServiceResource,\
         CIRelationResource, CIResource
 
 v09_api = Api(api_name='v0.9')
+# business API
 for r in (VentureResource, VentureLightResource, RoleResource,
+          DepartmentResource):
+    v09_api.register(r())
+
+# discovery API
+for r in (
     IPAddressResource, ModelGroupResource, ModelResource,
     PhysicalServerResource, RackServerResource, BladeServerResource,
     VirtualServerResource, DevResource):
     v09_api.register(r())
 
+# CMDB API
 for r in (BusinessLineResource, ServiceResource, CIResource, CIRelationResource):
+    v09_api.register(r())
+
+# deployment API
+for r in (DeploymentResource,):
     v09_api.register(r())
 
 class VhostRedirectView(RedirectView):
@@ -43,7 +55,7 @@ urlpatterns = patterns('',
     url(r'^robots\.txt$', RedirectView.as_view(url='/static/robots.txt')),
     (r'^static/(?P<path>.*)$', 'django.views.static.serve', {'document_root':
         settings.STATIC_ROOT, 'show_indexes': True}),
-    (r'^uploads/(?P<path>.*)$', 'django.views.static.serve',
+    (r'^u/(?P<path>.*)$', 'django.views.static.serve',
         {'document_root': settings.MEDIA_ROOT, 'show_indexes': True}),
     url(r'^login/', 'django.contrib.auth.views.login', {'template_name': 'admin/login.html'}),
     url(r'^logout/', 'django.contrib.auth.views.logout'),# {'template_name': 'admin/logout.html'}),
@@ -63,12 +75,10 @@ urlpatterns = patterns('',
     url(r'^cmdb/', include('ralph.cmdb.urls')),
     url(r'^api/', include(v09_api.urls)),
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^pxe/$', 'ralph.deployment.views.preboot_view', name='preboot-view'),
+
     # include the lookup urls
     (r'^admin/lookups/', include(ajax_select_urls)),
     (r'^admin/', include(admin.site.urls)),
 
 )
-
-
-
-

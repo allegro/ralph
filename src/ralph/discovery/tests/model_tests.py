@@ -10,7 +10,6 @@ from django.test import TestCase
 
 from ralph.discovery.models import DeviceType, Device
 
-
 class ModelsTest(TestCase):
     def test_device_create_empty(self):
         with self.assertRaises(ValueError):
@@ -40,4 +39,3 @@ class ModelsTest(TestCase):
         self.assertEqual(dev.sn, None)
         macs = [e.mac for e in dev.ethernet_set.all()]
         self.assertEqual(macs, ['DEADBEEFCAFE'])
-

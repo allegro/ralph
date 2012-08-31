@@ -64,6 +64,10 @@ class UnknownCTException(Exception):
         return repr("Unknown content type : %s" % self.parameter)
 
 class CIImporter(object):
+    def __init__(self):
+        # initial check for removed cis
+        self.remove_moved_cis()
+
     @nested_commit_on_success
     def store_asset(self, asset, type_, layer_id, uid_prefix):
         """Store given asset as  CI  """
@@ -406,7 +410,6 @@ class CIImporter(object):
                 bdb.BusinessLine: 7,
                 bdb.Service: 7,
         }
-        self.remove_moved_cis()
         for i in content_types:
             assetClass  = i.model_class()
             assetContentType = i

@@ -27,8 +27,6 @@ from ralph.util.presentation import get_device_icon, get_venture_icon, get_netwo
 import ralph.cmdb.models  as db
 from bob.menu import MenuItem, MenuHeader
 
-import ralph.cmdb.models_signals
-
 
 ROWS_PER_PAGE=20
 SAVE_PRIORITY = 200
@@ -345,7 +343,7 @@ class LastChanges(BaseCMDBView):
     def get_last_changes(self, ci):
         from ralph.cmdb.integration.jira import Jira
         params = dict(jql='DB\\ CI="%s"' % self.ci_uid)
-        xxx=Jira().find_issue(params)
+        xxx=Jira().find_issues(params)
         items_list = []
         for i in xxx.get('issues'):
             f = i.get('fields')
