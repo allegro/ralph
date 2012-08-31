@@ -26,9 +26,17 @@ from ralph.cmdb.models_common import getfunc
 logger = logging.Logger(__file__)
 
 user_match = re.compile(r".*\<(.*)@.*\>")
-ralph_change_link = settings.ISSUETRACKERS['default']['CMDB_VIEWCHANGE_LINK']
-jira_op_template = settings.ISSUETRACKERS['default']['OP']['TEMPLATE']
-default_assignee = settings.ISSUETRACKERS['default']['OP']['DEFAULT_ASSIGNEE']
+
+if settings.ISSUETRACKERS['default']['ENGINE'] == '':
+    # Null Issue Tracker fallback
+    ralph_change_link = ''
+    jira_op_template = ''
+    default_assignee = ''
+else:
+    ralph_change_link = settings.ISSUETRACKERS['default']['CMDB_VIEWCHANGE_LINK']
+    jira_op_template = settings.ISSUETRACKERS['default']['OP']['TEMPLATE']
+    default_assignee = settings.ISSUETRACKERS['default']['OP']['DEFAULT_ASSIGNEE']
+
 
 def get_login_from_user(long_user_text):
     """ Return email from 'username <email>'
