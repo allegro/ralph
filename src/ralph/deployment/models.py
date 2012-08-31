@@ -69,7 +69,7 @@ class Deployment(Auditable):
     mac =  MACAddressField()
     status = db.IntegerField(choices=DeploymentStatus(),
                                  default=DeploymentStatus.open.id)
-    ip = db.IPAddressField(verbose_name=_("IP address"), unique=True)
+    ip = db.IPAddressField(verbose_name=_("IP address"))
     hostname = db.CharField(verbose_name=_("hostname"), max_length=255,
         unique=True)
     img_path = db.CharField(verbose_name=_("image path"), max_length=255)
