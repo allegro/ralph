@@ -47,11 +47,11 @@ def get_response(pbf):
 
 
 def preboot_raw_view(request, file_name):
-    deployment = get_current_deployment(request)
     try:
+        deployment = get_current_deployment(request)
         pbf = deployment.preboot.files.get(name=file_name)
         return get_response(pbf)
-    except (AttributeError, PrebootFile.DoesNotExist,
+    except (AttributeError, Deployment.DoesNotExist, PrebootFile.DoesNotExist,
         PrebootFile.MultipleObjectsReturned):
         pass
     if file_name in ('boot', 'boot_ipxe', 'boot.ipxe'):
@@ -61,15 +61,15 @@ def preboot_raw_view(request, file_name):
 
 
 def preboot_type_view(request, file_type):
-    deployment = get_current_deployment(request)
     try:
         ftype = FileType.from_name(file_type)
     except ValueError:
         return HttpResponseNotFound()
     try:
+        deployment = get_current_deployment(request)
         pbf = deployment.preboot.files.get(ftype=ftype)
         return get_response(pbf)
-    except (AttributeError, PrebootFile.DoesNotExist,
+    except (AttributeError, Deployment.DoesNotExist, PrebootFile.DoesNotExist,
         PrebootFile.MultipleObjectsReturned):
         pass
     if ftype is FileType.boot_ipxe:
