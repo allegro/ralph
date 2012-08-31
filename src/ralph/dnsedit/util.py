@@ -6,13 +6,18 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import re
+import datetime
 
 from powerdns.models import Domain, Record
 from lck.django.common import nested_commit_on_success
+from django.template import loader, Context
+
+from ralph.dnsedit.models import DHCPEntry
 
 
 HOSTNAME_CHUNK_PATTERN = re.compile(r'^([A-Z\d][A-Z\d-]{0,61}[A-Z\d]|[A-Z\d])$',
                                     re.IGNORECASE)
+
 
 def is_valid_hostname(hostname):
     """Check if a hostname is valid"""
@@ -21,17 +26,20 @@ def is_valid_hostname(hostname):
     hostname = hostname.rstrip('.')
     return all(HOSTNAME_CHUNK_PATTERN.match(x) for x in hostname.split("."))
 
+
 def clean_dns_name(name):
     """Remove all entries for the specified name from the DNS."""
     name = name.strip().strip('.')
     for r in Record.objects.filter(name=name):
         r.delete()
 
+
 def clean_dns_address(ip):
     """Remove all A entries for the specified IP address from the DNS."""
     ip = str(ip).strip().strip('.')
     for r in Record.objects.filter(content=ip, type='A'):
         r.delete()
+
 
 def add_dns_address(name, ip):
     """Add a new DNS record in the right domain."""
@@ -47,6 +55,7 @@ def add_dns_address(name, ip):
     )
     record.save()
 
+
 @nested_commit_on_success
 def reset_dns(name, ip):
     """Make sure the name is the only one pointing to specified IP."""
@@ -54,3 +63,21 @@ def reset_dns(name, ip):
     clean_dns_address(ip)
     add_dns_address(name, ip)
 
+
+def generate_dhcp_config():
+    template = loader.get_template('dnsedit/dhcp.conf')
+    def entries():
+        for macaddr, in DHCPEntry.objects.values_list('mac').distinct():
+            ips = []
+            for ip, in DHCPEntry.objects.filter(mac=macaddr).values_list('ip'):
+                ips.append(ip)
+            name = ips[0] # XXX Get the correct name from DNS
+            address = ', '.join(ips)
+            mac = ':'.join('%s%s' % c for c in zip(macaddr[::2],
+                                                   macaddr[1::2])).upper()
+            yield name, address, mac
+    c = Context({
+        'entries': entries,
+        'now': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+    })
+    return template.render(c)

@@ -33,6 +33,6 @@ class Deployment(BaseMixin, CreateView):
     def form_valid(self, form):
         model = form.save(commit=False)
         model.save(user=self.request.user)
-        messages.success(self.request, "Deployment started.")
+        messages.success(self.request, "Deployment initiated.")
         return HttpResponseRedirect(
-                self.request.path + '../info/%d' % model.device.id)
+                self.request.path + '/../../info/%d' % model.device.id)
