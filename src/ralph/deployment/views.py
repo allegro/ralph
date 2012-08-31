@@ -10,12 +10,12 @@ from __future__ import unicode_literals
 
 from django.conf import settings
 from django.core.servers.basehttp import FileWrapper
-from django.http import HttpResponse, HttpResponseNotFound,\
-    HttpResponseForbidden
+from django.http import (HttpResponse, HttpResponseNotFound,
+    HttpResponseForbidden)
 from lck.django.common import remote_addr, render
 
-from ralph.deployment.models import Deployment, DeploymentStatus, FileType,\
-    PrebootFile
+from ralph.deployment.models import (Deployment, DeploymentStatus, FileType,
+    PrebootFile)
 from ralph.util import api
 
 
