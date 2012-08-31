@@ -23,7 +23,7 @@ class Index(Base):
 
 
 def is_authorized(request):
-    username = request.GET.get('user_name')
+    username = request.GET.get('username')
     api_key = request.GET.get('api_key')
     try:
         user = User.objects.get(username=username)
