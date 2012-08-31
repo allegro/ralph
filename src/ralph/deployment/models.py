@@ -9,6 +9,7 @@ from __future__ import unicode_literals
 import os
 import unicodedata
 
+from django.core.exceptions import ImproperlyConfigured
 from django.conf import settings
 from django.db import models as db
 from django.dispatch.dispatcher import Signal
@@ -19,7 +20,7 @@ from dj.choices.fields import ChoiceField
 from lck.django.common.models import MACAddressField, Named, TimeTrackable
 
 from ralph.cmdb.models import CI
-from ralph.cmdb.models_audits import Auditable, create_issue
+from ralph.cmdb.models_audits import Auditable, create_issue, transition_issue
 from ralph.cmdb.models_common import getfunc
 from ralph.discovery.models import Device
 
@@ -28,6 +29,38 @@ from ralph.discovery.models import Device
 # note, that you should manually change deployment statuses.
 deployment_accepted = Signal(providing_args=['deployment_id'])
 
+
+# Sanity checks - when Issue Tracker engine set to '', or some fields
+# are missing - fallback to NullIssueTracker engine
+NULL_ISSUE_TRACKER=False
+try:
+    # engine is set?
+    if settings.ISSUETRACKERS['default']['ENGINE']:
+        ACTION_IN_PROGRESS=settings.ISSUETRACKERS['default']['OPA']['ACTIONS']['IN_PROGRESS']
+        ACTION_IN_DEPLOYMENT=settings.ISSUETRACKERS['default']['OPA']['ACTIONS']['IN_DEPLOYMENT']
+        ACTION_RESOLVED_FIXED=settings.ISSUETRACKERS['default']['OPA']['ACTIONS']['RESOLVED_FIXED']
+        DEFAULT_ASSIGNEE=settings.ISSUETRACKERS['default']['OPA']['DEFAULT_ASSIGNEE']
+        NULL_ISSUE_TRACKER=False
+    else:
+        NULL_ISSUE_TRACKER=True
+except KeyError as e:
+    # some keys not set
+    raise ImproperlyConfigured("Expected ['default']['ENGINE']")
+    NULL_ISSUE_TRACKER=True
+
+if NULL_ISSUE_TRACKER:
+    ACTION_IN_PROGRESS=''
+    ACTION_IN_DEPLOYMENT=''
+    ACTION_RESOLVED_FIXED=''
+    DEFAULT_ASSIGNEE=''
+
+
+bugtracker_transition_ids = dict(
+    opened=None,
+    in_progress=ACTION_IN_PROGRESS,
+    in_deployment=ACTION_IN_DEPLOYMENT,
+    resolved_fixed=ACTION_RESOLVED_FIXED,
+)
 
 def normalize_owner(owner):
     owner = owner.name.lower().replace(' ', '.')
@@ -139,7 +172,12 @@ class Deployment(Auditable):
             template=s['TEMPLATE'],
             issue_type=s['ISSUETYPE'],
         )
-        getfunc(create_issue)(type(self), self.id, params)
+        getfunc(create_issue)(type(self), self.id, params, DEFAULT_ASSIGNEE)
+
+    def synchronize_status(self, new_status):
+        ch = DeploymentStatus.from_id(new_status)
+        transition_id = bugtracker_transition_ids.get(ch.name)
+        getfunc(transition_issue)(type(self), self.id, transition_id)
 
 
 class DeploymentPoll(db.Model):

@@ -12,10 +12,7 @@ from datetime import datetime
 
 from django.conf import settings
 from ralph.cmdb.integration.issuetracker import IssueTracker
-
-from ralph.deployment.models import (DeploymentStatus,
-        DeploymentPoll, deployment_accepted)
-
+from ralph.deployment.models import DeploymentPoll, deployment_accepted
 
 class JiraRSS(object):
     def __init__(self):
@@ -25,7 +22,7 @@ class JiraRSS(object):
         password = settings.ISSUETRACKERS['default']['OPA']['PASSWORD']
         rss_url ='http://%s%s%s/activity?streams=key+IS+%s&os_authType=basic' % \
                 (user, password, issuetracker_url[7:], project)
-                
+
     def update_issues(self, issues):
         for item in issues:
             key = item
@@ -64,29 +61,22 @@ class JiraRSS(object):
         return self.get_issues()
 
 
-class IntegrityError(Exception):
-    pass
-
-
 class JiraAcceptance(object):
+    ''' Fallback class - to be removed.
+    Use tracker.deployment_accepted for acceptace checking '''
 
     def accept_deployment(self, deployment):
         deployment_accepted.send(sender=deployment, deployment_id=deployment.id)
 
     def __init__(self):
-        self.acceptance_status = 'accept'
         self.tracker = IssueTracker()
-        # can move to IN_PROGRESS = Accepted
-        self.accepted_transition = settings.ISSUETRACKERS['default']['OPA']['ACTIONS']['IN_PROGRESS']
 
     def deployment_accepted(self, deployment):
-        if deployment.status != DeploymentStatus.open.id:
-            raise IntegrityError("Expected status open, but got %r" % deployment.status)
-        issue_transitions = self.tracker.get_issue_transitions(deployment.issue_key).get('transitions')
-        issue_transitions_ids = [int(x.get('id')) for x in issue_transitions]
-        return self.accepted_transition  in issue_transitions_ids
+        return self.tracker.deployment_accepted(deployment)
 
     def run(self):
         # Unimplemented
         pass
 
+class IntegrityError(Exception):
+    pass
