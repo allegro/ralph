@@ -10,11 +10,13 @@ from __future__ import unicode_literals
 
 from django.conf import settings
 from django.core.servers.basehttp import FileWrapper
-from django.http import HttpResponse, HttpResponseNotFound
+from django.http import (HttpResponse, HttpResponseNotFound,
+    HttpResponseForbidden)
 from lck.django.common import remote_addr, render
 
-from ralph.deployment.models import Deployment, DeploymentStatus, FileType,\
-    PrebootFile
+from ralph.deployment.models import (Deployment, DeploymentStatus, FileType,
+    PrebootFile)
+from ralph.util import api
 
 
 def get_current_deployment(request):
@@ -76,3 +78,15 @@ def preboot_type_view(request, file_type):
         return render(request, 'deployment/localboot.txt', locals(),
             mimetype='text/plain')
     return HttpResponseNotFound()
+
+
+def preboot_complete_view(request):
+    if not api.is_authenticated(request):
+        return HttpResponseForbidden('API key required.')
+    try:
+        deployment = get_current_deployment(request)
+        deployment.status = DeploymentStatus.resolved_fixed
+        deployment.save()
+    except (Deployment.DoesNotExist):
+        pass
+    return HttpResponse()
