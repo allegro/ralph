@@ -13,6 +13,7 @@ from lck.django.common import nested_commit_on_success
 from django.template import loader, Context
 
 from ralph.dnsedit.models import DHCPEntry
+from lck.django.common.models import MACAddressField
 
 
 HOSTNAME_CHUNK_PATTERN = re.compile(r'^([A-Z\d][A-Z\d-]{0,61}[A-Z\d]|[A-Z\d])$',
@@ -62,6 +63,27 @@ def reset_dns(name, ip):
     clean_dns_name(name)
     clean_dns_address(ip)
     add_dns_address(name, ip)
+
+
+def clean_dhcp_mac(mac):
+    """Remove all DHCP entries for the given MAC."""
+    mac = MACAddressField.normalize(mac)
+    for e in DHCPEntry.objects.filter(mac=mac):
+        e.delete()
+
+
+def clean_dhcp_ip(ip):
+    """Remove all DHCP entries for the given IP."""
+    ip = str(ip).strip().strip('.')
+    for e in DHCPEntry.objects.filter(ip=ip):
+        e.delete()
+
+
+def reset_dhcp(ip, mac):
+    mac = MACAddressField.normalize(mac)
+    ip = str(ip).strip().strip('.')
+    entry = DHCPEntry(ip=ip, mac=mac)
+    entry.save()
 
 
 def generate_dhcp_config():

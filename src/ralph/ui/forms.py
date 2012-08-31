@@ -371,6 +371,7 @@ class DeviceForm(forms.ModelForm):
         'model_name': 'fugue-wooden-box',
         'venture': 'fugue-store',
         'venture_role': 'fugue-mask',
+        'verified': 'fugue-tick',
         'dc': 'fugue-building',
         'dc_name': 'fugue-building',
         'rack': 'fugue-media-player-phone',
@@ -518,6 +519,7 @@ class DeviceBulkForm(DeviceForm):
         fields = (
             'venture',
             'venture_role',
+            'verified',
             'barcode',
             'position',
             'chassis_position',
