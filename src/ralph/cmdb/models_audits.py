@@ -47,21 +47,14 @@ class Auditable(TimeTrackable):
         old_attribute = ...
 
     """
-    user = models.ForeignKey('auth.User',
-           verbose_name=_("user"), null=True,
-           blank=True, default=None,
-           on_delete=models.SET_NULL
-    )
+    user = models.ForeignKey('auth.User', verbose_name=_("user"), null=True,
+           blank=True, default=None, on_delete=models.SET_NULL)
     status_lastchanged = models.DateTimeField(verbose_name=_("date"))
-    #status = models.IntegerField(max_length=11,
-    #        choices=AuditStatus(), default=AuditStatus.created.id)
-    issue_key = models.CharField(verbose_name='External ticket key number',
-            max_length=30, blank=True,
-            null=True, default=None)
+    issue_key = models.CharField(verbose_name=_("external ticket key number"),
+            max_length=30, blank=True, null=True, default=None)
 
     class Meta:
         abstract = True
-        verbose_name = 'Auditable base class'
 
     def status_changed(self):
         # newly created
