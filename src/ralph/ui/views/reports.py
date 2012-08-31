@@ -13,6 +13,7 @@ from dj.choices import Choices
 from django.template.defaultfilters import slugify
 
 from ralph.account.models import Perm
+from ralph.deployment.models import DeploymentStatus
 from ralph.ui.views.common import Base, DeviceDetailView
 from ralph.ui.views.devices import DEVICE_SORT_COLUMNS
 
@@ -71,7 +72,23 @@ class ReportType(Choices):
             )
     verified = _('Verified venture and role').extra(
             filter=lambda device_list: device_list.filter(verified=True),
-            columns=['venture', 'remarks'])
+            columns=['venture', 'remarks']
+            )
+    deployment_open = _('Deployment open').extra(
+            filter=lambda device_list: device_list.filter(
+                deployment__status=DeploymentStatus.open),
+                columns=['venture', 'remarks']
+            )
+    deployment_in_progress = _('Deployment in progress').extra(
+            filter=lambda device_list: device_list.filter(
+                deployment__status=DeploymentStatus.in_progress),
+                columns=['venture', 'remarks']
+            )
+    deployment_running = _('Deployment running').extra(
+            filter=lambda device_list: device_list.filter(
+                deployment__status=DeploymentStatus.in_deployment),
+                columns=['venture', 'remarks']
+            )
 
 
 class Reports(DeviceDetailView):
