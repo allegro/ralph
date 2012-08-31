@@ -75,7 +75,9 @@ urlpatterns = patterns('',
     url(r'^cmdb/', include('ralph.cmdb.urls')),
     url(r'^api/', include(v09_api.urls)),
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^pxe/$', 'ralph.deployment.views.preboot_view', name='preboot-view'),
+    url(r'^pxe/_(?P<file_type>[^/]+)$', 'ralph.deployment.views.preboot_type_view', name='preboot-type-view'),
+    url(r'^pxe/(?P<file_name>[^_][^/]+)$', 'ralph.deployment.views.preboot_raw_view', name='preboot-raw-view'),
+    url(r'^pxe/$', 'ralph.deployment.views.preboot_raw_view', name='preboot-raw-view', kwargs={'file_name': 'boot'}),
 
     # include the lookup urls
     (r'^admin/lookups/', include(ajax_select_urls)),

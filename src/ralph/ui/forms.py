@@ -297,15 +297,12 @@ class DeploymentForm(forms.ModelForm):
                 'mac',
                 'ip',
                 'hostname',
-                'img_path',
-                'kickstart_path',
+                'preboot',
             ]
         widgets = {
             'device': DeviceWidget,
             'mac': AutocompleteWidget,
             'ip': AutocompleteWidget,
-            'img_path': AutocompleteWidget,
-            'kickstart_path': AutocompleteWidget,
         }
 
     def __init__(self, *args, **kwargs):
@@ -315,30 +312,20 @@ class DeploymentForm(forms.ModelForm):
         self.fields['mac'].widget.choices = [(mac, mac) for mac in macs]
         ips = [e.ip for e in DHCPEntry.objects.filter(mac__in=macs)]
         self.fields['ip'].widget.choices = [(ip, ip) for ip in ips]
-        img_paths = [
+        preboots = [
             path for path, in Venture.objects.values_list(
-                'img_path').distinct()
+                'preboot').distinct()
         ] + [
-            path for path, in Venture.objects.values_list(
-                'img_path').distinct()
+            path for path, in VentureRole.objects.values_list(
+                'preboot').distinct()
         ]
-        self.fields['img_path'].widget.choices = [(p, p) for p in img_paths]
-        kickstart_paths = [
-            path for path, in Venture.objects.values_list(
-                'kickstart_path').distinct()
-        ] + [
-            path for path, in Venture.objects.values_list(
-                'kickstart_path').distinct()
-        ]
-        self.fields['kickstart_path'].widget.choices = [(p, p) for
-                                                        p in kickstart_paths]
+        self.fields['preboot'].widget.choices = [(p, p) for p in preboots]
         self.initial.update({
             'mac': macs[0] if macs else '',
             'ip': ips[0] if ips else '',
             'venture': device.venture,
             'venture_role': device.venture_role,
-            'image_path': device.venture_role.get_img_path() if device.venture_role else '',
-            'kickstart_path': device.venture_role.get_kickstart_path() if device.venture_role else '',
+            'preboot': device.venture_role.get_preboot() if device.venture_role else '',
             'hostname': device.name,
         })
 
