@@ -17,3 +17,8 @@ class DHCPEntry(TimeTrackable):
     class Meta:
         verbose_name = _("DHCP entry")
         verbose_name_plural = _("DHCP entries")
+
+
+class DHCPServer(db.Model):
+    ip = db.IPAddressField(verbose_name=_("IP address"), unique=True)
+    last_synchronized = db.DateTimeField(null=False)
