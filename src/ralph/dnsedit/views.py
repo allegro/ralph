@@ -6,11 +6,13 @@ from __future__ import unicode_literals
 
 import datetime
 
-from django.http import HttpResponse, HttpResponseForbidden
-from django.contrib.auth.models import User
 
-from ralph.ui.views.common import Base
+from django.contrib.auth.models import User
+from django.http import HttpResponse, HttpResponseForbidden
 from ralph.dnsedit.models import DHCPServer
+from ralph.dnsedit.util import generate_dhcp_config
+from ralph.ui.views.common import Base
+
 
 class Index(Base):
     template_name = 'dnsedit/index.html'
@@ -37,3 +39,9 @@ def dhcp_synch(request):
     server = DHCPServer.get_or_create(ip=address)
     server.last_synchronized = datetime.datetime.now()
     return HttpResponse('OK', content_type='text/plain')
+
+
+def dhcp_config(request):
+    if not is_authorized(request):
+        return HttpResponseForbidden('API key required.')
+    return HttpResponse(generate_dhcp_config(), content_type="text/plain")
