@@ -7,8 +7,8 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from ralph.util import plugin
-from ralph.cmdb.inytegration.issuetracker_plugins.jira import (JiraAcceptance,
-                                                               IntegrityError)
+from ralph.cmdb.integration.issuetracker_plugins.jira import (JiraAcceptance,
+                                                              IntegrityError)
 from ralph.deployment.models import DeploymentStatus
 
 @plugin.register(chain='deployment', requires=[], priority=100)
