@@ -45,7 +45,7 @@ try:
         NULL_ISSUE_TRACKER=True
 except KeyError as e:
     # some keys not set
-    raise ImproperlyConfigured("Expected ['default']['ENGINE']")
+    raise ImproperlyConfigured("Expected %r in ISSUETRACKERS configuration." % e)
     NULL_ISSUE_TRACKER=True
 
 if NULL_ISSUE_TRACKER:
@@ -116,6 +116,9 @@ class PrebootFile(Named):
         verbose_name = _("preboot file")
         verbose_name_plural = _("preboot files")
 
+    def __unicode__(self):
+        return "_{}: {}".format(self.get_ftype_display(), self.name)
+
     def get_filesize_display(self):
         template = """binary {size:.2f} MB"""
         return template.format(
@@ -157,8 +160,6 @@ class Deployment(Auditable):
         verbose_name_plural = _("deployments")
 
     def fire_issue(self):
-        s = settings.ISSUETRACKERS['default']['OPA']
-        ci = None
         bowner = get_business_owner(self.device)
         towner = get_technical_owner(self.device)
         params = dict(
@@ -166,11 +167,8 @@ class Deployment(Auditable):
             # FIXME: doesn't check if CI even exists
             description = 'Please accept',
             summary = 'Summary',
-            ci=ci,
             technical_assigne=towner,
             business_assignee=bowner,
-            template=s['TEMPLATE'],
-            issue_type=s['ISSUETYPE'],
         )
         getfunc(create_issue)(type(self), self.id, params, DEFAULT_ASSIGNEE)
 
