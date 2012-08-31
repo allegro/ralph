@@ -29,29 +29,32 @@ admin.site.register(Deployment, DeploymentAdmin)
 
 
 class PrebootAdmin(ModelAdmin):
-    def config_slug(self):
-        return self.raw_config.replace('\r', '').replace('\n', ' ')[:40]
-    config_slug.short_description = _("config")
+    def file_list(self):
+        result = ", ".join([f.name for f in self.files.all()])
+        return result
+    file_list.short_description = _("files")
 
-    list_display = ('name', config_slug)
+    list_display = ('name', file_list)
     filter_horizontal = ('files',)
-    search_fields = ('name', 'raw_config')
+    search_fields = ('name',)
     save_on_top = True
 
 admin.site.register(Preboot, PrebootAdmin)
 
 
 class PrebootFileAdmin(ModelAdmin):
-    def file_with_size(self):
-        template = """{filename} - {size:.2f} MB"""
-        return template.format(
-            filename=self.name,
-            size=self.file.size/1024/1024,
-        )
-    file_with_size.short_description = _("name")
-    list_display = (file_with_size,)
+    def config_slug(self):
+        if self.file:
+            return self.get_filesize_display()
+        slug = self.raw_config.replace('\r', '').replace('\n', ' ')
+        if len(slug) > 50:
+            slug = slug[:50] + " (...)"
+        return slug
+    config_slug.short_description = _("details")
+
+    list_display = ('name', 'ftype', config_slug)
     list_filter = ('ftype',)
-    search_fields = ('name',)
+    search_fields = ('name', 'raw_config')
     save_on_top = True
 
 admin.site.register(PrebootFile, PrebootFileAdmin)

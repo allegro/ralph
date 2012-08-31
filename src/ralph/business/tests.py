@@ -9,6 +9,7 @@ from django.test import TestCase
 from django.conf import settings
 from ralph.business.models import Venture, VentureRole
 from ralph.discovery.models_network import Network, NetworkTerminator, DataCenter
+from ralph.deployment.models import Preboot
 
 
 class TestModels(TestCase):
@@ -117,7 +118,7 @@ class TestModels(TestCase):
         self.assertEqual(venture_role_child.check_ip("111.11.11.1"), True)
         self.assertEqual(venture_role_child.check_ip("111.11.11.44"), False)
 
-    def test_get_iso_none(self):
+    def test_get_preboot_none(self):
         a = Venture(name='test1', symbol='test1')
         a.save()
         b = Venture(name='test1 parent', symbol='test1_parent', parent_id = a.id)
@@ -125,49 +126,25 @@ class TestModels(TestCase):
         c = Venture(name='test1 parent parent', symbol='test1_parent_parent', parent_id = b.id)
         c.save()
 
-        self.assertEqual(a.get_img_path(), settings.DEFAULT_ISO_PATH)
-        self.assertEqual(c.get_img_path(), settings.DEFAULT_ISO_PATH)
+        self.assertEqual(a.get_preboot(), None)
+        self.assertEqual(c.get_preboot(), None)
 
-    def test_get_iso(self):
-        iso = 'iso'
+    def test_get_preboot(self):
+        preboot = Preboot(name='test preboot')
+        preboot.save()
 
-        a = Venture(name='test1', symbol='test1', img_path = iso)
+        a = Venture(name='test1', symbol='test1', preboot = preboot)
         a.save()
         b = Venture(name='test1 parent', symbol='test1_parent', parent_id = a.id)
         b.save()
         c = Venture(name='test1 parent parent', symbol='test1_parent_parent', parent_id = b.id)
         c.save()
 
-        self.assertEqual(a.get_img_path(), iso)
-        self.assertEqual(b.get_img_path(), iso)
-        self.assertEqual(c.get_img_path(), iso)
+        self.assertEqual(a.get_preboot(), preboot)
+        self.assertEqual(b.get_preboot(), preboot)
+        self.assertEqual(c.get_preboot(), preboot)
 
-    def get_kickstart_path_none(self):
-        a = Venture(name='test1', symbol='test1')
-        a.save()
-        b = Venture(name='test1 parent', symbol='test1_parent', parent_id = a.id)
-        b.save()
-        c = Venture(name='test1 parent parent', symbol='test1_parent_parent', parent_id = b.id)
-        c.save()
-
-        self.assertIsNone(a.get_kickstart_path())
-        self.assertIsNone(c.get_kickstart_path())
-
-    def test_get_kickstart(self):
-        kick_path = '/simple/path'
-
-        a = Venture(name='test1', symbol='test1', kickstart_path = kick_path)
-        a.save()
-        b = Venture(name='test1 parent', symbol='test1_parent', parent_id = a.id)
-        b.save()
-        c = Venture(name='test1 parent parent', symbol='test1_parent_parent', parent_id = b.id)
-        c.save()
-
-        self.assertEqual(a.get_kickstart_path(), kick_path)
-        self.assertEqual(b.get_kickstart_path(), kick_path)
-        self.assertEqual(c.get_kickstart_path(), kick_path)
-
-    def test_get_iso_role_none(self):
+    def test_get_preboot_role_none(self):
         ven = Venture(name='test1', symbol='test1')
         ven.save()
 
@@ -178,64 +155,22 @@ class TestModels(TestCase):
         c = VentureRole(name='test1 parent parent', parent_id = b.id, venture_id = ven.id)
         c.save()
 
-        self.assertEqual(a.get_img_path(), settings.DEFAULT_ISO_PATH)
-        self.assertEqual(b.get_img_path(), settings.DEFAULT_ISO_PATH)
-        self.assertEqual(c.get_img_path(), settings.DEFAULT_ISO_PATH)
+        self.assertEqual(a.get_preboot(), None)
+        self.assertEqual(b.get_preboot(), None)
+        self.assertEqual(c.get_preboot(), None)
 
-    def test_get_iso_role(self):
-        iso = 'iso'
-        ven = Venture(name='test1', symbol='test1', img_path = iso)
+    def test_get_preboot_role(self):
+        preboot = Preboot(name='test preboot')
+        preboot.save()
+        ven = Venture(name='test1', symbol='test1', preboot = preboot)
         ven.save()
 
-        a = VentureRole(name='test1', img_path = iso, venture_id = ven.id)
+        a = VentureRole(name='test1', preboot = preboot, venture_id = ven.id)
         a.save()
         b = VentureRole(name='test1 parent', parent_id = a.id, venture_id = ven.id)
         b.save()
         c = VentureRole(name='test1 parent parent', parent_id = b.id, venture_id = ven.id)
         c.save()
-<<<<<<< HEAD
-                
-        self.assertEqual(a.get_iso_path(), iso)
-        self.assertEqual(b.get_iso_path(), iso)
-        self.assertEqual(c.get_iso_path(), iso)
-=======
-
-        self.assertEqual(a.get_img_path(), iso)
-        self.assertEqual(b.get_img_path(), iso)
-        self.assertEqual(c.get_img_path(), iso)
->>>>>>> 4de8446159b568d44d2a956df70ee5bd94efafb7
-
-    def test_get_kickstart_role_none(self):
-        ven = Venture(name='test1', symbol='test1')
-        ven.save()
-
-        a = VentureRole(name='test1', venture_id = ven.id)
-        a.save()
-        b = VentureRole(name='test1 parent', parent_id = a.id, venture_id = ven.id)
-        b.save()
-        c = VentureRole(name='test1 parent parent', parent_id = b.id, venture_id = ven.id)
-        c.save()
-<<<<<<< HEAD
-                
-=======
-
->>>>>>> 4de8446159b568d44d2a956df70ee5bd94efafb7
-        self.assertIsNone(a.get_kickstart_path())
-        self.assertIsNone(b.get_kickstart_path())
-        self.assertIsNone(c.get_kickstart_path())
-
-    def test_get_kickstart_role(self):
-        kick = '/path/to/kickstart'
-        ven = Venture(name='test1', symbol='test1', kickstart_path = kick)
-        ven.save()
-
-        a = VentureRole(name='test1', venture_id = ven.id)
-        a.save()
-        b = VentureRole(name='test1 parent', parent_id = a.id, venture_id = ven.id)
-        b.save()
-        c = VentureRole(name='test1 parent parent', parent_id = b.id, venture_id = ven.id)
-        c.save()
-
-        self.assertEqual(a.get_kickstart_path(), kick)
-        self.assertEqual(b.get_kickstart_path(), kick)
-        self.assertEqual(c.get_kickstart_path(), kick)
+        self.assertEqual(a.get_preboot(), preboot)
+        self.assertEqual(b.get_preboot(), preboot)
+        self.assertEqual(c.get_preboot(), preboot)
