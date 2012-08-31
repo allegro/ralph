@@ -14,7 +14,7 @@ from ralph.dnsedit.util import generate_dhcp_config
 
 
 class Command(BaseCommand):
-    """Update the billing data from OpenStack"""
+    """Generate configuration for the DHCP server."""
 
     help = textwrap.dedent(__doc__).strip()
     requires_model_validation = True
