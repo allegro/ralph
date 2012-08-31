@@ -41,7 +41,7 @@ class VentureRoleInline(ForeignKeyAutocompleteTabularInline):
     exclude = ('created', 'modified')
     extra = 4
     related_search_fields = {
-        'parent': ['^parent'],
+        'parent': ['^name'],
     }
 
 class VentureExtraCostInline(admin.TabularInline):
@@ -53,8 +53,9 @@ class VentureRoleAdmin(ModelAdmin):
     inlines = [RolePropertyInline, RoleIntegrationInline]
     related_search_fields = {
         'venture': ['^name'],
-        'parent': ['^parent'],
+        'parent': ['^name'],
     }
+    filter_horizontal = ('networks',)
 
 admin.site.register(VentureRole, VentureRoleAdmin)
 
@@ -77,7 +78,7 @@ class VentureAdmin(ModelAdmin):
                 SubVentureInline,
               ]
     related_search_fields = {
-        'parent': ['^parent'],
+        'parent': ['^name'],
     }
 
     def members(self):
@@ -101,6 +102,7 @@ class VentureAdmin(ModelAdmin):
 
     list_display = ('name', 'path', 'data_center', members, technical_owners, business_owners)
     list_filter = ('data_center', 'show_in_ralph', 'parent')
+    filter_horizontal = ('networks',)
     search_fields = ('name', 'ventureowner__name')
     save_on_top = True
 

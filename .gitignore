@@ -5,14 +5,4 @@
 /src/ralph/manage.py
 /src/ralph/static
 /src/ralph/logs
-*.pyc
-.gitignore.swp
-.gitignore
-/.project
-/.pydevproject
-/.settings/
-ralph.egg-info/
-.idea/
-dbcelery.sqlite
-src/ralph/manage.py
-/src/ralph.egg-info/
+/src/ralph/uploads

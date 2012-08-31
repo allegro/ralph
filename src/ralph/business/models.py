@@ -7,6 +7,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import re
+import ipaddr
 
 from django.conf import settings
 from django.db import models as db
@@ -20,7 +21,7 @@ from django.dispatch import receiver
 
 from ralph.discovery.models import DataCenter
 from ralph.discovery.models_history import HistoryCost
-
+from ralph.discovery.models_network import Network
 
 SYNERGY_URL_BASE = settings.SYNERGY_URL_BASE
 
@@ -44,10 +45,12 @@ class Venture(Named, TimeTrackable):
             on_delete=db.SET_NULL)
     path = db.TextField(verbose_name=_("symbol path"), blank=True,
             default="", editable=False)
-    iso_path = db.CharField(verbose_name=_("iso path"), blank=True,
-            default="", max_length=255)    
+    networks = db.ManyToManyField(Network, null=True,
+                                 verbose_name=_("networks list"))
+    img_path = db.CharField(verbose_name=_("iso path"), blank=True,
+            default="", max_length=255)
     kickstart_path = db.CharField(verbose_name=_("kickstart path"), max_length=255,
-            blank=True, default='')        
+            blank=True, default='')
 
     class Meta:
         verbose_name = _("venture")
@@ -89,23 +92,32 @@ class Venture(Named, TimeTrackable):
             return self.department
         if self.parent:
             return self.parent.get_department()
-        
-    def get_iso_path(self):
+
+    def check_ip(self, ip):
         node = self
         while node:
-            if node.iso_path:
-                return node.iso_path
+            for network in node.network:
+                if ipaddr.IPAddress(ip) in ipaddr.IPNetwork(network.address):
+                    return True
+            node = node.parent
+        return False
+
+    def get_img_path(self):
+        node = self
+        while node:
+            if node.img_path:
+                return node.img_path
             node = node.parent
         if node is None:
             return settings.DEFAULT_ISO_PATH
-        
+
     def get_kickstart_path(self):
         node = self
         while node:
             if node.kickstart_path:
                 return node.kickstart_path
             node = node.parent
-        
+
     @property
     def device(self):
         return self.device_set
@@ -113,6 +125,7 @@ class Venture(Named, TimeTrackable):
     @property
     def venturerole(self):
         return self.venturerole_set
+
 
 class Service(db.Model):
     name = db.CharField(max_length=255, db_index=True)
@@ -140,11 +153,12 @@ class VentureRole(Named.NonUnique, TimeTrackable):
     venture = db.ForeignKey(Venture, verbose_name=_("venture"))
     parent = db.ForeignKey('self', verbose_name=_("parent role"), null=True,
         blank=True, default=None, related_name="child_set")
-
-    iso_path = db.CharField(verbose_name=_("iso path"), blank=True,
-            default="", max_length=255)    
+    networks = db.ManyToManyField(Network, null=True,
+                                 verbose_name=_("networks list"))
+    img_path = db.CharField(verbose_name=_("iso path"), blank=True,
+            default="", max_length=255)
     kickstart_path = db.CharField(verbose_name=_("kickstart path"), max_length=255,
-            blank=True, default='')   
+            blank=True, default='')
 
     class Meta:
         unique_together = ('name', 'venture')
@@ -160,13 +174,22 @@ class VentureRole(Named.NonUnique, TimeTrackable):
             parents.append(obj.name)
         return " / ".join(reversed(parents))
 
-    def get_iso_path(self):
+    def check_ip(self, ip):
         node = self
         while node:
-            if node.iso_path:
-                return node.iso_path
+            for network in node.network:
+                if ipaddr.IPAddress(ip) in ipaddr.IPNetwork(network.address):
+                    return True
             node = node.parent
-        return self.venture.get_iso_path()
+        return self.venture.check_ip(ip)
+
+    def get_img_path(self):
+        node = self
+        while node:
+            if node.img_path:
+                return node.img_path
+            node = node.parent
+        return self.venture.get_img_path()
 
     def get_kickstart_path(self):
         node = self
@@ -174,7 +197,7 @@ class VentureRole(Named.NonUnique, TimeTrackable):
             if node.kickstart_path:
                 return node.kickstart_path
             node = node.parent
-            
+
         return self.venture.get_kickstart_path()
 
     def __unicode__(self):
