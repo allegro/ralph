@@ -36,8 +36,8 @@ class JiraRSS(object):
                 new_issue.save()
 
     def get_issues(self):
-        issues = DeploymentPoll.objects.filter(checked=False)
         new_issues = []
+        issues = DeploymentPoll.objects.filter(checked=False)
         for issue in issues:
             new_issues.append(issue.key)
         return new_issues
