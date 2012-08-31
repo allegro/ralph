@@ -193,10 +193,17 @@ class TestModels(TestCase):
         b.save()
         c = VentureRole(name='test1 parent parent', parent_id = b.id, venture_id = ven.id)
         c.save()
+<<<<<<< HEAD
+                
+        self.assertEqual(a.get_iso_path(), iso)
+        self.assertEqual(b.get_iso_path(), iso)
+        self.assertEqual(c.get_iso_path(), iso)
+=======
 
         self.assertEqual(a.get_img_path(), iso)
         self.assertEqual(b.get_img_path(), iso)
         self.assertEqual(c.get_img_path(), iso)
+>>>>>>> 4de8446159b568d44d2a956df70ee5bd94efafb7
 
     def test_get_kickstart_role_none(self):
         ven = Venture(name='test1', symbol='test1')
@@ -208,7 +215,11 @@ class TestModels(TestCase):
         b.save()
         c = VentureRole(name='test1 parent parent', parent_id = b.id, venture_id = ven.id)
         c.save()
+<<<<<<< HEAD
+                
+=======
 
+>>>>>>> 4de8446159b568d44d2a956df70ee5bd94efafb7
         self.assertIsNone(a.get_kickstart_path())
         self.assertIsNone(b.get_kickstart_path())
         self.assertIsNone(c.get_kickstart_path())
