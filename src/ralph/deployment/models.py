@@ -168,7 +168,7 @@ class Deployment(Auditable):
             # FIXME: doesn't check if CI even exists
             description = 'Please accept',
             summary = 'Summary',
-            technical_assigne=towner,
+            technical_assignee=towner,
             business_assignee=bowner,
         )
         getfunc(create_issue)(type(self), self.id, params, DEFAULT_ASSIGNEE)
