@@ -6,7 +6,8 @@ from __future__ import unicode_literals
 
 import datetime
 
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden
+from django.contrib.auth.models import User
 
 from ralph.ui.views.common import Base
 from ralph.dnsedit.models import DHCPServer
@@ -19,7 +20,19 @@ class Index(Base):
         super(Index, self).__init__(*args, **kwargs)
 
 
+def is_authorized(request):
+    username = request.GET.get('user_name')
+    api_key = request.GET.get('api_key')
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        user = None
+    return user and user.api_key == api_key
+
+
 def dhcp_synch(request):
+    if not is_authorized(request):
+        return HttpResponseForbidden('API key required.')
     address = request.META['REMOTE_ADDR']
     server = DHCPServer.get_or_create(ip=address)
     server.last_synchronized = datetime.datetime.now()
