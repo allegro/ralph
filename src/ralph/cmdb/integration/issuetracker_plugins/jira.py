@@ -12,8 +12,7 @@ from datetime import datetime
 
 from django.conf import settings
 from ralph.cmdb.integration.issuetracker import IssueTracker
-from ralph.deployment.models import (DeploymentStatus,
-        DeploymentPooler, deployment_accepted)
+from ralph.deployment.models import DeploymentPoll, deployment_accepted
 
 class JiraRSS(object):
     def __init__(self):
@@ -28,16 +27,16 @@ class JiraRSS(object):
         for item in issues:
             key = item
             date = issues[item]
-            new_issue = DeploymentPooler(key=key, date=date)
+            new_issue = DeploymentPoll(key=key, date=date)
             try:
-                db_issue = DeploymentPooler.get(key=key, date__gte=date, checked=False)
+                db_issue = DeploymentPoll.get(key=key, date__gte=date, checked=False)
                 if db_issue.date <= new_issue.date:
                     new_issue.save()
-            except DeploymentPooler.DoesNotExist:
+            except DeploymentPoll.DoesNotExist:
                 new_issue.save()
 
     def get_issues(self):
-        issues = DeploymentPooler.filter(checked=False)
+        issues = DeploymentPoll.filter(checked=False)
         new_issues = []
         for issue in issues:
             new_issues.append(issue)
