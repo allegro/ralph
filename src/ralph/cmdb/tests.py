@@ -15,10 +15,11 @@ from ralph.cmdb.importer import CIImporter
 from ralph.cmdb.models import CI, CIRelation, CI_RELATION_TYPES, CIChange, CI_TYPES, \
     CIChangePuppet, CIChangeGit, CI_CHANGE_TYPES
 from ralph.discovery.models import Device, DeviceType, DeviceModel
-from ralph.business.models import Venture,VentureRole
+from ralph.business.models import Venture, VentureRole
 from django.contrib.contenttypes.models import ContentType
 from ralph.cmdb.integration.puppet import PuppetAgentsImporter
-from ralph.cmdb.models import PuppetLog,Deployment
+from ralph.cmdb.models import PuppetLog
+from ralph.deployment.models import Deployment
 from ralph.cmdb.integration.puppet import PuppetGitImporter as pgi
 
 
