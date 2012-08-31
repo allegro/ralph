@@ -21,4 +21,4 @@ class DHCPEntry(TimeTrackable):
 
 class DHCPServer(db.Model):
     ip = db.IPAddressField(verbose_name=_("IP address"), unique=True)
-    last_synchronized = db.DateTimeField(null=False)
+    last_synchronized = db.DateTimeField(null=True)

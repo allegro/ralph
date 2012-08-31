@@ -29,15 +29,16 @@ def is_authorized(request):
         user = User.objects.get(username=username)
     except User.DoesNotExist:
         user = None
-    return user and user.api_key == api_key
+    return user and user.api_key.key == api_key
 
 
 def dhcp_synch(request):
     if not is_authorized(request):
         return HttpResponseForbidden('API key required.')
     address = request.META['REMOTE_ADDR']
-    server = DHCPServer.get_or_create(ip=address)
+    server, created = DHCPServer.objects.get_or_create(ip=address)
     server.last_synchronized = datetime.datetime.now()
+    server.save()
     return HttpResponse('OK', content_type='text/plain')
 
 
