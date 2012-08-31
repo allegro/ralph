@@ -63,7 +63,8 @@ bugtracker_transition_ids = dict(
 )
 
 def normalize_owner(owner):
-    owner = owner.name.lower().replace(' ', '.')
+    # Polish Ł is not handled properly
+    owner = owner.name.lower().replace(' ', '.').replace('Ł', 'L').replace('ł', 'l')
     return unicodedata.normalize('NFD', owner).encode('ascii', 'ignore')
 
 
@@ -175,7 +176,7 @@ class Deployment(Auditable):
     def synchronize_status(self, new_status):
         ch = DeploymentStatus.from_id(new_status)
         transition_id = bugtracker_transition_ids.get(ch.name)
-        getfunc(transition_issue)(type(self), self.id, transition_id)
+        transition_issue(type(self), self.id, transition_id)
 
 
 class DeploymentPoll(db.Model):
