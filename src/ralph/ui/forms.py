@@ -312,14 +312,6 @@ class DeploymentForm(forms.ModelForm):
         self.fields['mac'].widget.choices = [(mac, mac) for mac in macs]
         ips = [e.ip for e in DHCPEntry.objects.filter(mac__in=macs)]
         self.fields['ip'].widget.choices = [(ip, ip) for ip in ips]
-        preboots = [
-            path for path, in Venture.objects.values_list(
-                'preboot').distinct()
-        ] + [
-            path for path, in VentureRole.objects.values_list(
-                'preboot').distinct()
-        ]
-        self.fields['preboot'].widget.choices = [(p, p) for p in preboots]
         self.initial.update({
             'mac': macs[0] if macs else '',
             'ip': ips[0] if ips else '',
