@@ -214,7 +214,7 @@ class Jira(object):
 
     def deployment_accepted(self, deployment):
         self.accepted_transition = settings.ISSUETRACKERS['default']['OPA']['ACTIONS']['IN_PROGRESS']
-        issue_transitions = self.concrete.get_issue_transitions(deployment.issue_key).get('transitions')
+        issue_transitions = self.get_issue_transitions(deployment.issue_key).get('transitions')
         issue_transitions_ids = [int(x.get('id')) for x in issue_transitions]
         return self.accepted_transition  in issue_transitions_ids
 
