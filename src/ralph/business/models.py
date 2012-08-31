@@ -26,7 +26,22 @@ from ralph.discovery.models_network import Network
 SYNERGY_URL_BASE = settings.SYNERGY_URL_BASE
 
 
-class Venture(Named, TimeTrackable):
+class PrebootMixin(db.Model):
+    preboot = db.ForeignKey('deployment.Preboot', verbose_name=_("preboot"),
+            null=True, blank=True, default=None, on_delete=db.SET_NULL)
+
+    class Meta:
+        abstract = True
+
+    def get_preboot(self):
+        node = self
+        while node:
+            if node.preboot:
+                return node.preboot
+            node = node.parent
+
+
+class Venture(Named, PrebootMixin, TimeTrackable):
     data_center = db.ForeignKey(DataCenter, verbose_name=_("data center"),
         null=True, blank=True)
     parent = db.ForeignKey('self', verbose_name=_("parent venture"), null=True,
@@ -46,11 +61,7 @@ class Venture(Named, TimeTrackable):
     path = db.TextField(verbose_name=_("symbol path"), blank=True,
             default="", editable=False)
     networks = db.ManyToManyField(Network, null=True,
-                                 verbose_name=_("networks list"))
-    img_path = db.CharField(verbose_name=_("iso path"), blank=True,
-            default="", max_length=255)
-    kickstart_path = db.CharField(verbose_name=_("kickstart path"), max_length=255,
-            blank=True, default='')
+            verbose_name=_("networks list"))
 
     class Meta:
         verbose_name = _("venture")
@@ -102,22 +113,6 @@ class Venture(Named, TimeTrackable):
             node = node.parent
         return False
 
-    def get_img_path(self):
-        node = self
-        while node:
-            if node.img_path:
-                return node.img_path
-            node = node.parent
-        if node is None:
-            return settings.DEFAULT_ISO_PATH
-
-    def get_kickstart_path(self):
-        node = self
-        while node:
-            if node.kickstart_path:
-                return node.kickstart_path
-            node = node.parent
-
     @property
     def device(self):
         return self.device_set
@@ -149,16 +144,13 @@ class Service(db.Model):
 class BusinessLine(db.Model):
     name = db.CharField(max_length=255, db_index=True, unique=True)
 
-class VentureRole(Named.NonUnique, TimeTrackable):
+
+class VentureRole(Named.NonUnique, PrebootMixin, TimeTrackable):
     venture = db.ForeignKey(Venture, verbose_name=_("venture"))
     parent = db.ForeignKey('self', verbose_name=_("parent role"), null=True,
         blank=True, default=None, related_name="child_set")
     networks = db.ManyToManyField(Network, null=True,
                                  verbose_name=_("networks list"))
-    img_path = db.CharField(verbose_name=_("iso path"), blank=True,
-            default="", max_length=255)
-    kickstart_path = db.CharField(verbose_name=_("kickstart path"), max_length=255,
-            blank=True, default='')
 
     class Meta:
         unique_together = ('name', 'venture')
@@ -182,23 +174,6 @@ class VentureRole(Named.NonUnique, TimeTrackable):
                     return True
             node = node.parent
         return self.venture.check_ip(ip)
-
-    def get_img_path(self):
-        node = self
-        while node:
-            if node.img_path:
-                return node.img_path
-            node = node.parent
-        return self.venture.get_img_path()
-
-    def get_kickstart_path(self):
-        node = self
-        while node:
-            if node.kickstart_path:
-                return node.kickstart_path
-            node = node.parent
-
-        return self.venture.get_kickstart_path()
 
     def __unicode__(self):
         return "{} / {}".format(self.venture.symbol if self.venture else '?',
@@ -295,6 +270,7 @@ class VentureOwner(Named.NonUnique, TimeTrackable):
             return '<a href="{}docs/HRMResourceCard.aspx?ID={}">{}</a>'.format(
                 SYNERGY_URL_BASE, self.synergy_id, self.name)
 
+
 class DepartmentIcon(Choices):
     _ = Choices.Choice
 
@@ -356,6 +332,7 @@ class VentureExtraCost(Named.NonUnique, TimeTrackable):
     cost = db.FloatField(verbose_name=_("monthly cost"), default=0)
     expire = db.DateField(default=None, null=True, blank=True)
 
+
 @receiver(post_save, sender=VentureExtraCost, dispatch_uid='ralph.costhistory')
 def cost_post_save(sender, instance, raw, using, **kwargs):
     changed = False
@@ -375,4 +352,3 @@ def cost_post_save(sender, instance, raw, using, **kwargs):
 @receiver(pre_delete, sender=VentureExtraCost, dispatch_uid='ralph.costhistory')
 def cost_pre_delete(sender, instance, using, **kwargs):
     HistoryCost.end_span(extra=instance)
-

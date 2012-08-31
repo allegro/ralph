@@ -8,6 +8,7 @@ from __future__ import unicode_literals
 from datetime import datetime
 
 from celery.task import task
+from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from lck.django.choices import Choices
@@ -71,6 +72,9 @@ class Auditable(TimeTrackable):
     def synchronize_status(self, new_status):
         pass
 
+    def fire_issue(self):
+        pass
+
     def save(self, *args, **kwargs):
         if kwargs.get('user'):
             self.user = kwargs.get('user')
@@ -111,12 +115,17 @@ def create_issue(auditable_class, auditable_id, params, default_assignee, retry_
     3) #TODO: assignes needs to be set per subtask
     """
     auditable_object = auditable_class.objects.get(id=auditable_id)
+    s = settings.ISSUETRACKERS['default']['OPA']
+    template=s['TEMPLATE']
+    issue_type=s['ISSUETYPE']
     try:
         tracker = IssueTracker()
-        if params.get('ci_uid'):
-            ci = CI.objects.get(uid=params.get('ci_uid'))
-        else:
-            ci = None
+        ci = None
+        try:
+            if params.get('ci_uid'):
+                ci = CI.objects.get(uid=params.get('ci_uid'))
+        except CI.DoesNotExist:
+            pass
         if not tracker.user_exists(params.get('technical_assignee')):
             tuser = default_assignee
         else:
@@ -126,7 +135,7 @@ def create_issue(auditable_class, auditable_id, params, default_assignee, retry_
         else:
             buser = params.get('business_assignee')
         issue = tracker.create_issue(
-                issue_type=params.get('issue_type'),
+                issue_type=issue_type,
                 description=params.get('description'),
                 summary=params.get('summary'),
                 ci=ci,
@@ -135,7 +144,7 @@ def create_issue(auditable_class, auditable_id, params, default_assignee, retry_
                 business_assignee=buser,
                 start=auditable_object.created.isoformat(),
                 end='',
-                template=params.get('template'),
+                template=template,
         )
         auditable_object.status_lastchanged = datetime.now()
         auditable_object.issue_key = issue.get('key')
