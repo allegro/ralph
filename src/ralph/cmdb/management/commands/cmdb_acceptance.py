@@ -21,7 +21,7 @@ class Command(BaseCommand):
     def __init__(self, *args, **kwargs):
         self.option_list = []
         self.option_list.extend(BaseCommand.option_list)
-        self.option_list.append(make_option('--cmdb_acceptance_pool',
+        self.option_list.append(make_option('--cmdb_acceptance',
                 dest="cmdb_acceptance_pool",
                 action="store_true",
                 default=False
