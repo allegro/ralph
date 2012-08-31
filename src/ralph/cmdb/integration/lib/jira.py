@@ -93,7 +93,6 @@ class Jira(object):
                 }
             )
         except Exception as e:
-            # enclose exception as jira exception, for furter analysing
             raise IssueTrackerException(e)
         return call_result
 
@@ -212,5 +211,11 @@ class Jira(object):
             # enclose exception as jira exception, for furter analysing
             raise IssueTrackerException(e)
         return call_result
+
+    def deployment_accepted(self, deployment):
+        self.accepted_transition = settings.ISSUETRACKERS['default']['OPA']['ACTIONS']['IN_PROGRESS']
+        issue_transitions = self.concrete.get_issue_transitions(deployment.issue_key).get('transitions')
+        issue_transitions_ids = [int(x.get('id')) for x in issue_transitions]
+        return self.accepted_transition  in issue_transitions_ids
 
 
