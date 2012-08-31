@@ -9,7 +9,7 @@ from ralph.ui.views.common import Base
 from ralph.dnsedit.util import generate_dhcp_config
 
 def dhcpd_config(request):
-    return HttpResponse(generate_dhcp_config())
+    return HttpResponse(generate_dhcp_config(), mimetype="text/plain")
 
 class Index(Base):
     template_name = 'dnsedit/index.html'
