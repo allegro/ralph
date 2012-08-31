@@ -23,7 +23,8 @@ from ralph.business.models import Venture, VentureRole, Department
 class VentureResource(MResource):
     devices = fields.ToManyField('ralph.discovery.api.DevResource', 'device')
     roles = fields.ToManyField('ralph.business.api.RoleResource', 'venturerole')
-    department = fields.ForeignKey('ralph.business.api.DepartmentResource', 'department', full=True)
+    department = fields.ForeignKey('ralph.business.api.DepartmentResource',
+        'department', null=True, full=True)
 
     class Meta:
         queryset = Venture.objects.all()
@@ -42,7 +43,9 @@ class VentureResource(MResource):
 
 
 class VentureLightResource(MResource):
-    department = fields.ForeignKey('ralph.business.api.DepartmentResource', 'department', full=True)
+    department = fields.ForeignKey('ralph.business.api.DepartmentResource',
+        'department', null=True, full=True)
+
     class Meta:
         queryset = Venture.objects.all()
         authentication = ApiKeyAuthentication()

@@ -100,15 +100,6 @@ class Auditable(TimeTrackable):
             self.fire_issue()
 
 
-class DeploymentStatus(Choices):
-    _ = Choices.Choice
-
-    open = _('open')
-    in_progress = _('in progress')
-    in_deployment = _('in deployment')
-    resolved_fixed = _('resolved fixed')
-
-
 bugtracker_transition_ids = dict(
     opened=None,
     in_progress=ACTION_IN_PROGRESS,
