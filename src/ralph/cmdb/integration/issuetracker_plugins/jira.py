@@ -16,12 +16,12 @@ from ralph.deployment.models import DeploymentPoll, deployment_accepted
 
 class JiraRSS(object):
     def __init__(self):
-        issuetracker_url = settings.ISSUETRACKERS['default']['OPA']['RSS_URL']
-        project = settings.ISSUETRACKERS['default']['OPA']['CMDB_PROJECT']
-        user = settings.ISSUETRACKERS['default']['OPA']['USER']
-        password = settings.ISSUETRACKERS['default']['OPA']['PASSWORD']
-        rss_url ='http://%s%s%s/activity?streams=key+IS+%s&os_authType=basic' % \
-                (user, password, issuetracker_url[7:], project)
+        self.issuetracker_url = settings.ISSUETRACKERS['default']['URL']
+        self.project = settings.ISSUETRACKERS['default']['CMDB_PROJECT']
+        self.user = settings.ISSUETRACKERS['default']['USER']
+        self.password = settings.ISSUETRACKERS['default']['PASSWORD']
+        self.rss_url ='http://%s:%s@%s/activity?streams=key+IS+%s&os_authType=basic' % \
+                (self.user, self.password, self.issuetracker_url[7:], self.project)
 
     def update_issues(self, issues):
         for item in issues:
@@ -29,22 +29,22 @@ class JiraRSS(object):
             date = issues[item]
             new_issue = DeploymentPoll(key=key, date=date)
             try:
-                db_issue = DeploymentPoll.get(key=key, date__gte=date, checked=False)
-                if db_issue.date <= new_issue.date:
+                db_issue = DeploymentPoll.objects.get(key=key, date__gte=date, checked=False)
+                if db_issue.date < new_issue.date:
                     new_issue.save()
             except DeploymentPoll.DoesNotExist:
                 new_issue.save()
 
     def get_issues(self):
-        issues = DeploymentPoll.filter(checked=False)
+        issues = DeploymentPoll.objects.filter(checked=False)
         new_issues = []
         for issue in issues:
-            new_issues.append(issue)
+            new_issues.append(issue.key)
         return new_issues
 
     def parse_rss(self, rss_url):
-        feed = feedparser.parse(rss_url)
         issues = {}
+        feed = feedparser.parse(rss_url)
         for item in feed['entries']:
             issue_key = item['link'].split("/")[-1]
             date_time = datetime.fromtimestamp(mktime(item['updated_parsed']))
@@ -56,6 +56,7 @@ class JiraRSS(object):
         return issues
 
     def get_new_issues(self):
+        issues = None
         issues = self.parse_rss(self.rss_url)
         self.update_issues(issues)
         return self.get_issues()
