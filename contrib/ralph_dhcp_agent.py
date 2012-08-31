@@ -76,7 +76,7 @@ class SimpleDHCPManager(object):
         return self._restart_dhcp_server()
 
     def _send_confirm(self):
-        url = "%s/dhcp-synh/?username=%s&api_key=%s" % (self.ralph_url,
+        url = "%s/dhcp-synch/?username=%s&api_key=%s" % (self.ralph_url,
                                                         self.ralph_api_username,
                                                         self.ralph_api_key)
         req = urllib2.Request(url)
