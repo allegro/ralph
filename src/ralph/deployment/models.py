@@ -63,7 +63,8 @@ bugtracker_transition_ids = dict(
 )
 
 def normalize_owner(owner):
-    owner = owner.name.lower().replace(' ', '.')
+    # Polish Ł is not handled properly
+    owner = owner.name.lower().replace(' ', '.').replace('Ł', 'L').replace('ł', 'l')
     return unicodedata.normalize('NFD', owner).encode('ascii', 'ignore')
 
 
