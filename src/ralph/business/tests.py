@@ -113,7 +113,7 @@ class TestModels(TestCase):
         c.save()
                 
         self.assertEqual(a.get_iso_path(), iso)
-        self.assertEqual(b.get_iso_path(), iso)         
+        self.assertEqual(b.get_iso_path(), iso)
         self.assertEqual(c.get_iso_path(), iso)
 
     def test_get_kickstart_role_none(self):
@@ -127,9 +127,9 @@ class TestModels(TestCase):
         c = VentureRole(name='test1 parent parent', parent_id = b.id, venture_id = ven.id)
         c.save()
                 
-        self.assertIsNone(a.get_kickstart_path())  
-        self.assertIsNone(b.get_kickstart_path())  
-        self.assertIsNone(c.get_kickstart_path()) 
+        self.assertIsNone(a.get_kickstart_path())
+        self.assertIsNone(b.get_kickstart_path())
+        self.assertIsNone(c.get_kickstart_path())
 
     def test_get_kickstart_role(self):
         kick = '/path/to/kickstart'
@@ -144,7 +144,7 @@ class TestModels(TestCase):
         c.save()
  
         self.assertEqual(a.get_kickstart_path(), kick)
-        self.assertEqual(b.get_kickstart_path(), kick)         
+        self.assertEqual(b.get_kickstart_path(), kick)
         self.assertEqual(c.get_kickstart_path(), kick)
     
 
