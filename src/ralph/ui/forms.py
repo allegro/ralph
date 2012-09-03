@@ -492,6 +492,8 @@ class DeviceCreateForm(DeviceForm):
         macs_text = self.cleaned_data['macs']
         macs = []
         for mac in macs_text.split(' \r\n\t,;'):
+            if not mac:
+                continue
             try:
                 eth = Eth('', MACAddressField.normalize(mac), 0)
                 if is_mac_valid(eth):
