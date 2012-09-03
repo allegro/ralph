@@ -23,7 +23,7 @@ def run_deployment(deployment):
                 break
             name = plugin.highest_priority('deployment', plugins)
             tried.add(name)
-            if plugin.run('deployment', name)(deployment=deployment):
+            if plugin.run('deployment', name, deployment=deployment):
                 done.add(name)
         deployment.done_plugins = ', '.join(done)
         deployment.save()
