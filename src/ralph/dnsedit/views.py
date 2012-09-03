@@ -7,11 +7,11 @@ from __future__ import unicode_literals
 import datetime
 
 
-from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpResponseForbidden
 from ralph.dnsedit.models import DHCPServer
 from ralph.dnsedit.util import generate_dhcp_config
 from ralph.ui.views.common import Base
+from ralph.util import api
 
 
 class Index(Base):
@@ -22,18 +22,8 @@ class Index(Base):
         super(Index, self).__init__(*args, **kwargs)
 
 
-def is_authorized(request):
-    username = request.GET.get('username')
-    api_key = request.GET.get('api_key')
-    try:
-        user = User.objects.get(username=username)
-    except User.DoesNotExist:
-        user = None
-    return user and user.api_key.key == api_key
-
-
 def dhcp_synch(request):
-    if not is_authorized(request):
+    if not api.is_authenticated(request):
         return HttpResponseForbidden('API key required.')
     address = request.META['REMOTE_ADDR']
     server, created = DHCPServer.objects.get_or_create(ip=address)
@@ -43,6 +33,6 @@ def dhcp_synch(request):
 
 
 def dhcp_config(request):
-    if not is_authorized(request):
+    if not api.is_authenticated(request):
         return HttpResponseForbidden('API key required.')
     return HttpResponse(generate_dhcp_config(), content_type="text/plain")

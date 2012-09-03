@@ -20,6 +20,7 @@ class Jira(object):
         return cls._instance
 
     def __init__(self):
+        self.accepted_transition = settings.ISSUETRACKERS['default']['OPA']['ACTIONS']['IN_PROGRESS']
         user = settings.ISSUETRACKERS['default']['USER']
         password = settings.ISSUETRACKERS['default']['PASSWORD']
         jira_url = settings.ISSUETRACKERS['default']['URL']
@@ -34,14 +35,18 @@ class Jira(object):
         return resource
 
     def call_resource(self, resource_name, params):
-       resource = self.create_resource(resource_name)
-       response = resource.post(payload=json.dumps(params),
+        resource = self.create_resource(resource_name)
+        response = resource.post(payload=json.dumps(params),
                headers = self.resource_headers)
-       if response:
-           ret = json.loads(response.body_string())
-       else:
-           ret = None
-       return ret
+        if response:
+            b = response.body_string()
+            if b:
+                ret = json.loads(b)
+            else:
+                ret = None
+        else:
+            ret = None
+        return ret
 
     def get_resource(self, resource_name):
         resource = self.create_resource(resource_name)
@@ -213,8 +218,7 @@ class Jira(object):
         return call_result
 
     def deployment_accepted(self, deployment):
-        self.accepted_transition = settings.ISSUETRACKERS['default']['OPA']['ACTIONS']['IN_PROGRESS']
-        issue_transitions = self.concrete.get_issue_transitions(deployment.issue_key).get('transitions')
+        issue_transitions = self.get_issue_transitions(deployment.issue_key).get('transitions')
         issue_transitions_ids = [int(x.get('id')) for x in issue_transitions]
         return self.accepted_transition  in issue_transitions_ids
 

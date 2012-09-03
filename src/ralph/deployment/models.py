@@ -63,7 +63,8 @@ bugtracker_transition_ids = dict(
 )
 
 def normalize_owner(owner):
-    owner = owner.name.lower().replace(' ', '.')
+    # Polish Ł is not handled properly
+    owner = owner.name.lower().replace(' ', '.').replace('Ł', 'L').replace('ł', 'l')
     return unicodedata.normalize('NFD', owner).encode('ascii', 'ignore')
 
 
@@ -167,7 +168,7 @@ class Deployment(Auditable):
             # FIXME: doesn't check if CI even exists
             description = 'Please accept',
             summary = 'Summary',
-            technical_assigne=towner,
+            technical_assignee=towner,
             business_assignee=bowner,
         )
         getfunc(create_issue)(type(self), self.id, params, DEFAULT_ASSIGNEE)
