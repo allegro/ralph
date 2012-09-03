@@ -15,7 +15,6 @@ from lck.django.choices import Choices
 from lck.django.common.models import TimeTrackable
 
 from ralph.cmdb.integration.issuetracker import IssueTracker
-from ralph.cmdb.integration.exceptions import IssueTrackerException
 from ralph.cmdb.models import CI
 
 
@@ -101,23 +100,14 @@ class Auditable(TimeTrackable):
             self.status_lastchanged=datetime.now()
         # we need change id
         super(Auditable, self).save(*args, **kwargs)
-        # now fire celery task if just created
-        if first_run:
-            self.fire_issue()
 
-@task
 def transition_issue(auditable_class, auditable_id, transition_id, retry_count=1):
-    try:
-        auditable_object = auditable_class.objects.get(id=auditable_id)
-        tracker = IssueTracker()
-        tracker.transition_issue(
-            issue_key=auditable_object.issue_key,
-            transition_id=transition_id,
-        )
-    except IssueTrackerException as e:
-        raise transition_issue.retry(exc=e, args=[auditable_class,
-            auditable_id, transition_id, retry_count + 1], countdown=60 * (2 ** retry_count),
-            max_retries=15) # up to 22 days
+    auditable_object = auditable_class.objects.get(id=auditable_id)
+    tracker = IssueTracker()
+    tracker.transition_issue(
+        issue_key=auditable_object.issue_key,
+        transition_id=transition_id,
+    )
 
 @task
 def create_issue(auditable_class, auditable_id, params, default_assignee, retry_count=1):
@@ -130,40 +120,35 @@ def create_issue(auditable_class, auditable_id, params, default_assignee, retry_
     s = settings.ISSUETRACKERS['default']['OPA']
     template=s['TEMPLATE']
     issue_type=s['ISSUETYPE']
+    tracker = IssueTracker()
+    ci = None
     try:
-        tracker = IssueTracker()
-        ci = None
-        try:
-            if params.get('ci_uid'):
-                ci = CI.objects.get(uid=params.get('ci_uid'))
-        except CI.DoesNotExist:
-            pass
-        if not tracker.user_exists(params.get('technical_assignee')):
-            tuser = default_assignee
-        else:
-            tuser = params.get('technical_assignee')
-        if not tracker.user_exists(params.get('business_assignee')):
-            buser = default_assignee
-        else:
-            buser = params.get('business_assignee')
-        issue = tracker.create_issue(
-                issue_type=issue_type,
-                description=params.get('description'),
-                summary=params.get('summary'),
-                ci=ci,
-                assignee=default_assignee,
-                technical_assignee=tuser,
-                business_assignee=buser,
-                start=auditable_object.created.isoformat(),
-                end='',
-                template=template,
-        )
-        auditable_object.status_lastchanged = datetime.now()
-        auditable_object.issue_key = issue.get('key')
-        auditable_object.save()
-    except IssueTrackerException as e:
-        raise create_issue.retry(exc=e, args=[auditable_class,
-            auditable_id, params, retry_count + 1], countdown=60 * (2 ** retry_count),
-            max_retries=15) # up to 22 days
+        if params.get('ci_uid'):
+            ci = CI.objects.get(uid=params.get('ci_uid'))
+    except CI.DoesNotExist:
+        pass
+    if not tracker.user_exists(params.get('technical_assignee')):
+        tuser = default_assignee
+    else:
+        tuser = params.get('technical_assignee')
+    if not tracker.user_exists(params.get('business_assignee')):
+        buser = default_assignee
+    else:
+        buser = params.get('business_assignee')
+    issue = tracker.create_issue(
+            issue_type=issue_type,
+            description=params.get('description'),
+            summary=params.get('summary'),
+            ci=ci,
+            assignee=default_assignee,
+            technical_assignee=tuser,
+            business_assignee=buser,
+            start=auditable_object.created.isoformat(),
+            end='',
+            template=template,
+    )
+    auditable_object.status_lastchanged = datetime.now()
+    auditable_object.issue_key = issue.get('key')
+    auditable_object.save()
 
 
