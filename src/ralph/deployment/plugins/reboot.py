@@ -14,7 +14,8 @@ from ralph.discovery.plugins.ipmi import ipmi_reboot
 from ralp.discovery.hp_ilo import IloHost
 
 
-@plugin.register(chain='deployment', requires=['ticket', 'dns', 'dhcp'],
+@plugin.register(chain='deployment',
+                 requires=['ticket', 'dns', 'dhcp', 'puppet', 'role'],
                  priority=0)
 def reboot(deployment):
     management = deployment.device.find_management()
