@@ -429,20 +429,17 @@ class IloHost(object):
             ])
             family = int(''.join(fields.get("Family", [])) or 0)
             yield fields['Label'][0], speed, cores, extra, CPU_FAMILY.get(family)
-            
+
     def _raw_to_tree(self, raw):
         xml = ('<?xml version="1.0"?><ROOT>%s</ROOT>' %
                raw.replace('<?xml version="1.0"?>', ''))
-        
         xml = xml.replace('<RIBCL VERSION="2.22"/>', '<RIBCL VERSION="2.22">')
-
         try:
             tree = elementtree.XML(xml)
         except elementtree.ParseError:
             raise ResponseError('Invalid XML in response.')
-        
         return tree
-            
+
     def is_server_power_on(self):
         query = """<?xml version="1.0"?>
     <RIBCL VERSION="2.0">
@@ -452,9 +449,7 @@ class IloHost(object):
             </SERVER_INFO>
         </LOGIN>
     </RIBCL>""" % (self.user, self.password)
-        
         tree = self._raw_to_tree(self._get_ilo(query))
-
         node = tree.find('RIBCL/GET_HOST_POWER')
         if node is None:
             raise ResponseError('Could not detect server power state.')
@@ -470,9 +465,7 @@ class IloHost(object):
             </SERVER_INFO>
         </LOGIN>
     </RIBCL>""" % (self.user, self.password)
-    
         tree = self._raw_to_tree(self._get_ilo(query))
-        
         node = tree.find('RIBCL/RESPONSE')
         if node is None:
             raise ResponseError('Invalid XML in response.')
@@ -488,18 +481,14 @@ class IloHost(object):
             </SERVER_INFO>
         </LOGIN>
     </RIBCL>""" % (self.user, self.password)
-
         tree = self._raw_to_tree(self._get_ilo(query))
-        
         node = tree.find('RIBCL/RESPONSE')
         if node is None:
             raise ResponseError('Invalid XML in response.')
-            
         status = node.attrib.get('STATUS')
         if int(status, 0) == 0:
             return True
         msg = node.attrib.get('MESSAGE')
         if 'powered off' in msg and power_on_if_disabled:
             return self.power_on()
-        
         return False
