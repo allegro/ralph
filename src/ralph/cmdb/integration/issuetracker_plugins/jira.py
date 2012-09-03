@@ -15,11 +15,13 @@ from ralph.cmdb.integration.issuetracker import IssueTracker
 from ralph.deployment.models import DeploymentPoll, deployment_accepted
 
 class JiraRSS(object):
-    def __init__(self):
-        self.issuetracker_url = settings.ISSUETRACKERS['default']['URL']
-        self.project = settings.ISSUETRACKERS['default']['CMDB_PROJECT']
-        self.user = settings.ISSUETRACKERS['default']['USER']
-        self.password = settings.ISSUETRACKERS['default']['PASSWORD']
+    def __init__(self, tracker_name='default'):
+        if tracker_name is not 'Jira':
+            raise ValueError('given tracker is not Jira')
+        self.issuetracker_url = settings.ISSUETRACKERS[tracker_name]['URL']
+        self.project = settings.ISSUETRACKERS[tracker_name]['CMDB_PROJECT']
+        self.user = settings.ISSUETRACKERS[tracker_name]['USER']
+        self.password = settings.ISSUETRACKERS[tracker_name]['PASSWORD']
         self.rss_url = 'http://%s:%s@%s/activity?streams=key+IS+%s&os_authType=basic' %\
                        (self.user, self.password, self.issuetracker_url[7:],
                         self.project)
