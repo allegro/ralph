@@ -88,6 +88,11 @@ def reset_dhcp(ip, mac):
 
 def generate_dhcp_config():
     template = loader.get_template('dnsedit/dhcp.conf')
+    try:
+        last = DHCPEntry.objects.order_by('-modified')[0]
+        last_modified_date = last.modified.strftime('%Y-%m-%d %H:%M:%S')
+    except IndexError:
+        last_modified_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     def entries():
         for macaddr, in DHCPEntry.objects.values_list('mac').distinct():
             ips = []
@@ -100,6 +105,6 @@ def generate_dhcp_config():
             yield name, address, mac
     c = Context({
         'entries': entries,
-        'now': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        'last_modified_date': last_modified_date,
     })
     return template.render(c)
