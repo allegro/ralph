@@ -76,6 +76,19 @@ class Auditable(TimeTrackable):
         pass
 
     def save(self, *args, **kwargs):
+        """
+        Note that djano keeps cached objects from db.
+        Our issue_key is lazy set, so you *must* reload your database object
+        to make any changes to this object.
+        eg.
+            o.save() ;
+            # must reload to get fresh object
+            o = Auditable.objects.get(id=o.id)
+            o.status=..;
+            o.save()
+            o.status=...;
+            o.save()
+        """
         if kwargs.get('user'):
             self.user = kwargs.get('user')
         first_run = False
