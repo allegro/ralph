@@ -11,8 +11,7 @@ from datetime import datetime
 from django.conf import settings
 from time import mktime
 
-from ralph.cmdb.integration.issuetracker import IssueTracker
-from ralph.deployment.models import DeploymentPoll, deployment_accepted
+from ralph.deployment.models import DeploymentPoll
 
 
 class JiraRSS(object):
@@ -61,23 +60,3 @@ class JiraRSS(object):
         self.update_issues(issues)
         return self.get_issues()
 
-
-class JiraAcceptance(object):
-    ''' Fallback class - to be removed.
-    Use tracker.deployment_accepted for acceptace checking '''
-
-    def __init__(self):
-        self.tracker = IssueTracker()
-
-    def accept_deployment(self, deployment):
-        deployment_accepted.send(sender=deployment, deployment_id=deployment.id)
-
-    def deployment_accepted(self, deployment):
-        return self.tracker.deployment_accepted(deployment)
-
-    def run(self):
-        # Unimplemented
-        pass
-
-class IntegrityError(Exception):
-    pass
