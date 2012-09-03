@@ -19,20 +19,14 @@ from ralp.discovery.hp_ilo import IloHost
                  priority=0)
 def reboot(deployment):
     management = deployment.device.find_management()
-
     user, password = settings.ILO_USER, settings.ILO_PASSWORD
-    if user:
-        if IloHost(management, user, password).reboot(True):
+    if user and IloHost(management, user, password).reboot(True):
             return True
-
     user, password = settings.IPMI_USER, settings.IPMI_PASSWORD
-    if user:
-        if ipmi_reboot(management, user, password, True):
-            return True
-
+    if user and ipmi_reboot(management, user, password, True):
+        return True
     user = settings.SSH_IBM_USER
     bay = deployment.device.chassis_position
-    if user and bay:
-        if ssh_ibm_reboot(management, bay):
-            return True
+    if user and bay and ssh_ibm_reboot(management, bay):
+        return True
     return False
