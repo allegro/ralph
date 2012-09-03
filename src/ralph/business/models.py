@@ -321,14 +321,23 @@ class Department(Named):
         ordering = ('name',)
 
 
-class VentureExtraCost(Named.NonUnique, TimeTrackable):
+class VentureExtraCostName(Named.NonUnique):
+    class Meta:
+        verbose_name = _("venture extra cost name")
+        verbose_name_plural = _("venture extra cost names")
+        ordering = ('name',)
+
+
+class VentureExtraCost(TimeTrackable):
     class Meta:
         verbose_name = _("venture extra cost")
         verbose_name_plural = _("venture extra costs")
-        unique_together = ('name', 'venture')
-        ordering = ('name',)
+        unique_together = ('venture_extra_cost_name', 'venture')
+        ordering = ('venture_extra_cost_name',)
 
     venture = db.ForeignKey(Venture, verbose_name=_("venture"))
+    venture_extra_cost_name = db.ForeignKey(VentureExtraCostName,
+        verbose_name=_("name"))
     cost = db.FloatField(verbose_name=_("monthly cost"), default=0)
     expire = db.DateField(default=None, null=True, blank=True)
 
