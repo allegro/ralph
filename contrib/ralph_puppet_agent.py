@@ -30,18 +30,18 @@ class ApiAuthError(ApiError):
 
 class SimpleApiClient(object):
     def __init__(self, api_url, api_username, api_key, api_resource=None):
-        self.__api_url = api_url
-        self.__api_username = api_username
-        self.__api_key = api_key
-        self.__api_resource = api_resource
+        self.api_url = api_url
+        self.api_username = api_username
+        self.api_key = api_key
+        self.api_resource = api_resource
 
     def __getattr__(self, resource):
-        if self.__api_resource:
-            resource = "%s/%s" % (self.__api_resource, resource)
-        return SimpleApiClient(self.__api_url, self.__api_username,
-                               self.__api_key, resource)
+        if self.api_resource:
+            resource = "%s/%s" % (self.api_resource, resource)
+        return SimpleApiClient(self.api_url, self.api_username,
+                               self.api_key, resource)
 
-    def __get_data(self, url):
+    def _get_data(self, url):
         try:
             f = urllib2.urlopen(url)
             raw_data = f.read()
@@ -49,7 +49,7 @@ class SimpleApiClient(object):
         except:
             raise ApiError(sys.exc_info()[1])
 
-    def __put_data(self, url, data):
+    def _put_data(self, url, data):
         opener = urllib2.build_opener(urllib2.HTTPHandler)
         request = urllib2.Request(url, data)
         request.add_header('Content-Type', 'application/json')
@@ -64,32 +64,32 @@ class SimpleApiClient(object):
             raise ApiError(sys.exc_info()[1])
         return 'HTTP/1.0 204 NO CONTENT' in f.info().headers
 
-    def __do_get_request(self, **kwargs):
+    def _do_get_request(self, **kwargs):
         id_part = ''
         if 'id' in kwargs:
             id_part = "%s/" % kwargs['id']
             del kwargs['id']
-        api_resource = self.__api_resource.replace('/get', '')
+        api_resource = self.api_resource.replace('/get', '')
         url = ("%s/api/v%s/%s/%s?format=json&username=%s&api_key=%s" %
-               (self.__api_url, RALPH_API_VERSION, api_resource, id_part,
-                self.__api_username, self.__api_key))
+               (self.api_url, RALPH_API_VERSION, api_resource, id_part,
+                self.api_username, self.api_key))
         query = '&'.join(["%s=%s" % (key, kwargs[key]) for key in kwargs])
         if query:
             url = "%s&%s" % (url, query)
-        return self.__get_data(url)
+        return self._get_data(url)
 
-    def __do_put_request(self, id, data):
-        api_resource = self.__api_resource.replace('/put', '')
+    def _do_put_request(self, id, data):
+        api_resource = self.api_resource.replace('/put', '')
         url = ("%s/api/v%s/%s/%s/?format=json&username=%s&api_key=%s" %
-               (self.__api_url, RALPH_API_VERSION, api_resource, id,
-                self.__api_username, self.__api_key))
-        return self.__put_data(url, data)
+               (self.api_url, RALPH_API_VERSION, api_resource, id,
+                self.api_username, self.api_key))
+        return self._put_data(url, data)
 
     def __call__(self, **kwargs):
-        if self.self.__api_resource.endswith('get/self'):
-            return self.__do_get_request(**kwargs)
-        elif self.self.__api_resource.endswith('put/self'):
-            return self.__do_put_request(**kwargs)
+        if self.self.api_resource.endswith('get/self'):
+            return self._do_get_request(**kwargs)
+        elif self.self.api_resource.endswith('put/self'):
+            return self._do_put_request(**kwargs)
         else:
             raise ApiError('Incorrect API call.')
 
@@ -105,7 +105,7 @@ class SimplePuppetManager(object):
             logging.basicConfig(format=LOG_FORMAT, filename=self.log_path,
                                 level=logging.INFO)
 
-    def __get_certs_to_remove(self):
+    def _get_certs_to_remove(self):
         deployments = []
         current_offset = 0
         certs = []
@@ -133,14 +133,14 @@ class SimplePuppetManager(object):
                 logging.error('ApiError occured: "%s"' % e)
         return certs
 
-    def __remove_cert(self, cert_name):
+    def _remove_cert(self, cert_name):
         command = ['puppet', 'cert', 'clean', cert_name]
         proc = subprocess.Popen(command, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
         proc.wait()
-        return proc.returncode == 0:
+        return proc.returncode == 0
 
-    def __notify_ralph(self, id):
+    def _notify_ralph(self, id):
         data = '{"puppet_certificate_revoked": "True"}'
         try:
             self.api.deployment.put(id=id, data=data)
@@ -152,10 +152,20 @@ class SimplePuppetManager(object):
                 logging.error('ApiError occured: "%s"' % e)
 
     def remove_certs(self):
-        certs = self.__get_certs_to_remove()
+        certs = self._get_certs_to_remove()
         for cert in certs:
-            if self.__remove_cert(cert['name']):
-                self.__notify_ralph(cert['id'])
+            if self._remove_cert(cert['name']):
+                self._notify_ralph(cert['id'])
+
+
+def _get_cmd_options():
+    args_parser = argparse.ArgumentParser(
+        description='Delete certs from Puppet server.')
+    args_parser.add_argument('ralph_url', help='Ralph instance address.')
+    args_parser.add_argument('ralph_api_username', help='Ralph API username.')
+    args_parser.add_argument('ralph_api_key', help='Ralph API key.')
+    args_parser.add_argument('-l', '--log_path', help='Path to log file.')
+    return vars(args_parser.parse_args())
 
 
 if __name__ == "__main__":
@@ -167,13 +177,6 @@ if __name__ == "__main__":
             sys.stderr.write('[%s] Script already running.\n' % time.strftime('%c'))
             sys.exit(-1)
         raise
-    args_parser = argparse.ArgumentParser(
-        description='Delete certs from Puppet server.')
-    args_parser.add_argument('ralph_url', help='Ralph instance address.')
-    args_parser.add_argument('ralph_api_username', help='Ralph API username.')
-    args_parser.add_argument('ralph_api_key', help='Ralph API key.')
-    args_parser.add_argument('-l', '--log_path', help='Path to log file.')
-    args = vars(args_parser.parse_args())
+    args = _get_cmd_options()
     spm = SimplePuppetManager(**args)
     spm.remove_certs()
-    sys.exit(0)
