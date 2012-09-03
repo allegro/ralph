@@ -11,7 +11,7 @@ from django.conf import settings
 from ralph.util import plugin
 from ralph .discovery.plugins.ssh_ibm_bladecenter import ssh_ibm_reboot
 from ralph.discovery.plugins.ipmi import ipmi_reboot
-from ralp.discovery.hp_ilo import IloHost
+from ralph.discovery.hp_ilo import IloHost
 
 
 @plugin.register(chain='deployment',
