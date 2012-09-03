@@ -125,7 +125,6 @@ def create_issue(auditable_class, auditable_id, params, default_assignee, retry_
     We create 2 IssueTracker requests for IssueTracker here.
     1) Check if assignee exists in IssueTracker
     2) Create issue with back-link for acceptance
-    3) #TODO: assignes needs to be set per subtask
     """
     auditable_object = auditable_class.objects.get(id=auditable_id)
     s = settings.ISSUETRACKERS['default']['OPA']
