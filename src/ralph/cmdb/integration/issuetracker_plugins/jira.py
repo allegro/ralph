@@ -20,8 +20,9 @@ class JiraRSS(object):
         self.project = settings.ISSUETRACKERS['default']['CMDB_PROJECT']
         self.user = settings.ISSUETRACKERS['default']['USER']
         self.password = settings.ISSUETRACKERS['default']['PASSWORD']
-        self.rss_url ='http://%s:%s@%s/activity?streams=key+IS+%s&os_authType=basic' % \
-                (self.user, self.password, self.issuetracker_url[7:], self.project)
+        self.rss_url = 'http://%s:%s@%s/activity?streams=key+IS+%s&os_authType=basic' %\
+                       (self.user, self.password, self.issuetracker_url[7:],
+                        self.project)
 
     def update_issues(self, issues):
         for item in issues:
@@ -29,7 +30,8 @@ class JiraRSS(object):
             date = issues[item]
             new_issue = DeploymentPoll(key=key, date=date)
             try:
-                db_issue = DeploymentPoll.objects.get(key=key, date__gte=date, checked=False)
+                db_issue = DeploymentPoll.objects.get(key=key, date__gte=date,
+                                                      checked=False)
                 if db_issue.date < new_issue.date:
                     new_issue.save()
             except DeploymentPoll.DoesNotExist:
@@ -78,6 +80,7 @@ class JiraAcceptance(object):
     def run(self):
         # Unimplemented
         pass
+
 
 class IntegrityError(Exception):
     pass
