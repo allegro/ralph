@@ -12,7 +12,8 @@ from ralph.cmdb.integration.issuetracker_plugins.jira import (JiraAcceptance,
 from ralph.deployment.models import DeploymentStatus, Deployment
 
 @plugin.register(chain='deployment', requires=[], priority=100)
-def ticket(deployment):
+def ticket(deployment_id):
+    deployment = Deployment.objects.get(id=deployment_id)
     try:
         if JiraAcceptance().deployment_accepted(deployment):
             deployment.status = DeploymentStatus.in_progress.id
