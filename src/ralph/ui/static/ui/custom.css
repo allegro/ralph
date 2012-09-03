@@ -1,3 +1,7 @@
+.browser-min-weight
+{
+    min-width: 1000px;
+}
 table.table-list tr.active > td {
     background-color: #eee;
 }
