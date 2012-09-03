@@ -414,6 +414,13 @@ class DeviceForm(forms.ModelForm):
     def clean_parent(self):
         return self.instance.parent
 
+    def clean_verified(self):
+        verified = self.cleaned_data['verified']
+        if verified and not (self.cleaned_data['venture'] and
+                             self.cleaned_data['venture_role']):
+            raise forms.ValidationError("Can't verify an empty role!")
+        return verified
+
     def clean_barcode(self):
         barcode = self.cleaned_data['barcode']
         return barcode or None
