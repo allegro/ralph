@@ -16,7 +16,7 @@ def run_deployment(deployment):
     deployment.save()
     try:
         done = set(name.strip() for name in deployment.done_plugins.split(','))
-        tried = done
+        tried = set(done)
         while True:
             plugins = plugin.next('deployment', done) - tried
             if not plugins:
