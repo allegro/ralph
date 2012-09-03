@@ -1,2 +1,2 @@
 #!ipxe
-sanboot --no-describe --drive 0x80
+sanboot --drive 0x80
