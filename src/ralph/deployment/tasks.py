@@ -16,14 +16,14 @@ def run_deployment(deployment):
     deployment.save()
     try:
         done = set(name.strip() for name in deployment.done_plugins.split(','))
-        tried = done
+        tried = set(done)
         while True:
-            plugins = plugin.next('discovery', done) - tried
+            plugins = plugin.next('deployment', done) - tried
             if not plugins:
                 break
-            name = plugin.highest_priority('discovery', plugins)
+            name = plugin.highest_priority('deployment', plugins)
             tried.add(name)
-            if plugin.run('deployment', name)(deployment):
+            if plugin.run('deployment', name, deployment=deployment):
                 done.add(name)
         deployment.done_plugins = ', '.join(done)
         deployment.save()
