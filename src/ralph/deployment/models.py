@@ -69,11 +69,15 @@ def normalize_owner(owner):
 
 
 def get_technical_owner(device):
+    if not device.venture:
+        return ''
     owners = device.venture.technical_owners()
     return normalize_owner(owners[0]) if owners else None
 
 
 def get_business_owner(device):
+    if not device.venture:
+        return ''
     owners = device.venture.business_owners()
     return normalize_owner(owners[0]) if owners else None
 
@@ -189,7 +193,6 @@ class DeploymentPoll(db.Model):
 def handle_deployment_accepted(sender, deployment_id, **kwargs):
     # sample deployment accepted signal code.
     pass
-
 
 # Import all the plugins
 import ralph.deployment.plugins
