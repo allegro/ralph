@@ -28,7 +28,8 @@ def reboot(deployment):
     user, password = settings.IPMI_USER, settings.IPMI_PASSWORD
     if user:
         if ipmi_reboot(management, user, password, True):
-            return
+            return True
+
     user = settings.SSH_IBM_USER
     bay = deployment.device.chassis_position
     if user and bay:
