@@ -99,11 +99,38 @@ class Reports(DeviceDetailView):
         result = super(Reports, self).get_context_data(**kwargs)
         return result
 
+class SidebarReports(object):
+    def __init__(self, *args, **kwargs):
+        super(SidebarReports, self).__init__(*args, **kwargs)
+        self.report_name = ''
 
-class ReportList(Base):
+    def set_report(self):
+        self.report_name = self.kwargs.get('report')
+
+    def get_context_data(self, **kwargs):
+        self.set_report()
+        context = super(SidebarReports, self).get_context_data(**kwargs)
+        sidebar_items = [
+            MenuItem("Unknown", name='', fugue_icon='fugue-prohibition',
+                     view_name='reports', view_args=[self.report_name, '', ''])
+        ]
+        context.update({
+            'sidebar_items': sidebar_items,
+            'sidebar_selected': slugify(self.report_name),
+            'section': 'reports',
+            'subsection': slugify(self.report_name),
+        })
+        return context
+
+
+
+class ReportList(SidebarReports, Base):
     section = 'reports'
     template_name = 'ui/report_list.html'
 
+    def get_context_data(self, **kwargs):
+        result = super(ReportList, self).get_context_data(**kwargs)
+        return result
 
 class ReportDeviceList(object):
     template_name = 'ui/device_report_list.html'
