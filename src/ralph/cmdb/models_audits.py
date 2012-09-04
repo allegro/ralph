@@ -78,10 +78,9 @@ class Auditable(TimeTrackable):
         self.save()
 
     def transition_issue(self, transition_id, retry_count=1):
-        auditable_object = self
         tracker = IssueTracker()
         tracker.transition_issue(
-            issue_key=auditable_object.issue_key,
+            issue_key=self.issue_key,
             transition_id=transition_id,
         )
 
@@ -91,7 +90,6 @@ class Auditable(TimeTrackable):
         1) Check if assignee exists in IssueTracker
         2) Create issue with back-link for acceptance
         """
-        auditable_object = self
         s = settings.ISSUETRACKERS['default']['OPA']
         template=s['TEMPLATE']
         issue_type=s['ISSUETYPE']
@@ -118,11 +116,11 @@ class Auditable(TimeTrackable):
                 assignee=default_assignee,
                 technical_assignee=tuser,
                 business_assignee=buser,
-                start=auditable_object.created.isoformat(),
+                start=self.created.isoformat(),
                 end='',
                 template=template,
         )
-        auditable_object.issue_key = issue.get('key')
-        auditable_object.save()
+        self.issue_key = issue.get('key')
+        self.save()
 
 
