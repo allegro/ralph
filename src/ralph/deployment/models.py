@@ -168,8 +168,8 @@ class Deployment(Auditable):
         towner = get_technical_owner(self.device)
         params = dict(
             ci_uid = CI.get_uid_by_content_object(self.device),
-            description = 'Please accept',
-            summary = 'Summary',
+            description = 'Please accept in order to continue deployment.',
+            summary = '%s - acceptance request for deployment' % unicode(self.device),
             technical_assignee=towner,
             business_assignee=bowner,
         )
