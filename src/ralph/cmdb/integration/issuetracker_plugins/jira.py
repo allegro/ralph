@@ -7,14 +7,15 @@ from __future__ import unicode_literals
 
 import feedparser
 
-from time import mktime
 from datetime import datetime
-
 from django.conf import settings
 from exceptions import ValueError
 from lck.django.common import nested_commit_on_success
+from time import mktime
+
 from ralph.cmdb.integration.issuetracker import IssueTracker
 from ralph.deployment.models import DeploymentPoll, deployment_accepted
+
 
 class JiraRSS(object):
     def __init__(self, tracker_name='default'):
@@ -67,11 +68,11 @@ class JiraAcceptance(object):
     ''' Fallback class - to be removed.
     Use tracker.deployment_accepted for acceptace checking '''
 
-    def accept_deployment(self, deployment):
-        deployment_accepted.send(sender=deployment, deployment_id=deployment.id)
-
     def __init__(self):
         self.tracker = IssueTracker()
+
+    def accept_deployment(self, deployment):
+        deployment_accepted.send(sender=deployment, deployment_id=deployment.id)
 
     def deployment_accepted(self, deployment):
         return self.tracker.deployment_accepted(deployment)
