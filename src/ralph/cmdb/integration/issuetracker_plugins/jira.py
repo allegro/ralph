@@ -12,13 +12,14 @@ from datetime import datetime
 
 from django.conf import settings
 from exceptions import ValueError
+from lck.django.common import nested_commit_on_success
 from ralph.cmdb.integration.issuetracker import IssueTracker
 from ralph.deployment.models import DeploymentPoll, deployment_accepted
 
 class JiraRSS(object):
     def __init__(self, tracker_name='default'):
-        if tracker_name is not 'Jira':
-            raise ValueError('given tracker is not Jira')
+        if tracker_name is not 'JIRA':
+            raise ValueError('given tracker is not JIRA')
         self.issuetracker_url = settings.ISSUETRACKERS[tracker_name]['URL']
         self.project = settings.ISSUETRACKERS[tracker_name]['CMDB_PROJECT']
         self.user = settings.ISSUETRACKERS[tracker_name]['USER']
@@ -27,18 +28,14 @@ class JiraRSS(object):
                        (self.user, self.password, self.issuetracker_url[7:],
                         self.project)
 
+    @nested_commit_on_success
     def update_issues(self, issues):
         for item in issues:
             key = item
             date = issues[item]
-            new_issue = DeploymentPoll(key=key, date=date)
-            try:
-                db_issue = DeploymentPoll.objects.get(key=key, date__gte=date,
-                                                      checked=False)
-                if db_issue.date < new_issue.date:
-                    new_issue.save()
-            except DeploymentPoll.DoesNotExist:
-                new_issue.save()
+            issues, create = DeploymentPoll.concurrent_get_or_create(key=key,
+                                                     date__gte=date, checked=False,
+                                                     defaults={'date': date})
 
     def get_issues(self):
         new_issues = []
@@ -61,7 +58,6 @@ class JiraRSS(object):
         return issues
 
     def get_new_issues(self):
-        issues = None
         issues = self.parse_rss(self.rss_url)
         self.update_issues(issues)
         return self.get_issues()

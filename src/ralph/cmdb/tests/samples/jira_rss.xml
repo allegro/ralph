@@ -1,0 +1,462 @@
+<feed xmlns="http://www.w3.org/2005/Atom"
+      xmlns:atlassian="http://streams.atlassian.com/syndication/general/1.0">
+<id>https://domain.local/activity?maxResults=10&amp;streams=key+IS+RALPH&amp;os_authType=basic&amp;title=undefined</id>
+<link
+        href="https://domain.local/activity?maxResults=10&amp;streams=key+IS+RALPH&amp;os_authType=basic&amp;title=undefined"
+        rel="self"/>
+<title
+        type="text">undefined</title>
+<atlassian:timezone-offset>+0200</atlassian:timezone-offset>
+<updated>2012-02-01T01:10:0:0Z</updated>
+<entry
+        xmlns:activity="http://activitystrea.ms/spec/1.0/">
+    <id>urn:uuid:f616e5a7-db35-328a-a9e8-f428d9565514</id>
+    <title
+            type="html">&lt;a
+        href="https://domain.local/secure/ViewProfile.jspa?name=user"
+        class="activity-item-user activity-item-author">User&lt;/a>
+        lorem ipsum&lt;a
+        href="https://domain.local/browse/RALPH-341">RALPH-341 - Lorem ipsum
+        &amp;quot;Reports&amp;quot;&lt;/a>
+    </title>
+    <content type="html">&lt;ul class="updates activity-list">
+        &lt;li>Changed the Project to 'Ralph'&lt;/li>
+        &lt;li>Changed the Key to 'RALPH-341'&lt;/li>
+        &lt;li>Lorem ipsum'&lt;a
+        href='https://domain.local/browse/RALPH/component/10612'>Lorem ipsum&lt;/a>'&lt;/li>
+        &lt;/ul>
+
+    </content>
+    <author
+            xmlns:usr="http://streams.atlassian.com/syndication/username/1.0">
+        <name>user</name>
+        <email>user@domain.local</email>
+        <uri>https://domain.local/secure/ViewProfile.jspa?name=user</uri>
+        <link
+                xmlns:media="http://purl.org/syndication/atommedia" rel="photo"
+                href="https://domain.local/secure/useravatar?avatarId=10102&amp;s=16"
+                media:height="16" media:width="16"/>
+        <link
+                xmlns:media="http://purl.org/syndication/atommedia" rel="photo"
+                href="https://domain.local/secure/useravatar?avatarId=10102&amp;s=48"
+                media:height="48" media:width="48"
+                />
+        <usr:username>user</usr:username>
+        <activity:object-type>http://activitystrea.ms/schema/1.0/person
+        </activity:object-type>
+    </author>
+    <published>2011-02-01T01:10:00:000Z</published>
+    <updated>2012-02-01T01:10:00:000Z</updated>
+    <link
+            href="https://domain.local/browse/RALPH-341" rel="alternate"/>
+    <link
+            href="https://domain.local/images/icons/task.gif"
+            rel="http://streams.atlassian.com/syndication/icon" title="Task"
+            />
+    <link href="https://domain.local/s/en_USg6ghsj/782/3/1.0/_/download/resources/jira.webresources:global-static/wiki-renderer.css"
+          rel="http://streams.atlassian.com/syndication/css"/>
+    <link
+            href="https://domain.local/plugins/servlet/streamscomments/issues/RALPH-341"
+            rel="http://streams.atlassian.com/syndication/reply-to"/>
+    <link
+            href="https://domain.local/rest/jira-activity-stream/1.0/actions/issue-watch/RALPH-341"
+            rel="http://streams.atlassian.com/syndication/watch"/>
+    <link
+            href="https://domain.local/rest/jira-activity-stream/1.0/actions/issue-vote/RALPH-341"
+            rel="http://streams.atlassian.com/syndication/issue-vote"/>
+    <generator
+            uri="https://domain.local"
+            />
+    <atlassian:application>com.atlassian.jira</atlassian:application>
+    <activity:verb>http://activitystrea.ms/schema/1.0/update</activity:verb>
+    <activity:object>
+        <id>urn:uuid:37024506-3702-3702-bbb4-370237023702</id>
+        <title
+                type="text">RALPH-341</title>
+        <summary type="text">Lorem ipsum</summary>
+        <link
+                rel="alternate" href="https://domain.local/browse/RALPH-341"
+                />
+        <activity:object-type>
+            http://streams.atlassian.com/syndication/types/issue
+        </activity:object-type>
+    </activity:object>
+    <atlassian:timezone-offset>+0200</atlassian:timezone-offset>
+</entry>
+<entry
+        xmlns:activity="http://activitystrea.ms/spec/1.0/">
+    <id>urn:uuid:f616e5a7-db35-328a-a9e8-f428d9565514</id>
+    <title
+            type="html">&lt;a
+        href="https://domain.local/secure/ViewProfile.jspa?name=user"
+        class="activity-item-user activity-item-author">User&lt;/a>
+        lorem ipsum&lt;a
+        href="https://domain.local/browse/RALPH-341">RALPH-341 - Lorem ipsum
+        &amp;quot;Reports&amp;quot;&lt;/a>
+    </title>
+    <content type="html">&lt;ul class="updates activity-list">
+        &lt;li>Changed the Project to 'Ralph'&lt;/li>
+        &lt;li>Changed the Key to 'RALPH-341'&lt;/li>
+        &lt;li>Lorem ipsum'&lt;a
+        href='https://domain.local/browse/RALPH/component/10612'>Lorem ipsum&lt;/a>'&lt;/li>
+        &lt;/ul>
+
+    </content>
+    <author
+            xmlns:usr="http://streams.atlassian.com/syndication/username/1.0">
+        <name>user</name>
+        <email>user@domain.local</email>
+        <uri>https://domain.local/secure/ViewProfile.jspa?name=user</uri>
+        <link
+                xmlns:media="http://purl.org/syndication/atommedia" rel="photo"
+                href="https://domain.local/secure/useravatar?avatarId=10102&amp;s=16"
+                media:height="16" media:width="16"/>
+        <link
+                xmlns:media="http://purl.org/syndication/atommedia" rel="photo"
+                href="https://domain.local/secure/useravatar?avatarId=10102&amp;s=48"
+                media:height="48" media:width="48"
+                />
+        <usr:username>user</usr:username>
+        <activity:object-type>http://activitystrea.ms/schema/1.0/person
+        </activity:object-type>
+    </author>
+    <published>2011-02-01T01:10:00:000Z</published>
+    <updated>2012-01-01T01:10:00:000Z</updated>
+    <link
+            href="https://domain.local/browse/RALPH-341" rel="alternate"/>
+    <link
+            href="https://domain.local/images/icons/task.gif"
+            rel="http://streams.atlassian.com/syndication/icon" title="Task"
+            />
+    <link href="https://domain.local/s/en_USg6ghsj/782/3/1.0/_/download/resources/jira.webresources:global-static/wiki-renderer.css"
+          rel="http://streams.atlassian.com/syndication/css"/>
+    <link
+            href="https://domain.local/plugins/servlet/streamscomments/issues/RALPH-341"
+            rel="http://streams.atlassian.com/syndication/reply-to"/>
+    <link
+            href="https://domain.local/rest/jira-activity-stream/1.0/actions/issue-watch/RALPH-341"
+            rel="http://streams.atlassian.com/syndication/watch"/>
+    <link
+            href="https://domain.local/rest/jira-activity-stream/1.0/actions/issue-vote/RALPH-341"
+            rel="http://streams.atlassian.com/syndication/issue-vote"/>
+    <generator
+            uri="https://domain.local"
+            />
+    <atlassian:application>com.atlassian.jira</atlassian:application>
+    <activity:verb>http://activitystrea.ms/schema/1.0/update</activity:verb>
+    <activity:object>
+        <id>urn:uuid:37024506-3702-3702-bbb4-370237023702</id>
+        <title
+                type="text">RALPH-341</title>
+        <summary type="text">Lorem ipsum</summary>
+        <link
+                rel="alternate" href="https://domain.local/browse/RALPH-341"
+                />
+        <activity:object-type>
+            http://streams.atlassian.com/syndication/types/issue
+        </activity:object-type>
+    </activity:object>
+    <atlassian:timezone-offset>+0200</atlassian:timezone-offset>
+</entry>
+
+<entry
+        xmlns:activity="http://activitystrea.ms/spec/1.0/">
+    <id>urn:uuid:f616e5a7-db35-328a-a9e8-f428d9565514</id>
+    <title
+            type="html">&lt;a
+        href="https://domain.local/secure/ViewProfile.jspa?name=user"
+        class="activity-item-user activity-item-author">User&lt;/a>
+        lorem ipsum&lt;a
+        href="https://domain.local/browse/RALPH-342">RALPH-342 - Lorem ipsum
+        &amp;quot;Reports&amp;quot;&lt;/a>
+    </title>
+    <content type="html">&lt;ul class="updates activity-list">
+        &lt;li>Changed the Project to 'Ralph'&lt;/li>
+        &lt;li>Changed the Key to 'RALPH-342'&lt;/li>
+        &lt;li>Lorem ipsum'&lt;a
+        href='https://domain.local/browse/RALPH/component/10612'>Lorem ipsum&lt;/a>'&lt;/li>
+        &lt;/ul>
+
+    </content>
+    <author
+            xmlns:usr="http://streams.atlassian.com/syndication/username/1.0">
+        <name>user</name>
+        <email>user@domain.local</email>
+        <uri>https://domain.local/secure/ViewProfile.jspa?name=user</uri>
+        <link
+                xmlns:media="http://purl.org/syndication/atommedia" rel="photo"
+                href="https://domain.local/secure/useravatar?avatarId=10102&amp;s=16"
+                media:height="16" media:width="16"/>
+        <link
+                xmlns:media="http://purl.org/syndication/atommedia" rel="photo"
+                href="https://domain.local/secure/useravatar?avatarId=10102&amp;s=48"
+                media:height="48" media:width="48"
+                />
+        <usr:username>user</usr:username>
+        <activity:object-type>http://activitystrea.ms/schema/1.0/person
+        </activity:object-type>
+    </author>
+    <published>2011-02-01T01:10:00:000Z</published>
+    <updated>2012-03-02T01:20:00:000Z</updated>
+    <link
+            href="https://domain.local/browse/RALPH-342" rel="alternate"/>
+    <link
+            href="https://domain.local/images/icons/task.gif"
+            rel="http://streams.atlassian.com/syndication/icon" title="Task"
+            />
+    <link href="https://domain.local/s/en_USg6ghsj/782/3/1.0/_/download/resources/jira.webresources:global-static/wiki-renderer.css"
+          rel="http://streams.atlassian.com/syndication/css"/>
+    <link
+            href="https://domain.local/plugins/servlet/streamscomments/issues/RALPH-342"
+            rel="http://streams.atlassian.com/syndication/reply-to"/>
+    <link
+            href="https://domain.local/rest/jira-activity-stream/1.0/actions/issue-watch/RALPH-342"
+            rel="http://streams.atlassian.com/syndication/watch"/>
+    <link
+            href="https://domain.local/rest/jira-activity-stream/1.0/actions/issue-vote/RALPH-342"
+            rel="http://streams.atlassian.com/syndication/issue-vote"/>
+    <generator
+            uri="https://domain.local"
+            />
+    <atlassian:application>com.atlassian.jira</atlassian:application>
+    <activity:verb>http://activitystrea.ms/schema/1.0/update</activity:verb>
+    <activity:object>
+        <id>urn:uuid:37024506-3702-3702-bbb4-370237023702</id>
+        <title
+                type="text">RALPH-342</title>
+        <summary type="text">Lorem ipsum</summary>
+        <link
+                rel="alternate" href="https://domain.local/browse/RALPH-342"
+                />
+        <activity:object-type>
+            http://streams.atlassian.com/syndication/types/issue
+        </activity:object-type>
+    </activity:object>
+    <atlassian:timezone-offset>+0200</atlassian:timezone-offset>
+</entry>
+<entry
+        xmlns:activity="http://activitystrea.ms/spec/1.0/">
+    <id>urn:uuid:f616e5a7-db35-328a-a9e8-f428d9565514</id>
+    <title
+            type="html">&lt;a
+        href="https://domain.local/secure/ViewProfile.jspa?name=user"
+        class="activity-item-user activity-item-author">User&lt;/a>
+        lorem ipsum&lt;a
+        href="https://domain.local/browse/RALPH-342">RALPH-342 - Lorem ipsum
+        &amp;quot;Reports&amp;quot;&lt;/a>
+    </title>
+    <content type="html">&lt;ul class="updates activity-list">
+        &lt;li>Changed the Project to 'Ralph'&lt;/li>
+        &lt;li>Changed the Key to 'RALPH-342'&lt;/li>
+        &lt;li>Lorem ipsum'&lt;a
+        href='https://domain.local/browse/RALPH/component/10612'>Lorem ipsum&lt;/a>'&lt;/li>
+        &lt;/ul>
+
+    </content>
+    <author
+            xmlns:usr="http://streams.atlassian.com/syndication/username/1.0">
+        <name>user</name>
+        <email>user@domain.local</email>
+        <uri>https://domain.local/secure/ViewProfile.jspa?name=user</uri>
+        <link
+                xmlns:media="http://purl.org/syndication/atommedia" rel="photo"
+                href="https://domain.local/secure/useravatar?avatarId=10102&amp;s=16"
+                media:height="16" media:width="16"/>
+        <link
+                xmlns:media="http://purl.org/syndication/atommedia" rel="photo"
+                href="https://domain.local/secure/useravatar?avatarId=10102&amp;s=48"
+                media:height="48" media:width="48"
+                />
+        <usr:username>user</usr:username>
+        <activity:object-type>http://activitystrea.ms/schema/1.0/person
+        </activity:object-type>
+    </author>
+    <published>2011-02-01T01:10:00:000Z</published>
+    <updated>2012-02-02T01:20:00:000Z</updated>
+    <link
+            href="https://domain.local/browse/RALPH-342" rel="alternate"/>
+    <link
+            href="https://domain.local/images/icons/task.gif"
+            rel="http://streams.atlassian.com/syndication/icon" title="Task"
+            />
+    <link href="https://domain.local/s/en_USg6ghsj/782/3/1.0/_/download/resources/jira.webresources:global-static/wiki-renderer.css"
+          rel="http://streams.atlassian.com/syndication/css"/>
+    <link
+            href="https://domain.local/plugins/servlet/streamscomments/issues/RALPH-342"
+            rel="http://streams.atlassian.com/syndication/reply-to"/>
+    <link
+            href="https://domain.local/rest/jira-activity-stream/1.0/actions/issue-watch/RALPH-342"
+            rel="http://streams.atlassian.com/syndication/watch"/>
+    <link
+            href="https://domain.local/rest/jira-activity-stream/1.0/actions/issue-vote/RALPH-342"
+            rel="http://streams.atlassian.com/syndication/issue-vote"/>
+    <generator
+            uri="https://domain.local"
+            />
+    <atlassian:application>com.atlassian.jira</atlassian:application>
+    <activity:verb>http://activitystrea.ms/schema/1.0/update</activity:verb>
+    <activity:object>
+        <id>urn:uuid:37024506-3702-3702-bbb4-370237023702</id>
+        <title
+                type="text">RALPH-342</title>
+        <summary type="text">Lorem ipsum</summary>
+        <link
+                rel="alternate" href="https://domain.local/browse/RALPH-342"
+                />
+        <activity:object-type>
+            http://streams.atlassian.com/syndication/types/issue
+        </activity:object-type>
+    </activity:object>
+    <atlassian:timezone-offset>+0200</atlassian:timezone-offset>
+</entry>
+<entry
+        xmlns:activity="http://activitystrea.ms/spec/1.0/">
+    <id>urn:uuid:f616e5a7-db35-328a-a9e8-f428d9565514</id>
+    <title
+            type="html">&lt;a
+        href="https://domain.local/secure/ViewProfile.jspa?name=user"
+        class="activity-item-user activity-item-author">User&lt;/a>
+        lorem ipsum&lt;a
+        href="https://domain.local/browse/RALPH-343">RALPH-343 - Lorem ipsum
+        &amp;quot;Reports&amp;quot;&lt;/a>
+    </title>
+    <content type="html">&lt;ul class="updates activity-list">
+        &lt;li>Changed the Project to 'Ralph'&lt;/li>
+        &lt;li>Changed the Key to 'RALPH-343'&lt;/li>
+        &lt;li>Lorem ipsum'&lt;a
+        href='https://domain.local/browse/RALPH/component/10612'>Lorem ipsum&lt;/a>'&lt;/li>
+        &lt;/ul>
+
+    </content>
+    <author
+            xmlns:usr="http://streams.atlassian.com/syndication/username/1.0">
+        <name>user</name>
+        <email>user@domain.local</email>
+        <uri>https://domain.local/secure/ViewProfile.jspa?name=user</uri>
+        <link
+                xmlns:media="http://purl.org/syndication/atommedia" rel="photo"
+                href="https://domain.local/secure/useravatar?avatarId=10102&amp;s=16"
+                media:height="16" media:width="16"/>
+        <link
+                xmlns:media="http://purl.org/syndication/atommedia" rel="photo"
+                href="https://domain.local/secure/useravatar?avatarId=10102&amp;s=48"
+                media:height="48" media:width="48"
+                />
+        <usr:username>user</usr:username>
+        <activity:object-type>http://activitystrea.ms/schema/1.0/person
+        </activity:object-type>
+    </author>
+    <published>2011-02-01T01:10:00:000Z</published>
+    <updated>2012-04-03T03:30:00:000Z</updated>
+    <link
+            href="https://domain.local/browse/RALPH-343" rel="alternate"/>
+    <link
+            href="https://domain.local/images/icons/task.gif"
+            rel="http://streams.atlassian.com/syndication/icon" title="Task"
+            />
+    <link href="https://domain.local/s/en_USg6ghsj/782/3/1.0/_/download/resources/jira.webresources:global-static/wiki-renderer.css"
+          rel="http://streams.atlassian.com/syndication/css"/>
+    <link
+            href="https://domain.local/plugins/servlet/streamscomments/issues/RALPH-343"
+            rel="http://streams.atlassian.com/syndication/reply-to"/>
+    <link
+            href="https://domain.local/rest/jira-activity-stream/1.0/actions/issue-watch/RALPH-343"
+            rel="http://streams.atlassian.com/syndication/watch"/>
+    <link
+            href="https://domain.local/rest/jira-activity-stream/1.0/actions/issue-vote/RALPH-343"
+            rel="http://streams.atlassian.com/syndication/issue-vote"/>
+    <generator
+            uri="https://domain.local"
+            />
+    <atlassian:application>com.atlassian.jira</atlassian:application>
+    <activity:verb>http://activitystrea.ms/schema/1.0/update</activity:verb>
+    <activity:object>
+        <id>urn:uuid:37024506-3702-3702-bbb4-370237023702</id>
+        <title
+                type="text">RALPH-343</title>
+        <summary type="text">Lorem ipsum</summary>
+        <link
+                rel="alternate" href="https://domain.local/browse/RALPH-343"
+                />
+        <activity:object-type>
+            http://streams.atlassian.com/syndication/types/issue
+        </activity:object-type>
+    </activity:object>
+    <atlassian:timezone-offset>+0200</atlassian:timezone-offset>
+</entry>
+<entry
+        xmlns:activity="http://activitystrea.ms/spec/1.0/">
+    <id>urn:uuid:f616e5a7-db35-328a-a9e8-f428d9565514</id>
+    <title
+            type="html">&lt;a
+        href="https://domain.local/secure/ViewProfile.jspa?name=user"
+        class="activity-item-user activity-item-author">User&lt;/a>
+        lorem ipsum&lt;a
+        href="https://domain.local/browse/RALPH-343">RALPH-343 - Lorem ipsum
+        &amp;quot;Reports&amp;quot;&lt;/a>
+    </title>
+    <content type="html">&lt;ul class="updates activity-list">
+        &lt;li>Changed the Project to 'Ralph'&lt;/li>
+        &lt;li>Changed the Key to 'RALPH-343'&lt;/li>
+        &lt;li>Lorem ipsum'&lt;a
+        href='https://domain.local/browse/RALPH/component/10612'>Lorem ipsum&lt;/a>'&lt;/li>
+        &lt;/ul>
+
+    </content>
+    <author
+            xmlns:usr="http://streams.atlassian.com/syndication/username/1.0">
+        <name>user</name>
+        <email>user@domain.local</email>
+        <uri>https://domain.local/secure/ViewProfile.jspa?name=user</uri>
+        <link
+                xmlns:media="http://purl.org/syndication/atommedia" rel="photo"
+                href="https://domain.local/secure/useravatar?avatarId=10102&amp;s=16"
+                media:height="16" media:width="16"/>
+        <link
+                xmlns:media="http://purl.org/syndication/atommedia" rel="photo"
+                href="https://domain.local/secure/useravatar?avatarId=10102&amp;s=48"
+                media:height="48" media:width="48"
+                />
+        <usr:username>user</usr:username>
+        <activity:object-type>http://activitystrea.ms/schema/1.0/person
+        </activity:object-type>
+    </author>
+    <published>2011-02-01T01:10:00:000Z</published>
+    <updated>2012-03-03T03:30:00:000Z</updated>
+    <link
+            href="https://domain.local/browse/RALPH-343" rel="alternate"/>
+    <link
+            href="https://domain.local/images/icons/task.gif"
+            rel="http://streams.atlassian.com/syndication/icon" title="Task"
+            />
+    <link href="https://domain.local/s/en_USg6ghsj/782/3/1.0/_/download/resources/jira.webresources:global-static/wiki-renderer.css"
+          rel="http://streams.atlassian.com/syndication/css"/>
+    <link
+            href="https://domain.local/plugins/servlet/streamscomments/issues/RALPH-343"
+            rel="http://streams.atlassian.com/syndication/reply-to"/>
+    <link
+            href="https://domain.local/rest/jira-activity-stream/1.0/actions/issue-watch/RALPH-343"
+            rel="http://streams.atlassian.com/syndication/watch"/>
+    <link
+            href="https://domain.local/rest/jira-activity-stream/1.0/actions/issue-vote/RALPH-343"
+            rel="http://streams.atlassian.com/syndication/issue-vote"/>
+    <generator
+            uri="https://domain.local"
+            />
+    <atlassian:application>com.atlassian.jira</atlassian:application>
+    <activity:verb>http://activitystrea.ms/schema/1.0/update</activity:verb>
+    <activity:object>
+        <id>urn:uuid:37024506-3702-3702-bbb4-370237023702</id>
+        <title
+                type="text">RALPH-343</title>
+        <summary type="text">Lorem ipsum</summary>
+        <link
+                rel="alternate" href="https://domain.local/browse/RALPH-343"
+                />
+        <activity:object-type>
+            http://streams.atlassian.com/syndication/types/issue
+        </activity:object-type>
+    </activity:object>
+    <atlassian:timezone-offset>+0200</atlassian:timezone-offset>
+</entry>
+</feed>
