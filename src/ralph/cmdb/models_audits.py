@@ -7,7 +7,6 @@ from __future__ import unicode_literals
 
 from datetime import datetime
 
-from celery.task import task
 from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
@@ -94,61 +93,59 @@ class Auditable(TimeTrackable):
         if not self.id:
             first_run = True
         if self.status_changed():
-            new_status = self._fields_as_dict().get('status')
+            new_status = self.status
             if new_status and not first_run:
                 self.synchronize_status(new_status)
             self.status_lastchanged=datetime.now()
         # we need change id
         super(Auditable, self).save(*args, **kwargs)
 
-def transition_issue(auditable_class, auditable_id, transition_id, retry_count=1):
-    auditable_object = auditable_class.objects.get(id=auditable_id)
-    tracker = IssueTracker()
-    tracker.transition_issue(
-        issue_key=auditable_object.issue_key,
-        transition_id=transition_id,
-    )
+    def transition_issue(self, transition_id, retry_count=1):
+        auditable_object = self
+        tracker = IssueTracker()
+        tracker.transition_issue(
+            issue_key=auditable_object.issue_key,
+            transition_id=transition_id,
+        )
 
-@task
-def create_issue(auditable_class, auditable_id, params, default_assignee, retry_count=1):
-    """
-    We create 2 IssueTracker requests for IssueTracker here.
-    1) Check if assignee exists in IssueTracker
-    2) Create issue with back-link for acceptance
-    """
-    auditable_object = auditable_class.objects.get(id=auditable_id)
-    s = settings.ISSUETRACKERS['default']['OPA']
-    template=s['TEMPLATE']
-    issue_type=s['ISSUETYPE']
-    tracker = IssueTracker()
-    ci = None
-    try:
-        if params.get('ci_uid'):
-            ci = CI.objects.get(uid=params.get('ci_uid'))
-    except CI.DoesNotExist:
-        pass
-    if not tracker.user_exists(params.get('technical_assignee')):
-        tuser = default_assignee
-    else:
-        tuser = params.get('technical_assignee')
-    if not tracker.user_exists(params.get('business_assignee')):
-        buser = default_assignee
-    else:
-        buser = params.get('business_assignee')
-    issue = tracker.create_issue(
-            issue_type=issue_type,
-            description=params.get('description'),
-            summary=params.get('summary'),
-            ci=ci,
-            assignee=default_assignee,
-            technical_assignee=tuser,
-            business_assignee=buser,
-            start=auditable_object.created.isoformat(),
-            end='',
-            template=template,
-    )
-    auditable_object.status_lastchanged = datetime.now()
-    auditable_object.issue_key = issue.get('key')
-    auditable_object.save()
+    def create_issue(self, params, default_assignee, retry_count=1):
+        """
+        We create 2 IssueTracker requests for IssueTracker here.
+        1) Check if assignee exists in IssueTracker
+        2) Create issue with back-link for acceptance
+        """
+        auditable_object = self
+        s = settings.ISSUETRACKERS['default']['OPA']
+        template=s['TEMPLATE']
+        issue_type=s['ISSUETYPE']
+        tracker = IssueTracker()
+        ci = None
+        try:
+            if params.get('ci_uid'):
+                ci = CI.objects.get(uid=params.get('ci_uid'))
+        except CI.DoesNotExist:
+            pass
+        if not tracker.user_exists(params.get('technical_assignee')):
+            tuser = default_assignee
+        else:
+            tuser = params.get('technical_assignee')
+        if not tracker.user_exists(params.get('business_assignee')):
+            buser = default_assignee
+        else:
+            buser = params.get('business_assignee')
+        issue = tracker.create_issue(
+                issue_type=issue_type,
+                description=params.get('description'),
+                summary=params.get('summary'),
+                ci=ci,
+                assignee=default_assignee,
+                technical_assignee=tuser,
+                business_assignee=buser,
+                start=auditable_object.created.isoformat(),
+                end='',
+                template=template,
+        )
+        auditable_object.issue_key = issue.get('key')
+        auditable_object.save()
 
 
