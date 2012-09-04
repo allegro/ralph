@@ -20,8 +20,7 @@ from dj.choices.fields import ChoiceField
 from lck.django.common.models import MACAddressField, Named, TimeTrackable
 
 from ralph.cmdb.models import CI
-from ralph.cmdb.models_audits import Auditable, create_issue, transition_issue
-from ralph.cmdb.models_common import getfunc
+from ralph.cmdb.models_audits import Auditable
 from ralph.discovery.models import Device
 
 
@@ -169,18 +168,17 @@ class Deployment(Auditable):
         towner = get_technical_owner(self.device)
         params = dict(
             ci_uid = CI.get_uid_by_content_object(self.device),
-            # FIXME: doesn't check if CI even exists
             description = 'Please accept',
             summary = 'Summary',
             technical_assignee=towner,
             business_assignee=bowner,
         )
-        getfunc(create_issue)(type(self), self.id, params, DEFAULT_ASSIGNEE)
+        self.create_issue(params, DEFAULT_ASSIGNEE)
 
     def synchronize_status(self, new_status):
         ch = DeploymentStatus.from_id(new_status)
         transition_id = bugtracker_transition_ids.get(ch.name)
-        transition_issue(type(self), self.id, transition_id)
+        self.transition_issue(transition_id)
 
 
 class DeploymentPoll(db.Model):
