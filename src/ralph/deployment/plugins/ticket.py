@@ -11,7 +11,9 @@ from ralph.cmdb.integration.issuetracker import IssueTracker
 from ralph.deployment.models import DeploymentStatus, Deployment
 
 @plugin.register(chain='deployment', requires=[], priority=100)
-def ticket(deployment):
+def ticket(deployment_id):
+    import pdb; pdb.set_trace()
+    deployment = Deployment.objects.get(id=deployment_id)
     issue_tracker = IssueTracker()
     if not deployment.issue_key:
         deployment.fire_issue()

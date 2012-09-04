@@ -9,10 +9,12 @@ from __future__ import unicode_literals
 from ralph.util import plugin
 from ralph.dnsedit.models import DHCPEntry, DHCPServer
 from ralph.dnsedit.util import reset_dhcp
+from ralph.deployment.models import Deployment
 
 
 @plugin.register(chain='deployment', requires=['ticket'], priority=0)
-def dhcp(deployment):
+def dhcp(deployment_id):
+    deployment = Deployment.objects.get(id=deployment_id)
     try:
         entry = DHCPEntry.objects.get(ip=deployment.ip, mac=deployment.mac)
     except DHCPEntry.DoesNotExist:
