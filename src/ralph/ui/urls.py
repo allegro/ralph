@@ -43,11 +43,9 @@ urlpatterns = patterns('',
     url(r'^unlock-field/$', login_required(unlock_field), {}, 'unlock-field'),
     url(r'^$', login_required(Home.as_view()), {}, 'home'),
 
-    url(r'^(?P<section>\w+)/(?P<details>bulkedit)/$',
+    url(r'^(?P<section>\w+)/([^/]*/)?(?P<details>bulkedit)/$',
             login_required(BulkEdit.as_view()), {}, 'bulkedit'),
-    url(r'^(?P<section>\w+)/.*/(?P<details>bulkedit)/$',
-            login_required(BulkEdit.as_view()), {}, 'bulkedit'),
-    url(r'^(?P<section>\w+)/(?P<details>deploy)/(?P<device>\d+)$',
+    url(r'^(?P<section>\w+)/([^/]*/)?(?P<details>deploy)/(?P<device>\d+)$',
             login_required(Deployment.as_view()), {}, 'deploy'),
 
     url(r'^search/$',
