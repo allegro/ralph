@@ -46,7 +46,8 @@ class Auditable(TimeTrackable):
     """
     user = models.ForeignKey('auth.User', verbose_name=_("user"), null=True,
            blank=True, default=None, on_delete=models.SET_NULL)
-    status_lastchanged = models.DateTimeField(verbose_name=_("date"))
+    status_lastchanged = models.DateTimeField(default=datetime.now,
+            verbose_name=_("date"))
     issue_key = models.CharField(verbose_name=_("external ticket key number"),
             max_length=30, blank=True, null=True, default=None)
 
@@ -70,35 +71,11 @@ class Auditable(TimeTrackable):
     def synchronize_status(self, new_status):
         pass
 
-    def fire_issue(self):
-        pass
-
-    def save(self, *args, **kwargs):
-        """
-        Note that djano keeps cached objects from db.
-        Our issue_key is lazy set, so you *must* reload your database object
-        to make any changes to this object.
-        eg.
-            o.save() ;
-            # must reload to get fresh object
-            o = Auditable.objects.get(id=o.id)
-            o.status=..;
-            o.save()
-            o.status=...;
-            o.save()
-        """
-        if kwargs.get('user'):
-            self.user = kwargs.get('user')
-        first_run = False
-        if not self.id:
-            first_run = True
-        if self.status_changed():
-            new_status = self.status
-            if new_status and not first_run:
-                self.synchronize_status(new_status)
-            self.status_lastchanged=datetime.now()
-        # we need change id
-        super(Auditable, self).save(*args, **kwargs)
+    def set_status_and_sync(self, new_status):
+        self.status = new_status
+        self.status_lastchanged = datetime.now()
+        self.synchronize_status(new_status)
+        self.save()
 
     def transition_issue(self, transition_id, retry_count=1):
         auditable_object = self
