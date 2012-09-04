@@ -120,6 +120,11 @@ We can check the status of the Redis server::
   pubsub_patterns:0
   vm_enabled:0 role:master
 
+.. note::
+
+  Remember to configure redis in `settings.py <configuration#message-queue-broker>`_.
+
+
 rabbitmq
 ~~~~~~~~
 
