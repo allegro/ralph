@@ -11,6 +11,7 @@ from time import mktime
 from datetime import datetime
 
 from django.conf import settings
+from exceptions import ValueError
 from ralph.cmdb.integration.issuetracker import IssueTracker
 from ralph.deployment.models import DeploymentPoll, deployment_accepted
 
