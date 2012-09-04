@@ -15,7 +15,8 @@ def ticket(deployment):
     issue_tracker = IssueTracker()
     if not deployment.issue_key:
         deployment.fire_issue()
-        return True
+        # prevent other plugins to be executed until issue fires.
+        return False
     if issue_tracker.deployment_accepted(deployment):
         deployment.status = DeploymentStatus.in_progress.id
         deployment.save()
