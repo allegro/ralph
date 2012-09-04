@@ -10,6 +10,7 @@ from ralph.util import plugin
 from ralph.cmdb.integration.issuetracker import IssueTracker
 from ralph.deployment.models import DeploymentStatus, Deployment
 
+
 @plugin.register(chain='deployment', requires=[], priority=100)
 def ticket(deployment_id):
     deployment = Deployment.objects.get(id=deployment_id)
@@ -21,9 +22,7 @@ def ticket(deployment_id):
     if issue_tracker.deployment_accepted(deployment):
         deployment.status = DeploymentStatus.in_progress.id
         deployment.save()
-        obj_id = deployment.id
-        x = Deployment.objects.get(id=obj_id)
-        x.status = DeploymentStatus.in_deployment.id
-        x.save()
+        deployment.status = DeploymentStatus.in_deployment.id
+        deployment.save()
         return True
     return False
