@@ -11,13 +11,6 @@ logger = logging.getLogger(__name__)
 from ralph.cmdb.integration.exceptions import IssueTrackerException
 
 class Jira(object):
-    """ Simple JIRA wrapper around RestKit """
-    _instance = None
-    def __new__(cls, *args, **kwargs):
-        if not cls._instance:
-            cls._instance = super(Jira, cls).__new__(
-                                cls, *args, **kwargs)
-        return cls._instance
 
     def __init__(self):
         self.accepted_transition = settings.ISSUETRACKERS['default']['OPA']['ACTIONS']['IN_PROGRESS']
