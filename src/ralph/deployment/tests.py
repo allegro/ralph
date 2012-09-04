@@ -78,7 +78,7 @@ class DeploymentTest(TestCase):
     def test_acceptance(self):
         # using issue null engine
         self.assertEqual(self.deployment.status, DeploymentStatus.open.id)
-        self.deployment.fire_issue()
+        self.deployment.create_issue()
         self.assertEqual(self.deployment.issue_key, '#123456')
         # status not changed, until plugin is run
         self.assertEqual(self.deployment.status, DeploymentStatus.open.id)

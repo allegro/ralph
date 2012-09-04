@@ -163,7 +163,7 @@ class Deployment(Auditable):
         verbose_name = _("deployment")
         verbose_name_plural = _("deployments")
 
-    def fire_issue(self):
+    def create_issue(self):
         bowner = get_business_owner(self.device)
         towner = get_technical_owner(self.device)
         params = dict(
@@ -173,7 +173,7 @@ class Deployment(Auditable):
             technical_assignee=towner,
             business_assignee=bowner,
         )
-        self.create_issue(params, DEFAULT_ASSIGNEE)
+        super(Deployment, self).create_issue(params, DEFAULT_ASSIGNEE)
 
     def synchronize_status(self, new_status):
         ch = DeploymentStatus.from_id(new_status)
