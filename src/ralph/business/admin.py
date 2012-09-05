@@ -10,8 +10,8 @@ from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 from lck.django.common.admin import ModelAdmin, ForeignKeyAutocompleteTabularInline
 
-from ralph.business.models import Venture, VentureRole, OwnerType, VentureOwner
-from ralph.business.models import VentureExtraCost
+from ralph.business.models import (Venture, VentureRole, OwnerType,
+    VentureOwner, VentureExtraCost, VentureExtraCostType)
 from ralph.business.models import (RoleProperty, RolePropertyType,
         RolePropertyTypeValue, RolePropertyValue, Department)
 from ralph.integration.admin import RoleIntegrationInline
@@ -30,6 +30,7 @@ admin.site.register(RolePropertyType, RolePropertyTypeAdmin)
 class RolePropertyInline(admin.TabularInline):
     model = RoleProperty
 
+
 class VentureOwnerInline(admin.TabularInline):
     model = VentureOwner
     exclude = ('created', 'modified')
@@ -44,9 +45,19 @@ class VentureRoleInline(ForeignKeyAutocompleteTabularInline):
         'parent': ['^name'],
     }
 
+
 class VentureExtraCostInline(admin.TabularInline):
     model = VentureExtraCost
     exclude = ('created', 'modified')
+
+
+class AutocompleteVentureExtraCostInline(ForeignKeyAutocompleteTabularInline):
+    model = VentureExtraCost
+    exclude = ('created', 'modified')
+    extra = 3
+    related_search_fields = {
+        'venture': ['^name'],
+    }
 
 
 class VentureRoleAdmin(ModelAdmin):
@@ -60,9 +71,16 @@ class VentureRoleAdmin(ModelAdmin):
 admin.site.register(VentureRole, VentureRoleAdmin)
 
 
+class VentureExtraCostTypeAdmin(ModelAdmin):
+    inlines = [AutocompleteVentureExtraCostInline, ]
+
+admin.site.register(VentureExtraCostType, VentureExtraCostTypeAdmin)
+
+
 class RolePropertyValueInline(admin.TabularInline):
     model = RolePropertyValue
     extra = 0
+
 
 class SubVentureInline(admin.TabularInline):
     model = Venture
