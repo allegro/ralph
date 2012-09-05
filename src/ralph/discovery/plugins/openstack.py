@@ -83,7 +83,6 @@ def openstack(**kwargs):
                 end=end.strftime('%Y-%m-%dT%H:%M:%S'),
             ):
             tenants[data['tenant_id']].update(data)
-
     for tenant_id, data in tenants.iteritems():
         dev, cost = make_tenant(data)
         dev.historycost_set.filter(start=start).delete()
