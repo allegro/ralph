@@ -54,7 +54,7 @@ class VentureExtraCostInline(admin.TabularInline):
 class AutocompleteVentureExtraCostInline(ForeignKeyAutocompleteTabularInline):
     model = VentureExtraCost
     exclude = ('created', 'modified')
-    extra = 0
+    extra = 3
     related_search_fields = {
         'venture': ['^name'],
     }
