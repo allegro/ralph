@@ -4,6 +4,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+from django.db.models.query import QuerySet
 
 import feedparser
 
@@ -19,7 +20,7 @@ from ralph.deployment.models import DeploymentPoll, deployment_accepted
 
 class JiraRSS(object):
     def __init__(self, tracker_name='default'):
-        if tracker_name is not 'JIRA':
+        if tracker_name != 'JIRA':
             raise ValueError('given tracker is not JIRA')
         self.issuetracker_url = settings.ISSUETRACKERS[tracker_name]['URL']
         self.project = settings.ISSUETRACKERS[tracker_name]['CMDB_PROJECT']
@@ -34,13 +35,17 @@ class JiraRSS(object):
         for item in issues:
             key = item
             date = issues[item]
-            issues, create = DeploymentPoll.concurrent_get_or_create(key=key,
-                                                     date__gte=date, checked=False,
-                                                     defaults={'date': date})
+            new_issue = DeploymentPoll(key=key, date=date)
+            try:
+                DeploymentPoll.objects.get(key=key, date__gte=date, checked=False)
+            except DeploymentPoll.DoesNotExist:
+                new_issue.save()
 
     def get_issues(self):
         new_issues = []
-        issues = DeploymentPoll.objects.filter(checked=False)
+        query = DeploymentPoll.objects.filter(checked=False).query
+        query.group_by = ['key']
+        issues = QuerySet(query=query, model=DeploymentPoll)
         for issue in issues:
             new_issues.append(issue.key)
         return new_issues
