@@ -10,14 +10,16 @@ logger = logging.getLogger(__name__)
 
 from ralph.cmdb.integration.exceptions import IssueTrackerException
 
-class Jira(object):
+DEFAULT_TIMEOUT=60
+DEFAULT_KEEPALIVE=10
 
+class Jira(object):
     def __init__(self):
         self.accepted_transition = settings.ISSUETRACKERS['default']['OPA']['ACTIONS']['IN_PROGRESS']
         user = settings.ISSUETRACKERS['default']['USER']
         password = settings.ISSUETRACKERS['default']['PASSWORD']
         jira_url = settings.ISSUETRACKERS['default']['URL']
-        self.pool = SimplePool(keepalive=2)
+        self.pool = SimplePool(keepalive=DEFAULT_KEEPALIVE, timeout=DEFAULT_TIMEOUT)
         self.auth = BasicAuth(user, password)
         self.base_url = "%s/rest/api/latest" % jira_url
         self.resource_headers = {'Content-type': 'application/json'}
@@ -50,7 +52,6 @@ class Jira(object):
         resource_name = "issue/" + issue_key
         return self.get_resource(resource_name)
 
-
     def find_issues(self, params):
        resource_name = "search"
        return self.call_resource(resource_name, params)
@@ -66,7 +67,6 @@ class Jira(object):
     def get_issue_transitions(self, issue_key):
         resource_name = 'issue/%s/transitions' % issue_key
         return self.get_resource(resource_name)
-
 
     def transition_issue(self, issue_key, transition_id):
         try:

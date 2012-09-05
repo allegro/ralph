@@ -21,8 +21,7 @@ from lck.django.common.models import MACAddressField, Named, TimeTrackable,\
                                     WithConcurrentGetOrCreate
 
 from ralph.cmdb.models import CI
-from ralph.cmdb.models_audits import Auditable, create_issue, transition_issue
-from ralph.cmdb.models_common import getfunc
+from ralph.cmdb.models_audits import Auditable
 from ralph.discovery.models import Device
 
 
@@ -70,11 +69,15 @@ def normalize_owner(owner):
 
 
 def get_technical_owner(device):
+    if not device.venture:
+        return ''
     owners = device.venture.technical_owners()
     return normalize_owner(owners[0]) if owners else None
 
 
 def get_business_owner(device):
+    if not device.venture:
+        return ''
     owners = device.venture.business_owners()
     return normalize_owner(owners[0]) if owners else None
 
@@ -161,23 +164,22 @@ class Deployment(Auditable):
         verbose_name = _("deployment")
         verbose_name_plural = _("deployments")
 
-    def fire_issue(self):
+    def create_issue(self):
         bowner = get_business_owner(self.device)
         towner = get_technical_owner(self.device)
         params = dict(
             ci_uid = CI.get_uid_by_content_object(self.device),
-            # FIXME: doesn't check if CI even exists
-            description = 'Please accept',
-            summary = 'Summary',
+            description = 'Please accept in order to continue deployment.',
+            summary = '%s - acceptance request for deployment' % unicode(self.device),
             technical_assignee=towner,
             business_assignee=bowner,
         )
-        getfunc(create_issue)(type(self), self.id, params, DEFAULT_ASSIGNEE)
+        super(Deployment, self).create_issue(params, DEFAULT_ASSIGNEE)
 
     def synchronize_status(self, new_status):
         ch = DeploymentStatus.from_id(new_status)
         transition_id = bugtracker_transition_ids.get(ch.name)
-        transition_issue(type(self), self.id, transition_id)
+        self.transition_issue(transition_id)
 
 
 class DeploymentPoll(db.Model, WithConcurrentGetOrCreate):
@@ -190,7 +192,6 @@ class DeploymentPoll(db.Model, WithConcurrentGetOrCreate):
 def handle_deployment_accepted(sender, deployment_id, **kwargs):
     # sample deployment accepted signal code.
     pass
-
 
 # Import all the plugins
 import ralph.deployment.plugins

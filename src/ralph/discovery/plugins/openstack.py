@@ -86,12 +86,14 @@ def openstack(**kwargs):
     for tenant_id, data in tenants.iteritems():
         dev, cost = make_tenant(data)
         dev.historycost_set.filter(start=start).delete()
+        margin_in_percent = dev.get_margin() or 0
+        total_cost = cost * (1 + margin_in_percent / 100)
         hc = HistoryCost(
             device=dev,
             venture=dev.venture,
             start=start,
             end=end,
-            daily_cost=cost,
+            daily_cost=total_cost,
         )
         hc.save()
     return True, 'loaded from %s to %s.' % (start, end), kwargs

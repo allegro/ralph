@@ -138,7 +138,7 @@ class ProcessorInline(ForeignKeyAutocompleteTabularInline):
     exclude = ('created', 'modified')
     extra = 0
     related_search_fields = {
-        'model': ['^name', '^type__name'],
+        'model': ['^name'],
     }
 
 
@@ -148,7 +148,7 @@ class MemoryInline(ForeignKeyAutocompleteTabularInline):
     exclude = ('created', 'modified')
     extra = 0
     related_search_fields = {
-        'model': ['^name', '^type__name'],
+        'model': ['^name'],
     }
 
 
@@ -158,7 +158,7 @@ class EthernetInline(ForeignKeyAutocompleteTabularInline):
     exclude = ('created', 'modified')
     extra = 0
     related_search_fields = {
-        'model': ['^name', '^type__name'],
+        'model': ['^name'],
     }
 
 
