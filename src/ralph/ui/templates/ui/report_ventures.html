@@ -49,7 +49,9 @@
                 </a>
             </td>
             <td>{{ venture.department|default:'' }}</td>
-            <td style="text-align:right">{{ venture.margin_kind|default:'' }}</td>
+            <td style="text-align:right">
+                {{ venture.get_margin }}%
+            </td>
             <td class="currency">
                 {{ venture.total|default:0|currency }}
             </td>

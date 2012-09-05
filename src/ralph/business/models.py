@@ -98,6 +98,14 @@ class Venture(Named, PrebootMixin, TimeTrackable):
         if self.parent:
             return self.parent.get_data_center()
 
+    def get_margin(self):
+        venture = self
+        while venture:
+            if venture.margin_kind:
+                return venture.margin_kind.margin
+            venture = venture.parent
+        return 0
+
     def get_department(self):
         if self.department:
             return self.department
