@@ -116,7 +116,9 @@ class SidebarReports(object):
         context = super(SidebarReports, self).get_context_data(**kwargs)
         sidebar_items = [
             MenuItem("Ventures", fugue_icon='fugue-store',
-                     view_name='reports_ventures')
+                     view_name='reports_ventures'),
+            MenuItem("Margins", fugue_icon='fugue-piggy-bank',
+                     view_name='reports_margins'),
         ]
         context.update({
             'sidebar_items': sidebar_items,
