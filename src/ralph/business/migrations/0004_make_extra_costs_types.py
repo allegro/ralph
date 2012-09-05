@@ -34,10 +34,10 @@ class Migration(SchemaMigration):
         # Migrate data
         for venture_cost in orm['business.VentureExtraCost'].objects.all():
             try:
-                type = orm['business.VentureExtraCostType'].objects.get(name__exact=venture_cost.name)
+                cost_type = orm['business.VentureExtraCostType'].objects.get(name__exact=venture_cost.name)
             except orm['business.VentureExtraCostType'].DoesNotExist:
-                type = orm['business.VentureExtraCostType'].objects.create(name=venture_cost.name)
-            venture_cost.type = type
+                cost_type = orm['business.VentureExtraCostType'].objects.create(name=venture_cost.name)
+            venture_cost.type = cost_type
             venture_cost.save()
 
         # Changing field 'VentureExtraCost.name'
