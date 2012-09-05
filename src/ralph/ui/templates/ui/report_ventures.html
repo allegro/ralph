@@ -40,7 +40,7 @@
             {% endif %}
         </tr>
         {% for venture in ventures %}
-        <tr>
+        <tr {% if not venture.parent %}class="table-highlight"{% endif %}>
             <td>
                 {% if venture.parent %}&nbsp;&nbsp;&nbsp;&nbsp;{% endif %}
                 <a href="../../ventures/{{ venture.symbol|slugify }}/venture" >
@@ -50,7 +50,9 @@
             </td>
             <td>{{ venture.department|default:'' }}</td>
             <td style="text-align:right">{{ venture.margin_kind|default:'' }}</td>
-            <td class="currency">{{ venture.total|default:0|currency }}</td>
+            <td class="currency">
+                {{ venture.total|default:0|currency }}
+            </td>
             {% if profile.is_staff %}
             <td>{% spaceless %}
             <a href="/admin/business/venture/{{ venture.id }}">
