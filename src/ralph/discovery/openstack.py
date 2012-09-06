@@ -67,6 +67,7 @@ class OpenStack(object):
             end = datetime.datetime.now()
         if start is None:
             start = end - datetime.timedelta(hours=24)
+        import pdb; pdb.set_trace()
         return self.query(
                 'os-simple-tenant-usage',
                 start=start.strftime('%Y-%m-%dT%H:%M:%S'),
