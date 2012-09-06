@@ -7,12 +7,13 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import hashlib
+import re
 import zlib
 
 from lck.django.common import nested_commit_on_success
 
 from ralph.util import network, Eth
-from ralph.discovery.models import (DeviceType, Device,
+from ralph.discovery.models import (DeviceType, Device, OperatingSystem,
     ComponentModel, ComponentType, Storage, SERIAL_BLACKLIST,
     DISK_VENDOR_BLACKLIST, DISK_PRODUCT_BLACKLIST)
 
@@ -36,6 +37,7 @@ def parse_facts(facts, is_virtual):
             if 'operatingsystemrelease' in facts:
                 dev_name_parts.append(facts['operatingsystemrelease'])
         dev_name = " ".join(dev_name_parts)
+
         try:
             mac = get_default_mac(facts)
         except ValueError, e:
@@ -160,8 +162,31 @@ Size: {size}""".format(**disk)
             size=stor.size, speed=0, type=ComponentType.disk.id,
             family=disk['vendor'].strip(),
             extra_hash=hashlib.md5(extra).hexdigest(), extra=extra)
-        stor.model.name =  '{} {}MiB'.format(stor.label, stor.size)
+        stor.model.name = '{} {}MiB'.format(stor.label, stor.size)
         stor.model.save(priority=SAVE_PRIORITY)
         stor.save(priority=SAVE_PRIORITY)
 
+@nested_commit_on_success
+def handle_facts_os(dev, facts):
+    try:
+        os_name = "%s %s (%s)" % (facts['operatingsystem'],
+                                  facts['operatingsystemrelease'],
+                                  facts['kernelrelease'])
+        family = facts['kernel']
+    except KeyError:
+        return
+    os = OperatingSystem.create(dev=dev, os_name=os_name, family=family)
+    memory_size = None
+    try:
+        memory_size, unit = re.split('\s+', facts['memorysize'].lower())
+        if unit == 'tb':
+            memory_size = int(float(memory_size) * 1024 * 1024)
+        elif unit == 'gb':
+            memory_size = int(float(memory_size) * 1024)
+        elif unit == 'mb' or unit == 'mib':
+            memory_size = int(memory_size)
+    except (KeyError, ValueError):
+        pass
+    os.memory = memory_size
+    os.save()
 
