@@ -134,3 +134,7 @@ h3 {
     padding-bottom: 10px; 
     padding-top: 10px; 
 }
+
+tr.table-highlight td {
+    font-weight: bold;
+}
