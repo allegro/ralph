@@ -22,8 +22,6 @@ class DeploymentAdminForm(forms.ModelForm):
         cleaned_data = super(DeploymentAdminForm, self).clean()
         ip = self.cleaned_data.get('ip')
         venture_role = self.cleaned_data.get('venture_role')
-        venture = self.cleaned_data.get('venture')
-        x = [venture_role.__dict__]
         if venture_role.check_ip(ip) is False:
             msg = _("Given IP isn't in the appropriate subnet")
             self._errors["ip"] = self.error_class([msg])
