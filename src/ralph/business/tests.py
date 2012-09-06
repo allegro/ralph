@@ -101,8 +101,6 @@ class TestModels(TestCase):
                                          venture=child_venture,
                                          parent=venture_role_main)
         venture_role_child.save()
-        import pdb
-        pdb.set_trace()
         venture_role_child.networks = [fourth_network]
         venture_role_child.save()
 
