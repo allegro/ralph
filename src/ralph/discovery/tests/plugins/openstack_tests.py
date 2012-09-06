@@ -21,7 +21,7 @@ class OpenStackPluginTest(TestCase):
     """ OpenStack costs Test Case """
 
     def setUp(self):
-        # fake settings needed to run plugin, event with mocked library.
+        # fake settings needed to run plugin, even with mocked library.
         settings.OPENSTACK_URL = '/'
         settings.OPENSTACK_USER = 'test'
         settings.OPENSTACK_PASSWORD = 'test'
