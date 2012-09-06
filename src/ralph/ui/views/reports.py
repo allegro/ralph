@@ -20,7 +20,7 @@ from ralph.account.models import Perm
 from ralph.deployment.models import DeploymentStatus
 from ralph.ui.views.common import Base, DeviceDetailView
 from ralph.ui.views.devices import DEVICE_SORT_COLUMNS
-from ralph.ui.forms import DateRangeForm
+from ralph.ui.forms import DateRangeForm, MarginsReportForm
 from ralph.business.models import Venture
 from ralph.discovery.models_history import HistoryCost
 from ralph.ui.reports import total_cost_count
@@ -125,6 +125,27 @@ class SidebarReports(object):
             'sidebar_selected': self.subsection,
             'section': 'reports',
             'subsection': self.subsection,
+        })
+        return context
+
+
+class ReportMargins(SidebarReports, Base):
+    template_name = 'ui/report_margins.html'
+    subsection = 'margins'
+
+    def get(self, *args, **kwargs):
+        profile = self.request.user.get_profile()
+        has_perm = profile.has_perm
+        if not has_perm(Perm.read_device_info_reports):
+            return HttpResponseForbidden(
+                    "You don't have permission to see reports.")
+        self.form = MarginsReportForm(self.request.GET)
+        return super(ReportMargins, self).get(*args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(ReportMargins, self).get_context_data(**kwargs)
+        context.update({
+            'form': self.form,
         })
         return context
 
