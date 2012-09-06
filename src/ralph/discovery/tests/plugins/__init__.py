@@ -6,3 +6,4 @@ from ralph.discovery.tests.plugins.snmp_tests import SnmpPluginTest, SnmpMacPlug
 from ralph.discovery.tests.plugins.ssg_tests import SshSsgPluginTest
 from ralph.discovery.tests.plugins.aix_tests import SshAixPluginTest
 from ralph.discovery.tests.plugins.xen_tests import SshXENPluginTest
+from ralph.discovery.tests.plugins.openstack_tests import OpenStackPluginTest
