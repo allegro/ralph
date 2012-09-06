@@ -33,7 +33,7 @@ from ralph.ui.views.catalog import (Catalog, CatalogDevice, CatalogComponent)
 from ralph.ui.views.deploy import Deployment
 from ralph.ui.views.ventures import VenturesDeviceList, VenturesCMDB
 from ralph.ui.views.racks import RacksDeviceList
-from ralph.ui.views.reports import ReportList
+from ralph.ui.views.reports import ReportVentures, ReportMargins
 
 
 urlpatterns = patterns('',
@@ -173,5 +173,7 @@ urlpatterns = patterns('',
     url(r'^catalog/(?P<kind>device)/(?P<type>\d*)/(?P<group>\d*)/$', login_required(CatalogDevice.as_view()), {}, 'catalog'),
     url(r'^catalog/(?P<kind>component)/(?P<type>\d*)/(?P<group>\d*)/$', login_required(CatalogComponent.as_view()), {}, 'catalog'),
 
-    url(r'^reports/$', login_required(ReportList.as_view()), {}, 'reports'),
+    url(r'^reports/$', login_required(ReportVentures.as_view()), {}, 'reports'),
+    url(r'^reports/ventures/$', login_required(ReportVentures.as_view()), {}, 'reports_ventures'),
+    url(r'^reports/margins/$', login_required(ReportMargins.as_view()), {}, 'reports_margins'),
 )
