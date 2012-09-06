@@ -1,0 +1,30 @@
+{% extends "ui/report_base.html" %}
+{% load url from future %}
+{% load icons %}
+{% load formats %}
+{% load bob %}
+
+{% block contentarea %}
+
+<form class="form form-inline">
+<div class="form-actions">
+    {% for f in form %}
+        <div style="display:inline-block; vertical-align:top" class="control-group {% if f.errors %}error{% endif %}" >
+            {{ f }}
+            {% if f.errors %}
+                <span class="help-block">
+                    {% for e in f.errors %}{{ e }}{% endfor %}
+                </span>
+            {% endif %}
+        </div>
+    {% endfor %}
+    <button type="submit" class="btn">{% spaceless %}
+        {% icon 'fugue-calendar-search-result' %}&nbsp;Update
+        {% endspaceless %}</button>
+</div>
+</form>
+</div>
+<div class="row-fluid">
+<div class="span12">
+</div>
+{% endblock %}
