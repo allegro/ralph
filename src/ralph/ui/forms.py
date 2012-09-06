@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 
 from django import forms
 from lck.django.common.models import MACAddressField
+from bob.forms import AutocompleteWidget
 
 from ralph.business.models import Venture, RoleProperty, VentureRole
 from ralph.deployment.models import Deployment
@@ -19,11 +20,6 @@ from ralph.ui.widgets import (DateWidget, ReadOnlySelectWidget,
                               DeviceGroupWidget, ComponentGroupWidget,
                               DeviceWidget, DeviceModelWidget, ReadOnlyWidget,
                               RackWidget, ReadOnlyPriceWidget)
-
-# XXX those are used by other modules
-from bob.forms import AutocompleteWidget
-from ralph.ui.widgets import ReadOnlyMultipleChoiceWidget
-
 
 def _all_ventures():
     yield '', '---------'
@@ -51,6 +47,28 @@ class DateRangeForm(forms.Form):
 
 class MarginsReportForm(DateRangeForm):
     margin_venture = forms.ChoiceField(choices=_all_ventures())
+
+    def __init__(self, margin_kinds, *args, **kwargs):
+        super(MarginsReportForm, self).__init__(*args, **kwargs)
+        for mk in margin_kinds:
+            field_id = 'm_%d' % mk.id
+            field = forms.IntegerField(label='', initial=mk.margin,
+                    required=False,
+                    widget=forms.TextInput(attrs={
+                        'class': 'span2',
+                        'style': 'text-align: right',
+                    }))
+            field.initial = mk.margin
+            self.fields[field_id] = field
+
+    def get(self, field, default=None):
+        try:
+            return self.cleaned_data[field]
+        except (KeyError, AttributeError):
+            try:
+                return self.initial[field]
+            except KeyError:
+                return self.fields[field].initial
 
 
 class VentureFilterForm(forms.Form):
