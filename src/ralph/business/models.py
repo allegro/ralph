@@ -18,6 +18,7 @@ from dj.choices import Choices
 from dj.choices.fields import ChoiceField
 from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
+from exceptions import AttributeError
 
 from ralph.discovery.models import DataCenter
 from ralph.discovery.models_history import HistoryCost
@@ -60,7 +61,7 @@ class Venture(Named, PrebootMixin, TimeTrackable):
             on_delete=db.SET_NULL)
     path = db.TextField(verbose_name=_("symbol path"), blank=True,
             default="", editable=False)
-    networks = db.ManyToManyField(Network, null=True,
+    networks = db.ManyToManyField(Network, null=True, blank=True,
             verbose_name=_("networks list"))
 
     class Meta:
@@ -107,10 +108,13 @@ class Venture(Named, PrebootMixin, TimeTrackable):
     def check_ip(self, ip):
         node = self
         while node:
-            for network in node.network:
-                if ipaddr.IPAddress(ip) in ipaddr.IPNetwork(network.address):
-                    return True
-            node = node.parent
+            try:
+                for network in node.networks.all():
+                    if ipaddr.IPAddress(ip) in ipaddr.IPNetwork(network.address):
+                        return True
+                node = node.parent
+            except AttributeError:
+                node = node.parent
         return False
 
     @property
@@ -149,7 +153,7 @@ class VentureRole(Named.NonUnique, PrebootMixin, TimeTrackable):
     venture = db.ForeignKey(Venture, verbose_name=_("venture"))
     parent = db.ForeignKey('self', verbose_name=_("parent role"), null=True,
         blank=True, default=None, related_name="child_set")
-    networks = db.ManyToManyField(Network, null=True,
+    networks = db.ManyToManyField(Network, null=True, blank=True,
                                  verbose_name=_("networks list"))
 
     class Meta:
@@ -169,10 +173,13 @@ class VentureRole(Named.NonUnique, PrebootMixin, TimeTrackable):
     def check_ip(self, ip):
         node = self
         while node:
-            for network in node.network:
-                if ipaddr.IPAddress(ip) in ipaddr.IPNetwork(network.address):
-                    return True
-            node = node.parent
+            try:
+                for network in node.networks.all():
+                    if ipaddr.IPAddress(ip) in ipaddr.IPNetwork(network.address):
+                        return True
+                node = node.parent
+            except AttributeError:
+                node = node.parent
         return self.venture.check_ip(ip)
 
     def __unicode__(self):
