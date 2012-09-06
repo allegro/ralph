@@ -17,7 +17,7 @@ from ralph.business.models import Venture, RoleProperty, VentureRole
 from ralph.deployment.models import Deployment
 from ralph.discovery.models_component import is_mac_valid
 from ralph.discovery.models import (Device, ComponentModelGroup, DeviceModel,
-                                    DeviceModelGroup, DeviceType)
+                                    DeviceModelGroup, DeviceType, IPAddress)
 from ralph.dnsedit.models import DHCPEntry
 from ralph.dnsedit.util import is_valid_hostname
 from ralph.util import Eth, presentation
@@ -328,6 +328,30 @@ class DeploymentForm(forms.ModelForm):
         if '.' not in hostname:
             raise forms.ValidationError("Hostname has to include the domain.")
         return hostname
+
+    def clean_ip(self):
+        ip = self.cleaned_data.get('ip')
+        venture_role = self.cleaned_data.get('venture_role')
+        if venture_role.check_ip(ip) is False:
+            raise forms.ValidationError("Given IP isn't in the appropriate subnet")
+        return ip
+
+    def clean_device(self):
+        device = self.cleaned_data['device']
+        managements = self.device_management_count(device)
+        if managements < 1:
+            raise forms.ValidationError("This device doesn't have management")
+        if managements > 1:
+            raise forms.ValidationError("This device have two or more management")
+        return device
+
+    def device_management_count(self, device):
+        try:
+            managements = IPAddress.objects.filter(device_id= device.id,
+                                                   is_management=True)
+            return len(managements)
+        except IPAddress.DoesNotExist:
+            return 0
 
 
 class DeviceForm(forms.ModelForm):

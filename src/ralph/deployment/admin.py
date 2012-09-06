@@ -6,37 +6,11 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from django import forms
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 from lck.django.common.admin import ModelAdmin
 
 from ralph.deployment.models import Deployment, Preboot, PrebootFile
-from ralph.discovery.models import IPAddress
-
-
-class DeploymentAdminForm(forms.ModelForm):
-    class Meta:
-        model = Deployment
-
-    def ip_is_management(self, ip):
-        try:
-            IPAddress.objects.get(address=ip, is_management=True)
-            return True
-        except IPAddress.DoesNotExist:
-            return False
-
-    def clean(self):
-        cleaned_data = super(DeploymentAdminForm, self).clean()
-        ip = self.cleaned_data.get('ip')
-        venture_role = self.cleaned_data.get('venture_role')
-        if venture_role.check_ip(ip) is False:
-            msg = _("Given IP isn't in the appropriate subnet")
-            self._errors["ip"] = self.error_class([msg])
-        if self.ip_is_management(ip):
-            msg = _("Given IP is now management")
-            self._errors["ip"] = self.error_class([msg])
-        return cleaned_data
 
 
 class DeploymentAdmin(ModelAdmin):
@@ -50,7 +24,6 @@ class DeploymentAdmin(ModelAdmin):
         'venture': ['^name'],
         'venture_role': ['^name'],
     }
-    form = DeploymentAdminForm
 
 admin.site.register(Deployment, DeploymentAdmin)
 
