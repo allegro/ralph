@@ -23,6 +23,25 @@ from ralph.dnsedit.util import is_valid_hostname
 from ralph.util import Eth, presentation
 
 
+def _all_ventures():
+    yield '', '---------'
+    for v in Venture.objects.filter(
+                show_in_ralph=True,
+            ).order_by(
+                '-is_infrastructure', 'path'
+            ):
+        yield v.id, '\u00A0' * 4 * v.path.count('/') + v.name
+
+
+def _all_roles():
+    yield '', '---------'
+    for r in VentureRole.objects.order_by(
+                '-venture__is_infrastructure', 'venture__name',
+                'parent__parent__name', 'parent__name', 'name'
+            ):
+        yield r.id, '{} / {}'.format(r.venture.name, r.full_name)
+
+
 class ReadOnlySelectWidget(forms.Select):
     def _has_changed(self, initial, data):
         return False
@@ -183,6 +202,9 @@ class DateWidget(forms.DateInput):
 class DateRangeForm(forms.Form):
     start = forms.DateField(widget=DateWidget)
     end = forms.DateField(widget=DateWidget)
+
+class MarginsReportForm(DateRangeForm):
+    margin_venture = forms.ChoiceField(choices=_all_ventures())
 
 
 class VentureFilterForm(forms.Form):
@@ -438,25 +460,6 @@ class DeviceForm(forms.ModelForm):
             raise forms.ValidationError("Role from a different venture.")
         return None
 
-    def _all_ventures(self):
-        ventures = [(v.id, v.name) for v in
-                Venture.objects.filter(
-                    show_in_ralph=True
-                ).order_by(
-                    '-is_infrastructure', 'name'
-                )]
-        ventures.insert(0, ('', '---------'))
-        return ventures
-
-    def _all_roles(self):
-        roles = [(r.id, '%s / %s' % (r.venture.name, r.full_name))
-                for r in VentureRole.objects.order_by(
-                    '-venture__is_infrastructure', 'venture__name',
-                    'parent__parent__name', 'parent__name', 'name'
-                )
-            ]
-        roles.insert(0, ('', '---------'))
-        return roles
 
 class DeviceCreateForm(DeviceForm):
     class Meta(DeviceForm.Meta):
@@ -488,8 +491,8 @@ class DeviceCreateForm(DeviceForm):
 
     def __init__(self, *args, **kwargs):
         super(DeviceCreateForm, self).__init__(*args, **kwargs)
-        self.fields['venture'].choices = self._all_ventures()
-        self.fields['venture_role'].choices = self._all_roles()
+        self.fields['venture'].choices = _all_ventures()
+        self.fields['venture_role'].choices = _all_roles()
         self.fields['venture'].required = True
         self.fields['model'].required = True
         del self.fields['save_comment']
@@ -542,8 +545,8 @@ class DeviceBulkForm(DeviceForm):
 
     def __init__(self, *args, **kwargs):
         super(DeviceBulkForm, self).__init__(*args, **kwargs)
-        self.fields['venture'].choices = self._all_ventures()
-        self.fields['venture_role'].choices = self._all_roles()
+        self.fields['venture'].choices = _all_ventures()
+        self.fields['venture_role'].choices = _all_roles()
 
 class DeviceInfoForm(DeviceForm):
     class Meta(DeviceForm.Meta):
@@ -570,8 +573,8 @@ class DeviceInfoForm(DeviceForm):
             self.data['model_name'] = self.initial['model_name']
             self.data['rack_name'] = self.initial['rack_name']
             self.data['dc_name'] = self.initial['dc_name']
-        self.fields['venture'].choices = self._all_ventures()
-        self.fields['venture_role'].choices = self._all_roles()
+        self.fields['venture'].choices = _all_ventures()
+        self.fields['venture_role'].choices = _all_roles()
 
 class DeviceInfoVerifiedForm(DeviceInfoForm):
     class Meta(DeviceInfoForm.Meta):
