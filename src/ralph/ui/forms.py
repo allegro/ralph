@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 
 from django import forms
 from lck.django.common.models import MACAddressField
-from django.template.defaultfilters import slugify
+from bob.forms import AutocompleteWidget
 
 from ralph.business.models import Venture, RoleProperty, VentureRole
 from ralph.deployment.models import Deployment
@@ -20,11 +20,6 @@ from ralph.ui.widgets import (DateWidget, ReadOnlySelectWidget,
                               DeviceGroupWidget, ComponentGroupWidget,
                               DeviceWidget, DeviceModelWidget, ReadOnlyWidget,
                               RackWidget, ReadOnlyPriceWidget)
-
-# XXX those are used by other modules
-from bob.forms import AutocompleteWidget
-from ralph.ui.widgets import ReadOnlyMultipleChoiceWidget
-
 
 def _all_ventures():
     yield '', '---------'
