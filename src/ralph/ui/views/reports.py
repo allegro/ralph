@@ -22,6 +22,7 @@ from ralph.ui.views.common import Base, DeviceDetailView
 from ralph.ui.views.devices import DEVICE_SORT_COLUMNS
 from ralph.ui.forms import DateRangeForm, MarginsReportForm
 from ralph.business.models import Venture
+from ralph.discovery.models_device import MarginKind
 from ralph.discovery.models_history import HistoryCost
 from ralph.ui.reports import total_cost_count
 from ralph.util import csvutil
@@ -139,13 +140,76 @@ class ReportMargins(SidebarReports, Base):
         if not has_perm(Perm.read_device_info_reports):
             return HttpResponseForbidden(
                     "You don't have permission to see reports.")
-        self.form = MarginsReportForm(self.request.GET)
+        self.margin_kinds = MarginKind.objects.all()
+        if 'start' in self.request.GET:
+            self.form = MarginsReportForm(self.margin_kinds, self.request.GET)
+        else:
+            self.form = MarginsReportForm(self.margin_kinds, initial={
+                'start': datetime.date.today() - datetime.timedelta(days=30),
+                'end': datetime.date.today(),
+            })
         return super(ReportMargins, self).get(*args, **kwargs)
+
+    def post(self, *args, **kwargs):
+        return self.get(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(ReportMargins, self).get_context_data(**kwargs)
+        if self.form.is_valid():
+            venture = Venture.objects.get(
+                    id=self.form.cleaned_data['margin_venture'])
+            query = HistoryCost.objects.filter(
+                db.Q(venture=venture) |
+                db.Q(venture__parent=venture) |
+                db.Q(venture__parent__parent=venture) |
+                db.Q(venture__parent__parent__parent=venture) |
+                db.Q(venture__parent__parent__parent__parent=venture)
+            )
+            total_cost = 0
+            total_sim = 0
+            total_count = 0
+            for mk in self.margin_kinds:
+                q = query.filter(db.Q(device__margin_kind=mk) |
+                     db.Q(
+                        db.Q(device__margin_kind=None) &
+                        db.Q(
+                            db.Q(device__venture__margin_kind=mk) |
+                            db.Q(device__venture__margin_kind=None,
+                                 device__venture__parent__margin_kind=mk) |
+                            db.Q(device__venture__margin_kind=None,
+                                 device__venture__parent__margin_kind=None,
+                                 device__venture__parent__parent__margin_kind=mk) |
+                            db.Q(device__venture__margin_kind=None,
+                                 device__venture__parent__margin_kind=None,
+                                 device__venture__parent__parent__margin_kind=None,
+                        device__venture__parent__parent__parent__margin_kind=mk)
+                        )
+                    )
+                )
+                mk.total, mk.count, mk.count_now = total_cost_count(
+                        q,
+                        self.form.cleaned_data['start'],
+                        self.form.cleaned_data['end'],
+                    )
+                mk.sim_margin = self.form.get('m_%d' % mk.id, 0) or 0
+                mk.sim_cost = ((mk.total or 0) /
+                               (1 + mk.margin/100) *
+                               (1 + mk.sim_margin/100))
+                total_sim += mk.sim_cost
+                total_cost += mk.total or 0
+                total_count += mk.count or 0
+            context.update({
+                'venture': venture,
+                'total_cost': total_cost,
+                'total_sim': total_sim,
+                'total_count': total_count,
+            })
         context.update({
             'form': self.form,
+            'margin_kinds': self.margin_kinds,
+            'zip_margin_kinds_form': zip([f for f in self.form if
+                                          not f.label],
+                                          self.margin_kinds),
         })
         return context
 
