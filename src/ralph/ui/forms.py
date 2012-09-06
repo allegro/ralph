@@ -49,11 +49,8 @@ class DateRangeForm(forms.Form):
     end = forms.DateField(widget=DateWidget, label='End date')
 
 
-class MarginsReportDateForm(DateRangeForm):
+class MarginsReportForm(DateRangeForm):
     margin_venture = forms.ChoiceField(choices=_all_ventures())
-
-    def __init__(self, *args, **kwargs):
-        super(MarginsReportDateForm, self).__init__(*args, **kwargs)
 
 
 class VentureFilterForm(forms.Form):

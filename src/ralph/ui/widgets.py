@@ -186,4 +186,3 @@ class DeviceGroupWidget(forms.Widget):
 class DateWidget(forms.DateInput):
     input_type = 'text'
 
-
