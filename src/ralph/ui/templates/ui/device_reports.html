@@ -5,11 +5,117 @@
 
 {% block content %}
   <div class="row-fluid">
-    <div class="span10">
-      <h1>Elo</h1>
+        <div class="span6">
+            <table class="table table-striped table-bordered details-history">
+                <tbody>
+                    <tr>
+                        <td>Name</td>
+                        <td>{{ device.name }}</td>
+                    </tr>
+                    {% if device.name2 %}
+                    <tr>
+                        <td>Extra name</td>
+                        <td>{{ device.name2 }}</td>
+                    </tr>
+                    {% endif %}
+                    <tr>
+                        <td>Model</td>
+                        <td>{{ device.model.name }}</td>
+                    </tr>
+                    <tr>
+                        <td>Serial number</td>
+                        <td>{{ device.sn }}</td>
+                    </tr>
+                    <tr>
+                        <td>Barcode</td>
+                        <td>{{ device.barcode }}</td>
+                    </tr>
+                    <tr>
+                        <td>Venture</td>
+                        <td>{{ device.venture }}</td>
+                    </tr>
+                    <tr>
+                        <td>Role</td>
+                        <td>{{ device.role }}</td>
+                    </tr>
+                    <tr>
+                        <td>Verified</td>
+                        <td>{{ device.verified }}</td>
+                    </tr>
+                    <tr>
+                        <td>Purchase date</td>
+                        <td>{{ device.purchase_date }}</td>
+                    </tr>
+                    <tr>
+                        <td>Deprecation date</td>
+                        <td>{{ device.deprecation_date }}</td>
+                    </tr>
+                    <tr>
+                        <td>Support expiration</td>
+                        <td>{{ device.support_expiration_date }}</td>
+                    </tr>
+                    <tr>
+                        <td>parent</td>
+                        <td>{{ device.parent }}</td>
+                    </tr>
+                    <tr>
+                        <td>remarks</td>
+                        <td>{{ device.remarks }}</td>
+                    </tr>
+                    <tr>
+                        <td>price</td>
+                        <td>{{ device.price }}</td>
+                    </tr>
+                    <tr>
+                        <td>cached_price</td>
+                        <td>{{ device.cached_price }}</td>
+                    </tr>
+                    <tr>
+                        <td>cached_cost</td>
+                        <td>{{ device.cached_cost }}</td>
+                    </tr>
+                    <tr>
+                        <td>warranty_expiration_date</td>
+                        <td>{{ device.warranty_expiration_date }}</td>
+                    </tr>
+                    <tr>
+                        <td>support_kind</td>
+                        <td>{{ device.support_kind }}</td>
+                    </tr>
+                    <tr>
+                        <td>deprecation_kind.month</td>
+                        <td>{{ device.deprecation_kind.name }}</td>
+                    </tr>
+                    <tr>
+                        <td>margin_kind</td>
+                        <td>{{ device.margin_kind }}</td>
+                    </tr>
+                    <tr>
+                        <td>chassis_position</td>
+                        <td>{{ device.chassis_position }}</td>
+                    </tr>
+                    <tr>
+                        <td>position</td>
+                        <td>{{ device.position }}</td>
+                    </tr>
+                    <tr>
+                        <td>management</td>
+                        <td>{{ device.management }}</td>
+                    </tr>
+                    <tr>
+                        <td>venture_role</td>
+                        <td>{{ device.venture_role }}</td>
+                    </tr>
+                    <tr>
+                        <td>role</td>
+                        <td>{{ device.role }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
-    <div class="span2">
-      {% sidebar_menu sidebar_items sidebar_selected %}
-    </div>
+
   </div>
 {% endblock content %}
+
+
