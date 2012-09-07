@@ -130,6 +130,7 @@ class ComponentModel(Named.NonUnique, SavePrioritized, WithConcurrentGetOrCreate
                 self.fibrechannel_set.count(),
                 self.genericcomponent_set.count(),
                 self.software_set.count(),
+                self.operatingsystem_set.count(),
             ])
 
     def get_json(self):
@@ -404,11 +405,11 @@ class OperatingSystem(Component):
                                      null=True, blank=True)
 
     @classmethod
-    def create(cls, dev, os_name, memory=None, family=None):
+    def create(cls, dev, os_name, version='', memory=None, family=None):
         model, created = ComponentModel.concurrent_get_or_create(
             type=ComponentType.os.id,
             family=family,
-            extra_hash=hashlib.md5(os_name.encode('utf-8', 'replace')).hexdigest(),
+            extra_hash=hashlib.md5(os_name.encode('utf-8', 'replace')).hexdigest()
         )
         if created:
             model.name = os_name
@@ -418,7 +419,7 @@ class OperatingSystem(Component):
         except cls.DoesNotExist:
             operating_system = cls.objects.create(device=dev)
         operating_system.model = model
-        operating_system.label = os_name
+        operating_system.label = '%s %s' % (os_name, version)
         operating_system.memory = memory
         return operating_system
 
