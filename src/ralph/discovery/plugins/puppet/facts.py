@@ -169,13 +169,19 @@ Size: {size}""".format(**disk)
 @nested_commit_on_success
 def handle_facts_os(dev, facts):
     try:
-        os_name = "%s %s (%s)" % (facts['operatingsystem'],
-                                  facts['operatingsystemrelease'],
-                                  facts['kernelrelease'])
+        os_name = "%s %s" % (facts['operatingsystem'],
+                             facts['operatingsystemrelease'])
         family = facts['kernel']
+        os_version = facts['kernelrelease']
     except KeyError:
-        return
-    os = OperatingSystem.create(dev=dev, os_name=os_name, family=family)
+        try:
+            os_name, family
+        except NameError:
+            return
+        else:
+            os_version = ''
+    os = OperatingSystem.create(dev=dev, os_name=os_name, version=os_version,
+                                family=family)
     memory_size = None
     try:
         memory_size, unit = re.split('\s+', facts['memorysize'].lower())
@@ -188,5 +194,5 @@ def handle_facts_os(dev, facts):
     except (KeyError, ValueError):
         pass
     os.memory = memory_size
-    os.save()
+    os.save(priority=SAVE_PRIORITY)
 
