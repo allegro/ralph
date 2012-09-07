@@ -340,18 +340,15 @@ class DeploymentForm(forms.ModelForm):
         device = self.cleaned_data['device']
         managements = self.device_management_count(device)
         if managements < 1:
-            raise forms.ValidationError("This device doesn't have management")
+            raise forms.ValidationError("doesn't have a management address")
         if managements > 1:
-            raise forms.ValidationError("This device have two or more management")
+            raise forms.ValidationError("has more than one management address")
         return device
 
     def device_management_count(self, device):
-        try:
-            managements = IPAddress.objects.filter(device_id= device.id,
-                                                   is_management=True)
-            return len(managements)
-        except IPAddress.DoesNotExist:
-            return 0
+        managements = IPAddress.objects.filter(device_id= device.id,
+                                               is_management=True)
+        return len(managements)
 
 
 class DeviceForm(forms.ModelForm):
