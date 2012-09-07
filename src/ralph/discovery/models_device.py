@@ -227,6 +227,8 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
         null=True, blank=True)
     purchase_date = db.DateTimeField(verbose_name=_("purchase date"),
         null=True, blank=True)
+    deprecation_date = db.DateTimeField(verbose_name=_("deprecation date"),
+        null=True, blank=True)
     cached_price = db.FloatField(verbose_name=_("quoted price"),
         null=True, blank=True)
     cached_cost = db.FloatField(verbose_name=_("monthly cost"),
