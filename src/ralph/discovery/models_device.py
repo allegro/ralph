@@ -8,6 +8,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from dateutil.relativedelta import *
 from datetime import datetime, timedelta
 import re
 
@@ -429,6 +430,8 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
 
     def save(self, user=None, *args, **kwargs):
         self.saving_user = user
+        if self.purchase_date or self.deprecation_kind:
+            self.deprecation_date = self.purchase_date + relativedelta(months = + self.deprecation_kind.months)
         return super(Device, self).save(*args, **kwargs)
 
 
