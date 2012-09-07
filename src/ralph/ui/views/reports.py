@@ -98,28 +98,28 @@ class ReportType(Choices):
     deprecation_devices = _('Deprecation devices').extra(
             filter=lambda device_list: device_list.filter(
                 deprecation_date__lte = datetime.date.today()),
-                columns=['venture', 'purchase_date', 'deprecation',
+                columns=['venture', 'purchase', 'deprecation',
                          'deprecation_date', 'remarks']
             )
     deprecation_devices30 = _('Deprecation devices in 30').extra(
             filter=lambda device_list: device_list.filter(
                 deprecation_date__lte = threshold(30)).filter(
                     deprecation_date__gte=datetime.date.today()),
-                columns=['venture', 'purchase_date', 'deprecation',
+                columns=['venture', 'purchase', 'deprecation',
                          'deprecation_date','remarks']
             )
     deprecation_devices60 = _('Deprecation devices in 60').extra(
             filter=lambda device_list: device_list.filter(
                 deprecation_date__lte = threshold(60)).filter(
                     deprecation_date__gte=datetime.date.today()),
-                columns=['venture', 'purchase_date', 'deprecation',
+                columns=['venture', 'purchase', 'deprecation',
                          'deprecation_date','remarks']
             )
     deprecation_devices90 = _('Deprecation devices in 90').extra(
             filter=lambda device_list: device_list.filter(
                     deprecation_date__lte = threshold(90)).filter(
                 deprecation_date__gte=datetime.date.today()),
-                columns=['venture', 'purchase_date', 'deprecation',
+                columns=['venture', 'purchase', 'deprecation',
                          'deprecation_date', 'remarks']
             )
 
