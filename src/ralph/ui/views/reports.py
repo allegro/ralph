@@ -10,13 +10,10 @@ import datetime
 
 from bob.menu import MenuItem
 from dj.choices import Choices
-from django.template.defaultfilters import slugify
-
 from ralph.account.models import Perm
-from ralph.deployment.models import DeploymentStatus
+from ralph.deployment.models import DeploymentStatus, Device
 from ralph.ui.views.common import Base, DeviceDetailView
 from ralph.ui.views.devices import DEVICE_SORT_COLUMNS
-
 
 def threshold(days):
     return datetime.date.today() + datetime.timedelta(days=days)
@@ -52,23 +49,32 @@ class ReportType(Choices):
             columns=['venture', 'position', 'barcode', 'cost', 'lastseen',
                 'remarks'],
             )
+    deactivated_support = _('Deactivated support').extra(
+        filter=lambda device_list: device_list.filter(
+            support_expiration_date__lte= datetime.date.today()),
+        columns=['venture', 'position', 'barcode', 'price', 'lastseen',
+                 'remarks', 'support'],
+    )
     support_expires30 = _('Support expires in 30 days').extra(
             filter=lambda device_list: device_list.filter(
-                support_expiration_date__lte=threshold(30)),
+                support_expiration_date__lte=threshold(30)).filter(
+                    support_expiration_date__gte=datetime.date.today()),
             columns=['venture', 'position', 'barcode', 'price', 'lastseen',
-                'remarks'],
+                'remarks', 'support'],
             )
     support_expires60 = _('Support expires in 60 days').extra(
             filter=lambda device_list: device_list.filter(
-                support_expiration_date__lte=threshold(60)),
+                support_expiration_date__lte=threshold(60)).filter(
+                    support_expiration_date__gte=datetime.date.today()),
             columns=['venture', 'position', 'barcode', 'price', 'lastseen',
-                'remarks'],
+                'remarks', 'support'],
             )
     support_expires90 = _('Support expires in 90 days').extra(
             filter=lambda device_list: device_list.filter(
-                support_expiration_date__lte=threshold(90)),
+                support_expiration_date__lte=threshold(90)).filter(
+                    support_expiration_date__gte=datetime.date.today()),
             columns=['venture', 'position', 'barcode', 'price', 'lastseen',
-                'remarks'],
+                'remarks', 'support'],
             )
     verified = _('Verified venture and role').extra(
             filter=lambda device_list: device_list.filter(verified=True),
