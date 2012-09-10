@@ -17,7 +17,8 @@ from django.dispatch import receiver
 from django.utils.translation import ugettext_lazy as _
 from dj.choices import Choices
 from dj.choices.fields import ChoiceField
-from lck.django.common.models import MACAddressField, Named, TimeTrackable
+from lck.django.common.models import MACAddressField, Named, TimeTrackable,\
+                                    WithConcurrentGetOrCreate
 
 from ralph.cmdb.models import CI
 from ralph.cmdb.models_audits import Auditable
@@ -181,7 +182,7 @@ class Deployment(Auditable):
         self.transition_issue(transition_id)
 
 
-class DeploymentPoll(db.Model):
+class DeploymentPoll(db.Model, WithConcurrentGetOrCreate):
     key = db.CharField(max_length=255)
     date = db.DateTimeField()
     checked = db.BooleanField(default=False)
