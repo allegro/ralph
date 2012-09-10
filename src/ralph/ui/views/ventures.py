@@ -10,7 +10,6 @@ import calendar
 
 from django.contrib import messages
 from django.db import models as db
-from django.db.models.sql.aggregates import Aggregate
 from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.shortcuts import get_object_or_404
 from django.utils import simplejson as json
@@ -22,13 +21,13 @@ from ralph.business.models import Venture, VentureRole, VentureExtraCost
 from ralph.discovery.models import (ReadOnlyDevice, DeviceType, DataCenter,
                                     Device, DeviceModelGroup, HistoryCost,
                                     SplunkUsage)
-from ralph.discovery.models_history import FOREVER
 from ralph.ui.forms import RolePropertyForm, DateRangeForm, VentureFilterForm
 from ralph.ui.views.common import (Info, Prices, Addresses, Costs, Purchase,
                                    Components, History, Discover, BaseMixin,
                                    Base, DeviceDetailView, CMDB)
 from ralph.ui.views.devices import BaseDeviceList
 from ralph.ui.views.reports import Reports, ReportDeviceList
+from ralph.ui.reports import total_cost_count
 from ralph.util import presentation
 
 
@@ -242,40 +241,8 @@ class VenturesRoles(Ventures, Base):
         return ret
 
 
-class SpanSum(Aggregate):
-    sql_function = "SUM"
-    sql_template = ("%(function)s(GREATEST(0, "
-                    "DATEDIFF(LEAST(end, DATE('%(end)s')),"
-                    "GREATEST(start, DATE('%(start)s')))) * %(field)s)")
-    default_alias = 'spansum'
-
-    def __init__(self, lookup, **extra):
-        self.lookup = lookup
-        self.extra = extra
-
-    def add_to_query(self, query, alias, col, source, is_summary):
-        super(SpanSum, self).__init__(col, source, is_summary, **self.extra)
-        query.aggregate_select[alias] = self
-
-
-def _total_cost_count(query, start, end):
-    total = query.aggregate(
-            SpanSum(
-                'daily_cost',
-                start=start.strftime('%Y-%m-%d'),
-                end=end.strftime('%Y-%m-%d'),
-            ),
-            #Count('device'),
-        )
-    count = HistoryCost.filter_span(start, end, query).values_list(
-            'device').distinct().count()
-    count_now = query.filter(end=FOREVER).values_list(
-            'device').distinct().count()
-    return total['spansum'], count, count_now
-
-
 def _total_dict(name, query, start, end, url=None):
-    cost, count, count_now = _total_cost_count(query, start, end)
+    cost, count, count_now = total_cost_count(query, start, end)
     if not count:
         return None
     return {
@@ -285,7 +252,6 @@ def _total_dict(name, query, start, end, url=None):
         'count_now': count_now,
         'url': url,
     }
-
 
 def _get_search_url(venture, dc=None, type=(), model_group=None):
     if venture == '':
@@ -459,7 +425,7 @@ def _get_summaries(query, start, end, overlap=True, venture=None):
         if extra_id is None:
             continue
         extra = VentureExtraCost.objects.get(id=extra_id)
-        cost, count, count_now = _total_cost_count(
+        cost, count, count_now = total_cost_count(
                 query.filter(extra=extra), start, end)
         yield {
             'name': extra.name + ' (from %s)' % extra.venture.name,
@@ -535,7 +501,7 @@ class VenturesVenture(SidebarVentures, Base):
                              date in datapoints)
             for date in sorted(datapoints):
                 timestamp = calendar.timegm(date.timetuple()) * 1000
-                total_cost, total_count, now_count  = _total_cost_count(
+                total_cost, total_count, now_count  = total_cost_count(
                         query.all(), date, date+one_day)
                 cost_data.append([timestamp, total_cost])
                 count_data.append([timestamp, total_count])

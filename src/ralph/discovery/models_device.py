@@ -358,8 +358,9 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
     def get_margin(self):
         if self.margin_kind:
             return self.margin_kind.margin
-        elif self.venture and self.venture.margin_kind:
-            return self.venture.margin_kind.margin
+        elif self.venture:
+            return self.venture.get_margin()
+        return 0
 
 
     @classmethod

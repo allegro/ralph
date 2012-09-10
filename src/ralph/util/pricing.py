@@ -11,9 +11,10 @@ import math
 
 from django.db import models as db
 from django.utils.html import escape
+from django.conf import settings
 
-from ralph.discovery.models import (DeviceType, ComponentModelGroup,
-                                    Processor, DiskShare, EthernetSpeed)
+from ralph.discovery.models import (DeviceType, ComponentModelGroup, Processor,
+                                    DiskShare, EthernetSpeed, OperatingSystem)
 #from ralph.util import presentation
 
 
@@ -127,7 +128,18 @@ def get_device_memory_price(device):
     price = math.fsum(
         m.get_price() for m in device.memory_set.all() if m.model)
     if not price and device.model and device.model.type in (
-            DeviceType.rack_server.id, DeviceType.blade_server.id):
+        DeviceType.rack_server.id, DeviceType.blade_server.id,
+        DeviceType.virtual_server.id):
+        try:
+            os = OperatingSystem.objects.get(device=device)
+            group = ComponentModelGroup.objects.get(name='OS Detected Memory')
+            if not group.per_size:
+                return group.price or 0
+            if os.memory:
+                return (os.memory /
+                        (group.size_modifier or 1)) * (group.price or 0)
+        except (OperatingSystem.DoesNotExist, ComponentModelGroup.DoesNotExist):
+            pass
         try:
             group = ComponentModelGroup.objects.get(name='Default Memory')
         except ComponentModelGroup.DoesNotExist:
@@ -163,6 +175,9 @@ def get_device_fc_price(device):
 def get_device_software_price(device):
     return math.fsum(s.get_price() for s in device.software_set.all())
 
+def get_device_operatingsystem_price(device):
+    return math.fsum(os.get_price() for os in device.operatingsystem_set.all())
+
 def get_device_auto_price(device):
     """Calculate the total price of all components."""
 
@@ -180,6 +195,7 @@ def get_device_auto_price(device):
         get_device_components_price(device),
         get_device_fc_price(device),
         get_device_software_price(device),
+        get_device_operatingsystem_price(device),
     ])
 
 def device_update_cached(device):
@@ -280,15 +296,30 @@ def details_mem(dev, purchase_only=False):
     if not has_mem and dev.model and dev.model.type in (
             DeviceType.blade_server.id, DeviceType.rack_server.id):
         try:
-            group = ComponentModelGroup.objects.get(name='Default Memory')
-        except ComponentModelGroup.DoesNotExist:
-            pass
-        else:
+            os = OperatingSystem.objects.get(device=dev)
+            group = ComponentModelGroup.objects.get(name='OS Detected Memory')
+            if group.per_size:
+                price = "%s %s / %s %s" % (group.price, settings.CURRENCY,
+                                           group.size_modifier, group.size_unit)
+            else:
+                price = group.price
             yield {
                 'label': group.name,
-                'price': group.price,
-                'icon': 'fugue-prohibition-button',
+                'icon': 'fugue-memory',
+                'size': os.memory,
+                'price': price,
             }
+        except (OperatingSystem.DoesNotExist, ComponentModelGroup.DoesNotExist):
+            try:
+                group = ComponentModelGroup.objects.get(name='Default Memory')
+            except ComponentModelGroup.DoesNotExist:
+                pass
+            else:
+                yield {
+                    'label': group.name,
+                    'price': group.price,
+                    'icon': 'fugue-prohibition-button',
+                }
 
 def details_disk(dev, purchase_only=False):
     has_disk = False
@@ -299,7 +330,7 @@ def details_disk(dev, purchase_only=False):
             if disk.model and disk.model.group:
                 g = disk.model.group
                 if g.per_size:
-                    size = '%.1f %s' % (float(disk.get_size())/(g.size_modifier or 1),
+                    size = '%.1f %s' % (float(disk.get_size()) / (g.size_modifier or 1),
                                       g.size_unit or '')
             yield {
                 'label': disk.label,
@@ -357,7 +388,7 @@ def details_disk(dev, purchase_only=False):
         yield {
             'label': share.label,
             'size': share.get_total_size(),
-            'price': -share.get_price() if count else 0,
+            'price':-share.get_price() if count else 0,
             'count': count,
             'model': share.model,
             'serial': share.wwn,
@@ -408,6 +439,15 @@ def details_other(dev, purchase_only=False):
             'label': soft.label,
             'model': soft.model,
             'serial': soft.sn,
+        }
+    for os in dev.operatingsystem_set.order_by('label'):
+        if os.memory:
+            label = "%s (memory: %s MiB)" % (os.label, os.memory)
+        else:
+            label = os.label
+        yield {
+            'label': label,
+            'model': os.model,
         }
 
 def details_all(dev, purchase_only=False):
