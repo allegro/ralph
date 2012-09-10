@@ -107,6 +107,10 @@ class BaseMixin(object):
             mainmenu_items.append(
                 MenuItem('Networks', fugue_icon='fugue-weather-clouds',
                          view_name='networks'))
+        if has_perm(Perm.read_device_info_reports):
+            mainmenu_items.append(
+                MenuItem('Reports', fugue_icon='fugue-report',
+                         view_name='reports'))
         if has_perm(Perm.edit_device_info_financial):
             mainmenu_items.append(
                 MenuItem('Catalog', fugue_icon='fugue-paper-bag',
@@ -117,10 +121,6 @@ class BaseMixin(object):
                 MenuItem('CMDB', fugue_icon='fugue-thermometer',
                          href='/cmdb/changes/timeline')
             )
-        if has_perm(Perm.read_device_info_reports) and False: # FIXME: not ready yet
-            mainmenu_items.append(
-                MenuItem('Reports', fugue_icon='fugue-reports-stack',
-                         view_name='reports'))
         if self.request.user.is_staff:
             mainmenu_items.append(
                 MenuItem('Admin', fugue_icon='fugue-toolbox', href='/admin'))

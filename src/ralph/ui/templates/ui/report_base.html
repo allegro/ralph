@@ -1,0 +1,11 @@
+{% extends 'ui/base.html' %}
+
+{% load url from future %}
+{% load icons %}
+{% load bob %}
+
+{% block sidebar %}
+{% if sidebar_items %}    
+{% sidebar_menu sidebar_items sidebar_selected %}
+{% endif %}
+{% endblock %}
