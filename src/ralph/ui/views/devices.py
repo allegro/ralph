@@ -14,6 +14,7 @@ from django.utils.translation import ugettext as _
 from django.views.generic import ListView
 
 from ralph.account.models import Perm
+from ralph.discovery.models import SplunkUsage
 from ralph.util import csvutil
 
 
@@ -182,10 +183,27 @@ class BaseDeviceList(ListView):
     def get_template_names(self):
         return [self.template_name]
 
+    def mark_device_with_nonpermanent_costs(self, queryset):
+        object_list = queryset
+        device_with_nonpermanent_costs = []
+        for item in object_list:
+            sp = SplunkUsage.objects.filter(device_id=item.id)
+            if len(sp) > 0:
+                device_with_nonpermanent_costs.append(item.id)
+        queryset = []
+        for item in object_list:
+            if item.id in device_with_nonpermanent_costs:
+                item.nonpermanent_costs = 1
+            else:
+                item.nonpermanent_costs = 0
+            queryset.append(item)
+        return queryset
+
     def paginate_queryset(self, queryset, page_size):
         """
         Paginate the queryset, if needed. When page number is 0, don't paginate.
         """
+        queryset = self.mark_device_with_nonpermanent_costs(queryset)
         paginator = self.get_paginator(queryset, page_size,
                         allow_empty_first_page=self.get_allow_empty())
         page = self.kwargs.get('page')
