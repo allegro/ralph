@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import datetime
 
-from dateutil.relativedelta import *
+from dateutil.relativedelta import relativedelta
 from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
@@ -20,7 +20,7 @@ class Migration(SchemaMigration):
         #prepare deprecation_date
         devices = orm['discovery.device'].objects.all()
         for device in devices:
-            if device.purchase_date and device.deprecation_kind_id:
+            if device.purchase_date is not None and device.deprecation_kind_id is not None:
                 device.deprecation_date = device.purchase_date + relativedelta(months = device.deprecation_kind.months)
                 device.save()
 
