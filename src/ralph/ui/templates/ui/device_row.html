@@ -46,7 +46,7 @@
         {% else %}
             {{d.cached_cost|currency }}
         {% endif %}
-        {% if d.nonpermanent_costs = 1 %}
+        {% if d.nonpermanent_costs %}
             <i class="fugue-icon fugue-asterisk-small-yellow" title="nonpermanent costs" ></i>
         {% endif %}
         </td>

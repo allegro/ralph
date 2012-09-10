@@ -193,9 +193,7 @@ class BaseDeviceList(ListView):
         queryset = []
         for item in object_list:
             if item.id in device_with_nonpermanent_costs:
-                item.nonpermanent_costs = 1
-            else:
-                item.nonpermanent_costs = 0
+                item.nonpermanent_costs = True
             queryset.append(item)
         return queryset
 
