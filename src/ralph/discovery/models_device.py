@@ -25,6 +25,7 @@ from django.utils.html import escape
 from ralph.discovery.models_util import LastSeen
 from ralph.discovery.models_component import is_mac_valid, Ethernet
 from ralph.util import Eth
+from dirtyfields import DirtyFieldsMixin
 
 
 BLADE_SERVERS = [
@@ -77,7 +78,7 @@ class DeviceType(Choices):
     unknown = _("unknown")
 
 
-class DeprecationKind(Named):
+class DeprecationKind(DirtyFieldsMixin, Named):
     months = db.PositiveIntegerField(verbose_name=_("deprecation time in months"),
         blank=True, null=True)
     remarks = db.TextField(verbose_name=_("remarks"),
@@ -87,6 +88,17 @@ class DeprecationKind(Named):
     class Meta:
         verbose_name = _("deprecation kind")
         verbose_name_plural = _("deprecation kinds")
+
+    def save(self, *args, **kwargs):
+        if self.get_dirty_fields()['months'] is not None:
+            devices = Device.objects.filter(deprecation_kind_id = self.id)
+            for device in devices:
+                if (device.purchase_date is not None
+                    and device.deprecation_kind_id is not None):
+                    device.deprecation_date = (device.purchase_date +
+                                               relativedelta(months=self.months))
+                    super(Device, device).save(*args, **kwargs)
+        return super(DeprecationKind, self).save(*args, **kwargs)
 
 
 class MarginKind(Named):
