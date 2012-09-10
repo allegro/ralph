@@ -179,10 +179,14 @@ class RacksDeviceList(SidebarRacks, BaseMixin, BaseDeviceList):
                     Q(parent__parent__parent__parent=self.rack)
                 ).select_related(depth=3)
         queryset = self.sort_queryset(queryset.order_by('model__type'))
+        return queryset
+
+    def paginate_queryset(self, queryset, page_size):
         if (self.rack and self.rack.model and
             self.rack.model.type == DeviceType.rack.id):
             queryset = list(self.sort_tree(queryset, self.sort))
-        return queryset
+        return super(RacksDeviceList, self).paginate_queryset(queryset,
+                                                              page_size)
 
     def get_context_data(self, **kwargs):
         ret = super(RacksDeviceList, self).get_context_data(**kwargs)
