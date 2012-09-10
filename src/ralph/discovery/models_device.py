@@ -443,8 +443,9 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
 
     def save(self, user=None, *args, **kwargs):
         self.saving_user = user
-        if self.purchase_date or self.deprecation_kind:
-            self.deprecation_date = self.purchase_date + relativedelta(months = + self.deprecation_kind.months)
+        if self.purchase_date and self.deprecation_kind:
+            self.deprecation_date = (self.purchase_date +
+                           relativedelta(months = self.deprecation_kind.months))
         return super(Device, self).save(*args, **kwargs)
 
 
