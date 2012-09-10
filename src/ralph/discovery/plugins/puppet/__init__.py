@@ -9,12 +9,12 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import datetime
-import MySQLdb
 import random
 import re
 import time
 
 from lck.django.common import nested_commit_on_success
+import MySQLdb
 from django.conf import settings
 
 from ralph.util import network, plugin
