@@ -21,7 +21,7 @@ class Migration(SchemaMigration):
         devices = orm['discovery.device'].objects.all()
         for device in devices:
             if device.purchase_date and device.deprecation_kind_id:
-                device.deprecation_date = device.purchase_date + relativedelta(months = + device.deprecation_kind.months)
+                device.deprecation_date = device.purchase_date + relativedelta(months = device.deprecation_kind.months)
                 device.save()
 
 
