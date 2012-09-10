@@ -134,3 +134,8 @@ h3 {
     padding-bottom: 10px; 
     padding-top: 10px; 
 }
+
+.details-raport th
+{
+    width: 40%;
+}
