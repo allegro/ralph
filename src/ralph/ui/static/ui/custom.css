@@ -139,3 +139,7 @@ h3 {
 {
     width: 40%;
 }
+
+tr.table-highlight td {
+    font-weight: bold;
+}

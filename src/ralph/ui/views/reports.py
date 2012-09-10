@@ -7,13 +7,25 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import datetime
+import cStringIO as StringIO
+
+from django.db import models as db
+from django.http import HttpResponseForbidden, HttpResponse
+from django.conf import settings
 
 from bob.menu import MenuItem
 from dj.choices import Choices
+
 from ralph.account.models import Perm
 from ralph.deployment.models import DeploymentStatus, Device
 from ralph.ui.views.common import Base, DeviceDetailView
 from ralph.ui.views.devices import DEVICE_SORT_COLUMNS
+from ralph.ui.forms import DateRangeForm, MarginsReportForm
+from ralph.business.models import Venture
+from ralph.discovery.models_device import MarginKind
+from ralph.discovery.models_history import HistoryCost
+from ralph.ui.reports import total_cost_count
+from ralph.util import csvutil
 
 def threshold(days):
     return datetime.date.today() + datetime.timedelta(days=days)
@@ -131,10 +143,188 @@ class Reports(DeviceDetailView):
         result = super(Reports, self).get_context_data(**kwargs)
         return result
 
-
-class ReportList(Base):
+class SidebarReports(object):
     section = 'reports'
-    template_name = 'ui/report_list.html'
+    subsection = ''
+
+    def get_context_data(self, **kwargs):
+        context = super(SidebarReports, self).get_context_data(**kwargs)
+        sidebar_items = [
+            MenuItem("Ventures", fugue_icon='fugue-store',
+                     view_name='reports_ventures'),
+            MenuItem("Margins", fugue_icon='fugue-piggy-bank',
+                     view_name='reports_margins'),
+        ]
+        context.update({
+            'sidebar_items': sidebar_items,
+            'sidebar_selected': self.subsection,
+            'section': 'reports',
+            'subsection': self.subsection,
+        })
+        return context
+
+
+class ReportMargins(SidebarReports, Base):
+    template_name = 'ui/report_margins.html'
+    subsection = 'margins'
+
+    def get(self, *args, **kwargs):
+        profile = self.request.user.get_profile()
+        has_perm = profile.has_perm
+        if not has_perm(Perm.read_device_info_reports):
+            return HttpResponseForbidden(
+                    "You don't have permission to see reports.")
+        self.margin_kinds = MarginKind.objects.all()
+        if 'start' in self.request.GET:
+            self.form = MarginsReportForm(self.margin_kinds, self.request.GET)
+        else:
+            self.form = MarginsReportForm(self.margin_kinds, initial={
+                'start': datetime.date.today() - datetime.timedelta(days=30),
+                'end': datetime.date.today(),
+            })
+        return super(ReportMargins, self).get(*args, **kwargs)
+
+    def post(self, *args, **kwargs):
+        return self.get(*args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(ReportMargins, self).get_context_data(**kwargs)
+        if self.form.is_valid():
+            venture = Venture.objects.get(
+                    id=self.form.cleaned_data['margin_venture'])
+            query = HistoryCost.objects.filter(
+                db.Q(venture=venture) |
+                db.Q(venture__parent=venture) |
+                db.Q(venture__parent__parent=venture) |
+                db.Q(venture__parent__parent__parent=venture) |
+                db.Q(venture__parent__parent__parent__parent=venture)
+            )
+            total_cost = 0
+            total_sim = 0
+            total_count = 0
+            for mk in self.margin_kinds:
+                q = query.filter(db.Q(device__margin_kind=mk) |
+                     db.Q(
+                        db.Q(device__margin_kind=None) &
+                        db.Q(
+                            db.Q(device__venture__margin_kind=mk) |
+                            db.Q(device__venture__margin_kind=None,
+                                 device__venture__parent__margin_kind=mk) |
+                            db.Q(device__venture__margin_kind=None,
+                                 device__venture__parent__margin_kind=None,
+                                 device__venture__parent__parent__margin_kind=mk) |
+                            db.Q(device__venture__margin_kind=None,
+                                 device__venture__parent__margin_kind=None,
+                                 device__venture__parent__parent__margin_kind=None,
+                        device__venture__parent__parent__parent__margin_kind=mk)
+                        )
+                    )
+                )
+                mk.total, mk.count, mk.count_now = total_cost_count(
+                        q,
+                        self.form.cleaned_data['start'],
+                        self.form.cleaned_data['end'],
+                    )
+                mk.sim_margin = self.form.get('m_%d' % mk.id, 0) or 0
+                mk.sim_cost = ((mk.total or 0) /
+                               (1 + mk.margin/100) *
+                               (1 + mk.sim_margin/100))
+                total_sim += mk.sim_cost
+                total_cost += mk.total or 0
+                total_count += mk.count or 0
+            context.update({
+                'venture': venture,
+                'total_cost': total_cost,
+                'total_sim': total_sim,
+                'total_count': total_count,
+            })
+        context.update({
+            'form': self.form,
+            'margin_kinds': self.margin_kinds,
+            'zip_margin_kinds_form': zip([f for f in self.form if
+                                          not f.label],
+                                          self.margin_kinds),
+        })
+        return context
+
+
+class ReportVentures(SidebarReports, Base):
+    template_name = 'ui/report_ventures.html'
+    subsection = 'ventures'
+
+    def export_csv(self):
+        def iter_rows():
+            yield [
+                'Venture',
+                'Path',
+                'Department',
+                'Default margin',
+                'Total cost'
+            ]
+            for venture in self.ventures:
+                total = venture.total or 0
+                yield [
+                    venture.name,
+                    venture.path,
+                    unicode(venture.department) if venture.department else '',
+                    ('%d%%' % venture.margin_kind.margin
+                        ) if venture.margin_kind else '',
+                    '{:,.2f} {}'.format(total, settings.CURRENCY).replace(',', ' '),
+                ]
+        f = StringIO.StringIO()
+        csvutil.UnicodeWriter(f).writerows(iter_rows())
+        response = HttpResponse(f.getvalue(), content_type='application/csv')
+        response['Content-Disposition'] = 'attachment; filename=ventures.csv'
+        return response
+
+    def get(self, *args, **kwargs):
+        profile = self.request.user.get_profile()
+        has_perm = profile.has_perm
+        if not has_perm(Perm.read_device_info_reports):
+            return HttpResponseForbidden(
+                    "You don't have permission to see reports.")
+        if 'start' in self.request.GET:
+            self.form = DateRangeForm(self.request.GET)
+        else:
+            self.form = DateRangeForm(initial={
+                'start': datetime.date.today() - datetime.timedelta(days=30),
+                'end': datetime.date.today(),
+            })
+        if self.form.is_valid():
+            self.ventures = profile.perm_ventures(
+                    Perm.read_device_info_reports
+                ).filter(
+                    db.Q(parent=None) |
+                    db.Q(parent__parent=None),
+                    show_in_ralph=True
+                ).order_by('path')
+            for venture in self.ventures:
+                (venture.total, venture.count,
+                 venture.count_now) = total_cost_count(
+                         HistoryCost.objects.filter(
+                             db.Q(venture=venture) |
+                             db.Q(venture__parent=venture) |
+                             db.Q(venture__parent__parent=venture) |
+                             db.Q(venture__parent__parent__parent=venture) |
+                             db.Q(venture__parent__parent__parent__parent=venture)
+                         ).distinct(),
+                         self.form.cleaned_data['start'],
+                         self.form.cleaned_data['end'],
+                    )
+        else:
+            self.ventures = Venture.objects.none()
+        if self.request.GET.get('export') == 'csv':
+            return self.export_csv()
+        return super(ReportVentures, self).get(*args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(ReportVentures, self).get_context_data(**kwargs)
+        context.update({
+            'form': self.form,
+            'ventures': self.ventures,
+            'profile': self.request.user.get_profile(),
+        })
+        return context
 
 
 class ReportDeviceList(object):

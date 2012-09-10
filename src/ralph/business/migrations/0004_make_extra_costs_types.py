@@ -7,36 +7,64 @@ from django.db import models
 
 class Migration(SchemaMigration):
 
-    def forwards(self, orm):
-        # Adding model 'BusinessLine'
-        db.create_table('business_businessline', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(unique=True, max_length=255, db_index=True)),
-        ))
-        db.send_create_signal('business', ['BusinessLine'])
+    no_dry_run = True
 
-        # Adding model 'Service'
-        db.create_table('business_service', (
+    def forwards(self, orm):
+        # Removing unique constraint on 'VentureExtraCost', fields ['name', 'venture']
+        db.delete_unique('business_ventureextracost', ['name', 'venture_id'])
+
+        # Adding model 'VentureExtraCostType'
+        db.create_table('business_ventureextracosttype', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=255, db_index=True)),
-            ('external_key', self.gf('django.db.models.fields.CharField')(unique=True, max_length=100, db_index=True)),
-            ('location', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('state', self.gf('django.db.models.fields.CharField')(max_length=100)),
-            ('it_person', self.gf('django.db.models.fields.CharField')(default=u'', max_length=255, blank=True)),
-            ('it_person_mail', self.gf('django.db.models.fields.CharField')(default=u'', max_length=255, blank=True)),
-            ('business_person', self.gf('django.db.models.fields.CharField')(default=u'', max_length=255, blank=True)),
-            ('business_person_mail', self.gf('django.db.models.fields.CharField')(default=u'', max_length=255, blank=True)),
-            ('business_line', self.gf('django.db.models.fields.CharField')(max_length=255)),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=75)),
+            ('created', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
+            ('modified', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
+            ('cache_version', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
         ))
-        db.send_create_signal('business', ['Service'])
+        db.send_create_signal('business', ['VentureExtraCostType'])
+
+        # Insert temp venture cost name
+        temp = orm['business.VentureExtraCostType'].objects.create(name='temp')
+
+        # Adding field 'VentureExtraCost.type'
+        db.add_column('business_ventureextracost', 'type',
+                      self.gf('django.db.models.fields.related.ForeignKey')(default=temp.pk, to=orm['business.VentureExtraCostType']),
+                      keep_default=False)
+
+        # Migrate data
+        for venture_cost in orm['business.VentureExtraCost'].objects.all():
+            try:
+                cost_type = orm['business.VentureExtraCostType'].objects.get(name__exact=venture_cost.name)
+            except orm['business.VentureExtraCostType'].DoesNotExist:
+                cost_type = orm['business.VentureExtraCostType'].objects.create(name=venture_cost.name)
+            venture_cost.type = cost_type
+            venture_cost.save()
+
+        # Changing field 'VentureExtraCost.name'
+        db.alter_column('business_ventureextracost', 'name', self.gf('django.db.models.fields.CharField')(max_length=75, null=True, blank=True))
+
+        # Adding unique constraint on 'VentureExtraCost', fields ['type', 'venture']
+        db.create_unique('business_ventureextracost', ['type_id', 'venture_id'])
+
+        # Delete temp venture cost name
+        temp.delete()
 
 
     def backwards(self, orm):
-        # Deleting model 'BusinessLine'
-        db.delete_table('business_businessline')
+        # Removing unique constraint on 'VentureExtraCost', fields ['type', 'venture']
+        db.delete_unique('business_ventureextracost', ['type_id', 'venture_id'])
 
-        # Deleting model 'Service'
-        db.delete_table('business_service')
+        # Deleting model 'VentureExtraCostType'
+        db.delete_table('business_ventureextracosttype')
+
+        # Deleting field 'VentureExtraCost.type'
+        db.delete_column('business_ventureextracost', 'type_id')
+
+        # Changing field 'VentureExtraCost.name'
+        db.alter_column('business_ventureextracost', 'name', self.gf('django.db.models.fields.CharField')(max_length=75, null=False, blank=False))
+
+        # Adding unique constraint on 'VentureExtraCost', fields ['name', 'venture']
+        db.create_unique('business_ventureextracost', ['name', 'venture_id'])
 
 
     models = {
@@ -142,21 +170,32 @@ class Migration(SchemaMigration):
             'margin_kind': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': "orm['discovery.MarginKind']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
             'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '75', 'db_index': 'True'}),
+            'networks': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['discovery.Network']", 'null': 'True', 'symmetrical': 'False'}),
             'parent': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'related_name': "u'child_set'", 'null': 'True', 'blank': 'True', 'to': "orm['business.Venture']"}),
             'path': ('django.db.models.fields.TextField', [], {'default': "u''", 'blank': 'True'}),
+            'preboot': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': "orm['deployment.Preboot']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
             'show_in_ralph': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'symbol': ('django.db.models.fields.CharField', [], {'default': "u''", 'max_length': '32', 'blank': 'True'})
         },
         'business.ventureextracost': {
-            'Meta': {'ordering': "(u'name',)", 'unique_together': "((u'name', u'venture'),)", 'object_name': 'VentureExtraCost'},
+            'Meta': {'ordering': "(u'type',)", 'unique_together': "((u'type', u'venture'),)", 'object_name': 'VentureExtraCost'},
             'cache_version': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
             'cost': ('django.db.models.fields.FloatField', [], {'default': '0'}),
             'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'expire': ('django.db.models.fields.DateField', [], {'default': 'None', 'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '75'}),
+            'name': ('django.db.models.fields.CharField', [], {'default': "u''", 'max_length': '75', 'null': 'True', 'blank': 'True'}),
+            'type': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['business.VentureExtraCostType']"}),
             'venture': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['business.Venture']"})
+        },
+        'business.ventureextracosttype': {
+            'Meta': {'ordering': "(u'name',)", 'object_name': 'VentureExtraCostType'},
+            'cache_version': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
+            'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '75'})
         },
         'business.ventureowner': {
             'Meta': {'object_name': 'VentureOwner'},
@@ -176,7 +215,9 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '75'}),
+            'networks': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['discovery.Network']", 'null': 'True', 'symmetrical': 'False'}),
             'parent': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'related_name': "u'child_set'", 'null': 'True', 'blank': 'True', 'to': "orm['business.VentureRole']"}),
+            'preboot': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': "orm['deployment.Preboot']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
             'venture': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['business.Venture']"})
         },
         'contenttypes.contenttype': {
@@ -185,6 +226,23 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
+        },
+        'deployment.preboot': {
+            'Meta': {'object_name': 'Preboot'},
+            'cache_version': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
+            'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
+            'files': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': "orm['deployment.PrebootFile']", 'null': 'True', 'blank': 'True'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
+            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '75', 'db_index': 'True'})
+        },
+        'deployment.prebootfile': {
+            'Meta': {'object_name': 'PrebootFile'},
+            'file': ('django.db.models.fields.files.FileField', [], {'default': 'None', 'max_length': '100', 'null': 'True', 'blank': 'True'}),
+            'ftype': (u'dj.choices.fields.ChoiceField', [], {'unique': 'False', 'primary_key': 'False', 'db_column': 'None', 'blank': 'False', u'default': '101', 'null': 'False', '_in_south': 'True', 'db_index': 'False'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '75', 'db_index': 'True'}),
+            'raw_config': ('django.db.models.fields.TextField', [], {'blank': 'True'})
         },
         'discovery.datacenter': {
             'Meta': {'ordering': "(u'name',)", 'object_name': 'DataCenter'},
@@ -208,6 +266,7 @@ class Migration(SchemaMigration):
             'chassis_position': ('django.db.models.fields.PositiveIntegerField', [], {'null': 'True', 'blank': 'True'}),
             'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'dc': ('django.db.models.fields.CharField', [], {'default': 'None', 'max_length': '32', 'null': 'True', 'blank': 'True'}),
+            'deleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_index': 'True'}),
             'deprecation_kind': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': "orm['discovery.DeprecationKind']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
             'diag_firmware': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
             'hard_firmware': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
