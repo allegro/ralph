@@ -174,3 +174,19 @@ class TestModels(TestCase):
         self.assertEqual(a.get_preboot(), preboot)
         self.assertEqual(b.get_preboot(), preboot)
         self.assertEqual(c.get_preboot(), preboot)
+
+    def test_get_data_center(self):
+        data_center = DataCenter(name='Test DateCenter')
+        data_center.save()
+        ven = Venture(name='test', symbol='test', data_center=data_center)
+        ven.save()
+
+        a = Venture(name='test1', symbol='test1', parent=ven)
+        a.save()
+        b = Venture(name='test2', symbol='test1 parent', parent=a)
+        b.save()
+        c = Venture(name='test3', symbol='test1 parent parent', parent=b)
+        c.save()
+        self.assertEqual(a.get_data_center(), data_center)
+        self.assertEqual(b.get_data_center(), data_center)
+        self.assertEqual(c.get_data_center(), data_center)
