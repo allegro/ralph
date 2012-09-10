@@ -1,117 +1,193 @@
 {% extends "ui/base-devices.html" %}
 {% load url from future %}
+{% load formats %}
 {% load bob %}
 {% load icons %}
 
 {% block content %}
   <div class="row-fluid">
         <div class="span6">
-            <table class="table table-striped table-bordered details-history">
+            <table class="table table-striped table-bordered details-raport">
                 <tbody>
                     <tr>
-                        <td>Name</td>
+                        <th>Name</th>
                         <td>{{ device.name }}</td>
                     </tr>
                     {% if device.name2 %}
                     <tr>
-                        <td>Extra name</td>
+                        <th>Extra name</th>
                         <td>{{ device.name2 }}</td>
                     </tr>
                     {% endif %}
                     <tr>
-                        <td>Model</td>
+                        <th>Model</th>
                         <td>{{ device.model.name }}</td>
                     </tr>
                     <tr>
-                        <td>Serial number</td>
+                        <th>Serial number</th>
                         <td>{{ device.sn }}</td>
                     </tr>
                     <tr>
-                        <td>Barcode</td>
+                        <th>Barcode</th>
                         <td>{{ device.barcode }}</td>
                     </tr>
                     <tr>
-                        <td>Venture</td>
-                        <td>{{ device.venture }}</td>
-                    </tr>
-                    <tr>
-                        <td>Role</td>
-                        <td>{{ device.role }}</td>
-                    </tr>
-                    <tr>
-                        <td>Verified</td>
+                        <th>Verified</th>
                         <td>{{ device.verified }}</td>
                     </tr>
-                    <tr>
-                        <td>Purchase date</td>
-                        <td>{{ device.purchase_date }}</td>
-                    </tr>
-                    <tr>
-                        <td>Deprecation date</td>
-                        <td>{{ device.deprecation_date }}</td>
-                    </tr>
-                    <tr>
-                        <td>Support expiration</td>
-                        <td>{{ device.support_expiration_date }}</td>
-                    </tr>
-                    <tr>
-                        <td>parent</td>
-                        <td>{{ device.parent }}</td>
-                    </tr>
-                    <tr>
-                        <td>remarks</td>
-                        <td>{{ device.remarks }}</td>
-                    </tr>
-                    <tr>
-                        <td>price</td>
-                        <td>{{ device.price }}</td>
-                    </tr>
-                    <tr>
-                        <td>cached_price</td>
-                        <td>{{ device.cached_price }}</td>
-                    </tr>
-                    <tr>
-                        <td>cached_cost</td>
-                        <td>{{ device.cached_cost }}</td>
-                    </tr>
-                    <tr>
-                        <td>warranty_expiration_date</td>
-                        <td>{{ device.warranty_expiration_date }}</td>
-                    </tr>
-                    <tr>
-                        <td>support_kind</td>
-                        <td>{{ device.support_kind }}</td>
-                    </tr>
-                    <tr>
-                        <td>deprecation_kind.month</td>
-                        <td>{{ device.deprecation_kind.name }}</td>
-                    </tr>
-                    <tr>
-                        <td>margin_kind</td>
-                        <td>{{ device.margin_kind }}</td>
-                    </tr>
-                    <tr>
-                        <td>chassis_position</td>
-                        <td>{{ device.chassis_position }}</td>
-                    </tr>
-                    <tr>
-                        <td>position</td>
-                        <td>{{ device.position }}</td>
-                    </tr>
-                    <tr>
-                        <td>management</td>
-                        <td>{{ device.management }}</td>
-                    </tr>
-                    <tr>
-                        <td>venture_role</td>
-                        <td>{{ device.venture_role }}</td>
-                    </tr>
-                    <tr>
-                        <td>role</td>
-                        <td>{{ device.role }}</td>
-                    </tr>
+
+                </body>
+            </table>
+
+            <table class="table table-striped table-bordered details-raport">
+                <tbody>
+                <tr>
+                    <th>Support expiration</th>
+                    <td>{{ device.support_expiration_date|date:'Y-m-d H:i' }}</td>
+                </tr>
+                <tr>
+                    <th>Warranty expiration</th>
+                    <td>{{ device.warranty_expiration_date|date:'Y-m-d H:i' }}</td>
+                </tr>
                 </tbody>
             </table>
+
+            <table class="table table-striped table-bordered details-raport">
+                <tbody>
+                <tr>
+                    <th>Venture</th>
+                    <td>{{ device.venture.name }}</td>
+                </tr>
+                <tr>
+                    <th>Role</th>
+                    <td>{{ device.role }}</td>
+                </tr>
+                <tr>
+                    <th>Parent</th>
+                    <td>{{ device.parent }}</td>
+                </tr>
+                <tr>
+                    <th>Chassis position</th>
+                    <td>{{ device.chassis_position }}</td>
+                </tr>
+                <tr>
+                    <th>Position</th>
+                    <td>{{ device.position }}</td>
+                </tr>
+
+                {% if device.model.type == dt.blade_server.id %}
+                    <tr>
+                        <th>Blade System</th>
+                        <td><a href="{{ device.parent.id }}"
+                                >{{ device.parent|device_icon }}
+                            {{ device.parent.name }}</a></td>
+                    </tr>
+                    {%  if device.parent.management %}
+                        <tr>
+                            <th>Blade System Management Address</th>
+                            <td><a href="https://{{ device.parent.management.address }}"
+                                    >{{ device.parent.management|address_icon }}
+                                {{ device.parent.management }}</a></td>
+                        </tr>
+                    {%  endif %}
+                {% endif %}
+
+                {% if device.model.type == dt.virtual_server.id %}
+                    <tr>
+                        <th>Virtual Server Hypervisor</th>
+                        <td><a href="{{ device.parent.id }}"
+                                >{{ device.parent|device_icon }}
+                            {{ device.parent.name }}</a></td>
+                    </tr>
+                    {%  if device.management %}
+                        <tr>
+                            <th>Head Node Management Address</th>
+                            <td><a href="https://{{ device.management.address }}"
+                                    >{{ device.management|address_icon }}
+                                {{ device.management }}</a></td>
+                        </tr>
+                    {%  endif %}
+                {% else %}
+                    {%  if device.find_management %}
+                        <tr>
+                            <th>Server Management Address</th>
+                            <td><a href="https://{{ device.find_management.address }}"
+                                    >{{ device.find_management|address_icon }}
+                                {{ device.find_management }}</a></td>
+                        </tr>
+                    {%  endif %}
+                {% endif %}
+                </tbody>
+            </table>
+
+            <table class="table table-striped table-bordered details-addresses">
+                <thead><tr>
+                    <th width="16"></th>
+                    <th>Hostname</th>
+                    <th>Address</th>
+                    <th>Last Ping</th>
+                </tr></thead>
+                <tbody>
+                {% for item in device.ipaddress_set.all %}
+                    <tr>
+                        <td>{{ item|address_icon }}</td>
+                        <td>{{ item.hostname }}</td>
+                        <td>{{ item.address }}</td>
+                        <td>{{ item.last_seen|date:'Y-m-d H:i' }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="span6">
+            <table class="table table-striped table-bordered details-raport">
+                <tbody>
+                    <tr>
+                        <th>Price</th>
+                        <td>{{ device.cached_price|currency }}</td>
+                    </tr>
+                    <tr>
+                        <th>Cost</th>
+                        <td>{{ device.cached_cost|currency }}</td>
+                    </tr>
+                    <tr>
+                        <th>Purchase date</th>
+                        <td>{{ device.purchase_date|date:'Y-m-d H:i' }}</td>
+                    </tr>
+                    <tr>
+                        <th>Deprecation date</th>
+                        <td>{{ device.deprecation_date|date:'Y-m-d H:i' }}</td>
+                    </tr>
+                    <tr>
+                        <th>Deprecation month</th>
+                        <td>{{ device.deprecation_kind.name }}</td>
+                    </tr>
+
+                </tbody>
+            </table>
+
+            <table class="table table-striped table-bordered details-info-owners">
+                <thead><tr>
+                    <th width="16"></th>
+                    <th>Owner</th>
+                </tr></thead>
+                <tbody>
+                {% for o in device.venture.ventureowner_set.all %}
+                    <tr>
+                        <td>{{ o|owner_icon }}</td>
+                        <td>{{ o.name }}</td>
+                    </tr>
+                {% endfor %}
+                {% if device.venture.department %}
+                    <tr>
+                        <td>{{ device.venture|venture_icon }}</td>
+                        <td>{{ device.venture.department }}</td>
+                    </tr>
+                {% endif %}
+                </tbody>
+            </table>
+
+        </div>
         </div>
     </div>
 
