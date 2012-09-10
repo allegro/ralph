@@ -128,7 +128,8 @@ def get_device_memory_price(device):
     price = math.fsum(
         m.get_price() for m in device.memory_set.all() if m.model)
     if not price and device.model and device.model.type in (
-            DeviceType.rack_server.id, DeviceType.blade_server.id):
+        DeviceType.rack_server.id, DeviceType.blade_server.id,
+        DeviceType.virtual_server.id):
         try:
             os = OperatingSystem.objects.get(device=device)
             group = ComponentModelGroup.objects.get(name='OS Detected Memory')
