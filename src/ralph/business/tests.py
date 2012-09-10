@@ -59,7 +59,7 @@ class TestModels(TestCase):
 
         main_venture = Venture(name='Main Venture')
         main_venture.save()
-        main_venture.network = [network, subnetwork]
+        main_venture.networks = [network, subnetwork]
         main_venture.save()
 
         second_network = Network(address='172.16.0.0/28',name='Test secound_network',
@@ -70,7 +70,7 @@ class TestModels(TestCase):
 
         child_venture = Venture(name='Child Venture', parent=main_venture)
         child_venture.save()
-        child_venture.network = [second_network]
+        child_venture.networks = [second_network]
         child_venture.save()
 
         third_network = Network(address='66.6.6.0/29',name='Test third_network',
@@ -88,7 +88,7 @@ class TestModels(TestCase):
         venture_role_main = VentureRole(name='Main Venture role',
                                         venture=child_venture)
         venture_role_main.save()
-        venture_role_main.network = [third_network, third_subnetwork]
+        venture_role_main.networks = [third_network, third_subnetwork]
         venture_role_main.save()
 
         fourth_network = Network(address='111.11.11.0/27',name='Test fourth_network',
@@ -101,7 +101,7 @@ class TestModels(TestCase):
                                          venture=child_venture,
                                          parent=venture_role_main)
         venture_role_child.save()
-        venture_role_child.network = [fourth_network]
+        venture_role_child.networks = [fourth_network]
         venture_role_child.save()
 
         self.assertEqual(venture_role_child.check_ip("192.168.1.15"), True)
@@ -174,3 +174,19 @@ class TestModels(TestCase):
         self.assertEqual(a.get_preboot(), preboot)
         self.assertEqual(b.get_preboot(), preboot)
         self.assertEqual(c.get_preboot(), preboot)
+
+    def test_get_data_center(self):
+        data_center = DataCenter(name='Test DateCenter')
+        data_center.save()
+        ven = Venture(name='test', symbol='test', data_center=data_center)
+        ven.save()
+
+        a = Venture(name='test1', symbol='test1', parent=ven)
+        a.save()
+        b = Venture(name='test2', symbol='test1 parent', parent=a)
+        b.save()
+        c = Venture(name='test3', symbol='test1 parent parent', parent=b)
+        c.save()
+        self.assertEqual(a.get_data_center(), data_center)
+        self.assertEqual(b.get_data_center(), data_center)
+        self.assertEqual(c.get_data_center(), data_center)
