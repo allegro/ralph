@@ -23,43 +23,11 @@ class Migration(SchemaMigration):
             ('margin_kind', self.gf('django.db.models.fields.related.ForeignKey')(default=None, to=orm['discovery.MarginKind'], null=True, on_delete=models.SET_NULL, blank=True)),
             ('department', self.gf('django.db.models.fields.related.ForeignKey')(default=None, to=orm['business.Department'], null=True, on_delete=models.SET_NULL, blank=True)),
             ('path', self.gf('django.db.models.fields.TextField')(default=u'', blank=True)),
-            ('img_path', self.gf('django.db.models.fields.CharField')(default=u'', max_length=255, blank=True)),
-            ('kickstart_path', self.gf('django.db.models.fields.CharField')(default=u'', max_length=255, blank=True)),
-        ))
+            ))
         db.send_create_signal('business', ['Venture'])
 
         # Adding unique constraint on 'Venture', fields ['parent', 'symbol']
         db.create_unique('business_venture', ['parent_id', 'symbol'])
-
-        # Adding M2M table for field networks on 'Venture'
-        db.create_table('business_venture_networks', (
-            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('venture', models.ForeignKey(orm['business.venture'], null=False)),
-            ('network', models.ForeignKey(orm['discovery.network'], null=False))
-        ))
-        db.create_unique('business_venture_networks', ['venture_id', 'network_id'])
-
-        # Adding model 'Service'
-        db.create_table('business_service', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=255, db_index=True)),
-            ('external_key', self.gf('django.db.models.fields.CharField')(unique=True, max_length=100, db_index=True)),
-            ('location', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('state', self.gf('django.db.models.fields.CharField')(max_length=100)),
-            ('it_person', self.gf('django.db.models.fields.CharField')(default=u'', max_length=255, blank=True)),
-            ('it_person_mail', self.gf('django.db.models.fields.CharField')(default=u'', max_length=255, blank=True)),
-            ('business_person', self.gf('django.db.models.fields.CharField')(default=u'', max_length=255, blank=True)),
-            ('business_person_mail', self.gf('django.db.models.fields.CharField')(default=u'', max_length=255, blank=True)),
-            ('business_line', self.gf('django.db.models.fields.CharField')(max_length=255)),
-        ))
-        db.send_create_signal('business', ['Service'])
-
-        # Adding model 'BusinessLine'
-        db.create_table('business_businessline', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(unique=True, max_length=255, db_index=True)),
-        ))
-        db.send_create_signal('business', ['BusinessLine'])
 
         # Adding model 'VentureRole'
         db.create_table('business_venturerole', (
@@ -70,27 +38,17 @@ class Migration(SchemaMigration):
             ('cache_version', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
             ('venture', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['business.Venture'])),
             ('parent', self.gf('django.db.models.fields.related.ForeignKey')(default=None, related_name=u'child_set', null=True, blank=True, to=orm['business.VentureRole'])),
-            ('img_path', self.gf('django.db.models.fields.CharField')(default=u'', max_length=255, blank=True)),
-            ('kickstart_path', self.gf('django.db.models.fields.CharField')(default=u'', max_length=255, blank=True)),
-        ))
+            ))
         db.send_create_signal('business', ['VentureRole'])
 
         # Adding unique constraint on 'VentureRole', fields ['name', 'venture']
         db.create_unique('business_venturerole', ['name', 'venture_id'])
 
-        # Adding M2M table for field networks on 'VentureRole'
-        db.create_table('business_venturerole_networks', (
-            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('venturerole', models.ForeignKey(orm['business.venturerole'], null=False)),
-            ('network', models.ForeignKey(orm['discovery.network'], null=False))
-        ))
-        db.create_unique('business_venturerole_networks', ['venturerole_id', 'network_id'])
-
         # Adding model 'RolePropertyType'
         db.create_table('business_rolepropertytype', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('symbol', self.gf('django.db.models.fields.CharField')(default=None, max_length=32, unique=True, null=True)),
-        ))
+            ))
         db.send_create_signal('business', ['RolePropertyType'])
 
         # Adding model 'RolePropertyTypeValue'
@@ -98,7 +56,7 @@ class Migration(SchemaMigration):
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('type', self.gf('django.db.models.fields.related.ForeignKey')(default=None, to=orm['business.RolePropertyType'], null=True, blank=True)),
             ('value', self.gf('django.db.models.fields.TextField')(default=None, null=True)),
-        ))
+            ))
         db.send_create_signal('business', ['RolePropertyTypeValue'])
 
         # Adding model 'RoleProperty'
@@ -107,7 +65,7 @@ class Migration(SchemaMigration):
             ('symbol', self.gf('django.db.models.fields.CharField')(default=None, max_length=32, null=True)),
             ('role', self.gf('django.db.models.fields.related.ForeignKey')(default=None, to=orm['business.VentureRole'], null=True, blank=True)),
             ('type', self.gf('django.db.models.fields.related.ForeignKey')(default=None, to=orm['business.RolePropertyType'], null=True, blank=True)),
-        ))
+            ))
         db.send_create_signal('business', ['RoleProperty'])
 
         # Adding unique constraint on 'RoleProperty', fields ['symbol', 'role']
@@ -119,7 +77,7 @@ class Migration(SchemaMigration):
             ('property', self.gf('django.db.models.fields.related.ForeignKey')(default=None, to=orm['business.RoleProperty'], null=True, blank=True)),
             ('device', self.gf('django.db.models.fields.related.ForeignKey')(default=None, to=orm['discovery.Device'], null=True, blank=True)),
             ('value', self.gf('django.db.models.fields.TextField')(default=None, null=True)),
-        ))
+            ))
         db.send_create_signal('business', ['RolePropertyValue'])
 
         # Adding unique constraint on 'RolePropertyValue', fields ['property', 'device']
@@ -135,7 +93,7 @@ class Migration(SchemaMigration):
             ('venture', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['business.Venture'])),
             ('type', self.gf('django.db.models.fields.PositiveIntegerField')(default=1)),
             ('synergy_id', self.gf('django.db.models.fields.PositiveIntegerField')(default=None, null=True, blank=True)),
-        ))
+            ))
         db.send_create_signal('business', ['VentureOwner'])
 
         # Adding model 'Department'
@@ -143,7 +101,7 @@ class Migration(SchemaMigration):
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('name', self.gf('django.db.models.fields.CharField')(unique=True, max_length=75, db_index=True)),
             ('icon', self.gf(u'dj.choices.fields.ChoiceField')(unique=False, primary_key=False, db_column=None, blank=True, default=None, null=True, _in_south=True, db_index=False)),
-        ))
+            ))
         db.send_create_signal('business', ['Department'])
 
         # Adding model 'VentureExtraCost'
@@ -156,7 +114,7 @@ class Migration(SchemaMigration):
             ('venture', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['business.Venture'])),
             ('cost', self.gf('django.db.models.fields.FloatField')(default=0)),
             ('expire', self.gf('django.db.models.fields.DateField')(default=None, null=True, blank=True)),
-        ))
+            ))
         db.send_create_signal('business', ['VentureExtraCost'])
 
         # Adding unique constraint on 'VentureExtraCost', fields ['name', 'venture']
@@ -182,20 +140,8 @@ class Migration(SchemaMigration):
         # Deleting model 'Venture'
         db.delete_table('business_venture')
 
-        # Removing M2M table for field networks on 'Venture'
-        db.delete_table('business_venture_networks')
-
-        # Deleting model 'Service'
-        db.delete_table('business_service')
-
-        # Deleting model 'BusinessLine'
-        db.delete_table('business_businessline')
-
         # Deleting model 'VentureRole'
         db.delete_table('business_venturerole')
-
-        # Removing M2M table for field networks on 'VentureRole'
-        db.delete_table('business_venturerole_networks')
 
         # Deleting model 'RolePropertyType'
         db.delete_table('business_rolepropertytype')
@@ -262,11 +208,6 @@ class Migration(SchemaMigration):
             'user_permissions': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.Permission']", 'symmetrical': 'False', 'blank': 'True'}),
             'username': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'})
         },
-        'business.businessline': {
-            'Meta': {'object_name': 'BusinessLine'},
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255', 'db_index': 'True'})
-        },
         'business.department': {
             'Meta': {'ordering': "(u'name',)", 'object_name': 'Department'},
             'icon': (u'dj.choices.fields.ChoiceField', [], {'unique': 'False', 'primary_key': 'False', 'db_column': 'None', 'blank': 'True', u'default': 'None', 'null': 'True', '_in_south': 'True', 'db_index': 'False'}),
@@ -298,19 +239,6 @@ class Migration(SchemaMigration):
             'property': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': "orm['business.RoleProperty']", 'null': 'True', 'blank': 'True'}),
             'value': ('django.db.models.fields.TextField', [], {'default': 'None', 'null': 'True'})
         },
-        'business.service': {
-            'Meta': {'object_name': 'Service'},
-            'business_line': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'business_person': ('django.db.models.fields.CharField', [], {'default': "u''", 'max_length': '255', 'blank': 'True'}),
-            'business_person_mail': ('django.db.models.fields.CharField', [], {'default': "u''", 'max_length': '255', 'blank': 'True'}),
-            'external_key': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '100', 'db_index': 'True'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'it_person': ('django.db.models.fields.CharField', [], {'default': "u''", 'max_length': '255', 'blank': 'True'}),
-            'it_person_mail': ('django.db.models.fields.CharField', [], {'default': "u''", 'max_length': '255', 'blank': 'True'}),
-            'location': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '255', 'db_index': 'True'}),
-            'state': ('django.db.models.fields.CharField', [], {'max_length': '100'})
-        },
         'business.venture': {
             'Meta': {'unique_together': "((u'parent', u'symbol'),)", 'object_name': 'Venture'},
             'cache_version': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
@@ -318,13 +246,10 @@ class Migration(SchemaMigration):
             'data_center': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['discovery.DataCenter']", 'null': 'True', 'blank': 'True'}),
             'department': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': "orm['business.Department']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'img_path': ('django.db.models.fields.CharField', [], {'default': "u''", 'max_length': '255', 'blank': 'True'}),
             'is_infrastructure': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'kickstart_path': ('django.db.models.fields.CharField', [], {'default': "u''", 'max_length': '255', 'blank': 'True'}),
             'margin_kind': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': "orm['discovery.MarginKind']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
             'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '75', 'db_index': 'True'}),
-            'networks': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['discovery.Network']", 'null': 'True', 'symmetrical': 'False'}),
             'parent': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'related_name': "u'child_set'", 'null': 'True', 'blank': 'True', 'to': "orm['business.Venture']"}),
             'path': ('django.db.models.fields.TextField', [], {'default': "u''", 'blank': 'True'}),
             'show_in_ralph': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
@@ -357,11 +282,8 @@ class Migration(SchemaMigration):
             'cache_version': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
             'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'img_path': ('django.db.models.fields.CharField', [], {'default': "u''", 'max_length': '255', 'blank': 'True'}),
-            'kickstart_path': ('django.db.models.fields.CharField', [], {'default': "u''", 'max_length': '255', 'blank': 'True'}),
             'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '75'}),
-            'networks': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['discovery.Network']", 'null': 'True', 'symmetrical': 'False'}),
             'parent': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'related_name': "u'child_set'", 'null': 'True', 'blank': 'True', 'to': "orm['business.VentureRole']"}),
             'venture': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['business.Venture']"})
         },
@@ -394,7 +316,6 @@ class Migration(SchemaMigration):
             'chassis_position': ('django.db.models.fields.PositiveIntegerField', [], {'null': 'True', 'blank': 'True'}),
             'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'dc': ('django.db.models.fields.CharField', [], {'default': 'None', 'max_length': '32', 'null': 'True', 'blank': 'True'}),
-            'deleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_index': 'True'}),
             'deprecation_kind': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': "orm['discovery.DeprecationKind']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
             'diag_firmware': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
             'hard_firmware': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
