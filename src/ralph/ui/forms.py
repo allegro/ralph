@@ -254,7 +254,7 @@ class DeviceForm(forms.ModelForm):
             'cached_cost': ReadOnlyPriceWidget,
             'auto_price': ReadOnlyPriceWidget,
             'purchase_date': DateWidget,
-            'deprecation_date': DateWidget,
+            'deprecation_date': ReadOnlyWidget,
             'warranty_expiration_date': DateWidget,
             'support_expiration_date': DateWidget,
         }
