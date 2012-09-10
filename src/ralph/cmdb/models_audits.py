@@ -7,7 +7,6 @@ from __future__ import unicode_literals
 
 from datetime import datetime
 
-from celery.task import task
 from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
@@ -15,7 +14,6 @@ from lck.django.choices import Choices
 from lck.django.common.models import TimeTrackable
 
 from ralph.cmdb.integration.issuetracker import IssueTracker
-from ralph.cmdb.integration.exceptions import IssueTrackerException
 from ralph.cmdb.models import CI
 
 
@@ -48,7 +46,8 @@ class Auditable(TimeTrackable):
     """
     user = models.ForeignKey('auth.User', verbose_name=_("user"), null=True,
            blank=True, default=None, on_delete=models.SET_NULL)
-    status_lastchanged = models.DateTimeField(verbose_name=_("date"))
+    status_lastchanged = models.DateTimeField(default=datetime.now,
+            verbose_name=_("date"))
     issue_key = models.CharField(verbose_name=_("external ticket key number"),
             max_length=30, blank=True, null=True, default=None)
 
@@ -72,65 +71,28 @@ class Auditable(TimeTrackable):
     def synchronize_status(self, new_status):
         pass
 
-    def fire_issue(self):
-        pass
+    def set_status_and_sync(self, new_status):
+        self.status = new_status
+        self.status_lastchanged = datetime.now()
+        self.synchronize_status(new_status)
+        self.save()
 
-    def save(self, *args, **kwargs):
-        """
-        Note that djano keeps cached objects from db.
-        Our issue_key is lazy set, so you *must* reload your database object
-        to make any changes to this object.
-        eg.
-            o.save() ;
-            # must reload to get fresh object
-            o = Auditable.objects.get(id=o.id)
-            o.status=..;
-            o.save()
-            o.status=...;
-            o.save()
-        """
-        if kwargs.get('user'):
-            self.user = kwargs.get('user')
-        first_run = False
-        if not self.id:
-            first_run = True
-        if self.status_changed():
-            new_status = self._fields_as_dict().get('status')
-            if new_status and not first_run:
-                self.synchronize_status(new_status)
-            self.status_lastchanged=datetime.now()
-        # we need change id
-        super(Auditable, self).save(*args, **kwargs)
-        # now fire celery task if just created
-        if first_run:
-            self.fire_issue()
-
-@task
-def transition_issue(auditable_class, auditable_id, transition_id, retry_count=1):
-    try:
-        auditable_object = auditable_class.objects.get(id=auditable_id)
+    def transition_issue(self, transition_id, retry_count=1):
         tracker = IssueTracker()
         tracker.transition_issue(
-            issue_key=auditable_object.issue_key,
+            issue_key=self.issue_key,
             transition_id=transition_id,
         )
-    except IssueTrackerException as e:
-        raise transition_issue.retry(exc=e, args=[auditable_class,
-            auditable_id, transition_id, retry_count + 1], countdown=60 * (2 ** retry_count),
-            max_retries=15) # up to 22 days
 
-@task
-def create_issue(auditable_class, auditable_id, params, default_assignee, retry_count=1):
-    """
-    We create 2 IssueTracker requests for IssueTracker here.
-    1) Check if assignee exists in IssueTracker
-    2) Create issue with back-link for acceptance
-    """
-    auditable_object = auditable_class.objects.get(id=auditable_id)
-    s = settings.ISSUETRACKERS['default']['OPA']
-    template=s['TEMPLATE']
-    issue_type=s['ISSUETYPE']
-    try:
+    def create_issue(self, params, default_assignee, retry_count=1):
+        """
+        We create 2 IssueTracker requests for IssueTracker here.
+        1) Check if assignee exists in IssueTracker
+        2) Create issue with back-link for acceptance
+        """
+        s = settings.ISSUETRACKERS['default']['OPA']
+        template=s['TEMPLATE']
+        issue_type=s['ISSUETYPE']
         tracker = IssueTracker()
         ci = None
         try:
@@ -154,16 +116,11 @@ def create_issue(auditable_class, auditable_id, params, default_assignee, retry_
                 assignee=default_assignee,
                 technical_assignee=tuser,
                 business_assignee=buser,
-                start=auditable_object.created.isoformat(),
+                start=self.created.isoformat(),
                 end='',
                 template=template,
         )
-        auditable_object.status_lastchanged = datetime.now()
-        auditable_object.issue_key = issue.get('key')
-        auditable_object.save()
-    except IssueTrackerException as e:
-        raise create_issue.retry(exc=e, args=[auditable_class,
-            auditable_id, params, retry_count + 1], countdown=60 * (2 ** retry_count),
-            max_retries=15) # up to 22 days
+        self.issue_key = issue.get('key')
+        self.save()
 
 

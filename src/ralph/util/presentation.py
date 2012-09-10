@@ -59,6 +59,7 @@ COMPONENT_ICONS = {
     ComponentType.chassis.id: 'fugue-wooden-box',
     ComponentType.backup.id: 'fugue-lifebuoy',
     ComponentType.software.id: 'fugue-disc',
+    ComponentType.os.id: 'fugue-application-terminal',
     None: 'fugue-prohibition-button',
     'Linux': 'fugue-animal-penguin',
     'Windows': 'fugue-windows',

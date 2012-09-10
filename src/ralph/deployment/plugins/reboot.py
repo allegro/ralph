@@ -12,12 +12,14 @@ from ralph.util import plugin
 from ralph .discovery.plugins.ssh_ibm_bladecenter import ssh_ibm_reboot
 from ralph.discovery.plugins.ipmi import ipmi_reboot
 from ralph.discovery.hp_ilo import IloHost
+from ralph.deployment.models import Deployment
 
 
 @plugin.register(chain='deployment',
                  requires=['ticket', 'dns', 'dhcp', 'puppet', 'role'],
                  priority=0)
-def reboot(deployment):
+def reboot(deployment_id):
+    deployment = Deployment.objects.get(id=deployment_id)
     management = deployment.device.find_management()
     user, password = settings.ILO_USER, settings.ILO_PASSWORD
     if user and IloHost(management, user, password).reboot(True):

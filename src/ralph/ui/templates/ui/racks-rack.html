@@ -7,7 +7,7 @@
 <div class="row">
 {% for rack, slots in slots_set %}
 <div class="span3">
-<table class="table table-bordered table-condensed">
+<table class="table table-bordered table-condensed cabinet-rack-view">
     <tr>
         <th colspan="3"><a href="../info/{{ rack.id }}">{{ rack|device_icon }}&nbsp;{{ rack.name }}</a></th>
     </tr>
@@ -17,7 +17,7 @@
     {%   else %}
     <tr>
         <th width="16" style="text-align:right">{{ slot }}</th>
-        <td rowspan="{{ size }}">
+        <td rowspan="{% if size == 0 %}1{% else %} {{ size }} {% endif %}">
         {% for dev in devs %}
         {% if dev.model.type == 2 %}
             <table class="table table-bordered table-condensed">

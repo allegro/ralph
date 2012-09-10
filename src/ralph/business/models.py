@@ -18,6 +18,7 @@ from dj.choices import Choices
 from dj.choices.fields import ChoiceField
 from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
+from exceptions import AttributeError
 
 from ralph.discovery.models import DataCenter
 from ralph.discovery.models_history import HistoryCost
@@ -60,7 +61,7 @@ class Venture(Named, PrebootMixin, TimeTrackable):
             on_delete=db.SET_NULL)
     path = db.TextField(verbose_name=_("symbol path"), blank=True,
             default="", editable=False)
-    networks = db.ManyToManyField(Network, null=True,
+    networks = db.ManyToManyField(Network, null=True, blank=True,
             verbose_name=_("networks list"))
 
     class Meta:
@@ -98,6 +99,14 @@ class Venture(Named, PrebootMixin, TimeTrackable):
         if self.parent:
             return self.parent.get_data_center()
 
+    def get_margin(self):
+        venture = self
+        while venture:
+            if venture.margin_kind:
+                return venture.margin_kind.margin
+            venture = venture.parent
+        return 0
+
     def get_department(self):
         if self.department:
             return self.department
@@ -107,10 +116,13 @@ class Venture(Named, PrebootMixin, TimeTrackable):
     def check_ip(self, ip):
         node = self
         while node:
-            for network in node.network:
-                if ipaddr.IPAddress(ip) in ipaddr.IPNetwork(network.address):
-                    return True
-            node = node.parent
+            try:
+                for network in node.networks.all():
+                    if ipaddr.IPAddress(ip) in ipaddr.IPNetwork(network.address):
+                        return True
+                node = node.parent
+            except AttributeError:
+                node = node.parent
         return False
 
     @property
@@ -149,7 +161,7 @@ class VentureRole(Named.NonUnique, PrebootMixin, TimeTrackable):
     venture = db.ForeignKey(Venture, verbose_name=_("venture"))
     parent = db.ForeignKey('self', verbose_name=_("parent role"), null=True,
         blank=True, default=None, related_name="child_set")
-    networks = db.ManyToManyField(Network, null=True,
+    networks = db.ManyToManyField(Network, null=True, blank=True,
                                  verbose_name=_("networks list"))
 
     class Meta:
@@ -169,10 +181,13 @@ class VentureRole(Named.NonUnique, PrebootMixin, TimeTrackable):
     def check_ip(self, ip):
         node = self
         while node:
-            for network in node.network:
-                if ipaddr.IPAddress(ip) in ipaddr.IPNetwork(network.address):
-                    return True
-            node = node.parent
+            try:
+                for network in node.networks.all():
+                    if ipaddr.IPAddress(ip) in ipaddr.IPNetwork(network.address):
+                        return True
+                node = node.parent
+            except AttributeError:
+                node = node.parent
         return self.venture.check_ip(ip)
 
     def __unicode__(self):
@@ -321,16 +336,28 @@ class Department(Named):
         ordering = ('name',)
 
 
-class VentureExtraCost(Named.NonUnique, TimeTrackable):
+class VentureExtraCostType(Named.NonUnique, TimeTrackable):
+    class Meta:
+        verbose_name = _("venture extra cost type")
+        verbose_name_plural = _("venture extra cost types")
+        ordering = ('name',)
+
+
+class VentureExtraCost(TimeTrackable):
     class Meta:
         verbose_name = _("venture extra cost")
         verbose_name_plural = _("venture extra costs")
-        unique_together = ('name', 'venture')
-        ordering = ('name',)
+        unique_together = ('type', 'venture')
+        ordering = ('type',)
 
     venture = db.ForeignKey(Venture, verbose_name=_("venture"))
+    type = db.ForeignKey(VentureExtraCostType, verbose_name=_("type"))
     cost = db.FloatField(verbose_name=_("monthly cost"), default=0)
     expire = db.DateField(default=None, null=True, blank=True)
+
+    @property
+    def name(self):
+        return self.type.name
 
 
 @receiver(post_save, sender=VentureExtraCost, dispatch_uid='ralph.costhistory')

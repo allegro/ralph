@@ -134,3 +134,15 @@ h3 {
     padding-bottom: 10px; 
     padding-top: 10px; 
 }
+
+.details-report th{
+    width: 40%;
+}
+
+tr.table-highlight td {
+    font-weight: bold;
+}
+
+.cabinet-rack-view td{
+    min-width: 200px;
+}

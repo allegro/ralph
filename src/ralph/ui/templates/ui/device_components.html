@@ -5,7 +5,7 @@
 {% block content %}
 <table class="table table-striped table-bordered details-components">
     <thead><tr>
-            <th width="16"></th>
+        <th width="16"></th>
         <th>Label</th>
         <th>Model</th>
         <th>Serial Number</th>
@@ -34,7 +34,7 @@
                     {{ item.model }}
                 {% endif %}
             </td>
-            <td>{{ item.serial }}</td>
+            <td>{{ item.serial|default:'' }}</td>
             <td>{{ item.speed|default:'' }}</td>
             <td>{{ item.size|default:'' }}</td>
             <td>{{ item.count|default:'' }}</td>
