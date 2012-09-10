@@ -2,7 +2,6 @@
 /www/_build/
 /src/ralph/runtime.log*
 /src/ralph/settings-local.py
-/src/ralph/manage.py
 /src/ralph/static
 /src/ralph/logs
 /src/ralph/uploads
