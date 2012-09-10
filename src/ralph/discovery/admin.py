@@ -16,7 +16,8 @@ from ralph.discovery.models import (Device, DeviceModel, IPAddress, Network,
     NetworkTerminator, DataCenter, Processor, Memory, Ethernet,
     DeprecationKind, MarginKind, LoadBalancerVirtualServer, LoadBalancerMember,
     ComponentModel, ComponentModelGroup, DeviceModelGroup, IPAlias, DiskShare,
-    DiskShareMount, Storage, NetworkKind, FibreChannel, GenericComponent)
+    DiskShareMount, Storage, NetworkKind, FibreChannel, GenericComponent,
+    Software, OperatingSystem)
 from ralph.discovery.models_history import HistoryChange
 from ralph.business.admin import RolePropertyValueInline
 
@@ -138,7 +139,7 @@ class ProcessorInline(ForeignKeyAutocompleteTabularInline):
     exclude = ('created', 'modified')
     extra = 0
     related_search_fields = {
-        'model': ['^name', '^type__name'],
+        'model': ['^name'],
     }
 
 
@@ -148,7 +149,7 @@ class MemoryInline(ForeignKeyAutocompleteTabularInline):
     exclude = ('created', 'modified')
     extra = 0
     related_search_fields = {
-        'model': ['^name', '^type__name'],
+        'model': ['^name'],
     }
 
 
@@ -158,7 +159,7 @@ class EthernetInline(ForeignKeyAutocompleteTabularInline):
     exclude = ('created', 'modified')
     extra = 0
     related_search_fields = {
-        'model': ['^name', '^type__name'],
+        'model': ['^name'],
     }
 
 
@@ -273,6 +274,8 @@ class ComponentModelGroupAdmin(ModelAdmin):
             Storage.objects.filter(model__group=self).count(),
             FibreChannel.objects.filter(model__group=self).count(),
             DiskShare.objects.filter(model__group=self).count(),
+            Software.objects.filter(model__group=self).count(),
+            OperatingSystem.objects.filter(model__group=self).count(),
             GenericComponent.objects.filter(model__group=self).count(),
         ])
     inlines = [ComponentModelInline]
