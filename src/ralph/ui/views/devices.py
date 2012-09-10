@@ -184,18 +184,13 @@ class BaseDeviceList(ListView):
         return [self.template_name]
 
     def mark_device_with_nonpermanent_costs(self, queryset):
-        object_list = queryset
-        device_with_nonpermanent_costs = []
-        for item in object_list:
-            sp = SplunkUsage.objects.filter(device_id=item.id)
-            if len(sp) > 0:
-                device_with_nonpermanent_costs.append(item.id)
-        queryset = []
-        for item in object_list:
-            if item.id in device_with_nonpermanent_costs:
+        ret = []
+        for item in queryset:
+            sp = SplunkUsage.objects.filter(device_id=item.id).exists()
+            if sp:
                 item.nonpermanent_costs = True
-            queryset.append(item)
-        return queryset
+            ret.append(item)
+        return ret
 
     def paginate_queryset(self, queryset, page_size):
         """
