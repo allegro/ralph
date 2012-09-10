@@ -133,13 +133,14 @@ def get_device_memory_price(device):
         try:
             os = OperatingSystem.objects.get(device=device)
             group = ComponentModelGroup.objects.get(name='OS Detected Memory')
+        except (OperatingSystem.DoesNotExist, ComponentModelGroup.DoesNotExist):
+            pass
+        else:
             if not group.per_size:
                 return group.price or 0
             if os.memory:
                 return (os.memory /
                         (group.size_modifier or 1)) * (group.price or 0)
-        except (OperatingSystem.DoesNotExist, ComponentModelGroup.DoesNotExist):
-            pass
         try:
             group = ComponentModelGroup.objects.get(name='Default Memory')
         except ComponentModelGroup.DoesNotExist:

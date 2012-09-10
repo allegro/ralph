@@ -172,14 +172,9 @@ def handle_facts_os(dev, facts):
         os_name = "%s %s" % (facts['operatingsystem'],
                              facts['operatingsystemrelease'])
         family = facts['kernel']
-        os_version = facts['kernelrelease']
+        os_version = facts.get('kernelrelease', '')
     except KeyError:
-        try:
-            os_name, family
-        except NameError:
-            return
-        else:
-            os_version = ''
+        return
     os = OperatingSystem.create(dev=dev, os_name=os_name, version=os_version,
                                 family=family)
     memory_size = None
