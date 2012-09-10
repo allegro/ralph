@@ -20,7 +20,7 @@ from ralph.discovery.models_network import (
 from ralph.discovery.models_component import (
         ComponentType, EthernetSpeed, ComponentModel, ComponentModelGroup,
         GenericComponent, DiskShare, DiskShareMount, Processor, Memory,
-        Storage, FibreChannel, Ethernet, Software, SplunkUsage,
+        Storage, FibreChannel, Ethernet, Software, SplunkUsage, OperatingSystem,
         MAC_PREFIX_BLACKLIST,
     )
 from ralph.discovery.models_history import HistoryChange, HistoryCost
