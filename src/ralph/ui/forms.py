@@ -521,7 +521,7 @@ class DevicePurchaseForm(DeviceForm):
             'support_kind',
         )
 
-    def deprecation_date(self):
+    def clean_deprecation_date(self):
         return self.instance.deprecation_date
 
     def __init__(self, *args, **kwargs):
