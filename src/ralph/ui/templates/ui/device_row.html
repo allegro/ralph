@@ -42,7 +42,7 @@
     {% if 'cost' in columns %}
         <td class="currency">
         {% if d.model.type == 204 %}
-            -
+            —
         {% else %}
             {{d.cached_cost|currency }}
         {% endif %}
