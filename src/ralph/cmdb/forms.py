@@ -7,15 +7,15 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from django import forms
-from ralph.cmdb import models
-from ralph.ui.forms import ReadOnlyWidget, \
-    ReadOnlyMultipleChoiceWidget
-from ralph.cmdb.models import CILayer, CIType
 from django.contrib.admin.widgets import FilteredSelectMultiple
-from ralph.ui.forms import ReadOnlySelectWidget
+from ajax_select import make_ajax_field
+
+from ralph.cmdb import models
+from ralph.ui.widgets import (ReadOnlyWidget, ReadOnlyMultipleChoiceWidget,
+                              ReadOnlySelectWidget)
+from ralph.cmdb.models import CILayer, CIType
 from ralph.cmdb import models  as db
 
-from ajax_select import make_ajax_field
 
 class CISearchForm(forms.Form):
     uid = forms.CharField(label = ' CI UID ', max_length=100)

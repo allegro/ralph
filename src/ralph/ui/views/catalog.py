@@ -15,7 +15,7 @@ from ralph.discovery.models import (DeviceType, ComponentType, DeviceModel,
                                     DeviceModelGroup, ComponentModelGroup,
                                     ComponentModel, Storage, Memory, Processor,
                                     DiskShare, FibreChannel, GenericComponent,
-                                    Software, Device)
+                                    Software, OperatingSystem, Device)
 from ralph.ui.forms import ComponentModelGroupForm, DeviceModelGroupForm
 from ralph.ui.views.common import Base
 from ralph.util import pricing
@@ -245,8 +245,8 @@ class CatalogComponent(Catalog):
 
     def update_cached(self, group):
         devices = set()
-        for _class in (Storage, Memory, Processor, DiskShare,
-                            FibreChannel, GenericComponent, Software):
+        for _class in (Storage, Memory, Processor, DiskShare, FibreChannel,
+                       GenericComponent, OperatingSystem, Software):
             for component in _class.objects.filter(model__group=group):
                 devices.add(component.device)
         for device in devices:
