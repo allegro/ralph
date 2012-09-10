@@ -440,8 +440,12 @@ def details_other(dev, purchase_only=False):
             'serial': soft.sn,
         }
     for os in dev.operatingsystem_set.order_by('label'):
+        if os.memory:
+            label = "%s (memory: %s MiB)" % (os.label, os.memory)
+        else:
+            label = os.label
         yield {
-            'label': os.label,
+            'label': label,
             'model': os.model,
         }
 
