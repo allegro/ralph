@@ -11,8 +11,9 @@ from bob.forms import AutocompleteWidget
 from ralph.business.models import Venture, RoleProperty, VentureRole
 from ralph.deployment.models import Deployment
 from ralph.discovery.models_component import is_mac_valid
-from ralph.discovery.models import (Device, ComponentModelGroup,
-                                    DeviceModelGroup, DeviceType)
+
+from ralph.discovery.models import (Device, ComponentModelGroup,DeviceModelGroup,
+                                    DeviceType, IPAddress)
 from ralph.dnsedit.models import DHCPEntry
 from ralph.dnsedit.util import is_valid_hostname
 from ralph.util import Eth
@@ -219,6 +220,27 @@ class DeploymentForm(forms.ModelForm):
             raise forms.ValidationError("Hostname has to include the domain.")
         return hostname
 
+    def clean_ip(self):
+        ip = self.cleaned_data.get('ip')
+        venture_role = self.cleaned_data.get('venture_role')
+        if venture_role.check_ip(ip) is False:
+            raise forms.ValidationError("Given IP isn't in the appropriate subnet")
+        return ip
+
+    def clean_device(self):
+        device = self.cleaned_data['device']
+        managements = self.device_management_count(device)
+        if managements < 1:
+            raise forms.ValidationError("doesn't have a management address")
+        if managements > 1:
+            raise forms.ValidationError("has more than one management address")
+        return device
+
+    def device_management_count(self, device):
+        managements = IPAddress.objects.filter(device_id= device.id,
+                                               is_management=True)
+        return len(managements)
+
 
 class DeviceForm(forms.ModelForm):
     class Meta:
@@ -232,6 +254,7 @@ class DeviceForm(forms.ModelForm):
             'cached_cost': ReadOnlyPriceWidget,
             'auto_price': ReadOnlyPriceWidget,
             'purchase_date': DateWidget,
+            'deprecation_date': ReadOnlyWidget,
             'warranty_expiration_date': DateWidget,
             'support_expiration_date': DateWidget,
         }
@@ -492,10 +515,14 @@ class DevicePurchaseForm(DeviceForm):
             'sn',
             'barcode',
             'purchase_date',
+            'deprecation_date',
             'warranty_expiration_date',
             'support_expiration_date',
             'support_kind',
         )
+
+    def clean_deprecation_date(self):
+        return self.instance.deprecation_date
 
     def __init__(self, *args, **kwargs):
         super(DevicePurchaseForm, self).__init__(*args, **kwargs)
