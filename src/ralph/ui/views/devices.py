@@ -34,6 +34,7 @@ DEVICE_SORT_COLUMNS = {
     'lastseen': ('last_seen',),
     'remarks': ('remarks',),
     'purchase_date': ('purchase_date',),
+    'deprecation_date': ('deprecation_date',),
     'warranty': ('warranty_expiration_date',),
     'support': ('support_expiration_date', 'support_kind'),
     # FIXME: create a column for affected reports quantity
