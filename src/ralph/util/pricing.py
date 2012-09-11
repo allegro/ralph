@@ -152,7 +152,25 @@ def get_device_memory_price(device):
 def get_device_local_storage_price(device):
     price = math.fsum(s.get_price() for s in device.storage_set.all())
     if not price and device.model and device.model.type in (
-            DeviceType.rack_server.id, DeviceType.blade_server.id):
+            DeviceType.rack_server.id, DeviceType.blade_server.id,
+            DeviceType.virtual_server.id):
+        try:
+            os = OperatingSystem.objects.get(device=device)
+            group = ComponentModelGroup.objects.get(name='OS Detected Storage')
+        except (OperatingSystem.DoesNotExist, ComponentModelGroup.DoesNotExist):
+            pass
+        else:
+            if not group.per_size:
+                return group.price or 0
+            else:
+                storage = getattr(os, 'storage', 0)
+                remote_storage_size = math.fsum(
+                    m.get_size() for m in device.disksharemount_set.all()
+                )
+                storage -= remote_storage_size
+                if storage > 0:
+                    return (storage /
+                            (group.size_modifier or 1)) * (group.price or 0)
         try:
             group = ComponentModelGroup.objects.get(name='Default Disk')
         except ComponentModelGroup.DoesNotExist:
