@@ -188,3 +188,22 @@ class DateWidget(forms.DateInput):
         output = ('<input type="text" class="datepicker" '
                  'value="%s" data-date-format="yy-mm-dd">')
         return mark_safe(output % escape(value))
+
+
+class YearsBarWidget(forms.Widget):
+    def render(self, name, value, attrs=None, choices=()):
+        buttons_group = '<div class="btn-group"></div>'
+        output = [
+            buttons_group,
+            '<input type="hidden" name="%s" value="%s">' % (name, value)
+        ]
+        return mark_safe('\n'.join(output))
+
+
+class MonthsBarWidget(forms.Widget):
+    def render(self, name, value, attrs=None, choices=()):
+        output = [
+            '<input type="hidden" name="%s" value="%s">' % (name, value)
+        ]
+        return mark_safe('\n'.join(output))
+

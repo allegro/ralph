@@ -4,6 +4,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import datetime
+
 from django import forms
 from lck.django.common.models import MACAddressField
 from bob.forms import AutocompleteWidget
@@ -17,10 +19,11 @@ from ralph.discovery.models import (Device, ComponentModelGroup,DeviceModelGroup
 from ralph.dnsedit.models import DHCPEntry
 from ralph.dnsedit.util import is_valid_hostname
 from ralph.util import Eth
-from ralph.ui.widgets import (DateWidget, ReadOnlySelectWidget,
-                              DeviceGroupWidget, ComponentGroupWidget,
-                              DeviceWidget, DeviceModelWidget, ReadOnlyWidget,
-                              RackWidget, ReadOnlyPriceWidget)
+from ralph.ui.widgets import (DateWidget, YearsBarWidget, MonthsBarWidget,
+                              ReadOnlySelectWidget, DeviceGroupWidget,
+                              ComponentGroupWidget, DeviceWidget,
+                              DeviceModelWidget, ReadOnlyWidget, RackWidget,
+                              ReadOnlyPriceWidget)
 
 def _all_ventures():
     yield '', '---------'
@@ -44,6 +47,13 @@ def _all_roles():
 class DateRangeForm(forms.Form):
     start = forms.DateField(widget=DateWidget, label='Start date')
     end = forms.DateField(widget=DateWidget, label='End date')
+
+
+class PredefinedDateRange(forms.Form):
+    year = forms.IntegerField(widget=YearsBarWidget, label='Year',
+                              max_value=datetime.datetime.now().year)
+    month = forms.IntegerField(widget=MonthsBarWidget, label='Month',
+                               min_value=1, max_value=12)
 
 
 class MarginsReportForm(DateRangeForm):
