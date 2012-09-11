@@ -5,6 +5,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from django import forms
+from lck.django.choices import Choices
 from lck.django.common.models import MACAddressField
 from bob.forms import AutocompleteWidget
 
@@ -21,6 +22,7 @@ from ralph.ui.widgets import (DateWidget, ReadOnlySelectWidget,
                               DeviceGroupWidget, ComponentGroupWidget,
                               DeviceWidget, DeviceModelWidget, ReadOnlyWidget,
                               RackWidget, ReadOnlyPriceWidget)
+
 
 def _all_ventures():
     yield '', '---------'
@@ -39,6 +41,14 @@ def _all_roles():
                 'parent__parent__name', 'parent__name', 'name'
             ):
         yield r.id, '{} / {}'.format(r.venture.name, r.full_name)
+
+
+class TooltipContent(Choices):
+    _ = Choices.Choice
+
+    empty_field = _('Enter "none" to search empty fields')
+    empty_field_venture = _('Enter "none" or "-" to view empty fields')
+
 
 
 class DateRangeForm(forms.Form):
@@ -88,25 +98,32 @@ class SearchForm(forms.Form):
     name = forms.CharField(required=False,
             widget=forms.TextInput(attrs={'class':'span2'}))
     address = forms.CharField(required=False,
-            widget=forms.TextInput(attrs={'class':'span2'}),
+            widget=forms.TextInput(attrs={'class':'span2', 'rel': 'tooltip',
+                            'data-original-title': TooltipContent.empty_field}),
             label="Address or network")
     remarks = forms.CharField(required=False,
-            widget=forms.TextInput(attrs={'class':'span2'}))
+            widget=forms.TextInput(attrs={'class':'span2', 'rel': 'tooltip',
+                                          'data-original-title': TooltipContent.empty_field}))
     role = forms.CharField(required=False,
-            widget=forms.TextInput(attrs={'class':'span2'}),
+            widget=forms.TextInput(attrs={'class':'span2', 'rel': 'tooltip',
+                                          'data-original-title': TooltipContent.empty_field}),
             label="Venture or role")
     model = forms.CharField(required=False,
-            widget=forms.TextInput(attrs={'class':'span2'}))
+            widget=forms.TextInput(attrs={'class':'span2', 'rel': 'tooltip',
+                                          'data-original-title': TooltipContent.empty_field_venture}))
     component = forms.CharField(required=False,
             widget=forms.TextInput(attrs={'class':'span2'}),
             label="Component or software")
     serial = forms.CharField(required=False,
-            widget=forms.TextInput(attrs={'class':'span2'}),
+            widget=forms.TextInput(attrs={'class':'span2', 'rel': 'tooltip',
+                                          'data-original-title': TooltipContent.empty_field}),
             label="Serial number or MAC")
     barcode = forms.CharField(required=False,
-            widget=forms.TextInput(attrs={'class':'span2'}))
+            widget=forms.TextInput(attrs={'class':'span2', 'rel': 'tooltip',
+                                          'data-original-title': TooltipContent.empty_field}))
     position = forms.CharField(required=False,
-            widget=forms.TextInput(attrs={'class':'span2'}),
+            widget=forms.TextInput(attrs={'class':'span2', 'rel': 'tooltip',
+                                          'data-original-title': TooltipContent.empty_field}),
             label="Datacenter, rack or position")
     history = forms.CharField(required=False,
             widget=forms.TextInput(attrs={'class':'span2'}))
@@ -118,6 +135,34 @@ class SearchForm(forms.Form):
             widget=DeviceGroupWidget, label="")
     component_group = forms.IntegerField(required=False,
             widget=ComponentGroupWidget, label="")
+
+
+    purchase_date_start = forms.DateField(required=False, widget=DateWidget, label='Start purchase_date')
+    purchase_date_end = forms.DateField(required=False, widget=DateWidget, label='End purchase_date')
+    no_purchase_date = forms.BooleanField(required=False,
+        label="No purchase date")
+
+    deprecation_date_start = forms.DateField(required=False, widget=DateWidget, label='Start deprecation_date')
+    deprecation_date_end = forms.DateField(required=False, widget=DateWidget, label='End deprecation_date')
+    no_deprecation_date = forms.BooleanField(required=False,
+        label="No deprecation date")
+
+    warranty_expiration_date_start = forms.DateField(required=False, widget=DateWidget, label='Start warranty_expiration_date')
+    warranty_expiration_date_end = forms.DateField(required=False, widget=DateWidget, label='End warranty_expiration_date')
+    no_warranty_expiration_date = forms.BooleanField(required=False,
+        label="No warranty expiration date")
+
+    support_expiration_date_start = forms.DateField(required=False, widget=DateWidget, label='Start date')
+    support_expiration_date_end = forms.DateField(required=False, widget=DateWidget, label='End date')
+    no_support_expiration_date = forms.BooleanField(required=False,
+        label="No support expiration date")
+
+
+
+
+
+
+
     deleted = forms.BooleanField(required=False,
             label="Include deleted")
 
