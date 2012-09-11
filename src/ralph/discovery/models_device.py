@@ -16,7 +16,7 @@ from django.db import models as db
 from django.db import IntegrityError, transaction
 from django.utils.translation import ugettext_lazy as _
 from lck.django.common.models import (Named, WithConcurrentGetOrCreate,
-        MACAddressField, SavePrioritized, SoftDeletable)
+        MACAddressField, SavePrioritized, SoftDeletable, TimeTrackable)
 from lck.django.choices import Choices
 from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Taggable
@@ -25,7 +25,6 @@ from django.utils.html import escape
 from ralph.discovery.models_util import LastSeen
 from ralph.discovery.models_component import is_mac_valid, Ethernet
 from ralph.util import Eth
-from dirtyfields import DirtyFieldsMixin
 
 
 BLADE_SERVERS = [
@@ -78,7 +77,7 @@ class DeviceType(Choices):
     unknown = _("unknown")
 
 
-class DeprecationKind(DirtyFieldsMixin, Named):
+class DeprecationKind(TimeTrackable, Named):
     months = db.PositiveIntegerField(verbose_name=_("deprecation time in months"),
         blank=True, null=True)
     remarks = db.TextField(verbose_name=_("remarks"),
@@ -90,7 +89,7 @@ class DeprecationKind(DirtyFieldsMixin, Named):
         verbose_name_plural = _("deprecation kinds")
 
     def save(self, *args, **kwargs):
-        if self.get_dirty_fields()['months'] is not None:
+        if self.dirty_fields['months'] is not None:
             devices = Device.objects.filter(deprecation_kind_id = self.id)
             for device in devices:
                 if (device.purchase_date is not None
