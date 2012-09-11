@@ -405,7 +405,11 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
         if dev.model and dev.model.type in (DeviceType.rack.id,
                                             DeviceType.data_center.id):
             return dev.name
-        for ipaddr in dev.ipaddress_set.order_by('-hostname', 'is_management', '-address'):
+        for ipaddr in dev.ipaddress_set.exclude(hostname=None).order_by(
+                'is_management', '-last_seen', '-address'):
+            return ipaddr.hostname
+        for ipaddr in dev.ipaddress_set.order_by(
+                'is_management', '-last_seen', '-address'):
             return ipaddr.hostname or ipaddr.address
         return 'unknown'
 
