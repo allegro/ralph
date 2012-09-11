@@ -167,7 +167,7 @@ Size: {size}""".format(**disk)
         stor.save(priority=SAVE_PRIORITY)
 
 @nested_commit_on_success
-def handle_facts_os(dev, facts):
+def handle_facts_os(dev, facts, is_virtual=False):
     try:
         os_name = "%s %s" % (facts['operatingsystem'],
                              facts['operatingsystemrelease'])
@@ -189,5 +189,9 @@ def handle_facts_os(dev, facts):
     except (KeyError, ValueError):
         pass
     os.memory = memory_size
+    if is_virtual:
+        os.cores_count = facts.get('processorcount', None)
+    else:
+        os.cores_count = facts.get('physicalprocessorcorecount', None)
     os.save(priority=SAVE_PRIORITY)
 
