@@ -8,6 +8,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from dateutil.relativedelta import relativedelta
 from datetime import datetime, timedelta
 import re
 
@@ -15,7 +16,7 @@ from django.db import models as db
 from django.db import IntegrityError, transaction
 from django.utils.translation import ugettext_lazy as _
 from lck.django.common.models import (Named, WithConcurrentGetOrCreate,
-        MACAddressField, SavePrioritized, SoftDeletable)
+        MACAddressField, SavePrioritized, SoftDeletable, TimeTrackable)
 from lck.django.choices import Choices
 from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Taggable
@@ -76,7 +77,7 @@ class DeviceType(Choices):
     unknown = _("unknown")
 
 
-class DeprecationKind(Named):
+class DeprecationKind(TimeTrackable, Named):
     months = db.PositiveIntegerField(verbose_name=_("deprecation time in months"),
         blank=True, null=True)
     remarks = db.TextField(verbose_name=_("remarks"),
@@ -86,6 +87,17 @@ class DeprecationKind(Named):
     class Meta:
         verbose_name = _("deprecation kind")
         verbose_name_plural = _("deprecation kinds")
+
+    def save(self, *args, **kwargs):
+        if self.dirty_fields['months'] is not None:
+            devices = Device.objects.filter(deprecation_kind_id = self.id)
+            for device in devices:
+                if (device.purchase_date is not None
+                    and device.deprecation_kind_id is not None):
+                    device.deprecation_date = (device.purchase_date +
+                                               relativedelta(months=self.months))
+                    super(Device, device).save(*args, **kwargs)
+        return super(DeprecationKind, self).save(*args, **kwargs)
 
 
 class MarginKind(Named):
@@ -226,6 +238,8 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
     price = db.PositiveIntegerField(verbose_name=_("manual price"),
         null=True, blank=True)
     purchase_date = db.DateTimeField(verbose_name=_("purchase date"),
+        null=True, blank=True)
+    deprecation_date = db.DateTimeField(verbose_name=_("deprecation date"),
         null=True, blank=True)
     cached_price = db.FloatField(verbose_name=_("quoted price"),
         null=True, blank=True)
@@ -428,6 +442,9 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
 
     def save(self, user=None, *args, **kwargs):
         self.saving_user = user
+        if self.purchase_date and self.deprecation_kind:
+            self.deprecation_date = (self.purchase_date +
+                           relativedelta(months = self.deprecation_kind.months))
         return super(Device, self).save(*args, **kwargs)
 
 

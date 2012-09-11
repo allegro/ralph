@@ -23,7 +23,7 @@ class Migration(SchemaMigration):
             ('margin_kind', self.gf('django.db.models.fields.related.ForeignKey')(default=None, to=orm['discovery.MarginKind'], null=True, on_delete=models.SET_NULL, blank=True)),
             ('department', self.gf('django.db.models.fields.related.ForeignKey')(default=None, to=orm['business.Department'], null=True, on_delete=models.SET_NULL, blank=True)),
             ('path', self.gf('django.db.models.fields.TextField')(default=u'', blank=True)),
-        ))
+            ))
         db.send_create_signal('business', ['Venture'])
 
         # Adding unique constraint on 'Venture', fields ['parent', 'symbol']
@@ -38,7 +38,7 @@ class Migration(SchemaMigration):
             ('cache_version', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
             ('venture', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['business.Venture'])),
             ('parent', self.gf('django.db.models.fields.related.ForeignKey')(default=None, related_name=u'child_set', null=True, blank=True, to=orm['business.VentureRole'])),
-        ))
+            ))
         db.send_create_signal('business', ['VentureRole'])
 
         # Adding unique constraint on 'VentureRole', fields ['name', 'venture']
@@ -48,7 +48,7 @@ class Migration(SchemaMigration):
         db.create_table('business_rolepropertytype', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('symbol', self.gf('django.db.models.fields.CharField')(default=None, max_length=32, unique=True, null=True)),
-        ))
+            ))
         db.send_create_signal('business', ['RolePropertyType'])
 
         # Adding model 'RolePropertyTypeValue'
@@ -56,7 +56,7 @@ class Migration(SchemaMigration):
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('type', self.gf('django.db.models.fields.related.ForeignKey')(default=None, to=orm['business.RolePropertyType'], null=True, blank=True)),
             ('value', self.gf('django.db.models.fields.TextField')(default=None, null=True)),
-        ))
+            ))
         db.send_create_signal('business', ['RolePropertyTypeValue'])
 
         # Adding model 'RoleProperty'
@@ -65,7 +65,7 @@ class Migration(SchemaMigration):
             ('symbol', self.gf('django.db.models.fields.CharField')(default=None, max_length=32, null=True)),
             ('role', self.gf('django.db.models.fields.related.ForeignKey')(default=None, to=orm['business.VentureRole'], null=True, blank=True)),
             ('type', self.gf('django.db.models.fields.related.ForeignKey')(default=None, to=orm['business.RolePropertyType'], null=True, blank=True)),
-        ))
+            ))
         db.send_create_signal('business', ['RoleProperty'])
 
         # Adding unique constraint on 'RoleProperty', fields ['symbol', 'role']
@@ -77,7 +77,7 @@ class Migration(SchemaMigration):
             ('property', self.gf('django.db.models.fields.related.ForeignKey')(default=None, to=orm['business.RoleProperty'], null=True, blank=True)),
             ('device', self.gf('django.db.models.fields.related.ForeignKey')(default=None, to=orm['discovery.Device'], null=True, blank=True)),
             ('value', self.gf('django.db.models.fields.TextField')(default=None, null=True)),
-        ))
+            ))
         db.send_create_signal('business', ['RolePropertyValue'])
 
         # Adding unique constraint on 'RolePropertyValue', fields ['property', 'device']
@@ -93,7 +93,7 @@ class Migration(SchemaMigration):
             ('venture', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['business.Venture'])),
             ('type', self.gf('django.db.models.fields.PositiveIntegerField')(default=1)),
             ('synergy_id', self.gf('django.db.models.fields.PositiveIntegerField')(default=None, null=True, blank=True)),
-        ))
+            ))
         db.send_create_signal('business', ['VentureOwner'])
 
         # Adding model 'Department'
@@ -101,7 +101,7 @@ class Migration(SchemaMigration):
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('name', self.gf('django.db.models.fields.CharField')(unique=True, max_length=75, db_index=True)),
             ('icon', self.gf(u'dj.choices.fields.ChoiceField')(unique=False, primary_key=False, db_column=None, blank=True, default=None, null=True, _in_south=True, db_index=False)),
-        ))
+            ))
         db.send_create_signal('business', ['Department'])
 
         # Adding model 'VentureExtraCost'
@@ -114,7 +114,7 @@ class Migration(SchemaMigration):
             ('venture', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['business.Venture'])),
             ('cost', self.gf('django.db.models.fields.FloatField')(default=0)),
             ('expire', self.gf('django.db.models.fields.DateField')(default=None, null=True, blank=True)),
-        ))
+            ))
         db.send_create_signal('business', ['VentureExtraCost'])
 
         # Adding unique constraint on 'VentureExtraCost', fields ['name', 'venture']

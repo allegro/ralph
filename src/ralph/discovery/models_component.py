@@ -64,6 +64,7 @@ class ComponentType(Choices):
     chassis = _("chassis")
     backup = _("backup")
     software = _("software")
+    os = _('operating system')
 
 
 class ComponentModelGroup(Named):
@@ -129,6 +130,7 @@ class ComponentModel(Named.NonUnique, SavePrioritized, WithConcurrentGetOrCreate
                 self.fibrechannel_set.count(),
                 self.genericcomponent_set.count(),
                 self.software_set.count(),
+                self.operatingsystem_set.count(),
             ])
 
     def get_json(self):
@@ -243,7 +245,7 @@ class DiskShareMount(TimeTrackable, WithConcurrentGetOrCreate):
 
     def get_price(self):
         if self.size and self.share.model and self.share.model.group:
-            return (self.share.model.group.price or 0 )* self.get_size() / 1024
+            return (self.share.model.group.price or 0) * self.get_size() / 1024
         return self.share.get_price() / (self.get_total_mounts() or 1)
 
 
@@ -395,3 +397,36 @@ class SplunkUsage(Component):
         if not size:
             size = self.size
         return self.model.get_price(size=size)
+
+
+class OperatingSystem(Component):
+    label = db.CharField(verbose_name=_("name"), max_length=255)
+    memory = db.PositiveIntegerField(verbose_name=_("size (MiB)"),
+                                     null=True, blank=True)
+
+    @classmethod
+    def create(cls, dev, os_name, version='', memory=None, family=None):
+        model, created = ComponentModel.concurrent_get_or_create(
+            type=ComponentType.os.id,
+            family=family,
+            extra_hash=hashlib.md5(os_name.encode('utf-8', 'replace')).hexdigest()
+        )
+        if created:
+            model.name = os_name
+            model.save()
+        try:
+            operating_system = cls.objects.get(device=dev)
+        except cls.DoesNotExist:
+            operating_system = cls.objects.create(device=dev)
+        operating_system.model = model
+        operating_system.label = '%s %s' % (os_name, version)
+        operating_system.memory = memory
+        return operating_system
+
+    class Meta:
+        verbose_name = _("operating system")
+        verbose_name_plural = _("operating systems")
+        ordering = ('label',)
+
+    def __unicode__(self):
+        return self.label
