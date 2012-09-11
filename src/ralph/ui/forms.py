@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 
 import datetime
 
+from calendar import monthrange
 from django import forms
 from lck.django.common.models import MACAddressField
 from bob.forms import AutocompleteWidget
@@ -49,11 +50,19 @@ class DateRangeForm(forms.Form):
     end = forms.DateField(widget=DateWidget, label='End date')
 
 
-class PredefinedDateRange(forms.Form):
+class PredefinedDateRangeForm(forms.Form):
     year = forms.IntegerField(widget=YearsBarWidget, label='Year',
-                              max_value=datetime.datetime.now().year)
+                              max_value=datetime.date.today().year)
     month = forms.IntegerField(widget=MonthsBarWidget, label='Month',
                                min_value=1, max_value=12)
+
+    def get_range(self):
+        month = self.cleaned_data['month']
+        year = self.cleaned_data['year']
+        last_month_day = monthrange(year, month)[1]
+        start_date = datetime.date(year=year, month=month, day=1)
+        end_date = datetime.date(year=year, month=month, day=last_month_day)
+        return start_date, end_date
 
 
 class MarginsReportForm(DateRangeForm):

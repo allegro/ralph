@@ -4,6 +4,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import calendar
+import datetime
+
 from django.conf import settings
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django import forms
@@ -192,18 +195,43 @@ class DateWidget(forms.DateInput):
 
 class YearsBarWidget(forms.Widget):
     def render(self, name, value, attrs=None, choices=()):
-        buttons_group = '<div class="btn-group"></div>'
+        buttons = []
+        year = 2011
+        current_year = datetime.date.today().year
+        while year <= current_year:
+            buttons.append(
+                '<button type="button" value="%s" class="btn%s">%s</button>' % (
+                    year,
+                    ' active' if year == int(value) else '',
+                    year
+                )
+            )
+            year += 1
         output = [
-            buttons_group,
-            '<input type="hidden" name="%s" value="%s">' % (name, value)
+            '<div class="bar-widget-wrapper bar-widget-wrapper-years">',
+            '<div class="btn-group">%s</div>' % ''.join(buttons),
+            '<input type="hidden" name="%s" value="%s">' % (name, value),
+            '</div>'
         ]
         return mark_safe('\n'.join(output))
 
 
 class MonthsBarWidget(forms.Widget):
     def render(self, name, value, attrs=None, choices=()):
+        buttons = []
+        for ind, month in enumerate(list(calendar.month_name)[1:], start=1):
+            buttons.append(
+                '<button type="button" value="%s" class="btn%s">%s</button>' % (
+                    ind,
+                    ' active' if ind == int(value) else '',
+                    month
+                )
+            )
         output = [
-            '<input type="hidden" name="%s" value="%s">' % (name, value)
+            '<div class="bar-widget-wrapper bar-widget-wrapper-months">',
+            '<div class="btn-group">%s</div>' % ''.join(buttons),
+            '<input type="hidden" name="%s" value="%s">' % (name, value),
+            '</div>'
         ]
         return mark_safe('\n'.join(output))
 
