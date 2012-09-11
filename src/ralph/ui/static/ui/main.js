@@ -133,4 +133,6 @@ $(function ($) {
     };
     $('select#id_venture').change(venture_changed);
     $('select#id_venture').each(venture_changed);
+
+    $('.datepicker').datepicker({ format: 'yyyy-mm-dd'});
 });
