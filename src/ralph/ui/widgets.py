@@ -185,6 +185,6 @@ class DeviceGroupWidget(forms.Widget):
 
 class DateWidget(forms.DateInput):
     def render(self, name, value, attrs=None, choices=()):
-        output = '<input type="text" class="datepicker" ' \
-                 'value="%s" data-date-format="yy-mm-dd">'
+        output = ('<input type="text" class="datepicker" '
+                 'value="%s" data-date-format="yy-mm-dd">')
         return mark_safe(output % escape(value))
