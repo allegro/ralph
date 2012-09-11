@@ -71,7 +71,7 @@ def puppet(**kwargs):
     ip_address.last_puppet = datetime.datetime.now()
     ip_address.save(update_last_seen=True) # no priorities for IP addresses
 
-    handle_facts_os(dev, facts)
+    handle_facts_os(dev, facts, is_virtual)
 
     return True, message, kwargs
 
