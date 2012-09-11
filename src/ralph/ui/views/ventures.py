@@ -420,10 +420,11 @@ def _get_summaries(query, start, end, overlap=True, venture=None):
         yesterday = datetime.date.today() - datetime.timedelta(days=1)
         splunk_count_now = SplunkUsage.objects.filter(
                 day=yesterday).values('device').distinct().count()
+        url = None
         try:
             splunk_model = ComponentModel.objects.get(family='splunkvolume')
         except ComponentModel.DoesNotExist:
-            url = None
+            pass
         else:
             if splunk_model.group_id:
                 url = ('/ui/search/components/'
