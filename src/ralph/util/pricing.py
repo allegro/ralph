@@ -171,12 +171,13 @@ def get_device_local_storage_price(device):
                 if storage > 0:
                     return (storage /
                             (group.size_modifier or 1)) * (group.price or 0)
-        try:
-            group = ComponentModelGroup.objects.get(name='Default Disk')
-        except ComponentModelGroup.DoesNotExist:
-            pass
-        else:
-            return group.price
+        if device.model.type != DeviceType.virtual_server.id:
+            try:
+                group = ComponentModelGroup.objects.get(name='Default Disk')
+            except ComponentModelGroup.DoesNotExist:
+                pass
+            else:
+                return group.price
     return price
 
 def get_device_exported_storage_price(device):
