@@ -95,11 +95,20 @@ def get_device_virtual_cpu_price(device):
             db.Sum('model__group__price'))['model__group__price__sum'] or 0
     if not cpu_price:
         try:
-            group = ComponentModelGroup.objects.get(name='Default CPU')
-        except ComponentModelGroup.DoesNotExist:
+            os = OperatingSystem.objects.get(device=device)
+            group = ComponentModelGroup.objects.get(name='OS Detected CPU')
+        except (OperatingSystem.DoesNotExist, ComponentModelGroup.DoesNotExist):
             pass
         else:
-            cpu_price = group.price
+            if os.cores_count:
+                cpu_price = os.cores_count * group.price
+        if not cpu_price:
+            try:
+                group = ComponentModelGroup.objects.get(name='Default CPU')
+            except ComponentModelGroup.DoesNotExist:
+                pass
+            else:
+                cpu_price = group.price
     total_virtual_cpus = Processor.objects.filter(
             device__parent=device).filter(
                 device__model__type=DeviceType.virtual_server.id).count()
@@ -116,6 +125,14 @@ def get_device_cpu_price(device):
             db.Sum('model__group__price'))['model__group__price__sum'] or 0
     if not price and device.model and device.model.type in (
             DeviceType.rack_server.id, DeviceType.blade_server.id):
+        try:
+            os = OperatingSystem.objects.get(device=device)
+            group = ComponentModelGroup.objects.get(name='OS Detected CPU')
+        except (OperatingSystem.DoesNotExist, ComponentModelGroup.DoesNotExist):
+            pass
+        else:
+            if os.cores_count:
+                return os.cores_count * group.price
         try:
             group = ComponentModelGroup.objects.get(name='Default CPU')
         except ComponentModelGroup.DoesNotExist:
@@ -152,13 +169,32 @@ def get_device_memory_price(device):
 def get_device_local_storage_price(device):
     price = math.fsum(s.get_price() for s in device.storage_set.all())
     if not price and device.model and device.model.type in (
-            DeviceType.rack_server.id, DeviceType.blade_server.id):
+            DeviceType.rack_server.id, DeviceType.blade_server.id,
+            DeviceType.virtual_server.id):
         try:
-            group = ComponentModelGroup.objects.get(name='Default Disk')
-        except ComponentModelGroup.DoesNotExist:
+            os = OperatingSystem.objects.get(device=device)
+            group = ComponentModelGroup.objects.get(name='OS Detected Storage')
+        except (OperatingSystem.DoesNotExist, ComponentModelGroup.DoesNotExist):
             pass
         else:
-            return group.price
+            if not group.per_size:
+                return group.price or 0
+            else:
+                storage = getattr(os, 'storage', 0)
+                remote_storage_size = math.fsum(
+                    m.get_size() for m in device.disksharemount_set.all()
+                )
+                storage -= remote_storage_size
+                if storage > 0:
+                    return (storage /
+                            (group.size_modifier or 1)) * (group.price or 0)
+        if device.model.type != DeviceType.virtual_server.id:
+            try:
+                group = ComponentModelGroup.objects.get(name='Default Disk')
+            except ComponentModelGroup.DoesNotExist:
+                pass
+            else:
+                return group.price
     return price
 
 def get_device_exported_storage_price(device):
@@ -272,17 +308,28 @@ def details_cpu(dev, purchase_only=False):
     if purchase_only:
         return
     if not has_cpu and dev.model and dev.model.type in (
-            DeviceType.blade_server.id, DeviceType.rack_server.id):
+        DeviceType.blade_server.id, DeviceType.rack_server.id,
+        DeviceType.virtual_server.id):
         try:
-            group = ComponentModelGroup.objects.get(name='Default CPU')
-        except ComponentModelGroup.DoesNotExist:
-            pass
-        else:
-            yield {
-                'label': group.name,
-                'price': group.price,
-                'icon': 'fugue-prohibition-button',
-            }
+            os = OperatingSystem.objects.get(device=dev)
+            group = ComponentModelGroup.objects.get(name='OS Detected CPU')
+            for core_num in xrange(os.cores_count or 0):
+                yield {
+                    'label': '%s %d' % (group.name, core_num + 1),
+                    'price': group.price,
+                    'icon': 'fugue-processor',
+                }
+        except (OperatingSystem.DoesNotExist, ComponentModelGroup.DoesNotExist):
+            try:
+                group = ComponentModelGroup.objects.get(name='Default CPU')
+            except ComponentModelGroup.DoesNotExist:
+                pass
+            else:
+                yield {
+                    'label': group.name,
+                    'price': group.price,
+                    'icon': 'fugue-prohibition-button',
+                }
 
 def details_mem(dev, purchase_only=False):
     has_mem = False
@@ -295,7 +342,8 @@ def details_mem(dev, purchase_only=False):
     if purchase_only:
         return
     if not has_mem and dev.model and dev.model.type in (
-            DeviceType.blade_server.id, DeviceType.rack_server.id):
+        DeviceType.blade_server.id, DeviceType.rack_server.id,
+        DeviceType.virtual_server.id):
         try:
             os = OperatingSystem.objects.get(device=dev)
             group = ComponentModelGroup.objects.get(name='OS Detected Memory')
@@ -442,8 +490,13 @@ def details_other(dev, purchase_only=False):
             'serial': soft.sn,
         }
     for os in dev.operatingsystem_set.order_by('label'):
+        details = []
+        if os.cores_count:
+            details.append('cores count: %d' % os.cores_count)
         if os.memory:
-            label = "%s (memory: %s MiB)" % (os.label, os.memory)
+            details.append('memory: %s MiB' % os.memory)
+        if details:
+            label = "%s (%s)" % (os.label, ', '.join(details))
         else:
             label = os.label
         yield {
