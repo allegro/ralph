@@ -11,7 +11,8 @@ import re
 from django.conf import settings
 
 from ralph.util import plugin, Eth
-from ralph.discovery.models import DeviceType, Device, IPAddress, Software
+from ralph.discovery.models import (DeviceType, Device, IPAddress,
+    OperatingSystem)
 from ralph.discovery.models import MAC_PREFIX_BLACKLIST
 from ralph.discovery.snmp import snmp_command, snmp_macs, check_snmp_port
 
@@ -284,9 +285,9 @@ def do_snmp_mac(snmp_name, community, snmp_version, ip, kwargs):
     elif model_name == 'Intel Modular Blade System':
         _snmp_modular(ip, community, dev)
     elif model_name == 'Linux':
-        Software.create(dev, '', 'Linux', label=snmp_name, family='Linux').save()
+        OperatingSystem.create(dev, os_name=snmp_name, family='Linux').save()
     elif model_name == 'SunOs':
-        Software.create(dev, '', 'Solaris', label=snmp_name, family='Sun').save()
+        OperatingSystem.create(dev, os_name=snmp_name, family='Sun').save()
     return ethernets
 
 def _cisco_snmp_model(model_oid, sn_oid, **kwargs):
