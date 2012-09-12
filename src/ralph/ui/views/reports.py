@@ -65,39 +65,39 @@ class ReportType(Choices):
     support_expires30 = _('Support expires in 30 days').extra(
             filter=lambda device_list: device_list.filter(
                 support_expiration_date__lte=threshold(30)),
-            columns=['venture', 'position', 'barcode', 'price', 'lastseen',
-                'remarks'],
+            columns=['venture', 'model', 'position', 'barcode',
+                     'serial_number', 'remarks'],
             )
     support_expires60 = _('Support expires in 60 days').extra(
             filter=lambda device_list: device_list.filter(
                 support_expiration_date__lte=threshold(60)),
-            columns=['venture', 'position', 'barcode', 'price', 'lastseen',
-                'remarks'],
+            columns=['venture', 'model', 'position', 'barcode',
+                     'serial_number', 'remarks'],
             )
     support_expires90 = _('Support expires in 90 days').extra(
             filter=lambda device_list: device_list.filter(
                 support_expiration_date__lte=threshold(90)),
-            columns=['venture', 'position', 'barcode', 'price', 'lastseen',
-                'remarks'],
+            columns=['venture', 'model', 'position', 'barcode',
+                     'serial_number', 'remarks'],
             )
     verified = _('Verified venture and role').extra(
             filter=lambda device_list: device_list.filter(verified=True),
-            columns=['venture', 'remarks']
+            columns=['venture', 'remarks', 'barcode', 'serial_number']
             )
     deployment_open = _('Deployment open').extra(
             filter=lambda device_list: device_list.filter(
                 deployment__status=DeploymentStatus.open),
-                columns=['venture', 'remarks']
+                columns=['venture', 'remarks', 'position', 'barcode']
             )
     deployment_in_progress = _('Deployment in progress').extra(
             filter=lambda device_list: device_list.filter(
                 deployment__status=DeploymentStatus.in_progress),
-                columns=['venture', 'remarks']
+                columns=['venture', 'remarks', 'position', 'barcode']
             )
     deployment_running = _('Deployment running').extra(
             filter=lambda device_list: device_list.filter(
                 deployment__status=DeploymentStatus.in_deployment),
-                columns=['venture', 'remarks']
+                columns=['venture', 'remarks', 'position', 'barcode']
             )
 
 

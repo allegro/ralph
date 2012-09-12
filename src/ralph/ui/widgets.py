@@ -184,7 +184,16 @@ class DeviceGroupWidget(forms.Widget):
 
 
 class DateWidget(forms.DateInput):
-    def render(self, name, value, attrs=None, choices=()):
-        output = ('<input type="text" class="datepicker" '
-                 'value="%s" data-date-format="yy-mm-dd">')
-        return mark_safe(output % escape(value))
+    def render(self, name, value='', attrs=None, choices=()):
+        try:
+            attr_class = escape(self.attrs['class'])
+        except KeyError:
+            attr_class = ''
+        try:
+            attr_placeholder = escape(self.attrs['placeholder'])
+        except KeyError:
+            attr_placeholder = ''
+        output = ('<input type="text" name="%s" class="datepicker %s" '
+                  'placeholder="%s" value="%s" data-date-format="yyyy-mm-dd">')
+        return mark_safe(output % (escape(name), attr_class,
+                                   attr_placeholder, value))

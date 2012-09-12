@@ -54,6 +54,9 @@
     {% if 'barcode' in columns %}
     <td>{{ d.barcode|default:'' }}</td>
     {% endif %}
+    {% if 'serial_number' in columns %}
+        <td>{{ d.sn|default:'' }}</td>
+    {% endif %}
     {% if 'position' in columns %}
     <td>
         {% if d.dc %}<a href="{% url 'racks' d.dc|slugify details '' %}">{{ d.dc }}</a>/{% endif %}{% if d.rack %}<a href="{% url 'racks' d.rack|slugify details '' %}">{{ d.rack }}</a>/{% endif %}{% if d.parent and d.parent.model and d.parent.model.type == 2 %}{{ d.parent.chassis_position|default:'-' }}/{% endif %}{% if d.model.type == 203 %}{% if d.parent and d.parent.parent and d.parent.parent.model and d.parent.parent.model.type == 2 %}{{ d.parent.parent.get_position|default:'-' }}/{% endif %}{{ d.parent.get_position|default:'-' }}/{% endif %}<b>{{ d.get_position|default:'-' }}</b>
@@ -81,7 +84,7 @@
     <td>{{ d.created|date:'Y-m-d H:i' }}</td>
     {% endif %}
     {% if 'lastseen' in columns %}
-    <td>{{ d.last_seen|date:'Y-m-d H:i' }}</td>
+    <td>{{ d.last_ping|date:'Y-m-d H:i' }}</td>
     {% endif %}
     {% if 'reports' in columns %}
     <td>{%icon 'fugue-fingerprint'%}</td>

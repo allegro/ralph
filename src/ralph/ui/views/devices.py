@@ -15,6 +15,7 @@ from django.views.generic import ListView
 
 from ralph.account.models import Perm
 from ralph.discovery.models import SplunkUsage
+from ralph.discovery.models_network import IPAddress
 from ralph.util import csvutil
 
 
@@ -37,6 +38,7 @@ DEVICE_SORT_COLUMNS = {
     'purchase_date': ('purchase_date',),
     'warranty': ('warranty_expiration_date',),
     'support': ('support_expiration_date', 'support_kind'),
+    'sn' : ('serial_number'),
     # FIXME: create a column for affected reports quantity
     'reports': ('remarks',),
 }
@@ -72,7 +74,7 @@ class BaseDeviceList(ListView):
     paginate_by = PAGE_SIZE
     details_columns = {
         'info': ['venture', 'model', 'position', 'remarks'],
-        'components': ['model', 'barcode'],
+        'components': ['model', 'barcode', 'sn'],
         'prices': ['venture', 'margin', 'deprecation', 'price', 'cost'],
         'addresses': ['ips', 'management'],
         'costs': ['venture', 'cost'],
@@ -114,6 +116,7 @@ class BaseDeviceList(ListView):
                 dev.rack or '' if 'info' in show_tabs else '',
                 dev.get_position() if 'info' in show_tabs else '',
                 dev.barcode or '' if 'info' in show_tabs else '',
+                dev.sn or '' if 'info' in show_tabs else '',
                 str(dev.get_margin())+'%' if 'prices' in show_tabs else '',
                 (dev.deprecation_kind.name if dev.deprecation_kind and
                     'prices' in show_tabs else ''),
@@ -189,11 +192,20 @@ class BaseDeviceList(ListView):
             item.nonpermanent_costs = SplunkUsage.objects.filter(device_id=item.id).exists()
         return items
 
+    def last_ping(self, queryset):
+        items = list(queryset)
+        for item in items:
+            ip = IPAddress.objects.filter(device_id=item.id).order_by('-last_seen')[:1]
+            if ip:
+                item.last_ping = ip[0].last_seen
+        return items
+
     def paginate_queryset(self, queryset, page_size):
         """
         Paginate the queryset, if needed. When page number is 0, don't paginate.
         """
         queryset = self.mark_device_with_nonpermanent_costs(queryset)
+        queryset = self.last_ping(queryset)
         paginator = self.get_paginator(queryset, page_size,
                         allow_empty_first_page=self.get_allow_empty())
         page = self.kwargs.get('page')
