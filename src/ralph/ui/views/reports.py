@@ -17,7 +17,7 @@ from bob.menu import MenuItem
 from dj.choices import Choices
 
 from ralph.account.models import Perm
-from ralph.deployment.models import DeploymentStatus, Device
+from ralph.deployment.models import DeploymentStatus
 from ralph.ui.views.common import Base, DeviceDetailView
 from ralph.ui.views.devices import DEVICE_SORT_COLUMNS
 from ralph.ui.forms import DateRangeForm, MarginsReportForm
@@ -256,6 +256,7 @@ class ReportVentures(SidebarReports, Base):
                 'Path',
                 'Department',
                 'Default margin',
+                'Device count',
                 'Total cost'
             ]
             for venture in self.ventures:
@@ -266,6 +267,7 @@ class ReportVentures(SidebarReports, Base):
                     unicode(venture.department) if venture.department else '',
                     ('%d%%' % venture.margin_kind.margin
                         ) if venture.margin_kind else '',
+                    venture.count or 0,
                     '{:,.2f} {}'.format(total, settings.CURRENCY).replace(',', ' '),
                 ]
         f = StringIO.StringIO()
