@@ -134,4 +134,40 @@ $(function ($) {
     $('select#id_venture').each(venture_changed);
 
     $('.datepicker').datepicker({ format: 'yyyy-mm-dd'});
+
+    $('div.bar-widget-wrapper').each(function() {
+        var wrapper = $(this);
+        var input = $(this).find('input');
+        var refreshMonthsWrapper = function() {
+            var monthsWrapper = $('div.bar-widget-wrapper-months');
+            var yearsWrapper = $('div.bar-widget-wrapper-years');
+            if($(monthsWrapper).length > 0 && $(yearsWrapper).length > 0) {
+                var selected_year = $(yearsWrapper).find('div.btn-group button.active').val();
+                var currentTime = new Date();
+                $(monthsWrapper).find('div.btn-group button').each(function() {
+                    if(selected_year == currentTime.getFullYear() &&  $(this).val() > (currentTime.getMonth() + 1)) {
+                        $(this).addClass('disabled');
+                        $(this).removeClass('active');
+                    } else {
+                        $(this).removeClass('disabled');
+                    }
+                });
+                if($(monthsWrapper).find('div.btn-group button.active').length == 0) {
+                    $(monthsWrapper).find('div.btn-group button:not(.disabled):last').click();
+                }
+            }
+        }
+        refreshMonthsWrapper();
+        $(this).find('div.btn-group button').click(function() {
+            if(!$(this).hasClass('active') && !$(this).hasClass('disabled')) {
+                $(wrapper).find('div.btn-group button').removeClass('active');
+                $(input).val($(this).val());
+                $(this).addClass('active');
+                if($(wrapper).hasClass('bar-widget-wrapper-years')) {
+                    refreshMonthsWrapper();
+                }
+            }
+            return false;
+        });
+    });
 });
