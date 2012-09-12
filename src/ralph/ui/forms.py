@@ -43,6 +43,10 @@ def _all_roles():
         yield r.id, '{} / {}'.format(r.venture.name, r.full_name)
 
 
+def validate_whitespaces(value):
+    if value[0:1] == ' ':
+        raise forms.ValidationError("This field can't start with whitespaces")
+
 class TooltipContent(Choices):
     _ = Choices.Choice
 
@@ -95,38 +99,45 @@ class NetworksFilterForm(forms.Form):
 
 
 class SearchForm(forms.Form):
+
     name = forms.CharField(required=False,
-            widget=forms.TextInput(attrs={'class':'span2'}))
+            widget=forms.TextInput(attrs={'class':'span2'}),
+            validators=[validate_whitespaces])
     address = forms.CharField(required=False,
             widget=forms.TextInput(attrs={'class':'span2', 'rel': 'tooltip',
                             'data-original-title': TooltipContent.empty_field}),
-            label="Address or network")
+            label="Address or network",
+            validators=[validate_whitespaces])
     remarks = forms.CharField(required=False,
             widget=forms.TextInput(attrs={'class':'span2', 'rel': 'tooltip',
-                                          'data-original-title': TooltipContent.empty_field}))
+            'data-original-title': TooltipContent.empty_field}),
+            validators=[validate_whitespaces])
     role = forms.CharField(required=False,
             widget=forms.TextInput(attrs={'class':'span2', 'rel': 'tooltip',
-                                          'data-original-title': TooltipContent.empty_field}),
-            label="Venture or role")
+                            'data-original-title': TooltipContent.empty_field}),
+            label="Venture or role", validators=[validate_whitespaces])
     model = forms.CharField(required=False,
             widget=forms.TextInput(attrs={'class':'span2', 'rel': 'tooltip',
-                                          'data-original-title': TooltipContent.empty_field_venture}))
+                    'data-original-title': TooltipContent.empty_field_venture}),
+            validators=[validate_whitespaces])
     component = forms.CharField(required=False,
             widget=forms.TextInput(attrs={'class':'span2'}),
-            label="Component or software")
+            label="Component or software", validators=[validate_whitespaces])
     serial = forms.CharField(required=False,
             widget=forms.TextInput(attrs={'class':'span2', 'rel': 'tooltip',
-                                          'data-original-title': TooltipContent.empty_field}),
-            label="Serial number or MAC")
+                            'data-original-title': TooltipContent.empty_field}),
+            label="Serial number or MAC", validators=[validate_whitespaces])
     barcode = forms.CharField(required=False,
             widget=forms.TextInput(attrs={'class':'span2', 'rel': 'tooltip',
-                                          'data-original-title': TooltipContent.empty_field}))
+                            'data-original-title': TooltipContent.empty_field}),
+            validators=[validate_whitespaces])
     position = forms.CharField(required=False,
             widget=forms.TextInput(attrs={'class':'span2', 'rel': 'tooltip',
-                                          'data-original-title': TooltipContent.empty_field}),
-            label="Datacenter, rack or position")
+                            'data-original-title': TooltipContent.empty_field}),
+            label="Datacenter, rack or position", validators=[validate_whitespaces])
     history = forms.CharField(required=False,
-            widget=forms.TextInput(attrs={'class':'span2'}))
+            widget=forms.TextInput(attrs={'class':'span2'}),
+            validators=[validate_whitespaces])
     device_type = forms.MultipleChoiceField(required=False,
             widget=forms.SelectMultiple(attrs={'class': 'span2'}),
             choices=DeviceType(item=lambda e: (e.id, e.raw)),
@@ -135,34 +146,38 @@ class SearchForm(forms.Form):
             widget=DeviceGroupWidget, label="")
     component_group = forms.IntegerField(required=False,
             widget=ComponentGroupWidget, label="")
-
-
-    purchase_date_start = forms.DateField(required=False, widget=DateWidget, label='Start purchase_date')
-    purchase_date_end = forms.DateField(required=False, widget=DateWidget, label='End purchase_date')
+    purchase_date_start = forms.DateField(required=False,
+        widget=DateWidget(attrs={'class':'span2', 'placeholder': 'Start YYYY-MM-DD'}),
+        label='Purchase date', input_formats=['%Y-%m-%d'])
+    purchase_date_end = forms.DateField(required=False,
+        widget=DateWidget(attrs={'class':'span2', 'placeholder': 'End YYYY-MM-DD'}),
+        label='', input_formats=['%Y-%m-%d'])
     no_purchase_date = forms.BooleanField(required=False,
         label="No purchase date")
-
-    deprecation_date_start = forms.DateField(required=False, widget=DateWidget, label='Start deprecation_date')
-    deprecation_date_end = forms.DateField(required=False, widget=DateWidget, label='End deprecation_date')
+    deprecation_date_start = forms.DateField(required=False,
+        widget=DateWidget(attrs={'class':'span2', 'placeholder': 'Start YYYY-MM-DD'}),
+        label='Deprecation date', input_formats=['%Y-%m-%d'])
+    deprecation_date_end = forms.DateField(required=False,
+        widget=DateWidget(attrs={'class':'span2', 'placeholder': 'End YYYY-MM-DD'}),
+        label='', input_formats=['%Y-%m-%d'])
     no_deprecation_date = forms.BooleanField(required=False,
         label="No deprecation date")
-
-    warranty_expiration_date_start = forms.DateField(required=False, widget=DateWidget, label='Start warranty_expiration_date')
-    warranty_expiration_date_end = forms.DateField(required=False, widget=DateWidget, label='End warranty_expiration_date')
+    warranty_expiration_date_start = forms.DateField(required=False,
+        widget=DateWidget(attrs={'class':'span2', 'placeholder': 'Start YYYY-MM-DD'}),
+        label='Warranty expiration date', input_formats=['%Y-%m-%d'])
+    warranty_expiration_date_end = forms.DateField(required=False,
+        widget=DateWidget(attrs={'class':'span2', 'placeholder': 'End YYYY-MM-DD'}),
+        label='', input_formats=['%Y-%m-%d'])
     no_warranty_expiration_date = forms.BooleanField(required=False,
         label="No warranty expiration date")
-
-    support_expiration_date_start = forms.DateField(required=False, widget=DateWidget, label='Start date')
-    support_expiration_date_end = forms.DateField(required=False, widget=DateWidget, label='End date')
+    support_expiration_date_start = forms.DateField(required=False,
+        widget=DateWidget(attrs={'class':'span2', 'placeholder': 'Start YYYY-MM-DD'}),
+        label='Support expiration date', input_formats=['%Y-%m-%d'])
+    support_expiration_date_end = forms.DateField(required=False,
+        widget=DateWidget(attrs={'class':'span2', 'placeholder': 'End YYYY-MM-DD'}),
+        label='', input_formats=['%Y-%m-%d'])
     no_support_expiration_date = forms.BooleanField(required=False,
         label="No support expiration date")
-
-
-
-
-
-
-
     deleted = forms.BooleanField(required=False,
             label="Include deleted")
 
