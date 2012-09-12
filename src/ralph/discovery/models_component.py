@@ -401,14 +401,16 @@ class SplunkUsage(Component):
 
 class OperatingSystem(Component):
     label = db.CharField(verbose_name=_("name"), max_length=255)
-    memory = db.PositiveIntegerField(verbose_name=_("size (MiB)"),
-                                     null=True, blank=True)
+    memory = db.PositiveIntegerField(verbose_name=_("memory"),
+        help_text=_("in MiB"), null=True, blank=True)
+    storage = db.PositiveIntegerField(verbose_name=_("storage"),
+        help_text=_("in MiB"), null=True, blank=True)
     cores_count = db.PositiveIntegerField(verbose_name=_("cores count"),
-                                          null=True, blank=True)
+        null=True, blank=True)
 
     @classmethod
-    def create(cls, dev, os_name, version='', memory=None, cores_count=None,
-               family=None):
+    def create(cls, dev, os_name, version='', memory=None, storage=None,
+               cores_count=None, family=None):
         model, created = ComponentModel.concurrent_get_or_create(
             type=ComponentType.os.id,
             family=family,
@@ -424,6 +426,7 @@ class OperatingSystem(Component):
         operating_system.model = model
         operating_system.label = '%s %s' % (os_name, version)
         operating_system.memory = memory
+        operating_system.storage = storage
         operating_system.cores_count = cores_count
         return operating_system
 
