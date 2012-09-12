@@ -37,17 +37,17 @@ class ReportType(Choices):
     no_ping1 = _('No ping since 1 day').extra(
             filter=lambda device_list: device_list.filter(
                 ipaddress__last_seen__lte=threshold(-1)),
-            columns=['venture', 'position', 'lastseen', 'remarks'],
+            columns=['venture', 'position', 'lastseen', 'remarks', 'lastping'],
             )
     no_ping3 = _('No ping since 3 days').extra(
             filter=lambda device_list: device_list.filter(
                 ipaddress__last_seen__lte=threshold(-3)),
-            columns=['venture', 'position', 'lastseen', 'remarks'],
+            columns=['venture', 'position', 'lastseen', 'remarks', 'lastping'],
             )
     no_ping7 = _('No ping since 7 days').extra(
             filter=lambda device_list: device_list.filter(
                 ipaddress__last_seen__lte=threshold(-7)),
-            columns=['venture', 'position', 'lastseen', 'remarks'],
+            columns=['venture', 'position', 'lastseen', 'remarks', 'lastping'],
             )
     no_purchase_date = _('No purchase date').extra(
             filter=lambda device_list: device_list.filter(
