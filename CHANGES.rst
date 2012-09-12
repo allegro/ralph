@@ -6,6 +6,23 @@ Change Log
 
 Unreleased yet.
 
+* A details view for device in the reports
+
+* Removed date pickers from the "Venture" tab
+
+* New reports in the "Reports" tab
+
+* OpenStack pricing now includes pricing margins
+
+* Extra costs have now a dictionary of cost types
+
+* OperatingSystem included in pricing
+
+* A new component kind, OperatingSystem, with information about CPU, memory and
+  disk storage visible from the oprating system
+
+* A new main menu entry, "Reports", with financial reports
+
 * Deployment of new machines using PXE implemented
 
 * CMDB: change acceptance
