@@ -70,9 +70,9 @@ class NetworkTest(TestCase):
 
 class PricingTest(TestCase):
     def test_rack_server(self):
-        dev = Device.create(sn='xxx', model_type=DeviceType.rack_server,
-                            model_name='xxx')
-        dmg = DeviceModelGroup(name='XXX')
+        dev = Device.create(sn='device', model_type=DeviceType.rack_server,
+                            model_name='device')
+        dmg = DeviceModelGroup(name='DeviceModelGroup')
         dmg.price = 1337
         dmg.save()
         dev.model.group = dmg
@@ -83,9 +83,9 @@ class PricingTest(TestCase):
         self.assertEquals(dev.cached_price, 1337)
 
     def test_manual_price(self):
-        dev = Device.create(sn='xxx', model_type=DeviceType.rack_server,
-                            model_name='xxx')
-        dmg = DeviceModelGroup(name='XXX')
+        dev = Device.create(sn='device', model_type=DeviceType.rack_server,
+                            model_name='device')
+        dmg = DeviceModelGroup(name='DeviceModelGroup')
         dmg.price = 1337
         dmg.save()
         dev.model.group = dmg
@@ -98,19 +98,19 @@ class PricingTest(TestCase):
         self.assertEquals(dev.cached_price, 238)
 
     def test_blade_server(self):
-        encl = Device.create(sn='xxxx', model_type=DeviceType.blade_system,
-                            model_name='xxx encl')
-        dev = Device.create(sn='xxx', model_type=DeviceType.blade_server,
-                            model_name='xxx', parent=encl)
+        encl = Device.create(sn='devicex', model_type=DeviceType.blade_system,
+                            model_name='device encl')
+        dev = Device.create(sn='device', model_type=DeviceType.blade_server,
+                            model_name='device', parent=encl)
 
-        encl_dmg = DeviceModelGroup(name='XXX encl')
+        encl_dmg = DeviceModelGroup(name='DeviceModelGroup encl')
         encl_dmg.slots = 4
         encl_dmg.price = 65535
         encl_dmg.save()
         encl.model.group = encl_dmg
         encl.model.save()
 
-        dmg = DeviceModelGroup(name='XXX')
+        dmg = DeviceModelGroup(name='DeviceModelGroup')
         dmg.price = 1337
         dmg.slots = 1
         dmg.save()
@@ -125,9 +125,9 @@ class PricingTest(TestCase):
         self.assertEquals(dev.cached_price + encl.cached_price, 65535 + 1337)
 
     def test_cost(self):
-        dev = Device.create(sn='xxx', model_type=DeviceType.rack_server,
-                            model_name='xxx')
-        dmg = DeviceModelGroup(name='XXX')
+        dev = Device.create(sn='device', model_type=DeviceType.rack_server,
+                            model_name='device')
+        dmg = DeviceModelGroup(name='DeviceModelGroup')
         dmg.price = 100
         dmg.save()
         dev.model.group = dmg
