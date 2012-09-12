@@ -190,4 +190,4 @@ class DateWidget(forms.DateInput):
         output = ('<input type="text" name="%s" class="datepicker %s" '
                   'placeholder="%s" value="%s" data-date-format="yyyy-mm-dd">')
         return mark_safe(output % (escape(name), attr_class,
-                                   attr_placeholder, value))
+                                   attr_placeholder, escape(value)))

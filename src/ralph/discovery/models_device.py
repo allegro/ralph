@@ -437,11 +437,8 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
             pos = '%d' % self.chassis_position
         return pos
 
-    def has_nonpermanent_costs(self):
-        return SplunkUsage.objects.filter(device_id=self.id).exists()
-
     def get_last_ping(self):
-        ip = IPAddress.objects.filter(device_id=self.id).order_by('-last_seen')[:1]
+        ip = IPAddress.objects.filter(device=self).order_by('-last_seen')[:1]
         if ip:
             return ip[0].last_seen
 
