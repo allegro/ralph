@@ -106,10 +106,29 @@ that is used is included in the price.
 The price of a virtual server hypervisor is calculated normally, but then the
 total prices of its virtual machines are subtracted from it.
 
-:index:`Storage`
+:index:`Remote storage`
 ----------------
 
 The price of storage is calculated normally, and then the prices of all the
-:index:`disk shares` that are mounted somwehere (and thus their price is
+:index:`disk shares` that are mounted somewhere (and thus their price is
 already included in the price of whatever device they are mounted on) are
 subtracted from it.
+
+:index:`Default disks, CPUs and memory`
+---------------------------------------
+
+When a server is missing the information about its hard disk drives, memory
+chips or processors, the pricing algorithm estimates their values by taking
+information collected at the operating system level: the amount of available
+disk space, the amount of free system memory and the number of CPU cores
+available. The prices for those are calculated based on the "OS Detected
+Storage", "OS Detected Memory" and "OS Detected CPU" model groups, if they
+exist in the catalog (they have to be created manually).
+
+If the appropriate model groups don't exists in the catalog, or there is no
+information available from the operating system, Ralph assumes that the server
+has a default memory, disk and CPU -- if it finds "Default Memory", "Default
+Disk" or "Default CPU" model groups in the catalog.
+
+Finally, if none of this information is available, the missing components are
+not included in the pricing.
