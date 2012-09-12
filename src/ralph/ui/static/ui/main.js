@@ -152,7 +152,6 @@ $(function ($) {
                         $(this).removeClass('disabled');
                     }
                 });
-                console.log($(monthsWrapper).find('div.btn-group button.active').length);
                 if($(monthsWrapper).find('div.btn-group button.active').length == 0) {
                     $(monthsWrapper).find('div.btn-group button:not(.disabled):last').click();
                 }

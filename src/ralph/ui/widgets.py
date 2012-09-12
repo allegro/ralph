@@ -195,6 +195,10 @@ class DateWidget(forms.DateInput):
 
 class YearsBarWidget(forms.Widget):
     def render(self, name, value, attrs=None, choices=()):
+        try:
+            value = int(value)
+        except TypeError:
+            pass
         buttons = []
         year = 2011
         current_year = datetime.date.today().year
@@ -202,7 +206,7 @@ class YearsBarWidget(forms.Widget):
             buttons.append(
                 '<button type="button" value="%s" class="btn%s">%s</button>' % (
                     year,
-                    ' active' if year == int(value) else '',
+                    ' active' if year == value else '',
                     year
                 )
             )
@@ -218,12 +222,16 @@ class YearsBarWidget(forms.Widget):
 
 class MonthsBarWidget(forms.Widget):
     def render(self, name, value, attrs=None, choices=()):
+        try:
+            value = int(value)
+        except TypeError:
+            pass
         buttons = []
         for ind, month in enumerate(list(calendar.month_name)[1:], start=1):
             buttons.append(
                 '<button type="button" value="%s" class="btn%s">%s</button>' % (
                     ind,
-                    ' active' if ind == int(value) else '',
+                    ' active' if ind == value else '',
                     month
                 )
             )

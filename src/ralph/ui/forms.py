@@ -56,12 +56,26 @@ class PredefinedDateRangeForm(forms.Form):
     month = forms.IntegerField(widget=MonthsBarWidget, label='Month',
                                min_value=1, max_value=12)
 
+    def clean_month(self):
+        month = self.cleaned_data['month']
+        try:
+            year = self.cleaned_data['year']
+            today = datetime.date.today()
+            if year == today.year and month > today.month:
+                raise forms.ValidationError("Invalid month.")
+        except KeyError:
+            pass
+        return month
+
     def get_range(self):
         month = self.cleaned_data['month']
         year = self.cleaned_data['year']
-        last_month_day = monthrange(year, month)[1]
+        last_day = monthrange(year, month)[1]
+        today = datetime.date.today()
+        if year == today.year and month == today.month and last_day > today.day:
+            last_day = today.day
         start_date = datetime.date(year=year, month=month, day=1)
-        end_date = datetime.date(year=year, month=month, day=last_month_day)
+        end_date = datetime.date(year=year, month=month, day=last_day)
         return start_date, end_date
 
 
