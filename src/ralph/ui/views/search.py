@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 
 import ipaddr
 import re
+import datetime
 
 from django.contrib import messages
 from django.core.urlresolvers import reverse
@@ -14,7 +15,7 @@ from django.http import HttpResponseRedirect
 from powerdns.models import Record
 
 from ralph.account.models import Perm
-from ralph.discovery.models import ReadOnlyDevice, Device
+from ralph.discovery.models import ReadOnlyDevice, Device, ComponentModel
 from ralph.ui.forms import SearchForm
 from ralph.ui.views.common import (BaseMixin, Info, Prices, Addresses, Costs,
                                    Purchase, Components, History, Discover)
@@ -220,15 +221,23 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                         model__group_id=data['device_group']
                     )
             if data['component_group']:
-                q = _search_fields_or([
-                    'genericcomponent__model__group_id',
-                    'software__model__group_id',
-                    'fibrechannel__model__group_id',
-                    'storage__model__group_id',
-                    'memory__model__group_id',
-                    'processor__model__group_id',
-                    'disksharemount__share__model__group_id',
-                ], [str(data['component_group'])])
+                is_splunk = ComponentModel.objects.filter(
+                        group_id=str(data['component_group']),
+                        family='splunkusage').exists()
+                if is_splunk:
+                    yesterday = datetime.date.today() - datetime.timedelta(
+                            days=1)
+                    q = Q(splunkusage__day=yesterday)
+                else:
+                    q = _search_fields_or([
+                        'genericcomponent__model__group_id',
+                        'software__model__group_id',
+                        'fibrechannel__model__group_id',
+                        'storage__model__group_id',
+                        'memory__model__group_id',
+                        'processor__model__group_id',
+                        'disksharemount__share__model__group_id',
+                    ], [str(data['component_group'])])
                 self.query = self.query.filter(q).distinct()
             if data['device_type']:
                 self.query = self.query.filter(

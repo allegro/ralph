@@ -47,7 +47,8 @@
                 {% endif %}
               {% endif %}
               {% if i.count %}
-                  / <span class="badge nolink">{{i.count}}</span>
+                {% if i.url or i.count_now %} / {% endif %}
+                <span class="badge nolink">{{i.count}}</span>
               {% endif %}
             </td>
             <td class="column-cost currency">{{ i.cost|currency }}</td>
