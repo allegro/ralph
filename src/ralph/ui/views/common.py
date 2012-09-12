@@ -157,10 +157,13 @@ class BaseMixin(object):
                 MenuItem('Addresses', fugue_icon='fugue-network-ip',
                         href=tab_href('addresses')),
             ])
-        if has_perm(Perm.read_device_info_financial, venture):
+        if has_perm(Perm.edit_device_info_financial, venture):
             tab_items.extend([
                 MenuItem('Prices', fugue_icon='fugue-money-coin',
                         href=tab_href('prices')),
+            ])
+        if has_perm(Perm.read_device_info_financial, venture):
+            tab_items.extend([
                 MenuItem('Costs', fugue_icon='fugue-wallet',
                         href=tab_href('costs')),
             ])
@@ -400,7 +403,7 @@ class Components(DeviceDetailView):
 class Prices(DeviceUpdateView):
     form_class = DevicePricesForm
     template_name = 'ui/device_prices.html'
-    read_perm = Perm.read_device_info_financial
+    read_perm = Perm.edit_device_info_financial # sic
     edit_perm = Perm.edit_device_info_financial
 
     def get_initial(self):

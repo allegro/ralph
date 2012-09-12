@@ -21,7 +21,7 @@ from ralph.util import network, plugin
 from ralph.discovery.models import IPAddress, DiskShare, DiskShareMount
 from ralph.discovery import hardware
 
-from .facts import parse_facts
+from .facts import parse_facts, handle_facts_os
 from .lshw import parse_lshw
 from .util import connect_db, get_ip_hostname_sets
 
@@ -52,7 +52,7 @@ def puppet(**kwargs):
             dev, dev_name = parse_lshw(lshw, facts, is_virtual)
     except MySQLdb.OperationalError as e:
         if e.args[0] in (1205, 1213) and 'try restarting transaction' in e.args[1]:
-            time.sleep(random.choice(range(10))+1)
+            time.sleep(random.choice(range(10)) + 1)
             raise plugin.Restart(unicode(e), kwargs)
         raise
     if not dev:
@@ -70,6 +70,9 @@ def puppet(**kwargs):
         ip_address.hostname = network.hostname(ip_address.address)
     ip_address.last_puppet = datetime.datetime.now()
     ip_address.save(update_last_seen=True) # no priorities for IP addresses
+
+    handle_facts_os(dev, facts, is_virtual)
+
     return True, message, kwargs
 
 def get_all_facts_by_ip_set(db, ip_set):
@@ -197,4 +200,3 @@ def parse_uptime(facts, dev):
         uptime = None
     dev.uptime = uptime
     dev.save()
-

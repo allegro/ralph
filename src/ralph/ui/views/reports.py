@@ -17,7 +17,7 @@ from bob.menu import MenuItem
 from dj.choices import Choices
 
 from ralph.account.models import Perm
-from ralph.deployment.models import DeploymentStatus
+from ralph.deployment.models import DeploymentStatus, Device
 from ralph.ui.views.common import Base, DeviceDetailView
 from ralph.ui.views.devices import DEVICE_SORT_COLUMNS
 from ralph.ui.forms import DateRangeForm, MarginsReportForm
@@ -26,7 +26,6 @@ from ralph.discovery.models_device import MarginKind
 from ralph.discovery.models_history import HistoryCost
 from ralph.ui.reports import total_cost_count
 from ralph.util import csvutil
-
 
 def threshold(days):
     return datetime.date.today() + datetime.timedelta(days=days)
@@ -62,23 +61,29 @@ class ReportType(Choices):
             columns=['venture', 'position', 'barcode', 'cost', 'lastseen',
                 'remarks'],
             )
+    deactivated_support = _('Deactivated support').extra(
+        filter=lambda device_list: device_list.filter(
+            support_expiration_date__lte= datetime.date.today()),
+        columns=['venture', 'model', 'position', 'barcode',
+                 'serial_number', 'remarks', 'support'],
+    )
     support_expires30 = _('Support expires in 30 days').extra(
             filter=lambda device_list: device_list.filter(
                 support_expiration_date__lte=threshold(30)),
             columns=['venture', 'model', 'position', 'barcode',
-                     'serial_number', 'remarks'],
+                     'serial_number', 'remarks', 'support'],
             )
     support_expires60 = _('Support expires in 60 days').extra(
             filter=lambda device_list: device_list.filter(
                 support_expiration_date__lte=threshold(60)),
             columns=['venture', 'model', 'position', 'barcode',
-                     'serial_number', 'remarks'],
+                     'serial_number', 'remarks', 'support'],
             )
     support_expires90 = _('Support expires in 90 days').extra(
             filter=lambda device_list: device_list.filter(
                 support_expiration_date__lte=threshold(90)),
             columns=['venture', 'model', 'position', 'barcode',
-                     'serial_number', 'remarks'],
+                     'serial_number', 'remarks', 'support'],
             )
     verified = _('Verified venture and role').extra(
             filter=lambda device_list: device_list.filter(verified=True),
@@ -99,7 +104,33 @@ class ReportType(Choices):
                 deployment__status=DeploymentStatus.in_deployment),
                 columns=['venture', 'remarks', 'position', 'barcode']
             )
-
+    deprecation_devices = _('Deprecation devices').extra(
+            filter=lambda device_list: device_list.filter(
+                deprecation_date__lte = datetime.date.today()),
+                columns=['venture', 'purchase', 'deprecation',
+                         'deprecation_date', 'remarks', 'barcode']
+            )
+    deprecation_devices30 = _('Deprecation devices in 30').extra(
+            filter=lambda device_list: device_list.filter(
+                deprecation_date__lte = threshold(30)).filter(
+                    deprecation_date__gte=datetime.date.today()),
+                columns=['venture', 'purchase', 'deprecation',
+                         'deprecation_date','remarks', 'barcode']
+            )
+    deprecation_devices60 = _('Deprecation devices in 60').extra(
+            filter=lambda device_list: device_list.filter(
+                deprecation_date__lte = threshold(60)).filter(
+                    deprecation_date__gte=datetime.date.today()),
+                columns=['venture', 'purchase', 'deprecation',
+                         'deprecation_date','remarks', 'barcode']
+            )
+    deprecation_devices90 = _('Deprecation devices in 90').extra(
+            filter=lambda device_list: device_list.filter(
+                    deprecation_date__lte = threshold(90)).filter(
+                deprecation_date__gte=datetime.date.today()),
+                columns=['venture', 'purchase', 'deprecation',
+                         'deprecation_date', 'remarks', 'barcode']
+            )
 
 class Reports(DeviceDetailView):
     template_name = 'ui/device_reports.html'

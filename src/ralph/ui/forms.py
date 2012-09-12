@@ -254,6 +254,7 @@ class DeviceForm(forms.ModelForm):
             'cached_cost': ReadOnlyPriceWidget,
             'auto_price': ReadOnlyPriceWidget,
             'purchase_date': DateWidget,
+            'deprecation_date': ReadOnlyWidget,
             'warranty_expiration_date': DateWidget,
             'support_expiration_date': DateWidget,
         }
@@ -514,10 +515,14 @@ class DevicePurchaseForm(DeviceForm):
             'sn',
             'barcode',
             'purchase_date',
+            'deprecation_date',
             'warranty_expiration_date',
             'support_expiration_date',
             'support_kind',
         )
+
+    def clean_deprecation_date(self):
+        return self.instance.deprecation_date
 
     def __init__(self, *args, **kwargs):
         super(DevicePurchaseForm, self).__init__(*args, **kwargs)

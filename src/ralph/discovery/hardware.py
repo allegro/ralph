@@ -197,10 +197,15 @@ def get_disk_shares(ssh):
         pvs['/dev/%s' % pv] = wwn
         if path:
             pvs['/dev/mapper/%s' % path] = wwn
-    stdin, stdout, stderr = ssh.exec_command("pvs --noheadings --units M")
+    stdin, stdout, stderr = ssh.exec_command(
+            "pvs --noheadings --units M --separator '|'")
     vgs = {}
     for line in stdout.readlines():
-        pv, vg, fmt, attr, psize, pfree = line.split(None, 5)
+        pv, vg, rest = line.split('|', 2)
+        pv = pv.strip()
+        vg = vg.strip()
+        if not vg:
+            continue
         vgs[vg] = pv
     stdin, stdout, stderr = ssh.exec_command("lvs --noheadings --units M")
     storage = {}

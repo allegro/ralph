@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2012 Łukasz Langa
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
