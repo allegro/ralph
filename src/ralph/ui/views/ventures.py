@@ -471,6 +471,8 @@ class VenturesVenture(SidebarVentures, Base):
 
     def get_context_data(self, **kwargs):
         ret = super(VenturesVenture, self).get_context_data(**kwargs)
+        start = None
+        end = None
         if self.venture is None or not self.form.is_valid():
             items = []
             cost_data = []
@@ -511,6 +513,8 @@ class VenturesVenture(SidebarVentures, Base):
             'cost_data': json.dumps(cost_data),
             'count_data': json.dumps(count_data),
             'form': self.form,
+            'start_date': start,
+            'end_date': end,
         })
         return ret
 
