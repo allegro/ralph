@@ -22,8 +22,7 @@ from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Taggable
 from django.utils.html import escape
 
-from ralph.discovery.models_component import is_mac_valid, Ethernet, SplunkUsage
-from ralph.discovery.models_network import IPAddress
+from ralph.discovery.models_component import is_mac_valid, Ethernet
 from ralph.discovery.models_util import LastSeen
 from ralph.util import Eth
 
@@ -438,9 +437,8 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
         return pos
 
     def get_last_ping(self):
-        ip = IPAddress.objects.filter(device=self).order_by('-last_seen')[:1]
-        if ip:
-            return ip[0].last_seen
+        for ip in self.ipaddress_set.order_by('-last_seen'):
+            return ip.last_seen
 
     @property
     def ipaddress(self):
