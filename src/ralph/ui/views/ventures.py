@@ -21,7 +21,8 @@ from ralph.business.models import Venture, VentureRole, VentureExtraCost
 from ralph.discovery.models import (ReadOnlyDevice, DeviceType, DataCenter,
                                     Device, DeviceModelGroup, HistoryCost,
                                     SplunkUsage, ComponentModel)
-from ralph.ui.forms import RolePropertyForm, DateRangeForm, VentureFilterForm
+from ralph.ui.forms import (RolePropertyForm, PredefinedDateRangeForm,
+                            VentureFilterForm)
 from ralph.ui.views.common import (Info, Prices, Addresses, Costs, Purchase,
                                    Components, History, Discover, BaseMixin,
                                    Base, DeviceDetailView, CMDB)
@@ -465,16 +466,16 @@ class VenturesVenture(SidebarVentures, Base):
     template_name = 'ui/ventures-venture.html'
 
     def get(self, *args, **kwargs):
-        if 'start' in self.request.GET:
-            self.form = DateRangeForm(self.request.GET)
+        if 'year' in self.request.GET:
+            self.form = PredefinedDateRangeForm(self.request.GET)
             if not self.form.is_valid():
                 messages.error(self.request, "Invalid date range")
         else:
             initial = {
-                'start': datetime.date.today() - datetime.timedelta(days=30),
-                'end': datetime.date.today(),
+                'year': datetime.date.today().year,
+                'month': datetime.date.today().month,
             }
-            self.form = DateRangeForm(initial)
+            self.form = PredefinedDateRangeForm(initial)
             self.form.is_valid()
         self.set_venture()
         has_perm = self.request.user.get_profile().has_perm
@@ -486,6 +487,8 @@ class VenturesVenture(SidebarVentures, Base):
 
     def get_context_data(self, **kwargs):
         ret = super(VenturesVenture, self).get_context_data(**kwargs)
+        start = None
+        end = None
         if self.venture is None or not self.form.is_valid():
             items = []
             cost_data = []
@@ -501,8 +504,7 @@ class VenturesVenture(SidebarVentures, Base):
                 query = HistoryCost.objects.filter(
                     venture__in=ventures
                 )
-            start = self.form.cleaned_data['start']
-            end = self.form.cleaned_data['end']
+            start, end = self.form.get_range()
             query = HistoryCost.filter_span(start, end, query)
             items = _get_summaries(query.all(), start, end, True, self.venture)
             cost_data = []
@@ -527,6 +529,8 @@ class VenturesVenture(SidebarVentures, Base):
             'cost_data': json.dumps(cost_data),
             'count_data': json.dumps(count_data),
             'form': self.form,
+            'start_date': start,
+            'end_date': end,
         })
         return ret
 
