@@ -46,13 +46,16 @@
         {% else %}
             {{d.cached_cost|currency }}
         {% endif %}
-        {% if d.nonpermanent_costs %}
+        {% if d.splunkusage_set.exists %}
             <i class="fugue-icon fugue-asterisk-small-yellow" title="nonpermanent costs" ></i>
         {% endif %}
         </td>
     {% endif %}
     {% if 'barcode' in columns %}
     <td>{{ d.barcode|default:'' }}</td>
+    {% endif %}
+    {% if 'serial_number' in columns %}
+        <td>{{ d.sn|default:'' }}</td>
     {% endif %}
     {% if 'position' in columns %}
     <td>
@@ -82,6 +85,9 @@
     {% endif %}
     {% if 'lastseen' in columns %}
     <td>{{ d.last_seen|date:'Y-m-d H:i' }}</td>
+    {% endif %}
+    {% if 'lastping' in columns %}
+    <td>{{ d.get_last_ping|date:'Y-m-d H:i'|default:'' }}</td>
     {% endif %}
     {% if 'reports' in columns %}
     <td>{%icon 'fugue-fingerprint'%}</td>

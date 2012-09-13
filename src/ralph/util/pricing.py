@@ -180,7 +180,7 @@ def get_device_local_storage_price(device):
             if not group.per_size:
                 return group.price or 0
             else:
-                storage = getattr(os, 'storage', 0)
+                storage = os.storage or 0
                 remote_storage_size = math.fsum(
                     m.get_size() for m in device.disksharemount_set.all()
                 )

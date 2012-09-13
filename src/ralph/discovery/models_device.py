@@ -22,8 +22,8 @@ from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Taggable
 from django.utils.html import escape
 
-from ralph.discovery.models_util import LastSeen
 from ralph.discovery.models_component import is_mac_valid, Ethernet
+from ralph.discovery.models_util import LastSeen
 from ralph.util import Eth
 
 
@@ -405,7 +405,11 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
         if dev.model and dev.model.type in (DeviceType.rack.id,
                                             DeviceType.data_center.id):
             return dev.name
-        for ipaddr in dev.ipaddress_set.order_by('-hostname', 'is_management', '-address'):
+        for ipaddr in dev.ipaddress_set.exclude(hostname=None).order_by(
+                'is_management', '-last_seen', '-address'):
+            return ipaddr.hostname
+        for ipaddr in dev.ipaddress_set.order_by(
+                'is_management', '-last_seen', '-address'):
             return ipaddr.hostname or ipaddr.address
         return 'unknown'
 
@@ -435,6 +439,10 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
         else:
             pos = '%d' % self.chassis_position
         return pos
+
+    def get_last_ping(self):
+        for ip in self.ipaddress_set.order_by('-last_seen'):
+            return ip.last_seen
 
     @property
     def ipaddress(self):
