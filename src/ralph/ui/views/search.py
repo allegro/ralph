@@ -83,9 +83,7 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
         return True
 
     def get_queryset(self):
-
         empty_field = 'none'
-
         if self.query is not None:
             return self.query
         self.query = ReadOnlyDevice.objects.none()
@@ -280,70 +278,42 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                 self.query = self.query.filter(
                         model__type__in=data['device_type']
                     )
-            if data['purchase_date_start'] or data['purchase_date_end']:
-                if data['purchase_date_start']:
-                    self.query = self.query.filter(
-                        purchase_date__gte = data['purchase_date_start']
-                    ).filter(
-                        purchase_date__lte = datetime.date.today()
-                    )
-                elif data['purchase_date_end']:
-                    self.query = self.query.filter(
-                        purchase_date__gte = datetime.date.today()
-                    ).filter(
-                        purchase_date__lte = data['purchase_date_end']
-                    )
+            if data['purchase_date_start'] and data['purchase_date_end']:
+                self.query = self.query.filter(
+                    purchase_date__gte = data['purchase_date_start']
+                ).filter(
+                    purchase_date__lte = data['purchase_date_end']
+                )
             if data['no_purchase_date']:
                 self.query = self.query.filter(
                     purchase_date = None
                 )
-            if data['deprecation_date_start'] or data['deprecation_date_end']:
-                if data['deprecation_date_start']:
-                    self.query = self.query.filter(
-                        deprecation_date__gte = data['deprecation_date_start']
-                    ).filter(
-                        deprecation_date__lte = datetime.date.today()
-                    )
-                elif data['deprecation_date_end']:
-                    self.query = self.query.filter(
-                        deprecation_date__gte = datetime.date.today()
-                    ).filter(
-                        deprecation_date__lte = data['deprecation_date_end']
-                    )
+            if data['deprecation_date_start'] and data['deprecation_date_end']:
+                self.query = self.query.filter(
+                    deprecation_date__gte = data['deprecation_date_start']
+                ).filter(
+                    deprecation_date__lte = data['deprecation_date_end']
+                )
             if data['no_deprecation_date']:
                 self.query = self.query.filter(
                     purchase_date = None
                 )
             if data['warranty_expiration_date_start'] or data['warranty_expiration_date_end']:
-                if data['deprecation_date_start']:
-                    self.query = self.query.filter(
-                        warranty_expiration_date__gte = data['warranty_expiration_date_start']
-                    ).filter(
-                        warranty_expiration_date__lte = datetime.date.today()
-                    )
-                elif data['warranty_expiration_date_end']:
-                    self.query = self.query.filter(
-                        warranty_expiration_date__gte = datetime.date.today()
-                    ).filter(
-                        warranty_expiration_date__lte = data['warranty_expiration_date_end']
-                    )
+                self.query = self.query.filter(
+                    warranty_expiration_date__gte = data['warranty_expiration_date_start']
+                ).filter(
+                    warranty_expiration_date__lte = data['warranty_expiration_date_end']
+                )
             if data['no_warranty_expiration_date']:
                 self.query = self.query.filter(
                     warranty_expiration_date = None
                 )
             if data['support_expiration_date_start'] or data['support_expiration_date_end']:
-                if data['support_expiration_date_start']:
-                    self.query = self.query.filter(
-                        support_expiration_date__gte = data['support_expiration_date_start']
-                    ).filter(
-                        support_expiration_date__lte = datetime.date.today()
-                    )
-                elif data['support_expiration_date_end']:
-                    self.query = self.query.filter(
-                        support_expiration_date__gte = datetime.date.today()
-                    ).filter(
-                        support_expiration_date__lte = data['support_expiration_date_end']
-                    )
+                self.query = self.query.filter(
+                    support_expiration_date__gte = data['support_expiration_date_start']
+                ).filter(
+                    support_expiration_date__lte = data['support_expiration_date_end']
+                )
             if data['no_support_expiration_date']:
                 self.query = self.query.filter(
                     support_expiration_date = None
