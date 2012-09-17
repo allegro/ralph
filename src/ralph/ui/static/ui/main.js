@@ -202,8 +202,6 @@ $(function ($) {
             var end_date = parseDate($end.val());
             end_date.setUTCFullYear($this.data('value'));
             $end.val(formatDate(end_date));
-
-            $form.find('button[type="submit"]').click()
         });
         $form.find('.months a').click(function (e) {
             var $this = $(this);
@@ -216,8 +214,6 @@ $(function ($) {
             date.setUTCMonth($this.data('value'));
             date.setUTCDate(0);
             $end.val(formatDate(date));
-
-            $form.find('button[type="submit"]').click()
         });
     });
 });
