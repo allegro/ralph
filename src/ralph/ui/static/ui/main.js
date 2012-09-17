@@ -153,27 +153,28 @@ $(function ($) {
                 pad(d.getUTCMonth()+1) + '-' +
                 pad(d.getUTCDate());
     };
-    var calendar = {
-        years: [
-            { label: '2011', value: 2011 },
-            { label: '2012', value: 2012 }
-        ],
-        months: [
-            { label: 'Jan', value: 1 },
-            { label: 'Feb', value: 2 },
-            { label: 'Mar', value: 3 },
-            { label: 'Apr', value: 4 },
-            { label: 'May', value: 5 },
-            { label: 'Jun', value: 6 },
-            { label: 'Jul', value: 7 },
-            { label: 'Aug', value: 8 },
-            { label: 'Sep', value: 9 },
-            { label: 'Oct', value: 10 },
-            { label: 'Nov', value: 11 },
-            { label: 'Dec', value: 12 }
-        ]
+    var calendar = { years: [], months: [] };
+    var now = new Date();
+    var year = 2011;
+    while (true) {
+        if (new Date(year + 1, 0, 1, 12) >= now) {
+            calendar.years.push({ label: year, value: year,
+                                  css_class: 'btn-success' });
+            break;
+        }
+        calendar.years.push({ label: year, value: year });
+        year += 1;
     };
-    var calendar_tmp = '<div class="btn-toolbar">' +
+    ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct',
+     'Nov', 'Dec'].forEach(function (label, i) {
+         if (i === now.getUTCMonth()) {
+            calendar.months.push({ label: label, value: i+1,
+                                   css_class: 'btn-success' });
+         } else {
+            calendar.months.push({ label: label, value: i+1 });
+         }
+    });
+    var calendar_tmpl = '<div class="btn-toolbar">' +
             '<div class="btn-group years" data-toggle="buttons-radio">' +
             '{{#years}}' +
             '<a href="#" class="btn {{css_class}}" data-value="{{value}}">' + 
@@ -192,7 +193,7 @@ $(function ($) {
         var $form = $(form);
         var $start = $form.find('input[name="start"]');
         var $end = $form.find('input[name="end"]');
-        $form.prepend(Mustache.render(calendar_tmp, calendar));
+        $form.prepend(Mustache.render(calendar_tmpl, calendar));
         $form.find('.years a').click(function (e) {
             var $this = $(this);
             var start_date = parseDate($start.val());
