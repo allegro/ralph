@@ -14,6 +14,7 @@ $(document).ajaxSend(function(event, xhr, settings) {
         }
         return cookieValue;
     }
+
     function sameOrigin(url) {
         // url could be relative or scheme relative or absolute
         var host = document.location.host; // host + port
@@ -135,39 +136,85 @@ $(function ($) {
 
     $('.datepicker').datepicker({ format: 'yyyy-mm-dd'});
 
-    $('div.bar-widget-wrapper').each(function() {
-        var wrapper = $(this);
-        var input = $(this).find('input');
-        var refreshMonthsWrapper = function() {
-            var monthsWrapper = $('div.bar-widget-wrapper-months');
-            var yearsWrapper = $('div.bar-widget-wrapper-years');
-            if($(monthsWrapper).length > 0 && $(yearsWrapper).length > 0) {
-                var selected_year = $(yearsWrapper).find('div.btn-group button.active').val();
-                var currentTime = new Date();
-                $(monthsWrapper).find('div.btn-group button').each(function() {
-                    if(selected_year == currentTime.getFullYear() &&  $(this).val() > (currentTime.getMonth() + 1)) {
-                        $(this).addClass('disabled');
-                        $(this).removeClass('active');
-                    } else {
-                        $(this).removeClass('disabled');
-                    }
-                });
-                if($(monthsWrapper).find('div.btn-group button.active').length == 0) {
-                    $(monthsWrapper).find('div.btn-group button:not(.disabled):last').click();
-                }
-            }
+
+    var parseDate = function (input, format) {
+        format = format || 'yyyy-mm-dd';
+        var parts = input.match(/(\d+)/g), i = 0, fmt = {};
+        format.replace(/(yyyy|dd|mm)/g, function(part) { fmt[part] = i++; });
+        var date = new Date(0);
+        date.setUTCFullYear(parts[fmt['yyyy']]);
+        date.setUTCMonth(parts[fmt['mm']]-1);
+        date.setUTCDate(parts[fmt['dd']]);
+        return date;
+    };
+    var formatDate = function (d) {
+        var pad = function (n) { return n < 10 ? '0' + n : n };
+        return  d.getUTCFullYear() + '-' +
+                pad(d.getUTCMonth()+1) + '-' +
+                pad(d.getUTCDate());
+    };
+    var calendar = { years: [], months: [] };
+    var now = new Date();
+    var year = 2011;
+    while (true) {
+        if (new Date(year + 1, 0, 1, 12) >= now) {
+            calendar.years.push({ label: year, value: year,
+                                  css_class: 'btn-success' });
+            break;
         }
-        refreshMonthsWrapper();
-        $(this).find('div.btn-group button').click(function() {
-            if(!$(this).hasClass('active') && !$(this).hasClass('disabled')) {
-                $(wrapper).find('div.btn-group button').removeClass('active');
-                $(input).val($(this).val());
-                $(this).addClass('active');
-                if($(wrapper).hasClass('bar-widget-wrapper-years')) {
-                    refreshMonthsWrapper();
-                }
-            }
-            return false;
+        calendar.years.push({ label: year, value: year });
+        year += 1;
+    };
+    ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct',
+     'Nov', 'Dec'].forEach(function (label, i) {
+         if (i === now.getUTCMonth()) {
+            calendar.months.push({ label: label, value: i+1,
+                                   css_class: 'btn-success' });
+         } else {
+            calendar.months.push({ label: label, value: i+1 });
+         }
+    });
+    var calendar_tmpl = '<div class="btn-toolbar">' +
+            '<div class="btn-group years" data-toggle="buttons-radio">' +
+            '{{#years}}' +
+            '<a href="#" class="btn {{css_class}}" data-value="{{value}}">' + 
+            '{{label}}</a>' +
+            '{{/years}}' +
+            '</div>' +
+            '<div class="btn-group months" data-toggle="buttons-radio">' +
+            '{{#months}}' +
+            '<a href="#" class="btn {{css_class}}" data-value="{{value}}">' +
+            '{{label}}</a>' +
+            '{{/months}}' +
+            '</div>' +
+            '</div>';
+
+    $('.daterange-form .form-actions').each(function (i, form) {
+        var $form = $(form);
+        var $start = $form.find('input[name="start"]');
+        var $end = $form.find('input[name="end"]');
+        $form.prepend(Mustache.render(calendar_tmpl, calendar));
+        $form.find('.years a').click(function (e) {
+            var $this = $(this);
+            var start_date = parseDate($start.val());
+            start_date.setUTCFullYear($this.data('value'));
+            $start.val(formatDate(start_date));
+
+            var end_date = parseDate($end.val());
+            end_date.setUTCFullYear($this.data('value'));
+            $end.val(formatDate(end_date));
+        });
+        $form.find('.months a').click(function (e) {
+            var $this = $(this);
+
+            var date = parseDate($start.val());
+            date.setUTCMonth($this.data('value') - 1);
+            date.setUTCDate(1);
+            $start.val(formatDate(date));
+
+            date.setUTCMonth($this.data('value'));
+            date.setUTCDate(0);
+            $end.val(formatDate(date));
         });
     });
 });

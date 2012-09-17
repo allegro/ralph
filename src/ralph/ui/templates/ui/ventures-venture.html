@@ -6,7 +6,7 @@
 
 {% block contentarea %}
 
-<form class="form form-inline">
+<form class="form form-inline daterange-form">
 <div class="form-actions">
     {% for f in form %}
         <div style="display:inline-block; vertical-align:top" class="control-group {% if f.errors %}error{% endif %}" >
@@ -18,12 +18,11 @@
             {% endif %}
         </div>
     {% endfor %}
-    <button type="submit" class="btn">
-        {% icon 'fugue-calendar-search-result' %} Update
-    </button>
+    <button type="submit" class="btn">{% spaceless %}
+        {% icon 'fugue-calendar-search-result' %}&nbsp;Update
+        {% endspaceless %}</button>
 </div>
 </form>
-{% if start_date and end_date %}<h3>Current range: {{ start_date|date:"d.m.Y" }} - {{ end_date|date:"d.m.Y" }}</h3>{% endif %}
 </div>
 <div class="row-fluid">
 <div class="span7">

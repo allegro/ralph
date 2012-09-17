@@ -21,7 +21,7 @@ from ralph.business.models import Venture, VentureRole, VentureExtraCost
 from ralph.discovery.models import (ReadOnlyDevice, DeviceType, DataCenter,
                                     Device, DeviceModelGroup, HistoryCost,
                                     SplunkUsage, ComponentModel)
-from ralph.ui.forms import (RolePropertyForm, PredefinedDateRangeForm,
+from ralph.ui.forms import (RolePropertyForm, DateRangeForm,
                             VentureFilterForm)
 from ralph.ui.views.common import (Info, Prices, Addresses, Costs, Purchase,
                                    Components, History, Discover, BaseMixin,
@@ -466,16 +466,16 @@ class VenturesVenture(SidebarVentures, Base):
     template_name = 'ui/ventures-venture.html'
 
     def get(self, *args, **kwargs):
-        if 'year' in self.request.GET:
-            self.form = PredefinedDateRangeForm(self.request.GET)
+        if 'start' in self.request.GET:
+            self.form = DateRangeForm(self.request.GET)
             if not self.form.is_valid():
                 messages.error(self.request, "Invalid date range")
         else:
             initial = {
-                'year': datetime.date.today().year,
-                'month': datetime.date.today().month,
+                'start': datetime.date.today() - datetime.timedelta(days=30),
+                'end': datetime.date.today(),
             }
-            self.form = PredefinedDateRangeForm(initial)
+            self.form = DateRangeForm(initial)
             self.form.is_valid()
         self.set_venture()
         has_perm = self.request.user.get_profile().has_perm
@@ -504,7 +504,8 @@ class VenturesVenture(SidebarVentures, Base):
                 query = HistoryCost.objects.filter(
                     venture__in=ventures
                 )
-            start, end = self.form.get_range()
+            start = self.form.cleaned_data['start']
+            end = self.form.cleaned_data['end']
             query = HistoryCost.filter_span(start, end, query)
             items = _get_summaries(query.all(), start, end, True, self.venture)
             cost_data = []
