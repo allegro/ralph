@@ -50,35 +50,6 @@ class DateRangeForm(forms.Form):
     end = forms.DateField(widget=DateWidget, label='End date')
 
 
-class PredefinedDateRangeForm(forms.Form):
-    year = forms.IntegerField(widget=YearsBarWidget, label='Year',
-                              max_value=datetime.date.today().year)
-    month = forms.IntegerField(widget=MonthsBarWidget, label='Month',
-                               min_value=1, max_value=12)
-
-    def clean_month(self):
-        month = self.cleaned_data['month']
-        try:
-            year = self.cleaned_data['year']
-            today = datetime.date.today()
-            if year == today.year and month > today.month:
-                raise forms.ValidationError("Invalid month.")
-        except KeyError:
-            pass
-        return month
-
-    def get_range(self):
-        month = self.cleaned_data['month']
-        year = self.cleaned_data['year']
-        last_day = monthrange(year, month)[1]
-        today = datetime.date.today()
-        if year == today.year and month == today.month and last_day > today.day:
-            last_day = today.day
-        start_date = datetime.date(year=year, month=month, day=1)
-        end_date = datetime.date(year=year, month=month, day=last_day)
-        return start_date, end_date
-
-
 class MarginsReportForm(DateRangeForm):
     margin_venture = forms.ChoiceField(choices=_all_ventures())
 
