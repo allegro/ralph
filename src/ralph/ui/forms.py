@@ -156,7 +156,7 @@ class RolePropertyForm(forms.ModelForm):
 class ComponentModelGroupForm(forms.ModelForm):
     class Meta:
         model = ComponentModelGroup
-        exclude = ['type']
+        exclude = ['type', 'last_seen', 'created', 'modified']
 
     icons = {
         'name': 'fugue-paper-bag',
@@ -169,7 +169,7 @@ class ComponentModelGroupForm(forms.ModelForm):
 class DeviceModelGroupForm(forms.ModelForm):
     class Meta:
         model = DeviceModelGroup
-        exclude = ['type']
+        exclude = ['type', 'last_seen', 'created', 'modified']
 
     icons = {
         'name': 'fugue-paper-bag',

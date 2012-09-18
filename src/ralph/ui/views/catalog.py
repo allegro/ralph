@@ -148,13 +148,13 @@ class CatalogDevice(Catalog):
             elif target_id == 'new':
                 item = get_object_or_404(DeviceModel, id=items[0])
                 target = DeviceModelGroup(name=item.name, type=item.type)
-                target.save()
+                target.save(user=self.request.user)
             else:
                 target = get_object_or_404(DeviceModelGroup, id=target_id)
             for item in items:
                 model = get_object_or_404(DeviceModel, id=item)
                 model.group = target
-                model.save()
+                model.save(user=self.request.user)
             self.update_cached(target)
             messages.success(self.request, "Items moved.")
             return HttpResponseRedirect(self.request.path)
@@ -167,7 +167,7 @@ class CatalogDevice(Catalog):
                 self.group = get_object_or_404(DeviceModelGroup,
                                                id=self.group_id)
                 self.group.price = 0
-                self.group.save()
+                self.group.save(user=self.request.user)
                 self.update_cached(self.group)
                 self.group.delete()
                 messages.warning(self.request,
@@ -185,7 +185,8 @@ class CatalogDevice(Catalog):
             self.form = DeviceModelGroupForm(self.request.POST,
                                              instance=self.group)
             if self.form.is_valid():
-                self.form.save()
+                self.form.save(commit=False)
+                self.form.instance.save(user=self.request.user)
                 self.update_cached(self.group)
                 messages.success(self.request, "Changes saved.")
                 return HttpResponseRedirect(self.request.path)
@@ -268,13 +269,13 @@ class CatalogComponent(Catalog):
             elif target_id == 'new':
                 item = get_object_or_404(ComponentModel, id=items[0])
                 target = ComponentModelGroup(name=item.name, type=item.type)
-                target.save()
+                target.save(user=self.request.user)
             else:
                 target = get_object_or_404(ComponentModelGroup, id=target_id)
             for item in items:
                 model = get_object_or_404(ComponentModel, id=item)
                 model.group = target
-                model.save()
+                model.save(user=self.request.user)
             self.update_cached(target)
             messages.success(self.request, "Items moved.")
             return HttpResponseRedirect(self.request.path)
@@ -287,7 +288,7 @@ class CatalogComponent(Catalog):
                 self.group = get_object_or_404(ComponentModelGroup,
                                                id=self.group_id)
                 self.group.price = 0
-                self.group.save()
+                self.group.save(user=self.request.user)
                 self.update_cached(self.group)
                 self.group.delete()
                 messages.warning(self.request,
@@ -305,7 +306,8 @@ class CatalogComponent(Catalog):
             self.form = ComponentModelGroupForm(self.request.POST,
                                                 instance=self.group)
             if self.form.is_valid():
-                self.form.save()
+                self.form.save(commit=False)
+                self.form.instance.save(user=self.request.user)
                 self.update_cached(self.group)
                 messages.success(self.request, "Changes saved.")
                 return HttpResponseRedirect(self.request.path)
