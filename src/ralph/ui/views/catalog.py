@@ -16,6 +16,7 @@ from ralph.discovery.models import (DeviceType, ComponentType, DeviceModel,
                                     ComponentModel, Storage, Memory, Processor,
                                     DiskShare, FibreChannel, GenericComponent,
                                     Software, OperatingSystem, Device)
+from ralph.discovery.models_history import HistoryModelChange
 from ralph.ui.forms import ComponentModelGroupForm, DeviceModelGroupForm
 from ralph.ui.views.common import Base
 from ralph.util import pricing
@@ -25,6 +26,11 @@ from ralph.util.presentation import COMPONENT_ICONS, DEVICE_ICONS
 MODEL_GROUP_SORT_COLUMNS = {
     'name': ('name',),
     'size': ('chassis_size',),
+}
+HISTORY_SORT_COLUMNS = {
+    'date': ('date',),
+    'user': ('user__login',),
+    'field_name': ('field_name',),
 }
 PAGE_SIZE = 25
 MAX_PAGE_SIZE = 65535
@@ -104,7 +110,11 @@ class Catalog(Base):
                         fugue_icon = DEVICE_ICONS[t.id],
                         view_name='catalog',
                         view_args=('device', t.id),
-                    ) for t in DeviceType(item=lambda t: t)]
+                    ) for t in DeviceType(item=lambda t: t)] +
+            [MenuHeader('History'),
+             MenuItem('History', fugue_icon='fugue-hourglass',
+                      view_name='catalog_history'),
+            ]
         )
         ret.update({
             'sidebar_items': sidebar_items,
@@ -360,3 +370,25 @@ class CatalogComponent(Catalog):
         ret.update(_prepare_model_groups(self.request, self.query))
         return ret
 
+
+class CatalogHistory(Catalog):
+    template_name = 'ui/catalog-history.html'
+
+    def get_context_data(self, **kwargs):
+        ret = super(CatalogHistory, self).get_context_data(**kwargs)
+        query = HistoryModelChange.objects.all()
+        query, sort, page = _prepare_query(self.request, query, False,
+                                           HISTORY_SORT_COLUMNS, '-date')
+        if page == 0:
+            pages = Paginator(query, MAX_PAGE_SIZE)
+            items = pages.page(1)
+        else:
+            pages = Paginator(query, PAGE_SIZE)
+            items = pages.page(page)
+        ret.update({
+            'sidebar_selected': 'history',
+            'subsection': 'history',
+            'sort': sort,
+            'items': items,
+        })
+        return ret
