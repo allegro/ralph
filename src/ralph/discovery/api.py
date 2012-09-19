@@ -12,15 +12,21 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from django.conf import settings
 from tastypie import fields
 from tastypie.authentication import ApiKeyAuthentication
 from tastypie.authorization import DjangoAuthorization
 from tastypie.cache import SimpleCache
 from tastypie.constants import ALL, ALL_WITH_RELATIONS
 from tastypie.resources import ModelResource as MResource
+from tastypie.throttle import CacheThrottle
+
 from ralph.discovery.models import Device, DeviceModel, DeviceModelGroup,\
     DeviceType, IPAddress
 
+THROTTLE_AT = settings.API_THROTTLING['throttle_at']
+TIMEFREME = settings.API_THROTTLING['timeframe']
+EXPIRATION = settings.API_THROTTLING['expiration']
 
 class IPAddressResource(MResource):
     device = fields.ForeignKey('ralph.discovery.api.DevResource', 'device',
@@ -40,6 +46,8 @@ class IPAddressResource(MResource):
         excludes = ('save_priorities', 'max_save_priority', 'dns_info',
             'snmp_name')
         cache = SimpleCache()
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+                                expiration=EXPIRATION)
 
 
 class ModelGroupResource(MResource):
@@ -48,6 +56,8 @@ class ModelGroupResource(MResource):
         authentication = ApiKeyAuthentication()
         authorization = DjangoAuthorization()
         cache = SimpleCache()
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+                                expiration=EXPIRATION)
 
 
 class ModelResource(MResource):
@@ -63,6 +73,8 @@ class ModelResource(MResource):
         filtering = {
             'type': ALL,
         }
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+                                expiration=EXPIRATION)
 
 
 class DeviceResource(MResource):
@@ -90,6 +102,8 @@ class DeviceResource(MResource):
         authentication = ApiKeyAuthentication()
         authorization = DjangoAuthorization()
         cache = SimpleCache()
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+                                expiration=EXPIRATION)
 
     def obj_update(self, bundle, request=None, **kwargs):
         """
@@ -219,26 +233,36 @@ class PhysicalServerResource(DeviceResource):
     class Meta(DeviceResource.Meta):
         queryset = Device.objects.filter(model__type__in={
             DeviceType.rack_server.id, DeviceType.blade_server.id})
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+                                expiration=EXPIRATION)
 
 
 class RackServerResource(DeviceResource):
     class Meta(DeviceResource.Meta):
         queryset = Device.objects.filter(model__type=
             DeviceType.rack_server.id)
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+                                expiration=EXPIRATION)
 
 
 class BladeServerResource(DeviceResource):
     class Meta(DeviceResource.Meta):
         queryset = Device.objects.filter(model__type=
             DeviceType.blade_server.id)
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+                                expiration=EXPIRATION)
 
 
 class VirtualServerResource(DeviceResource):
     class Meta(DeviceResource.Meta):
         queryset = Device.objects.filter(model__type=
             DeviceType.virtual_server.id)
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+                                expiration=EXPIRATION)
 
 
 class DevResource(DeviceResource):
     class Meta(DeviceResource.Meta):
         queryset = Device.objects.all()
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+                                expiration=EXPIRATION)
