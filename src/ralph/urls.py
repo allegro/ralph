@@ -50,6 +50,7 @@ class VhostRedirectView(RedirectView):
 
 urlpatterns = patterns('',
     url(r'^$', VhostRedirectView.as_view(permanent=False)),
+    url(r'^report-a-bug$', RedirectView.as_view(url=settings.BUGTRACKER_URL)),
     url(r'^favicon\.ico$', RedirectView.as_view(url='/static/img/favicon.ico')),
     url(r'^humans\.txt$', RedirectView.as_view(url='/static/humans.txt')),
     url(r'^robots\.txt$', RedirectView.as_view(url='/static/robots.txt')),
