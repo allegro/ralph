@@ -316,7 +316,7 @@ ISSUETRACKERS = {
                 'DEFAULT_ASSIGNEE': '',
         },
     },
-},
+}
 API_THROTTLING = {
     'throttle_at': 200,
     'timeframe': 3600,
