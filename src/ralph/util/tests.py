@@ -163,7 +163,7 @@ class ApiTest(TestCase):
         id_list = self._save_ventures(5)
 
         for i, id in enumerate(id_list):
-            path = "/api/v0.9/venture/%s" % id
+            path = "/api/v0.9/venture/%s" % i
             response = self.client.get(path=path, data=data, follow=True)
             status_list.append(response.status_code)
 
