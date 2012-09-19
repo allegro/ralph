@@ -3,6 +3,7 @@
 {% load url from future %}
 {% load icons %}
 {% load bob %}
+{% load formats %}
 
 {% block contentarea %}
 <div class="span5">
@@ -28,8 +29,12 @@
                     >{{ g.type|component_model_type_icon }}&nbsp;{{ g.name }}</a></td>
             <td class="column-count count"><a href="{% url 'search' 'components' '' %}?component_group={{ g.id }}" class="badge badge-info">{{ g.count }}</a></td>
                 <td class="column-price currency">
-                    {{ g.price }}&nbsp;{{ CURRENCY }}
-                    {% if g.per_size %}/{{ g.size_modifier}}&nbsp;{{ g.size_unit }}{% endif %}
+                    {% spaceless %}
+                    {{ g.price|currency }}
+                    {% if g.per_size %} / {{ g.size_modifier}}&nbsp;{{ g.size_unit }}
+                    (<i>{{ g.modified_price }}&nbsp;{{ CURRENCY }}/{{ g.size_unit }}</i>)
+                    {% endif %}
+                    {% endspaceless %}
                 </td>
             </tr>
             {% endfor %}

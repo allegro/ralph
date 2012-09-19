@@ -4,9 +4,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import calendar
-import datetime
-
 from django.conf import settings
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django import forms
@@ -17,6 +14,7 @@ from django.utils.safestring import mark_safe
 from ralph.discovery.models import (DeviceModel, ComponentModelGroup, Device,
                                     DeviceModelGroup)
 from ralph.util import presentation
+
 
 class ReadOnlySelectWidget(forms.Select):
     def _has_changed(self, initial, data):
@@ -196,3 +194,9 @@ class DateWidget(forms.DateInput):
                                    attr_placeholder, escape(value)))
 
 
+class CurrencyWidget(forms.TextInput):
+    def render(self, name, value=0, attrs=None, *args, **kwargs):
+        value = '{}'.format(value)
+        attrs['class'] = attrs.get('class', '') + ' currency'
+        return super(CurrencyWidget, self).render(name, value, attrs,
+                                                  *args, **kwargs)
