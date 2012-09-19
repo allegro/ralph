@@ -24,7 +24,6 @@ BROKER_USER = "ralph"
 BROKER_PASSWORD = "ralph"
 BROKER_VHOST = "/ralph"
 INSTALLED_APPS = [
-    'allegro_plugins',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -37,7 +36,7 @@ INSTALLED_APPS = [
     'south',
     'lck.django.common',
 #   slows down testing - disabled
-#   'lck.django.activitylog',
+    'lck.django.activitylog',
     'lck.django.profile',
     'lck.django.score',
     'lck.django.tags',
@@ -45,7 +44,7 @@ INSTALLED_APPS = [
     'fugue_icons',
     'bob',
 #   slows down testing - disabled
-#   'tastypie',
+    'tastypie',
     'ralph.account',
     'ralph.business',
     'ralph.cmdb',
@@ -175,3 +174,8 @@ SANITY_CHECK_PING_ADDRESS=''
 SANITY_CHECK_IP2HOST_IP=''
 SANITY_CHECK_IP2HOST_HOSTNAME_REGEX = r'.*google.*'
 
+API_THROTTLING = {
+    'throttle_at': 2,
+    'timeframe': 10,
+    'expiration': None,
+}

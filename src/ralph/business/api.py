@@ -17,8 +17,15 @@ from tastypie.authorization import DjangoAuthorization
 from tastypie.cache import SimpleCache
 from tastypie.constants import ALL, ALL_WITH_RELATIONS
 from tastypie.resources import ModelResource as MResource
+from tastypie.throttle import CacheThrottle
+
+from django.conf import settings
+
 from ralph.business.models import Venture, VentureRole, Department
 
+THROTTLE_AT = settings.API_THROTTLING['throttle_at']
+TIMEFREME = settings.API_THROTTLING['timeframe']
+EXPIRATION = settings.API_THROTTLING['expiration']
 
 class VentureResource(MResource):
     devices = fields.ToManyField('ralph.discovery.api.DevResource', 'device')
@@ -40,6 +47,8 @@ class VentureResource(MResource):
         excludes = ('save_priorities', 'max_save_priority',)
         cache = SimpleCache()
         limit = 10
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+                                expiration=EXPIRATION)
 
 
 class VentureLightResource(MResource):
@@ -59,6 +68,8 @@ class VentureLightResource(MResource):
         }
         excludes = ('save_priorities', 'max_save_priority',)
         cache = SimpleCache()
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+                                expiration=EXPIRATION)
 
     def dehydrate_resource_uri(self, bundle):
         uri = super(VentureLightResource, self).dehydrate_resource_uri(bundle)
@@ -81,6 +92,8 @@ class RoleResource(MResource):
         }
         excludes = ('save_priorities', 'max_save_priority',)
         cache = SimpleCache()
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+                                expiration=EXPIRATION)
 
 
 class DepartmentResource(MResource):
@@ -94,3 +107,5 @@ class DepartmentResource(MResource):
         }
         cache = SimpleCache()
         excludes = ('icon',)
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+                                expiration=EXPIRATION)
