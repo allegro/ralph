@@ -15,6 +15,7 @@ from ralph.discovery.models import (DeviceModel, ComponentModelGroup, Device,
                                     DeviceModelGroup)
 from ralph.util import presentation
 
+
 class ReadOnlySelectWidget(forms.Select):
     def _has_changed(self, initial, data):
         return False
@@ -185,6 +186,8 @@ class DeviceGroupWidget(forms.Widget):
 
 class DateWidget(forms.DateInput):
     def render(self, name, value='', attrs=None, choices=()):
+        if value == None:
+            value = ''
         attr_class =  escape(self.attrs.get('class', ''))
         attr_placeholder = escape(self.attrs.get('placeholder', ''))
         output = ('<input type="text" name="%s" class="datepicker %s" '
@@ -193,3 +196,9 @@ class DateWidget(forms.DateInput):
                                    attr_placeholder, escape(value or '')))
 
 
+class CurrencyWidget(forms.TextInput):
+    def render(self, name, value=0, attrs=None, *args, **kwargs):
+        value = '{}'.format(value)
+        attrs['class'] = attrs.get('class', '') + ' currency'
+        return super(CurrencyWidget, self).render(name, value, attrs,
+                                                  *args, **kwargs)

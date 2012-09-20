@@ -149,3 +149,8 @@ tr.table-highlight td {
 .cabinet-rack-view td{
     min-width: 200px;
 }
+
+.end-date-field
+{
+    margin-top: -10px !important;
+}
