@@ -4,11 +4,14 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import decimal
+
 from bob.menu import MenuItem, MenuHeader
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
+from django.conf import settings
 
 from ralph.account.models import Perm
 from ralph.discovery.models import (DeviceType, ComponentType, DeviceModel,
@@ -353,6 +356,8 @@ class CatalogComponent(Catalog):
                 type=self.model_type_id))
         for g in groups:
             g.count = g.get_count()
+            g.modified_price = decimal.Decimal(
+                    g.price or 0) / (g.size_modifier or 1)
         self.groups = [g for g in groups if g.count]
         if not self.form:
             self.form = ComponentModelGroupForm(instance=self.group)
@@ -366,6 +371,7 @@ class CatalogComponent(Catalog):
             'group': self.group,
             'unassigned_count': self.unassigned_count,
             'form': self.form,
+            'CURRENCY': settings.CURRENCY,
         })
         ret.update(_prepare_model_groups(self.request, self.query))
         return ret
