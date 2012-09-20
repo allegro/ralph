@@ -53,7 +53,14 @@
             {% include 'ui/column-header.html' with label='Devices' name='name' always=1 %}
             {% include 'ui/column-header.html' with label='Count' name='count' type='quantity'%}
             {% include 'ui/column-header.html' with label='Size' name='size' type='number'%}
-            <td width="14"></td>
+        <th width="16"><div class="dropdown">
+            <a href="#" data-toggle="dropdown" class="dropdown-toggle">{% icon 'fugue-ui-check-boxes-series' %}</a>
+            <ul class="dropdown-menu">
+                <li><a href="#" class="select-all">{% icon 'fugue-ui-check-box' %}&nbsp;Select all on this page</a></li>
+                <li><a href="#" class="select-toggle">{% icon 'fugue-ui-check-box-mix' %}&nbsp;Reverse selection</a></li>
+                <li><a href="#" class="select-none">{% icon 'fugue-ui-check-box-uncheck' %}&nbsp;Deselect all</a></li>
+            </ul>
+        </div></th>
             {% endspaceless %}
         </tr></thead>
         <tbody>
@@ -67,7 +74,7 @@
             {% endfor %}
         </tbody>
     </table>
-    {% pagination items fugue_icons=1 url_query=url_query %}
+    {% pagination items fugue_icons=1 url_query=url_query show_all=1 %}
     <div class="form-actions">
         <label for="select-target">Move selected items to:</label>
         <select name="target" id="select-target">

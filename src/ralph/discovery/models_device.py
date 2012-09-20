@@ -112,7 +112,7 @@ class MarginKind(Named):
         verbose_name_plural = _("margin kinds")
 
 
-class DeviceModelGroup(Named):
+class DeviceModelGroup(Named, TimeTrackable):
     price = db.PositiveIntegerField(verbose_name=_("purchase price"),
         null=True, blank=True)
     type = db.PositiveIntegerField(verbose_name=_("device type"),
@@ -125,6 +125,11 @@ class DeviceModelGroup(Named):
 
     def get_count(self):
         return Device.objects.filter(model__group=self).count()
+
+    def save(self, user=None, *args, **kwargs):
+        self.saving_user = user
+        return super(DeviceModelGroup, self).save(*args, **kwargs)
+
 
 class DeviceModel(SavePrioritized, WithConcurrentGetOrCreate):
     name = db.CharField(verbose_name=_("name"), max_length=255, unique=True)
@@ -157,6 +162,11 @@ class DeviceModel(SavePrioritized, WithConcurrentGetOrCreate):
             'name': escape(self.name or ''),
             'count': self.device_set.count(),
         }
+
+    def save(self, user=None, *args, **kwargs):
+        self.saving_user = user
+        return super(DeviceModel, self).save(*args, **kwargs)
+
 
 class UptimeSupport(db.Model):
     """Adds an `uptime` attribute to the model. This attribute is shifted
