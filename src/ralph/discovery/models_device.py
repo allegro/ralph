@@ -23,7 +23,7 @@ from lck.django.tags.models import Taggable
 from django.utils.html import escape
 
 from ralph.discovery.models_component import is_mac_valid, Ethernet
-from ralph.discovery.models_util import LastSeen
+from ralph.discovery.models_util import LastSeen, SavingUser
 from ralph.util import Eth
 
 
@@ -112,7 +112,7 @@ class MarginKind(Named):
         verbose_name_plural = _("margin kinds")
 
 
-class DeviceModelGroup(Named, TimeTrackable):
+class DeviceModelGroup(Named, TimeTrackable, SavingUser):
     price = db.PositiveIntegerField(verbose_name=_("purchase price"),
         null=True, blank=True)
     type = db.PositiveIntegerField(verbose_name=_("device type"),
@@ -126,12 +126,8 @@ class DeviceModelGroup(Named, TimeTrackable):
     def get_count(self):
         return Device.objects.filter(model__group=self).count()
 
-    def save(self, user=None, *args, **kwargs):
-        self.saving_user = user
-        return super(DeviceModelGroup, self).save(*args, **kwargs)
 
-
-class DeviceModel(SavePrioritized, WithConcurrentGetOrCreate):
+class DeviceModel(SavePrioritized, WithConcurrentGetOrCreate, SavingUser):
     name = db.CharField(verbose_name=_("name"), max_length=255, unique=True)
     type = db.PositiveIntegerField(verbose_name=_("device type"),
         choices=DeviceType(), default=DeviceType.unknown.id)
@@ -162,10 +158,6 @@ class DeviceModel(SavePrioritized, WithConcurrentGetOrCreate):
             'name': escape(self.name or ''),
             'count': self.device_set.count(),
         }
-
-    def save(self, user=None, *args, **kwargs):
-        self.saving_user = user
-        return super(DeviceModel, self).save(*args, **kwargs)
 
 
 class UptimeSupport(db.Model):
@@ -217,7 +209,7 @@ class UptimeSupport(db.Model):
 
 
 class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
-    WithConcurrentGetOrCreate, UptimeSupport, SoftDeletable):
+    WithConcurrentGetOrCreate, UptimeSupport, SoftDeletable, SavingUser):
     name = db.CharField(verbose_name=_("name"), max_length=255)
     name2 = db.CharField(verbose_name=_("extra name"), max_length=255,
         null=True, blank=True, default=None)
@@ -292,7 +284,6 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
         verbose_name_plural = _("devices")
 
     def __init__(self, *args, **kwargs):
-        self.saving_user = None
         self.save_comment = None
         self.being_deleted = False
         super(Device, self).__init__(*args, **kwargs)
@@ -458,8 +449,7 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
     def ipaddress(self):
         return self.ipaddress_set
 
-    def save(self, user=None, *args, **kwargs):
-        self.saving_user = user
+    def save(self, *args, **kwargs):
         if self.purchase_date and self.deprecation_kind:
             self.deprecation_date = (self.purchase_date +
                            relativedelta(months = self.deprecation_kind.months))
