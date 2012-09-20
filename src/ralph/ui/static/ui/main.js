@@ -54,6 +54,7 @@ $(function ($) {
         placement: 'left'
     });
     $('a[rel="tooltip"]').tooltip();
+    $('input[rel="tooltip"]').tooltip();
     $('.select-all').click(function () {
         $('input[name="select"]').prop('checked', true);
     });
