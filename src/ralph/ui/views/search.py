@@ -278,46 +278,54 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                 self.query = self.query.filter(
                         model__type__in=data['device_type']
                     )
-            if data['purchase_date_start'] and data['purchase_date_end']:
-                self.query = self.query.filter(
-                    purchase_date__gte = data['purchase_date_start']
-                ).filter(
-                    purchase_date__lte = data['purchase_date_end']
-                )
             if data['no_purchase_date']:
-                self.query = self.query.filter(
-                    purchase_date = None
-                )
-            if data['deprecation_date_start'] and data['deprecation_date_end']:
-                self.query = self.query.filter(
-                    deprecation_date__gte = data['deprecation_date_start']
-                ).filter(
-                    deprecation_date__lte = data['deprecation_date_end']
-                )
+                self.query = self.query.filter(purchase_date = None)
+            else:
+                if data['purchase_date_start']:
+                    self.query = self.query.filter(
+                        purchase_date__gte=data['purchase_date_start']
+                    )
+                if data['purchase_date_end']:
+                    self.query = self.query.filter(
+                        purchase_date__lte=data['purchase_date_end']
+                    )
             if data['no_deprecation_date']:
-                self.query = self.query.filter(
-                    purchase_date = None
-                )
-            if data['warranty_expiration_date_start'] or data['warranty_expiration_date_end']:
-                self.query = self.query.filter(
-                    warranty_expiration_date__gte = data['warranty_expiration_date_start']
-                ).filter(
-                    warranty_expiration_date__lte = data['warranty_expiration_date_end']
-                )
+                self.query = self.query.filter(purchase_date = None)
+            else:
+                if data['deprecation_date_start']:
+                    self.query = self.query.filter(
+                        deprecation_date__gte=data['deprecation_date_start']
+                    )
+                if data['deprecation_date_end']:
+                    self.query = self.query.filter(
+                        deprecation_date__lte=data['deprecation_date_end']
+                    )
             if data['no_warranty_expiration_date']:
-                self.query = self.query.filter(
-                    warranty_expiration_date = None
-                )
-            if data['support_expiration_date_start'] or data['support_expiration_date_end']:
-                self.query = self.query.filter(
-                    support_expiration_date__gte = data['support_expiration_date_start']
-                ).filter(
-                    support_expiration_date__lte = data['support_expiration_date_end']
-                )
+                self.query = self.query.filter(warranty_expiration_date=None)
+            else:
+                if data['warranty_expiration_date_start']:
+                    self.query = self.query.filter(
+                        warranty_expiration_date__gte=
+                            data['warranty_expiration_date_start']
+                    )
+                if data['warranty_expiration_date_end']:
+                    self.query = self.query.filter(
+                        warranty_expiration_date__lte=
+                            data['warranty_expiration_date_end']
+                    )
             if data['no_support_expiration_date']:
-                self.query = self.query.filter(
-                    support_expiration_date = None
-                )
+                self.query = self.query.filter(support_expiration_date=None)
+            else:
+                if data['support_expiration_date_start']:
+                    self.query = self.query.filter(
+                        support_expiration_date__gte=
+                            data['support_expiration_date_start']
+                    )
+                if data['support_expiration_date_end']:
+                    self.query = self.query.filter(
+                        support_expiration_date__lte=
+                            data['support_expiration_date_end']
+                    )
         profile = self.request.user.get_profile()
         if not profile.has_perm(Perm.read_dc_structure):
             self.query = profile.filter_by_perm(self.query,
