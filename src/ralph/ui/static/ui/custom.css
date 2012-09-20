@@ -1,3 +1,6 @@
+.main-body {
+    min-height: 40em;
+}
 .browser-min-width
 {
     min-width: 1000px;

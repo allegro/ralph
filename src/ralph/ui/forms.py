@@ -58,7 +58,7 @@ class MarginsReportForm(DateRangeForm):
             field = forms.IntegerField(label='', initial=mk.margin,
                     required=False,
                     widget=forms.TextInput(attrs={
-                        'class': 'span2',
+                        'class': 'span12',
                         'style': 'text-align: right',
                     }))
             field.initial = mk.margin
@@ -83,37 +83,37 @@ class NetworksFilterForm(forms.Form):
     show_ip = forms.BooleanField(required=False,
             label="Show as addresses")
     contains = forms.CharField(required=False, label="Contains",
-            widget=forms.TextInput(attrs={'class':'span2'}))
+            widget=forms.TextInput(attrs={'class':'span12'}))
 
 
 class SearchForm(forms.Form):
     name = forms.CharField(required=False,
-            widget=forms.TextInput(attrs={'class':'span2'}))
+            widget=forms.TextInput(attrs={'class':'span12'}))
     address = forms.CharField(required=False,
-            widget=forms.TextInput(attrs={'class':'span2'}),
+            widget=forms.TextInput(attrs={'class':'span12'}),
             label="Address or network")
     remarks = forms.CharField(required=False,
-            widget=forms.TextInput(attrs={'class':'span2'}))
+            widget=forms.TextInput(attrs={'class':'span12'}))
     role = forms.CharField(required=False,
-            widget=forms.TextInput(attrs={'class':'span2'}),
+            widget=forms.TextInput(attrs={'class':'span12'}),
             label="Venture or role")
     model = forms.CharField(required=False,
-            widget=forms.TextInput(attrs={'class':'span2'}))
+            widget=forms.TextInput(attrs={'class':'span12'}))
     component = forms.CharField(required=False,
-            widget=forms.TextInput(attrs={'class':'span2'}),
+            widget=forms.TextInput(attrs={'class':'span12'}),
             label="Component or software")
     serial = forms.CharField(required=False,
-            widget=forms.TextInput(attrs={'class':'span2'}),
+            widget=forms.TextInput(attrs={'class':'span12'}),
             label="Serial number or MAC")
     barcode = forms.CharField(required=False,
-            widget=forms.TextInput(attrs={'class':'span2'}))
+            widget=forms.TextInput(attrs={'class':'span12'}))
     position = forms.CharField(required=False,
-            widget=forms.TextInput(attrs={'class':'span2'}),
+            widget=forms.TextInput(attrs={'class':'span12'}),
             label="Datacenter, rack or position")
     history = forms.CharField(required=False,
-            widget=forms.TextInput(attrs={'class':'span2'}))
+            widget=forms.TextInput(attrs={'class':'span12'}))
     device_type = forms.MultipleChoiceField(required=False,
-            widget=forms.SelectMultiple(attrs={'class': 'span2'}),
+            widget=forms.SelectMultiple(attrs={'class': 'span12'}),
             choices=DeviceType(item=lambda e: (e.id, e.raw)),
             )
     device_group = forms.IntegerField(required=False,
@@ -262,7 +262,6 @@ class DeviceForm(forms.ModelForm):
         }
 
     save_comment = forms.CharField(required=True,
-            widget=forms.TextInput(attrs={'class':'span4'}),
             help_text="Describe your change",
             error_messages={
                 'required': "You must describe your change",

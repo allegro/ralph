@@ -4,9 +4,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import calendar
-import datetime
-
 from django.conf import settings
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django import forms
@@ -193,6 +190,6 @@ class DateWidget(forms.DateInput):
         output = ('<input type="text" name="%s" class="datepicker %s" '
                   'placeholder="%s" value="%s" data-date-format="yyyy-mm-dd">')
         return mark_safe(output % (escape(name), attr_class,
-                                   attr_placeholder, escape(value)))
+                                   attr_placeholder, escape(value or '')))
 
 
