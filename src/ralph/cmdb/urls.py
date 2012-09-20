@@ -8,6 +8,7 @@ from __future__ import unicode_literals
 
 from django.conf.urls.defaults import patterns
 from django.contrib.auth.decorators import login_required
+from django.conf.urls.defaults import include
 
 from ralph.cmdb.views import (Index, Search, Edit, Add, View,
         ViewIframe, EditRelation, LastChanges, AddRelation,
@@ -15,7 +16,8 @@ from ralph.cmdb.views import (Index, Search, Edit, Add, View,
 from ralph.cmdb.views_changes import  (Changes, Problems, Incidents,
         Change, Dashboard, Reports, DashboardDetails)
 from ralph.cmdb.views_changes import TimeLine
-from django.conf.urls.defaults import include
+from ralph.cmdb.graphs import Graphs
+
 
 
 urlpatterns = patterns('',
@@ -47,4 +49,6 @@ urlpatterns = patterns('',
     '(?P<month>[0-9]+)/(?P<report_type>\w+)$', \
             login_required(DashboardDetails.as_view())),
     (r'^changes/reports$', login_required(Reports.as_view())),
+    (r'^graphs$', login_required(Graphs.as_view())),
+
 )
