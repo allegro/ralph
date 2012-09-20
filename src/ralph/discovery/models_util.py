@@ -27,3 +27,10 @@ class LastSeen(db.Model):
         super(LastSeen, self).save(*args, **kwargs)
 
 
+class SavingUser(db.Model):
+    class Meta:
+        abstract = True
+
+    def save(self, user=None, *args, **kwargs):
+        self.saving_user = user
+        return super(SavingUser, self).save(*args, **kwargs)
