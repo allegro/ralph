@@ -4,9 +4,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import datetime
 
-from calendar import monthrange
 from django import forms
 from lck.django.common.models import MACAddressField
 from bob.forms import AutocompleteWidget
@@ -20,7 +18,7 @@ from ralph.discovery.models import (Device, ComponentModelGroup,DeviceModelGroup
 from ralph.dnsedit.models import DHCPEntry
 from ralph.dnsedit.util import is_valid_hostname
 from ralph.util import Eth
-from ralph.ui.widgets import (DateWidget, YearsBarWidget, MonthsBarWidget,
+from ralph.ui.widgets import (DateWidget,
                               ReadOnlySelectWidget, DeviceGroupWidget,
                               ComponentGroupWidget, DeviceWidget,
                               DeviceModelWidget, ReadOnlyWidget, RackWidget,
@@ -158,7 +156,7 @@ class RolePropertyForm(forms.ModelForm):
 class ComponentModelGroupForm(forms.ModelForm):
     class Meta:
         model = ComponentModelGroup
-        exclude = ['type']
+        exclude = ['type', 'last_seen', 'created', 'modified']
 
     icons = {
         'name': 'fugue-paper-bag',
@@ -171,7 +169,7 @@ class ComponentModelGroupForm(forms.ModelForm):
 class DeviceModelGroupForm(forms.ModelForm):
     class Meta:
         model = DeviceModelGroup
-        exclude = ['type']
+        exclude = ['type', 'last_seen', 'created', 'modified']
 
     icons = {
         'name': 'fugue-paper-bag',
