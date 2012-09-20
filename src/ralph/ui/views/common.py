@@ -95,6 +95,7 @@ class BaseMixin(object):
         details = self.kwargs.get('details', 'info')
         profile = self.request.user.get_profile()
         has_perm = profile.has_perm
+        footer_items = []
         mainmenu_items = [
             MenuItem('Ventures', fugue_icon='fugue-store',
                      view_name='ventures')
@@ -121,14 +122,14 @@ class BaseMixin(object):
                 MenuItem('CMDB', fugue_icon='fugue-thermometer',
                          href='/cmdb/changes/timeline')
             )
-        if self.request.user.is_staff:
-            mainmenu_items.append(
-                MenuItem('Admin', fugue_icon='fugue-toolbox', href='/admin'))
         if settings.BUGTRACKER_URL:
-            mainmenu_items.append(
+            footer_items.append(
                 MenuItem('Bugs', fugue_icon='fugue-bug',
                          href=settings.BUGTRACKER_URL))
-        mainmenu_items.append(
+        if self.request.user.is_staff:
+            footer_items.append(
+                MenuItem('Admin', fugue_icon='fugue-toolbox', href='/admin'))
+        footer_items.append(
             MenuItem('%s (logout)' % self.request.user, fugue_icon='fugue-user',
                      view_name='logout', view_args=[details or 'info', ''],
                      pull_right=True))
@@ -202,6 +203,7 @@ class BaseMixin(object):
             'section': self.section,
             'details': details,
             'mainmenu_items': mainmenu_items,
+            'footer_items': footer_items,
             'url_query': self.request.GET,
             'search_url': reverse('search', args=[details, '']),
             'user': self.request.user,
