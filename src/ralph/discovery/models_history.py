@@ -37,7 +37,7 @@ def _field_changes(instance, ignore=('last_seen',)):
     in ``ignore``.
     """
     for field, orig in instance.dirty_fields.iteritems():
-        if field in {'last_seen'}:
+        if field in ignore:
             continue
         if field in instance.insignificant_fields:
             continue
