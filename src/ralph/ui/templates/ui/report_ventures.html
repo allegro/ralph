@@ -6,7 +6,7 @@
 
 {% block contentarea %}
 
-<form class="form form-inline">
+<form class="form form-inline daterange-form">
 <div class="form-actions">
     {% for f in form %}
         <div style="display:inline-block; vertical-align:top" class="control-group {% if f.errors %}error{% endif %}" >
@@ -34,6 +34,7 @@
             <th>Venture</th>
             <th>Department</th>
             <th>Default margin</th>
+            <th>Device count</th>
             <th>Total cost</th>
             {% if profile.is_staff %}
             <th>Actions</th>
@@ -51,6 +52,9 @@
             <td>{{ venture.department|default:'' }}</td>
             <td style="text-align:right">
                 {{ venture.get_margin }}%
+            </td>
+            <td class="count">
+                {{ venture.count|default:0 }}
             </td>
             <td class="currency">
                 {{ venture.total|default:0|currency }}

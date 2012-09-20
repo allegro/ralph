@@ -4,7 +4,7 @@ Change Log
 1.1.0
 ~~~~~
 
-Unreleased yet.
+Released on September 19, 2012.
 
 * Deployment of new machines using PXE implemented
 
@@ -12,6 +12,21 @@ Unreleased yet.
 
 * DHCP can be served and reconfigured remotely
 
+* Improved reports: new report types for devices, main menu entry for generic
+  reports, a details view for devices in reports
+
+* API supports throttling
+
+* A new component kind, ``OperatingSystem``, with information about CPU, memory
+  and disk storage visible from the operating system
+
+* Operating system components included in pricing
+
+* OpenStack pricing now includes pricing margins
+
+* Extra costs are now a dictionary
+
+* Improved date pickers in UI
 
 1.0.6
 ~~~~~

@@ -17,7 +17,7 @@ from bob.menu import MenuItem
 from dj.choices import Choices
 
 from ralph.account.models import Perm
-from ralph.deployment.models import DeploymentStatus, Device
+from ralph.deployment.models import DeploymentStatus
 from ralph.ui.views.common import Base, DeviceDetailView
 from ralph.ui.views.devices import DEVICE_SORT_COLUMNS
 from ralph.ui.forms import DateRangeForm, MarginsReportForm
@@ -37,17 +37,17 @@ class ReportType(Choices):
     no_ping1 = _('No ping since 1 day').extra(
             filter=lambda device_list: device_list.filter(
                 ipaddress__last_seen__lte=threshold(-1)),
-            columns=['venture', 'position', 'lastseen', 'remarks'],
+            columns=['venture', 'position', 'lastseen', 'remarks', 'lastping'],
             )
     no_ping3 = _('No ping since 3 days').extra(
             filter=lambda device_list: device_list.filter(
                 ipaddress__last_seen__lte=threshold(-3)),
-            columns=['venture', 'position', 'lastseen', 'remarks'],
+            columns=['venture', 'position', 'lastseen', 'remarks', 'lastping'],
             )
     no_ping7 = _('No ping since 7 days').extra(
             filter=lambda device_list: device_list.filter(
                 ipaddress__last_seen__lte=threshold(-7)),
-            columns=['venture', 'position', 'lastseen', 'remarks'],
+            columns=['venture', 'position', 'lastseen', 'remarks', 'lastping'],
             )
     no_purchase_date = _('No purchase date').extra(
             filter=lambda device_list: device_list.filter(
@@ -64,75 +64,72 @@ class ReportType(Choices):
     deactivated_support = _('Deactivated support').extra(
         filter=lambda device_list: device_list.filter(
             support_expiration_date__lte= datetime.date.today()),
-        columns=['venture', 'position', 'barcode', 'price', 'lastseen',
-                 'remarks', 'support'],
+        columns=['venture', 'model', 'position', 'barcode',
+                 'serial_number', 'remarks', 'support'],
     )
     support_expires30 = _('Support expires in 30 days').extra(
             filter=lambda device_list: device_list.filter(
-                support_expiration_date__lte=threshold(30)).filter(
-                    support_expiration_date__gte=datetime.date.today()),
-            columns=['venture', 'position', 'barcode', 'price', 'lastseen',
-                'remarks', 'support'],
+                support_expiration_date__lte=threshold(30)),
+            columns=['venture', 'model', 'position', 'barcode',
+                     'serial_number', 'remarks', 'support'],
             )
     support_expires60 = _('Support expires in 60 days').extra(
             filter=lambda device_list: device_list.filter(
-                support_expiration_date__lte=threshold(60)).filter(
-                    support_expiration_date__gte=datetime.date.today()),
-            columns=['venture', 'position', 'barcode', 'price', 'lastseen',
-                'remarks', 'support'],
+                support_expiration_date__lte=threshold(60)),
+            columns=['venture', 'model', 'position', 'barcode',
+                     'serial_number', 'remarks', 'support'],
             )
     support_expires90 = _('Support expires in 90 days').extra(
             filter=lambda device_list: device_list.filter(
-                support_expiration_date__lte=threshold(90)).filter(
-                    support_expiration_date__gte=datetime.date.today()),
-            columns=['venture', 'position', 'barcode', 'price', 'lastseen',
-                'remarks', 'support'],
+                support_expiration_date__lte=threshold(90)),
+            columns=['venture', 'model', 'position', 'barcode',
+                     'serial_number', 'remarks', 'support'],
             )
     verified = _('Verified venture and role').extra(
             filter=lambda device_list: device_list.filter(verified=True),
-            columns=['venture', 'remarks']
+            columns=['venture', 'remarks', 'barcode', 'serial_number']
             )
     deployment_open = _('Deployment open').extra(
             filter=lambda device_list: device_list.filter(
                 deployment__status=DeploymentStatus.open),
-                columns=['venture', 'remarks']
+                columns=['venture', 'remarks', 'position', 'barcode']
             )
     deployment_in_progress = _('Deployment in progress').extra(
             filter=lambda device_list: device_list.filter(
                 deployment__status=DeploymentStatus.in_progress),
-                columns=['venture', 'remarks']
+                columns=['venture', 'remarks', 'position', 'barcode']
             )
     deployment_running = _('Deployment running').extra(
             filter=lambda device_list: device_list.filter(
                 deployment__status=DeploymentStatus.in_deployment),
-                columns=['venture', 'remarks']
+                columns=['venture', 'remarks', 'position', 'barcode']
             )
     deprecation_devices = _('Deprecation devices').extra(
             filter=lambda device_list: device_list.filter(
                 deprecation_date__lte = datetime.date.today()),
                 columns=['venture', 'purchase', 'deprecation',
-                         'deprecation_date', 'remarks']
+                         'deprecation_date', 'remarks', 'barcode']
             )
     deprecation_devices30 = _('Deprecation devices in 30').extra(
             filter=lambda device_list: device_list.filter(
                 deprecation_date__lte = threshold(30)).filter(
                     deprecation_date__gte=datetime.date.today()),
                 columns=['venture', 'purchase', 'deprecation',
-                         'deprecation_date','remarks']
+                         'deprecation_date','remarks', 'barcode']
             )
     deprecation_devices60 = _('Deprecation devices in 60').extra(
             filter=lambda device_list: device_list.filter(
                 deprecation_date__lte = threshold(60)).filter(
                     deprecation_date__gte=datetime.date.today()),
                 columns=['venture', 'purchase', 'deprecation',
-                         'deprecation_date','remarks']
+                         'deprecation_date','remarks', 'barcode']
             )
     deprecation_devices90 = _('Deprecation devices in 90').extra(
             filter=lambda device_list: device_list.filter(
                     deprecation_date__lte = threshold(90)).filter(
                 deprecation_date__gte=datetime.date.today()),
                 columns=['venture', 'purchase', 'deprecation',
-                         'deprecation_date', 'remarks']
+                         'deprecation_date', 'remarks', 'barcode']
             )
 
 class Reports(DeviceDetailView):
@@ -259,6 +256,7 @@ class ReportVentures(SidebarReports, Base):
                 'Path',
                 'Department',
                 'Default margin',
+                'Device count',
                 'Total cost'
             ]
             for venture in self.ventures:
@@ -269,6 +267,7 @@ class ReportVentures(SidebarReports, Base):
                     unicode(venture.department) if venture.department else '',
                     ('%d%%' % venture.margin_kind.margin
                         ) if venture.margin_kind else '',
+                    venture.count or 0,
                     '{:,.2f} {}'.format(total, settings.CURRENCY).replace(',', ' '),
                 ]
         f = StringIO.StringIO()

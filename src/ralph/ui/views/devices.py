@@ -37,6 +37,7 @@ DEVICE_SORT_COLUMNS = {
     'deprecation_date': ('deprecation_date',),
     'warranty': ('warranty_expiration_date',),
     'support': ('support_expiration_date', 'support_kind'),
+    'sn' : ('serial_number'),
     # FIXME: create a column for affected reports quantity
     'reports': ('remarks',),
 }
@@ -72,7 +73,7 @@ class BaseDeviceList(ListView):
     paginate_by = PAGE_SIZE
     details_columns = {
         'info': ['venture', 'model', 'position', 'remarks'],
-        'components': ['model', 'barcode'],
+        'components': ['model', 'barcode', 'sn'],
         'prices': ['venture', 'margin', 'deprecation', 'price', 'cost'],
         'addresses': ['ips', 'management'],
         'costs': ['venture', 'cost'],
@@ -114,6 +115,7 @@ class BaseDeviceList(ListView):
                 dev.rack or '' if 'info' in show_tabs else '',
                 dev.get_position() if 'info' in show_tabs else '',
                 dev.barcode or '' if 'info' in show_tabs else '',
+                dev.sn or '' if 'info' in show_tabs else '',
                 str(dev.get_margin())+'%' if 'prices' in show_tabs else '',
                 (dev.deprecation_kind.name if dev.deprecation_kind and
                     'prices' in show_tabs else ''),

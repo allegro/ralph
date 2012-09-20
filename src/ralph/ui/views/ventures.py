@@ -20,8 +20,9 @@ from ralph.account.models import Perm
 from ralph.business.models import Venture, VentureRole, VentureExtraCost
 from ralph.discovery.models import (ReadOnlyDevice, DeviceType, DataCenter,
                                     Device, DeviceModelGroup, HistoryCost,
-                                    SplunkUsage)
-from ralph.ui.forms import RolePropertyForm, DateRangeForm, VentureFilterForm
+                                    SplunkUsage, ComponentModel)
+from ralph.ui.forms import (RolePropertyForm, DateRangeForm,
+                            VentureFilterForm)
 from ralph.ui.views.common import (Info, Prices, Addresses, Costs, Purchase,
                                    Components, History, Discover, BaseMixin,
                                    Base, DeviceDetailView, CMDB)
@@ -416,10 +417,26 @@ def _get_summaries(query, start, end, overlap=True, venture=None):
         splunk_usage = splunk_usage.filter(device__venture=None)
     if splunk_usage.count():
         splunk_size = splunk_usage.aggregate(db.Sum('size'))['size__sum'] or 0
+        splunk_count = splunk_usage.values('device').distinct().count()
+        yesterday = datetime.date.today() - datetime.timedelta(days=1)
+        splunk_count_now = SplunkUsage.objects.filter(
+                day=yesterday).values('device').distinct().count()
+        url = None
+        try:
+            splunk_model = ComponentModel.objects.get(family='splunkvolume')
+        except ComponentModel.DoesNotExist:
+            pass
+        else:
+            if splunk_model.group_id:
+                url = ('/ui/search/components/'
+                       '?component_group=%d' % splunk_model.group_id)
         yield {
-            'name': 'Splunk usage ({:.0f} MB)'.format(splunk_size),
+            'name': 'Splunk usage ({:,.0f} MB)'.format(
+                                    splunk_size).replace(',', ' '),
             'cost': splunk_usage[0].get_price(size=splunk_size),
-            'url': None,
+            'count': splunk_count,
+            'count_now': splunk_count_now,
+            'url': url,
         }
     for extra_id, in query.values_list('extra_id').distinct():
         if extra_id is None:
@@ -470,6 +487,8 @@ class VenturesVenture(SidebarVentures, Base):
 
     def get_context_data(self, **kwargs):
         ret = super(VenturesVenture, self).get_context_data(**kwargs)
+        start = None
+        end = None
         if self.venture is None or not self.form.is_valid():
             items = []
             cost_data = []
@@ -511,6 +530,8 @@ class VenturesVenture(SidebarVentures, Base):
             'cost_data': json.dumps(cost_data),
             'count_data': json.dumps(count_data),
             'form': self.form,
+            'start_date': start,
+            'end_date': end,
         })
         return ret
 
