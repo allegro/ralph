@@ -218,6 +218,7 @@ admin.site.register(IPAddress, IPAddressAdmin)
 
 class DeprecationKindAdmin(ModelAdmin):
     save_on_top = True
+    list_display = ('name', 'months', 'default')
 admin.site.register(DeprecationKind, DeprecationKindAdmin)
 
 
