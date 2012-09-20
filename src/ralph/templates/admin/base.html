@@ -30,7 +30,7 @@
             {% block userlinks %}
                 {% url 'django-admindocs-docroot' as docsroot %}
                 <a href="/doc">{% trans 'Documentation' %}</a> /
-                <a href="/trac">{% trans 'Report a problem' %}</a> /
+                <a href="/report-a-bug">{% trans 'Report a problem' %}</a> /
                 {% url 'admin:password_change' as password_change_url %}
                 {% if password_change_url %}
                     <a href="{{ password_change_url }}">

@@ -6,7 +6,7 @@
 
 {% block contentarea %}
 
-<form class="form form-inline">
+<form class="form form-inline daterange-form">
 <div class="form-actions">
     {% for f in form %}
         <div style="display:inline-block; vertical-align:top" class="control-group {% if f.errors %}error{% endif %}" >
@@ -18,9 +18,9 @@
             {% endif %}
         </div>
     {% endfor %}
-    <button type="submit" class="btn">
-        {% icon 'fugue-calendar-search-result' %} Update
-    </button>
+    <button type="submit" class="btn">{% spaceless %}
+        {% icon 'fugue-calendar-search-result' %}&nbsp;Update
+        {% endspaceless %}</button>
 </div>
 </form>
 </div>
@@ -46,7 +46,8 @@
                 {% endif %}
               {% endif %}
               {% if i.count %}
-                  / <span class="badge nolink">{{i.count}}</span>
+                {% if i.url or i.count_now %} / {% endif %}
+                <span class="badge nolink">{{i.count}}</span>
               {% endif %}
             </td>
             <td class="column-cost currency">{{ i.cost|currency }}</td>
