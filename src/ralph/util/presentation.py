@@ -7,7 +7,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from ralph.discovery.models import DeviceType, ComponentType
-from ralph.business.models import OwnerType
+from ralph.cmdb.models import CIOwnershipType
 
 
 DEVICE_ICONS = {
@@ -69,8 +69,8 @@ COMPONENT_ICONS = {
 }
 
 OWNER_ICONS = {
-    OwnerType.technical.id: 'fugue-user-worker',
-    OwnerType.business.id: 'fugue-user-business',
+    CIOwnershipType.technical.id: 'fugue-user-worker',
+    CIOwnershipType.business.id: 'fugue-user-business',
     None: 'fugue-user-nude',
 }
 
