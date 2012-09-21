@@ -29,7 +29,8 @@ from ralph.ui.views.networks import (NetworksDeviceList, NetworksInfo,
         NetworksCosts, NetworksHistory, NetworksPurchase, NetworksDiscover,
         NetworksReports, ReportNetworksDeviceList,
         )
-from ralph.ui.views.catalog import (Catalog, CatalogDevice, CatalogComponent)
+from ralph.ui.views.catalog import (Catalog, CatalogDevice,
+                                    CatalogComponent, CatalogHistory)
 from ralph.ui.views.deploy import Deployment
 from ralph.ui.views.ventures import VenturesDeviceList, VenturesCMDB
 from ralph.ui.views.racks import RacksDeviceList
@@ -168,6 +169,8 @@ urlpatterns = patterns('',
 
 
     url(r'^catalog/$', login_required(Catalog.as_view()), {}, 'catalog'),
+    url(r'^catalog/history/$', login_required(CatalogHistory.as_view()), {},
+        'catalog_history'),
     url(r'^catalog/(?P<kind>device)/(?P<type>\d*)/$', login_required(CatalogDevice.as_view()), {}, 'catalog'),
     url(r'^catalog/(?P<kind>component)/(?P<type>\d*)/$', login_required(CatalogComponent.as_view()), {}, 'catalog'),
     url(r'^catalog/(?P<kind>device)/(?P<type>\d*)/(?P<group>\d*)/$', login_required(CatalogDevice.as_view()), {}, 'catalog'),
