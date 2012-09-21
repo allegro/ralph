@@ -88,17 +88,15 @@ class Venture(Named, PrebootMixin, TimeTrackable):
         return ("business-show-venture", (), {'venture_id': self.id})
 
     def technical_owners(self):
-        try:
-            ci = CI.get_by_content_object(self)
-        except CI.DoesNotExist:
+        ci = CI.get_by_content_object(self)
+        if not ci:
             return []
         return CIOwner.objects.filter(ci=ci,
             ciownership__type=CIOwnershipType.technical.id)
 
     def business_owners(self):
-        try:
-            ci = CI.get_by_content_object(self)
-        except CI.DoesNotExist:
+        ci = CI.get_by_content_object(self)
+        if not ci:
             return []
         return CIOwner.objects.filter(ci=ci,
             ciownership__type=CIOwnershipType.business.id)
