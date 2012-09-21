@@ -36,7 +36,7 @@ def total_cost_count(query, start, end):
         )
     count = HistoryCost.filter_span(start, end, query).values_list(
             'device').distinct().count()
-    count_now = query.filter(end=FOREVER).values_list(
+    count_now = query.filter(end__gte=FOREVER).values_list(
             'device').distinct().count()
     return total['spansum'], count, count_now
 
