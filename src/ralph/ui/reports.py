@@ -5,8 +5,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import datetime
+
 from django.db.models.sql.aggregates import Aggregate
-from ralph.discovery.models_history import FOREVER
 from ralph.discovery.models import HistoryCost
 
 
@@ -36,7 +37,8 @@ def total_cost_count(query, start, end):
         )
     count = HistoryCost.filter_span(start, end, query).values_list(
             'device').distinct().count()
-    count_now = query.filter(end__gte=FOREVER).values_list(
+    today = datetime.date.today()
+    count_now = query.filter(end__gte=today).values_list(
             'device').distinct().count()
     return total['spansum'], count, count_now
 
