@@ -56,6 +56,7 @@ $(function ($) {
     $('a[rel="tooltip"]').tooltip();
     $('.select-all').click(function () {
         $('input[name="select"]').prop('checked', true);
+        $('input[name="items"]').prop('checked', true);
     });
     $('.select-pages').click(function () {
         $('input[name="select"]').prop('checked', true);
@@ -63,10 +64,14 @@ $(function ($) {
     });
     $('.select-none').click(function () {
         $('input[name="select"]').prop('checked', false);
+        $('input[name="items"]').prop('checked', false);
         $('input[name="selectall"]').prop('checked', false);
     });
     $('.select-toggle').click(function() {
         $('input[name="select"]').each(function () {
+            this.checked = !this.checked;
+        });
+        $('input[name="items"]').each(function () {
             this.checked = !this.checked;
         });
         $('input[name="selectall"]').prop('checked', false);
