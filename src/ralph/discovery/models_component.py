@@ -67,7 +67,7 @@ class ComponentType(Choices):
     os = _('operating system')
 
 
-class ComponentModelGroup(Named):
+class ComponentModelGroup(Named, TimeTrackable):
     price = db.PositiveIntegerField(verbose_name=_("purchase price"),
         null=True, blank=True)
     type = db.PositiveIntegerField(verbose_name=_("component type"),
@@ -87,6 +87,10 @@ class ComponentModelGroup(Named):
         return sum(model.objects.filter(model__group=self).count()
             for model in (Storage, Memory, Processor, DiskShare, FibreChannel,
                 GenericComponent, Software))
+
+    def save(self, user=None, *args, **kwargs):
+        self.saving_user = user
+        return super(ComponentModelGroup, self).save(*args, **kwargs)
 
 
 class ComponentModel(Named.NonUnique, SavePrioritized, WithConcurrentGetOrCreate):
@@ -144,6 +148,10 @@ class ComponentModel(Named.NonUnique, SavePrioritized, WithConcurrentGetOrCreate
             'extra': escape(self.extra or ''),
             'count': self.get_count()
         }
+
+    def save(self, user=None, *args, **kwargs):
+        self.saving_user = user
+        return super(ComponentModel, self).save(*args, **kwargs)
 
 
 class Component(SavePrioritized, WithConcurrentGetOrCreate):
