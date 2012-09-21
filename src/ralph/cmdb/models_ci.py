@@ -71,9 +71,9 @@ class CIContentTypePrefix(TimeTrackable):
     prefix = models.SlugField()
 
     @classmethod
-    def get_prefix_by_object(cls, content_object):
+    def get_prefix_by_object(cls, content_object, fallback_value=None):
         content_type=ContentType.objects.get_for_model(content_object)
-        label =  '%s.%s' % (
+        label = '%s.%s' % (
                 content_type.app_label,
                 content_type.model,
         )
@@ -89,7 +89,10 @@ class CIContentTypePrefix(TimeTrackable):
                     content_type.model,
                 ))
             except CIContentTypePrefix.DoesNotExist:
-                return ''
+                if fallback_value:
+                    return fallback_value
+                else:
+                    raise
             return obj.prefix
 
     def get_content_type(self):
@@ -271,9 +274,7 @@ class CI(TimeTrackable):
 
     @classmethod
     def get_uid_by_content_object(cls, obj):
-        prefix = CIContentTypePrefix.get_prefix_by_object(obj)
-        if not prefix:
-            return ''
+        prefix = CIContentTypePrefix.get_prefix_by_object(obj, '')
         return '%s-%s' % (prefix, obj.id)
 
     def get_jira_display(self):
@@ -312,7 +313,7 @@ class CI(TimeTrackable):
     @classmethod
     def get_by_content_object(self, content_object):
         # find CI using his content object
-        prefix = CIContentTypePrefix.get_prefix_by_object(content_object)
+        prefix = CIContentTypePrefix.get_prefix_by_object(content_object, None)
         if not prefix:
             # fixtures not loaded, or content type not registered in CMDB. Skip checking.
             return None
@@ -379,7 +380,7 @@ class CIOwnership(TimeTrackable):
 class CIOwner(TimeTrackable, WithConcurrentGetOrCreate):
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=100)
-    email = models.EmailField(unique=True, null=True, blank=False)
+    email = models.EmailField(unique=True, null=True)
 
     class Meta:
         verbose_name = _("configuration item owner")
