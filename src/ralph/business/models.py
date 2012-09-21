@@ -24,7 +24,7 @@ from ralph.discovery.models import DataCenter
 from ralph.discovery.models_history import HistoryCost
 from ralph.discovery.models_network import Network
 
-from ralph.cmdb.models_ci import CI, CIOwner, CIOwnershipType
+from ralph.cmdb.models_ci import CI, CIOwner, CIOwnershipType, CIOwnership
 
 SYNERGY_URL_BASE = settings.SYNERGY_URL_BASE
 
@@ -100,6 +100,12 @@ class Venture(Named, PrebootMixin, TimeTrackable):
             return []
         return CIOwner.objects.filter(ci=ci,
             ciownership__type=CIOwnershipType.business.id)
+
+    def all_ownerships(self):
+        ci = CI.get_by_content_object(self)
+        if not ci:
+            return []
+        return CIOwnership.objects.filter(ci=ci)
 
     def get_data_center(self):
         if self.data_center:
