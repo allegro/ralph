@@ -344,7 +344,7 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
                     if any((# both devices are properly placed in the tree
                             sndev.parent and dev.parent,
                             # the device found using ethernets (or explicitly
-                            # given as `device`) has different sn than `sn` 
+                            # given as `device`) has different sn than `sn`
                             dev.sn and dev.sn != sn,
                             # the device found using `sn` already has other
                             # ethernets

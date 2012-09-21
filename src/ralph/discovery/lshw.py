@@ -204,9 +204,10 @@ def handle_lshw_processors(dev, processors, is_virtual=False, priority=0):
         extra = "\n".join([": ".join((key, ' '.join(e for e in
             untangle(caps[key]) if e) or '')) for key in sorted(caps.keys())])
         model, c = ComponentModel.concurrent_get_or_create(
-            speed=speed, type=ComponentType.processor.id, extra=extra,
+            speed=speed, type=ComponentType.processor.id,
             extra_hash=hashlib.md5(extra).hexdigest(), family=family,
             cores=0)
+        model.extra = extra
         model.name = processor['product'] or 'CPU {} {}MHz'.format(family,
             speed)
         model.save(priority=priority)
