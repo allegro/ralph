@@ -6,15 +6,20 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from django.conf import settings
 from tastypie import fields
 from tastypie.authentication import ApiKeyAuthentication
 from tastypie.authorization import DjangoAuthorization
 from tastypie.cache import SimpleCache
 from tastypie.constants import ALL, ALL_WITH_RELATIONS
 from tastypie.resources import ModelResource as MResource
+from tastypie.throttle import CacheThrottle
 
 from ralph.deployment.models import Deployment
 
+THROTTLE_AT = settings.API_THROTTLING['throttle_at']
+TIMEFREME = settings.API_THROTTLING['timeframe']
+EXPIRATION = settings.API_THROTTLING['expiration']
 
 class DeploymentResource(MResource):
     venture = fields.ForeignKey('ralph.business.api.VentureResource',
@@ -48,3 +53,5 @@ class DeploymentResource(MResource):
         excludes = ('save_priorities', 'max_save_priority',)
         cache = SimpleCache()
         limit = 10
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+                                expiration=EXPIRATION)

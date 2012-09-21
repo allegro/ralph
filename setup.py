@@ -34,7 +34,7 @@ setup (
     install_requires = [
         'django-ajax-selects==1.2.4',
         'django-bob==1.2.2',
-        'django-celery==3.0.4',
+        'django-celery==3.0.9',
         'django-powerdns==0.2',
         'django-tastypie==0.9.11',
         'django==1.4.1',
