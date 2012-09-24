@@ -252,6 +252,7 @@ class ReportVentures(SidebarReports, Base):
     def export_csv(self):
         def iter_rows():
             yield [
+                'Venture ID',
                 'Venture',
                 'Path',
                 'Department',
@@ -262,6 +263,7 @@ class ReportVentures(SidebarReports, Base):
             for venture in self.ventures:
                 total = venture.total or 0
                 yield [
+                    '%d' % venture.id,
                     venture.name,
                     venture.path,
                     unicode(venture.department) if venture.department else '',
