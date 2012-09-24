@@ -6,6 +6,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from django import forms
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 from lck.django.common.admin import ModelAdmin, ForeignKeyAutocompleteTabularInline
@@ -88,6 +89,14 @@ class SubVentureInline(admin.TabularInline):
     extra = 0
 
 
+class VentureAdminForm(forms.ModelForm):
+    def clean_symbol(self):
+        data = self.cleaned_data['symbol']
+        if not data:
+            raise forms.ValidationError(_("symbol must be given"))
+        return data
+
+
 class VentureAdmin(ModelAdmin):
     inlines = [
                 VentureExtraCostInline,
@@ -98,6 +107,7 @@ class VentureAdmin(ModelAdmin):
     related_search_fields = {
         'parent': ['^name'],
     }
+    form = VentureAdminForm
 
     def members(self):
         from ralph.discovery.models import Device
