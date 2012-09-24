@@ -15,7 +15,9 @@ from django.utils.translation import ugettext_lazy as _
 from django.db.models.signals import post_save, pre_save, pre_delete
 from django.dispatch import receiver
 
-from ralph.discovery.models_device import Device, DeviceModel, DeviceModelGroup
+from ralph.discovery.models_device import (
+        Device, DeprecationKind, DeviceModel, DeviceModelGroup
+    )
 from ralph.discovery.models_device import LoadBalancerMember
 from ralph.discovery.models_device import LoadBalancerVirtualServer
 from ralph.discovery.models_component import (
@@ -181,6 +183,14 @@ def device_related_pre_delete(sender, instance, using, **kwargs):
             component=unicode(instance),
             component_id=instance.id,
         ).save()
+
+@receiver(pre_save, sender=DeprecationKind, dispatch_uid='ralph.history')
+def deprecationkind_pre_save(sender, instance, raw, using, **kwargs):
+    if instance.default:
+        items = DeprecationKind.objects.filter(default=True)
+        for item in items:
+            item.default = False
+            item.save()
 
 
 class HistoryCost(db.Model):

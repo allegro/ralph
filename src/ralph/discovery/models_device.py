@@ -83,13 +83,14 @@ class DeprecationKind(TimeTrackable, Named):
     remarks = db.TextField(verbose_name=_("remarks"),
         help_text=_("additional information."),
         blank=True, default="")
+    default = db.BooleanField(default=False)
 
     class Meta:
         verbose_name = _("deprecation kind")
         verbose_name_plural = _("deprecation kinds")
 
     def save(self, *args, **kwargs):
-        if self.dirty_fields['months'] is not None:
+        if self.dirty_fields.get('months') is not None:
             devices = Device.objects.filter(deprecation_kind_id = self.id)
             for device in devices:
                 if (device.purchase_date is not None
@@ -335,7 +336,7 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
                     if any((# both devices are properly placed in the tree
                             sndev.parent and dev.parent,
                             # the device found using ethernets (or explicitly
-                            # given as `device`) has different sn than `sn` 
+                            # given as `device`) has different sn than `sn`
                             dev.sn and dev.sn != sn,
                             # the device found using `sn` already has other
                             # ethernets
@@ -444,6 +445,16 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
     def get_last_ping(self):
         for ip in self.ipaddress_set.order_by('-last_seen'):
             return ip.last_seen
+
+    def get_deprecation_kind(self):
+        if self.deprecation_kind:
+            return self.deprecation_kind
+        try:
+            default_deprecation_kind = DeprecationKind.objects.get(default=True)
+        except DeprecationKind.DoesNotExist:
+            return None
+        else:
+            return default_deprecation_kind
 
     @property
     def ipaddress(self):
