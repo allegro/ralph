@@ -91,7 +91,8 @@ def _parse_smbios(dev, data, facts, is_virtual):
         data = zlib.decompress(data)
     except zlib.error:
         pass
-    hardware.handle_smbios(dev, data, is_virtual, SAVE_PRIORITY)
+    smb = hardware.parse_smbios(data)
+    hardware.handle_smbios(dev, smb, is_virtual, SAVE_PRIORITY)
 
 def handle_facts_ethernets(facts):
     ethernets = []
