@@ -107,7 +107,7 @@ The price of a virtual server hypervisor is calculated normally, but then the
 total prices of its virtual machines are subtracted from it.
 
 :index:`Remote storage`
-----------------
+-----------------------
 
 The price of storage is calculated normally, and then the prices of all the
 :index:`disk shares` that are mounted somewhere (and thus their price is
