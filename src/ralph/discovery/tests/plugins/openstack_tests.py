@@ -17,6 +17,27 @@ from ralph.discovery.models import (Device, ComponentModel, GenericComponent,
 from ralph.discovery.models_history import HistoryCost
 
 
+class MockOpenStack(object):
+    """ Simple mock for OpenStack network library """
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def __call__(self, *args, **kwargs):
+        return self
+
+    def simple_tenant_usage(self, start, end):
+        return simple_tenant_usage_data
+
+    def query(self, query, url, **kwargs):
+        pass
+
+    def auth(self, *args, **kwargs):
+        pass
+
+    def __getattr__(self, name):
+        return mock.Mock()
+
+
 class OpenStackPluginTest(TestCase):
     """ OpenStack costs Test Case """
 
@@ -112,25 +133,4 @@ class OpenStackPluginTest(TestCase):
             # Rest of components are unassigned to the group, so not counted
             result = make_tenant(tenant_params)
             self.assertEqual(result[1], 200.0)
-
-
-class MockOpenStack(object):
-    """ Simple mock for OpenStack network library """
-    def __init__(self, *args, **kwargs):
-        pass
-
-    def __call__(self, *args, **kwargs):
-        return self
-
-    def simple_tenant_usage(self, start, end):
-        return simple_tenant_usage_data
-
-    def query(self, query, url, **kwargs):
-        pass
-
-    def auth(self, *args, **kwargs):
-        pass
-
-    def __getattr__(self, name):
-        return mock.Mock()
 
