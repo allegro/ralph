@@ -19,19 +19,19 @@
         {%   main_menu mainmenu_items section title="Ralph" search=search_url %}
         {% endblock %}
     </div>
+    {%   if messages %}
     <div class="row-fluid"><div class="span12 alerts">
         {% block alerts %}
-        {%   if messages %}
         {%     for message in messages %}
         <div class="alert alert-{{ message.tags }} fade in">
             <a class="close" data-dismiss="alert" href="#">&times;</a>
             <p>{{ message.tags|alert_icon }} {{ message }}</p>
         </div>
         {%     endfor %}
-        {%   endif %}
         {% endblock %}
     </div></div>
-    <div class="row-fluid"><div class="span2">
+    {%   endif %}
+    <div class="row-fluid main-body"><div class="span2">
         {% block sidebar %}
         {% endblock %}
     </div><div class="span10">
@@ -43,6 +43,12 @@
         {% endblock %}
         </div>
     </div></div>
+    <div class="row-fluid"><div class="span12">
+        {% block footer %}
+        <p></p>
+        {%   main_menu footer_items section white=1 %}
+        {% endblock %}
+    </div>
 </div>
 {% block scripts %}
 <script src="{{ STATIC_URL }}jquery-1.7.2.min.js"></script>
