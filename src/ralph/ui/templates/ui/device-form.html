@@ -4,27 +4,24 @@
 {% load icons %}
 
 {% block formbuttons %}
-<div 
-    class="input-append control-group pull-left {% if form.save_comment.errors %}error{% endif %}"
-    style="white-space:nowrap">
-    {{ form.save_comment }}<button
+<div class="control-group pull-right">
+    {% if device.verified %}
+    &nbsp;<a class="btn btn-inverse" href="../deploy/{{ device.id }}">
+            {% icon 'fugue-wand-hat' %}&nbsp;Deploy
+        </a>
+    {% endif %}
+</div>
+<div class="control-group {% if form.save_comment.errors %}error{% endif %}">
+    <div class="input-append">{{ form.save_comment }}<button
         class="btn btn-primary"
         type="submit"
-        name="devicesave">
-            {% icon 'fugue-tick' %}&nbsp;Save
+        name="devicesave">{% icon 'fugue-tick' %}&nbsp;Save
     </button>
+    </div>
     {% for e in form.save_comment.errors %}
         <div class="help-block error-text">{{ e }}</div>
     {% empty %}
         <div class="help-block">{{ form.save_comment.help_text }}</div>
     {% endfor %}
-</div>
-<div class="control-group pull-left">
-    {% if device.verified %}
-    &nbsp;<a class="btn btn-inverse" href="../deploy/{{ device.id }}">
-            {% icon 'fugue-wand-hat' %}&nbsp;Deploy
-        </a>
-        <div class="help-block">Change venture or role</div>
-    {% endif %}
 </div>
 {% endblock %}

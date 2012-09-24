@@ -44,7 +44,7 @@
         <tr {% if not venture.parent %}class="table-highlight"{% endif %}>
             <td>
                 {% if venture.parent %}&nbsp;&nbsp;&nbsp;&nbsp;{% endif %}
-                <a href="../../ventures/{{ venture.symbol|slugify }}/venture" >
+                <a href="/ui/ventures/{{ venture.symbol|slugify }}/venture/" >
                 {{ venture|venture_icon }}
                 {{ venture.name }}
                 </a>
