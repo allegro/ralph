@@ -11,8 +11,9 @@ from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 from lck.django.common.admin import ModelAdmin, ForeignKeyAutocompleteTabularInline
 
-from ralph.business.models import (Venture, VentureRole, OwnerType,
-    VentureOwner, VentureExtraCost, VentureExtraCostType)
+from ralph.business.models import (Venture, VentureRole,
+    VentureExtraCost, VentureExtraCostType)
+from ralph.cmdb.models_ci import CIOwner, CI, CIOwnershipType
 from ralph.business.models import (RoleProperty, RolePropertyType,
         RolePropertyTypeValue, RolePropertyValue, Department)
 from ralph.integration.admin import RoleIntegrationInline
@@ -33,7 +34,7 @@ class RolePropertyInline(admin.TabularInline):
 
 
 class VentureOwnerInline(admin.TabularInline):
-    model = VentureOwner
+    model = CIOwner
     exclude = ('created', 'modified')
     extra = 4
 
@@ -115,16 +116,22 @@ class VentureAdmin(ModelAdmin):
     members.short_description = _("members")
 
     def technical_owners(self):
-        owners = VentureOwner.objects.filter(type=OwnerType.technical.id,
-            venture=self)
-        return ", ".join([owner.link_if_possible() for owner in owners])
+        ci = CI.get_by_content_object(self)
+        if not ci:
+            return []
+        owners = CIOwner.objects.filter(ciownership__type=CIOwnershipType.technical.id,
+            ci=ci)
+        return ", ".join([unicode(owner) for owner in owners])
     technical_owners.short_description = _("technical owners")
     technical_owners.allow_tags = True
 
     def business_owners(self):
-        owners = VentureOwner.objects.filter(type=OwnerType.business.id,
-            venture=self)
-        return ", ".join([owner.link_if_possible() for owner in owners])
+        ci = CI.get_by_content_object(self)
+        if not ci:
+            return []
+        owners = CIOwner.objects.filter(ciownership__type=CIOwnershipType.business.id,
+            ci=ci)
+        return ", ".join([unicode(owner) for owner in owners])
     business_owners.short_description = _("business owners")
     business_owners.allow_tags = True
 
