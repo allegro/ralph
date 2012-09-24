@@ -27,6 +27,9 @@ from ralph.cmdb.models_ci import (
     CIValueChoice,
     CIContentTypePrefix,
     CIAttributeValue,
+
+    CIOwner,
+    CIOwnershipType,
 )
 
 from ralph.cmdb.models_changes import (
@@ -79,6 +82,10 @@ __all__ = [
     CIValueString,
     CIValueChoice,
     CIContentTypePrefix,
+
+    # owners
+    CIOwner,
+    CIOwnershipType,
 
     #change management types
     CIChange,

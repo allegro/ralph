@@ -1,17 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
-from django.utils.translation import ugettext_lazy as _
 from django.core.exceptions import ValidationError
+from django.db import models
+from django.utils.translation import ugettext_lazy as _
 
-from lck.django.common.models import TimeTrackable
+from lck.django.common.models import TimeTrackable, WithConcurrentGetOrCreate
 from lck.django.choices import Choices
 
 
@@ -70,9 +71,9 @@ class CIContentTypePrefix(TimeTrackable):
     prefix = models.SlugField()
 
     @classmethod
-    def get_prefix_by_object(cls, content_object):
+    def get_prefix_by_object(cls, content_object, fallback=None):
         content_type=ContentType.objects.get_for_model(content_object)
-        label =  '%s.%s' % (
+        label = '%s.%s' % (
                 content_type.app_label,
                 content_type.model,
         )
@@ -82,10 +83,15 @@ class CIContentTypePrefix(TimeTrackable):
             return first_run
         else:
             # fixtures lookup
-            obj = CIContentTypePrefix.objects.get(content_type_name='%s.%s' % (
-                content_type.app_label,
-                content_type.model,
-            ))
+            try:
+                obj = CIContentTypePrefix.objects.get(content_type_name='%s.%s' % (
+                    content_type.app_label,
+                    content_type.model,
+                ))
+            except CIContentTypePrefix.DoesNotExist:
+                if fallback:
+                    return fallback
+                raise
             return obj.prefix
 
     def get_content_type(self):
@@ -255,6 +261,9 @@ class CI(TimeTrackable):
     relations = models.ManyToManyField("self", symmetrical=False,
             through='CIRelation')
     added_manually = models.BooleanField(default=False)
+    owners = models.ManyToManyField('CIOwner',
+            through='CIOwnership',
+            verbose_name=_("configuration item owners"))
 
     class Meta:
         unique_together = ('content_type', 'object_id')
@@ -264,7 +273,8 @@ class CI(TimeTrackable):
 
     @classmethod
     def get_uid_by_content_object(cls, obj):
-        return '%s-%s' % (CIContentTypePrefix.get_prefix_by_object(obj), obj.id)
+        prefix = CIContentTypePrefix.get_prefix_by_object(obj, '')
+        return '%s-%s' % (prefix, obj.id)
 
     def get_jira_display(self):
         return "%(name)s %(uid)s - #%(barcode)s type: %(type)s" % (
@@ -275,6 +285,8 @@ class CI(TimeTrackable):
                     type=self.type
                     )
                 )
+
+
 
     def get_service(self):
         """
@@ -300,8 +312,15 @@ class CI(TimeTrackable):
     @classmethod
     def get_by_content_object(self, content_object):
         # find CI using his content object
-        prefix = CIContentTypePrefix.get_prefix_by_object(content_object)
-        return CI.objects.get(uid='%s-%s' % (prefix, content_object.id))
+        prefix = CIContentTypePrefix.get_prefix_by_object(content_object, None)
+        if not prefix:
+            # fixtures not loaded, or content type not registered in CMDB. Skip checking.
+            return None
+        try:
+            ci = CI.objects.get(uid='%s-%s' % (prefix, content_object.id))
+        except CI.DoesNotExist:
+            ci = None
+        return ci
 
     @models.permalink
     def get_absolute_url(self):
@@ -338,5 +357,35 @@ class CIAttributeValue(TimeTrackable):
             null = True,
             blank = True,
             verbose_name=_("choice value"))
+
+
+class CIOwnershipType(Choices):
+    _ = Choices.Choice
+
+    technical = _("technical owner")
+    business = _("business owner")
+
+
+class CIOwnership(TimeTrackable):
+    ci = models.ForeignKey('CI')
+    owner = models.ForeignKey('CIOwner')
+    type = models.PositiveIntegerField(verbose_name=_("type of ownership"),
+        choices=CIOwnershipType(), default=CIOwnershipType.technical.id)
+
+    def __unicode__(self):
+        return '%s is %s of %s ' % (self.owner, self.get_type_display(), self.ci )
+
+
+class CIOwner(TimeTrackable, WithConcurrentGetOrCreate):
+    first_name = models.CharField(max_length=50)
+    last_name = models.CharField(max_length=100)
+    email = models.EmailField(unique=True, null=True)
+
+    class Meta:
+        verbose_name = _("configuration item owner")
+        verbose_name_plural = _("configuration item owners")
+
+    def __unicode__(self):
+        return ' '.join([self.first_name, self.last_name])
 
 
