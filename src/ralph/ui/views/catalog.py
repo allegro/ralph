@@ -233,7 +233,6 @@ class CatalogDevice(Catalog):
             type=self.model_type_id))
         for g in self.groups:
             g.count = g.get_count()
-        self.groups = [g for g in self.groups if g.count]
         if not self.form:
             self.form = DeviceModelGroupForm(instance=self.group)
         return super(CatalogDevice, self).get(*args, **kwargs)
@@ -358,7 +357,7 @@ class CatalogComponent(Catalog):
             g.count = g.get_count()
             g.modified_price = decimal.Decimal(
                     g.price or 0) / (g.size_modifier or 1)
-        self.groups = [g for g in groups if g.count]
+        self.groups = [g for g in groups ]
         if not self.form:
             self.form = ComponentModelGroupForm(instance=self.group)
         return super(CatalogComponent, self).get(*args, **kwargs)
