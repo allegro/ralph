@@ -269,7 +269,7 @@ class ReportVentures(SidebarReports, Base):
                     unicode(venture.department) if venture.department else '',
                     ('%d%%' % venture.margin_kind.margin
                         ) if venture.margin_kind else '',
-                    venture.count or 0,
+                    '%d' % (venture.count or 0),
                     '{:,.2f} {}'.format(total, settings.CURRENCY).replace(',', ' '),
                 ]
         f = StringIO.StringIO()
