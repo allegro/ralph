@@ -34,7 +34,7 @@ setup (
     install_requires = [
         'django-ajax-selects==1.2.4',
         'django-bob==1.3.1',
-        'django-celery==3.0.9',
+        'django-celery==3.0.10',
         'django-powerdns==0.2',
         'django-tastypie==0.9.11',
         'django==1.4.1',
@@ -44,9 +44,10 @@ setup (
         'gunicorn==0.14.6',
         'ipaddr==2.1.7',
         'iscconf==1.0.0dev3',
+        'jira-python==0.12',
         'jpath==1.2',
         'lck.django==0.7.13',
-        'lxml>=2.3.3',
+        'lxml==2.3.5',
         'mock==0.8.0',
         'MySQL-python==1.2.3',
         'ping==0.2',
@@ -60,7 +61,6 @@ setup (
         'splunk-sdk==0.8.0',
         'SQLAlchemy==0.7.8',
         'ssh==1.7.14',
-        'jira-python==0.12',
         ],
     entry_points={
         'console_scripts': [
