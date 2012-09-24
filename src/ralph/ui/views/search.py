@@ -114,11 +114,14 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                 ))
                 self.query = self.query.filter(q).distinct()
             if data['address']:
-                if re.match(r'^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]'
-                            r')\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25'
-                            r'[0-5])(\/([0-9]|[1-2][0-9]|3[0-2])|)$',
-                            data['address']):
+                try:
                     net = ipaddr.IPNetwork(data['address'])
+                except ValueError:
+                    q = _search_fields_or([
+                        'ipaddress__address__icontains'
+                    ], data['address'].split(' '))
+                    self.query = self.query.filter(q).distinct()
+                else:
                     min_ip = int(net.network)
                     max_ip = int(net.broadcast)
                     self.query = self.query.filter(
@@ -126,11 +129,6 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                     ).filter(
                         ipaddress__number__lte=max_ip
                     )
-                else:
-                    q = _search_fields_or([
-                        'ipaddress__address__icontains'
-                    ], data['address'].split(' '))
-                    self.query = self.query.filter(q).distinct()
             if data['remarks']:
                 self.query = self.query.filter(
                         remarks__icontains=data['remarks']
