@@ -357,7 +357,7 @@ class CatalogComponent(Catalog):
             g.count = g.get_count()
             g.modified_price = decimal.Decimal(
                     g.price or 0) / (g.size_modifier or 1)
-        self.groups = [g for g in groups ]
+        self.groups = groups
         if not self.form:
             self.form = ComponentModelGroupForm(instance=self.group)
         return super(CatalogComponent, self).get(*args, **kwargs)
