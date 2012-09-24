@@ -1,15 +1,20 @@
 # -*- coding: utf-8 -*-
 
+"""This module fill owners of CI CMDB Database.
+This migration needs fully populated CI Ventures database.
+You must do it manually.
+1) ralph loaddata cmdb/fixtures/*
+2) ralph cmdb_sync --kind=ci --action=import
+"""
+
 from django.core.management import call_command
-from django.contrib.contenttypes.models import ContentType
 
 import datetime
+import logging
 from south.db import db
 from south.v2 import SchemaMigration
 
-# directly imported to allow CI importing
-from ralph.cmdb.importer import CIImporter
-from ralph.cmdb.models_ci import CI as CI_orm
+logger = logging.getLogger(__name__)
 
 def extract_names(name):
     try:
@@ -26,10 +31,6 @@ def extract_names(name):
 
 class Migration(SchemaMigration):
     no_dry_run = True
-
-    def load_fixtures(self, fixtures_list):
-        for fixture in fixtures_list:
-            call_command("loaddata", fixture)
 
     def forwards(self, orm):
         # Adding model 'CIOwner'
@@ -62,20 +63,19 @@ class Migration(SchemaMigration):
         CMDB database from Ventures. We need this to bind owners to CI's.
         Then we can migrate VentureOwner to CIOwner through CIOwnership.
         """
-        # fixtures needed for CI database, load if not already done.
-        self.load_fixtures(['0_types.yaml', '1_attributes.yaml', '2_layers.yaml',
-            '3_prefixes.yaml'])
         persons = dict()
         CIOwner = orm['cmdb.CIOwner']
         CIOwnership = orm['cmdb.CIOwnership']
-        CI_frozen = orm['cmdb.CI']
+        CI = orm['cmdb.CI']
         VentureOwner = orm['business.VentureOwner']
-        CIImporter().import_all_ci([
-            ContentType.objects.get(app_label='business', model='venture')])
         for venture_owner in VentureOwner.objects.all():
             venture = venture_owner.venture
-            venture_ci_id = CI_orm.get_by_content_object(venture).id
-            venture_ci = CI_frozen.objects.get(id=venture_ci_id)
+            try:
+                venture_ci = CI.objects.get(uid='bv-%s' % venture.id)
+            except CI.DoesNotExist:
+                logger.warning('Skipping importing venture owner %s, because CI of venture: %s'
+                        ' does not exist' % (venture_owner.name, venture.name))
+                continue
             names_dict = extract_names(venture_owner.name)
             first_name = names_dict['first_name']
             last_name = names_dict['last_name']
