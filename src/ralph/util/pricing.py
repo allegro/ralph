@@ -46,9 +46,9 @@ def get_device_cost(device):
     """Return the monthly cost of this device."""
 
     price = get_device_price(device)
-
-    if device.deprecation_kind is not None:
-        cost = price / device.deprecation_kind.months
+    deprecation_kind = device.get_deprecation_kind()
+    if deprecation_kind is not None:
+        cost = price / deprecation_kind.months
     else:
         cost = 0
 
