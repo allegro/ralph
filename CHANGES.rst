@@ -1,6 +1,16 @@
 Change Log
 ----------
 
+1.1.1
+~~~~~
+
+Released on September 24, 2012.
+
+* Price catalog updated: history of changes tracked, a more intuitive UI for
+  prices per unit of size
+
+* bug fixes in discovery and UI
+
 1.1.0
 ~~~~~
 
