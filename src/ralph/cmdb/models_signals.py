@@ -29,12 +29,12 @@ user_match = re.compile(r".*\<(.*)@.*\>")
 
 if settings.ISSUETRACKERS['default']['ENGINE'] == '':
     # Null Issue Tracker fallback
-    ralph_change_link = ''
-    jira_op_template = ''
+    ralph_change_link = '%s'
+    op_template = ''
     default_assignee = ''
 else:
     ralph_change_link = settings.ISSUETRACKERS['default']['CMDB_VIEWCHANGE_LINK']
-    jira_op_template = settings.ISSUETRACKERS['default']['OP']['TEMPLATE']
+    op_template = settings.ISSUETRACKERS['default']['OP']['TEMPLATE']
     default_assignee = settings.ISSUETRACKERS['default']['OP']['DEFAULT_ASSIGNEE']
 
 
@@ -109,7 +109,7 @@ def ci_post_save(sender, instance, raw, using, **kwargs):
                     pk=orig
                 ) if orig is not None else None
         ch = chdb.CIChangeCMDBHistory()
-        if getattr(instance, 'parent_id'):
+        if getattr(instance, 'parent_id', None):
             ci = instance.parent
         else:
             ci = instance
@@ -117,7 +117,10 @@ def ci_post_save(sender, instance, raw, using, **kwargs):
         ch.time = datetime.datetime.now()
         ch.field_name = field
         ch.old_value = unicode(orig)
-        ch.new_value = unicode(getattr(instance, field))
+        if field == 'object':
+            ch.new_value = 'object'
+        else:
+            ch.new_value = unicode(getattr(instance, field))
         ch.user = instance.saving_user
         if instance.id:
             ch.comment = 'Record updated.'
@@ -173,10 +176,9 @@ def create_issue(change_id, retry_count=1):
         description = '''
         Old value: %(old_value)s
         New value: %(new_value)s
-        Description: %(summary)s
+        Description: %(description)s
         CMDB link: %(cmdb_link)s
         Author: %(author)s
-
         ''' % (dict(
             old_value=ch.content_object.old_value,
             new_value=ch.content_object.new_value,
@@ -200,7 +202,7 @@ def create_issue(change_id, retry_count=1):
                 assignee=user,
                 start=ch.created.isoformat(),
                 end='',
-                template=jira_op_template,
+                template=op_template,
         )
         ch.registration_type = chdb.CI_CHANGE_REGISTRATION_TYPES.CHANGE.id
         ch.external_key = issue.get('key')
@@ -212,6 +214,9 @@ def create_issue(change_id, retry_count=1):
 
 @receiver(post_save, sender=chdb.CIChange, dispatch_uid='ralph.cmdb.cichange')
 def change_post_save(sender, instance, raw, using, **kwargs):
+    if not op_template:
+        logger.debug('Skipping creating ticket since op_template not set in config.')
+        return
     if instance.type in chdb.REGISTER_CHANGE_TYPES:
         if not instance.external_key:
             getfunc(create_issue)(instance.id)
