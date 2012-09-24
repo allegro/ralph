@@ -71,7 +71,7 @@ class CIContentTypePrefix(TimeTrackable):
     prefix = models.SlugField()
 
     @classmethod
-    def get_prefix_by_object(cls, content_object, fallback_value=None):
+    def get_prefix_by_object(cls, content_object, fallback=None):
         content_type=ContentType.objects.get_for_model(content_object)
         label = '%s.%s' % (
                 content_type.app_label,
@@ -89,10 +89,9 @@ class CIContentTypePrefix(TimeTrackable):
                     content_type.model,
                 ))
             except CIContentTypePrefix.DoesNotExist:
-                if fallback_value:
-                    return fallback_value
-                else:
-                    raise
+                if fallback:
+                    return fallback
+                raise
             return obj.prefix
 
     def get_content_type(self):
