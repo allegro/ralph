@@ -30,7 +30,7 @@ class NetworkAdmin(ModelAdmin):
     list_filter = ('data_center', 'terminators', 'queue', 'kind')
     list_per_page = 250
     radio_fields = {'data_center': admin.HORIZONTAL, 'kind': admin.HORIZONTAL}
-    search_fields = ('name', 'address')
+    search_fields = ('name', 'address', 'vlan')
     filter_horizontal = ('terminators',)
     save_on_top = True
 
@@ -218,6 +218,7 @@ admin.site.register(IPAddress, IPAddressAdmin)
 
 class DeprecationKindAdmin(ModelAdmin):
     save_on_top = True
+    list_display = ('name', 'months', 'default')
 admin.site.register(DeprecationKind, DeprecationKindAdmin)
 
 
