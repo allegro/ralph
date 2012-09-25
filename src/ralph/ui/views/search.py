@@ -129,8 +129,7 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                             min_ip = int(net.network)
                             max_ip = int(net.broadcast)
                             self.query = self.query.filter(
-                                ipaddress__number__lte=max_ip
-                            ).filter(
+                                ipaddress__number__lte=max_ip,
                                 ipaddress__number__gte=min_ip
                             )
                     else:
