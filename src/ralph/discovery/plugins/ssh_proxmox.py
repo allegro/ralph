@@ -51,7 +51,7 @@ def _get_local_disk_size(ssh, disk):
     return size
 
 
-def _add_virtual_machine(ssh, vmid, parent, master, storage):
+def _add_virtual_machine(ssh, vmid, parent, master, storages):
     stdin, stdout, stderr = ssh.exec_command(
             "cat /etc/qemu-server/%d.conf" % vmid)
     lines = stdout.readlines()
@@ -119,7 +119,7 @@ def _add_virtual_machine(ssh, vmid, parent, master, storage):
             continue
         vol = '%s:%s' % (vg, lv)
         try:
-            wwn, size = storage[lv]
+            wwn, size = storages[lv]
         except KeyError:
             logger.warning('Volume %r does not exist.' % lv)
             continue
@@ -162,7 +162,7 @@ def _add_virtual_machine(ssh, vmid, parent, master, storage):
     return dev
 
 def _add_virtual_machines(ssh, parent, master):
-    storage = get_disk_shares(ssh)
+    storages = get_disk_shares(ssh)
     stdin, stdout, stderr = ssh.exec_command("qm list")
     dev_ids = []
     for line in stdout:
@@ -174,7 +174,7 @@ def _add_virtual_machines(ssh, parent, master):
         if status != 'running':
             continue
         vmid = int(vmid)
-        dev = _add_virtual_machine(ssh, vmid, parent, master, storage)
+        dev = _add_virtual_machine(ssh, vmid, parent, master, storages)
         if dev is None:
             continue
         dev_ids.append(dev.id)
