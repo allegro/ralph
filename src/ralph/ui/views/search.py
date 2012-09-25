@@ -66,7 +66,7 @@ class SidebarSearch(object):
             'section': 'home',
             'subsection': 'search',
             'searchform': self.searchform,
-        })
+            })
         return ret
 
 
@@ -97,22 +97,22 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
             if data['name']:
                 name = data['name'].strip()
                 names = set(n.strip('.') for (n,) in Record.objects.filter(
-                        type='CNAME'
-                    ).filter(
-                        name__icontains=name
-                    ).values_list('content'))
+                    type='CNAME'
+                ).filter(
+                    name__icontains=name
+                ).values_list('content'))
                 ips = set(ip.strip('.') for (ip,) in Record.objects.filter(
-                        type='A'
-                    ).filter(
-                        Q(name__icontains=name) |
-                        Q(name__in=names)
-                    ).values_list('content'))
+                    type='A'
+                ).filter(
+                    Q(name__icontains=name) |
+                    Q(name__in=names)
+                ).values_list('content'))
                 q = (_search_fields_or([
-                    'name',
-                    'ipaddress__hostname__icontains',
-                ], name.split(' ')) | Q(
+                                           'name',
+                                           'ipaddress__hostname__icontains',
+                                           ], name.split()) | Q(
                     ipaddress__address__in=ips,
-                ))
+                    ))
                 self.query = self.query.filter(q).distinct()
             if data['address']:
                 if data['address'] == empty_field:
@@ -123,19 +123,18 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                     try:
                         net = ipaddr.IPNetwork(data['address'])
                     except ValueError:
-                        pass
+                        q = _search_fields_or([
+                                                  'ipaddress__address__icontains'
+                                              ], data['address'].split())
+                        self.query = self.query.filter(q).distinct()
                     else:
                         min_ip = int(net.network)
                         max_ip = int(net.broadcast)
                         self.query = self.query.filter(
-                            ipaddress__number__lte=max_ip,
                             ipaddress__number__gte=min_ip
+                        ).filter(
+                            ipaddress__number__lte=max_ip
                         )
-                else:
-                    q = _search_fields_or([
-                        'ipaddress__address__icontains'
-                    ], data['address'].split(' '))
-                    self.query = self.query.filter(q).distinct()
             if data['remarks']:
                 if data['remarks'] == empty_field:
                     self.query = self.query.filter(
@@ -152,34 +151,34 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                     )
                 else:
                     q = _search_fields_or([
-                        'model__name__icontains',
-                        'model__group__name__icontains',
-                    ], data['model'].split('|'))
+                                              'model__name__icontains',
+                                              'model__group__name__icontains',
+                                              ], data['model'].split('|'))
                     self.query = self.query.filter(q).distinct()
             if data['component']:
                 q = _search_fields_or([
-                    'genericcomponent__label__icontains',
-                    'genericcomponent__model__name__icontains',
-                    'genericcomponent__model__group__name__icontains',
-                    'software__label__icontains',
-                    'software__model__name__icontains',
-                    'software__model__group__name__icontains',
-                    'ethernet__mac__icontains',
-                    'fibrechannel__label__icontains',
-                    'fibrechannel__model__name__icontains',
-                    'fibrechannel__model__group__name__icontains',
-                    'storage__label__icontains',
-                    'storage__model__name__icontains',
-                    'storage__model__group__name__icontains',
-                    'memory__label__icontains',
-                    'memory__model__name__icontains',
-                    'memory__model__group__name__icontains',
-                    'processor__label__icontains',
-                    'processor__model__name__icontains',
-                    'processor__model__group__name__icontains',
-                    'disksharemount__share__label__icontains',
-                    'disksharemount__share__wwn__icontains',
-                ], data['component'].split('|'))
+                                          'genericcomponent__label__icontains',
+                                          'genericcomponent__model__name__icontains',
+                                          'genericcomponent__model__group__name__icontains',
+                                          'software__label__icontains',
+                                          'software__model__name__icontains',
+                                          'software__model__group__name__icontains',
+                                          'ethernet__mac__icontains',
+                                          'fibrechannel__label__icontains',
+                                          'fibrechannel__model__name__icontains',
+                                          'fibrechannel__model__group__name__icontains',
+                                          'storage__label__icontains',
+                                          'storage__model__name__icontains',
+                                          'storage__model__group__name__icontains',
+                                          'memory__label__icontains',
+                                          'memory__model__name__icontains',
+                                          'memory__model__group__name__icontains',
+                                          'processor__label__icontains',
+                                          'processor__model__name__icontains',
+                                          'processor__model__group__name__icontains',
+                                          'disksharemount__share__label__icontains',
+                                          'disksharemount__share__wwn__icontains',
+                                          ], data['component'].split('|'))
                 self.query = self.query.filter(q).distinct()
             if data['serial']:
                 if data['serial'] == empty_field:
@@ -189,11 +188,14 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                         Q(genericcomponent__sn = None)
                     )
                 else:
+                    serial = data['serial'].replace(':','')
                     q = _search_fields_or([
-                        'sn__icontains',
-                        'ethernet__mac__icontains',
-                        'genericcomponent__sn__icontains',
-                    ], data['serial'].split(' '))
+                                              'sn__icontains',
+                                              'ethernet__mac__icontains',
+                                              'genericcomponent__sn__icontains',
+                                              'diskshare__wwn',
+                                              'disksharemount__share__wwn',
+                                              ], serial.split())
                     self.query = self.query.filter(q).distinct()
             if data['barcode']:
                 if data['barcode'] == empty_field:
@@ -202,8 +204,8 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                     )
                 else:
                     self.query = self.query.filter(
-                            barcode__icontains=data['barcode']
-                        )
+                        barcode__icontains=data['barcode']
+                    )
             if data['position']:
                 if data['position'] == empty_field:
                     self.query = self.query.filter(
@@ -213,18 +215,18 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                     )
                 else:
                     q = Q()
-                    for part in data['position'].split(' '):
+                    for part in data['position'].split():
                         q |= _search_fields_and([
-                            'position__icontains',
-                            'dc__icontains',
-                            'rack__icontains',
-                        ], part.split('/'))
+                                                    'position__icontains',
+                                                    'dc__icontains',
+                                                    'rack__icontains',
+                                                    ], part.split('/'))
                     self.query = self.query.filter(q).distinct()
             if data['history']:
                 q = _search_fields_or([
-                    'historychange__old_value__icontains',
-                    'historychange__new_value__icontains',
-                ], data['history'].split(' '))
+                                          'historychange__old_value__icontains',
+                                          'historychange__new_value__icontains',
+                                          ], data['history'].split())
                 self.query = self.query.filter(q).distinct()
             if data['role']:
                 q = Q()
@@ -234,53 +236,53 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                 elif data['role'].strip() == '*':
                     self.query = self.query.exclude(venture=None)
                 else:
-                    for part in data['role'].split(' '):
+                    for part in data['role'].split():
                         try:
                             role_id = int(part)
                         except:
                             q |= _search_fields_and([
-                                'venture_role__name__icontains',
-                                'venture_role__parent__name__icontains',
-                                'venture_role__parent__parent__name__icontains',
-                                'venture__name__icontains',
-                                'venture__symbol__icontains',
-                            ], part.split('/'))
+                                                        'venture_role__name__icontains',
+                                                        'venture_role__parent__name__icontains',
+                                                        'venture_role__parent__parent__name__icontains',
+                                                        'venture__name__icontains',
+                                                        'venture__symbol__icontains',
+                                                        ], part.split('/'))
                         else:
                             q |= _search_fields_or([
-                                'venture__id',
-                                'venture__parent__id',
-                                'venture__parent__parent__id',
-                                'venture__parent__parent__parent__id',
-                                'venture__parent__parent__parent__parent__id',
-                            ], [str(role_id)])
+                                                       'venture__id',
+                                                       'venture__parent__id',
+                                                       'venture__parent__parent__id',
+                                                       'venture__parent__parent__parent__id',
+                                                       'venture__parent__parent__parent__parent__id',
+                                                       ], [str(role_id)])
                     self.query = self.query.filter(q).distinct()
             if data['device_group']:
                 self.query = self.query.filter(
-                        model__group_id=data['device_group']
-                    )
+                    model__group_id=data['device_group']
+                )
             if data['component_group']:
                 is_splunk = ComponentModel.objects.filter(
-                        group_id=str(data['component_group']),
-                        family='splunkusage').exists()
+                    group_id=str(data['component_group']),
+                    family='splunkusage').exists()
                 if is_splunk:
                     yesterday = datetime.date.today() - datetime.timedelta(
-                            days=1)
+                        days=1)
                     q = Q(splunkusage__day=yesterday)
                 else:
                     q = _search_fields_or([
-                        'genericcomponent__model__group_id',
-                        'software__model__group_id',
-                        'fibrechannel__model__group_id',
-                        'storage__model__group_id',
-                        'memory__model__group_id',
-                        'processor__model__group_id',
-                        'disksharemount__share__model__group_id',
-                    ], [str(data['component_group'])])
+                                              'genericcomponent__model__group_id',
+                                              'software__model__group_id',
+                                              'fibrechannel__model__group_id',
+                                              'storage__model__group_id',
+                                              'memory__model__group_id',
+                                              'processor__model__group_id',
+                                              'disksharemount__share__model__group_id',
+                                              ], [str(data['component_group'])])
                 self.query = self.query.filter(q).distinct()
             if data['device_type']:
                 self.query = self.query.filter(
-                        model__type__in=data['device_type']
-                    )
+                    model__type__in=data['device_type']
+                )
             if data['no_purchase_date']:
                 self.query = self.query.filter(purchase_date = None)
             else:
@@ -309,12 +311,12 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                 if data['warranty_expiration_date_start']:
                     self.query = self.query.filter(
                         warranty_expiration_date__gte=
-                            data['warranty_expiration_date_start']
+                        data['warranty_expiration_date_start']
                     )
                 if data['warranty_expiration_date_end']:
                     self.query = self.query.filter(
                         warranty_expiration_date__lte=
-                            data['warranty_expiration_date_end']
+                        data['warranty_expiration_date_end']
                     )
             if data['no_support_expiration_date']:
                 self.query = self.query.filter(support_expiration_date=None)
@@ -322,17 +324,17 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                 if data['support_expiration_date_start']:
                     self.query = self.query.filter(
                         support_expiration_date__gte=
-                            data['support_expiration_date_start']
+                        data['support_expiration_date_start']
                     )
                 if data['support_expiration_date_end']:
                     self.query = self.query.filter(
                         support_expiration_date__lte=
-                            data['support_expiration_date_end']
+                        data['support_expiration_date_end']
                     )
         profile = self.request.user.get_profile()
         if not profile.has_perm(Perm.read_dc_structure):
             self.query = profile.filter_by_perm(self.query,
-                Perm.list_devices_generic)
+                                                Perm.list_devices_generic)
         self.query = super(SearchDeviceList, self).get_queryset(self.query)
         return self.query
 
