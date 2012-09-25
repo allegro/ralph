@@ -263,16 +263,17 @@ class SearchForm(forms.Form):
 
     def clean_address(self):
         data = self.cleaned_data['address']
-        if '/' in data:
-            try:
-                ipaddr.IPNetwork(data)
-            except ValueError:
-                raise forms.ValidationError("Invalid network")
-        else:
-            try:
-                ipaddr.IPv4Address(data)
-            except ValueError:
-                raise forms.ValidationError("Invalid address")
+        if data:
+            if '/' in data:
+                try:
+                    ipaddr.IPNetwork(data)
+                except ValueError:
+                    raise forms.ValidationError("Invalid network")
+            else:
+                try:
+                    ipaddr.IPv4Address(data)
+                except ValueError:
+                    raise forms.ValidationError("Invalid address")
         return data
 
 class PropertyForm(forms.Form):
