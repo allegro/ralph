@@ -95,8 +95,9 @@ class Jira(object):
         return call_result
 
     def create_issue(self, summary, description, issue_type, ci, assignee,
-            template, start='', end='',
-            business_assignee=None, technical_assignee=None):
+            start='', end='',
+            business_assignee=None, technical_assignee=None, template=None,
+            service=None):
         """ Create new issue.
 
         Jira Rest accepts following fields:
@@ -183,12 +184,12 @@ class Jira(object):
         else:
             ci_value = ''
             ci_full_description = ''
+
         params={
                     'fields': {
                         'issuetype': {'name': issue_type},
                         'summary': summary,
                         ci_field_name: ci_value,
-                        template_field_name: template,
                         ci_name_field_name: ci_full_description,
                         'assignee': {
                             'name': assignee
@@ -203,6 +204,8 @@ class Jira(object):
             params['fields'][towner_field_name] = {'name': technical_assignee}
         if business_assignee:
             params['fields'][bowner_field_name] = {'name': business_assignee}
+        if template:
+            params['fields'][template_field_name] = template
         try:
             call_result = self.call_resource('issue', params)
         except Exception as e:
