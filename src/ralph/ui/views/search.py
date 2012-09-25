@@ -119,24 +119,23 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                     self.query = self.query.filter(
                         ipaddress = None
                     )
-                else:
-                    if '/' in data['address']:
-                        try:
-                            net = ipaddr.IPNetwork(data['address'])
-                        except ValueError:
-                            pass
-                        else:
-                            min_ip = int(net.network)
-                            max_ip = int(net.broadcast)
-                            self.query = self.query.filter(
-                                ipaddress__number__lte=max_ip,
-                                ipaddress__number__gte=min_ip
-                            )
+                elif '/' in data['address']:
+                    try:
+                        net = ipaddr.IPNetwork(data['address'])
+                    except ValueError:
+                        pass
                     else:
-                        q = _search_fields_or([
-                            'ipaddress__address__icontains'
-                        ], data['address'].split(' '))
-                        self.query = self.query.filter(q).distinct()
+                        min_ip = int(net.network)
+                        max_ip = int(net.broadcast)
+                        self.query = self.query.filter(
+                            ipaddress__number__lte=max_ip,
+                            ipaddress__number__gte=min_ip
+                        )
+                else:
+                    q = _search_fields_or([
+                        'ipaddress__address__icontains'
+                    ], data['address'].split(' '))
+                    self.query = self.query.filter(q).distinct()
             if data['remarks']:
                 if data['remarks'] == empty_field:
                     self.query = self.query.filter(

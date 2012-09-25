@@ -658,6 +658,10 @@ class DeviceInfoForm(DeviceForm):
             'remarks',
             'deleted',
         )
+        widgets = {
+            'venture': ReadOnlySelectWidget,
+            'venture_role': ReadOnlySelectWidget,
+        }
 
     def __init__(self, *args, **kwargs):
         super(DeviceInfoForm, self).__init__(*args, **kwargs)
