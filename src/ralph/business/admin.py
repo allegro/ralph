@@ -95,9 +95,9 @@ class VentureAdminForm(forms.ModelForm):
     def clean_symbol(self):
         data = self.cleaned_data['symbol']
         if not re.match(r'^[a-z]{1}[a-z0-9_]*[a-z0-9]{1}$', data):
-            raise forms.ValidationError("Symbol can't be empty, have starts with"
-                " letter, and can't ends with '_'. Allow chars: a-z, 0-9, '_'. "
-                "Example: simple_venture2")
+            raise forms.ValidationError("Symbol can't be empty, has to start with"
+                " letter, and can't end with '_'. Allowed characters: a-z, 0-9, "
+                "'_'. Example: simple_venture2")
         else:
             venture = Venture.objects.filter(symbol=data)
             if venture:
