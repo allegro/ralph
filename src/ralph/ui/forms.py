@@ -135,7 +135,7 @@ class SearchForm(forms.Form):
                 'class':'span12',
                 'title': TooltipContent.empty_field,
             }),
-            label="Serial number or MAC")
+            label="Serial number, MAC or WWN")
     barcode = forms.CharField(required=False,
             widget=forms.TextInput(attrs={
                 'class':'span12',
