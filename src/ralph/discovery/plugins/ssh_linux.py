@@ -18,10 +18,9 @@ from ralph.discovery.models import (DeviceType, Device, DiskShare,
                                     DiskShareMount)
 from ralph.discovery.hardware import (get_disk_shares, parse_smbios,
                                       handle_smbios)
+from ralph.discovery import guessmodel
 
 
-SSH_USER  = 'root'
-SSH_PASSWORD = settings.SSH_PASSWORD
 SAVE_PRIORITY=5
 logger = logging.getLogger(__name__)
 
@@ -29,7 +28,7 @@ logger = logging.getLogger(__name__)
 def run_ssh_linux(ssh, ip):
     # Create the device
     stdin, stdout, stderr = ssh.exec_command(
-            "/usr/sbin/ip addr show | grep 'link/ether'")
+            "/usr/bin/sudo /usr/sbin/ip addr show | /bin/grep 'link/ether'")
     ethernets = [
         Eth(label='', mac=line.split(None, 3)[1], speed=0)
         for line in stdout
@@ -53,18 +52,36 @@ def run_ssh_linux(ssh, ip):
         ds.delete()
     # Handle smbios data
     stdin, stdout, stderr = ssh.exec_command(
-            "/usr/sbin/smbios")
+            "/usb/bin/sudo /usr/sbin/smbios")
     smb = parse_smbios(stdin.read())
     handle_smbios(dev, smb, priority=SAVE_PRIORITY)
 
 
-@plugin.register(chain='discovery', requires=['ping'])
+@plugin.register(chain='discovery', requires=['ping', 'snmp'])
 def ssh_linux(**kwargs):
+    kwargs['guessmodel'] = gvendor, gmodel = guessmodel.guessmodel(**kwargs)
+    if gmodel not in {'Linux', 'ESX'}:
+        return False, 'no match: %s %s' % (gvendor, gmodel), kwargs
     ip = str(kwargs['ip'])
     if not network.check_tcp_port(ip, 22):
         return False, 'closed.', kwargs
+    ssh = None
+    auths = [
+        ('root', settings.SSH_PASSWORD),
+        (settings.XEN_USER, settings.XEN_PASSWORD),
+    ]
     try:
-        ssh = network.connect_ssh(ip, SSH_USER, SSH_PASSWORD)
+        for user, password in auths:
+            if user is None or password is None:
+                continue
+            try:
+                ssh = network.connect_ssh(ip, user, password)
+            except network.AuthError:
+                pass
+            else:
+                break
+        else:
+            return False, 'Authorization failed', kwargs
         name = run_ssh_linux(ssh, ip)
     except (network.Error, paramiko.SSHException) as e:
         return False, str(e), kwargs
