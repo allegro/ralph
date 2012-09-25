@@ -188,11 +188,14 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                         Q(genericcomponent__sn = None)
                     )
                 else:
+                    serial = data['serial'].replace(':','')
                     q = _search_fields_or([
                         'sn__icontains',
                         'ethernet__mac__icontains',
                         'genericcomponent__sn__icontains',
-                    ], data['serial'].split(' '))
+                        'diskshare__wwn',
+                        'disksharemount__share__wwn',
+                    ], serial.split(' '))
                     self.query = self.query.filter(q).distinct()
             if data['barcode']:
                 if data['barcode'] == empty_field:
