@@ -5,6 +5,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import decimal
+import ipaddr
 
 from django import forms
 from lck.django.choices import Choices
@@ -260,6 +261,20 @@ class SearchForm(forms.Form):
             self.cleaned_data['support_expiration_date_end'])
         return self.cleaned_data['support_expiration_date_end']
 
+    def clean_address(self):
+        data = self.cleaned_data['address']
+        if data:
+            if '/' in data:
+                try:
+                    ipaddr.IPNetwork(data)
+                except ValueError:
+                    raise forms.ValidationError("Invalid network")
+            else:
+                try:
+                    ipaddr.IPv4Address(data)
+                except ValueError:
+                    raise forms.ValidationError("Invalid address")
+        return data
 
 class PropertyForm(forms.Form):
     icons = {}
@@ -643,6 +658,10 @@ class DeviceInfoForm(DeviceForm):
             'remarks',
             'deleted',
         )
+        widgets = {
+            'venture': ReadOnlySelectWidget,
+            'venture_role': ReadOnlySelectWidget,
+        }
 
     def __init__(self, *args, **kwargs):
         super(DeviceInfoForm, self).__init__(*args, **kwargs)
