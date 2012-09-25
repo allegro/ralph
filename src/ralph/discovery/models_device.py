@@ -287,6 +287,7 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
     def __init__(self, *args, **kwargs):
         self.save_comment = None
         self.being_deleted = False
+        self.saving_user = None
         super(Device, self).__init__(*args, **kwargs)
 
     def __unicode__(self):
