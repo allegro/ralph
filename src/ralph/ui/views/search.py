@@ -134,8 +134,8 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                             )
                     else:
                         q = _search_fields_or([
-                                                  'ipaddress__address__icontains'
-                                              ], data['address'].split(' '))
+                            'ipaddress__address__icontains'
+                        ], data['address'].split(' '))
                         self.query = self.query.filter(q).distinct()
             if data['remarks']:
                 if data['remarks'] == empty_field:
