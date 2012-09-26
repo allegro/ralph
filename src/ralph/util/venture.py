@@ -12,7 +12,7 @@ def invalid_ventures():
     list = []
     for venture in ventures:
         if not re.match(r'^[a-z]{1}[a-z0-9_]*[a-z0-9]{1}$', venture.symbol):
-            list.append({'venture': venture.name, 'venture_id': venture.id, 'symbol': venture.symbol})
+            list.append({'name': venture.name, 'id': venture.id, 'symbol': venture.symbol})
     return list
 
 def invalid_roles():
@@ -20,5 +20,5 @@ def invalid_roles():
     list = []
     for role in roles:
         if not re.match(r'^[a-z]{1}[a-z0-9_]*[a-z0-9]{1}$', role.name):
-            list.append({'role': role.name, 'role_id': role.id})
+            list.append({'name': role.name, 'id': role.id})
     return list
