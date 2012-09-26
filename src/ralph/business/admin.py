@@ -5,7 +5,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
-import re
 
 from django import forms
 from django.contrib import admin
@@ -19,6 +18,7 @@ from ralph.business.models import (RoleProperty, RolePropertyType,
         RolePropertyTypeValue, RolePropertyValue, Department)
 from ralph.integration.admin import RoleIntegrationInline
 
+import ralph.util.venture as util_venture
 
 class RolePropertyTypeValueInline(admin.TabularInline):
     model = RolePropertyTypeValue
@@ -63,12 +63,23 @@ class AutocompleteVentureExtraCostInline(ForeignKeyAutocompleteTabularInline):
     }
 
 
+class VentureRoleAdminForm(forms.ModelForm):
+    def clean_name(self):
+        data = self.cleaned_data['name']
+        if util_venture.slug_validation(data):
+            raise forms.ValidationError("Symbol can't be empty, has to start with"
+                                        " letter, and can't end with '_'. Allowed characters: a-z, 0-9, "
+                                        "'_'. Example: simple_venture2")
+        return data
+
+
 class VentureRoleAdmin(ModelAdmin):
     inlines = [RolePropertyInline, RoleIntegrationInline]
     related_search_fields = {
         'venture': ['^name'],
         'parent': ['^name'],
     }
+    form = VentureRoleAdminForm
     filter_horizontal = ('networks',)
 
 admin.site.register(VentureRole, VentureRoleAdmin)
@@ -94,7 +105,7 @@ class SubVentureInline(admin.TabularInline):
 class VentureAdminForm(forms.ModelForm):
     def clean_symbol(self):
         data = self.cleaned_data['symbol']
-        if not re.match(r'^[a-z]{1}[a-z0-9_]*[a-z0-9]{1}$', data):
+        if util_venture.slug_validation(data):
             raise forms.ValidationError("Symbol can't be empty, has to start with"
                 " letter, and can't end with '_'. Allowed characters: a-z, 0-9, "
                 "'_'. Example: simple_venture2")
