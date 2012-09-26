@@ -304,10 +304,10 @@ def handle_lshw_fibre_cards(dev, lshw, is_virtual=False, priority=0):
     detected_fc_cards = set()
     for bus in buses:
         handle = unicode(bus['handle'])
-        m = re.search(r"[1-9][0-9]*", handle)
+        m = re.search(r"([1-9][0-9]*)", handle)
         if not m:
             continue
-        physid = handle[m.start():m.end()]
+        physid = m.group(1)
         if physid in handled_buses:
             continue
         fib, created = FibreChannel.concurrent_get_or_create(device=dev,
