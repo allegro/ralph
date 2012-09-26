@@ -9,7 +9,7 @@ from __future__ import unicode_literals
 import hashlib
 import re
 
-from ralph.util import units
+from ralph.util import units, parse
 from ralph.discovery.models import (Memory, Processor, ComponentModel,
     ComponentType, Storage, DISK_VENDOR_BLACKLIST, DISK_PRODUCT_BLACKLIST)
 
@@ -355,3 +355,26 @@ Status: {status}""".format(**disk_default)
         stor.model.save(priority=priority)
         stor.save(priority=priority)
 
+def parse_dmidecode(data):
+    p = parse.multi_pairs(data)
+    result = {
+        'model': p['System Information']['Product Name'],
+        'sn': p['System Information']['Serial Number'],
+        'uuid': p['System Information']['UUID'],
+        'cpus': [{
+            'label': cpu['Socket Information'],
+            'model': cpu['Version'],
+            'speed': cpu['Max Speed'],
+            'threads': cpu['Thread Count'],
+#            '64bit': any('64-bit capable' in char
+#                         for char in cpu.getlist('Characteristics')),
+#            'flags': [list(f) for f in cpu.getlist('Flags') if f],
+        } for cpu in p.getlist('Processor Information') if cpu],
+        'mem': [{
+            'label': mem['Locator'],
+            'type': mem['Type'],
+            'size': mem.get('Size'),
+            'speed': mem.get('Speed'),
+        } for mem in p.getlist('Memory Device')],
+    }
+    return result
