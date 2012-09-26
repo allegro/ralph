@@ -1,24 +1,31 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import re
+
 from ralph.business.models import Venture, VentureRole
 
 def slug_validation(data):
-    if re.match(r'^[a-z]{1}[a-z0-9_]*[a-z0-9]{1}$', data):
-        return False
-    return True
-
+    result = re.match(r'^[a-z]{1}[a-z0-9_]*[a-z0-9]{1}$', data)
+    return bool(result)
 
 def invalid_ventures():
     ventures = Venture.objects.all()
-    list = []
+    result = []
     for venture in ventures:
-        if not re.match(r'^[a-z]{1}[a-z0-9_]*[a-z0-9]{1}$', venture.symbol):
-            list.append({'name': venture.name, 'id': venture.id, 'symbol': venture.symbol})
-    return list
+        if not slug_validation(venture.symbol):
+            result.append({'name': venture.name, 'id': venture.id, 'symbol': venture.symbol})
+    return result
 
 def invalid_roles():
     roles = VentureRole.objects.all()
-    list = []
+    result = []
     for role in roles:
-        if not re.match(r'^[a-z]{1}[a-z0-9_]*[a-z0-9]{1}$', role.name):
-            list.append({'name': role.name, 'id': role.id})
-    return list
+        if not slug_validation(role.name):
+            result.append({'name': role.name, 'id': role.id})
+    return result

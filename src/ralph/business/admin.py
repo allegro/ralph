@@ -66,7 +66,7 @@ class AutocompleteVentureExtraCostInline(ForeignKeyAutocompleteTabularInline):
 class VentureRoleAdminForm(forms.ModelForm):
     def clean_name(self):
         data = self.cleaned_data['name']
-        if util_venture.slug_validation(data):
+        if not util_venture.slug_validation(data):
             raise forms.ValidationError("Symbol can't be empty, has to start with"
                                         " letter, and can't end with '_'. Allowed characters: a-z, 0-9, "
                                         "'_'. Example: simple_venture2")
@@ -105,7 +105,7 @@ class SubVentureInline(admin.TabularInline):
 class VentureAdminForm(forms.ModelForm):
     def clean_symbol(self):
         data = self.cleaned_data['symbol']
-        if util_venture.slug_validation(data):
+        if not util_venture.slug_validation(data):
             raise forms.ValidationError("Symbol can't be empty, has to start with"
                 " letter, and can't end with '_'. Allowed characters: a-z, 0-9, "
                 "'_'. Example: simple_venture2")
