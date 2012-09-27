@@ -95,7 +95,7 @@ def run_ssh_linux(ssh, ip):
     os.save()
     # Hostname
     dev.name = host
-    dev.save(priotity=SAVE_PRIORITY)
+    dev.save(priority=SAVE_PRIORITY)
     return dev.name
 
 
