@@ -6,7 +6,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import os
 import ssh as paramiko
 import logging
 
@@ -15,9 +14,10 @@ from django.conf import settings
 from ralph.util import network
 from ralph.util import plugin, Eth
 from ralph.discovery.models import (DeviceType, Device, DiskShare,
-                                    DiskShareMount)
-from ralph.discovery.hardware import (get_disk_shares, parse_smbios,
-                                      handle_smbios)
+                                    DiskShareMount, IPAddress,
+                                    OperatingSystem)
+from ralph.discovery.hardware import (get_disk_shares, parse_dmidecode,
+                                      handle_dmidecode, DMIDecodeError)
 from ralph.discovery import guessmodel
 
 
@@ -26,18 +26,34 @@ logger = logging.getLogger(__name__)
 
 
 def run_ssh_linux(ssh, ip):
-    # Create the device
+    # Get the MAC addresses
     stdin, stdout, stderr = ssh.exec_command(
             "/sbin/ip addr show | /bin/grep 'link/ether'")
     ethernets = [
-        Eth(label='', mac=line.split(None, 3)[1], speed=0)
-        for line in stdout
+        Eth(label='', mac=line.split(None, 3)[1], speed=0) for line in stdout
     ]
-    if not ethernets:
-        return ''
-    dev = Device.create(ethernets=ethernets, model_name='Linux',
-                        model_type=DeviceType.unknown)
-    dev.save(update_last_seen=True, priority=SAVE_PRIORITY)
+
+    # Handle dmidecode data
+    stdin, stdout, stderr = ssh.exec_command(
+            "/usr/bin/sudo /usr/sbin/dmidecode")
+    try:
+        info = parse_dmidecode(stdout.read())
+    except (DMIDecodeError, IOError):
+        # No dmidecode, fall back to dumb device
+        if not ethernets:
+            # No serial number and no macs -- no way to make a device
+            return ''
+        dev = Device.create(ethernets=ethernets, model_name='Linux',
+                        model_type=DeviceType.unknown, priority=SAVE_PRIORITY)
+    else:
+        dev = handle_dmidecode(info, ethernets, SAVE_PRIORITY)
+
+    # Attach the IP address
+    ipaddr, ip_created = IPAddress.concurrent_get_or_create(address=ip)
+    ipaddr.device = dev
+    ipaddr.is_management = False
+    ipaddr.save()
+
     # Add remote disk shares
     wwns = []
     for lv, (wwn, size) in get_disk_shares(ssh).iteritems():
@@ -52,15 +68,34 @@ def run_ssh_linux(ssh, ip):
     for ds in dev.disksharemount_set.filter(
             is_virtual=False).exclude(share__wwn__in=wwns):
         ds.delete()
-    # Handle smbios data
+
+    # Create OperatingSystem component
+    stdin, stdout, stderr = ssh.exec_command("/bin/uname -a")
+    family, host, version, release, rest = stdout.read().strip().split(None, 4)
+    os = OperatingSystem.create(dev=dev, os_name=release, version=version,
+                                family=family)
+    # System-visible memory
     stdin, stdout, stderr = ssh.exec_command(
-            "/usr/sbin/smbios")
-    try:
-        smb = parse_smbios(stdin.read())
-    except IOError:
-        pass
-    else:
-        handle_smbios(dev, smb, priority=SAVE_PRIORITY)
+            "/bin/grep 'MemTotal:' '/proc/meminfo'")
+    label, memory, unit = stdout.read().strip().split(None, 2)
+    os.memory = int(int(memory)/1024)
+    # System-visible cores
+    stdin, stdout, stderr = ssh.exec_command(
+            "/bin/grep '^processor' '/proc/cpuinfo'")
+    os.cores_count = len(stdout.readlines())
+    # System-visible disk space
+    stdin, stdout, stderr = ssh.exec_command(
+        "/bin/df -P -x tmpfs -x devtmpfs -x ecryptfs -x iso9660 -BM "
+        "| /bin/grep '^/'")
+    total = 0
+    for line in stdout:
+        path, size, rest = line.split(None, 2)
+        total += int(size.replace('M', ''))
+    os.storage = total
+    os.save()
+    # Hostname
+    dev.name = host
+    dev.save(priotity=SAVE_PRIORITY)
     return dev.name
 
 
