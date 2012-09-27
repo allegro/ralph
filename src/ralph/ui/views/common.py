@@ -525,9 +525,7 @@ class History(DeviceDetailView):
             page_size = MAX_PAGE_SIZE
         else:
             page_size = HISTORY_PAGE_SIZE
-
         history_page = Paginator(history, HISTORY_PAGE_SIZE).page(page)
-
         ret.update({
             'history': history,
             'history_page': history_page,
