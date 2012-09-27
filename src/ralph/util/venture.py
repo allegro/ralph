@@ -11,7 +11,8 @@ import re
 from ralph.business.models import Venture, VentureRole
 
 def slug_validation(data):
-    result = re.match(r'^[a-z]{1}[a-z0-9_]*[a-z0-9]{1}$', data)
+    reg = re.compile(r'^[a-z]{1}[a-z0-9_]*[a-z0-9]{1}$')
+    result = reg.match(data)
     return bool(result)
 
 def invalid_ventures():
