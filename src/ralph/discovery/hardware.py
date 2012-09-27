@@ -434,6 +434,8 @@ def handle_dmidecode(info, ethernets=(), save_priority=0):
             cpu.label = cpu_info['label']
             cpu.model = model
             cpu.save()
+    for cpu in dev.processor_set.filter(index__gt=i+1):
+        cpu.delete()
     for i, mem_info in enumerate(info['mem']):
         model, created = ComponentModel.concurrent_get_or_create(
             speed=mem_info['speed'],
@@ -448,5 +450,7 @@ def handle_dmidecode(info, ethernets=(), save_priority=0):
             mem.label = mem_info['label']
             mem.model = model
             mem.save()
+    for mem in dev.memory_set.filter(index__gt=i+1):
+        mem.delete()
 
     return dev
