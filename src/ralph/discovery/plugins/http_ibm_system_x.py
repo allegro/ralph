@@ -62,7 +62,6 @@ def _send_soap(post_url, session_id, message):
     response_data = response.read()
     return response_data
 
-
 def _get_session_id(ip):
     login_url = "http://%s/session/create" % ip
     login_data = "%s,%s" % (USER, PASSWORD)
@@ -135,7 +134,6 @@ def _get_memory(management_url, session_id):
         ))
     return mems
 
-
 def _get_mac_addresses(management_url, session_id):
     message = generic_soap_template % dict(
             management_url=management_url,
@@ -156,7 +154,6 @@ def _get_mac_addresses(management_url, session_id):
         add = mac.find('Address').text
         macs.append([dsc, add])
     return macs
-
 
 @nested_commit_on_success
 def _run_http_ibm_system_x(ip):
@@ -199,17 +196,17 @@ def http_ibm_system_x(**kwargs):
     if USER is None or PASSWORD is None:
         return False, 'no credentials.', kwargs
     ip = str(kwargs['ip'])
-    if not network.check_tcp_port(ip, 80):
-        return False, 'closed.', kwargs
-    headers, document = get_http_info(ip)
-    family = guess_family(headers, document)
-    if family != 'IBM System X':
-        return False, 'not identified.', kwargs
     try:
+        if not network.check_tcp_port(ip, 80):
+            return False, 'closed.', kwargs
+        headers, document = get_http_info(ip)
+        family = guess_family(headers, document)
+        if family != 'IBM System X':
+            return False, 'not identified.', kwargs
         name = _run_http_ibm_system_x(ip)
+        return True, name, kwargs
     except (network.Error, Error) as e:
         return False, str(e), kwargs
     except Error as e:
         return False, str(e), kwargs
-    return True, name, kwargs
 
