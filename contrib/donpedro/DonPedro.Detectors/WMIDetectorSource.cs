@@ -1,20 +1,10 @@
-﻿/*
- * Created by SharpDevelop.
- * User: Andrzej Jankowski
- * Date: 9/26/2012
- * Time: 12:18 AM
- * 
- */
-using System;
+﻿using System;
 using System.Management;
 using System.Collections.Generic;
 using DonPedro.DTO;
 
 namespace DonPedro.Detectors
 {
-	/// <summary>
-	/// WMIDetectorSource
-	/// </summary>
 	public class WMIDetectorSource
 	{
 		public WMIDetectorSource()
@@ -55,7 +45,7 @@ namespace DonPedro.Detectors
 		{
 			List<MemoryDTOResponse> memory = new List<MemoryDTOResponse>();
 			
-			SelectQuery query = new SelectQuery("select Name, BankLabel, Speed, SerialNumber, Caption, TotalWidth from Win32_PhysicalMemory");
+			SelectQuery query = new SelectQuery("select Name, DeviceLocator, Speed, SerialNumber, Caption, Capacity from Win32_PhysicalMemory");
 			ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
 			
 			try
@@ -64,11 +54,11 @@ namespace DonPedro.Detectors
 				{
 					MemoryDTOResponse chip = new MemoryDTOResponse();
 					chip.label = GetValueAsString(obj, "Name");
-					chip.index = GetValueAsString(obj, "BankLabel");
+					chip.index = GetValueAsString(obj, "DeviceLocator");
 					chip.speed = GetValueAsString(obj, "Speed");
 					chip.sn = GetValueAsString(obj, "SerialNumber");
 					chip.caption = GetValueAsString(obj, "Caption");
-					chip.size = GetValueAsString(obj, "TotalWidth");
+					chip.size = GetValueAsString(obj, "Capacity");
 					
 					memory.Add(chip);				
 				}

@@ -1,11 +1,4 @@
-﻿/*
- * Created by SharpDevelop.
- * User: Andrzej Jankowski
- * Date: 9/25/2012
- * Time: 11:40 PM
- * 
- */
-using System;
+﻿using System;
 using DonPedro.DTO;
 
 namespace DonPedro.DTO
