@@ -15,26 +15,41 @@ namespace DonPedro.Detectors
 			wmiDetector = new WMIDetectorSource();
 		}
 		
-		public List<ProcessorDTOResponse> GetProcessors()
+		public List<ProcessorDTOResponse> GetProcessorsInfo()
 		{
-			return  wmiDetector.GetProcessors();
+			return  wmiDetector.GetProcessorsInfo();
 		}
 		
-		public List<MemoryDTOResponse> GetMemory()
+		public List<MemoryDTOResponse> GetMemoryInfo()
 		{
-			return wmiDetector.GetMemory();
+			return wmiDetector.GetMemoryInfo();
+		}
+		
+		public OperatingSystemDTOResponse GetOperatingSystemInfo()
+		{
+			return wmiDetector.GetOperatingSystemInfo();
+		}
+		
+		public List<StorageDTOResponse> GetStorageInfo()
+		{
+			return wmiDetector.GetStorageInfo();
+		}
+		
+		public List<EthernetDTOResponse> GetEthernetInfo()
+		{
+			return wmiDetector.GetEthernetInfo();
 		}
 		
 		public List<BaseDTOResponse> GetAllComponents()
 		{
 			List<BaseDTOResponse> components = new List<BaseDTOResponse>();
 			
-			foreach (ProcessorDTOResponse obj in GetProcessors())
+			foreach (ProcessorDTOResponse obj in GetProcessorsInfo())
 			{
 				components.Add(obj);
 			}
 			
-			foreach (MemoryDTOResponse obj in GetMemory())
+			foreach (MemoryDTOResponse obj in GetMemoryInfo())
 			{
 				components.Add(obj);
 			}

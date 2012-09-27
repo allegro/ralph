@@ -11,10 +11,13 @@ namespace DonPedro.Detectors
 		{
 		}
 		
-		public List<ProcessorDTOResponse> GetProcessors()
+		public List<ProcessorDTOResponse> GetProcessorsInfo()
 		{
 			List<ProcessorDTOResponse> processors = new List<ProcessorDTOResponse>();
-			SelectQuery query = new SelectQuery("select Name, Description, DeviceID, MaxClockSpeed, NumberOfCores, NumberOfLogicalProcessors, Caption from Win32_Processor");
+			SelectQuery query = new SelectQuery(
+				@"select Name, Description, DeviceID, MaxClockSpeed, NumberOfCores, NumberOfLogicalProcessors, Caption
+				  from Win32_Processor"
+			);
 			ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
 			
 			try
@@ -30,22 +33,24 @@ namespace DonPedro.Detectors
 					processor.number_of_logical_processors = GetValueAsString(obj, "NumberOfLogicalProcessors");
 					processor.caption = GetValueAsString(obj, "Caption");
 					
-					processors.Add(processor);				
+					processors.Add(processor);
 				}
 			}
-			catch (ManagementException e)
+			catch (ManagementException)
 			{
-				
 			}
 			
 			return processors;
 		}
 		
-		public List<MemoryDTOResponse> GetMemory()
+		public List<MemoryDTOResponse> GetMemoryInfo()
 		{
 			List<MemoryDTOResponse> memory = new List<MemoryDTOResponse>();
 			
-			SelectQuery query = new SelectQuery("select Name, DeviceLocator, Speed, SerialNumber, Caption, Capacity from Win32_PhysicalMemory");
+			SelectQuery query = new SelectQuery(
+				@"select Name, DeviceLocator, Speed, SerialNumber, Caption, Capacity
+				  from Win32_PhysicalMemory"
+			);
 			ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
 			
 			try
@@ -60,12 +65,11 @@ namespace DonPedro.Detectors
 					chip.caption = GetValueAsString(obj, "Caption");
 					chip.size = GetValueAsString(obj, "Capacity");
 					
-					memory.Add(chip);				
+					memory.Add(chip);
 				}
 			}
-			catch (ManagementException e)
+			catch (ManagementException)
 			{
-				
 			}
 			
 			if (memory.Count == 0) {
@@ -83,13 +87,133 @@ namespace DonPedro.Detectors
 						memory.Add(chip);
 					}
 				}
-				catch (ManagementException e)
+				catch (ManagementException)
 				{
-
 				}
 			}
 			
 			return memory;
+		}
+		
+		public OperatingSystemDTOResponse GetOperatingSystemInfo()
+		{
+			OperatingSystemDTOResponse os = new OperatingSystemDTOResponse();
+			
+			SelectQuery query = new SelectQuery("select Caption, TotalVisibleMemorySize from Win32_OperatingSystem");
+			ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
+			
+			try
+			{
+				foreach (ManagementObject obj in searcher.Get())
+				{
+					os.label = GetValueAsString(obj, "Caption");
+					os.memory = GetValueAsString(obj, "TotalVisibleMemorySize");
+					break;
+				}
+			}
+			catch (ManagementException)
+			{
+			}
+			
+			int totalCoresCount = 0;
+			foreach (ProcessorDTOResponse cpu in GetProcessorsInfo())
+			{
+				int coresCount;
+				if (int.TryParse(cpu.cores, out coresCount))
+				{
+					totalCoresCount += coresCount;
+				}
+			}
+			os.coresCount = totalCoresCount.ToString();
+			
+			Int64 totalDisksSize = 0;
+			foreach (StorageDTOResponse storage in GetStorageInfo())
+			{
+				Int64 storageSize;
+				if (Int64.TryParse(storage.size, out storageSize))
+				{
+					totalDisksSize += storageSize;
+				}
+			}
+			os.storage = totalDisksSize.ToString();
+			
+			return os;
+		}
+		
+		public List<StorageDTOResponse> GetStorageInfo()
+		{
+			List<StorageDTOResponse> storage = new List<StorageDTOResponse>();
+			
+			SelectQuery diskDrivesQuery = new SelectQuery("select Caption, DeviceID, SerialNumber from Win32_DiskDrive");
+			ManagementObjectSearcher diskDrivesSearcher = new ManagementObjectSearcher(diskDrivesQuery);
+			
+			try
+			{
+				foreach (ManagementObject diskDrive in diskDrivesSearcher.Get())
+				{
+					RelatedObjectQuery diskPartitionsQuery = new RelatedObjectQuery(
+						"associators of {Win32_DiskDrive.DeviceID='" +
+						GetValueAsString(diskDrive, "DeviceID") +
+						"'} where AssocClass=Win32_DiskDriveToDiskPartition"
+					);
+					ManagementObjectSearcher diskPartitionsSearcher = new ManagementObjectSearcher(diskPartitionsQuery);
+					
+					foreach (ManagementObject diskPartition in diskPartitionsSearcher.Get())
+					{
+						RelatedObjectQuery logicalDisksQuery = new RelatedObjectQuery(
+							"associators of {Win32_DiskPartition.DeviceID='" +
+							GetValueAsString(diskPartition, "DeviceID") +
+							"'} where AssocClass=Win32_LogicalDiskToPartition"
+						);
+						ManagementObjectSearcher logicalDisksSearcher = new ManagementObjectSearcher(logicalDisksQuery);
+						
+						foreach (ManagementObject logicalDisk in logicalDisksSearcher.Get())
+						{
+							StorageDTOResponse disk = new StorageDTOResponse();
+							disk.label = GetValueAsString(diskDrive, "Caption");
+							disk.mountPoint = GetValueAsString(logicalDisk, "Caption");
+							disk.size = GetValueAsString(logicalDisk, "Size");
+							disk.sn = GetValueAsString(diskDrive, "SerialNumber");
+							
+							storage.Add(disk);
+						}
+					}
+				}
+			}
+			catch (ManagementException)
+			{
+			}
+			
+			return storage;
+		}
+		
+		public List<EthernetDTOResponse> GetEthernetInfo()
+		{
+			List<EthernetDTOResponse> ethetnets = new List<EthernetDTOResponse>();
+			
+			SelectQuery query = new SelectQuery(
+				@"select Name,  MACAddress, Speed 
+				  from Win32_NetworkAdapter where NetEnabled=True"
+			);
+			ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
+			
+			try
+			{
+				foreach (ManagementObject obj in searcher.Get())
+				{
+					EthernetDTOResponse eth = new EthernetDTOResponse();
+					eth.label = GetValueAsString(obj, "Name");
+					eth.mac = GetValueAsString(obj, "MACAddress");
+					eth.speed = GetValueAsString(obj, "Speed");
+					
+					ethetnets.Add(eth);
+				}
+			}
+			catch (ManagementException)
+			{
+			}
+			
+			return ethetnets;
 		}
 		
 		protected string GetValueAsString(ManagementObject obj, string valueName)
