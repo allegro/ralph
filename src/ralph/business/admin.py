@@ -5,6 +5,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+import re
 
 from django import forms
 from django.contrib import admin
@@ -93,10 +94,15 @@ class SubVentureInline(admin.TabularInline):
 class VentureAdminForm(forms.ModelForm):
     def clean_symbol(self):
         data = self.cleaned_data['symbol']
-        if not data:
-            raise forms.ValidationError(_("symbol must be given"))
+        if not re.match(r'^[a-z]{1}[a-z0-9_]*[a-z0-9]{1}$', data):
+            raise forms.ValidationError("Symbol can't be empty, has to start with"
+                " letter, and can't end with '_'. Allowed characters: a-z, 0-9, "
+                "'_'. Example: simple_venture2")
+        else:
+            venture = Venture.objects.filter(symbol=data)
+            if venture:
+                raise forms.ValidationError("Symbol already exist")
         return data
-
 
 class VentureAdmin(ModelAdmin):
     inlines = [

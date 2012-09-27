@@ -9,7 +9,7 @@ import datetime
 from django.conf import settings
 from django.contrib import messages
 from django.core.urlresolvers import reverse
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, EmptyPage
 from django.db import models as db
 from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.utils import simplejson as json
@@ -483,7 +483,10 @@ class Costs(DeviceDetailView):
             page = max(1, int(self.request.GET.get('page', 1)))
         except ValueError:
             page = 1
-        history_page = Paginator(history, HISTORY_PAGE_SIZE).page(page)
+        try:
+            history_page = Paginator(history, HISTORY_PAGE_SIZE).page(page)
+        except EmptyPage:
+            history_page = Paginator(history, HISTORY_PAGE_SIZE).page(1)
         ret.update({
             'history': history,
             'history_page': history_page,
@@ -522,7 +525,10 @@ class History(DeviceDetailView):
             page_size = MAX_PAGE_SIZE
         else:
             page_size = HISTORY_PAGE_SIZE
-        history_page = Paginator(history, page_size).page(page)
+        try:
+            history_page = Paginator(history, HISTORY_PAGE_SIZE).page(page)
+        except EmptyPage:
+            history_page = Paginator(history, HISTORY_PAGE_SIZE).page(1)
         ret.update({
             'history': history,
             'history_page': history_page,
