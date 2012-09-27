@@ -62,6 +62,7 @@ def _send_soap(post_url, session_id, message):
     response_data = response.read()
     return response_data
 
+
 def _get_session_id(ip):
     login_url = "http://%s/session/create" % ip
     login_data = "%s,%s" % (USER, PASSWORD)
@@ -74,6 +75,7 @@ def _get_session_id(ip):
     if response_data and response_data[0][:2] =='ok':
         return response_data[0][3:]
     raise Error()
+
 
 def _get_model_name(management_url, session_id):
     message = generic_soap_template % dict(
@@ -111,6 +113,7 @@ def _get_sn(management_url, session_id):
     sn = sn[0].text
     return sn
 
+
 def _get_memory(management_url, session_id):
     message = generic_soap_template % dict(
             management_url=management_url,
@@ -134,6 +137,7 @@ def _get_memory(management_url, session_id):
         ))
     return mems
 
+
 def _get_mac_addresses(management_url, session_id):
     message = generic_soap_template % dict(
             management_url=management_url,
@@ -154,6 +158,7 @@ def _get_mac_addresses(management_url, session_id):
         add = mac.find('Address').text
         macs.append([dsc, add])
     return macs
+
 
 @nested_commit_on_success
 def _run_http_ibm_system_x(ip):
