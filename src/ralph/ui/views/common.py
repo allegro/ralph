@@ -469,6 +469,7 @@ class Costs(DeviceDetailView):
     read_perm = Perm.list_devices_financial
 
     def get_context_data(self, **kwargs):
+        query_variable_name = 'cost_page'
         ret = super(Costs, self).get_context_data(**kwargs)
         history = self.object.historycost_set.order_by('-end', '-start').all()
         has_perm = self.request.user.get_profile().has_perm
@@ -480,16 +481,14 @@ class Costs(DeviceDetailView):
             elif h.start:
                 h.span = (datetime.date.today() - h.start).days
         try:
-            page = max(1, int(self.request.GET.get('page', 1)))
+            page = max(1, int(self.request.GET.get(query_variable_name, 1)))
         except ValueError:
             page = 1
-        try:
-            history_page = Paginator(history, HISTORY_PAGE_SIZE).page(page)
-        except EmptyPage:
-            history_page = Paginator(history, HISTORY_PAGE_SIZE).page(1)
+        history_page = Paginator(history, HISTORY_PAGE_SIZE).page(page)
         ret.update({
             'history': history,
             'history_page': history_page,
+            'query_variable_name': query_variable_name,
         })
         last_month = datetime.date.today() - datetime.timedelta(days=31)
         splunk = self.object.splunkusage_set.filter(
@@ -511,13 +510,14 @@ class History(DeviceDetailView):
     read_perm = Perm.read_device_info_history
 
     def get_context_data(self, **kwargs):
+        query_variable_name = 'history_page'
         ret = super(History, self).get_context_data(**kwargs)
         history = self.object.historychange_set.order_by('-date')
         show_all = bool(self.request.GET.get('all', ''))
         if not show_all:
             history = history.exclude(user=None)
         try:
-            page = int(self.request.GET.get('page', 1))
+            page = int(self.request.GET.get(query_variable_name, 1))
         except ValueError:
             page = 1
         if page == 0:
@@ -525,14 +525,14 @@ class History(DeviceDetailView):
             page_size = MAX_PAGE_SIZE
         else:
             page_size = HISTORY_PAGE_SIZE
-        try:
-            history_page = Paginator(history, HISTORY_PAGE_SIZE).page(page)
-        except EmptyPage:
-            history_page = Paginator(history, HISTORY_PAGE_SIZE).page(1)
+
+        history_page = Paginator(history, HISTORY_PAGE_SIZE).page(page)
+
         ret.update({
             'history': history,
             'history_page': history_page,
             'show_all': show_all,
+            'query_variable_name': query_variable_name,
         })
         return ret
 
