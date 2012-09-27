@@ -1,11 +1,4 @@
-﻿/*
- * Created by SharpDevelop.
- * User: Andrzej Jankowski
- * Date: 9/25/2012
- * Time: 11:22 PM
- * 
- */
-using System;
+﻿using System;
 using DonPedro.DTO;
 using DonPedro.Detectors;
 using System.Collections.Generic;
@@ -13,9 +6,6 @@ using System.Management;
 
 namespace DonPedro.Detectors
 {
-	/// <summary>
-	/// Detector
-	/// </summary>
 	public class Detector
 	{
 		WMIDetectorSource wmiDetector;
