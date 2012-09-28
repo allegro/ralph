@@ -29,13 +29,13 @@ namespace DonPedro.Detectors
 				foreach (ManagementObject obj in searcher.Get())
 				{
 					ProcessorDTOResponse processor = new ProcessorDTOResponse();
-					processor.label = GetValueAsString(obj, "Name");
-					processor.speed = GetValueAsString(obj, "MaxClockSpeed");
-					processor.cores = GetValueAsString(obj, "NumberOfCores");
-					processor.index = GetValueAsString(obj, "DeviceID");
-					processor.description = GetValueAsString(obj, "Description");
-					processor.number_of_logical_processors = GetValueAsString(obj, "NumberOfLogicalProcessors");
-					processor.caption = GetValueAsString(obj, "Caption");
+					processor.Label = GetValueAsString(obj, "Name");
+					processor.Speed = GetValueAsString(obj, "MaxClockSpeed");
+					processor.Cores = GetValueAsString(obj, "NumberOfCores");
+					processor.Index = GetValueAsString(obj, "DeviceID");
+					processor.Description = GetValueAsString(obj, "Description");
+					processor.NumberOfLogicalProcessors = GetValueAsString(obj, "NumberOfLogicalProcessors");
+					processor.Caption = GetValueAsString(obj, "Caption");
 					
 					processors.Add(processor);
 				}
@@ -62,14 +62,14 @@ namespace DonPedro.Detectors
 				foreach (ManagementObject obj in searcher.Get())
 				{
 					MemoryDTOResponse chip = new MemoryDTOResponse();
-					chip.label = GetValueAsString(obj, "Name");
-					chip.index = GetValueAsString(obj, "DeviceLocator");
-					chip.speed = GetValueAsString(obj, "Speed");
-					chip.sn = GetValueAsString(obj, "SerialNumber");
-					chip.caption = GetValueAsString(obj, "Caption");
+					chip.Label = GetValueAsString(obj, "Name");
+					chip.Index = GetValueAsString(obj, "DeviceLocator");
+					chip.Speed = GetValueAsString(obj, "Speed");
+					chip.Sn = GetValueAsString(obj, "SerialNumber");
+					chip.Caption = GetValueAsString(obj, "Caption");
 					try
 					{
-						chip.size = ConvertSizeToMiB(
+						chip.Size = ConvertSizeToMiB(
 							Int64.Parse(obj["Capacity"].ToString()), 
 							SizeUnits.B
 						).ToString();
@@ -93,9 +93,8 @@ namespace DonPedro.Detectors
 					foreach (ManagementObject obj in searcher.Get())
 					{
 						MemoryDTOResponse chip = new MemoryDTOResponse();
-						chip.label = "Virtual RAM";
-						chip.size = GetValueAsString(obj, "TotalPhysicalMemory");
-						GetValueAsString(obj, "BootOptionOnLimitfg");
+						chip.Label = "Virtual RAM";
+						chip.Size = GetValueAsString(obj, "TotalPhysicalMemory");
 						
 						memory.Add(chip);
 					}
@@ -119,10 +118,10 @@ namespace DonPedro.Detectors
 			{
 				foreach (ManagementObject obj in searcher.Get())
 				{
-					os.label = GetValueAsString(obj, "Caption");
+					os.Label = GetValueAsString(obj, "Caption");
 					try
 					{
-						os.memory = ConvertSizeToMiB(Int64.Parse(obj["TotalVisibleMemorySize"].ToString()), SizeUnits.KB).ToString();
+						os.Memory = ConvertSizeToMiB(Int64.Parse(obj["TotalVisibleMemorySize"].ToString()), SizeUnits.KB).ToString();
 					}
 					catch (Exception)
 					{
@@ -138,23 +137,23 @@ namespace DonPedro.Detectors
 			foreach (ProcessorDTOResponse cpu in GetProcessorsInfo())
 			{
 				int coresCount;
-				if (int.TryParse(cpu.cores, out coresCount))
+				if (int.TryParse(cpu.Cores, out coresCount))
 				{
 					totalCoresCount += coresCount;
 				}
 			}
-			os.coresCount = totalCoresCount.ToString();
+			os.CoresCount = totalCoresCount.ToString();
 			
 			Int64 totalDisksSize = 0;
 			foreach (StorageDTOResponse storage in GetStorageInfo())
 			{
 				Int64 storageSize;
-				if (Int64.TryParse(storage.size, out storageSize))
+				if (Int64.TryParse(storage.Size, out storageSize))
 				{
 					totalDisksSize += storageSize;
 				}
 			}
-			os.storage = totalDisksSize.ToString();
+			os.Storage = totalDisksSize.ToString();
 			
 			return os;
 		}
@@ -189,17 +188,16 @@ namespace DonPedro.Detectors
 						foreach (ManagementObject logicalDisk in logicalDisksSearcher.Get())
 						{
 							StorageDTOResponse disk = new StorageDTOResponse();
-							disk.label = GetValueAsString(diskDrive, "Caption");
-							disk.mountPoint = GetValueAsString(logicalDisk, "Caption");
-							disk.size = GetValueAsString(logicalDisk, "Size");
+							disk.Label = GetValueAsString(diskDrive, "Caption");
+							disk.MountPoint = GetValueAsString(logicalDisk, "Caption");
 							try
 							{
-								disk.size = ConvertSizeToMiB(Int64.Parse(logicalDisk["Size"].ToString()), SizeUnits.B).ToString();
+								disk.Size = ConvertSizeToMiB(Int64.Parse(logicalDisk["Size"].ToString()), SizeUnits.B).ToString();
 							}
 							catch (Exception)
 							{
 							}
-							disk.sn = GetValueAsString(diskDrive, "SerialNumber");
+							disk.Sn = GetValueAsString(diskDrive, "SerialNumber");
 							
 							storage.Add(disk);
 						}
@@ -229,9 +227,9 @@ namespace DonPedro.Detectors
 				foreach (ManagementObject obj in searcher.Get())
 				{
 					EthernetDTOResponse eth = new EthernetDTOResponse();
-					eth.label = GetValueAsString(obj, "Name");
-					eth.mac = GetValueAsString(obj, "MACAddress");
-					eth.speed = GetValueAsString(obj, "Speed");
+					eth.Label = GetValueAsString(obj, "Name");
+					eth.Mac = GetValueAsString(obj, "MACAddress");
+					eth.Speed = GetValueAsString(obj, "Speed");
 					
 					ethetnets.Add(eth);
 				}
@@ -241,6 +239,36 @@ namespace DonPedro.Detectors
 			}
 			
 			return ethetnets;
+		}
+		
+		public List<FibreChannelDTOResponse> GetFibreChannelInfo()
+		{
+			List<FibreChannelDTOResponse> fc = new List<FibreChannelDTOResponse>();
+			
+			SelectQuery query = new SelectQuery(
+				@"select Caption, DeviceID 
+				  from Win32_SCSIController 
+				  where Caption like '%Fibre Channel Adapter%' or Caption like '%HBA%'"
+			);
+			ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
+			
+			try
+			{
+				foreach (ManagementObject obj in searcher.Get())
+				{
+					FibreChannelDTOResponse card = new FibreChannelDTOResponse();
+					card.Label = GetValueAsString(obj, "Caption");
+					string[] deviveIDParts = GetValueAsString(obj, "DeviceID").Split('&');
+					card.PhysicalId = deviveIDParts[deviveIDParts.Length - 1];
+					
+					fc.Add(card);
+				}
+			}
+			catch (ManagementException)
+			{
+			}
+			
+			return fc;
 		}
 		
 		protected string GetValueAsString(ManagementObject obj, string valueName)

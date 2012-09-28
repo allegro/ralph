@@ -5,8 +5,8 @@ namespace DonPedro.DTO
 {
 	public class OperatingSystemDTOResponse : BaseDTOResponse
 	{
-		public string memory { get; set; }
-		public string storage { get; set; }
-		public string coresCount { get; set; }
+		public string Memory { get; set; }
+		public string Storage { get; set; }
+		public string CoresCount { get; set; }
 	}
 }

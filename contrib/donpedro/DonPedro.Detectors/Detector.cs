@@ -40,6 +40,11 @@ namespace DonPedro.Detectors
 			return wmiDetector.GetEthernetInfo();
 		}
 		
+		public List<FibreChannelDTOResponse> GetFibreChannelInfo()
+		{
+			return wmiDetector.GetFibreChannelInfo();
+		}
+		
 		public List<BaseDTOResponse> GetAllComponents()
 		{
 			List<BaseDTOResponse> components = new List<BaseDTOResponse>();
@@ -62,6 +67,11 @@ namespace DonPedro.Detectors
 			foreach (EthernetDTOResponse eth in GetEthernetInfo())
 			{
 				components.Add(eth);
+			}
+			
+			foreach (FibreChannelDTOResponse fc in GetFibreChannelInfo())
+			{
+				components.Add(fc);
 			}
 			
 			components.Add(GetOperatingSystemInfo());
