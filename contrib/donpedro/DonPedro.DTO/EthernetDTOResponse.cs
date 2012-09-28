@@ -5,7 +5,7 @@ namespace DonPedro.DTO
 {
 	public class EthernetDTOResponse : BaseDTOResponse
 	{
-		public string mac { get; set; }
-		public string speed { get; set; }
+		public string Mac { get; set; }
+		public string Speed { get; set; }
 	}
 }

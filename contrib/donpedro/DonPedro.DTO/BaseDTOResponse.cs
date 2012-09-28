@@ -4,6 +4,6 @@ namespace DonPedro.DTO
 {
 	public abstract class BaseDTOResponse
 	{
-		public string label { get; set; }
+		public string Label { get; set; }
 	}
 }
