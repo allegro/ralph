@@ -89,6 +89,8 @@ def guess_family(headers, document):
     elif family in ('lighttpd',):
         if 'Modular Server Control' in document:
             family = 'Modular'
+        elif '<title>IMM</title>' in document:
+            family = 'IBM System X'
     elif family in ('Thomas-Krenn',):
         if 'ERIC_RESPONSE_OK' in document:
             family = 'VTL'
