@@ -288,8 +288,8 @@ def handle_megaraid(dev, disks, priority=0):
                 _handle_inquiry_data(disk.get('inquiry_data', ''),
                         controller_handle, disk_handle)
 
-        if not disk.get('serial_number') or disk.get('media_type') not in ('Hard Disk Device',
-                'Solid State Device'):
+        if not disk.get('serial_number') or disk.get(
+                'media_type') not in ('Hard Disk Device', 'Solid State Device'):
             continue
         if {'coerced_size', 'vendor', 'product', 'pd_type'} - \
                 set(disk.keys()):
@@ -364,6 +364,7 @@ Status: {status}""".format(**disk_default)
         stor.model.save(priority=priority)
         stor.save(priority=priority)
 
+
 def parse_dmidecode(data):
     p = parse.multi_pairs(data)
     def exclude(value, exceptions):
@@ -404,6 +405,7 @@ def parse_dmidecode(data):
     }
     return result
 
+
 def handle_dmidecode(info, ethernets=(), save_priority=0):
     dev = Device.create(
             ethernets=ethernets,
@@ -429,12 +431,13 @@ def handle_dmidecode(info, ethernets=(), save_priority=0):
             model.name = cpu_info['model']
             model.extra = extra
             model.save()
-        cpu, created = Processor.concurrent_get_or_create(device=dev, index=i+1)
+        cpu, created = Processor.concurrent_get_or_create(device=dev,
+                                                          index=i + 1)
         if created:
             cpu.label = cpu_info['label']
             cpu.model = model
             cpu.save()
-    for cpu in dev.processor_set.filter(index__gt=i+1):
+    for cpu in dev.processor_set.filter(index__gt=i + 1):
         cpu.delete()
     for i, mem_info in enumerate(info['mem']):
         model, created = ComponentModel.concurrent_get_or_create(
@@ -445,12 +448,11 @@ def handle_dmidecode(info, ethernets=(), save_priority=0):
         if created:
             model.name = 'RAM %s %dMiB' % (mem_info['type'], mem_info['size'])
             model.save()
-        mem, created = Memory.concurrent_get_or_create(device=dev, index=i+1)
+        mem, created = Memory.concurrent_get_or_create(device=dev, index=i + 1)
         if created:
             mem.label = mem_info['label']
             mem.model = model
             mem.save()
-    for mem in dev.memory_set.filter(index__gt=i+1):
+    for mem in dev.memory_set.filter(index__gt=i + 1):
         mem.delete()
-
     return dev
