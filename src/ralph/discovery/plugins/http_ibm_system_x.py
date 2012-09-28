@@ -221,11 +221,8 @@ def run_http_ibm_system_x(ip):
     ipaddr.save()
     detected_memory = get_memory(management_url, session_id)
     detected_memory_indexes = [x.get('index') for x in detected_memory]
-    old_memory = Memory.objects.filter(device=dev)
-    # delete removed memory
-    for m in old_memory:
-        if m.index not in detected_memory_indexes:
-            m.delete()
+    for m in dev.memory_set.exclude(index__in=detected_memory_indexes):
+        m.delete()
     for m in detected_memory:
         index = m['index']
         mem, _ = Memory.concurrent_get_or_create(index=index, device=dev)
