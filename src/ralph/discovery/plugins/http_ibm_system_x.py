@@ -56,8 +56,6 @@ def _send_soap(post_url, session_id, message):
         headers={'session_id': session_id}
     )
     response = opener.open(request, timeout=10)
-    if response.code != 200:
-        raise Error('Request failed')
     response_data = response.read()
     return response_data
 
@@ -68,8 +66,6 @@ def get_session_id(ip):
     opener = urllib2.build_opener()
     request = urllib2.Request(login_url, login_data)
     response = opener.open(request, timeout=15)
-    if response.code != 200:
-        raise Error('Request failed')
     response_data = response.readlines()
     if response_data and response_data[0][:2] == 'ok':
         return response_data[0][3:]
@@ -204,6 +200,7 @@ def get_mac_addresses(management_url, session_id):
 @nested_commit_on_success
 def run_http_ibm_system_x(ip):
     session_id = get_session_id(ip)
+    session_id = 'test'
     management_url = "http://%s/wsman" % ip
     model_name = get_model_name(management_url, session_id)
     sn = get_sn(management_url, session_id)
@@ -212,7 +209,7 @@ def run_http_ibm_system_x(ip):
                  for (label, mac) in macs]
     ipaddr, ip_created = IPAddress.concurrent_get_or_create(address=ip)
     ipaddr.is_management = True
-    ipaddr.save(priority=SAVE_PRIORITY)
+    ipaddr.save()
     dev = Device.create(
         ethernets=ethernets,
         model_name=model_name,
@@ -222,7 +219,7 @@ def run_http_ibm_system_x(ip):
     dev.management = ipaddr
     dev.save(priority=SAVE_PRIORITY)
     ipaddr.device = dev
-    ipaddr.save(priority=SAVE_PRIORITY)
+    ipaddr.save()
     detected_memory = get_memory(management_url, session_id)
     detected_memory_indexes = [x.get('index') for x in detected_memory]
     old_memory = Memory.objects.filter(device=dev)
