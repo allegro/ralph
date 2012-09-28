@@ -53,7 +53,19 @@ namespace DonPedro.Detectors
 			{
 				components.Add(obj);
 			}
-				
+			
+			foreach (StorageDTOResponse storage in GetStorageInfo())
+			{
+				components.Add(storage);
+			}
+			
+			foreach (EthernetDTOResponse eth in GetEthernetInfo())
+			{
+				components.Add(eth);
+			}
+			
+			components.Add(GetOperatingSystemInfo());
+
 			return components;
 		}
 	}
