@@ -152,6 +152,7 @@ class BaseCMDBView(Base):
             'tabs_left': False,
             'fisheye_url': settings.FISHEYE_URL,
             'fisheye_project': settings.FISHEYE_PROJECT_NAME,
+            'section': 'cmdb',
         })
         return ret
 
