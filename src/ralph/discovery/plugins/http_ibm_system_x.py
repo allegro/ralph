@@ -240,11 +240,8 @@ def run_http_ibm_system_x(ip):
         mem.save(priority=SAVE_PRIORITY)
     detected_processors = get_processors(management_url, session_id)
     detected_processors_keys = [x.get('index') for x in detected_processors]
-    old_processors = Processor.objects.filter(device=dev)
-    # delete removed processor
-    for p in old_processors:
-        if p.index not in detected_processors_keys:
-            p.delete()
+    for cpu in dev.processor_set.exclude(index__in=detected_processors_keys):
+        cpu.delete()
     # add new
     for p in detected_processors:
         processor_model, _ = ComponentModel.concurrent_get_or_create(
