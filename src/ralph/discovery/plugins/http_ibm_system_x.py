@@ -11,6 +11,7 @@ import urllib2
 from django.conf import settings
 from xml.etree import cElementTree as ET
 from lck.django.common import nested_commit_on_success
+
 from ralph.util import network
 from ralph.util import plugin, Eth
 from ralph.discovery.models import (DeviceType, Device, Processor, IPAddress,
