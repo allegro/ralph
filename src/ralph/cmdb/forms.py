@@ -11,6 +11,7 @@ from django.contrib.admin.widgets import FilteredSelectMultiple
 from ajax_select import make_ajax_field
 
 from ralph.cmdb import models
+from ralph.cmdb.models_ci import CIOwnership
 from ralph.ui.widgets import (ReadOnlyWidget, ReadOnlyMultipleChoiceWidget,
                               ReadOnlySelectWidget)
 from ralph.cmdb.models import CILayer, CIType
@@ -62,6 +63,8 @@ class CIEditForm(forms.ModelForm):
             'status',
             'layers',
             'pci_scope',
+            'technical_owners',
+            'business_owners',
         )
 
     icons={
@@ -70,6 +73,18 @@ class CIEditForm(forms.ModelForm):
             widget = FilteredSelectMultiple("layers", False,
                 attrs={'rows' : '10' }
             )
+    )
+    business_owners = forms.ModelMultipleChoiceField(
+                    models.CIOwner.objects.all(),
+                    widget = FilteredSelectMultiple("owners", False,
+                                                    attrs={'rows' : '10' }
+                    )
+    )
+    technical_owners = forms.ModelMultipleChoiceField(
+                    models.CIOwner.objects.all(),
+                    widget = FilteredSelectMultiple("owners", False,
+                       attrs={'rows' : '10' }
+                    )
     )
 
     def __init__(self, *args, **kwargs):
@@ -82,6 +97,20 @@ class CIEditForm(forms.ModelForm):
                 self.data['id'] = self.initial['id']
             if self.initial.get('name', None):
                 self.data['name'] = self.initial['name']
+
+#            if self.initial.get('owners') and self.initial.get('ci'):
+        technical_owners, business_owners = [], []
+        owns = CIOwnership.objects.filter(ci_id=self.initial.get('ci').id)
+
+        for own in owns:
+            if own.type == 1:
+                technical_owners.append(own.pk)
+            elif own.type == 2:
+               business_owners.append(own.pk)
+        self.initial['technical_owners'] = technical_owners
+        self.initial['business_owners'] = business_owners
+
+        import pdb; pdb.set_trace()
 
 
 class CIViewForm(CIEditForm):
@@ -110,10 +139,16 @@ class CIViewForm(CIEditForm):
             'barcode',
             'pci_scope',
             'technical_owner',
+            'owners',
         )
     layers = forms.ModelMultipleChoiceField(
             models.CILayer.objects.all(),
             widget = ReadOnlyMultipleChoiceWidget("layers", False,
+                attrs={'rows' : '10' })
+    )
+    owners = forms.ModelMultipleChoiceField(
+            models.CIOwner.objects.all(),
+            widget = ReadOnlyMultipleChoiceWidget("owners", False,
                 attrs={'rows' : '10' })
     )
     technical_owner = forms.CharField(widget = ReadOnlyWidget())
