@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom;
 using System.Management;
 using System.Collections.Generic;
 using DonPedro.DTO;
@@ -7,6 +8,8 @@ namespace DonPedro.Detectors
 {
 	public class WMIDetectorSource
 	{
+		protected enum SizeUnits {B, KB, MB, GB, TB};
+		
 		public WMIDetectorSource()
 		{
 		}
@@ -14,6 +17,7 @@ namespace DonPedro.Detectors
 		public List<ProcessorDTOResponse> GetProcessorsInfo()
 		{
 			List<ProcessorDTOResponse> processors = new List<ProcessorDTOResponse>();
+			
 			SelectQuery query = new SelectQuery(
 				@"select Name, Description, DeviceID, MaxClockSpeed, NumberOfCores, NumberOfLogicalProcessors, Caption
 				  from Win32_Processor"
@@ -63,7 +67,16 @@ namespace DonPedro.Detectors
 					chip.speed = GetValueAsString(obj, "Speed");
 					chip.sn = GetValueAsString(obj, "SerialNumber");
 					chip.caption = GetValueAsString(obj, "Caption");
-					chip.size = GetValueAsString(obj, "Capacity");
+					try
+					{
+						chip.size = ConvertSizeToMiB(
+							Int64.Parse(obj["Capacity"].ToString()), 
+							SizeUnits.B
+						).ToString();
+					}
+					catch (Exception)
+					{
+					}
 					
 					memory.Add(chip);
 				}
@@ -107,7 +120,13 @@ namespace DonPedro.Detectors
 				foreach (ManagementObject obj in searcher.Get())
 				{
 					os.label = GetValueAsString(obj, "Caption");
-					os.memory = GetValueAsString(obj, "TotalVisibleMemorySize");
+					try
+					{
+						os.memory = ConvertSizeToMiB(Int64.Parse(obj["TotalVisibleMemorySize"].ToString()), SizeUnits.KB).ToString();
+					}
+					catch (Exception)
+					{
+					}
 					break;
 				}
 			}
@@ -173,6 +192,13 @@ namespace DonPedro.Detectors
 							disk.label = GetValueAsString(diskDrive, "Caption");
 							disk.mountPoint = GetValueAsString(logicalDisk, "Caption");
 							disk.size = GetValueAsString(logicalDisk, "Size");
+							try
+							{
+								disk.size = ConvertSizeToMiB(Int64.Parse(logicalDisk["Size"].ToString()), SizeUnits.B).ToString();
+							}
+							catch (Exception)
+							{
+							}
 							disk.sn = GetValueAsString(diskDrive, "SerialNumber");
 							
 							storage.Add(disk);
@@ -193,7 +219,8 @@ namespace DonPedro.Detectors
 			
 			SelectQuery query = new SelectQuery(
 				@"select Name,  MACAddress, Speed 
-				  from Win32_NetworkAdapter where NetEnabled=True"
+				  from Win32_NetworkAdapter 
+				  where MACAddress<>null and PhysicalAdapter=true"
 			);
 			ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
 			
@@ -226,6 +253,23 @@ namespace DonPedro.Detectors
 			{
 				return "";
 			}
+		}
+		
+		protected Int64 ConvertSizeToMiB(Int64 size, SizeUnits inputUnit)
+		{
+			switch (inputUnit)
+			{
+				case SizeUnits.B:
+					return (Int64) Math.Ceiling((double) (size / 1024 / 1024));
+				case SizeUnits.KB:
+					return (Int64) Math.Ceiling((double) (size / 1024));
+				case SizeUnits.GB:
+					return size * 1024;
+				case SizeUnits.TB:
+					return size * 1024 * 1024;
+			}
+			
+			return size;
 		}
 	}
 }
