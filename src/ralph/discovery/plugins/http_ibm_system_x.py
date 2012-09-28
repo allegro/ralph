@@ -200,7 +200,6 @@ def get_mac_addresses(management_url, session_id):
 @nested_commit_on_success
 def run_http_ibm_system_x(ip):
     session_id = get_session_id(ip)
-    session_id = 'test'
     management_url = "http://%s/wsman" % ip
     model_name = get_model_name(management_url, session_id)
     sn = get_sn(management_url, session_id)
