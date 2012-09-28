@@ -6,29 +6,26 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from django.conf import settings
-from lck.django.common import nested_commit_on_success
 import urllib2
-from xml.etree import cElementTree as ET
 
+from django.conf import settings
+from xml.etree import cElementTree as ET
+from lck.django.common import nested_commit_on_success
 from ralph.util import network
 from ralph.util import plugin, Eth
-from ralph.discovery.models import (DeviceType, Device, IPAddress,
+from ralph.discovery.models import (DeviceType, Device, Processor, IPAddress,
                                     ComponentModel, ComponentType, Memory)
-from ralph.discovery.plugins.http import  guess_family, get_http_info
+from ralph.discovery.plugins.http import guess_family, get_http_info
 
 
-try:
-    USER = settings.IBM_SYSTEM_X_USER
-    PASSWORD = settings.IBM_SYSTEM_X_PASSWORD
-except AttributeError:
-    USER = None
-    PASSWORD = None
+USER = settings.IBM_SYSTEM_X_USER
+PASSWORD = settings.IBM_SYSTEM_X_PASSWORD
+SAVE_PRIORITY = 5
 
 # WSDL module from IBM System X management is generally broken,
 # so we prepare SOAP requests by hand
 
-generic_soap_template = '''
+GENERIC_SOAP_TEMPLATE = '''
 <SOAP-ENV:Envelope xmlns:SOAP-ENV="http://www.w3.org/2003/05/soap-envelope"
     xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing"
     xmlns:wsman="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd">
@@ -53,59 +50,61 @@ class Error(Exception):
 
 def _send_soap(post_url, session_id, message):
     opener = urllib2.build_opener()
-    request = urllib2.Request(post_url, message,
-          headers={'session_id': session_id}
+    request = urllib2.Request(
+        post_url, message,
+        headers={'session_id': session_id}
     )
     response = opener.open(request, timeout=10)
     if response.code != 200:
-        raise Error()
+        raise Error('Request failed')
     response_data = response.read()
     return response_data
 
 
-def _get_session_id(ip):
+def get_session_id(ip):
     login_url = "http://%s/session/create" % ip
     login_data = "%s,%s" % (USER, PASSWORD)
     opener = urllib2.build_opener()
     request = urllib2.Request(login_url, login_data)
     response = opener.open(request, timeout=15)
     if response.code != 200:
-        raise Error()
+        raise Error('Request failed')
     response_data = response.readlines()
-    if response_data and response_data[0][:2] =='ok':
+    if response_data and response_data[0][:2] == 'ok':
         return response_data[0][3:]
-    raise Error()
+    raise Error('Session error')
 
 
-def _get_model_name(management_url, session_id):
-    message = generic_soap_template % dict(
-            management_url=management_url,
-            action='http://www.ibm.com/iBMC/sp/Monitors/GetVitalProductData',
-            resource='Monitors',
-            body='''
-    <GetVitalProductData xmlns="http://www.ibm.com/iBMC/sp/Monitors"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-    </GetVitalProductData>
-    ''')
+def get_model_name(management_url, session_id):
+    message = GENERIC_SOAP_TEMPLATE % dict(
+        management_url=management_url,
+        action='http://www.ibm.com/iBMC/sp/Monitors/GetVitalProductData',
+        resource='Monitors',
+        body='''
+        <GetVitalProductData xmlns="http://www.ibm.com/iBMC/sp/Monitors"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+        </GetVitalProductData>'''
+    )
     soap_result = _send_soap(management_url, session_id, message)
     tree = ET.XML(soap_result)
-    product_name = tree.findall('{0}Body/GetVitalProductDataResponse/'
-            'GetVitalProductDataResponse/MachineLevelVPD/'
-            'ProductName'.format('{http://www.w3.org/2003/05/soap-envelope}'))
+    product_name = tree.findall(
+        '{0}Body/GetVitalProductDataResponse/'
+        'GetVitalProductDataResponse/MachineLevelVPD/'
+        'ProductName'.format('{http://www.w3.org/2003/05/soap-envelope}'))
     return product_name[0].text
 
 
-def _get_sn(management_url, session_id):
-    message = generic_soap_template % dict(
-            management_url=management_url,
-            action='http://www.ibm.com/iBMC/sp/iBMCControl/GetSPNameSettings',
-            resource='iBMCControl',
-            body='''
+def get_sn(management_url, session_id):
+    message = GENERIC_SOAP_TEMPLATE % dict(
+        management_url=management_url,
+        action='http://www.ibm.com/iBMC/sp/iBMCControl/GetSPNameSettings',
+        resource='iBMCControl',
+        body='''
         <GetSPNameSettings xmlns="http://www.ibm.com/iBMC/sp/iBMCControl"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xmlns:xsd="http://www.w3.org/2001/XMLSchema"></GetSPNameSettings>
-        ''')
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"></GetSPNameSettings>'''
+    )
     soap_result = _send_soap(management_url, session_id, message)
     tree = ET.XML(soap_result)
     sn = tree.findall('{0}Body/GetSPNameSettingsResponse/SPName'.format(
@@ -114,12 +113,12 @@ def _get_sn(management_url, session_id):
     return sn
 
 
-def _get_memory(management_url, session_id):
-    message = generic_soap_template % dict(
-            management_url=management_url,
-            action='http://www.ibm.com/iBMC/sp/Monitors/GetMemoryInfo',
-            resource='Monitors',
-            body='''
+def get_memory(management_url, session_id):
+    message = GENERIC_SOAP_TEMPLATE % dict(
+        management_url=management_url,
+        action='http://www.ibm.com/iBMC/sp/Monitors/GetMemoryInfo',
+        resource='Monitors',
+        body='''
         <GetMemoryInfo xmlns="http://www.ibm.com/iBMC/sp/Monitors"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xmlns:xsd="http://www.w3.org/2001/XMLSchema"></GetMemoryInfo>
@@ -133,25 +132,66 @@ def _get_memory(management_url, session_id):
         mems.append(dict(
             label=record.find('Description').text,
             index=int(record.find('Description').text.split()[1]),
-            size=int(record.find('Size').text)*1024,
+            size=int(record.find('Size').text) * 1024,
         ))
     return mems
 
 
-def _get_mac_addresses(management_url, session_id):
-    message = generic_soap_template % dict(
-            management_url=management_url,
-            action='http://www.ibm.com/iBMC/sp/Monitors/GetHostMacAddresses',
-            resource='Monitors',
-            body='''
+def get_processors(management_url, session_id):
+    message = GENERIC_SOAP_TEMPLATE % dict(
+        management_url=management_url,
+        resource='Monitors',
+        action='http://www.ibm.com/iBMC/sp/Monitors/GetProcessorInfo',
+        body='''
+        <GetProcessorInfo xmlns="http://www.ibm.com/iBMC/sp/Monitors"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"></GetProcessorInfo>
+        '''
+    )
+    soap_result = _send_soap(management_url, session_id, message)
+    tree = ET.XML(soap_result)
+    data = tree.findall('{0}Body/GetProcessorInfoResponse/Processor/*'.format(
+        '{http://www.w3.org/2003/05/soap-envelope}'))
+    processors = []
+    for d in data:
+        dsc = d.find('Description').text
+        speed = d.find('Speed').text
+        family = d.find('Family').text
+        cores = d.find('Cores').text
+        threads = d.find('Threads').text
+        index = dsc.split()[1]
+        label = '%(family)s CPU %(speed)s MHz, %(cores)s cores %(threads)s threads' % dict(
+            family=family,
+            speed=speed,
+            cores=cores,
+            threads=threads,
+        )
+        processors.append(dict(
+            index=index,
+            label=label,
+            speed=speed,
+            cores=cores,
+            family=family,
+        ))
+    return processors
+
+
+def get_mac_addresses(management_url, session_id):
+    message = GENERIC_SOAP_TEMPLATE % dict(
+        management_url=management_url,
+        action='http://www.ibm.com/iBMC/sp/Monitors/GetHostMacAddresses',
+        resource='Monitors',
+        body='''
     <GetHostMacAddresses xmlns="http://www.ibm.com/iBMC/sp/Monitors"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:xsd="http://www.w3.org/2001/XMLSchema"></GetHostMacAddresses>
     ''')
     soap_result = _send_soap(management_url, session_id, message)
-    tree=ET.XML(soap_result)
-    mac_addresses = tree.findall('{0}Body/GetHostMacAddressesResponse/**'.format(
-        '{http://www.w3.org/2003/05/soap-envelope}'))
+    tree = ET.XML(soap_result)
+    mac_addresses = tree.findall(
+        '{0}Body/GetHostMacAddressesResponse/**'.format(
+        '{http://www.w3.org/2003/05/soap-envelope}')
+    )
     macs = []
     for mac in mac_addresses:
         dsc = mac.find('Description').text
@@ -161,38 +201,70 @@ def _get_mac_addresses(management_url, session_id):
 
 
 @nested_commit_on_success
-def _run_http_ibm_system_x(ip):
-    session_id = _get_session_id(ip)
+def run_http_ibm_system_x(ip):
+    session_id = get_session_id(ip)
     management_url = "http://%s/wsman" % ip
-    model_name  = _get_model_name(management_url, session_id)
-    sn = _get_sn(management_url, session_id)
-    macs = _get_mac_addresses(management_url, session_id)
+    model_name = get_model_name(management_url, session_id)
+    sn = get_sn(management_url, session_id)
+    macs = get_mac_addresses(management_url, session_id)
     ethernets = [Eth(label=label, mac=mac, speed=0)
                  for (label, mac) in macs]
     ipaddr, ip_created = IPAddress.concurrent_get_or_create(address=ip)
     ipaddr.is_management = True
-    ipaddr.save()
-    dev = Device.create(ethernets=ethernets,
-                        model_name = model_name,
-                        model_type = DeviceType.rack_server,
+    ipaddr.save(priority=SAVE_PRIORITY)
+    dev = Device.create(
+        ethernets=ethernets,
+        model_name=model_name,
+        sn=sn,
+        model_type=DeviceType.rack_server,
     )
     dev.management = ipaddr
-    dev.sn = sn
-    dev.save()
+    dev.save(priority=SAVE_PRIORITY)
     ipaddr.device = dev
-    ipaddr.save()
-    memory = _get_memory(management_url, session_id)
-    for i in memory:
-        index = i['index']
+    ipaddr.save(priority=SAVE_PRIORITY)
+    detected_memory = get_memory(management_url, session_id)
+    detected_memory_indexes = [x.get('index') for x in detected_memory]
+    old_memory = Memory.objects.filter(device=dev)
+    # delete removed memory
+    for m in old_memory:
+        if m.index not in detected_memory_indexes:
+            m.delete()
+    for m in detected_memory:
+        index = m['index']
         mem, _ = Memory.concurrent_get_or_create(index=index, device=dev)
-        mem.label = i['label']
-        mem.size = i['size']
-        mem.save()
+        mem.label = m['label']
+        mem.size = m['size']
+        mem.save(priority=SAVE_PRIORITY)
         mem.model, c = ComponentModel.concurrent_get_or_create(
-                name='RAM %s %dMiB' % (mem.label, mem.size), size=mem.size,
-                type=ComponentType.memory.id, extra='', extra_hash='',
-                family=mem.label, cores=0)
-        mem.save()
+            name='RAM %s %dMiB' % (mem.label, mem.size), size=mem.size,
+            type=ComponentType.memory.id,
+            family=mem.label, cores=0
+        )
+        mem.save(priority=SAVE_PRIORITY)
+    detected_processors = get_processors(management_url, session_id)
+    detected_processors_keys = [x.get('index') for x in detected_processors]
+    old_processors = Processor.objects.filter(device=dev)
+    # delete removed processor
+    for p in old_processors:
+        if p.index not in detected_processors_keys:
+            p.delete()
+    # add new
+    for p in detected_processors:
+        processor_model, _ = ComponentModel.concurrent_get_or_create(
+            name=p.get('label'),
+            speed=p.get('speed'),
+            type=ComponentType.processor.id,
+            family=p.get('family'),
+            cores=p.get('cores')
+        )
+        processor, _ = Processor.concurrent_get_or_create(
+            device=dev,
+            index=p.get('index'),
+        )
+        processor.label = p.get('label')
+        processor.model = processor_model
+        processor.speed = p.get('speed')
+        processor.save()
     return model_name
 
 
@@ -202,16 +274,12 @@ def http_ibm_system_x(**kwargs):
         return False, 'no credentials.', kwargs
     ip = str(kwargs['ip'])
     try:
-        if not network.check_tcp_port(ip, 80):
-            return False, 'closed.', kwargs
         headers, document = get_http_info(ip)
         family = guess_family(headers, document)
         if family != 'IBM System X':
             return False, 'not identified.', kwargs
-        name = _run_http_ibm_system_x(ip)
+        name = run_http_ibm_system_x(ip)
         return True, name, kwargs
     except (network.Error, Error) as e:
-        return False, str(e), kwargs
-    except Error as e:
         return False, str(e), kwargs
 
