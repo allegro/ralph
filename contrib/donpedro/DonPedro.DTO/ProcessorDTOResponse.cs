@@ -5,11 +5,11 @@ namespace DonPedro.DTO
 {
 	public class ProcessorDTOResponse : BaseDTOResponse
 	{
-		public string speed { get; set; }
-		public string cores { get; set; }
-		public string index { get; set; }
-		public string description { get; set; }
-		public string number_of_logical_processors { get; set; }
-		public string caption { get; set; }
+		public string Speed { get; set; }
+		public string Cores { get; set; }
+		public string Index { get; set; }
+		public string Description { get; set; }
+		public string NumberOfLogicalProcessors { get; set; }
+		public string Caption { get; set; }
 	}
 }
