@@ -264,6 +264,8 @@ def run_ssh_proxmox(ip):
 
 @plugin.register(chain='discovery', requires=['ping', 'http'])
 def ssh_proxmox(**kwargs):
+    if 'nx-os' in kwargs.get('snmp_name', '').lower():
+        return False, 'incompatible Nexus found.', kwargs
     ip = str(kwargs['ip'])
     if kwargs.get('http_family') not in ('Proxmox',):
         return False, 'no match.', kwargs
