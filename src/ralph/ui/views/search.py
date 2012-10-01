@@ -110,7 +110,7 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                 q = (_search_fields_or([
                     'name',
                     'ipaddress__hostname__icontains',
-                ], name.split(' ')) | Q(
+                ], name.split()) | Q(
                     ipaddress__address__in=ips,
                 ))
                 self.query = self.query.filter(q).distinct()
@@ -119,22 +119,23 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                     self.query = self.query.filter(
                         ipaddress = None
                     )
-                else:
+                elif '/' in data['address']:
                     try:
                         net = ipaddr.IPNetwork(data['address'])
                     except ValueError:
-                        q = _search_fields_or([
-                            'ipaddress__address__icontains'
-                        ], data['address'].split(' '))
-                        self.query = self.query.filter(q).distinct()
+                        pass
                     else:
                         min_ip = int(net.network)
                         max_ip = int(net.broadcast)
                         self.query = self.query.filter(
+                            ipaddress__number__lte=max_ip,
                             ipaddress__number__gte=min_ip
-                        ).filter(
-                            ipaddress__number__lte=max_ip
                         )
+                else:
+                    q = _search_fields_or([
+                        'ipaddress__address__icontains'
+                    ], data['address'].split(' '))
+                    self.query = self.query.filter(q).distinct()
             if data['remarks']:
                 if data['remarks'] == empty_field:
                     self.query = self.query.filter(
@@ -188,11 +189,14 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                         Q(genericcomponent__sn = None)
                     )
                 else:
+                    serial = data['serial'].replace(':','')
                     q = _search_fields_or([
                         'sn__icontains',
                         'ethernet__mac__icontains',
                         'genericcomponent__sn__icontains',
-                    ], data['serial'].split(' '))
+                        'diskshare__wwn',
+                        'disksharemount__share__wwn',
+                    ], serial.split())
                     self.query = self.query.filter(q).distinct()
             if data['barcode']:
                 if data['barcode'] == empty_field:
@@ -212,7 +216,7 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                     )
                 else:
                     q = Q()
-                    for part in data['position'].split(' '):
+                    for part in data['position'].split():
                         q |= _search_fields_and([
                             'position__icontains',
                             'dc__icontains',
@@ -223,7 +227,7 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                 q = _search_fields_or([
                     'historychange__old_value__icontains',
                     'historychange__new_value__icontains',
-                ], data['history'].split(' '))
+                ], data['history'].split())
                 self.query = self.query.filter(q).distinct()
             if data['role']:
                 q = Q()
@@ -233,7 +237,7 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                 elif data['role'].strip() == '*':
                     self.query = self.query.exclude(venture=None)
                 else:
-                    for part in data['role'].split(' '):
+                    for part in data['role'].split():
                         try:
                             role_id = int(part)
                         except:
