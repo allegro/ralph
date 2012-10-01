@@ -17,6 +17,7 @@ import calendar
 import datetime
 
 import ralph.cmdb.models  as db
+from ralph.cmdb.models_changes import CI_CHANGE_TYPES
 from ralph.cmdb.views import BaseCMDBView, get_icon_for
 from ralph.cmdb.forms import CIChangeSearchForm, CIReportsParamsForm
 from ralph.cmdb.util import PaginatedView
@@ -88,10 +89,18 @@ class Changes(ChangesBase, PaginatedView):
 
     def get_context_data(self, **kwargs):
         ret = super(Changes, self).get_context_data(**kwargs)
+        subsection = ''
+        get_type =  self.request.GET.get('type', None)
+        if get_type:
+            type = CI_CHANGE_TYPES.NameFromID(int(get_type))
+            subsection += '%s - ' % CI_CHANGE_TYPES.DescFromName(type)
+
+        subsection += 'Changes'
         ret.update({
             'changes': [(x, get_icon_for(x.ci)) for x in self.changes],
             'statistics': self.data,
             'form': self.form,
+            'subsection': subsection
         })
         return ret
 
@@ -141,7 +150,8 @@ class Problems(ChangesBase, PaginatedView):
         ret = super(Problems, self).get_context_data(**kwargs)
         ret.update({
             'problems': self.data,
-            'jira_url': settings.ISSUETRACKERS['default']['URL'] + '/browse/'
+            'jira_url': settings.ISSUETRACKERS['default']['URL'] + '/browse/',
+            'subsection': 'Problems'
         })
         return ret
 
@@ -160,6 +170,7 @@ class Incidents(ChangesBase, PaginatedView):
         ret.update({
             'incidents': self.data,
             'jira_url': settings.ISSUETRACKERS['default']['URL'] + '/browse/',
+            'subsection': 'Incidents'
         })
         return ret
 
@@ -356,6 +367,7 @@ class Dashboard(ChangesBase):
             'reports': self.reports,
             'db_supported': self.db_supported,
             'breadcrumb': 'test',
+            'subsection': 'Dashboard'
         })
         return ret
 
@@ -408,11 +420,16 @@ class Reports(ChangesBase, PaginatedView):
 
     def get_context_data(self, **kwargs):
         ret = super(Reports, self).get_context_data(**kwargs)
+        subsection = ''
+        if self.request.GET.get('kind', None):
+            subsection += '%s - ' % self.report_name
+        subsection += 'Reports'
         ret.update({
             'data': self.data,
             'form': self.form,
             'report_kind': self.request.GET.get('kind', 'top'),
             'report_name': self.report_name,
+            'subsection': subsection
        })
         return ret
 
