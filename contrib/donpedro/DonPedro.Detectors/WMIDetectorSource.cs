@@ -94,7 +94,10 @@ namespace DonPedro.Detectors
 					{
 						MemoryDTOResponse chip = new MemoryDTOResponse();
 						chip.Label = "Virtual RAM";
-						chip.Size = GetValueAsString(obj, "TotalPhysicalMemory");
+						chip.Size = ConvertSizeToMiB(
+							Int64.Parse(obj["TotalPhysicalMemory"].ToString()), 
+							SizeUnits.B
+						).ToString();
 						
 						memory.Add(chip);
 					}
@@ -304,7 +307,7 @@ namespace DonPedro.Detectors
 		{
 			try
 			{
-				return obj[valueName].ToString();
+				return obj[valueName].ToString().Trim();
 			}
 			catch (Exception)
 			{
