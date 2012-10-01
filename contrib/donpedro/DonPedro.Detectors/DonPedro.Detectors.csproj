@@ -37,6 +37,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Detector.cs" />
+    <Compile Include="Exceptions\ExternalCommandExecutionException.cs" />
+    <Compile Include="FCInfoDetectorSource.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WMIDetectorSource.cs" />
   </ItemGroup>
@@ -45,6 +47,9 @@
       <Project>{2D5CC727-4B81-4980-80C8-D078B1559C55}</Project>
       <Name>DonPedro.DTO</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Exceptions" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
 </Project>
