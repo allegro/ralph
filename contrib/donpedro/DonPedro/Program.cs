@@ -1,5 +1,5 @@
 ﻿using System;
-using DonPedro.Detectors;
+using DonPedro;
 
 namespace DonPedro
 {
@@ -13,7 +13,7 @@ namespace DonPedro
 		public static void Main(string[] args)
 		{
 			AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
-			throw new Exception("wyjatek");
+			
 		}
 	}
 }

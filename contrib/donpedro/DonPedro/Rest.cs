@@ -21,7 +21,7 @@ namespace DonPedro
 		  byte[] formData = UTF8Encoding.UTF8.GetBytes(json_data.ToString());
 		  req.ContentLength = formData.Length;
 		  using (Stream post = req.GetRequestStream())  
-		  {  
+		  {
 		    post.Write(formData, 0, formData.Length);  
 		  }
 		  string result = null;
@@ -35,7 +35,6 @@ namespace DonPedro
 		
 		public string Get(string url)
 		{
-			string x = FormatterServices.
 		  	HttpWebRequest req = WebRequest.Create(new Uri(url)) as HttpWebRequest;
 		  	req.Method = "GET";  
 		  	req.ContentType = "application/json";
@@ -46,7 +45,7 @@ namespace DonPedro
 		  	  StreamReader reader = new StreamReader(resp.GetResponseStream());
 		  	  result = reader.ReadToEnd();
 		 	 }
-			  return result;
+			 return result;
 		}
 	}
 }
