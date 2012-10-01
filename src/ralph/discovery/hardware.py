@@ -366,6 +366,8 @@ Status: {status}""".format(**disk_default)
 
 
 def parse_dmidecode(data):
+    """Parse data returned by the dmidecode command into a dict."""
+
     p = parse.multi_pairs(data)
     def exclude(value, exceptions):
         if value not in exceptions:
@@ -407,14 +409,13 @@ def parse_dmidecode(data):
 
 
 def handle_dmidecode(info, ethernets=(), save_priority=0):
-    dev = Device.create(
-            ethernets=ethernets,
-            sn=info['sn'],
-            uuid=info['uuid'],
-            model_name=info['model'],
-            model_type=DeviceType.unknown,
-            priority=save_priority,
-        )
+    """Take the data collected by parse_dmidecode and apply it to a device."""
+
+    # It's either a rack or a blade server, who knows?
+    # We will let other plugins determine that.
+    dev = Device.create(ethernets=ethernets, sn=info['sn'], uuid=info['uuid'],
+            model_name=info['model'], model_type=DeviceType.unknown,
+            priority=save_priority)
     for i, cpu_info in enumerate(info['cpu']):
         extra = ',\n'.join(cpu_info['flags'])
         extra = ('threads: %d\n' % cpu_info['threads']) + extra
@@ -456,3 +457,4 @@ def handle_dmidecode(info, ethernets=(), save_priority=0):
     for mem in dev.memory_set.filter(index__gt=i + 1):
         mem.delete()
     return dev
+
