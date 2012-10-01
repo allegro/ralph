@@ -42,7 +42,12 @@ namespace DonPedro.Detectors
 		
 		public List<FibreChannelDTOResponse> GetFibreChannelInfo()
 		{
-			return wmiDetector.GetFibreChannelInfo();
+			FCInfoDetectorSource fcinfo = new FCInfoDetectorSource();
+			List<FibreChannelDTOResponse> fc = fcinfo.GetFibreChannelInfo();
+			if (fc.Count == 0) {
+				fc = wmiDetector.GetFibreChannelInfo();
+			}
+			return fc;
 		}
 		
 		public List<DiskShareMountDTOResponse> GetDiskShareMountInfo()

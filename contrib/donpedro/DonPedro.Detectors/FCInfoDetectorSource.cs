@@ -16,7 +16,7 @@ namespace DonPedro.Detectors
 		{
 			List<FibreChannelDTOResponse> fc = new List<FibreChannelDTOResponse>();
 			
-			// todo
+			GetDataFromFcinfo();
 			
 			return fc;
 		}
@@ -27,9 +27,9 @@ namespace DonPedro.Detectors
 			
 			try
 			{
-				fcinfoResult = ExecuteFcinfoCommand();	
+				fcinfoResult = ExecuteFcinfoCommand();
 			}
-			catch (ExternalCommandExecutionException)
+			catch (ExternalCommandExecutionException e)
 			{
 				return "";
 			}
@@ -57,18 +57,18 @@ namespace DonPedro.Detectors
 			{
 				throw new ExternalCommandExecutionException(errorMessage);
 			}
-			
+
 			return proc.StandardOutput.ReadToEnd();
 		}
 		
 		protected ProcessStartInfo PrepareProcessStartInfo()
 		{
-			ProcessStartInfo psi = new ProcessStartInfo("cmd", "/cfcinfo");
+			ProcessStartInfo psi = new ProcessStartInfo("cmd.exe", "/C C:/Windows/System32/fcinfo.exe");
 			psi.RedirectStandardOutput = true;
 			psi.RedirectStandardError = true;
 			psi.UseShellExecute = false;
 			psi.CreateNoWindow = true;
-			
+
 			return psi;
 		}
 	}
