@@ -126,7 +126,9 @@ class VentureAdmin(ModelAdmin):
             return []
         owners = CIOwner.objects.filter(ciownership__type=CIOwnershipType.technical.id,
             ci=ci)
-        return ", ".join([unicode(owner) for owner in owners])
+        return "<a href=\"/cmdb/ci/edit/{}\">{}</a>".format(ci.id,
+                    ", ".join([unicode(owner) for owner in owners]))
+
     technical_owners.short_description = _("technical owners")
     technical_owners.allow_tags = True
 
@@ -136,7 +138,8 @@ class VentureAdmin(ModelAdmin):
             return []
         owners = CIOwner.objects.filter(ciownership__type=CIOwnershipType.business.id,
             ci=ci)
-        return ", ".join([unicode(owner) for owner in owners])
+        return "<a href=\"/cmdb/ci/edit/{}\">{}</a>".format(ci.id,
+                    ", ".join([unicode(owner) for owner in owners]))
     business_owners.short_description = _("business owners")
     business_owners.allow_tags = True
 
