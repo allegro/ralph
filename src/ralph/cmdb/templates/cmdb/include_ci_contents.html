@@ -193,13 +193,11 @@
     {% include 'cmdb/include_zabbix.html' with rows=zabbix_triggers%}
 </div>
 <div class="tab-pane" id="relations">
-    <div class='span10' style='padding-top: 4px;margin-top: 10px; '>
-        <div class='span{{span_number}}'  >
-                <table style='cell-padding: 10px'>
-                    <tr>
-                    </tr>
-                    <tr>
-                        <td style='vertical-align: top; padding-right: 10px'>
+    <div class='span12' style='padding-top: 4px;margin-top: 10px; '>
+        <div>
+                <table style='cell-padding: 10px' class="row-fluid">
+                    <tr  class="row-fluid">
+                        <td style='vertical-align: top; padding-right: 10px' class="span6">
                             {% include 'cmdb/include_relations.html' with span_number=span_number label='Contains' relations=relations_contains editable=editable %}
                             {% include 'cmdb/include_relations.html' with span_number=span_number label='Has roles' relations=relations_hasrole editable=editable %}
                             {% include 'cmdb/include_relations.html' with span_number=span_number label='Requires' relations=relations_requires editable=editable %}
@@ -215,7 +213,7 @@
                        {% endif %}
                         </td>
 
-                    <td style='vertical-align: top;'>
+                    <td style='vertical-align: top;' class="span6">
                         {% include 'cmdb/include_relations.html' with span_number=span_number label='Is part of' relations=relations_parts editable=editable %}
                         {% include 'cmdb/include_relations.html' with span_number=span_number label='Is role for' relations=relations_isrole editable=editable %}
                         {% include 'cmdb/include_relations.html' with span_number=span_number label='Is required by' relations=relations_isrequired editable=editable %}
