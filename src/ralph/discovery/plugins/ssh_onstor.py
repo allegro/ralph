@@ -173,6 +173,8 @@ def _run_ssh_onstor(ip):
 def ssh_onstor(**kwargs):
     if SSH_ONSTOR_USER is None or SSH_ONSTOR_PASSWORD is None:
         return False, 'no credentials.', kwargs
+    if 'nx-os' in kwargs.get('snmp_name', '').lower():
+        return False, 'incompatible Nexus found.', kwargs
     ip = str(kwargs['ip'])
     if kwargs.get('http_family') not in ('sscccc',):
         return False, 'no match.', kwargs

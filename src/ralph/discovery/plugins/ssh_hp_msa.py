@@ -28,6 +28,8 @@ def _run_ssh_msa(ip):
 def ssh_hp_msa(**kwargs):
     if SSH_MSA_USER is None or SSH_MSA_PASSWORD is None:
         return False, 'no credentials.', kwargs
+    if 'nx-os' in kwargs.get('snmp_name', '').lower():
+        return False, 'incompatible Nexus found.', kwargs
     ip = str(kwargs['ip'])
     if kwargs.get('http_family') not in ('WindRiver-WebServer',):
         return False, 'no match.', kwargs
