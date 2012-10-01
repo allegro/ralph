@@ -45,6 +45,11 @@ namespace DonPedro.Detectors
 			return wmiDetector.GetFibreChannelInfo();
 		}
 		
+		public List<DiskShareMountDTOResponse> GetDiskShareMountInfo()
+		{
+			return wmiDetector.GetDiskShareMountInfo();
+		}
+		
 		public List<BaseDTOResponse> GetAllComponents()
 		{
 			List<BaseDTOResponse> components = new List<BaseDTOResponse>();
@@ -72,6 +77,11 @@ namespace DonPedro.Detectors
 			foreach (FibreChannelDTOResponse fc in GetFibreChannelInfo())
 			{
 				components.Add(fc);
+			}
+			
+			foreach (DiskShareMountDTOResponse share in GetDiskShareMountInfo())
+			{
+				components.Add(share);
 			}
 			
 			components.Add(GetOperatingSystemInfo());

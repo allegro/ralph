@@ -271,6 +271,35 @@ namespace DonPedro.Detectors
 			return fc;
 		}
 		
+		public List<DiskShareMountDTOResponse> GetDiskShareMountInfo()
+		{
+			List<DiskShareMountDTOResponse> mounts = new List<DiskShareMountDTOResponse>();
+			
+			SelectQuery query = new SelectQuery(
+				@"select Model, SerialNumber 
+				  from Win32_DiskDrive 
+				  where Model like '3PARdata%'"
+			);
+			ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
+			
+			try
+			{
+				foreach (ManagementObject obj in searcher.Get())
+				{
+					DiskShareMountDTOResponse share = new DiskShareMountDTOResponse();
+					share.Volume = GetValueAsString(obj, "Model");
+					share.Sn = GetValueAsString(obj, "SerialNumber");
+					
+					mounts.Add(share);
+				}
+			}
+			catch (ManagementException)
+			{
+			}
+			
+			return mounts;
+		}
+		
 		protected string GetValueAsString(ManagementObject obj, string valueName)
 		{
 			try
