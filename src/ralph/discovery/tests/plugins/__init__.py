@@ -7,3 +7,4 @@ from ralph.discovery.tests.plugins.ssg_tests import SshSsgPluginTest
 from ralph.discovery.tests.plugins.aix_tests import SshAixPluginTest
 from ralph.discovery.tests.plugins.xen_tests import SshXENPluginTest
 from ralph.discovery.tests.plugins.openstack_tests import OpenStackPluginTest
+from ralph.discovery.tests.plugins.ssh_linux_tests import SshLinuxPluginTest
