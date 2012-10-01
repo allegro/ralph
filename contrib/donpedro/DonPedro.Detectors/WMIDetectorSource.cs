@@ -94,7 +94,10 @@ namespace DonPedro.Detectors
 					{
 						MemoryDTOResponse chip = new MemoryDTOResponse();
 						chip.Label = "Virtual RAM";
-						chip.Size = GetValueAsString(obj, "TotalPhysicalMemory");
+						chip.Size = ConvertSizeToMiB(
+							Int64.Parse(obj["TotalPhysicalMemory"].ToString()), 
+							SizeUnits.B
+						).ToString();
 						
 						memory.Add(chip);
 					}
@@ -271,11 +274,40 @@ namespace DonPedro.Detectors
 			return fc;
 		}
 		
+		public List<DiskShareMountDTOResponse> GetDiskShareMountInfo()
+		{
+			List<DiskShareMountDTOResponse> mounts = new List<DiskShareMountDTOResponse>();
+			
+			SelectQuery query = new SelectQuery(
+				@"select Model, SerialNumber 
+				  from Win32_DiskDrive 
+				  where Model like '3PARdata%'"
+			);
+			ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
+			
+			try
+			{
+				foreach (ManagementObject obj in searcher.Get())
+				{
+					DiskShareMountDTOResponse share = new DiskShareMountDTOResponse();
+					share.Volume = GetValueAsString(obj, "Model");
+					share.Sn = GetValueAsString(obj, "SerialNumber");
+					
+					mounts.Add(share);
+				}
+			}
+			catch (ManagementException)
+			{
+			}
+			
+			return mounts;
+		}
+		
 		protected string GetValueAsString(ManagementObject obj, string valueName)
 		{
 			try
 			{
-				return obj[valueName].ToString();
+				return obj[valueName].ToString().Trim();
 			}
 			catch (Exception)
 			{

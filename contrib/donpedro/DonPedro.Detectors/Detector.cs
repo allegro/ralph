@@ -42,7 +42,17 @@ namespace DonPedro.Detectors
 		
 		public List<FibreChannelDTOResponse> GetFibreChannelInfo()
 		{
-			return wmiDetector.GetFibreChannelInfo();
+			FCInfoDetectorSource fcinfo = new FCInfoDetectorSource();
+			List<FibreChannelDTOResponse> fc = fcinfo.GetFibreChannelInfo();
+			if (fc.Count == 0) {
+				fc = wmiDetector.GetFibreChannelInfo();
+			}
+			return fc;
+		}
+		
+		public List<DiskShareMountDTOResponse> GetDiskShareMountInfo()
+		{
+			return wmiDetector.GetDiskShareMountInfo();
 		}
 		
 		public List<BaseDTOResponse> GetAllComponents()
@@ -72,6 +82,11 @@ namespace DonPedro.Detectors
 			foreach (FibreChannelDTOResponse fc in GetFibreChannelInfo())
 			{
 				components.Add(fc);
+			}
+			
+			foreach (DiskShareMountDTOResponse share in GetDiskShareMountInfo())
+			{
+				components.Add(share);
 			}
 			
 			components.Add(GetOperatingSystemInfo());
