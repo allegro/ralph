@@ -21,6 +21,7 @@ from lck.django.common import nested_commit_on_success
 
 from ralph.cmdb.forms import CISearchForm, CIEditForm, CIViewForm, CIRelationEditForm
 from ralph.cmdb.customfields import EditAttributeFormFactory
+from ralph.cmdb.models_ci import CILayer, CI_TYPES
 from ralph.account.models import Perm
 from ralph.ui.views.common import Base
 from ralph.util.presentation import get_device_icon, get_venture_icon, get_network_icon
@@ -306,6 +307,7 @@ class Add(BaseCMDBView):
         ret.update({
             'form': self.form,
             'label': 'Add CI',
+            'subsection': 'Add CI'
         })
         return ret
 
@@ -462,7 +464,7 @@ class Edit(BaseCMDBView):
             'cmdb_messages': self.get_messages(),
             'show_in_ralph': self.show_in_ralph,
             'ralph_ci_link': self.ralph_ci_link,
-
+            'subsection': 'Edit - %s' % self.ci.name
         })
         return ret
 
@@ -647,7 +649,8 @@ class View(Edit):
     def get_context_data(self, **kwargs):
         ret = super(View, self).get_context_data(**kwargs)
         ret.update({
-            'label': 'View CI:  ' + self.ci.name
+            'label': 'View CI:  ' + self.ci.name,
+            'subsection': 'Info - %s' % self.ci.name
         })
         return ret
 
@@ -691,12 +694,23 @@ class Search(BaseCMDBView):
     cis = []
     def get_context_data(self, **kwargs):
         ret = super(Search, self).get_context_data(**kwargs)
+        subsection = ''
+        if self.request.GET.get('layer', None):
+            get_layer = self.request.GET['layer']
+            layer = CILayer.objects.get(id = get_layer)
+            subsection += '%s - ' % layer
+        if self.request.GET.get('type', None):
+            get_type = self.request.GET['type']
+            type = CI_TYPES.NameFromID(int(get_type))
+            subsection += '%s - ' % CI_TYPES.DescFromName(type)
+        subsection += 'Search'
         ret.update({
             'rows': self.rows,
             'page': self.page,
             'pages': _get_pages(self.paginator, self.page_number),
             'sort': self.request.GET.get('sort', ''),
             'form': self.form,
+            'subsection': subsection,
         })
         return ret
 
