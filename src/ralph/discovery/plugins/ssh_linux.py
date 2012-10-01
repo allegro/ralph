@@ -145,6 +145,8 @@ def run_ssh_linux(ssh, ip):
 
 @plugin.register(chain='discovery', requires=['ping', 'snmp'])
 def ssh_linux(**kwargs):
+    if 'nx-os' in kwargs.get('snmp_name', '').lower():
+        return False, 'incompatible Nexus found.', kwargs
     kwargs['guessmodel'] = gvendor, gmodel = guessmodel.guessmodel(**kwargs)
     if gmodel not in {'Linux', 'ESX', 'XEN'}:
         return False, 'no match: %s %s' % (gvendor, gmodel), kwargs

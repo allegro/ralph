@@ -107,6 +107,8 @@ def _run_ssh_3par(ip):
 def ssh_3par(**kwargs):
     if SSH_3PAR_USER is None or SSH_3PAR_PASSWORD is None:
         return False, 'no credentials.', kwargs
+    if 'nx-os' in kwargs.get('snmp_name', '').lower():
+        return False, 'incompatible Nexus found.', kwargs
     ip = str(kwargs['ip'])
     if kwargs.get('http_family') not in ('Unspecified',):
         return False, 'no match.', kwargs
