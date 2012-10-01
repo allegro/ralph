@@ -98,16 +98,21 @@ class CIEditForm(forms.ModelForm):
             if self.initial.get('name', None):
                 self.data['name'] = self.initial['name']
 
-        technical_ownership, technical_owners = [], []
-        business_ownership, busines_owners = [] ,[]
+        technical_owners, bussines_owners = [], []
         owns = CIOwnership.objects.filter(ci_id=self.initial.get('ci').id)
         for own in owns:
             if own.type == 1:
-                technical_owners.append(CIOwner.objects.get(pk=str(own.owner_id)))
+                try:
+                    technical_owners.append(CIOwner.objects.get(pk=str(own.owner_id)))
+                except CIOwner.DoesNotExist:
+                    pass
             elif own.type == 2:
-                busines_owners.append(CIOwner.objects.get(pk=str(own.owner_id)))
+                try:
+                    bussines_owners.append(CIOwner.objects.get(pk=str(own.owner_id)))
+                except CIOwner.DoesNotExist:
+                    pass
         self['technical_owners'].field.initial = technical_owners
-        self['business_owners'].field.initial = busines_owners
+        self['business_owners'].field.initial = bussines_owners
 
 
 class CIViewForm(CIEditForm):
