@@ -7,14 +7,16 @@
 {% endblock %}
 
 {% block contentarea %}
-    <form class="form form-inline dashboard-form" action="{% url 'search' 'info' '' %}">
-        <div class="control-group input-append">
+    <div class="span9">
+        <form class="form form-inline dashboard-form" action="{% url 'search' 'info' '' %}">
             <p>Where do you want to go today?</p>
-            <input type="text" class="span6" name="name"
-             ><button class="btn btn-primary">
-                {% icon 'fugue-magnifier' %} Search
-            </button>
-        </div>
-    </form>
+            <div class="control-group input-append">
+                <input type="text" name="name" id="appendedInputButton">
+                <button class="btn btn-primary">
+                    {% icon 'fugue-magnifier' %} Search
+                </button>
+            </div>
+        </form>
+    </div>
 {% endblock %}
 

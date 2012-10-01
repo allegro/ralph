@@ -46,6 +46,7 @@ class Perm(Choices):
     edit_domain_name = _("edit domain name entries")
     read_domain_name = _("read domain name entries")
     create_device = _("create new devices manually")
+    read_deployment = _("read deployment")
 
     PER_VENTURE = Choices.Group(100) << {'per_venture': True}
     list_devices_generic = _("list venture devices")
