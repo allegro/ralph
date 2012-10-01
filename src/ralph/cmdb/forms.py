@@ -9,6 +9,7 @@ from __future__ import unicode_literals
 from django import forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from ajax_select import make_ajax_field
+from south.management.commands import patch_for_test_db_setup
 
 from ralph.cmdb import models
 from ralph.cmdb.models_ci import CIOwnership, CIOwner
@@ -97,22 +98,22 @@ class CIEditForm(forms.ModelForm):
                 self.data['id'] = self.initial['id']
             if self.initial.get('name', None):
                 self.data['name'] = self.initial['name']
-
-        technical_owners, bussines_owners = [], []
-        owns = CIOwnership.objects.filter(ci_id=self.initial.get('ci').id)
-        for own in owns:
-            if own.type == 1:
-                try:
-                    technical_owners.append(CIOwner.objects.get(pk=str(own.owner_id)))
-                except CIOwner.DoesNotExist:
-                    pass
-            elif own.type == 2:
-                try:
-                    bussines_owners.append(CIOwner.objects.get(pk=str(own.owner_id)))
-                except CIOwner.DoesNotExist:
-                    pass
-        self['technical_owners'].field.initial = technical_owners
-        self['business_owners'].field.initial = bussines_owners
+        if len(self.initial):
+            technical_owners, bussines_owners = [], []
+            owns = CIOwnership.objects.filter(ci_id=self.initial.get('ci').id)
+            for own in owns:
+                if own.type == 1:
+                    try:
+                        technical_owners.append(CIOwner.objects.get(pk=str(own.owner_id)))
+                    except CIOwner.DoesNotExist:
+                        pass
+                elif own.type == 2:
+                    try:
+                        bussines_owners.append(CIOwner.objects.get(pk=str(own.owner_id)))
+                    except CIOwner.DoesNotExist:
+                        pass
+            self['technical_owners'].field.initial = technical_owners
+            self['business_owners'].field.initial = bussines_owners
 
 
 class CIViewForm(CIEditForm):
