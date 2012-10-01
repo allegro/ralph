@@ -103,6 +103,8 @@ def ssh_xen(**kwargs):
     ip = str(kwargs['ip'])
     if XEN_USER is None:
         return False, 'no auth.', kwargs
+    if 'nx-os' in kwargs.get('snmp_name', '').lower():
+        return False, 'incompatible Nexus found.', kwargs
     if 'xen' not in kwargs.get('snmp_name', ''):
         return False, 'no match.', kwargs
     if not network.check_tcp_port(ip, 22):

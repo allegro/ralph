@@ -6,6 +6,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from django.utils.datastructures import MultiValueDict
+
 
 def get_indent(line):
     for indent, c in enumerate(line):
@@ -48,6 +50,42 @@ def pairs(text='', lines=None):
         last_indent = indent
         last_key = key
     return root
+
+def multi_pairs(text='', lines=None):
+    r"""
+        Parse nested key-value pairs with repetitions.
+
+        >>> pairs('abc: def\n ghi: jkl\n mno: pqr')
+        {u'def': {None: u'abc', u'ghi': u'jkl', u'mno': u'pqr'}}
+    """
+
+    if lines is None:
+        lines = text.splitlines()
+    root = MultiValueDict()
+    parents = [root]
+    indents = [0]
+    last_key = None
+    for line in lines:
+        if not line.strip():
+            continue
+        if ':' in line:
+            key, value = (v.strip() for v in line.split(':', 1))
+        else:
+            key = line.strip()
+            value = None
+        indent = get_indent(line)
+        while indent < indents[-1]:
+            indents.pop()
+            parents.pop()
+        if indent > indents[-1]:
+            node = MultiValueDict()
+            parents[-1].appendlist(last_key, node)
+            parents.append(node)
+            indents.append(indent)
+        parents[-1].appendlist(key, value)
+        last_key = key
+    return root
+
 
 def tree(text='', lines=None):
     r"""
