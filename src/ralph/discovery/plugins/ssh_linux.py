@@ -7,7 +7,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import ssh as paramiko
-import logging
 
 from django.conf import settings
 
@@ -22,18 +21,23 @@ from ralph.discovery import guessmodel
 
 
 SAVE_PRIORITY=5
-logger = logging.getLogger(__name__)
 
 
-def run_ssh_linux(ssh, ip):
-    # Get the MAC addresses
+def get_ethernets(ssh):
+    """Get the MAC addresses"""
+
     stdin, stdout, stderr = ssh.exec_command(
             "/sbin/ip addr show | /bin/grep 'link/ether'")
     ethernets = [
-        Eth(label='', mac=line.split(None, 3)[1], speed=0) for line in stdout
+        Eth(label='', mac=line.split(None, 3)[1], speed=0)
+        for line in stdout
     ]
+    return ethernets
 
-    # Handle dmidecode data
+
+def run_dmidecode(ssh, ethernets):
+    """Handle dmidecode data"""
+
     stdin, stdout, stderr = ssh.exec_command(
             "/usr/bin/sudo /usr/sbin/dmidecode")
     try:
@@ -44,17 +48,25 @@ def run_ssh_linux(ssh, ip):
             # No serial number and no macs -- no way to make a device
             return ''
         dev = Device.create(ethernets=ethernets, model_name='Linux',
-                        model_type=DeviceType.unknown, priority=SAVE_PRIORITY)
+                        model_type=DeviceType.unknown,
+                        priority=SAVE_PRIORITY)
     else:
         dev = handle_dmidecode(info, ethernets, SAVE_PRIORITY)
+    return dev
 
-    # Attach the IP address
+
+def attach_ip(dev, ip):
+    """Attach the IP address"""
+
     ipaddr, ip_created = IPAddress.concurrent_get_or_create(address=ip)
     ipaddr.device = dev
     ipaddr.is_management = False
     ipaddr.save()
 
-    # Add remote disk shares
+
+def update_shares(ssh, dev):
+    """Update remote disk shares"""
+
     wwns = []
     for lv, (wwn, size) in get_disk_shares(ssh).iteritems():
         share = DiskShare.objects.get(wwn=wwn)
@@ -69,21 +81,27 @@ def run_ssh_linux(ssh, ip):
             is_virtual=False).exclude(share__wwn__in=wwns):
         ds.delete()
 
-    # Create OperatingSystem component
-    stdin, stdout, stderr = ssh.exec_command("/bin/uname -a")
-    family, host, version, release, rest = stdout.read().strip().split(None, 4)
-    os = OperatingSystem.create(dev=dev, os_name=release, version=version,
-                                family=family)
-    # System-visible memory
+
+def get_memory(ssh):
+    """System-visible memory in MIB"""
+
     stdin, stdout, stderr = ssh.exec_command(
             "/bin/grep 'MemTotal:' '/proc/meminfo'")
     label, memory, unit = stdout.read().strip().split(None, 2)
-    os.memory = int(int(memory)/1024)
-    # System-visible cores
+    return int(int(memory)/1024)
+
+
+def get_cores(ssh):
+    """System-visible core count"""
+
     stdin, stdout, stderr = ssh.exec_command(
             "/bin/grep '^processor' '/proc/cpuinfo'")
-    os.cores_count = len(stdout.readlines())
-    # System-visible disk space
+    return len(stdout.readlines())
+
+
+def get_disk(ssh):
+    """System-visible disk space in MiB"""
+
     stdin, stdout, stderr = ssh.exec_command(
         "/bin/df -P -x tmpfs -x devtmpfs -x ecryptfs -x iso9660 -BM "
         "| /bin/grep '^/'")
@@ -91,11 +109,31 @@ def run_ssh_linux(ssh, ip):
     for line in stdout:
         path, size, rest = line.split(None, 2)
         total += int(size.replace('M', ''))
-    os.storage = total
+    return total
+
+
+def update_os(ssh, dev):
+    """Update the OperatingSystem component. Also update the hostname."""
+
+    stdin, stdout, stderr = ssh.exec_command("/bin/uname -a")
+    family, host, version, release, rest = stdout.read().strip().split(None, 4)
+    os = OperatingSystem.create(dev=dev, os_name=release, version=version,
+                                family=family)
+    os.memory = get_memory(ssh)
+    os.cores_count = get_cores(ssh)
+    os.storage = get_disk(ssh)
     os.save()
     # Hostname
     dev.name = host
     dev.save(priority=SAVE_PRIORITY)
+
+
+def run_ssh_linux(ssh, ip):
+    ethernets = get_ethernets(ssh)
+    dev = run_dmidecode(ssh, ethernets)
+    attach_ip(dev, ip)
+    update_shares(ssh, dev)
+    update_os(ssh, dev)
     return dev.name
 
 
