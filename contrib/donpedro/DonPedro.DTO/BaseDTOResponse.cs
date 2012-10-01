@@ -7,7 +7,7 @@ namespace DonPedro.DTO
 	{
 		public string Label { get; set; }
 
-		public string ToJson()
+		public string ToJSON()
 		{
 			ArrayList parts = new ArrayList();
 
@@ -15,12 +15,13 @@ namespace DonPedro.DTO
 			{
 				parts.Add(
 					string.Format(
-						"\"{0}\":\"{1}\"", property.Name, property.GetValue(this, null)
+						"\t\"{0}\":\"{1}\"", property.Name.ToLower(), 
+						property.GetValue(this, null)
 					)
 				);
 			}
 
-			return "{" + String.Join(",", (String[]) parts.ToArray(typeof(string))) + "}";
+			return "{\n" + String.Join(",\n", (String[]) parts.ToArray(typeof(string))) + "\n}";
 		}
 	}
 }
