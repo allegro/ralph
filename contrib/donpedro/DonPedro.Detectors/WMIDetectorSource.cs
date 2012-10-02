@@ -231,7 +231,7 @@ namespace DonPedro.Detectors
 			try
 			{
 				SelectQuery query = new SelectQuery(
-					@"select Name,  MACAddress, Speed 
+					@"select Name,  MACAddress, Speed, GUID 
 					  from Win32_NetworkAdapter 
 					  where MACAddress<>null and PhysicalAdapter=true"
 				);
@@ -243,6 +243,38 @@ namespace DonPedro.Detectors
 					eth.Label = GetValueAsString(obj, "Name");
 					eth.Mac = GetValueAsString(obj, "MACAddress");
 					eth.Speed = GetValueAsString(obj, "Speed");
+					
+					try
+					{
+						SelectQuery queryAdapterConf = new SelectQuery(
+							@"select IPAddress,  IPSubnet 
+							  from Win32_NetworkAdapterConfiguration 
+							  where SettingID='" + GetValueAsString(obj, "GUID") + "'"
+						);
+						ManagementObjectSearcher adapterConfSearcher = new ManagementObjectSearcher(queryAdapterConf);
+
+						foreach (ManagementObject adapterConf in adapterConfSearcher.Get())
+						{
+							try
+							{
+								eth.IPAddress = ((string[]) adapterConf["IPAddress"])[0];
+								eth.IPSubnet = ((string[]) adapterConf["IPSubnet"])[0];
+							}
+							catch (ManagementException e)
+							{
+								new Logger().LogError(e.ToString());
+							}
+							catch (Exception)
+							{
+							}
+							
+							break;
+						}
+					}
+					catch (ManagementException e)
+					{
+						new Logger().LogError(e.ToString());
+					}
 					
 					ethetnets.Add(eth);
 				}
