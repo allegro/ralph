@@ -280,7 +280,8 @@ class Processor(Component):
             return self.model.cores
         return self.cores or 1
 
-    def get_size(self):
+    @property
+    def size(self):
         return self.get_cores()
 
 
