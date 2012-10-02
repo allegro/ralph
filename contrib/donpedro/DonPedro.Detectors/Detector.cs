@@ -42,7 +42,43 @@ namespace DonPedro.Detectors
 		
 		public List<FibreChannelDTOResponse> GetFibreChannelInfo()
 		{
-			return wmiDetector.GetFibreChannelInfo();
+			FCInfoDetectorSource fcinfo = new FCInfoDetectorSource();
+			List<FibreChannelDTOResponse> fc = fcinfo.GetFibreChannelInfo();
+			if (fc.Count == 0) {
+				fc = wmiDetector.GetFibreChannelInfo();
+			}
+			return fc;
+		}
+		
+		public List<DiskShareMountDTOResponse> GetDiskShareMountInfo()
+		{
+			return wmiDetector.GetDiskShareMountInfo();
+		}
+		
+		public string getAllComponentsJSON()
+		{
+			string json = "{\"data\":{";
+			json += "\"storage\": [";
+			json += string.Join(",", GetStorageInfo().ConvertAll(s => s.ToJSON()).ToArray());
+			json += "],\n \"ethernets\": [";
+			json += string.Join(",", GetEthernetInfo().ConvertAll(s => s.ToJSON()).ToArray());
+			json += "],\n \"fcs\": [";
+			json += string.Join(",", GetFibreChannelInfo().ConvertAll(s => s.ToJSON()).ToArray());
+			json += "],\n \"shares\": [";
+			json += string.Join(",", GetDiskShareMountInfo().ConvertAll(s => s.ToJSON()).ToArray());
+			json += "],\n \"operating_system\": ";
+			json += GetOperatingSystemInfo().ToJSON();
+			json += ",\n \"processors\": [";
+			json += string.Join(",", GetProcessorsInfo().ConvertAll(s => s.ToJSON()).ToArray());
+			json += "],\n \"device\": ";
+			json += GetDeviceInfo().ToJSON();
+			json += "}}";
+			return json;
+		}
+		
+		public DeviceDTOResponse GetDeviceInfo()
+		{
+			return wmiDetector.GetDeviceInfo();
 		}
 		
 		public List<BaseDTOResponse> GetAllComponents()
@@ -74,9 +110,17 @@ namespace DonPedro.Detectors
 				components.Add(fc);
 			}
 			
+			foreach (DiskShareMountDTOResponse share in GetDiskShareMountInfo())
+			{
+				components.Add(share);
+			}
+			
 			components.Add(GetOperatingSystemInfo());
+			
+			components.Add(GetDeviceInfo());
 
 			return components;
 		}
+		
 	}
 }
