@@ -80,6 +80,7 @@ def get_device_chassis_price(device):
         chassis_price = 0
     return chassis_price
 
+
 def get_device_virtuals_price(device):
     """Calculate the total price of all virtual servers inside."""
 
@@ -88,43 +89,31 @@ def get_device_virtuals_price(device):
         device.child_set.filter(model__type=DeviceType.virtual_server.id))
     return price
 
+
 def get_device_virtual_cpu_price(device):
     """Calculate the price of a single virtual cpu for virtual servers inside."""
 
-    cpu_price = device.processor_set.all().aggregate(
-            db.Sum('model__group__price'))['model__group__price__sum'] or 0
-    if not cpu_price:
-        try:
-            os = OperatingSystem.objects.get(device=device)
-            group = ComponentModelGroup.objects.get(name='OS Detected CPU')
-        except (OperatingSystem.DoesNotExist, ComponentModelGroup.DoesNotExist):
-            pass
-        else:
-            if os.cores_count:
-                cpu_price = os.cores_count * group.price
-        if not cpu_price:
-            try:
-                group = ComponentModelGroup.objects.get(name='Default CPU')
-            except ComponentModelGroup.DoesNotExist:
-                pass
-            else:
-                cpu_price = group.price
+    cpu_price = get_device_cpu_price(device)
     total_virtual_cpus = Processor.objects.filter(
-            device__parent=device).filter(
-                device__model__type=DeviceType.virtual_server.id).count()
+            device__parent=device,
+            device__model__type=DeviceType.virtual_server.id
+        ).count()
     if not total_virtual_cpus:
         return 0
     return (cpu_price or 0) / total_virtual_cpus
 
+
 def get_device_cpu_price(device):
     if (device.parent and device.model and
         device.model.type == DeviceType.virtual_server.id):
+        # Virtual servers count CPU price based on the price of the hypervisor
         total_cpus = device.processor_set.count()
         return get_device_virtual_cpu_price(device.parent) * total_cpus
-    price = device.processor_set.all().aggregate(
-            db.Sum('model__group__price'))['model__group__price__sum'] or 0
-    if not price and device.model and device.model.type in (
-            DeviceType.rack_server.id, DeviceType.blade_server.id):
+    # Non-virtual servers just sum the prices of individual CPUs
+    price = math.fsum(cpu.get_price() for cpu in device.processor_set.all())
+    if not price and device.model and device.model.type in {
+            DeviceType.rack_server.id, DeviceType.blade_server.id}:
+        # Fall back to OperatingSystem-visible cores, and then to default
         try:
             os = OperatingSystem.objects.get(device=device)
             group = ComponentModelGroup.objects.get(name='OS Detected CPU')
@@ -140,6 +129,7 @@ def get_device_cpu_price(device):
         else:
             return group.price
     return price
+
 
 def get_device_memory_price(device):
     price = math.fsum(
@@ -304,6 +294,8 @@ def details_cpu(dev, purchase_only=False):
             yield {
                 'label': cpu.label,
                 'model': cpu.model,
+                'size': '%d core(s)' % cpu.get_cores(),
+                'price': cpu.get_price(),
             }
     if purchase_only:
         return
@@ -338,6 +330,8 @@ def details_mem(dev, purchase_only=False):
         yield {
             'label': mem.label,
             'model': mem.model,
+            'size': '%d MiB' % mem.get_size(),
+            'price': mem.get_price(),
         }
     if purchase_only:
         return
