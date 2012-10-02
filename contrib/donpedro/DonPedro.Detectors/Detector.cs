@@ -93,5 +93,20 @@ namespace DonPedro.Detectors
 
 			return components;
 		}
+		
+		public string GetAllComponentsJSON()
+		{
+			List<BaseDTOResponse> components = GetAllComponents();
+			string[] jsonParts = new string[components.Count];
+			
+			int i = 0;
+			foreach (BaseDTOResponse component in components)
+			{
+				jsonParts[i] = component.ToJSON();
+				i++;
+			}
+			
+			return "{" + string.Join(",", jsonParts) + "}";
+		}
 	}
 }

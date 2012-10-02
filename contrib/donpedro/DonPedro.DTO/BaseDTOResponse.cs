@@ -15,13 +15,13 @@ namespace DonPedro.DTO
 			{
 				parts.Add(
 					string.Format(
-						"\t\"{0}\":\"{1}\"", property.Name.ToLower(), 
+						"\"{0}\":\"{1}\"", property.Name.ToLower(), 
 						property.GetValue(this, null)
 					)
 				);
 			}
 
-			return "{\n" + String.Join(",\n", (String[]) parts.ToArray(typeof(string))) + "\n}";
+			return "{" + String.Join(",", (String[]) parts.ToArray(typeof(string))) + "}";
 		}
 	}
 }
