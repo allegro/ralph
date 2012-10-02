@@ -36,6 +36,7 @@ namespace DonPedro
 			new Logger().LogDebug("Detecting config");
 			Detectors.Detector d = new DonPedro.Detectors.Detector();
 			json_data = d.getAllComponentsJSON();
+			new Logger().LogDebug(json_data);
 			new Logger().LogDebug("Sending to: " + report_url);
 			while (tries < max_tries)
 			{
