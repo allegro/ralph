@@ -8,6 +8,7 @@ from __future__ import unicode_literals
 
 from django.conf.urls.defaults import patterns
 from django.contrib.auth.decorators import login_required
+from django.conf.urls.defaults import patterns, include, url
 
 from ralph.cmdb.views import (Index, Search, Edit, Add, View,
         ViewIframe, EditRelation, LastChanges, AddRelation,
@@ -26,7 +27,7 @@ urlpatterns = patterns('',
     (r'^ci/view_iframe/(?P<ci_id>\w+)$', login_required(ViewIframe.as_view())),
     (r'^ci/view_jira/(?P<ci_uid>.*)$', login_required(ViewJira.as_view())),
     (r'^ci/jira_ci_unknown/$', login_required(ViewUnknown.as_view())),
-    (r'^ci/edit/(?P<ci_id>\w+)$', login_required(Edit.as_view())),
+    url(r'^ci/edit/(?P<ci_id>\w+)$', login_required(Edit.as_view()), name='ci_edit'),
     (r'^ci/get_last_changes/(?P<ci_id>.*)$', login_required(LastChanges.as_view())),
     (r'^relation/add/(?P<ci_id>\w+)$', login_required(AddRelation.as_view())),
     (r'^relation/delete/(?P<relation_id>\w+)/(?P<ci_id>\w+)$', login_required(EditRelation.as_view())),
