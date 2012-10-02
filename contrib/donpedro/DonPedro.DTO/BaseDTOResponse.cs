@@ -7,7 +7,7 @@ namespace DonPedro.DTO
 	{
 		public string Label { get; set; }
 
-		public string ToJson()
+		public string ToJSON()
 		{
 			ArrayList parts = new ArrayList();
 
