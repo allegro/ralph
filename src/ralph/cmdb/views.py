@@ -308,7 +308,7 @@ class Add(BaseCMDBView):
             'form': self.form,
             'label': 'Add CI',
             'subsection': 'Add CI',
-            'sidebar_selected': 'add ci'
+            'sidebar_selected': 'add ci',
         })
         return ret
 
@@ -695,16 +695,16 @@ class Search(BaseCMDBView):
     cis = []
     def get_context_data(self, **kwargs):
         subsection = ''
-        layer = self.request.GET.get('layer', None)
-        type = self.request.GET.get('type', None)
+        layer = self.request.GET.get('layer')
+        type = self.request.GET.get('type')
         if layer:
             subsection += '%s - ' % CILayer.objects.get(id = layer)
-        if type:
+        elif type:
             type = CI_TYPES.NameFromID(int(type))
             subsection += '%s - ' % CI_TYPES.DescFromName(type)
         subsection += 'Search'
         sidebar_selected = ''
-        if layer == str(7):
+        if layer == '7':
             sidebar_selected = 'services'
         if not layer and not type:
             sidebar_selected = 'all cis'
@@ -716,7 +716,7 @@ class Search(BaseCMDBView):
             'sort': self.request.GET.get('sort', ''),
             'form': self.form,
             'sidebar_selected': sidebar_selected,
-            'subsection': subsection
+            'subsection': subsection,
         })
         return ret
 

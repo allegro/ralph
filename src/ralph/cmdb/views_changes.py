@@ -90,7 +90,7 @@ class Changes(ChangesBase, PaginatedView):
     def get_context_data(self, **kwargs):
         ret = super(Changes, self).get_context_data(**kwargs)
         subsection = ''
-        get_type = self.request.GET.get('type', None)
+        get_type = self.request.GET.get('type')
         if get_type:
             get_type = int(get_type)
             type = CI_CHANGE_TYPES.NameFromID(get_type)
@@ -108,7 +108,7 @@ class Changes(ChangesBase, PaginatedView):
             'statistics': self.data,
             'form': self.form,
             'subsection': subsection,
-            'sidebar_selected': sidebar_selected
+            'sidebar_selected': sidebar_selected,
         })
         return ret
 
@@ -160,7 +160,7 @@ class Problems(ChangesBase, PaginatedView):
             'problems': self.data,
             'jira_url': settings.ISSUETRACKERS['default']['URL'] + '/browse/',
             'subsection': 'Problems',
-             'sidebar_selected': 'problems'
+             'sidebar_selected': 'problems',
         })
         return ret
 
@@ -180,7 +180,7 @@ class Incidents(ChangesBase, PaginatedView):
             'incidents': self.data,
             'jira_url': settings.ISSUETRACKERS['default']['URL'] + '/browse/',
             'subsection': 'Incidents',
-            'sidebar_selected': 'incidents'
+            'sidebar_selected': 'incidents',
         })
         return ret
 
@@ -378,7 +378,7 @@ class Dashboard(ChangesBase):
             'db_supported': self.db_supported,
             'breadcrumb': 'test',
             'subsection': 'Dashboard',
-            'sidebar_selected': 'dashboard'
+            'sidebar_selected': 'dashboard',
         })
         return ret
 
@@ -431,14 +431,15 @@ class Reports(ChangesBase, PaginatedView):
 
     def get_context_data(self, **kwargs):
         subsection = ''
-        kind = self.request.GET.get('kind', None)
+        kind = self.request.GET.get('kind')
         if kind:
             subsection += '%s - ' % self.report_name
         subsection += 'Reports'
         select = {'top_changes': 'top ci changes',
                   'top_problems': 'top ci problems',
                   'top_incidents': 'top ci incidents',
-                  'usage': 'cis w/o changes'}
+                  'usage': 'cis w/o changes',
+        }
         ret = super(Reports, self).get_context_data(**kwargs)
         ret.update({
             'data': self.data,
@@ -446,7 +447,7 @@ class Reports(ChangesBase, PaginatedView):
             'report_kind': self.request.GET.get('kind', 'top'),
             'report_name': self.report_name,
             'subsection': subsection,
-            'sidebar_selected': select.get(kind, '')
+            'sidebar_selected': select.get(kind, ''),
        })
         return ret
 
@@ -545,7 +546,7 @@ class TimeLine(BaseCMDBView):
         ret = super(TimeLine, self).get_context_data(**kwargs)
         ret.update({
             'sidebar_selected': 'timeline view',
-            'subsection': 'Time Line'
+            'subsection': 'Time Line',
         })
         return ret
 
