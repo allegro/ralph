@@ -5,6 +5,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+from django.core.urlresolvers import reverse_lazy
 import re
 
 from django import forms
@@ -126,9 +127,9 @@ class VentureAdmin(ModelAdmin):
             return []
         owners = CIOwner.objects.filter(ciownership__type=CIOwnershipType.technical.id,
             ci=ci)
-        return "<a href=\"/cmdb/ci/edit/{}\">{}</a>".format(ci.id,
+        part_url = reverse_lazy('ci_edit', kwargs={'ci_id': str(ci.id)})
+        return "<a href=\"{}\">{}</a>".format(part_url,
                     ", ".join([unicode(owner) for owner in owners]))
-
     technical_owners.short_description = _("technical owners")
     technical_owners.allow_tags = True
 
@@ -138,7 +139,8 @@ class VentureAdmin(ModelAdmin):
             return []
         owners = CIOwner.objects.filter(ciownership__type=CIOwnershipType.business.id,
             ci=ci)
-        return "<a href=\"/cmdb/ci/edit/{}\">{}</a>".format(ci.id,
+        part_url = reverse_lazy('ci_edit', kwargs={'ci_id': str(ci.id)})
+        return "<a href=\"{}\">{}</a>".format(part_url,
                     ", ".join([unicode(owner) for owner in owners]))
     business_owners.short_description = _("business owners")
     business_owners.allow_tags = True
