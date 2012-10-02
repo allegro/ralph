@@ -68,7 +68,8 @@ class VentureRoleAdminForm(forms.ModelForm):
         data = self.cleaned_data['name']
         if not util_venture.slug_validation(data):
             raise forms.ValidationError("Symbol can't be empty, has to start with"
-                                        " letter, and can't end with '_'. Allowed characters: a-z, 0-9, "
+                                        " a letter, and can't end with '_'. "
+                                        "Allowed characters: a-z, 0-9, "
                                         "'_'. Example: simple_venture2")
         return data
 
@@ -107,7 +108,7 @@ class VentureAdminForm(forms.ModelForm):
         data = self.cleaned_data['symbol']
         if not util_venture.slug_validation(data):
             raise forms.ValidationError("Symbol can't be empty, has to start with"
-                " letter, and can't end with '_'. Allowed characters: a-z, 0-9, "
+                " a letter, and can't end with '_'. Allowed characters: a-z, 0-9, "
                 "'_'. Example: simple_venture2")
         else:
             venture = Venture.objects.filter(symbol=data)
