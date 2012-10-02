@@ -7,5 +7,7 @@ namespace DonPedro.DTO
 	{
 		public string Mac { get; set; }
 		public string Speed { get; set; }
+		public string IPAddress { get; set; }
+		public string IPSubnet { get; set; }
 	}
 }
