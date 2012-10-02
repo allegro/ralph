@@ -39,24 +39,32 @@ vm-name-label ( RO)    : Transfer VM for VDI 07f1cca1-056d-4694-879e-adcb2ed989e
 
     def test_xen_get_running_vms(self):
         ssh = MockSSH([
-                ('sudo xe vm-list params=uuid,name-label,power-state', """\
-uuid ( RO)           : 66844623-25b9-3d62-f9c9-5efcc35e213f
-     name-label ( RW): Transfer VM for VDI 07f1cca1-056d-4694-879e-adcb2ed989e1
-    power-state ( RO): halted
+                ('sudo xe vm-list '
+                 'params=uuid,name-label,power-state,'
+                 'VCPUs-number,memory-actual', """\
+uuid ( RO)             : 66844623-25b9-3d62-f9c9-5efcc35e213f
+       name-label ( RW): Transfer VM for VDI 07f1cca1-056d-4694-879e-adcb2ed989e1
+      power-state ( RO): halted
+    memory-actual ( RO): 0
+     VCPUs-number ( RO): 1
 
 
-uuid ( RO)           : c98c2e2b-a8cf-fe0a-a3c3-2e492c541ef9
-     name-label ( RW): win2k8
-    power-state ( RO): running
+uuid ( RO)             : c98c2e2b-a8cf-fe0a-a3c3-2e492c541ef9
+       name-label ( RW): win2k8
+      power-state ( RO): running
+    memory-actual ( RO): 1073713152
+     VCPUs-number ( RO): 1
 
 
-uuid ( RO)           : 4c960326-0522-482f-9213-ffcc3acf8298
-     name-label ( RW): Control domain on host: s10820.dc2
-    power-state ( RO): running
+uuid ( RO)             : 4c960326-0522-482f-9213-ffcc3acf8298
+       name-label ( RW): Control domain on host: s10820.dc2
+      power-state ( RO): running
+    memory-actual ( RO): 609222656
+     VCPUs-number ( RO): 8
 
 
 """)])
         vms = ssh_xen.get_running_vms(ssh)
         self.assertEqual(vms, {
-            ('win2k8', '66844623-25b9-3d62-f9c9-5efcc35e213f')
+            ('win2k8', '66844623-25b9-3d62-f9c9-5efcc35e213f', 1, 1048548)
         })

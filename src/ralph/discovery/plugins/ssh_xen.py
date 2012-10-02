@@ -9,12 +9,10 @@ from __future__ import unicode_literals
 import ssh as paramiko
 
 from django.conf import settings
-from lck.django.common import nested_commit_on_success
 
-from ralph.util import network, Eth
-from ralph.util import plugin
-from ralph.discovery.models import IPAddress
-from ralph.discovery.models import Device, DeviceType
+from ralph.util import network, Eth, plugin, parse
+from ralph.discovery.models import (Device, DeviceType, ComponentModel,
+                                    Processor, ComponentType, Memory, IPAddress)
 
 
 XEN_USER = settings.XEN_USER
@@ -52,25 +50,32 @@ def get_macs(ssh):
     return macs
 
 def get_running_vms(ssh):
+    stdin, stdout, stderr = ssh.exec_command('sudo xe vm-list '
+            'params=uuid,name-label,power-state,VCPUs-number,memory-actual')
+    data = stdout.read()
     vms = set()
-    label = ''
-    uuid = ''
-    for line in _ssh_lines(ssh,
-                       'sudo xe vm-list params=uuid,name-label,power-state'):
-        line = line.strip()
-        if not line:
+    for vm_data in data.split('\n\n'):
+        info = parse.pairs(lines=[
+            line.replace('( RO)',
+                         '').replace('( RW)',
+                         '').replace('(MRO)',
+                         '').strip()
+            for line in vm_data.splitlines()])
+        if not info:
             continue
-        if line.startswith('name-label'):
-            label = line.split(':', 1)[1].strip()
+        label = info['name-label']
         if (label.startswith('Transfer VM for') or
             label.startswith('Control domain on host:')):
+            # Skip the helper virtual machines
             continue
-        if line.startswith('uuid'):
-            uuid = line.split(':', 1)[1].strip()
-        if line.startswith('power-state'):
-            state = line.split(':', 1)[1].strip()
-            if state == 'running':
-                vms.add((label, uuid))
+        power = info['power-state']
+        if power not in {'running'}:
+            # Only include the running virtual machines
+            continue
+        cores = int(info['VCPUs-number'])
+        memory = int(int(info['memory-actual'])/1024)
+        uuid = info['uuid']
+        vms.add((label, uuid, cores, memory))
     return vms
 
 
@@ -83,11 +88,11 @@ def run_ssh_xen(ipaddr, parent):
         ssh.close()
 
     for dev in parent.child_set.exclude(
-            sn__in=[vm_uuid for (vm_name, vm_uuid) in vms]
+            sn__in=[vm_uuid for (vm_name, vm_uuid, vm_cores, vm_memory) in vms]
         ):
         dev.deleted = True
         dev.save()
-    for vm_name, vm_uuid in vms:
+    for vm_name, vm_uuid, vm_cores, vm_memory in vms:
         ethernets = [Eth('vif %d' % i, mac, 0) for
                      i, mac in enumerate(macs.get(vm_name, []))]
         dev = Device.create(ethernets=ethernets, parent=parent, sn=vm_uuid,
@@ -95,7 +100,36 @@ def run_ssh_xen(ipaddr, parent):
                 model_name='XEN Virtual Server', priority=SAVE_PRIORITY)
         dev.name = vm_name
         dev.save(priority=SAVE_PRIORITY)
-    return ', '.join(vm_name for (vm_name, vm_uuid) in vms)
+        cpu_model, cpu_model_created = ComponentModel.concurrent_get_or_create(
+            speed=0, type=ComponentType.processor.id, family='XEN Virtual',
+            cores=0)
+        if cpu_model_created:
+            cpu_model.name = 'XEN Virtual CPU'
+            cpu_model.save()
+        for i in xrange(vm_cores):
+            cpu, created = Processor.concurrent_get_or_create(device=dev,
+                                                              index=i + 1)
+            if created:
+                cpu.label = 'CPU %d' % i
+                cpu.model = cpu_model
+                cpu.family = 'XEN Virtual'
+                cpu.save()
+        for cpu in dev.processor_set.filter(index__gt=vm_cores+1):
+            cpu.delete()
+        mem_model, mem_model_created = ComponentModel.concurrent_get_or_create(
+            speed=0, type=ComponentType.memory.id, family='XEN Virtual',
+            cores=0, size=0)
+        if mem_model_created:
+            mem_model.name = 'XEN Virtual Memory'
+            mem_model.save()
+        memory, created = Memory.concurrent_get_or_create(device=dev, index=1)
+        memory.size = vm_memory
+        memory.model = mem_model
+        memory.label = 'XEN Memory'
+        memory.save()
+        for mem in dev.memory_set.filter(index__gt=1):
+            mem.delete()
+    return ', '.join(vm_name for (vm_name, vm_uuid, vm_cores, vm_memory) in vms)
 
 
 @plugin.register(chain='discovery', requires=['ping', 'snmp'])
