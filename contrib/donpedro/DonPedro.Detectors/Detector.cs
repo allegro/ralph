@@ -67,7 +67,10 @@ namespace DonPedro.Detectors
 			json += "],\n \"shares\": [";
 			json += string.Join(",", GetDiskShareMountInfo().ConvertAll(s => s.ToJSON()).ToArray());
 			json += "],\n \"operating_system\": [";
-			json += GetOperatingSystemInfo().ToJSON() + "]}}";
+			json += GetOperatingSystemInfo().ToJSON();
+			json += "],\n \"processors\": [";
+			json += string.Join(",", GetProcessorsInfo().ConvertAll(s => s.ToJSON()).ToArray());
+			json += "]}}";
 			return json;
 		}
 		
