@@ -140,6 +140,8 @@ def run_ssh_aix(ip):
 
 @plugin.register(chain='discovery', requires=['ping'])
 def ssh_aix(**kwargs):
+    if 'nx-os' in kwargs.get('snmp_name', '').lower():
+        return False, 'incompatible Nexus found.', kwargs
     ip = str(kwargs['ip'])
     if AIX_USER is None:
         return False, 'no auth.', kwargs

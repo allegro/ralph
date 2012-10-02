@@ -17,7 +17,7 @@ import csv
 
 
 class excel_semicolon(csv.excel):
-    delimiter = ';'
+    delimiter = b';'
 
 
 class UTF8Recoder:

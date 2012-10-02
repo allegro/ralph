@@ -66,7 +66,7 @@ class SidebarSearch(object):
             'section': 'home',
             'subsection': 'search',
             'searchform': self.searchform,
-            })
+        })
         return ret
 
 
@@ -97,10 +97,10 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
             if data['name']:
                 name = data['name'].strip()
                 names = set(n.strip('.') for (n,) in Record.objects.filter(
-                            type='CNAME'
-                        ).filter(
-                            name__icontains=name
-                        ).values_list('content'))
+                        type='CNAME'
+                    ).filter(
+                        name__icontains=name
+                    ).values_list('content'))
                 ips = set(ip.strip('.') for (ip,) in Record.objects.filter(
                         type='A'
                     ).filter(
@@ -205,8 +205,8 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                     )
                 else:
                     self.query = self.query.filter(
-                        barcode__icontains=data['barcode']
-                    )
+                            barcode__icontains=data['barcode']
+                        )
             if data['position']:
                 if data['position'] == empty_field:
                     self.query = self.query.filter(
@@ -267,7 +267,7 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                         family='splunkusage').exists()
                 if is_splunk:
                     yesterday = datetime.date.today() - datetime.timedelta(
-                        days=1)
+                            days=1)
                     q = Q(splunkusage__day=yesterday)
                 else:
                     q = _search_fields_or([
@@ -283,7 +283,7 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
             if data['device_type']:
                 self.query = self.query.filter(
                         model__type__in=data['device_type']
-                )
+                    )
             if data['no_purchase_date']:
                 self.query = self.query.filter(purchase_date = None)
             else:
@@ -312,12 +312,12 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                 if data['warranty_expiration_date_start']:
                     self.query = self.query.filter(
                         warranty_expiration_date__gte=
-                        data['warranty_expiration_date_start']
+                            data['warranty_expiration_date_start']
                     )
                 if data['warranty_expiration_date_end']:
                     self.query = self.query.filter(
                         warranty_expiration_date__lte=
-                        data['warranty_expiration_date_end']
+                            data['warranty_expiration_date_end']
                     )
             if data['no_support_expiration_date']:
                 self.query = self.query.filter(support_expiration_date=None)
@@ -335,7 +335,7 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
         profile = self.request.user.get_profile()
         if not profile.has_perm(Perm.read_dc_structure):
             self.query = profile.filter_by_perm(self.query,
-                                                Perm.list_devices_generic)
+                Perm.list_devices_generic)
         self.query = super(SearchDeviceList, self).get_queryset(self.query)
         return self.query
 

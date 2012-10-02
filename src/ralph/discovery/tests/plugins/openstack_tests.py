@@ -29,7 +29,7 @@ class MockOpenStack(object):
         return simple_tenant_usage_data
 
     def query(self, query, url, **kwargs):
-        pass
+        return []
 
     def auth(self, *args, **kwargs):
         pass
