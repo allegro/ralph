@@ -15,13 +15,14 @@ namespace DonPedro.DTO
 			{
 				parts.Add(
 					string.Format(
-						"\"{0}\":\"{1}\"", property.Name.ToLower(), 
-						property.GetValue(this, null)
+						"\"{0}\":\"{1}\"", 
+						property.Name.ToLower(),
+						property.GetValue(this, null).ToString().Replace("\"", "\\\"")
 					)
 				);
 			}
 
-			return "{" + String.Join(",", (String[]) parts.ToArray(typeof(string))) + "}";
+			return "{" + string.Join(",", (string[]) parts.ToArray(typeof(string))) + "}";
 		}
 	}
 }

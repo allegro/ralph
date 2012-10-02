@@ -316,6 +316,33 @@ namespace DonPedro.Detectors
 			return mounts;
 		}
 		
+		public DeviceDTOResponse GetDeviceInfo()
+		{
+			DeviceDTOResponse device = new DeviceDTOResponse();
+			
+			try
+			{
+				ManagementClass mc = new ManagementClass("Win32_ComputerSystemProduct");
+				
+				foreach (ManagementObject obj in mc.GetInstances())
+				{
+					device.Label = GetValueAsString(obj, "Name");
+					device.Sn = GetValueAsString(obj, "IdentifyingNumber");
+					device.Caption = GetValueAsString(obj, "Caption");
+					device.Vendor = GetValueAsString(obj, "Vendor");
+					device.Version = GetValueAsString(obj, "Version");
+					
+					break;
+				}
+			}
+			catch (ManagementException e)
+			{
+				new Logger().LogError(e.ToString());
+			}
+			
+			return device;
+		}
+		
 		protected string GetValueAsString(ManagementObject obj, string valueName)
 		{
 			try
