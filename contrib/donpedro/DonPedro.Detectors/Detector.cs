@@ -55,6 +55,22 @@ namespace DonPedro.Detectors
 			return wmiDetector.GetDiskShareMountInfo();
 		}
 		
+		public string getAllComponentsJSON()
+		{
+			string json = "{\"data\":{";
+			json += "\"storage\": [";
+			json += string.Join(",", GetStorageInfo().ConvertAll(s => s.ToJSON()).ToArray());
+			json += "],\n \"ethernets\": [";
+			json += string.Join(",", GetEthernetInfo().ConvertAll(s => s.ToJSON()).ToArray());
+			json += "],\n \"fcs\": [";
+			json += string.Join(",", GetFibreChannelInfo().ConvertAll(s => s.ToJSON()).ToArray());
+			json += "],\n \"shares\": [";
+			json += string.Join(",", GetDiskShareMountInfo().ConvertAll(s => s.ToJSON()).ToArray());
+			json += "],\n \"operating_system\": [";
+			json += GetOperatingSystemInfo().ToJSON() + "]}}";
+			return json;
+		}
+		
 		public List<BaseDTOResponse> GetAllComponents()
 		{
 			List<BaseDTOResponse> components = new List<BaseDTOResponse>();
