@@ -22,7 +22,7 @@ namespace DonPedro.Detectors
 			{
 				fcinfoResult = ExecuteFcinfoCommand();
 			}
-			catch (ExternalCommandExecutionException)
+			catch (ExternalCommandExecutionException e)
 			{
 				return fc;
 			}
@@ -106,7 +106,7 @@ namespace DonPedro.Detectors
 		
 		protected ProcessStartInfo PrepareProcessStartInfo()
 		{
-			ProcessStartInfo psi = new ProcessStartInfo("cmd.exe", @"/C  fcinfo.exe /details");
+			ProcessStartInfo psi = new ProcessStartInfo("cmd.exe", @"/C %windir%\\Sysnative\\fcinfo.exe /details");
 			psi.RedirectStandardOutput = true;
 			psi.RedirectStandardError = true;
 			psi.UseShellExecute = false;
