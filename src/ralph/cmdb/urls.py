@@ -6,9 +6,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from django.conf.urls.defaults import patterns
-from django.contrib.auth.decorators import login_required
 from django.conf.urls.defaults import patterns, include, url
+from django.contrib.auth.decorators import login_required
 
 from ralph.cmdb.views import (Index, Search, Edit, Add, View,
         ViewIframe, EditRelation, LastChanges, AddRelation,
@@ -16,7 +15,6 @@ from ralph.cmdb.views import (Index, Search, Edit, Add, View,
 from ralph.cmdb.views_changes import  (Changes, Problems, Incidents,
         Change, Dashboard, Reports, DashboardDetails)
 from ralph.cmdb.views_changes import TimeLine
-from django.conf.urls.defaults import include
 
 
 urlpatterns = patterns('',
