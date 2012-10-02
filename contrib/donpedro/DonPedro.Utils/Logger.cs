@@ -2,7 +2,7 @@
 using System.IO;
 using System.Reflection;
 
-namespace DonPedro
+namespace DonPedro.Utils
 {
 	public sealed class Logger :IDisposable
 	{

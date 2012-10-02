@@ -4,6 +4,7 @@ using System.IO;
 
 using DonPedro;
 using DonPedro.Detectors;
+using DonPedro.Utils;
 
 namespace DonPedro
 {

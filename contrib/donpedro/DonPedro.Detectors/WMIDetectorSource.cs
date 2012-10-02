@@ -3,6 +3,7 @@ using System.CodeDom;
 using System.Management;
 using System.Collections.Generic;
 using DonPedro.DTO;
+using DonPedro.Utils;
 
 namespace DonPedro.Detectors
 {
@@ -17,15 +18,15 @@ namespace DonPedro.Detectors
 		public List<ProcessorDTOResponse> GetProcessorsInfo()
 		{
 			List<ProcessorDTOResponse> processors = new List<ProcessorDTOResponse>();
-			
-			SelectQuery query = new SelectQuery(
-				@"select Name, Description, DeviceID, MaxClockSpeed, NumberOfCores, NumberOfLogicalProcessors, Caption
-				  from Win32_Processor"
-			);
-			ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
-			
+
 			try
 			{
+				SelectQuery query = new SelectQuery(
+					@"select Name, Description, DeviceID, MaxClockSpeed, NumberOfCores, NumberOfLogicalProcessors, Caption
+					  from Win32_Processor"
+				);
+				ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
+				
 				foreach (ManagementObject obj in searcher.Get())
 				{
 					ProcessorDTOResponse processor = new ProcessorDTOResponse();
@@ -40,8 +41,9 @@ namespace DonPedro.Detectors
 					processors.Add(processor);
 				}
 			}
-			catch (ManagementException)
+			catch (ManagementException e)
 			{
+				new Logger().LogError(e.ToString());
 			}
 			
 			return processors;
@@ -51,14 +53,14 @@ namespace DonPedro.Detectors
 		{
 			List<MemoryDTOResponse> memory = new List<MemoryDTOResponse>();
 			
-			SelectQuery query = new SelectQuery(
-				@"select Name, DeviceLocator, Speed, SerialNumber, Caption, Capacity
-				  from Win32_PhysicalMemory"
-			);
-			ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
-			
 			try
 			{
+				SelectQuery query = new SelectQuery(
+					@"select Name, DeviceLocator, Speed, SerialNumber, Caption, Capacity
+					  from Win32_PhysicalMemory"
+				);
+				ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
+				
 				foreach (ManagementObject obj in searcher.Get())
 				{
 					MemoryDTOResponse chip = new MemoryDTOResponse();
@@ -74,22 +76,25 @@ namespace DonPedro.Detectors
 							SizeUnits.B
 						).ToString();
 					}
-					catch (Exception)
+					catch (Exception e)
 					{
+						new Logger().LogError(e.ToString());
 					}
 					
 					memory.Add(chip);
 				}
 			}
-			catch (ManagementException)
+			catch (ManagementException e)
 			{
+				new Logger().LogError(e.ToString());
 			}
 			
 			if (memory.Count == 0) {
 				try
 				{
-					query = new SelectQuery("select TotalPhysicalMemory, BootOptionOnLimit from Win32_ComputerSystem");
-					searcher = new ManagementObjectSearcher(query);
+					SelectQuery query = new SelectQuery("select TotalPhysicalMemory, BootOptionOnLimit from Win32_ComputerSystem");
+					ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
+					
 					foreach (ManagementObject obj in searcher.Get())
 					{
 						MemoryDTOResponse chip = new MemoryDTOResponse();
@@ -102,8 +107,9 @@ namespace DonPedro.Detectors
 						memory.Add(chip);
 					}
 				}
-				catch (ManagementException)
+				catch (ManagementException e)
 				{
+					new Logger().LogError(e.ToString());
 				}
 			}
 			
@@ -113,12 +119,12 @@ namespace DonPedro.Detectors
 		public OperatingSystemDTOResponse GetOperatingSystemInfo()
 		{
 			OperatingSystemDTOResponse os = new OperatingSystemDTOResponse();
-			
-			SelectQuery query = new SelectQuery("select Caption, TotalVisibleMemorySize from Win32_OperatingSystem");
-			ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
-			
+
 			try
 			{
+				SelectQuery query = new SelectQuery("select Caption, TotalVisibleMemorySize from Win32_OperatingSystem");
+				ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
+				
 				foreach (ManagementObject obj in searcher.Get())
 				{
 					os.Label = GetValueAsString(obj, "Caption");
@@ -126,14 +132,16 @@ namespace DonPedro.Detectors
 					{
 						os.Memory = ConvertSizeToMiB(Int64.Parse(obj["TotalVisibleMemorySize"].ToString()), SizeUnits.KB).ToString();
 					}
-					catch (Exception)
+					catch (Exception e)
 					{
+						new Logger().LogError(e.ToString());
 					}
 					break;
 				}
 			}
-			catch (ManagementException)
+			catch (ManagementException e)
 			{
+				new Logger().LogError(e.ToString());
 			}
 			
 			int totalCoresCount = 0;
@@ -164,12 +172,12 @@ namespace DonPedro.Detectors
 		public List<StorageDTOResponse> GetStorageInfo()
 		{
 			List<StorageDTOResponse> storage = new List<StorageDTOResponse>();
-			
-			SelectQuery diskDrivesQuery = new SelectQuery("select Caption, DeviceID, SerialNumber from Win32_DiskDrive");
-			ManagementObjectSearcher diskDrivesSearcher = new ManagementObjectSearcher(diskDrivesQuery);
-			
+
 			try
 			{
+				SelectQuery diskDrivesQuery = new SelectQuery("select Caption, DeviceID, SerialNumber from Win32_DiskDrive");
+				ManagementObjectSearcher diskDrivesSearcher = new ManagementObjectSearcher(diskDrivesQuery);
+				
 				foreach (ManagementObject diskDrive in diskDrivesSearcher.Get())
 				{
 					RelatedObjectQuery diskPartitionsQuery = new RelatedObjectQuery(
@@ -197,8 +205,9 @@ namespace DonPedro.Detectors
 							{
 								disk.Size = ConvertSizeToMiB(Int64.Parse(logicalDisk["Size"].ToString()), SizeUnits.B).ToString();
 							}
-							catch (Exception)
+							catch (Exception e)
 							{
+								new Logger().LogError(e.ToString());
 							}
 							disk.Sn = GetValueAsString(diskDrive, "SerialNumber");
 							
@@ -207,8 +216,9 @@ namespace DonPedro.Detectors
 					}
 				}
 			}
-			catch (ManagementException)
+			catch (ManagementException e)
 			{
+				new Logger().LogError(e.ToString());
 			}
 			
 			return storage;
@@ -217,16 +227,16 @@ namespace DonPedro.Detectors
 		public List<EthernetDTOResponse> GetEthernetInfo()
 		{
 			List<EthernetDTOResponse> ethetnets = new List<EthernetDTOResponse>();
-			
-			SelectQuery query = new SelectQuery(
-				@"select Name,  MACAddress, Speed 
-				  from Win32_NetworkAdapter 
-				  where MACAddress<>null and PhysicalAdapter=true"
-			);
-			ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
-			
+
 			try
 			{
+				SelectQuery query = new SelectQuery(
+					@"select Name,  MACAddress, Speed 
+					  from Win32_NetworkAdapter 
+					  where MACAddress<>null and PhysicalAdapter=true"
+				);
+				ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
+				
 				foreach (ManagementObject obj in searcher.Get())
 				{
 					EthernetDTOResponse eth = new EthernetDTOResponse();
@@ -237,8 +247,9 @@ namespace DonPedro.Detectors
 					ethetnets.Add(eth);
 				}
 			}
-			catch (ManagementException)
+			catch (ManagementException e)
 			{
+				new Logger().LogError(e.ToString());
 			}
 			
 			return ethetnets;
@@ -247,16 +258,16 @@ namespace DonPedro.Detectors
 		public List<FibreChannelDTOResponse> GetFibreChannelInfo()
 		{
 			List<FibreChannelDTOResponse> fc = new List<FibreChannelDTOResponse>();
-			
-			SelectQuery query = new SelectQuery(
-				@"select Caption, DeviceID 
-				  from Win32_SCSIController 
-				  where Caption like '%Fibre Channel Adapter%' or Caption like '%HBA%'"
-			);
-			ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
-			
+
 			try
 			{
+				SelectQuery query = new SelectQuery(
+					@"select Caption, DeviceID 
+					  from Win32_SCSIController 
+					  where Caption like '%Fibre Channel Adapter%' or Caption like '%HBA%'"
+				);
+				ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
+				
 				foreach (ManagementObject obj in searcher.Get())
 				{
 					FibreChannelDTOResponse card = new FibreChannelDTOResponse();
@@ -267,8 +278,9 @@ namespace DonPedro.Detectors
 					fc.Add(card);
 				}
 			}
-			catch (ManagementException)
+			catch (ManagementException e)
 			{
+				new Logger().LogError(e.ToString());
 			}
 			
 			return fc;
@@ -277,16 +289,16 @@ namespace DonPedro.Detectors
 		public List<DiskShareMountDTOResponse> GetDiskShareMountInfo()
 		{
 			List<DiskShareMountDTOResponse> mounts = new List<DiskShareMountDTOResponse>();
-			
-			SelectQuery query = new SelectQuery(
-				@"select Model, SerialNumber 
-				  from Win32_DiskDrive 
-				  where Model like '3PARdata%'"
-			);
-			ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
-			
+
 			try
 			{
+				SelectQuery query = new SelectQuery(
+					@"select Model, SerialNumber 
+					  from Win32_DiskDrive 
+					  where Model like '3PARdata%'"
+				);
+				ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
+				
 				foreach (ManagementObject obj in searcher.Get())
 				{
 					DiskShareMountDTOResponse share = new DiskShareMountDTOResponse();
@@ -296,8 +308,9 @@ namespace DonPedro.Detectors
 					mounts.Add(share);
 				}
 			}
-			catch (ManagementException)
+			catch (ManagementException e)
 			{
+				new Logger().LogError(e.ToString());
 			}
 			
 			return mounts;
