@@ -3,8 +3,8 @@ using System.Diagnostics;
 using System.IO;
 
 using DonPedro;
-using DonPedro.DTO;
-using System.Collections.Generic;
+using DonPedro.Detectors;
+using DonPedro.Utils;
 
 namespace DonPedro
 {
@@ -34,7 +34,7 @@ namespace DonPedro
 			string json_data = "";
 			setup();
 			new Logger().LogDebug("Detecting config");
-			Detectors.Detector d = new DonPedro.Detectors.Detector();
+			Detectors.Detector d = new Detector();
 			json_data = d.getAllComponentsJSON();
 			new Logger().LogDebug(json_data);
 			new Logger().LogDebug("Sending to: " + ReportURL);
@@ -58,5 +58,4 @@ namespace DonPedro
 			Console.ReadKey();
 		}
 	}
-	
 }

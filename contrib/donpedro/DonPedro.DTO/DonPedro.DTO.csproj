@@ -49,6 +49,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BaseDTOResponse.cs" />
+    <Compile Include="DeviceDTOResponse.cs" />
     <Compile Include="DiskShareMountDTOResponse.cs" />
     <Compile Include="EthernetDTOResponse.cs" />
     <Compile Include="FibreChannelDTOResponse.cs" />

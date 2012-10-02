@@ -48,7 +48,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Logger.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\app.Designer.cs">
       <DependentUpon>app.settings</DependentUpon>
@@ -65,6 +64,10 @@
     <ProjectReference Include="..\DonPedro.DTO\DonPedro.DTO.csproj">
       <Project>{2D5CC727-4B81-4980-80C8-D078B1559C55}</Project>
       <Name>DonPedro.DTO</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DonPedro.Utils\DonPedro.Utils.csproj">
+      <Project>{66ED9F1D-C781-4EBB-BC39-3D7E600C89E9}</Project>
+      <Name>DonPedro.Utils</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
