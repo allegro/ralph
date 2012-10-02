@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Net;
 
 using DonPedro;
 using DonPedro.Detectors;
@@ -21,6 +22,7 @@ namespace DonPedro
 		static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
 		{
 			new Logger().LogFatal(e.ExceptionObject.ToString());
+			ServicePointManager.ServerCertificateValidationCallback += delegate { return true; };
 		}
 		
 		private static void setup()
