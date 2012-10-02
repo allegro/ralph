@@ -307,7 +307,8 @@ class Add(BaseCMDBView):
         ret.update({
             'form': self.form,
             'label': 'Add CI',
-            'subsection': 'Add CI'
+            'subsection': 'Add CI',
+            'sidebar_selected': 'add ci'
         })
         return ret
 
@@ -693,24 +694,29 @@ class Search(BaseCMDBView):
     Form = CISearchForm
     cis = []
     def get_context_data(self, **kwargs):
-        ret = super(Search, self).get_context_data(**kwargs)
         subsection = ''
-        if self.request.GET.get('layer', None):
-            get_layer = self.request.GET['layer']
-            layer = CILayer.objects.get(id = get_layer)
-            subsection += '%s - ' % layer
-        if self.request.GET.get('type', None):
-            get_type = self.request.GET['type']
-            type = CI_TYPES.NameFromID(int(get_type))
+        layer = self.request.GET.get('layer', None)
+        type = self.request.GET.get('type', None)
+        if layer:
+            subsection += '%s - ' % CILayer.objects.get(id = layer)
+        if type:
+            type = CI_TYPES.NameFromID(int(type))
             subsection += '%s - ' % CI_TYPES.DescFromName(type)
         subsection += 'Search'
+        sidebar_selected = ''
+        if layer == str(7):
+            sidebar_selected = 'services'
+        if not layer and not type:
+            sidebar_selected = 'all cis'
+        ret = super(Search, self).get_context_data(**kwargs)
         ret.update({
             'rows': self.rows,
             'page': self.page,
             'pages': _get_pages(self.paginator, self.page_number),
             'sort': self.request.GET.get('sort', ''),
             'form': self.form,
-            'subsection': subsection,
+            'sidebar_selected': sidebar_selected,
+            'subsection': subsection
         })
         return ret
 
