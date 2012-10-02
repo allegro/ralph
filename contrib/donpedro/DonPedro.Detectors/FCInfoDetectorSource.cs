@@ -22,7 +22,7 @@ namespace DonPedro.Detectors
 			{
 				fcinfoResult = ExecuteFcinfoCommand();
 			}
-			catch (ExternalCommandExecutionException e)
+			catch (ExternalCommandExecutionException)
 			{
 				return fc;
 			}

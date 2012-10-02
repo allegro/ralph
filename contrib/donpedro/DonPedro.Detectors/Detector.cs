@@ -55,6 +55,11 @@ namespace DonPedro.Detectors
 			return wmiDetector.GetDiskShareMountInfo();
 		}
 		
+		public DeviceDTOResponse GetDeviceInfo()
+		{
+			return wmiDetector.GetDeviceInfo();
+		}
+		
 		public List<BaseDTOResponse> GetAllComponents()
 		{
 			List<BaseDTOResponse> components = new List<BaseDTOResponse>();
@@ -90,6 +95,8 @@ namespace DonPedro.Detectors
 			}
 			
 			components.Add(GetOperatingSystemInfo());
+			
+			components.Add(GetDeviceInfo());
 
 			return components;
 		}
