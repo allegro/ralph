@@ -22,7 +22,17 @@ from tastypie.resources import ModelResource as MResource
 from tastypie.throttle import CacheThrottle
 
 from ralph.discovery.models import Device, DeviceModel, DeviceModelGroup,\
-    DeviceType, IPAddress
+    DeviceType, IPAddress, Memory, Processor, ComponentModel, \
+    ComponentType, OperatingSystem, Storage, DiskShare, DiskShareMount, \
+    FibreChannel, MAC_PREFIX_BLACKLIST
+
+from ralph.util import plugin, Eth
+from lck.django.common.models import MACAddressField
+from lck.django.common import remote_addr
+import hashlib
+
+class NoMACError(Exception):
+    pass
 
 THROTTLE_AT = settings.API_THROTTLING['throttle_at']
 TIMEFREME = settings.API_THROTTLING['timeframe']
@@ -266,3 +276,93 @@ class DevResource(DeviceResource):
         queryset = Device.objects.all()
         throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
                                 expiration=EXPIRATION)
+
+
+class IPAddressResource(MResource):
+    device = fields.ForeignKey('ralph.discovery.api.DevResource', 'device',
+        null=True)
+
+    class Meta:
+        queryset = IPAddress.objects.all()
+        authentication = ApiKeyAuthentication()
+        authorization = DjangoAuthorization()
+        filtering = {
+            'address': ALL,
+            'hostname': ALL,
+            'snmp_community': ALL,
+            'device': ALL,
+            'is_management': ALL,
+        }
+        excludes = ('save_priorities', 'max_save_priority', 'dns_info',
+            'snmp_name')
+        cache = SimpleCache()
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+                                expiration=EXPIRATION)
+
+def import_device_data(data, remote_ip):
+    SAVE_PRIORITY = 10
+    device = data['device']
+    shares = data['shares']
+    fcs = data['fcs']
+    storage = data['storage']
+    operating_system = data['operating_system']
+    processors = data['processors']
+    device = data['device']
+    ethernets = [Eth(e.get('label'), e['mac'].replace(':', ''), e.get('speed')) for
+        e in data['ethernets'] if MACAddressField.normalize(e.get('mac'))[0:6]
+        not in MAC_PREFIX_BLACKLIST ]
+    if not ethernets:
+        raise NoMACError('No MAC addresses.')
+    dev = Device.create(
+        sn = device.get('sn'),
+        ethernets=ethernets,
+        model_name='%s %s %s' % (device.get('caption'),
+        device.get('vendor'), device.get('version')),
+        model_type=DeviceType.unknown, priority=SAVE_PRIORITY
+    )
+    dev.save(priority=SAVE_PRIORITY)
+    if not dev.operatingsystem_set.exists():
+        OperatingSystem.create(dev, os_name=operating_system.get('label'),
+           family='Windows').save()
+    ip_address = IPAddress.concurrent_get_or_create(address=str(remote_ip))
+    ip_address.device = dev
+    ip_address.is_management = False
+    ip_address.save()
+    for cpu in dev.processor_set.exclude(index__in=[p.index for p in processors]):
+        cpu.delete()
+    for p in processors:
+        index = p['index'][3:] #CPU0
+        label = p['index']
+        speed = int(p.get('speed'))
+        cores = int(p.get('cores'))
+        cpu, created = Processor.concurrent_get_or_create(
+                device=dev, index=index)
+        cpu.label = p.get('index')
+        cpu.model, c = ComponentModel.concurrent_get_or_create(
+            speed=speed, type=ComponentType.processor.id,
+            cores=cores, label=label)
+        cpu.model.save(priority=SAVE_PRIORITY)
+        cpu.save(priority=SAVE_PRIORITY)
+    dev.processor_set.filter(index__contains=processors).delete()
+
+class WindowsDeviceResource(MResource):
+    def obj_create(self, bundle, request=None, **kwargs):
+        ip = remote_addr(request)
+        import_device_data(bundle.data.get('data'), )
+
+    def obj_update(self, bundle, request=None, **kwargs):
+        pass
+
+    class Meta:
+        queryset = Device.objects.all()
+        authentication = ApiKeyAuthentication()
+        authorization = DjangoAuthorization()
+        filtering = {}
+        excludes = ('save_priorities', 'max_save_priority', 'dns_info',
+            'snmp_name')
+        cache = SimpleCache()
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+            expiration=EXPIRATION)
+
+
+
