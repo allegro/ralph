@@ -465,7 +465,7 @@ class Edit(BaseCMDBView):
             'cmdb_messages': self.get_messages(),
             'show_in_ralph': self.show_in_ralph,
             'ralph_ci_link': self.ralph_ci_link,
-            'subsection': 'Edit - %s' % self.ci.name
+            'subsection': 'Edit - %s' % self.ci.name,
         })
         return ret
 
