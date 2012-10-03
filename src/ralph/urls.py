@@ -6,7 +6,8 @@ from ralph.business.api import VentureResource, VentureLightResource,\
 from ralph.deployment.api import DeploymentResource
 from ralph.discovery.api import IPAddressResource, ModelGroupResource,\
     ModelResource, PhysicalServerResource, RackServerResource,\
-    VirtualServerResource, BladeServerResource, DevResource
+    VirtualServerResource, BladeServerResource, DevResource, \
+    WindowsDeviceResource
 
 from django.conf import settings
 from django.contrib import admin
@@ -24,7 +25,7 @@ for r in (VentureResource, VentureLightResource, RoleResource,
 
 # discovery API
 for r in (
-    IPAddressResource, ModelGroupResource, ModelResource,
+    IPAddressResource, ModelGroupResource, ModelResource, WindowsDeviceResource,
     PhysicalServerResource, RackServerResource, BladeServerResource,
     VirtualServerResource, DevResource):
     v09_api.register(r())
