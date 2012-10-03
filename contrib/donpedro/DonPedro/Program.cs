@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Net;
 
 using DonPedro;
 using DonPedro.Detectors;
@@ -10,17 +11,18 @@ namespace DonPedro
 {
 	class Program
 	{
-		static string json_data  = "";
-		static string ralph_url = Properties.app.Default.ralph_url;
-		static string report_url = ralph_url + Properties.app.Default.api_path;
-		static int max_tries = Properties.app.Default.max_tries;
-		static int seconds_interval = Properties.app.Default.tries_interval;
-		static string api_user = Properties.app.Default.api_user;
-		static string api_key = Properties.app.Default.api_key;
+		static string JSONData  = "";
+		static string RalphURL = Properties.app.Default.ralph_url;
+		static string ReportURL = RalphURL + Properties.app.Default.api_path;
+		static int MaxTries = Properties.app.Default.max_tries;
+		static int SecondsInterval = Properties.app.Default.tries_interval;
+		static string ApiUser = Properties.app.Default.api_user;
+		static string ApiKey = Properties.app.Default.api_key;
 		
 		static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
 		{
 			new Logger().LogFatal(e.ExceptionObject.ToString());
+			ServicePointManager.ServerCertificateValidationCallback += delegate { return true; };
 		}
 		
 		private static void setup()
@@ -34,15 +36,16 @@ namespace DonPedro
 			string json_data = "";
 			setup();
 			new Logger().LogDebug("Detecting config");
-			Detector d = new Detector();
-			json_data = d.GetAllComponentsJSON();
-			new Logger().LogDebug("Sending to: " + report_url);
-			while (tries < max_tries)
+			Detectors.Detector d = new Detector();
+			json_data = d.getAllComponentsJSON();
+			new Logger().LogDebug(json_data);
+			new Logger().LogDebug("Sending to: " + ReportURL);
+			while (tries < MaxTries)
 			{
 				tries ++;
 				try
 				{
-					new Rest().Post(report_url+"/?username="+api_user+"&api_key="+api_key, json_data);
+					new Rest().Post(ReportURL+"/?username="+ApiUser+"&api_key="+ApiKey, json_data);
 				}
 				catch(System.Net.WebException e)
 				{
@@ -50,8 +53,8 @@ namespace DonPedro
 					string server_message = s.ReadToEnd();
 					string error_message = e.Message;
 					new Logger().LogError(String.Format("Error while sending data to {0}: {1}. Full response:{2} Waiting for {3} try.",
-					                                    ralph_url,	error_message,server_message, tries+1));
-					System.Threading.Thread.Sleep(seconds_interval*1000);
+					                                    RalphURL,	error_message,server_message, tries+1));
+					System.Threading.Thread.Sleep(SecondsInterval*1000);
 				}
 			}
 			Console.ReadKey();

@@ -55,6 +55,27 @@ namespace DonPedro.Detectors
 			return wmiDetector.GetDiskShareMountInfo();
 		}
 		
+		public string getAllComponentsJSON()
+		{
+			string json = "{\"data\":{";
+			json += "\"storage\": [";
+			json += string.Join(",", GetStorageInfo().ConvertAll(s => s.ToJSON()).ToArray());
+			json += "],\n \"ethernets\": [";
+			json += string.Join(",", GetEthernetInfo().ConvertAll(s => s.ToJSON()).ToArray());
+			json += "],\n \"fcs\": [";
+			json += string.Join(",", GetFibreChannelInfo().ConvertAll(s => s.ToJSON()).ToArray());
+			json += "],\n \"shares\": [";
+			json += string.Join(",", GetDiskShareMountInfo().ConvertAll(s => s.ToJSON()).ToArray());
+			json += "],\n \"operating_system\": ";
+			json += GetOperatingSystemInfo().ToJSON();
+			json += ",\n \"processors\": [";
+			json += string.Join(",", GetProcessorsInfo().ConvertAll(s => s.ToJSON()).ToArray());
+			json += "],\n \"device\": ";
+			json += GetDeviceInfo().ToJSON();
+			json += "}}";
+			return json;
+		}
+		
 		public DeviceDTOResponse GetDeviceInfo()
 		{
 			return wmiDetector.GetDeviceInfo();
@@ -101,19 +122,5 @@ namespace DonPedro.Detectors
 			return components;
 		}
 		
-		public string GetAllComponentsJSON()
-		{
-			List<BaseDTOResponse> components = GetAllComponents();
-			string[] jsonParts = new string[components.Count];
-			
-			int i = 0;
-			foreach (BaseDTOResponse component in components)
-			{
-				jsonParts[i] = component.ToJSON();
-				i++;
-			}
-			
-			return "{" + string.Join(",", jsonParts) + "}";
-		}
 	}
 }
