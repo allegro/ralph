@@ -22,12 +22,13 @@ namespace DonPedro
 		static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
 		{
 			new Logger().LogFatal(e.ExceptionObject.ToString());
-			ServicePointManager.ServerCertificateValidationCallback += delegate { return true; };
+		
 		}
 		
 		private static void setup()
 		{
 			AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
+			ServicePointManager.ServerCertificateValidationCallback += delegate { return true; };
 		}
 		
 		public static void Main(string[] args)
@@ -57,7 +58,6 @@ namespace DonPedro
 					System.Threading.Thread.Sleep(SecondsInterval*1000);
 				}
 			}
-			Console.ReadKey();
 		}
 	}
 }
