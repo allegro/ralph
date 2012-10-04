@@ -704,7 +704,7 @@ class Search(BaseCMDBView):
             subsection += '%s - ' % CI_TYPES.DescFromName(type)
         subsection += 'Search'
         sidebar_selected = ''
-        if layer == '7':
+        if layer == str(CI_TYPES.SERVICE.id):
             sidebar_selected = 'services'
         if not layer and not type:
             sidebar_selected = 'all cis'
