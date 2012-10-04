@@ -114,11 +114,12 @@ def save_storage(storage, dev):
 def save_memory(memory, dev):
     indexes = []
     memory_total_size = 0
+    index = 0
     for row in memory:
+        index+=1
         size = int(row['size']); speed = int(row['speed']) if row['speed'] else 0
         memory_total_size += size
-        index = int(row['index'].split()[1])+1
-        label = row['label']
+        label = row['index'] #eg: 'DIMM-2A'
         indexes.append(index)
         mem, created = Memory.concurrent_get_or_create(device=dev,
                 label=label,
