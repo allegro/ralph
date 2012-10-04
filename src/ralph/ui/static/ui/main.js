@@ -223,4 +223,9 @@ $(function ($) {
             $end.val(formatDate(date));
         });
     });
+    $('.search-form').submit(function() {
+        var fields = $(":input[value != ''][type != 'hidden']").serialize();
+        window.location.replace('?' + fields);
+        return false
+    });
 });
