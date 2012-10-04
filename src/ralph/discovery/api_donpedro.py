@@ -13,6 +13,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import hashlib
+import logging
 
 from tastypie.authentication import ApiKeyAuthentication
 from tastypie.authorization import DjangoAuthorization
@@ -36,6 +37,8 @@ EXPIRATION = settings.API_THROTTLING['expiration']
 SAVE_PRIORITY = 51
 
 
+logger = logging.getLogger(__name__)
+
 class NoMACError(Exception):
     pass
 
@@ -45,19 +48,26 @@ def save_processors(processors, dev):
     for p in processors:
         index = int(p['index'][3:])+1 #CPU0
         indexes.append(index)
-        label = p['index']
         speed = int(p.get('speed'))
         cores = int(p.get('cores'))
+        cpuname = p.get('label')
         cpu, created = Processor.concurrent_get_or_create(
                 device=dev, index=index)
-        cpu.label = label
+        cpu.label = cpuname
         cpu.speed = speed
         cpu.cores = cores
-        extra = '%s %s %s ' % (label, speed, cores)
+        extra = '%s %s %s ' % (p.get('label'), speed, cores)
+        is64bit = p.get('is64bit') or False
+        name = 'CPU %s%s %s %s' % (
+            '64bit ' if is64bit else '',
+            cpuname, '%dMhz' % speed if speed else '',
+            'multicore' if cores else '')
         cpu.model, c = ComponentModel.concurrent_get_or_create(
             speed=speed, type=ComponentType.processor.id,
+            family=cpuname,
             cores=cores, extra_hash=hashlib.md5(extra).hexdigest())
         cpu.model.extra = extra
+        cpu.model.name = name
         cpu.model.save(priority=SAVE_PRIORITY)
         cpu.save(priority=SAVE_PRIORITY)
     for cpu in dev.processor_set.exclude(index__in=indexes):
@@ -188,6 +198,7 @@ def save_device_data(data, remote_ip):
 class WindowsDeviceResource(MResource):
     def obj_create(self, bundle, request=None, **kwargs):
         ip = remote_addr(request)
+        logger.debug('Got json data: %s' % bundle.data.get('data'))
         return save_device_data(bundle.data.get('data'), ip)
 
     def obj_update(self, bundle, request=None, **kwargs):
