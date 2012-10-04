@@ -48,11 +48,15 @@ class DonPedroPluginTest(TestCase):
         self.assertEqual(storage.label, 'XENSRC PVDISK SCSI Disk Device')
         self.assertEqual(storage.size, 40957)
 
-    def testShares(self):
-        pass
-
     def testFC(self):
-        pass
+        fc = self.dev.fibrechannel_set.all()
+        self.assertEqual(len(fc), 2)
+        self.assertEqual(fc[0].model.name, 
+                u'QLogic QMH2462 Fibre Channel Adapter')
+        self.assertEqual(fc[1].model.name, 
+                u'QLogic QMH2462 Fibre Channel Adapter')
+        self.assertTrue(fc[0].label == fc[1].label == 
+                u'QLogic QMH2462 Fibre Channel Adapter')
 
     def testMemory(self):
         memory = self.dev.memory_set.all()
