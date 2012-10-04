@@ -86,7 +86,7 @@ def save_shares(shares, dev, ip):
         wwns.append(share.wwn)
         ipaddr = dev.ipaddress_set.all()[0]
         mount, _ = DiskShareMount.concurrent_get_or_create(
-            device=ipaddr.device, label=s.get('label'))
+            device=ipaddr.device, share=share)
         mount.volume = s['volume']
         mount.save(update_last_seen=True)
     for mount in DiskShareMount.objects.filter(device=dev).exclude( share__wwn__in=wwns):
@@ -104,7 +104,7 @@ def save_storage(storage, dev):
         stor.mount_point = s.get('mountpoint')
         stor.model, c = ComponentModel.concurrent_get_or_create(
             size=stor.size, type=ComponentType.disk.id, speed=0, cores=0,
-            family='', name=stor.label,
+            extra='', extra_hash='', family=model
         )
         stor.model.name = model
         stor.model.save(priority=SAVE_PRIORITY)
@@ -144,12 +144,12 @@ def save_fibre_channel(fcs, dev):
         fib, created = FibreChannel.concurrent_get_or_create(device=dev,
             physical_id=pid)
         fib.label = f.get('label')
-        extra = fib.label
+        extra = '%s %s' % (fib.label, pid)
         fib.model, c = ComponentModel.concurrent_get_or_create(
-            type=ComponentType.fibre.id, family=f.get('manufacturer'),
+            type=ComponentType.fibre.id, family=fib.label,
             extra_hash=hashlib.md5(extra).hexdigest())
         fib.model.extra = extra
-        fib.model.name = f.get('model')
+        fib.model.name = fib.label
         fib.model.save(priority=SAVE_PRIORITY)
         fib.save(priority=SAVE_PRIORITY)
         detected_fc_cards.append(fib.pk)
