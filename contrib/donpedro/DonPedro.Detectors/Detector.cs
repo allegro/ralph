@@ -66,6 +66,8 @@ namespace DonPedro.Detectors
 			json += string.Join(",", GetFibreChannelInfo().ConvertAll(s => s.ToJSON()).ToArray());
 			json += "],\n \"shares\": [";
 			json += string.Join(",", GetDiskShareMountInfo().ConvertAll(s => s.ToJSON()).ToArray());
+			json += "],\n \"memory\": [";
+			json += string.Join(",", GetMemoryInfo().ConvertAll(s => s.ToJSON()).ToArray());
 			json += "],\n \"operating_system\": ";
 			json += GetOperatingSystemInfo().ToJSON();
 			json += ",\n \"processors\": [";
