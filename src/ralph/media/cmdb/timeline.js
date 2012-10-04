@@ -40,7 +40,7 @@ function load_data(){
     $.get("/cmdb/changes/timeline_ajax", function(data){
             setup(data);
         }).error(function(e){
-            alert('Error loading data.');
+            $('#placeholder').html('<p class="text-error"><b>Error loading data.</b></p>');
             console.log(e.responseText);
     });
 }
