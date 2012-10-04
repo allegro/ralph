@@ -53,7 +53,7 @@ def save_processors(processors, dev):
         cpu.label = label
         cpu.speed = speed
         cpu.cores = cores
-        extra = '%s %s %s' % (label, speed, cores, index)
+        extra = '%s %s %s ' % (label, speed, cores)
         cpu.model, c = ComponentModel.concurrent_get_or_create(
             speed=speed, type=ComponentType.processor.id,
             cores=cores, extra_hash=hashlib.md5(extra).hexdigest())
