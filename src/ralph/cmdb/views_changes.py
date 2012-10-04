@@ -552,16 +552,38 @@ class TimeLine(BaseCMDBView):
 
     @staticmethod
     def get_ajax(self):
-        start_date = datetime.datetime.now() - datetime.timedelta(days=7)
-        stop_date = datetime.datetime.now()
+        interval = self.GET.get('interval')
+        get_start_date = self.GET.get('start', datetime.datetime.now())
+        get_end_date = self.GET.get('end', datetime.datetime.now())
+        if interval == '1':
+            plot_title = 'Last 6 hours'
+            start_date = datetime.datetime.now() - datetime.timedelta(hours=6)
+            stop_date = datetime.datetime.now() + datetime.timedelta(hours=1)
+        elif interval == '2':
+            plot_title = 'Last day'
+            start_date = datetime.datetime.now() - datetime.timedelta(days=1)
+            stop_date = datetime.datetime.now() + datetime.timedelta(hours=1)
+        elif interval == '3':
+            plot_title = 'Last week'
+            start_date = datetime.datetime.now() - datetime.timedelta(days=7)
+            stop_date = datetime.datetime.now() + datetime.timedelta(hours=1)
+        elif interval == '4':
+            plot_title = 'Last month'
+            start_date = datetime.datetime.now() - datetime.timedelta(days=30)
+            stop_date = datetime.datetime.now() + datetime.timedelta(hours=1)
+        elif get_start_date or get_end_date:
+            plot_title = '%s - %s' % (get_start_date, get_end_date)
+            start_date = get_start_date
+            stop_date = get_end_date
+
         manual_changes = db.CIChange.objects.filter(
-                    time__gt=start_date,
-                    time__lt=stop_date,
+                    time__gte=start_date,
+                    time__lte=stop_date,
                     type=db.CI_CHANGE_TYPES.CONF_GIT.id,
         ).order_by('-time')
         agent_changes_warnings = db.CIChange.objects.filter(
-                    time__gt=start_date,
-                    time__lt=stop_date,
+                    time__gte=start_date,
+                    time__lte=stop_date,
                     type=db.CI_CHANGE_TYPES.CONF_AGENT.id,
                     priority__in=[
                         db.CI_CHANGE_PRIORITY_TYPES.NOTICE.id,
@@ -569,8 +591,8 @@ class TimeLine(BaseCMDBView):
                     ]
         ).order_by('-time')
         agent_changes_errors = db.CIChange.objects.filter(
-                    time__gt=start_date,
-                    time__lt=stop_date,
+                    time__gte=start_date,
+                    time__lte=stop_date,
                     type=db.CI_CHANGE_TYPES.CONF_AGENT.id,
                     priority__in=[
                         db.CI_CHANGE_PRIORITY_TYPES.ERROR.id,
@@ -616,6 +638,7 @@ class TimeLine(BaseCMDBView):
                 manual=manual,
                 agent_warnings=agent_warnings,
                 agent_errors=agent_errors,
+                plot_title=plot_title
         )
         return HttpResponse(
                 simplejson.dumps(response_dict),

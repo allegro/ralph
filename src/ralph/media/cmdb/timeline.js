@@ -36,9 +36,14 @@ if ( typeof jQuery != "undefined" )
     };
 
 
-function load_data(){
-    $.get("/cmdb/changes/timeline_ajax", function(data){
-            setup(data);
+function load_data(url){
+    $('#placeholder').html(loading());
+    $('#changes_table').html('');
+    $('#plot_title').html('');
+    $('#changes_table').removeClass('table table-striped table-bordered table-condensed');
+    $.get(url, function(data){
+        setup(data);
+        $('#changes_table').addClass('table table-striped table-bordered table-condensed');
         }).error(function(e){
             $('#placeholder').html('<p class="text-error"><b>Error loading data.</b></p>');
             console.log(e.responseText);
@@ -51,7 +56,7 @@ function handle_manual_click(){
     display.style.fontSize = '30px';
 }
 
-function annotate_manual(plot, data, min, max){
+function annotate_manual(plot, data, title, min, max){
 
     var aggregatedData = [];
     var text_content = '';
@@ -60,14 +65,14 @@ function annotate_manual(plot, data, min, max){
     var href_link;
     var point_text_template = '<div style="display:none">{{comment}}</div><div class="pointer" onclick="handle_manual_click()"> * </div>';
     var row_template = '<tr class="{{row_class}}"><td>{{date}}</td><td>{{comment}}</td><td>{{author}}</td><td>{{{href_link}}}</td><td>{{external_key}}<td>{{changed_cis}}</td><td>{{failed_cis}}</tr>';
-
+    $('#plot_title').html(title);
     $("#changes_table").html('<tr><th>Time</th><th>Comment</th><th>Author</th><th>View</th><th>External key</th><th>Changed CIs</th><th>Failed CI</th></tr>');
 
     for (var i=0; i<data.length; i++){
         obj = data[i];
         d = new Date(data[i].time);
-        t = d.getTime(); 
-        if (t<min || t>max){ 
+        t = d.getTime();
+        if (t<min || t>max){
             continue 
         }
         day_and_hour = t;
@@ -131,8 +136,11 @@ function aggregate(data){
 }
 
 function setup(data){
+    var d = new Date();
+    var n = d.getHours();
+
     var options = {
-        xaxis: { mode: "time", timeformat: "%d/%m %h:%M" },
+        xaxis: { mode: "time", timeformat: "%d/%m %h:%M"},
         series: {
             lines: { show: true },
             points: { show: true }
@@ -166,9 +174,14 @@ function setup(data){
     plot.setSelection({ xaxis: { from: 0, to: 0 } });
     plot.setupGrid();
     plot.draw();
-    annotate_manual(plot, data.manual);
+    annotate_manual(plot, data.manual,data.plot_title);
     });
 
     plot = $.plot(placeholder, plotdata , options);
-    annotate_manual(plot, data.manual);
+    annotate_manual(plot, data.manual, data.plot_title);
+};
+
+
+function loading(){
+    return '<b>Loading please wait...</b>';
 };
