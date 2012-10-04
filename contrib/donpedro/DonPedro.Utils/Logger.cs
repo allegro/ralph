@@ -1,63 +1,42 @@
 ﻿using System;
-using System.IO;
-using System.Reflection;
+using System.Diagnostics;
 
 namespace DonPedro.Utils
 {
-	public sealed class Logger :IDisposable
+	public sealed class Logger
 	{
-		private static String path = Path.Combine(
-				Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location),
-				"logs.txt"
-		);
-		private static StreamWriter sw = new StreamWriter(path, true); 
-		private static readonly Logger instance = new Logger();
+		private static Logger instance = new Logger();
+		private EventLog log;
 		
-		public static Logger Instance
-		{
-			get
-			{
+		public static Logger Instance {
+			get {
 				return instance;
 			}
 		}
 		
-		public void Log(string text)
+		public void LogInformation(string msg)
 		{
-			#if DEBUG
-			Console.WriteLine(string.Format("[{0}] {1}", DateTime.Now, text));
-			#endif
-			sw.WriteLine(string.Format("[{0}] {1}", DateTime.Now, text));
-			sw.Flush();
+			log.WriteEntry(msg, EventLogEntryType.Information);
 		}
 		
-		public void LogDebug(string text)
+		public void LogWarning(string msg)
 		{
-			#if DEBUG
-			sw.WriteLine(string.Format("[{0}] [debug] {1}", DateTime.Now, text));
-			Console.WriteLine(string.Format("[{0}] {1}", DateTime.Now, text));
-			#endif
-			sw.Flush();
+			log.WriteEntry(msg, EventLogEntryType.Warning);
 		}
 		
-		public void LogError(string text)
+		public void LogError(string msg)
 		{
-			sw.WriteLine(string.Format("[{0}] [error] {1}", DateTime.Now, text));
-			Console.WriteLine(string.Format("[{0}] {1}", DateTime.Now, text));
-			sw.Flush();
+			log.WriteEntry(msg, EventLogEntryType.Error);
 		}
 		
-		public void LogFatal(string text)
+		private Logger()
 		{
-			sw.WriteLine(string.Format("[{0}] [fatal] {1}", DateTime.Now, text));
-			Console.WriteLine(string.Format("[{0}] {1}", DateTime.Now, text));
-			sw.Flush();
-		}
-		
-		public void Dispose()
-		{
-			sw.Flush();
-			sw.Close();
-			sw.Dispose();
+			if(!EventLog.SourceExists("DonPedro"))
+			{
+				EventLog.CreateEventSource("DonPedro", "DonPedroLogs");
+			}
+			log = new EventLog();
+			log.Source = "DonPedro";
 		}
 	}
 }
