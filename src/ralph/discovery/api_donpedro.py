@@ -33,7 +33,7 @@ from django.conf import settings
 THROTTLE_AT = settings.API_THROTTLING['throttle_at']
 TIMEFREME = settings.API_THROTTLING['timeframe']
 EXPIRATION = settings.API_THROTTLING['expiration']
-SAVE_PRIORITY = 10
+SAVE_PRIORITY = 51
 
 
 class NoMACError(Exception):
@@ -53,9 +53,11 @@ def save_processors(processors, dev):
         cpu.label = label
         cpu.speed = speed
         cpu.cores = cores
+        extra = '%s %s %s' % (label, speed, cores, index)
         cpu.model, c = ComponentModel.concurrent_get_or_create(
             speed=speed, type=ComponentType.processor.id,
-            cores=cores)
+            cores=cores, extra_hash=hashlib.md5(extra).hexdigest())
+        cpu.model.extra = extra
         cpu.model.save(priority=SAVE_PRIORITY)
         cpu.save(priority=SAVE_PRIORITY)
     for cpu in dev.processor_set.exclude(index__in=indexes):
@@ -63,31 +65,21 @@ def save_processors(processors, dev):
 
 
 def save_shares(shares, dev, ip):
-    #FIXME:
-    pass
-#    for share in shares:
-#        ipaddr = dev.ipaddress_set.all()[0]
-#        mount, created = DiskShare.concurrent_get_or_create(
-#            address=ipaddr, device=ipaddr.device, server=dev)
-#        mount.volume = share['volume']
-#        mount.save(update_last_seen=True)
-
-#    wwns = []
-#    for share in shares:
-#        wwn_end = share.get('sn')
-#        try:
-#            share = DiskShare.objects.get(wwn__endswith=wwn_end)
-#        except DiskShare.DoesNotExist:
-#            continue
-#        wwns.append(share.wwn)
-#    for share in shares:
-#            ipaddr = dev.ipaddress_set.all()[0]
-#            mount, created = DiskShareMount.concurrent_get_or_create(
-#                address=ipaddr, device=ipaddr.device, server=dev)
-#            mount.volume = share['volume']
-#            mount.save(update_last_seen=True)
-#    for mount in DiskShareMount.objects.filter( server=dev).exclude( share__wwn__in=wwns):
-#        mount.delete()
+    wwns = []
+    for s in shares:
+        wwn_end = s.get('sn')
+        try:
+            share = DiskShare.objects.get(wwn__endswith=wwn_end)
+        except DiskShare.DoesNotExist:
+            continue
+        wwns.append(share.wwn)
+        ipaddr = dev.ipaddress_set.all()[0]
+        mount, _ = DiskShareMount.concurrent_get_or_create(
+            device=ipaddr.device, label=s.get('label'))
+        mount.volume = s['volume']
+        mount.save(update_last_seen=True)
+    for mount in DiskShareMount.objects.filter(device=dev).exclude( share__wwn__in=wwns):
+        mount.delete()
 
 
 def save_storage(storage, dev):

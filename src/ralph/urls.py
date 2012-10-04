@@ -25,7 +25,7 @@ for r in (VentureResource, VentureLightResource, RoleResource,
 
 # discovery API
 for r in (
-    IPAddressResource, ModelGroupResource, ModelResource, WindowsDeviceResource,
+    IPAddressResource, ModelGroupResource, ModelResource, 
     PhysicalServerResource, RackServerResource, BladeServerResource,
     VirtualServerResource, DevResource, WindowsDeviceResource):
     v09_api.register(r())
