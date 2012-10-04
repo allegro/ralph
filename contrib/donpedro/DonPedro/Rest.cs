@@ -12,13 +12,13 @@ namespace DonPedro
 		{
 		}
 		
-		public string Post(string url, string json_data)
+		public string Post(string url, string jsonData)
 		{
 			HttpWebRequest req = WebRequest.Create(new Uri(url)) as HttpWebRequest;
 			req.Method = "POST";
 			req.ContentType = "application/json";
 			StringBuilder s = new StringBuilder();
-			byte[] formData = UTF8Encoding.UTF8.GetBytes(json_data.ToString());
+			byte[] formData = UTF8Encoding.UTF8.GetBytes(jsonData.ToString());
 			req.ContentLength = formData.Length;
 			using (Stream post = req.GetRequestStream())
 			{
