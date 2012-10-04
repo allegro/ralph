@@ -28,6 +28,8 @@ def _run_ssh_p2000(ip):
 def ssh_hp_p2000(**kwargs):
     if SSH_P2000_USER is None or SSH_P2000_PASSWORD is None:
         return False, 'no credentials.', kwargs
+    if 'nx-os' in kwargs.get('snmp_name', '').lower():
+        return False, 'incompatible Nexus found.', kwargs
     ip = str(kwargs['ip'])
     if 'StorageWorks' not in kwargs.get('snmp_name'):
         return False, 'no match.', kwargs

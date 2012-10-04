@@ -124,6 +124,8 @@ def run_ssh_asa(ip):
 @plugin.register(chain='discovery', requires=['ping', 'http'])
 def ssh_cisco_asa(**kwargs):
     ip = str(kwargs['ip'])
+    if 'nx-os' in kwargs.get('snmp_name', '').lower():
+        return False, 'incompatible Nexus found.', kwargs
     kwargs['guessmodel'] = gvendor, gmodel = guessmodel.guessmodel(**kwargs)
     if gvendor != 'Cisco' or gmodel not in ('',):
         return False, 'no match: %s %s' % (gvendor, gmodel), kwargs
