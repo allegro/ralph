@@ -7,11 +7,12 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import ssh as paramiko
+import collections
 
 from django.conf import settings
 
 from ralph.util import network, Eth, plugin, parse
-from ralph.discovery.models import (Device, DeviceType, ComponentModel,
+from ralph.discovery.models import (Device, DeviceType, ComponentModel, Storage,
                                     Processor, ComponentType, Memory, IPAddress)
 
 
@@ -33,8 +34,11 @@ def _ssh_lines(ssh, command):
     for line in stdout.readlines():
         yield line
 
+
 def get_macs(ssh):
-    macs = {}
+    """Get a dict of sets of macs of all the virtual machines."""
+
+    macs = collections.defaultdict(set)
     label = ''
     for line in _ssh_lines(ssh, 'sudo xe vif-list params=vm-name-label,MAC'):
         line = line.strip()
@@ -46,10 +50,70 @@ def get_macs(ssh):
             continue
         if line.startswith('MAC'):
             mac = line.split(':', 1)[1].strip()
-            macs.setdefault(label, set()).add(mac)
+            macs[label].add(mac)
     return macs
 
+
+def get_disks(ssh):
+    """Get a dict of lists of disks of virtual machines."""
+
+    stdin, stdout, stderr = ssh.exec_command('sudo xe vm-disk-list '
+            'vdi-params=sr-uuid,uuid,virtual-size '
+            'vbd-params=vm-name-label,type,device '
+            '--multiple')
+    disks = collections.defaultdict(list)
+    vm = None
+    sr_uuid = None
+    device = None
+    type_ = None
+    device = None
+    size = None
+    uuid = None
+    for line in  stdout:
+        if not line.strip():
+            continue
+        key, value = (x.strip() for x in line.split(':', 1))
+        if key.startswith('vm-name-label '):
+            vm = value
+        elif key.startswith('sr-uuid '):
+            sr_uuid = value
+        elif key.startswith('type '):
+            type_ = value
+        elif key.startswith('device '):
+            device = value
+        elif key.startswith('uuid '):
+            uuid = value
+        elif key.startswith('virtual-size '):
+            if type_ in {'Disk'}:
+                disks[vm].append((uuid, sr_uuid, int(int(value)/1024), device))
+    return disks
+
+
+def get_srs(ssh):
+    """Get a dict of disk SRs on the hypervisor."""
+
+    stdin, stdout, stderr = ssh.exec_command('sudo xe sr-list '
+            'params=uuid,physical-size,type')
+    srs = {}
+    size = None
+    uuid = None
+    for line in stdout:
+        if not line.strip():
+            continue
+        key, value = (x.strip() for x in line.split(':', 1))
+        if key.startswith('uuid '):
+            uuid = value
+        elif key.startswith('physical-size '):
+            size = int(int(value)/1024)
+        elif key.startswith('type '):
+            if value in {'lvm'} and size > 0:
+                srs[uuid] = size
+    return srs
+
+
 def get_running_vms(ssh):
+    """Get a set of virtual machines running on the host."""
+
     stdin, stdout, stderr = ssh.exec_command('sudo xe vm-list '
             'params=uuid,name-label,power-state,VCPUs-number,memory-actual')
     data = stdout.read()
@@ -84,6 +148,7 @@ def run_ssh_xen(ipaddr, parent):
     try:
         vms = get_running_vms(ssh)
         macs = get_macs(ssh)
+        disks = get_disks(ssh)
     finally:
         ssh.close()
 
@@ -129,6 +194,23 @@ def run_ssh_xen(ipaddr, parent):
         memory.save()
         for mem in dev.memory_set.filter(index__gt=1):
             mem.delete()
+        disk_model, created = ComponentModel.concurrent_get_or_create(
+                type=ComponentType.disk.id, family='XEN virtual disk')
+        if created:
+            disk_model.name = 'XEN virtual disk'
+            disk_model.save()
+        vm_disks = disks.get(vm_name, [])
+        for uuid, sr_uuid, size, device in vm_disks:
+            storage, created = Storage.concurrent_get_or_create(
+                device=dev, mount_point=device, sn=uuid)
+            storage.size = size
+            storage.model = disk_model
+            storage.label = device
+            storage.save()
+        for disk in dev.storage_set.exclude(sn__in={
+            uuid for uuid, x , y , z in vm_disks
+        }):
+            disk.delete()
     return ', '.join(vm_name for (vm_name, vm_uuid, vm_cores, vm_memory) in vms)
 
 
