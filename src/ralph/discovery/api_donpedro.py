@@ -1,10 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""ReST API for Ralph's discovery models
-   -------------------------------------
-
-Done with TastyPie.
+"""ReST API for Donpedro Windows Agent.
 """
 
 from __future__ import absolute_import
@@ -21,6 +18,9 @@ from tastypie.authorization import DjangoAuthorization
 from tastypie.cache import SimpleCache
 from tastypie.resources import ModelResource as MResource
 from tastypie.throttle import CacheThrottle
+from django.conf import settings
+from lck.django.common.models import MACAddressField
+from lck.django.common import remote_addr
 
 from ralph.discovery.models import Device, DeviceModel, DeviceModelGroup,\
     DeviceType, IPAddress, Memory, Processor, ComponentModel, \
@@ -28,9 +28,6 @@ from ralph.discovery.models import Device, DeviceModel, DeviceModelGroup,\
     FibreChannel, MAC_PREFIX_BLACKLIST
 from ralph.util import Eth
 
-from lck.django.common.models import MACAddressField
-from lck.django.common import remote_addr
-from django.conf import settings
 
 THROTTLE_AT = settings.API_THROTTLING['throttle_at']
 TIMEFREME = settings.API_THROTTLING['timeframe']
