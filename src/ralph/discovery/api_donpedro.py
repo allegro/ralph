@@ -14,6 +14,7 @@ from __future__ import unicode_literals
 
 import hashlib
 import logging
+import traceback
 
 from tastypie.authentication import ApiKeyAuthentication
 from tastypie.authorization import DjangoAuthorization
@@ -202,8 +203,8 @@ class WindowsDeviceResource(MResource):
         logger.debug('Got json data: %s' % bundle.data.get('data'))
         try:
             return save_device_data(bundle.data.get('data'), ip)
-        except Exception as e:
-            logger.error(e)
+        except Exception:
+            logger.error(traceback.format_exc())
             raise
 
     def obj_update(self, bundle, request=None, **kwargs):
