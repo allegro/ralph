@@ -18,6 +18,9 @@ class DonPedroPluginTest(TestCase):
         ip = '10.10.10.10'
         save_device_data(json.loads(data).get('data'), ip)
         self.dev = Device.objects.all()[0]
+        self.total_memory_size = 3068
+        self.total_storage_size = 40957
+        self.total_cores_count = 2
 
     def testDev(self):
         self.assertEquals(self.dev.model.name,
@@ -32,7 +35,6 @@ class DonPedroPluginTest(TestCase):
         self.assertTrue(processors[0].model.name == processors[1].model.name == '')
         self.assertTrue(processors[0].model.speed == processors[1].model.speed == 2667)
         self.assertTrue(processors[0].model.cores == processors[1].model.cores == 1)
-        self.assertTrue(processors[0].speed == processors[1].speed == 2667)
 
     def testStorage(self):
         storage = self.dev.storage_set.all()
@@ -47,5 +49,29 @@ class DonPedroPluginTest(TestCase):
     def testShares(self):
         pass
 
-    def testOS(self):
+    def testFC(self):
         pass
+
+    def testMemory(self):
+        memory = self.dev.memory_set.all()
+        self.assertEqual(len(memory), 1)
+        memory = memory[0]
+        self.assertEqual(memory.size, 3068)
+        self.assertEqual(memory.label, 'Physical Memory')
+        self.assertEqual(memory.model.speed, 0)
+        self.assertEqual(memory.model.name, u'RAM Windows 3068MiB')
+        self.assertEqual(memory.model.size, self.total_memory_size)
+        self.assertEqual(memory.model.family, 'Windows RAM')
+
+    def testOS(self):
+        os = self.dev.operatingsystem_set.all()
+        self.assertEqual(len(os), 1)
+        os = os[0]
+        # unfortunatelly additional space is being added to the os.label
+        self.assertEqual(os.label, 'Microsoft Windows Server 2008 R2 Standard ')
+        self.assertEqual(os.model.name, 'Microsoft Windows Server 2008 R2 Standard')
+        self.assertEqual(os.memory, 3067)
+        self.assertEqual(os.model.family, 'Windows')
+        self.assertEqual(os.storage, self.total_storage_size)
+        self.assertEqual(os.cores_count, self.total_cores_count)
+

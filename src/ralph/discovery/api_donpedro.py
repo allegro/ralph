@@ -12,6 +12,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import hashlib
+
 from tastypie.authentication import ApiKeyAuthentication
 from tastypie.authorization import DjangoAuthorization
 from tastypie.cache import SimpleCache
@@ -37,12 +39,127 @@ SAVE_PRIORITY = 10
 class NoMACError(Exception):
     pass
 
+
+def save_processors(processors, dev):
+    indexes = []
+    for p in processors:
+        index = int(p['index'][3:])+1 #CPU0
+        indexes.append(index)
+        label = p['index']
+        speed = int(p.get('speed'))
+        cores = int(p.get('cores'))
+        cpu, created = Processor.concurrent_get_or_create(
+                device=dev, index=index)
+        cpu.label = label
+        cpu.speed = speed
+        cpu.cores = cores
+        cpu.model, c = ComponentModel.concurrent_get_or_create(
+            speed=speed, type=ComponentType.processor.id,
+            cores=cores)
+        cpu.model.save(priority=SAVE_PRIORITY)
+        cpu.save(priority=SAVE_PRIORITY)
+    for cpu in dev.processor_set.exclude(index__in=indexes):
+        cpu.delete()
+
+
+def save_shares(shares, dev, ip):
+    #FIXME:
+    pass
+#    for share in shares:
+#        ipaddr = dev.ipaddress_set.all()[0]
+#        mount, created = DiskShare.concurrent_get_or_create(
+#            address=ipaddr, device=ipaddr.device, server=dev)
+#        mount.volume = share['volume']
+#        mount.save(update_last_seen=True)
+
+#    wwns = []
+#    for share in shares:
+#        wwn_end = share.get('sn')
+#        try:
+#            share = DiskShare.objects.get(wwn__endswith=wwn_end)
+#        except DiskShare.DoesNotExist:
+#            continue
+#        wwns.append(share.wwn)
+#    for share in shares:
+#            ipaddr = dev.ipaddress_set.all()[0]
+#            mount, created = DiskShareMount.concurrent_get_or_create(
+#                address=ipaddr, device=ipaddr.device, server=dev)
+#            mount.volume = share['volume']
+#            mount.save(update_last_seen=True)
+#    for mount in DiskShareMount.objects.filter( server=dev).exclude( share__wwn__in=wwns):
+#        mount.delete()
+
+
+def save_storage(storage, dev):
+    for s in storage:
+        if not s['sn']:
+            continue
+        stor, created = Storage.concurrent_get_or_create(device=dev, sn=s['sn'])
+        stor.size = int(s['size'])
+        stor.label = s['label']
+        stor.mount_point = s.get('mountpoint')
+        stor.model, c = ComponentModel.concurrent_get_or_create(
+            size=stor.size, type=ComponentType.disk.id,
+            family='', name=stor.label,
+        )
+        stor.model.name =  '{} {}MiB'.format(stor.label, stor.size)
+        stor.model.save(priority=SAVE_PRIORITY)
+        stor.save(priority=SAVE_PRIORITY)
+    for storage_to_delete in dev.storage_set.exclude(sn__in=[s['sn'] for s in storage]):
+        storage_to_delete.delete()
+
+
+def save_memory(memory, dev):
+    indexes = []
+    memory_total_size = 0
+    for row in memory:
+        size = int(row['size']); speed = int(row['speed']) if row['speed'] else 0
+        memory_total_size += size
+        index = int(row['index'].split()[1])+1
+        label = row['label']
+        indexes.append(index)
+        mem, created = Memory.concurrent_get_or_create(device=dev,
+                label=label,
+                index=index)
+        mem.label = label
+        mem.size = size
+        mem.model, c = ComponentModel.concurrent_get_or_create(
+            family='Windows RAM', size=size, speed=speed,
+            type=ComponentType.memory.id, extra_hash='')
+        mem.model.name = 'RAM Windows %dMiB' % size
+        mem.model.size = size
+        mem.model.save()
+        mem.save(priority=SAVE_PRIORITY)
+    dev.memory_set.exclude(index__in=indexes).delete()
+
+
+def save_fibre_channel(fcs, dev):
+    detected_fc_cards = []
+    for f in fcs:
+        pid = f.get('physicalid')
+        fib, created = FibreChannel.concurrent_get_or_create(device=dev,
+            physical_id=pid)
+        fib.label = f.get('label')
+        extra = fib.label
+        fib.model, c = ComponentModel.concurrent_get_or_create(
+            type=ComponentType.fibre.id, family=f.get('manufacturer'),
+            extra_hash=hashlib.md5(extra).hexdigest())
+        fib.model.extra = extra
+        fib.model.name = f.get('model')
+        fib.model.save(priority=SAVE_PRIORITY)
+        fib.save(priority=SAVE_PRIORITY)
+        detected_fc_cards.append(fib.pk)
+    dev.fibrechannel_set.exclude(pk__in=detected_fc_cards).delete()
+
+
 def save_device_data(data, remote_ip):
     device = data['device']
     shares = data['shares']
     fcs = data['fcs']
     storage = data['storage']
-    operating_system = data['operating_system']
+    memory = data['memory']
+    processors = data['processors']
+    os = data['operating_system']
     device = data['device']
     ethernets = [Eth(e.get('label'), e['mac'].replace(':', ''), e.get('speed')) for
         e in data['ethernets'] if MACAddressField.normalize(e.get('mac'))[0:6]
@@ -58,73 +175,28 @@ def save_device_data(data, remote_ip):
     )
     dev.save(priority=SAVE_PRIORITY)
     if not dev.operatingsystem_set.exists():
-        OperatingSystem.create(dev,
-            os_name=operating_system.get('label'),
-           family='Windows').save()
+        o = OperatingSystem.create(dev,
+            os_name=os.get('label'),
+           family='Windows')
+        o.memory = int(os['memory'])
+        o.storage = int(os['storage'])
+        o.cores_count = int(os['corescount'])
+        o.save()
     ip_address, _ = IPAddress.concurrent_get_or_create(address=str(remote_ip))
     ip_address.device = dev
     ip_address.is_management = False
     ip_address.save()
-    processors = data['processors']
-    for cpu in dev.processor_set.exclude(index__in=[int(p['index'][3:]) for p in processors]):
-        cpu.delete()
-    for p in processors:
-        index = p['index'][3:] #CPU0
-        label = p['index']
-        speed = int(p.get('speed'))
-        cores = int(p.get('cores'))
-        cpu, created = Processor.concurrent_get_or_create(
-                device=dev, index=index)
-        cpu.label = label
-        cpu.speed = speed
-        cpu.cores = cores
-        cpu.model, c = ComponentModel.concurrent_get_or_create(
-            speed=speed, type=ComponentType.processor.id,
-            cores=cores)
-        cpu.model.save(priority=SAVE_PRIORITY)
-        cpu.save(priority=SAVE_PRIORITY)
-    for storage_to_delete in dev.storage_set.exclude(sn__in=[s['sn'] for s in storage]):
-        storage_to_delete.delete()
-    for s in storage:
-        if not s['sn']:
-            continue
-        stor, created = Storage.concurrent_get_or_create(device=dev, sn=s['sn'])
-        stor.size = int(s['size'])
-        stor.label = s['label']
-        stor.mount_point = s.get('mountpoint')
-        stor.model, c = ComponentModel.concurrent_get_or_create(
-            size=stor.size, type=ComponentType.disk.id,
-            family='', name=label,
-        )
-        stor.model.name =  '{} {}MiB'.format(stor.label, stor.size)
-        stor.model.save(priority=SAVE_PRIORITY)
-        stor.save(priority=SAVE_PRIORITY)
-    wwns = []
-    for share in shares:
-        wwn_end = share.get('wwn')
-        try:
-            share = DiskShare.objects.get(wwn__endswith=wwn_end)
-        except DiskShare.DoesNotExist:
-            continue
-        wwns.append(share.wwn)
-    for share in shares:
-            ipaddr, ip_created = IPAddress.concurrent_get_or_create(address=share['ip'])
-            mount, created = DiskShareMount.concurrent_get_or_create(
-                    address=ipaddr, device=ipaddr.device, server=dev)
-            mount.volume = share['volume']
-            mount.save(update_last_seen=True)
-    for mount in DiskShareMount.objects.filter(
-                server=dev
-            ).exclude(
-                share__wwn__in=wwns
-        ):
-        mount.delete()
-    return dev
+    save_processors(processors, dev)
+    save_memory(memory, dev)
+    save_storage(storage, dev)
+    save_shares(shares, dev, ip_address)
+    save_fibre_channel(fcs, dev)
+
 
 class WindowsDeviceResource(MResource):
     def obj_create(self, bundle, request=None, **kwargs):
         ip = remote_addr(request)
-        return import_device_data(bundle.data.get('data'), ip)
+        return save_device_data(bundle.data.get('data'), ip)
 
     def obj_update(self, bundle, request=None, **kwargs):
         pass
