@@ -200,7 +200,11 @@ class WindowsDeviceResource(MResource):
     def obj_create(self, bundle, request=None, **kwargs):
         ip = remote_addr(request)
         logger.debug('Got json data: %s' % bundle.data.get('data'))
-        return save_device_data(bundle.data.get('data'), ip)
+        try:
+            return save_device_data(bundle.data.get('data'), ip)
+        except Exception as e:
+            logger.error(e)
+            raise
 
     def obj_update(self, bundle, request=None, **kwargs):
         pass
