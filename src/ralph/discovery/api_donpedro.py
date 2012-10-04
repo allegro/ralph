@@ -100,12 +100,13 @@ def save_storage(storage, dev):
         stor, created = Storage.concurrent_get_or_create(device=dev, sn=s['sn'])
         stor.size = int(s['size'])
         stor.label = s['label']
+        model = '{} {}MiB'.format(stor.label, stor.size)
         stor.mount_point = s.get('mountpoint')
         stor.model, c = ComponentModel.concurrent_get_or_create(
-            size=stor.size, type=ComponentType.disk.id,
+            size=stor.size, type=ComponentType.disk.id, speed=0, cores=0,
             family='', name=stor.label,
         )
-        stor.model.name =  '{} {}MiB'.format(stor.label, stor.size)
+        stor.model.name = model
         stor.model.save(priority=SAVE_PRIORITY)
         stor.save(priority=SAVE_PRIORITY)
     for storage_to_delete in dev.storage_set.exclude(sn__in=[s['sn'] for s in storage]):
@@ -124,8 +125,8 @@ def save_memory(memory, dev):
         indexes.append(index)
         extra ='RAM Windows %dMiB %s %s %s' % (size , label, speed, row['caption'])
         mem, created = Memory.concurrent_get_or_create(device=dev,
-                label=label,
                 index=index)
+        mem.label = label
         mem.size = size
         mem.model, c = ComponentModel.concurrent_get_or_create(
             family='Windows RAM', size=size, speed=speed,
