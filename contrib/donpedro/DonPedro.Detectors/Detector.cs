@@ -55,7 +55,12 @@ namespace DonPedro.Detectors
 			return wmiDetector.GetDiskShareMountInfo();
 		}
 		
-		public string getAllComponentsJSON()
+		public DeviceDTOResponse GetDeviceInfo()
+		{
+			return wmiDetector.GetDeviceInfo();
+		}
+		
+		public string GetAllComponentsJSON()
 		{
 			string json = "{\"data\":{";
 			json += "\"storage\": [";
@@ -75,52 +80,5 @@ namespace DonPedro.Detectors
 			json += "}}";
 			return json;
 		}
-		
-		public DeviceDTOResponse GetDeviceInfo()
-		{
-			return wmiDetector.GetDeviceInfo();
-		}
-		
-		public List<BaseDTOResponse> GetAllComponents()
-		{
-			List<BaseDTOResponse> components = new List<BaseDTOResponse>();
-			
-			foreach (ProcessorDTOResponse obj in GetProcessorsInfo())
-			{
-				components.Add(obj);
-			}
-			
-			foreach (MemoryDTOResponse obj in GetMemoryInfo())
-			{
-				components.Add(obj);
-			}
-			
-			foreach (StorageDTOResponse storage in GetStorageInfo())
-			{
-				components.Add(storage);
-			}
-			
-			foreach (EthernetDTOResponse eth in GetEthernetInfo())
-			{
-				components.Add(eth);
-			}
-			
-			foreach (FibreChannelDTOResponse fc in GetFibreChannelInfo())
-			{
-				components.Add(fc);
-			}
-			
-			foreach (DiskShareMountDTOResponse share in GetDiskShareMountInfo())
-			{
-				components.Add(share);
-			}
-			
-			components.Add(GetOperatingSystemInfo());
-			
-			components.Add(GetDeviceInfo());
-
-			return components;
-		}
-		
 	}
 }

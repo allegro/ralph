@@ -5,19 +5,22 @@
   </Profiles>
   <Settings>
     <Setting Name="api_key" Type="System.String" Scope="User" Roaming="false">
-      <Value Profile="(Default)">a70756db3e9d8d4003d6b3d351e89160bb86d2b7</Value>
+      <Value Profile="(Default)" />
     </Setting>
     <Setting Name="api_path" Type="System.String" Scope="Application">
       <Value Profile="(Default)">/api/v0.9/windowsdevice</Value>
     </Setting>
     <Setting Name="api_user" Type="System.String" Scope="User" Roaming="false">
-      <Value Profile="(Default)">admin</Value>
+      <Value Profile="(Default)" />
     </Setting>
     <Setting Name="max_tries" Type="System.Int32" Scope="User" Roaming="false">
       <Value Profile="(Default)">5</Value>
     </Setting>
+    <Setting Name="notifications_interval" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">3600</Value>
+    </Setting>
     <Setting Name="ralph_url" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">http://172.20.8.27:8080</Value>
+      <Value Profile="(Default)" />
     </Setting>
     <Setting Name="tries_interval" Type="System.Int32" Scope="User" Roaming="false">
       <Value Profile="(Default)">300</Value>

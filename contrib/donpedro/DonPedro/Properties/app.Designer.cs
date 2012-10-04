@@ -25,7 +25,7 @@ namespace DonPedro.Properties {
 		
 		[global::System.Configuration.UserScopedSettingAttribute()]
 		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-		[global::System.Configuration.DefaultSettingValueAttribute("a70756db3e9d8d4003d6b3d351e89160bb86d2b7")]
+		[global::System.Configuration.DefaultSettingValueAttribute("")]
 		public string api_key {
 			get {
 				return ((string)(this["api_key"]));
@@ -46,7 +46,7 @@ namespace DonPedro.Properties {
 		
 		[global::System.Configuration.UserScopedSettingAttribute()]
 		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-		[global::System.Configuration.DefaultSettingValueAttribute("admin")]
+		[global::System.Configuration.DefaultSettingValueAttribute("")]
 		public string api_user {
 			get {
 				return ((string)(this["api_user"]));
@@ -70,7 +70,16 @@ namespace DonPedro.Properties {
 		
 		[global::System.Configuration.ApplicationScopedSettingAttribute()]
 		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-		[global::System.Configuration.DefaultSettingValueAttribute("http://172.20.8.27:8080")]
+		[global::System.Configuration.DefaultSettingValueAttribute("3600")]
+		public int notifications_interval {
+			get {
+				return ((int)(this["notifications_interval"]));
+			}
+		}
+		
+		[global::System.Configuration.ApplicationScopedSettingAttribute()]
+		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+		[global::System.Configuration.DefaultSettingValueAttribute("")]
 		public string ralph_url {
 			get {
 				return ((string)(this["ralph_url"]));

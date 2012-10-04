@@ -43,7 +43,7 @@ namespace DonPedro.Detectors
 			}
 			catch (ManagementException e)
 			{
-				new Logger().LogError(e.ToString());
+				Logger.Instance.LogError(e.ToString());
 			}
 			
 			return processors;
@@ -78,7 +78,7 @@ namespace DonPedro.Detectors
 					}
 					catch (Exception e)
 					{
-						new Logger().LogError(e.ToString());
+						Logger.Instance.LogError(e.ToString());
 					}
 					
 					memory.Add(chip);
@@ -86,7 +86,7 @@ namespace DonPedro.Detectors
 			}
 			catch (ManagementException e)
 			{
-				new Logger().LogError(e.ToString());
+				Logger.Instance.LogError(e.ToString());
 			}
 			
 			if (memory.Count == 0) {
@@ -109,7 +109,7 @@ namespace DonPedro.Detectors
 				}
 				catch (ManagementException e)
 				{
-					new Logger().LogError(e.ToString());
+					Logger.Instance.LogError(e.ToString());
 				}
 			}
 			
@@ -134,14 +134,14 @@ namespace DonPedro.Detectors
 					}
 					catch (Exception e)
 					{
-						new Logger().LogError(e.ToString());
+						Logger.Instance.LogError(e.ToString());
 					}
 					break;
 				}
 			}
 			catch (ManagementException e)
 			{
-				new Logger().LogError(e.ToString());
+				Logger.Instance.LogError(e.ToString());
 			}
 			
 			int totalCoresCount = 0;
@@ -207,7 +207,7 @@ namespace DonPedro.Detectors
 							}
 							catch (Exception e)
 							{
-								new Logger().LogError(e.ToString());
+								Logger.Instance.LogError(e.ToString());
 							}
 							disk.Sn = GetValueAsString(diskDrive, "SerialNumber");
 							
@@ -218,7 +218,7 @@ namespace DonPedro.Detectors
 			}
 			catch (ManagementException e)
 			{
-				new Logger().LogError(e.ToString());
+				Logger.Instance.LogError(e.ToString());
 			}
 			
 			return storage;
@@ -262,7 +262,7 @@ namespace DonPedro.Detectors
 							}
 							catch (ManagementException e)
 							{
-								new Logger().LogError(e.ToString());
+								Logger.Instance.LogError(e.ToString());
 							}
 							catch (Exception)
 							{
@@ -273,7 +273,7 @@ namespace DonPedro.Detectors
 					}
 					catch (ManagementException e)
 					{
-						new Logger().LogError(e.ToString());
+						Logger.Instance.LogError(e.ToString());
 					}
 					
 					ethetnets.Add(eth);
@@ -281,7 +281,7 @@ namespace DonPedro.Detectors
 			}
 			catch (ManagementException e)
 			{
-				new Logger().LogError(e.ToString());
+				Logger.Instance.LogError(e.ToString());
 			}
 			
 			return ethetnets;
@@ -312,7 +312,7 @@ namespace DonPedro.Detectors
 			}
 			catch (ManagementException e)
 			{
-				new Logger().LogError(e.ToString());
+				Logger.Instance.LogError(e.ToString());
 			}
 			
 			return fc;
@@ -342,7 +342,7 @@ namespace DonPedro.Detectors
 			}
 			catch (ManagementException e)
 			{
-				new Logger().LogError(e.ToString());
+				Logger.Instance.LogError(e.ToString());
 			}
 			
 			return mounts;
@@ -369,7 +369,7 @@ namespace DonPedro.Detectors
 			}
 			catch (ManagementException e)
 			{
-				new Logger().LogError(e.ToString());
+				Logger.Instance.LogError(e.ToString());
 			}
 			
 			return device;
