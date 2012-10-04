@@ -59,7 +59,7 @@ class DonPedroPluginTest(TestCase):
         self.assertEqual(len(memory), 1)
         memory = memory[0]
         self.assertEqual(memory.size, 3068)
-        self.assertEqual(memory.label, 'Physical Memory')
+        self.assertEqual(memory.label, 'DIMM 0')
         self.assertEqual(memory.model.speed, 0)
         self.assertEqual(memory.model.name, u'RAM Windows 3068MiB')
         self.assertEqual(memory.model.size, self.total_memory_size)
