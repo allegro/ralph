@@ -122,16 +122,15 @@ def save_memory(memory, dev):
         memory_total_size += size
         label = row['index'] #eg: 'DIMM-2A'
         indexes.append(index)
+        extra ='RAM Windows %dMiB %s %s %s' % (size , label, speed)
         mem, created = Memory.concurrent_get_or_create(device=dev,
                 label=label,
                 index=index)
-        mem.label = label
         mem.size = size
         mem.model, c = ComponentModel.concurrent_get_or_create(
             family='Windows RAM', size=size, speed=speed,
-            type=ComponentType.memory.id, extra_hash='')
+            type=ComponentType.memory.id, extra_hash=hashlib.md5(extra).hexdigest())
         mem.model.name = 'RAM Windows %dMiB' % size
-        mem.model.size = size
         mem.model.save()
         mem.save(priority=SAVE_PRIORITY)
     dev.memory_set.exclude(index__in=indexes).delete()
