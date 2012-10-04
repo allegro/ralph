@@ -46,7 +46,8 @@ def _get_local_disk_size(ssh, disk):
     path = os.path.join('/var/lib/vz/images', disk)
     stdin, stdout, stderr = ssh.exec_command("du -m '%s'" % path)
     line = stdout.read().strip()
-    print('path=%r size=%r' % (path, line))
+    if not line:
+        return 0
     size = int(line.split(None, 1)[0])
     return size
 
@@ -104,13 +105,16 @@ def _add_virtual_machine(ssh, vmid, parent, master, storages):
             vg = ''
             lv = disk
         if vg == 'local':
+            size = _get_local_disk_size(ssh, lv)
+            if not size > 0:
+                continue
             model, created = ComponentModel.concurrent_get_or_create(
                 type=ComponentType.disk.id, family='QEMU disk image')
             if created:
                 model.save()
             storage, created = Storage.concurrent_get_or_create(
                 device=dev, mount_point=lv)
-            storage.size = _get_local_disk_size(ssh, lv)
+            storage.size = size
             storage.model = model
             storage.label = slot
             storage.save()
