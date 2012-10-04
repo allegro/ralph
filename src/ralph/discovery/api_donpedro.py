@@ -122,7 +122,7 @@ def save_memory(memory, dev):
         memory_total_size += size
         label = row['index'] #eg: 'DIMM-2A'
         indexes.append(index)
-        extra ='RAM Windows %dMiB %s %s %s' % (size , label, speed)
+        extra ='RAM Windows %dMiB %s %s %s' % (size , label, speed, row['caption'])
         mem, created = Memory.concurrent_get_or_create(device=dev,
                 label=label,
                 index=index)
