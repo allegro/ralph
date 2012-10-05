@@ -24,7 +24,7 @@ from lck.django.common import remote_addr
 
 from ralph.discovery.models import (Device, DeviceType, IPAddress, Memory,
     Processor, ComponentModel, ComponentType, OperatingSystem, Storage,
-    DiskShare, DiskShareMount, FibreChannel, MAC_PREFIX_BLACKLIST)
+    DiskShare, DiskShareMount, FibreChannel, MAC_PREFIX_BLACKLIST, EthernetSpeed )
 from ralph.util import Eth
 
 
@@ -164,6 +164,18 @@ def save_fibre_channel(fcs, dev):
     dev.fibrechannel_set.exclude(pk__in=detected_fc_cards).delete()
 
 
+def str_to_ethspeed(str_value):
+    if not str_value: return ''
+    int_value = int(str_value)
+    if int_value == 1000000000:
+        speed = EthernetSpeed.s1gbit.id                                                                                                                                   
+    elif int_value == 100000000:
+        speed = EthernetSpeed.s100mbit.id
+    else:
+        speed = EthernetSpeed.unknown.id
+    return speed
+
+
 def save_device_data(data, remote_ip):
     device = data['device']
     shares = data['shares']
@@ -173,7 +185,7 @@ def save_device_data(data, remote_ip):
     processors = data['processors']
     os = data['operating_system']
     device = data['device']
-    ethernets = [Eth(e.get('label'), e['mac'].replace(':', ''), e.get('speed')) for
+    ethernets = [Eth(e.get('label'), e['mac'].replace(':', ''), str_to_ethspeed(e.get('speed'))) for
         e in data['ethernets'] if MACAddressField.normalize(e.get('mac'))[0:6]
         not in MAC_PREFIX_BLACKLIST]
     if not ethernets:
