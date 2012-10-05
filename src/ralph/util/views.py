@@ -36,3 +36,9 @@ def csvify(func):
         return HttpResponse(f.getvalue(), mimetype="application/csv")
     return wrapper
 
+def build_url(*args):
+    url = '/'
+    for arg in args:
+        item = arg.replace('/', '')
+        url += '%s/' % str(item)
+    return url
