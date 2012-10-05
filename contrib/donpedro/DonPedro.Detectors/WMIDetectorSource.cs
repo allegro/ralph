@@ -22,7 +22,17 @@ namespace DonPedro.Detectors
 			try
 			{
 				SelectQuery query = new SelectQuery(
-					@"select Name, Description, DeviceID, MaxClockSpeed, NumberOfCores, NumberOfLogicalProcessors, Caption
+					@"select 
+						Name, 
+						Description, 
+						DeviceID, 
+						MaxClockSpeed, 
+						NumberOfCores, 
+						NumberOfLogicalProcessors, 
+						Caption, 
+						Manufacturer, 
+						Version,
+						DataWidth
 					  from Win32_Processor"
 				);
 				ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
@@ -37,6 +47,15 @@ namespace DonPedro.Detectors
 					processor.Description = GetValueAsString(obj, "Description");
 					processor.NumberOfLogicalProcessors = GetValueAsString(obj, "NumberOfLogicalProcessors");
 					processor.Caption = GetValueAsString(obj, "Caption");
+					processor.Manufacturer = GetValueAsString(obj, "Manufacturer");
+					processor.Version = GetValueAsString(obj, "Version");
+					if (GetValueAsString(obj, "DataWidth") == "64") {
+						processor.Is64Bit = "true";
+					}
+					else
+					{
+						processor.Is64Bit = "false";
+					}
 					
 					processors.Add(processor);
 				}

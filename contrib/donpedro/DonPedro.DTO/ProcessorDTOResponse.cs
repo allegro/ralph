@@ -11,5 +11,8 @@ namespace DonPedro.DTO
 		public string Description { get; set; }
 		public string NumberOfLogicalProcessors { get; set; }
 		public string Caption { get; set; }
+		public string Manufacturer { get; set; }
+		public string Version { get; set; }
+		public string Is64Bit { get; set; }
 	}
 }
