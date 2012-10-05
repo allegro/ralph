@@ -43,18 +43,22 @@ class NoMACError(Exception):
 def save_processors(processors, dev):
     indexes = []
     for p in processors:
-        index = int(p['index'][3:])+1 #CPU0
-        indexes.append(index)
-        speed = int(p.get('speed'))
-        cores = int(p.get('cores'))
         cpuname = p.get('label')
+        try:
+            index = int(p.get('index')[3:]) + 1 #CPU0
+            speed = int(p.get('speed'))
+            cores = int(p.get('cores'))
+        except ValueError:
+            continue
+        indexes.append(index)
         cpu, created = Processor.concurrent_get_or_create(
-                device=dev, index=index)
+            device=dev, index=index)
         cpu.label = cpuname
         cpu.speed = speed
         cpu.cores = cores
-        extra = '%s %s %s ' % (p.get('label'), speed, cores)
-        is64bit = p.get('is64bit') or False
+        is64bit = p.get('is64bit') == 'true'
+        extra = '%s %s %s ' % (p.get('manufacturer'),
+            p.get('version'), '64bit' if is64bit else '')
         name = 'CPU %s%s %s %s' % (
             '64bit ' if is64bit else '',
             cpuname, '%dMhz' % speed if speed else '',
@@ -168,7 +172,7 @@ def str_to_ethspeed(str_value):
     if not str_value: return ''
     int_value = int(str_value)
     if int_value == 1000000000:
-        speed = EthernetSpeed.s1gbit.id                                                                                                                                   
+        speed = EthernetSpeed.s1gbit.id
     elif int_value == 100000000:
         speed = EthernetSpeed.s100mbit.id
     else:
