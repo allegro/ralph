@@ -27,7 +27,7 @@ class DeploymentTest(TestCase):
         engine = settings.ISSUETRACKERS['default']['ENGINE']
         if engine != '':
             raise ImproperlyConfigured(
-                '''Expected ISSUETRACKERS['default']['ENGINE']='' got: %s'''
+                '''Expected ISSUETRACKERS['default']['ENGINE']='' got: %r'''
                 % engine)
         # usual stuff
         self.top_venture = Venture(name='top_venture')
@@ -45,13 +45,11 @@ class DeploymentTest(TestCase):
         )
         self.child_role.save()
         to = CIOwner(
-            first_name='Bufallo',
-            last_name='Kudłaczek',
+            first_name='Bufallo', last_name='Kudłaczek',
         )
         to.save()
         bo = CIOwner(
-            first_name='Bill',
-            last_name='Bąbelek',
+            first_name='Bill', last_name='Bąbelek',
         )
         bo.save()
         ct = ContentType.objects.get_for_model(self.top_venture)
@@ -67,10 +65,7 @@ class DeploymentTest(TestCase):
             type=CIOwnershipType.business.id
         ).save()
         dm = self.add_model('DC model sample', DeviceType.data_center.id)
-        self.dc = Device.create(
-            sn='sn1',
-            model=dm,
-        )
+        self.dc = Device.create(sn='sn1', model=dm)
         self.dc.name = 'dc'
         self.dc.save()
         dm = self.add_model('Rack model sample', DeviceType.rack_server.id)
