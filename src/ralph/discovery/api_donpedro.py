@@ -219,6 +219,7 @@ def save_device_data(data, remote_ip):
     save_storage(storage, dev)
     save_shares(shares, dev, ip_address)
     save_fibre_channel(fcs, dev)
+    return dev
 
 
 class WindowsDeviceResource(MResource):
