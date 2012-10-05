@@ -195,11 +195,14 @@ def get_disk_shares(ssh):
     pvs = {}
     for line in stdout.readlines():
         line = line.strip()
-        if not line.startswith('mpath'):
+        if line.startswith(('\_', '[')):
             continue
         try:
             path, wwn, pv, model = line.strip().split(None, 3)
         except ValueError:
+            wwn, pv, model = line.strip().split(None, 2)
+            path = None
+        if '(' not in wwn:
             wwn, pv, model = line.strip().split(None, 2)
             path = None
         wwn  = normalize_wwn(wwn.strip('()'))
