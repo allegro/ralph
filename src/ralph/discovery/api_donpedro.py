@@ -170,7 +170,7 @@ def save_fibre_channel(fcs, dev):
 
 def str_to_ethspeed(str_value):
     if not str_value:
-        speed = EthernetSpeed.unknown.id
+        return EthernetSpeed.unknown.id
     int_value = int(str_value)
     if int_value == 1000000000:
         speed = EthernetSpeed.s1gbit.id
