@@ -13,21 +13,7 @@
     <script src="{{ STATIC_URL }}jquery.flot.js"></script>
 
     <!-- additional scripts !-->
-    <script src="{{ STATIC_URL }}ui/main.js"></script>
     <script src="{{ STATIC_URL }}jit/jit.js"></script>
-
-    <script type='text/javascript'> 
-        /* FIXME: datepicker plugin has some problem with hooking elements by class.
-           It works only for first element - to be fixed */
-        /*
-        $(document).ready(function()
-        {
-           $(".datepicker").datepicker(
-            format='yyyy/mm/dd'
-            );
-        });
-        */
-    </script>
 {% endblock %}
 
 {% block extra_headers %}
@@ -48,7 +34,6 @@
 
      <!-- django admin wigets css !-->
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}/filtered_widget/style.css" />
-    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}/ui/datepicker.css" />
 {% endblock %}
 
 {% block breadcrumbs %}
