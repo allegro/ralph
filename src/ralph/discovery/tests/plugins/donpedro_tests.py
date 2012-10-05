@@ -52,9 +52,9 @@ class DonPedroPluginTest(TestCase):
         fc = self.dev.fibrechannel_set.all()
         self.assertEqual(len(fc), 2)
         self.assertEqual(fc[0].model.name,
-                u'QLogic QMH2462 Fibre Channel Adapter')
+                u'QMH2462')
         self.assertEqual(fc[1].model.name,
-                u'QLogic QMH2462 Fibre Channel Adapter')
+                u'QMH2462')
         self.assertTrue(fc[0].label == fc[1].label ==
                 u'QLogic QMH2462 Fibre Channel Adapter')
 
@@ -63,11 +63,11 @@ class DonPedroPluginTest(TestCase):
         self.assertEqual(len(memory), 1)
         memory = memory[0]
         self.assertEqual(memory.size, 3068)
-        self.assertEqual(memory.label, 'DIMM 0')
+        self.assertEqual(memory.label, 'RAM 3068MiB')
         self.assertEqual(memory.model.speed, 0)
-        self.assertEqual(memory.model.name, u'RAM Windows 3068MiB')
+        self.assertEqual(memory.model.name, 'RAM Windows 3068MiB')
         self.assertEqual(memory.model.size, self.total_memory_size)
-        self.assertEqual(memory.model.family, 'Windows RAM')
+        self.assertEqual(memory.model.family, '')
 
     def testOS(self):
         os = self.dev.operatingsystem_set.all()
