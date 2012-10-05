@@ -31,15 +31,17 @@
             <a href="#" id="interval-1m" class="btn" data-value="4">last month</a>
         </div>
         <div class="span5">
-            <div style="display:inline-block; vertical-align:top" class="control-group ">
-                <input type="text" name="start" class="input-small datepicker" placeholder="yyyy-mm-dd" value="" data-date-format="yyyy-mm-dd">
+            <div class="pull-right">
+                <div style="display:inline-block; vertical-align:top" class="control-group ">
+                    <input type="text" name="start" class="input-small datepicker" placeholder="yyyy-mm-dd" value="" data-date-format="yyyy-mm-dd">
+                </div>
+                <div style="display:inline-block; vertical-align:top" class="control-group ">
+                    <input type="text" name="end" class="input-small datepicker" placeholder="yyyy-mm-dd" value="" data-date-format="yyyy-mm-dd">
+                </div>
+                <button type="submit" class="btn" id="custom-date">{% spaceless %}
+                    {% icon 'fugue-calendar-search-result' %}&nbsp;Update
+                {% endspaceless %}</button>
             </div>
-            <div style="display:inline-block; vertical-align:top" class="control-group ">
-                <input type="text" name="end" class="input-small datepicker" placeholder="yyyy-mm-dd" value="" data-date-format="yyyy-mm-dd">
-            </div>
-            <button type="submit" class="btn" id="custom-date">{% spaceless %}
-                {% icon 'fugue-calendar-search-result' %}&nbsp;Update
-            {% endspaceless %}</button>
         </div>
     </form>
 </div>
