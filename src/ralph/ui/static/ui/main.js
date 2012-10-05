@@ -140,8 +140,14 @@ $(function ($) {
     $('select#id_venture').change(venture_changed);
     $('select#id_venture').each(venture_changed);
 
-    $('.datepicker').datepicker({ format: 'yyyy-mm-dd'});
-
+    $('.datepicker').datepicker({format: 'yyyy-mm-dd', autoclose: true}).click(function(){
+        if ($(this).attr('name') =='start'){
+            $("input[name='end']").datepicker('hide');
+        }
+        if ($(this).attr('name') =='end'){
+            $("input[name='start']").datepicker('hide');
+        }
+    });
 
     var parseDate = function (input, format) {
         format = format || 'yyyy-mm-dd';
@@ -228,4 +234,9 @@ $(function ($) {
         window.location.replace('?' + fields);
         return false
     });
+    $('.close').click(function() {
+        if ($(this).attr('data-dismiss') == 'alert'){
+            $(this).parents('.alerts').filter(':first').remove();
+        }
+    })
 });
