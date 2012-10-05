@@ -152,7 +152,7 @@ def save_fibre_channel(fcs, dev):
         fib, created = FibreChannel.concurrent_get_or_create(device=dev,
             physical_id=pid)
         fib.label = f.get('label')
-        extra = '%s %s' % (fib.label, pid, manufacturer, model)
+        extra = '%s %s %s %s' % (fib.label, pid, manufacturer, model)
         fib.model, c = ComponentModel.concurrent_get_or_create(
             type=ComponentType.fibre.id, family=fib.label,
             extra_hash=hashlib.md5(extra).hexdigest())
