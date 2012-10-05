@@ -8,7 +8,7 @@ from __future__ import unicode_literals
 import json
 from django.test import TestCase
 
-from ralph.discovery.models import DeviceType, Device, IPAddress, DiskShare
+from ralph.discovery.models import Device
 from ralph.discovery.tests.plugins.samples.donpedro import data
 from ralph.discovery.api_donpedro import save_device_data
 
@@ -51,11 +51,11 @@ class DonPedroPluginTest(TestCase):
     def testFC(self):
         fc = self.dev.fibrechannel_set.all()
         self.assertEqual(len(fc), 2)
-        self.assertEqual(fc[0].model.name, 
+        self.assertEqual(fc[0].model.name,
                 u'QLogic QMH2462 Fibre Channel Adapter')
-        self.assertEqual(fc[1].model.name, 
+        self.assertEqual(fc[1].model.name,
                 u'QLogic QMH2462 Fibre Channel Adapter')
-        self.assertTrue(fc[0].label == fc[1].label == 
+        self.assertTrue(fc[0].label == fc[1].label ==
                 u'QLogic QMH2462 Fibre Channel Adapter')
 
     def testMemory(self):
