@@ -21,7 +21,8 @@ from lck.django.common import nested_commit_on_success
 
 from ralph.cmdb.forms import CISearchForm, CIEditForm, CIViewForm, CIRelationEditForm
 from ralph.cmdb.customfields import EditAttributeFormFactory
-from ralph.cmdb.models_ci import CILayer, CI_TYPES
+from ralph.cmdb.models_ci import CIOwner, CIOwnership, CILayer
+
 from ralph.account.models import Perm
 from ralph.ui.views.common import Base
 from ralph.util.presentation import get_device_icon, get_venture_icon, get_network_icon
@@ -327,10 +328,29 @@ class Add(BaseCMDBView):
                 if not model.content_object:
                     model.uid = "%s-%s" % ('mm', model.id)
                     model.save(user=self.request.user)
+                model.owners.clear()
+                model.layers.clear()
+                layers = self.form.data.getlist('base-layers')
+                for layer in layers:
+                    model.layers.add(CILayer.objects.get(pk=int(layer[0])))
+
+                owners_t = self.form.data.getlist('base-technical_owners')
+                for owner in owners_t:
+                    own = CIOwnership(ci=model,
+                                      owner=CIOwner.objects.get(pk=owner[0]),
+                                      type=1,)
+                    own.save()
+                owners_b = self.form.data.getlist('base-business_owners')
+                for owner in owners_b:
+                    own = CIOwnership(ci=model,
+                                      owner=CIOwner.objects.get(pk=owner[0]),
+                                      type=2,)
+                    own.save()
                 messages.success(self.request, _("Changes saved."))
                 return HttpResponseRedirect('/cmdb/ci/edit/'+str(model.id))
             else:
                 messages.error(self.request, _("Correct the errors."))
+
         return super(Add, self).get(*args, **kwargs)
 
 
@@ -633,6 +653,28 @@ class Edit(BaseCMDBView):
                 if self.form.is_valid() and self.form_attributes.is_valid():
                     self.form.data['base-id'] = self.ci.id
                     model = self.form.save(commit=False)
+                    model.id = self.ci.id
+                    model.owners.clear()
+                    model.layers.clear()
+                    layers = self.form_attributes.data.getlist('base-layers')
+                    for layer in layers:
+                        model.layers.add(CILayer.objects.get(pk=int(layer[0])))
+
+                    owners_t = self.form_attributes.data.getlist('base-technical_owners')
+                    for owner in owners_t:
+                        own = CIOwnership(ci=model,
+                                owner=CIOwner.objects.get(pk=owner[0]),
+                                type=1,)
+                        own.save()
+
+                    owners_b = self.form_attributes.data.getlist('base-business_owners')
+                    for owner in owners_b:
+                        own = CIOwnership(ci=model,
+                                          owner=CIOwner.objects.get(pk=owner[0]),
+                                          type=2,)
+                        own.save()
+
+
                     model.uid = self.ci.uid
                     model.save(user=self.request.user)
                     self.form_attributes.ci = model
