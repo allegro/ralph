@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""ReST API for Donpedro Windows Agent.
-"""
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -132,8 +129,8 @@ def save_memory(memory, dev):
             pass
         label = row.get('label')
         mem, created = Memory.concurrent_get_or_create(device=dev, index=index)
-        mem.label = label
         mem.size = size
+        mem.label = 'RAM %dMiB' % size
         mem.speed = speed
         family = 'Virtual' if 'Virtual' in label else ''
         extra = '%s %dMiB %s %s' % (label, size, speed, row.get('caption'))
