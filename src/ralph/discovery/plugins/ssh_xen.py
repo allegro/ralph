@@ -8,17 +8,22 @@ from __future__ import unicode_literals
 
 import ssh as paramiko
 import collections
+import logging
 
 from django.conf import settings
 
 from ralph.util import network, Eth, plugin, parse
 from ralph.discovery.models import (Device, DeviceType, ComponentModel, Storage,
-                                    Processor, ComponentType, Memory, IPAddress)
+                                    Processor, ComponentType, Memory, IPAddress,
+                                    DiskShare, DiskShareMount)
+from ralph.discovery import hardware
 
 
 XEN_USER = settings.XEN_USER
 XEN_PASSWORD = settings.XEN_PASSWORD
 SAVE_PRIORITY = 20
+
+logger = logging.getLogger(__name__)
 
 
 class Error(Exception):
@@ -149,6 +154,7 @@ def run_ssh_xen(ipaddr, parent):
         vms = get_running_vms(ssh)
         macs = get_macs(ssh)
         disks = get_disks(ssh)
+        shares = hardware.get_disk_shares(ssh)
     finally:
         ssh.close()
 
@@ -200,17 +206,40 @@ def run_ssh_xen(ipaddr, parent):
             disk_model.name = 'XEN virtual disk'
             disk_model.save()
         vm_disks = disks.get(vm_name, [])
+        wwns = []
         for uuid, sr_uuid, size, device in vm_disks:
-            storage, created = Storage.concurrent_get_or_create(
-                device=dev, mount_point=device, sn=uuid)
-            storage.size = size
-            storage.model = disk_model
-            storage.label = device
-            storage.save()
+            wwn, mount_size = shares.get('VHD-%s' % sr_uuid, (None, None))
+            if wwn:
+                try:
+                    share = DiskShare.objects.get(wwn=wwn)
+                    wwns.append(wwn)
+                except DiskShare.DoesNotExist:
+                    logger.warning('A share with WWN %r does not exist.' % wwn)
+                    continue
+                mount, created = DiskShareMount.concurrent_get_or_create(
+                        share=share, device=dev)
+                mount.is_virtual = True
+                mount.server = parent
+                mount.size = mount_size
+                mount.volume = device
+                mount.save()
+            else:
+                storage, created = Storage.concurrent_get_or_create(
+                    device=dev, mount_point=device, sn=uuid)
+                storage.size = size
+                storage.model = disk_model
+                storage.label = device
+                storage.save()
         for disk in dev.storage_set.exclude(sn__in={
             uuid for uuid, x , y , z in vm_disks
         }):
             disk.delete()
+        for ds in dev.disksharemount_set.filter(
+                server=parent).exclude(share__wwn__in=wwns):
+            ds.delete()
+        for ds in dev.disksharemount_set.filter(
+                is_virtual=True).exclude(share__wwn__in=wwns):
+            ds.delete()
     return ', '.join(vm_name for (vm_name, vm_uuid, vm_cores, vm_memory) in vms)
 
 
