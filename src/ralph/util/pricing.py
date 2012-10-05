@@ -291,10 +291,13 @@ def details_cpu(dev, purchase_only=False):
     else:
         for cpu in dev.processor_set.all():
             has_cpu = True
+            speed = cpu.model.speed if (cpu.model and
+                                        cpu.model.speed) else cpu.speed
             yield {
                 'label': cpu.label,
                 'model': cpu.model,
                 'size': '%d core(s)' % cpu.get_cores(),
+                'speed': '%d Mhz' % speed if speed else None,
                 'price': cpu.get_price(),
             }
     if purchase_only:
@@ -327,10 +330,13 @@ def details_mem(dev, purchase_only=False):
     has_mem = False
     for mem in dev.memory_set.all():
         has_mem = True
+        speed = mem.model.speed if (mem.model and
+                                    mem.model.speed) else mem.speed
         yield {
             'label': mem.label,
             'model': mem.model,
             'size': '%d MiB' % mem.get_size(),
+            'speed': '%d Mhz' % speed if speed else None,
             'price': mem.get_price(),
         }
     if purchase_only:
