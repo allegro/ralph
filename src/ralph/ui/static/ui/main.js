@@ -236,7 +236,7 @@ $(function ($) {
     });
     $('.close').click(function(){
         if ($(this).attr('data-dismiss') == 'alert'){
-            $(this).parent().parent().remove();
+            $(this).parents('.alerts').filter(':first').remove();
         }
     })
 });
