@@ -21,6 +21,7 @@ from ralph.cmdb.models_changes import CI_CHANGE_TYPES
 from ralph.cmdb.views import BaseCMDBView, get_icon_for
 from ralph.cmdb.forms import CIChangeSearchForm, CIReportsParamsForm
 from ralph.cmdb.util import PaginatedView
+from ralph.util.views import build_url
 
 
 class ChangesBase(BaseCMDBView):
@@ -158,7 +159,7 @@ class Problems(ChangesBase, PaginatedView):
         ret = super(Problems, self).get_context_data(**kwargs)
         ret.update({
             'problems': self.data,
-            'jira_url': settings.ISSUETRACKERS['default']['URL'] + '/browse/',
+            'jira_url': build_url(settings.ISSUETRACKERS['default']['URL'], 'browse'),
             'subsection': 'Problems',
              'sidebar_selected': 'problems',
         })
@@ -178,7 +179,7 @@ class Incidents(ChangesBase, PaginatedView):
         ret = super(Incidents, self).get_context_data(**kwargs)
         ret.update({
             'incidents': self.data,
-            'jira_url': settings.ISSUETRACKERS['default']['URL'] + '/browse/',
+            'jira_url': build_url(settings.ISSUETRACKERS['default']['URL'], 'browse'),
             'subsection': 'Incidents',
             'sidebar_selected': 'incidents',
         })
