@@ -21,6 +21,8 @@ from lck.django.common import nested_commit_on_success
 
 from ralph.cmdb.forms import CISearchForm, CIEditForm, CIViewForm, CIRelationEditForm
 from ralph.cmdb.customfields import EditAttributeFormFactory
+from ralph.cmdb.models_ci import CIOwner, CIOwnership, CILayer
+
 from ralph.account.models import Perm
 from ralph.ui.views.common import Base
 from ralph.util.presentation import get_device_icon, get_venture_icon, get_network_icon
@@ -152,6 +154,7 @@ class BaseCMDBView(Base):
             'tabs_left': False,
             'fisheye_url': settings.FISHEYE_URL,
             'fisheye_project': settings.FISHEYE_PROJECT_NAME,
+            'section': 'cmdb',
         })
         return ret
 
@@ -305,6 +308,8 @@ class Add(BaseCMDBView):
         ret.update({
             'form': self.form,
             'label': 'Add CI',
+            'subsection': 'Add CI',
+            'sidebar_selected': 'add ci',
         })
         return ret
 
@@ -323,10 +328,29 @@ class Add(BaseCMDBView):
                 if not model.content_object:
                     model.uid = "%s-%s" % ('mm', model.id)
                     model.save(user=self.request.user)
+                model.owners.clear()
+                model.layers.clear()
+                layers = self.form.data.getlist('base-layers')
+                for layer in layers:
+                    model.layers.add(CILayer.objects.get(pk=int(layer[0])))
+
+                owners_t = self.form.data.getlist('base-technical_owners')
+                for owner in owners_t:
+                    own = CIOwnership(ci=model,
+                                      owner=CIOwner.objects.get(pk=owner[0]),
+                                      type=1,)
+                    own.save()
+                owners_b = self.form.data.getlist('base-business_owners')
+                for owner in owners_b:
+                    own = CIOwnership(ci=model,
+                                      owner=CIOwner.objects.get(pk=owner[0]),
+                                      type=2,)
+                    own.save()
                 messages.success(self.request, _("Changes saved."))
                 return HttpResponseRedirect('/cmdb/ci/edit/'+str(model.id))
             else:
                 messages.error(self.request, _("Correct the errors."))
+
         return super(Add, self).get(*args, **kwargs)
 
 
@@ -461,7 +485,7 @@ class Edit(BaseCMDBView):
             'cmdb_messages': self.get_messages(),
             'show_in_ralph': self.show_in_ralph,
             'ralph_ci_link': self.ralph_ci_link,
-
+            'subsection': 'Edit - %s' % self.ci.name,
         })
         return ret
 
@@ -629,6 +653,28 @@ class Edit(BaseCMDBView):
                 if self.form.is_valid() and self.form_attributes.is_valid():
                     self.form.data['base-id'] = self.ci.id
                     model = self.form.save(commit=False)
+                    model.id = self.ci.id
+                    model.owners.clear()
+                    model.layers.clear()
+                    layers = self.form_attributes.data.getlist('base-layers')
+                    for layer in layers:
+                        model.layers.add(CILayer.objects.get(pk=int(layer[0])))
+
+                    owners_t = self.form_attributes.data.getlist('base-technical_owners')
+                    for owner in owners_t:
+                        own = CIOwnership(ci=model,
+                                owner=CIOwner.objects.get(pk=owner[0]),
+                                type=1,)
+                        own.save()
+
+                    owners_b = self.form_attributes.data.getlist('base-business_owners')
+                    for owner in owners_b:
+                        own = CIOwnership(ci=model,
+                                          owner=CIOwner.objects.get(pk=owner[0]),
+                                          type=2,)
+                        own.save()
+
+
                     model.uid = self.ci.uid
                     model.save(user=self.request.user)
                     self.form_attributes.ci = model
@@ -646,7 +692,8 @@ class View(Edit):
     def get_context_data(self, **kwargs):
         ret = super(View, self).get_context_data(**kwargs)
         ret.update({
-            'label': 'View CI:  ' + self.ci.name
+            'label': 'View CI:  ' + self.ci.name,
+            'subsection': 'Info - %s' % self.ci.name
         })
         return ret
 
@@ -689,6 +736,20 @@ class Search(BaseCMDBView):
     Form = CISearchForm
     cis = []
     def get_context_data(self, **kwargs):
+        subsection = ''
+        layer = self.request.GET.get('layer')
+        type = self.request.GET.get('type')
+        if layer:
+            subsection += '%s - ' % CILayer.objects.get(id = layer)
+        elif type:
+            type = CI_TYPES.NameFromID(int(type))
+            subsection += '%s - ' % CI_TYPES.DescFromName(type)
+        subsection += 'Search'
+        sidebar_selected = ''
+        if layer == str(CI_TYPES.SERVICE.id):
+            sidebar_selected = 'services'
+        if not layer and not type:
+            sidebar_selected = 'all cis'
         ret = super(Search, self).get_context_data(**kwargs)
         ret.update({
             'rows': self.rows,
@@ -696,6 +757,8 @@ class Search(BaseCMDBView):
             'pages': _get_pages(self.paginator, self.page_number),
             'sort': self.request.GET.get('sort', ''),
             'form': self.form,
+            'sidebar_selected': sidebar_selected,
+            'subsection': subsection,
         })
         return ret
 
