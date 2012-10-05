@@ -564,11 +564,9 @@ class DeviceCreateForm(DeviceForm):
             'position',
             'chassis_position',
             'remarks',
-
             'margin_kind',
             'deprecation_kind',
             'price',
-
             'model',
             'sn',
             'barcode',
@@ -620,18 +618,15 @@ class DeviceBulkForm(DeviceForm):
             'position',
             'chassis_position',
             'remarks',
-
             'margin_kind',
             'deprecation_kind',
             'price',
-
             'sn',
             'barcode',
             'purchase_date',
             'warranty_expiration_date',
             'support_expiration_date',
             'support_kind',
-
             'deleted',
         )
 
@@ -681,6 +676,17 @@ class DeviceInfoVerifiedForm(DeviceInfoForm):
         widgets = {
             'venture': ReadOnlySelectWidget,
             'venture_role': ReadOnlySelectWidget,
+            'parent': DeviceWidget,
+            'model': DeviceModelWidget,
+            'rack': RackWidget,
+            'dc': RackWidget,
+            'cached_price': ReadOnlyPriceWidget,
+            'cached_cost': ReadOnlyPriceWidget,
+            'auto_price': ReadOnlyPriceWidget,
+            'purchase_date': DateWidget,
+            'deprecation_date': ReadOnlyWidget,
+            'warranty_expiration_date': DateWidget,
+            'support_expiration_date': DateWidget,
         }
 
     def clean_venture(self):

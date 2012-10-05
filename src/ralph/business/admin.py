@@ -5,10 +5,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
-import re
 
 from django import forms
 from django.contrib import admin
+from django.core.urlresolvers import reverse_lazy
 from django.utils.translation import ugettext_lazy as _
 from lck.django.common.admin import ModelAdmin, ForeignKeyAutocompleteTabularInline
 
@@ -19,6 +19,7 @@ from ralph.business.models import (RoleProperty, RolePropertyType,
         RolePropertyTypeValue, RolePropertyValue, Department)
 from ralph.integration.admin import RoleIntegrationInline
 
+import ralph.util.venture as util_venture
 
 class RolePropertyTypeValueInline(admin.TabularInline):
     model = RolePropertyTypeValue
@@ -63,12 +64,24 @@ class AutocompleteVentureExtraCostInline(ForeignKeyAutocompleteTabularInline):
     }
 
 
+class VentureRoleAdminForm(forms.ModelForm):
+    def clean_name(self):
+        data = self.cleaned_data['name']
+        if not util_venture.slug_validation(data):
+            raise forms.ValidationError("Symbol can't be empty, has to start with"
+                                        " a letter, and can't end with '_'. "
+                                        "Allowed characters: a-z, 0-9, "
+                                        "'_'. Example: simple_venture2")
+        return data
+
+
 class VentureRoleAdmin(ModelAdmin):
     inlines = [RolePropertyInline, RoleIntegrationInline]
     related_search_fields = {
         'venture': ['^name'],
         'parent': ['^name'],
     }
+    form = VentureRoleAdminForm
     filter_horizontal = ('networks',)
 
 admin.site.register(VentureRole, VentureRoleAdmin)
@@ -94,9 +107,9 @@ class SubVentureInline(admin.TabularInline):
 class VentureAdminForm(forms.ModelForm):
     def clean_symbol(self):
         data = self.cleaned_data['symbol']
-        if not re.match(r'^[a-z]{1}[a-z0-9_]*[a-z0-9]{1}$', data):
+        if not util_venture.slug_validation(data):
             raise forms.ValidationError("Symbol can't be empty, has to start with"
-                " letter, and can't end with '_'. Allowed characters: a-z, 0-9, "
+                " a letter, and can't end with '_'. Allowed characters: a-z, 0-9, "
                 "'_'. Example: simple_venture2")
         else:
             venture = Venture.objects.filter(symbol=data)
@@ -126,7 +139,9 @@ class VentureAdmin(ModelAdmin):
             return []
         owners = CIOwner.objects.filter(ciownership__type=CIOwnershipType.technical.id,
             ci=ci)
-        return ", ".join([unicode(owner) for owner in owners])
+        part_url = reverse_lazy('ci_edit', kwargs={'ci_id': str(ci.id)})
+        return "<a href=\"{}\">{}</a>".format(part_url,
+                    ", ".join([unicode(owner) for owner in owners]))
     technical_owners.short_description = _("technical owners")
     technical_owners.allow_tags = True
 
@@ -136,7 +151,9 @@ class VentureAdmin(ModelAdmin):
             return []
         owners = CIOwner.objects.filter(ciownership__type=CIOwnershipType.business.id,
             ci=ci)
-        return ", ".join([unicode(owner) for owner in owners])
+        part_url = reverse_lazy('ci_edit', kwargs={'ci_id': str(ci.id)})
+        return "<a href=\"{}\">{}</a>".format(part_url,
+                    ", ".join([unicode(owner) for owner in owners]))
     business_owners.short_description = _("business owners")
     business_owners.allow_tags = True
 
