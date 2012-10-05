@@ -60,8 +60,7 @@ class PuppetAgentsImporter(BaseImporter):
         report.ci = self.get_ci_by_name(host)
         report.status = status
         report.save()
-        if settings.PUPPET_SAVE_UNCHANGED_RESOURCES:
-            if status !='unchanged':
+        if settings.PUPPET_SAVE_UNCHANGED_RESOURCES and status !='unchanged':
                 for key in yaml.resource_statuses:
                     resource_status = yaml.resource_statuses[key]
                     change_count = resource_status.change_count
@@ -91,7 +90,7 @@ class PuppetAgentsImporter(BaseImporter):
                         dvalue = event.desired_value
                         pr = event.property
                         stat = event.status
-                        logger.debug('EVENT %s %s %s %s %s' % (msg, name, pvalue, dvalue, stat)
+                        logger.debug('EVENT %r %r %r %r %r' % (msg, name, pvalue, dvalue, stat)
                         )
         if status == 'changed' or status == 'failed':
             for log in yaml.logs:
