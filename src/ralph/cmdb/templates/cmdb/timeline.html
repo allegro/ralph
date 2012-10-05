@@ -69,7 +69,7 @@
 <script type="text/javascript">
     $(function(){
         var get_interval = $('.btn-group a').data('value');
-        var form = $('#date-filter')
+        var form = $('#date-filter');
         $(".btn-group a").click(function (){
             get_interval = $(this).data('value');
             load_data("/cmdb/changes/timeline_ajax?interval=" + get_interval);
@@ -83,7 +83,7 @@
             load_data("/cmdb/changes/timeline_ajax?start=" + inputs[0]['value']
                     +"&end=" + inputs[1]['value']);
             return false;
-        })
+        });
 
         $('#placeholder').html(loading());
         load_data("/cmdb/changes/timeline_ajax?interval=" + get_interval);

@@ -174,7 +174,7 @@ function setup(data){
     plot.setSelection({ xaxis: { from: 0, to: 0 } });
     plot.setupGrid();
     plot.draw();
-    annotate_manual(plot, data.manual,data.plot_title);
+    annotate_manual(plot, data.manual, data.plot_title);
     });
 
     plot = $.plot(placeholder, plotdata , options);
