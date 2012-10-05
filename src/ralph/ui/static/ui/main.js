@@ -234,4 +234,9 @@ $(function ($) {
         window.location.replace('?' + fields);
         return false
     });
+    $('.close').click(function(){
+        if ($(this).attr('data-dismiss') == 'alert'){
+            $(this).parent().parent().remove();
+        }
+    })
 });
