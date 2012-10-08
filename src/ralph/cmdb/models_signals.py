@@ -31,10 +31,12 @@ if settings.ISSUETRACKERS['default']['ENGINE'] == '':
     # Null Issue Tracker fallback
     ralph_change_link = '%s'
     op_template = ''
+    op_issue_type = ''
     default_assignee = ''
 else:
     ralph_change_link = settings.ISSUETRACKERS['default']['CMDB_VIEWCHANGE_LINK']
     op_template = settings.ISSUETRACKERS['default']['OP']['TEMPLATE']
+    op_issue_type = settings.ISSUETRACKERS['default']['OP']['ISSUETYPE']
     default_assignee = settings.ISSUETRACKERS['default']['OP']['DEFAULT_ASSIGNEE']
 
 
@@ -196,13 +198,14 @@ def create_issue(change_id, retry_count=1):
             user = default_assignee
 
         issue = j.create_issue(
-                description=description,
                 summary=summary,
+                description=description,
+                issue_type=op_issue_type,
                 ci=ci,
                 assignee=user,
+                template=op_template,
                 start=ch.created.isoformat(),
                 end='',
-                template=op_template,
         )
         ch.registration_type = chdb.CI_CHANGE_REGISTRATION_TYPES.CHANGE.id
         ch.external_key = issue.get('key')

@@ -9,9 +9,11 @@ from __future__ import unicode_literals
 import hashlib
 import re
 
-from ralph.util import units
+from ralph.util import units, parse
 from ralph.discovery.models import (Memory, Processor, ComponentModel,
-    ComponentType, Storage, DISK_VENDOR_BLACKLIST, DISK_PRODUCT_BLACKLIST)
+    ComponentType, Storage, DISK_VENDOR_BLACKLIST, DISK_PRODUCT_BLACKLIST,
+    Device, DeviceType
+)
 
 
 
@@ -26,6 +28,13 @@ INQUIRY_REGEXES = (
     re.compile(r'^(?P<vendor>HP)\s+(?P<product>[a-zA-Z0-9]{11})\s+(?P<sn>[a-zA-Z0-9]{12})$'),
     re.compile(r'^(?P<vendor>HITACHI)\s+(?P<product>[a-zA-Z0-9]{15})(?P<sn>[a-zA-Z0-9]{15})$'),
 )
+
+
+class Error(Exception):
+    pass
+
+class DMIDecodeError(Error):
+    pass
 
 
 def normalize_wwn(wwn):
@@ -186,11 +195,14 @@ def get_disk_shares(ssh):
     pvs = {}
     for line in stdout.readlines():
         line = line.strip()
-        if not line.startswith('mpath'):
+        if line.startswith((r'\_', r'[')):
             continue
         try:
             path, wwn, pv, model = line.strip().split(None, 3)
         except ValueError:
+            wwn, pv, model = line.strip().split(None, 2)
+            path = None
+        if '(' not in wwn:
             wwn, pv, model = line.strip().split(None, 2)
             path = None
         wwn  = normalize_wwn(wwn.strip('()'))
@@ -279,8 +291,8 @@ def handle_megaraid(dev, disks, priority=0):
                 _handle_inquiry_data(disk.get('inquiry_data', ''),
                         controller_handle, disk_handle)
 
-        if not disk.get('serial_number') or disk.get('media_type') not in ('Hard Disk Device',
-                'Solid State Device'):
+        if not disk.get('serial_number') or disk.get(
+                'media_type') not in ('Hard Disk Device', 'Solid State Device'):
             continue
         if {'coerced_size', 'vendor', 'product', 'pd_type'} - \
                 set(disk.keys()):
@@ -354,4 +366,98 @@ Status: {status}""".format(**disk_default)
         stor.model.name =  '{} {}MiB'.format(stor.label, stor.size)
         stor.model.save(priority=priority)
         stor.save(priority=priority)
+
+
+def parse_dmidecode(data):
+    """Parse data returned by the dmidecode command into a dict."""
+
+    p = parse.multi_pairs(data)
+    def exclude(value, exceptions):
+        if value not in exceptions:
+            return value
+    def num(value):
+        if value is None:
+            return None
+        try:
+            num, unit = value.split(None, 1)
+        except ValueError:
+            num = value
+        return int(num)
+    if 'System Information' not in p:
+        raise DMIDecodeError('System information not found')
+    result = {
+        'model': p['System Information']['Product Name'],
+        'sn': p['System Information']['Serial Number'],
+        'uuid': p['System Information']['UUID'],
+        'cpu': [{
+            'label': cpu['Socket Designation'],
+            'model': cpu['Version'],
+            'speed': num(cpu['Current Speed']),
+            'threads': num(cpu.get('Thread Count')),
+            'cores': num(cpu['Core Count']),
+            'family': cpu['Family'],
+            '64bit': any('64-bit capable' in char
+                         for char in cpu.getlist('Characteristics') if char),
+            'flags': [f.keys() for f in cpu.getlist('Flags') if f][0],
+        } for cpu in p.getlist('Processor Information') if cpu],
+        'mem': [{
+            'label': mem['Locator'],
+            'type': mem['Type'],
+            'size': num(mem['Size']),
+            'speed': num(exclude(mem.get('Speed'), {'Unknown'})),
+        } for mem in p.getlist('Memory Device')
+            if mem and mem.get('Size') != 'No Module Installed'],
+    }
+    return result
+
+
+def handle_dmidecode(info, ethernets=(), save_priority=0):
+    """Take the data collected by parse_dmidecode and apply it to a device."""
+
+    # It's either a rack or a blade server, who knows?
+    # We will let other plugins determine that.
+    dev = Device.create(ethernets=ethernets, sn=info['sn'], uuid=info['uuid'],
+            model_name=info['model'], model_type=DeviceType.unknown,
+            priority=save_priority)
+    for i, cpu_info in enumerate(info['cpu']):
+        extra = ',\n'.join(cpu_info['flags'])
+        extra = ('threads: %d\n' % cpu_info['threads']) + extra
+        if cpu_info['64bit']:
+            extra = '64bit\n' + extra
+        model, created = ComponentModel.concurrent_get_or_create(
+            speed=cpu_info['speed'],
+            cores=cpu_info['cores'],
+            family=cpu_info['family'],
+            extra_hash=hashlib.md5(extra).hexdigest(),
+            type=ComponentType.processor.id,
+        )
+        if created:
+            model.name = cpu_info['model']
+            model.extra = extra
+            model.save()
+        cpu, created = Processor.concurrent_get_or_create(device=dev,
+                                                          index=i + 1)
+        if created:
+            cpu.label = cpu_info['label']
+            cpu.model = model
+            cpu.save()
+    for cpu in dev.processor_set.filter(index__gt=i + 1):
+        cpu.delete()
+    for i, mem_info in enumerate(info['mem']):
+        model, created = ComponentModel.concurrent_get_or_create(
+            speed=mem_info['speed'],
+            size=mem_info['size'],
+            type=ComponentType.memory.id,
+        )
+        if created:
+            model.name = 'RAM %s %dMiB' % (mem_info['type'], mem_info['size'])
+            model.save()
+        mem, created = Memory.concurrent_get_or_create(device=dev, index=i + 1)
+        if created:
+            mem.label = mem_info['label']
+            mem.model = model
+            mem.save()
+    for mem in dev.memory_set.filter(index__gt=i + 1):
+        mem.delete()
+    return dev
 

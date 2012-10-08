@@ -64,7 +64,7 @@
         <th>Owner</th>
     </tr></thead>
     <tbody>
-        {% for o in device.venture.all_ownerships %}
+        {% for o in venture.all_ownerships %}
             <tr>
                  <td>{{ o|owner_icon }}</td>
                  <td>{{ o.owner }}</td>
