@@ -87,7 +87,8 @@ def save_shares(shares, dev, ip):
             share=share)
         mount.volume = s.get('volume')
         mount.save(update_last_seen=True)
-    for mount in DiskShareMount.objects.filter(device=dev).exclude(share__wwn__in=wwns):
+    for mount in DiskShareMount.objects.filter(device=dev).exclude(
+            share__wwn__in=wwns):
         mount.delete()
 
 
@@ -187,7 +188,8 @@ def save_device_data(data, remote_ip):
     processors = data['processors']
     os = data['operating_system']
     device = data['device']
-    ethernets = [Eth(e.get('label'), e['mac'].replace(':', ''), str_to_ethspeed(e.get('speed'))) for
+    ethernets = [Eth(e.get('label'), e['mac'].replace(':', ''), 
+        str_to_ethspeed(e.get('speed'))) for
         e in data['ethernets'] if MACAddressField.normalize(e.get('mac'))[0:6]
         not in MAC_PREFIX_BLACKLIST]
     if not ethernets:
@@ -203,7 +205,8 @@ def save_device_data(data, remote_ip):
     if not dev.operatingsystem_set.exists():
         o = OperatingSystem.create(dev,
             os_name=os.get('label'),
-           family='Windows')
+            family='Windows',
+        )
         o.memory = int(os['memory'])
         o.storage = int(os['storage'])
         o.cores_count = int(os['corescount'])
@@ -243,4 +246,3 @@ class WindowsDeviceResource(MResource):
         cache = SimpleCache()
         throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
             expiration=EXPIRATION)
-
