@@ -9,3 +9,4 @@ from ralph.discovery.tests.plugins.xen_tests import SshXENPluginTest
 from ralph.discovery.tests.plugins.openstack_tests import OpenStackPluginTest
 from ralph.discovery.tests.plugins.ssh_linux_tests import SshLinuxPluginTest
 from ralph.discovery.tests.plugins.system_x_tests import SystemXPluginTest
+from ralph.discovery.tests.plugins.donpedro_tests import DonPedroPluginTest

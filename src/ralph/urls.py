@@ -7,6 +7,7 @@ from ralph.deployment.api import DeploymentResource
 from ralph.discovery.api import IPAddressResource, ModelGroupResource,\
     ModelResource, PhysicalServerResource, RackServerResource,\
     VirtualServerResource, BladeServerResource, DevResource
+from ralph.discovery.api_donpedro import WindowsDeviceResource
 
 from django.conf import settings
 from django.contrib import admin
@@ -24,9 +25,9 @@ for r in (VentureResource, VentureLightResource, RoleResource,
 
 # discovery API
 for r in (
-    IPAddressResource, ModelGroupResource, ModelResource,
+    IPAddressResource, ModelGroupResource, ModelResource, 
     PhysicalServerResource, RackServerResource, BladeServerResource,
-    VirtualServerResource, DevResource):
+    VirtualServerResource, DevResource, WindowsDeviceResource):
     v09_api.register(r())
 
 # CMDB API
