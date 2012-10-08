@@ -8,7 +8,7 @@ from __future__ import unicode_literals
 import json
 from django.test import TestCase
 
-from ralph.discovery.models import Device
+from ralph.discovery.models import Device, DiskShare, DiskShareMount
 from ralph.discovery.tests.plugins.samples.donpedro import data
 from ralph.discovery.api_donpedro import save_device_data
 
@@ -18,6 +18,11 @@ class DonPedroPluginTest(TestCase):
         ip = '10.10.10.10'
         save_device_data(json.loads(data).get('data'), ip)
         self.dev = Device.objects.all()[0]
+        d = DiskShare(device=self.dev)
+        d.wwn = '25D304C1'
+        d.save()
+        # once again - check for duplicates also
+        save_device_data(json.loads(data).get('data'), ip)
         self.total_memory_size = 3068
         self.total_storage_size = 40957
         self.total_cores_count = 2
@@ -81,3 +86,7 @@ class DonPedroPluginTest(TestCase):
         self.assertEqual(os.storage, self.total_storage_size)
         self.assertEqual(os.cores_count, self.total_cores_count)
 
+    def testShares(self):
+        # only first share mount created, because DiskShare is presetn
+        self.assertEqual(DiskShareMount.object.count(), 1)
+        self.assertEqual(DiskShareMount.objects.all()[0].share.wwn, '25D304C1')
