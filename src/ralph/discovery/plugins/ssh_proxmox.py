@@ -46,12 +46,13 @@ def _get_local_disk_size(ssh, disk):
     path = os.path.join('/var/lib/vz/images', disk)
     stdin, stdout, stderr = ssh.exec_command("du -m '%s'" % path)
     line = stdout.read().strip()
-    print('path=%r size=%r' % (path, line))
+    if not line:
+        return 0
     size = int(line.split(None, 1)[0])
     return size
 
 
-def _add_virtual_machine(ssh, vmid, parent, master, storage):
+def _add_virtual_machine(ssh, vmid, parent, master, storages):
     stdin, stdout, stderr = ssh.exec_command(
             "cat /etc/qemu-server/%d.conf" % vmid)
     lines = stdout.readlines()
@@ -104,13 +105,16 @@ def _add_virtual_machine(ssh, vmid, parent, master, storage):
             vg = ''
             lv = disk
         if vg == 'local':
+            size = _get_local_disk_size(ssh, lv)
+            if not size > 0:
+                continue
             model, created = ComponentModel.concurrent_get_or_create(
                 type=ComponentType.disk.id, family='QEMU disk image')
             if created:
                 model.save()
             storage, created = Storage.concurrent_get_or_create(
                 device=dev, mount_point=lv)
-            storage.size = _get_local_disk_size(ssh, lv)
+            storage.size = size
             storage.model = model
             storage.label = slot
             storage.save()
@@ -119,7 +123,7 @@ def _add_virtual_machine(ssh, vmid, parent, master, storage):
             continue
         vol = '%s:%s' % (vg, lv)
         try:
-            wwn, size = storage[lv]
+            wwn, size = storages[lv]
         except KeyError:
             logger.warning('Volume %r does not exist.' % lv)
             continue
@@ -162,7 +166,7 @@ def _add_virtual_machine(ssh, vmid, parent, master, storage):
     return dev
 
 def _add_virtual_machines(ssh, parent, master):
-    storage = get_disk_shares(ssh)
+    storages = get_disk_shares(ssh)
     stdin, stdout, stderr = ssh.exec_command("qm list")
     dev_ids = []
     for line in stdout:
@@ -174,7 +178,7 @@ def _add_virtual_machines(ssh, parent, master):
         if status != 'running':
             continue
         vmid = int(vmid)
-        dev = _add_virtual_machine(ssh, vmid, parent, master, storage)
+        dev = _add_virtual_machine(ssh, vmid, parent, master, storages)
         if dev is None:
             continue
         dev_ids.append(dev.id)
@@ -264,6 +268,8 @@ def run_ssh_proxmox(ip):
 
 @plugin.register(chain='discovery', requires=['ping', 'http'])
 def ssh_proxmox(**kwargs):
+    if 'nx-os' in kwargs.get('snmp_name', '').lower():
+        return False, 'incompatible Nexus found.', kwargs
     ip = str(kwargs['ip'])
     if kwargs.get('http_family') not in ('Proxmox',):
         return False, 'no match.', kwargs

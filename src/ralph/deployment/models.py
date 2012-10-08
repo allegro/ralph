@@ -62,24 +62,34 @@ bugtracker_transition_ids = dict(
     resolved_fixed=ACTION_RESOLVED_FIXED,
 )
 
-def normalize_owner(owner):
-    # Polish Ł is not handled properly
-    owner = owner.name.lower().replace(' ', '.').replace('Ł', 'L').replace('ł', 'l')
-    return unicodedata.normalize('NFD', owner).encode('ascii', 'ignore')
+def get_login_from_owner_name(owner):
+    def normalize_name(name):
+        # Polish Ł is not handled properly
+        ret = name.lower().replace(' ', '.').replace('Ł', 'L').replace('ł', 'l')
+        return unicodedata.normalize('NFD', ret).encode('ascii', 'ignore')
+    return normalize_name(owner.first_name) + '.' + normalize_name(owner.last_name)
 
 
 def get_technical_owner(device):
     if not device.venture:
         return ''
     owners = device.venture.technical_owners()
-    return normalize_owner(owners[0]) if owners else None
+    if not owners:
+        return ''
+    else:
+        owner = owners[0]
+        return get_login_from_owner_name(owner)
 
 
 def get_business_owner(device):
     if not device.venture:
         return ''
     owners = device.venture.business_owners()
-    return normalize_owner(owners[0]) if owners else None
+    if not owners:
+        return ''
+    else:
+        owner = owners[0]
+        return get_login_from_owner_name(owner) if owners else ''
 
 
 class DeploymentStatus(Choices):
