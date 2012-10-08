@@ -188,9 +188,9 @@ def save_device_data(data, remote_ip):
     processors = data['processors']
     os = data['operating_system']
     device = data['device']
-    ethernets = [Eth(e.get('label'), e['mac'].replace(':', ''), 
+    ethernets = [Eth(e.get('label'), MACAddressField.normalize(e.get('mac')),
         str_to_ethspeed(e.get('speed'))) for
-        e in data['ethernets'] if MACAddressField.normalize(e.get('mac'))[0:6]
+        e in data['ethernets'] if MACAddressField.normalize(e.get('mac'))
         not in MAC_PREFIX_BLACKLIST]
     if not ethernets:
         raise NoMACError('No MAC addresses.')
@@ -232,9 +232,6 @@ class WindowsDeviceResource(MResource):
         except Exception:
             logger.error(traceback.format_exc())
             raise
-
-    def obj_update(self, bundle, request=None, **kwargs):
-        pass
 
     class Meta:
         queryset = Device.objects.all()
