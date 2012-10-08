@@ -179,5 +179,5 @@ API_THROTTLING = {
     'timeframe': 10,
     'expiration': None,
 }
-IBM_SYSTEM_X_USER = "admin"
-IBM_SYSTEM_X_PASSWORD = "admin666"
+IBM_SYSTEM_X_USER = ""
+IBM_SYSTEM_X_PASSWORD = ""
