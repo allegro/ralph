@@ -407,3 +407,4 @@ class SearchReports(Search, Reports):
 
 class ReportSearchDeviceList(ReportDeviceList, SearchDeviceList):
     pass
+
