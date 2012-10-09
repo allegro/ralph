@@ -21,7 +21,7 @@ from lck.django.common import nested_commit_on_success
 
 from ralph.cmdb.forms import CISearchForm, CIEditForm, CIViewForm, CIRelationEditForm
 from ralph.cmdb.customfields import EditAttributeFormFactory
-from ralph.cmdb.models_ci import CIOwner, CIOwnership, CILayer
+from ralph.cmdb.models_ci import CIOwner, CIOwnership, CILayer, CI_TYPES
 
 from ralph.account.models import Perm
 from ralph.ui.views.common import Base

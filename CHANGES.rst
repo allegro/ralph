@@ -1,6 +1,22 @@
 Change Log
 ----------
 
+1.1.2
+~~~~~
+
+Released on October 8, 2012.
+
+* ``Donpedro`` introduced: a new dedicated discovery agent for Windows.  Works
+  as a background Windows service; a lightweight alternative to SCCM
+
+* a new plugin to discover Xen hypervisors (with support for information about
+  pools and hardware usage)
+
+* a new ``ssh_linux`` plugin that discovers Linux machines by logging into them;
+  an alternative to Puppet storeconfig
+
+* lots of minor bugfixes in UI, CMDB and discovery
+
 1.1.1
 ~~~~~
 
