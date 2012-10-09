@@ -18,8 +18,7 @@ from ralph.account.models import Perm
 from ralph.discovery.models import ReadOnlyDevice, Device, ComponentModel
 from ralph.ui.forms import SearchForm
 from ralph.ui.views.common import (BaseMixin, Info, Prices, Addresses, Costs,
-                                   Purchase, Components, History, Discover,
-                                   CMDB)
+                                   Purchase, Components, History, Discover)
 from ralph.ui.views.devices import BaseDeviceList
 from ralph.ui.views.reports import Reports, ReportDeviceList
 
@@ -403,10 +402,6 @@ class SearchDiscover(Search, Discover):
 
 
 class SearchReports(Search, Reports):
-    pass
-
-
-class SearchCMDB(Search, CMDB):
     pass
 
 
