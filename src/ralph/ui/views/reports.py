@@ -217,7 +217,7 @@ class ReportMargins(SidebarReports, Base):
                         )
                     )
                 )
-                mk.total, mk.count, mk.count_now = total_cost_count(
+                mk.total, mk.count, _, mk.count_now = total_cost_count(
                         q,
                         self.form.cleaned_data['start'],
                         self.form.cleaned_data['end'],
@@ -258,6 +258,7 @@ class ReportVentures(SidebarReports, Base):
                 'Department',
                 'Default margin',
                 'Device count',
+                'Core count',
                 'Total cost'
             ]
             for venture in self.ventures:
@@ -270,6 +271,7 @@ class ReportVentures(SidebarReports, Base):
                     ('%d%%' % venture.margin_kind.margin
                         ) if venture.margin_kind else '',
                     '%d' % (venture.count or 0),
+                    '%d' % (venture.core_count or 0),
                     '{:,.2f} {}'.format(total, settings.CURRENCY).replace(',', ' '),
                 ]
         f = StringIO.StringIO()
@@ -300,7 +302,7 @@ class ReportVentures(SidebarReports, Base):
                     show_in_ralph=True
                 ).order_by('path')
             for venture in self.ventures:
-                (venture.total, venture.count,
+                (venture.total, venture.count, venture.core_count,
                  venture.count_now) = total_cost_count(
                          HistoryCost.objects.filter(
                              db.Q(venture=venture) |

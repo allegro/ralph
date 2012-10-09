@@ -9,8 +9,10 @@ from __future__ import unicode_literals
 from django import forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from ajax_select import make_ajax_field
+from south.management.commands import patch_for_test_db_setup
 
 from ralph.cmdb import models
+from ralph.cmdb.models_ci import CIOwnership, CIOwner
 from ralph.ui.widgets import (ReadOnlyWidget, ReadOnlyMultipleChoiceWidget,
                               ReadOnlySelectWidget)
 from ralph.cmdb.models import CILayer, CIType
@@ -62,6 +64,8 @@ class CIEditForm(forms.ModelForm):
             'status',
             'layers',
             'pci_scope',
+            'business_owners',
+            'technical_owners',
         )
 
     icons={
@@ -70,6 +74,18 @@ class CIEditForm(forms.ModelForm):
             widget = FilteredSelectMultiple("layers", False,
                 attrs={'rows' : '10' }
             )
+    )
+    business_owners = forms.ModelMultipleChoiceField(
+                    models.CIOwner.objects.all(),
+                    widget = FilteredSelectMultiple("owners", False,
+                        attrs={'rows' : '10' }
+                    ),
+    )
+    technical_owners = forms.ModelMultipleChoiceField(
+                    models.CIOwner.objects.all(),
+                    widget = FilteredSelectMultiple("owners", False,
+                       attrs={'rows' : '10' }
+                    )
     )
 
     def __init__(self, *args, **kwargs):
@@ -82,6 +98,22 @@ class CIEditForm(forms.ModelForm):
                 self.data['id'] = self.initial['id']
             if self.initial.get('name', None):
                 self.data['name'] = self.initial['name']
+        if len(self.initial):
+            technical_owners, bussines_owners = [], []
+            owns = CIOwnership.objects.filter(ci_id=self.initial.get('ci').id)
+            for own in owns:
+                if own.type == 1:
+                    try:
+                        technical_owners.append(CIOwner.objects.get(pk=str(own.owner_id)))
+                    except CIOwner.DoesNotExist:
+                        pass
+                elif own.type == 2:
+                    try:
+                        bussines_owners.append(CIOwner.objects.get(pk=str(own.owner_id)))
+                    except CIOwner.DoesNotExist:
+                        pass
+            self['technical_owners'].field.initial = technical_owners
+            self['business_owners'].field.initial = bussines_owners
 
 
 class CIViewForm(CIEditForm):
@@ -96,7 +128,6 @@ class CIViewForm(CIEditForm):
             'status' : ReadOnlySelectWidget,
             'barcode' : ReadOnlyWidget,
             'pci_scope' : ReadOnlyWidget,
-            'technical_owner' : ReadOnlyWidget,
 
         }
         fields = (
@@ -109,14 +140,22 @@ class CIViewForm(CIEditForm):
             'layers',
             'barcode',
             'pci_scope',
-            'technical_owner',
         )
     layers = forms.ModelMultipleChoiceField(
             models.CILayer.objects.all(),
             widget = ReadOnlyMultipleChoiceWidget("layers", False,
                 attrs={'rows' : '10' })
     )
-    technical_owner = forms.CharField(widget = ReadOnlyWidget())
+    technical_owners = forms.ModelMultipleChoiceField(
+        models.CIOwner.objects.all(),
+        widget = ReadOnlyMultipleChoiceWidget("owners", False,
+                                              attrs={'rows' : '10' })
+    )
+    business_owners = forms.ModelMultipleChoiceField(
+        models.CIOwner.objects.all(),
+        widget = ReadOnlyMultipleChoiceWidget("owners", False,
+                                              attrs={'rows' : '10' })
+    )
 
     def __init__(self, *args, **kwargs):
         super(CIViewForm, self).__init__(*args, **kwargs)

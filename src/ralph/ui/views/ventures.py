@@ -243,12 +243,13 @@ class VenturesRoles(Ventures, Base):
 
 
 def _total_dict(name, query, start, end, url=None):
-    cost, count, count_now = total_cost_count(query, start, end)
+    cost, count, core_count, count_now = total_cost_count(query, start, end)
     if not count:
         return None
     return {
         'name': name,
         'count': count,
+        'core_count': core_count,
         'cost': cost,
         'count_now': count_now,
         'url': url,
@@ -442,12 +443,13 @@ def _get_summaries(query, start, end, overlap=True, venture=None):
         if extra_id is None:
             continue
         extra = VentureExtraCost.objects.get(id=extra_id)
-        cost, count, count_now = total_cost_count(
+        cost, count, core_count, count_now = total_cost_count(
                 query.filter(extra=extra), start, end)
         yield {
             'name': extra.name + ' (from %s)' % extra.venture.name,
             'count': 'expires %s' % extra.expire.strftime(
                 '%Y-%m-%d') if extra.expire else '',
+            'core_count': core_count,
             'cost': cost,
             'count_now': count_now,
         }
@@ -520,7 +522,7 @@ class VenturesVenture(SidebarVentures, Base):
                              date in datapoints)
             for date in sorted(datapoints):
                 timestamp = calendar.timegm(date.timetuple()) * 1000
-                total_cost, total_count, now_count  = total_cost_count(
+                total_cost, total_count, core_count, now_count  = total_cost_count(
                         query.all(), date, date+one_day)
                 cost_data.append([timestamp, total_cost])
                 count_data.append([timestamp, total_count])

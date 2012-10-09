@@ -7,9 +7,9 @@ from __future__ import unicode_literals
 
 import datetime
 
+from django.db import models as db
 from django.db.models.sql.aggregates import Aggregate
-from ralph.discovery.models import HistoryCost
-
+from ralph.discovery.models import HistoryCost, Processor
 
 class SpanSum(Aggregate):
     sql_function = "SUM"
@@ -35,11 +35,15 @@ def total_cost_count(query, start, end):
                 end=end.strftime('%Y-%m-%d'),
             ),
         )
-    count = HistoryCost.filter_span(start, end, query).values_list(
-            'device').distinct().count()
+    devices = HistoryCost.filter_span(start, end, query).values_list(
+        'device')
+    dev_ids = {dev[0] for dev in devices}
+    count = len(dev_ids)
+    core_count = Processor.objects.filter(device__id__in=dev_ids).aggregate(
+        db.Sum('cores'))['cores__sum']
     today = datetime.date.today()
     count_now = query.filter(end__gte=today).values_list(
-            'device').distinct().count()
-    return total['spansum'], count, count_now
+        'device').distinct().count()
+    return total['spansum'], count, core_count, count_now
 
 

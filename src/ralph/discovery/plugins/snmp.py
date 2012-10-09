@@ -284,10 +284,13 @@ def do_snmp_mac(snmp_name, community, snmp_version, ip, kwargs):
         dev.save(update_last_seen=True)
     elif model_name == 'Intel Modular Blade System':
         _snmp_modular(ip, community, dev)
-    elif model_name == 'Linux':
-        OperatingSystem.create(dev, os_name=snmp_name, family='Linux').save()
-    elif model_name == 'SunOs':
-        OperatingSystem.create(dev, os_name=snmp_name, family='Sun').save()
+    if not dev.operatingsystem_set.exists():
+        if model_name == 'Linux':
+            OperatingSystem.create(dev, os_name=snmp_name,
+                                   family='Linux').save()
+        elif model_name == 'SunOs':
+            OperatingSystem.create(dev, os_name=snmp_name,
+                                   family='Sun').save()
     return ethernets
 
 def _cisco_snmp_model(model_oid, sn_oid, **kwargs):
