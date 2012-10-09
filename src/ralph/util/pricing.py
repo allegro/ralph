@@ -15,7 +15,6 @@ from django.conf import settings
 
 from ralph.discovery.models import (DeviceType, ComponentModelGroup, Processor,
                                     DiskShare, EthernetSpeed, OperatingSystem)
-#from ralph.util import presentation
 
 
 def get_device_price(device):
@@ -225,13 +224,27 @@ def get_device_auto_price(device):
         get_device_operatingsystem_price(device),
     ])
 
+
 def device_update_cached(device):
-    device.name = device.get_name()
-    device.cached_price = get_device_price(device)
-    device.cached_cost = get_device_cost(device)
-    device.save()
-    for d in device.child_set.all():
-        device_update_cached(d)
+    stack = [device]
+    devices = []
+    visited = set()
+    while stack:
+        device = stack.pop()
+        devices.append(device)
+        for d in device.child_set.all():
+            if d in visited:
+                # Make sure we don't do the same device twice.
+                continue
+            visited.add(d)
+            stack.append(d)
+    devices.reverse() # Do the children before their parent.
+    for d in devices:
+        device.name = device.get_name()
+        device.cached_price = get_device_price(device)
+        device.cached_cost = get_device_cost(device)
+        device.save()
+
 
 def details_dev(dev, purchase_only=False):
     yield {
