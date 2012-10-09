@@ -101,7 +101,6 @@ class VentureAdminForm(forms.ModelForm):
 class VentureAdmin(ModelAdmin):
     inlines = [
                 VentureExtraCostInline,
-                VentureOwnerInline,
                 VentureRoleInline,
                 SubVentureInline,
               ]
@@ -138,7 +137,7 @@ class VentureAdmin(ModelAdmin):
     list_display = ('name', 'path', 'data_center', members, technical_owners, business_owners)
     list_filter = ('data_center', 'show_in_ralph', 'parent')
     filter_horizontal = ('networks',)
-    search_fields = ('name', 'ventureowner__name')
+    search_fields = ('name',)
     save_on_top = True
 
 admin.site.register(Venture, VentureAdmin)
