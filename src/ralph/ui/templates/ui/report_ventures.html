@@ -35,6 +35,8 @@
             <th>Department</th>
             <th>Default margin</th>
             <th>Device count</th>
+            <th>Core count</th>
+            <th>Cloud use</th>
             <th>Total cost</th>
             {% if profile.is_staff %}
             <th>Actions</th>
@@ -55,6 +57,12 @@
             </td>
             <td class="count">
                 {{ venture.count|default:0 }}
+            </td>
+            <td class="count">
+                {{ venture.core_count|default:0 }}
+            </td>
+            <td style="text-align:right">
+                {{ venture.cloud_use|default:0 }}%
             </td>
             <td class="currency">
                 {{ venture.total|default:0|currency }}

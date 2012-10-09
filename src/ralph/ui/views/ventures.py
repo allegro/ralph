@@ -28,7 +28,7 @@ from ralph.ui.views.common import (Info, Prices, Addresses, Costs, Purchase,
                                    Base, DeviceDetailView, CMDB)
 from ralph.ui.views.devices import BaseDeviceList
 from ralph.ui.views.reports import Reports, ReportDeviceList
-from ralph.ui.reports import total_cost_count
+from ralph.ui.reports import get_total_cost, get_total_count
 from ralph.util import presentation
 
 
@@ -243,7 +243,8 @@ class VenturesRoles(Ventures, Base):
 
 
 def _total_dict(name, query, start, end, url=None):
-    cost, count, count_now = total_cost_count(query, start, end)
+    cost = get_total_cost(query, start, end)
+    count, count_now, devices = get_total_count(query, start, end)
     if not count:
         return None
     return {
@@ -442,8 +443,9 @@ def _get_summaries(query, start, end, overlap=True, venture=None):
         if extra_id is None:
             continue
         extra = VentureExtraCost.objects.get(id=extra_id)
-        cost, count, count_now = total_cost_count(
-                query.filter(extra=extra), start, end)
+        q = query.filter(extra=extra)
+        cost = get_total_cost(q, start, end)
+        count, count_now, devices = get_total_count(q, start, end)
         yield {
             'name': extra.name + ' (from %s)' % extra.venture.name,
             'count': 'expires %s' % extra.expire.strftime(
@@ -520,8 +522,9 @@ class VenturesVenture(SidebarVentures, Base):
                              date in datapoints)
             for date in sorted(datapoints):
                 timestamp = calendar.timegm(date.timetuple()) * 1000
-                total_cost, total_count, now_count  = total_cost_count(
-                        query.all(), date, date+one_day)
+                total_cost = get_total_cost(query, date, date + one_day)
+                total_count, now_count, devices = get_total_count(
+                        query, date, date + one_day)
                 cost_data.append([timestamp, total_cost])
                 count_data.append([timestamp, total_count])
         ret.update({

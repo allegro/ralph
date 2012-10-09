@@ -394,7 +394,7 @@ def parse_dmidecode(data):
             'model': cpu['Version'],
             'speed': num(cpu['Current Speed']),
             'threads': num(cpu.get('Thread Count')),
-            'cores': num(cpu['Core Count']),
+            'cores': num(cpu.get('Core Count')),
             'family': cpu['Family'],
             '64bit': any('64-bit capable' in char
                          for char in cpu.getlist('Characteristics') if char),
