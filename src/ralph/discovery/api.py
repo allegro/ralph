@@ -27,6 +27,7 @@ from ralph.discovery.models import Device, DeviceModel, DeviceModelGroup,\
 THROTTLE_AT = settings.API_THROTTLING['throttle_at']
 TIMEFREME = settings.API_THROTTLING['timeframe']
 EXPIRATION = settings.API_THROTTLING['expiration']
+SAVE_PRIORITY=10
 
 class IPAddressResource(MResource):
     device = fields.ForeignKey('ralph.discovery.api.DevResource', 'device',
@@ -266,3 +267,27 @@ class DevResource(DeviceResource):
         queryset = Device.objects.all()
         throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
                                 expiration=EXPIRATION)
+
+
+class IPAddressResource(MResource):
+    device = fields.ForeignKey('ralph.discovery.api.DevResource', 'device',
+        null=True)
+
+    class Meta:
+        queryset = IPAddress.objects.all()
+        authentication = ApiKeyAuthentication()
+        authorization = DjangoAuthorization()
+        filtering = {
+            'address': ALL,
+            'hostname': ALL,
+            'snmp_community': ALL,
+            'device': ALL,
+            'is_management': ALL,
+        }
+        excludes = ('save_priorities', 'max_save_priority', 'dns_info',
+            'snmp_name')
+        cache = SimpleCache()
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+                                expiration=EXPIRATION)
+
+

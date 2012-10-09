@@ -160,7 +160,12 @@ class Component(SavePrioritized, WithConcurrentGetOrCreate):
     def get_price(self):
         if not self.model:
             return 0
-        return self.model.get_price(getattr(self, 'size', 0) or 0)
+        return self.model.get_price(self.get_size())
+
+    def get_size(self):
+        if self.model and self.model.size:
+            return self.model.size
+        return getattr(self, 'size', 0) or 0
 
 
 class GenericComponent(Component):
@@ -269,6 +274,15 @@ class Processor(Component):
 
     def __unicode__(self):
         return '#{}: {} ({})'.format(self.index, self.label, self.model)
+
+    def get_cores(self):
+        if self.model and self.model.cores:
+            return self.model.cores
+        return self.cores or 1
+
+    @property
+    def size(self):
+        return self.get_cores()
 
 
 class Memory(Component):

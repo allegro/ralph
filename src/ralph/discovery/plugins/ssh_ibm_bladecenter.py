@@ -398,6 +398,8 @@ def run_ssh_bladecenter(ip):
 
 @plugin.register(chain='discovery', requires=['ping', 'http'])
 def ssh_ibm_bladecenter(**kwargs):
+    if 'nx-os' in kwargs.get('snmp_name', '').lower():
+        return False, 'incompatible Nexus found.', kwargs
     ip = str(kwargs['ip'])
     if kwargs.get('http_family', '') not in ('IBM', 'Unspecified'):
         return False, 'no match.', kwargs

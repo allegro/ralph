@@ -183,11 +183,12 @@ def hp_oa_xml(**kwargs):
     data, raw = hp_xmldata(ip, timeout=30)
     if not data:
         return False, 'silent.', kwargs
-    name = data['MP']['PN'].strip()
-    sn = data['MP']['SN'].strip()
-    rack_name = data['INFRA2']['RACK'].strip()
-    encl_name = data['INFRA2']['PN'].strip()
-    encl_sn = data['INFRA2']['ENCL_SN'].strip()
+    # For some reason those are sometimes ints instead of strings
+    name = unicode(data['MP']['PN']).strip()
+    sn = unicode(data['MP']['SN']).strip()
+    rack_name = unicode(data['INFRA2']['RACK']).strip()
+    encl_name = unicode(data['INFRA2']['PN']).strip()
+    encl_sn = unicode(data['INFRA2']['ENCL_SN']).strip()
     if not (name and sn and rack_name and encl_name and encl_sn):
         return False, 'incompatible answer.', kwargs
     encl = make_encl(data, raw)
