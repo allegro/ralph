@@ -11,6 +11,7 @@ from django.db import models as db
 from django.db.models.sql.aggregates import Aggregate
 from ralph.discovery.models import HistoryCost, Processor
 
+
 class SpanSum(Aggregate):
     sql_function = "SUM"
     sql_template = ("%(function)s(GREATEST(0, "
@@ -45,5 +46,4 @@ def total_cost_count(query, start, end):
     count_now = query.filter(end__gte=today).values_list(
         'device').distinct().count()
     return total['spansum'], count, core_count, count_now
-
 
