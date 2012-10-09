@@ -46,7 +46,7 @@ def run_dmidecode(ssh, ethernets):
         # No dmidecode, fall back to dumb device
         if not ethernets:
             # No serial number and no macs -- no way to make a device
-            return ''
+            return None
         dev = Device.create(ethernets=ethernets, model_name='Linux',
                         model_type=DeviceType.unknown,
                         priority=SAVE_PRIORITY)
@@ -137,10 +137,11 @@ def update_os(ssh, dev):
 def run_ssh_linux(ssh, ip):
     ethernets = get_ethernets(ssh)
     dev = run_dmidecode(ssh, ethernets)
-    attach_ip(dev, ip)
-    update_shares(ssh, dev)
-    update_os(ssh, dev)
-    return dev.name
+    if dev:
+        attach_ip(dev, ip)
+        update_shares(ssh, dev)
+        update_os(ssh, dev)
+    return dev.name if dev else ''
 
 
 @plugin.register(chain='discovery', requires=['ping', 'snmp'])
