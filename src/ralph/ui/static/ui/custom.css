@@ -154,7 +154,3 @@ tr.table-highlight td {
 {
     margin-top: -10px !important;
 }
-
-.manual_fields input, .manual_fields textarea, .manual_fields select{
-    background-color: #FFFFD9;
-}
