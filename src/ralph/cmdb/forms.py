@@ -76,16 +76,12 @@ class CIEditForm(forms.ModelForm):
             )
     )
     business_owners = forms.ModelMultipleChoiceField(
-                    models.CIOwner.objects.all(),
-                    widget = FilteredSelectMultiple("owners", False,
-                        attrs={'rows' : '10' }
-                    ),
+        models.CIOwner.objects.all().order_by('last_name', 'first_name'),
+        widget=FilteredSelectMultiple("owners", False, attrs={'rows': '10'})
     )
     technical_owners = forms.ModelMultipleChoiceField(
-                    models.CIOwner.objects.all(),
-                    widget = FilteredSelectMultiple("owners", False,
-                       attrs={'rows' : '10' }
-                    )
+        models.CIOwner.objects.all().order_by('last_name', 'first_name'),
+        widget=FilteredSelectMultiple("owners", False, attrs={'rows': '10'})
     )
 
     def __init__(self, *args, **kwargs):
@@ -147,12 +143,12 @@ class CIViewForm(CIEditForm):
                 attrs={'rows' : '10' })
     )
     technical_owners = forms.ModelMultipleChoiceField(
-        models.CIOwner.objects.all(),
+        models.CIOwner.objects.all().order_by('last_name', 'first_name'),
         widget = ReadOnlyMultipleChoiceWidget("owners", False,
                                               attrs={'rows' : '10' })
     )
     business_owners = forms.ModelMultipleChoiceField(
-        models.CIOwner.objects.all(),
+        models.CIOwner.objects.all().order_by('last_name', 'first_name'),
         widget = ReadOnlyMultipleChoiceWidget("owners", False,
                                               attrs={'rows' : '10' })
     )
