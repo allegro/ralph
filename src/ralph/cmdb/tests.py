@@ -5,6 +5,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import datetime
+from os.path import join as djoin
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -41,19 +42,24 @@ class MockFisheye(object):
 
     def get_changes(self, *args, **kwargs):
         xml = open(
-            CURRENT_DIR + 'cmdb/tests/samples/fisheye_changesets.xml').read()
+            djoin(CURRENT_DIR, 'cmdb/tests/samples/fisheye_changesets.xml')
+        ).read()
         return objectify.fromstring(xml)
 
     def get_details(self, *args, **kwargs):
         xml = open(
-            CURRENT_DIR + 'cmdb/tests/samples/fisheye_details.xml').read()
+            djoin(CURRENT_DIR + 'cmdb/tests/samples/fisheye_details.xml')
+        ).read()
         return objectify.fromstring(xml)
 
 
 class CIImporterTest(TestCase):
     fixtures = [
-        '0_types.yaml', '1_attributes.yaml',
-        '2_layers.yaml', '3_prefixes.yaml']
+        '0_types.yaml',
+        '1_attributes.yaml',
+        '2_layers.yaml',
+        '3_prefixes.yaml'
+    ]
 
     def setUp(self):
         self.top_venture = Venture(name='top_venture')
@@ -267,7 +273,9 @@ class JiraRssTest(TestCase):
             date=datetime.datetime.strptime('4-4-2012 5:10', '%d-%m-%Y %H:%M'))
         dp4_1.save()
         x = JiraRSS(tracker_name='JIRA')
-        rss = open(CURRENT_DIR + 'cmdb/tests/samples/jira_rss.xml').read()
+        rss = open(
+            djoin(CURRENT_DIR, 'cmdb/tests/samples/jira_rss.xml')
+        ).read()
         x.rss_url = rss
         self.assertEquals(
             sorted(x.get_new_issues()), [
