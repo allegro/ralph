@@ -19,7 +19,8 @@ from ralph.deployment.models import DeploymentPoll
 
 class JiraRSS(object):
     def __init__(self, tracker_name='default'):
-        if settings.ISSUETRACKERS[tracker_name]['ENGINE'] != 'JIRA':
+        tracker =  settings.ISSUETRACKERS.get(tracker_name)
+        if tracker is None or tracker.get('ENGINE') != 'JIRA':
             raise ValueError('given tracker is not JIRA')
         self.issuetracker_url = settings.ISSUETRACKERS[tracker_name]['URL']
         self.project = settings.ISSUETRACKERS[tracker_name]['CMDB_PROJECT']
