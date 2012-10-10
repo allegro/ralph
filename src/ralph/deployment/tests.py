@@ -20,8 +20,12 @@ from django.contrib.contenttypes.models import ContentType
 
 
 class DeploymentTest(TestCase):
-    fixtures=['0_types.yaml', '1_attributes.yaml',
-            '2_layers.yaml', '3_prefixes.yaml']
+    fixtures = [
+        '0_types.yaml', 
+        '1_attributes.yaml',
+        '2_layers.yaml', 
+        '3_prefixes.yaml'
+    ]
 
     def setUp(self):
         engine = settings.ISSUETRACKERS['default']['ENGINE']
@@ -95,7 +99,6 @@ class DeploymentTest(TestCase):
         self.deployment.hostname = 'test'
         self.deployment.save()
 
-
     def test_acceptance(self):
         # using issue null engine
         self.assertEqual(self.deployment.status, DeploymentStatus.open.id)
@@ -112,12 +115,15 @@ class DeploymentTest(TestCase):
         )
 
     def test_owners(self):
-        self.assertEqual(get_technical_owner(self.deployment.device),
-                         'bufallo.kudlaczek')
-        self.assertEqual(get_business_owner(self.deployment.device), 'bill.babelek')
+        self.assertEqual(
+            get_technical_owner(self.deployment.device),
+            'bufallo.kudlaczek')
+        self.assertEqual(
+            get_business_owner(self.deployment.device),
+            'bill.babelek')
 
     def add_model(self, name, device_type):
-        dm = DeviceModel();
+        dm = DeviceModel()
         dm.model_type = device_type,
         dm.name = name
         dm.save()

@@ -29,21 +29,25 @@ user_match = re.compile(r".*\<(.*)@.*\>")
 
 if settings.ISSUETRACKERS['default']['ENGINE'] == '':
     # Null Issue Tracker fallback
-    ralph_change_link = '%s'
-    op_template = ''
-    op_issue_type = ''
-    default_assignee = ''
+    RALPH_CHANGE_LINK = '%s'
+    OP_TEMPLATE = ''
+    OP_ISSUE_TYPE = ''
+    DEFAULT_ASSIGNEE = ''
+    OP_START_DATE = ''
+    OP_TICKETS_ENABLE = False
 else:
-    ralph_change_link = settings.ISSUETRACKERS['default']['CMDB_VIEWCHANGE_LINK']
-    op_template = settings.ISSUETRACKERS['default']['OP']['TEMPLATE']
-    op_issue_type = settings.ISSUETRACKERS['default']['OP']['ISSUETYPE']
-    default_assignee = settings.ISSUETRACKERS['default']['OP']['DEFAULT_ASSIGNEE']
+    RALPH_CHANGE_LINK = settings.ISSUETRACKERS['default']['CMDB_VIEWCHANGE_LINK']
+    OP_TEMPLATE = settings.ISSUETRACKERS['default']['OP']['TEMPLATE']
+    OP_ISSUE_TYPE = settings.ISSUETRACKERS['default']['OP']['ISSUETYPE']
+    DEFAULT_ASSIGNEE = settings.ISSUETRACKERS['default']['OP']['DEFAULT_ASSIGNEE']
+    OP_START_DATE = settings.ISSUETRACKERS['default']['OP']['START_DATE']
+    OP_TICKETS_ENABLE = settings.ISSUETRACKERS['default']['OP']['ENABLE_TICKETS']
 
 
 def get_login_from_user(long_user_text):
     """ Return email from 'username <email>'
 
-    >>> re.compile(user_match).match('Unknown User <unknown@allegro.pl>').groups()[0]
+    >>> user_match.match('Unknown User <unknown@allegro.pl>').groups()[0]
     'unknown'
 
     """
@@ -52,6 +56,21 @@ def get_login_from_user(long_user_text):
         return matches.groups()[0]
     else:
         return ''
+
+
+@receiver(post_delete, sender=chdb.CIChangeGit, dispatch_uid='ralph.cmdb.cichangedelete')
+@receiver(post_delete, sender=chdb.CIChangeZabbixTrigger, dispatch_uid='ralph.cmdb.cichangedelete')
+@receiver(post_delete, sender=chdb.CIChangeStatusOfficeIncident, dispatch_uid='ralph.cmdb.cichangedelete')
+@receiver(post_delete, sender=chdb.CIChangeCMDBHistory, dispatch_uid='ralph.cmdb.cichangedelete')
+@receiver(post_delete, sender=chdb.CIChangePuppet, dispatch_uid='ralph.cmdb.cichangedelete')
+def change_delete_post_save(sender, instance, **kwargs):
+    # remove child cichange
+    try:
+        parent_change = chdb.CIChange.get_by_content_object(instance)
+        parent_change.delete()
+    except chdb.CIChange.DoesNotExist:
+        # in case of some trash
+        pass
 
 
 @receiver(post_save, sender=chdb.CIChangeCMDBHistory, dispatch_uid='ralph.cmdb.change_post_save')
@@ -82,7 +101,9 @@ def post_create_change(sender, instance, raw, using, **kwargs):
         change_type = chdb.CI_CHANGE_TYPES.CONF_AGENT.id
         time = instance.time
         ci = instance.ci
-        message = 'Puppet log for %s (%s)' % (instance.host, instance.configuration_version)
+        message = 'Puppet log for %s (%s)' % (
+            instance.host, instance.configuration_version
+        )
 
     # now decide if this is a change included into the statistics
     # by default create for every hooked change type.
@@ -96,20 +117,21 @@ def post_create_change(sender, instance, raw, using, **kwargs):
     ch.save()
     logger.debug('Hook done.')
 
+
 @receiver(post_save, sender=cdb.CI, dispatch_uid='ralph.cmdb.history')
 @receiver(post_save, sender=cdb.CIRelation, dispatch_uid='ralph.cmdb.history')
 def ci_post_save(sender, instance, raw, using, **kwargs):
-    """A hook for creating ``CIChangeCMDBHistory`` entries when a CI changes."""
+    """A hook for creating ``CIChangeCMDBHistory`` entries when a CI changes"""
     for field, orig in instance.dirty_fields.iteritems():
         if field in instance.insignificant_fields:
             continue
         if field.endswith('_id'):
             field = field[:-3]
             orig = instance._meta.get_field_by_name(
-                    field
-                )[0].related.parent_model.objects.get(
-                    pk=orig
-                ) if orig is not None else None
+                field
+            )[0].related.parent_model.objects.get(
+                pk=orig
+            ) if orig is not None else None
         ch = chdb.CIChangeCMDBHistory()
         if getattr(instance, 'parent_id', None):
             ci = instance.parent
@@ -130,13 +152,14 @@ def ci_post_save(sender, instance, raw, using, **kwargs):
             ch.comment = 'Record created'
         ch.save()
 
+
 @task
 def create_issue(change_id, retry_count=1):
     ch = chdb.CIChange.objects.get(id=change_id)
     if ch.registration_type == chdb.CI_CHANGE_REGISTRATION_TYPES.CHANGE.id:
         raise Exception('Already registered')
 
-    user=''
+    user = ''
     if ch.type == chdb.CI_CHANGE_TYPES.CONF_GIT.id:
         user = get_login_from_user(ch.content_object.author)
         summary = 'Config Change: %s' % ch.message
@@ -150,7 +173,7 @@ def create_issue(change_id, retry_count=1):
         ''' % (dict(
             changeset=ch.content_object.changeset,
             summary=ch.message,
-            change_link=ralph_change_link % (ch.id),
+            change_link=RALPH_CHANGE_LINK % (ch.id),
             author=ch.content_object.author,
         ))
 
@@ -169,7 +192,7 @@ def create_issue(change_id, retry_count=1):
             new_value=ch.content_object.new_value,
             description=ch.content_object.comment,
             author=unicode(ch.content_object.user),
-            cmdb_link=ralph_change_link % (ch.id),
+            cmdb_link=RALPH_CHANGE_LINK % (ch.id),
         ))
 
     elif ch.type == chdb.CI_CHANGE_TYPES.CI.id:
@@ -186,7 +209,7 @@ def create_issue(change_id, retry_count=1):
             new_value=ch.content_object.new_value,
             description=ch.content_object.comment,
             author=unicode(ch.content_object.user),
-            cmdb_link=ralph_change_link % (ch.id),
+            cmdb_link=RALPH_CHANGE_LINK % (ch.id),
         ))
     try:
         j = IssueTracker()
@@ -195,49 +218,43 @@ def create_issue(change_id, retry_count=1):
         else:
             ci = None
         if not j.user_exists(user):
-            user = default_assignee
+            user = DEFAULT_ASSIGNEE
 
         issue = j.create_issue(
-                summary=summary,
-                description=description,
-                issue_type=op_issue_type,
-                ci=ci,
-                assignee=user,
-                template=op_template,
-                start=ch.created.isoformat(),
-                end='',
+            summary=summary,
+            description=description,
+            issue_type=OP_ISSUE_TYPE,
+            ci=ci,
+            assignee=user,
+            template=OP_TEMPLATE,
+            start=ch.created.isoformat(),
+            end='',
         )
         ch.registration_type = chdb.CI_CHANGE_REGISTRATION_TYPES.CHANGE.id
         ch.external_key = issue.get('key')
         ch.save()
     except IssueTrackerException as e:
-        raise create_issue.retry(exc=e, args=[change_id,
-            retry_count + 1], countdown=60 * (2 ** retry_count),
-            max_retries=15) # 22 days
+        raise create_issue.retry(
+            exc=e, args=[change_id, retry_count + 1],
+            countdown=60 * (2 ** retry_count),
+            max_retries=15,
+        )  # 22 days
+
+
+def date_from_str(s):
+    return datetime.datetime.strptime(s, '%Y-%m-%d').date()
+
 
 @receiver(post_save, sender=chdb.CIChange, dispatch_uid='ralph.cmdb.cichange')
 def change_post_save(sender, instance, raw, using, **kwargs):
-    if not op_template:
-        logger.debug('Skipping creating ticket since op_template not set in config.')
+    if not OP_TEMPLATE or not OP_START_DATE or not OP_TICKETS_ENABLE:
+        logger.debug(
+            'Settings not configured for OP tickets registration. Skipping.')
         return
-    if instance.type in chdb.REGISTER_CHANGE_TYPES:
-        if not instance.external_key:
+    if ((instance.type in chdb.REGISTER_CHANGE_TYPES)
+        and (instance.time.date() >= date_from_str(OP_START_DATE))
+        and not instance.external_key):
             getfunc(create_issue)(instance.id)
-
-
-@receiver(post_delete, sender=chdb.CIChangeGit, dispatch_uid='ralph.cmdb.cichangedelete')
-@receiver(post_delete, sender=chdb.CIChangeZabbixTrigger, dispatch_uid='ralph.cmdb.cichangedelete')
-@receiver(post_delete, sender=chdb.CIChangeStatusOfficeIncident, dispatch_uid='ralph.cmdb.cichangedelete')
-@receiver(post_delete, sender=chdb.CIChangeCMDBHistory, dispatch_uid='ralph.cmdb.cichangedelete')
-@receiver(post_delete, sender=chdb.CIChangePuppet, dispatch_uid='ralph.cmdb.cichangedelete')
-def change_delete_post_save(sender, instance, **kwargs):
-    # remove child cichange
-    try:
-        parent_change = chdb.CIChange.get_by_content_object(instance)
-        parent_change.delete()
-    except chdb.CIChange.DoesNotExist as e:
-        # in case of some trash
-        pass
 
 
 @receiver(post_delete, sender=chdb.CIChange, dispatch_uid='ralph.cmdb.cichangebasedelete')
