@@ -241,11 +241,8 @@ def create_issue(change_id, retry_count=1):
         )  # 22 days
 
 
-def is_past(begin_str, date):
-    """Returns true if date is after margin_str"""
-    return (date -
-            datetime.datetime.strptime(begin_str, '%Y-%m-%d').date()
-            ).days >= 0
+def date_from_str(s):
+    return datetime.datetime.strptime(s, '%Y-%m-%d').date()
 
 
 @receiver(post_save, sender=chdb.CIChange, dispatch_uid='ralph.cmdb.cichange')
@@ -255,10 +252,9 @@ def change_post_save(sender, instance, raw, using, **kwargs):
             'Settings not configured for OP tickets registration. Skipping.')
         return
     if ((instance.type in chdb.REGISTER_CHANGE_TYPES)
-            and is_past(OP_START_DATE, instance.time.date())
-            and not instance.external_key):
-                getfunc(create_issue)(instance.id)
-
+        and (instance.time.date() >= date_from_str(OP_START_DATE))
+        and not instance.external_key):
+            getfunc(create_issue)(instance.id)
 
 
 @receiver(post_delete, sender=chdb.CIChange, dispatch_uid='ralph.cmdb.cichangebasedelete')
