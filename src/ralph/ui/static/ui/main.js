@@ -229,14 +229,16 @@ $(function ($) {
             $end.val(formatDate(date));
         });
     });
-    $('.search-form').submit(function() {
-        var fields = $(":input[value != ''][type != 'hidden']").serialize();
-        window.location.replace('?' + fields);
-        return false
+    $('form.search-form').submit(function () {
+        var $form = $(this)
+        var fields = $form.find('input[value!=""],textarea,select').serialize();
+        var action = $form.attr('action') || '';
+        window.location = action + '?' + fields;
+        return false;
     });
-    $('.close').click(function() {
+    $('.close').click(function () {
         if ($(this).attr('data-dismiss') == 'alert'){
             $(this).parents('.alerts').filter(':first').remove();
-        }
+        };
     })
 });
