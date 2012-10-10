@@ -229,9 +229,14 @@ $(function ($) {
             $end.val(formatDate(date));
         });
     });
+    $('.search-form').each(function(){
+        $(":input").val('')
+    });
     $('.search-form').submit(function() {
         var fields = $(":input[value != ''][type != 'hidden']").serialize();
-        window.location.replace('?' + fields);
+        var path = window.location.pathname.split('/');
+        var base =  '/' + path[1] + '/' + path[2] + '/' + path[3]
+        window.location.replace(base + '/?' + fields);
         return false
     });
     $('.close').click(function() {
