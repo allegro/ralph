@@ -17,12 +17,12 @@
                     <label class="control-label">
                         {{ f.label }}
                         {% if f.name in form.manual_fields %}
-                        <a href="#" class="fugue-icon fugue-hand"
+                        <a href="#" class="fugue-icon fugue-lock"
                             data-clear-field="{{ f.name }}" data-device-id="{{ device.id }}"
                             rel="tooltip" title="Unlock automated updates"></a>
                         {% endif %}
                     </label>
-                    <div class="form-field controls">
+                    <div class="form-field controls {% if f.name in form.manual_fields %}manual_fields{% endif %}">
                         {% if editable %}
                             {{ f }}
                         {% else %}
