@@ -114,11 +114,11 @@ class CIImporterTest(TestCase):
         hostci.save()
         p = PuppetAgentsImporter()
         yaml = open(
-            CURRENT_DIR + 'cmdb/tests/samples/canonical.yaml'
+            djoin(CURRENT_DIR, 'cmdb/tests/samples/canonical.yaml')
         ).read()
         p.import_contents(yaml)
         yaml = open(
-            CURRENT_DIR + 'cmdb/tests/samples/canonical_unchanged.yaml'
+            djoin(CURRENT_DIR, 'cmdb/tests/samples/canonical_unchanged.yaml')
         ).read()
         p.import_contents(yaml)
         chg = CIChange.objects.get(type=CI_CHANGE_TYPES.CONF_AGENT.id)

@@ -21,8 +21,11 @@ from django.contrib.contenttypes.models import ContentType
 
 class DeploymentTest(TestCase):
     fixtures = [
-        '0_types.yaml', '1_attributes.yaml',
-        '2_layers.yaml', '3_prefixes.yaml']
+        '0_types.yaml', 
+        '1_attributes.yaml',
+        '2_layers.yaml', 
+        '3_prefixes.yaml'
+    ]
 
     def setUp(self):
         engine = settings.ISSUETRACKERS['default']['ENGINE']
