@@ -162,9 +162,8 @@ class ApiTest(TestCase):
         status_list = []
         id_list = self._save_ventures(5)
 
-        for i, id in enumerate(id_list):
-            path = "/api/v0.9/venture/%s" % i
+        for id in id_list:
+            path = "/api/v0.9/venture/%s" % id
             response = self.client.get(path=path, data=data, follow=True)
             status_list.append(response.status_code)
-
         self.assertListEqual([200, 200, 403, 403, 403], status_list)

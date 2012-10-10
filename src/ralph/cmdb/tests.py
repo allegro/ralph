@@ -239,6 +239,9 @@ class CIImporterTest(TestCase):
 
 
 class JiraRssTest(TestCase):
+    def get_datetime(self, data, format='%d-%m-%Y %H:%M'):
+        return datetime.datetime.strptime(data, format)
+
     def test_get_new_issues(self):
         dp1_1 = DeploymentPoll(
             key='RALPH-341',
@@ -338,6 +341,3 @@ class OPRegisterTest(TestCase):
         self.assertEqual(chg.content_object, c)
         self.assertEqual(chg.external_key, '')
         self.assertEqual(chg.get_registration_type_display(), 'Not registered')
-
-
-
