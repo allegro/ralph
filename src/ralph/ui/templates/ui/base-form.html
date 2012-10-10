@@ -13,6 +13,7 @@
             <div class="control-group 
                     {{ f.css_classes }}
                     {% if f.errors %}error{% endif %}
+                    {% if f.name in form.manual_fields %}warning{% endif %}
                 ">
                     <label class="control-label">
                         {{ f.label }}
@@ -22,7 +23,7 @@
                             rel="tooltip" title="Unlock automated updates"></a>
                         {% endif %}
                     </label>
-                    <div class="form-field controls {% if f.name in form.manual_fields %}manual_fields{% endif %}">
+                    <div class="form-field controls">
                         {% if editable %}
                             {{ f }}
                         {% else %}
