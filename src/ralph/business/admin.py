@@ -21,6 +21,7 @@ from ralph.integration.admin import RoleIntegrationInline
 
 import ralph.util.venture as util_venture
 
+
 class RolePropertyTypeValueInline(admin.TabularInline):
     model = RolePropertyTypeValue
 
@@ -106,16 +107,20 @@ class SubVentureInline(admin.TabularInline):
 
 class VentureAdminForm(forms.ModelForm):
     def clean_symbol(self):
-        data = self.cleaned_data['symbol']
+        data = self.cleaned_data['symbol'].lower()
         if not util_venture.slug_validation(data):
             raise forms.ValidationError("Symbol can't be empty, has to start with"
                 " a letter, and can't end with '_'. Allowed characters: a-z, 0-9, "
                 "'_'. Example: simple_venture2")
         else:
-            venture = Venture.objects.filter(symbol=data)
-            if venture:
-                raise forms.ValidationError("Symbol already exist")
+            try:
+                venture = Venture.objects.get(symbol=data)
+                if venture != self.instance:
+                    raise forms.ValidationError("Symbol already exist")
+            except Venture.DoesNotExist:
+                pass
         return data
+
 
 class VentureAdmin(ModelAdmin):
     inlines = [
