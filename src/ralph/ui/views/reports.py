@@ -259,6 +259,7 @@ class ReportVentures(SidebarReports, Base):
                 'Default margin',
                 'Device count',
                 'Core count',
+                'Virtual core count',
                 'Cloud use',
                 'Total cost'
             ]
@@ -273,6 +274,7 @@ class ReportVentures(SidebarReports, Base):
                         ) if venture.margin_kind else '',
                     '%d' % (venture.count or 0),
                     '%d' % (venture.core_count or 0),
+                    '%d' % (venture.virtual_core_count or 0),
                     '%f' % (venture.cloud_use or 0),
                     '{:,.2f} {}'.format(total, settings.CURRENCY).replace(',', ' '),
                 ]
