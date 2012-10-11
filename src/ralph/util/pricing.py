@@ -228,7 +228,7 @@ def get_device_auto_price(device):
 def device_update_cached(device):
     stack = [device]
     devices = [device]
-    visited = set()
+    visited = {device}
     while stack:
         device = stack.pop()
         devices.append(device)
@@ -240,10 +240,10 @@ def device_update_cached(device):
             stack.append(d)
     devices.reverse() # Do the children before their parent.
     for d in devices:
-        device.name = device.get_name()
-        device.cached_price = get_device_price(device)
-        device.cached_cost = get_device_cost(device)
-        device.save()
+        d.name = device.get_name()
+        d.cached_price = get_device_price(d)
+        d.cached_cost = get_device_cost(d)
+        d.save()
 
 
 def details_dev(dev, purchase_only=False):
