@@ -21,7 +21,7 @@ import sys
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import TestCase
-from unittest import skipIf
+from unittest import skipIf, skip
 from tastypie.models import ApiKey
 
 from ralph.business.models import Venture
@@ -41,7 +41,8 @@ IP2HOST_HOSTNAME_REGEX = settings.SANITY_CHECK_IP2HOST_HOSTNAME_REGEX
 
 class NetworkTest(TestCase):
 
-    @skipIf(sys.platform in ('darwin',), "Ping on MacOS X requires root.")
+    @skip('uses external resources')
+    # @skipIf(sys.platform in ('darwin',), "Ping on MacOS X requires root.")
     def test_ping(self):
         from ralph.util.network import ping
         # existing domain; big timeout for running tests through GPRS
@@ -62,6 +63,7 @@ class NetworkTest(TestCase):
         # non-pingable host
         self.assertIsNone(ping(NON_EXISTENT_HOST_IP))
 
+    @skip('uses external resources')
     def test_hostname(self):
         from ralph.util.network import hostname
         # existing host
@@ -70,6 +72,7 @@ class NetworkTest(TestCase):
             hostname(IP2HOST_IP)))
         # non-existent host
         self.assertIsNone(hostname(NON_EXISTENT_HOST_IP))
+
 
 class PricingTest(TestCase):
     def test_rack_server(self):
