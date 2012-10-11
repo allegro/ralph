@@ -6,7 +6,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime, time
 import math
 
 from django.db import models as db
@@ -36,10 +36,14 @@ def get_device_price(device):
         price += get_device_chassis_price(device)
     return max(0, price)
 
+
 def get_device_raw_price(device):
     """Purchase price of this device, before anything interacts with it."""
-
+    today_midnight = datetime.combine(datetime.today(), time())
+    if device.deprecation_date and today_midnight >= device.deprecation_date:
+        return 0
     return device.price or get_device_auto_price(device)
+
 
 def get_device_cost(device):
     """Return the monthly cost of this device."""
@@ -50,10 +54,10 @@ def get_device_cost(device):
         cost = price / deprecation_kind.months
     else:
         cost = 0
-
     margin = device.get_margin() or 0
     cost = cost * (1 + margin / 100) + get_device_additional_costs(device)
     return cost
+
 
 def get_device_additional_costs(device):
     """Return additional monthly costs for this device, e.g. Splunk usage."""
@@ -64,6 +68,7 @@ def get_device_additional_costs(device):
         size = splunk.aggregate(db.Sum('size'))['size__sum'] or 0
         cost += splunk[0].get_price(size=size)
     return cost
+
 
 def get_device_chassis_price(device):
     """
