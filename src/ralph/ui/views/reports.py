@@ -24,7 +24,7 @@ from ralph.ui.forms import DateRangeForm, MarginsReportForm
 from ralph.business.models import Venture
 from ralph.discovery.models_device import MarginKind, DeviceType
 from ralph.discovery.models_history import HistoryCost
-from ralph.ui.reports import get_total_cost, get_total_count, get_total_cores
+from ralph.ui.reports import get_total_cost, get_total_count, get_total_cores, get_total_virtual_cores
 from ralph.util import csvutil
 
 
@@ -259,6 +259,7 @@ class ReportVentures(SidebarReports, Base):
                 'Default margin',
                 'Device count',
                 'Core count',
+                'Virtual core count',
                 'Cloud use',
                 'Total cost'
             ]
@@ -273,6 +274,7 @@ class ReportVentures(SidebarReports, Base):
                         ) if venture.margin_kind else '',
                     '%d' % (venture.count or 0),
                     '%d' % (venture.core_count or 0),
+                    '%d' % (venture.virtual_core_count or 0),
                     '%f' % (venture.cloud_use or 0),
                     '{:,.2f} {}'.format(total, settings.CURRENCY).replace(',', ' '),
                 ]
@@ -320,6 +322,7 @@ class ReportVentures(SidebarReports, Base):
                 (venture.count, venture.count_now,
                  devices) = get_total_count(query, start, end)
                 venture.core_count = get_total_cores(devices, start, end)
+                venture.virtual_core_count = get_total_virtual_cores(devices, start, end)
                 cloud_cost = get_total_cost(query.filter(
                         device__model__type=DeviceType.cloud_server.id
                     ), start, end)
