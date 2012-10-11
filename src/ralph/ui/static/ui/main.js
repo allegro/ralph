@@ -48,6 +48,7 @@ $(function ($) {
             field: field_name
         }, function (data) {
             button.fadeOut();
+            button.closest('.control-group').removeClass('warning');
         }, 'json');
     });
     $('div.add-popover[').popover({
