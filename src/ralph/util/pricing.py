@@ -34,6 +34,10 @@ def get_device_price(device):
     elif device.model and device.model.type == DeviceType.blade_server.id:
         # Add the price taken from the blade system
         price += get_device_chassis_price(device)
+    # Add the prices of the remote disk shares
+    remote_storage_price = math.fsum(m.get_price()
+                                     for m in device.disksharemount_set.all())
+    price += remote_storage_price
     return max(0, price)
 
 def get_device_raw_price(device):
@@ -209,12 +213,8 @@ def get_device_auto_price(device):
 
     model_price = (device.model.group.price or 0) if (
                     device.model and device.model.group) else 0
-    remote_storage_price = math.fsum(
-        m.get_price() for m in device.disksharemount_set.all()
-    )
     return math.fsum([
         model_price,
-        remote_storage_price,
         get_device_memory_price(device),
         get_device_cpu_price(device),
         get_device_local_storage_price(device),
