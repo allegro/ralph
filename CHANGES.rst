@@ -1,6 +1,15 @@
 Change Log
 ----------
 
+1.1.3
+~~~~~
+
+Released on October 10, 2012.
+
+* cloud usage is visible in the main ventures report
+
+* several minor fixes in UI and new plugins
+
 1.1.2
 ~~~~~
 
