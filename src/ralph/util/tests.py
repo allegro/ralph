@@ -163,6 +163,34 @@ class PricingTest(TestCase):
         dev.save()
         pricing.device_update_cached(dev)
         self.assertEqual(get_device_raw_price(dev), 0)
+        self.assertEqual(dev.cached_price, 0)
+        self.assertEqual(dev.cached_cost, 0)
+
+    def test_price_deprecation_in_progress(self):
+        # Device in deprecation period should have raw price >0 if price is set
+        dev = Device.create(sn='device', model_type=DeviceType.rack_server,
+                            model_name='device')
+        dmg = DeviceModelGroup(name='DeviceModelGroup')
+        dmg.price = 100
+        dmg.save()
+        dev.model.group = dmg
+        # currently first month in deprecation period
+        dev.purchase_date = datetime.today() - timedelta(1 * (365 / 12))
+        dev.model.save()
+        dev.margin_kind = MarginKind(name='50%', margin=50)
+        dev.margin_kind.save()
+        dev.deprecation_kind = DeprecationKind(name='10 months', months=10)
+        dev.deprecation_kind.save()
+        dev.save()
+        pricing.device_update_cached(dev)
+        self.assertEqual(get_device_raw_price(dev), 100)
+        self.assertEqual(dev.cached_cost, 15)
+        self.assertEqual(dev.cached_price, 100)
+
+
+
+
+
 
 class ApiTest(TestCase):
     def _save_ventures(self, count):
