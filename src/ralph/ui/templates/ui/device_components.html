@@ -7,6 +7,7 @@
     <thead><tr>
         <th width="16"></th>
         <th>Label</th>
+        <th>Model Group</th>
         <th>Model</th>
         <th>Serial Number</th>
         <th>Speed</th>
@@ -24,11 +25,28 @@
             <td>
                 {% if item.modelgroup %}
                     {% if item.group == 'dev' %}
-                        <a href="{% url 'search' 'components' '' %}?device_group={{ item.modelgroup.id }}"
-                         >{{ item.model }}</a>
+                        <a href="{% url 'search' 'components' '' %}?device_group={{ item.modelgroup.id }}">
+                            {{ item.model.group.name }}
+                        </a>
                     {% else %}
-                        <a href="{% url 'search' 'components' '' %}?component_group={{ item.modelgroup.id }}"
-                         >{{ item.model }}</a>
+                        <a href="{% url 'search' 'components' '' %}?component_group={{ item.modelgroup.id }}">
+                            {{ item.model.group.name }}
+                        </a>
+                    {% endif %}
+                {% else %}
+                    {{ item.model }}
+                {% endif %}
+            </td>
+            <td>
+                {% if item.modelgroup %}
+                    {% if item.group == 'dev' %}
+                        <a href="{% url 'search' 'components' '' %}?device_group={{ item.modelgroup.id }}">
+                            {{ item.model }}
+                        </a>
+                    {% else %}
+                        <a href="{% url 'search' 'components' '' %}?component_group={{ item.modelgroup.id }}">
+                            {{ item.model }}
+                        </a>
                     {% endif %}
                 {% else %}
                     {{ item.model }}
