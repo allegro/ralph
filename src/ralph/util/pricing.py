@@ -227,7 +227,7 @@ def get_device_auto_price(device):
 
 def device_update_cached(device):
     stack = [device]
-    devices = []
+    devices = [device]
     visited = set()
     while stack:
         device = stack.pop()
