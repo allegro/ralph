@@ -188,10 +188,6 @@ class PricingTest(TestCase):
         self.assertEqual(dev.cached_price, 100)
 
 
-
-
-
-
 class ApiTest(TestCase):
     def _save_ventures(self, count):
         id_list = []
