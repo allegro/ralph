@@ -97,6 +97,7 @@ class BaseDeviceList(ListView):
         rows = [
             ['Id', 'Name', 'Venture', 'Role', 'Model', 'Data Center', 'Rack',
              'Position', 'Barcode', 'Margin', 'Deprecation', 'Price', 'Cost',
+             'Monthly Cost',
              'Addresses', 'Management', 'Created', 'Last Seen', 'Purchased',
              'Warranty Expiration', 'Support Expiration', 'Support Kind',
              'Serial Number', 'Remarks'],
