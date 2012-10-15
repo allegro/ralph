@@ -586,4 +586,3 @@ class VenturesCMDB(Ventures, CMDB, DeviceDetailView):
 
 class ReportVenturesDeviceList(ReportDeviceList, VenturesDeviceList):
     pass
-
