@@ -87,7 +87,8 @@ class DonPedroPluginTest(TestCase):
         self.assertEqual(
             os.label, 'Microsoft Windows Server 2008 R2 Standard '
         )
-        self.assertEqual(os.model.name, 'Microsoft Windows Server 2008 R2 Standard')
+        self.assertEqual(
+            os.model.name, 'Microsoft Windows Server 2008 R2 Standard')
         self.assertEqual(os.memory, 3067)
         self.assertEqual(os.model.family, 'Windows')
         self.assertEqual(os.storage, self.total_storage_size)
@@ -95,5 +96,5 @@ class DonPedroPluginTest(TestCase):
 
     def testShares(self):
         # only first share mount created, because DiskShare is presetn
-        self.assertEqual(DiskShareMount.object.count(), 1)
+        self.assertEqual(DiskShareMount.objects.count(), 1)
         self.assertEqual(DiskShareMount.objects.all()[0].share.wwn, '25D304C1')
