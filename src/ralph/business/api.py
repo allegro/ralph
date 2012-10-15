@@ -124,8 +124,6 @@ class RoleLightResource(MResource):
         return uri.replace('rolelight', 'role')
 
 
-
-
 class DepartmentResource(MResource):
     class Meta:
         queryset = Department.objects.all()
