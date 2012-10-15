@@ -25,7 +25,8 @@ from ralph.ui.forms import (RolePropertyForm, DateRangeForm,
                             VentureFilterForm)
 from ralph.ui.views.common import (Info, Prices, Addresses, Costs, Purchase,
                                    Components, History, Discover, BaseMixin,
-                                   Base, DeviceDetailView, CMDB)
+                                   Base, DeviceDetailView)
+from ralph.cmdb.views import CMDB
 from ralph.ui.views.devices import BaseDeviceList
 from ralph.ui.views.reports import Reports, ReportDeviceList
 from ralph.ui.reports import get_total_cost, get_total_count
