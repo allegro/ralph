@@ -74,8 +74,6 @@ def _get_details(dev, purchase_only=False, with_price=False):
         if detail.get('model'):
             if detail['model'].group:
                 detail['modelgroup'] = detail['model'].group
-            else:
-                detail['model'] = detail['model']
         else:
             detail['model'] = detail.get('model_name', '')
         yield detail
