@@ -79,7 +79,7 @@ class VentureRoleAdminForm(forms.ModelForm):
 class VentureRoleAdmin(ModelAdmin):
     def members(self):
         from ralph.discovery.models import Device
-        return str(Device.objects.filter(venture=self).count())
+        return unicode(Device.objects.filter(venture=self).count())
     members.short_description = _("members")
 
     def venture_path(self):
@@ -151,7 +151,7 @@ class VentureAdmin(ModelAdmin):
 
     def members(self):
         from ralph.discovery.models import Device
-        return str(Device.objects.filter(venture=self).count())
+        return unicode(Device.objects.filter(venture=self).count())
     members.short_description = _("members")
 
     def technical_owners(self):
