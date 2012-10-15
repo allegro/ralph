@@ -30,7 +30,6 @@ from ralph.ui.forms import (DeviceInfoForm, DeviceInfoVerifiedForm,
                             DevicePricesForm, DevicePurchaseForm,
                             PropertyForm, DeviceBulkForm)
 
-
 SAVE_PRIORITY = 200
 HISTORY_PAGE_SIZE = 25
 MAX_PAGE_SIZE = 65535
@@ -638,24 +637,3 @@ class BulkEdit(BaseMixin, TemplateView):
         return ret
 
 
-
-class CMDB(BaseMixin):
-    template_name = 'cmdb/ralph_view_ci.html'
-    read_perm = Perm.read_configuration_item_info_generic
-
-    def get_context_data(self, **kwargs):
-        ret = super(CMDB, self).get_context_data(**kwargs)
-        device_id = self.kwargs.get('device')
-        try:
-            ci=cdb.CI.objects.get(
-                    type=cdb.CI_TYPES.DEVICE.id,
-                    object_id=device_id
-            )
-        except:
-            ci = None
-        ret.update({
-            'ci': ci,
-            'url_query': self.request.GET,
-            'components': _get_details(self.object, purchase_only=False),
-        })
-        return ret
