@@ -462,6 +462,9 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
         return self.ipaddress_set
 
     def save(self, *args, **kwargs):
+        if self.model.type == DeviceType.blade_server.id:
+            if not self.position:
+                self.position = self.get_position()
         if self.purchase_date and self.deprecation_kind:
             self.deprecation_date = (self.purchase_date +
                            relativedelta(months = self.deprecation_kind.months))
