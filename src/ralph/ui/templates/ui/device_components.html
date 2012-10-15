@@ -25,11 +25,11 @@
             <td>
                 {% if item.model.group %}
                     {% if item.group == 'dev' %}
-                        <a href="{% url 'search' 'components' '' %}?device_group={{ item.model.group.id }}">
+                        <a href="{% url 'catalog' 'device' item.model.type item.model.group.id|default:''%}">
                             {{ item.model.group.name }}
                         </a>
                     {% else %}
-                        <a href="{% url 'search' 'components' '' %}?component_group={{ item.model.group.id }}">
+                        <a href="{% url 'catalog' 'component' item.model.type  item.modelgroup.id|default:''%}">
                             {{ item.model.group.name }}
                         </a>
                     {% endif %}
@@ -38,11 +38,11 @@
             <td>
                 {% if item.model.group %}
                     {% if item.group == 'dev' %}
-                        <a href="{% url 'catalog' 'device' item.model.type item.model.group.id|default:''%}">
-                            {{ item.model }}
+                        <a href="{% url 'search' 'component' '' %}?model={{ item.model.name }}">
+                            {{ item.model.name }}
                         </a>
                     {% else %}
-                        <a href="{% url 'catalog' 'component' item.model.type  item.modelgroup.id|default:''%}">
+                        <a href="{% url 'search' 'component' '' %}?component={{ item.model }}">
                             {{ item.model }}
                         </a>
                     {% endif %}
