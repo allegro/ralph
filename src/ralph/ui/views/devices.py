@@ -97,9 +97,9 @@ class BaseDeviceList(ListView):
         rows = [
             ['Id', 'Name', 'Venture', 'Role', 'Model', 'Data Center', 'Rack',
              'Position', 'Barcode', 'Margin', 'Deprecation', 'Price', 'Cost',
-             'Addresses', 'Management', 'Created', 'Last Seen', 'Purchased',
-             'Warranty Expiration', 'Support Expiration', 'Support Kind',
-             'Serial Number', 'Remarks'],
+             'Monthly Cost', 'Addresses', 'Management', 'Created', 'Last Seen',
+             'Purchased', 'Warranty Expiration', 'Support Expiration',
+             'Support Kind', 'Serial Number', 'Remarks'],
         ]
         for dev in query.all():
             show_tabs = set(_get_show_tabs(self.request, None, dev))
