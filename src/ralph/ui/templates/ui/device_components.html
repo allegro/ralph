@@ -20,7 +20,14 @@
         {% for item in components %}
         <tr>
             <td><i class="fugue-icon {{ item.icon }}"></i></td>
-            <td>{{ item.label }}</td>
+            {%  if item.hrefinfo %}
+                <td><a href="{{ item.hrefinfo }}" style="white-space:nowrap">
+                        {{ item.label }}
+                     </a>
+                </td>
+            {%  else %}
+                <td>{{ item.label }}</td>
+            {%  endif %}
             <td>
                 {% if item.modelgroup %}
                     {% if item.group == 'dev' %}
