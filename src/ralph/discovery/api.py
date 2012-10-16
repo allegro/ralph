@@ -84,10 +84,12 @@ class DeviceResource(MResource):
         full=True)
     venture = fields.ForeignKey('ralph.business.api.VentureLightResource',
         'venture', null=True, full=True)
-    role = fields.ForeignKey('ralph.business.api.RoleResource',
+    role = fields.ForeignKey('ralph.business.api.RoleLightResource',
         'venture_role', null=True, full=True)
     ip_addresses = fields.ToManyField(IPAddressResource, 'ipaddress',
         related_name='device', full=True)
+    properties = fields.ToManyField('ralph.business.api.RolePropertyValueResource',
+        'rolepropertyvalue', related_name='device', full=True)
 
     class Meta:
         excludes = ('raw', 'save_priorities', 'max_save_priority')

@@ -17,11 +17,12 @@ from __future__ import unicode_literals
 import re
 import textwrap
 import sys
+from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import TestCase
-from unittest import skipIf
+from unittest import skipIf, skip
 from tastypie.models import ApiKey
 
 from ralph.business.models import Venture
@@ -29,6 +30,7 @@ from ralph.discovery.models import Device, DeviceType
 from ralph.discovery.models import DeviceModelGroup
 from ralph.discovery.models import MarginKind, DeprecationKind
 from ralph.util import pricing
+from ralph.util.pricing import get_device_raw_price
 
 
 EXISTING_DOMAIN = settings.SANITY_CHECK_PING_ADDRESS
@@ -41,7 +43,8 @@ IP2HOST_HOSTNAME_REGEX = settings.SANITY_CHECK_IP2HOST_HOSTNAME_REGEX
 
 class NetworkTest(TestCase):
 
-    @skipIf(sys.platform in ('darwin',), "Ping on MacOS X requires root.")
+    @skip('uses external resources')
+    # @skipIf(sys.platform in ('darwin',), "Ping on MacOS X requires root.")
     def test_ping(self):
         from ralph.util.network import ping
         # existing domain; big timeout for running tests through GPRS
@@ -62,6 +65,7 @@ class NetworkTest(TestCase):
         # non-pingable host
         self.assertIsNone(ping(NON_EXISTENT_HOST_IP))
 
+    @skip('uses external resources')
     def test_hostname(self):
         from ralph.util.network import hostname
         # existing host
@@ -70,6 +74,7 @@ class NetworkTest(TestCase):
             hostname(IP2HOST_IP)))
         # non-existent host
         self.assertIsNone(hostname(NON_EXISTENT_HOST_IP))
+
 
 class PricingTest(TestCase):
     def test_rack_server(self):
@@ -142,8 +147,49 @@ class PricingTest(TestCase):
         dev.deprecation_kind.save()
         dev.save()
         pricing.device_update_cached(dev)
-
         self.assertEqual(dev.cached_cost, 15)
+
+    def test_price_deprecation(self):
+        # Device after deprecation period should have raw price = 0
+        dev = Device.create(sn='device', model_type=DeviceType.rack_server,
+                            model_name='device')
+        dmg = DeviceModelGroup(name='DeviceModelGroup')
+        dmg.price = 100
+        dmg.save()
+        dev.model.group = dmg
+        dev.purchase_date = datetime.today() - timedelta(11 * (365 / 12))
+        dev.model.save()
+        dev.margin_kind = MarginKind(name='50%', margin=50)
+        dev.margin_kind.save()
+        dev.deprecation_kind = DeprecationKind(name='10 months', months=10)
+        dev.deprecation_kind.save()
+        dev.save()
+        pricing.device_update_cached(dev)
+        self.assertEqual(get_device_raw_price(dev), 0)
+        self.assertEqual(dev.cached_price, 0)
+        self.assertEqual(dev.cached_cost, 0)
+
+    def test_price_deprecation_in_progress(self):
+        # Device in deprecation period should have raw price >0 if price is set
+        dev = Device.create(sn='device', model_type=DeviceType.rack_server,
+                            model_name='device')
+        dmg = DeviceModelGroup(name='DeviceModelGroup')
+        dmg.price = 100
+        dmg.save()
+        dev.model.group = dmg
+        # currently first month in deprecation period
+        dev.purchase_date = datetime.today() - timedelta(1 * (365 / 12))
+        dev.model.save()
+        dev.margin_kind = MarginKind(name='50%', margin=50)
+        dev.margin_kind.save()
+        dev.deprecation_kind = DeprecationKind(name='10 months', months=10)
+        dev.deprecation_kind.save()
+        dev.save()
+        pricing.device_update_cached(dev)
+        self.assertEqual(get_device_raw_price(dev), 100)
+        self.assertEqual(dev.cached_cost, 15)
+        self.assertEqual(dev.cached_price, 100)
+
 
 class ApiTest(TestCase):
     def _save_ventures(self, count):

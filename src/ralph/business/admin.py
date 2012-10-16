@@ -21,6 +21,7 @@ from ralph.integration.admin import RoleIntegrationInline
 
 import ralph.util.venture as util_venture
 
+
 class RolePropertyTypeValueInline(admin.TabularInline):
     model = RolePropertyTypeValue
 
@@ -43,7 +44,7 @@ class VentureOwnerInline(admin.TabularInline):
 
 class VentureRoleInline(ForeignKeyAutocompleteTabularInline):
     model = VentureRole
-    exclude = ('created', 'modified')
+    exclude = ('created', 'modified', 'networks', 'preboot')
     extra = 4
     related_search_fields = {
         'parent': ['^name'],
@@ -76,6 +77,18 @@ class VentureRoleAdminForm(forms.ModelForm):
 
 
 class VentureRoleAdmin(ModelAdmin):
+    def members(self):
+        from ralph.discovery.models import Device
+        return unicode(Device.objects.filter(venture=self).count())
+    members.short_description = _("members")
+
+    def venture_path(self):
+        if not self.venture:
+            return '---'
+        else:
+            return self.venture.path
+    venture_path.short_description = _("venture_path")
+
     inlines = [RolePropertyInline, RoleIntegrationInline]
     related_search_fields = {
         'venture': ['^name'],
@@ -83,6 +96,10 @@ class VentureRoleAdmin(ModelAdmin):
     }
     form = VentureRoleAdminForm
     filter_horizontal = ('networks',)
+    list_display = ('name', venture_path, 'path', members)
+    list_filter = ('venture__data_center', 'venture__show_in_ralph',)
+    search_fields = ('name', 'venture__name', 'venture__path')
+    save_on_top = True
 
 admin.site.register(VentureRole, VentureRoleAdmin)
 
@@ -100,22 +117,26 @@ class RolePropertyValueInline(admin.TabularInline):
 
 class SubVentureInline(admin.TabularInline):
     model = Venture
-    exclude = ('created', 'modified',)
+    exclude = ('created', 'modified', 'networks', 'preboot',)
     extra = 0
 
 
 class VentureAdminForm(forms.ModelForm):
     def clean_symbol(self):
-        data = self.cleaned_data['symbol']
+        data = self.cleaned_data['symbol'].lower()
         if not util_venture.slug_validation(data):
             raise forms.ValidationError("Symbol can't be empty, has to start with"
                 " a letter, and can't end with '_'. Allowed characters: a-z, 0-9, "
                 "'_'. Example: simple_venture2")
         else:
-            venture = Venture.objects.filter(symbol=data)
-            if venture:
-                raise forms.ValidationError("Symbol already exist")
+            try:
+                venture = Venture.objects.get(symbol=data)
+                if venture != self.instance:
+                    raise forms.ValidationError("Symbol already exist")
+            except Venture.DoesNotExist:
+                pass
         return data
+
 
 class VentureAdmin(ModelAdmin):
     inlines = [
@@ -130,7 +151,7 @@ class VentureAdmin(ModelAdmin):
 
     def members(self):
         from ralph.discovery.models import Device
-        return str(Device.objects.filter(venture=self).count())
+        return unicode(Device.objects.filter(venture=self).count())
     members.short_description = _("members")
 
     def technical_owners(self):
@@ -158,9 +179,9 @@ class VentureAdmin(ModelAdmin):
     business_owners.allow_tags = True
 
     list_display = ('name', 'path', 'data_center', members, technical_owners, business_owners)
-    list_filter = ('data_center', 'show_in_ralph', 'parent')
+    list_filter = ('data_center', 'show_in_ralph',)
     filter_horizontal = ('networks',)
-    search_fields = ('name',)
+    search_fields = ('name', 'symbol')
     save_on_top = True
 
 admin.site.register(Venture, VentureAdmin)
