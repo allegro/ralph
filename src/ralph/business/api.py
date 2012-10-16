@@ -20,10 +20,12 @@ from tastypie.constants import ALL, ALL_WITH_RELATIONS
 from tastypie.resources import ModelResource as MResource
 from tastypie.throttle import CacheThrottle
 
-from ralph.business.models import Venture, VentureRole, Department
+from ralph.business.models import (Venture, VentureRole, Department,
+    RolePropertyType, RolePropertyTypeValue, RoleProperty,
+    RolePropertyValue)
 
 THROTTLE_AT = settings.API_THROTTLING['throttle_at']
-TIMEFREME = settings.API_THROTTLING['timeframe']
+TIMEFRAME = settings.API_THROTTLING['timeframe']
 EXPIRATION = settings.API_THROTTLING['expiration']
 
 class VentureResource(MResource):
@@ -46,7 +48,7 @@ class VentureResource(MResource):
         excludes = ('save_priorities', 'max_save_priority',)
         cache = SimpleCache()
         limit = 10
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
                                 expiration=EXPIRATION)
 
 
@@ -67,7 +69,7 @@ class VentureLightResource(MResource):
         }
         excludes = ('save_priorities', 'max_save_priority',)
         cache = SimpleCache()
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
                                 expiration=EXPIRATION)
 
     def dehydrate_resource_uri(self, bundle):
@@ -76,6 +78,29 @@ class VentureLightResource(MResource):
 
 
 class RoleResource(MResource):
+    venture = fields.ForeignKey(VentureResource, 'venture', null=True)
+    parent = fields.ForeignKey('ralph.business.api.RoleResource',
+        'parent', null=True)
+    devices = fields.ToManyField('ralph.discovery.api.DevResource', 'device')
+    properties = fields.ToManyField('ralph.business.api.RolePropertyResource',
+        'roleproperty', full=True)
+
+    class Meta:
+        queryset = VentureRole.objects.all()
+        authentication = ApiKeyAuthentication()
+        authorization = DjangoAuthorization()
+        filtering = {
+            'id': ALL,
+            'name': ALL,
+            'venture': ALL_WITH_RELATIONS,
+        }
+        excludes = ('save_priorities', 'max_save_priority',)
+        cache = SimpleCache()
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
+                                expiration=EXPIRATION)
+
+
+class RoleLightResource(MResource):
     venture = fields.ForeignKey(VentureResource, 'venture', null=True)
     parent = fields.ForeignKey('ralph.business.api.RoleResource',
         'parent', null=True)
@@ -91,8 +116,12 @@ class RoleResource(MResource):
         }
         excludes = ('save_priorities', 'max_save_priority',)
         cache = SimpleCache()
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
                                 expiration=EXPIRATION)
+
+    def dehydrate_resource_uri(self, bundle):
+        uri = super(RoleLightResource, self).dehydrate_resource_uri(bundle)
+        return uri.replace('rolelight', 'role')
 
 
 class DepartmentResource(MResource):
@@ -106,5 +135,71 @@ class DepartmentResource(MResource):
         }
         cache = SimpleCache()
         excludes = ('icon',)
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
+                                expiration=EXPIRATION)
+
+
+class RolePropertyTypeResource(MResource):
+    class Meta:
+        queryset = RolePropertyType.objects.all()
+        authentication = ApiKeyAuthentication()
+        authorization = DjangoAuthorization()
+        filtering = {
+            'id': ALL,
+            'symbol': ALL,
+        }
+        cache = SimpleCache()
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
+                                expiration=EXPIRATION)
+
+
+class RolePropertyTypeValueResource(MResource):
+    type = fields.ForeignKey(RolePropertyTypeResource, 'type', null=True,
+        full=True)
+
+    class Meta:
+        queryset = RolePropertyTypeValue.objects.all()
+        authentication = ApiKeyAuthentication()
+        authorization = DjangoAuthorization()
+        filtering = {
+            'id': ALL,
+        }
+        cache = SimpleCache()
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
+                                expiration=EXPIRATION)
+
+
+class RolePropertyResource(MResource):
+    role = fields.ForeignKey(RoleResource, 'role', null=True)
+    type = fields.ForeignKey(RolePropertyTypeResource, 'type', null=True,
+        full=True)
+
+    class Meta:
+        queryset = RoleProperty.objects.all()
+        authentication = ApiKeyAuthentication()
+        authorization = DjangoAuthorization()
+        filtering = {
+            'id': ALL,
+        }
+        cache = SimpleCache()
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
+                                expiration=EXPIRATION)
+
+
+class RolePropertyValueResource(MResource):
+    property = fields.ForeignKey(RolePropertyResource, 'property', null=True,
+        full=True)
+    device = fields.ForeignKey('ralph.discovery.api.DevResource', 'device',
+        null=True)
+
+    class Meta:
+        queryset = RolePropertyValue.objects.all()
+        authentication = ApiKeyAuthentication()
+        authorization = DjangoAuthorization()
+        filtering = {
+            'id': ALL,
+            'value': ALL,
+        }
+        cache = SimpleCache()
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
                                 expiration=EXPIRATION)
