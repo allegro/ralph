@@ -36,6 +36,7 @@
             <th>Default margin</th>
             <th>Device count</th>
             <th>Core count</th>
+            <th>Virtual core count</th>
             <th>Cloud use</th>
             <th>Total cost</th>
             {% if profile.is_staff %}
@@ -60,6 +61,9 @@
             </td>
             <td class="count">
                 {{ venture.core_count|default:0 }}
+            </td>
+            <td class="count">
+                {{ venture.virtual_core_count|default:0 }}
             </td>
             <td style="text-align:right">
                 {{ venture.cloud_use|default:0 }}%
