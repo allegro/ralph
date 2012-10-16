@@ -7,6 +7,10 @@ from django.db import models
 
 class Migration(SchemaMigration):
 
+    depends_on = (
+            ("cmdb", "0007_auto__add_ciowner__add_ciownership.py"),
+    )
+
     def forwards(self, orm):
         # Deleting model 'VentureOwner'
         db.delete_table('business_ventureowner')
