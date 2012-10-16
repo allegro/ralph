@@ -30,7 +30,6 @@ from ralph.ui.forms import (DeviceInfoForm, DeviceInfoVerifiedForm,
                             DevicePricesForm, DevicePurchaseForm,
                             PropertyForm, DeviceBulkForm)
 
-
 SAVE_PRIORITY = 200
 HISTORY_PAGE_SIZE = 25
 MAX_PAGE_SIZE = 65535
@@ -636,7 +635,6 @@ class BulkEdit(BaseMixin, TemplateView):
             'different_fields': self.different_fields,
         })
         return ret
-
 
 
 class CMDB(BaseMixin):
