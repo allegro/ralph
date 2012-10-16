@@ -85,7 +85,7 @@
         <div class="tab-content"> 
                 <div class="tab-pane active" id="main">
 
-<div class='span6'>
+                    <div class='span6'>
     <p style='height: 10px;'></p>
 
     {% if editable %}
@@ -240,12 +240,12 @@
         {% if read_configuration_item_info_puppet_perm %}
             <div class="tab-pane" id="puppet">
                 <div class='span12'>
-                <span><h3> Agent configuration log</h3> </span>
-                <p>
-                    {% include 'cmdb/include_puppet.html' %}
-                </p>
+                    <span><h3> Agent configuration log</h3> </span>
+                    <p>
+                        {% include 'cmdb/include_puppet.html' %}
+                    </p>
+                </div>
             </div>
-        </div>
         {% endif %}
 
         {% if read_configuration_item_info_jira_perm %}

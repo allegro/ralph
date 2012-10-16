@@ -56,7 +56,7 @@ function handle_manual_click(){
     display.style.fontSize = '30px';
 }
 
-function annotate_manual(plot, data, title, min, max){
+function annotate_manual(plot, data, plot_title, min, max){
 
     var aggregatedData = [];
     var text_content = '';
@@ -65,7 +65,7 @@ function annotate_manual(plot, data, title, min, max){
     var href_link;
     var point_text_template = '<div style="display:none">{{comment}}</div><div class="pointer" onclick="handle_manual_click()"> * </div>';
     var row_template = '<tr class="{{row_class}}"><td>{{date}}</td><td>{{comment}}</td><td>{{author}}</td><td>{{{href_link}}}</td><td>{{external_key}}<td>{{changed_cis}}</td><td>{{failed_cis}}</tr>';
-    $('#plot_title').html(title);
+    $('#plot_title').html(plot_title);
     $("#changes_table").html('<tr><th>Time</th><th>Comment</th><th>Author</th><th>View</th><th>External key</th><th>Changed CIs</th><th>Failed CI</th></tr>');
 
     for (var i=0; i<data.length; i++){
@@ -164,21 +164,22 @@ function setup(data){
             $.extend(true, {}, options, {
                 xaxis: { min: ranges.xaxis.from, max: ranges.xaxis.to }
             }));
-        annotate_manual(plot, data.manual, ranges.xaxis.from, ranges.xaxis.to);
+        annotate_manual(plot, data.manual, data.plot_title, ranges.xaxis.from, ranges.xaxis.to);
     });
 
     placeholder.bind("plotunselected", function (event) {
         //$("#selection").text("Click drawing to unselect");
         options['xaxis'] =  { mode: "time", timeformat: "%d/%m %h:%M" },
         plot = $.plot(placeholder, plotdata , options);
-    plot.setSelection({ xaxis: { from: 0, to: 0 } });
-    plot.setupGrid();
-    plot.draw();
-    annotate_manual(plot, data.manual, data.plot_title);
+        plot.setSelection({ xaxis: { from: 0, to: 0 } });
+        plot.setupGrid();
+        plot.draw();
+        annotate_manual(plot, data.manual, data.plot_title);
     });
 
     plot = $.plot(placeholder, plotdata , options);
     annotate_manual(plot, data.manual, data.plot_title);
+
 };
 
 

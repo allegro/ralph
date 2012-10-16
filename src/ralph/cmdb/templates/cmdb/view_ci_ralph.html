@@ -1,0 +1,8 @@
+{% extends 'ui/base-devices.html' %}
+{% load icons %}
+{% load query %}
+
+{% block content %}
+    {% include 'cmdb/include_ci_contents.html' with span_number=span_number editable=0 tabs_left=0 %}
+{% endblock %}
+

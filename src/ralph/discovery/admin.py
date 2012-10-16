@@ -21,6 +21,7 @@ from ralph.discovery.models import (Device, DeviceModel, IPAddress, Network,
 from ralph.discovery.models_history import HistoryChange
 from ralph.business.admin import RolePropertyValueInline
 
+
 class NetworkAdmin(ModelAdmin):
     def terms(self):
         return ", ".join([n.name for n in self.terminators.order_by('name')])
