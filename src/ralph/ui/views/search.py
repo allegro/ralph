@@ -157,30 +157,65 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                     ], data['model'].split('|'))
                     self.query = self.query.filter(q).distinct()
             if data['component']:
-                q = _search_fields_or([
-                    'genericcomponent__label__icontains',
-                    'genericcomponent__model__name__icontains',
-                    'genericcomponent__model__group__name__icontains',
-                    'software__label__icontains',
-                    'software__model__name__icontains',
-                    'software__model__group__name__icontains',
-                    'ethernet__mac__icontains',
-                    'fibrechannel__label__icontains',
-                    'fibrechannel__model__name__icontains',
-                    'fibrechannel__model__group__name__icontains',
-                    'storage__label__icontains',
-                    'storage__model__name__icontains',
-                    'storage__model__group__name__icontains',
-                    'memory__label__icontains',
-                    'memory__model__name__icontains',
-                    'memory__model__group__name__icontains',
-                    'processor__label__icontains',
-                    'processor__model__name__icontains',
-                    'processor__model__group__name__icontains',
-                    'disksharemount__share__label__icontains',
-                    'disksharemount__share__wwn__icontains',
-                ], data['component'].split('|'))
-                self.query = self.query.filter(q).distinct()
+                try:
+                    component_id = int(data['component'])
+####################################################################
+                    q = _search_fields_or([
+                        'processor__model__id',
+                        'memory__model__id',
+                        'storage__model__id',
+                        'disksharemount__share__id',
+                        'ethernet__id',
+                        'genericcomponent__model__id',
+                        'software__model__id',
+                        'fibrechannel__model__id',
+
+#                        'genericcomponent__label__icontains',
+#                        'genericcomponent__model__name__icontains',
+#                        'genericcomponent__model__group__name__icontains',
+#                        'software__label__icontains',
+#                        'software__model__name__icontains',
+#                        'software__model__group__name__icontains',
+#                        'ethernet__mac__icontains',
+#                        'fibrechannel__label__icontains',
+#                        'fibrechannel__model__name__icontains',
+#                        'fibrechannel__model__group__name__icontains',
+#                        'storage__label__icontains',
+#                        'storage__model__name__icontains',
+#                        'storage__model__group__name__icontains',
+#                        'memory__label__icontains',
+#                        'memory__model__name__icontains',
+#                        'memory__model__group__name__icontains',
+#                        'disksharemount__share__label__icontains',
+#                        'disksharemount__share__wwn__icontains',
+                        ], data['component'].split('|'))
+                    self.query = self.query.filter(q).distinct()
+###########################################################################
+                except ValueError:
+                    q = _search_fields_or([
+                        'genericcomponent__label__icontains',
+                        'genericcomponent__model__name__icontains',
+                        'genericcomponent__model__group__name__icontains',
+                        'software__label__icontains',
+                        'software__model__name__icontains',
+                        'software__model__group__name__icontains',
+                        'ethernet__mac__icontains',
+                        'fibrechannel__label__icontains',
+                        'fibrechannel__model__name__icontains',
+                        'fibrechannel__model__group__name__icontains',
+                        'storage__label__icontains',
+                        'storage__model__name__icontains',
+                        'storage__model__group__name__icontains',
+                        'memory__label__icontains',
+                        'memory__model__name__icontains',
+                        'memory__model__group__name__icontains',
+                        'processor__label__icontains',
+                        'processor__model__name__icontains',
+                        'processor__model__group__name__icontains',
+                        'disksharemount__share__label__icontains',
+                        'disksharemount__share__wwn__icontains',
+                    ], data['component'].split('|'))
+                    self.query = self.query.filter(q).distinct()
             if data['serial']:
                 if data['serial'] == empty_field:
                     self.query = self.query.filter(
