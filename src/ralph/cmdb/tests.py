@@ -239,6 +239,14 @@ class CIImporterTest(TestCase):
 
 
 class JiraRssTest(TestCase):
+    def setUp(self):
+        settings.ISSUETRACKERS['JIRA'] = {'ENGINE': 'JIRA', 'USER': '',
+                                          'PASSWORD': '', 'URL': '',
+                                          'CMDB_PROJECT': ''}
+
+    def tearDown(self):
+        del settings.ISSUETRACKERS['JIRA']
+
     def get_datetime(self, data, format='%d-%m-%Y %H:%M'):
         return datetime.datetime.strptime(data, format)
 

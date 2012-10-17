@@ -192,6 +192,16 @@ class PricingTest(TestCase):
 
 
 class ApiTest(TestCase):
+    def setUp(self):
+        settings.API_THROTTLING = {'throttle_at': 2, 'timeframe': 10,
+                                   'expiration': None,
+                                   }
+
+    def tearDown(self):
+        settings.API_THROTTLING = {'throttle_at': '', 'timeframe': '',
+                                   'expiration': None,
+                                   }
+
     def _save_ventures(self, count):
         id_list = []
         for i in range(0, count):
