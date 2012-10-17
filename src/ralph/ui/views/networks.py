@@ -13,9 +13,10 @@ from django.shortcuts import get_object_or_404
 from ralph.account.models import Perm
 from ralph.discovery.models import ReadOnlyDevice, Network, IPAddress
 from ralph.ui.forms import NetworksFilterForm
-from ralph.ui.views.common import (BaseMixin, DeviceDetailView, CMDB, Info,
+from ralph.ui.views.common import (BaseMixin, DeviceDetailView, Info,
                                    Prices, Addresses, Costs, Purchase,
                                    Components, History, Discover)
+from ralph.cmdb.views import CMDB
 from ralph.ui.views.devices import BaseDeviceList
 from ralph.ui.views.reports import Reports, ReportDeviceList
 from ralph.util import presentation
