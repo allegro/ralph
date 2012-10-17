@@ -1,6 +1,17 @@
 Change Log
 ----------
 
+1.1.4
+~~~~~
+
+Released on October 15, 2012.
+
+* role properties available in API
+
+* virtual CPU count in the main ventures report
+
+* deprecated devices now have a zero monthly cost
+
 1.1.3
 ~~~~~
 
