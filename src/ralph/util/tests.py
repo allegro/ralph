@@ -197,7 +197,6 @@ class ApiTest(TestCase):
                                    'expiration': None,
                                    }
 
-
     def _save_ventures(self, count):
         id_list = []
         for i in range(0, count):
