@@ -29,7 +29,7 @@
                             {{ item.model.group.name }}
                         </a>
                     {% else %}
-                        <a href="{% url 'catalog' 'component' item.model.type  item.modelgroup.id|default:''%}">
+                        <a href="{% url 'catalog' 'component' item.model.type  item.model.group.id|default:''%}">
                             {{ item.model.group.name }}
                         </a>
                     {% endif %}
