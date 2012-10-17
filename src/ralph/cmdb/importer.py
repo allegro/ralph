@@ -306,7 +306,7 @@ class CIImporter(object):
                 child=d,
                 readonly=True):
             x.delete()
-        if obj.venture_id and not obj.parent:
+        if obj.venture_id:
                 venture_ci = cdb.CI.objects.get(
                     content_type=self.venture_content_type,
                     object_id=obj.venture_id)
@@ -320,7 +320,7 @@ class CIImporter(object):
                 except IntegrityError:
                     pass
 
-        if obj.venture_role_id and not obj.parent:
+        if obj.venture_role_id:
                 venture_role_ci = cdb.CI.objects.get(
                     content_type=self.venture_role_content_type,
                     object_id=obj.venture_role_id)
