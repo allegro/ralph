@@ -239,16 +239,18 @@ class CIImporterTest(TestCase):
 
 
 class JiraRssTest(TestCase):
-    def prepare_setting(self):
+    def setUp(self):
         settings.ISSUETRACKERS['JIRA'] = {'ENGINE': 'JIRA', 'USER': '',
                                           'PASSWORD': '', 'URL': '',
                                           'CMDB_PROJECT': ''}
+
+    def tearDown(self):
+        del settings.ISSUETRACKERS['JIRA']
 
     def get_datetime(self, data, format='%d-%m-%Y %H:%M'):
         return datetime.datetime.strptime(data, format)
 
     def test_get_new_issues(self):
-        self.prepare_setting()
         dp1_1 = DeploymentPoll(
             key='RALPH-341',
             date=datetime.datetime.strptime('1-1-2012 1:10', '%d-%m-%Y %H:%M')
