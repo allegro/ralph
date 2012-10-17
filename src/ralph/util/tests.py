@@ -192,6 +192,12 @@ class PricingTest(TestCase):
 
 
 class ApiTest(TestCase):
+    def prepare_setting(self):
+        settings.API_THROTTLING = {'throttle_at': 2, 'timeframe': 10,
+                                   'expiration': None,
+                                   }
+
+
     def _save_ventures(self, count):
         id_list = []
         for i in range(0, count):
@@ -201,6 +207,7 @@ class ApiTest(TestCase):
         return id_list
 
     def test_throttling(self):
+        self.prepare_setting()
         user = User.objects.create_user('api_user', 'test@mail.local', 'password')
         user.save()
         api_key = ApiKey.objects.get(user=user)
