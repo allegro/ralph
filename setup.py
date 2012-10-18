@@ -55,7 +55,7 @@ setup (
         'PyYAML==3.10',
         'pytz',
         'pyzabbix==0.1',
-        'RestKit==2.0',
+        'RestKit==4.2.0',
         'setproctitle==1.1.6',
         'South==0.7.6',
         'splunk-sdk==0.8.0',
