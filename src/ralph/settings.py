@@ -205,9 +205,9 @@ AJAX_SELECT_INLINES = 'inline'
 
 # <template>
 SECRET_KEY = 'CHANGE ME'
-DEBUG = True#False
-TEMPLATE_DEBUG = DEBUG
-SEND_BROKEN_LINK_EMAILS = DEBUG
+DEBUG = False
+TEMPLATE_DEBUG = False
+SEND_BROKEN_LINK_EMAILS = False
 ADMINS = (
     ('Webmaster', 'ralph@localhost'),
 )
