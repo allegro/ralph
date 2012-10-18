@@ -8,6 +8,7 @@ You must do it manually.
 """
 
 from django.core.management import call_command
+from django.db.utils import DatabaseError
 
 import datetime
 import logging
@@ -68,7 +69,11 @@ class Migration(SchemaMigration):
         CIOwnership = orm['cmdb.CIOwnership']
         CI = orm['cmdb.CI']
         VentureOwner = orm['business.VentureOwner']
-        for venture_owner in VentureOwner.objects.all():
+        try:
+            ventureowner_objects = list(VentureOwner.objects.all())
+        except DatabaseError:
+            ventureowner_objects = []
+        for venture_owner in ventureowner_objects:
             venture = venture_owner.venture
             try:
                 venture_ci = CI.objects.get(uid='bv-%s' % venture.id)
