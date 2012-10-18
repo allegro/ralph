@@ -12,7 +12,8 @@ import re
 
 from django.conf import settings
 from django.dispatch import receiver
-from django.db.models.signals import post_save, post_delete
+from django.db.models.signals import pre_save, post_delete, post_save
+from django.db import IntegrityError
 from celery.task import task
 
 # using models_ci not models, for dependency chain.
@@ -77,45 +78,49 @@ def change_delete_post_save(sender, instance, **kwargs):
 @receiver(post_save, sender=chdb.CIChangePuppet, dispatch_uid='ralph.cmdb.change_post_save')
 @receiver(post_save, sender=chdb.CIChangeGit, dispatch_uid='ralph.cmdb.change_post_save')
 def post_create_change(sender, instance, raw, using, **kwargs):
-    """ Classify change, and create record - CIChange """
-    logger.debug('Hooking post save CIChange creation.')
-    if isinstance(instance, chdb.CIChangeGit):
-        priority = chdb.CI_CHANGE_PRIORITY_TYPES.WARNING.id
-        change_type = chdb.CI_CHANGE_TYPES.CONF_GIT.id
-        message = instance.comment
-        time = instance.time
-        ci = instance.ci
-    elif isinstance(instance, chdb.CIChangeCMDBHistory):
-        change_type = chdb.CI_CHANGE_TYPES.CI.id
-        priority = chdb.CI_CHANGE_PRIORITY_TYPES.NOTICE.id
-        message = instance.comment
-        time = instance.time
-        ci = instance.ci
-    elif isinstance(instance, chdb.CIChangePuppet):
-        if instance.status == 'failed':
-            priority = chdb.CI_CHANGE_PRIORITY_TYPES.ERROR.id
-        elif instance.status == 'changed':
+    try:
+        """ Classify change, and create record - CIChange """
+        logger.debug('Hooking post save CIChange creation.')
+        if isinstance(instance, chdb.CIChangeGit):
             priority = chdb.CI_CHANGE_PRIORITY_TYPES.WARNING.id
-        else:
+            change_type = chdb.CI_CHANGE_TYPES.CONF_GIT.id
+            message = instance.comment
+            time = instance.time
+            ci = instance.ci
+        elif isinstance(instance, chdb.CIChangeCMDBHistory):
+            change_type = chdb.CI_CHANGE_TYPES.CI.id
             priority = chdb.CI_CHANGE_PRIORITY_TYPES.NOTICE.id
-        change_type = chdb.CI_CHANGE_TYPES.CONF_AGENT.id
-        time = instance.time
-        ci = instance.ci
-        message = 'Puppet log for %s (%s)' % (
-            instance.host, instance.configuration_version
-        )
+            message = instance.comment
+            time = instance.time
+            ci = instance.ci
+        elif isinstance(instance, chdb.CIChangePuppet):
+            if instance.status == 'failed':
+                priority = chdb.CI_CHANGE_PRIORITY_TYPES.ERROR.id
+            elif instance.status == 'changed':
+                priority = chdb.CI_CHANGE_PRIORITY_TYPES.WARNING.id
+            else:
+                priority = chdb.CI_CHANGE_PRIORITY_TYPES.NOTICE.id
+            change_type = chdb.CI_CHANGE_TYPES.CONF_AGENT.id
+            time = instance.time
+            ci = instance.ci
+            message = 'Puppet log for %s (%s)' % (
+                instance.host, instance.configuration_version
+            )
 
-    # now decide if this is a change included into the statistics
-    # by default create for every hooked change type.
-    ch = chdb.CIChange()
-    ch.time = time
-    ch.ci = ci
-    ch.priority = priority
-    ch.type = change_type
-    ch.content_object = instance
-    ch.message = message
-    ch.save()
-    logger.debug('Hook done.')
+        # now decide if this is a change included into the statistics
+        # by default create for every hooked change type.
+        ch = chdb.CIChange()
+        ch.time = time
+        ch.ci = ci
+        ch.priority = priority
+        ch.type = change_type
+        ch.content_object = instance
+        ch.message = message
+        ch.save()
+        logger.debug('Hook done.')
+    except IntegrityError:
+        instance.delete()
+        raise
 
 
 @receiver(post_save, sender=cdb.CI, dispatch_uid='ralph.cmdb.history')
