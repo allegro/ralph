@@ -70,13 +70,7 @@ def _get_details(dev, purchase_only=False, with_price=False):
             continue
         if detail['group'] != 'dev' and 'size' not in detail and detail.get('model'):
             detail['size'] = detail['model'].size
-        if detail.get('model'):
-            if detail['model'].group:
-                detail['modelgroup'] = detail['model'].group
-                detail['model'] = detail['model'].group.name
-            else:
-                detail['model'] = detail['model'].name
-        else:
+        if not detail.get('model'):
             detail['model'] = detail.get('model_name', '')
         yield detail
 
