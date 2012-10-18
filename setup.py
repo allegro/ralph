@@ -37,7 +37,7 @@ setup (
         'django-celery==3.0.10',
         'django-powerdns==0.2',
         'django-tastypie==0.9.11',
-        'django==1.4.1',
+        'django==1.4.2',
         'dnspython==1.10.0',
         'feedparser==5.1.2',
         'fugue-icons==3.4.4',
