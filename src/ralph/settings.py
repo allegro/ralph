@@ -209,7 +209,7 @@ DEBUG = False
 TEMPLATE_DEBUG = False
 SEND_BROKEN_LINK_EMAILS = False
 ADMINS = (
-    ('Webmaster', 'ralph@localhost'),
+    #('Webmaster', 'ralph@localhost'),
 )
 MANAGERS = ADMINS
 DEFAULT_FROM_EMAIL = 'ralph@localhost'
