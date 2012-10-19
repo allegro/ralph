@@ -243,61 +243,61 @@ class CIImporter(object):
     def import_venture_relations(self, obj, d):
         """ Must be called after datacenter """
         if obj.data_center_id:
-                datacenter_ci = cdb.CI.objects.filter(
-                    content_type=self.datacenter_content_type,
-                    object_id=obj.data_center_id).all()[0]
-                cir = cdb.CIRelation()
-                cir.readonly = True
-                cir.parent = datacenter_ci
-                cir.child = d
-                cir.type = cdb.CI_RELATION_TYPES.REQUIRES.id
-                try:
-                    cir.save()
-                except IntegrityError:
-                    pass
+            datacenter_ci = cdb.CI.objects.filter(
+                content_type=self.datacenter_content_type,
+                object_id=obj.data_center_id).all()[0]
+            cir = cdb.CIRelation()
+            cir.readonly = True
+            cir.parent = datacenter_ci
+            cir.child = d
+            cir.type = cdb.CI_RELATION_TYPES.REQUIRES.id
+            try:
+                cir.save()
+            except IntegrityError:
+                pass
 
         if obj.parent:
-                logger.info('Saving relation: %s' % obj)
-                cir = cdb.CIRelation()
-                cir.readonly = True
-                cir.child = d
-                cir.parent = cdb.CI.objects.filter(
-                    content_type_id=self.venture_content_type,
-                    object_id=obj.parent.id)[0]
-                cir.type = cdb.CI_RELATION_TYPES.CONTAINS.id
-                try:
-                    cir.save()
-                except IntegrityError:
-                    pass
+            logger.info('Saving relation: %s' % obj)
+            cir = cdb.CIRelation()
+            cir.readonly = True
+            cir.child = d
+            cir.parent = cdb.CI.objects.filter(
+                content_type_id=self.venture_content_type,
+                object_id=obj.parent.id)[0]
+            cir.type = cdb.CI_RELATION_TYPES.CONTAINS.id
+            try:
+                cir.save()
+            except IntegrityError:
+                pass
 
     @nested_commit_on_success
     def import_role_relations(self, obj, d):
         if obj.venture_id:
-                # first venturerole in hierarchy, connect it to venture
-                venture_ci = cdb.CI.objects.get(
-                    content_type=self.venture_content_type,
-                    object_id=obj.venture_id)
-                cir = cdb.CIRelation()
-                cir.readonly = True
-                cir.parent = venture_ci
-                cir.child = d
-                cir.type = cdb.CI_RELATION_TYPES.HASROLE.id
-                try:
-                    cir.save()
-                except IntegrityError:
-                    pass
+            # first venturerole in hierarchy, connect it to venture
+            venture_ci = cdb.CI.objects.get(
+                content_type=self.venture_content_type,
+                object_id=obj.venture_id)
+            cir = cdb.CIRelation()
+            cir.readonly = True
+            cir.parent = venture_ci
+            cir.child = d
+            cir.type = cdb.CI_RELATION_TYPES.HASROLE.id
+            try:
+                cir.save()
+            except IntegrityError:
+                pass
         if obj.parent:
-                cir = cdb.CIRelation()
-                cir.readonly = True
-                cir.child = d
-                cir.parent = cdb.CI.objects.filter(
-                    content_type_id=self.venture_role_content_type,
-                    object_id=obj.parent.id)[0]
-                cir.type = cdb.CI_RELATION_TYPES.CONTAINS.id
-                try:
-                    cir.save()
-                except IntegrityError:
-                    pass
+            cir = cdb.CIRelation()
+            cir.readonly = True
+            cir.child = d
+            cir.parent = cdb.CI.objects.filter(
+                content_type_id=self.venture_role_content_type,
+                object_id=obj.parent.id)[0]
+            cir.type = cdb.CI_RELATION_TYPES.CONTAINS.id
+            try:
+                cir.save()
+            except IntegrityError:
+                pass
 
     @nested_commit_on_success
     def import_device_relations(self, obj, d):
@@ -306,33 +306,33 @@ class CIImporter(object):
                 child=d,
                 readonly=True):
             x.delete()
-        if obj.venture_id and not obj.parent:
-                venture_ci = cdb.CI.objects.get(
-                    content_type=self.venture_content_type,
-                    object_id=obj.venture_id)
-                cir = cdb.CIRelation()
-                cir.readonly = True
-                cir.parent = venture_ci
-                cir.child = d
-                cir.type = cdb.CI_RELATION_TYPES.CONTAINS.id
-                try:
-                    cir.save()
-                except IntegrityError:
-                    pass
+        if obj.venture_id:
+            venture_ci = cdb.CI.objects.get(
+                content_type=self.venture_content_type,
+                object_id=obj.venture_id)
+            cir = cdb.CIRelation()
+            cir.readonly = True
+            cir.parent = venture_ci
+            cir.child = d
+            cir.type = cdb.CI_RELATION_TYPES.CONTAINS.id
+            try:
+                cir.save()
+            except IntegrityError:
+                pass
 
-        if obj.venture_role_id and not obj.parent:
-                venture_role_ci = cdb.CI.objects.get(
-                    content_type=self.venture_role_content_type,
-                    object_id=obj.venture_role_id)
-                cir = cdb.CIRelation()
-                cir.readonly = True
-                cir.parent = venture_role_ci
-                cir.child = d
-                cir.type = cdb.CI_RELATION_TYPES.HASROLE.id
-                try:
-                    cir.save()
-                except IntegrityError:
-                    pass
+        if obj.venture_role_id:
+            venture_role_ci = cdb.CI.objects.get(
+                content_type=self.venture_role_content_type,
+                object_id=obj.venture_role_id)
+            cir = cdb.CIRelation()
+            cir.readonly = True
+            cir.parent = venture_role_ci
+            cir.child = d
+            cir.type = cdb.CI_RELATION_TYPES.HASROLE.id
+            try:
+                cir.save()
+            except IntegrityError:
+                pass
 
         if obj.parent:
             logger.info('Saving relation: %s' % obj)
