@@ -1,6 +1,22 @@
 Change Log
 ----------
 
+1.1.5
+~~~~~
+
+Released on October 19, 2012.
+
+* bumped Django version to 1.4.2
+
+* fixes order of database migrations
+
+* fixes a problem in Django 1.4.x with built-in unit tests failing because of
+  settings used
+
+* minor CMDB fixes
+
+* more unit tests
+
 1.1.4
 ~~~~~
 

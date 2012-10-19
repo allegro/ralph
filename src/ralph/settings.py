@@ -205,11 +205,11 @@ AJAX_SELECT_INLINES = 'inline'
 
 # <template>
 SECRET_KEY = 'CHANGE ME'
-DEBUG = True#False
-TEMPLATE_DEBUG = DEBUG
-SEND_BROKEN_LINK_EMAILS = DEBUG
+DEBUG = False
+TEMPLATE_DEBUG = False
+SEND_BROKEN_LINK_EMAILS = False
 ADMINS = (
-    ('Webmaster', 'ralph@localhost'),
+    #('Webmaster', 'ralph@localhost'),
 )
 MANAGERS = ADMINS
 DEFAULT_FROM_EMAIL = 'ralph@localhost'
@@ -293,7 +293,7 @@ FISHEYE_URL = ""
 FISHEYE_PROJECT_NAME = ""
 ISSUETRACKERS = {
     'default': {
-        'ENGINE': 'JIRA',
+        'ENGINE': '',
         'USER': '',
         'PASSWORD': '',
         'URL': '',
@@ -301,8 +301,8 @@ ISSUETRACKERS = {
         'CI_NAME_FIELD_NAME': '',
         'TEMPLATE_FIELD_NAME': '',
         'CMDB_PROJECT': '',
-        'CMDB_VIEWCHANGE_LINK': '',
-        'USE_CELERY': True, 
+        'CMDB_VIEWCHANGE_LINK': 'http://url/%s',
+        'USE_CELERY': True,
         'OPA': {
             'RSS_URL': '',
             'BOWNER_FIELD_NAME': '',
