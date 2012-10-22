@@ -109,6 +109,7 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                     ).values_list('content'))
                 q = (_search_fields_or([
                     'name',
+                    'name__icontains',
                     'ipaddress__hostname__icontains',
                 ], name.split()) | Q(
                     ipaddress__address__in=ips,
