@@ -158,7 +158,8 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                     self.query = self.query.filter(q).distinct()
             if data['component']:
                 try:
-                    int(data['component'])
+                    component = data['component']
+                    int(component)
                     q = _search_fields_or([
                         'processor__model__id',
                         'memory__model__id',
@@ -169,7 +170,7 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                         'fibrechannel__model__id',
                         'disksharemount__share__model__id',
                         'operatingsystem__model__id'
-                        ], data['component'].split('|'))
+                        ], component)
                     self.query = self.query.filter(q).distinct()
                 except ValueError:
                     q = _search_fields_or([
@@ -194,8 +195,9 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                         'processor__model__group__name__icontains',
                         'disksharemount__share__label__icontains',
                         'disksharemount__share__wwn__icontains',
+                        'disksharemount__share__model__name__icontains',
                         'operatingsystem__model__name__icontains'
-                    ], data['component'].split('|'))
+                    ], component.split('|'))
                     self.query = self.query.filter(q).distinct()
             if data['serial']:
                 if data['serial'] == empty_field:
