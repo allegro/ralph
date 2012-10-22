@@ -133,6 +133,12 @@ class DeviceForm(forms.ModelForm):
             sn = None
         return sn
 
+    def clean_model(self):
+        model = self.cleaned_data['model']
+        if not model:
+            raise forms.ValidationError(_("Model is required"))
+        return model
+
 
 class ProcessorInline(ForeignKeyAutocompleteTabularInline):
     model = Processor
