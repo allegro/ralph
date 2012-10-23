@@ -14,6 +14,7 @@ from django.contrib.contenttypes.models import ContentType
 
 logger = logging.getLogger(__name__)
 
+
 class Command(BaseCommand):
     """
     CMDB asset synchronization and  maintanance app.
@@ -30,29 +31,30 @@ class Command(BaseCommand):
             ContentType.objects.get(app_label='discovery', model='datacenter'),
             ContentType.objects.get(app_label='discovery', model='network'),
             # not used as for now.
-            # ContentType.objects.get(app_label='discovery', model='networkterminator'),
+            # ContentType.objects.get(app_label='discovery',
+            # model='networkterminator'),
         ]
         self.actions = ['purge', 'import']
-        self.kinds = ['ci', 'user-relations', 'all-relations', 'system-relations']
+        self.kinds = [
+            'ci', 'user-relations', 'all-relations', 'system-relations'
+        ]
         self.option_list = []
         self.option_list.extend(BaseCommand.option_list)
         self.option_list.extend([
-            make_option('--action',
-                    dest='action',
-                    help="Purge all CI and Relations."
+            make_option(
+                '--action', dest='action', help="Purge all CI and Relations."
             ),
-            make_option('--kind',
-                    dest='kind',
-                    help="Choose import kind.",
+            make_option(
+                '--kind', dest='kind', help="Choose import kind.",
             ),
-            make_option('--ids',
-                    dest='ids',
-                    help="Choose ids to import.",
+            make_option(
+                '--ids', dest='ids',
+                help="Choose ids to import.",
             ),
-            make_option('--content-types',
-                    dest='content_types',
-                    help="Type of content to reimport.",
-                    default=[]
+            make_option(
+                '--content-types', dest='content_types',
+                help="Type of content to reimport.",
+                default=[],
             )
         ])
 
@@ -60,7 +62,8 @@ class Command(BaseCommand):
         usage = "usage: %prog --action=[purge|import] \
             --kind=[ci/user-relations/all-relations/system-relations] \
             --content-types"
-        if not options.get('action') or options.get('action') not in self.actions:
+        if not options.get('action') or options.get(
+                'action') not in self.actions:
             print(usage)
             print("Specify valid action: " + ','.join(self.actions))
             return
@@ -68,8 +71,8 @@ class Command(BaseCommand):
             print(usage)
             print("You must specify valid kind: " + '|'.join(self.kinds))
             return
-        content_types_names = dict([(x.app_label + '.' + x.model, x)
-            for x in self.content_types])
+        content_types_names = dict(
+            [(x.app_label + '.' + x.model, x) for x in self.content_types])
         content_types_to_import = []
         id_to_import = None
         if options.get('ids'):
@@ -81,7 +84,8 @@ class Command(BaseCommand):
                     print("Invalid content type: %s: " % ct)
                     return
                 else:
-                    content_types_to_import.append(content_types_names.get(ct, None))
+                    content_types_to_import.append(
+                        content_types_names.get(ct, None))
         else:
             content_types_to_import = self.content_types
         cimp = CIImporter()
