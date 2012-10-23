@@ -125,6 +125,11 @@ class CIRelation(TimeTrackable):
                 self.child,
         )
 
+    def clean(self):
+        validation_msg = 'CI can not have relation with himself'
+        if self.parent == self.child:
+            raise ValidationError(validation_msg)
+
     def save(self, user=None, *args, **kwargs):
         self.saving_user = user
         return super(CIRelation, self).save(*args, **kwargs)
