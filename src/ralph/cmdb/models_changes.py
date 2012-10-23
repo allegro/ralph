@@ -40,9 +40,10 @@ class CI_CHANGE_REGISTRATION_TYPES(Choices):
     _ = Choices.Choice
 
     INCIDENT = _('Incident')
-    CHANGE = _('Change')
+    OP = _('OP Change')
     SR = _('Service Request')
     NOT_REGISTERED = _('Not registered')
+    WAITING = _('Waiting for register')
 
 
 class CIChangeZabbixTrigger(TimeTrackable):
@@ -182,9 +183,3 @@ class CIIncident(CIEvent):
     pass
 
 
-# changes being handled by ticket registration are listed below.
-REGISTER_CHANGE_TYPES = (
-    CI_CHANGE_TYPES.CONF_GIT.id,
-    CI_CHANGE_TYPES.DEVICE.id,
-    CI_CHANGE_TYPES.CI.id,
-)
