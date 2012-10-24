@@ -11,13 +11,13 @@ import logging
 from django.contrib.contenttypes.models import ContentType
 from django.db import IntegrityError
 
-from ralph.cmdb.integration.base import BaseImporter
-from ralph.cmdb import models as db
-from ralph.cmdb import models_changes as chdb
 from ralph.discovery.models_history import HistoryChange
 from ralph.util import plugin
-
+from ralph.cmdb.integration.base import BaseImporter
 from ralph.cmdb.models_signals import register_issue_signal
+from ralph.cmdb import models as db
+from ralph.cmdb import models_changes as chdb
+
 
 logger = logging.getLogger(__name__)
 
