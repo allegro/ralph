@@ -93,11 +93,11 @@ class CIImporterTest(TestCase):
         dm = self.add_model('Blade model sample', DeviceType.blade_server.id)
         self.blade = Device.create(
             venture=self.child_venture,
-            venturerole=self.child_role,
             sn='sn3',
-            model=dm
+            model=dm,
         )
         self.blade.name = 'blade'
+        self.blade.venture_role = self.child_role
         self.blade.parent = self.rack
         self.blade.save()
 
@@ -210,10 +210,15 @@ class CIImporterTest(TestCase):
         for o in objs:
             ct = ContentType.objects.get_for_model(o)
             CIImporter().import_relations(ct, asset_id=o.id)
+
         # All ci should be in Hardware layer
         ci_dc = CI.objects.get(name='dc')
+        ci_role = CI.objects.get(name='dc')
         ci_rack = CI.objects.get(name='rack')
         ci_blade = CI.objects.get(name='blade')
+        ci_venture = CI.objects.get(name='child_venture')
+        ci_role = CI.objects.get(name='child_role')
+
         self.assertEqual(ci_dc.layers.select_related()[0].name, 'Hardware')
         self.assertEqual(ci_rack.layers.select_related()[0].name, 'Hardware')
         self.assertEqual(ci_blade.layers.select_related()[0].name, 'Hardware')
@@ -234,11 +239,48 @@ class CIImporterTest(TestCase):
         # Blade should be inside Rack
         CIRelation.objects.get(
             parent=ci_rack, child=ci_blade, type=CI_RELATION_TYPES.CONTAINS.id)
-        # Relations count should be 6
-        self.assertEqual(len(CIRelation.objects.all()), 6)
+
+        # every device in composition chain should have relation
+        # to Venture and Role as well.
+        # test relations -
+        # dc - no role no venture
+        # rack - venture, no role
+        # blade - venture and role
+        venture_rels = CIRelation.objects.filter(
+            child__in=[ci_dc, ci_rack, ci_blade],
+            parent=ci_venture,
+            type=CI_RELATION_TYPES.CONTAINS.id,
+        )
+        # dc is *not* bound to venture
+        self.assertEqual(
+            set([(x.parent.name, x.child.name, x.type) for x in venture_rels]),
+            set([(u'child_venture', u'rack', 1),
+                (u'child_venture', u'blade', 1)])
+        )
+        role_rels = CIRelation.objects.filter(
+            child__in=[ci_dc, ci_rack, ci_blade],
+            parent=ci_role,
+            type=CI_RELATION_TYPES.HASROLE.id,
+        )
+        # only bottom level device has role, so one relation is made
+        self.assertEqual(
+            set([(x.parent.name, x.child.name, x.type) for x in role_rels]),
+            set([(u'child_role', u'blade', 3)]),
+        )
+        # summarize relations - 9
+        self.assertEqual(len(CIRelation.objects.all()), 9)
+
 
 
 class JiraRssTest(TestCase):
+    def setUp(self):
+        settings.ISSUETRACKERS['JIRA'] = {'ENGINE': 'JIRA', 'USER': '',
+                                          'PASSWORD': '', 'URL': '',
+                                          'CMDB_PROJECT': ''}
+
+    def tearDown(self):
+        del settings.ISSUETRACKERS['JIRA']
+
     def get_datetime(self, data, format='%d-%m-%Y %H:%M'):
         return datetime.datetime.strptime(data, format)
 

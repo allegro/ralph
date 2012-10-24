@@ -18,7 +18,8 @@ from ralph.discovery.models import ReadOnlyDevice, Device, DeviceType
 from ralph.ui.forms import DeviceCreateForm
 from ralph.ui.views.common import (Info, Prices, Addresses, Costs, Purchase,
                                    Components, History, Discover, BaseMixin,
-                                   CMDB, DeviceDetailView, Base)
+                                   DeviceDetailView, Base)
+from ralph.cmdb.views import CMDB
 from ralph.ui.views.devices import BaseDeviceList
 from ralph.ui.views.reports import Reports, ReportDeviceList
 from ralph.util import presentation

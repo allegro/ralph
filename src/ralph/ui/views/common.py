@@ -30,7 +30,6 @@ from ralph.ui.forms import (DeviceInfoForm, DeviceInfoVerifiedForm,
                             DevicePricesForm, DevicePurchaseForm,
                             PropertyForm, DeviceBulkForm)
 
-
 SAVE_PRIORITY = 200
 HISTORY_PAGE_SIZE = 25
 MAX_PAGE_SIZE = 65535
@@ -71,13 +70,7 @@ def _get_details(dev, purchase_only=False, with_price=False):
             continue
         if detail['group'] != 'dev' and 'size' not in detail and detail.get('model'):
             detail['size'] = detail['model'].size
-        if detail.get('model'):
-            if detail['model'].group:
-                detail['modelgroup'] = detail['model'].group
-                detail['model'] = detail['model'].group.name
-            else:
-                detail['model'] = detail['model'].name
-        else:
+        if not detail.get('model'):
             detail['model'] = detail.get('model_name', '')
         yield detail
 
@@ -636,7 +629,6 @@ class BulkEdit(BaseMixin, TemplateView):
             'different_fields': self.different_fields,
         })
         return ret
-
 
 
 class CMDB(BaseMixin):
