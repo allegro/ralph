@@ -31,7 +31,7 @@ user_match = re.compile(r".*\<(.*)@.*\>")
 register_issue_signal = django.dispatch.Signal(providing_args=["change_id"])
 
 if settings.ISSUETRACKERS['default']['ENGINE'] == '':
-    # Null Issue Tracker fallback
+    # Dont register changes at all.
     RALPH_CHANGE_LINK = '%s'
     OP_TEMPLATE = ''
     OP_ISSUE_TYPE = ''

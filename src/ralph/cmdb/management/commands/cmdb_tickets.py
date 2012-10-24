@@ -16,6 +16,7 @@ from ralph.cmdb import models_signals as signals
 
 logger = logging.getLogger(__name__)
 
+
 class Command(BaseCommand):
     """This tool synchronize database with Jira tickets in case of errors."""
     help = textwrap.dedent(__doc__).strip()
@@ -39,9 +40,8 @@ class Command(BaseCommand):
             logger.debug('Syncing tickets.')
             for change in chdb.CIChange.objects.filter(
                     registration_type=chdb.CI_CHANGE_REGISTRATION_TYPES.WAITING.id):
-                logger.debug('Starting task with change id=%d' % change.id)
-                signals.getfunc(signals.create_issue)(change.id)
+                signals.register_issue_signal.send(sender=self, change_id=change.id)
             logger.debug('Finished syncing tickets.')
         else:
-            print('Please specify option. ')
+            print('Please specify option.')
 
