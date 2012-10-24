@@ -368,7 +368,8 @@ class OPRegisterTest(TestCase):
         #removing cichange remove cichangegit child too.
         self.assertEqual(CIChangeGit.objects.count(), 0)
 
-        # if change is registered before date of start, ticket remains WAITING
+        # if change is registered before date of start, and change type is GIT, then
+        # ticket remains WAITING
         # forever. When date is changed, and signal is send to the model
         # ticket is going to be registrated again.
         c = CIChangeGit()
@@ -386,34 +387,85 @@ class OPRegisterTest(TestCase):
     @patch('ralph.cmdb.models_signals.OP_TICKETS_ENABLE', _PATCHED_TICKETS_ENABLE_NO)
     @patch('ralph.cmdb.models_common.USE_CELERY', _PATCHED_USE_CELERY)
     def test_create_ci_generate_change(self):
-        # adding CI should generate CMDBHistoryChange changes
-        # automatic change should not be registered
+        # TICKETS REGISTRATION IN THIS TEST IS DISABLED.
+        # first case - automatic change
         hostci = CI(name='s11401.dc2', uid='mm-1')
         hostci.type_id = CI_TYPES.DEVICE.id
         hostci.save()
+        # not registered, because not user - driven change
         self.assertEqual(
             set([(x.content_object.old_value,
                 x.content_object.new_value, x.content_object.field_name,
-                x.content_object.user_id)
+                x.content_object.user_id, x.registration_type)
                 for x in CIChange.objects.all()]),
-            set([(u'None', u'Device', u'type', None),
-                (u'None', u'1', u'id', None)])
+            set([(u'None', u'Device', u'type', None,
+                CI_CHANGE_REGISTRATION_TYPES.NOT_REGISTERED.id),
+                (u'None', u'1', u'id', None,
+                CI_CHANGE_REGISTRATION_TYPES.NOT_REGISTERED.id)])
         )
         hostci.delete()
+        # second case - manual change
         user = User.objects.create_user(
             'john', 'lennon@thebeatles.com', 'johnpassword')
 
-        # manual change should be registered as ticket 
-
+        # john reigstered change, change should be at WAITING because registering is
+        # not enabled in config
         hostci = CI(name='s11401.dc2', uid='mm-1')
         hostci.type_id = CI_TYPES.DEVICE.id
-        hostci.save(saving_user=user)
+        hostci.save(user=user)
         self.assertEqual(
             set([(x.content_object.old_value,
                 x.content_object.new_value, x.content_object.field_name,
-                x.content_object.user_id)
+                x.content_object.user_id, x.registration_type)
                 for x in CIChange.objects.all()]),
-            set([(u'None', u'Device', u'type', 1), (u'None', u'1', u'id', 1)])
+            set([
+                (u'None', u'Device', u'type', 1,
+                    CI_CHANGE_REGISTRATION_TYPES.WAITING.id),
+                (u'None', u'1', u'id', 1,
+                    CI_CHANGE_REGISTRATION_TYPES.WAITING.id),
+                ])
+        )
+
+
+    @patch('ralph.cmdb.models_signals.OP_TEMPLATE', _PATCHED_OP_TEMPLATE)
+    @patch('ralph.cmdb.models_signals.OP_START_DATE', _PATCHED_OP_START_DATE)
+    @patch('ralph.cmdb.models_signals.OP_TICKETS_ENABLE', _PATCHED_TICKETS_ENABLE)
+    @patch('ralph.cmdb.models_common.USE_CELERY', _PATCHED_USE_CELERY)
+    def test_create_ci_register_change(self):
+        # TICKETS REGISTRATION IN THIS TEST IS ENABLED
+        # first case - automatic change, should not be registered
+        hostci = CI(name='s11401.dc2', uid='mm-1')
+        hostci.type_id = CI_TYPES.DEVICE.id
+        hostci.save()
+        # not registered, because not user - driven change
+        self.assertEqual(
+            set([(x.content_object.old_value,
+                x.content_object.new_value, x.content_object.field_name,
+                x.content_object.user_id, x.registration_type)
+                for x in CIChange.objects.all()]),
+            set([(u'None', u'Device', u'type', None,
+                CI_CHANGE_REGISTRATION_TYPES.NOT_REGISTERED.id),
+                (u'None', u'1', u'id', None,
+                CI_CHANGE_REGISTRATION_TYPES.NOT_REGISTERED.id)])
+        )
+        hostci.delete()
+        # second case - manual change should be registered as ticket
+        user = User.objects.create_user(
+            'john', 'lennon@thebeatles.com', 'johnpassword')
+        hostci = CI(name='s11401.dc2', uid='mm-1')
+        hostci.type_id = CI_TYPES.DEVICE.id
+        hostci.save(user=user)
+        self.assertEqual(
+            set([(x.content_object.old_value,
+                x.content_object.new_value, x.content_object.field_name,
+                x.content_object.user_id, x.registration_type)
+                for x in CIChange.objects.all()]),
+            set([
+                (u'None', u'Device', u'type', 1,
+                    CI_CHANGE_REGISTRATION_TYPES.OP.id),
+                (u'None', u'1', u'id', 1,
+                    CI_CHANGE_REGISTRATION_TYPES.OP.id),
+                ])
         )
 
 
