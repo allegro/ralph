@@ -157,8 +157,7 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                     ], data['model'].split('|'))
                     self.query = self.query.filter(q).distinct()
             if data['component']:
-                try:
-                    int(data['component'])
+                if data['component'].isdigit():
                     q = _search_fields_or([
                         'processor__model__id',
                         'memory__model__id',
@@ -171,7 +170,7 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                         'operatingsystem__model__id'
                     ], data['component'].split('|'))
                     self.query = self.query.filter(q).distinct()
-                except ValueError:
+                else:
                     q = _search_fields_or([
                         'genericcomponent__label__icontains',
                         'genericcomponent__model__name__icontains',
