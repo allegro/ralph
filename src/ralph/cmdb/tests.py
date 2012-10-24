@@ -487,3 +487,9 @@ class OPRegisterTest(TestCase):
         self.assertEqual(chg.external_key, '')
         self.assertEqual(
             chg.registration_type, CI_CHANGE_REGISTRATION_TYPES.WAITING.id)
+
+
+
+
+    def test_import_assets_history(self):
+        pass
