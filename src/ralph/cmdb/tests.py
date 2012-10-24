@@ -27,7 +27,6 @@ from ralph.cmdb.integration.puppet import PuppetAgentsImporter
 from ralph.cmdb.models import PuppetLog
 from ralph.cmdb.integration.puppet import PuppetGitImporter as pgi
 from ralph.cmdb.integration.issuetracker_plugins.jira import JiraRSS
-#from ralph.cmdb.util import CIRelationsGraph
 from ralph.deployment.models import DeploymentPoll
 
 
