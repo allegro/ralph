@@ -195,3 +195,5 @@ def handle_facts_os(dev, facts, is_virtual=False):
     else:
         os.cores_count = facts.get('physicalprocessorcorecount', None)
     os.save(priority=SAVE_PRIORITY)
+    dev.operatingsystem_set.exclude(pk=os.pk).delete()
+

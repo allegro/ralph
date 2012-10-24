@@ -436,11 +436,8 @@ class OperatingSystem(Component):
         if created:
             model.name = os_name
             model.save()
-        try:
-            operating_system = cls.objects.get(device=dev)
-        except cls.DoesNotExist:
-            operating_system = cls.objects.create(device=dev)
-        operating_system.model = model
+        operating_system, created = cls.concurrent_get_or_create(device=dev,
+                                                                 model=model)
         operating_system.label = '%s %s' % (os_name, version)
         operating_system.memory = memory
         operating_system.storage = storage
@@ -451,6 +448,7 @@ class OperatingSystem(Component):
         verbose_name = _("operating system")
         verbose_name_plural = _("operating systems")
         ordering = ('label',)
+        unique_together = ('device', 'model')
 
     def __unicode__(self):
         return self.label
