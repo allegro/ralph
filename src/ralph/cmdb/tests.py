@@ -5,27 +5,29 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import datetime
-from django.db.utils import IntegrityError
 import mock
 
-from os.path import join as djoin
+
+from django.db.utils import IntegrityError
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase, Client
 from lxml import objectify
 from mock import patch
+from os.path import join as djoin
 
+from ralph.discovery.models import Device, DeviceType, DeviceModel
+from ralph.business.models import Venture, VentureRole
 from ralph.cmdb.importer import CIImporter
 from ralph.cmdb.models import (CI, CILayer, CIRelation, CI_RELATION_TYPES,
                                CIChange, CI_TYPES, CIChangePuppet, CIChangeGit,
-                               CI_CHANGE_TYPES, CIType, CIRelation)
-from ralph.discovery.models import Device, DeviceType, DeviceModel
-from ralph.business.models import Venture, VentureRole
+                               CI_CHANGE_TYPES, CIType)
 from ralph.cmdb.integration.puppet import PuppetAgentsImporter
 from ralph.cmdb.models import PuppetLog
 from ralph.cmdb.integration.puppet import PuppetGitImporter as pgi
 from ralph.cmdb.integration.issuetracker_plugins.jira import JiraRSS
+#from ralph.cmdb.util import CIRelationsGraph
 from ralph.deployment.models import DeploymentPoll
 
 
@@ -481,15 +483,13 @@ class CIFormsTest(TestCase):
 
     def test_two_ci_without_content_object(self):
         response_ci1 = self.add_ci(name='CI1')
-        response_ci2 = self.add_ci(name='CI2')
-        ci1 = CI.objects.get(name='CI1')
-        ci2 = CI.objects.get(name='CI2')
+        response_ci2 = self.add_ci(name='CI1')
+        cis = CI.objects.filter(name='CI1')
         self.assertEqual(response_ci1.status_code, 302)
         self.assertEqual(response_ci2.status_code, 302)
-        self.assertGreater(ci1, 0)
-        self.assertGreater(ci2, 0)
+        self.assertEqual(len(cis), 2)
 
-    def test_add_ci_relation(self):
+    def test_add_ci_relation_rel_child(self):
         response_ci1 = self.add_ci(name='CI1')
         response_ci2 = self.add_ci(name='CI2')
         self.assertEqual(response_ci1.status_code, 302)
@@ -532,6 +532,49 @@ class CIFormsTest(TestCase):
                                      type=CI_RELATION_TYPES.REQUIRES)
         self.assertEqual(rel.type, CI_RELATION_TYPES.REQUIRES)
 
+    def test_add_ci_relation_rel_parent(self):
+        response_ci1 = self.add_ci(name='CI1')
+        response_ci2 = self.add_ci(name='CI2')
+        self.assertEqual(response_ci1.status_code, 302)
+        self.assertEqual(response_ci2.status_code, 302)
+        ci1 = CI.objects.get(name='CI1')
+        ci2 = CI.objects.get(name='CI2')
+
+        response_r = self.add_ci_relation(
+            parent_ci=ci1,
+            child_ci=ci2,
+            relation_type='rel_parent',
+            relation_kind=CI_RELATION_TYPES.HASROLE
+        )
+        self.assertEqual(response_r.status_code, 302)
+        rel = CIRelation.objects.get(parent_id=ci1.id, child_id=ci2.id,
+                                     type=CI_RELATION_TYPES.HASROLE)
+        self.assertEqual(rel.type, CI_RELATION_TYPES.HASROLE)
+
+        response_r = self.add_ci_relation(
+            parent_ci=ci1,
+            child_ci=ci2,
+            relation_type='rel_parent',
+            relation_kind=CI_RELATION_TYPES.CONTAINS
+        )
+        self.assertEqual(response_r.status_code, 302)
+        rel = CIRelation.objects.get(
+            parent_id=ci1.id,
+            child_id=ci2.id,
+            type=CI_RELATION_TYPES.CONTAINS
+        )
+        self.assertEqual(rel.type, CI_RELATION_TYPES.CONTAINS)
+
+        response_r = self.add_ci_relation(
+            parent_ci=ci1,
+            child_ci=ci2,
+            relation_type='rel_parent',
+            relation_kind=CI_RELATION_TYPES.REQUIRES)
+        self.assertEqual(response_r.status_code, 302)
+        rel = CIRelation.objects.get(parent_id=ci1.id, child_id=ci2.id,
+                                     type=CI_RELATION_TYPES.REQUIRES)
+        self.assertEqual(rel.type, CI_RELATION_TYPES.REQUIRES)
+
     def test_add_ci_relation_with_himself(self):
         response_ci = self.add_ci(name='CI')
         self.assertEqual(response_ci.status_code, 302)
@@ -545,3 +588,74 @@ class CIFormsTest(TestCase):
         )
         self.assertEqual(response_r.context_data['form'].errors['__all__'][0],
                          'CI can not have relation with himself')
+
+    def test_ci_cycle_parent_child(self):
+        response_ci1 = self.add_ci(name='CI1')
+        response_ci2 = self.add_ci(name='CI2')
+        self.assertEqual(response_ci1.status_code, 302)
+        self.assertEqual(response_ci2.status_code, 302)
+
+        ci1 = CI.objects.get(name='CI1')
+        ci2 = CI.objects.get(name='CI2')
+
+        response_r = self.add_ci_relation(
+            parent_ci=ci1,
+            child_ci=ci2,
+            relation_type='rel_parent',
+            relation_kind=CI_RELATION_TYPES.CONTAINS
+        )
+        self.assertEqual(response_r.status_code, 302)
+        response_r = self.add_ci_relation(
+            parent_ci=ci2,
+            child_ci=ci1,
+            relation_type='rel_parent',
+            relation_kind=CI_RELATION_TYPES.CONTAINS
+        )
+        self.assertEqual(response_r.status_code, 302)
+
+    def test_ci_relations_cycle(self):
+        response_ci1 = self.add_ci(name='CI1')
+        response_ci2 = self.add_ci(name='CI2')
+        response_ci3 = self.add_ci(name='CI3')
+        self.assertEqual(response_ci1.status_code, 302)
+        self.assertEqual(response_ci2.status_code, 302)
+        self.assertEqual(response_ci3.status_code, 302)
+        ci1 = CI.objects.get(name='CI1')
+        ci2 = CI.objects.get(name='CI2')
+        ci3 = CI.objects.get(name='CI3')
+
+        response_r = self.add_ci_relation(
+            parent_ci=ci1,
+            child_ci=ci2,
+            relation_type='rel_parent',
+            relation_kind=CI_RELATION_TYPES.HASROLE
+        )
+        self.assertEqual(response_r.status_code, 302)
+        rel = CIRelation.objects.get(parent_id=ci1.id, child_id=ci2.id,
+                                     type=CI_RELATION_TYPES.HASROLE)
+        self.assertEqual(rel.type, CI_RELATION_TYPES.HASROLE)
+
+        response_r = self.add_ci_relation(
+            parent_ci=ci2,
+            child_ci=ci3,
+            relation_type='rel_parent',
+            relation_kind=CI_RELATION_TYPES.HASROLE
+        )
+        self.assertEqual(response_r.status_code, 302)
+        rel = CIRelation.objects.get(parent_id=ci2.id, child_id=ci3.id,
+                                     type=CI_RELATION_TYPES.HASROLE)
+        self.assertEqual(rel.type, CI_RELATION_TYPES.HASROLE)
+
+        response_r = self.add_ci_relation(
+            parent_ci=ci3,
+            child_ci=ci1,
+            relation_type='rel_parent',
+            relation_kind=CI_RELATION_TYPES.HASROLE
+        )
+        self.assertEqual(response_r.status_code, 302)
+        rel = CIRelation.objects.get(parent_id=ci3.id, child_id=ci1.id,
+                                     type=CI_RELATION_TYPES.HASROLE)
+        self.assertEqual(rel.type, CI_RELATION_TYPES.HASROLE)
+
+        cycle = CI.get_cycle()
+        self.assertEqual(cycle, [1, 2, 3])

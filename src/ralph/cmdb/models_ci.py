@@ -14,6 +14,8 @@ from django.utils.translation import ugettext_lazy as _
 
 from lck.django.common.models import TimeTrackable, WithConcurrentGetOrCreate
 from lck.django.choices import Choices
+from pygraph.classes.digraph import digraph
+from pygraph.algorithms.cycles import find_cycle
 
 
 class CI_RELATION_TYPES(Choices):
@@ -129,6 +131,7 @@ class CIRelation(TimeTrackable):
         validation_msg = 'CI can not have relation with himself'
         if self.parent == self.child:
             raise ValidationError(validation_msg)
+
 
     def save(self, user=None, *args, **kwargs):
         self.saving_user = user
@@ -313,6 +316,23 @@ class CI(TimeTrackable):
                 for x in self.content_object.technical_owners() ] or ['-'])
         else:
             return ['-']
+    @classmethod
+    def get_cycle(self):
+        allci = CI.objects.all().values('pk')
+        relations = CIRelation.objects.all().values('parent_id', 'child_id')
+        cis = [x['pk'] for x in allci]
+        rel = [(x['parent_id'], x['child_id']) for x in relations]
+        cycle = self.has_cycle(cis, rel)
+        return cycle
+
+    @classmethod
+    def has_cycle(self, nodes, edges):
+        gr = digraph()
+        gr.add_nodes(nodes)
+        for edge in edges:
+            gr.add_edge(edge)
+        return find_cycle(gr)
+
 
     @classmethod
     def get_by_content_object(self, content_object):
@@ -392,5 +412,3 @@ class CIOwner(TimeTrackable, WithConcurrentGetOrCreate):
 
     def __unicode__(self):
         return ' '.join([self.first_name, self.last_name])
-
-
