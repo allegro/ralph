@@ -81,6 +81,7 @@ def change_delete_post_save(sender, instance, **kwargs):
 @receiver(post_save, sender=chdb.CIChangeGit, dispatch_uid='ralph.cmdb.change_post_save')
 def post_create_change(sender, instance, raw, using, **kwargs):
     registration_type = chdb.CI_CHANGE_REGISTRATION_TYPES.NOT_REGISTERED.id
+    user = None
     try:
         """ Classify change, and create record - CIChange """
         logger.debug('Hooking post save CIChange creation.')
@@ -97,6 +98,7 @@ def post_create_change(sender, instance, raw, using, **kwargs):
             if instance.user_id:
                 registration_type = \
                     chdb.CI_CHANGE_REGISTRATION_TYPES.WAITING.id
+                user = instance.user
             change_type = chdb.CI_CHANGE_TYPES.CI.id
             priority = chdb.CI_CHANGE_PRIORITY_TYPES.NOTICE.id
             message = instance.comment
@@ -128,6 +130,7 @@ def post_create_change(sender, instance, raw, using, **kwargs):
         ch.type = change_type
         ch.content_object = instance
         ch.message = message
+        ch.user = user
         ch.save()
         # register ticket now.
         register_issue_signal.send(sender=instance, change_id=ch.id)
@@ -161,7 +164,6 @@ def register_issue_handler(sender, change_id, **kwargs):
 @receiver(post_save, sender=cdb.CI, dispatch_uid='ralph.cmdb.history')
 @receiver(post_save, sender=cdb.CIRelation, dispatch_uid='ralph.cmdb.history')
 def ci_post_save(sender, instance, raw, using, **kwargs):
-    import pdb; pdb.set_trace()
     """A hook for creating ``CIChangeCMDBHistory`` entries when a CI changes"""
     for field, orig in instance.dirty_fields.iteritems():
         if field in instance.insignificant_fields:
