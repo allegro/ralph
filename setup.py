@@ -53,6 +53,7 @@ setup (
         'ping==0.2',
         'pysnmp==4.2.2',
         'PyYAML==3.10',
+        'python-graph-core==1.8.2',
         'pytz',
         'pyzabbix==0.1',
         'RestKit==4.2.0',

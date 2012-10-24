@@ -5,20 +5,24 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import datetime
+import mock
+
+
+from django.db.utils import IntegrityError
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
+from django.test import TestCase, Client
+from lxml import objectify
+from mock import patch
 from os.path import join as djoin
 
-from django.conf import settings
-from django.contrib.contenttypes.models import ContentType
-from django.test import TestCase
-import mock
-from mock import patch
-from lxml import objectify
-
-from ralph.cmdb.importer import CIImporter
-from ralph.cmdb.models import CI, CIRelation, CI_RELATION_TYPES, CIChange, CI_TYPES, \
-    CIChangePuppet, CIChangeGit, CI_CHANGE_TYPES
 from ralph.discovery.models import Device, DeviceType, DeviceModel
 from ralph.business.models import Venture, VentureRole
+from ralph.cmdb.importer import CIImporter
+from ralph.cmdb.models import (CI, CILayer, CIRelation, CI_RELATION_TYPES,
+                               CIChange, CI_TYPES, CIChangePuppet, CIChangeGit,
+                               CI_CHANGE_TYPES, CIType)
 from ralph.cmdb.integration.puppet import PuppetAgentsImporter
 from ralph.cmdb.models import PuppetLog
 from ralph.cmdb.integration.puppet import PuppetGitImporter as pgi
@@ -30,7 +34,6 @@ CURRENT_DIR = settings.CURRENT_DIR
 
 
 class MockFisheye(object):
-
     def __init__(self):
         pass
 
@@ -157,7 +160,7 @@ class CIImporterTest(TestCase):
         CIImporter().import_relations(
             ContentType.objects.get_for_model(y), asset_id=y.id)
         with mock.patch(
-                'ralph.cmdb.integration.lib.fisheye.Fisheye') as Fisheye:
+            'ralph.cmdb.integration.lib.fisheye.Fisheye') as Fisheye:
             Fisheye.side_effect = MockFisheye
             x = pgi(fisheye_class=Fisheye)
             x.import_git()
@@ -206,7 +209,7 @@ class CIImporterTest(TestCase):
         for o in objs:
             ct = ContentType.objects.get_for_model(o)
             CIImporter().import_all_ci([ct], asset_id=o.id)
-        # create relations
+            # create relations
         for o in objs:
             ct = ContentType.objects.get_for_model(o)
             CIImporter().import_relations(ct, asset_id=o.id)
@@ -229,14 +232,14 @@ class CIImporterTest(TestCase):
             ct = ContentType.objects.get_for_model(o)
             cis.extend(
                 CIImporter().import_all_ci([ct], asset_id=o.id))
-        # Rack should be inside DC
+            # Rack should be inside DC
         try:
             CIRelation.objects.get(
                 parent=ci_dc, child=ci_rack,
                 type=CI_RELATION_TYPES.CONTAINS.id)
         except CIRelation.DoesNotExist:
             self.fail('Cant find relation %s %s %s' % (ci_dc, ci_rack))
-        # Blade should be inside Rack
+            # Blade should be inside Rack
         CIRelation.objects.get(
             parent=ci_rack, child=ci_blade, type=CI_RELATION_TYPES.CONTAINS.id)
 
@@ -255,7 +258,7 @@ class CIImporterTest(TestCase):
         self.assertEqual(
             set([(x.parent.name, x.child.name, x.type) for x in venture_rels]),
             set([(u'child_venture', u'rack', 1),
-                (u'child_venture', u'blade', 1)])
+                 (u'child_venture', u'blade', 1)])
         )
         role_rels = CIRelation.objects.filter(
             child__in=[ci_dc, ci_rack, ci_blade],
@@ -269,7 +272,6 @@ class CIImporterTest(TestCase):
         )
         # summarize relations - 9
         self.assertEqual(len(CIRelation.objects.all()), 9)
-
 
 
 class JiraRssTest(TestCase):
@@ -333,14 +335,17 @@ _PATCHED_TICKETS_ENABLE = True
 _PATCHED_USE_CELERY = False
 _PATCHED_TICKETS_ENABLE_NO = False
 
+
 class OPRegisterTest(TestCase):
-    """ OP Changes such as git change, attribute change, is immiediatelly sent to
-    issue tracker as CHANGE ticket for logging purporses. Check this workflow here
+    """ OP Changes such as git change, attribute change, is immiediatelly sent
+    to issue tracker as CHANGE ticket for logging purporses. Check this
+    workflow here
     """
 
     @patch('ralph.cmdb.models_signals.OP_TEMPLATE', _PATCHED_OP_TEMPLATE)
     @patch('ralph.cmdb.models_signals.OP_START_DATE', _PATCHED_OP_START_DATE)
-    @patch('ralph.cmdb.models_signals.OP_TICKETS_ENABLE', _PATCHED_TICKETS_ENABLE)
+    @patch('ralph.cmdb.models_signals.OP_TICKETS_ENABLE',
+           _PATCHED_TICKETS_ENABLE)
     @patch('ralph.cmdb.models_common.USE_CELERY', _PATCHED_USE_CELERY)
     def test_create_issues(self):
         # if change is registered after date of start, ticket is registered
@@ -367,10 +372,10 @@ class OPRegisterTest(TestCase):
         self.assertEqual(chg.external_key, '')
         self.assertEqual(chg.get_registration_type_display(), 'Not registered')
 
-
     @patch('ralph.cmdb.models_signals.OP_TEMPLATE', _PATCHED_OP_TEMPLATE)
     @patch('ralph.cmdb.models_signals.OP_START_DATE', _PATCHED_OP_START_DATE)
-    @patch('ralph.cmdb.models_signals.OP_TICKETS_ENABLE', _PATCHED_TICKETS_ENABLE_NO)
+    @patch('ralph.cmdb.models_signals.OP_TICKETS_ENABLE',
+           _PATCHED_TICKETS_ENABLE_NO)
     @patch('ralph.cmdb.models_common.USE_CELERY', _PATCHED_USE_CELERY)
     def test_dont_create_issues(self):
         # the date is ok, but tickets enabled is set to no.  Dont register ticket.
@@ -383,3 +388,273 @@ class OPRegisterTest(TestCase):
         self.assertEqual(chg.content_object, c)
         self.assertEqual(chg.external_key, '')
         self.assertEqual(chg.get_registration_type_display(), 'Not registered')
+
+DEVICE_NAME = 'SimpleDevice'
+DEVICE_IP = '10.0.0.1'
+DEVICE_REMARKS = 'Very important device'
+DEVICE_VENTURE = 'SimpleVenture'
+DEVICE_VENTURE_SYMBOL = 'simple_venture'
+VENTURE_ROLE = 'VentureRole'
+DEVICE_POSITION = '12'
+DEVICE_RACK = '13'
+DEVICE_BARCODE = 'bc_dev'
+DEVICE_SN = '0000000001'
+DEVICE_MAC = '00:00:00:00:00:00'
+DATACENTER = 'dc1'
+
+
+class CIFormsTest(TestCase):
+    def setUp(self):
+        login = 'ralph'
+        password = 'ralph'
+        user = User.objects.create_user(login, 'ralph@ralph.local', password)
+        self.user = user
+        self.user.is_staff = True
+        self.user.is_superuser = True
+        self.user.save()
+        self.client = Client()
+        self.client.login(username=login, password=password)
+
+        venture = Venture(name=DEVICE_VENTURE, symbol=DEVICE_VENTURE_SYMBOL)
+        venture.save()
+        self.venture = venture
+        venture_role = VentureRole(name=VENTURE_ROLE, venture=self.venture)
+        venture_role.save()
+        self.venture_role = venture_role
+        self.device = Device.create(
+            sn=DEVICE_SN,
+            barcode=DEVICE_BARCODE,
+            remarks=DEVICE_REMARKS,
+            model_name='xxxx',
+            model_type=DeviceType.unknown,
+            venture=self.venture,
+            venture_role=self.venture_role,
+            rack=DEVICE_RACK,
+            position=DEVICE_POSITION,
+            dc=DATACENTER,
+        )
+        self.device.name = DEVICE_NAME
+        self.device.save()
+
+        self.layer = CILayer(name='layer1')
+        self.layer.save()
+        self.citype = CIType(name='xxx')
+        self.citype.save()
+
+    def add_ci(self, name='CI'):
+        ci_add_url = '/cmdb/add/'
+        attrs = {
+            'base-layers': 1,
+            'base-name': name,
+            'base-state': 2,
+            'base-status': 2,
+            'base-type': 1
+        }
+        return self.client.post(ci_add_url, attrs)
+
+    def add_ci_relation(self, parent_ci, child_ci, relation_type,
+                        relation_kind):
+        ci_relation_add_url = '/cmdb/relation/add/{}?{}={}'.format(
+            parent_ci.id, relation_type, parent_ci.id
+        )
+        attrs = {
+            'base-parent': parent_ci.id,
+            'base-child': child_ci.id,
+            'base-type': relation_kind.id,
+        }
+        return self.client.post(ci_relation_add_url, attrs)
+
+    def test_add_two_ci_with_the_same_content_object(self):
+        response = self.add_ci(name='CI1')
+        self.assertEqual(response.status_code, 302)
+        ci1 = CI.objects.get(name='CI1')
+        ci1.content_object = self.device
+        ci1.save()
+
+        response = self.add_ci(name='CI2')
+        self.assertEqual(response.status_code, 302)
+        with self.assertRaises(IntegrityError) as e:
+            ci2 = CI.objects.get(name='CI2')
+            ci2.content_object = self.device
+            ci2.save()
+        self.assertEqual('columns content_type_id, object_id are not unique',
+                         e.exception.message)
+
+    def test_two_ci_without_content_object(self):
+        response_ci1 = self.add_ci(name='CI1')
+        response_ci2 = self.add_ci(name='CI1')
+        cis = CI.objects.filter(name='CI1')
+        self.assertEqual(response_ci1.status_code, 302)
+        self.assertEqual(response_ci2.status_code, 302)
+        self.assertEqual(len(cis), 2)
+
+    def test_add_ci_relation_rel_child(self):
+        response_ci1 = self.add_ci(name='CI1')
+        response_ci2 = self.add_ci(name='CI2')
+        self.assertEqual(response_ci1.status_code, 302)
+        self.assertEqual(response_ci2.status_code, 302)
+        ci1 = CI.objects.get(name='CI1')
+        ci2 = CI.objects.get(name='CI2')
+
+        response_r = self.add_ci_relation(
+            parent_ci=ci1,
+            child_ci=ci2,
+            relation_type='rel_child',
+            relation_kind=CI_RELATION_TYPES.HASROLE
+        )
+        self.assertEqual(response_r.status_code, 302)
+        rel = CIRelation.objects.get(parent_id=ci1.id, child_id=ci2.id,
+                                     type=CI_RELATION_TYPES.HASROLE)
+        self.assertEqual(rel.type, CI_RELATION_TYPES.HASROLE)
+
+        response_r = self.add_ci_relation(
+            parent_ci=ci1,
+            child_ci=ci2,
+            relation_type='rel_child',
+            relation_kind=CI_RELATION_TYPES.CONTAINS
+        )
+        self.assertEqual(response_r.status_code, 302)
+        rel = CIRelation.objects.get(
+            parent_id=ci1.id,
+            child_id=ci2.id,
+            type=CI_RELATION_TYPES.CONTAINS
+        )
+        self.assertEqual(rel.type, CI_RELATION_TYPES.CONTAINS)
+
+        response_r = self.add_ci_relation(
+            parent_ci=ci1,
+            child_ci=ci2,
+            relation_type='rel_child',
+            relation_kind=CI_RELATION_TYPES.REQUIRES)
+        self.assertEqual(response_r.status_code, 302)
+        rel = CIRelation.objects.get(parent_id=ci1.id, child_id=ci2.id,
+                                     type=CI_RELATION_TYPES.REQUIRES)
+        self.assertEqual(rel.type, CI_RELATION_TYPES.REQUIRES)
+
+    def test_add_ci_relation_rel_parent(self):
+        response_ci1 = self.add_ci(name='CI1')
+        response_ci2 = self.add_ci(name='CI2')
+        self.assertEqual(response_ci1.status_code, 302)
+        self.assertEqual(response_ci2.status_code, 302)
+        ci1 = CI.objects.get(name='CI1')
+        ci2 = CI.objects.get(name='CI2')
+
+        response_r = self.add_ci_relation(
+            parent_ci=ci1,
+            child_ci=ci2,
+            relation_type='rel_parent',
+            relation_kind=CI_RELATION_TYPES.HASROLE
+        )
+        self.assertEqual(response_r.status_code, 302)
+        rel = CIRelation.objects.get(parent_id=ci1.id, child_id=ci2.id,
+                                     type=CI_RELATION_TYPES.HASROLE)
+        self.assertEqual(rel.type, CI_RELATION_TYPES.HASROLE)
+
+        response_r = self.add_ci_relation(
+            parent_ci=ci1,
+            child_ci=ci2,
+            relation_type='rel_parent',
+            relation_kind=CI_RELATION_TYPES.CONTAINS
+        )
+        self.assertEqual(response_r.status_code, 302)
+        rel = CIRelation.objects.get(
+            parent_id=ci1.id,
+            child_id=ci2.id,
+            type=CI_RELATION_TYPES.CONTAINS
+        )
+        self.assertEqual(rel.type, CI_RELATION_TYPES.CONTAINS)
+
+        response_r = self.add_ci_relation(
+            parent_ci=ci1,
+            child_ci=ci2,
+            relation_type='rel_parent',
+            relation_kind=CI_RELATION_TYPES.REQUIRES)
+        self.assertEqual(response_r.status_code, 302)
+        rel = CIRelation.objects.get(parent_id=ci1.id, child_id=ci2.id,
+                                     type=CI_RELATION_TYPES.REQUIRES)
+        self.assertEqual(rel.type, CI_RELATION_TYPES.REQUIRES)
+
+    def test_add_ci_relation_with_himself(self):
+        response_ci = self.add_ci(name='CI')
+        self.assertEqual(response_ci.status_code, 302)
+        ci = CI.objects.get(name='CI')
+
+        response_r = self.add_ci_relation(
+            parent_ci=ci,
+            child_ci=ci,
+            relation_type='rel_child',
+            relation_kind=CI_RELATION_TYPES.HASROLE
+        )
+        self.assertEqual(response_r.context_data['form'].errors['__all__'][0],
+                         'CI can not have relation with himself')
+
+    def test_ci_cycle_parent_child(self):
+        response_ci1 = self.add_ci(name='CI1')
+        response_ci2 = self.add_ci(name='CI2')
+        self.assertEqual(response_ci1.status_code, 302)
+        self.assertEqual(response_ci2.status_code, 302)
+
+        ci1 = CI.objects.get(name='CI1')
+        ci2 = CI.objects.get(name='CI2')
+
+        response_r = self.add_ci_relation(
+            parent_ci=ci1,
+            child_ci=ci2,
+            relation_type='rel_parent',
+            relation_kind=CI_RELATION_TYPES.CONTAINS
+        )
+        self.assertEqual(response_r.status_code, 302)
+        response_r = self.add_ci_relation(
+            parent_ci=ci2,
+            child_ci=ci1,
+            relation_type='rel_parent',
+            relation_kind=CI_RELATION_TYPES.CONTAINS
+        )
+        self.assertEqual(response_r.status_code, 302)
+
+    def test_ci_relations_cycle(self):
+        response_ci1 = self.add_ci(name='CI1')
+        response_ci2 = self.add_ci(name='CI2')
+        response_ci3 = self.add_ci(name='CI3')
+        self.assertEqual(response_ci1.status_code, 302)
+        self.assertEqual(response_ci2.status_code, 302)
+        self.assertEqual(response_ci3.status_code, 302)
+        ci1 = CI.objects.get(name='CI1')
+        ci2 = CI.objects.get(name='CI2')
+        ci3 = CI.objects.get(name='CI3')
+
+        response_r = self.add_ci_relation(
+            parent_ci=ci1,
+            child_ci=ci2,
+            relation_type='rel_parent',
+            relation_kind=CI_RELATION_TYPES.HASROLE
+        )
+        self.assertEqual(response_r.status_code, 302)
+        rel = CIRelation.objects.get(parent_id=ci1.id, child_id=ci2.id,
+                                     type=CI_RELATION_TYPES.HASROLE)
+        self.assertEqual(rel.type, CI_RELATION_TYPES.HASROLE)
+
+        response_r = self.add_ci_relation(
+            parent_ci=ci2,
+            child_ci=ci3,
+            relation_type='rel_parent',
+            relation_kind=CI_RELATION_TYPES.HASROLE
+        )
+        self.assertEqual(response_r.status_code, 302)
+        rel = CIRelation.objects.get(parent_id=ci2.id, child_id=ci3.id,
+                                     type=CI_RELATION_TYPES.HASROLE)
+        self.assertEqual(rel.type, CI_RELATION_TYPES.HASROLE)
+
+        response_r = self.add_ci_relation(
+            parent_ci=ci3,
+            child_ci=ci1,
+            relation_type='rel_parent',
+            relation_kind=CI_RELATION_TYPES.HASROLE
+        )
+        self.assertEqual(response_r.status_code, 302)
+        rel = CIRelation.objects.get(parent_id=ci3.id, child_id=ci1.id,
+                                     type=CI_RELATION_TYPES.HASROLE)
+        self.assertEqual(rel.type, CI_RELATION_TYPES.HASROLE)
+
+        cycle = CI.get_cycle()
+        self.assertEqual(cycle, [1, 2, 3])
