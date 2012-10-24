@@ -317,16 +317,16 @@ class CI(TimeTrackable):
         else:
             return ['-']
     @classmethod
-    def get_cycle(self):
+    def get_cycle(cls):
         allci = CI.objects.all().values('pk')
         relations = CIRelation.objects.all().values('parent_id', 'child_id')
         cis = [x['pk'] for x in allci]
         rel = [(x['parent_id'], x['child_id']) for x in relations]
-        cycle = self.has_cycle(cis, rel)
+        cycle = cls.has_cycle(cis, rel)
         return cycle
 
     @classmethod
-    def has_cycle(self, nodes, edges):
+    def has_cycle(cls, nodes, edges):
         gr = digraph()
         gr.add_nodes(nodes)
         for edge in edges:
