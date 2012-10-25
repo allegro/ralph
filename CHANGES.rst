@@ -1,6 +1,68 @@
 Change Log
 ----------
 
+1.1.5
+~~~~~
+
+Released on October 19, 2012.
+
+* bumped Django version to 1.4.2
+
+* fixes order of database migrations
+
+* fixes a problem in Django 1.4.x with built-in unit tests failing because of
+  settings used
+
+* minor CMDB fixes
+
+* more unit tests
+
+1.1.4
+~~~~~
+
+Released on October 15, 2012.
+
+* role properties available in API
+
+* virtual CPU count in the main ventures report
+
+* deprecated devices now have a zero monthly cost
+
+1.1.3
+~~~~~
+
+Released on October 10, 2012.
+
+* cloud usage is visible in the main ventures report
+
+* several minor fixes in UI and new plugins
+
+1.1.2
+~~~~~
+
+Released on October 8, 2012.
+
+* ``Donpedro`` introduced: a new dedicated discovery agent for Windows.  Works
+  as a background Windows service; a lightweight alternative to SCCM
+
+* a new plugin to discover Xen hypervisors (with support for information about
+  pools and hardware usage)
+
+* a new ``ssh_linux`` plugin that discovers Linux machines by logging into them;
+  an alternative to Puppet storeconfig
+
+* lots of minor bugfixes in UI, CMDB and discovery
+
+1.1.1
+~~~~~
+
+Released on September 24, 2012.
+
+* Price catalog updated: history of changes tracked, a more intuitive UI for
+  prices per unit of size
+
+* bug fixes in discovery and UI
+
 1.1.0
 ~~~~~
 

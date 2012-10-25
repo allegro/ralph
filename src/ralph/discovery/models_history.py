@@ -15,18 +15,46 @@ from django.utils.translation import ugettext_lazy as _
 from django.db.models.signals import post_save, pre_save, pre_delete
 from django.dispatch import receiver
 
-from ralph.discovery.models_device import Device
+from ralph.discovery.models_device import (
+        Device, DeprecationKind, DeviceModel, DeviceModelGroup
+    )
 from ralph.discovery.models_device import LoadBalancerMember
 from ralph.discovery.models_device import LoadBalancerVirtualServer
 from ralph.discovery.models_component import (
         Memory, Processor, Storage, DiskShareMount, DiskShare, Software,
-        GenericComponent, Ethernet, FibreChannel
+        GenericComponent, Ethernet, FibreChannel, ComponentModel,
+        ComponentModelGroup
     )
 from ralph.discovery.models_network import IPAddress
 
 
 FOREVER = '2199-1-1' # not all DB backends will accept '9999-1-1'
 ALWAYS = '0001-1-1' # not all DB backends will accept '0000-0-0'
+
+
+def _field_changes(instance, ignore=('last_seen',)):
+    """
+    Iterate over all changed fields, yielding the field name,
+    its original value and its new value. Skip the fields passed
+    in ``ignore``.
+    """
+    for field, orig in instance.dirty_fields.iteritems():
+        if field in ignore:
+            continue
+        if field in instance.insignificant_fields:
+            continue
+        if field.endswith('_id'):
+            field = field[:-3]
+            orig = instance._meta.get_field_by_name(
+                    field
+                )[0].related.parent_model.objects.get(
+                    pk=orig
+                ) if orig is not None else None
+        try:
+            new = getattr(instance, field)
+        except AttributeError:
+            continue
+        yield field, orig, new
 
 
 class HistoryChange(db.Model):
@@ -64,24 +92,14 @@ class HistoryChange(db.Model):
 def device_pre_save(sender, instance, raw, using, **kwargs):
     """A hook for creating ``HistoryChange`` entries when a device changes."""
 
-    for field, orig in instance.dirty_fields.iteritems():
-        if field in ('last_seen', 'cached_cost', 'cached_price', 'raw',
-                     'uptime_seconds', 'uptime_timestamp'):
-            continue
-        if field in instance.insignificant_fields:
-            continue
-        if field.endswith('_id'):
-            field = field[:-3]
-            orig = instance._meta.get_field_by_name(
-                    field
-                )[0].related.parent_model.objects.get(
-                    pk=orig
-                ) if orig is not None else None
+    for field, orig, new in _field_changes(instance, ignore={
+            'last_seen', 'cached_cost', 'cached_price', 'raw',
+            'uptime_seconds', 'uptime_timestamp'}):
         HistoryChange(
                 device=instance,
                 field_name=field,
                 old_value=unicode(orig),
-                new_value=unicode(getattr(instance, field)),
+                new_value=unicode(new),
                 user=instance.saving_user,
                 comment=instance.save_comment,
             ).save()
@@ -128,28 +146,14 @@ def device_related_pre_save(sender, instance, raw, using, **kwargs):
     """A hook for creating ``HistoryChange`` entry when a component is changed."""
 
     device = instance.device
-    for field, orig in instance.dirty_fields.iteritems():
-        if field in ('last_seen', 'network_id', 'number', 'hostname',
-                        'last_puppet', 'dns_info', ):
-            continue
-        if field in instance.insignificant_fields:
-            continue
-        if field.endswith('_id'):
-            field = field[:-3]
-            orig = instance._meta.get_field_by_name(
-                    field
-                )[0].related.parent_model.objects.get(
-                    pk=orig
-                ) if orig is not None else None
-        try:
-            new_value = unicode(getattr(instance, field))
-        except AttributeError:
-            continue
+    for field, orig, new in _field_changes(instance, ignore={
+        'last_seen', 'network_id', 'number', 'hostname', 'last_puppet',
+        'dns_info'}):
         HistoryChange(
                 device=device,
                 field_name=field,
                 old_value=unicode(orig),
-                new_value=new_value,
+                new_value=unicode(new),
                 user=device.saving_user if device else None,
                 component=unicode(instance),
                 component_id=instance.id,
@@ -179,6 +183,14 @@ def device_related_pre_delete(sender, instance, using, **kwargs):
             component=unicode(instance),
             component_id=instance.id,
         ).save()
+
+@receiver(pre_save, sender=DeprecationKind, dispatch_uid='ralph.history')
+def deprecationkind_pre_save(sender, instance, raw, using, **kwargs):
+    if instance.default:
+        items = DeprecationKind.objects.filter(default=True)
+        for item in items:
+            item.default = False
+            item.save()
 
 
 class HistoryCost(db.Model):
@@ -300,3 +312,98 @@ def cost_pre_delete(sender, instance, using, **kwargs):
     """
 
     HistoryCost.end_span(device=instance)
+
+
+class HistoryModelChange(db.Model):
+    """
+    Represent a single change in the device and component models.
+    """
+
+    date = db.DateTimeField(verbose_name=_("date"), default=datetime.now)
+    device_model = db.ForeignKey('DeviceModel', verbose_name=_("device model"),
+                                 null=True, blank=True, default=None,
+                                 on_delete=db.SET_NULL)
+    component_model = db.ForeignKey('ComponentModel', null=True, blank=True,
+                                    verbose_name=_("component model"),
+                                    default=None, on_delete=db.SET_NULL)
+    device_model_group = db.ForeignKey('DeviceModelGroup',
+                                 verbose_name=_("device model group"),
+                                 null=True, blank=True, default=None,
+                                 on_delete=db.SET_NULL)
+    component_model_group = db.ForeignKey('ComponentModelGroup', null=True,
+                                    blank=True,
+                                    verbose_name=_("component model group"),
+                                    default=None, on_delete=db.SET_NULL)
+    user = db.ForeignKey('auth.User', verbose_name=_("user"), null=True,
+                           blank=True, default=None, on_delete=db.SET_NULL)
+    field_name = db.CharField(max_length=64, default='')
+    old_value = db.CharField(max_length=255, default='')
+    new_value = db.CharField(max_length=255, default='')
+
+
+@receiver(pre_save, sender=DeviceModel, dispatch_uid='ralph.history')
+def device_model_pre_save(sender, instance, raw, using, **kwargs):
+    """
+    A hook for creating ``HistoryModelChange`` entries when a device
+    model changes.
+    """
+
+    for field, orig, new in _field_changes(instance):
+        HistoryModelChange(
+                device_model=instance,
+                device_model_group=instance.group,
+                field_name=field,
+                old_value=unicode(orig),
+                new_value=unicode(new),
+                user=instance.saving_user,
+            ).save()
+
+@receiver(pre_save, sender=ComponentModel, dispatch_uid='ralph.history')
+def component_model_pre_save(sender, instance, raw, using, **kwargs):
+    """
+    A hook for creating ``HistoryModelChange`` entries when a component
+    model changes.
+    """
+
+    for field, orig, new in _field_changes(instance):
+        HistoryModelChange(
+                component_model=instance,
+                component_model_group=instance.group,
+                field_name=field,
+                old_value=unicode(orig),
+                new_value=unicode(new),
+                user=instance.saving_user,
+            ).save()
+
+@receiver(pre_save, sender=DeviceModelGroup, dispatch_uid='ralph.history')
+def device_model_pre_save(sender, instance, raw, using, **kwargs):
+    """
+    A hook for creating ``HistoryModelChange`` entries when a device
+    model group changes.
+    """
+
+    for field, orig, new in _field_changes(instance):
+        HistoryModelChange(
+                device_model_group=instance,
+                field_name=field,
+                old_value=unicode(orig),
+                new_value=unicode(new),
+                user=instance.saving_user,
+            ).save()
+
+@receiver(pre_save, sender=ComponentModelGroup, dispatch_uid='ralph.history')
+def component_model_pre_save(sender, instance, raw, using, **kwargs):
+    """
+    A hook for creating ``HistoryModelChange`` entries when a component
+    model group changes.
+    """
+
+    for field, orig, new in _field_changes(instance):
+        HistoryModelChange(
+                component_model_group=instance,
+                field_name=field,
+                old_value=unicode(orig),
+                new_value=unicode(new),
+                user=instance.saving_user,
+            ).save()
+

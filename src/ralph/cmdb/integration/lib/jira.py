@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from django.conf import settings
-from restkit import Resource, SimplePool, BasicAuth, ResourceNotFound
+from restkit import Resource, BasicAuth, ResourceNotFound
 from django.utils import simplejson as json
 
 import logging
@@ -10,8 +10,6 @@ logger = logging.getLogger(__name__)
 
 from ralph.cmdb.integration.exceptions import IssueTrackerException
 
-DEFAULT_TIMEOUT=60
-DEFAULT_KEEPALIVE=10
 
 class Jira(object):
     def __init__(self):
@@ -19,20 +17,22 @@ class Jira(object):
         user = settings.ISSUETRACKERS['default']['USER']
         password = settings.ISSUETRACKERS['default']['PASSWORD']
         jira_url = settings.ISSUETRACKERS['default']['URL']
-        self.pool = SimplePool(keepalive=DEFAULT_KEEPALIVE, timeout=DEFAULT_TIMEOUT)
         self.auth = BasicAuth(user, password)
         self.base_url = "%s/rest/api/latest" % jira_url
         self.resource_headers = {'Content-type': 'application/json'}
 
     def create_resource(self, resource_name):
-        complete_url= "%s/%s" % (self.base_url , resource_name)
-        resource = Resource(complete_url, pool_instance=self.pool, filters=[self.auth])
+        complete_url = "%s/%s" % (self.base_url, resource_name)
+        resource = Resource(
+            complete_url, filters=[self.auth]
+        )
         return resource
 
     def call_resource(self, resource_name, params):
         resource = self.create_resource(resource_name)
-        response = resource.post(payload=json.dumps(params),
-               headers = self.resource_headers)
+        response = resource.post(
+            payload=json.dumps(params), headers=self.resource_headers
+        )
         if response:
             b = response.body_string()
             if b:
@@ -45,7 +45,7 @@ class Jira(object):
 
     def get_resource(self, resource_name):
         resource = self.create_resource(resource_name)
-        response=resource.get(headers=self.resource_headers)
+        response = resource.get(headers=self.resource_headers)
         return json.loads(response.body_string())
 
     def get_issue(self, issue_key):
@@ -53,15 +53,15 @@ class Jira(object):
         return self.get_resource(resource_name)
 
     def find_issues(self, params):
-       resource_name = "search"
-       return self.call_resource(resource_name, params)
+        resource_name = "search"
+        return self.call_resource(resource_name, params)
 
     def user_exists(self, username):
         resource_name = "user?username=%s" % username
         try:
             self.get_resource(resource_name)
         except ResourceNotFound:
-           return False
+            return False
         return True
 
     def get_issue_transitions(self, issue_key):
@@ -70,8 +70,8 @@ class Jira(object):
 
     def transition_issue(self, issue_key, transition_id):
         try:
-            call_result = self.call_resource('issue/%s/transitions' % issue_key,
-                params={
+            call_result = self.call_resource(
+                'issue/%s/transitions' % issue_key, params={
                     'update': {
                         'comment': [
                             {
@@ -95,8 +95,8 @@ class Jira(object):
         return call_result
 
     def create_issue(self, summary, description, issue_type, ci, assignee,
-            template, start='', end='',
-            business_assignee=None, technical_assignee=None):
+            start='', end='', business_assignee=None, technical_assignee=None,
+            template=None, service=None):
         """ Create new issue.
 
         Jira Rest accepts following fields:
@@ -183,26 +183,29 @@ class Jira(object):
         else:
             ci_value = ''
             ci_full_description = ''
-        params={
-                    'fields': {
-                        'issuetype': {'name': issue_type},
-                        'summary': summary,
-                        ci_field_name: ci_value,
-                        template_field_name: template,
-                        ci_name_field_name: ci_full_description,
-                        'assignee': {
-                            'name': assignee
-                        },
-                        'description': description,
-                        'project': {
-                            'key': project
-                            }
-                        },
+
+        params = {
+            'fields': {
+                'issuetype': {'name': issue_type},
+                'summary': summary,
+                ci_field_name: ci_value,
+                ci_name_field_name: ci_full_description,
+                'assignee': {
+                    'name': assignee
+                },
+                'description': description,
+                'project': {
+                    'key': project
+                }
+            },
         }
         if technical_assignee:
             params['fields'][towner_field_name] = {'name': technical_assignee}
         if business_assignee:
             params['fields'][bowner_field_name] = {'name': business_assignee}
+        if template:
+            params['fields'][template_field_name] = template
+        logger.debug('Calling with params: %s' % unicode(params))
         try:
             call_result = self.call_resource('issue', params)
         except Exception as e:
@@ -211,8 +214,9 @@ class Jira(object):
         return call_result
 
     def deployment_accepted(self, deployment):
-        issue_transitions = self.get_issue_transitions(deployment.issue_key).get('transitions')
+        issue_transitions = self.get_issue_transitions(
+            deployment.issue_key).get('transitions')
         issue_transitions_ids = [int(x.get('id')) for x in issue_transitions]
-        return self.accepted_transition  in issue_transitions_ids
+        return self.accepted_transition in issue_transitions_ids
 
 

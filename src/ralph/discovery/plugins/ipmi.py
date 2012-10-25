@@ -226,9 +226,11 @@ def _run_ipmi(ip):
 
 @plugin.register(chain='discovery', requires=['ping', 'http'])
 def ipmi(**kwargs):
+    if not IPMI_USER or not IPMI_PASSWORD:
+        return False, "not configured", kwargs
     ip = str(kwargs['ip'])
     http_family = kwargs.get('http_family')
-    if http_family not in ('Sun', 'Thomas-Krenn', 'Oracle-ILOM-Web-Server'):
+    if http_family not in ('Sun', 'Thomas-Krenn', 'Oracle-ILOM-Web-Server', 'IBM System X'):
         return False, 'no match.', kwargs
     try:
         name = _run_ipmi(ip)

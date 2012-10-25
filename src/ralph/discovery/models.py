@@ -48,6 +48,7 @@ __all__ = [
     Ethernet,
     Software,
     SplunkUsage,
+    OperatingSystem,
 
     Device,
     ReadOnlyDevice,

@@ -17,9 +17,11 @@ import calendar
 import datetime
 
 import ralph.cmdb.models  as db
+from ralph.cmdb.models_changes import CI_CHANGE_TYPES
 from ralph.cmdb.views import BaseCMDBView, get_icon_for
 from ralph.cmdb.forms import CIChangeSearchForm, CIReportsParamsForm
 from ralph.cmdb.util import PaginatedView
+from ralph.util.views import build_url
 
 
 class ChangesBase(BaseCMDBView):
@@ -88,10 +90,26 @@ class Changes(ChangesBase, PaginatedView):
 
     def get_context_data(self, **kwargs):
         ret = super(Changes, self).get_context_data(**kwargs)
+        subsection = ''
+        get_type = self.request.GET.get('type')
+        if get_type:
+            get_type = int(get_type)
+            type = CI_CHANGE_TYPES.NameFromID(get_type)
+            subsection += '%s - ' % CI_CHANGE_TYPES.DescFromName(type)
+        subsection += 'Changes'
+        select = {1: 'repo changes',
+                  2: 'agent events',
+                  3: 'asset attr. changes',
+                  4: 'monitoring events',
+                  5: 'status office events',
+        }
+        sidebar_selected = select.get(get_type, 'all events')
         ret.update({
             'changes': [(x, get_icon_for(x.ci)) for x in self.changes],
             'statistics': self.data,
             'form': self.form,
+            'subsection': subsection,
+            'sidebar_selected': sidebar_selected,
         })
         return ret
 
@@ -141,7 +159,9 @@ class Problems(ChangesBase, PaginatedView):
         ret = super(Problems, self).get_context_data(**kwargs)
         ret.update({
             'problems': self.data,
-            'jira_url': settings.ISSUETRACKERS['default']['URL'] + '/browse/'
+            'jira_url': build_url(settings.ISSUETRACKERS['default']['URL'], 'browse'),
+            'subsection': 'Problems',
+             'sidebar_selected': 'problems',
         })
         return ret
 
@@ -159,7 +179,9 @@ class Incidents(ChangesBase, PaginatedView):
         ret = super(Incidents, self).get_context_data(**kwargs)
         ret.update({
             'incidents': self.data,
-            'jira_url': settings.ISSUETRACKERS['default']['URL'] + '/browse/',
+            'jira_url': build_url(settings.ISSUETRACKERS['default']['URL'], 'browse'),
+            'subsection': 'Incidents',
+            'sidebar_selected': 'incidents',
         })
         return ret
 
@@ -356,6 +378,8 @@ class Dashboard(ChangesBase):
             'reports': self.reports,
             'db_supported': self.db_supported,
             'breadcrumb': 'test',
+            'subsection': 'Dashboard',
+            'sidebar_selected': 'dashboard',
         })
         return ret
 
@@ -407,12 +431,24 @@ class Reports(ChangesBase, PaginatedView):
     exporting_csv_file = False
 
     def get_context_data(self, **kwargs):
+        subsection = ''
+        kind = self.request.GET.get('kind')
+        if kind:
+            subsection += '%s - ' % self.report_name
+        subsection += 'Reports'
+        select = {'top_changes': 'top ci changes',
+                  'top_problems': 'top ci problems',
+                  'top_incidents': 'top ci incidents',
+                  'usage': 'cis w/o changes',
+        }
         ret = super(Reports, self).get_context_data(**kwargs)
         ret.update({
             'data': self.data,
             'form': self.form,
             'report_kind': self.request.GET.get('kind', 'top'),
             'report_name': self.report_name,
+            'subsection': subsection,
+            'sidebar_selected': select.get(kind, ''),
        })
         return ret
 
@@ -506,18 +542,49 @@ def make_jira_url(external_key):
 
 class TimeLine(BaseCMDBView):
     template_name = 'cmdb/timeline.html'
+
+    def get_context_data(self, **kwargs):
+        ret = super(TimeLine, self).get_context_data(**kwargs)
+        ret.update({
+            'sidebar_selected': 'timeline view',
+            'subsection': 'Time Line',
+        })
+        return ret
+
     @staticmethod
     def get_ajax(self):
-        start_date = datetime.datetime.now() - datetime.timedelta(days=7)
-        stop_date = datetime.datetime.now()
+        interval = self.GET.get('interval')
+        get_start_date = self.GET.get('start', datetime.datetime.now())
+        get_end_date = self.GET.get('end', datetime.datetime.now())
+        if interval == '1':
+            plot_title = 'Last 6 hours'
+            start_date = datetime.datetime.now() - datetime.timedelta(hours=6)
+            stop_date = datetime.datetime.now() + datetime.timedelta(hours=1)
+        elif interval == '2':
+            plot_title = 'Last day'
+            start_date = datetime.datetime.now() - datetime.timedelta(days=1)
+            stop_date = datetime.datetime.now() + datetime.timedelta(hours=1)
+        elif interval == '3':
+            plot_title = 'Last week'
+            start_date = datetime.datetime.now() - datetime.timedelta(days=7)
+            stop_date = datetime.datetime.now() + datetime.timedelta(hours=1)
+        elif interval == '4':
+            plot_title = 'Last month'
+            start_date = datetime.datetime.now() - datetime.timedelta(days=30)
+            stop_date = datetime.datetime.now() + datetime.timedelta(hours=1)
+        elif get_start_date or get_end_date:
+            plot_title = '%s - %s' % (get_start_date, get_end_date)
+            start_date = get_start_date
+            stop_date = get_end_date
+
         manual_changes = db.CIChange.objects.filter(
-                    time__gt=start_date,
-                    time__lt=stop_date,
+                    time__gte=start_date,
+                    time__lte=stop_date,
                     type=db.CI_CHANGE_TYPES.CONF_GIT.id,
         ).order_by('-time')
         agent_changes_warnings = db.CIChange.objects.filter(
-                    time__gt=start_date,
-                    time__lt=stop_date,
+                    time__gte=start_date,
+                    time__lte=stop_date,
                     type=db.CI_CHANGE_TYPES.CONF_AGENT.id,
                     priority__in=[
                         db.CI_CHANGE_PRIORITY_TYPES.NOTICE.id,
@@ -525,8 +592,8 @@ class TimeLine(BaseCMDBView):
                     ]
         ).order_by('-time')
         agent_changes_errors = db.CIChange.objects.filter(
-                    time__gt=start_date,
-                    time__lt=stop_date,
+                    time__gte=start_date,
+                    time__lte=stop_date,
                     type=db.CI_CHANGE_TYPES.CONF_AGENT.id,
                     priority__in=[
                         db.CI_CHANGE_PRIORITY_TYPES.ERROR.id,
@@ -572,6 +639,7 @@ class TimeLine(BaseCMDBView):
                 manual=manual,
                 agent_warnings=agent_warnings,
                 agent_errors=agent_errors,
+                plot_title=plot_title
         )
         return HttpResponse(
                 simplejson.dumps(response_dict),

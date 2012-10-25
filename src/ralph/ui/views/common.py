@@ -9,7 +9,7 @@ import datetime
 from django.conf import settings
 from django.contrib import messages
 from django.core.urlresolvers import reverse
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, EmptyPage
 from django.db import models as db
 from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.utils import simplejson as json
@@ -29,7 +29,6 @@ from ralph.util import presentation, pricing
 from ralph.ui.forms import (DeviceInfoForm, DeviceInfoVerifiedForm,
                             DevicePricesForm, DevicePurchaseForm,
                             PropertyForm, DeviceBulkForm)
-
 
 SAVE_PRIORITY = 200
 HISTORY_PAGE_SIZE = 25
@@ -71,13 +70,7 @@ def _get_details(dev, purchase_only=False, with_price=False):
             continue
         if detail['group'] != 'dev' and 'size' not in detail and detail.get('model'):
             detail['size'] = detail['model'].size
-        if detail.get('model'):
-            if detail['model'].group:
-                detail['modelgroup'] = detail['model'].group
-                detail['model'] = detail['model'].group.name
-            else:
-                detail['model'] = detail['model'].name
-        else:
+        if not detail.get('model'):
             detail['model'] = detail.get('model_name', '')
         yield detail
 
@@ -95,6 +88,7 @@ class BaseMixin(object):
         details = self.kwargs.get('details', 'info')
         profile = self.request.user.get_profile()
         has_perm = profile.has_perm
+        footer_items = []
         mainmenu_items = [
             MenuItem('Ventures', fugue_icon='fugue-store',
                      view_name='ventures')
@@ -121,14 +115,14 @@ class BaseMixin(object):
                 MenuItem('CMDB', fugue_icon='fugue-thermometer',
                          href='/cmdb/changes/timeline')
             )
-        if self.request.user.is_staff:
-            mainmenu_items.append(
-                MenuItem('Admin', fugue_icon='fugue-toolbox', href='/admin'))
         if settings.BUGTRACKER_URL:
-            mainmenu_items.append(
+            footer_items.append(
                 MenuItem('Bugs', fugue_icon='fugue-bug',
                          href=settings.BUGTRACKER_URL))
-        mainmenu_items.append(
+        if self.request.user.is_staff:
+            footer_items.append(
+                MenuItem('Admin', fugue_icon='fugue-toolbox', href='/admin'))
+        footer_items.append(
             MenuItem('%s (logout)' % self.request.user, fugue_icon='fugue-user',
                      view_name='logout', view_args=[details or 'info', ''],
                      pull_right=True))
@@ -202,6 +196,7 @@ class BaseMixin(object):
             'section': self.section,
             'details': details,
             'mainmenu_items': mainmenu_items,
+            'footer_items': footer_items,
             'url_query': self.request.GET,
             'search_url': reverse('search', args=[details, '']),
             'user': self.request.user,
@@ -467,6 +462,7 @@ class Costs(DeviceDetailView):
     read_perm = Perm.list_devices_financial
 
     def get_context_data(self, **kwargs):
+        query_variable_name = 'cost_page'
         ret = super(Costs, self).get_context_data(**kwargs)
         history = self.object.historycost_set.order_by('-end', '-start').all()
         has_perm = self.request.user.get_profile().has_perm
@@ -478,13 +474,14 @@ class Costs(DeviceDetailView):
             elif h.start:
                 h.span = (datetime.date.today() - h.start).days
         try:
-            page = max(1, int(self.request.GET.get('page', 1)))
+            page = max(1, int(self.request.GET.get(query_variable_name, 1)))
         except ValueError:
             page = 1
         history_page = Paginator(history, HISTORY_PAGE_SIZE).page(page)
         ret.update({
             'history': history,
             'history_page': history_page,
+            'query_variable_name': query_variable_name,
         })
         last_month = datetime.date.today() - datetime.timedelta(days=31)
         splunk = self.object.splunkusage_set.filter(
@@ -506,13 +503,14 @@ class History(DeviceDetailView):
     read_perm = Perm.read_device_info_history
 
     def get_context_data(self, **kwargs):
+        query_variable_name = 'history_page'
         ret = super(History, self).get_context_data(**kwargs)
         history = self.object.historychange_set.order_by('-date')
         show_all = bool(self.request.GET.get('all', ''))
         if not show_all:
             history = history.exclude(user=None)
         try:
-            page = int(self.request.GET.get('page', 1))
+            page = int(self.request.GET.get(query_variable_name, 1))
         except ValueError:
             page = 1
         if page == 0:
@@ -520,11 +518,12 @@ class History(DeviceDetailView):
             page_size = MAX_PAGE_SIZE
         else:
             page_size = HISTORY_PAGE_SIZE
-        history_page = Paginator(history, page_size).page(page)
+        history_page = Paginator(history, HISTORY_PAGE_SIZE).page(page)
         ret.update({
             'history': history,
             'history_page': history_page,
             'show_all': show_all,
+            'query_variable_name': query_variable_name,
         })
         return ret
 
@@ -630,7 +629,6 @@ class BulkEdit(BaseMixin, TemplateView):
             'different_fields': self.different_fields,
         })
         return ret
-
 
 
 class CMDB(BaseMixin):

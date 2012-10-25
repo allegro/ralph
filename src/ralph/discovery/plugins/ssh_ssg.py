@@ -101,6 +101,8 @@ def ssh_ssg(**kwargs):
     ip = str(kwargs['ip'])
     if kwargs.get('http_family') not in ('SSG', 'Unspecified'):
         return False, 'no match.', kwargs
+    if 'nx-os' in kwargs.get('snmp_name', '').lower():
+        return False, 'incompatible Nexus found.', kwargs
     if not network.check_tcp_port(ip, 22):
         return False, 'closed.', kwargs
     try:

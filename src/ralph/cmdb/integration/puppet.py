@@ -9,6 +9,7 @@ from __future__ import unicode_literals
 import logging
 import re
 
+from ralph import settings
 from ralph.business.models import Venture
 from ralph.util import plugin
 from ralph.cmdb.integration.lib.fisheye import Fisheye
@@ -16,6 +17,7 @@ from ralph.cmdb.integration.lib.puppet_yaml import  load
 from ralph.cmdb import models as db
 from ralph.cmdb.integration.base import BaseImporter
 from ralph.cmdb.integration.util import strip_timezone
+
 
 from lck.django.common import nested_commit_on_success
 
@@ -58,38 +60,38 @@ class PuppetAgentsImporter(BaseImporter):
         report.ci = self.get_ci_by_name(host)
         report.status = status
         report.save()
-        if status !='unchanged':
-            for key in yaml.resource_statuses:
-                resource_status = yaml.resource_statuses[key]
-                change_count = resource_status.change_count
-                changed = resource_status.changed
-                type = resource_status.resource_type
-                time = resource_status.time
-                logger.debug('Resource status  %s %s %s %s %s' % (
-                   key, change_count, changed, type, time
-                ))
-                obj = db.PuppetResourceStatus()
-                obj.change_count = change_count
-                obj.cichange = report
-                obj.changed = changed
-                obj.failed = getattr(resource_status, 'failed', 0)
-                obj.skipped = getattr(resource_status, 'skipped', 0)
-                obj.file = resource_status.file or ''
-                obj.line = resource_status.line or 0
-                obj.resource = resource_status.resource
-                obj.resource_type = resource_status.resource_type
-                obj.time = resource_status.time
-                obj.title = resource_status.title
-                obj.save()
-                for event in resource_status.events:
-                    msg = event.message
-                    name = event.name
-                    pvalue = event.previous_value
-                    dvalue = event.desired_value
-                    pr = event.property
-                    stat = event.status
-                    logger.debug('EVENT %s %s %s %s %s' % (msg, name, pvalue, dvalue, stat)
-                    )
+        if settings.PUPPET_SAVE_UNCHANGED_RESOURCES and status !='unchanged':
+                for key in yaml.resource_statuses:
+                    resource_status = yaml.resource_statuses[key]
+                    change_count = resource_status.change_count
+                    changed = resource_status.changed
+                    type = resource_status.resource_type
+                    time = resource_status.time
+                    logger.debug('Resource status  %s %s %s %s %s' % (
+                       key, change_count, changed, type, time
+                    ))
+                    obj = db.PuppetResourceStatus()
+                    obj.change_count = change_count
+                    obj.cichange = report
+                    obj.changed = changed
+                    obj.failed = getattr(resource_status, 'failed', 0)
+                    obj.skipped = getattr(resource_status, 'skipped', 0)
+                    obj.file = resource_status.file or ''
+                    obj.line = resource_status.line or 0
+                    obj.resource = resource_status.resource
+                    obj.resource_type = resource_status.resource_type
+                    obj.time = resource_status.time
+                    obj.title = resource_status.title
+                    obj.save()
+                    for event in resource_status.events:
+                        msg = event.message
+                        name = event.name
+                        pvalue = event.previous_value
+                        dvalue = event.desired_value
+                        pr = event.property
+                        stat = event.status
+                        logger.debug('EVENT %r %r %r %r %r' % (msg, name, pvalue, dvalue, stat)
+                        )
         if status == 'changed' or status == 'failed':
             for log in yaml.logs:
                 level = log.level
@@ -117,7 +119,7 @@ level=%s
 message=%s
 time=%s'''  % ( title(), host, status, level, message, time))
 
-        
+
 
 class PuppetGitImporter(BaseImporter):
     """ Fetch changesets from fisheye repo.
@@ -227,7 +229,7 @@ class PuppetGitImporter(BaseImporter):
             groups = None
             if ventures_1.match(f):
                 groups = ventures_1.match(f).groups()
-                ci =self.find_ci_by_venturerole(groups)
+                ci = self.find_ci_by_venturerole(groups)
                 if ci:
                     return ci
             elif ventures_2.match(f):

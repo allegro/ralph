@@ -40,9 +40,10 @@ class CI_CHANGE_REGISTRATION_TYPES(Choices):
     _ = Choices.Choice
 
     INCIDENT = _('Incident')
-    CHANGE = _('Change')
+    OP = _('OP Change')
     SR = _('Service Request')
     NOT_REGISTERED = _('Not registered')
+    WAITING = _('Waiting for register')
 
 
 class CIChangeZabbixTrigger(TimeTrackable):
@@ -59,17 +60,21 @@ class CIChangeZabbixTrigger(TimeTrackable):
 
 class CIChangeStatusOfficeIncident(TimeTrackable):
     ci = models.ForeignKey('CI', null=True)
-    time = models.DateTimeField(verbose_name=_("timestamp"), default=datetime.now)
+    time = models.DateTimeField(
+        verbose_name=_("timestamp"), default=datetime.now)
     status = models.IntegerField(max_length=11)
     subject = models.CharField(max_length=1024)
-    incident_id= models.IntegerField(max_length=11)
+    incident_id = models.IntegerField(
+        max_length=11)
 
 
 class CIChangeCMDBHistory(TimeTrackable):
     ci = models.ForeignKey('CI')
-    time = models.DateTimeField(verbose_name=_("timestamp"), default=datetime.now)
-    user = models.ForeignKey('auth.User', verbose_name=_("user"), null=True,
-                           blank=True, default=None, on_delete=models.SET_NULL)
+    time = models.DateTimeField(
+        verbose_name=_("timestamp"), default=datetime.now)
+    user = models.ForeignKey(
+        'auth.User', verbose_name=_("user"), null=True,
+        blank=True, default=None, on_delete=models.SET_NULL)
     field_name = models.CharField(max_length=64, default='')
     old_value = models.CharField(max_length=255, default='')
     new_value = models.CharField(max_length=255, default='')
@@ -82,33 +87,33 @@ class CIChangeCMDBHistory(TimeTrackable):
 
 class CIChange(TimeTrackable):
     ci = models.ForeignKey('CI', null=True, blank=True)
-    type = models.IntegerField(max_length=11, choices=CI_CHANGE_TYPES(),
-            null=False)
-    priority = models.IntegerField(max_length=11,
-            choices=CI_CHANGE_PRIORITY_TYPES(),
-            null=False)
-    content_type = models.ForeignKey(ContentType, verbose_name=_("content type"),
-            null=True)
+    type = models.IntegerField(
+        max_length=11, choices=CI_CHANGE_TYPES(), null=False)
+    priority = models.IntegerField(
+        max_length=11, choices=CI_CHANGE_PRIORITY_TYPES(), null=False)
+    content_type = models.ForeignKey(ContentType, verbose_name=_(
+        "content type"), null=True)
     object_id = models.PositiveIntegerField(
-            verbose_name=_("object id"),
-            null=True,
-            blank=True,
+        verbose_name=_("object id"),
+        null=True,
+        blank=True,
     )
     content_object = generic.GenericForeignKey('content_type', 'object_id')
-    time = models.DateTimeField(verbose_name=_("timestamp"), default=datetime.now)
+    time = models.DateTimeField(
+        verbose_name=_("timestamp"), default=datetime.now)
     message = models.CharField(max_length=1024)
     external_key = models.CharField(max_length=60, blank=True)
     registration_type = models.IntegerField(
-            max_length=11,
-            choices=CI_CHANGE_REGISTRATION_TYPES(),
-            default=CI_CHANGE_REGISTRATION_TYPES.NOT_REGISTERED.id,
+        max_length=11,
+        choices=CI_CHANGE_REGISTRATION_TYPES(),
+        default=CI_CHANGE_REGISTRATION_TYPES.NOT_REGISTERED.id,
     )
 
     @classmethod
     def get_by_content_object(cls, content_object):
         ct = ContentType.objects.get_for_model(content_object)
-        return CIChange.objects.get(object_id=content_object.id,
-                content_type=ct)
+        return CIChange.objects.get(
+            object_id=content_object.id, content_type=ct)
 
     class Meta:
         unique_together = ('content_type', 'object_id')
@@ -127,21 +132,22 @@ class CIChangePuppet(TimeTrackable):
     configuration_version = models.CharField(max_length=30, db_index=True)
     host = models.CharField(max_length=100)
     kind = models.CharField(max_length=30)
-    time = models.DateTimeField(verbose_name=_("timestamp"), default=datetime.now)
+    time = models.DateTimeField(
+        verbose_name=_("timestamp"), default=datetime.now)
     status = models.CharField(max_length=30)
 
 
 class PuppetLog(TimeTrackable):
     cichange = models.ForeignKey('CIChangePuppet')
     source = models.CharField(max_length=100)
-    message =models.CharField(max_length=1024)
+    message = models.CharField(max_length=1024)
     tags = models.CharField(max_length=100)
     time = models.DateTimeField()
     level = models.CharField(max_length=100)
 
 
 class PuppetResourceStatus(TimeTrackable):
-    cichange= models.ForeignKey('CIChangePuppet')
+    cichange = models.ForeignKey('CIChangePuppet')
     change_count = models.IntegerField()
     changed = models.BooleanField()
     failed = models.BooleanField()
@@ -156,10 +162,8 @@ class PuppetResourceStatus(TimeTrackable):
 
 class CIEvent(TimeTrackable):
     ''' Abstract for CIProblem/CIIncident '''
-    ci = models.ForeignKey('CI',
-            null = True,
-            blank = True,
-    )
+    ci = models.ForeignKey(
+        'CI', null=True, blank=True)
     time = models.DateTimeField()
     summary = models.CharField(max_length=1024)
     description = models.CharField(max_length=1024)
@@ -179,9 +183,3 @@ class CIIncident(CIEvent):
     pass
 
 
-# changes being handled by ticket registration are listed below.
-REGISTER_CHANGE_TYPES=(
-        CI_CHANGE_TYPES.CONF_GIT.id,
-        CI_CHANGE_TYPES.DEVICE.id,
-        CI_CHANGE_TYPES.CI.id,
-)

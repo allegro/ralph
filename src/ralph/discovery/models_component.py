@@ -17,6 +17,8 @@ from lck.django.common.models import (TimeTrackable, Named,
 from lck.django.choices import Choices
 from django.utils.html import escape
 
+from ralph.discovery.models_util import SavingUser
+
 
 MAC_PREFIX_BLACKLIST = set([
     '505054', '33506F', '009876', '000000', '00000C', '204153', '149120',
@@ -67,7 +69,7 @@ class ComponentType(Choices):
     os = _('operating system')
 
 
-class ComponentModelGroup(Named):
+class ComponentModelGroup(Named, TimeTrackable, SavingUser):
     price = db.PositiveIntegerField(verbose_name=_("purchase price"),
         null=True, blank=True)
     type = db.PositiveIntegerField(verbose_name=_("component type"),
@@ -89,7 +91,8 @@ class ComponentModelGroup(Named):
                 GenericComponent, Software))
 
 
-class ComponentModel(Named.NonUnique, SavePrioritized, WithConcurrentGetOrCreate):
+class ComponentModel(Named.NonUnique, SavePrioritized,
+                     WithConcurrentGetOrCreate, SavingUser):
     speed = db.PositiveIntegerField(verbose_name=_("speed (MHz)"),
         default=0, blank=True)
     cores = db.PositiveIntegerField(verbose_name=_("number of cores"),
@@ -157,7 +160,12 @@ class Component(SavePrioritized, WithConcurrentGetOrCreate):
     def get_price(self):
         if not self.model:
             return 0
-        return self.model.get_price(getattr(self, 'size', 0) or 0)
+        return self.model.get_price(self.get_size())
+
+    def get_size(self):
+        if self.model and self.model.size:
+            return self.model.size
+        return getattr(self, 'size', 0) or 0
 
 
 class GenericComponent(Component):
@@ -266,6 +274,15 @@ class Processor(Component):
 
     def __unicode__(self):
         return '#{}: {} ({})'.format(self.index, self.label, self.model)
+
+    def get_cores(self):
+        if self.model and self.model.cores:
+            return self.model.cores
+        return self.cores or 1
+
+    @property
+    def size(self):
+        return self.get_cores()
 
 
 class Memory(Component):

@@ -48,14 +48,17 @@ $(function ($) {
             field: field_name
         }, function (data) {
             button.fadeOut();
+            button.closest('.control-group').removeClass('warning');
         }, 'json');
     });
     $('div.add-popover[').popover({
         placement: 'left'
     });
     $('a[rel="tooltip"]').tooltip();
+    $('input[title]').tooltip();
     $('.select-all').click(function () {
         $('input[name="select"]').prop('checked', true);
+        $('input[name="items"]').prop('checked', true);
     });
     $('.select-pages').click(function () {
         $('input[name="select"]').prop('checked', true);
@@ -63,10 +66,14 @@ $(function ($) {
     });
     $('.select-none').click(function () {
         $('input[name="select"]').prop('checked', false);
+        $('input[name="items"]').prop('checked', false);
         $('input[name="selectall"]').prop('checked', false);
     });
     $('.select-toggle').click(function() {
         $('input[name="select"]').each(function () {
+            this.checked = !this.checked;
+        });
+        $('input[name="items"]').each(function () {
             this.checked = !this.checked;
         });
         $('input[name="selectall"]').prop('checked', false);
@@ -134,8 +141,14 @@ $(function ($) {
     $('select#id_venture').change(venture_changed);
     $('select#id_venture').each(venture_changed);
 
-    $('.datepicker').datepicker({ format: 'yyyy-mm-dd'});
-
+    $('.datepicker').datepicker({format: 'yyyy-mm-dd', autoclose: true}).click(function(){
+        if ($(this).attr('name') =='start'){
+            $("input[name='end']").datepicker('hide');
+        }
+        if ($(this).attr('name') =='end'){
+            $("input[name='start']").datepicker('hide');
+        }
+    });
 
     var parseDate = function (input, format) {
         format = format || 'yyyy-mm-dd';
@@ -217,4 +230,16 @@ $(function ($) {
             $end.val(formatDate(date));
         });
     });
+    $('form.search-form').submit(function () {
+        var $form = $(this)
+        var fields = $form.find('input[value!=""],textarea,select').serialize();
+        var action = $form.attr('action') || '';
+        window.location = action + '?' + fields;
+        return false;
+    });
+    $('.close').click(function () {
+        if ($(this).attr('data-dismiss') == 'alert'){
+            $(this).parents('.alerts').filter(':first').remove();
+        };
+    })
 });

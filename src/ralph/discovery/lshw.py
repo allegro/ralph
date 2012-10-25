@@ -7,6 +7,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import hashlib
+import re
 
 import jpath
 from lck.django.common.models import MACAddressField
@@ -204,9 +205,10 @@ def handle_lshw_processors(dev, processors, is_virtual=False, priority=0):
         extra = "\n".join([": ".join((key, ' '.join(e for e in
             untangle(caps[key]) if e) or '')) for key in sorted(caps.keys())])
         model, c = ComponentModel.concurrent_get_or_create(
-            speed=speed, type=ComponentType.processor.id, extra=extra,
+            speed=speed, type=ComponentType.processor.id,
             extra_hash=hashlib.md5(extra).hexdigest(), family=family,
             cores=0)
+        model.extra = extra
         model.name = processor['product'] or 'CPU {} {}MHz'.format(family,
             speed)
         model.save(priority=priority)
@@ -297,23 +299,29 @@ def handle_lshw_fibre_cards(dev, lshw, is_virtual=False, priority=0):
         else:
             buses.append(bus)
     buses = filter(lambda item: item['id'].startswith('fiber'), buses)
-    buses.sort(key=lambda item: item['physid'])
+    buses.sort(key=lambda item: item['handle'])
     handled_buses = set()
+    detected_fc_cards = set()
     for bus in buses:
-        physid = unicode(bus['physid'])
-        for handled in handled_buses:
-            if physid.startswith(handled):
-                break
-        else:
-            fib, created = FibreChannel.concurrent_get_or_create(device=dev,
-                physical_id=physid)
-            fib.label = "{} {}".format(bus['vendor'], bus['product'])
-            extra = fib.label
-            fib.model, c = ComponentModel.concurrent_get_or_create(
-                type=ComponentType.fibre.id, family=bus['vendor'],
-                            extra_hash=hashlib.md5(extra).hexdigest(),
-                            extra=extra)
-            fib.model.name = bus['product']
-            fib.model.save(priority=priority)
-            fib.save(priority=priority)
+        handle = unicode(bus['handle'])
+        m = re.search(r"([1-9][0-9]*)", handle)
+        if not m:
+            continue
+        physid = m.group(1)
+        if physid in handled_buses:
+            continue
+        fib, created = FibreChannel.concurrent_get_or_create(device=dev,
+            physical_id=physid)
+        fib.label = "{} {}".format(bus['vendor'], bus['product'])
+        extra = fib.label
+        fib.model, c = ComponentModel.concurrent_get_or_create(
+            type=ComponentType.fibre.id, family=bus['vendor'],
+            extra_hash=hashlib.md5(extra).hexdigest())
+        fib.model.extra = extra
+        fib.model.name = bus['product']
+        fib.model.save(priority=priority)
+        fib.save(priority=priority)
         handled_buses.add(physid)
+        detected_fc_cards.add(fib.pk)
+    dev.fibrechannel_set.exclude(pk__in=detected_fc_cards).delete()
+
