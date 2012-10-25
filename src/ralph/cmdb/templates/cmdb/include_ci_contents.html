@@ -85,7 +85,7 @@
         <div class="tab-content"> 
                 <div class="tab-pane active" id="main">
 
-<div class='span6'>
+                    <div class='span6'>
     <p style='height: 10px;'></p>
 
     {% if editable %}
@@ -132,13 +132,13 @@
             <hr> 
     {% endif %}
 
-   <div class='row'>
+   <div class='span12'>
     {% if show_in_ralph %}
-        <div class='span2'>
+        <div class='span6'>
                 <a class='btn btn-info btn-large' href='{{ ralph_ci_link }}'> Asset details </a>
         </div>
     {% endif %}
-    <div class='span2'>
+    <div class='span6'>
         {% if editable %}
             <button class="btn btn-primary" type="submit">{% icon 'fugue-tick' %}&nbsp;Save</button>
             <button class="btn" type="reset">{% icon 'fugue-broom' %}&nbsp;Clean</button>
@@ -193,13 +193,11 @@
     {% include 'cmdb/include_zabbix.html' with rows=zabbix_triggers%}
 </div>
 <div class="tab-pane" id="relations">
-    <div class='span10' style='padding-top: 4px;margin-top: 10px; '>
-        <div class='span{{span_number}}'  >
-                <table style='cell-padding: 10px'>
-                    <tr>
-                    </tr>
-                    <tr>
-                        <td style='vertical-align: top; padding-right: 10px'>
+    <div class='span12' style='padding-top: 4px;margin-top: 10px; '>
+        <div>
+                <table style='cell-padding: 10px' class="row-fluid">
+                    <tr  class="row-fluid">
+                        <td style='vertical-align: top; padding-right: 10px' class="span6">
                             {% include 'cmdb/include_relations.html' with span_number=span_number label='Contains' relations=relations_contains editable=editable %}
                             {% include 'cmdb/include_relations.html' with span_number=span_number label='Has roles' relations=relations_hasrole editable=editable %}
                             {% include 'cmdb/include_relations.html' with span_number=span_number label='Requires' relations=relations_requires editable=editable %}
@@ -215,7 +213,7 @@
                        {% endif %}
                         </td>
 
-                    <td style='vertical-align: top;'>
+                    <td style='vertical-align: top;' class="span6">
                         {% include 'cmdb/include_relations.html' with span_number=span_number label='Is part of' relations=relations_parts editable=editable %}
                         {% include 'cmdb/include_relations.html' with span_number=span_number label='Is role for' relations=relations_isrole editable=editable %}
                         {% include 'cmdb/include_relations.html' with span_number=span_number label='Is required by' relations=relations_isrequired editable=editable %}
@@ -242,12 +240,12 @@
         {% if read_configuration_item_info_puppet_perm %}
             <div class="tab-pane" id="puppet">
                 <div class='span12'>
-                <span><h3> Agent configuration log</h3> </span>
-                <p>
-                    {% include 'cmdb/include_puppet.html' %}
-                </p>
+                    <span><h3> Agent configuration log</h3> </span>
+                    <p>
+                        {% include 'cmdb/include_puppet.html' %}
+                    </p>
+                </div>
             </div>
-        </div>
         {% endif %}
 
         {% if read_configuration_item_info_jira_perm %}

@@ -3,6 +3,7 @@
 {% load url from future %}
 {% load icons %}
 {% load bob %}
+{% load formats %}
 
 {% block contentarea %}
 <div class="span5">
@@ -28,8 +29,12 @@
                     >{{ g.type|component_model_type_icon }}&nbsp;{{ g.name }}</a></td>
             <td class="column-count count"><a href="{% url 'search' 'components' '' %}?component_group={{ g.id }}" class="badge badge-info">{{ g.count }}</a></td>
                 <td class="column-price currency">
-                    {{ g.price }}&nbsp;{{ CURRENCY }}
-                    {% if g.per_size %}/{{ g.size_modifier}}&nbsp;{{ g.size_unit }}{% endif %}
+                    {% spaceless %}
+                    {{ g.price|currency }}
+                    {% if g.per_size %} / {{ g.size_modifier}}&nbsp;{{ g.size_unit }}
+                    (<i>{{ g.modified_price }}&nbsp;{{ CURRENCY }}/{{ g.size_unit }}</i>)
+                    {% endif %}
+                    {% endspaceless %}
                 </td>
             </tr>
             {% endfor %}
@@ -50,7 +55,14 @@
             {% spaceless %}
             {% include 'ui/column-header.html' with label='Components' name='name' always=1 %}
             {% include 'ui/column-header.html' with label='Count' name='count' type='quantity'%}
-            <td width="14"></td>
+        <th width="16"><div class="dropdown">
+            <a href="#" data-toggle="dropdown" class="dropdown-toggle">{% icon 'fugue-ui-check-boxes-series' %}</a>
+            <ul class="dropdown-menu">
+                <li><a href="#" class="select-all">{% icon 'fugue-ui-check-box' %}&nbsp;Select all on this page</a></li>
+                <li><a href="#" class="select-toggle">{% icon 'fugue-ui-check-box-mix' %}&nbsp;Reverse selection</a></li>
+                <li><a href="#" class="select-none">{% icon 'fugue-ui-check-box-uncheck' %}&nbsp;Deselect all</a></li>
+            </ul>
+        </div></th>
             {% endspaceless %}
         </tr></thead>
         <tbody>
@@ -73,7 +85,7 @@
             {% endfor %}
         </tbody>
     </table>
-    {% pagination items fugue_icons=1 url_query=url_query %}
+    {% pagination items fugue_icons=1 url_query=url_query show_all=1 %}
     <div class="form-actions">
         <label for="select-target">Move selected items to:</label>
         <select name="target" id="select-target">

@@ -1,0 +1,96 @@
+{%extends 'cmdb/base.html'%}
+{% load icons %}
+{% load query %}
+{% block content %}
+
+<style>
+    #placeholder
+    {
+        height: 340px;
+    }
+    .pointer
+    {
+        font-size: 13px; 
+        cursor: pointer;
+    }
+    .row_error
+    {
+        background-color: #faa;
+
+    }
+
+</style>
+
+<h3>Timeline view</h3>
+<div class="row-fluid">
+    <form id="date-filter" class="form-inline well">
+        <div class="btn-group span7" data-toggle="buttons-radio">
+            <a href="#" id="interval-6h" class="btn active" data-value="1">last 6h</a>
+            <a href="#" id="interval-1d" class="btn" data-value="2">last day</a>
+            <a href="#" id="interval-1w" class="btn" data-value="3">last week</a>
+            <a href="#" id="interval-1m" class="btn" data-value="4">last month</a>
+        </div>
+        <div class="span5">
+            <div class="pull-right">
+                <div style="display:inline-block; vertical-align:top" class="control-group ">
+                    <input type="text" name="start" class="input-small datepicker" placeholder="yyyy-mm-dd" value="" data-date-format="yyyy-mm-dd">
+                </div>
+                <div style="display:inline-block; vertical-align:top" class="control-group ">
+                    <input type="text" name="end" class="input-small datepicker" placeholder="yyyy-mm-dd" value="" data-date-format="yyyy-mm-dd">
+                </div>
+                <button type="submit" class="btn" id="custom-date">{% spaceless %}
+                    {% icon 'fugue-calendar-search-result' %}&nbsp;Update
+                {% endspaceless %}</button>
+            </div>
+        </div>
+    </form>
+</div>
+<div class="row-fluid">
+    <div class='span12 well'>
+        <h4 id="plot_title"></h4>
+        <div id='placeholder' style="margin-right: 10px;"></div>
+        <div id='selection' style='color: green'></div>
+    </div>
+</div>
+<div class="row-fluid">
+    <div class="span12">
+        <div id='changes_table_container'>
+            <table id='changes_table'></table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+
+<script src="{{ STATIC_URL }}mustache.js"></script>
+<script src="{{ STATIC_URL }}jquery.flot.selection.js"></script>
+<script src="{{ STATIC_URL }}cmdb/timeline.js"></script>
+
+<script type="text/javascript">
+    $(function(){
+        var get_interval = $('.btn-group a').data('value');
+        var form = $('#date-filter');
+        $(".btn-group a").click(function (){
+            get_interval = $(this).data('value');
+            load_data("/cmdb/changes/timeline_ajax?interval=" + get_interval);
+        });
+
+        $("#custom-date").click(function(){
+            var inputs = form.serializeArray();
+            $(".btn-group a").each(function(){
+                $(this).removeClass("active");
+            });
+            load_data("/cmdb/changes/timeline_ajax?start=" + inputs[0]['value']
+                    +"&end=" + inputs[1]['value']);
+            return false;
+        });
+
+        $('#placeholder').html(loading());
+        load_data("/cmdb/changes/timeline_ajax?interval=" + get_interval);
+    });
+</script>
+
+{% endblock %}
+

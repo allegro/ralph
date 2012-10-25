@@ -4,11 +4,14 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import decimal
+
 from bob.menu import MenuItem, MenuHeader
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
+from django.conf import settings
 
 from ralph.account.models import Perm
 from ralph.discovery.models import (DeviceType, ComponentType, DeviceModel,
@@ -16,6 +19,7 @@ from ralph.discovery.models import (DeviceType, ComponentType, DeviceModel,
                                     ComponentModel, Storage, Memory, Processor,
                                     DiskShare, FibreChannel, GenericComponent,
                                     Software, OperatingSystem, Device)
+from ralph.discovery.models_history import HistoryModelChange
 from ralph.ui.forms import ComponentModelGroupForm, DeviceModelGroupForm
 from ralph.ui.views.common import Base
 from ralph.util import pricing
@@ -25,6 +29,11 @@ from ralph.util.presentation import COMPONENT_ICONS, DEVICE_ICONS
 MODEL_GROUP_SORT_COLUMNS = {
     'name': ('name',),
     'size': ('chassis_size',),
+}
+HISTORY_SORT_COLUMNS = {
+    'date': ('date',),
+    'user': ('user__login',),
+    'field_name': ('field_name',),
 }
 PAGE_SIZE = 25
 MAX_PAGE_SIZE = 65535
@@ -104,7 +113,11 @@ class Catalog(Base):
                         fugue_icon = DEVICE_ICONS[t.id],
                         view_name='catalog',
                         view_args=('device', t.id),
-                    ) for t in DeviceType(item=lambda t: t)]
+                    ) for t in DeviceType(item=lambda t: t)] +
+            [MenuHeader('History'),
+             MenuItem('History', fugue_icon='fugue-hourglass',
+                      view_name='catalog_history'),
+            ]
         )
         ret.update({
             'sidebar_items': sidebar_items,
@@ -148,13 +161,13 @@ class CatalogDevice(Catalog):
             elif target_id == 'new':
                 item = get_object_or_404(DeviceModel, id=items[0])
                 target = DeviceModelGroup(name=item.name, type=item.type)
-                target.save()
+                target.save(user=self.request.user)
             else:
                 target = get_object_or_404(DeviceModelGroup, id=target_id)
             for item in items:
                 model = get_object_or_404(DeviceModel, id=item)
                 model.group = target
-                model.save()
+                model.save(user=self.request.user)
             self.update_cached(target)
             messages.success(self.request, "Items moved.")
             return HttpResponseRedirect(self.request.path)
@@ -167,7 +180,7 @@ class CatalogDevice(Catalog):
                 self.group = get_object_or_404(DeviceModelGroup,
                                                id=self.group_id)
                 self.group.price = 0
-                self.group.save()
+                self.group.save(user=self.request.user)
                 self.update_cached(self.group)
                 self.group.delete()
                 messages.warning(self.request,
@@ -185,7 +198,8 @@ class CatalogDevice(Catalog):
             self.form = DeviceModelGroupForm(self.request.POST,
                                              instance=self.group)
             if self.form.is_valid():
-                self.form.save()
+                self.form.save(commit=False)
+                self.form.instance.save(user=self.request.user)
                 self.update_cached(self.group)
                 messages.success(self.request, "Changes saved.")
                 return HttpResponseRedirect(self.request.path)
@@ -219,7 +233,6 @@ class CatalogDevice(Catalog):
             type=self.model_type_id))
         for g in self.groups:
             g.count = g.get_count()
-        self.groups = [g for g in self.groups if g.count]
         if not self.form:
             self.form = DeviceModelGroupForm(instance=self.group)
         return super(CatalogDevice, self).get(*args, **kwargs)
@@ -268,13 +281,13 @@ class CatalogComponent(Catalog):
             elif target_id == 'new':
                 item = get_object_or_404(ComponentModel, id=items[0])
                 target = ComponentModelGroup(name=item.name, type=item.type)
-                target.save()
+                target.save(user=self.request.user)
             else:
                 target = get_object_or_404(ComponentModelGroup, id=target_id)
             for item in items:
                 model = get_object_or_404(ComponentModel, id=item)
                 model.group = target
-                model.save()
+                model.save(user=self.request.user)
             self.update_cached(target)
             messages.success(self.request, "Items moved.")
             return HttpResponseRedirect(self.request.path)
@@ -287,7 +300,7 @@ class CatalogComponent(Catalog):
                 self.group = get_object_or_404(ComponentModelGroup,
                                                id=self.group_id)
                 self.group.price = 0
-                self.group.save()
+                self.group.save(user=self.request.user)
                 self.update_cached(self.group)
                 self.group.delete()
                 messages.warning(self.request,
@@ -305,7 +318,8 @@ class CatalogComponent(Catalog):
             self.form = ComponentModelGroupForm(self.request.POST,
                                                 instance=self.group)
             if self.form.is_valid():
-                self.form.save()
+                self.form.save(commit=False)
+                self.form.instance.save(user=self.request.user)
                 self.update_cached(self.group)
                 messages.success(self.request, "Changes saved.")
                 return HttpResponseRedirect(self.request.path)
@@ -341,7 +355,9 @@ class CatalogComponent(Catalog):
                 type=self.model_type_id))
         for g in groups:
             g.count = g.get_count()
-        self.groups = [g for g in groups if g.count]
+            g.modified_price = decimal.Decimal(
+                    g.price or 0) / (g.size_modifier or 1)
+        self.groups = groups
         if not self.form:
             self.form = ComponentModelGroupForm(instance=self.group)
         return super(CatalogComponent, self).get(*args, **kwargs)
@@ -354,7 +370,30 @@ class CatalogComponent(Catalog):
             'group': self.group,
             'unassigned_count': self.unassigned_count,
             'form': self.form,
+            'CURRENCY': settings.CURRENCY,
         })
         ret.update(_prepare_model_groups(self.request, self.query))
         return ret
 
+
+class CatalogHistory(Catalog):
+    template_name = 'ui/catalog-history.html'
+
+    def get_context_data(self, **kwargs):
+        ret = super(CatalogHistory, self).get_context_data(**kwargs)
+        query = HistoryModelChange.objects.all()
+        query, sort, page = _prepare_query(self.request, query, False,
+                                           HISTORY_SORT_COLUMNS, '-date')
+        if page == 0:
+            pages = Paginator(query, MAX_PAGE_SIZE)
+            items = pages.page(1)
+        else:
+            pages = Paginator(query, PAGE_SIZE)
+            items = pages.page(page)
+        ret.update({
+            'sidebar_selected': 'history',
+            'subsection': 'history',
+            'sort': sort,
+            'items': items,
+        })
+        return ret

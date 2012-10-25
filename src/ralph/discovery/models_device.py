@@ -23,7 +23,7 @@ from lck.django.tags.models import Taggable
 from django.utils.html import escape
 
 from ralph.discovery.models_component import is_mac_valid, Ethernet
-from ralph.discovery.models_util import LastSeen
+from ralph.discovery.models_util import LastSeen, SavingUser
 from ralph.util import Eth
 
 
@@ -83,13 +83,14 @@ class DeprecationKind(TimeTrackable, Named):
     remarks = db.TextField(verbose_name=_("remarks"),
         help_text=_("additional information."),
         blank=True, default="")
+    default = db.BooleanField(default=False)
 
     class Meta:
         verbose_name = _("deprecation kind")
         verbose_name_plural = _("deprecation kinds")
 
     def save(self, *args, **kwargs):
-        if self.dirty_fields['months'] is not None:
+        if self.dirty_fields.get('months') is not None:
             devices = Device.objects.filter(deprecation_kind_id = self.id)
             for device in devices:
                 if (device.purchase_date is not None
@@ -112,7 +113,7 @@ class MarginKind(Named):
         verbose_name_plural = _("margin kinds")
 
 
-class DeviceModelGroup(Named):
+class DeviceModelGroup(Named, TimeTrackable, SavingUser):
     price = db.PositiveIntegerField(verbose_name=_("purchase price"),
         null=True, blank=True)
     type = db.PositiveIntegerField(verbose_name=_("device type"),
@@ -126,7 +127,8 @@ class DeviceModelGroup(Named):
     def get_count(self):
         return Device.objects.filter(model__group=self).count()
 
-class DeviceModel(SavePrioritized, WithConcurrentGetOrCreate):
+
+class DeviceModel(SavePrioritized, WithConcurrentGetOrCreate, SavingUser):
     name = db.CharField(verbose_name=_("name"), max_length=255, unique=True)
     type = db.PositiveIntegerField(verbose_name=_("device type"),
         choices=DeviceType(), default=DeviceType.unknown.id)
@@ -157,6 +159,7 @@ class DeviceModel(SavePrioritized, WithConcurrentGetOrCreate):
             'name': escape(self.name or ''),
             'count': self.device_set.count(),
         }
+
 
 class UptimeSupport(db.Model):
     """Adds an `uptime` attribute to the model. This attribute is shifted
@@ -207,7 +210,7 @@ class UptimeSupport(db.Model):
 
 
 class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
-    WithConcurrentGetOrCreate, UptimeSupport, SoftDeletable):
+    WithConcurrentGetOrCreate, UptimeSupport, SoftDeletable, SavingUser):
     name = db.CharField(verbose_name=_("name"), max_length=255)
     name2 = db.CharField(verbose_name=_("extra name"), max_length=255,
         null=True, blank=True, default=None)
@@ -282,9 +285,9 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
         verbose_name_plural = _("devices")
 
     def __init__(self, *args, **kwargs):
-        self.saving_user = None
         self.save_comment = None
         self.being_deleted = False
+        self.saving_user = None
         super(Device, self).__init__(*args, **kwargs)
 
     def __unicode__(self):
@@ -334,7 +337,7 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
                     if any((# both devices are properly placed in the tree
                             sndev.parent and dev.parent,
                             # the device found using ethernets (or explicitly
-                            # given as `device`) has different sn than `sn` 
+                            # given as `device`) has different sn than `sn`
                             dev.sn and dev.sn != sn,
                             # the device found using `sn` already has other
                             # ethernets
@@ -444,12 +447,28 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
         for ip in self.ipaddress_set.order_by('-last_seen'):
             return ip.last_seen
 
+    def get_deprecation_kind(self):
+        if self.deprecation_kind:
+            return self.deprecation_kind
+        try:
+            default_deprecation_kind = DeprecationKind.objects.get(default=True)
+        except DeprecationKind.DoesNotExist:
+            return None
+        else:
+            return default_deprecation_kind
+
     @property
     def ipaddress(self):
         return self.ipaddress_set
 
-    def save(self, user=None, *args, **kwargs):
-        self.saving_user = user
+    @property
+    def rolepropertyvalue(self):
+        return self.rolepropertyvalue_set
+
+    def save(self, *args, **kwargs):
+        if self.model.type == DeviceType.blade_server.id:
+            if not self.position:
+                self.position = self.get_position()
         if self.purchase_date and self.deprecation_kind:
             self.deprecation_date = (self.purchase_date +
                            relativedelta(months = self.deprecation_kind.months))

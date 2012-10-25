@@ -24,6 +24,8 @@ from ralph.discovery.models import DataCenter
 from ralph.discovery.models_history import HistoryCost
 from ralph.discovery.models_network import Network
 
+from ralph.cmdb.models_ci import CI, CIOwner, CIOwnershipType, CIOwnership
+
 SYNERGY_URL_BASE = settings.SYNERGY_URL_BASE
 
 
@@ -42,7 +44,24 @@ class PrebootMixin(db.Model):
             node = node.parent
 
 
-class Venture(Named, PrebootMixin, TimeTrackable):
+class HasSymbolBasedPath(db.Model):
+    path = db.TextField(verbose_name=_("symbol path"), blank=True,
+            default="", editable=False)
+
+    class Meta:
+        abstract = True
+
+    def save(self, *args, **kwargs):
+        if self.parent:
+           self.path = self.parent.path + "/" + self.symbol
+        else:
+            self.path = self.symbol
+        super(HasSymbolBasedPath, self).save(*args, **kwargs)
+        for child in self.child_set.all():
+            child.save()
+
+
+class Venture(Named, PrebootMixin, HasSymbolBasedPath, TimeTrackable):
     data_center = db.ForeignKey(DataCenter, verbose_name=_("data center"),
         null=True, blank=True)
     parent = db.ForeignKey('self', verbose_name=_("parent venture"), null=True,
@@ -59,8 +78,6 @@ class Venture(Named, PrebootMixin, TimeTrackable):
     department = db.ForeignKey('business.Department',
             verbose_name=_("department"), null=True, blank=True, default=None,
             on_delete=db.SET_NULL)
-    path = db.TextField(verbose_name=_("symbol path"), blank=True,
-            default="", editable=False)
     networks = db.ManyToManyField(Network, null=True, blank=True,
             verbose_name=_("networks list"))
 
@@ -68,6 +85,7 @@ class Venture(Named, PrebootMixin, TimeTrackable):
         verbose_name = _("venture")
         verbose_name_plural = _("ventures")
         unique_together = ('parent', 'symbol')
+        ordering = ('parent__symbol', 'symbol')
 
     def clean(self):
         self.symbol = re.sub(r'[^\w]', '.', self.symbol).lower()
@@ -86,12 +104,24 @@ class Venture(Named, PrebootMixin, TimeTrackable):
         return ("business-show-venture", (), {'venture_id': self.id})
 
     def technical_owners(self):
-        return VentureOwner.objects.filter(venture=self,
-            type=OwnerType.technical.id)
+        ci = CI.get_by_content_object(self)
+        if not ci:
+            return []
+        return CIOwner.objects.filter(ci=ci,
+            ciownership__type=CIOwnershipType.technical.id)
 
     def business_owners(self):
-        return VentureOwner.objects.filter(venture=self,
-            type=OwnerType.business.id)
+        ci = CI.get_by_content_object(self)
+        if not ci:
+            return []
+        return CIOwner.objects.filter(ci=ci,
+            ciownership__type=CIOwnershipType.business.id)
+
+    def all_ownerships(self):
+        ci = CI.get_by_content_object(self)
+        if not ci:
+            return []
+        return CIOwnership.objects.filter(ci=ci)
 
     def get_data_center(self):
         if self.data_center:
@@ -157,7 +187,8 @@ class BusinessLine(db.Model):
     name = db.CharField(max_length=255, db_index=True, unique=True)
 
 
-class VentureRole(Named.NonUnique, PrebootMixin, TimeTrackable):
+class VentureRole(Named.NonUnique, PrebootMixin, HasSymbolBasedPath,
+        TimeTrackable):
     venture = db.ForeignKey(Venture, verbose_name=_("venture"))
     parent = db.ForeignKey('self', verbose_name=_("parent role"), null=True,
         blank=True, default=None, related_name="child_set")
@@ -168,6 +199,7 @@ class VentureRole(Named.NonUnique, PrebootMixin, TimeTrackable):
         unique_together = ('name', 'venture')
         verbose_name = _("venture role")
         verbose_name_plural = _("venture roles")
+        ordering = ('parent__name', 'name')
 
     @property
     def full_name(self):
@@ -193,6 +225,19 @@ class VentureRole(Named.NonUnique, PrebootMixin, TimeTrackable):
     def __unicode__(self):
         return "{} / {}".format(self.venture.symbol if self.venture else '?',
                 self.full_name)
+
+    @property
+    def symbol(self):
+        # for HasSymbolBasedPath
+        return self.name
+
+    @property
+    def device(self):
+        return self.device_set
+
+    @property
+    def roleproperty(self):
+        return self.roleproperty_set
 
 
 class RolePropertyType(db.Model):
@@ -245,45 +290,6 @@ class RolePropertyValue(db.Model, WithConcurrentGetOrCreate):
         unique_together = ('property', 'device')
         verbose_name = _("property value")
         verbose_name_plural = _("property values")
-
-
-class OwnerType(Choices):
-    _ = Choices.Choice
-
-    technical = _("technical owner")
-    business = _("business owner")
-
-
-class VentureOwner(Named.NonUnique, TimeTrackable):
-    venture = db.ForeignKey(Venture, verbose_name=_("venture"))
-    type = db.PositiveIntegerField(verbose_name=_("type"),
-        choices=OwnerType(), default=OwnerType.technical.id)
-    synergy_id = db.PositiveIntegerField(verbose_name=_("Synergy ID"),
-        null=True, blank=True, default=None)
-
-    class Meta:
-        verbose_name = _("venture owner")
-        verbose_name_plural = _("venture owners")
-
-    def save(self, *args, **kwargs):
-        if self.synergy_id:
-            owners = VentureOwner.objects.exclude(
-                id=self.id).filter(name=self.name, synergy_id=None).update(
-                synergy_id=self.synergy_id)
-        if not self.synergy_id:
-            owners = VentureOwner.objects.filter(
-                name=self.name).exclude(synergy_id=None)
-            if owners.count():
-                self.synergy_id = owners[0].synergy_id
-        super(VentureOwner, self).save(*args, **kwargs)
-
-    def link_if_possible(self):
-        if not self.synergy_id:
-            return self.name
-        else:
-            # XXX HTML-escape the name!
-            return '<a href="{}docs/HRMResourceCard.aspx?ID={}">{}</a>'.format(
-                SYNERGY_URL_BASE, self.synergy_id, self.name)
 
 
 class DepartmentIcon(Choices):

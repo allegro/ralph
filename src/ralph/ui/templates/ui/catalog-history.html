@@ -1,0 +1,59 @@
+{% extends "ui/catalog.html" %}
+
+{% load url from future %}
+{% load icons %}
+{% load bob %}
+
+{% block contentarea %}
+<div class="span12">
+    {% block content %}
+    <table class="table table-striped table-bordered table-condensed table-list model-group-table">
+        <thead><tr>
+{% spaceless %}
+{% include 'ui/column-header.html' with label='Date' name='date' always=1  type='date' %}
+{% include 'ui/column-header.html' with label='User' name='user' always=1 %}
+{% include 'ui/column-header.html' with label='Group' name='group' always=1 %}
+{% include 'ui/column-header.html' with label='Model' name='model' always=1 %}
+{% include 'ui/column-header.html' with label='Field' name='field' always=1 %}
+{% include 'ui/column-header.html' with label='Old value' name='old' always=1 %}
+{% include 'ui/column-header.html' with label='New value' name='new' always=1 %}
+{% endspaceless %}
+        </tr></thead>
+        <tbody>
+            {% for h in items.object_list %}
+            <tr>
+                <td>{{ h.date|timesince_limited }}</td>
+                <td>{{ h.user|default:'' }}</td>
+<td>
+{% spaceless %}
+{% if h.component_model_group %}
+{{ h.component_model_group.type|component_model_type_icon }}&nbsp;{{ h.component_model_group }}
+{% else %}
+{%   if h.device_model_group %}
+{{ h.device_model_group.type|device_model_type_icon }}&nbsp;{{ h.device_model_group }}
+{%   else %}
+Unassigned
+{%   endif %}
+{% endif %}
+{% endspaceless %}
+</td>
+<td>
+{% spaceless %}
+{% if h.component_model %}
+{{ h.component_model.type|component_model_type_icon }}&nbsp;{{ h.component_model }}
+{% endif %}
+{% if h.device_model %}
+{{ h.device_model.type|device_model_type_icon }}&nbsp;{{ h.device_model }}
+{% endif %}
+{% endspaceless %}
+</td>
+                <td>{{ h.field_name }}</td>
+                <td>{{ h.old_value }}</td>
+                <td>{{ h.new_value }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% pagination items fugue_icons=1 url_query=url_query show_all=1 %}
+    {% endblock %}
+{% endblock %}

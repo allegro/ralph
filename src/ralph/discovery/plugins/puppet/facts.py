@@ -23,6 +23,8 @@ from ralph.discovery import hardware
 
 SAVE_PRIORITY = 52
 
+class UnknownUnitError(Exception):
+    pass
 
 @nested_commit_on_success
 def parse_facts(facts, is_virtual):
@@ -91,7 +93,8 @@ def _parse_smbios(dev, data, facts, is_virtual):
         data = zlib.decompress(data)
     except zlib.error:
         pass
-    hardware.handle_smbios(dev, data, is_virtual, SAVE_PRIORITY)
+    smb = hardware.parse_smbios(data)
+    hardware.handle_smbios(dev, smb, is_virtual, SAVE_PRIORITY)
 
 def handle_facts_ethernets(facts):
     ethernets = []
@@ -185,7 +188,10 @@ def handle_facts_os(dev, facts, is_virtual=False):
         elif unit == 'gb':
             memory_size = int(float(memory_size) * 1024)
         elif unit == 'mb' or unit == 'mib':
-            memory_size = int(memory_size)
+            # can got: 1000.24 mb - just remove float digits.
+            memory_size = int(float(memory_size))
+        else:
+            raise UnknownUnitError('Got unit: ' + unit)
     except (KeyError, ValueError):
         pass
     os.memory = memory_size

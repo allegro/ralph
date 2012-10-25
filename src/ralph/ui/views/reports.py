@@ -22,10 +22,11 @@ from ralph.ui.views.common import Base, DeviceDetailView
 from ralph.ui.views.devices import DEVICE_SORT_COLUMNS
 from ralph.ui.forms import DateRangeForm, MarginsReportForm
 from ralph.business.models import Venture
-from ralph.discovery.models_device import MarginKind
+from ralph.discovery.models_device import MarginKind, DeviceType
 from ralph.discovery.models_history import HistoryCost
-from ralph.ui.reports import total_cost_count
+from ralph.ui.reports import get_total_cost, get_total_count, get_total_cores, get_total_virtual_cores
 from ralph.util import csvutil
+
 
 def threshold(days):
     return datetime.date.today() + datetime.timedelta(days=days)
@@ -199,6 +200,8 @@ class ReportMargins(SidebarReports, Base):
             total_cost = 0
             total_sim = 0
             total_count = 0
+            start = self.form.cleaned_data['start']
+            end = self.form.cleaned_data['end']
             for mk in self.margin_kinds:
                 q = query.filter(db.Q(device__margin_kind=mk) |
                      db.Q(
@@ -217,11 +220,8 @@ class ReportMargins(SidebarReports, Base):
                         )
                     )
                 )
-                mk.total, mk.count, mk.count_now = total_cost_count(
-                        q,
-                        self.form.cleaned_data['start'],
-                        self.form.cleaned_data['end'],
-                    )
+                mk.total = get_total_cost(q, start, end)
+                mk.count, mk.count_now, devices = get_total_count(q, start, end)
                 mk.sim_margin = self.form.get('m_%d' % mk.id, 0) or 0
                 mk.sim_cost = ((mk.total or 0) /
                                (1 + mk.margin/100) *
@@ -252,22 +252,30 @@ class ReportVentures(SidebarReports, Base):
     def export_csv(self):
         def iter_rows():
             yield [
+                'Venture ID',
                 'Venture',
                 'Path',
                 'Department',
                 'Default margin',
                 'Device count',
+                'Core count',
+                'Virtual core count',
+                'Cloud use',
                 'Total cost'
             ]
             for venture in self.ventures:
                 total = venture.total or 0
                 yield [
+                    '%d' % venture.id,
                     venture.name,
                     venture.path,
                     unicode(venture.department) if venture.department else '',
                     ('%d%%' % venture.margin_kind.margin
                         ) if venture.margin_kind else '',
-                    venture.count or 0,
+                    '%d' % (venture.count or 0),
+                    '%d' % (venture.core_count or 0),
+                    '%d' % (venture.virtual_core_count or 0),
+                    '%f' % (venture.cloud_use or 0),
                     '{:,.2f} {}'.format(total, settings.CURRENCY).replace(',', ' '),
                 ]
         f = StringIO.StringIO()
@@ -297,19 +305,28 @@ class ReportVentures(SidebarReports, Base):
                     db.Q(parent__parent=None),
                     show_in_ralph=True
                 ).order_by('path')
+            start = self.form.cleaned_data['start']
+            end = self.form.cleaned_data['end']
+            total_cloud_cost = get_total_cost(HistoryCost.objects.filter(
+                    device__model__type=DeviceType.cloud_server.id
+                ), start, end)
             for venture in self.ventures:
-                (venture.total, venture.count,
-                 venture.count_now) = total_cost_count(
-                         HistoryCost.objects.filter(
-                             db.Q(venture=venture) |
-                             db.Q(venture__parent=venture) |
-                             db.Q(venture__parent__parent=venture) |
-                             db.Q(venture__parent__parent__parent=venture) |
-                             db.Q(venture__parent__parent__parent__parent=venture)
-                         ).distinct(),
-                         self.form.cleaned_data['start'],
-                         self.form.cleaned_data['end'],
-                    )
+                query = HistoryCost.objects.filter(
+                    db.Q(venture=venture) |
+                    db.Q(venture__parent=venture) |
+                    db.Q(venture__parent__parent=venture) |
+                    db.Q(venture__parent__parent__parent=venture) |
+                    db.Q(venture__parent__parent__parent__parent=venture)
+                )
+                venture.total = get_total_cost(query, start, end)
+                (venture.count, venture.count_now,
+                 devices) = get_total_count(query, start, end)
+                venture.core_count = get_total_cores(devices, start, end)
+                venture.virtual_core_count = get_total_virtual_cores(devices, start, end)
+                cloud_cost = get_total_cost(query.filter(
+                        device__model__type=DeviceType.cloud_server.id
+                    ), start, end)
+                venture.cloud_use = (cloud_cost or 0) / total_cloud_cost * 100
         else:
             self.ventures = Venture.objects.none()
         if self.request.GET.get('export') == 'csv':

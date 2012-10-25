@@ -1,0 +1,18 @@
+{% extends "ui/base-devices.html" %}
+{% load url from future %}
+{% load icons %}
+{% load query %}
+{% block header %}
+{% endblock %}
+
+{% block content %}
+{% if ci %}
+    {% include 'cmdb/include_ci_contents.html' with span_number=span_number editable=0 tabs_left=0 %}
+{% else %}
+    <span class="label label-important">No CMDB data for this Asset</span>
+{% endif %}
+
+{% endblock %}
+
+
+

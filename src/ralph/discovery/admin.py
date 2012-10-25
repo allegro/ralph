@@ -21,6 +21,7 @@ from ralph.discovery.models import (Device, DeviceModel, IPAddress, Network,
 from ralph.discovery.models_history import HistoryChange
 from ralph.business.admin import RolePropertyValueInline
 
+
 class NetworkAdmin(ModelAdmin):
     def terms(self):
         return ", ".join([n.name for n in self.terminators.order_by('name')])
@@ -30,7 +31,7 @@ class NetworkAdmin(ModelAdmin):
     list_filter = ('data_center', 'terminators', 'queue', 'kind')
     list_per_page = 250
     radio_fields = {'data_center': admin.HORIZONTAL, 'kind': admin.HORIZONTAL}
-    search_fields = ('name', 'address')
+    search_fields = ('name', 'address', 'vlan')
     filter_horizontal = ('terminators',)
     save_on_top = True
 
@@ -132,6 +133,12 @@ class DeviceForm(forms.ModelForm):
             sn = None
         return sn
 
+    def clean_model(self):
+        model = self.cleaned_data['model']
+        if not model:
+            raise forms.ValidationError(_("Model is required"))
+        return model
+
 
 class ProcessorInline(ForeignKeyAutocompleteTabularInline):
     model = Processor
@@ -218,6 +225,7 @@ admin.site.register(IPAddress, IPAddressAdmin)
 
 class DeprecationKindAdmin(ModelAdmin):
     save_on_top = True
+    list_display = ('name', 'months', 'default')
 admin.site.register(DeprecationKind, DeprecationKindAdmin)
 
 

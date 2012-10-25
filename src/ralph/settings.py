@@ -20,7 +20,7 @@ execfile(namespace_package_support)
 #
 SITE_ID = 1
 USE_I18N = True
-USE_L10N = True #FIXME: breaks contents of localized date fields on form reload
+USE_L10N = True  # FIXME: breaks contents of localized date fields on form reload
 MEDIA_ROOT = CURRENT_DIR + 'uploads'
 MEDIA_URL = '/u/'
 STATIC_ROOT = CURRENT_DIR + 'static'
@@ -113,14 +113,14 @@ LOGGING = {
         'file': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
-            'maxBytes': 1024 * 1024 * 100, # 100 MB
+            'maxBytes': 1024 * 1024 * 100,  # 100 MB
             'backupCount': 10,
-            'filename': None, # to be configured in settings-local.py
+            'filename': None,  # to be configured in settings-local.py
             'formatter': 'verbose',
         },
-        'console':{
-            'level':'DEBUG',
-            'class':'logging.StreamHandler',
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
             'formatter': 'simple',
         },
     },
@@ -205,11 +205,11 @@ AJAX_SELECT_INLINES = 'inline'
 
 # <template>
 SECRET_KEY = 'CHANGE ME'
-DEBUG = True#False
-TEMPLATE_DEBUG = DEBUG
-SEND_BROKEN_LINK_EMAILS = DEBUG
+DEBUG = False
+TEMPLATE_DEBUG = False
+SEND_BROKEN_LINK_EMAILS = False
 ADMINS = (
-    ('Webmaster', 'ralph@localhost'),
+    #('Webmaster', 'ralph@localhost'),
 )
 MANAGERS = ADMINS
 DEFAULT_FROM_EMAIL = 'ralph@localhost'
@@ -263,11 +263,11 @@ SSH_ONSTOR_PASSWORD = None
 AIX_USER = None
 AIX_PASSWORD = None
 AIX_KEY = None
-XEN_USER=None
+XEN_USER = None
 XEN_PASSWORD = None
 SNMP_PLUGIN_COMMUNITIES = ['public']
 DEFAULT_SAVE_PRIORITY = 0
-SCCM_DB_URL=None
+SCCM_DB_URL = None
 SSH_MSA_USER = None
 SSH_MSA_PASSWORD = None
 SSH_P2000_USER = None
@@ -276,6 +276,7 @@ SPLUNK_HOST = None
 SPLUNK_USER = None
 SPLUNK_PASSWORD = None
 PUPPET_DB_URL = None
+PUPPET_SAVE_UNCHANGED_RESOURCES = False
 ZABBIX_URL = None
 ZABBIX_USER = None
 ZABBIX_PASSWORD = None
@@ -285,10 +286,14 @@ SO_URL = None
 OPENSTACK_URL = None
 OPENSTACK_USER = None
 OPENSTACK_PASS = None
+IBM_SYSTEM_X_USER = None
+IBM_SYSTEM_X_PASSWORD = None
 OPENSTACK_EXTRA_QUERIES = []
+FISHEYE_URL = ""
+FISHEYE_PROJECT_NAME = ""
 ISSUETRACKERS = {
     'default': {
-        'ENGINE': 'JIRA',
+        'ENGINE': '',
         'USER': '',
         'PASSWORD': '',
         'URL': '',
@@ -296,24 +301,27 @@ ISSUETRACKERS = {
         'CI_NAME_FIELD_NAME': '',
         'TEMPLATE_FIELD_NAME': '',
         'CMDB_PROJECT': '',
-        'CMDB_VIEWCHANGE_LINK': '',
+        'CMDB_VIEWCHANGE_LINK': 'http://url/%s',
+        'USE_CELERY': True,
         'OPA': {
-                'RSS_URL' : '',
-                'BOWNER_FIELD_NAME': '',
-                'TOWNER_FIELD_NAME': '',
-                'TEMPLATE': '',
-                'ISSUETYPE': '',
-                'DEFAULT_ASSIGNEE': '',
-                'ACTIONS': {
-                    'IN_PROGRESS': 1,
-                    'IN_DEPLOYMENT': 2,
-                    'RESOLVED_FIXED': 3,
-                },
+            'RSS_URL': '',
+            'BOWNER_FIELD_NAME': '',
+            'TOWNER_FIELD_NAME': '',
+            'TEMPLATE': '',
+            'ISSUETYPE': '',
+            'DEFAULT_ASSIGNEE': '',
+            'ACTIONS': {
+                'IN_PROGRESS': 1,
+                'IN_DEPLOYMENT': 2,
+                'RESOLVED_FIXED': 3,
+            },
         },
         'OP': {
-                'ISSUETYPE': '',
-                'TEMPLATE': '',
-                'DEFAULT_ASSIGNEE': '',
+            'ENABLE_TICKETS': False,
+            'START_DATE': '',
+            'ISSUETYPE': '',
+            'TEMPLATE': '',
+            'DEFAULT_ASSIGNEE': '',
         },
     },
 }
