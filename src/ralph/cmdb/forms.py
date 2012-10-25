@@ -9,54 +9,52 @@ from __future__ import unicode_literals
 from django import forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from ajax_select import make_ajax_field
-from south.management.commands import patch_for_test_db_setup
 
 from ralph.cmdb import models
 from ralph.cmdb.models_ci import CIOwnership, CIOwner
 from ralph.ui.widgets import (ReadOnlyWidget, ReadOnlyMultipleChoiceWidget,
                               ReadOnlySelectWidget)
 from ralph.cmdb.models import CILayer, CIType
-from ralph.cmdb import models  as db
+from ralph.cmdb import models as db
 
 
 class CISearchForm(forms.Form):
-    uid = forms.CharField(label = ' CI UID ', max_length=100)
-    layer = forms.ModelChoiceField(label = 'Layer',
-            queryset = CILayer.objects.all(),
-            empty_label='----'
+    uid = forms.CharField(label=' CI UID ', max_length=100)
+    layer = forms.ModelChoiceField(
+        label='Layer',
+        queryset=CILayer.objects.all(),
+        empty_label='----'
     )
     type = forms.ModelChoiceField(
-           label = 'CI Type',
-           queryset = CIType.objects.all(),
-           empty_label='----',
+        label='CI Type',
+        queryset=CIType.objects.all(),
+        empty_label='----',
     )
-    top_level = forms.BooleanField(label = 'Top lev.')
-    parent = forms.CharField(label='',
-            widget=forms.HiddenInput()
+    top_level = forms.BooleanField(label='Top lev.')
+    parent = forms.CharField(
+        label='', widget=forms.HiddenInput()
     )
+
 
 class CIChangeSearchForm(forms.Form):
     type = forms.ChoiceField(choices=[['', '------']] + db.CI_CHANGE_TYPES())
-    priority = forms.ChoiceField(choices = [['', '------']] + db.CI_CHANGE_PRIORITY_TYPES() )
-    uid = forms.CharField(label = 'CI name', max_length=100)
+    priority = forms.ChoiceField(
+        choices=[['', '------']] + db.CI_CHANGE_PRIORITY_TYPES())
+    uid = forms.CharField(label='CI name', max_length=100)
+
 
 class CIReportsParamsForm(forms.Form):
     this_month = forms.BooleanField()
-    #date_start = forms.DateField(widget=forms.TextInput(attrs={'class': 'datepicker'}),
-    #        label = 'Date start')
-    #date_end = forms.DateField(widget=forms.TextInput(attrs={'class' : 'datepicker'}),
-    #        label = 'Date end')
-    kind = forms.CharField(label = '', widget=forms.HiddenInput())
+    kind = forms.CharField(label='', widget=forms.HiddenInput())
+
 
 class CIEditForm(forms.ModelForm):
     class Meta:
         model = models.CI
         widgets = {
-            'id': ReadOnlyWidget,
-            'uid' : ReadOnlyWidget,
+            'uid': ReadOnlyWidget,
         }
         fields = (
-            'id',
             'uid',
             'name',
             'type',
@@ -68,12 +66,14 @@ class CIEditForm(forms.ModelForm):
             'technical_owners',
         )
 
-    icons={
+    icons = {
     }
-    layers = forms.ModelMultipleChoiceField( models.CILayer.objects.all(),
-            widget = FilteredSelectMultiple("layers", False,
-                attrs={'rows' : '10' }
-            )
+
+    layers = forms.ModelMultipleChoiceField(
+        models.CILayer.objects.all(),
+        widget=FilteredSelectMultiple(
+            "layers", False, attrs={'rows': '10'}
+        )
     )
     business_owners = forms.ModelMultipleChoiceField(
         models.CIOwner.objects.all().order_by('last_name', 'first_name'),
@@ -88,14 +88,6 @@ class CIEditForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(CIEditForm, self).__init__(*args, **kwargs)
-        if self.data:
-            self.data = self.data.copy()
-            if self.initial.get('uid', None):
-                self.data['uid'] = self.initial['uid']
-            if self.initial.get('id', None):
-                self.data['id'] = self.initial['id']
-            if self.initial.get('name', None):
-                self.data['name'] = self.initial['name']
         if len(self.initial):
             technical_owners, bussines_owners = [], []
             owns = CIOwnership.objects.filter(ci_id=self.initial.get('ci').id)
@@ -119,14 +111,13 @@ class CIViewForm(CIEditForm):
         model = models.CI
         widgets = {
             'id': ReadOnlyWidget,
-            'uid' : ReadOnlyWidget,
-            'name' : ReadOnlyWidget,
-            'type' : ReadOnlySelectWidget,
-            'state' : ReadOnlySelectWidget,
-            'status' : ReadOnlySelectWidget,
-            'barcode' : ReadOnlyWidget,
-            'pci_scope' : ReadOnlyWidget,
-
+            'uid': ReadOnlyWidget,
+            'name': ReadOnlyWidget,
+            'type': ReadOnlySelectWidget,
+            'state': ReadOnlySelectWidget,
+            'status': ReadOnlySelectWidget,
+            'barcode': ReadOnlyWidget,
+            'pci_scope': ReadOnlyWidget,
         }
         fields = (
             'id',
@@ -140,20 +131,20 @@ class CIViewForm(CIEditForm):
             'pci_scope',
         )
     layers = forms.ModelMultipleChoiceField(
-            models.CILayer.objects.all(),
-            widget = ReadOnlyMultipleChoiceWidget("layers", False,
-                attrs={'rows' : '10' })
+        models.CILayer.objects.all(),
+        widget=ReadOnlyMultipleChoiceWidget(
+            "layers", False, attrs={'rows': '10'})
     )
     technical_owners = forms.ModelMultipleChoiceField(
         models.CIOwner.objects.all().order_by('last_name', 'first_name'),
-        widget = ReadOnlyMultipleChoiceWidget("owners", False,
-                                              attrs={'rows' : '10' }),
+        widget=ReadOnlyMultipleChoiceWidget(
+            "owners", False, attrs={'rows': '10'}),
         required=False
     )
     business_owners = forms.ModelMultipleChoiceField(
         models.CIOwner.objects.all().order_by('last_name', 'first_name'),
-        widget = ReadOnlyMultipleChoiceWidget("owners", False,
-                                              attrs={'rows' : '10' }),
+        widget=ReadOnlyMultipleChoiceWidget(
+            "owners", False, attrs={'rows': '10'}),
         required=False
     )
 
@@ -174,8 +165,6 @@ class CIRelationEditForm(forms.ModelForm):
             'type',
         )
 
-    icons={
-    }
     parent = make_ajax_field(models.CIRelation, 'parent', 'ci', help_text=None)
     child = make_ajax_field(models.CIRelation, 'child', 'ci', help_text=None)
 
