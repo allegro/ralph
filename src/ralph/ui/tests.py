@@ -38,6 +38,9 @@ DISKSHARE = {
     'barcode': 'bc_share',
     'wwn': 'DiskShareWWN',
 }
+GENERIC = {
+    'sn': '0000000003',
+}
 NETWORK = {
     'name': 'SimpleNetwork',
     'address': '10.0.0.1/26',
@@ -130,6 +133,7 @@ class TestSearch(TestCase):
             device=self.device,
             model=self.cm_generic,
             label=COMPONENT['GenericComponent'],
+            sn=GENERIC['sn'],
         )
         self.generic_component.save()
         self.diskshare = DiskShare(
@@ -235,9 +239,7 @@ class TestSearch(TestCase):
         self.assertEqual(self.device.venture.name, DEVICE['venture'])
         self.assertEqual(context.venture.name, DEVICE['venture'])
         self.assertEqual(context.venture_role_id, self.venture_role.id)
-        """
-        FIXME: i can`t see venture_symbol
-        """
+        self.assertEqual(context.venture.symbol, self.venture.symbol)
 
     def test_model_field(self):
         url = '/ui/search/info/%s' % self.device.id
@@ -261,10 +263,10 @@ class TestSearch(TestCase):
         self.assertEqual(self.device.sn, context.sn)
         mac = context.ethernet_set.filter(mac=DEVICE['mac']).count()
         self.assertTrue(mac>0)
-        """
-        FIXME: I can`t see any wwn (diskshare, disksharemount), generatic_sn
-        in template
-        """
+        diskshare = context.diskshare_set.filter(device=self.device.id).count()
+        self.assertTrue(diskshare>0)
+        dsm = context.disksharemount_set.filter(device=self.device.id).count()
+        self.assertTrue(dsm>0)
 
     def test_barcode_field(self):
         url = '/ui/search/info/%s' % self.device.id
