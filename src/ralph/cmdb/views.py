@@ -670,20 +670,20 @@ class Edit(BaseCMDBView):
                 model.layers.clear()
                 layers = self.form_attributes.data.getlist('base-layers')
                 for layer in layers:
-                    model.layers.add(CILayer.objects.get(pk=int(layer[0])))
+                    model.layers.add(CILayer.objects.get(pk=int(layer)))
                 owners_t = self.form_attributes.data.getlist(
                     'base-technical_owners')
                 for owner in owners_t:
                     own = CIOwnership(
                         ci=model,
-                        owner=CIOwner.objects.get(pk=owner[0]),
+                        owner=CIOwner.objects.get(pk=owner),
                         type=1,)
                     own.save()
                 owners_b = self.form_attributes.data.getlist(
                     'base-business_owners')
                 for owner in owners_b:
                     own = CIOwnership(
-                        ci=model, owner=CIOwner.objects.get(pk=owner[0]),
+                        ci=model, owner=CIOwner.objects.get(pk=owner),
                         type=2,)
                     own.save()
                 model.save(user=self.request.user)
