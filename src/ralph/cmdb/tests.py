@@ -6,16 +6,22 @@ from __future__ import unicode_literals
 
 import datetime
 import mock
+from os.path import join as djoin
 
+from lxml import objectify
+from mock import patch
 
 from django.db.utils import IntegrityError
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase, Client
-from lxml import objectify
-from mock import patch
-from os.path import join as djoin
+from django.contrib.auth.models import User
+
+from ralph.cmdb.importer import CIImporter
+from ralph.cmdb.models import (
+    CI, CIRelation, CI_RELATION_TYPES, CIChange, CI_TYPES,
+    CIChangePuppet, CIChangeGit, CI_CHANGE_TYPES, CI_CHANGE_REGISTRATION_TYPES)
 
 from ralph.discovery.models import Device, DeviceType, DeviceModel
 from ralph.business.models import Venture, VentureRole
@@ -337,6 +343,13 @@ _PATCHED_TICKETS_ENABLE_NO = False
 
 
 class OPRegisterTest(TestCase):
+    fixtures = [
+        '0_types.yaml',
+        '1_attributes.yaml',
+        '2_layers.yaml',
+        '3_prefixes.yaml'
+    ]
+
     """ OP Changes such as git change, attribute change, is immiediatelly sent
     to issue tracker as CHANGE ticket for logging purporses. Check this
     workflow here
@@ -356,13 +369,17 @@ class OPRegisterTest(TestCase):
         chg = CIChange.objects.get(type=CI_CHANGE_TYPES.CONF_GIT.id)
         self.assertEqual(chg.content_object, c)
         self.assertEqual(chg.external_key, '#123456')
-        self.assertEqual(chg.get_registration_type_display(), 'Change')
+        self.assertEqual(
+            chg.registration_type, CI_CHANGE_REGISTRATION_TYPES.OP)
         CIChange.objects.all().delete()
 
         #removing cichange remove cichangegit child too.
         self.assertEqual(CIChangeGit.objects.count(), 0)
 
-        # if change is registered before date of start, ticket is not registered
+        # if change is registered before date of start, and change type is GIT, then
+        # ticket remains WAITING
+        # forever. When date is changed, and signal is send to the model
+        # ticket is going to be registrated again.
         c = CIChangeGit()
         c.time = datetime.datetime(year=2012, month=1, day=1)
         c.changeset = 'testchangeset'
@@ -370,7 +387,94 @@ class OPRegisterTest(TestCase):
         chg = CIChange.objects.get(type=CI_CHANGE_TYPES.CONF_GIT.id)
         self.assertEqual(chg.content_object, c)
         self.assertEqual(chg.external_key, '')
-        self.assertEqual(chg.get_registration_type_display(), 'Not registered')
+        self.assertEqual(
+            chg.registration_type, CI_CHANGE_REGISTRATION_TYPES.WAITING.id)
+
+    @patch('ralph.cmdb.models_signals.OP_TEMPLATE', _PATCHED_OP_TEMPLATE)
+    @patch('ralph.cmdb.models_signals.OP_START_DATE', _PATCHED_OP_START_DATE)
+    @patch('ralph.cmdb.models_signals.OP_TICKETS_ENABLE', _PATCHED_TICKETS_ENABLE_NO)
+    @patch('ralph.cmdb.models_common.USE_CELERY', _PATCHED_USE_CELERY)
+    def test_create_ci_generate_change(self):
+        # TICKETS REGISTRATION IN THIS TEST IS DISABLED.
+        # first case - automatic change
+        hostci = CI(name='s11401.dc2', uid='mm-1')
+        hostci.type_id = CI_TYPES.DEVICE.id
+        hostci.save()
+        # not registered, because not user - driven change
+        self.assertEqual(
+            set([(x.content_object.old_value,
+                x.content_object.new_value, x.content_object.field_name,
+                x.content_object.user_id, x.registration_type)
+                for x in CIChange.objects.all()]),
+            set([(u'None', u'Device', u'type', None,
+                CI_CHANGE_REGISTRATION_TYPES.NOT_REGISTERED.id),
+                (u'None', u'1', u'id', None,
+                CI_CHANGE_REGISTRATION_TYPES.NOT_REGISTERED.id)])
+        )
+        hostci.delete()
+        # second case - manual change
+        user = User.objects.create_user(
+            'john', 'lennon@thebeatles.com', 'johnpassword')
+
+        # john reigstered change, change should be at WAITING because registering is
+        # not enabled in config
+        hostci = CI(name='s11401.dc2', uid='mm-1')
+        hostci.type_id = CI_TYPES.DEVICE.id
+        hostci.save(user=user)
+        self.assertEqual(
+            set([(x.content_object.old_value,
+                x.content_object.new_value, x.content_object.field_name,
+                x.content_object.user_id, x.registration_type)
+                for x in CIChange.objects.all()]),
+            set([
+                (u'None', u'Device', u'type', 1,
+                    CI_CHANGE_REGISTRATION_TYPES.WAITING.id),
+                (u'None', u'1', u'id', 1,
+                    CI_CHANGE_REGISTRATION_TYPES.WAITING.id),
+                ])
+        )
+
+
+    @patch('ralph.cmdb.models_signals.OP_TEMPLATE', _PATCHED_OP_TEMPLATE)
+    @patch('ralph.cmdb.models_signals.OP_START_DATE', _PATCHED_OP_START_DATE)
+    @patch('ralph.cmdb.models_signals.OP_TICKETS_ENABLE', _PATCHED_TICKETS_ENABLE)
+    @patch('ralph.cmdb.models_common.USE_CELERY', _PATCHED_USE_CELERY)
+    def test_create_ci_register_change(self):
+        # TICKETS REGISTRATION IN THIS TEST IS ENABLED
+        # first case - automatic change, should not be registered
+        hostci = CI(name='s11401.dc2', uid='mm-1')
+        hostci.type_id = CI_TYPES.DEVICE.id
+        hostci.save()
+        # not registered, because not user - driven change
+        self.assertEqual(
+            set([(x.content_object.old_value,
+                x.content_object.new_value, x.content_object.field_name,
+                x.content_object.user_id, x.registration_type)
+                for x in CIChange.objects.all()]),
+            set([(u'None', u'Device', u'type', None,
+                CI_CHANGE_REGISTRATION_TYPES.NOT_REGISTERED.id),
+                (u'None', u'1', u'id', None,
+                CI_CHANGE_REGISTRATION_TYPES.NOT_REGISTERED.id)])
+        )
+        hostci.delete()
+        # second case - manual change should be registered as ticket
+        user = User.objects.create_user(
+            'john', 'lennon@thebeatles.com', 'johnpassword')
+        hostci = CI(name='s11401.dc2', uid='mm-1')
+        hostci.type_id = CI_TYPES.DEVICE.id
+        hostci.save(user=user)
+        self.assertEqual(
+            set([(x.content_object.old_value,
+                x.content_object.new_value, x.content_object.field_name,
+                x.content_object.user_id, x.registration_type)
+                for x in CIChange.objects.all()]),
+            set([
+                (u'None', u'Device', u'type', 1,
+                    CI_CHANGE_REGISTRATION_TYPES.OP.id),
+                (u'None', u'1', u'id', 1,
+                    CI_CHANGE_REGISTRATION_TYPES.OP.id),
+                ])
+        )
 
     @patch('ralph.cmdb.models_signals.OP_TEMPLATE', _PATCHED_OP_TEMPLATE)
     @patch('ralph.cmdb.models_signals.OP_START_DATE', _PATCHED_OP_START_DATE)
@@ -378,16 +482,20 @@ class OPRegisterTest(TestCase):
            _PATCHED_TICKETS_ENABLE_NO)
     @patch('ralph.cmdb.models_common.USE_CELERY', _PATCHED_USE_CELERY)
     def test_dont_create_issues(self):
-        # the date is ok, but tickets enabled is set to no.  Dont register ticket.
+        # the date is ok, but tickets enabled is set to no.
+        # Dont register ticket.
         c = CIChangeGit()
         c.time = datetime.datetime(year=2012, month=1, day=2)
         c.changeset = 'testchangeset'
         c.save()
         chg = CIChange.objects.get(type=CI_CHANGE_TYPES.CONF_GIT.id)
-        # yeah, ticket is not registered, because disabled in config.
+        # yeah, ticket is waiting, but not going to register because disabled
+        # in config.
         self.assertEqual(chg.content_object, c)
         self.assertEqual(chg.external_key, '')
-        self.assertEqual(chg.get_registration_type_display(), 'Not registered')
+        self.assertEqual(
+            chg.registration_type, CI_CHANGE_REGISTRATION_TYPES.WAITING.id)
+
 
 DEVICE_NAME = 'SimpleDevice'
 DEVICE_IP = '10.0.0.1'
