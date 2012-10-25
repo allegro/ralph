@@ -196,9 +196,9 @@ def handle_facts_os(dev, facts, is_virtual=False):
         pass
     os.memory = memory_size
     if is_virtual:
-        os.cores_count = facts.get('processorcount', None)
+        os.cores_count = int(facts.get('processorcount', None))
     else:
-        os.cores_count = facts.get('physicalprocessorcorecount', None)
+        os.cores_count = int(facts.get('physicalprocessorcorecount', None))
     os.save(priority=SAVE_PRIORITY)
     dev.operatingsystem_set.exclude(pk=os.pk).delete()
 
