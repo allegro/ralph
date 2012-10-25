@@ -94,12 +94,14 @@ class CIEditForm(forms.ModelForm):
             for own in owns:
                 if own.type == 1:
                     try:
-                        technical_owners.append(CIOwner.objects.get(pk=str(own.owner_id)))
+                        technical_owners.append(CIOwner.objects.get(id=own.owner_id))
                     except CIOwner.DoesNotExist:
                         pass
                 elif own.type == 2:
                     try:
-                        bussines_owners.append(CIOwner.objects.get(pk=str(own.owner_id)))
+                        bussines_owners.append(
+                            CIOwner.objects.get(id=own.owner_id)
+                        )
                     except CIOwner.DoesNotExist:
                         pass
             self['technical_owners'].field.initial = technical_owners
