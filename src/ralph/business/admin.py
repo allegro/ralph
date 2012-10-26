@@ -167,7 +167,7 @@ class VentureAdmin(ModelAdmin):
         )
         part_url = reverse_lazy('ci_edit', kwargs={'ci_id': str(ci.id)})
         link_text = ", ".join([unicode(owner)
-                               for owner in owners]) if owners else 'add'
+                               for owner in owners]) if owners else '[add]'
         return "<a href=\"{}\">{}</a>".format(part_url, link_text)
     technical_owners.short_description = _("technical owners")
     technical_owners.allow_tags = True
@@ -182,7 +182,7 @@ class VentureAdmin(ModelAdmin):
         )
         part_url = reverse_lazy('ci_edit', kwargs={'ci_id': str(ci.id)})
         link_text = ", ".join([unicode(owner)
-                               for owner in owners]) if owners else 'add'
+                               for owner in owners]) if owners else '[add]'
         return "<a href=\"{}\">{}</a>".format(part_url, link_text)
     business_owners.short_description = _("business owners")
     business_owners.allow_tags = True
