@@ -36,7 +36,7 @@ class SidebarRacks(object):
             self.rack = None
             return
         rack_name = rack_name.replace('-', ' ')
-        if rack_name and rack_name != 'rack none':
+        if rack_name and rack_name != 'rack none' and rack_name != ' ':
             self.rack = get_object_or_404(
                     Device,
                     sn=rack_name,
@@ -54,7 +54,7 @@ class SidebarRacks(object):
             return sn.replace(' ', '-').lower()
         sidebar_items = [
             MenuItem("Unknown", name='', fugue_icon='fugue-prohibition',
-                     view_name='racks', view_args=['', ret['details'], ''])
+                     view_name='racks', view_args=['-', ret['details'], ''])
         ]
         for dc in Device.objects.filter(
                 model__type=DeviceType.data_center.id).order_by('name'):
@@ -264,6 +264,9 @@ class RacksRack(Racks, Base):
         tab_items = ret['tab_items']
         tab_items.append(MenuItem('Rack', fugue_icon='fugue-media-player-phone',
                             href='../rack/?%s' % self.request.GET.urlencode()))
+        tab_items.append(MenuItem('Add device',
+            fugue_icon='fugue-wooden-box--plus',
+            href='../add_device/?%s' % self.request.GET.urlencode()))
         if self.rack.model.type == DeviceType.rack.id:
             slots_set = [
                 (self.rack, self.get_slots(self.rack))
@@ -307,7 +310,11 @@ class DeviceCreateView(CreateView):
     def get(self, *args, **kwargs):
         self.set_rack()
         has_perm = self.request.user.get_profile().has_perm
-        if not has_perm(Perm.create_device, self.rack.venture):
+        try:
+            venture = self.rack.venture
+        except AttributeError:
+            venture = None
+        if not has_perm(Perm.create_device, venture):
             return HttpResponseForbidden(
                     "You don't have permission to create devices here.")
         return super(DeviceCreateView, self).get(*args, **kwargs)
