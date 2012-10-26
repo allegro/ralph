@@ -654,45 +654,45 @@ class Edit(BaseCMDBView):
         ci_id = self.kwargs.get('ci_id')
         if ci_id:
             self.ci = get_object_or_404(db.CI, id=ci_id)
-            if self.Form:
-                self.form = self.Form(self.request.POST, **self.form_options)
-                self.form_attributes = EditAttributeFormFactory(
-                    ci=self.ci).factory(
-                        self.request.POST,
-                        **self.form_attributes_options
-                    )
-                if self.form.is_valid() and self.form_attributes.is_valid():
-                    self.form.data['base-id'] = self.ci.id
-                    model = self.form.save(commit=False)
-                    model.id = self.ci.id
-                    model.owners.clear()
-                    model.layers.clear()
-                    layers = self.form_attributes.data.getlist('base-layers')
-                    for layer in layers:
-                        model.layers.add(CILayer.objects.get(pk=int(layer[0])))
-                    owners_t = self.form_attributes.data.getlist(
-                        'base-technical_owners')
-                    for owner in owners_t:
-                        own = CIOwnership(
-                            ci=model,
-                            owner=CIOwner.objects.get(pk=owner[0]),
-                            type=1,)
-                        own.save()
-                    owners_b = self.form_attributes.data.getlist(
-                        'base-business_owners')
-                    for owner in owners_b:
-                        own = CIOwnership(
-                            ci=model, owner=CIOwner.objects.get(pk=owner[0]),
-                            type=2,)
-                        own.save()
-                    model.uid = self.ci.uid
-                    model.save(user=self.request.user)
-                    self.form_attributes.ci = model
-                    self.form_attributes.save()
-                    messages.success(self.request, "Changes saved.")
-                    return HttpResponseRedirect(self.request.path)
-                else:
-                    messages.error(self.request, "Correct the errors.")
+            self.form_options['instance'] = self.ci
+            self.form = self.Form(
+                self.request.POST, **self.form_options
+            )
+            self.form_attributes = EditAttributeFormFactory(
+                ci=self.ci).factory(
+                    self.request.POST,
+                    **self.form_attributes_options
+                )
+            if self.form.is_valid() and self.form_attributes.is_valid():
+                model = self.form.save(commit=False)
+                model.id = self.ci.id
+                model.owners.clear()
+                model.layers.clear()
+                layers = self.form_attributes.data.getlist('base-layers')
+                for layer in layers:
+                    model.layers.add(CILayer.objects.get(pk=int(layer[0])))
+                owners_t = self.form_attributes.data.getlist(
+                    'base-technical_owners')
+                for owner in owners_t:
+                    own = CIOwnership(
+                        ci=model,
+                        owner=CIOwner.objects.get(pk=owner[0]),
+                        type=1,)
+                    own.save()
+                owners_b = self.form_attributes.data.getlist(
+                    'base-business_owners')
+                for owner in owners_b:
+                    own = CIOwnership(
+                        ci=model, owner=CIOwner.objects.get(pk=owner[0]),
+                        type=2,)
+                    own.save()
+                model.save(user=self.request.user)
+                self.form_attributes.ci = model
+                self.form_attributes.save()
+                messages.success(self.request, "Changes saved.")
+                return HttpResponseRedirect(self.request.path)
+            else:
+                messages.error(self.request, "Correct the errors.")
         return super(Edit, self).get(*args, **kwargs)
 
 

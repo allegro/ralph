@@ -12,9 +12,10 @@ import re
 
 from django.conf import settings
 from django.dispatch import receiver
-from django.db.models.signals import pre_save, post_delete, post_save
+from django.db.models.signals import post_delete, post_save
 from django.db import IntegrityError
 from celery.task import task
+import django.dispatch
 
 # using models_ci not models, for dependency chain.
 from ralph.cmdb import models_ci as cdb
@@ -27,9 +28,10 @@ from ralph.cmdb.models_common import getfunc
 logger = logging.Logger(__file__)
 
 user_match = re.compile(r".*\<(.*)@.*\>")
+register_issue_signal = django.dispatch.Signal(providing_args=["change_id"])
 
 if settings.ISSUETRACKERS['default']['ENGINE'] == '':
-    # Null Issue Tracker fallback
+    # Dont register changes at all.
     RALPH_CHANGE_LINK = '%s'
     OP_TEMPLATE = ''
     OP_ISSUE_TYPE = ''
@@ -78,16 +80,25 @@ def change_delete_post_save(sender, instance, **kwargs):
 @receiver(post_save, sender=chdb.CIChangePuppet, dispatch_uid='ralph.cmdb.change_post_save')
 @receiver(post_save, sender=chdb.CIChangeGit, dispatch_uid='ralph.cmdb.change_post_save')
 def post_create_change(sender, instance, raw, using, **kwargs):
+    registration_type = chdb.CI_CHANGE_REGISTRATION_TYPES.NOT_REGISTERED.id
+    user = None
     try:
         """ Classify change, and create record - CIChange """
         logger.debug('Hooking post save CIChange creation.')
         if isinstance(instance, chdb.CIChangeGit):
+            # register every git change (treat as manual)
+            registration_type = chdb.CI_CHANGE_REGISTRATION_TYPES.WAITING.id
             priority = chdb.CI_CHANGE_PRIORITY_TYPES.WARNING.id
             change_type = chdb.CI_CHANGE_TYPES.CONF_GIT.id
             message = instance.comment
             time = instance.time
             ci = instance.ci
         elif isinstance(instance, chdb.CIChangeCMDBHistory):
+            # register only user triggered cmdb history
+            if instance.user_id:
+                registration_type = \
+                    chdb.CI_CHANGE_REGISTRATION_TYPES.WAITING.id
+                user = instance.user
             change_type = chdb.CI_CHANGE_TYPES.CI.id
             priority = chdb.CI_CHANGE_PRIORITY_TYPES.NOTICE.id
             message = instance.comment
@@ -109,18 +120,45 @@ def post_create_change(sender, instance, raw, using, **kwargs):
 
         # now decide if this is a change included into the statistics
         # by default create for every hooked change type.
+        # dont register tickets  before start date.
+
         ch = chdb.CIChange()
         ch.time = time
         ch.ci = ci
+        ch.registration_type = registration_type
         ch.priority = priority
         ch.type = change_type
         ch.content_object = instance
         ch.message = message
+        ch.user = user
         ch.save()
+        # register ticket now.
+        register_issue_signal.send(sender=instance, change_id=ch.id)
         logger.debug('Hook done.')
     except IntegrityError:
         instance.delete()
         raise
+
+
+def can_register_change(instance):
+    if not OP_TEMPLATE or not OP_START_DATE or not OP_TICKETS_ENABLE:
+        logger.debug(
+            'Settings not configured for OP tickets registration. Skipping.')
+        return False
+    return (
+        (instance.time.date() >= date_from_str(OP_START_DATE))
+        and instance.registration_type ==
+            chdb.CI_CHANGE_REGISTRATION_TYPES.WAITING.id
+            and not instance.external_key
+    )
+
+
+@receiver(
+    register_issue_signal, dispatch_uid='register_issue_handler')
+def register_issue_handler(sender, change_id, **kwargs):
+    instance = chdb.CIChange.objects.get(id=change_id)
+    if can_register_change(instance):
+        getfunc(create_issue)(instance.id)
 
 
 @receiver(post_save, sender=cdb.CI, dispatch_uid='ralph.cmdb.history')
@@ -161,7 +199,7 @@ def ci_post_save(sender, instance, raw, using, **kwargs):
 @task
 def create_issue(change_id, retry_count=1):
     ch = chdb.CIChange.objects.get(id=change_id)
-    if ch.registration_type == chdb.CI_CHANGE_REGISTRATION_TYPES.CHANGE.id:
+    if ch.registration_type == chdb.CI_CHANGE_REGISTRATION_TYPES.OP.id:
         raise Exception('Already registered')
 
     user = ''
@@ -186,6 +224,7 @@ def create_issue(change_id, retry_count=1):
         user = unicode(ch.content_object.user)
         summary = 'Asset attribute change: %s' % ch.message
         description = '''
+        Attribute: %(attribute)s
         Old value: %(old_value)s
         New value: %(new_value)s
         Description: %(description)s
@@ -193,6 +232,7 @@ def create_issue(change_id, retry_count=1):
         Author: %(author)s
 
         ''' % (dict(
+            attribute=ch.content_object.field_name,
             old_value=ch.content_object.old_value,
             new_value=ch.content_object.new_value,
             description=ch.content_object.comment,
@@ -204,12 +244,14 @@ def create_issue(change_id, retry_count=1):
         user = unicode(ch.content_object.user)
         summary = 'CMDB attribute change: %s' % ch.message
         description = '''
+        Attribute: %(attribute)s
         Old value: %(old_value)s
         New value: %(new_value)s
         Description: %(description)s
         CMDB link: %(cmdb_link)s
         Author: %(author)s
         ''' % (dict(
+            attribute=ch.content_object.field_name,
             old_value=ch.content_object.old_value,
             new_value=ch.content_object.new_value,
             description=ch.content_object.comment,
@@ -235,7 +277,11 @@ def create_issue(change_id, retry_count=1):
             start=ch.created.isoformat(),
             end='',
         )
-        ch.registration_type = chdb.CI_CHANGE_REGISTRATION_TYPES.CHANGE.id
+        ch = chdb.CIChange.objects.get(id=ch.id)
+        # before save, check one more time
+        if ch.registration_type == chdb.CI_CHANGE_REGISTRATION_TYPES.OP.id:
+            raise Exception('Already registered')
+        ch.registration_type = chdb.CI_CHANGE_REGISTRATION_TYPES.OP.id
         ch.external_key = issue.get('key')
         ch.save()
     except IssueTrackerException as e:
@@ -248,18 +294,6 @@ def create_issue(change_id, retry_count=1):
 
 def date_from_str(s):
     return datetime.datetime.strptime(s, '%Y-%m-%d').date()
-
-
-@receiver(post_save, sender=chdb.CIChange, dispatch_uid='ralph.cmdb.cichange')
-def change_post_save(sender, instance, raw, using, **kwargs):
-    if not OP_TEMPLATE or not OP_START_DATE or not OP_TICKETS_ENABLE:
-        logger.debug(
-            'Settings not configured for OP tickets registration. Skipping.')
-        return
-    if ((instance.type in chdb.REGISTER_CHANGE_TYPES)
-        and (instance.time.date() >= date_from_str(OP_START_DATE))
-        and not instance.external_key):
-            getfunc(create_issue)(instance.id)
 
 
 @receiver(post_delete, sender=chdb.CIChange, dispatch_uid='ralph.cmdb.cichangebasedelete')
