@@ -783,7 +783,8 @@ class CIFormsTest(TestCase):
         self.assertEqual(cycle, [1, 2, 3])
 
     def test_ci_custom_fields(self):
-        #ci type = application
+        # Create CI by the form, and edit CI  with completion of custom fields
+        # (type - float) for CI type - device
         response_ci_application = self.add_ci(name='CI_application', type=1)
         self.assertEqual(response_ci_application.status_code, 302)
         ci_application = CI.objects.get(name='CI_application')
@@ -800,7 +801,8 @@ class CIFormsTest(TestCase):
         ci_values = CIValueFloat.objects.get(id__in=values['float'])
         self.assertEqual(ci_values.value, 12345)
 
-        #ci type - device
+        # Create CI by the form, and edit CI  with completion of custom fields
+        # (type - date and float) for CI type - device
         response_ci_device = self.add_ci(name='CI_device', type=2)
         self.assertEqual(response_ci_device.status_code, 302)
         ci_device = CI.objects.get(name='CI_device')
@@ -823,7 +825,8 @@ class CIFormsTest(TestCase):
                          time.strftime('%Y-%m-%d'))
         self.assertEqual(ci_float_value.value, 666)
 
-        #ci type - procedure
+        # Create CI by the form, and edit CI  with completion of custom fields
+        # (type - string) for CI type - procedure
         response_ci_device = self.add_ci(name='CI_procedure', type=3)
         self.assertEqual(response_ci_device.status_code, 302)
         ci_device = CI.objects.get(name='CI_procedure')
@@ -831,13 +834,13 @@ class CIFormsTest(TestCase):
             ci_device, custom_attrs={
                 'attr-attribute_string_1': 'http://doc.local',
                 'attr-attribute_string_2': 'name-test',
-                }
+            }
         )
         self.assertEqual(response_ci_device_edit.status_code, 302)
         ci_attrvalue = ci_device.ciattributevalue_set.all()
         values = {}
         values['string'] = [x.value_string_id for x in ci_attrvalue
-                           if x.value_string]
+                            if x.value_string]
         ci_string_value = CIValueString.objects.filter(id__in=values['string'])
         val = [x.value for x in ci_string_value]
         val.sort()
