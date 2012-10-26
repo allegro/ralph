@@ -194,8 +194,11 @@ class RacksDeviceList(SidebarRacks, BaseMixin, BaseDeviceList):
         profile = self.request.user.get_profile()
         has_perm = profile.has_perm
         tab_items = ret['tab_items']
-        tab_items.append(MenuItem('Rack', fugue_icon='fugue-media-player-phone',
-                            href='../rack/?%s' % self.request.GET.urlencode()))
+        if ret['subsection'] is not '':
+            tab_items.append(
+                MenuItem('Rack', fugue_icon='fugue-media-player-phone',
+                href='../rack/?%s' % self.request.GET.urlencode())
+            )
         if has_perm(Perm.create_device, self.rack.venture if
                     self.rack else None):
             tab_items.append(MenuItem('Add Device',
@@ -262,8 +265,11 @@ class RacksRack(Racks, Base):
         ret = super(RacksRack, self).get_context_data(**kwargs)
         self.set_rack()
         tab_items = ret['tab_items']
-        tab_items.append(MenuItem('Rack', fugue_icon='fugue-media-player-phone',
-                            href='../rack/?%s' % self.request.GET.urlencode()))
+
+        tab_items.append(
+            MenuItem('Rack', fugue_icon='fugue-media-player-phone',
+            href='../rack/?%s' % self.request.GET.urlencode())
+        )
         tab_items.append(MenuItem('Add device',
             fugue_icon='fugue-wooden-box--plus',
             href='../add_device/?%s' % self.request.GET.urlencode()))
@@ -335,6 +341,12 @@ class RacksAddDevice(Racks, DeviceCreateView):
     def get_context_data(self, **kwargs):
         ret = super(RacksAddDevice, self).get_context_data(**kwargs)
         tab_items = ret['tab_items']
+        if ret['subsection'] is not '':
+            tab_items.append(
+                MenuItem('Rack', fugue_icon='fugue-media-player-phone',
+                href='../rack/?%s' % self.request.GET.urlencode())
+            )
+
         tab_items.append(MenuItem('Add Device', name='add_device',
                             fugue_icon='fugue-wooden-box--plus',
                             href='../add_device/?%s' % (
