@@ -50,5 +50,6 @@ urlpatterns = patterns('',
             login_required(DashboardDetails.as_view())),
     (r'^changes/reports$', login_required(Reports.as_view())),
     (r'^graphs$', login_required(Graphs.as_view())),
+    (r'^graphs_ajax$', login_required(Graphs.get_ajax)),
 
 )

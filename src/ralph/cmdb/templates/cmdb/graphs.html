@@ -1,0 +1,78 @@
+{%extends 'cmdb/base.html'%}
+{% load bob %}
+{% load icons %}
+
+{% block scripts %}
+    <!-- from now, include parent jquery version for normal use. !-->
+    {{ block.super }}
+    <script type="text/javascript" src="{{STATIC_URL}}cmdb/VivaGraphJS/vivagraph.js"></script>
+    <script type="text/javascript">
+        function mainer() {
+            // Step 1. We create a graph object.
+            var graph = Viva.Graph.graph();
+            $.get("/cmdb/graphs_ajax", function(data)
+                    {
+                        for (var i=0; i<data.nodes.length; i++)
+                        {
+                           graph.addNode(data.nodes[i][0], data.nodes[i][1]);
+                        }
+                        for (var i=0; i<data.relations.length; i++)
+                        {
+                           graph.addLink(data.relations[i].parent, data.relations[i].child);
+                        }
+                    }
+            );
+
+
+            /* Note: graph.addLink() creates new nodes if they are not yet 
+               present in the graph. Thus calling this method is equivalent to:
+
+               graph.addNode(1);
+               graph.addNode(2);
+               graph.addLink(1, 2);
+             */
+            var graphics = Viva.Graph.View.svgGraphics();
+            graphics.node(function(node) {
+                e = Viva.Graph.svg('text')
+                .attr('width', 24)
+                .attr('height', 24);
+                e.textContent = node.data;
+                return e
+                })
+                .placeNode(function(nodeUI, pos){
+                                nodeUI.attr('x', pos.x - 12).attr('y', pos.y - 12);
+            });
+            var renderer = Viva.Graph.View.renderer(graph, 
+                    {
+                     graphics : graphics
+                    }
+                    );
+            renderer.run();
+        }
+    </script>
+<script type="text/javascript" charset="utf-8">
+    $(document).ready(function()
+            {
+                mainer();
+            }
+            );
+</script>
+
+{% endblock %}
+
+{% block extra_headers %}
+{{ block.super }}
+    <style type="text/css" media="screen">
+        svg { 
+            width: 100%; height: 100%;
+            position: absolute;
+            top: 0px;
+        }
+    </style>
+{% endblock %}
+
+{% block contentarea %}
+{{ block.super }}
+<div id='tester' width='300' height='300' onload='mainer()'>
+</div>
+{% endblock %}
