@@ -17,20 +17,14 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase, Client
-from django.contrib.auth.models import User
 
 from ralph.cmdb.importer import CIImporter
 from ralph.cmdb.models import (
     CI, CIRelation, CI_RELATION_TYPES, CIChange, CI_TYPES, CILayer, CIType,
-    CIValueFloat, CIValueDate, CIChangePuppet, CIChangeGit, CI_CHANGE_TYPES,
-    CI_CHANGE_REGISTRATION_TYPES)
+    CIValueFloat, CIValueDate, CIValueString, CIChangePuppet, CIChangeGit,
+    CI_CHANGE_TYPES, CI_CHANGE_REGISTRATION_TYPES)
 from ralph.discovery.models import Device, DeviceType, DeviceModel
 from ralph.business.models import Venture, VentureRole
-from ralph.cmdb.importer import CIImporter
-from ralph.cmdb.models import (CI, CILayer, CIRelation, CI_RELATION_TYPES,
-                               CIChange, CI_TYPES, CIChangePuppet, CIChangeGit,
-                               CI_CHANGE_TYPES, CIType, CIValueFloat,
-                               CIValueDate)
 from ralph.cmdb.integration.puppet import PuppetAgentsImporter
 from ralph.cmdb.models import PuppetLog
 from ralph.cmdb.integration.puppet import PuppetGitImporter as pgi
@@ -565,7 +559,7 @@ class CIFormsTest(TestCase):
             'base-name': name,
             'base-state': 2,
             'base-status': 2,
-            'base-type': type
+            'base-type': type,
         }
         return self.client.post(ci_add_url, attrs)
 
@@ -789,15 +783,22 @@ class CIFormsTest(TestCase):
         self.assertEqual(cycle, [1, 2, 3])
 
     def test_ci_custom_fields(self):
-#        response_ci_application = self.add_ci(name='CI_application', type=1)
-#        self.assertEqual(response_ci_application.status_code, 302)
-#        ci_application = CI.objects.get(name='CI_application')
-#        response_ci_application_edit = self.edit_ci(
-#            ci_application, custom_attrs={'attr-attribute_float_4': 12345})
-#        self.assertEqual(response_ci_application_edit.status_code, 302)
-#        ci_attrvalue = ci_application.ciattributevalue_set.all()
-#        ci_attrvalue_ids = [x.id for x in ci_attrvalue]
-#        ci_values = CIValueFloat.objects.get(id__in = ci_attrvalue_ids)
+        #ci type = application
+        response_ci_application = self.add_ci(name='CI_application', type=1)
+        self.assertEqual(response_ci_application.status_code, 302)
+        ci_application = CI.objects.get(name='CI_application')
+        response_ci_application_edit = self.edit_ci(
+            ci_application, custom_attrs={
+                'attr-attribute_float_4': 12345
+            }
+        )
+        self.assertEqual(response_ci_application_edit.status_code, 302)
+        ci_attrvalue = ci_application.ciattributevalue_set.all()
+        values = {}
+        values['float'] = [x.value_float_id for x in ci_attrvalue
+                           if x.value_float]
+        ci_values = CIValueFloat.objects.get(id__in=values['float'])
+        self.assertEqual(ci_values.value, 12345)
 
         #ci type - device
         response_ci_device = self.add_ci(name='CI_device', type=2)
@@ -812,15 +813,32 @@ class CIFormsTest(TestCase):
         self.assertEqual(response_ci_device_edit.status_code, 302)
         ci_attrvalue = ci_device.ciattributevalue_set.all()
         values = {}
-        values['integer'] = [x.value_integer_id for x in ci_attrvalue
-                             if x.value_integer]
-        values['string'] = [x.value_string_id for x in ci_attrvalue
-                            if x.value_string]
         values['float'] = [x.value_float_id for x in ci_attrvalue
                            if x.value_float]
         values['date'] = [x.value_date_id for x in ci_attrvalue
                           if x.value_date]
-        values['choice'] = [x.value_choice_id for x in ci_attrvalue
-                            if x.value_choice]
         ci_float_value = CIValueFloat.objects.get(id__in=values['float'])
         ci_date_value = CIValueDate.objects.get(id__in=values['date'])
+        self.assertEqual(ci_date_value.value.strftime('%Y-%m-%d'),
+                         time.strftime('%Y-%m-%d'))
+        self.assertEqual(ci_float_value.value, 666)
+
+        #ci type - procedure
+        response_ci_device = self.add_ci(name='CI_procedure', type=3)
+        self.assertEqual(response_ci_device.status_code, 302)
+        ci_device = CI.objects.get(name='CI_procedure')
+        response_ci_device_edit = self.edit_ci(
+            ci_device, custom_attrs={
+                'attr-attribute_string_1': 'http://doc.local',
+                'attr-attribute_string_2': 'name-test',
+                }
+        )
+        self.assertEqual(response_ci_device_edit.status_code, 302)
+        ci_attrvalue = ci_device.ciattributevalue_set.all()
+        values = {}
+        values['string'] = [x.value_string_id for x in ci_attrvalue
+                           if x.value_string]
+        ci_string_value = CIValueString.objects.filter(id__in=values['string'])
+        val = [x.value for x in ci_string_value]
+        val.sort()
+        self.assertListEqual(val, ['http://doc.local', 'name-test'])

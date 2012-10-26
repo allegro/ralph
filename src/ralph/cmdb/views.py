@@ -470,7 +470,7 @@ class Edit(BaseCMDBView):
             'ci': self.ci,
             'ci_id': self.ci.id,
             'uid': self.ci.uid,
-            'label': 'Edit CI - ' + self.ci.uid,
+            'label': 'Edit CI: {} (uid: {})'.format(self.ci.name, self.ci.uid),
             'relations_contains': self.relations_contains,
             'relations_requires': self.relations_requires,
             'relations_isrequired': self.relations_isrequired,
@@ -703,7 +703,7 @@ class View(Edit):
     def get_context_data(self, **kwargs):
         ret = super(View, self).get_context_data(**kwargs)
         ret.update({
-            'label': 'View CI:  ' + self.ci.name,
+            'label': 'View CI: {} (uid: {})'.format(self.ci.name, self.ci.uid),
             'subsection': 'Info - %s' % self.ci.name
         })
         return ret
@@ -879,7 +879,7 @@ class CMDB(View):
         ret = super(View, self).get_context_data(**kwargs)
         ret.update({
             'ci': self.ci,
-            'label': 'View CI - ' + self.ci.name,
+            'label': 'View CI: {} (uid: {})'.format(self.ci.name, self.ci.uid),
             'url_query': self.request.GET,
             'components': _get_details(
                 self.ci.content_object, purchase_only=False
