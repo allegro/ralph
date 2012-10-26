@@ -51,11 +51,7 @@ class CIReportsParamsForm(forms.Form):
 class CIEditForm(forms.ModelForm):
     class Meta:
         model = models.CI
-        widgets = {
-            'uid': ReadOnlyWidget,
-        }
         fields = (
-            'uid',
             'name',
             'type',
             'state',
@@ -90,7 +86,7 @@ class CIEditForm(forms.ModelForm):
         super(CIEditForm, self).__init__(*args, **kwargs)
         if len(self.initial):
             technical_owners, bussines_owners = [], []
-            owns = CIOwnership.objects.filter(ci_id=self.initial.get('ci').id)
+            owns = self.instance.ciownership_set.all()
             for own in owns:
                 if own.type == 1:
                     try:
@@ -166,6 +162,9 @@ class CIRelationEditForm(forms.ModelForm):
             'child',
             'type',
         )
+
+    icons = {
+    }
 
     parent = make_ajax_field(models.CIRelation, 'parent', 'ci', help_text=None)
     child = make_ajax_field(models.CIRelation, 'child', 'ci', help_text=None)
