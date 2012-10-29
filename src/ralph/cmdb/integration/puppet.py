@@ -119,7 +119,7 @@ level=%s
 message=%s
 time=%s'''  % ( title(), host, status, level, message, time))
 
-        
+
 
 class PuppetGitImporter(BaseImporter):
     """ Fetch changesets from fisheye repo.
@@ -229,7 +229,7 @@ class PuppetGitImporter(BaseImporter):
             groups = None
             if ventures_1.match(f):
                 groups = ventures_1.match(f).groups()
-                ci =self.find_ci_by_venturerole(groups)
+                ci = self.find_ci_by_venturerole(groups)
                 if ci:
                     return ci
             elif ventures_2.match(f):
