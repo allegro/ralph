@@ -57,7 +57,7 @@ class NetworkTest(TestCase):
             * are you running tests from root
               or
             * are you using setuid bin/python""".format(
-                EXISTING_DOMAIN)).strip()
+            EXISTING_DOMAIN)).strip()
         self.assertIsNotNone(ping(EXISTING_DOMAIN, 2), msg)
         self.assertTrue(ping(EXISTING_DOMAIN, 2) > 0)
         # non-existent domain
@@ -71,7 +71,7 @@ class NetworkTest(TestCase):
         # existing host
         self.assertIsNotNone(hostname(IP2HOST_IP))
         self.assertIsNotNone(re.match(IP2HOST_HOSTNAME_REGEX,
-            hostname(IP2HOST_IP)))
+                                      hostname(IP2HOST_IP)))
         # non-existent host
         self.assertIsNone(hostname(NON_EXISTENT_HOST_IP))
 
@@ -107,7 +107,7 @@ class PricingTest(TestCase):
 
     def test_blade_server(self):
         encl = Device.create(sn='devicex', model_type=DeviceType.blade_system,
-                            model_name='device encl')
+                             model_name='device encl')
         dev = Device.create(sn='device', model_type=DeviceType.blade_server,
                             model_name='device', parent=encl)
 
@@ -192,15 +192,6 @@ class PricingTest(TestCase):
 
 
 class ApiTest(TestCase):
-    def setUp(self):
-        settings.API_THROTTLING = {'throttle_at': 2, 'timeframe': 10,
-                                   'expiration': None,
-                                   }
-
-    def tearDown(self):
-        settings.API_THROTTLING = {'throttle_at': '', 'timeframe': '',
-                                   'expiration': None,
-                                   }
 
     def _save_ventures(self, count):
         id_list = []
@@ -211,15 +202,26 @@ class ApiTest(TestCase):
         return id_list
 
     def test_throttling(self):
-        user = User.objects.create_user('api_user', 'test@mail.local', 'password')
+        user = User.objects.create_user(
+            'api_user',
+            'test@mail.local',
+            'password'
+        )
         user.save()
         api_key = ApiKey.objects.get(user=user)
-        data = {'format': 'json', 'username': user.username, 'api_key': api_key.key}
+        data = {
+            'format': 'json',
+            'username': user.username,
+            'api_key': api_key.key
+        }
         status_list = []
-        id_list = self._save_ventures(5)
+        id_list = self._save_ventures(202)
 
         for id in id_list:
             path = "/api/v0.9/venture/%s" % id
             response = self.client.get(path=path, data=data, follow=True)
             status_list.append(response.status_code)
-        self.assertListEqual([200, 200, 403, 403, 403], status_list)
+        gen_list = [200 for x in range(0, 200)]
+        gen_list.append(403)
+        gen_list.append(403)
+        self.assertListEqual(gen_list, status_list)
