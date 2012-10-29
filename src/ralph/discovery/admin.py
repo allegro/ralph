@@ -21,6 +21,8 @@ from ralph.discovery.models import (Device, DeviceModel, IPAddress, Network,
 from ralph.discovery.models_history import HistoryChange
 from ralph.business.admin import RolePropertyValueInline
 
+SAVE_PRIORITY = 200
+
 
 class NetworkAdmin(ModelAdmin):
     def terms(self):
@@ -190,7 +192,7 @@ class DeviceAdmin(ModelAdmin):
     }
 
     def save_model(self, request, obj, form, change):
-        obj.save(user=request.user)
+        obj.save(user=request.user, priority=SAVE_PRIORITY)
 
 admin.site.register(Device, DeviceAdmin)
 
