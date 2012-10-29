@@ -140,7 +140,7 @@ LOGGING = {
             'propagate': True,
         },
         'ralph': {
-            'handlers': ['file', 'console'],
+            'handlers': ['file'],
             'propagate': True,
             'level': 'DEBUG',
         },
