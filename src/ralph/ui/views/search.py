@@ -97,16 +97,16 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
             if data['name']:
                 name = data['name'].strip()
                 names = set(n.strip('.') for (n,) in Record.objects.filter(
-                        type='CNAME'
-                    ).filter(
-                        name__icontains=name
-                    ).values_list('content'))
+                    type='CNAME'
+                ).filter(
+                    name__icontains=name
+                ).values_list('content'))
                 ips = set(ip.strip('.') for (ip,) in Record.objects.filter(
-                        type='A'
-                    ).filter(
-                        Q(name__icontains=name) |
-                        Q(name__in=names)
-                    ).values_list('content'))
+                    type='A'
+                ).filter(
+                    Q(name__icontains=name) |
+                    Q(name__in=names)
+                ).values_list('content'))
                 q = (_search_fields_or([
                     'name',
                     'ipaddress__hostname__icontains',
@@ -117,7 +117,7 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
             if data['address']:
                 if data['address'] == empty_field:
                     self.query = self.query.filter(
-                        ipaddress = None
+                        ipaddress=None
                     )
                 elif '/' in data['address']:
                     try:
@@ -148,7 +148,7 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
             if data['model']:
                 if data['model'] == empty_field:
                     self.query = self.query.filter(
-                        model = None
+                        model=None
                     )
                 else:
                     q = _search_fields_or([
@@ -157,39 +157,55 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                     ], data['model'].split('|'))
                     self.query = self.query.filter(q).distinct()
             if data['component']:
-                q = _search_fields_or([
-                    'genericcomponent__label__icontains',
-                    'genericcomponent__model__name__icontains',
-                    'genericcomponent__model__group__name__icontains',
-                    'software__label__icontains',
-                    'software__model__name__icontains',
-                    'software__model__group__name__icontains',
-                    'ethernet__mac__icontains',
-                    'fibrechannel__label__icontains',
-                    'fibrechannel__model__name__icontains',
-                    'fibrechannel__model__group__name__icontains',
-                    'storage__label__icontains',
-                    'storage__model__name__icontains',
-                    'storage__model__group__name__icontains',
-                    'memory__label__icontains',
-                    'memory__model__name__icontains',
-                    'memory__model__group__name__icontains',
-                    'processor__label__icontains',
-                    'processor__model__name__icontains',
-                    'processor__model__group__name__icontains',
-                    'disksharemount__share__label__icontains',
-                    'disksharemount__share__wwn__icontains',
-                ], data['component'].split('|'))
-                self.query = self.query.filter(q).distinct()
+                if data['component'].isdigit():
+                    q = _search_fields_or([
+                        'processor__model__id',
+                        'memory__model__id',
+                        'storage__model__id',
+                        'ethernet__id',
+                        'genericcomponent__model__id',
+                        'software__model__id',
+                        'fibrechannel__model__id',
+                        'disksharemount__share__model__id',
+                        'operatingsystem__model__id'
+                    ], data['component'].split('|'))
+                    self.query = self.query.filter(q).distinct()
+                else:
+                    q = _search_fields_or([
+                        'genericcomponent__label__icontains',
+                        'genericcomponent__model__name__icontains',
+                        'genericcomponent__model__group__name__icontains',
+                        'software__label__icontains',
+                        'software__model__name__icontains',
+                        'software__model__group__name__icontains',
+                        'ethernet__mac__icontains',
+                        'fibrechannel__label__icontains',
+                        'fibrechannel__model__name__icontains',
+                        'fibrechannel__model__group__name__icontains',
+                        'storage__label__icontains',
+                        'storage__model__name__icontains',
+                        'storage__model__group__name__icontains',
+                        'memory__label__icontains',
+                        'memory__model__name__icontains',
+                        'memory__model__group__name__icontains',
+                        'processor__label__icontains',
+                        'processor__model__name__icontains',
+                        'processor__model__group__name__icontains',
+                        'disksharemount__share__label__icontains',
+                        'disksharemount__share__wwn__icontains',
+                        'disksharemount__share__model__name__icontains',
+                        'operatingsystem__model__name__icontains'
+                    ], data['component'].split('|'))
+                    self.query = self.query.filter(q).distinct()
             if data['serial']:
                 if data['serial'] == empty_field:
                     self.query = self.query.filter(
-                        Q(sn = None) |
-                        Q(ethernet__mac = None) |
-                        Q(genericcomponent__sn = None)
+                        Q(sn=None) |
+                        Q(ethernet__mac=None) |
+                        Q(genericcomponent__sn=None)
                     )
                 else:
-                    serial = data['serial'].replace(':','')
+                    serial = data['serial'].replace(':', '')
                     q = _search_fields_or([
                         'sn__icontains',
                         'ethernet__mac__icontains',
@@ -201,18 +217,18 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
             if data['barcode']:
                 if data['barcode'] == empty_field:
                     self.query = self.query.filter(
-                        barcode = None
+                        barcode=None
                     )
                 else:
                     self.query = self.query.filter(
-                            barcode__icontains=data['barcode']
-                        )
+                        barcode__icontains=data['barcode']
+                    )
             if data['position']:
                 if data['position'] == empty_field:
                     self.query = self.query.filter(
-                        Q(position = None) |
-                        Q(dc = None) |
-                        Q(rack = None)
+                        Q(position=None) |
+                        Q(dc=None) |
+                        Q(rack=None)
                     )
                 else:
                     q = Q()
@@ -259,15 +275,15 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                     self.query = self.query.filter(q).distinct()
             if data['device_group']:
                 self.query = self.query.filter(
-                        model__group_id=data['device_group']
-                    )
+                    model__group_id=data['device_group']
+                )
             if data['component_group']:
                 is_splunk = ComponentModel.objects.filter(
-                        group_id=str(data['component_group']),
-                        family='splunkusage').exists()
+                    group_id=str(data['component_group']),
+                    family='splunkusage').exists()
                 if is_splunk:
                     yesterday = datetime.date.today() - datetime.timedelta(
-                            days=1)
+                        days=1)
                     q = Q(splunkusage__day=yesterday)
                 else:
                     q = _search_fields_or([
@@ -282,10 +298,10 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                 self.query = self.query.filter(q).distinct()
             if data['device_type']:
                 self.query = self.query.filter(
-                        model__type__in=data['device_type']
-                    )
+                    model__type__in=data['device_type']
+                )
             if data['no_purchase_date']:
-                self.query = self.query.filter(purchase_date = None)
+                self.query = self.query.filter(purchase_date=None)
             else:
                 if data['purchase_date_start']:
                     self.query = self.query.filter(
@@ -296,7 +312,7 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                         purchase_date__lte=data['purchase_date_end']
                     )
             if data['no_deprecation_date']:
-                self.query = self.query.filter(purchase_date = None)
+                self.query = self.query.filter(purchase_date=None)
             else:
                 if data['deprecation_date_start']:
                     self.query = self.query.filter(
