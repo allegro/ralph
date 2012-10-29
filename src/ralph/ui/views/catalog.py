@@ -224,11 +224,15 @@ class CatalogDevice(Catalog):
         else:
             self.query = DeviceModel.objects.filter(
                     type=self.model_type_id).filter(group=None)
-        self.unassigned_count = DeviceModel.objects.filter(
-                type=self.model_type_id
-            ).filter(
-                group=None
-            ).count()
+        unassigned_device = DeviceModel.objects.filter(
+            type=self.model_type_id
+        ).filter(
+            group=None
+        )
+        unassigned_count = 0
+        for u in unassigned_device:
+            unassigned_count = unassigned_count + u.get_count()
+        self.unassigned_count = unassigned_count
         self.groups = list(DeviceModelGroup.objects.filter(
             type=self.model_type_id))
         for g in self.groups:
@@ -346,11 +350,15 @@ class CatalogComponent(Catalog):
         else:
             self.query = ComponentModel.objects.filter(
                     type=self.model_type_id).filter(group=None)
-        self.unassigned_count = ComponentModel.objects.filter(
+        unassigned_componsents = ComponentModel.objects.filter(
                 type=self.model_type_id
             ).filter(
                 group=None
-            ).count()
+            )
+        unassigned_count = 0
+        for u in unassigned_componsents:
+            unassigned_count = unassigned_count + u.get_count()
+        self.unassigned_count = unassigned_count
         groups = list(ComponentModelGroup.objects.filter(
                 type=self.model_type_id))
         for g in groups:
