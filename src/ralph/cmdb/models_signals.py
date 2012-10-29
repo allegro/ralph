@@ -37,10 +37,12 @@ if settings.ISSUETRACKERS['default']['ENGINE'] == '':
     OP_ISSUE_TYPE = ''
     DEFAULT_ASSIGNEE = ''
     OP_START_DATE = ''
+    OP_PROFILE = ''
     OP_TICKETS_ENABLE = False
 else:
     RALPH_CHANGE_LINK = settings.ISSUETRACKERS['default']['CMDB_VIEWCHANGE_LINK']
     OP_TEMPLATE = settings.ISSUETRACKERS['default']['OP']['TEMPLATE']
+    OP_PROFILE = settings.ISSUETRACKERS['default']['OP']['PROFILE']
     OP_ISSUE_TYPE = settings.ISSUETRACKERS['default']['OP']['ISSUETYPE']
     DEFAULT_ASSIGNEE = settings.ISSUETRACKERS['default']['OP']['DEFAULT_ASSIGNEE']
     OP_START_DATE = settings.ISSUETRACKERS['default']['OP']['START_DATE']
@@ -276,6 +278,7 @@ def create_issue(change_id, retry_count=1):
             template=OP_TEMPLATE,
             start=ch.created.isoformat(),
             end='',
+            profile=OP_PROFILE,
         )
         ch = chdb.CIChange.objects.get(id=ch.id)
         # before save, check one more time
