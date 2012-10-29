@@ -10,8 +10,9 @@ logger = logging.getLogger(__name__)
 
 from ralph.cmdb.integration.exceptions import IssueTrackerException
 
-DEFAULT_TIMEOUT=60
-DEFAULT_KEEPALIVE=10
+DEFAULT_TIMEOUT = 60
+DEFAULT_KEEPALIVE = 10
+
 
 class Jira(object):
     def __init__(self):
@@ -25,7 +26,7 @@ class Jira(object):
         self.resource_headers = {'Content-type': 'application/json'}
 
     def create_resource(self, resource_name):
-        complete_url= "%s/%s" % (self.base_url , resource_name)
+        complete_url = "%s/%s" % (self.base_url , resource_name)
         resource = Resource(complete_url, pool_instance=self.pool, filters=[self.auth])
         return resource
 
@@ -45,7 +46,7 @@ class Jira(object):
 
     def get_resource(self, resource_name):
         resource = self.create_resource(resource_name)
-        response=resource.get(headers=self.resource_headers)
+        response = resource.get(headers=self.resource_headers)
         return json.loads(response.body_string())
 
     def get_issue(self, issue_key):
@@ -71,7 +72,7 @@ class Jira(object):
     def transition_issue(self, issue_key, transition_id):
         try:
             call_result = self.call_resource('issue/%s/transitions' % issue_key,
-                params={
+                params = {
                     'update': {
                         'comment': [
                             {
@@ -97,7 +98,7 @@ class Jira(object):
     def create_issue(self, summary, description, issue_type, ci, assignee,
             start='', end='',
             business_assignee=None, technical_assignee=None, template=None,
-            service=None):
+            service=None, profile=None):
         """ Create new issue.
 
         Jira Rest accepts following fields:
@@ -175,6 +176,7 @@ class Jira(object):
         ci_name_field_name = s['CI_NAME_FIELD_NAME']
         project = s['CMDB_PROJECT']
         template_field_name = s['TEMPLATE_FIELD_NAME']
+        profile_field_name = s['PROFILE_FIELD_NAME']
         bowner_field_name = s['OPA']['BOWNER_FIELD_NAME']
         towner_field_name = s['OPA']['TOWNER_FIELD_NAME']
 
@@ -185,20 +187,20 @@ class Jira(object):
             ci_value = ''
             ci_full_description = ''
 
-        params={
-                    'fields': {
-                        'issuetype': {'name': issue_type},
-                        'summary': summary,
-                        ci_field_name: ci_value,
-                        ci_name_field_name: ci_full_description,
-                        'assignee': {
-                            'name': assignee
-                        },
-                        'description': description,
-                        'project': {
-                            'key': project
-                            }
-                        },
+        params = {
+            'fields': {
+                'issuetype': {'name': issue_type},
+                'summary': summary,
+                ci_field_name: ci_value,
+                ci_name_field_name: ci_full_description,
+                'assignee': {
+                    'name': assignee
+                },
+                'description': description,
+                'project': {
+                    'key': project
+                }
+            },
         }
         if technical_assignee:
             params['fields'][towner_field_name] = {'name': technical_assignee}
@@ -206,6 +208,8 @@ class Jira(object):
             params['fields'][bowner_field_name] = {'name': business_assignee}
         if template:
             params['fields'][template_field_name] = template
+        if profile_field_name:
+            params['fields'][profile_field_name] = profile
         try:
             call_result = self.call_resource('issue', params)
         except Exception as e:
