@@ -224,13 +224,13 @@ class CatalogDevice(Catalog):
         else:
             self.query = DeviceModel.objects.filter(
                     type=self.model_type_id).filter(group=None)
-        unassigned_device = DeviceModel.objects.filter(
+        unassigned_devices = DeviceModel.objects.filter(
             type=self.model_type_id
         ).filter(
             group=None
         )
         unassigned_count = 0
-        for u in unassigned_device:
+        for u in unassigned_devices:
             unassigned_count = unassigned_count + u.get_count()
         self.unassigned_count = unassigned_count
         self.groups = list(DeviceModelGroup.objects.filter(
