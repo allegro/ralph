@@ -224,4 +224,5 @@ class ApiTest(TestCase):
         gen_list = [200 for x in range(0, 200)]
         gen_list.append(403)
         gen_list.append(403)
+        self.maxDiff = None
         self.assertListEqual(gen_list, status_list)
