@@ -94,9 +94,10 @@ class Jira(object):
             raise IssueTrackerException(e)
         return call_result
 
-    def create_issue(self, summary, description, issue_type, ci, assignee,
-            start='', end='', business_assignee=None, technical_assignee=None,
-            template=None, service=None):
+    def create_issue(
+        self, summary, description, issue_type, ci, assignee,
+        start='', end='', business_assignee=None, technical_assignee=None,
+        template=None, service=None, profile=None):
         """ Create new issue.
 
         Jira Rest accepts following fields:
@@ -174,6 +175,7 @@ class Jira(object):
         ci_name_field_name = s['CI_NAME_FIELD_NAME']
         project = s['CMDB_PROJECT']
         template_field_name = s['TEMPLATE_FIELD_NAME']
+        profile_field_name = s['PROFILE_FIELD_NAME']
         bowner_field_name = s['OPA']['BOWNER_FIELD_NAME']
         towner_field_name = s['OPA']['TOWNER_FIELD_NAME']
 
@@ -205,6 +207,8 @@ class Jira(object):
             params['fields'][bowner_field_name] = {'name': business_assignee}
         if template:
             params['fields'][template_field_name] = template
+        if profile_field_name and profile:
+            params['fields'][profile_field_name] = profile
         logger.debug('Calling with params: %s' % unicode(params))
         try:
             call_result = self.call_resource('issue', params)
