@@ -555,6 +555,9 @@ class DeviceCreateForm(DeviceForm):
     class Meta(DeviceForm.Meta):
         widgets = {
             'model': None,
+            'purchase_date': DateWidget,
+            'warranty_expiration_date': DateWidget,
+            'support_expiration_date': DateWidget,
         }
         fields = (
             'name',
