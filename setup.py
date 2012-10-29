@@ -50,6 +50,7 @@ setup (
         'lxml==2.3.5',
         'mock==0.8.0',
         'MySQL-python==1.2.3',
+        'paramiko==1.8.0',
         'ping==0.2',
         'pysnmp==4.2.2',
         'PyYAML==3.10',
@@ -61,7 +62,6 @@ setup (
         'South==0.7.6',
         'splunk-sdk==0.8.0',
         'SQLAlchemy==0.7.8',
-        'ssh==1.7.14',
         ],
     entry_points={
         'console_scripts': [

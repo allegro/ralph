@@ -17,7 +17,7 @@ from dns.exception import DNSException
 from lck.cache import memoize
 import dns.resolver
 import ipaddr
-import ssh as paramiko
+import paramiko
 from ping import do_one
 
 
