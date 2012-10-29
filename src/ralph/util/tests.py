@@ -190,6 +190,8 @@ class PricingTest(TestCase):
         self.assertEqual(dev.cached_cost, 15)
         self.assertEqual(dev.cached_price, 100)
 
+THROTTLE_AT = settings.API_THROTTLING['throttle_at']
+
 
 class ApiTest(TestCase):
 
@@ -215,13 +217,13 @@ class ApiTest(TestCase):
             'api_key': api_key.key
         }
         status_list = []
-        id_list = self._save_ventures(202)
+        id_list = self._save_ventures(THROTTLE_AT+2)
 
         for id in id_list:
             path = "/api/v0.9/venture/%s" % id
             response = self.client.get(path=path, data=data, follow=True)
             status_list.append(response.status_code)
-        gen_list = [200 for x in range(0, 200)]
+        gen_list = [200 for x in range(0, THROTTLE_AT)]
         gen_list.append(403)
         gen_list.append(403)
         self.maxDiff = None
