@@ -448,7 +448,7 @@ class OperatingSystem(Component):
         verbose_name = _("operating system")
         verbose_name_plural = _("operating systems")
         ordering = ('label',)
-        unique_together = ('device', 'model')
+        unique_together = ('device',)
 
     def __unicode__(self):
         return self.label
