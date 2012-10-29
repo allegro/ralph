@@ -44,7 +44,24 @@ class PrebootMixin(db.Model):
             node = node.parent
 
 
-class Venture(Named, PrebootMixin, TimeTrackable):
+class HasSymbolBasedPath(db.Model):
+    path = db.TextField(verbose_name=_("symbol path"), blank=True,
+            default="", editable=False)
+
+    class Meta:
+        abstract = True
+
+    def save(self, *args, **kwargs):
+        if self.parent:
+           self.path = self.parent.path + "/" + self.symbol
+        else:
+            self.path = self.symbol
+        super(HasSymbolBasedPath, self).save(*args, **kwargs)
+        for child in self.child_set.all():
+            child.save()
+
+
+class Venture(Named, PrebootMixin, HasSymbolBasedPath, TimeTrackable):
     data_center = db.ForeignKey(DataCenter, verbose_name=_("data center"),
         null=True, blank=True)
     parent = db.ForeignKey('self', verbose_name=_("parent venture"), null=True,
@@ -61,8 +78,6 @@ class Venture(Named, PrebootMixin, TimeTrackable):
     department = db.ForeignKey('business.Department',
             verbose_name=_("department"), null=True, blank=True, default=None,
             on_delete=db.SET_NULL)
-    path = db.TextField(verbose_name=_("symbol path"), blank=True,
-            default="", editable=False)
     networks = db.ManyToManyField(Network, null=True, blank=True,
             verbose_name=_("networks list"))
 
@@ -70,6 +85,7 @@ class Venture(Named, PrebootMixin, TimeTrackable):
         verbose_name = _("venture")
         verbose_name_plural = _("ventures")
         unique_together = ('parent', 'symbol')
+        ordering = ('parent__symbol', 'symbol')
 
     def clean(self):
         self.symbol = re.sub(r'[^\w]', '.', self.symbol).lower()
@@ -171,7 +187,8 @@ class BusinessLine(db.Model):
     name = db.CharField(max_length=255, db_index=True, unique=True)
 
 
-class VentureRole(Named.NonUnique, PrebootMixin, TimeTrackable):
+class VentureRole(Named.NonUnique, PrebootMixin, HasSymbolBasedPath,
+        TimeTrackable):
     venture = db.ForeignKey(Venture, verbose_name=_("venture"))
     parent = db.ForeignKey('self', verbose_name=_("parent role"), null=True,
         blank=True, default=None, related_name="child_set")
@@ -182,6 +199,7 @@ class VentureRole(Named.NonUnique, PrebootMixin, TimeTrackable):
         unique_together = ('name', 'venture')
         verbose_name = _("venture role")
         verbose_name_plural = _("venture roles")
+        ordering = ('parent__name', 'name')
 
     @property
     def full_name(self):
@@ -207,6 +225,19 @@ class VentureRole(Named.NonUnique, PrebootMixin, TimeTrackable):
     def __unicode__(self):
         return "{} / {}".format(self.venture.symbol if self.venture else '?',
                 self.full_name)
+
+    @property
+    def symbol(self):
+        # for HasSymbolBasedPath
+        return self.name
+
+    @property
+    def device(self):
+        return self.device_set
+
+    @property
+    def roleproperty(self):
+        return self.roleproperty_set
 
 
 class RolePropertyType(db.Model):
@@ -259,6 +290,7 @@ class RolePropertyValue(db.Model, WithConcurrentGetOrCreate):
         unique_together = ('property', 'device')
         verbose_name = _("property value")
         verbose_name_plural = _("property values")
+
 
 class DepartmentIcon(Choices):
     _ = Choices.Choice

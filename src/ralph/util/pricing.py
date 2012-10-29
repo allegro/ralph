@@ -6,9 +6,10 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from datetime import date, timedelta, datetime, time
 import math
 
+from datetime import date, timedelta, datetime, time
+from django.core.urlresolvers import reverse_lazy
 from django.db import models as db
 from django.utils.html import escape
 from django.conf import settings
@@ -276,6 +277,9 @@ def details_dev(dev, purchase_only=False):
         'serial': dev.sn,
         'price': dev.price or dev.model.get_price() if dev.model else 0,
         'href': '/admin/discovery/device/%d/' % dev.id,
+        'hrefinfo' : reverse_lazy('search', kwargs={
+            'details': 'info',
+            'device': dev.id})
     }
     if purchase_only:
         return
@@ -292,12 +296,18 @@ def details_dev(dev, purchase_only=False):
                         'price': -chassis_price,
                         'icon': 'fugue-server-medium',
                         'serial': d.sn,
+                        'hrefinfo' : reverse_lazy('search', kwargs={
+                            'details': 'info',
+                            'device': d.id})
                     }
             else:
                 yield {
                     'label': d.name,
                     'model': d.model,
                     'serial': d.sn,
+                    'hrefinfo' : reverse_lazy('search', kwargs={
+                        'details': 'info',
+                        'device': d.id})
                 }
     elif dev.model.type == DeviceType.blade_server.id:
         chassis_price = get_device_chassis_price(dev)
@@ -310,6 +320,9 @@ def details_dev(dev, purchase_only=False):
                 'icon': 'fugue-servers',
                 'serial': dev.parent.sn,
                 'href': '/admin/discovery/device/%d/' % dev.parent.id,
+                'hrefinfo' : reverse_lazy('search', kwargs={
+                    'details': 'info',
+                    'device': dev.id})
             }
 
 
