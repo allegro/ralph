@@ -6,7 +6,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import ssh as paramiko
+import paramiko
 
 from ralph.util import plugin, network
 from ralph.discovery import storageworks
