@@ -36,7 +36,6 @@ from ralph.cmdb.models_changes import (
     CI_CHANGE_TYPES,
     CI_CHANGE_PRIORITY_TYPES,
     CI_CHANGE_REGISTRATION_TYPES,
-    REGISTER_CHANGE_TYPES,
 
     # change management types
     CIChange,
@@ -68,7 +67,6 @@ __all__ = [
     CI_CHANGE_PRIORITY_TYPES,
     CI_TYPES,
     CI_CHANGE_REGISTRATION_TYPES,
-    REGISTER_CHANGE_TYPES,
 
     #base types
     CI,

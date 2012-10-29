@@ -125,7 +125,7 @@ class BaseMixin(object):
         footer_items.append(
             MenuItem('%s (logout)' % self.request.user, fugue_icon='fugue-user',
                      view_name='logout', view_args=[details or 'info', ''],
-                     pull_right=True))
+                     pull_right=True, href=settings.LOGOUT_URL))
         mainmenu_items.append(
             MenuItem('Advanced search', name='search',
                      fugue_icon='fugue-magnifier', view_args=[details or 'info', ''],
