@@ -436,8 +436,7 @@ class OperatingSystem(Component):
         if created:
             model.name = os_name
             model.save()
-        operating_system, created = cls.concurrent_get_or_create(device=dev,
-                                                                 model=model)
+        operating_system, created = cls.concurrent_get_or_create(device=dev)
         operating_system.label = '%s %s' % (os_name, version)
         operating_system.memory = memory
         operating_system.storage = storage
