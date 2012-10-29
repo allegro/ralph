@@ -86,7 +86,7 @@ def post_create_change(sender, instance, raw, using, **kwargs):
     user = None
     try:
         """ Classify change, and create record - CIChange """
-        logging.debug('Hooking post save CIChange creation.')
+        logger.debug('Hooking post save CIChange creation.')
         if isinstance(instance, chdb.CIChangeGit):
             # register every git change (treat as manual)
             registration_type = chdb.CI_CHANGE_REGISTRATION_TYPES.WAITING.id
