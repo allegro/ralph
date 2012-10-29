@@ -315,11 +315,9 @@ class DeviceCreateView(CreateView):
         else:
             self.rack = ''
 
-
     def form_valid(self, form):
         self.set_rack()
         macs = [('', mac, 0) for mac in form.cleaned_data['macs'].split()]
-
         try:
             dc = self.rack.dc
         except AttributeError:
@@ -328,12 +326,8 @@ class DeviceCreateView(CreateView):
             rack = self.rack.rack
         except AttributeError:
             rack = None
-
         if self.rack == '':
             self.rack = None
-
-#        import pdb
-#        pdb.set_trace()
         wed = form.cleaned_data['warranty_expiration_date']
         sed = form.cleaned_data['support_expiration_date']
         dev = Device.create(
