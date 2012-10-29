@@ -58,6 +58,7 @@ COMPONENT = {
     'OS': '__Linux*'
 }
 
+
 class TestSearch(TestCase):
     """
     TODO:
@@ -209,18 +210,18 @@ class TestSearch(TestCase):
     def test_name_field_old(self):
         #Search objects in response.context
         url = '/ui/search/info/%s' % self.device.id
-        device_search = self.client.get(url,follow=True)
+        device_search = self.client.get(url, follow=True)
         context = device_search.context['object']
         self.assertEqual(context.name, self.device.name)
 
     def test_address_or_network_field(self):
         url = '/ui/search/info/%s' % self.device.id
-        device_search = self.client.get(url,follow=True)
+        device_search = self.client.get(url, follow=True)
         context = device_search.context['object']
         #test ip
         self.assertEqual(context.name, self.device.name)
         ip = context.ipaddress_set.filter(address=DEVICE['ip']).count()
-        self.assertTrue(ip>0)
+        self.assertTrue(ip > 0)
         #test network
         """
         FIXME - i can`t tests network, i need more info !
@@ -228,13 +229,13 @@ class TestSearch(TestCase):
 
     def test_remarks_field(self):
         url = '/ui/search/info/%s' % self.device.id
-        device_search = self.client.get(url,follow=True)
+        device_search = self.client.get(url, follow=True)
         context = device_search.context['object']
         self.assertEqual(context.remarks, DEVICE['remarks'])
 
     def test_venture_or_role_field(self):
         url = '/ui/search/info/%s' % self.device.id
-        device_search = self.client.get(url,follow=True)
+        device_search = self.client.get(url, follow=True)
         context = device_search.context['object']
         self.assertEqual(self.device.venture.name, DEVICE['venture'])
         self.assertEqual(context.venture.name, DEVICE['venture'])
@@ -243,7 +244,7 @@ class TestSearch(TestCase):
 
     def test_model_field(self):
         url = '/ui/search/info/%s' % self.device.id
-        device_search = self.client.get(url,follow=True)
+        device_search = self.client.get(url, follow=True)
         context = device_search.context['object']
         self.assertEqual(self.device.model.type, DeviceType.unknown)
         self.assertEqual(context.model.type, DeviceType.unknown)
@@ -251,33 +252,33 @@ class TestSearch(TestCase):
 
     def test_component_or_software_field(self):
         url = '/ui/search/info/%s' % self.device.id
-        device_search = self.client.get(url,follow=True)
+        device_search = self.client.get(url, follow=True)
         context = device_search.context['object']
         processor = context.processor_set.filter(device=self.device.id).count()
-        self.assertTrue(processor>0)
+        self.assertTrue(processor > 0)
 
     def test_serial_number_mac_or_wwn_field(self):
         url = '/ui/search/info/%s' % self.device.id
-        device_search = self.client.get(url,follow=True)
+        device_search = self.client.get(url, follow=True)
         context = device_search.context['object']
         self.assertEqual(self.device.sn, context.sn)
         mac = context.ethernet_set.filter(mac=DEVICE['mac']).count()
-        self.assertTrue(mac>0)
+        self.assertTrue(mac > 0)
         diskshare = context.diskshare_set.filter(device=self.device.id).count()
-        self.assertTrue(diskshare>0)
+        self.assertTrue(diskshare > 0)
         dsm = context.disksharemount_set.filter(device=self.device.id).count()
-        self.assertTrue(dsm>0)
+        self.assertTrue(dsm > 0)
 
     def test_barcode_field(self):
         url = '/ui/search/info/%s' % self.device.id
-        device_search = self.client.get(url,follow=True)
+        device_search = self.client.get(url, follow=True)
         context = device_search.context['object']
         self.assertEqual(self.device.barcode, DEVICE['barcode'])
         self.assertEqual(context.barcode, DEVICE['barcode'])
 
     def test_datacenter_rack_or_position_field(self):
         url = '/ui/search/info/%s' % self.device.id
-        device_search = self.client.get(url,follow=True)
+        device_search = self.client.get(url, follow=True)
         context = device_search.context['object']
         self.assertEqual(self.device.position, DEVICE['position'])
         self.assertEqual(context.position, DEVICE['position'])
@@ -288,7 +289,7 @@ class TestSearch(TestCase):
 
     def test_history_field(self):
         url = '/ui/search/info/%s' % self.device.id
-        device_search = self.client.get(url,follow=True)
+        device_search = self.client.get(url, follow=True)
         context = device_search.context['object']
         db_query = HistoryChange.objects.get(
             device=self.device, new_value=DEVICE['name'],
@@ -303,7 +304,7 @@ class TestSearch(TestCase):
 
     def test_device_type_field(self):
         url = '/ui/search/info/%s' % self.device.id
-        device_search = self.client.get(url,follow=True)
+        device_search = self.client.get(url, follow=True)
         context = device_search.context['object']
         self.assertEqual(self.device.model.type, DeviceType.unknown.id)
         self.assertEqual(context.model.type, DeviceType.unknown)
