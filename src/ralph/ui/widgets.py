@@ -53,8 +53,10 @@ class ReadOnlyMultipleChoiceWidget(FilteredSelectMultiple):
 
 class ReadOnlyWidget(forms.Widget):
     def render(self, name, value, attrs=None, choices=()):
-        return mark_safe('<div class="input uneditable-input">%s</div>' %
-                         escape(value))
+        return mark_safe('''
+        <input type="hidden" name="%s" value="%s">
+        <div class="input uneditable-input">%s</div></input>''' % (
+            escape(name), escape(value), escape(value)))
 
 
 class DeviceModelWidget(forms.Widget):
