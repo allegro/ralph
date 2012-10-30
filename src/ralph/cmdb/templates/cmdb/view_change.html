@@ -15,7 +15,9 @@
 </ul>
 </p>
 <hr>
-{% if change.type ==  3 %}
+{% if change.type == 6 %}
+    {% include 'cmdb/include_ciattributechange.html' %}
+{% elif change.type == 3 %}
     {% include 'cmdb/include_attributechange.html' %}
 {% elif change.type == 2 %}
     {% include 'cmdb/include_puppet.html' %}
