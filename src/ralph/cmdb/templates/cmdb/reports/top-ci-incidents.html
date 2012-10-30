@@ -9,6 +9,8 @@
         {% spaceless %}
             {% include 'cmdb/column-header.html' with label='incidents count' name='ciname' always=1 %}
             {% include 'cmdb/column-header.html' with label='configuration item' name='count' always=1%}
+            {% include 'cmdb/column-header.html' with label='Technical owners' name='towners' always=1%}
+            {% include 'cmdb/column-header.html' with label='Business owners' name='bowners' always=1%}
         {% endspaceless %}
 
     </tr></thead>
