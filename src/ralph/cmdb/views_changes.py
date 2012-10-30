@@ -45,6 +45,7 @@ class Change(ChangesBase):
                 'puppet_reports': self.puppet_reports,
                 'git_changes': self.git_changes,
                 'device_attributes_changes': self.device_attributes_changes,
+                'ci_attributes_changes': self.ci_attributes_changes,
                 'fisheye_url': settings.FISHEYE_URL,
                 'fisheye_project': settings.FISHEYE_PROJECT_NAME,
                 'puppet_feedback_errors': self.puppet_feedback_errors,
@@ -60,6 +61,7 @@ class Change(ChangesBase):
         self.puppet_reports = []
         self.git_changes = []
         self.device_attributes_changes = []
+        self.ci_attributes_changes = []
         self.puppet_feedback_errors = 0
         self.puppet_feedback_changes = 0
         report = change.content_object
@@ -86,17 +88,11 @@ class Change(ChangesBase):
         elif change.type == db.CI_CHANGE_TYPES.DEVICE.id:
             self.device_attributes_changes = [report]
         elif change.type == db.CI_CHANGE_TYPES.CI:
+
             user = User.objects.filter(
                 pk=change.content_object.user_id
-            ).values('first_name', 'last_name', 'email')
-            if user:
-                user_info = '{} {} <{}>'.format(
-                    user[0].get('last_name', '-'),
-                    user[0].get('first_name', ''),
-                    user[0].get('email', ''),
-                )
-            else:
-                user_info = '-'
+            ).values('username')
+            user_info = user[0].get('username', '–') if user else '–'
             report = [
                 {
                     'time':change.content_object.time,
@@ -107,7 +103,7 @@ class Change(ChangesBase):
                     'comment':change.content_object.comment,
                 }
             ]
-            self.device_attributes_changes = report
+            self.ci_attributes_changes = report
         return super(Change, self).get(*args, **kwargs)
 
 
