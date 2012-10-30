@@ -1,0 +1,21 @@
+{% load bob %}
+<table class="table table-bordered table-striped table-properties">
+    <tr>
+        <th> Date </th>
+        <th> User </th>
+        <th> Field name</th>
+        <th> Old value</th>
+        <th> New value</th>
+        <th> Comment</th>
+    </tr>
+    {% for f in ci_attributes_changes %}
+        <tr>
+            <td>  {{ f.time|timesince_limited|default:'–' }}  </td>
+            <td>  {{ f.user|default:'–' }} </td>
+            <td>  {{ f.field_name|default:'–' }} </td>
+            <td>  {{ f.old_value|default:'–' }}  </td>
+            <td>  {{ f.new_value|default:'–' }}  </td>
+            <td>  {{ f.comment|default:'–' }}  </td>
+        </tr>
+    {% endfor %}
+</table>
