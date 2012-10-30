@@ -55,7 +55,7 @@
             {% endif %}
             <td class="column-name"><a
                     href="{{ d.id|default:'' }}?{{ url_query.urlencode }}"
-                >{%  for i in d.padding %}&nbsp;&nbsp;&nbsp;&nbsp;{%  endfor %}{{ d|device_icon }}&nbsp;{{ d.name|default:'unknown' }}
+                >{%  for i in d.padding %}&nbsp;&nbsp;&nbsp;&nbsp;{%  endfor %}{{ d|device_icon }}&nbsp;{{ d.get_name|default:'unknown' }}
             </a>
             </td>
             {% if 'venture' in columns %}
