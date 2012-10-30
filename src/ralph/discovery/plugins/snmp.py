@@ -287,10 +287,7 @@ def do_snmp_mac(snmp_name, community, snmp_version, ip, kwargs):
     if not dev.operatingsystem_set.exists():
         if model_name in ('Linux', 'SunOs'):
             family = 'Linux' if model_name == 'Linux' else 'Sun'
-            os = OperatingSystem.create(dev, os_name=snmp_name,
-                                        family=family)
-            os.save()
-            dev.operatingsystem_set.exclude(pk=os.pk).delete()
+            OperatingSystem.create(dev, os_name=snmp_name, family=family).save()
     return ethernets
 
 def _cisco_snmp_model(model_oid, sn_oid, **kwargs):
