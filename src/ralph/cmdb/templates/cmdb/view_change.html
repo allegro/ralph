@@ -15,10 +15,10 @@
 </ul>
 </p>
 <hr>
-{% if change.type ==  6 %}
+{% if change.type == 6 %}
     {% include 'cmdb/include_ciattributechange.html' %}
 {#    {% include 'cmdb/include_attributechange.html' %}#}
-{% elif change.type ==  3 %}
+{% elif change.type == 3 %}
     {% include 'cmdb/include_attributechange.html' %}
 {% elif change.type == 2 %}
     {% include 'cmdb/include_puppet.html' %}
