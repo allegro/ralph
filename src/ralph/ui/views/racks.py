@@ -38,11 +38,11 @@ class SidebarRacks(object):
         rack_name = rack_name.replace('-', ' ')
         if rack_name and rack_name != 'rack none' and rack_name != ' ':
             self.rack = get_object_or_404(
-                    Device,
-                    sn=rack_name,
-                    model__type__in=(DeviceType.rack.id,
-                                     DeviceType.data_center.id)
-                )
+                Device,
+                sn=rack_name,
+                model__type__in=(DeviceType.rack.id,
+                                 DeviceType.data_center.id)
+            )
         else:
             self.rack = ''
 
@@ -50,11 +50,12 @@ class SidebarRacks(object):
         self.set_rack()
         ret = super(SidebarRacks, self).get_context_data(**kwargs)
         icon = presentation.get_device_icon
+
         def slug(sn):
             return sn.replace(' ', '-').lower()
         sidebar_items = [
             MenuItem("Unknown", name='', fugue_icon='fugue-prohibition',
-                     view_name='racks', view_args=['-', ret['details'], ''])
+                view_name='racks', view_args=['-', ret['details'], ''])
         ]
         for dc in Device.objects.filter(
                 model__type=DeviceType.data_center.id).order_by('name'):
@@ -381,6 +382,8 @@ class DeviceCreateView(CreateView):
             return HttpResponseForbidden(
                 "You don't have permission to create devices here.")
         return super(DeviceCreateView, self).post(*args, **kwargs)
+
+
 class RacksAddDevice(Racks, DeviceCreateView):
     template_name = 'ui/racks-add-device.html'
     form_class = DeviceCreateForm
