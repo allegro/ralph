@@ -15,7 +15,7 @@ import socket
 
 from django.conf import settings
 from lck.django.common import nested_commit_on_success
-import ssh as paramiko
+import paramiko
 from lck.django.common.models import MACAddressField
 
 from ralph.util import network, parse, plugin, Eth
