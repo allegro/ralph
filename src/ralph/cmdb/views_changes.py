@@ -88,7 +88,6 @@ class Change(ChangesBase):
         elif change.type == db.CI_CHANGE_TYPES.DEVICE.id:
             self.device_attributes_changes = [report]
         elif change.type == db.CI_CHANGE_TYPES.CI:
-
             user = User.objects.filter(
                 pk=change.content_object.user_id
             ).values('username')
