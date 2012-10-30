@@ -204,5 +204,4 @@ def handle_facts_os(dev, facts, is_virtual=False):
     except TypeError:
         pass
     os.save(priority=SAVE_PRIORITY)
-    dev.operatingsystem_set.exclude(pk=os.pk).delete()
 
