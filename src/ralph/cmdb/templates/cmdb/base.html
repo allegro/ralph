@@ -38,23 +38,19 @@
 
 {% block breadcrumbs %}
 {% if breadcrumbs %}
-<div class='span10'> 
-    <ul class='breadcrumb'> 
+    <ul class='breadcrumb'>
         {% for segment in breadcrumbs %}
         <li>
         <a href='/cmdb/search?parent={{ segment.id }}'> {{ segment.name }}</a> &gt; 
         </li>
         {% endfor %}
     </ul>
-</div>
 {% endif %}
 {% endblock %}
 
 {% block contentarea %}
-    <div class='span10'> 
         {% block content %}
         {% endblock %}
-    </div>
 {% endblock %}
 
 {% block sidebar %}

@@ -10,7 +10,6 @@
         width: auto;
     }
 </style>
-<div class='span12'>
     <h3> CMDB Reports</h3>
     <hr>
     {% if report_kind == 'top_changes' %}
@@ -43,6 +42,5 @@
         {% include 'cmdb/reports/least-ci-changes.html' with rows=data %}
     </p>
     {% endif %}
-</div>
 
 {% endblock %}
