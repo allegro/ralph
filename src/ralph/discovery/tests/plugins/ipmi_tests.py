@@ -8,7 +8,7 @@ from __future__ import unicode_literals
 from django.test import TestCase
 
 from ralph.discovery.plugins import ipmi
-from ralph.discovery.models import DeviceType, Device
+from ralph.discovery.models import DeviceType, Device, IPAddress
 
 
 
@@ -18,36 +18,37 @@ class IpmiPluginTest(TestCase):
 FRU Device Description : Builtin FRU Device (ID 0)
  Product Manufacturer  : Oracle Corporation
  Product Name          : ILOM INTEGRATED SP
+ Product Serial        : 00:11:22:33:44:55
 
 FRU Device Description : /SYS (ID 3)
  Board Mfg Date        : Mon Jan  1 00:00:00 1996
- Board Product         : ASSY,MOTHERBOARD,X4170/X4270/X4275  
+ Board Product         : ASSY,MOTHERBOARD,X4170/X4270/X4275
  Board Serial          : 9328MSL-09304H08BT
  Board Part Number     : 501-7917-11
  Board Extra           : 54
  Board Extra           : X4170/4270/4275
- Product Manufacturer  : ORACLE CORPORATION  
- Product Name          : SUN FIRE X4270 SERVER   
+ Product Manufacturer  : ORACLE CORPORATION
+ Product Name          : SUN FIRE X4270 SERVER
  Product Part Number   : 4457207-6
  Product Serial        : 0936XF707F
  Product Extra         : 080020FFFFFFFFFFFFFF00144FE79268
 
 FRU Device Description : MB (ID 4)
  Board Mfg Date        : Mon Jan  1 00:00:00 1996
- Board Product         : ASSY,MOTHERBOARD,X4170/X4270/X4275  
+ Board Product         : ASSY,MOTHERBOARD,X4170/X4270/X4275
  Board Serial          : 9328MSL-09304H08BT
  Board Part Number     : 501-7917-11
  Board Extra           : 54
  Board Extra           : X4170/4270/4275
- Product Manufacturer  : ORACLE CORPORATION  
- Product Name          : SUN FIRE X4270 SERVER   
+ Product Manufacturer  : ORACLE CORPORATION
+ Product Name          : SUN FIRE X4270 SERVER
  Product Part Number   : 4457207-6
  Product Serial        : 9936XF707F
  Product Extra         : 080020FFFFFFFFFFFFFF00144FE79268
 
 FRU Device Description : MB/BIOS (ID 5)
- Product Manufacturer  : AMERICAN MEGATRENDS 
- Product Name          : SYSTEM BIOS 
+ Product Manufacturer  : AMERICAN MEGATRENDS
+ Product Name          : SYSTEM BIOS
  Product Part Number   : AMIBIOS8
  Product Version       : 07060304
 
@@ -56,7 +57,7 @@ FRU Device Description : CPLD (ID 8)
  Product Version       : FW:1.6
 
 FRU Device Description : MB/NET0 (ID 43)
- Product Manufacturer  : INTEL   
+ Product Manufacturer  : INTEL
  Product Name          : GIGABIT ETHERNET CONTROLLERS
  Product Part Number   : 82575EB
  Product Serial        : 00:14:4F:E7:92:69
@@ -64,7 +65,7 @@ FRU Device Description : MB/NET0 (ID 43)
  Product Extra         : 00:14:4F:E7:92:64
 
 FRU Device Description : MB/NET1 (ID 44)
- Product Manufacturer  : INTEL   
+ Product Manufacturer  : INTEL
  Product Name          : GIGABIT ETHERNET CONTROLLERS
  Product Part Number   : 82575EB
  Product Serial        : 00:14:4F:E7:92:69
@@ -72,7 +73,7 @@ FRU Device Description : MB/NET1 (ID 44)
  Product Extra         : 00:14:4F:E7:92:65
 
 FRU Device Description : MB/NET2 (ID 45)
- Product Manufacturer  : INTEL   
+ Product Manufacturer  : INTEL
  Product Name          : GIGABIT ETHERNET CONTROLLERS
  Product Part Number   : 82575EB
  Product Serial        : 00:14:4F:E7:92:69
@@ -80,7 +81,7 @@ FRU Device Description : MB/NET2 (ID 45)
  Product Extra         : 00:14:4F:E7:92:66
 
 FRU Device Description : MB/NET3 (ID 46)
- Product Manufacturer  : INTEL   
+ Product Manufacturer  : INTEL
  Product Name          : GIGABIT ETHERNET CONTROLLERS
  Product Part Number   : 82575EB
  Product Serial        : 00:14:4F:E7:92:69
@@ -103,8 +104,8 @@ FRU Device Description : SP/NET1 (ID 2)
  Product Serial        : 00:14:4f:e7:92:69
 
 FRU Device Description : MB/P0 (ID 16)
- Product Manufacturer  : INTEL   
- Product Name          : INTEL(R) XEON(R) CPU           L5520  @ 2.27GHZ 
+ Product Manufacturer  : INTEL
+ Product Name          : INTEL(R) XEON(R) CPU           L5520  @ 2.27GHZ
  Product Part Number   : 060A
  Product Version       : 05
 
@@ -115,16 +116,16 @@ FRU Device Description : MB/P0/D0 (ID 24)
  Device not present (Requested sensor, data, or record not found)
 
 FRU Device Description : MB/P0/D1 (ID 25)
- Product Manufacturer  : SAMSUNG 
- Product Name          : 4GB DDR3 SDRAM 666  
- Product Part Number   : M393B5170EH1-CH9  
+ Product Manufacturer  : SAMSUNG
+ Product Name          : 4GB DDR3 SDRAM 666
+ Product Part Number   : M393B5170EH1-CH9
  Product Version       : 00
  Product Serial        : 42221369
 
 FRU Device Description : MB/P0/D2 (ID 26)
- Product Manufacturer  : SAMSUNG 
- Product Name          : 4GB DDR3 SDRAM 666  
- Product Part Number   : M393B5170EH1-CH9  
+ Product Manufacturer  : SAMSUNG
+ Product Name          : 4GB DDR3 SDRAM 666
+ Product Part Number   : M393B5170EH1-CH9
  Product Version       : 00
  Product Serial        : 9222085A
 
@@ -132,16 +133,16 @@ FRU Device Description : MB/P0/D3 (ID 27)
  Device not present (Requested sensor, data, or record not found)
 
 FRU Device Description : MB/P0/D4 (ID 28)
- Product Manufacturer  : SAMSUNG 
- Product Name          : 4GB DDR3 SDRAM 666  
- Product Part Number   : M393B5170EH1-CH9  
+ Product Manufacturer  : SAMSUNG
+ Product Name          : 4GB DDR3 SDRAM 666
+ Product Part Number   : M393B5170EH1-CH9
  Product Version       : 00
  Product Serial        : 922214AF
 
 FRU Device Description : MB/P0/D5 (ID 29)
- Product Manufacturer  : SAMSUNG 
- Product Name          : 4GB DDR3 SDRAM 666  
- Product Part Number   : M393B5170EH1-CH9  
+ Product Manufacturer  : SAMSUNG
+ Product Name          : 4GB DDR3 SDRAM 666
+ Product Part Number   : M393B5170EH1-CH9
  Product Version       : 00
  Product Serial        : 922212FE
 
@@ -149,16 +150,16 @@ FRU Device Description : MB/P0/D6 (ID 30)
  Device not present (Requested sensor, data, or record not found)
 
 FRU Device Description : MB/P0/D7 (ID 31)
- Product Manufacturer  : SAMSUNG 
- Product Name          : 4GB DDR3 SDRAM 666  
- Product Part Number   : M393B5170EH1-CH9  
+ Product Manufacturer  : SAMSUNG
+ Product Name          : 4GB DDR3 SDRAM 666
+ Product Part Number   : M393B5170EH1-CH9
  Product Version       : 00
  Product Serial        : 92221301
 
 FRU Device Description : MB/P0/D8 (ID 32)
- Product Manufacturer  : SAMSUNG 
- Product Name          : 4GB DDR3 SDRAM 666  
- Product Part Number   : M393B5170EH1-CH9  
+ Product Manufacturer  : SAMSUNG
+ Product Name          : 4GB DDR3 SDRAM 666
+ Product Part Number   : M393B5170EH1-CH9
  Product Version       : 00
  Product Serial        : 9221B058
 
@@ -203,7 +204,7 @@ FRU Device Description : PCIE5/F20CARD (ID 229)
 
 FRU Device Description : MB/R1 (ID 220)
  Board Mfg Date        : Mon Jan  1 00:00:00 1996
- Board Product         : ASSY,ACTIVE_RISER,X4270/X4275   
+ Board Product         : ASSY,ACTIVE_RISER,X4270/X4275
  Board Serial          : 9328MSL-09275K04PC
  Board Part Number     : 511-1139-02
  Board Extra           : 50
@@ -211,7 +212,7 @@ FRU Device Description : MB/R1 (ID 220)
 
 FRU Device Description : MB/R2 (ID 221)
  Board Mfg Date        : Mon Jan  1 00:00:00 1996
- Board Product         : ASSY,ACTIVE_RISER,X4270/X4275   
+ Board Product         : ASSY,ACTIVE_RISER,X4270/X4275
  Board Serial          : 9328MSL-09275K04PD
  Board Part Number     : 511-1139-02
  Board Extra           : 50
@@ -233,7 +234,7 @@ FRU Device Description : PS1 (ID 64)
 
 FRU Device Description : DBP (ID 210)
  Board Mfg Date        : Mon Jan  1 00:00:00 1996
- Board Product         : BD,SATA,16DSK,BKPL,2U   
+ Board Product         : BD,SATA,16DSK,BKPL,2U
  Board Serial          : A3921H
  Board Part Number     : 511-1257-02
  Board Extra           : 50
@@ -241,7 +242,7 @@ FRU Device Description : DBP (ID 210)
 
 FRU Device Description : PDB (ID 211)
  Board Mfg Date        : Mon Jan  1 00:00:00 1996
- Board Product         : PDB,H+V,BUS_BAR,2U  
+ Board Product         : PDB,H+V,BUS_BAR,2U
  Board Serial          : 9226LHF-0930B500MC
  Board Part Number     : 541-2073-09
  Board Extra           : 50
@@ -251,7 +252,7 @@ FRU Device Description : PDB (ID 211)
 
 FRU Device Description : PADCRD (ID 222)
  Board Mfg Date        : Mon Jan  1 00:00:00 1996
- Board Product         : BD,SATA,2U,PADDLE_CARD  
+ Board Product         : BD,SATA,2U,PADDLE_CARD
  Board Serial          : 9226LHF-09300001MG
  Board Part Number     : 541-3513-02
  Board Extra           : 50
@@ -330,7 +331,7 @@ FRU Device Description : Builtin FRU Device (ID 0)
  Board Mfg Date        : Mon Jan  1 00:00:00 1996
  Board Mfg             : Super Micro
  Board Product         : X8DT3-LN4F
- Board Serial          :           
+ Board Serial          :
  Board Part Number     : Winbond Hermon
  Product Manufacturer  : Thomas-Krenn.AG
  Product Name          : 1HE Supermicro SC113TQ-R650CB
@@ -394,7 +395,8 @@ FRU Device Description : Builtin FRU Device (ID 0)
             'Builtin FRU Device': {
                 None: 'FRU Device Description',
                 'Product Manufacturer': 'Oracle Corporation',
-                'Product Name': 'ILOM INTEGRATED SP'
+                'Product Name': 'ILOM INTEGRATED SP',
+                'Product Serial': '00:11:22:33:44:55'
             },
             'CPLD': {
                 None: 'FRU Device Description',
@@ -645,4 +647,34 @@ FRU Device Description : Builtin FRU Device (ID 0)
         labels = [m.label for m in mem]
         self.assertEquals(labels, ['4GB DDR3 SDRAM 666'] * 6)
 
+    def test_run_ipmi(self):
+        ipmi.IPMI.tool = lambda o, c, s: self.DATA_SUN.get((c, s))
+        ipmi.IPMI.get_mc = lambda o: {'Firmware Revision': '123'}
+        ipmi.IPMI.get_mac = lambda o: 'ff:aa:cc:01:10:33'
+
+        result = ipmi._run_ipmi('127.0.0.1')
+        self.assertEquals(result, 'SUN FIRE X4270 SERVER, ILOM INTEGRATED SP')
+
+        dev = None
+        try:
+            dev = Device.objects.get(sn='0936XF707F')
+        except Device.DoesNotExist:
+            pass
+        self.assertNotEqual(dev, None)
+        self.assertEqual(dev.ipaddress_set.count(), 0)
+
+        mgmt = None
+        try:
+            mgmt = Device.objects.get(sn='00:11:22:33:44:55')
+        except Device.DoesNotExist:
+            pass
+        self.assertNotEqual(mgmt, None)
+        self.assertEqual(mgmt.mgmt_firmware, 'rev 123')
+        ip = None
+        try:
+            ip = mgmt.ipaddress_set.get(address='127.0.0.1')
+        except IPAddress.DoesNotExist:
+            pass
+        self.assertNotEqual(ip, None)
+        self.assertTrue(dev.management.pk == ip.pk)
 
