@@ -5,13 +5,24 @@
 
 {% block content %}
 <h3> View change : {{ change.id }} </h3>
+<h4> CI :
+    {% if ci %}
+        <a href="{% url ci_view ci.id %}">{{ ci.name }} (uid: {{ ci.uid }})</a>
+    {% else %}
+        {% if change.ci_id %}
+            <a href="{% url ci_view change.ci_id %}">{{ change.ci_id }}</a>
+        {% else %}
+            –
+        {% endif %}
+    {% endif %}
+</h4>
 <hr>
 <p>
 <ul>
-    <li>Comment: {{ change.message}}
-    <li>Time: {{ change.time}}
-    <li>Type: {{ change.type}}
-    <li>Priority: {{ change.priority}}
+    <li>Comment: {{ change.message}}</li>
+    <li>Time: {{ change.time}}</li>
+    <li>Type: {{ change.get_type_display}}</li>
+    <li>Priority: {{ change.get_priority_display}}</li>
 </ul>
 </p>
 <hr>
