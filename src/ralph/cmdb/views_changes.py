@@ -50,7 +50,7 @@ class Change(ChangesBase):
                 'fisheye_project': settings.FISHEYE_PROJECT_NAME,
                 'puppet_feedback_errors': self.puppet_feedback_errors,
                 'puppet_feedback_changes': self.puppet_feedback_changes,
-                'ci': self.ci
+                'ci': self.ci,
             }
         )
         return ret
