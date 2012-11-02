@@ -1,6 +1,25 @@
 Change Log
 ----------
 
+1.1.6
+~~~~~
+
+Released on October 29, 2012.
+
+* CMDB fixes: owners not required when saving a CI, cycles in relationships are
+  detected, only manual changes generate tickets in external trackers
+
+* fixed `issue #183 <https://github.com/allegro/ralph/issues/183>`_: "Unknown"
+  rack unsupported
+
+* device admin fixes: model validatation, saving uses priorities
+
+* ``paramiko`` library used for SSH connectivity instead of the ``ssh`` fork
+
+* minor device report fixes
+
+* unit tests improved
+
 1.1.5
 ~~~~~
 
