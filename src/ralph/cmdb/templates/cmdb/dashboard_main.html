@@ -49,7 +49,6 @@
     </script>
 {% endblock %}
 
-<div class='span12'>
     {% for report in reports%}
     {% if report.has_subreports %}
         <h2> Type: {{ report.report_type_str }} </h2>
@@ -92,7 +91,6 @@
                     {% endif %}
                 {% endfor %}
                 {% endfor %} <!-- reports !-->
-            </div> <!-- span12 !-->
 
 {% endif %}
 

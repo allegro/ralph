@@ -22,8 +22,8 @@ from ralph.discovery.models_device import LoadBalancerMember
 from ralph.discovery.models_device import LoadBalancerVirtualServer
 from ralph.discovery.models_component import (
         Memory, Processor, Storage, DiskShareMount, DiskShare, Software,
-        GenericComponent, Ethernet, FibreChannel, ComponentModel,
-        ComponentModelGroup
+        GenericComponent, Ethernet, FibreChannel, OperatingSystem,
+        ComponentModel, ComponentModelGroup
     )
 from ralph.discovery.models_network import IPAddress
 
@@ -139,6 +139,7 @@ def device_pre_delete(sender, instance, using, **kwargs):
 @receiver(pre_save, sender=GenericComponent, dispatch_uid='ralph.history')
 @receiver(pre_save, sender=Ethernet, dispatch_uid='ralph.history')
 @receiver(pre_save, sender=FibreChannel, dispatch_uid='ralph.history')
+@receiver(pre_save, sender=OperatingSystem, dispatch_uid='ralph.history')
 @receiver(pre_save, sender=IPAddress, dispatch_uid='ralph.history')
 @receiver(pre_save, sender=LoadBalancerMember, dispatch_uid='ralph.history')
 @receiver(pre_save, sender=LoadBalancerVirtualServer, dispatch_uid='ralph.history')
@@ -169,6 +170,7 @@ def device_related_pre_save(sender, instance, raw, using, **kwargs):
 @receiver(pre_delete, sender=GenericComponent, dispatch_uid='ralph.history')
 @receiver(pre_delete, sender=Ethernet, dispatch_uid='ralph.history')
 @receiver(pre_delete, sender=FibreChannel, dispatch_uid='ralph.history')
+@receiver(pre_delete, sender=OperatingSystem, dispatch_uid='ralph.history')
 @receiver(pre_delete, sender=IPAddress, dispatch_uid='ralph.history')
 @receiver(pre_delete, sender=LoadBalancerMember, dispatch_uid='ralph.history')
 @receiver(pre_delete, sender=LoadBalancerVirtualServer, dispatch_uid='ralph.history')
