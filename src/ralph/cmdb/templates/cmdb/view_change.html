@@ -4,7 +4,7 @@
 {% load query %}
 
 {% block content %}
-<h3>View change : {{ change.id }} </h3>
+<h3>View change : {{ change.id }}</h3>
 <h4>CI :
     {% if ci %}
         <a href="{% url ci_view ci.id %}">{{ ci.name }} (uid: {{ ci.uid }})</a>
