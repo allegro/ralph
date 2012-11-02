@@ -35,7 +35,7 @@ class Command(BaseCommand):
                     action='store_true',
                     dest='user',
                     default=False,
-                    help="Set custom path settings file"),
+                    help="User specified path for settings"),
         )
 
     requires_model_validation = False
