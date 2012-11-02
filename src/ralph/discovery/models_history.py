@@ -22,8 +22,8 @@ from ralph.discovery.models_device import LoadBalancerMember
 from ralph.discovery.models_device import LoadBalancerVirtualServer
 from ralph.discovery.models_component import (
         Memory, Processor, Storage, DiskShareMount, DiskShare, Software,
-        GenericComponent, Ethernet, FibreChannel, ComponentModel,
-        ComponentModelGroup
+        GenericComponent, Ethernet, FibreChannel, OperatingSystem,
+        ComponentModel, ComponentModelGroup
     )
 from ralph.discovery.models_network import IPAddress
 
@@ -45,11 +45,22 @@ def _field_changes(instance, ignore=('last_seen',)):
             continue
         if field.endswith('_id'):
             field = field[:-3]
-            orig = instance._meta.get_field_by_name(
-                    field
-                )[0].related.parent_model.objects.get(
-                    pk=orig
-                ) if orig is not None else None
+            try:
+                orig = instance._meta.get_field_by_name(
+                        field
+                    )[0].related.parent_model.objects.get(
+                        pk=orig
+                    ) if orig is not None else None
+
+                # instance -> parent_model 
+                # example: IPAddress -> Device
+                # sometimes  parent_model is being set to None, 
+                # eg when disassign IPAddress from his Device 
+                # In this case, instance wont find  find child.
+                # handle this exception, and return None
+
+            except instance._meta.get_field_by_name(field)[0].related.parent_model.DoesNotExist:
+                orig = None
         try:
             new = getattr(instance, field)
         except AttributeError:
@@ -91,7 +102,6 @@ class HistoryChange(db.Model):
 @receiver(pre_save, sender=Device, dispatch_uid='ralph.history')
 def device_pre_save(sender, instance, raw, using, **kwargs):
     """A hook for creating ``HistoryChange`` entries when a device changes."""
-
     for field, orig, new in _field_changes(instance, ignore={
             'last_seen', 'cached_cost', 'cached_price', 'raw',
             'uptime_seconds', 'uptime_timestamp'}):
@@ -139,6 +149,7 @@ def device_pre_delete(sender, instance, using, **kwargs):
 @receiver(pre_save, sender=GenericComponent, dispatch_uid='ralph.history')
 @receiver(pre_save, sender=Ethernet, dispatch_uid='ralph.history')
 @receiver(pre_save, sender=FibreChannel, dispatch_uid='ralph.history')
+@receiver(pre_save, sender=OperatingSystem, dispatch_uid='ralph.history')
 @receiver(pre_save, sender=IPAddress, dispatch_uid='ralph.history')
 @receiver(pre_save, sender=LoadBalancerMember, dispatch_uid='ralph.history')
 @receiver(pre_save, sender=LoadBalancerVirtualServer, dispatch_uid='ralph.history')
@@ -169,6 +180,7 @@ def device_related_pre_save(sender, instance, raw, using, **kwargs):
 @receiver(pre_delete, sender=GenericComponent, dispatch_uid='ralph.history')
 @receiver(pre_delete, sender=Ethernet, dispatch_uid='ralph.history')
 @receiver(pre_delete, sender=FibreChannel, dispatch_uid='ralph.history')
+@receiver(pre_delete, sender=OperatingSystem, dispatch_uid='ralph.history')
 @receiver(pre_delete, sender=IPAddress, dispatch_uid='ralph.history')
 @receiver(pre_delete, sender=LoadBalancerMember, dispatch_uid='ralph.history')
 @receiver(pre_delete, sender=LoadBalancerVirtualServer, dispatch_uid='ralph.history')

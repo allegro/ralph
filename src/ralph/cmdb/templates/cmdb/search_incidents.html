@@ -4,11 +4,9 @@
 {% load query %}
 {% block content %}
 
-<div class='span12'>
     <h3> Incidents </h3>
     <hr>
     {% include 'cmdb/include_events.html' with rows=incidents%}
-</div>
 
 {% endblock %}
 

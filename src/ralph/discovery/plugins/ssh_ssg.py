@@ -68,6 +68,8 @@ class SSGSSHClient(paramiko.SSHClient):
             buffer.extend(lines[1:])
             if '->' in buffer[-1]:
                 return buffer[:-1]
+            if chunk.endswith('--- more --- '):
+                self._ssg_chan.sendall('\n')
 
 
 def _connect_ssh(ip):
