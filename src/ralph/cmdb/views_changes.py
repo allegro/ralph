@@ -50,6 +50,7 @@ class Change(ChangesBase):
                 'fisheye_project': settings.FISHEYE_PROJECT_NAME,
                 'puppet_feedback_errors': self.puppet_feedback_errors,
                 'puppet_feedback_changes': self.puppet_feedback_changes,
+                'ci': self.ci,
             }
         )
         return ret
@@ -58,6 +59,10 @@ class Change(ChangesBase):
         change_id = kwargs.get('change_id')
         change = get_object_or_404(db.CIChange, id=change_id)
         self.change = change
+        try:
+            self.ci = db.CI.objects.get(id=change.ci_id)
+        except db.CI.DoesNotExist:
+            self.ci = None
         self.puppet_reports = []
         self.git_changes = []
         self.device_attributes_changes = []
