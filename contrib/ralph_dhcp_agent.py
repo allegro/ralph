@@ -164,7 +164,7 @@ def _get_cmd_options():
 
 def _setup_logging(filename, verbose):
     log_size = 20 # MB
-    logger = logging.getLogger("TinyHTTPProxy")
+    logger = logging.getLogger("RalphDHCPAgent")
     if verbose:
         logger.setLevel(logging.INFO)
     else:
