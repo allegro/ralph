@@ -4,8 +4,8 @@
 {% load query %}
 
 {% block content %}
-<h3> View change : {{ change.id }} </h3>
-<h4> CI :
+<h3>View change : {{ change.id }} </h3>
+<h4>CI :
     {% if ci %}
         <a href="{% url ci_view ci.id %}">{{ ci.name }} (uid: {{ ci.uid }})</a>
     {% else %}
@@ -19,10 +19,10 @@
 <hr>
 <p>
 <ul>
-    <li>Comment: {{ change.message}}</li>
-    <li>Time: {{ change.time}}</li>
-    <li>Type: {{ change.get_type_display}}</li>
-    <li>Priority: {{ change.get_priority_display}}</li>
+    <li>Comment: {{ change.message }}</li>
+    <li>Time: {{ change.time }}</li>
+    <li>Type: {{ change.get_type_display }}</li>
+    <li>Priority: {{ change.get_priority_display }}</li>
 </ul>
 </p>
 <hr>
