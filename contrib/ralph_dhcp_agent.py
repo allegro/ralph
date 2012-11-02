@@ -16,10 +16,7 @@ import urllib2
 class SimpleDHCPManager(object):
     def __init__(self, api_url, api_username, api_key, dhcp_config, restart,
             logger, **kwargs):
-        if api_url.endswith('/'):
-            self.api_url = api_url[:-1]
-        else:
-            self.api_url = api_url
+        self.api_url = api_url.rstrip('/')
         self.api_username = api_username
         self.api_key = api_key
         self.dhcp_config_path = dhcp_config
