@@ -13,6 +13,14 @@ import sys
 import urllib2
 
 
+def all(iterable):
+    """The built-in was unavailable no Python 2.4."""
+    for element in iterable:
+        if not element:
+            return False
+    return True
+
+
 class SimpleDHCPManager(object):
     def __init__(self, api_url, api_username, api_key, dhcp_config, restart,
             logger, **kwargs):
