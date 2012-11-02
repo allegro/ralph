@@ -63,7 +63,6 @@ class SSGSSHClient(paramiko.SSHClient):
         buffer = ['']
         while True:
             chunk = self._ssg_chan.recv(1024)
-
             lines = chunk.split('\n')
             buffer[-1] += lines[0]
             buffer.extend(lines[1:])
