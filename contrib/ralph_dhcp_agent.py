@@ -160,7 +160,10 @@ def _get_cmd_options():
 def _setup_logging(filename, verbose):
     log_size = 20 # MB
     logger = logging.getLogger("TinyHTTPProxy")
-    logger.setLevel(logging.INFO if verbose else logging.WARNING)
+    if verbose:
+        logger.setLevel(logging.INFO)
+    else:
+        logger.setLevel(logging.WARNING)
     if not filename or filename in ('-', 'STDOUT'):
         # display to the screen
         handler = logging.StreamHandler()
