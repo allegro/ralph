@@ -63,11 +63,14 @@ class SSGSSHClient(paramiko.SSHClient):
         buffer = ['']
         while True:
             chunk = self._ssg_chan.recv(1024)
+
             lines = chunk.split('\n')
             buffer[-1] += lines[0]
             buffer.extend(lines[1:])
             if '->' in buffer[-1]:
                 return buffer[:-1]
+            if chunk.endswith('--- more --- '):
+                self._ssg_chan.sendall('\n')
 
 
 def _connect_ssh(ip):
