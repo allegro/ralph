@@ -34,9 +34,8 @@ ALWAYS = '0001-1-1' # not all DB backends will accept '0000-0-0'
 
 def _field_changes(instance, ignore=('last_seen',)):
     """
-    Iterate over all changed fields, yielding the field name,
-    its original value and its new value. Skip the fields passed
-    in ``ignore``.
+    Yield the name, original value and new value for each changed field. Skip
+    all insignificant fields and those passed in ``ignore``.
     """
     for field, orig in instance.dirty_fields.iteritems():
         if field in ignore:
@@ -45,21 +44,18 @@ def _field_changes(instance, ignore=('last_seen',)):
             continue
         if field.endswith('_id'):
             field = field[:-3]
+            parent_model = instance._meta.get_field_by_name(
+                field
+            )[0].related.parent_model
             try:
-                orig = instance._meta.get_field_by_name(
-                        field
-                    )[0].related.parent_model.objects.get(
-                        pk=orig
-                    ) if orig is not None else None
-
+                if orig is not None:
+                    orig = parent_model.objects.get(pk=orig)
                 # instance -> parent_model 
                 # example: IPAddress -> Device
-                # sometimes  parent_model is being set to None, 
-                # eg when disassign IPAddress from his Device 
-                # In this case, instance wont find  find child.
-                # handle this exception, and return None
-
-            except instance._meta.get_field_by_name(field)[0].related.parent_model.DoesNotExist:
+                # Sometimes `parent_model` is being set to None, e.g. when
+                # a `Device` is disconnected from an `IPAddress`. In this case
+                # the instance won't find the child.
+            except parent_model.DoesNotExist:
                 orig = None
         try:
             new = getattr(instance, field)
