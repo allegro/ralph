@@ -15,7 +15,6 @@ from django.views.generic import CreateView
 
 from ralph.account.models import Perm
 from ralph.discovery.models import ReadOnlyDevice, Device, DeviceType
-from ralph.discovery.models_history import HistoryChange
 from ralph.ui.forms import DeviceCreateForm
 from ralph.ui.views.common import (Info, Prices, Addresses, Costs, Purchase,
                                    Components, History, Discover, BaseMixin,
@@ -356,13 +355,7 @@ class DeviceCreateView(CreateView):
             user=self.request.user,
         )
         dev.name=form.cleaned_data['name']
-        dev.save()
-        hist = HistoryChange(
-            device=dev,
-            user=self.request.user,
-            comment='created'
-        )
-        hist.save()
+        dev.save(priority=1, user=self.request.user)
         messages.success(self.request, "Device created.")
         return HttpResponseRedirect(self.request.path + '../info/%d' % dev.id)
 
