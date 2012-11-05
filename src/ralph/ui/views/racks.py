@@ -54,8 +54,13 @@ class SidebarRacks(object):
         def slug(sn):
             return sn.replace(' ', '-').lower()
         sidebar_items = [
-            MenuItem("Unknown", name='', fugue_icon='fugue-prohibition',
-                view_name='racks', view_args=['-', ret['details'], ''])
+            MenuItem(
+                "Unknown",
+                name='',
+                fugue_icon='fugue-prohibition',
+                view_name='racks',
+                view_args=['-', ret['details'], '']
+            )
         ]
         for dc in Device.objects.filter(
                 model__type=DeviceType.data_center.id).order_by('name'):
@@ -65,19 +70,23 @@ class SidebarRacks(object):
                          view_name='racks', subitems=subitems, indent=' ',
                          view_args=[slug(dc.sn), ret['details'], ''],
                          collapsible=True, collapsed=not (
-                             self.rack and (self.rack==dc or
-                                            self.rack.parent==dc)))
+                             self.rack and (self.rack == dc or
+                                            self.rack.parent == dc)))
             )
             for r in Device.objects.filter(
-                        model__type=DeviceType.rack.id
-                    ).filter(
-                        parent=dc
-                    ).order_by('name'):
+                model__type=DeviceType.rack.id
+            ).filter(
+                parent=dc
+            ).order_by('name'):
                 subitems.append(
-                    MenuItem(r.name, name=slug(r.sn), indent=' ',
-                         fugue_icon=icon(r),
-                         view_name='racks',
-                         view_args=[slug(r.sn), ret['details'], ''])
+                    MenuItem(
+                        r.name,
+                        name=slug(r.sn),
+                        indent=' ',
+                        fugue_icon=icon(r),
+                        view_name='racks',
+                        view_args=[slug(r.sn), ret['details'], '']
+                    )
                 )
         ret.update({
             'sidebar_items': sidebar_items,
@@ -104,7 +113,7 @@ class RacksComponents(Racks, Components):
     pass
 
 
-class RacksCMDB(Racks, CMDB,DeviceDetailView ):
+class RacksCMDB(Racks, CMDB, DeviceDetailView):
     pass
 
 
@@ -165,27 +174,27 @@ class RacksDeviceList(SidebarRacks, BaseMixin, BaseDeviceList):
             queryset = ReadOnlyDevice.objects.none()
         elif self.rack == '':
             queryset = ReadOnlyDevice.objects.filter(
-                    parent=None
-                ).select_related(depth=3)
+                parent=None
+            ).select_related(depth=3)
         elif self.rack.model and self.rack.model.type != DeviceType.rack.id:
             queryset = Device.objects.filter(
-                    Q(id=self.rack.id) |
-                    Q(parent=self.rack)
-                ).select_related(depth=3)
+                Q(id=self.rack.id) |
+                Q(parent=self.rack)
+            ).select_related(depth=3)
         else:
             queryset = Device.objects.filter(
-                    Q(id=self.rack.id) |
-                    Q(parent=self.rack) |
-                    Q(parent__parent=self.rack) |
-                    Q(parent__parent__parent=self.rack) |
-                    Q(parent__parent__parent__parent=self.rack)
-                ).select_related(depth=3)
+                Q(id=self.rack.id) |
+                Q(parent=self.rack) |
+                Q(parent__parent=self.rack) |
+                Q(parent__parent__parent=self.rack) |
+                Q(parent__parent__parent__parent=self.rack)
+            ).select_related(depth=3)
         queryset = self.sort_queryset(queryset.order_by('model__type'))
         return queryset
 
     def paginate_queryset(self, queryset, page_size):
         if (self.rack and self.rack.model and
-            self.rack.model.type == DeviceType.rack.id):
+                self.rack.model.type == DeviceType.rack.id):
             queryset = list(self.sort_tree(queryset, self.sort))
         return super(RacksDeviceList, self).paginate_queryset(queryset,
                                                               page_size)
@@ -197,17 +206,22 @@ class RacksDeviceList(SidebarRacks, BaseMixin, BaseDeviceList):
         tab_items = ret['tab_items']
         if ret['subsection'] is not '':
             tab_items.append(
-                MenuItem('Rack', fugue_icon='fugue-media-player-phone',
-                href='../rack/?%s' % self.request.GET.urlencode())
+                MenuItem(
+                    'Rack',
+                    fugue_icon='fugue-media-player-phone',
+                    href='../rack/?%s' % self.request.GET.urlencode()
+                )
             )
         if has_perm(Perm.create_device, self.rack.venture if
                     self.rack else None):
-            tab_items.append(MenuItem('Add Device',
-                            fugue_icon='fugue-wooden-box--plus',
-                            name='add_device',
-                            href='../add_device/?%s' % (
-                                self.request.GET.urlencode(),)
-                        ))
+            tab_items.append(
+                MenuItem(
+                    'Add Device',
+                    fugue_icon='fugue-wooden-box--plus',
+                    name='add_device',
+                    href='../add_device/?%s' % (self.request.GET.urlencode())
+                )
+            )
         ret.update({
             'subsection': self.rack.name if self.rack else self.rack,
             'subsection_slug': self.rack.sn if self.rack else self.rack,
@@ -256,8 +270,9 @@ class RacksRack(Racks, Base):
                     slots[i][0] = -1
         else:
             return [(0, 1, rack.child_set.all())]
+
         def iter_slots():
-            for slot in reversed(range(0, max_slots+1)):
+            for slot in reversed(range(0, max_slots + 1)):
                 size, devs = slots[slot]
                 yield slot, size, devs
         return iter_slots
@@ -268,12 +283,19 @@ class RacksRack(Racks, Base):
         tab_items = ret['tab_items']
 
         tab_items.append(
-            MenuItem('Rack', fugue_icon='fugue-media-player-phone',
-            href='../rack/?%s' % self.request.GET.urlencode())
+            MenuItem(
+                'Rack',
+                fugue_icon='fugue-media-player-phone',
+                href='../rack/?%s' % self.request.GET.urlencode()
+            )
         )
-        tab_items.append(MenuItem('Add device',
-            fugue_icon='fugue-wooden-box--plus',
-            href='../add_device/?%s' % self.request.GET.urlencode()))
+        tab_items.append(
+            MenuItem(
+                'Add device',
+                fugue_icon='fugue-wooden-box--plus',
+                href='../add_device/?%s' % self.request.GET.urlencode()
+            )
+        )
         if self.rack.model.type == DeviceType.rack.id:
             slots_set = [
                 (self.rack, self.get_slots(self.rack))
@@ -354,7 +376,7 @@ class DeviceCreateView(CreateView):
             rack=rack,
             user=self.request.user,
         )
-        dev.name=form.cleaned_data['name']
+        dev.name = form.cleaned_data['name']
         dev.save(priority=1, user=self.request.user)
         messages.success(self.request, "Device created.")
         return HttpResponseRedirect(self.request.path + '../info/%d' % dev.id)
@@ -393,15 +415,21 @@ class RacksAddDevice(Racks, DeviceCreateView):
         tab_items = ret['tab_items']
         if ret['subsection'] is not '':
             tab_items.append(
-                MenuItem('Rack', fugue_icon='fugue-media-player-phone',
-                href='../rack/?%s' % self.request.GET.urlencode())
+                MenuItem(
+                    'Rack',
+                    fugue_icon='fugue-media-player-phone',
+                    href='../rack/?%s' % self.request.GET.urlencode()
+                )
             )
 
-        tab_items.append(MenuItem('Add Device', name='add_device',
-                            fugue_icon='fugue-wooden-box--plus',
-                            href='../add_device/?%s' % (
-                                self.request.GET.urlencode(),)
-                        ))
+        tab_items.append(
+            MenuItem(
+                'Add Device',
+                name='add_device',
+                fugue_icon='fugue-wooden-box--plus',
+                href='../add_device/?%s' % (self.request.GET.urlencode())
+            )
+        )
         return ret
 
 
