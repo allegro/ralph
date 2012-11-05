@@ -7,7 +7,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import collections
-import ssh as paramiko
+import paramiko
 
 from django.conf import settings
 from lck.django.common import nested_commit_on_success

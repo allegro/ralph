@@ -23,7 +23,7 @@ from ralph.cmdb.graphs import Graphs
 urlpatterns = patterns('',
     (r'^$', login_required(Index.as_view())),
     (r'^search$', login_required(Search.as_view())),
-    (r'^ci/view/(?P<ci_id>\w+)$', login_required(View.as_view())),
+    url(r'^ci/view/(?P<ci_id>\w+)$', login_required(View.as_view()), name='ci_view'),
     (r'^ci/view/(?P<ci_id>[a-z]{2}-[0-9]+)$', login_required(View.as_view())),
     (r'^ci/view_iframe/(?P<ci_id>\w+)$', login_required(ViewIframe.as_view())),
     (r'^ci/view_jira/(?P<ci_uid>.*)$', login_required(ViewJira.as_view())),
