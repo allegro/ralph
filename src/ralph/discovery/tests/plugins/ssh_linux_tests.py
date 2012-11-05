@@ -9,6 +9,7 @@ from __future__ import unicode_literals
 from django.test import TestCase
 
 from ralph.util import Eth
+from ralph.discovery import hardware
 from ralph.discovery.plugins import ssh_linux
 from ralph.discovery.tests.util import MockSSH
 from ralph.discovery.tests.samples.dmidecode_data import DATA
@@ -85,7 +86,8 @@ processor	: 3
         ssh = MockSSH([
             ("/usr/bin/sudo /usr/sbin/dmidecode", DATA),
             ("/bin/uname -a", """\
-Linux wintermute 3.2.0-29-generic #46-Ubuntu SMP Fri Jul 27 17:03:23 UTC 2012 x86_64 x86_64 x86_64 GNU/Linux
+Linux wintermute 3.2.0-29-generic #46-Ubuntu SMP Fri Jul
+27 17:03:23 UTC 2012 x86_64 x86_64 x86_64 GNU/Linux
 """),
         ])
         dev = ssh_linux.run_dmidecode(ssh, [])
@@ -95,3 +97,37 @@ Linux wintermute 3.2.0-29-generic #46-Ubuntu SMP Fri Jul 27 17:03:23 UTC 2012 x8
         self.assertEquals(os.model.name, '#46-Ubuntu')
         self.assertEquals(os.model.family, 'Linux')
 
+    def test_os_disc_share(self):
+        ssh = MockSSH([("multipath -l",
+                        """\
+mpath2 (350002ac000123456) dm-11 3PARdata,VV
+[size=100G][features=1 queue_if_no_path][hwhandler=0][rw]
+\_ round-robin 0 [prio=0][active]
+\_ 2:0:1:100 sdaj 66:48  [active][undef]
+\_ 1:0:0:100 sdf  8:80   [active][undef]
+\_ 1:0:1:100 sdp  8:240  [active][undef]
+\_ 2:0:0:100 sdz  65:144 [active][undef]
+mpath1 (350002ac000123457) dm-7 3PARdata,VV
+[size=100G][features=1 queue_if_no_path][hwhandler=0][rw]
+\_ round-robin 0 [prio=0][active]
+\_ 2:0:1:50  sdaf 65:240 [active][undef]
+\_ 1:0:0:50  sdb  8:16   [active][undef]
+\_ 1:0:1:50  sdl  8:176  [active][undef]
+\_ 2:0:0:50  sdv  65:80  [active][undef]
+mpath3 (350002ac000660910) dm-2 3PARdata,VV
+[size=100G][features=1 queue_if_no_path][hwhandler=0][rw]
+\_ round-robin 0 [prio=0][active]
+\_ 2:0:0:101 sdaa 65:160 [active][undef]
+\_ 2:0:1:101 sdak 66:64  [active][undef]
+\_ 1:0:0:101 sdg  8:96   [active][undef]
+\_ 1:0:1:101 sdq  65:0   [active][undef]"""),
+                       ("pvs --noheadings --units M --separator '|'", "\
+/dev/mapper/mpath3|VolGroup00|lvm2|a-|146632.87M|0M"),
+                       ("lvs --noheadings --units M", """\
+LogVol00 VolGroup00 -wi-ao 144552.49M
+LogVol01 VolGroup00 -wi-ao   2080.37M"""), ])
+        storage = hardware.get_disk_shares(ssh)
+        self.assertEqual(storage, {
+            'LogVol01': (u'50002AC000660910', 2080),
+            'LogVol00': (u'50002AC000660910', 144552)
+        })
