@@ -101,26 +101,26 @@ Linux wintermute 3.2.0-29-generic #46-Ubuntu SMP Fri Jul
         ssh = MockSSH([("multipath -l",
                         """\
 mpath2 (350002ac000123456) dm-11 3PARdata,VV
-[size=100G][features=1 queue_if_no_path][hwhandler=0][rw]
-\_ round-robin 0 [prio=0][active]
-\_ 2:0:1:100 sdaj 66:48  [active][undef]
-\_ 1:0:0:100 sdf  8:80   [active][undef]
-\_ 1:0:1:100 sdp  8:240  [active][undef]
-\_ 2:0:0:100 sdz  65:144 [active][undef]
+size=80G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='round-robin 0' prio=-1 status=active
+|- 9:0:0:50  sdc 8:32  active undef running
+|- 9:0:1:50  sdf 8:80  active undef running
+|- 8:0:0:50  sdi 8:128 active undef running
+`- 8:0:1:50  sdl 8:176 active undef running
 mpath1 (350002ac000123457) dm-7 3PARdata,VV
-[size=100G][features=1 queue_if_no_path][hwhandler=0][rw]
-\_ round-robin 0 [prio=0][active]
-\_ 2:0:1:50  sdaf 65:240 [active][undef]
-\_ 1:0:0:50  sdb  8:16   [active][undef]
-\_ 1:0:1:50  sdl  8:176  [active][undef]
-\_ 2:0:0:50  sdv  65:80  [active][undef]
+size=10G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='round-robin 0' prio=-1 status=active
+|- 9:0:1:0   sde 8:64  active undef running
+|- 9:0:0:0   sdb 8:16  active undef running
+|- 8:0:1:0   sdk 8:160 active undef running
+`- 8:0:0:0   sdh 8:112 active undef running
 mpath3 (350002ac000660910) dm-2 3PARdata,VV
-[size=100G][features=1 queue_if_no_path][hwhandler=0][rw]
-\_ round-robin 0 [prio=0][active]
-\_ 2:0:0:101 sdaa 65:160 [active][undef]
-\_ 2:0:1:101 sdak 66:64  [active][undef]
-\_ 1:0:0:101 sdg  8:96   [active][undef]
-\_ 1:0:1:101 sdq  65:0   [active][undef]"""),
+size=80G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='round-robin 0' prio=-1 status=active
+|- 9:0:0:100 sdd 8:48  active undef running
+|- 9:0:1:100 sdg 8:96  active undef running
+|- 8:0:0:100 sdj 8:144 active undef running
+`- 8:0:1:100 sdm 8:192 active undef running"""),
                        ("pvs --noheadings --units M --separator '|'", "\
 /dev/mapper/mpath3|VolGroup00|lvm2|a-|146632.87M|0M"),
                        ("lvs --noheadings --units M", """\
