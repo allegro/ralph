@@ -29,8 +29,8 @@ class NetworkAdmin(ModelAdmin):
         return ", ".join([n.name for n in self.terminators.order_by('name')])
     terms.short_description = _("network terminators")
     list_display = ('name', 'vlan', 'address', 'gateway', terms,
-                    'data_center', 'kind', 'queue')
-    list_filter = ('data_center', 'terminators', 'queue', 'kind')
+                    'data_center', 'kind', 'environment')
+    list_filter = ('data_center', 'terminators', 'environment', 'kind')
     list_per_page = 250
     radio_fields = {'data_center': admin.HORIZONTAL, 'kind': admin.HORIZONTAL}
     search_fields = ('name', 'address', 'vlan')
