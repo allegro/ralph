@@ -230,6 +230,8 @@ def _run_ipmi(ip):
             ip_address.save(update_last_seen=True)
         dev.save(update_last_seen=True, priority=SAVE_PRIORITY)
         names.append(name)
+    if not names:
+        raise AnswerError('Incompatible answer.')
     return ", ".join(names)
 
 
