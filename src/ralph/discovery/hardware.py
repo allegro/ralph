@@ -200,7 +200,9 @@ def get_disk_shares(ssh):
     pvs = {}
     for line in stdout.readlines():
         line = line.strip()
-        if line.startswith((r'\_', r'[', r'size', r'`-', r'|-',)):
+        if line.startswith((r'\_', r'[', r'`-', r'|')):
+            continue
+        if '=' in line:
             continue
         try:
             path, wwn, pv, model = line.strip().split(None, 3)
