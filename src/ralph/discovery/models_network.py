@@ -49,7 +49,7 @@ class AbstractNetwork(db.Model):
         null=True, blank=True, default=None)
     kind = db.ForeignKey(NetworkKind, on_delete=db.SET_NULL,
         verbose_name=_("network kind"), null=True, blank=True, default=None)
-    queue = db.CharField(verbose_name=_("Celery queue"),
+    environment = db.CharField(verbose_name=_("environment"),
         max_length=16, null=True, blank=True, default=None)
     rack = db.CharField(verbose_name=_("Rack"),
         max_length=16, null=True, blank=True, default=None)
