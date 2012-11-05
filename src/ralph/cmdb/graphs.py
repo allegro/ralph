@@ -9,7 +9,8 @@ from __future__ import unicode_literals
 from django.utils import simplejson
 
 from ralph.cmdb.views import BaseCMDBView
-from ralph.cmdb.models import CI, CIRelation
+from ralph.cmdb.models import CI, CIRelation, CI_TYPES
+from ralph.discovery.models import DeviceModel, DeviceType
 from django.http import HttpResponse
 
 class Graphs(BaseCMDBView):
@@ -23,8 +24,12 @@ class Graphs(BaseCMDBView):
 
     @staticmethod
     def get_ajax(self):
-        relations = [ dict(parent=x.parent.id, child=x.child.id, parent_name=x.parent.name, child_name=x.child.name)
-                for x in CIRelation.objects.filter(parent__type=2)]
+        root = CI.objects.filter(name='DC2')[0]
+        models_to_display = [ x.id for x in DeviceModel.objects.filter(type__in=[DeviceType.rack.id])]
+        relations = [ dict(parent=x.parent.id, child=x.child.id, parent_name=x.parent.name, child_name=x.child.name,
+            dupa=x.child.content_object.model.name)
+                for x in CIRelation.objects.filter(parent=root, child__type=CI_TYPES.DEVICE.id) if
+                x.child.content_object.model and x.child.content_object.model.id in models_to_display]
         nodes = dict()
         for x in relations:
             nodes[x.get('parent')] = x.get('parent_name')
