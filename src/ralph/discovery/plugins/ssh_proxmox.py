@@ -253,9 +253,9 @@ def _add_cluster_member(ssh, ip):
 def run_ssh_proxmox(ip):
     ssh = _connect_ssh(ip)
     try:
-        for file_name in ('/etc/pve/cluster.cfg', '/etc/pve/cluster.conf',
-                          '/etc/pve/storage.cfg'):
-            stdin, stdout, stderr = ssh.exec_command('cat "%s"' % file_name)
+        for command in ('cat /etc/pve/cluster.cfg', 'cat /etc/pve/cluster.conf',
+                          'cat /etc/pve/storage.cfg', 'pvecm help'):
+            stdin, stdout, stderr = ssh.exec_command(command)
             data = stdout.read()
             if data != '':
                 break
