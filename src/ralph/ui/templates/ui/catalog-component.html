@@ -70,16 +70,15 @@
             <tr>
                 <td class="column-name">
                     {% if m.extra %}
-                    <div  class="add-popover" title="{{ m.name }}"
+                    <div class="add-popover" title="{{ m.name }}"
                         data-content="<pre>{{ m.extra|default:'' }}</pre>">
                         {{ m.type|component_model_type_icon }}&nbsp;{{ m.name|default:'' }}&nbsp;{% icon 'fugue-information-small-white' %}
-
                     </div>
                     {% else %}
                         {{ m.type|component_model_type_icon }}&nbsp;{{ m.name|default:'' }}
                     {% endif %}
                 </td>
-                {% if 'count' in columns %}<td class="column-count count"><a href="{% url 'search' 'components' '' %}?component={{ m.name }}" class="badge badge-info">{{ m.count }}</a></td>{% endif %}
+                {% if 'count' in columns %}<td class="column-count count"><a href="{% url 'search' 'components' '' %}?component={{ m.id }}" class="badge badge-info">{{ m.count }}</a></td>{% endif %}
                 <td class="column-actions"><input type="checkbox" name="items" value="{{ m.id }}"></td>
             </tr>
             {% endfor %}

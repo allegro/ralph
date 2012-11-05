@@ -5,18 +5,18 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from django.shortcuts import get_object_or_404
-from django.conf import settings
-from django.db import connection
-from django.db.models import Q
-from django.http import HttpResponse
-from django.utils import simplejson
-from django.db.models import Count
-
 import calendar
 import datetime
 
-import ralph.cmdb.models  as db
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.db import connection
+from django.db.models import (Count, Q)
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from django.utils import simplejson
+
+import ralph.cmdb.models as db
 from ralph.cmdb.models_changes import CI_CHANGE_TYPES
 from ralph.cmdb.views import BaseCMDBView, get_icon_for
 from ralph.cmdb.forms import CIChangeSearchForm, CIReportsParamsForm
@@ -33,30 +33,40 @@ class ChangesBase(BaseCMDBView):
         })
         return ret
 
+
 class Change(ChangesBase):
     template_name = 'cmdb/view_change.html'
 
     def get_context_data(self, **kwargs):
         ret = super(Change, self).get_context_data(**kwargs)
-        ret.update({
-            'change': self.change,
-            'puppet_reports': self.puppet_reports,
-            'git_changes': self.git_changes,
-            'device_attributes_changes': self.device_attributes_changes,
-            'fisheye_url': settings.FISHEYE_URL,
-            'fisheye_project': settings.FISHEYE_PROJECT_NAME,
-            'puppet_feedback_errors' : self.puppet_feedback_errors,
-            'puppet_feedback_changes' : self.puppet_feedback_changes,
-            })
+        ret.update(
+            {
+                'change': self.change,
+                'puppet_reports': self.puppet_reports,
+                'git_changes': self.git_changes,
+                'device_attributes_changes': self.device_attributes_changes,
+                'ci_attributes_changes': self.ci_attributes_changes,
+                'fisheye_url': settings.FISHEYE_URL,
+                'fisheye_project': settings.FISHEYE_PROJECT_NAME,
+                'puppet_feedback_errors': self.puppet_feedback_errors,
+                'puppet_feedback_changes': self.puppet_feedback_changes,
+                'ci': self.ci,
+            }
+        )
         return ret
 
     def get(self, *args, **kwargs):
         change_id = kwargs.get('change_id')
         change = get_object_or_404(db.CIChange, id=change_id)
         self.change = change
+        try:
+            self.ci = db.CI.objects.get(id=change.ci_id)
+        except db.CI.DoesNotExist:
+            self.ci = None
         self.puppet_reports = []
         self.git_changes = []
-        self.device_attributes_changes  = []
+        self.device_attributes_changes = []
+        self.ci_attributes_changes = []
         self.puppet_feedback_errors = 0
         self.puppet_feedback_changes = 0
         report = change.content_object
@@ -71,7 +81,7 @@ class Change(ChangesBase):
                 author=report.author,
                 changeset=report.changeset,
             )]
-            configuration_version=change.content_object.changeset[0:7]
+            configuration_version = change.content_object.changeset[0:7]
             self.puppet_feedback_changes = db.CIChangePuppet.objects.filter(
                 configuration_version=configuration_version,
                 status='changed',
@@ -81,7 +91,23 @@ class Change(ChangesBase):
                 status='failed',
             ).count()
         elif change.type == db.CI_CHANGE_TYPES.DEVICE.id:
-            self.device_attributes_changes  = [report]
+            self.device_attributes_changes = [report]
+        elif change.type == db.CI_CHANGE_TYPES.CI:
+            user = User.objects.filter(
+                pk=change.content_object.user_id
+            ).values('username')
+            user_info = user[0].get('username', '–') if user else '–'
+            report = [
+                {
+                    'time':change.content_object.time,
+                    'user': user_info,
+                    'field_name':change.content_object.field_name,
+                    'old_value':change.content_object.old_value,
+                    'new_value':change.content_object.new_value,
+                    'comment':change.content_object.comment,
+                }
+            ]
+            self.ci_attributes_changes = report
         return super(Change, self).get(*args, **kwargs)
 
 
@@ -97,11 +123,12 @@ class Changes(ChangesBase, PaginatedView):
             type = CI_CHANGE_TYPES.NameFromID(get_type)
             subsection += '%s - ' % CI_CHANGE_TYPES.DescFromName(type)
         subsection += 'Changes'
-        select = {1: 'repo changes',
-                  2: 'agent events',
-                  3: 'asset attr. changes',
-                  4: 'monitoring events',
-                  5: 'status office events',
+        select = {
+            1: 'repo changes',
+            2: 'agent events',
+            3: 'asset attr. changes',
+            4: 'monitoring events',
+            5: 'status office events',
         }
         sidebar_selected = select.get(get_type, 'all events')
         ret.update({
@@ -116,14 +143,16 @@ class Changes(ChangesBase, PaginatedView):
     def get(self, *args, **kwargs):
         values = self.request.GET
         self.form = CIChangeSearchForm(initial=values)
-        changes  = db.CIChange.objects.filter()
+        changes = db.CIChange.objects.filter()
         if values.get('type'):
             changes = changes.filter(type__icontains=values.get('type'))
         if values.get('priority'):
-            changes = changes.filter(priority__icontains=values.get('priority'))
+            changes = changes.filter(
+                priority__icontains=values.get('priority')
+            )
         if values.get('uid'):
             changes = changes.filter(Q(ci__name__icontains=values.get('uid'))
-            | Q(ci__id=values.get('uid')))
+                                     | Q(ci__id=values.get('uid')))
         changes = changes.order_by('-time')
         self.paginate(changes)
         self.changes = self.page_contents
@@ -137,10 +166,10 @@ class Changes(ChangesBase, PaginatedView):
             GROUP BY type, priority, MONTH(ch.time)
             ORDER BY DATE(ch.time) DESC
         ''')
-        self.data= dict()
+        self.data = dict()
         rows = cursor.fetchall()
         for r in rows:
-            month =calendar.month_name[r[3]]
+            month = calendar.month_name[r[3]]
             count = r[0]
             type = dict(db.CI_CHANGE_TYPES())[r[1]]
             priority = dict(db.CI_CHANGE_PRIORITY_TYPES())[r[2]]
@@ -161,7 +190,7 @@ class Problems(ChangesBase, PaginatedView):
             'problems': self.data,
             'jira_url': build_url(settings.ISSUETRACKERS['default']['URL'], 'browse'),
             'subsection': 'Problems',
-             'sidebar_selected': 'problems',
+            'sidebar_selected': 'problems',
         })
         return ret
 
@@ -191,22 +220,21 @@ class Incidents(ChangesBase, PaginatedView):
         self.data = queryset
         return super(Incidents, self).get(*args, **kwargs)
 
+
 class DashboardDetails(ChangesBase, PaginatedView):
     template_name = 'cmdb/dashboard_details_ci.html'
 
     def get_context_data(self, **kwargs):
         ret = super(DashboardDetails, self).get_context_data(**kwargs)
-        ret.update({
-            'statistics': self.data,
-       })
+        ret.update({'statistics': self.data, })
         return ret
 
     def get_csv_data(self):
         report_type = self.kwargs.get('report_type')
         if report_type == 'ci':
             self.csv_data = [(unicode(x['name']),
-                unicode(x['count']),
-                unicode(x['venture'])) for x in self.data]
+                              unicode(x['count']),
+                              unicode(x['venture'])) for x in self.data]
         else:
             self.csv_data = [(unicode(x[0]), unicode(x[1])) for x in self.data]
         return self.csv_data
@@ -227,7 +255,7 @@ class DashboardDetails(ChangesBase, PaginatedView):
             AND YEAR(ch.time)=YEAR(NOW())
             GROUP BY cc.id DESC
             ORDER BY COUNT(*) DESC, cc.name ASC
-        ''', [type, prio, month] )
+        ''', [type, prio, month])
         if report_type == 'ci':
             self.data = []
             rows = cursor.fetchall()
@@ -240,13 +268,13 @@ class DashboardDetails(ChangesBase, PaginatedView):
                     ci = db.CI.objects.get(id=ci_id)
                     if ci and ci_id and ci.content_object and \
                             getattr(ci.content_object, 'venture', None):
-                        venture=db.CI.get_by_content_object(ci.content_object.venture)
+                        venture = db.CI.get_by_content_object(
+                            ci.content_object.venture)
                 if venture_id:
                     if (venture) and (
                             (venture.id == int(venture_id))
                             or
-                            ((venture == None) and (int(venture_id) == -1))
-                            ):
+                            ((venture is None) and (int(venture_id) == -1))):
                         self.data.append(dict(
                             count=count,
                             name=name,
@@ -270,7 +298,7 @@ class DashboardDetails(ChangesBase, PaginatedView):
             self.data_dict = {}
             rows = cursor.fetchall()
             for r in rows:
-                venture=None
+                venture = None
                 count = r[0]
                 name = r[1]
                 ci_id = r[2]
@@ -278,26 +306,27 @@ class DashboardDetails(ChangesBase, PaginatedView):
                     ci = db.CI.objects.get(id=ci_id)
                     if ci and ci_id and ci.content_object and \
                             getattr(ci.content_object, 'venture', None):
-                        venture = db.CI.get_by_content_object(ci.content_object.venture)
+                        venture = db.CI.get_by_content_object(
+                            ci.content_object.venture)
                 if venture:
                     if not self.data_dict.get(venture):
                         self.data_dict[venture.id] = dict(count=count,
-                                name=venture.name)
+                                                          name=venture.name)
                     else:
                         self.data_dict[venture.id]['count'] += count
                 else:
                     if not self.data_dict.get(-1):
                         self.data_dict[-1] = dict(count=count,
-                                name='Unassigned')
+                                                  name='Unassigned')
                     else:
-                        self.data_dict[-1]['count']+=count
-
+                        self.data_dict[-1]['count'] += count
 
             self.data = [(self.data_dict[x], x) for x in self.data_dict]
             self.data = sorted(self.data, reverse=True)
             self.paginate(self.data)
             self.data = self.page_contents
         return super(DashboardDetails, self).get(*args)
+
 
 class DashSubReport(object):
     """
@@ -310,9 +339,9 @@ class DashSubReport(object):
 
     def __repr__(self):
         return 'DashSubReport type= %s priority=%s' % (
-                self.report_type_int,
-                self.priority_int,
-                )
+            self.report_type_int,
+            self.priority_int,
+        )
 
     def get_month_data(self):
         cursor = connection.cursor()
@@ -359,8 +388,9 @@ class DashReport(object):
         return False
 
     def __repr__(self):
-        return 'DashReport %s with %d subreports' % (self.report_type,
-                len(self.subreports)
+        return 'DashReport %s with %d subreports' % (
+            self.report_type,
+            len(self.subreports),
         )
 
     def generate_subreports(self):
@@ -368,6 +398,7 @@ class DashReport(object):
             sr = DashSubReport(self.report_type, priority)
             sr.calculate_report()
             self.subreports.append(sr)
+
 
 class Dashboard(ChangesBase):
     template_name = 'cmdb/dashboard_main.html'
@@ -386,7 +417,7 @@ class Dashboard(ChangesBase):
     @staticmethod
     def get_ajax(*args, **kwargs):
         """Thin wrapper for Ajax subreports data"""
-        data={}
+        data = {}
         for _type in db.CI_CHANGE_TYPES():
             d = DashReport(_type)
             d.generate_subreports()
@@ -405,10 +436,10 @@ class Dashboard(ChangesBase):
                         priority=priority_id,
                         type=type_id,
                     )
-        response_dict={'data': data}
+        response_dict = {'data': data}
         return HttpResponse(
-                simplejson.dumps(response_dict),
-                mimetype='application/json',
+            simplejson.dumps(response_dict),
+            mimetype='application/json',
         )
 
     def get(self, *args, **kwargs):
@@ -426,6 +457,7 @@ class Dashboard(ChangesBase):
             self.reports.append(d)
         return super(Dashboard, self).get(*args)
 
+
 class Reports(ChangesBase, PaginatedView):
     template_name = 'cmdb/view_report.html'
     exporting_csv_file = False
@@ -436,25 +468,28 @@ class Reports(ChangesBase, PaginatedView):
         if kind:
             subsection += '%s - ' % self.report_name
         subsection += 'Reports'
-        select = {'top_changes': 'top ci changes',
-                  'top_problems': 'top ci problems',
-                  'top_incidents': 'top ci incidents',
-                  'usage': 'cis w/o changes',
+        select = {
+            'top_changes': 'top ci changes',
+            'top_problems': 'top ci problems',
+            'top_incidents': 'top ci incidents',
+            'usage': 'cis w/o changes',
         }
         ret = super(Reports, self).get_context_data(**kwargs)
-        ret.update({
-            'data': self.data,
-            'form': self.form,
-            'report_kind': self.request.GET.get('kind', 'top'),
-            'report_name': self.report_name,
-            'subsection': subsection,
-            'sidebar_selected': select.get(kind, ''),
-       })
+        ret.update(
+            {
+                'data': self.data,
+                'form': self.form,
+                'report_kind': self.request.GET.get('kind', 'top'),
+                'report_name': self.report_name,
+                'subsection': subsection,
+                'sidebar_selected': select.get(kind, ''),
+            }
+        )
         return ret
 
     def first_day_of_month(self, dt):
-        ddays = int(dt.strftime("%d"))-1
-        delta = datetime.timedelta(days= ddays)
+        ddays = int(dt.strftime("%d")) - 1
+        delta = datetime.timedelta(days=ddays)
         return dt - delta
 
     def handle_params(self, queryset):
@@ -479,8 +514,8 @@ class Reports(ChangesBase, PaginatedView):
         return rows
 
     def least_ci_changes(self):
-        queryset = db.CI.objects.annotate(num=Count('cichange')).\
-                filter(num=0).order_by('num')
+        queryset = db.CI.objects.annotate(
+            num=Count('cichange')).filter(num=0).order_by('num')
         queryset = self.handle_params(queryset)
         queryset = self.paginate_query(queryset)
         rows = [(x.num, x) for x in queryset]
@@ -521,7 +556,7 @@ class Reports(ChangesBase, PaginatedView):
     def get(self, *args, **kwargs):
         values = self.request.GET
         self.form = CIReportsParamsForm(initial=values)
-        changes  = db.CIChange.objects.filter()
+        changes = db.CIChange.objects.filter()
         if values.get('type'):
             changes = changes.filter(type__icontains=values.get('type'))
         if values.get('priority'):
@@ -539,6 +574,7 @@ class Reports(ChangesBase, PaginatedView):
 
 def make_jira_url(external_key):
     return settings.ISSUETRACKERS['default']['URL'] + '/' + external_key
+
 
 class TimeLine(BaseCMDBView):
     template_name = 'cmdb/timeline.html'
@@ -578,38 +614,38 @@ class TimeLine(BaseCMDBView):
             stop_date = get_end_date
 
         manual_changes = db.CIChange.objects.filter(
-                    time__gte=start_date,
-                    time__lte=stop_date,
-                    type=db.CI_CHANGE_TYPES.CONF_GIT.id,
+            time__gte=start_date,
+            time__lte=stop_date,
+            type=db.CI_CHANGE_TYPES.CONF_GIT.id,
         ).order_by('-time')
         agent_changes_warnings = db.CIChange.objects.filter(
-                    time__gte=start_date,
-                    time__lte=stop_date,
-                    type=db.CI_CHANGE_TYPES.CONF_AGENT.id,
-                    priority__in=[
-                        db.CI_CHANGE_PRIORITY_TYPES.NOTICE.id,
-                        db.CI_CHANGE_PRIORITY_TYPES.WARNING.id,
-                    ]
+            time__gte=start_date,
+            time__lte=stop_date,
+            type=db.CI_CHANGE_TYPES.CONF_AGENT.id,
+            priority__in=[
+                db.CI_CHANGE_PRIORITY_TYPES.NOTICE.id,
+                db.CI_CHANGE_PRIORITY_TYPES.WARNING.id,
+            ]
         ).order_by('-time')
         agent_changes_errors = db.CIChange.objects.filter(
-                    time__gte=start_date,
-                    time__lte=stop_date,
-                    type=db.CI_CHANGE_TYPES.CONF_AGENT.id,
-                    priority__in=[
-                        db.CI_CHANGE_PRIORITY_TYPES.ERROR.id,
-                        # critical is not used for puppet agents, though not
-                        # mentioned.
-                    ]
+            time__gte=start_date,
+            time__lte=stop_date,
+            type=db.CI_CHANGE_TYPES.CONF_AGENT.id,
+            priority__in=[
+                db.CI_CHANGE_PRIORITY_TYPES.ERROR.id,
+                # critical is not used for puppet agents, though not
+                # mentioned.
+            ]
         ).order_by('-time')
         manual = []
         for change in manual_changes:
             #number of ci affected - error/success
             errors_count = db.CIChangePuppet.objects.filter(
-                    configuration_version=change.content_object.changeset[0:7],
-                    status='failed').aggregate(num_ci=Count('ci'))
+                configuration_version=change.content_object.changeset[0:7],
+                status='failed').aggregate(num_ci=Count('ci'))
             success_count = db.CIChangePuppet.objects.filter(
-                    configuration_version=change.content_object.changeset[0:7],
-                    status='changed').aggregate(num_ci=Count('ci'))
+                configuration_version=change.content_object.changeset[0:7],
+                status='changed').aggregate(num_ci=Count('ci'))
             manual.append(dict(
                 id=change.id,
                 time=change.time.isoformat(),
@@ -627,7 +663,7 @@ class TimeLine(BaseCMDBView):
                 comment=change.message,
                 external_key=make_jira_url(change.external_key),
             ))
-        agent_errors=[]
+        agent_errors = []
         for change in agent_changes_errors:
             agent_errors.append(dict(
                 id=change.id,
@@ -635,13 +671,13 @@ class TimeLine(BaseCMDBView):
                 comment=change.message,
                 external_key=make_jira_url(change.external_key),
             ))
-        response_dict=dict(
-                manual=manual,
-                agent_warnings=agent_warnings,
-                agent_errors=agent_errors,
-                plot_title=plot_title
+        response_dict = dict(
+            manual=manual,
+            agent_warnings=agent_warnings,
+            agent_errors=agent_errors,
+            plot_title=plot_title
         )
         return HttpResponse(
-                simplejson.dumps(response_dict),
-                mimetype='application/json',
+            simplejson.dumps(response_dict),
+            mimetype='application/json',
         )

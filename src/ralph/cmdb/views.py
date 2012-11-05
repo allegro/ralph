@@ -30,12 +30,13 @@ from ralph.ui.views.common import Base, BaseMixin, _get_details
 from ralph.util.presentation import (
     get_device_icon, get_venture_icon, get_network_icon
 )
-import ralph.cmdb.models  as db
+import ralph.cmdb.models as db
 from bob.menu import MenuItem, MenuHeader
 
 
 ROWS_PER_PAGE = 20
 SAVE_PRIORITY = 200
+
 
 def get_icon_for(ci):
     if not ci or not ci.content_object:
@@ -162,8 +163,11 @@ class BaseCMDBView(Base):
         })
         return ret
 
+
 def _get_pages(paginator, page):
-    pages = paginator.page_range[max(0, page - 4):min(paginator.num_pages, page + 3)]
+    pages = paginator.page_range[
+        max(0, page - 4):min(paginator.num_pages, page + 3)
+    ]
     if 1 not in pages:
         pages.insert(0, 1)
         pages.insert(1, '...')
@@ -470,7 +474,7 @@ class Edit(BaseCMDBView):
             'ci': self.ci,
             'ci_id': self.ci.id,
             'uid': self.ci.uid,
-            'label': 'Edit CI - ' + self.ci.uid,
+            'label': 'Edit CI: {} (uid: {})'.format(self.ci.name, self.ci.uid),
             'relations_contains': self.relations_contains,
             'relations_requires': self.relations_requires,
             'relations_isrequired': self.relations_isrequired,
@@ -480,6 +484,7 @@ class Edit(BaseCMDBView):
             'puppet_reports': self.puppet_reports,
             'git_changes': self.git_changes,
             'device_attributes_changes': self.device_attributes_changes,
+            'ci_attributes_changes': self.ci_attributes_changes,
             'problems': self.problems,
             'incidents': self.incidents,
             'zabbix_triggers': self.zabbix_triggers,
@@ -595,12 +600,16 @@ class Edit(BaseCMDBView):
             self.device_attributes_changes = [
                 x.content_object for x in db.CIChange.objects.filter(
                     ci=self.ci, type=db.CI_CHANGE_TYPES.DEVICE.id)]
+            self.ci_attributes_changes = [
+                x.content_object for x in db.CIChange.objects.filter(
+                    ci=self.ci, type=db.CI_CHANGE_TYPES.CI.id).order_by('time')
+            ]
             reps = db.CIChangePuppet.objects.filter(ci=self.ci).all()
             for report in reps:
                 puppet_logs = db.PuppetLog.objects.filter(cichange=report).all()
                 self.puppet_reports.append(dict(report=report, logs=puppet_logs))
             self.zabbix_triggers = db.CIChangeZabbixTrigger.objects.filter(
-                    ci=self.ci).order_by('-lastchange')
+                ci=self.ci).order_by('-lastchange')
             self.so_events = db.CIChange.objects.filter(
                 type=db.CI_CHANGE_TYPES.STATUSOFFICE.id,
                 ci=self.ci).all()
@@ -628,6 +637,7 @@ class Edit(BaseCMDBView):
         self.puppet_reports = []
         self.git_changes = []
         self.zabbix_triggers = []
+        self.ci_attributes_changes = []
         self.device_attributes_changes = []
         self.form = None
         self.ci = None
@@ -703,7 +713,7 @@ class View(Edit):
     def get_context_data(self, **kwargs):
         ret = super(View, self).get_context_data(**kwargs)
         ret.update({
-            'label': 'View CI:  ' + self.ci.name,
+            'label': 'View CI: {} (uid: {})'.format(self.ci.name, self.ci.uid),
             'subsection': 'Info - %s' % self.ci.name
         })
         return ret
@@ -879,11 +889,10 @@ class CMDB(View):
         ret = super(View, self).get_context_data(**kwargs)
         ret.update({
             'ci': self.ci,
-            'label': 'View CI - ' + self.ci.name,
+            'label': 'View CI: {} (uid: {})'.format(self.ci.name, self.ci.uid),
             'url_query': self.request.GET,
             'components': _get_details(
                 self.ci.content_object, purchase_only=False
             )
         })
         return ret
-
