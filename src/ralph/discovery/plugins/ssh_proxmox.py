@@ -66,6 +66,8 @@ def _add_virtual_machine(ssh, vmid, parent, master, storages):
     name = 'unknown'
     for line in lines:
         line = line.strip()
+        if line.startswith('#'):
+            continue
         key, value = line.split(':', 1)
         if key.startswith('vlan'):
             lan_model, lan_mac = value.split('=', 1)
