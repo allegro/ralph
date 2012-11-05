@@ -34,13 +34,13 @@
             var graphics = Viva.Graph.View.svgGraphics();
             graphics.node(function(node) {
                 e = Viva.Graph.svg('text')
-                .attr('width', 24)
-                .attr('height', 24);
+                .attr('width', 224)
+                .attr('height', 180);
                 e.textContent = node.data;
                 return e
                 })
-                .placeNode(function(nodeUI, pos){
-                                nodeUI.attr('x', pos.x - 12).attr('y', pos.y - 12);
+            .placeNode(function(nodeUI, pos){
+                                nodeUI.attr('x', pos.x).attr('y', pos.y);
             });
             var renderer = Viva.Graph.View.renderer(graph, 
                     {
