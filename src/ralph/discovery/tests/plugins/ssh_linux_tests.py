@@ -97,7 +97,7 @@ Linux wintermute 3.2.0-29-generic #46-Ubuntu SMP Fri Jul
         self.assertEquals(os.model.name, '#46-Ubuntu')
         self.assertEquals(os.model.family, 'Linux')
 
-    def test_os_disc_share(self):
+    def test_os_disk_share(self):
         ssh = MockSSH([("multipath -l",
                         """\
 mpath2 (350002ac000123456) dm-11 3PARdata,VV
