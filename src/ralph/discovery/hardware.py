@@ -16,7 +16,6 @@ from ralph.discovery.models import (Memory, Processor, ComponentModel,
 )
 
 
-
 SMBIOS_BANNER = 'ID    SIZE TYPE'
 DENSE_SPEED_REGEX = re.compile(r'(\d+)\s*([GgHhKkMmZz]+)')
 INQUIRY_REGEXES = (
@@ -32,6 +31,7 @@ INQUIRY_REGEXES = (
 
 class Error(Exception):
     pass
+
 
 class DMIDecodeError(Error):
     pass
@@ -70,19 +70,21 @@ def normalize_wwn(wwn):
     elif len(wwn) == 32 and wwn[-6:] == '000000' and wwn[12:16] == '0000':
         # MSA
         wwn = wwn[6:12] + wwn[16:-6]
-    elif len(wwn) == 32 and wwn.startswith((
-            '600A0B80', # IBM
-        )):
+    elif len(wwn) == 32 and wwn.startswith(('600A0B80',)):
+        # IBM
         pass
-    elif len(wwn) == 33 and wwn.startswith((
-            '3600A0B80', # IBM - multipath
-            '3600508B1', # HP logical volume - multipath
-            '3600144F0', # SUN - multipath
-        )):
+    elif len(wwn) == 33 and wwn.startswith(
+        (
+            '3600A0B80',  # IBM - multipath
+            '3600508B1',  # HP logical volume - multipath
+            '3600144F0',  # SUN - multipath
+        )
+    ):
         wwn = wwn[1:]
     else:
         raise ValueError('Unknown WWN format %r' % wwn)
     return wwn
+
 
 def parse_smbios(as_string):
     if not as_string.startswith(SMBIOS_BANNER):
@@ -109,6 +111,7 @@ def parse_smbios(as_string):
                 current.setdefault('capabilities', []).append(line)
     return smb
 
+
 def handle_smbios(dev, smbios, is_virtual=False, priority=0):
     # memory
     for memory in smbios.get('MEMDEVICE', ()):
@@ -118,21 +121,23 @@ def handle_smbios(dev, smbios, is_virtual=False, priority=0):
             size /= units.size_divisor[size_units]
             size = int(size)
         except ValueError:
-            continue # empty slot
+            continue  # empty slot
         for split_key in ('BANK', 'Slot '):
             try:
                 bank = memory.get('Bank Locator').split(split_key)[1]
                 bank = int(bank) + 1
                 break
             except (IndexError, ValueError):
-                bank = None # unknown bank
+                bank = None  # unknown bank
         if bank is None:
             continue
         mem, created = Memory.concurrent_get_or_create(device=dev, index=bank)
         if created:
             mem.speed = 0
-        mem.label = "{} {}".format(memory.get('Device Locator',
-            memory.get('Location Tag', 'DIMM')), memory.get('Part Number', ''))
+        mem.label = "{} {}".format(
+            memory.get('Device Locator', memory.get('Location Tag', 'DIMM')),
+            memory.get('Part Number', '')
+        )
         mem.size = size
         manufacturer = memory.get('Manufacturer', 'Manufacturer')
         if not manufacturer.startswith('Manufacturer'):
@@ -169,7 +174,7 @@ def handle_smbios(dev, smbios, is_virtual=False, priority=0):
                 index_parts.append(int(cpu_part.strip()))
             except ValueError:
                 continue
-        index = reduce(lambda x, y: x*y, index_parts)
+        index = reduce(lambda x, y: x * y, index_parts)
         extra = "CPUID: {}".format(cpu['CPUID'])
         model, c = ComponentModel.concurrent_get_or_create(
             speed=speed, type=ComponentType.processor.id, extra=extra,
@@ -195,7 +200,7 @@ def get_disk_shares(ssh):
     pvs = {}
     for line in stdout.readlines():
         line = line.strip()
-        if line.startswith((r'\_', r'[')):
+        if line.startswith((r'\_', r'[', r'size', r'`-', r'|-',)):
             continue
         try:
             path, wwn, pv, model = line.strip().split(None, 3)
@@ -205,12 +210,12 @@ def get_disk_shares(ssh):
         if '(' not in wwn:
             wwn, pv, model = line.strip().split(None, 2)
             path = None
-        wwn  = normalize_wwn(wwn.strip('()'))
+        wwn = normalize_wwn(wwn.strip('()'))
         pvs['/dev/%s' % pv] = wwn
         if path:
             pvs['/dev/mapper/%s' % path] = wwn
     stdin, stdout, stderr = ssh.exec_command(
-            "pvs --noheadings --units M --separator '|'")
+        "pvs --noheadings --units M --separator '|'")
     vgs = {}
     for line in stdout.readlines():
         pv, vg, rest = line.split('|', 2)
@@ -244,8 +249,9 @@ def handle_smartctl(dev, disks, priority=0):
             continue
         if disk['product'].lower() in DISK_PRODUCT_BLACKLIST:
             continue
-        stor, created = Storage.concurrent_get_or_create(device=dev,
-            sn=disk['serial_number'])
+        stor, created = Storage.concurrent_get_or_create(
+            device=dev, sn=disk['serial_number']
+        )
         stor.device = dev
         size_value, size_unit, rest = disk['user_capacity'].split(' ', 2)
         size_value = size_value.replace(',', '')
@@ -256,11 +262,11 @@ def handle_smartctl(dev, disks, priority=0):
             label_meta.append(disk['transport_protocol'])
         stor.label = ' '.join(label_meta)
         disk_default = dict(
-            vendor = 'unknown',
-            product = 'unknown',
-            revision = 'unknown',
-            transport_protocol = 'unknown',
-            user_capacity = 'unknown',
+            vendor='unknown',
+            product='unknown',
+            revision='unknown',
+            transport_protocol='unknown',
+            user_capacity='unknown',
         )
         disk_default.update(disk)
         extra = """Model: {vendor} {product}
@@ -271,7 +277,7 @@ Size: {user_capacity}
         stor.model, c = ComponentModel.concurrent_get_or_create(
             size=stor.size, speed=stor.speed, type=ComponentType.disk.id,
             family='', extra_hash=hashlib.md5(extra).hexdigest(), extra=extra)
-        stor.model.name =  '{} {}MiB'.format(stor.label, stor.size)
+        stor.model.name = '{} {}MiB'.format(stor.label, stor.size)
         stor.model.save(priority=priority)
         stor.save(priority=priority)
 
@@ -281,18 +287,23 @@ def _handle_inquiry_data(raw, controller, disk):
         m = regex.match(raw)
         if m:
             return m.group('vendor'), m.group('product'), m.group('sn')
-    raise ValueError("Incompatible inquiry_data for disk {}/{}: {}"
-        "".format(controller, disk, raw))
+    raise ValueError(
+        "Incompatible inquiry_data for disk {}/{}: {}".format(
+            controller, disk, raw
+        )
+    )
 
 
 def handle_megaraid(dev, disks, priority=0):
     for (controller_handle, disk_handle), disk in disks.iteritems():
         disk['vendor'], disk['product'], disk['serial_number'] = \
-                _handle_inquiry_data(disk.get('inquiry_data', ''),
-                        controller_handle, disk_handle)
+            _handle_inquiry_data(
+                disk.get('inquiry_data', ''),
+                controller_handle, disk_handle
+            )
 
-        if not disk.get('serial_number') or disk.get(
-                'media_type') not in ('Hard Disk Device', 'Solid State Device'):
+        if not disk.get('serial_number') or disk.get('media_type') not in (
+                'Hard Disk Device', 'Solid State Device'):
             continue
         if {'coerced_size', 'vendor', 'product', 'pd_type'} - \
                 set(disk.keys()):
@@ -302,8 +313,8 @@ def handle_megaraid(dev, disks, priority=0):
             continue
         if disk['product'].lower() in DISK_PRODUCT_BLACKLIST:
             continue
-        stor, created = Storage.concurrent_get_or_create(device=dev,
-            sn=disk['serial_number'])
+        stor, created = Storage.concurrent_get_or_create(
+            device=dev, sn=disk['serial_number'])
         stor.device = dev
         size_value, size_unit, rest = disk['coerced_size'].split(' ', 2)
         size_value = size_value.replace(',', '')
@@ -314,11 +325,11 @@ def handle_megaraid(dev, disks, priority=0):
             label_meta.append(disk['pd_type'])
         stor.label = ' '.join(label_meta)
         disk_default = dict(
-            vendor = 'unknown',
-            product = 'unknown',
-            device_firmware_level = 'unknown',
-            pd_type = 'unknown',
-            coerced_size = 'unknown',
+            vendor='unknown',
+            product='unknown',
+            device_firmware_level='unknown',
+            pd_type='unknown',
+            coerced_size='unknown',
         )
         disk_default.update(disk)
         extra = """Model: {vendor} {product}
@@ -329,29 +340,30 @@ Size: {coerced_size}
         stor.model, c = ComponentModel.concurrent_get_or_create(
             size=stor.size, speed=stor.speed, type=ComponentType.disk.id,
             family='', extra_hash=hashlib.md5(extra).hexdigest(), extra=extra)
-        stor.model.name =  '{} {}MiB'.format(stor.label, stor.size)
+        stor.model.name = '{} {}MiB'.format(stor.label, stor.size)
         stor.model.save(priority=priority)
         stor.save(priority=priority)
+
 
 def handle_hpacu(dev, disks, priority=0):
     for disk_handle, disk in disks.iteritems():
         if not disk.get('serial_number'):
             continue
-        stor, created = Storage.concurrent_get_or_create(device=dev,
-            sn=disk['serial_number'])
+        stor, created = Storage.concurrent_get_or_create(
+            device=dev, sn=disk['serial_number'])
         stor.device = dev
         size_value, size_unit = disk['size'].split()
         stor.size = int(float(size_value) / units.size_divisor[size_unit])
         stor.speed = int(disk.get('rotational_speed', 0))
         stor.label = '{} {}'.format(' '.join(disk['model'].split()),
-            disk['interface_type'])
+                                    disk['interface_type'])
         disk_default = dict(
-            model = 'unknown',
-            firmware_revision = 'unknown',
-            interface_type = 'unknown',
-            size = 'unknown',
-            rotational_speed = 'unknown',
-            status = 'unknown',
+            model='unknown',
+            firmware_revision='unknown',
+            interface_type='unknown',
+            size='unknown',
+            rotational_speed='unknown',
+            status='unknown',
         )
         disk_default.update(disk)
         extra = """Model: {model}
@@ -363,7 +375,7 @@ Status: {status}""".format(**disk_default)
         stor.model, c = ComponentModel.concurrent_get_or_create(
             size=stor.size, speed=stor.speed, type=ComponentType.disk.id,
             family='', extra_hash=hashlib.md5(extra).hexdigest(), extra=extra)
-        stor.model.name =  '{} {}MiB'.format(stor.label, stor.size)
+        stor.model.name = '{} {}MiB'.format(stor.label, stor.size)
         stor.model.save(priority=priority)
         stor.save(priority=priority)
 
@@ -372,9 +384,11 @@ def parse_dmidecode(data):
     """Parse data returned by the dmidecode command into a dict."""
 
     p = parse.multi_pairs(data)
+
     def exclude(value, exceptions):
         if value not in exceptions:
             return value
+
     def num(value):
         if value is None:
             return None
@@ -416,9 +430,11 @@ def handle_dmidecode(info, ethernets=(), save_priority=0):
 
     # It's either a rack or a blade server, who knows?
     # We will let other plugins determine that.
-    dev = Device.create(ethernets=ethernets, sn=info['sn'], uuid=info['uuid'],
-            model_name=info['model'], model_type=DeviceType.unknown,
-            priority=save_priority)
+    dev = Device.create(
+        ethernets=ethernets, sn=info['sn'], uuid=info['uuid'],
+        model_name=info['model'], model_type=DeviceType.unknown,
+        priority=save_priority
+    )
     for i, cpu_info in enumerate(info['cpu']):
         extra = ',\n'.join(cpu_info['flags'])
         extra = ('threads: %d\n' % cpu_info['threads']) + extra
@@ -460,4 +476,3 @@ def handle_dmidecode(info, ethernets=(), save_priority=0):
     for mem in dev.memory_set.filter(index__gt=i + 1):
         mem.delete()
     return dev
-
