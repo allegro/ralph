@@ -13,15 +13,19 @@ from django.db import models as db
 from django.db import IntegrityError
 from django.utils.translation import ugettext_lazy as _
 import ipaddr
-from lck.django.common.models import (TimeTrackable, Named,
-    WithConcurrentGetOrCreate, SavePrioritized)
+from lck.django.common.models import (
+    TimeTrackable, Named, WithConcurrentGetOrCreate, SavePrioritized,
+)
 
 from ralph.util import network
 from ralph.discovery.models_util import LastSeen
 
+
 class NetworkKind(Named):
-    icon = db.CharField(verbose_name=_("Icon"),
-        max_length=32, null=True, blank=True, default=None)
+    icon = db.CharField(
+        _("icon"), max_length=32, null=True, blank=True, default=None,
+    )
+
     class Meta:
         verbose_name = _("network kind")
         verbose_name_plural = _("network kinds")
@@ -29,30 +33,42 @@ class NetworkKind(Named):
 
 
 class AbstractNetwork(db.Model):
-    address = db.CharField(verbose_name=_("Network address"),
-        help_text=_("Presented as string."),
-        max_length=len("xxx.xxx.xxx.xxx/xx"), unique=True)
-    gateway= db.IPAddressField(verbose_name=_("gateway address"),
-        help_text=_("Presented as string."), blank=True, null=True,
-        default=None)
-    remarks = db.TextField(verbose_name=_("Remarks"),
-        help_text=_("Additional information."),
-        blank=True, default="")
-    terminators = db.ManyToManyField("NetworkTerminator",
-        verbose_name=_("network terminators"))
-    vlan = db.PositiveIntegerField(verbose_name=_("VLAN number"),
-        null=True, blank=True, default=None)
+    address = db.CharField(
+        _("network address"), help_text=_("Presented as string."),
+        max_length=len("xxx.xxx.xxx.xxx/xx"), unique=True,
+    )
+    gateway = db.IPAddressField(
+        _("gateway address"), help_text=_("Presented as string."), blank=True,
+        null=True, default=None,
+    )
+    remarks = db.TextField(
+        _("remarks"), help_text=_("Additional information."), blank=True,
+        default="",
+    )
+    terminators = db.ManyToManyField(
+        "NetworkTerminator", verbose_name=_("network terminators"),
+    )
+    vlan = db.PositiveIntegerField(
+        _("VLAN number"), null=True, blank=True, default=None,
+    )
     data_center = db.ForeignKey("DataCenter", verbose_name=_("data center"))
-    min_ip = db.PositiveIntegerField(verbose_name=_("Smallest IP number"),
-        null=True, blank=True, default=None)
-    max_ip = db.PositiveIntegerField(verbose_name=_("Largest IP number"),
-        null=True, blank=True, default=None)
-    kind = db.ForeignKey(NetworkKind, on_delete=db.SET_NULL,
-        verbose_name=_("network kind"), null=True, blank=True, default=None)
-    queue = db.CharField(verbose_name=_("discovery queue"),
-        max_length=16, null=True, blank=True, default=None)
-    rack = db.CharField(verbose_name=_("Rack"),
-        max_length=16, null=True, blank=True, default=None)
+    min_ip = db.PositiveIntegerField(
+        _("smallest IP number"), null=True, blank=True, default=None,
+    )
+    max_ip = db.PositiveIntegerField(
+        _("largest IP number"), null=True, blank=True, default=None,
+    )
+    kind = db.ForeignKey(
+        NetworkKind, verbose_name=_("network kind"), on_delete=db.SET_NULL,
+        null=True, blank=True, default=None,
+    )
+    queue = db.CharField(
+        _("discovery queue"), max_length=16, null=True, blank=True,
+        default=None,
+    )
+    rack = db.CharField(
+        _("rack"), max_length=16, null=True, blank=True, default=None,
+    )
 
     class Meta:
         abstract = True
@@ -98,12 +114,14 @@ class AbstractNetwork(db.Model):
     def clean(self, *args, **kwargs):
         super(AbstractNetwork, self).clean(*args, **kwargs)
         try:
-            network = ipaddr.IPNetwork(self.address)
+            ipaddr.IPNetwork(self.address)
         except ValueError:
             raise ValidationError(_("The address value specified is not a "
-                "valid network."))
+                                    "valid network."))
 
-class Network(Named, AbstractNetwork, TimeTrackable, WithConcurrentGetOrCreate):
+
+class Network(Named, AbstractNetwork, TimeTrackable,
+              WithConcurrentGetOrCreate):
     class Meta:
         verbose_name = _("network")
         verbose_name_plural = _("networks")
@@ -133,30 +151,48 @@ db.signals.pre_save.connect(validate_network_address, sender=Network)
 
 
 class IPAddress(LastSeen, TimeTrackable, WithConcurrentGetOrCreate):
-    address = db.IPAddressField(verbose_name=_("IP address"),
-        help_text=_("Presented as string."), unique=True,
-        blank=True, null=True, default=None)
-    number = db.BigIntegerField(verbose_name=_("IP address"),
-        help_text=_("Presented as int."), editable=False, unique=True)
-    hostname = db.CharField(verbose_name=_("hostname"), max_length=255,
-        null=True, blank=True, default=None)
+    address = db.IPAddressField(
+        _("IP address"), help_text=_("Presented as string."), unique=True,
+        blank=True, null=True, default=None,
+    )
+    number = db.BigIntegerField(
+        _("IP address"), help_text=_("Presented as int."), editable=False,
+        unique=True,
+    )
+    hostname = db.CharField(
+        _("hostname"), max_length=255, null=True, blank=True, default=None,
+    )
     # hostname.max_length vide /usr/include/bits/posix1_lim.h
-    snmp_name = db.TextField(verbose_name=_("name from SNMP"),
-        null=True, blank=True, default=None)
-    snmp_community = db.CharField(verbose_name=_("SNMP community"),
-        max_length=64, null=True, blank=True, default=None)
-    device = db.ForeignKey('Device', verbose_name=_("device"),
-        null=True, blank=True, default=None, on_delete=db.SET_NULL)
-    http_family = db.TextField(verbose_name=_('family from HTTP'),
-        null=True, blank=True, default=None, max_length=64)
-    is_management = db.BooleanField(default=False,
-            verbose_name=_("This is a management address"))
-    dns_info = db.TextField(verbose_name=_('information from DNS TXT fields'),
-        null=True, blank=True, default=None)
-    last_puppet = db.DateTimeField(verbose_name=_("last puppet check"),
-        null=True, blank=True, default=None)
-    network = db.ForeignKey(Network, verbose_name=_("network"), null=True,
-                            blank=True, default=None)
+    snmp_name = db.TextField(
+        _("name from SNMP"), null=True, blank=True, default=None,
+    )
+    snmp_community = db.CharField(
+        _("SNMP community"), max_length=64, null=True, blank=True,
+        default=None,
+    )
+    device = db.ForeignKey(
+        'Device', verbose_name=_("device"), null=True, blank=True,
+        default=None, on_delete=db.SET_NULL,
+    )
+    http_family = db.TextField(
+        _('family from HTTP'),  null=True, blank=True, default=None,
+        max_length=64,
+    )
+    is_management = db.BooleanField(
+        _("This is a management address"),
+        default=False,
+    )
+    dns_info = db.TextField(
+        _('information from DNS TXT fields'), null=True, blank=True,
+        default=None,
+    )
+    last_puppet = db.DateTimeField(
+        _("last puppet check"), null=True, blank=True, default=None,
+    )
+    network = db.ForeignKey(
+        Network, verbose_name=_("network"), null=True, blank=True,
+        default=None,
+    )
 
     class Meta:
         verbose_name = _("IP address")
@@ -191,17 +227,17 @@ class IPAddress(LastSeen, TimeTrackable, WithConcurrentGetOrCreate):
                 self.network = Network.from_ip(self.address)
             except IndexError:
                 return
-        raise IntegrityError("Trying to assign device ID #{} for IP {} but "
-            "device ID #{} already assigned.".format(self.device_id, self,
-                dirty_devid))
+        raise IntegrityError(
+            "Trying to assign device ID #{} for IP {} but device ID #{} "
+            "already assigned.".format(self.device_id, self, dirty_devid),
+        )
 
 
 class IPAlias(SavePrioritized, WithConcurrentGetOrCreate):
     address = db.ForeignKey("IPAddress", related_name="+")
-    hostname = db.CharField(verbose_name=_("hostname"), max_length=255)
+    hostname = db.CharField(_("hostname"), max_length=255)
     # hostname.max_length vide /usr/include/bits/posix1_lim.h
 
     class Meta:
         verbose_name = _("IP alias")
         verbose_name_plural = _("IP aliases")
-
