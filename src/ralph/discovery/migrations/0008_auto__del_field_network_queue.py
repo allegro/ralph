@@ -8,54 +8,19 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding model 'DiscoveryQueue'
-        db.create_table('discovery_discoveryqueue', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(unique=True, max_length=75, db_index=True)),
-        ))
-        db.send_create_signal('discovery', ['DiscoveryQueue'])
+        # Deleting field 'Network.queue'
+        db.delete_column('discovery_network', 'queue')
 
-        # Adding field 'Network.queue2'
-        db.add_column('discovery_network', 'queue2',
-                      self.gf('django.db.models.fields.related.ForeignKey')(on_delete=models.SET_NULL, default=None, to=orm['discovery.DiscoveryQueue'], max_length=16, blank=True, null=True),
-                      keep_default=False)
-
-        if not db.dry_run:
-            # Remove spurious operating systems
-            devices = orm['discovery.device'].objects.all()
-            for device in devices:
-                os_count = len(device.operatingsystem_set.all())
-                if os_count > 1:
-                    for os in device.operatingsystem_set.order_by('modified')[:os_count-1]:
-                        os.delete()
-            # Copy discovery queue info to the new field
-            nets = orm['discovery.network'].objects.all()
-            for net in nets:
-                net.queue2, _ = orm['discovery.discoveryqueue'].objects.get_or_create(name=net.queue)
-                net.queue = None
-                net.save()
-
-        # Adding unique constraint on 'OperatingSystem', fields ['device']
-        db.create_unique('discovery_operatingsystem', ['device_id'])
+        db.rename_column('discovery_network', 'queue2_id', 'queue_id')
 
 
     def backwards(self, orm):
-        # Removing unique constraint on 'OperatingSystem', fields ['device']
-        db.delete_unique('discovery_operatingsystem', ['device_id'])
+        db.rename_column('discovery_network', 'queue_id', 'queue2_id')
 
-        if not db.dry_run:
-            # Bring back old queue fields
-            nets = orm['discovery.network'].objects.all()
-            for net in nets:
-                net.queue = net.queue2.name
-                net.queue2 = None
-                net.save()
-
-        # Deleting model 'DiscoveryQueue'
-        db.delete_table('discovery_discoveryqueue')
-
-        # Deleting field 'Network.queue2'
-        db.delete_column('discovery_network', 'queue2_id')
+        # Adding field 'Network.queue'
+        db.add_column('discovery_network', 'queue',
+                      self.gf('django.db.models.fields.CharField')(default=None, max_length=16, null=True, blank=True),
+                      keep_default=False)
 
 
     models = {
@@ -510,8 +475,7 @@ class Migration(SchemaMigration):
             'min_ip': ('django.db.models.fields.PositiveIntegerField', [], {'default': 'None', 'null': 'True', 'blank': 'True'}),
             'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '75', 'db_index': 'True'}),
-            'queue': ('django.db.models.fields.CharField', [], {'default': 'None', 'max_length': '16', 'null': 'True', 'blank': 'True'}),
-            'queue2': ('django.db.models.fields.related.ForeignKey', [], {'on_delete': 'models.SET_NULL', 'default': 'None', 'to': "orm['discovery.DiscoveryQueue']", 'max_length': '16', 'blank': 'True', 'null': 'True'}),
+            'queue': ('django.db.models.fields.related.ForeignKey', [], {'on_delete': 'models.SET_NULL', 'default': 'None', 'to': "orm['discovery.DiscoveryQueue']", 'max_length': '16', 'blank': 'True', 'null': 'True'}),
             'rack': ('django.db.models.fields.CharField', [], {'default': 'None', 'max_length': '16', 'null': 'True', 'blank': 'True'}),
             'remarks': ('django.db.models.fields.TextField', [], {'default': "u''", 'blank': 'True'}),
             'terminators': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['discovery.NetworkTerminator']", 'symmetrical': 'False'}),
