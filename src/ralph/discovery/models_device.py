@@ -498,9 +498,6 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
     def rolepropertyvalue(self):
         return self.rolepropertyvalue_set
 
-#    def clean_position(self):
-#        self.position = None
-
     def save(self, *args, **kwargs):
         if self.model.type == DeviceType.blade_server.id:
             if not self.position:
