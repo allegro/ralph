@@ -11,6 +11,15 @@ class Migration(SchemaMigration):
         # Rename queue to environment
         db.rename_column('discovery_network', 'queue', 'environment')
 
+        # Remove spurious operating systems
+        if not db.dry_run:
+            devices = orm['discovery.device'].objects.all()
+            for device in devices:
+                os_count = len(device.operatingsystem_set.all())
+                if os_count > 1:
+                    for os in device.operatingsystem_set.order_by('modified')[:os_count-1]:
+                        os.delete()
+
         # Adding unique constraint on 'OperatingSystem', fields ['device']
         db.create_unique('discovery_operatingsystem', ['device_id'])
 
