@@ -353,6 +353,11 @@ class DeviceCreateView(CreateView):
             self.rack = None
         wed = form.cleaned_data['warranty_expiration_date']
         sed = form.cleaned_data['support_expiration_date']
+        if form.cleaned_data['support_kind'] is '':
+            form.cleaned_data['support_kind'] = None
+        if form.cleaned_data['position'] is '':
+            form.cleaned_data['position'] = None
+
         dev = Device.create(
             ethernets=macs,
             barcode=form.cleaned_data['barcode'],
