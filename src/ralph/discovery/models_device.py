@@ -16,7 +16,8 @@ from django.db import models as db
 from django.db import IntegrityError, transaction
 from django.utils.translation import ugettext_lazy as _
 from lck.django.common.models import (Named, WithConcurrentGetOrCreate,
-        MACAddressField, SavePrioritized, SoftDeletable, TimeTrackable)
+                                      MACAddressField, SavePrioritized,
+                                      SoftDeletable, TimeTrackable)
 from lck.django.choices import Choices
 from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Taggable
@@ -288,7 +289,7 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
         if self.support_kind is '':
             self.support_kind = None
         if self.name2 is '':
-            self.name2= None
+            self.name2 = None
         if self.dc is '':
             self.dc = None
         if self.rack is '':
@@ -323,7 +324,8 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
             del kwargs['parent']
         if not model and (not model_name or not model_type):
             raise ValueError(
-                    'Either provide model or model_type and model_name.')
+                'Either provide model or model_type and model_name.'
+            )
         dev = device
         ethernets = [Eth(*e) for e in (ethernets or []) if
                      is_mac_valid(Eth(*e))]
@@ -331,7 +333,8 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
             macs = set([MACAddressField.normalize(eth.mac) for
                         eth in ethernets])
             devs = Device.admin_objects.filter(
-                        ethernet__mac__in=macs).distinct()
+                ethernet__mac__in=macs
+            ).distinct()
             if len(devs) > 1:
                 raise ValueError('Multiple devices match MACs: %r' % macs)
             elif len(devs) == 1:
@@ -345,8 +348,10 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
         if sn in SERIAL_BLACKLIST:
             sn = None
         if not any((sn, ethernets, allow_stub)):
-            raise ValueError("Neither `sn` nor `ethernets` given. "
-                "Use `allow_stub` to override.")
+            raise ValueError(
+                "Neither `sn` nor `ethernets` given.  Use `allow_stub` "
+                "to override."
+            )
         if sn:
             try:
                 sndev = Device.admin_objects.get(sn=sn)
@@ -356,7 +361,8 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
                 if dev is None:
                     dev = sndev
                 elif sndev.id != dev.id:
-                    if any((# both devices are properly placed in the tree
+                    # both devices are properly placed in the tree
+                    if any((
                             sndev.parent and dev.parent,
                             # the device found using ethernets (or explicitly
                             # given as `device`) has different sn than `sn`
@@ -364,8 +370,9 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
                             # the device found using `sn` already has other
                             # ethernets
                             sndev.ethernet_set.exists())):
-                        raise ValueError('Conflict of devices %r and %r!' %
-                                (dev, sndev))
+                        raise ValueError(
+                            'Conflict of devices %r and %r!' % (dev, sndev)
+                        )
                     sndev.delete()
         if model is None:
             model, model_created = DeviceModel.concurrent_get_or_create(
@@ -389,7 +396,8 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
         dev.save(user=user, update_last_seen=True, priority=priority)
         for eth in ethernets:
             ethernet, eth_created = Ethernet.concurrent_get_or_create(
-                    device=dev, mac=eth.mac)
+                device=dev, mac=eth.mac
+            )
             if eth_created:
                 ethernet.label = eth.label or 'Autocreated'
                 if eth.speed:
@@ -403,7 +411,6 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
         elif self.venture:
             return self.venture.get_margin()
         return 0
-
 
     @classmethod
     @nested_commit_on_success
@@ -421,11 +428,13 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
                 try:
                     obj = cls.objects.filter(ethernet__mac=mac).get(**kwargs)
                 except cls.DoesNotExist, e2:
-                    raise e1 # there is an object with a partial argument match
+                    #there is an object with a partial argument match
+                    raise e1
                 created = False
             else:
-                eth = Ethernet.objects.create(device=obj, mac=mac,
-                        label='Autocreated')
+                eth = Ethernet.objects.create(
+                    device=obj, mac=mac, label='Autocreated'
+                )
         return obj, created
 
     def get_name(self):
@@ -440,7 +449,6 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
                 'is_management', '-last_seen', '-address'):
             return ipaddr.hostname or ipaddr.address
         return 'unknown'
-
 
     def find_management(self):
         for ipaddr in self.ipaddress_set.filter(is_management=True).order_by('-address'):
@@ -476,7 +484,8 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
         if self.deprecation_kind:
             return self.deprecation_kind
         try:
-            default_deprecation_kind = DeprecationKind.objects.get(default=True)
+            default_deprecation_kind = \
+                DeprecationKind.objects.get(default=True)
         except DeprecationKind.DoesNotExist:
             return None
         else:
@@ -495,8 +504,11 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
             if not self.position:
                 self.position = self.get_position()
         if self.purchase_date and self.deprecation_kind:
-            self.deprecation_date = (self.purchase_date +
-                           relativedelta(months = self.deprecation_kind.months))
+            self.deprecation_date = (
+                self.purchase_date + relativedelta(
+                    months=self.deprecation_kind.months
+                )
+            )
         return super(Device, self).save(*args, **kwargs)
 
 
@@ -545,22 +557,25 @@ class LoadBalancerMember(SavePrioritized, WithConcurrentGetOrCreate):
         unique_together = ('pool', 'address', 'port', 'device')
 
     def __unicode__(self):
-        return "{}:{}@{}({})".format(self.address.address, self.port,
-                self.pool.name, self.id)
+        return "{}:{}@{}({})".format(
+            self.address.address, self.port, self.pool.name, self.id)
 
 
 class Warning(db.Model, WithConcurrentGetOrCreate):
     category = db.CharField(verbose_name=_("category"), max_length=128)
-    address = db.ForeignKey('IPAddress', verbose_name=_("address"),
-            related_name='warning_set', null=True)
-    device = db.ForeignKey(Device, verbose_name=_("device"),
-            related_name='warning_set', null=True)
+    address = db.ForeignKey(
+        'IPAddress', verbose_name=_("address"), related_name='warning_set',
+        null=True
+    )
+    device = db.ForeignKey(
+        Device, verbose_name=_("device"), related_name='warning_set', null=True
+    )
     remarks = db.TextField(verbose_name=_("remarks"), blank=True, default="")
-    aknowledged = db.CharField(verbose_name=_("acknowledged"),
-            max_length=128, default="", blank=True)
+    aknowledged = db.CharField(
+        verbose_name=_("acknowledged"), max_length=128, default="", blank=True
+    )
 
     class Meta:
         verbose_name = _("warning")
         verbose_name_plural = _("warnings")
         unique_together = ('category', 'address', 'device')
-
