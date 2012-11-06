@@ -48,6 +48,7 @@ $(function ($) {
             field: field_name
         }, function (data) {
             button.fadeOut();
+            button.closest('.control-group').removeClass('warning');
         }, 'json');
     });
     $('div.add-popover[').popover({
@@ -140,8 +141,14 @@ $(function ($) {
     $('select#id_venture').change(venture_changed);
     $('select#id_venture').each(venture_changed);
 
-    $('.datepicker').datepicker({ format: 'yyyy-mm-dd'});
-
+    $('.datepicker').datepicker({format: 'yyyy-mm-dd', autoclose: true}).click(function(){
+        if ($(this).attr('name') =='start'){
+            $("input[name='end']").datepicker('hide');
+        }
+        if ($(this).attr('name') =='end'){
+            $("input[name='start']").datepicker('hide');
+        }
+    });
 
     var parseDate = function (input, format) {
         format = format || 'yyyy-mm-dd';
@@ -223,4 +230,16 @@ $(function ($) {
             $end.val(formatDate(date));
         });
     });
+    $('form.search-form').submit(function () {
+        var $form = $(this)
+        var fields = $form.find('input[value!=""],textarea,select').serialize();
+        var action = $form.attr('action') || '';
+        window.location = action + '?' + fields;
+        return false;
+    });
+    $('.close').click(function () {
+        if ($(this).attr('data-dismiss') == 'alert'){
+            $(this).parents('.alerts').filter(':first').remove();
+        };
+    })
 });

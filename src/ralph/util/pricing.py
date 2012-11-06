@@ -6,16 +6,16 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from datetime import date, timedelta
 import math
 
+from datetime import date, timedelta, datetime, time
+from django.core.urlresolvers import reverse_lazy
 from django.db import models as db
 from django.utils.html import escape
 from django.conf import settings
 
 from ralph.discovery.models import (DeviceType, ComponentModelGroup, Processor,
                                     DiskShare, EthernetSpeed, OperatingSystem)
-#from ralph.util import presentation
 
 
 def get_device_price(device):
@@ -24,23 +24,41 @@ def get_device_price(device):
     devices.
     """
     price = get_device_raw_price(device)
+    price += get_device_external_price(device)
+    return max(0, price)
+
+
+def get_device_external_price(device):
+    """The price of all external subtractions additions for a device."""
+
+    price = 0
     # Subtract the price of virtual servers, so they don't count 2x
     price -= get_device_virtuals_price(device)
     # Subtract the price of exported disk shares
     price -= get_device_exported_storage_price(device)
     if device.model and device.model.type == DeviceType.blade_system.id:
         # Subtract the prices taken by blades
-        for d in device.child_set.filter(model__type=DeviceType.blade_server.id):
+        for d in device.child_set.filter(
+                model__type=DeviceType.blade_server.id):
             price -= get_device_chassis_price(d)
     elif device.model and device.model.type == DeviceType.blade_server.id:
         # Add the price taken from the blade system
         price += get_device_chassis_price(device)
-    return max(0, price)
+    # Add the prices of the remote disk shares
+    remote_storage_price = math.fsum(m.get_price()
+                                     for m in device.disksharemount_set.all())
+    price += remote_storage_price
+    return price
+
+
 
 def get_device_raw_price(device):
     """Purchase price of this device, before anything interacts with it."""
-
+    today_midnight = datetime.combine(datetime.today(), time())
+    if device.deprecation_date and today_midnight >= device.deprecation_date:
+        return 0
     return device.price or get_device_auto_price(device)
+
 
 def get_device_cost(device):
     """Return the monthly cost of this device."""
@@ -51,13 +69,14 @@ def get_device_cost(device):
         cost = price / deprecation_kind.months
     else:
         cost = 0
-
     margin = device.get_margin() or 0
     cost = cost * (1 + margin / 100) + get_device_additional_costs(device)
     return cost
 
+
 def get_device_additional_costs(device):
     """Return additional monthly costs for this device, e.g. Splunk usage."""
+
     cost = 0
     last_month = date.today() - timedelta(days=31)
     splunk = device.splunkusage_set.filter(day__gte=last_month).order_by('-day')
@@ -65,6 +84,7 @@ def get_device_additional_costs(device):
         size = splunk.aggregate(db.Sum('size'))['size__sum'] or 0
         cost += splunk[0].get_price(size=size)
     return cost
+
 
 def get_device_chassis_price(device):
     """
@@ -80,6 +100,7 @@ def get_device_chassis_price(device):
         chassis_price = 0
     return chassis_price
 
+
 def get_device_virtuals_price(device):
     """Calculate the total price of all virtual servers inside."""
 
@@ -88,43 +109,36 @@ def get_device_virtuals_price(device):
         device.child_set.filter(model__type=DeviceType.virtual_server.id))
     return price
 
+
 def get_device_virtual_cpu_price(device):
     """Calculate the price of a single virtual cpu for virtual servers inside."""
 
-    cpu_price = device.processor_set.all().aggregate(
-            db.Sum('model__group__price'))['model__group__price__sum'] or 0
-    if not cpu_price:
-        try:
-            os = OperatingSystem.objects.get(device=device)
-            group = ComponentModelGroup.objects.get(name='OS Detected CPU')
-        except (OperatingSystem.DoesNotExist, ComponentModelGroup.DoesNotExist):
-            pass
-        else:
-            if os.cores_count:
-                cpu_price = os.cores_count * group.price
-        if not cpu_price:
-            try:
-                group = ComponentModelGroup.objects.get(name='Default CPU')
-            except ComponentModelGroup.DoesNotExist:
-                pass
-            else:
-                cpu_price = group.price
+    if (device.model and device.model.type == DeviceType.virtual_server.id):
+        # Yo dawg! We put a virtual machine in your virtual machine, so that
+        # you can calculate virtual cpu price while you calculate the virtual
+        # cpu price!
+        return 0
+    cpu_price = get_device_cpu_price(device)
     total_virtual_cpus = Processor.objects.filter(
-            device__parent=device).filter(
-                device__model__type=DeviceType.virtual_server.id).count()
+            device__parent=device,
+            device__model__type=DeviceType.virtual_server.id
+        ).count()
     if not total_virtual_cpus:
         return 0
     return (cpu_price or 0) / total_virtual_cpus
 
+
 def get_device_cpu_price(device):
     if (device.parent and device.model and
         device.model.type == DeviceType.virtual_server.id):
+        # Virtual servers count CPU price based on the price of the hypervisor
         total_cpus = device.processor_set.count()
         return get_device_virtual_cpu_price(device.parent) * total_cpus
-    price = device.processor_set.all().aggregate(
-            db.Sum('model__group__price'))['model__group__price__sum'] or 0
-    if not price and device.model and device.model.type in (
-            DeviceType.rack_server.id, DeviceType.blade_server.id):
+    # Non-virtual servers just sum the prices of individual CPUs
+    price = math.fsum(cpu.get_price() for cpu in device.processor_set.all())
+    if not price and device.model and device.model.type in {
+            DeviceType.rack_server.id, DeviceType.blade_server.id}:
+        # Fall back to OperatingSystem-visible cores, and then to default
         try:
             os = OperatingSystem.objects.get(device=device)
             group = ComponentModelGroup.objects.get(name='OS Detected CPU')
@@ -140,6 +154,7 @@ def get_device_cpu_price(device):
         else:
             return group.price
     return price
+
 
 def get_device_memory_price(device):
     price = math.fsum(
@@ -165,6 +180,7 @@ def get_device_memory_price(device):
         else:
             return group.price
     return price
+
 
 def get_device_local_storage_price(device):
     price = math.fsum(s.get_price() for s in device.storage_set.all())
@@ -197,35 +213,37 @@ def get_device_local_storage_price(device):
                 return group.price
     return price
 
+
 def get_device_exported_storage_price(device):
     return math.fsum(
         s.get_price() for s in device.diskshare_set.all()
             if s.disksharemount_set.exclude(device=None).count()
     )
 
+
 def get_device_components_price(device):
     return math.fsum(c.get_price() for c in device.genericcomponent_set.all())
+
 
 def get_device_fc_price(device):
     return math.fsum(fc.get_price() for fc in device.fibrechannel_set.all())
 
+
 def get_device_software_price(device):
     return math.fsum(s.get_price() for s in device.software_set.all())
 
+
 def get_device_operatingsystem_price(device):
     return math.fsum(os.get_price() for os in device.operatingsystem_set.all())
+
 
 def get_device_auto_price(device):
     """Calculate the total price of all components."""
 
     model_price = (device.model.group.price or 0) if (
                     device.model and device.model.group) else 0
-    remote_storage_price = math.fsum(
-        m.get_price() for m in device.disksharemount_set.all()
-    )
     return math.fsum([
         model_price,
-        remote_storage_price,
         get_device_memory_price(device),
         get_device_cpu_price(device),
         get_device_local_storage_price(device),
@@ -235,13 +253,27 @@ def get_device_auto_price(device):
         get_device_operatingsystem_price(device),
     ])
 
+
 def device_update_cached(device):
-    device.name = device.get_name()
-    device.cached_price = get_device_price(device)
-    device.cached_cost = get_device_cost(device)
-    device.save()
-    for d in device.child_set.all():
-        device_update_cached(d)
+    stack = [device]
+    devices = [device]
+    visited = {device}
+    while stack:
+        device = stack.pop()
+        devices.append(device)
+        for d in device.child_set.all():
+            if d in visited:
+                # Make sure we don't do the same device twice.
+                continue
+            visited.add(d)
+            stack.append(d)
+    devices.reverse() # Do the children before their parent.
+    for d in devices:
+        d.name = d.get_name()
+        d.cached_price = get_device_price(d)
+        d.cached_cost = get_device_cost(d)
+        d.save()
+
 
 def details_dev(dev, purchase_only=False):
     yield {
@@ -250,6 +282,9 @@ def details_dev(dev, purchase_only=False):
         'serial': dev.sn,
         'price': dev.price or dev.model.get_price() if dev.model else 0,
         'href': '/admin/discovery/device/%d/' % dev.id,
+        'hrefinfo' : reverse_lazy('search', kwargs={
+            'details': 'info',
+            'device': dev.id})
     }
     if purchase_only:
         return
@@ -266,12 +301,18 @@ def details_dev(dev, purchase_only=False):
                         'price': -chassis_price,
                         'icon': 'fugue-server-medium',
                         'serial': d.sn,
+                        'hrefinfo' : reverse_lazy('search', kwargs={
+                            'details': 'info',
+                            'device': d.id})
                     }
             else:
                 yield {
                     'label': d.name,
                     'model': d.model,
                     'serial': d.sn,
+                    'hrefinfo' : reverse_lazy('search', kwargs={
+                        'details': 'info',
+                        'device': d.id})
                 }
     elif dev.model.type == DeviceType.blade_server.id:
         chassis_price = get_device_chassis_price(dev)
@@ -284,7 +325,11 @@ def details_dev(dev, purchase_only=False):
                 'icon': 'fugue-servers',
                 'serial': dev.parent.sn,
                 'href': '/admin/discovery/device/%d/' % dev.parent.id,
+                'hrefinfo' : reverse_lazy('search', kwargs={
+                    'details': 'info',
+                    'device': dev.id})
             }
+
 
 def details_cpu(dev, purchase_only=False):
     has_cpu = False
@@ -301,9 +346,14 @@ def details_cpu(dev, purchase_only=False):
     else:
         for cpu in dev.processor_set.all():
             has_cpu = True
+            speed = cpu.model.speed if (cpu.model and
+                                        cpu.model.speed) else cpu.speed
             yield {
                 'label': cpu.label,
                 'model': cpu.model,
+                'size': '%d core(s)' % cpu.get_cores(),
+                'speed': '%d Mhz' % speed if speed else None,
+                'price': cpu.get_price(),
             }
     if purchase_only:
         return
@@ -331,13 +381,19 @@ def details_cpu(dev, purchase_only=False):
                     'icon': 'fugue-prohibition-button',
                 }
 
+
 def details_mem(dev, purchase_only=False):
     has_mem = False
     for mem in dev.memory_set.all():
         has_mem = True
+        speed = mem.model.speed if (mem.model and
+                                    mem.model.speed) else mem.speed
         yield {
             'label': mem.label,
             'model': mem.model,
+            'size': '%d MiB' % mem.get_size(),
+            'speed': '%d Mhz' % speed if speed else None,
+            'price': mem.get_price(),
         }
     if purchase_only:
         return
@@ -370,6 +426,7 @@ def details_mem(dev, purchase_only=False):
                     'icon': 'fugue-prohibition-button',
                 }
 
+
 def details_disk(dev, purchase_only=False):
     has_disk = False
     for disk in dev.storage_set.all():
@@ -379,8 +436,9 @@ def details_disk(dev, purchase_only=False):
             if disk.model and disk.model.group:
                 g = disk.model.group
                 if g.per_size:
-                    size = '%.1f %s' % (float(disk.get_size()) / (g.size_modifier or 1),
-                                      g.size_unit or '')
+                    size = '%.1f %s' % (float(disk.get_size()) /
+                        (g.size_modifier or 1),
+                        g.size_unit or '')
             yield {
                 'label': disk.label,
                 'model': disk.model,
@@ -428,7 +486,11 @@ def details_disk(dev, purchase_only=False):
     # Exported shares
     for share in dev.diskshare_set.order_by('label').all():
         count = share.disksharemount_set.exclude(device=None).count()
-        if share.disksharemount_set.exclude(server=dev).exclude(server=None).count():
+        if share.disksharemount_set.exclude(
+                server=dev
+            ).exclude(
+                server=None
+            ).count():
             icon = 'fugue-globe-share'
         elif not share.full:
             icon = 'fugue-databases'
@@ -445,7 +507,8 @@ def details_disk(dev, purchase_only=False):
             'href': '/admin/discovery/diskshare/%d/' % share.id,
         }
     # Exported network shares
-    for mount in dev.servermount_set.distinct().values('volume', 'share', 'size'):
+    for mount in dev.servermount_set.distinct().values(
+            'volume', 'share', 'size'):
         share = DiskShare.objects.get(pk=mount['share'])
         yield {
             'label': mount['volume'] or share.label,
@@ -457,6 +520,7 @@ def details_disk(dev, purchase_only=False):
             'icon': 'fugue-globe-share',
             'href': '/admin/discovery/diskshare/%d/' % share.id,
         }
+
 
 def details_other(dev, purchase_only=False):
     for fc in dev.fibrechannel_set.all():
@@ -503,6 +567,7 @@ def details_other(dev, purchase_only=False):
             'label': label,
             'model': os.model,
         }
+
 
 def details_all(dev, purchase_only=False):
     for detail in details_dev(dev, purchase_only):

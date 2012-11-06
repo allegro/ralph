@@ -174,10 +174,5 @@ SANITY_CHECK_PING_ADDRESS=''
 SANITY_CHECK_IP2HOST_IP=''
 SANITY_CHECK_IP2HOST_HOSTNAME_REGEX = r'.*google.*'
 
-API_THROTTLING = {
-    'throttle_at': 2,
-    'timeframe': 10,
-    'expiration': None,
-}
-IBM_SYSTEM_X_USER = "admin"
-IBM_SYSTEM_X_PASSWORD = "admin666"
+IBM_SYSTEM_X_USER = ""
+IBM_SYSTEM_X_PASSWORD = ""

@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""ReST API for Donpedro Windows Agent.
-"""
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -22,10 +19,9 @@ from django.conf import settings
 from lck.django.common.models import MACAddressField
 from lck.django.common import remote_addr
 
-from ralph.discovery.models import Device, DeviceModel, DeviceModelGroup,\
-    DeviceType, IPAddress, Memory, Processor, ComponentModel, \
-    ComponentType, OperatingSystem, Storage, DiskShare, DiskShareMount, \
-    FibreChannel, MAC_PREFIX_BLACKLIST
+from ralph.discovery.models import (Device, DeviceType, IPAddress, Memory,
+    Processor, ComponentModel, ComponentType, OperatingSystem, Storage,
+    DiskShare, DiskShareMount, FibreChannel, MAC_PREFIX_BLACKLIST, EthernetSpeed )
 from ralph.util import Eth
 
 
@@ -44,18 +40,22 @@ class NoMACError(Exception):
 def save_processors(processors, dev):
     indexes = []
     for p in processors:
-        index = int(p['index'][3:])+1 #CPU0
-        indexes.append(index)
-        speed = int(p.get('speed'))
-        cores = int(p.get('cores'))
         cpuname = p.get('label')
+        try:
+            index = int(p.get('index')[3:]) + 1 #CPU0
+            speed = int(p.get('speed'))
+            cores = int(p.get('cores'))
+        except ValueError:
+            continue
+        indexes.append(index)
         cpu, created = Processor.concurrent_get_or_create(
-                device=dev, index=index)
+            device=dev, index=index)
         cpu.label = cpuname
         cpu.speed = speed
         cpu.cores = cores
-        extra = '%s %s %s ' % (p.get('label'), speed, cores)
-        is64bit = p.get('is64bit') or False
+        is64bit = p.get('is64bit') == 'true'
+        extra = '%s %s %s ' % (p.get('manufacturer'),
+            p.get('version'), '64bit' if is64bit else '')
         name = 'CPU %s%s %s %s' % (
             '64bit ' if is64bit else '',
             cpuname, '%dMhz' % speed if speed else '',
@@ -76,58 +76,69 @@ def save_shares(shares, dev, ip):
     wwns = []
     for s in shares:
         wwn_end = s.get('sn')
+        if not wwn_end:
+            continue
         try:
-            share = DiskShare.objects.get(wwn__endswith=wwn_end)
+            share = DiskShare.objects.get(wwn__endswith=wwn_end.upper())
         except DiskShare.DoesNotExist:
             continue
         wwns.append(share.wwn)
-        ipaddr = dev.ipaddress_set.all()[0]
-        mount, _ = DiskShareMount.concurrent_get_or_create(
-            device=ipaddr.device, share=share)
-        mount.volume = s['volume']
+        mount, _ = DiskShareMount.concurrent_get_or_create(device=dev,
+            share=share)
+        mount.volume = s.get('volume')
         mount.save(update_last_seen=True)
-    for mount in DiskShareMount.objects.filter(device=dev).exclude( share__wwn__in=wwns):
+    for mount in DiskShareMount.objects.filter(device=dev).exclude(
+            share__wwn__in=wwns):
         mount.delete()
 
 
 def save_storage(storage, dev):
+    mount_points = []
     for s in storage:
-        if not s['sn']:
+        if not s.get('sn'):
             continue
-        stor, created = Storage.concurrent_get_or_create(device=dev, sn=s['sn'])
-        stor.size = int(s['size'])
-        stor.label = s['label']
+        stor, created = Storage.concurrent_get_or_create(device=dev,
+            sn=s.get('sn'))
+        try:
+            stor.size = int(s.get('size'))
+        except ValueError:
+            pass
+        stor.label = s.get('label')
         model = '{} {}MiB'.format(stor.label, stor.size)
         stor.mount_point = s.get('mountpoint')
-        stor.model, c = ComponentModel.concurrent_get_or_create(
-            size=stor.size, type=ComponentType.disk.id, speed=0, cores=0,
-            extra='', extra_hash='', family=model
-        )
+        mount_points.append(stor.mount_point)
+        extra = ''
+        stor.model, c = ComponentModel.concurrent_get_or_create(size=stor.size,
+            type=ComponentType.disk.id, speed=0, cores=0, extra=extra,
+            extra_hash=hashlib.md5(extra).hexdigest(), family=model)
         stor.model.name = model
         stor.model.save(priority=SAVE_PRIORITY)
         stor.save(priority=SAVE_PRIORITY)
-    for storage_to_delete in dev.storage_set.exclude(sn__in=[s['sn'] for s in storage]):
-        storage_to_delete.delete()
+    dev.storage_set.exclude(mount_point__in=mount_points).delete()
 
 
 def save_memory(memory, dev):
     indexes = []
-    memory_total_size = 0
     index = 0
     for row in memory:
-        index+=1
-        size = int(row['size']); speed = int(row['speed']) if row['speed'] else 0
-        memory_total_size += size
-        label = row['index'] #eg: 'DIMM-2A'
+        index += 1
         indexes.append(index)
-        extra ='RAM Windows %dMiB %s %s %s' % (size , label, speed, row['caption'])
-        mem, created = Memory.concurrent_get_or_create(device=dev,
-                index=index)
-        mem.label = label
+        try:
+            size = int(row.get('size'))
+            speed = int(row.get('speed')) if row.get('speed') else 0
+        except ValueError:
+            pass
+        label = row.get('label')
+        mem, created = Memory.concurrent_get_or_create(device=dev, index=index)
         mem.size = size
+        mem.label = 'RAM %dMiB' % size
+        mem.speed = speed
+        family = 'Virtual' if 'Virtual' in label else ''
+        extra = '%s %dMiB %s %s' % (label, size, speed, row.get('caption'))
         mem.model, c = ComponentModel.concurrent_get_or_create(
-            family='Windows RAM', size=size, speed=speed,
-            type=ComponentType.memory.id, extra_hash=hashlib.md5(extra).hexdigest())
+            family=family, size=size, speed=speed, type=ComponentType.memory.id,
+            extra_hash=hashlib.md5(extra).hexdigest())
+        mem.model.extra = extra
         mem.model.name = 'RAM Windows %dMiB' % size
         mem.model.save()
         mem.save(priority=SAVE_PRIORITY)
@@ -138,19 +149,34 @@ def save_fibre_channel(fcs, dev):
     detected_fc_cards = []
     for f in fcs:
         pid = f.get('physicalid')
+        model = f.get('model')
+        manufacturer = f.get('manufacturer')
         fib, created = FibreChannel.concurrent_get_or_create(device=dev,
             physical_id=pid)
         fib.label = f.get('label')
-        extra = '%s %s' % (fib.label, pid)
+        extra = '%s %s %s %s' % (fib.label, pid, manufacturer, model)
         fib.model, c = ComponentModel.concurrent_get_or_create(
             type=ComponentType.fibre.id, family=fib.label,
             extra_hash=hashlib.md5(extra).hexdigest())
         fib.model.extra = extra
-        fib.model.name = fib.label
+        fib.model.name = model if model else fib.label
         fib.model.save(priority=SAVE_PRIORITY)
         fib.save(priority=SAVE_PRIORITY)
         detected_fc_cards.append(fib.pk)
     dev.fibrechannel_set.exclude(pk__in=detected_fc_cards).delete()
+
+
+def str_to_ethspeed(str_value):
+    if not str_value:
+        return EthernetSpeed.unknown.id
+    int_value = int(str_value)
+    if int_value == 1000000000:
+        speed = EthernetSpeed.s1gbit.id
+    elif int_value == 100000000:
+        speed = EthernetSpeed.s100mbit.id
+    else:
+        speed = EthernetSpeed.unknown.id
+    return speed
 
 
 def save_device_data(data, remote_ip):
@@ -162,8 +188,9 @@ def save_device_data(data, remote_ip):
     processors = data['processors']
     os = data['operating_system']
     device = data['device']
-    ethernets = [Eth(e.get('label'), e['mac'].replace(':', ''), e.get('speed')) for
-        e in data['ethernets'] if MACAddressField.normalize(e.get('mac'))[0:6]
+    ethernets = [Eth(e.get('label'), MACAddressField.normalize(e.get('mac')),
+        str_to_ethspeed(e.get('speed'))) for
+        e in data['ethernets'] if MACAddressField.normalize(e.get('mac'))
         not in MAC_PREFIX_BLACKLIST]
     if not ethernets:
         raise NoMACError('No MAC addresses.')
@@ -178,7 +205,8 @@ def save_device_data(data, remote_ip):
     if not dev.operatingsystem_set.exists():
         o = OperatingSystem.create(dev,
             os_name=os.get('label'),
-           family='Windows')
+            family='Windows',
+        )
         o.memory = int(os['memory'])
         o.storage = int(os['storage'])
         o.cores_count = int(os['corescount'])
@@ -192,6 +220,7 @@ def save_device_data(data, remote_ip):
     save_storage(storage, dev)
     save_shares(shares, dev, ip_address)
     save_fibre_channel(fcs, dev)
+    return dev
 
 
 class WindowsDeviceResource(MResource):
@@ -204,9 +233,6 @@ class WindowsDeviceResource(MResource):
             logger.error(traceback.format_exc())
             raise
 
-    def obj_update(self, bundle, request=None, **kwargs):
-        pass
-
     class Meta:
         queryset = Device.objects.all()
         authentication = ApiKeyAuthentication()
@@ -217,4 +243,3 @@ class WindowsDeviceResource(MResource):
         cache = SimpleCache()
         throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
             expiration=EXPIRATION)
-
