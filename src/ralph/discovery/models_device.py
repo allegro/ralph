@@ -503,6 +503,8 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
         if self.model.type == DeviceType.blade_server.id:
             if not self.position:
                 self.position = self.get_position()
+            if self.position is '':
+                self.position = None
         if self.purchase_date and self.deprecation_kind:
             self.deprecation_date = (
                 self.purchase_date + relativedelta(
