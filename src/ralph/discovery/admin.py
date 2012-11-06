@@ -193,12 +193,6 @@ class DeviceAdmin(ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         obj.save(user=request.user, priority=SAVE_PRIORITY)
-        hist = HistoryChange(
-            device=obj,
-            user=request.user,
-            comment='created'
-        )
-        hist.save()
 
 admin.site.register(Device, DeviceAdmin)
 
