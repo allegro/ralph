@@ -250,7 +250,7 @@ namespace DonPedro.Detectors
 			try
 			{
 				SelectQuery query = new SelectQuery(
-					@"select Name,  MACAddress, Speed, GUID 
+					@"select Name,  MACAddress, Speed, Index 
 					  from Win32_NetworkAdapter 
 					  where MACAddress<>null and PhysicalAdapter=true"
 				);
@@ -268,7 +268,7 @@ namespace DonPedro.Detectors
 						SelectQuery queryAdapterConf = new SelectQuery(
 							@"select IPAddress,  IPSubnet 
 							  from Win32_NetworkAdapterConfiguration 
-							  where SettingID='" + GetValueAsString(obj, "GUID") + "'"
+							  where Index='" + GetValueAsString(obj, "Index") + "'"
 						);
 						ManagementObjectSearcher adapterConfSearcher = new ManagementObjectSearcher(queryAdapterConf);
 
