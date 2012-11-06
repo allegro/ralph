@@ -1,6 +1,24 @@
 Change Log
 ----------
 
+1.1.7
+~~~~~
+
+Released on November 6, 2012.
+
+* Stability improved for discovering SSG firewalls.
+
+* ``ralph_dhcp_agent.py`` is now compatible with Python 2.4.
+
+* Uses the forked ``django-powerdns-dnssec`` package for improved PowerDNS
+  support.
+
+* Xen discovery support fixed (memory was reported in wrong units)
+
+* Minor CMDB improvements.
+
+* Minor bugfixes.
+
 1.1.6
 ~~~~~
 
