@@ -253,7 +253,7 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
     support_expiration_date = db.DateTimeField(
         verbose_name=_("support expiration"), null=True, blank=True)
     support_kind = db.CharField(verbose_name=_("support kind"),
-            null=True, blank=True, max_length=255)
+            null=True, blank=True, default=None, max_length=255)
     deprecation_kind = db.ForeignKey(DeprecationKind,
         verbose_name=_("deprecation"), on_delete=db.SET_NULL,
         null=True, blank=True, default=None)
@@ -283,6 +283,28 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
     class Meta:
         verbose_name = _("device")
         verbose_name_plural = _("devices")
+
+    def clean(self):
+        if self.support_kind is '':
+            self.support_kind = None
+        if self.name2 is '':
+            self.name2= None
+        if self.dc is '':
+            self.dc = None
+        if self.rack is '':
+            self.rack = None
+        if self.role is '':
+            self.role = None
+        if self.position is '':
+            self.position = None
+        if self.mgmt_firmware is '':
+            self.mgmt_firmware = None
+        if self.hard_firmware is '':
+            self.hard_firmware = None
+        if self.diag_firmware is '':
+            self.diag_firmware = None
+        if self.boot_firmware is '':
+            self.boot_firmware = None
 
     def __init__(self, *args, **kwargs):
         self.save_comment = None
