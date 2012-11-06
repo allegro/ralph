@@ -8,7 +8,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from django.core.exceptions import ValidationError 
+from django.core.exceptions import ValidationError
 from django.db import models as db
 from django.db import IntegrityError
 from django.utils.translation import ugettext_lazy as _
@@ -49,7 +49,7 @@ class AbstractNetwork(db.Model):
         null=True, blank=True, default=None)
     kind = db.ForeignKey(NetworkKind, on_delete=db.SET_NULL,
         verbose_name=_("network kind"), null=True, blank=True, default=None)
-    environment = db.CharField(verbose_name=_("environment"),
+    queue = db.CharField(verbose_name=_("discovery queue"),
         max_length=16, null=True, blank=True, default=None)
     rack = db.CharField(verbose_name=_("Rack"),
         max_length=16, null=True, blank=True, default=None)

@@ -42,7 +42,7 @@ class DCRouter(object):
         except KeyError:
             try:
                 net = Network.from_ip(args[0]['ip'])
-                queue = net.environment or net.data_center.name
+                queue = net.queue or net.data_center.name
             except (IndexError, KeyError):
                 queue = 'celery'
             args[0]['queue'] = queue
@@ -283,7 +283,7 @@ def discover_network(network, plugin_name='ping', requirements=None,
     for index, host in enumerate(hosts):
         context = {'ip': host}
         if dbnet:
-            context['queue'] = dbnet.environment
+            context['queue'] = dbnet.queue
 
         if interactive:
             discover_single(context, plugin_name=plugin_name,
@@ -304,7 +304,7 @@ def discover_all(interactive=False, update_existing=False, outputs=None):
         stdout, stdout_verbose, stderr = outputs
     else:
         stdout = output.get(interactive)
-    nets = Network.objects.exclude(environment=None).exclude(environment='')
+    nets = Network.objects.exclude(queue=None).exclude(queue='')
     for net in nets:
         if interactive:
             discover_network(net.network, interactive=True,
