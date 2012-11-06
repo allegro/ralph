@@ -360,8 +360,11 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
             if k in ('name', 'last_seen'):
                 continue
             setattr(dev, k, v)
-        dev.save(update_last_seen=True, priority=priority)
-
+        try:
+            user = kwargs['user']
+        except KeyError:
+            user = None
+        dev.save(user=user, update_last_seen=True, priority=priority)
         for eth in ethernets:
             ethernet, eth_created = Ethernet.concurrent_get_or_create(
                     device=dev, mac=eth.mac)
