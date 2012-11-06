@@ -13,6 +13,8 @@ Released on November 5, 2012.
 * Uses the forked ``django-powerdns-dnssec`` package for improved PowerDNS
   support.
 
+* Xen discovery support fixed (memory was reported in wrong units)
+
 * Minor CMDB improvements.
 
 * Minor bugfixes.
