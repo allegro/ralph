@@ -11,6 +11,7 @@ from django.test import TestCase
 from ralph.discovery.models import DeviceType, Device
 from ralph.discovery.models_history import HistoryChange
 
+
 class ModelsTest(TestCase):
     def test_device_create_empty(self):
         with self.assertRaises(ValueError):
