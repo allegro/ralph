@@ -20,8 +20,10 @@ from lck.django.common.models import MACAddressField
 from lck.django.common import remote_addr
 
 from ralph.discovery.models import (Device, DeviceType, IPAddress, Memory,
-    Processor, ComponentModel, ComponentType, OperatingSystem, Storage,
-    DiskShare, DiskShareMount, FibreChannel, MAC_PREFIX_BLACKLIST, EthernetSpeed )
+                                    Processor, ComponentModel, ComponentType,
+                                    OperatingSystem, Storage, DiskShare,
+                                    DiskShareMount, FibreChannel,
+                                    MAC_PREFIX_BLACKLIST, EthernetSpeed)
 from ralph.util import Eth
 
 
@@ -33,6 +35,7 @@ SAVE_PRIORITY = 51
 
 logger = logging.getLogger(__name__)
 
+
 class NoMACError(Exception):
     pass
 
@@ -42,7 +45,7 @@ def save_processors(processors, dev):
     for p in processors:
         cpuname = p.get('label')
         try:
-            index = int(p.get('index')[3:]) + 1 #CPU0
+            index = int(p.get('index')[3:]) + 1  # CPU0
             speed = int(p.get('speed'))
             cores = int(p.get('cores'))
         except ValueError:
@@ -55,7 +58,7 @@ def save_processors(processors, dev):
         cpu.cores = cores
         is64bit = p.get('is64bit') == 'true'
         extra = '%s %s %s ' % (p.get('manufacturer'),
-            p.get('version'), '64bit' if is64bit else '')
+                               p.get('version'), '64bit' if is64bit else '')
         name = 'CPU %s%s %s %s' % (
             '64bit ' if is64bit else '',
             cpuname, '%dMhz' % speed if speed else '',
@@ -84,7 +87,7 @@ def save_shares(shares, dev, ip):
             continue
         wwns.append(share.wwn)
         mount, _ = DiskShareMount.concurrent_get_or_create(device=dev,
-            share=share)
+                                                           share=share)
         mount.volume = s.get('volume')
         mount.save(update_last_seen=True)
     for mount in DiskShareMount.objects.filter(device=dev).exclude(
@@ -98,7 +101,7 @@ def save_storage(storage, dev):
         if not s.get('sn'):
             continue
         stor, created = Storage.concurrent_get_or_create(device=dev,
-            sn=s.get('sn'))
+                                                         sn=s.get('sn'))
         try:
             stor.size = int(s.get('size'))
         except ValueError:
@@ -108,9 +111,10 @@ def save_storage(storage, dev):
         stor.mount_point = s.get('mountpoint')
         mount_points.append(stor.mount_point)
         extra = ''
-        stor.model, c = ComponentModel.concurrent_get_or_create(size=stor.size,
-            type=ComponentType.disk.id, speed=0, cores=0, extra=extra,
-            extra_hash=hashlib.md5(extra).hexdigest(), family=model)
+        stor.model, c = ComponentModel.concurrent_get_or_create(
+            size=stor.size, type=ComponentType.disk.id, speed=0, cores=0,
+            extra=extra, extra_hash=hashlib.md5(extra).hexdigest(),
+            family=model)
         stor.model.name = model
         stor.model.save(priority=SAVE_PRIORITY)
         stor.save(priority=SAVE_PRIORITY)
@@ -136,7 +140,8 @@ def save_memory(memory, dev):
         family = 'Virtual' if 'Virtual' in label else ''
         extra = '%s %dMiB %s %s' % (label, size, speed, row.get('caption'))
         mem.model, c = ComponentModel.concurrent_get_or_create(
-            family=family, size=size, speed=speed, type=ComponentType.memory.id,
+            family=family, size=size, speed=speed,
+            type=ComponentType.memory.id,
             extra_hash=hashlib.md5(extra).hexdigest())
         mem.model.extra = extra
         mem.model.name = 'RAM Windows %dMiB' % size
@@ -152,7 +157,7 @@ def save_fibre_channel(fcs, dev):
         model = f.get('model')
         manufacturer = f.get('manufacturer')
         fib, created = FibreChannel.concurrent_get_or_create(device=dev,
-            physical_id=pid)
+                                                             physical_id=pid)
         fib.label = f.get('label')
         extra = '%s %s %s %s' % (fib.label, pid, manufacturer, model)
         fib.model, c = ComponentModel.concurrent_get_or_create(
@@ -188,17 +193,19 @@ def save_device_data(data, remote_ip):
     processors = data['processors']
     os = data['operating_system']
     device = data['device']
-    ethernets = [Eth(e.get('label'), MACAddressField.normalize(e.get('mac')),
-        str_to_ethspeed(e.get('speed'))) for
-        e in data['ethernets'] if MACAddressField.normalize(e.get('mac'))
-        not in MAC_PREFIX_BLACKLIST]
+    ethernets = [
+        Eth(e.get('label'), MACAddressField.normalize(e.get('mac')),
+            str_to_ethspeed(e.get('speed')))
+        for e in data['ethernets']
+        if MACAddressField.normalize(e.get('mac')) not in MAC_PREFIX_BLACKLIST]
     if not ethernets:
         raise NoMACError('No MAC addresses.')
     dev = Device.create(
         sn=device.get('sn'),
         ethernets=ethernets,
-        model_name='%s %s %s' % (device.get('caption'),
-        device.get('vendor'), device.get('version')),
+        model_name='%s %s %s' % (
+            device.get('caption'),
+            device.get('vendor'), device.get('version')),
         model_type=DeviceType.unknown, priority=SAVE_PRIORITY
     )
     dev.save(priority=SAVE_PRIORITY)
@@ -235,7 +242,8 @@ class WindowsDeviceResource(MResource):
         authorization = DjangoAuthorization()
         filtering = {}
         excludes = ('save_priorities', 'max_save_priority', 'dns_info',
-            'snmp_name')
+                    'snmp_name')
         cache = SimpleCache()
         throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
-            expiration=EXPIRATION)
+                                 expiration=EXPIRATION)
+
