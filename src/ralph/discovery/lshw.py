@@ -225,7 +225,7 @@ def handle_lshw_processors(dev, processors, is_virtual=False, priority=0):
         cpu.save(priority=priority)
 
 
-def handle_lshw_storage(dev, lshw, is_virtual=False, priority=0):
+def get_storage_from_lshw(lshw, no_ignore=False):
     storages = []
     for storage in jpath.get_all('..disk', lshw):
         if not storage:
@@ -234,17 +234,16 @@ def handle_lshw_storage(dev, lshw, is_virtual=False, priority=0):
             storages.extend(storage)
         else:
             storages.append(storage)
-    storages.sort(key=get_logical_name)
     mount_points = set()
-    for stor in storages:
-        if 'logicalname' not in stor:
+    for storage in storages:
+        if 'logicalname' not in storage:
             continue
-        ln = stor['logicalname']
+        ln = storage['logicalname']
         if isinstance(ln, list):
             mount_points.update(ln)
         else:
             mount_points.add(ln)
-    dev.storage_set.filter(mount_point__in=mount_points).delete()
+    parsed_storages = []
     for storage in storages:
         if 'size' in storage:
             size = storage['size']
@@ -254,36 +253,56 @@ def handle_lshw_storage(dev, lshw, is_virtual=False, priority=0):
             # empty slot
             continue
         sn = unicode(storage.get('serial') or '') or None
-        if not sn or sn.startswith('QM000') or \
-                storage.get('vendor', '').strip().lower() in DISK_VENDOR_BLACKLIST or \
-                storage.get('product', '').strip().lower() in DISK_PRODUCT_BLACKLIST:
+        if (not sn or (sn.startswith('QM000') and not no_ignore) or
+            storage.get('vendor', '').strip().lower() in DISK_VENDOR_BLACKLIST or
+            storage.get('product', '').strip().lower() in DISK_PRODUCT_BLACKLIST):
             continue
-        if sn:
-            stor, created = Storage.concurrent_get_or_create(sn=sn, device=dev)
-            stor.mount_point = storage.get('logicalname', None)
-        else:
-            stor, created = Storage.concurrent_get_or_create(sn=None, device=dev,
-                mount_point=storage.get('logicalname', None))
-        stor.size = int(size['value'])
-        stor.size /= units.size_divisor[size['units']]
-        stor.size = int(stor.size)
-        stor.speed = 0
+        mount_point = storage.get('logicalname', None)
+        storage_size = int(size['value'])
+        storage_size /= units.size_divisor[size['units']]
+        storage_size = int(storage_size)
+        storage_speed = 0
+        label = ''
         if storage.get('vendor', '').strip():
-            stor.label = storage['vendor'].strip() + ' '
-        else:
-            stor.label = ''
+            label = storage['vendor'].strip() + ' '
         if storage.get('product', '').strip():
-            stor.label += storage['product'].strip()
+            label += storage['product'].strip()
         elif storage.get('description', '').strip():
-            stor.label += storage['description'].strip()
+            label += storage['description'].strip()
         else:
-            stor.label += 'Generic disk'
+            label += 'Generic disk'
         caps = storage['capabilities']
-        extra = "\n".join([": ".join((unicode(key), unicode(caps[key]) or '')) for key in
-            sorted(caps.keys())])
+        extra = "\n".join([": ".join((unicode(key), unicode(caps[key]) or ''))
+            for key in sorted(caps.keys())])
+        parsed_storages.append({
+            'mount_point': mount_point,
+            'sn': sn,
+            'size': storage_size,
+            'speed': storage_speed,
+            'label': label,
+            'extra': extra
+        })
+    return mount_points, parsed_storages
+
+
+def handle_lshw_storage(dev, lshw, is_virtual=False, priority=0):
+    mount_points, storages = get_storage_from_lshw(lshw)
+    dev.storage_set.filter(mount_point__in=mount_points).delete()
+    for storage in storages:
+        if storage['sn']:
+            stor, created = Storage.concurrent_get_or_create(sn=storage['sn'],
+                device=dev)
+            stor.mount_point = storage['mount_point']
+        else:
+            stor, created = Storage.concurrent_get_or_create(sn=None,
+                device=dev, mount_point=storage['mount_point'])
+        stor.size = storage['size']
+        stor.speed = storage['speed']
+        stor.label = storage['label']
         stor.model, c = ComponentModel.concurrent_get_or_create(
             size=stor.size, speed=stor.speed, type=ComponentType.disk.id,
-            family='', extra_hash=hashlib.md5(extra).hexdigest(), extra=extra)
+            family='', extra_hash=hashlib.md5(storage['extra']).hexdigest())
+        stor.model.extra = storage['extra']
         stor.model.name =  '{} {}MiB'.format(stor.label, stor.size)
         stor.model.save(priority=priority)
         stor.save(priority=priority)

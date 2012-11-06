@@ -19,6 +19,7 @@ from ralph.discovery.models import (DeviceType, Device, OperatingSystem,
 
 from .util import assign_ips, get_default_mac
 from ralph.discovery import hardware
+from ralph.discovery.lshw import parse_lshw, get_storage_from_lshw
 
 
 SAVE_PRIORITY = 52
@@ -169,6 +170,32 @@ Size: {size}""".format(**disk)
         stor.model.save(priority=SAVE_PRIORITY)
         stor.save(priority=SAVE_PRIORITY)
 
+
+def get_storage_size_from_facts(facts):
+    disk_size = 0
+    smartctl_size = 0
+    reg = re.compile(r'^[0-9][0-9,]*')
+    for k, v in facts.iteritems():
+        if k.startswith('smartctl_') and k.endswith('_user_capacity'):
+            match = reg.match(v.strip())
+            if match:
+                try:
+                    size = int(match.group(0).replace(',', ''))
+                except ValueError:
+                    pass
+                else:
+                    size = int(size / 1024 / 1024)
+                    smartctl_size += size
+        if k.startswith('disk_') and k.endswith('_size'):
+            try:
+                size = int(int(v.strip()) / 1024 / 1024)
+            except ValueError:
+                pass
+            else:
+                disk_size += size
+    return smartctl_size if smartctl_size else disk_size
+
+
 @nested_commit_on_success
 def handle_facts_os(dev, facts, is_virtual=False):
     try:
@@ -203,5 +230,21 @@ def handle_facts_os(dev, facts, is_virtual=False):
         os.cores_count = int(cores_count)
     except TypeError:
         pass
+    storage_size = get_storage_size_from_facts(facts)
+    if not storage_size:
+        lshw = facts.get('lshw', None)
+        if lshw:
+            try:
+                lshw = zlib.decompress(lshw)
+            except zlib.error:
+                pass
+            else:
+                lshw = parse_lshw(as_string=lshw)
+                mount_point, storages = get_storage_from_lshw(lshw, True)
+                storage_size = 0
+                for storage in storages:
+                    storage_size += storage['size']
+    if storage_size:
+        os.storage = storage_size
     os.save(priority=SAVE_PRIORITY)
 
