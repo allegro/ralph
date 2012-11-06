@@ -353,9 +353,9 @@ class DeviceCreateView(CreateView):
             self.rack = None
         wed = form.cleaned_data['warranty_expiration_date']
         sed = form.cleaned_data['support_expiration_date']
-        if form.cleaned_data['support_kind'] is '':
+        if form.cleaned_data['support_kind'] == '':
             form.cleaned_data['support_kind'] = None
-        if form.cleaned_data['position'] is '':
+        if form.cleaned_data['position'] == '':
             form.cleaned_data['position'] = None
 
         dev = Device.create(

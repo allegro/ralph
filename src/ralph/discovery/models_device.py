@@ -286,25 +286,25 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
         verbose_name_plural = _("devices")
 
     def clean(self):
-        if self.support_kind is '':
+        if self.support_kind == '':
             self.support_kind = None
-        if self.name2 is '':
+        if self.name2 == '':
             self.name2 = None
-        if self.dc is '':
+        if self.dc == '':
             self.dc = None
-        if self.rack is '':
+        if self.rack == '':
             self.rack = None
-        if self.role is '':
+        if self.role == '':
             self.role = None
-        if self.position is '':
+        if self.position == '':
             self.position = None
-        if self.mgmt_firmware is '':
+        if self.mgmt_firmware == '':
             self.mgmt_firmware = None
-        if self.hard_firmware is '':
+        if self.hard_firmware == '':
             self.hard_firmware = None
-        if self.diag_firmware is '':
+        if self.diag_firmware == '':
             self.diag_firmware = None
-        if self.boot_firmware is '':
+        if self.boot_firmware == '':
             self.boot_firmware = None
 
     def __init__(self, *args, **kwargs):
@@ -390,7 +390,7 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
                 continue
             setattr(dev, k, v)
         try:
-            user = kwargs['user']
+            user = kwargs.get('user')
         except KeyError:
             user = None
         dev.save(user=user, update_last_seen=True, priority=priority)
@@ -467,7 +467,7 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
         if self.position:
             return self.position
         if self.chassis_position is None:
-            return ''
+            return None
         if self.chassis_position > 2000:
             pos = '%dB' % (self.chassis_position - 2000)
         elif self.chassis_position > 1000:
@@ -484,8 +484,7 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
         if self.deprecation_kind:
             return self.deprecation_kind
         try:
-            default_deprecation_kind = \
-                DeprecationKind.objects.get(default=True)
+            default_deprecation_kind = DeprecationKind.objects.get(default=True)
         except DeprecationKind.DoesNotExist:
             return None
         else:
@@ -499,12 +498,13 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
     def rolepropertyvalue(self):
         return self.rolepropertyvalue_set
 
+#    def clean_position(self):
+#        self.position = None
+
     def save(self, *args, **kwargs):
         if self.model.type == DeviceType.blade_server.id:
             if not self.position:
                 self.position = self.get_position()
-            if self.position is '':
-                self.position = None
         if self.purchase_date and self.deprecation_kind:
             self.deprecation_date = (
                 self.purchase_date + relativedelta(
