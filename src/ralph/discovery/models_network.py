@@ -62,9 +62,9 @@ class AbstractNetwork(db.Model):
         NetworkKind, verbose_name=_("network kind"), on_delete=db.SET_NULL,
         null=True, blank=True, default=None,
     )
-    queue = db.CharField(
-        _("discovery queue"), max_length=16, null=True, blank=True,
-        default=None,
+    queue = db.ForeignKey(
+        "DiscoveryQueue", verbose_name=_("discovery queue"), max_length=16,
+        null=True, blank=True, default=None, on_delete=db.SET_NULL,
     )
     rack = db.CharField(
         _("rack"), max_length=16, null=True, blank=True, default=None,
@@ -142,6 +142,13 @@ class DataCenter(Named):
     class Meta:
         verbose_name = _("data center")
         verbose_name_plural = _("data centers")
+        ordering = ('name',)
+
+
+class DiscoveryQueue(Named):
+    class Meta:
+        verbose_name = _("discovery queue")
+        verbose_name_plural = _("discovery queues")
         ordering = ('name',)
 
 

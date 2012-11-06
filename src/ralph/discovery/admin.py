@@ -57,6 +57,13 @@ class DataCenterAdmin(ModelAdmin):
 admin.site.register(m.DataCenter, DataCenterAdmin)
 
 
+class DiscoveryQueueAdmin(ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)
+
+admin.site.register(m.DiscoveryQueue, DiscoveryQueueAdmin)
+
+
 class IPAddressForm(forms.ModelForm):
     class Meta:
         model = m.IPAddress
