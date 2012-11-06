@@ -6,6 +6,9 @@ from __future__ import unicode_literals
 
 from django.conf.urls.defaults import patterns, url
 from django.contrib.auth.decorators import login_required
+from django.views.generic.simple import redirect_to
+
+from ralph.cmdb.views import Search as SearchCmdb
 
 from ralph.ui.views import typeahead_roles, unlock_field, logout, discover
 from ralph.ui.views.common import Home, BulkEdit
@@ -73,6 +76,9 @@ urlpatterns = patterns('',
             login_required(SearchReports.as_view()), {}, 'search'),
     url(r'^search/(?P<details>\w*)/(?P<device>)$',
             login_required(SearchDeviceList.as_view()), {}, 'search'),
+    url(r'^search/(?P<details>cmdb)/(?P<device>\d+)$',
+        login_required(SearchCmdb.as_view()), {}, 'search'),
+
 
     url(r'^ventures/$',
         login_required(VenturesDeviceList.as_view()), {}, 'ventures'),
@@ -111,6 +117,7 @@ urlpatterns = patterns('',
 
     url(r'^racks/$',
         login_required(RacksDeviceList.as_view()), {}, 'racks'),
+    url(r'^racks/-/rack/$', redirect_to, {'url': '/ui/racks/-/info/'}),
     url(r'^racks/(?P<rack>[-\w]*)/(?P<details>add_device)/(?P<device>)$',
         login_required(RacksAddDevice.as_view()), {}, 'racks'),
     url(r'^racks/(?P<rack>[-\w]*)/(?P<details>rack)/(?P<device>)$',

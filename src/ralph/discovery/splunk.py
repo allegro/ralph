@@ -39,9 +39,9 @@ u'host': u'hostname2', u'lastReceived': u'Thu 2012-06-07 12:00:34'}, ...]
 
     def __init__(self, host=settings.SPLUNK_HOST, username=settings.SPLUNK_USER,
             password=settings.SPLUNK_PASSWORD):
-        self.host = host
-        self.username = username
-        self.password = password
+        self.host = str(host) # sic, unicode fails in the splunk-sdk
+        self.username = str(username)
+        self.password = str(password)
         self.splunk = connect(host=self.host, username=self.username,
             password=self.password)
         self.job = None

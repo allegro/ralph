@@ -160,7 +160,12 @@ class Component(SavePrioritized, WithConcurrentGetOrCreate):
     def get_price(self):
         if not self.model:
             return 0
-        return self.model.get_price(getattr(self, 'size', 0) or 0)
+        return self.model.get_price(self.get_size())
+
+    def get_size(self):
+        if self.model and self.model.size:
+            return self.model.size
+        return getattr(self, 'size', 0) or 0
 
 
 class GenericComponent(Component):
@@ -269,6 +274,15 @@ class Processor(Component):
 
     def __unicode__(self):
         return '#{}: {} ({})'.format(self.index, self.label, self.model)
+
+    def get_cores(self):
+        if self.model and self.model.cores:
+            return self.model.cores
+        return self.cores or 1
+
+    @property
+    def size(self):
+        return self.get_cores()
 
 
 class Memory(Component):
@@ -422,10 +436,7 @@ class OperatingSystem(Component):
         if created:
             model.name = os_name
             model.save()
-        try:
-            operating_system = cls.objects.get(device=dev)
-        except cls.DoesNotExist:
-            operating_system = cls.objects.create(device=dev)
+        operating_system, created = cls.concurrent_get_or_create(device=dev)
         operating_system.model = model
         operating_system.label = '%s %s' % (os_name, version)
         operating_system.memory = memory
@@ -437,6 +448,7 @@ class OperatingSystem(Component):
         verbose_name = _("operating system")
         verbose_name_plural = _("operating systems")
         ordering = ('label',)
+        unique_together = ('device',)
 
     def __unicode__(self):
         return self.label

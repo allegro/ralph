@@ -20,3 +20,9 @@ def create_api_key_ignore_dberrors(*args, **kwargs):
         pass # no such table yet, first syncdb
 
 db.signals.post_save.connect(create_api_key_ignore_dberrors, sender=User)
+
+
+# workaround for a unit test bug in Django 1.4.x
+
+from django.contrib.auth.tests import models as auth_test_models
+del auth_test_models.ProfileTestCase.test_site_profile_not_available

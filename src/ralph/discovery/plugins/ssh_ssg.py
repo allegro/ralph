@@ -9,7 +9,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import ssh as paramiko
+import paramiko
 import time
 
 from django.conf import settings
@@ -68,6 +68,8 @@ class SSGSSHClient(paramiko.SSHClient):
             buffer.extend(lines[1:])
             if '->' in buffer[-1]:
                 return buffer[:-1]
+            if chunk.endswith('--- more --- '):
+                self._ssg_chan.sendall('\n')
 
 
 def _connect_ssh(ip):

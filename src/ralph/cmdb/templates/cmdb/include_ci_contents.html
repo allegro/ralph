@@ -10,7 +10,7 @@
 {% load icons %}
 {% load query %}
 
-  {% if ci_id %} {{ breadcrumb }} {% endif %} 
+  {% if ci_id %} {{ breadcrumb }} {% endif %}
 
   {% if not iframe %}
         <h3> {{ label }}  </h3>
@@ -56,6 +56,10 @@
                     {% endif %}
 
                     {% if read_configuration_item_info_jira_perm %}
+                        <li><a href="#ci_changes" data-toggle="tab">{% if ci_attributes_changes %} {% icon 'fugue-new' %} {% endif %}  CI attr. changes</a></li>
+                    {% endif %}
+
+                    {% if read_configuration_item_info_jira_perm %}
                         <li><a href="#zabbix" data-toggle="tab">{% if zabbix_triggers %}{% icon 'fugue-new' %}{% endif %}Monitoring events</a></li>
                     {% endif %}
 
@@ -82,10 +86,10 @@
       </ul>
 
       {% endif %}
-        <div class="tab-content"> 
+        <div class="tab-content">
                 <div class="tab-pane active" id="main">
 
-<div class='span6'>
+                    <div class='span6'>
     <p style='height: 10px;'></p>
 
     {% if editable %}
@@ -97,13 +101,13 @@
             {% if service_name %}
         <tr>
                 <td colspan=4>
-                    <p> <span style='font-size: 15px' class="label label-success">Service : {{ service_name }}</span> </p> 
+                    <p> <span style='font-size: 15px' class="label label-success">Service : {{ service_name }}</span> </p>
                 </td>
             </tr>
             {% endif %}
 
         {% for f in form.visible_fields %}
-        <tr class="control-group 
+        <tr class="control-group
                 {{ f.css_classes }}
                 {% if f.errors %}error{% endif %}
             ">
@@ -129,16 +133,16 @@
     {% if ci_id %}
          <span><h3>Custom Attributes</h3> </span>
             {% include 'cmdb/include_attributes.html' %}
-            <hr> 
+            <hr>
     {% endif %}
 
-   <div class='row'>
+   <div class='span12'>
     {% if show_in_ralph %}
-        <div class='span2'>
+        <div class='span6'>
                 <a class='btn btn-info btn-large' href='{{ ralph_ci_link }}'> Asset details </a>
         </div>
     {% endif %}
-    <div class='span2'>
+    <div class='span6'>
         {% if editable %}
             <button class="btn btn-primary" type="submit">{% icon 'fugue-tick' %}&nbsp;Save</button>
             <button class="btn" type="reset">{% icon 'fugue-broom' %}&nbsp;Clean</button>
@@ -157,76 +161,80 @@
 
 </div> <!-- main !-->
 
-<div class="tab-pane" id="ralph"> 
+<div class="tab-pane" id="ralph">
     <span><h3> Asset attr. changes</h3> </span>
     <br>
 {% include 'cmdb/include_attributechange.html' %}
 </div>
 
-<div class="tab-pane" id="problems"> 
+<div class="tab-pane" id="ci_changes">
+    <span><h3> CI attr. changes</h3> </span>
+    <br>
+    {% include 'cmdb/include_ciattributechange.html' %}
+</div>
+
+<div class="tab-pane" id="problems">
 <span><h3> Problems </h3> </span>
     <br>
 {% include 'cmdb/include_events.html' with rows=problems%}
 </div>
 
-<div class="tab-pane" id="incidents"> 
+<div class="tab-pane" id="incidents">
 <span><h3>{% if incidents %} {% icon 'fugue-new' %} {% endif %} Incidents</h3> </span>
     <br>
 {% include 'cmdb/include_events.html' with rows=incidents%}
 </div>
 
-<div class="tab-pane" id="planned"> 
+<div class="tab-pane" id="planned">
     <span><h3>{% if planned %} {% icon 'fugue-new' %} {% endif %} Planned changes</h3> </span>
     <br>
 {% include 'cmdb/include_events.html' with rows=planned%}
 </div>
 
-<div class="tab-pane" id="so"> 
+<div class="tab-pane" id="so">
     <span><h3>{% if so_events %} {% icon 'fugue-new' %} {% endif %} SO Events</h3> </span>
     <br>
     {% include 'cmdb/include_so_events.html' with rows=so_events%}
 </div>
 
-<div class="tab-pane" id="zabbix"> 
+<div class="tab-pane" id="zabbix">
     <span><h3> Monitoring events</h3> </span>
         <br>
     {% include 'cmdb/include_zabbix.html' with rows=zabbix_triggers%}
 </div>
 <div class="tab-pane" id="relations">
-    <div class='span10' style='padding-top: 4px;margin-top: 10px; '>
-        <div class='span{{span_number}}'  >
-                <table style='cell-padding: 10px'>
-                    <tr>
-                    </tr>
-                    <tr>
-                        <td style='vertical-align: top; padding-right: 10px'>
+    <div class='span12' style='padding-top: 4px;margin-top: 10px; '>
+        <div>
+                <table style='cell-padding: 10px' class="row-fluid">
+                    <tr  class="row-fluid">
+                        <td style='vertical-align: top; padding-right: 10px' class="span6">
                             {% include 'cmdb/include_relations.html' with span_number=span_number label='Contains' relations=relations_contains editable=editable %}
                             {% include 'cmdb/include_relations.html' with span_number=span_number label='Has roles' relations=relations_hasrole editable=editable %}
                             {% include 'cmdb/include_relations.html' with span_number=span_number label='Requires' relations=relations_requires editable=editable %}
 
-                       {% if editable and edit_configuration_item_relations_perm and ci_id %} 
+                       {% if editable and edit_configuration_item_relations_perm and ci_id %}
                        <p>
                                 <a class='btn btn-primary'
-                                    href="/cmdb/relation/add/{{ ci_id }}?rel_parent={{ ci_id }}"> 
-                                   <i class='icon-edit icon-white'></i> 
+                                    href="/cmdb/relation/add/{{ ci_id }}?rel_parent={{ ci_id }}">
+                                   <i class='icon-edit icon-white'></i>
                                    Add new child relation
-                               </a> 
+                               </a>
                        </p>
                        {% endif %}
                         </td>
 
-                    <td style='vertical-align: top;'>
+                    <td style='vertical-align: top;' class="span6">
                         {% include 'cmdb/include_relations.html' with span_number=span_number label='Is part of' relations=relations_parts editable=editable %}
                         {% include 'cmdb/include_relations.html' with span_number=span_number label='Is role for' relations=relations_isrole editable=editable %}
                         {% include 'cmdb/include_relations.html' with span_number=span_number label='Is required by' relations=relations_isrequired editable=editable %}
 
-                       {% if editable and edit_configuration_item_relations_perm and ci_id %} 
+                       {% if editable and edit_configuration_item_relations_perm and ci_id %}
                        <p>
                                 <a class='btn btn-primary'
-                                    href="/cmdb/relation/add/{{ ci_id }}?rel_child={{ ci_id }}"> 
-                                   <i class='icon-edit icon-white'></i> 
+                                    href="/cmdb/relation/add/{{ ci_id }}?rel_child={{ ci_id }}">
+                                   <i class='icon-edit icon-white'></i>
                                    Add new parent relation
-                               </a> 
+                               </a>
                        </p>
                        {% endif %}
 
@@ -242,21 +250,21 @@
         {% if read_configuration_item_info_puppet_perm %}
             <div class="tab-pane" id="puppet">
                 <div class='span12'>
-                <span><h3> Agent configuration log</h3> </span>
-                <p>
-                    {% include 'cmdb/include_puppet.html' %}
-                </p>
+                    <span><h3> Agent configuration log</h3> </span>
+                    <p>
+                        {% include 'cmdb/include_puppet.html' %}
+                    </p>
+                </div>
             </div>
-        </div>
         {% endif %}
 
         {% if read_configuration_item_info_jira_perm %}
         <div class="tab-pane" id="jira">
             <div class='span12'>
                <span><h3> Last Jira Issues</h3> </span>
-               <p> 
+               <p>
                    <div id='jira_placeholder'> </div>
-                </p> 
+                </p>
             </div>
         </div>
         {% endif %}
@@ -265,9 +273,9 @@
     <div class="tab-pane" id="git">
         <div class='span12'>
             <span><h3> Last Repo changes </h3> </span>
-            <p> 
+            <p>
                 {% include 'cmdb/include_git.html' %}
-            </p> 
+            </p>
         </div> <!-- span12 !-->
     </div> <!-- tab change !-->
 {% endif %}

@@ -10,7 +10,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import os
-import ssh as paramiko
+import paramiko
 import logging
 import json
 
@@ -46,7 +46,8 @@ def _get_local_disk_size(ssh, disk):
     path = os.path.join('/var/lib/vz/images', disk)
     stdin, stdout, stderr = ssh.exec_command("du -m '%s'" % path)
     line = stdout.read().strip()
-    print('path=%r size=%r' % (path, line))
+    if not line:
+        return 0
     size = int(line.split(None, 1)[0])
     return size
 
@@ -65,6 +66,8 @@ def _add_virtual_machine(ssh, vmid, parent, master, storages):
     name = 'unknown'
     for line in lines:
         line = line.strip()
+        if line.startswith('#'):
+            continue
         key, value = line.split(':', 1)
         if key.startswith('vlan'):
             lan_model, lan_mac = value.split('=', 1)
@@ -104,13 +107,16 @@ def _add_virtual_machine(ssh, vmid, parent, master, storages):
             vg = ''
             lv = disk
         if vg == 'local':
+            size = _get_local_disk_size(ssh, lv)
+            if not size > 0:
+                continue
             model, created = ComponentModel.concurrent_get_or_create(
                 type=ComponentType.disk.id, family='QEMU disk image')
             if created:
                 model.save()
             storage, created = Storage.concurrent_get_or_create(
                 device=dev, mount_point=lv)
-            storage.size = _get_local_disk_size(ssh, lv)
+            storage.size = size
             storage.model = model
             storage.label = slot
             storage.save()
@@ -247,9 +253,9 @@ def _add_cluster_member(ssh, ip):
 def run_ssh_proxmox(ip):
     ssh = _connect_ssh(ip)
     try:
-        for file_name in ('/etc/pve/cluster.cfg', '/etc/pve/cluster.conf',
-                          '/etc/pve/storage.cfg'):
-            stdin, stdout, stderr = ssh.exec_command('cat "%s"' % file_name)
+        for command in ('cat /etc/pve/cluster.cfg', 'cat /etc/pve/cluster.conf',
+                          'cat /etc/pve/storage.cfg', 'pvecm help'):
+            stdin, stdout, stderr = ssh.exec_command(command)
             data = stdout.read()
             if data != '':
                 break

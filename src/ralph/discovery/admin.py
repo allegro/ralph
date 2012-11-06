@@ -21,6 +21,9 @@ from ralph.discovery.models import (Device, DeviceModel, IPAddress, Network,
 from ralph.discovery.models_history import HistoryChange
 from ralph.business.admin import RolePropertyValueInline
 
+SAVE_PRIORITY = 200
+
+
 class NetworkAdmin(ModelAdmin):
     def terms(self):
         return ", ".join([n.name for n in self.terminators.order_by('name')])
@@ -132,6 +135,12 @@ class DeviceForm(forms.ModelForm):
             sn = None
         return sn
 
+    def clean_model(self):
+        model = self.cleaned_data['model']
+        if not model:
+            raise forms.ValidationError(_("Model is required"))
+        return model
+
 
 class ProcessorInline(ForeignKeyAutocompleteTabularInline):
     model = Processor
@@ -183,7 +192,7 @@ class DeviceAdmin(ModelAdmin):
     }
 
     def save_model(self, request, obj, form, change):
-        obj.save(user=request.user)
+        obj.save(user=request.user, priority=SAVE_PRIORITY)
 
 admin.site.register(Device, DeviceAdmin)
 
