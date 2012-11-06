@@ -14,8 +14,9 @@ from lck.django.common import nested_commit_on_success
 
 from ralph.util import network, Eth
 from ralph.discovery.models import (DeviceType, Device, OperatingSystem,
-    ComponentModel, ComponentType, Storage, SERIAL_BLACKLIST,
-    DISK_VENDOR_BLACKLIST, DISK_PRODUCT_BLACKLIST)
+                                    ComponentModel, ComponentType, Storage,
+                                    SERIAL_BLACKLIST, DISK_VENDOR_BLACKLIST,
+                                    DISK_PRODUCT_BLACKLIST)
 
 from .util import assign_ips, get_default_mac
 from ralph.discovery import hardware
@@ -24,8 +25,10 @@ from ralph.discovery.lshw import parse_lshw, get_storage_from_lshw
 
 SAVE_PRIORITY = 52
 
+
 class UnknownUnitError(Exception):
     pass
+
 
 @nested_commit_on_success
 def parse_facts(facts, is_virtual):
@@ -47,8 +50,8 @@ def parse_facts(facts, is_virtual):
             return False, "Invalid MAC address: {}".format(e)
         if not mac:
             return False, "Machine has no MAC addresses."
-        sn = "".join(("VIRT0_", mac, '_', hashlib.md5(facts.get('sshdsakey',
-            facts.get('sshrsakey', '#'))).hexdigest()[:8]))
+        sn = "".join(("VIRT0_", mac, '_', hashlib.md5(facts.get(
+            'sshdsakey', facts.get('sshrsakey', '#'))).hexdigest()[:8]))
     else:
         sn = facts.get('serialnumber')
         if sn in SERIAL_BLACKLIST:
@@ -56,8 +59,8 @@ def parse_facts(facts, is_virtual):
         prod_name = facts.get('productname')
         manufacturer = facts.get('manufacturer')
         if not prod_name or not manufacturer:
-            return False, "`productname` or `manufacturer` facts not "\
-                    "available. `lshw` not present."
+            return False, "`productname` or `manufacturer` facts not " \
+                "available. `lshw` not present."
         if manufacturer and manufacturer in prod_name:
             model_name = prod_name
         else:
@@ -83,11 +86,14 @@ def parse_facts(facts, is_virtual):
     handle_facts_disks(dev, facts, is_virtual=is_virtual)
     return dev, dev_name
 
+
 def network_prtconf(as_string):
     return None, as_string
 
+
 def _parse_prtconf(dev, prtconf, facts, is_virtual):
     prtconf, _ = network_prtconf(as_string=zlib.decompress(prtconf))
+
 
 def _parse_smbios(dev, data, facts, is_virtual):
     try:
@@ -96,6 +102,7 @@ def _parse_smbios(dev, data, facts, is_virtual):
         pass
     smb = hardware.parse_smbios(data)
     hardware.handle_smbios(dev, smb, is_virtual, SAVE_PRIORITY)
+
 
 def handle_facts_ethernets(facts):
     ethernets = []
@@ -112,6 +119,7 @@ def handle_facts_ethernets(facts):
         label = 'Ethernet {}'.format(interface)
         ethernets.append(Eth(label, mac, speed=None))
     return ip_addresses, ethernets
+
 
 def handle_facts_disks(dev, facts, is_virtual=False):
     disks = {}
@@ -151,13 +159,15 @@ def handle_facts_disks(dev, facts, is_virtual=False):
         sn = disk.get('serial', '').strip()
         if sn:
             stor, created = Storage.concurrent_get_or_create(device=dev,
-                sn=sn)
+                                                             sn=sn)
         else:
             stor, created = Storage.concurrent_get_or_create(device=dev,
-                mount_point=label, sn=None)
+                                                             mount_point=label,
+                                                             sn=None)
         stor.size = disk['size'] = int(int(disk['size']) / 1024 / 1024)
-        stor.label = '{} {} {}'.format(disk['vendor'].strip(),
-            disk['product'].strip(), disk['revision'].strip())
+        stor.label = '{} {} {}'.format(
+            disk['vendor'].strip(), disk['product'].strip(),
+            disk['revision'].strip())
         extra = """Vendor: {vendor}
 Product: {product}
 Firmware Revision: {revision}
