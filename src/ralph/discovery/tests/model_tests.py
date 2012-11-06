@@ -9,6 +9,7 @@ from __future__ import unicode_literals
 from django.test import TestCase
 
 from ralph.discovery.models import DeviceType, Device
+from ralph.discovery.models_history import HistoryChange
 
 class ModelsTest(TestCase):
     def test_device_create_empty(self):
@@ -39,3 +40,18 @@ class ModelsTest(TestCase):
         self.assertEqual(dev.sn, None)
         macs = [e.mac for e in dev.ethernet_set.all()]
         self.assertEqual(macs, ['DEADBEEFCAFE'])
+
+    def test_device_history(self):
+        dev = Device.create(
+            model_name='xxx',
+            model_type=DeviceType.unknown,
+            sn='xaxaxa',
+            user='ralph',
+        )
+        dev.name = 'dev1'
+        dev.save()
+        history = HistoryChange.objects.all()
+        self.assertEqual(history[0].field_name, 'id')
+        self.assertEqual(history[0].new_value, '1')
+        self.assertEqual(history[1].old_value, '')
+        self.assertEqual(history[1].new_value, dev.name)
