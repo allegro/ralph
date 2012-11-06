@@ -202,15 +202,11 @@ def save_device_data(data, remote_ip):
         model_type=DeviceType.unknown, priority=SAVE_PRIORITY
     )
     dev.save(priority=SAVE_PRIORITY)
-    if not dev.operatingsystem_set.exists():
-        o = OperatingSystem.create(dev,
-            os_name=os.get('label'),
-            family='Windows',
-        )
-        o.memory = int(os['memory'])
-        o.storage = int(os['storage'])
-        o.cores_count = int(os['corescount'])
-        o.save()
+    o = OperatingSystem.create(dev, os_name=os.get('label'), family='Windows')
+    o.memory = int(os['memory'])
+    o.storage = int(os['storage'])
+    o.cores_count = int(os['corescount'])
+    o.save()
     ip_address, _ = IPAddress.concurrent_get_or_create(address=str(remote_ip))
     ip_address.device = dev
     ip_address.is_management = False

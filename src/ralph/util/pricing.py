@@ -553,7 +553,9 @@ def details_other(dev, purchase_only=False):
         if os.cores_count:
             details.append('cores count: %d' % os.cores_count)
         if os.memory:
-            details.append('memory: %s MiB' % os.memory)
+            details.append('memory: %d MiB' % os.memory)
+        if os.storage:
+            details.append('storage size: %d MiB' % os.storage)
         if details:
             label = "%s (%s)" % (os.label, ', '.join(details))
         else:
