@@ -160,7 +160,7 @@ class CIImporterTest(TestCase):
         CIImporter().import_relations(
             ContentType.objects.get_for_model(y), asset_id=y.id)
         with mock.patch(
-            'ralph.cmdb.integration.lib.fisheye.Fisheye') as Fisheye:
+                'ralph.cmdb.integration.lib.fisheye.Fisheye') as Fisheye:
             Fisheye.side_effect = MockFisheye
             x = pgi(fisheye_class=Fisheye)
             x.import_git()
@@ -362,7 +362,8 @@ class OPRegisterTest(TestCase):
         #removing cichange remove cichangegit child too.
         self.assertEqual(CIChangeGit.objects.count(), 0)
 
-        # if change is registered before date of start, ticket is not registered
+        # if change is registered before date of start, ticket is not
+        # registered
         c = CIChangeGit()
         c.time = datetime.datetime(year=2012, month=1, day=1)
         c.changeset = 'testchangeset'
@@ -378,7 +379,8 @@ class OPRegisterTest(TestCase):
            _PATCHED_TICKETS_ENABLE_NO)
     @patch('ralph.cmdb.models_common.USE_CELERY', _PATCHED_USE_CELERY)
     def test_dont_create_issues(self):
-        # the date is ok, but tickets enabled is set to no.  Dont register ticket.
+        # The date is ok, but tickets enabled is set to no.
+        # Dont register ticket.
         c = CIChangeGit()
         c.time = datetime.datetime(year=2012, month=1, day=2)
         c.changeset = 'testchangeset'
