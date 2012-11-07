@@ -15,13 +15,13 @@ from ralph.cmdb.models import CI, CIRelation, CI_TYPES, CI_RELATION_TYPES
 from ralph.discovery.models import DeviceModel, DeviceType
 from django.http import HttpResponse
 import pygraph
-
+from pygraph.algorithms.searching import breadth_first_search
 
 class SearchImpactForm(forms.Form):
     depth = forms.CharField(max_length=100)
     ci = AutoCompleteSelectField(
         'ci', required=True,
-        plugin_options={'minLength': 3},
+        plugin_options={'minLength' : 3}
     )
 
 
@@ -68,6 +68,7 @@ class Graphs(BaseCMDBView):
             mimetype='application/json',
         )
 
+
     def get(self, *args, **kwargs):
         ci_id = self.request.GET.get('ci')
         depth = self.request.GET.get('depth')
@@ -82,30 +83,30 @@ class Graphs(BaseCMDBView):
 class ImpactCalculator(object):
     graph = None
 
-    def __init__(self):
+    def __init__(self, relation_types=[]):
+        default_relation_types = [CI_RELATION_TYPES.CONTAINS, CI_RELATION_TYPES.REQUIRES]
+        if not relation_types:
+            self.relation_types = default_relation_types
+        else:
+            self.relation_types = relation_types
         self.build_graph()
 
-    def calculate_dependencies(self, ci_id, depth):
-        ci = CI.objects.get(id=ci_id)
-        # everything it contains is marked failed.
-        contains_cis = CIRelation.objects.filter(
-            parent__id=ci.id, type=CI_RELATION_TYPES.CONTAINS
-        )
-        # everything that depend on this ci is marked failed as well.
-        is_required_by = CIRelation.objects.filter(
-            child__id=ci.id, type=CI_RELATION_TYPES.REQUIRES
-        )
+    def find_affected_nodes(self, ci_id, depth):
+        st, pre = breadth_first_search(self.graph, ci_id)
+        return pre
 
     def build_graph(self):
         allci = CI.objects.all().values('pk')
-        relations = CIRelation.objects.all().values('parent_id', 'child_id')
+        relations = CIRelation.objects.filter(
+            type__in=[
+                self.relation_types
+            ]
+        ).values('parent_id', 'child_id')
+
         nodes = [x['pk'] for x in allci]
         edges = [(x['parent_id'], x['child_id']) for x in relations]
-        self.graph = pygraph.classes.digraph()
+        self.graph = pygraph.classes.digraph.digraph()
         self.graph.add_nodes(nodes)
         for edge in edges:
             self.graph.add_edge(edge)
 
-    def find(self, ci_id):
-        ci = CI.objects.get(id=ci_id)
-        pass

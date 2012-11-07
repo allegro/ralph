@@ -6,10 +6,55 @@
 {% block scripts %}
     <!-- from now, include parent jquery version for normal use. !-->
     {{ block.super }}
+    <!--
     <script type="text/javascript" src="{{STATIC_URL}}cmdb/VivaGraphJS/vivagraph.js"></script>
+    !-->
+    <script type="text/javascript" src="{{STATIC_URL}}cmdb/d3.v2.min.js"></script>
     <script type="text/javascript">
+
+        function main(){
+            var radius = 960 / 2;
+             
+             var tree = d3.layout.tree()
+                 .size([360, radius - 120])
+                 .separation(function(a, b) { return (a.parent == b.parent ? 1 : 2) / a.depth; });
+             
+             var diagonal = d3.svg.diagonal.radial()
+                 .projection(function(d) { return [d.y, d.x / 180 * Math.PI]; });
+             
+             var vis = d3.select("#chart").append("svg")
+                 .attr("width", radius * 2)
+                 .attr("height", radius * 2 - 150)
+               .append("g")
+                 .attr("transform", "translate(" + radius + "," + radius + ")");
+             
+              d3.json("../data/flare.json", function(json) {
+               var nodes = tree.nodes(json);
+             
+               var link = vis.selectAll("path.link")
+                   .data(tree.links(nodes))
+                 .enter().append("path")
+                   .attr("class", "link")
+                   .attr("d", diagonal);
+             
+               var node = vis.selectAll("g.node")
+                   .data(nodes)
+                 .enter().append("g")
+                   .attr("class", "node")
+                   .attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + d.y + ")"; })
+             
+               node.append("circle")
+                   .attr("r", 4.5);
+             
+               node.append("text")
+                   .attr("dy", ".31em")
+                   .attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
+                   .attr("transform", function(d) { return d.x < 180 ? "translate(8)" : "rotate(180)translate(-8)"; })
+                   .text(function(d) { return d.name; });
+             });
+        }
+
         function mainer() {
-            // Step 1. We create a graph object.
             var graph = Viva.Graph.graph();
             $.get("/cmdb/graphs_ajax", function(data)
                     {
@@ -23,15 +68,6 @@
                         }
                     }
             );
-
-
-            /* Note: graph.addLink() creates new nodes if they are not yet 
-               present in the graph. Thus calling this method is equivalent to:
-
-               graph.addNode(1);
-               graph.addNode(2);
-               graph.addLink(1, 2);
-             */
             var graphics = Viva.Graph.View.svgGraphics();
             graphics.node(function(node) {
                 e = Viva.Graph.svg('text')
@@ -43,47 +79,34 @@
             .placeNode(function(nodeUI, pos){
                                 nodeUI.attr('x', pos.x).attr('y', pos.y);
             });
-            var renderer = Viva.Graph.View.renderer(graph, 
-                    {
-                     graphics : graphics
-                    }
-                    );
+            var renderer = Viva.Graph.View.renderer(graph, {
+             graphics : graphics
+            });
             renderer.run();
         }
     </script>
 <script type="text/javascript" charset="utf-8">
     $(document).ready(function()
             {
-            }
-            );
+                main()
+            });
 </script>
 
 {% endblock %}
 
 {% block extra_headers %}
-{{ block.super }}
-<!--
-    <style type="text/css" media="screen">
-        svg { 
-            width: 100%; height: 100%;
-            position: absolute;
-            top: 0px;
-        }
-    </style>
-    !-->
+    {{ block.super }}
 {% endblock %}
 
 {% block contentarea %}
-{{ block.super }}
+    {{ block.super }}
 
-{% form_horizontal form=form method="get" action="/cmdb/graphs" title='Formularz' %}
-<hr>
-<table class="table table-condensed">
-    {{ output }}
-</table>
+    {% form_horizontal form=form method="get" action="/cmdb/graphs" title='Formularz' %}
+    <hr>
+    <table class="table table-condensed">
+        {{ output }}
+    </table>
 
-<!--
-<div id='tester' width='300' height='300' onload='mainer()'>
-</div>
-!-->
+    <div id='chart' width='300' height='300' onload='mainer()'>
+    </div>
 {% endblock %}
