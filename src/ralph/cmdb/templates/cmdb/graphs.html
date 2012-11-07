@@ -75,24 +75,12 @@
 
 {% block contentarea %}
 {{ block.super }}
-<form class="form ">
-    <div class="form-actions">                                                      
-        {% for f in form %}                                                         
-            <div style="display:inline-block; vertical-align:top" class="control-group {% if f.errors %}error{% endif %}" >
-                {{ f }}                                                             
-                {% if f.errors %}                                                   
-                    <span class="help-block">                                       
-                        {% for e in f.errors %}{{ e }}{% endfor %}                  
-                    </span>                                                         
-                {% endif %}                                                         
-            </div>                                                                  
-        {% endfor %}                                                                
-        <button type="submit" class="btn">{% spaceless %}                           
-            {% icon 'fugue-calendar-search-result' %}&nbsp; Submit
-            {% endspaceless %}</button>                                             
-    </div>                                                                          
-</form>  
 
+{% form_horizontal form=form method="get" action="/cmdb/graphs" title='Formularz' %}
+<hr>
+<table class="table table-condensed">
+    {{ output }}
+</table>
 
 <!--
 <div id='tester' width='300' height='300' onload='mainer()'>
