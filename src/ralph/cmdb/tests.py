@@ -29,7 +29,6 @@ from ralph.cmdb.integration.puppet import PuppetAgentsImporter
 from ralph.cmdb.models import PuppetLog
 from ralph.cmdb.integration.puppet import PuppetGitImporter as pgi
 from ralph.cmdb.integration.issuetracker_plugins.jira import JiraRSS
-from ralph.cmdb.graphs import ImpactCalculator
 from ralph.deployment.models import DeploymentPoll
 
 
@@ -106,10 +105,6 @@ class CIImporterTest(TestCase):
         self.blade.venture_role = self.child_role
         self.blade.parent = self.rack
         self.blade.save()
-
-    def test_graph_deps(self):
-        c = ImpactCalculator()
-        import pdb; pdb.set_trace()
 
 
     def add_model(self, name, device_type):
@@ -280,6 +275,13 @@ class CIImporterTest(TestCase):
         )
         # summarize relations - 9
         self.assertEqual(len(CIRelation.objects.all()), 9)
+        from ralph.cmdb.graphs import ImpactCalculator
+        from pygraph.algorithms.searching import breadth_first_search
+        calc = ImpactCalculator()
+        breadth_first_search(calc.graph, 1)
+        import pdb; pdb.set_trace()
+
+
 
 
 class JiraRssTest(TestCase):
