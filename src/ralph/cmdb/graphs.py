@@ -17,12 +17,11 @@ from django.http import HttpResponse
 import pygraph
 
 
-
 class SearchImpactForm(forms.Form):
     depth = forms.CharField(max_length=100)
     ci = AutoCompleteSelectField(
         'ci', required=True,
-        plugin_options={'minLength' : 3}
+        plugin_options={'minLength': 3},
     )
 
 
@@ -68,7 +67,6 @@ class Graphs(BaseCMDBView):
             simplejson.dumps(response_dict),
             mimetype='application/json',
         )
-
 
     def get(self, *args, **kwargs):
         ci_id = self.request.GET.get('ci')
