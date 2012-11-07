@@ -85,7 +85,8 @@ calculated as normal, and then the *m/n* of the chassis price is added to it.
 :index:`Virtual servers`
 ------------------------
 
-The disk shares that are mounted from the hypervisor are counted as used by the virtual servers, with the exception that if not a whole disk share is used by
+The disk shares that are mounted from the hypervisor are counted as used by the
+virtual servers, with the exception that if not a whole disk share is used by
 the virtual machine's disk image, then only the part that is used is included
 in the price.
 
