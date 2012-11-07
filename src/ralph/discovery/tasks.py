@@ -304,7 +304,8 @@ def discover_all(interactive=False, update_existing=False, outputs=None):
         stdout, stdout_verbose, stderr = outputs
     else:
         stdout = output.get(interactive)
-    for net in Network.objects.exclude(queue=None).exclude(queue=''):
+    nets = Network.objects.exclude(queue=None).exclude(queue='')
+    for net in nets:
         if interactive:
             discover_network(net.network, interactive=True,
                 update_existing=True)

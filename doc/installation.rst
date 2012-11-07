@@ -122,7 +122,7 @@ We can check the status of the Redis server::
 
 .. note::
 
-  Remember to configure redis in `settings.py <configuration.rst#message-queue-broker>`_.
+  Remember to configure redis in `settings.py <configuration.html#message-queue-broker>`_.
 
 rabbitmq
 ~~~~~~~~

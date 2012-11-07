@@ -242,4 +242,21 @@ $(function ($) {
             $(this).parents('.alerts').filter(':first').remove();
         };
     })
+
+    ActiveTab = function (){
+        var hash = location.hash
+            , hashPieces = hash.split('?')
+            , activeTab = $('[href=' + hashPieces[0] + ']');
+        activeTab && activeTab.tab('show');
+    }
+    $('body').off('click.tab.data-api')
+    $('body').on('click.scrolling-tabs', '[data-toggle="tab"], [data-toggle="pill"]', function (e) {
+        $(this).tab('show')
+    });
+    $(window).on('hashchange', function (){
+        ActiveTab()
+    });
+    $(window).load(function (){
+        ActiveTab()
+    });
 });
