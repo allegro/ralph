@@ -12,7 +12,7 @@ import re
 
 from django.conf import settings
 from django.dispatch import receiver
-from django.db.models.signals import pre_save, post_delete, post_save
+from django.db.models.signals import post_delete, post_save
 from django.db import IntegrityError
 from celery.task import task
 
@@ -37,12 +37,15 @@ if settings.ISSUETRACKERS['default']['ENGINE'] == '':
     OP_START_DATE = ''
     OP_TICKETS_ENABLE = False
 else:
-    RALPH_CHANGE_LINK = settings.ISSUETRACKERS['default']['CMDB_VIEWCHANGE_LINK']
+    RALPH_CHANGE_LINK = \
+        settings.ISSUETRACKERS['default']['CMDB_VIEWCHANGE_LINK']
     OP_TEMPLATE = settings.ISSUETRACKERS['default']['OP']['TEMPLATE']
     OP_ISSUE_TYPE = settings.ISSUETRACKERS['default']['OP']['ISSUETYPE']
-    DEFAULT_ASSIGNEE = settings.ISSUETRACKERS['default']['OP']['DEFAULT_ASSIGNEE']
+    DEFAULT_ASSIGNEE = \
+        settings.ISSUETRACKERS['default']['OP']['DEFAULT_ASSIGNEE']
     OP_START_DATE = settings.ISSUETRACKERS['default']['OP']['START_DATE']
-    OP_TICKETS_ENABLE = settings.ISSUETRACKERS['default']['OP']['ENABLE_TICKETS']
+    OP_TICKETS_ENABLE = \
+        settings.ISSUETRACKERS['default']['OP']['ENABLE_TICKETS']
 
 
 def get_login_from_user(long_user_text):
@@ -59,11 +62,16 @@ def get_login_from_user(long_user_text):
         return ''
 
 
-@receiver(post_delete, sender=chdb.CIChangeGit, dispatch_uid='ralph.cmdb.cichangedelete')
-@receiver(post_delete, sender=chdb.CIChangeZabbixTrigger, dispatch_uid='ralph.cmdb.cichangedelete')
-@receiver(post_delete, sender=chdb.CIChangeStatusOfficeIncident, dispatch_uid='ralph.cmdb.cichangedelete')
-@receiver(post_delete, sender=chdb.CIChangeCMDBHistory, dispatch_uid='ralph.cmdb.cichangedelete')
-@receiver(post_delete, sender=chdb.CIChangePuppet, dispatch_uid='ralph.cmdb.cichangedelete')
+@receiver(post_delete, sender=chdb.CIChangeGit,
+          dispatch_uid='ralph.cmdb.cichangedelete')
+@receiver(post_delete, sender=chdb.CIChangeZabbixTrigger,
+          dispatch_uid='ralph.cmdb.cichangedelete')
+@receiver(post_delete, sender=chdb.CIChangeStatusOfficeIncident,
+          dispatch_uid='ralph.cmdb.cichangedelete')
+@receiver(post_delete, sender=chdb.CIChangeCMDBHistory,
+          dispatch_uid='ralph.cmdb.cichangedelete')
+@receiver(post_delete, sender=chdb.CIChangePuppet,
+          dispatch_uid='ralph.cmdb.cichangedelete')
 def change_delete_post_save(sender, instance, **kwargs):
     # remove child cichange
     try:
@@ -74,9 +82,12 @@ def change_delete_post_save(sender, instance, **kwargs):
         pass
 
 
-@receiver(post_save, sender=chdb.CIChangeCMDBHistory, dispatch_uid='ralph.cmdb.change_post_save')
-@receiver(post_save, sender=chdb.CIChangePuppet, dispatch_uid='ralph.cmdb.change_post_save')
-@receiver(post_save, sender=chdb.CIChangeGit, dispatch_uid='ralph.cmdb.change_post_save')
+@receiver(post_save, sender=chdb.CIChangeCMDBHistory,
+          dispatch_uid='ralph.cmdb.change_post_save')
+@receiver(post_save, sender=chdb.CIChangePuppet,
+          dispatch_uid='ralph.cmdb.change_post_save')
+@receiver(post_save, sender=chdb.CIChangeGit,
+          dispatch_uid='ralph.cmdb.change_post_save')
 def post_create_change(sender, instance, raw, using, **kwargs):
     try:
         """ Classify change, and create record - CIChange """
@@ -256,18 +267,17 @@ def change_post_save(sender, instance, raw, using, **kwargs):
         logger.debug(
             'Settings not configured for OP tickets registration. Skipping.')
         return
-    if ((instance.type in chdb.REGISTER_CHANGE_TYPES)
-        and (instance.time.date() >= date_from_str(OP_START_DATE))
-        and not instance.external_key):
+    if ((instance.type in chdb.REGISTER_CHANGE_TYPES) and
+        (instance.time.date() >= date_from_str(OP_START_DATE)) and
+        not instance.external_key):
             getfunc(create_issue)(instance.id)
 
 
-@receiver(post_delete, sender=chdb.CIChange, dispatch_uid='ralph.cmdb.cichangebasedelete')
+@receiver(post_delete, sender=chdb.CIChange,
+          dispatch_uid='ralph.cmdb.cichangebasedelete')
 def basechange_delete_post_save(sender, instance, **kwargs):
     # remove parent cichange
     content_object = instance.content_object
     if content_object:
         content_object.delete()
-
-
 
