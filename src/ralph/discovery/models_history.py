@@ -95,8 +95,8 @@ class HistoryChange(db.Model):
                     self.date, self.id)
 
 
-@receiver(pre_save, sender=Device, dispatch_uid='ralph.history')
-def device_pre_save(sender, instance, raw, using, **kwargs):
+@receiver(post_save, sender=Device, dispatch_uid='ralph.history')
+def device_post_save(sender, instance, raw, using, **kwargs):
     """A hook for creating ``HistoryChange`` entries when a device changes."""
     for field, orig, new in _field_changes(instance, ignore={
             'last_seen', 'cached_cost', 'cached_price', 'raw',
