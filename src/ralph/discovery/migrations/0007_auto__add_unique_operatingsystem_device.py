@@ -17,7 +17,7 @@ class Migration(SchemaMigration):
 
         # Adding field 'Network.queue2'
         db.add_column('discovery_network', 'queue2',
-                      self.gf('django.db.models.fields.related.ForeignKey')(on_delete=models.SET_NULL, default=None, to=orm['discovery.DiscoveryQueue'], max_length=16, blank=True, null=True),
+                      self.gf('django.db.models.fields.related.ForeignKey')(on_delete=models.SET_NULL, default=None, to=orm['discovery.DiscoveryQueue'], blank=True, null=True),
                       keep_default=False)
 
         if not db.dry_run:
@@ -511,7 +511,7 @@ class Migration(SchemaMigration):
             'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '75', 'db_index': 'True'}),
             'queue': ('django.db.models.fields.CharField', [], {'default': 'None', 'max_length': '16', 'null': 'True', 'blank': 'True'}),
-            'queue2': ('django.db.models.fields.related.ForeignKey', [], {'on_delete': 'models.SET_NULL', 'default': 'None', 'to': "orm['discovery.DiscoveryQueue']", 'max_length': '16', 'blank': 'True', 'null': 'True'}),
+            'queue2': ('django.db.models.fields.related.ForeignKey', [], {'on_delete': 'models.SET_NULL', 'default': 'None', 'to': "orm['discovery.DiscoveryQueue']", 'blank': 'True', 'null': 'True'}),
             'rack': ('django.db.models.fields.CharField', [], {'default': 'None', 'max_length': '16', 'null': 'True', 'blank': 'True'}),
             'remarks': ('django.db.models.fields.TextField', [], {'default': "u''", 'blank': 'True'}),
             'terminators': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['discovery.NetworkTerminator']", 'symmetrical': 'False'}),
