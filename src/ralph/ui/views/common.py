@@ -9,7 +9,7 @@ import datetime
 from django.conf import settings
 from django.contrib import messages
 from django.core.urlresolvers import reverse
-from django.core.paginator import Paginator, EmptyPage
+from django.core.paginator import Paginator
 from django.db import models as db
 from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.utils import simplejson as json
@@ -28,7 +28,7 @@ from ralph.discovery.models import Device, DeviceType
 from ralph.util import presentation, pricing
 from ralph.ui.forms import (DeviceInfoForm, DeviceInfoVerifiedForm,
                             DevicePricesForm, DevicePurchaseForm,
-                            PropertyForm, DeviceBulkForm)
+                            PropertyForm, DeviceBulkForm, DNSRecordsForm)
 
 SAVE_PRIORITY = 200
 HISTORY_PAGE_SIZE = 25
@@ -419,29 +419,66 @@ class Prices(DeviceUpdateView):
 class Addresses(DeviceDetailView):
     template_name = 'ui/device_addresses.html'
     read_perm = Perm.read_device_info_generic
+    edit_perm = Perm.edit_domain_name
+
+    def __init__(self, *args, **kwargs):
+        super(Addresses, self).__init__(*args, **kwargs)
+        self.form = None
 
     def get_dns(self):
         ips = set(ip.address for ip in self.object.ipaddress_set.all())
         names = set(ip.hostname for ip in self.object.ipaddress_set.all()
                  if ip.hostname)
         dotnames = set(name+'.' for name in names)
+        revnames = set(ip + '.in-addr.arpa' for ip in ips)
+        starrevnames = set()
+        for name in revnames:
+            parts = name.split('.')
+            while parts:
+                parts.pop(0)
+                starrevnames.add('.'.join(['*'] + parts))
         for entry in Record.objects.filter(
                 db.Q(content__in=ips) |
                 db.Q(name__in=names) |
                 db.Q(content__in=names | dotnames)
-            ):
+            ).distinct():
             names.add(entry.name)
             if entry.type == 'A':
                 ips.add(entry.content)
             elif entry.type == 'CNAME':
                 names.add(entry.content)
+        starnames = set()
+        for name in names:
+            parts = name.split('.')
+            while parts:
+                parts.pop(0)
+                starnames.add('.'.join(['*'] + parts))
         for entry in Record.objects.filter(
-                db.Q(content__in=ips) |
-                db.Q(name__in=names) |
-                db.Q(content__in=names)
-            ):
+                db.Q(content__in=ips | names) |
+                db.Q(name__in=names | revnames | starnames | starrevnames)
+            ).distinct():
             yield entry
 
+    def post(self, *args, **kwargs):
+        self.object = self.get_object()
+        profile = self.request.user.get_profile()
+        if not profile.has_perm(self.read_perm, self.object.venture):
+            return HttpResponseForbidden(
+                "You don't have permission to edit this."
+            )
+        dns_records = list(self.get_dns())
+        self.form = DNSRecordsForm(dns_records, self.request.POST)
+        if self.form.is_valid():
+            for record in dns_records:
+                prefix = 'dns_%d_' % record.id
+                record_type = self.form.cleaned_data.get(prefix + 'type')
+                if record_type:
+                    for label in ('name', 'type', 'content',
+                                  'ttl', 'prio', 'type'):
+                        setattr(record, label,
+                                self.form.cleaned_data[prefix + label] or None)
+                    record.save()
+        return self.get(*args, **kwargs)
 
     def get_dhcp(self):
         macs = set(eth.mac for eth in self.object.ethernet_set.all())
@@ -449,9 +486,12 @@ class Addresses(DeviceDetailView):
 
     def get_context_data(self, **kwargs):
         ret = super(Addresses, self).get_context_data(**kwargs)
+        if self.form is None:
+            dns = self.get_dns()
+            self.form = DNSRecordsForm(dns)
         ret.update({
             'balancers': list(_get_balancers(self.object)),
-            'dns': self.get_dns(),
+            'dnsform': self.form,
             'dhcp': self.get_dhcp(),
         })
         return ret
