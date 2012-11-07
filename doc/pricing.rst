@@ -85,20 +85,9 @@ calculated as normal, and then the *m/n* of the chassis price is added to it.
 :index:`Virtual servers`
 ------------------------
 
-The price of virtual server's CPU is calculated as *1/n* of the sum of prices
-of the CPUs in the hypervisor, where *n* is the sum of all virtual CPUs on
-all the virtual machines running on that hypervisor.
-
-The price of virtual server's memory is calculated normally, the memory model
-is set to "Virtual Memory" and you can set a price per 1GB of it.
-
-The disk space of a virtual server is not included in its price -- it's assumed
-that it only contains the base system of the server, and all relevant storage
-is done on the disk shares connected to it.
-
-The disk shares are counted normally, with the exception that if not a whole
-disk share is used by the virtual machine's disk image, then only the part
-that is used is included in the price.
+The disk shares that are mounted from the hypervisor are counted as used by the virtual servers, with the exception that if not a whole disk share is used by
+the virtual machine's disk image, then only the part that is used is included
+in the price.
 
 :index:`Virtual server hypervisors`
 -----------------------------------
