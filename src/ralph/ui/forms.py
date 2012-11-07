@@ -91,6 +91,47 @@ class MarginsReportForm(DateRangeForm):
                 return self.fields[field].initial
 
 
+def _dns_type_field(label=None, initial=None, widget=None, required=True):
+    types = [(x, x) for x in (
+        '', 'A', 'AAAA', 'CNAME', 'MX', 'NS', 'PTR', 'SOA', 'SPF', 'SRV',
+        'TXT', 'HINFO'
+    )]
+    return forms.ChoiceField(
+        label=label,
+        choices=types,
+        initial=initial,
+        widget=forms.Select(attrs={'class':'span12'}),
+        required=required,
+    )
+
+
+class DNSRecordsForm(forms.Form):
+    def __init__(self, records, *args, **kwargs):
+        super(DNSRecordsForm, self).__init__(*args, **kwargs)
+        fields =[
+            ('name', forms.CharField),
+            ('type', _dns_type_field),
+            ('content', forms.CharField),
+            ('ttl', forms.IntegerField),
+            ('prio', forms.IntegerField),
+        ]
+        def _add_fields(prefix, record):
+            for label, field_class in fields:
+                initial = getattr(record, label, None)
+                field = field_class(label=label, initial=initial, required=False,
+                    widget=forms.TextInput(attrs={
+                        'class': 'span12',
+                        'placeholder': label,
+                    }))
+                field.initial = initial
+                field_id = prefix + label
+                self.fields[field_id] = field
+        for record in records:
+            prefix = 'dns_%d_' % record.id
+            _add_fields(prefix, record)
+        #_add_fields('dns_new_', None)
+
+
 class VentureFilterForm(forms.Form):
     show_all = forms.BooleanField(required=False,
             label="Show all ventures")
