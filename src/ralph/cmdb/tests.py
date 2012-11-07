@@ -17,8 +17,9 @@ from lxml import objectify
 from mock import patch
 from os.path import join as djoin
 
-from ralph.discovery.models import Device, DeviceType, DeviceModel
-from ralph.business.models import Venture, VentureRole
+from ralph.discovery.models import (Device, DeviceType, DeviceModel,
+                                    DataCenter, Network)
+from ralph.business.models import Venture, VentureRole, Service, BusinessLine
 from ralph.cmdb.importer import CIImporter
 from ralph.cmdb.models import (CI, CILayer, CIRelation, CI_RELATION_TYPES,
                                CIChange, CI_TYPES, CIChangePuppet, CIChangeGit,
@@ -272,6 +273,133 @@ class CIImporterTest(TestCase):
         )
         # summarize relations - 9
         self.assertEqual(len(CIRelation.objects.all()), 9)
+
+
+class AutoCIRemoveTest(TestCase):
+    fixtures = [
+        '0_types.yaml',
+        '1_attributes.yaml',
+        '2_layers.yaml',
+        '3_prefixes.yaml'
+    ]
+
+    def setUp(self):
+        # create Venture and CI
+        self.venture = Venture.objects.create(name='TestVenture')
+        uid = CI.get_uid_by_content_object(self.venture)
+        self.venture_ci_id = CI.objects.create(
+            name='TestVentureCI', uid=uid, type_id=4).pk
+
+        # create VentureRole and CI
+        v = Venture.objects.create(name='SomeAssignedVenture')
+        self.venture_role = VentureRole.objects.create(name='TestVentureRole',
+                                                       venture=v)
+        uid = CI.get_uid_by_content_object(self.venture_role)
+        self.venture_role_ci_id = CI.objects.create(
+            name='TestVentureRoleCI', uid=uid, type_id=5).pk
+
+        # create DataCenter and CI
+        self.data_center = DataCenter.objects.create(name='DC123')
+        uid = CI.get_uid_by_content_object(self.data_center)
+        self.data_center_ci_id = CI.objects.create(
+            name='TestDataCenterCI', uid=uid, type_id=9).pk
+
+        # create Network and CI
+        dc = DataCenter.objects.create(name='SomeDC')
+        self.network = Network.objects.create(name='TestNetwork',
+                                              address='192.168.56.1',
+                                              data_center=dc)
+        uid = CI.get_uid_by_content_object(self.network)
+        self.network_ci_id = CI.objects.create(
+            name='TestNetworkCI', uid=uid, type_id=8).pk
+
+        # create Device and CI
+        device_model = DeviceModel.objects.create(
+            name='SomeDeviceModel', type=DeviceType.rack_server.id)
+        self.device = Device.create(name='TestDevice', sn='sn123',
+                                    model=device_model)
+        uid = CI.get_uid_by_content_object(self.device)
+        self.device_ci_id = CI.objects.create(
+            name='TestDeviceCI', uid=uid, type_id=2).pk
+
+        # create Service and CI
+        bl = BusinessLine.objects.create(name='Some Business Line')
+        self.service = Service.objects.create(name='someservice.com',
+                                              external_key='abc123',
+                                              business_line=bl)
+        uid = CI.get_uid_by_content_object(self.service)
+        self.service_ci_id = CI.objects.create(
+            name='TestServiceCI', uid=uid, type_id=7).pk
+
+        # create BusinessLIne and CI
+        self.business_line = BusinessLine.objects.create(
+            name='TestBusinessLine')
+        uid = CI.get_uid_by_content_object(self.business_line)
+        self.business_line_ci_id = CI.objects.create(
+            name='TestBusinessLineCI', uid=uid, type_id=6).pk
+
+    def test_remove_venture(self):
+        self.venture.delete()
+        ci = None
+        try:
+            ci = CI.objects.get(pk=self.venture_ci_id)
+        except CI.DoesNotExist:
+            pass
+        self.assertEquals(ci, None)
+
+    def test_remove_venture_role(self):
+        self.venture_role.delete()
+        ci = None
+        try:
+            ci = CI.objects.get(pk=self.venture_role_ci_id)
+        except CI.DoesNotExist:
+            pass
+        self.assertEquals(ci, None)
+
+    def test_remove_datacenter(self):
+        self.data_center.delete()
+        ci = None
+        try:
+            ci = CI.objects.get(pk=self.data_center_ci_id)
+        except CI.DoesNotExist:
+            pass
+        self.assertEquals(ci, None)
+
+    def test_remove_network(self):
+        self.network.delete()
+        ci = None
+        try:
+            ci = CI.objects.get(pk=self.network_ci_id)
+        except CI.DoesNotExist:
+            pass
+        self.assertEquals(ci, None)
+
+    def test_remove_device(self):
+        self.device.delete()
+        ci = None
+        try:
+            ci = CI.objects.get(pk=self.device_ci_id)
+        except CI.DoesNotExist:
+            pass
+        self.assertEquals(ci, None)
+
+    def test_remove_service(self):
+        self.service.delete()
+        ci = None
+        try:
+            ci = CI.objects.get(pk=self.service_ci_id)
+        except CI.DoesNotExist:
+            pass
+        self.assertEquals(ci, None)
+
+    def test_remove_businessline(self):
+        self.business_line.delete()
+        ci = None
+        try:
+            ci = CI.objects.get(pk=self.business_line_ci_id)
+        except CI.DoesNotExist:
+            pass
+        self.assertEquals(ci, None)
 
 
 class JiraRssTest(TestCase):
