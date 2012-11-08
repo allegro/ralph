@@ -6,7 +6,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import ssh as paramiko
+import paramiko
 import collections
 import logging
 
@@ -90,7 +90,8 @@ def get_disks(ssh):
             uuid = value
         elif key.startswith('virtual-size '):
             if type_ in {'Disk'}:
-                disks[vm].append((uuid, sr_uuid, int(int(value)/1024), device))
+                disks[vm].append((uuid, sr_uuid, int(int(value)/1024/1024),
+                                  device))
     return disks
 
 
@@ -109,7 +110,7 @@ def get_srs(ssh):
         if key.startswith('uuid '):
             uuid = value
         elif key.startswith('physical-size '):
-            size = int(int(value)/1024)
+            size = int(int(value)/1024/1024)
         elif key.startswith('type '):
             if value in {'lvm'} and size > 0:
                 srs[uuid] = size
@@ -142,7 +143,7 @@ def get_running_vms(ssh):
             # Only include the running virtual machines
             continue
         cores = int(info['VCPUs-number'])
-        memory = int(int(info['memory-actual'])/1024)
+        memory = int(int(info['memory-actual'])/1024/1024)
         uuid = info['uuid']
         vms.add((label, uuid, cores, memory))
     return vms

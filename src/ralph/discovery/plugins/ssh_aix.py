@@ -6,8 +6,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import paramiko
 import re
-import ssh as paramiko
 
 from django.conf import settings
 from lck.django.common import nested_commit_on_success

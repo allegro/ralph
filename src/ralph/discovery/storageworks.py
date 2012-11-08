@@ -6,7 +6,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import time
-import ssh as paramiko
+import paramiko
 
 from lck.django.common import nested_commit_on_success
 from lxml import etree as ET

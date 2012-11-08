@@ -36,13 +36,13 @@ class SidebarRacks(object):
             self.rack = None
             return
         rack_name = rack_name.replace('-', ' ')
-        if rack_name and rack_name != 'rack none':
+        if rack_name and rack_name != 'rack none' and rack_name != ' ':
             self.rack = get_object_or_404(
-                    Device,
-                    sn=rack_name,
-                    model__type__in=(DeviceType.rack.id,
-                                     DeviceType.data_center.id)
-                )
+                Device,
+                sn=rack_name,
+                model__type__in=(DeviceType.rack.id,
+                                 DeviceType.data_center.id)
+            )
         else:
             self.rack = ''
 
@@ -50,11 +50,17 @@ class SidebarRacks(object):
         self.set_rack()
         ret = super(SidebarRacks, self).get_context_data(**kwargs)
         icon = presentation.get_device_icon
+
         def slug(sn):
             return sn.replace(' ', '-').lower()
         sidebar_items = [
-            MenuItem("Unknown", name='', fugue_icon='fugue-prohibition',
-                     view_name='racks', view_args=['', ret['details'], ''])
+            MenuItem(
+                "Unknown",
+                name='',
+                fugue_icon='fugue-prohibition',
+                view_name='racks',
+                view_args=['-', ret['details'], '']
+            )
         ]
         for dc in Device.objects.filter(
                 model__type=DeviceType.data_center.id).order_by('name'):
@@ -64,19 +70,23 @@ class SidebarRacks(object):
                          view_name='racks', subitems=subitems, indent=' ',
                          view_args=[slug(dc.sn), ret['details'], ''],
                          collapsible=True, collapsed=not (
-                             self.rack and (self.rack==dc or
-                                            self.rack.parent==dc)))
+                             self.rack and (self.rack == dc or
+                                            self.rack.parent == dc)))
             )
             for r in Device.objects.filter(
-                        model__type=DeviceType.rack.id
-                    ).filter(
-                        parent=dc
-                    ).order_by('name'):
+                model__type=DeviceType.rack.id
+            ).filter(
+                parent=dc
+            ).order_by('name'):
                 subitems.append(
-                    MenuItem(r.name, name=slug(r.sn), indent=' ',
-                         fugue_icon=icon(r),
-                         view_name='racks',
-                         view_args=[slug(r.sn), ret['details'], ''])
+                    MenuItem(
+                        r.name,
+                        name=slug(r.sn),
+                        indent=' ',
+                        fugue_icon=icon(r),
+                        view_name='racks',
+                        view_args=[slug(r.sn), ret['details'], '']
+                    )
                 )
         ret.update({
             'sidebar_items': sidebar_items,
@@ -103,7 +113,7 @@ class RacksComponents(Racks, Components):
     pass
 
 
-class RacksCMDB(Racks, CMDB,DeviceDetailView ):
+class RacksCMDB(Racks, CMDB, DeviceDetailView):
     pass
 
 
@@ -164,27 +174,27 @@ class RacksDeviceList(SidebarRacks, BaseMixin, BaseDeviceList):
             queryset = ReadOnlyDevice.objects.none()
         elif self.rack == '':
             queryset = ReadOnlyDevice.objects.filter(
-                    parent=None
-                ).select_related(depth=3)
+                parent=None
+            ).select_related(depth=3)
         elif self.rack.model and self.rack.model.type != DeviceType.rack.id:
             queryset = Device.objects.filter(
-                    Q(id=self.rack.id) |
-                    Q(parent=self.rack)
-                ).select_related(depth=3)
+                Q(id=self.rack.id) |
+                Q(parent=self.rack)
+            ).select_related(depth=3)
         else:
             queryset = Device.objects.filter(
-                    Q(id=self.rack.id) |
-                    Q(parent=self.rack) |
-                    Q(parent__parent=self.rack) |
-                    Q(parent__parent__parent=self.rack) |
-                    Q(parent__parent__parent__parent=self.rack)
-                ).select_related(depth=3)
+                Q(id=self.rack.id) |
+                Q(parent=self.rack) |
+                Q(parent__parent=self.rack) |
+                Q(parent__parent__parent=self.rack) |
+                Q(parent__parent__parent__parent=self.rack)
+            ).select_related(depth=3)
         queryset = self.sort_queryset(queryset.order_by('model__type'))
         return queryset
 
     def paginate_queryset(self, queryset, page_size):
         if (self.rack and self.rack.model and
-            self.rack.model.type == DeviceType.rack.id):
+                self.rack.model.type == DeviceType.rack.id):
             queryset = list(self.sort_tree(queryset, self.sort))
         return super(RacksDeviceList, self).paginate_queryset(queryset,
                                                               page_size)
@@ -194,16 +204,24 @@ class RacksDeviceList(SidebarRacks, BaseMixin, BaseDeviceList):
         profile = self.request.user.get_profile()
         has_perm = profile.has_perm
         tab_items = ret['tab_items']
-        tab_items.append(MenuItem('Rack', fugue_icon='fugue-media-player-phone',
-                            href='../rack/?%s' % self.request.GET.urlencode()))
+        if ret['subsection'] is not '':
+            tab_items.append(
+                MenuItem(
+                    'Rack',
+                    fugue_icon='fugue-media-player-phone',
+                    href='../rack/?%s' % self.request.GET.urlencode()
+                )
+            )
         if has_perm(Perm.create_device, self.rack.venture if
                     self.rack else None):
-            tab_items.append(MenuItem('Add Device',
-                            fugue_icon='fugue-wooden-box--plus',
-                            name='add_device',
-                            href='../add_device/?%s' % (
-                                self.request.GET.urlencode(),)
-                        ))
+            tab_items.append(
+                MenuItem(
+                    'Add Device',
+                    fugue_icon='fugue-wooden-box--plus',
+                    name='add_device',
+                    href='../add_device/?%s' % (self.request.GET.urlencode())
+                )
+            )
         ret.update({
             'subsection': self.rack.name if self.rack else self.rack,
             'subsection_slug': self.rack.sn if self.rack else self.rack,
@@ -252,8 +270,9 @@ class RacksRack(Racks, Base):
                     slots[i][0] = -1
         else:
             return [(0, 1, rack.child_set.all())]
+
         def iter_slots():
-            for slot in reversed(range(0, max_slots+1)):
+            for slot in reversed(range(0, max_slots + 1)):
                 size, devs = slots[slot]
                 yield slot, size, devs
         return iter_slots
@@ -262,8 +281,21 @@ class RacksRack(Racks, Base):
         ret = super(RacksRack, self).get_context_data(**kwargs)
         self.set_rack()
         tab_items = ret['tab_items']
-        tab_items.append(MenuItem('Rack', fugue_icon='fugue-media-player-phone',
-                            href='../rack/?%s' % self.request.GET.urlencode()))
+
+        tab_items.append(
+            MenuItem(
+                'Rack',
+                fugue_icon='fugue-media-player-phone',
+                href='../rack/?%s' % self.request.GET.urlencode()
+            )
+        )
+        tab_items.append(
+            MenuItem(
+                'Add device',
+                fugue_icon='fugue-wooden-box--plus',
+                href='../add_device/?%s' % self.request.GET.urlencode()
+            )
+        )
         if self.rack.model.type == DeviceType.rack.id:
             slots_set = [
                 (self.rack, self.get_slots(self.rack))
@@ -278,6 +310,7 @@ class RacksRack(Racks, Base):
         })
         return ret
 
+
 class DeviceCreateView(CreateView):
     model = Device
     slug_field = 'id'
@@ -289,35 +322,92 @@ class DeviceCreateView(CreateView):
     def get_template_names(self):
         return [self.template_name]
 
+    def set_rack(self):
+        rack_name = self.kwargs.get('rack')
+        if rack_name is None:
+            self.rack = None
+            return
+        rack_name = rack_name.replace('-', ' ')
+        if rack_name and rack_name != 'rack none' and rack_name != ' ':
+            self.rack = get_object_or_404(
+                Device,
+                sn=rack_name,
+                model__type__in=(DeviceType.rack.id,
+                                 DeviceType.data_center.id)
+            )
+        else:
+            self.rack = ''
+
     def form_valid(self, form):
         self.set_rack()
-        model = form.save(commit=False)
         macs = [('', mac, 0) for mac in form.cleaned_data['macs'].split()]
-        dev = Device.create(ethernets=macs, sn=form.cleaned_data['sn'],
-                            model=form.cleaned_data['model'], priority=1)
-        form.instance = dev
-        model = form.save(commit=False)
-        model.parent = self.rack
-        model.dc = self.rack.dc
-        model.rack = self.rack.rack
-        model.save(priority=1, user=self.request.user)
+        try:
+            dc = self.rack.dc
+        except AttributeError:
+            dc = None
+        try:
+            rack = self.rack.rack
+        except AttributeError:
+            rack = None
+        if self.rack == '':
+            self.rack = None
+        wed = form.cleaned_data['warranty_expiration_date']
+        sed = form.cleaned_data['support_expiration_date']
+        if form.cleaned_data['support_kind'] == '':
+            form.cleaned_data['support_kind'] = None
+        if form.cleaned_data['position'] == '':
+            form.cleaned_data['position'] = None
+
+        dev = Device.create(
+            ethernets=macs,
+            barcode=form.cleaned_data['barcode'],
+            remarks=form.cleaned_data['remarks'],
+            sn=form.cleaned_data['sn'],
+            model=form.cleaned_data['model'],
+            venture=form.cleaned_data['venture'],
+            purchase_date=form.cleaned_data['purchase_date'],
+            priority=1,
+            position=form.cleaned_data['position'],
+            chassis_position=form.cleaned_data['chassis_position'],
+            margin_kind=form.cleaned_data['margin_kind'],
+            deprecation_kind=form.cleaned_data['deprecation_kind'],
+            price=form.cleaned_data['price'],
+            warranty_expiration_date=wed,
+            support_expiration_date=sed,
+            support_kind=form.cleaned_data['support_kind'],
+            venture_role=form.cleaned_data['venture_role'],
+            parent=self.rack,
+            dc=dc,
+            rack=rack,
+            user=self.request.user,
+        )
+        dev.name = form.cleaned_data['name']
+        dev.save(priority=1, user=self.request.user)
         messages.success(self.request, "Device created.")
-        return HttpResponseRedirect(self.request.path + '../info/%d' % model.id)
+        return HttpResponseRedirect(self.request.path + '../info/%d' % dev.id)
 
     def get(self, *args, **kwargs):
         self.set_rack()
         has_perm = self.request.user.get_profile().has_perm
-        if not has_perm(Perm.create_device, self.rack.venture):
+        try:
+            venture = self.rack.venture
+        except AttributeError:
+            venture = None
+        if not has_perm(Perm.create_device, venture):
             return HttpResponseForbidden(
-                    "You don't have permission to create devices here.")
+                "You don't have permission to create devices here.")
         return super(DeviceCreateView, self).get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
         self.set_rack()
         has_perm = self.request.user.get_profile().has_perm
-        if not has_perm(Perm.create_device, self.rack.venture):
+        try:
+            venture = self.rack.venture
+        except AttributeError:
+            venture = None
+        if not has_perm(Perm.create_device, venture):
             return HttpResponseForbidden(
-                    "You don't have permission to create devices here.")
+                "You don't have permission to create devices here.")
         return super(DeviceCreateView, self).post(*args, **kwargs)
 
 
@@ -328,11 +418,23 @@ class RacksAddDevice(Racks, DeviceCreateView):
     def get_context_data(self, **kwargs):
         ret = super(RacksAddDevice, self).get_context_data(**kwargs)
         tab_items = ret['tab_items']
-        tab_items.append(MenuItem('Add Device', name='add_device',
-                            fugue_icon='fugue-wooden-box--plus',
-                            href='../add_device/?%s' % (
-                                self.request.GET.urlencode(),)
-                        ))
+        if ret['subsection'] is not '':
+            tab_items.append(
+                MenuItem(
+                    'Rack',
+                    fugue_icon='fugue-media-player-phone',
+                    href='../rack/?%s' % self.request.GET.urlencode()
+                )
+            )
+
+        tab_items.append(
+            MenuItem(
+                'Add Device',
+                name='add_device',
+                fugue_icon='fugue-wooden-box--plus',
+                href='../add_device/?%s' % (self.request.GET.urlencode())
+            )
+        )
         return ret
 
 

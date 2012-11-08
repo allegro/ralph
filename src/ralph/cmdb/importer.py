@@ -66,10 +66,6 @@ class UnknownCTException(Exception):
 
 
 class CIImporter(object):
-    def __init__(self):
-        # initial check for removed cis
-        self.remove_moved_cis()
-
     @nested_commit_on_success
     def store_asset(self, asset, type_, layer_id, uid_prefix):
         """Store given asset as  CI  """
@@ -92,26 +88,8 @@ class CIImporter(object):
         ci.save()
         return ci
 
-    def remove_moved_cis(self):
-        """
-        Some CI has missing assets.
-        This is the case, when Ralph deletes Asset(remove and re-add
-        with different ID)
-
-        CMDB has fixed uid relations schema, so CI has to be removed and
-        added again.
-        This is temporary bugfix, until Ralph fixed floating CI problem.
-        All CI related information are lost, though.
-        """
-        logger.debug('Analysing CIs with missing asset')
-        for x in cdb.CI.objects.all():
-            if x.content_type and x.object_id and (not x.content_object):
-                # id has changed
-                logger.debug('Delete CI %s with missing asset.' % x)
-                x.delete()
-
-    def import_assets_by_contenttype(self, asset_class,
-            _type, layer_id, asset_id=None):
+    def import_assets_by_contenttype(self, asset_class, _type, layer_id,
+                                     asset_id=None):
         ret = []
         logger.info('Importing devices.')
         asset_content_type = ContentType.objects.get_for_model(asset_class)

@@ -6,23 +6,26 @@ from __future__ import unicode_literals
 
 import datetime
 import mock
+import time
 
+from lxml import objectify
+from mock import patch
+from os.path import join as djoin
 
 from django.db.utils import IntegrityError
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase, Client
-from lxml import objectify
-from mock import patch
-from os.path import join as djoin
 
-from ralph.discovery.models import Device, DeviceType, DeviceModel
-from ralph.business.models import Venture, VentureRole
 from ralph.cmdb.importer import CIImporter
-from ralph.cmdb.models import (CI, CILayer, CIRelation, CI_RELATION_TYPES,
-                               CIChange, CI_TYPES, CIChangePuppet, CIChangeGit,
-                               CI_CHANGE_TYPES, CIType)
+from ralph.cmdb.models import (
+    CI, CIRelation, CI_RELATION_TYPES, CIChange, CI_TYPES, CILayer, CIType,
+    CIValueFloat, CIValueDate, CIValueString, CIChangePuppet, CIChangeGit,
+    CI_CHANGE_TYPES, CI_CHANGE_REGISTRATION_TYPES)
+from ralph.discovery.models import (Device, DeviceType, DeviceModel,
+                                    DataCenter, Network)
+from ralph.business.models import Venture, VentureRole, Service, BusinessLine
 from ralph.cmdb.integration.puppet import PuppetAgentsImporter
 from ralph.cmdb.models import PuppetLog
 from ralph.cmdb.integration.puppet import PuppetGitImporter as pgi
@@ -160,7 +163,7 @@ class CIImporterTest(TestCase):
         CIImporter().import_relations(
             ContentType.objects.get_for_model(y), asset_id=y.id)
         with mock.patch(
-            'ralph.cmdb.integration.lib.fisheye.Fisheye') as Fisheye:
+                'ralph.cmdb.integration.lib.fisheye.Fisheye') as Fisheye:
             Fisheye.side_effect = MockFisheye
             x = pgi(fisheye_class=Fisheye)
             x.import_git()
@@ -274,6 +277,133 @@ class CIImporterTest(TestCase):
         self.assertEqual(len(CIRelation.objects.all()), 9)
 
 
+class AutoCIRemoveTest(TestCase):
+    fixtures = [
+        '0_types.yaml',
+        '1_attributes.yaml',
+        '2_layers.yaml',
+        '3_prefixes.yaml'
+    ]
+
+    def setUp(self):
+        # create Venture and CI
+        self.venture = Venture.objects.create(name='TestVenture')
+        uid = CI.get_uid_by_content_object(self.venture)
+        self.venture_ci_id = CI.objects.create(
+            name='TestVentureCI', uid=uid, type_id=4).pk
+
+        # create VentureRole and CI
+        v = Venture.objects.create(name='SomeAssignedVenture')
+        self.venture_role = VentureRole.objects.create(name='TestVentureRole',
+                                                       venture=v)
+        uid = CI.get_uid_by_content_object(self.venture_role)
+        self.venture_role_ci_id = CI.objects.create(
+            name='TestVentureRoleCI', uid=uid, type_id=5).pk
+
+        # create DataCenter and CI
+        self.data_center = DataCenter.objects.create(name='DC123')
+        uid = CI.get_uid_by_content_object(self.data_center)
+        self.data_center_ci_id = CI.objects.create(
+            name='TestDataCenterCI', uid=uid, type_id=9).pk
+
+        # create Network and CI
+        dc = DataCenter.objects.create(name='SomeDC')
+        self.network = Network.objects.create(name='TestNetwork',
+                                              address='192.168.56.1',
+                                              data_center=dc)
+        uid = CI.get_uid_by_content_object(self.network)
+        self.network_ci_id = CI.objects.create(
+            name='TestNetworkCI', uid=uid, type_id=8).pk
+
+        # create Device and CI
+        device_model = DeviceModel.objects.create(
+            name='SomeDeviceModel', type=DeviceType.rack_server.id)
+        self.device = Device.create(name='TestDevice', sn='sn123',
+                                    model=device_model)
+        uid = CI.get_uid_by_content_object(self.device)
+        self.device_ci_id = CI.objects.create(
+            name='TestDeviceCI', uid=uid, type_id=2).pk
+
+        # create Service and CI
+        bl = BusinessLine.objects.create(name='Some Business Line')
+        self.service = Service.objects.create(name='someservice.com',
+                                              external_key='abc123',
+                                              business_line=bl)
+        uid = CI.get_uid_by_content_object(self.service)
+        self.service_ci_id = CI.objects.create(
+            name='TestServiceCI', uid=uid, type_id=7).pk
+
+        # create BusinessLIne and CI
+        self.business_line = BusinessLine.objects.create(
+            name='TestBusinessLine')
+        uid = CI.get_uid_by_content_object(self.business_line)
+        self.business_line_ci_id = CI.objects.create(
+            name='TestBusinessLineCI', uid=uid, type_id=6).pk
+
+    def test_remove_venture(self):
+        self.venture.delete()
+        ci = None
+        try:
+            ci = CI.objects.get(pk=self.venture_ci_id)
+        except CI.DoesNotExist:
+            pass
+        self.assertEquals(ci, None)
+
+    def test_remove_venture_role(self):
+        self.venture_role.delete()
+        ci = None
+        try:
+            ci = CI.objects.get(pk=self.venture_role_ci_id)
+        except CI.DoesNotExist:
+            pass
+        self.assertEquals(ci, None)
+
+    def test_remove_datacenter(self):
+        self.data_center.delete()
+        ci = None
+        try:
+            ci = CI.objects.get(pk=self.data_center_ci_id)
+        except CI.DoesNotExist:
+            pass
+        self.assertEquals(ci, None)
+
+    def test_remove_network(self):
+        self.network.delete()
+        ci = None
+        try:
+            ci = CI.objects.get(pk=self.network_ci_id)
+        except CI.DoesNotExist:
+            pass
+        self.assertEquals(ci, None)
+
+    def test_remove_device(self):
+        self.device.delete()
+        ci = None
+        try:
+            ci = CI.objects.get(pk=self.device_ci_id)
+        except CI.DoesNotExist:
+            pass
+        self.assertEquals(ci, None)
+
+    def test_remove_service(self):
+        self.service.delete()
+        ci = None
+        try:
+            ci = CI.objects.get(pk=self.service_ci_id)
+        except CI.DoesNotExist:
+            pass
+        self.assertEquals(ci, None)
+
+    def test_remove_businessline(self):
+        self.business_line.delete()
+        ci = None
+        try:
+            ci = CI.objects.get(pk=self.business_line_ci_id)
+        except CI.DoesNotExist:
+            pass
+        self.assertEquals(ci, None)
+
+
 class JiraRssTest(TestCase):
     def setUp(self):
         settings.ISSUETRACKERS['JIRA'] = {'ENGINE': 'JIRA', 'USER': '',
@@ -337,6 +467,13 @@ _PATCHED_TICKETS_ENABLE_NO = False
 
 
 class OPRegisterTest(TestCase):
+    fixtures = [
+        '0_types.yaml',
+        '1_attributes.yaml',
+        '2_layers.yaml',
+        '3_prefixes.yaml'
+    ]
+
     """ OP Changes such as git change, attribute change, is immiediatelly sent
     to issue tracker as CHANGE ticket for logging purporses. Check this
     workflow here
@@ -356,13 +493,17 @@ class OPRegisterTest(TestCase):
         chg = CIChange.objects.get(type=CI_CHANGE_TYPES.CONF_GIT.id)
         self.assertEqual(chg.content_object, c)
         self.assertEqual(chg.external_key, '#123456')
-        self.assertEqual(chg.get_registration_type_display(), 'Change')
+        self.assertEqual(
+            chg.registration_type, CI_CHANGE_REGISTRATION_TYPES.OP)
         CIChange.objects.all().delete()
 
         #removing cichange remove cichangegit child too.
         self.assertEqual(CIChangeGit.objects.count(), 0)
 
-        # if change is registered before date of start, ticket is not registered
+        # if change is registered before date of start, and change type is GIT,
+        # then ticket remains WAITING
+        # forever. When date is changed, and signal is send to the model
+        # ticket is going to be registrated again.
         c = CIChangeGit()
         c.time = datetime.datetime(year=2012, month=1, day=1)
         c.changeset = 'testchangeset'
@@ -370,7 +511,95 @@ class OPRegisterTest(TestCase):
         chg = CIChange.objects.get(type=CI_CHANGE_TYPES.CONF_GIT.id)
         self.assertEqual(chg.content_object, c)
         self.assertEqual(chg.external_key, '')
-        self.assertEqual(chg.get_registration_type_display(), 'Not registered')
+        self.assertEqual(
+            chg.registration_type, CI_CHANGE_REGISTRATION_TYPES.WAITING.id)
+
+    @patch('ralph.cmdb.models_signals.OP_TEMPLATE', _PATCHED_OP_TEMPLATE)
+    @patch('ralph.cmdb.models_signals.OP_START_DATE', _PATCHED_OP_START_DATE)
+    @patch('ralph.cmdb.models_signals.OP_TICKETS_ENABLE',
+           _PATCHED_TICKETS_ENABLE_NO)
+    @patch('ralph.cmdb.models_common.USE_CELERY', _PATCHED_USE_CELERY)
+    def test_create_ci_generate_change(self):
+        # TICKETS REGISTRATION IN THIS TEST IS DISABLED.
+        # first case - automatic change
+        hostci = CI(name='s11401.dc2', uid='mm-1')
+        hostci.type_id = CI_TYPES.DEVICE.id
+        hostci.save()
+        # not registered, because not user - driven change
+        self.assertEqual(
+            set([(x.content_object.old_value,
+                x.content_object.new_value, x.content_object.field_name,
+                x.content_object.user_id, x.registration_type)
+                for x in CIChange.objects.all()]),
+            set([(u'None', u'Device', u'type', None,
+                CI_CHANGE_REGISTRATION_TYPES.NOT_REGISTERED.id),
+                (u'None', u'1', u'id', None,
+                CI_CHANGE_REGISTRATION_TYPES.NOT_REGISTERED.id)])
+        )
+        hostci.delete()
+        # second case - manual change
+        user = User.objects.create_user(
+            'john', 'lennon@thebeatles.com', 'johnpassword')
+
+        # john reigstered change, change should be at WAITING because
+        # registering is not enabled in config
+        hostci = CI(name='s11401.dc2', uid='mm-1')
+        hostci.type_id = CI_TYPES.DEVICE.id
+        hostci.save(user=user)
+        self.assertEqual(
+            set([(x.content_object.old_value,
+                x.content_object.new_value, x.content_object.field_name,
+                x.content_object.user_id, x.registration_type)
+                for x in CIChange.objects.all()]),
+            set([
+                (u'None', u'Device', u'type', 1,
+                    CI_CHANGE_REGISTRATION_TYPES.WAITING.id),
+                (u'None', u'1', u'id', 1,
+                    CI_CHANGE_REGISTRATION_TYPES.WAITING.id),
+                ])
+        )
+
+    @patch('ralph.cmdb.models_signals.OP_TEMPLATE', _PATCHED_OP_TEMPLATE)
+    @patch('ralph.cmdb.models_signals.OP_START_DATE', _PATCHED_OP_START_DATE)
+    @patch('ralph.cmdb.models_signals.OP_TICKETS_ENABLE',
+           _PATCHED_TICKETS_ENABLE)
+    @patch('ralph.cmdb.models_common.USE_CELERY', _PATCHED_USE_CELERY)
+    def test_create_ci_register_change(self):
+        # TICKETS REGISTRATION IN THIS TEST IS ENABLED
+        # first case - automatic change, should not be registered
+        hostci = CI(name='s11401.dc2', uid='mm-1')
+        hostci.type_id = CI_TYPES.DEVICE.id
+        hostci.save()
+        # not registered, because not user - driven change
+        self.assertEqual(
+            set([(x.content_object.old_value,
+                x.content_object.new_value, x.content_object.field_name,
+                x.content_object.user_id, x.registration_type)
+                for x in CIChange.objects.all()]),
+            set([(u'None', u'Device', u'type', None,
+                CI_CHANGE_REGISTRATION_TYPES.NOT_REGISTERED.id),
+                (u'None', u'1', u'id', None,
+                CI_CHANGE_REGISTRATION_TYPES.NOT_REGISTERED.id)])
+        )
+        hostci.delete()
+        # second case - manual change should be registered as ticket
+        user = User.objects.create_user(
+            'john', 'lennon@thebeatles.com', 'johnpassword')
+        hostci = CI(name='s11401.dc2', uid='mm-1')
+        hostci.type_id = CI_TYPES.DEVICE.id
+        hostci.save(user=user)
+        self.assertEqual(
+            set([(x.content_object.old_value,
+                x.content_object.new_value, x.content_object.field_name,
+                x.content_object.user_id, x.registration_type)
+                for x in CIChange.objects.all()]),
+            set([
+                (u'None', u'Device', u'type', 1,
+                    CI_CHANGE_REGISTRATION_TYPES.OP.id),
+                (u'None', u'1', u'id', 1,
+                    CI_CHANGE_REGISTRATION_TYPES.OP.id),
+                ])
+        )
 
     @patch('ralph.cmdb.models_signals.OP_TEMPLATE', _PATCHED_OP_TEMPLATE)
     @patch('ralph.cmdb.models_signals.OP_START_DATE', _PATCHED_OP_START_DATE)
@@ -378,16 +607,20 @@ class OPRegisterTest(TestCase):
            _PATCHED_TICKETS_ENABLE_NO)
     @patch('ralph.cmdb.models_common.USE_CELERY', _PATCHED_USE_CELERY)
     def test_dont_create_issues(self):
-        # the date is ok, but tickets enabled is set to no.  Dont register ticket.
+        # The date is ok, but tickets enabled is set to no.
+        # Dont register ticket.
         c = CIChangeGit()
         c.time = datetime.datetime(year=2012, month=1, day=2)
         c.changeset = 'testchangeset'
         c.save()
         chg = CIChange.objects.get(type=CI_CHANGE_TYPES.CONF_GIT.id)
-        # yeah, ticket is not registered, because disabled in config.
+        # yeah, ticket is waiting, but not going to register because disabled
+        # in config.
         self.assertEqual(chg.content_object, c)
         self.assertEqual(chg.external_key, '')
-        self.assertEqual(chg.get_registration_type_display(), 'Not registered')
+        self.assertEqual(
+            chg.registration_type, CI_CHANGE_REGISTRATION_TYPES.WAITING.id)
+
 
 DEVICE_NAME = 'SimpleDevice'
 DEVICE_IP = '10.0.0.1'
@@ -404,6 +637,13 @@ DATACENTER = 'dc1'
 
 
 class CIFormsTest(TestCase):
+    fixtures = [
+        '0_types.yaml',
+        '1_attributes.yaml',
+        '2_layers.yaml',
+        '3_prefixes.yaml'
+    ]
+
     def setUp(self):
         login = 'ralph'
         password = 'ralph'
@@ -441,16 +681,28 @@ class CIFormsTest(TestCase):
         self.citype = CIType(name='xxx')
         self.citype.save()
 
-    def add_ci(self, name='CI'):
+    def add_ci(self, name='CI', type=1):
         ci_add_url = '/cmdb/add/'
         attrs = {
             'base-layers': 1,
             'base-name': name,
             'base-state': 2,
             'base-status': 2,
-            'base-type': 1
+            'base-type': type,
         }
         return self.client.post(ci_add_url, attrs)
+
+    def edit_ci(self, ci, custom_attrs={}):
+        ci_edit_url = '/cmdb/ci/edit/{}'.format(ci.id)
+        attrs = {
+            'base-name': ci.name,
+            'base-type': 1,
+            'base-state': 2,
+            'base-status': 2,
+            'base-layers': 1,
+        }
+        attrs.update(custom_attrs)
+        return self.client.post(ci_edit_url, attrs)
 
     def add_ci_relation(self, parent_ci, child_ci, relation_type,
                         relation_kind):
@@ -658,3 +910,67 @@ class CIFormsTest(TestCase):
 
         cycle = CI.get_cycle()
         self.assertEqual(cycle, [1, 2, 3])
+
+    def test_ci_custom_fields(self):
+        # Create CI by the form, and edit CI  with completion of custom fields
+        # (type - float) for CI type - device
+        response_ci_application = self.add_ci(name='CI_application', type=1)
+        self.assertEqual(response_ci_application.status_code, 302)
+        ci_application = CI.objects.get(name='CI_application')
+        response_ci_application_edit = self.edit_ci(
+            ci_application, custom_attrs={
+                'attr-attribute_float_4': 12345
+            }
+        )
+        self.assertEqual(response_ci_application_edit.status_code, 302)
+        ci_attrvalue = ci_application.ciattributevalue_set.all()
+        values = {}
+        values['float'] = [x.value_float_id for x in ci_attrvalue
+                           if x.value_float]
+        ci_values = CIValueFloat.objects.get(id__in=values['float'])
+        self.assertEqual(ci_values.value, 12345)
+
+        # Create CI by the form, and edit CI  with completion of custom fields
+        # (type - date and float) for CI type - device
+        response_ci_device = self.add_ci(name='CI_device', type=2)
+        self.assertEqual(response_ci_device.status_code, 302)
+        ci_device = CI.objects.get(name='CI_device')
+        response_ci_device_edit = self.edit_ci(
+            ci_device, custom_attrs={
+                'attr-attribute_date_3': time.strftime('%Y-%m-%d'),
+                'attr-attribute_float_4': 666,
+            }
+        )
+        self.assertEqual(response_ci_device_edit.status_code, 302)
+        ci_attrvalue = ci_device.ciattributevalue_set.all()
+        values = {}
+        values['float'] = [x.value_float_id for x in ci_attrvalue
+                           if x.value_float]
+        values['date'] = [x.value_date_id for x in ci_attrvalue
+                          if x.value_date]
+        ci_float_value = CIValueFloat.objects.get(id__in=values['float'])
+        ci_date_value = CIValueDate.objects.get(id__in=values['date'])
+        self.assertEqual(ci_date_value.value.strftime('%Y-%m-%d'),
+                         time.strftime('%Y-%m-%d'))
+        self.assertEqual(ci_float_value.value, 666)
+
+        # Create CI by the form, and edit CI  with completion of custom fields
+        # (type - string) for CI type - procedure
+        response_ci_device = self.add_ci(name='CI_procedure', type=3)
+        self.assertEqual(response_ci_device.status_code, 302)
+        ci_device = CI.objects.get(name='CI_procedure')
+        response_ci_device_edit = self.edit_ci(
+            ci_device, custom_attrs={
+                'attr-attribute_string_1': 'http://doc.local',
+                'attr-attribute_string_2': 'name-test',
+            }
+        )
+        self.assertEqual(response_ci_device_edit.status_code, 302)
+        ci_attrvalue = ci_device.ciattributevalue_set.all()
+        values = {}
+        values['string'] = [x.value_string_id for x in ci_attrvalue
+                            if x.value_string]
+        ci_string_value = CIValueString.objects.filter(id__in=values['string'])
+        val = [x.value for x in ci_string_value]
+        val.sort()
+        self.assertListEqual(val, ['http://doc.local', 'name-test'])

@@ -1,6 +1,45 @@
 Change Log
 ----------
 
+1.1.7
+~~~~~
+
+Released on November 8, 2012.
+
+* Stability improved for discovering SSG firewalls.
+
+* ``ralph_dhcp_agent.py`` is now compatible with Python 2.4.
+
+* Uses the forked ``django-powerdns-dnssec`` package for improved PowerDNS
+  support.
+
+* Xen discovery support fixed (memory was reported in wrong units)
+
+* IPMI discovery improved for Sun and Supermicro servers.
+
+* Minor CMDB improvements.
+
+* Minor bugfixes.
+
+1.1.6
+~~~~~
+
+Released on October 29, 2012.
+
+* CMDB fixes: owners not required when saving a CI, cycles in relationships are
+  detected, only manual changes generate tickets in external trackers
+
+* fixed `issue #183 <https://github.com/allegro/ralph/issues/183>`_: "Unknown"
+  rack unsupported
+
+* device admin fixes: model validatation, saving uses priorities
+
+* ``paramiko`` library used for SSH connectivity instead of the ``ssh`` fork
+
+* minor device report fixes
+
+* unit tests improved
+
 1.1.5
 ~~~~~
 
