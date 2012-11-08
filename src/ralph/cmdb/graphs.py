@@ -26,6 +26,8 @@ class SearchImpactForm(forms.Form):
     )
 
 total_tree = dict()
+
+
 def search_tree(tree, root=CI.objects.filter(name='DC2')[0]):
     models_to_display = [
         x.id for x in DeviceModel.objects.filter(type__in=[
@@ -39,8 +41,8 @@ def search_tree(tree, root=CI.objects.filter(name='DC2')[0]):
             DeviceType.virtual_server.id
         ])]
     relations = [dict(
-        parent=x.parent.id, child=x.child.id, parent_name=x.parent.name, child_name=x.child.name,
-        )
+        parent=x.parent.id, child=x.child.id, parent_name=x.parent.name,
+        child_name=x.child.name)
         for x in CIRelation.objects.filter(parent=root, child__type=CI_TYPES.DEVICE.id) if
         x.child.content_object.model and x.child.content_object.model.id in models_to_display]
 
@@ -52,25 +54,24 @@ def search_tree(tree, root=CI.objects.filter(name='DC2')[0]):
         search_tree(root=CI.objects.get(id=x.get('child')), tree=new)
 
 
-
 class Graphs(BaseCMDBView):
     template_name = 'cmdb/graphs.html'
 
-    output = ''
+    rows = ''
 
     def get_context_data(self, **kwargs):
         ret = super(BaseCMDBView, self).get_context_data(**kwargs)
         form = SearchImpactForm(initial=self.get_initial())
         ret.update(dict(
             form=form,
-            output=self.output
+            rows=self.rows
         ))
         return ret
 
     def get_initial(self):
         return dict(
             depth=3,
-            ci=3313,
+            ci=192010,
         )
 
     @staticmethod
@@ -85,8 +86,6 @@ class Graphs(BaseCMDBView):
             mimetype='application/json',
         )
 
-
-
     @staticmethod
     def get_ajax2(self):
         root = CI.objects.filter(name='DC2')[0]
@@ -94,31 +93,34 @@ class Graphs(BaseCMDBView):
             x.id for x in DeviceModel.objects.filter(type__in=[DeviceType.rack.id])
         ]
         relations = [dict(
-            parent=x.parent.id, child=x.child.id, parent_name=x.parent.name, child_name=x.child.name,
-            )
-            for x in CIRelation.objects.filter(parent=root, child__type=CI_TYPES.DEVICE.id) if
-            x.child.content_object.model and x.child.content_object.model.id in models_to_display]
+            parent=x.parent.id, child=x.child.id, parent_name=x.parent.name,
+            child_name=x.child.name)
+            for x in CIRelation.objects.filter(
+                parent=root, child__type=CI_TYPES.DEVICE.id) if
+            x.child.content_object.model and
+            x.child.content_object.model.id in models_to_display]
         nodes = dict()
         for x in relations:
             nodes[x.get('parent')] = x.get('parent_name')
             nodes[x.get('child')] = x.get('child_name')
 
         response_dict = dict(
-                nodes=nodes.items(), relations=relations)
+            nodes=nodes.items(), relations=relations
+        )
         return HttpResponse(
             simplejson.dumps(response_dict),
             mimetype='application/json',
         )
 
-
     def get(self, *args, **kwargs):
         ci_id = self.request.GET.get('ci')
         depth = self.request.GET.get('depth')
         if ci_id and depth:
-            pass
-            #self.calculate_dependencies(ci_id, depth)
-            #self.find(ci_id)
-        self.output = 'output'
+            i = ImpactCalculator()
+            st, pre = i.find_affected_nodes(int(ci_id), depth)
+            self.rows = [CI.objects.get(pk=x) for x in pre]
+        else:
+            self.rows = []
         return super(BaseCMDBView, self).get(*args, **kwargs)
 
 
@@ -134,15 +136,17 @@ class ImpactCalculator(object):
         self.build_graph()
 
     def find_affected_nodes(self, ci_id, depth):
-        st, pre = breadth_first_search(self.graph, ci_id)
-        return pre
+        try:
+            st, pre = breadth_first_search(self.graph, ci_id)
+        except KeyError:
+            return []
+        return (st, pre)
 
     def build_graph(self):
         allci = CI.objects.all().values('pk')
         relations = CIRelation.objects.filter(
             type__in=self.relation_types
         ).values('parent_id', 'child_id')
-
         nodes = [x['pk'] for x in allci]
         edges = [(x['parent_id'], x['child_id']) for x in relations]
         self.graph = pygraph.classes.digraph.digraph()
