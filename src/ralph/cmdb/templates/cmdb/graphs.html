@@ -13,7 +13,7 @@
     <script type="text/javascript">
 
         function main(){
-            var radius = 960 / 2;
+            var radius =12860 / 2;
              
              var tree = d3.layout.tree()
                  .size([360, radius - 120])
@@ -26,9 +26,9 @@
                  .attr("width", radius * 2)
                  .attr("height", radius * 2 - 150)
                .append("g")
-                 .attr("transform", "translate(" + radius + "," + radius + ")");
+                 .attr("transform", "translate(" + radius/2 + "," + radius/2 + ")");
              
-              d3.json("../data/flare.json", function(json) {
+             d3.json("/cmdb/graphs_ajax", function(json) {
                var nodes = tree.nodes(json);
              
                var link = vis.selectAll("path.link")
@@ -57,7 +57,8 @@
         function mainer() {
             var graph = Viva.Graph.graph();
             $.get("/cmdb/graphs_ajax", function(data)
-                    {
+                {
+                console.log(data);
                         for (var i=0; i<data.nodes.length; i++)
                         {
                            graph.addNode(data.nodes[i][0], data.nodes[i][1]);
@@ -95,18 +96,36 @@
 {% endblock %}
 
 {% block extra_headers %}
+<style type='text/css'>
+  .node circle {
+      fill: #fff;
+        stroke: steelblue;
+          stroke-width: 1.5px;
+        }
+
+        .node {
+          font: 10px sans-serif;
+          }
+
+          .link {
+            fill: none;
+              stroke: #ccc;
+                stroke-width: 1.5px;
+                }
+
+</style>
     {{ block.super }}
 {% endblock %}
 
 {% block contentarea %}
     {{ block.super }}
 
-    {% form_horizontal form=form method="get" action="/cmdb/graphs" title='Formularz' %}
+    {# form_horizontal form=form method="get" action="/cmdb/graphs" title='Formularz' #}
     <hr>
     <table class="table table-condensed">
         {{ output }}
     </table>
 
-    <div id='chart' width='300' height='300' onload='mainer()'>
+    <div id='chart' style='position: absolute; top: 0px; margin-top:0px' width='800' height='800' onload='mainer()'>
     </div>
 {% endblock %}

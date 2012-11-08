@@ -24,6 +24,24 @@ class SearchImpactForm(forms.Form):
         plugin_options={'minLength' : 3}
     )
 
+total_tree = dict()
+def search_tree(tree, root=CI.objects.filter(name='DC2')[0]):
+    models_to_display = [
+        x.id for x in DeviceModel.objects.filter()] #type__in=[DeviceType.switch.id,DeviceType.router.id,DeviceType.management.id,DeviceType.storage.id,DeviceType.rack.id, DeviceType.blade_server.id, DeviceType.data_center.id, DeviceType.virtual_server.id]) ]
+    relations = [dict(
+        parent=x.parent.id, child=x.child.id, parent_name=x.parent.name, child_name=x.child.name,
+        )
+        for x in CIRelation.objects.filter(parent=root, child__type=CI_TYPES.DEVICE.id) if
+        x.child.content_object.model and x.child.content_object.model.id in models_to_display]
+
+    tree['name'] = root.name
+    tree['children'] = []
+    for x in relations:
+        new = dict(name=x.get('child'), children=[])
+        tree['children'].append(new)
+        search_tree(root=CI.objects.get(id=x.get('child')), tree=new)
+
+
 
 class Graphs(BaseCMDBView):
     template_name = 'cmdb/graphs.html'
@@ -47,6 +65,20 @@ class Graphs(BaseCMDBView):
 
     @staticmethod
     def get_ajax(self):
+        root = CI.objects.filter(name='DC2')[0]
+        search_tree(total_tree, root)
+
+        response_dict = total_tree
+
+        return HttpResponse(
+            simplejson.dumps(response_dict),
+            mimetype='application/json',
+        )
+
+
+
+    @staticmethod
+    def get_ajax2(self):
         root = CI.objects.filter(name='DC2')[0]
         models_to_display = [
             x.id for x in DeviceModel.objects.filter(type__in=[DeviceType.rack.id])
@@ -98,9 +130,7 @@ class ImpactCalculator(object):
     def build_graph(self):
         allci = CI.objects.all().values('pk')
         relations = CIRelation.objects.filter(
-            type__in=[
-                self.relation_types
-            ]
+            type__in=self.relation_types 
         ).values('parent_id', 'child_id')
 
         nodes = [x['pk'] for x in allci]
