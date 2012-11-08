@@ -63,8 +63,8 @@ class AbstractNetwork(db.Model):
         null=True, blank=True, default=None,
     )
     queue = db.ForeignKey(
-        "DiscoveryQueue", verbose_name=_("discovery queue"), max_length=16,
-        null=True, blank=True, default=None, on_delete=db.SET_NULL,
+        "DiscoveryQueue", verbose_name=_("discovery queue"), null=True,
+        blank=True, default=None, on_delete=db.SET_NULL,
     )
     rack = db.CharField(
         _("rack"), max_length=16, null=True, blank=True, default=None,
