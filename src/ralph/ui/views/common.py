@@ -18,7 +18,7 @@ from django.views.generic import UpdateView, DetailView, TemplateView
 from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Language, TagStem
 from bob.menu import MenuItem
-from powerdns.models import Record, Domain
+from powerdns.models import Record
 
 from ralph.account.models import Perm
 from ralph.business.models import RolePropertyValue
@@ -466,20 +466,16 @@ class Addresses(DeviceDetailView):
             return HttpResponseForbidden(
                 "You don't have permission to edit this."
             )
-        dns_records = list(self.get_dns())
+        dns_records = self.get_dns()
         self.form = DNSRecordsForm(dns_records, self.request.POST)
         def fill_record(prefix, record):
             for label in ('name', 'type', 'content',
                           'ttl', 'prio', 'type'):
                 setattr(record, label,
                         self.form.cleaned_data[prefix + label] or None)
-            domains = [d for d in Domain.objects.all() if
-                       record.name.endswith(d.name)]
-            domains.sort(key=lambda d: -len(d.name))
-            if domains:
-                record.domain = domains[0]
+                record.domain = self.form.get_domain(record.name)
         if self.form.is_valid():
-            for record in dns_records:
+            for record in self.form_records:
                 prefix = 'dns_%d_' % record.id
                 record_type = self.form.cleaned_data.get(prefix + 'type')
                 if record_type:
@@ -499,6 +495,8 @@ class Addresses(DeviceDetailView):
                                  (record.type, record.name))
             messages.success(self.request, "DNS records updated.")
             return HttpResponseRedirect(self.request.path)
+        else:
+            messages.error(self.request, "There are errors in the form.")
         return self.get(*args, **kwargs)
 
     def get_dhcp(self):
