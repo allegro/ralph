@@ -11,6 +11,7 @@ from django import forms
 from lck.django.choices import Choices
 from lck.django.common.models import MACAddressField
 from bob.forms import AutocompleteWidget
+from powerdns.models import Domain
 
 from ralph.business.models import Venture, RoleProperty, VentureRole
 from ralph.deployment.models import Deployment
@@ -108,6 +109,7 @@ def _dns_type_field(label=None, initial=None, widget=None, required=True):
 class DNSRecordsForm(forms.Form):
     def __init__(self, records, *args, **kwargs):
         super(DNSRecordsForm, self).__init__(*args, **kwargs)
+        self.records = list(records)
         fields =[
             ('name', forms.CharField),
             ('type', _dns_type_field),
@@ -118,18 +120,36 @@ class DNSRecordsForm(forms.Form):
         def _add_fields(prefix, record):
             for label, field_class in fields:
                 initial = getattr(record, label, None)
-                field = field_class(label=label, initial=initial, required=False,
+                attrs = dict(
+                    label=label,
+                    initial=initial,
+                    required=False,
                     widget=forms.TextInput(attrs={
                         'class': 'span12',
                         'placeholder': label,
-                    }))
+                    })
+                )
+                if label == 'name':
+                    attrs.update(validators=[self.validate_domain])
+                field = field_class(**attrs)
                 field.initial = initial
                 field_id = prefix + label
                 self.fields[field_id] = field
-        for record in records:
+        for record in self.records:
             prefix = 'dns_%d_' % record.id
             _add_fields(prefix, record)
         _add_fields('dns_new_', None)
+
+    def get_domain(self, name):
+        domains = [d for d in Domain.objects.all() if
+                   name.endswith(d.name)]
+        domains.sort(key=lambda d: -len(d.name))
+        if domains:
+            return domains[0]
+
+    def validate_domain(self, name):
+        if name and not self.get_domain(name):
+                raise forms.ValidationError("No such domain")
 
 
 class VentureFilterForm(forms.Form):
