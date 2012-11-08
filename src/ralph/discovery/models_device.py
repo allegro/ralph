@@ -467,7 +467,7 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
         if self.position:
             return self.position
         if self.chassis_position is None:
-            return None
+            return ''
         if self.chassis_position > 2000:
             pos = '%dB' % (self.chassis_position - 2000)
         elif self.chassis_position > 1000:
