@@ -342,66 +342,34 @@ class AutoCIRemoveTest(TestCase):
 
     def test_remove_venture(self):
         self.venture.delete()
-        ci = None
-        try:
-            ci = CI.objects.get(pk=self.venture_ci_id)
-        except CI.DoesNotExist:
-            pass
-        self.assertEquals(ci, None)
+        self.assertEqual(CI.objects.filter(pk=self.venture_ci_id).count(), 0)
 
     def test_remove_venture_role(self):
         self.venture_role.delete()
-        ci = None
-        try:
-            ci = CI.objects.get(pk=self.venture_role_ci_id)
-        except CI.DoesNotExist:
-            pass
-        self.assertEquals(ci, None)
+        self.assertEqual(
+            CI.objects.filter(pk=self.venture_role_ci_id).count(), 0)
 
     def test_remove_datacenter(self):
         self.data_center.delete()
-        ci = None
-        try:
-            ci = CI.objects.get(pk=self.data_center_ci_id)
-        except CI.DoesNotExist:
-            pass
-        self.assertEquals(ci, None)
+        self.assertEqual(
+            CI.objects.filter(pk=self.data_center_ci_id).count(), 0)
 
     def test_remove_network(self):
         self.network.delete()
-        ci = None
-        try:
-            ci = CI.objects.get(pk=self.network_ci_id)
-        except CI.DoesNotExist:
-            pass
-        self.assertEquals(ci, None)
+        self.assertEqual(CI.objects.filter(pk=self.network_ci_id).count(), 0)
 
     def test_remove_device(self):
         self.device.delete()
-        ci = None
-        try:
-            ci = CI.objects.get(pk=self.device_ci_id)
-        except CI.DoesNotExist:
-            pass
-        self.assertEquals(ci, None)
+        self.assertEqual(CI.objects.filter(pk=self.device_ci_id).count(), 0)
 
     def test_remove_service(self):
         self.service.delete()
-        ci = None
-        try:
-            ci = CI.objects.get(pk=self.service_ci_id)
-        except CI.DoesNotExist:
-            pass
-        self.assertEquals(ci, None)
+        self.assertEqual(CI.objects.filter(pk=self.service_ci_id).count(), 0)
 
     def test_remove_businessline(self):
         self.business_line.delete()
-        ci = None
-        try:
-            ci = CI.objects.get(pk=self.business_line_ci_id)
-        except CI.DoesNotExist:
-            pass
-        self.assertEquals(ci, None)
+        self.assertEqual(
+            CI.objects.filter(pk=self.business_line_ci_id).count(), 0)
 
 
 class JiraRssTest(TestCase):
