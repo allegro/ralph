@@ -129,7 +129,7 @@ class DNSRecordsForm(forms.Form):
         for record in records:
             prefix = 'dns_%d_' % record.id
             _add_fields(prefix, record)
-        #_add_fields('dns_new_', None)
+        _add_fields('dns_new_', None)
 
 
 class VentureFilterForm(forms.Form):
