@@ -17,14 +17,15 @@ from bob.menu import MenuItem
 from dj.choices import Choices
 
 from ralph.account.models import Perm
-from ralph.deployment.models import DeploymentStatus
-from ralph.ui.views.common import Base, DeviceDetailView
-from ralph.ui.views.devices import DEVICE_SORT_COLUMNS
-from ralph.ui.forms import DateRangeForm, MarginsReportForm
 from ralph.business.models import Venture
+from ralph.cmdb.models_ci import CI, CIRelation, CI_STATE_TYPES, CI_RELATION_TYPES
+from ralph.deployment.models import DeploymentStatus
 from ralph.discovery.models_device import MarginKind, DeviceType
 from ralph.discovery.models_history import HistoryCost
+from ralph.ui.forms import DateRangeForm, MarginsReportForm
 from ralph.ui.reports import get_total_cost, get_total_count, get_total_cores, get_total_virtual_cores
+from ralph.ui.views.common import Base, DeviceDetailView
+from ralph.ui.views.devices import DEVICE_SORT_COLUMNS
 from ralph.util import csvutil
 
 
@@ -148,10 +149,21 @@ class SidebarReports(object):
     def get_context_data(self, **kwargs):
         context = super(SidebarReports, self).get_context_data(**kwargs)
         sidebar_items = [
-            MenuItem("Ventures", fugue_icon='fugue-store',
-                     view_name='reports_ventures'),
-            MenuItem("Margins", fugue_icon='fugue-piggy-bank',
-                     view_name='reports_margins'),
+            MenuItem(
+                "Ventures",
+                fugue_icon='fugue-store',
+                view_name='reports_ventures'
+            ),
+            MenuItem(
+                "Services",
+                fugue_icon='fugue-disc-share',
+                view_name='reports_services'
+            ),
+            MenuItem(
+                "Margins",
+                fugue_icon='fugue-piggy-bank',
+                view_name='reports_margins'
+            ),
         ]
         context.update({
             'sidebar_items': sidebar_items,
@@ -342,6 +354,48 @@ class ReportVentures(SidebarReports, Base):
         })
         return context
 
+
+class ReportServices(SidebarReports, Base):
+    template_name = 'ui/report_services.html'
+    subsection = 'services'
+
+    def get(self, *args, **kwargs):
+        profile = self.request.user.get_profile()
+        has_perm = profile.has_perm
+        if not has_perm(Perm.read_device_info_reports):
+            return HttpResponseForbidden(
+                "You don't have permission to see reports.")
+
+
+        services = CI.objects.filter(type=7)
+        relations = CIRelation.objects.filter(child__type=7, parent__type=4)
+
+        self.serv_with_ven = []
+        for relation in relations:
+            child = relation.child
+            child.state = CI_STATE_TYPES.NameFromID(child.state)
+            child.venture_id = relation.parent.id
+            child.venture = relation.parent.name
+            child.relation_type = CI_RELATION_TYPES.NameFromID(relation.type)
+            child.relation_type_id = relation.type
+            self.serv_with_ven.append(relation.child)
+
+        self.serv_without_ven = []
+        for service in services:
+            if service not in self.serv_with_ven:
+                service.state = CI_STATE_TYPES.NameFromID(service.state)
+                self.serv_without_ven.append(service)
+
+        return super(ReportServices, self).get(*args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(ReportServices, self).get_context_data(**kwargs)
+        context.update({
+            'serv_with_ven': self.serv_with_ven,
+            'serv_without_ven': self.serv_without_ven,
+            'profile': self.request.user.get_profile(),
+            })
+        return context
 
 class ReportDeviceList(object):
     template_name = 'ui/device_report_list.html'
