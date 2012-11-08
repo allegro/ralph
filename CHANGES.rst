@@ -4,7 +4,7 @@ Change Log
 1.1.7
 ~~~~~
 
-Released on November 6, 2012.
+Released on November 8, 2012.
 
 * Stability improved for discovering SSG firewalls.
 
