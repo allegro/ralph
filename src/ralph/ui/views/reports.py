@@ -365,11 +365,8 @@ class ReportServices(SidebarReports, Base):
         if not has_perm(Perm.read_device_info_reports):
             return HttpResponseForbidden(
                 "You don't have permission to see reports.")
-
-
         services = CI.objects.filter(type=7)
         relations = CIRelation.objects.filter(child__type=7, parent__type=4)
-
         self.serv_with_ven = []
         for relation in relations:
             child = relation.child
@@ -379,13 +376,11 @@ class ReportServices(SidebarReports, Base):
             child.relation_type = CI_RELATION_TYPES.NameFromID(relation.type)
             child.relation_type_id = relation.type
             self.serv_with_ven.append(relation.child)
-
         self.serv_without_ven = []
         for service in services:
             if service not in self.serv_with_ven:
                 service.state = CI_STATE_TYPES.NameFromID(service.state)
                 self.serv_without_ven.append(service)
-
         return super(ReportServices, self).get(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
