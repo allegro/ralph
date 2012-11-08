@@ -111,27 +111,7 @@ def get_device_virtuals_price(device):
     return price
 
 
-def get_device_virtual_cpu_price(device):
-    """
-    Calculate the price of a single virtual cpu for virtual servers inside.
-    """
-
-    cpu_price = get_device_cpu_price(device)
-    total_virtual_cpus = Processor.objects.filter(
-        device__parent=device,
-        device__model__type=DeviceType.virtual_server.id).count()
-    if not total_virtual_cpus:
-        return 0
-    return (cpu_price or 0) / total_virtual_cpus
-
-
 def get_device_cpu_price(device):
-    if (device.parent and device.model and
-        device.model.type == DeviceType.virtual_server.id):
-        # Virtual servers count CPU price based on the price of the hypervisor
-        total_cpus = device.processor_set.count()
-        return get_device_virtual_cpu_price(device.parent) * total_cpus
-    # Non-virtual servers just sum the prices of individual CPUs
     price = math.fsum(cpu.get_price() for cpu in device.processor_set.all())
     if not price and device.model and device.model.type in {
             DeviceType.rack_server.id, DeviceType.blade_server.id}:
@@ -269,7 +249,7 @@ def device_update_cached(device):
             stack.append(d)
     devices.reverse()   # Do the children before their parent.
     for d in devices:
-        d.name = device.get_name()
+        d.name = d.get_name()
         d.cached_price = get_device_price(d)
         d.cached_cost = get_device_cost(d)
         d.save()
@@ -333,34 +313,22 @@ def details_dev(dev, purchase_only=False):
 
 def details_cpu(dev, purchase_only=False):
     has_cpu = False
-    if (dev.parent and dev.model and
-        dev.model.type == DeviceType.virtual_server.id):
-        cpu_price = get_device_virtual_cpu_price(dev.parent)
-        for cpu in dev.processor_set.all():
-            has_cpu = True
-            yield {
-                'label': cpu.label,
-                'price': cpu_price,
-                'model_name': 'Virtual CPU',
-                'icon': 'fugue-processor',
-            }
-    else:
-        for cpu in dev.processor_set.all():
-            has_cpu = True
-            speed = cpu.model.speed if (cpu.model and
-                                        cpu.model.speed) else cpu.speed
-            yield {
-                'label': cpu.label,
-                'model': cpu.model,
-                'size': '%d core(s)' % cpu.get_cores(),
-                'speed': '%d Mhz' % speed if speed else None,
-                'price': cpu.get_price(),
-            }
+    for cpu in dev.processor_set.all():
+        has_cpu = True
+        speed = cpu.model.speed if (cpu.model and
+                                    cpu.model.speed) else cpu.speed
+        yield {
+            'label': cpu.label,
+            'model': cpu.model,
+            'size': '%d core(s)' % cpu.get_cores(),
+            'speed': '%d Mhz' % speed if speed else None,
+            'price': cpu.get_price(),
+        }
     if purchase_only:
         return
-    if (not has_cpu and dev.model and
-        dev.model.type in (DeviceType.blade_server.id,
-        DeviceType.rack_server.id, DeviceType.virtual_server.id)):
+    if not has_cpu and dev.model and dev.model.type in (
+        DeviceType.blade_server.id, DeviceType.rack_server.id,
+        DeviceType.virtual_server.id):
         try:
             os = OperatingSystem.objects.get(device=dev)
             group = ComponentModelGroup.objects.get(name='OS Detected CPU')
@@ -370,8 +338,7 @@ def details_cpu(dev, purchase_only=False):
                     'price': group.price,
                     'icon': 'fugue-processor',
                 }
-        except (OperatingSystem.DoesNotExist,
-                ComponentModelGroup.DoesNotExist):
+        except (OperatingSystem.DoesNotExist, ComponentModelGroup.DoesNotExist):
             try:
                 group = ComponentModelGroup.objects.get(name='Default CPU')
             except ComponentModelGroup.DoesNotExist:

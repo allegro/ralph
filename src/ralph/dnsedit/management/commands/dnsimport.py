@@ -12,8 +12,6 @@ import dns.zone
 import dns.rdatatype
 
 from django.core.management.base import BaseCommand
-from django.conf import settings
-
 from powerdns.models import Domain, Record
 
 
@@ -23,9 +21,16 @@ class Command(BaseCommand):
     help = textwrap.dedent(__doc__).strip()
     requires_model_validation = True
 
-    def handle(self, filename, *args, **options):
+    def handle(self, *args, **options):
+        for filename in args:
+            self.handle_single(filename)
+
+    def handle_single(self, filename):
+        print('Importing DNS records from {}...'.format(filename))
         zone = dns.zone.from_file(filename)
-        domain = Domain(name=str(zone.origin).strip('.'), type='MASTER')
+        domain, _ = Domain.objects.get_or_create(
+            name=str(zone.origin).strip('.'), type='MASTER',
+        )
         domain.save()
         for entry in zone:
             node = zone[entry]
