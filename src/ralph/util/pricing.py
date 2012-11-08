@@ -110,26 +110,7 @@ def get_device_virtuals_price(device):
     return price
 
 
-def get_device_virtual_cpu_price(device):
-    """Calculate the price of a single virtual cpu for virtual servers inside."""
-
-    cpu_price = get_device_cpu_price(device)
-    total_virtual_cpus = Processor.objects.filter(
-            device__parent=device,
-            device__model__type=DeviceType.virtual_server.id
-        ).count()
-    if not total_virtual_cpus:
-        return 0
-    return (cpu_price or 0) / total_virtual_cpus
-
-
 def get_device_cpu_price(device):
-    if (device.parent and device.model and
-        device.model.type == DeviceType.virtual_server.id):
-        # Virtual servers count CPU price based on the price of the hypervisor
-        total_cpus = device.processor_set.count()
-        return get_device_virtual_cpu_price(device.parent) * total_cpus
-    # Non-virtual servers just sum the prices of individual CPUs
     price = math.fsum(cpu.get_price() for cpu in device.processor_set.all())
     if not price and device.model and device.model.type in {
             DeviceType.rack_server.id, DeviceType.blade_server.id}:
@@ -328,28 +309,17 @@ def details_dev(dev, purchase_only=False):
 
 def details_cpu(dev, purchase_only=False):
     has_cpu = False
-    if dev.parent and dev.model and dev.model.type == DeviceType.virtual_server.id:
-        cpu_price = get_device_virtual_cpu_price(dev.parent)
-        for cpu in dev.processor_set.all():
-            has_cpu = True
-            yield {
-                'label': cpu.label,
-                'price': cpu_price,
-                'model_name': 'Virtual CPU',
-                'icon': 'fugue-processor',
-            }
-    else:
-        for cpu in dev.processor_set.all():
-            has_cpu = True
-            speed = cpu.model.speed if (cpu.model and
-                                        cpu.model.speed) else cpu.speed
-            yield {
-                'label': cpu.label,
-                'model': cpu.model,
-                'size': '%d core(s)' % cpu.get_cores(),
-                'speed': '%d Mhz' % speed if speed else None,
-                'price': cpu.get_price(),
-            }
+    for cpu in dev.processor_set.all():
+        has_cpu = True
+        speed = cpu.model.speed if (cpu.model and
+                                    cpu.model.speed) else cpu.speed
+        yield {
+            'label': cpu.label,
+            'model': cpu.model,
+            'size': '%d core(s)' % cpu.get_cores(),
+            'speed': '%d Mhz' % speed if speed else None,
+            'price': cpu.get_price(),
+        }
     if purchase_only:
         return
     if not has_cpu and dev.model and dev.model.type in (
