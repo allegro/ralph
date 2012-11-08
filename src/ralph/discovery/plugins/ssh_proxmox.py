@@ -10,7 +10,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import os
-import ssh as paramiko
+import paramiko
 import logging
 import json
 
@@ -66,6 +66,8 @@ def _add_virtual_machine(ssh, vmid, parent, master, storages):
     name = 'unknown'
     for line in lines:
         line = line.strip()
+        if line.startswith('#'):
+            continue
         key, value = line.split(':', 1)
         if key.startswith('vlan'):
             lan_model, lan_mac = value.split('=', 1)
@@ -251,9 +253,9 @@ def _add_cluster_member(ssh, ip):
 def run_ssh_proxmox(ip):
     ssh = _connect_ssh(ip)
     try:
-        for file_name in ('/etc/pve/cluster.cfg', '/etc/pve/cluster.conf',
-                          '/etc/pve/storage.cfg'):
-            stdin, stdout, stderr = ssh.exec_command('cat "%s"' % file_name)
+        for command in ('cat /etc/pve/cluster.cfg', 'cat /etc/pve/cluster.conf',
+                          'cat /etc/pve/storage.cfg', 'pvecm help'):
+            stdin, stdout, stderr = ssh.exec_command(command)
             data = stdout.read()
             if data != '':
                 break
