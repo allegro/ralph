@@ -5,9 +5,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from django.contrib.auth.models import User
 from django.test import TestCase
-from django.test.client import Client
 from ralph.business.models import Venture, VentureRole
 from ralph.discovery.models import Device, DeviceType
 from ralph.discovery.models_component import (
@@ -17,7 +15,7 @@ from ralph.discovery.models_component import (
 from ralph.discovery.models_history import HistoryChange
 from ralph.discovery.models_network import (
     IPAddress, NetworkTerminator, Network, DataCenter)
-from ralph.ui.tests.helper import login_as_su as login
+from ralph.ui.tests.helper import login_as_su
 
 DEVICE = {
     'name': 'SimpleDevice',
@@ -67,11 +65,10 @@ class TestSearch(TestCase):
     2. verification objects in html
     """
     def setUp(self):
-        self.client = login()
+        self.client = login_as_su()
         venture = Venture(
             name=DEVICE['venture'], symbol=DEVICE['ventureSymbol']
-        )
-        venture.save()
+        ).save()
         self.venture = venture
         venture_role = VentureRole(
             name=DEVICE['venture_role'], venture=self.venture
