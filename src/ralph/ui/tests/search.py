@@ -17,6 +17,7 @@ from ralph.discovery.models_component import (
 from ralph.discovery.models_history import HistoryChange
 from ralph.discovery.models_network import (
     IPAddress, NetworkTerminator, Network, DataCenter)
+from ralph.ui.tests.helper import login_as_su as login
 
 DEVICE = {
     'name': 'SimpleDevice',
@@ -66,16 +67,7 @@ class TestSearch(TestCase):
     2. verification objects in html
     """
     def setUp(self):
-        login = 'ralph'
-        password = 'ralph'
-        self.user = User.objects.create_user(
-            login, 'ralph@ralph.local', password
-        )
-        self.user.is_staff = True
-        self.user.is_superuser = True
-        self.user.save()
-        self.client = Client()
-        self.client.login(username=login, password=password)
+        self.client = login()
         venture = Venture(
             name=DEVICE['venture'], symbol=DEVICE['ventureSymbol']
         )
