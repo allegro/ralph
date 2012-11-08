@@ -13,7 +13,7 @@ from ralph.discovery.models import Device, DeviceType
 from ralph.discovery.models_component import (
     Ethernet, DiskShare, GenericComponent, Processor, Software, ComponentModel,
     DiskShareMount, Memory, FibreChannel, SplunkUsage, Storage, OperatingSystem
-)
+    )
 from ralph.discovery.models_history import HistoryChange
 from ralph.discovery.models_network import (
     IPAddress, NetworkTerminator, Network, DataCenter)
@@ -31,20 +31,20 @@ DEVICE = {
     'barcode': 'bc_dev',
     'sn': '0000000001',
     'mac': '00:00:00:00:00:00',
-}
+    }
 DISKSHARE = {
     'device': 'DiskShareSrv',
     'sn': '0000000002',
     'barcode': 'bc_share',
     'wwn': 'DiskShareWWN',
-}
+    }
 GENERIC = {
     'sn': '0000000003',
-}
+    }
 NETWORK = {
     'name': 'SimpleNetwork',
     'address': '10.0.0.1/26',
-}
+    }
 DATACENTER = 'dc1'
 
 COMPONENT = {
