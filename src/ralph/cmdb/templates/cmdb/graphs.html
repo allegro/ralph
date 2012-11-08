@@ -6,176 +6,159 @@
 {% block scripts %}
     <!-- from now, include parent jquery version for normal use. !-->
     {{ block.super }}
-    <!--
     <script type="text/javascript" src="{{STATIC_URL}}cmdb/VivaGraphJS/vivagraph.js"></script>
-    !-->
     <script type="text/javascript" src="{{STATIC_URL}}cmdb/d3.v2.min.js"></script>
     <script type="text/javascript" src="{{STATIC_URL}}cmdb/zoom.js"></script>
     <script type="text/javascript">
+                var zoom_value = 1;
+                (function() {
+                    var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame ||
+                    window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
+                    window.requestAnimationFrame = requestAnimationFrame;
+                    })();
 
-        (function() {
-           var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame ||
-                                         window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
-                                           window.requestAnimationFrame = requestAnimationFrame;
-                                           })();
-    function hypot(x, y){
-        return Math.sqrt(x*x + y*y);
-    }
+                function hypot(x, y){
+                    return Math.sqrt(x*x + y*y);
+                }
 
-    function step(timestamp) {
-        width = $("#chart")[0].style.width;
-        height = $("#chart")[0].style.height;
-        left = $("#chart")[0].style.left;
-        top= $("#chart")[0].style.top;
-        values = calculate_new_xy(width, height, left, top, zoom); 
-        $("#chart")[0].style.position = 'absolute'; 
-        $("#chart")[0].style.left = values['x'];
-        $("#chart")[0].style.top= values['y'];
-        $("#chart")[0].style.webkitTransform = 'scale(' + parseFloat(zoom_value) + ')';
-         requestAnimationFrame(step);
-        }
- 
-        requestAnimationFrame(step);
+                function step(timestamp) {
+                    var el = $("#chart")[0];
+                    var width = el.style.width;
+                    var height = el.style.height;
+                    var left = el.style.left;
+                    var top = el.style.top;
+                    values = calculate_new_xy(width, height, left, top, zoom); 
+                    el.style.position = 'absolute'; 
+                    el.style.left = values['x'];
+                    el.style.top = values['y'];
+                    el.style.webkitTransform = 'scale(' + parseFloat(zoom_value) + ')';
+                    requestAnimationFrame(step);
+                }
 
-        function calculate_new_xy(image_width, image_height, x_from_topleft, 
+            requestAnimationFrame(step);
+
+            function calculate_new_xy(image_width, image_height, x_from_topleft, 
                 y_from_topleft, zoom_factor)
-        {
-            var x_center = image_width / 2; 
-            var y_center = image_height / 2
-
-            var x_from_zoom_center = x_from_topleft - x_center;
-            var y_from_zoom_center = y_from_topleft - y_center;
-
-            angle  = Math.atan2(y_from_zoom_center, x_from_zoom_center);
-            length = hypot(x_from_zoom_center, y_from_zoom_center);
-
-            x_new = zoom_factor * length * Math.cos(angle);
-            y_new = zoom_factor * length * Math.sin(angle);
-
-            x_new_topleft = x_new + x_center;
-            y_new_topleft = y_new + y_center;
-            return {x: x_new_topleft, y: y_new_topleft}
-
-        }
-
-        zoom_value = 1;
-        jQuery(document).bind('DOMMouseScroll mousewheel', function(e, delta) {
-            delta = delta || e.detail || e.wheelDelta || e.originalEvent.wheelDeltaY;
-            if (zoom_value + (delta / 500) >= 1)
             {
-            zoom_value += delta / 500;
-
-            
+                var x_center = image_width / 2; 
+                var y_center = image_height / 2
+                var x_from_zoom_center = x_from_topleft - x_center;
+                var y_from_zoom_center = y_from_topleft - y_center;
+                angle  = Math.atan2(y_from_zoom_center, x_from_zoom_center);
+                length = hypot(x_from_zoom_center, y_from_zoom_center);
+                x_new = zoom_factor * length * Math.cos(angle);
+                y_new = zoom_factor * length * Math.sin(angle);
+                x_new_topleft = x_new + x_center;
+                y_new_topleft = y_new + y_center;
+                return {x: x_new_topleft, y: y_new_topleft}
             }
-            e.preventDefault();
-            //console.log($("#chart")[0].style.width);
-            return false;
+
+jQuery(document).bind('DOMMouseScroll mousewheel', function(e, delta) {
+        delta = delta || e.detail || e.wheelDelta || e.originalEvent.wheelDeltaY;
+        if (zoom_value + (delta / 500) >= 1)
+        {
+            zoom_value += delta / 500;
+        }
+        e.preventDefault();
+        return false;
         });
 
 
-        function main(){
-            var radius =860 / 2;
-             
-             var tree = d3.layout.tree()
-                 .size([360, radius - 120])
-                 .separation(function(a, b) { return (a.parent == b.parent ? 1 : 2) / a.depth; });
-             
-             var diagonal = d3.svg.diagonal.radial()
-                 .projection(function(d) { return [d.y, d.x / 180 * Math.PI]; });
-             
-             var vis = d3.select("#chart").append("svg")
-                 .attr("width", radius * 2)
-                 .attr("height", radius * 2 - 150)
-               .append("g")
-                 .attr("transform", "translate(" + radius + "," + radius + ")");
-             
-             d3.json("/cmdb/graphs_ajax", function(json) {
-               var nodes = tree.nodes(json);
-             
-               var link = vis.selectAll("path.link")
-                   .data(tree.links(nodes))
-                 .enter().append("path")
-                   .attr("class", "link")
-                   .attr("d", diagonal);
-             
-               var node = vis.selectAll("g.node")
-                   .data(nodes)
-                 .enter().append("g")
-                   .attr("class", "node")
-                   .attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + d.y + ")"; })
-             
-               node.append("circle")
-                   .attr("r", 4.5);
-             
-               node.append("text")
-                   .attr("dy", ".31em")
-                   .attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
-                   .attr("transform", function(d) { return d.x < 180 ? "translate(8)" : "rotate(180)translate(-8)"; })
-                   .text(function(d) { return d.name; });
-             });
-        }
+function main(){
+    var radius = 860 / 2;
+    var tree = d3.layout.tree()
+        .size([360, radius - 120])
+        .separation(function(a, b) { return (a.parent == b.parent ? 1 : 2) / a.depth; });
+    var diagonal = d3.svg.diagonal.radial()
+        .projection(function(d) { return [d.y, d.x / 180 * Math.PI]; });
+    var vis = d3.select("#chart").append("svg")
+        .attr("width", radius * 2)
+        .attr("height", radius * 2 - 150)
+        .append("g")
+        .attr("transform", "translate(" + radius + "," + radius + ")");
 
-        function mainer() {
-            var graph = Viva.Graph.graph();
-            $.get("/cmdb/graphs_ajax", function(data)
-            {
-                //console.log(data);
-                        for (var i=0; i<data.nodes.length; i++)
-                        {
-                           graph.addNode(data.nodes[i][0], data.nodes[i][1]);
-                        }
-                        for (var i=0; i<data.relations.length; i++)
-                        {
-                           graph.addLink(data.relations[i].parent, data.relations[i].child);
-                        }
-            });
-            var graphics = Viva.Graph.View.svgGraphics();
-            graphics.node(function(node) {
-                e = Viva.Graph.svg('text')
-                .attr('width', 224)
-                .attr('height', 180);
-                e.textContent = node.data;
-                return e
-                })
-            .placeNode(function(nodeUI, pos){
-                                nodeUI.attr('x', pos.x).attr('y', pos.y);
-            });
-            var renderer = Viva.Graph.View.renderer(graph, {
-             graphics : graphics
-            });
-            renderer.run();
+    d3.json("/cmdb/graphs_ajax", function(json) {
+            var nodes = tree.nodes(json);
+            var link = vis.selectAll("path.link")
+            .data(tree.links(nodes))
+            .enter().append("path")
+            .attr("class", "link")
+            .attr("d", diagonal);
+
+            var node = vis.selectAll("g.node")
+            .data(nodes)
+            .enter().append("g")
+            .attr("class", "node")
+            .attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + d.y + ")"; })
+
+            node.append("circle")
+            .attr("r", 2.5);
+
+            node.append("text")
+            .attr("dy", ".31em")
+            .attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
+            .attr("transform", function(d) { return d.x < 180 ? "translate(8)" : "rotate(180)translate(-8)"; })
+            .text(function(d) { return d.name; });
+    });
+}
+
+function draw_graph() {
+    var graph = Viva.Graph.graph();
+    $.get("/cmdb/graphs_ajax", function(data)
+    {
+        for (var i=0; i<data.nodes.length; i++)
+        {
+            graph.addNode(data.nodes[i][0], data.nodes[i][1]);
         }
-    </script>
+        for (var i=0; i<data.relations.length; i++)
+        {
+            graph.addLink(data.relations[i].parent, data.relations[i].child);
+        }
+    });
+    var graphics = Viva.Graph.View.svgGraphics();
+    graphics.node(function(node) {
+            e = Viva.Graph.svg('text')
+            .attr('width', 224)
+            .attr('height', 180);
+            e.textContent = node.data;
+            return e
+            })
+    .placeNode(function(nodeUI, pos){
+            nodeUI.attr('x', pos.x).attr('y', pos.y);
+            });
+    var renderer = Viva.Graph.View.renderer(graph, {
+graphics : graphics
+});
+renderer.run();
+}
+</script>
+
 <script type="text/javascript" charset="utf-8">
     $(document).ready(function()
-            {
-                main()
-            });
+    {
+        //main()
+    });
 </script>
 
 {% endblock %}
 
 {% block extra_headers %}
 <style type='text/css'>
-    #chart{
+    .node circle {
+          fill: #fff;
+          stroke: steelblue;
+          stroke-width: 1.5px;
+    }
 
-        }
+    .node {
+      font: 3px sans-serif;
+    }
 
-        .node circle {
-              fill: #fff;
-              stroke: steelblue;
-              stroke-width: 1.5px;
-        }
-
-        .node {
-          font: 3px sans-serif;
-        }
-
-        .link {
-            fill: none;
-            stroke: #ccc;
-           stroke-width: 1.5px;
-        }
+    .link {
+        fill: none;
+        stroke: #ccc;
+       stroke-width: 1px;
+    }
 </style>
     {{ block.super }}
 {% endblock %}
@@ -183,12 +166,22 @@
 {% block contentarea %}
     {{ block.super }}
 
-    {# form_horizontal form=form method="get" action="/cmdb/graphs" title='Formularz' #}
+    {% form_horizontal form=form method="get" action="/cmdb/graphs" title='Formularz' %}
     <hr>
-    <table class="table table-condensed">
-        {{ output }}
+    <table class="table table-striped table-condensed table-list table-bordered">
+        <tbody>
+        <tr>
+            <th> Name </th>
+            <th> UID </th>
+        </tr>
+        {% for row in rows %}
+        <tr><td> {{ row.name }} </td> <td> {{ row.uid }} </td></tr>
+        {% endfor %}
+    </tbody>
     </table>
-
-    <div id='chart' style='position: absolute; top: 0px; margin-top:0px' width='800' height='800' onload='mainer()'>
+    <h4> Impact chart </h4>
+    <div id='container' style='width:800; height:800;border: solid #ddd 1px'>
+        <div id='chart' style='position: absolute; top: 0px; margin-top:300px' width='800' height='800'>
+        </div>
     </div>
 {% endblock %}
