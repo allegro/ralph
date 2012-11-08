@@ -18,7 +18,7 @@ from django.views.generic import UpdateView, DetailView, TemplateView
 from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Language, TagStem
 from bob.menu import MenuItem
-from powerdns.models import Record
+from powerdns.models import Record, Domain
 
 from ralph.account.models import Perm
 from ralph.business.models import RolePropertyValue
@@ -468,16 +468,31 @@ class Addresses(DeviceDetailView):
             )
         dns_records = list(self.get_dns())
         self.form = DNSRecordsForm(dns_records, self.request.POST)
+        def fill_record(prefix, record):
+            for label in ('name', 'type', 'content',
+                          'ttl', 'prio', 'type'):
+                setattr(record, label,
+                        self.form.cleaned_data[prefix + label] or None)
+            domains = [d for d in Domain.objects.all() if
+                       record.name.endswith(d.name)]
+            domains.sort(key=lambda d: -len(d.name))
+            if domains:
+                record.domain = domains[0]
         if self.form.is_valid():
             for record in dns_records:
                 prefix = 'dns_%d_' % record.id
                 record_type = self.form.cleaned_data.get(prefix + 'type')
                 if record_type:
-                    for label in ('name', 'type', 'content',
-                                  'ttl', 'prio', 'type'):
-                        setattr(record, label,
-                                self.form.cleaned_data[prefix + label] or None)
+                    fill_record(prefix, record)
                     record.save()
+                else:
+                    record.delete()
+            if self.form.cleaned_data.get('dns_new_type'):
+                record = Record()
+                fill_record('dns_new_', record)
+                record.save()
+            dns_records = self.get_dns()
+            self.form = DNSRecordsForm(dns_records)
         return self.get(*args, **kwargs)
 
     def get_dhcp(self):
