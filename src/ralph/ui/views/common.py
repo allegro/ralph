@@ -486,13 +486,19 @@ class Addresses(DeviceDetailView):
                     fill_record(prefix, record)
                     record.save()
                 else:
+                    messages.warning(self.request,
+                                     "A %s DNS record for %s deleted." %
+                                     (record.type, record.name))
                     record.delete()
             if self.form.cleaned_data.get('dns_new_type'):
                 record = Record()
                 fill_record('dns_new_', record)
                 record.save()
-            dns_records = self.get_dns()
-            self.form = DNSRecordsForm(dns_records)
+                messages.warning(self.request,
+                                 "A %s DNS record for %s added." %
+                                 (record.type, record.name))
+            messages.success(self.request, "DNS records updated.")
+            return HttpResponseRedirect(self.request.path)
         return self.get(*args, **kwargs)
 
     def get_dhcp(self):
