@@ -113,6 +113,11 @@ def get_device_virtuals_price(device):
 def get_device_virtual_cpu_price(device):
     """Calculate the price of a single virtual cpu for virtual servers inside."""
 
+    if (device.model and device.model.type == DeviceType.virtual_server.id):
+        # Yo dawg! We put a virtual machine in your virtual machine, so that
+        # you can calculate virtual cpu price while you calculate the virtual
+        # cpu price!
+        return 0
     cpu_price = get_device_cpu_price(device)
     total_virtual_cpus = Processor.objects.filter(
             device__parent=device,
@@ -264,7 +269,7 @@ def device_update_cached(device):
             stack.append(d)
     devices.reverse() # Do the children before their parent.
     for d in devices:
-        d.name = device.get_name()
+        d.name = d.get_name()
         d.cached_price = get_device_price(d)
         d.cached_cost = get_device_cost(d)
         d.save()

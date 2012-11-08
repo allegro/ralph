@@ -32,9 +32,8 @@ ALWAYS = '0001-1-1'  # not all DB backends will accept '0000-0-0'
 
 def _field_changes(instance, ignore=('last_seen',)):
     """
-    Iterate over all changed fields, yielding the field name,
-    its original value and its new value. Skip the fields passed
-    in ``ignore``.
+    Yield the name, original value and new value for each changed field. Skip
+    all insignificant fields and those passed in ``ignore``.
     """
     for field, orig in instance.dirty_fields.iteritems():
         if field in ignore:
@@ -43,10 +42,19 @@ def _field_changes(instance, ignore=('last_seen',)):
             continue
         if field.endswith('_id'):
             field = field[:-3]
-            orig = instance._meta.get_field_by_name(
-                field)[0].related.parent_model.objects.get(
-                    pk=orig
-                ) if orig is not None else None
+            parent_model = instance._meta.get_field_by_name(
+                field
+            )[0].related.parent_model
+            try:
+                if orig is not None:
+                    orig = parent_model.objects.get(pk=orig)
+                # instance -> parent_model
+                # example: IPAddress -> Device
+                # Sometimes `parent_model` is being set to None, e.g. when
+                # a `Device` is disconnected from an `IPAddress`. In this case
+                # the instance won't find the child.
+            except parent_model.DoesNotExist:
+                orig = None
         try:
             new = getattr(instance, field)
         except AttributeError:
@@ -85,10 +93,9 @@ class HistoryChange(db.Model):
                 self.user, self.date, self.id)
 
 
-@receiver(pre_save, sender=Device, dispatch_uid='ralph.history')
-def device_pre_save(sender, instance, raw, using, **kwargs):
+@receiver(post_save, sender=Device, dispatch_uid='ralph.history')
+def device_post_save(sender, instance, raw, using, **kwargs):
     """A hook for creating ``HistoryChange`` entries when a device changes."""
-
     for field, orig, new in _field_changes(instance, ignore={
             'last_seen', 'cached_cost', 'cached_price', 'raw',
             'uptime_seconds', 'uptime_timestamp'}):
