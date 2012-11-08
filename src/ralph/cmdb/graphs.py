@@ -17,17 +17,27 @@ from django.http import HttpResponse
 import pygraph
 from pygraph.algorithms.searching import breadth_first_search
 
+
 class SearchImpactForm(forms.Form):
     depth = forms.CharField(max_length=100)
     ci = AutoCompleteSelectField(
         'ci', required=True,
-        plugin_options={'minLength' : 3}
+        plugin_options={'minLength': 3}
     )
 
 total_tree = dict()
 def search_tree(tree, root=CI.objects.filter(name='DC2')[0]):
     models_to_display = [
-        x.id for x in DeviceModel.objects.filter()] #type__in=[DeviceType.switch.id,DeviceType.router.id,DeviceType.management.id,DeviceType.storage.id,DeviceType.rack.id, DeviceType.blade_server.id, DeviceType.data_center.id, DeviceType.virtual_server.id]) ]
+        x.id for x in DeviceModel.objects.filter(type__in=[
+            DeviceType.switch.id,
+            DeviceType.router.id,
+            DeviceType.management.id,
+            DeviceType.storage.id,
+            DeviceType.rack.id,
+            DeviceType.blade_server.id,
+            DeviceType.data_center.id,
+            DeviceType.virtual_server.id
+        ])]
     relations = [dict(
         parent=x.parent.id, child=x.child.id, parent_name=x.parent.name, child_name=x.child.name,
         )
@@ -130,7 +140,7 @@ class ImpactCalculator(object):
     def build_graph(self):
         allci = CI.objects.all().values('pk')
         relations = CIRelation.objects.filter(
-            type__in=self.relation_types 
+            type__in=self.relation_types
         ).values('parent_id', 'child_id')
 
         nodes = [x['pk'] for x in allci]
