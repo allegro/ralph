@@ -15,6 +15,8 @@ Released on November 8, 2012.
 
 * Xen discovery support fixed (memory was reported in wrong units)
 
+* IPMI discovery improved for Sun and Supermicro servers.
+
 * Minor CMDB improvements.
 
 * Minor bugfixes.
