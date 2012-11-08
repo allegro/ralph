@@ -14,8 +14,8 @@ from django.db import models as db
 from django.utils.html import escape
 from django.conf import settings
 
-from ralph.discovery.models import (DeviceType, ComponentModelGroup, Processor,
-                                    DiskShare, EthernetSpeed, OperatingSystem)
+from ralph.discovery.models import (DeviceType, ComponentModelGroup, DiskShare,
+                                    EthernetSpeed, OperatingSystem)
 
 
 def get_device_price(device):
