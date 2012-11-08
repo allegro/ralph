@@ -12,7 +12,7 @@ import re
 
 from django.conf import settings
 from django.dispatch import receiver
-from django.db.models.signals import post_delete, post_save
+from django.db.models.signals import post_delete, post_save, pre_delete
 from django.db import IntegrityError
 from celery.task import task
 import django.dispatch
@@ -23,6 +23,8 @@ from ralph.cmdb import models_changes as chdb
 from ralph.cmdb.integration.issuetracker import IssueTracker
 from ralph.cmdb.integration.exceptions import IssueTrackerException
 from ralph.cmdb.models_common import getfunc
+from ralph.discovery.models import Device, DataCenter, Network
+from ralph.business.models import Venture, VentureRole, Service, BusinessLine
 
 
 logger = logging.Logger(__file__)
@@ -40,13 +42,16 @@ if settings.ISSUETRACKERS['default']['ENGINE'] == '':
     OP_PROFILE = ''
     OP_TICKETS_ENABLE = False
 else:
-    RALPH_CHANGE_LINK = settings.ISSUETRACKERS['default']['CMDB_VIEWCHANGE_LINK']
+    RALPH_CHANGE_LINK = \
+        settings.ISSUETRACKERS['default']['CMDB_VIEWCHANGE_LINK']
     OP_TEMPLATE = settings.ISSUETRACKERS['default']['OP']['TEMPLATE']
     OP_PROFILE = settings.ISSUETRACKERS['default']['OP']['PROFILE']
     OP_ISSUE_TYPE = settings.ISSUETRACKERS['default']['OP']['ISSUETYPE']
-    DEFAULT_ASSIGNEE = settings.ISSUETRACKERS['default']['OP']['DEFAULT_ASSIGNEE']
+    DEFAULT_ASSIGNEE = \
+        settings.ISSUETRACKERS['default']['OP']['DEFAULT_ASSIGNEE']
     OP_START_DATE = settings.ISSUETRACKERS['default']['OP']['START_DATE']
-    OP_TICKETS_ENABLE = settings.ISSUETRACKERS['default']['OP']['ENABLE_TICKETS']
+    OP_TICKETS_ENABLE = \
+        settings.ISSUETRACKERS['default']['OP']['ENABLE_TICKETS']
 
 
 def get_login_from_user(long_user_text):
@@ -63,11 +68,16 @@ def get_login_from_user(long_user_text):
         return ''
 
 
-@receiver(post_delete, sender=chdb.CIChangeGit, dispatch_uid='ralph.cmdb.cichangedelete')
-@receiver(post_delete, sender=chdb.CIChangeZabbixTrigger, dispatch_uid='ralph.cmdb.cichangedelete')
-@receiver(post_delete, sender=chdb.CIChangeStatusOfficeIncident, dispatch_uid='ralph.cmdb.cichangedelete')
-@receiver(post_delete, sender=chdb.CIChangeCMDBHistory, dispatch_uid='ralph.cmdb.cichangedelete')
-@receiver(post_delete, sender=chdb.CIChangePuppet, dispatch_uid='ralph.cmdb.cichangedelete')
+@receiver(post_delete, sender=chdb.CIChangeGit,
+          dispatch_uid='ralph.cmdb.cichangedelete')
+@receiver(post_delete, sender=chdb.CIChangeZabbixTrigger,
+          dispatch_uid='ralph.cmdb.cichangedelete')
+@receiver(post_delete, sender=chdb.CIChangeStatusOfficeIncident,
+          dispatch_uid='ralph.cmdb.cichangedelete')
+@receiver(post_delete, sender=chdb.CIChangeCMDBHistory,
+          dispatch_uid='ralph.cmdb.cichangedelete')
+@receiver(post_delete, sender=chdb.CIChangePuppet,
+          dispatch_uid='ralph.cmdb.cichangedelete')
 def change_delete_post_save(sender, instance, **kwargs):
     # remove child cichange
     try:
@@ -78,9 +88,12 @@ def change_delete_post_save(sender, instance, **kwargs):
         pass
 
 
-@receiver(post_save, sender=chdb.CIChangeCMDBHistory, dispatch_uid='ralph.cmdb.change_post_save')
-@receiver(post_save, sender=chdb.CIChangePuppet, dispatch_uid='ralph.cmdb.change_post_save')
-@receiver(post_save, sender=chdb.CIChangeGit, dispatch_uid='ralph.cmdb.change_post_save')
+@receiver(post_save, sender=chdb.CIChangeCMDBHistory,
+          dispatch_uid='ralph.cmdb.change_post_save')
+@receiver(post_save, sender=chdb.CIChangePuppet,
+          dispatch_uid='ralph.cmdb.change_post_save')
+@receiver(post_save, sender=chdb.CIChangeGit,
+          dispatch_uid='ralph.cmdb.change_post_save')
 def post_create_change(sender, instance, raw, using, **kwargs):
     registration_type = chdb.CI_CHANGE_REGISTRATION_TYPES.NOT_REGISTERED.id
     user = None
@@ -299,7 +312,8 @@ def date_from_str(s):
     return datetime.datetime.strptime(s, '%Y-%m-%d').date()
 
 
-@receiver(post_delete, sender=chdb.CIChange, dispatch_uid='ralph.cmdb.cichangebasedelete')
+@receiver(post_delete, sender=chdb.CIChange,
+          dispatch_uid='ralph.cmdb.cichangebasedelete')
 def basechange_delete_post_save(sender, instance, **kwargs):
     # remove parent cichange
     content_object = instance.content_object
@@ -307,4 +321,22 @@ def basechange_delete_post_save(sender, instance, **kwargs):
         content_object.delete()
 
 
+@receiver(pre_delete, sender=Device,
+          dispatch_uid='ralph.cmdb.deletedevice')
+@receiver(pre_delete, sender=Venture,
+          dispatch_uid='ralph.cmdb.deletedevice')
+@receiver(pre_delete, sender=VentureRole,
+          dispatch_uid='ralph.cmdb.deletedevice')
+@receiver(pre_delete, sender=DataCenter,
+          dispatch_uid='ralph.cmdb.deletedevice')
+@receiver(pre_delete, sender=Network,
+          dispatch_uid='ralph.cmdb.deletedevice')
+@receiver(pre_delete, sender=Service,
+          dispatch_uid='ralph.cmdb.deletedevice')
+@receiver(pre_delete, sender=BusinessLine,
+          dispatch_uid='ralph.cmdb.deletedevice')
+def remove_moved_cis_pre_delete(sender, instance, using, **kwargs):
+    ci = cdb.CI.get_by_content_object(instance)
+    if ci:
+        ci.delete()
 
