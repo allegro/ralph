@@ -62,7 +62,7 @@ def save_processors(processors, dev):
             'multicore' if cores else '')
         cpu.model, c = ComponentModel.concurrent_get_or_create(
             speed=speed, type=ComponentType.processor.id,
-            family=cpuname,
+            family=cpuname, size=cores,
             cores=cores, extra_hash=hashlib.md5(extra).hexdigest())
         cpu.model.extra = extra
         cpu.model.name = name
