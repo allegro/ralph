@@ -17,6 +17,7 @@
         <th width="*">Content</th>
         <th width="10%">TTL</th>
         <th width="10%">Priority</th>
+        <th width="16">PTR</th>
     </tr></thead>
     <tbody>
         {% for f in dnsform %}
@@ -32,7 +33,7 @@
             </td>
             {% endif %}
         {% endif %}
-        <td class="control-group {{ f.css_classes }} {% if f.errors %}error{% endif %}">{{ f }}
+        <td class="control-group {{ f.css_classes }} {% if f.errors %}error{% endif %}" style="vertical-align:middle;text-align:center">{{ f }}
             {% for e in f.errors %}
                 <div class="help-block">{{ e }}</div>
             {% empty %}
@@ -41,7 +42,7 @@
             {%  endif %}
             {% endfor %}
         </td>
-        {% if f.label == 'prio' %}
+        {% if f.label == 'ptr' %}
         </tr>
         {% endif %}
         {% endfor %}

@@ -8,12 +8,14 @@ from __future__ import unicode_literals
 import re
 import datetime
 
-from powerdns.models import Domain, Record
-from lck.django.common import nested_commit_on_success
 from django.template import loader, Context
+from powerdns.models import Domain, Record
+
+from lck.django.common import nested_commit_on_success
+from lck.django.common.models import MACAddressField
 
 from ralph.dnsedit.models import DHCPEntry
-from lck.django.common.models import MACAddressField
+
 
 
 HOSTNAME_CHUNK_PATTERN = re.compile(r'^([A-Z\d][A-Z\d-]{0,61}[A-Z\d]|[A-Z\d])$',
@@ -108,3 +110,36 @@ def generate_dhcp_config():
         'last_modified_date': last_modified_date,
     })
     return template.render(c)
+
+
+def get_domain(name):
+    domains = [d for d in Domain.objects.all() if
+               name.endswith(d.name)]
+    domains.sort(key=lambda d: -len(d.name))
+    if domains:
+        return domains[0]
+
+
+def get_revdns_records(ip):
+    revname = '.'.join(reversed(ip.split('.'))) + '.in-addr.arpa'
+    return Record.objects.filter(name=revname, type='PTR')
+
+
+def set_revdns_record(ip, name, ttl=None, prio=None, overwrite=False):
+    revname = '.'.join(reversed(ip.split('.'))) + '.in-addr.arpa'
+    domain_name = '.'.join(list(reversed(ip.split('.')))[1:]) + '.in-addr.arpa'
+    domain, created = Domain.objects.get_or_create(name=domain_name)
+    records = Record.objects.filter(name=revname, type='PTR')
+    if records:
+        if not overwrite:
+            raise ValueError('RevDNS record already exists')
+    else:
+        records = [Record(name=revname, type='PTR')]
+    for record in records:
+        record.content = name
+        record.domain = domain
+        if ttl is not None:
+            record.ttl = ttl
+        if prio is not None:
+            record.prio = prio
+        record.save()
