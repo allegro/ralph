@@ -1,6 +1,7 @@
 ﻿using System;
 using System.CodeDom;
 using System.Management;
+using System.Collections;
 using System.Collections.Generic;
 using DonPedro.DTO;
 using DonPedro.Utils;
@@ -10,62 +11,35 @@ namespace DonPedro.Detectors
 	public class WMIDetectorSource
 	{
 		protected enum SizeUnits {B, KB, MB, GB, TB};
-		
+		protected string operatingSystemVersion;
+		protected string vendor;
+
 		public WMIDetectorSource()
 		{
+			operatingSystemVersion = GetOperatingSystemVersion();
+			vendor = GetVendor();
 		}
 		
 		public List<ProcessorDTOResponse> GetProcessorsInfo()
 		{
-			List<ProcessorDTOResponse> processors = new List<ProcessorDTOResponse>();
-
+			int osVersionNumber = 6;
 			try
 			{
-				SelectQuery query = new SelectQuery(
-					@"select 
-						Name, 
-						Description, 
-						DeviceID, 
-						MaxClockSpeed, 
-						NumberOfCores, 
-						NumberOfLogicalProcessors, 
-						Caption, 
-						Manufacturer, 
-						Version,
-						DataWidth
-					  from Win32_Processor"
+				osVersionNumber = int.Parse(
+					operatingSystemVersion.Substring(0, operatingSystemVersion.IndexOf('.'))
 				);
-				ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
-				
-				foreach (ManagementObject obj in searcher.Get())
-				{
-					ProcessorDTOResponse processor = new ProcessorDTOResponse();
-					processor.Label = GetValueAsString(obj, "Name");
-					processor.Speed = GetValueAsString(obj, "MaxClockSpeed");
-					processor.Cores = GetValueAsString(obj, "NumberOfCores");
-					processor.Index = GetValueAsString(obj, "DeviceID");
-					processor.Description = GetValueAsString(obj, "Description");
-					processor.NumberOfLogicalProcessors = GetValueAsString(obj, "NumberOfLogicalProcessors");
-					processor.Caption = GetValueAsString(obj, "Caption");
-					processor.Manufacturer = GetValueAsString(obj, "Manufacturer");
-					processor.Version = GetValueAsString(obj, "Version");
-					if (GetValueAsString(obj, "DataWidth") == "64") {
-						processor.Is64Bit = "true";
-					}
-					else
-					{
-						processor.Is64Bit = "false";
-					}
-					
-					processors.Add(processor);
-				}
 			}
-			catch (ManagementException e)
+			catch (Exception e)
 			{
 				Logger.Instance.LogError(e.ToString());
 			}
+
+			if (osVersionNumber < 6)
+			{
+				return GetWinLTE6ProcessorsInfo();
+			}
 			
-			return processors;
+			return GetWinGTE6ProcessorsInfo();
 		}
 		
 		public List<MemoryDTOResponse> GetMemoryInfo()
@@ -184,7 +158,7 @@ namespace DonPedro.Detectors
 				}
 			}
 			os.Storage = totalDisksSize.ToString();
-			
+
 			return os;
 		}
 		
@@ -199,6 +173,12 @@ namespace DonPedro.Detectors
 				
 				foreach (ManagementObject diskDrive in diskDrivesSearcher.Get())
 				{
+//					string sn = GetValueAsString(diskDrive, "SerialNumber");
+//					if (sn.StartsWith("QM000"))
+//					{
+//						continue;
+//					}
+					
 					RelatedObjectQuery diskPartitionsQuery = new RelatedObjectQuery(
 						"associators of {Win32_DiskDrive.DeviceID='" +
 						GetValueAsString(diskDrive, "DeviceID") +
@@ -252,12 +232,28 @@ namespace DonPedro.Detectors
 				SelectQuery query = new SelectQuery(
 					@"select Name,  MACAddress, Speed, Index 
 					  from Win32_NetworkAdapter 
-					  where MACAddress<>null and PhysicalAdapter=true"
+					  where MACAddress<>null"
 				);
 				ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
 				
 				foreach (ManagementObject obj in searcher.Get())
 				{
+					string normalizedMac = MACAddressUtils.NormalizeMACAddress(GetValueAsString(obj, "MACAddress"));
+					normalizedMac = normalizedMac.ToUpper();
+					bool inBlackList = false;
+					for (int i = 0; i < Blacklists.MacPrefixBlacklist.Length; i++)
+					{
+						if (normalizedMac.Substring(0, 6) == Blacklists.MacPrefixBlacklist[i])
+						{
+							inBlackList = true;
+							break;
+						}
+					}
+					if (inBlackList) 
+					{
+						continue;
+					}
+					
 					EthernetDTOResponse eth = new EthernetDTOResponse();
 					eth.Label = GetValueAsString(obj, "Name");
 					eth.Mac = GetValueAsString(obj, "MACAddress");
@@ -268,7 +264,7 @@ namespace DonPedro.Detectors
 						SelectQuery queryAdapterConf = new SelectQuery(
 							@"select IPAddress,  IPSubnet 
 							  from Win32_NetworkAdapterConfiguration 
-							  where Index='" + GetValueAsString(obj, "Index") + "'"
+							  where Index='" + GetValueAsString(obj, "Index") + "' and IPEnabled=True"
 						);
 						ManagementObjectSearcher adapterConfSearcher = new ManagementObjectSearcher(queryAdapterConf);
 
@@ -278,13 +274,16 @@ namespace DonPedro.Detectors
 							{
 								eth.IPAddress = ((string[]) adapterConf["IPAddress"])[0];
 								eth.IPSubnet = ((string[]) adapterConf["IPSubnet"])[0];
+								
+								ethetnets.Add(eth);
 							}
 							catch (ManagementException e)
 							{
 								Logger.Instance.LogError(e.ToString());
 							}
-							catch (Exception)
+							catch (Exception e)
 							{
+								Logger.Instance.LogError(e.ToString());
 							}
 							
 							break;
@@ -294,8 +293,6 @@ namespace DonPedro.Detectors
 					{
 						Logger.Instance.LogError(e.ToString());
 					}
-					
-					ethetnets.Add(eth);
 				}
 			}
 			catch (ManagementException e)
@@ -421,6 +418,191 @@ namespace DonPedro.Detectors
 			}
 			
 			return size;
+		}
+		
+		protected string GetOperatingSystemVersion()
+		{
+			string osVersion = "";
+			
+			try
+			{
+				SelectQuery query = new SelectQuery("select Version from Win32_OperatingSystem");
+				ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
+				
+				foreach (ManagementObject obj in searcher.Get())
+				{
+					osVersion = GetValueAsString(obj, "Version");
+					break;
+				}
+			}
+			catch (ManagementException e)
+			{
+				Logger.Instance.LogError(e.ToString());
+			}
+			
+			return osVersion;
+		}
+		
+		protected string GetVendor()
+		{
+			string computerVendor = "";
+			
+			try
+			{
+				ManagementClass mc = new ManagementClass("Win32_ComputerSystemProduct");
+				
+				foreach (ManagementObject obj in mc.GetInstances())
+				{
+					computerVendor = GetValueAsString(obj, "Vendor");
+
+					break;
+				}
+			}
+			catch (ManagementException e)
+			{
+				Logger.Instance.LogError(e.ToString());
+			}
+			
+			return computerVendor.Trim().ToLower();
+		}
+		
+		protected List<ProcessorDTOResponse> GetWinGTE6ProcessorsInfo()
+		{
+			List<ProcessorDTOResponse> processors = new List<ProcessorDTOResponse>();
+
+			try
+			{
+				SelectQuery query = new SelectQuery(
+					@"select 
+						Name, 
+						Description, 
+						DeviceID, 
+						MaxClockSpeed, 
+						NumberOfCores, 
+						NumberOfLogicalProcessors, 
+						Caption, 
+						Manufacturer, 
+						Version,
+						DataWidth
+					  from Win32_Processor"
+				);
+				ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
+				
+				foreach (ManagementObject obj in searcher.Get())
+				{
+					ProcessorDTOResponse processor = new ProcessorDTOResponse();
+					if (vendor == "xen" || vendor == "vmware, inc." || vendor == "vmware")
+					{
+						processor.Label = "Virtual " + GetValueAsString(obj, "Name");	
+					}
+					else
+					{
+						processor.Label = GetValueAsString(obj, "Name");	
+					}
+					processor.Speed = GetValueAsString(obj, "MaxClockSpeed");
+					processor.Cores = GetValueAsString(obj, "NumberOfCores");
+					processor.Index = GetValueAsString(obj, "DeviceID");
+					processor.Description = GetValueAsString(obj, "Description");
+					processor.NumberOfLogicalProcessors = GetValueAsString(obj, "NumberOfLogicalProcessors");
+					processor.Caption = GetValueAsString(obj, "Caption");
+					processor.Manufacturer = GetValueAsString(obj, "Manufacturer");
+					processor.Version = GetValueAsString(obj, "Version");
+					if (GetValueAsString(obj, "DataWidth") == "64") {
+						processor.Is64Bit = "true";
+					}
+					else
+					{
+						processor.Is64Bit = "false";
+					}
+					
+					processors.Add(processor);
+				}
+			}
+			catch (ManagementException e)
+			{
+				Logger.Instance.LogError(e.ToString());
+			}
+			
+			return processors;
+		}
+		
+		protected List<ProcessorDTOResponse> GetWinLTE6ProcessorsInfo()
+		{
+			List<ProcessorDTOResponse> processors = new List<ProcessorDTOResponse>();
+			Hashtable uniqueProcessors = new Hashtable();
+			int totalDetectedCPUs = 0;
+			
+			try
+			{
+				SelectQuery query = new SelectQuery(
+					@"select 
+						Name, 
+						Description, 
+						DeviceID, 
+						MaxClockSpeed, 
+						Caption, 
+						Manufacturer, 
+						Version,
+						DataWidth,
+						SocketDesignation
+					  from Win32_Processor"
+				);
+				ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
+				
+				foreach (ManagementObject obj in searcher.Get())
+				{
+					totalDetectedCPUs++;
+					
+					string socketDesignation = GetValueAsString(obj, "SocketDesignation");
+					if (uniqueProcessors.ContainsKey(socketDesignation))
+					{
+						continue;
+					}
+					
+					ProcessorDTOResponse processor = new ProcessorDTOResponse();
+					if (vendor == "xen" || vendor == "vmware, inc." || vendor == "vmware")
+					{
+						processor.Label = "Virtual " + GetValueAsString(obj, "Name");	
+					}
+					else
+					{
+						processor.Label = GetValueAsString(obj, "Name");	
+					}
+					processor.Speed = GetValueAsString(obj, "MaxClockSpeed");
+					processor.Index = GetValueAsString(obj, "DeviceID");
+					processor.Description = GetValueAsString(obj, "Description");
+					processor.Caption = GetValueAsString(obj, "Caption");
+					processor.Manufacturer = GetValueAsString(obj, "Manufacturer");
+					processor.Version = GetValueAsString(obj, "Version");
+					if (GetValueAsString(obj, "DataWidth") == "64") {
+						processor.Is64Bit = "true";
+					}
+					else
+					{
+						processor.Is64Bit = "false";
+					}
+					
+					uniqueProcessors.Add(socketDesignation, processor);
+				}
+			}
+			catch (ManagementException e)
+			{
+				Logger.Instance.LogError(e.ToString());
+			}
+			
+			if (uniqueProcessors.Count > 0)
+			{
+				int coresCount = totalDetectedCPUs / uniqueProcessors.Count;
+				foreach (ProcessorDTOResponse cpu in uniqueProcessors.Values)
+				{
+					cpu.Cores = coresCount.ToString();
+					cpu.NumberOfLogicalProcessors = coresCount.ToString();
+					
+					processors.Add(cpu);
+				}
+			}
+			
+			return processors;
 		}
 	}
 }
