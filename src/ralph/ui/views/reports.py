@@ -321,12 +321,16 @@ class ReportVentures(SidebarReports, Base):
                 venture.total = get_total_cost(query, start, end)
                 (venture.count, venture.count_now,
                  devices) = get_total_count(query, start, end)
-                venture.core_count = get_total_cores(devices, start, end)
-                venture.virtual_core_count = get_total_virtual_cores(devices, start, end)
+                venture.core_count = get_total_cores(query, end)
+                venture.virtual_core_count = get_total_virtual_cores(query, end)
                 cloud_cost = get_total_cost(query.filter(
                         device__model__type=DeviceType.cloud_server.id
                     ), start, end)
-                venture.cloud_use = (cloud_cost or 0) / total_cloud_cost * 100
+                if total_cloud_cost:
+                    venture.cloud_use = (cloud_cost or
+                                         0) / total_cloud_cost * 100
+                else:
+                    venture.cloud_use = 0
         else:
             self.ventures = Venture.objects.none()
         if self.request.GET.get('export') == 'csv':

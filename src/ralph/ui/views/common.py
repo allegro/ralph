@@ -26,6 +26,7 @@ from ralph.cmdb import models as cdb
 from ralph.dnsedit.models import DHCPEntry
 from ralph.dnsedit.util import get_domain, set_revdns_record
 from ralph.discovery.models import Device, DeviceType
+from ralph.discovery.models_history import FOREVER_DATE, ALWAYS_DATE
 from ralph.util import presentation, pricing
 from ralph.ui.forms import (DeviceInfoForm, DeviceInfoVerifiedForm,
                             DevicePricesForm, DevicePurchaseForm,
@@ -539,7 +540,7 @@ class Costs(DeviceDetailView):
         for h in history:
             if not has_perm(Perm.list_devices_financial, h.venture):
                 h.daily_cost = None
-            if h.end.year != 9999 and h.start:
+            if h.end < FOREVER_DATE and h.start:
                 h.span = (h.end - h.start).days
             elif h.start:
                 h.span = (datetime.date.today() - h.start).days
@@ -552,6 +553,8 @@ class Costs(DeviceDetailView):
             'history': history,
             'history_page': history_page,
             'query_variable_name': query_variable_name,
+            'ALWAYS_DATE': ALWAYS_DATE,
+            'FOREVER_DATE': FOREVER_DATE,
         })
         last_month = datetime.date.today() - datetime.timedelta(days=31)
         splunk = self.object.splunkusage_set.filter(
