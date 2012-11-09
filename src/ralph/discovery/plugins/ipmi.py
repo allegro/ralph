@@ -17,29 +17,35 @@ from lck.django.common.models import MACAddressField
 from ralph.util import network, parse
 from ralph.util import plugin, Eth
 from ralph.discovery.models import (DeviceType, EthernetSpeed, Device,
-        Processor, Memory, Ethernet, IPAddress, ComponentModel,
-        ComponentType, SERIAL_BLACKLIST)
+                                    Processor, Memory, Ethernet, IPAddress,
+                                    ComponentModel, ComponentType,
+                                    SERIAL_BLACKLIST)
 
 
 IPMI_SECTION_REGEX = re.compile(r'FRU Device Description : (?P<value>[^(]+) '
-    r'\(ID (?P<id>\d+)\)')
+                                r'\(ID (?P<id>\d+)\)')
 IPMI_OPTION_REGEX = re.compile(r' (?P<key>[^:]+) : (?P<value>.*)')
 IPMI_USER = settings.IPMI_USER
 IPMI_PASSWORD = settings.IPMI_PASSWORD
 
 SAVE_PRIORITY = 55
 
+
 class Error(Exception):
     pass
+
 
 class IPMIToolError(Error):
     pass
 
+
 class AnswerError(Error):
     pass
 
+
 class AuthError(IPMIToolError):
     pass
+
 
 def _clean(raw):
     if raw:
@@ -72,7 +78,6 @@ class IPMI(object):
                 raise IPMIToolError('Error calling ipmitool: %s' % err)
         return unicode(out, 'utf-8', 'replace')
 
-
     def get_fru(self):
         out = self.tool('fru', 'print')
         ipmi = parse.pairs(out)
@@ -96,10 +101,11 @@ class IPMI(object):
 
 
 def _add_ipmi_lan(device, mac):
-    eth, created = Ethernet.concurrent_get_or_create(device=device,
-        mac=MACAddressField.normalize(mac))
+    eth, created = Ethernet.concurrent_get_or_create(
+        device=device, mac=MACAddressField.normalize(mac))
     eth.label = 'IPMI MC'
     eth.save(priority=SAVE_PRIORITY)
+
 
 def _get_ipmi_ethernets(data):
     # Ethernet
@@ -109,7 +115,8 @@ def _get_ipmi_ethernets(data):
         if not ethernet:
             return
         mac = ethernet['Product Serial']
-        label = " ".join((ethernet['Product Manufacturer'],
+        label = " ".join((
+            ethernet['Product Manufacturer'],
             ethernet['Product Name'])).title()
         if 'GIGABIT' in ethernet['Product Name']:
             speed = EthernetSpeed.s1gbit.id
@@ -117,6 +124,7 @@ def _get_ipmi_ethernets(data):
             speed = 0
         yield Eth(label=label, mac=mac, speed=speed)
         index += 1
+
 
 def _add_ipmi_components(device, data):
     # CPUs
@@ -129,8 +137,8 @@ def _add_ipmi_components(device, data):
         if not cpu['Product Name']:
             cpu_index += 1
             continue
-        proc, _ = Processor.concurrent_get_or_create(index=cpu_index+1,
-            device=device)
+        proc, _ = Processor.concurrent_get_or_create(
+            index=cpu_index + 1, device=device)
         proc.label = re.sub(' +', ' ', cpu['Product Name']).title()
         speed_match = re.search(r'(\d+\.\d+)GHZ', cpu['Product Name'])
         if speed_match:
@@ -142,8 +150,8 @@ def _add_ipmi_components(device, data):
             family=proc.label, speed=speed, type=ComponentType.processor.id,
             cores=cores, extra_hash='', size=0)
         if c:
-            proc.model.name = ('CPU %s %dMHz %d-core' %
-                                (proc.label, speed, cores))[:50]
+            proc.model.name = ('CPU %s %dMHz %d-core' % (
+                proc.label, speed, cores))[:50]
             proc.model.save()
         proc.save()
         # Memory
@@ -161,19 +169,31 @@ def _add_ipmi_components(device, data):
                 mem_index += 1
                 total_mem_index += 1
                 continue
-            mem, _ = Memory.concurrent_get_or_create(index=total_mem_index+1,
-                device=device)
+            mem, _ = Memory.concurrent_get_or_create(
+                index=total_mem_index + 1, device=device)
             mem.label = memory['Product Name']
             size = int(size_match.group(1)) * 1024
             speed = 0
             mem.model, c = ComponentModel.concurrent_get_or_create(
-                name='RAM %s %dMiB' % (mem.label, size), size=size, speed=speed,
-                type=ComponentType.memory.id, extra='', extra_hash='',
-                family=mem.label, cores=0)
+                name='RAM %s %dMiB' % (mem.label, size), size=size,
+                speed=speed, type=ComponentType.memory.id, extra='',
+                extra_hash='', family=mem.label, cores=0)
             mem.save()
             mem_index += 1
             total_mem_index += 1
         cpu_index += 1
+
+
+def _get_base_device_info(fru_part):
+    name, name_clean = _clean(fru_part['Product Name'])
+    sn, sn_clean = _clean(fru_part['Product Serial'])
+    if sn in SERIAL_BLACKLIST:
+        sn = None
+    model_type = DeviceType.rack_server
+    if name.lower().startswith('ipmi'):
+            model_type = DeviceType.unknown
+    return name, sn, model_type
+
 
 @nested_commit_on_success
 def _run_ipmi(ip):
@@ -188,41 +208,51 @@ def _run_ipmi(ip):
             ipmi = IPMI(ip, 'ADMIN', 'ADMIN')
             fru = ipmi.get_fru()
     mc = ipmi.get_mc()
-    top = fru['/SYS']
-    if not top:
-        top = fru['Builtin FRU Device']
-    if not top:
-        raise AnswerError('Incompatible answer.')
-    name, name_clean = _clean(top['Product Name'])
-    sn, sn_clean = _clean(top['Product Serial'])
-    if sn in SERIAL_BLACKLIST:
-        sn = None
-    model_type = DeviceType.rack_server
-    if name.lower().startswith('ipmi'):
-        model_type = DeviceType.unknown
-    mac = ipmi.get_mac()
-    if mac:
-        ethernets = [Eth(label='IPMI MAC', mac=mac, speed=0)]
-    else:
-        ethernets = []
-    ethernets.extend(_get_ipmi_ethernets(fru))
-    dev = Device.create(ethernets=ethernets, priority=SAVE_PRIORITY,
-                        sn=sn, model_name=name.title(), model_type=model_type)
     firmware = mc.get('Firmware Revision')
-    if firmware:
-        dev.mgmt_firmware = 'rev %s' % firmware
-    _add_ipmi_lan(dev, mac)
-    _add_ipmi_components(dev, fru)
-    dev.save(update_last_seen=True, priority=SAVE_PRIORITY)
+    names = []
+    if not fru['/SYS'] and not fru['Builtin FRU Device']:
+        raise AnswerError('Incompatible answer.')
+    ip_address, ip_address_created = IPAddress.concurrent_get_or_create(
+        address=str(ip))
+    top = fru['/SYS']
+    if top:
+        name, sn, model_type = _get_base_device_info(top)
+        ethernets = []
+        ethernets.extend(_get_ipmi_ethernets(fru))
+        dev = Device.create(ethernets=ethernets, priority=SAVE_PRIORITY,
+                            sn=sn, model_name=name.title(),
+                            model_type=model_type)
+        if firmware:
+            dev.mgmt_firmware = 'rev %s' % firmware
+        _add_ipmi_components(dev, fru)
+        dev.management = ip_address
+        dev.save(update_last_seen=True, priority=SAVE_PRIORITY)
+        names.append(name)
+    top = fru['Builtin FRU Device']
+    if top:
+        name, sn, model_type = _get_base_device_info(top)
+        mac = ipmi.get_mac()
+        if mac:
+            ethernets = [Eth(label='IPMI MAC', mac=mac, speed=0)]
+        else:
+            ethernets = []
+        dev = Device.create(ethernets=ethernets, priority=SAVE_PRIORITY,
+                            sn=sn, model_name=name.title(),
+                            model_type=model_type)
+        if firmware:
+            dev.mgmt_firmware = 'rev %s' % firmware
+        _add_ipmi_lan(dev, mac)
+        _add_ipmi_components(dev, fru)
+        ip_address.device = dev
+        ip_address.is_management = True
+        if ip_address_created:
+            ip_address.hostname = network.hostname(ip_address.address)
+            ip_address.snmp_name = name
+        ip_address.save(update_last_seen=True)
+        dev.save(update_last_seen=True, priority=SAVE_PRIORITY)
+        names.append(name)
+    return ", ".join(names)
 
-    ip_address, created = IPAddress.concurrent_get_or_create(address=str(ip))
-    ip_address.device = dev
-    ip_address.is_management = True
-    if created:
-        ip_address.hostname = network.hostname(ip_address.address)
-        ip_address.snmp_name = name
-    ip_address.save(update_last_seen=True) # no priorities for IP addresses
-    return name
 
 @plugin.register(chain='discovery', requires=['ping', 'http'])
 def ipmi(**kwargs):
@@ -230,7 +260,8 @@ def ipmi(**kwargs):
         return False, "not configured", kwargs
     ip = str(kwargs['ip'])
     http_family = kwargs.get('http_family')
-    if http_family not in ('Sun', 'Thomas-Krenn', 'Oracle-ILOM-Web-Server', 'IBM System X'):
+    if http_family not in ('Sun', 'Thomas-Krenn', 'Oracle-ILOM-Web-Server',
+                           'IBM System X'):
         return False, 'no match.', kwargs
     try:
         name = _run_ipmi(ip)
@@ -239,10 +270,12 @@ def ipmi(**kwargs):
 
     return True, name, kwargs
 
+
 def ipmi_power_on(host, user=IPMI_USER, password=IPMI_PASSWORD):
     ipmi = IPMI(host, user, password)
     response = ipmi.tool('chassis', 'power', 'on')
     return response.strip().lower().endswith('on')
+
 
 def ipmi_reboot(host, user=IPMI_USER, password=IPMI_PASSWORD,
                 power_on_if_disabled=False):
