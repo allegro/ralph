@@ -9,7 +9,10 @@ from django.test import TestCase
 
 from ralph.discovery.models import (Device, DeviceType, OperatingSystem)
 from ralph.discovery.tests.plugins.samples.puppet import data
-from ralph.discovery.plugins.puppet.facts import handle_facts_os
+from ralph.discovery.tests.plugins.samples.puppet_packages import data_packages
+
+from ralph.discovery.plugins.puppet.facts import (
+    handle_facts_os, handle_facts_packages)
 
 
 class PuppetPluginTest(TestCase):
@@ -20,6 +23,10 @@ class PuppetPluginTest(TestCase):
             model_name='device'
         )
         self.dev.save()
+        self.dev2 = Device.create(
+            sn='device2', model_type=DeviceType.virtual_server,
+            model_name='device2'
+        )
 
     def test_handle_facts_os(self):
         handle_facts_os(self.dev, data, is_virtual=True)
@@ -27,5 +34,43 @@ class PuppetPluginTest(TestCase):
         self.assertEqual(os.model.name, 'CentOS 5.6')
         self.assertEqual(os.memory, 1000)
         self.assertEqual(os.cores_count, 1)
-        self.assertEqual(os.model.get_type_display(), u'operating system')
+        self.assertEqual(os.model.get_type_display(), 'operating system')
 
+    def test_handle_facts_packages(self):
+        handle_facts_packages(self.dev, data_packages[0])
+        handle_facts_packages(self.dev2, data_packages[1])
+        handle_facts_packages(self.dev2, data_packages[0])
+        device = Device.objects.get(sn='device')
+        device_packages = [x.label for x in device.software_set.all()]
+        device_packages.sort()
+        self.assertListEqual(
+            device_packages,
+            ['apache2 - 2.2.22-1ubuntu1',
+             'cron - 3.0pl1-120ubuntu4',
+             'gcc - 4:4.6.3-1ubuntu5',
+             'mysql-client - 5.5.28-0ubuntu0.12.04.2',
+             'mysql-server - 5.5.28-0ubuntu0.12.04.2',
+             'mysql-server-5.4 - 5.5.28-0ubuntu0.12.04.2',
+             'mysql-server-core-5.5 - 5.5.28-0ubuntu0.12.04.2',
+             'python - 2.7.3-0ubuntu2',
+             'sed - 4.3.1-9']
+        )
+        device2 = Device.objects.get(sn='device2')
+        device_packages = [x.label for x in device2.software_set.all()]
+        device_packages.sort()
+        self.assertListEqual(
+            device_packages,
+            ['apache2 - 1.2.22-1ubuntu1',
+             'apache2 - 2.2.22-1ubuntu1',
+             'cron - 3.0pl1-120ubuntu4',
+             'gcc - 4:4.6.3-1ubuntu5',
+             'mysql-client - 5.5.28-0ubuntu0.12.04.2',
+             'mysql-server - 5.5.28-0ubuntu0.12.04.2',
+             'mysql-server-5.4 - 5.5.28-0ubuntu0.12.04.2',
+             'mysql-server-5.5 - 5.5.28-0ubuntu0.12.04.2',
+             'mysql-server-core-5.5 - 5.5.28-0ubuntu0.12.04.2',
+             'python - 2.7.3-0ubuntu2',
+             'python - lack',
+             'sed - 4.1.1-9',
+             'sed - 4.3.1-9']
+        )
