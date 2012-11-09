@@ -8,18 +8,19 @@ from __future__ import unicode_literals
 
 from django.utils import simplejson
 from django import forms
+from django.http import HttpResponse
 from ajax_select.fields import AutoCompleteSelectField
 
-from ralph.cmdb.views import BaseCMDBView
 from ralph.cmdb.models import CI, CIRelation, CI_TYPES, CI_RELATION_TYPES
 from ralph.discovery.models import DeviceModel, DeviceType
-from django.http import HttpResponse
+from ralph.cmdb.views import BaseCMDBView, get_icon_for
+
+
 import pygraph
 from pygraph.algorithms.searching import breadth_first_search
 
 
 class SearchImpactForm(forms.Form):
-    depth = forms.CharField(max_length=100)
     ci = AutoCompleteSelectField(
         'ci', required=True,
         plugin_options={'minLength': 3}
@@ -58,7 +59,7 @@ class GraphsThree(BaseCMDBView):
     template_name = 'cmdb/graphs_three.html'
 
     @staticmethod
-    def get_ajax_three(self):
+    def get_ajax(self):
         root = CI.objects.filter(name='DC2')[0]
         search_tree(total_tree, root)
 
@@ -69,31 +70,34 @@ class GraphsThree(BaseCMDBView):
             mimetype='application/json',
         )
 
+
 class Graphs(BaseCMDBView):
     template_name = 'cmdb/graphs.html'
 
     rows = ''
+    graph_data = {}
 
     def get_context_data(self, **kwargs):
         ret = super(BaseCMDBView, self).get_context_data(**kwargs)
         form = SearchImpactForm(initial=self.get_initial())
         ret.update(dict(
             form=form,
-            rows=self.rows
+            rows=self.rows,
+            graph_data=simplejson.dumps(self.graph_data),
         ))
         return ret
 
     def get_initial(self):
         return dict(
-            depth=3,
-            ci=192010,
+            ci=self.request.GET.get('ci'),
         )
 
     @staticmethod
     def get_ajax(self):
         root = CI.objects.filter(name='DC2')[0]
         models_to_display = [
-            x.id for x in DeviceModel.objects.filter(type__in=[DeviceType.rack.id])
+            x.id for x in DeviceModel.objects.filter(
+                type__in=[DeviceType.rack.id])
         ]
         relations = [dict(
             parent=x.parent.id, child=x.child.id, parent_name=x.parent.name,
@@ -117,13 +121,20 @@ class Graphs(BaseCMDBView):
 
     def get(self, *args, **kwargs):
         ci_id = self.request.GET.get('ci')
-        depth = self.request.GET.get('depth')
-        if ci_id and depth:
+        self.rows = []
+        if ci_id:
+            ci_names = dict([(x.id, x.name) for x in CI.objects.all()])
             i = ImpactCalculator()
-            st, pre = i.find_affected_nodes(int(ci_id), depth)
-            self.rows = [CI.objects.get(pk=x) for x in pre]
-        else:
-            self.rows = []
+            st, pre = i.find_affected_nodes(int(ci_id))
+            nodes = [(key, ci_names[key]) for key in st.keys()]
+            relations = [dict(
+                parent=x,
+                child=st.get(x),
+                parent_name=ci_names[x],
+                child_name=ci_names[st.get(x)]) for x in st.keys() if st.get(x)]
+            self.graph_data = dict(nodes = nodes,
+                    relations=relations)
+            self.rows = [dict( icon=get_icon_for(CI.objects.get(pk=x)), ci=CI.objects.get(pk=x)) for x in pre]
         return super(BaseCMDBView, self).get(*args, **kwargs)
 
 
@@ -138,7 +149,7 @@ class ImpactCalculator(object):
             self.relation_types = relation_types
         self.build_graph()
 
-    def find_affected_nodes(self, ci_id, depth):
+    def find_affected_nodes(self, ci_id):
         try:
             st, pre = breadth_first_search(self.graph, ci_id)
         except KeyError:
