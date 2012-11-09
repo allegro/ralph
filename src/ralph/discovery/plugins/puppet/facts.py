@@ -14,7 +14,7 @@ from lck.django.common import nested_commit_on_success
 
 from ralph.util import network, Eth
 from ralph.discovery.models import (DeviceType, Device, OperatingSystem,
-    ComponentModel, ComponentType, Storage, SERIAL_BLACKLIST,
+    ComponentModel, ComponentType, Software, Storage, SERIAL_BLACKLIST,
     DISK_VENDOR_BLACKLIST, DISK_PRODUCT_BLACKLIST)
 
 from .util import assign_ips, get_default_mac
@@ -205,3 +205,34 @@ def handle_facts_os(dev, facts, is_virtual=False):
         pass
     os.save(priority=SAVE_PRIORITY)
 
+@nested_commit_on_success
+def handle_facts_packages(dev, facts):
+    packages_list = parse_packages(facts)
+    for package in packages_list:
+        package_name = '{} - {}'.format(package['name'], package['version'])
+        Software.create(
+            dev=dev,
+            path=package_name,
+            model_name=package_name,
+            label=package_name,
+            family=package['name'],
+        ).save()
+
+def parse_packages(facts):
+    packages_list = []
+    packages  = facts.strip().replace('\n', '').split(',')
+    for package in packages:
+        p = package.split(' ')
+        package = {}
+        try:
+            package['name'] = p[0]
+        except IndexError:
+            continue
+        if package['name'] == '':
+            continue
+        try:
+            package['version'] = p[1]
+        except IndexError:
+            package['version'] = 'lack'
+        packages_list.append(package)
+    return packages_list
