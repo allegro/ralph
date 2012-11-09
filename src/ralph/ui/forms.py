@@ -11,7 +11,7 @@ from django import forms
 from lck.django.choices import Choices
 from lck.django.common.models import MACAddressField
 from bob.forms import AutocompleteWidget
-from powerdns.models import Domain
+from powerdns.models import Record
 
 from ralph.business.models import Venture, RoleProperty, VentureRole
 from ralph.deployment.models import Deployment
@@ -20,7 +20,7 @@ from ralph.discovery.models_component import is_mac_valid
 from ralph.discovery.models import (Device, ComponentModelGroup,
                                     DeviceModelGroup, DeviceType, IPAddress)
 from ralph.dnsedit.models import DHCPEntry
-from ralph.dnsedit.util import is_valid_hostname
+from ralph.dnsedit.util import is_valid_hostname, get_domain, get_revdns_records
 from ralph.util import Eth
 from ralph.ui.widgets import (DateWidget, CurrencyWidget,
                               ReadOnlySelectWidget, DeviceGroupWidget,
@@ -92,18 +92,60 @@ class MarginsReportForm(DateRangeForm):
                 return self.fields[field].initial
 
 
-def _dns_type_field(label=None, initial=None, widget=None, required=True):
-    types = [(x, x) for x in (
-        '', 'A', 'AAAA', 'CNAME', 'MX', 'NS', 'PTR', 'SOA', 'SPF', 'SRV',
-        'TXT', 'HINFO'
-    )]
+def _dns_char_field(label=None, initial=None, record=None, **kwargs):
+    kwargs.update(
+        label=label,
+        initial=initial,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'span12',
+            'placeholder': label,
+        })
+    )
+    return forms.CharField(**kwargs)
+
+
+def _dns_int_field(label=None, initial=None, **kwargs):
+    kwargs.update(
+        label=label,
+        initial=initial,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'span12',
+            'placeholder': label,
+        })
+    )
+    return forms.IntegerField(**kwargs)
+
+
+def validate_domain_name(name):
+    if not name:
+        return
+    if '*' not in name and not is_valid_hostname(name):
+        raise forms.ValidationError("Invalid hostname")
+    if not get_domain(name):
+        raise forms.ValidationError("No such domain")
+
+
+def _dns_name_field(label=None, initial=None, **kwargs):
+    kwargs.update(validators=[validate_domain_name])
+    return _dns_char_field(label, initial, **kwargs)
+
+
+def _dns_type_field(label=None, initial=None, **kwargs):
+    types = list(Record.RECORD_TYPE)
+    types.insert(0, ('', ''))
     return forms.ChoiceField(
         label=label,
         choices=types,
         initial=initial,
         widget=forms.Select(attrs={'class':'span12'}),
-        required=required,
+        required=False,
+        **kwargs
     )
+
+def _ptr_field(label=None, initial=None, **kwargs):
+    return forms.BooleanField(label=label, required=False, **kwargs)
 
 
 class DNSRecordsForm(forms.Form):
@@ -111,46 +153,28 @@ class DNSRecordsForm(forms.Form):
         super(DNSRecordsForm, self).__init__(*args, **kwargs)
         self.records = list(records)
         fields =[
-            ('name', forms.CharField),
+            ('name', _dns_name_field),
             ('type', _dns_type_field),
-            ('content', forms.CharField),
-            ('ttl', forms.IntegerField),
-            ('prio', forms.IntegerField),
+            ('content', _dns_char_field),
+            ('ttl', _dns_int_field),
+            ('prio', _dns_int_field),
+            ('ptr', _ptr_field),
         ]
         def _add_fields(prefix, record):
             for label, field_class in fields:
                 initial = getattr(record, label, None)
-                attrs = dict(
-                    label=label,
-                    initial=initial,
-                    required=False,
-                    widget=forms.TextInput(attrs={
-                        'class': 'span12',
-                        'placeholder': label,
-                    })
-                )
-                if label == 'name':
-                    attrs.update(validators=[self.validate_domain])
-                field = field_class(**attrs)
+                field=field_class(label, initial)
                 field.initial = initial
                 field_id = prefix + label
                 self.fields[field_id] = field
         for record in self.records:
+            record.ptr = bool(
+                record.type in ('A', 'AAAA') and
+                get_revdns_records(record.content)
+            )
             prefix = 'dns_%d_' % record.id
             _add_fields(prefix, record)
         _add_fields('dns_new_', None)
-
-    def get_domain(self, name):
-        domains = [d for d in Domain.objects.all() if
-                   name.endswith(d.name)]
-        domains.sort(key=lambda d: -len(d.name))
-        if domains:
-            return domains[0]
-
-    def validate_domain(self, name):
-        if name and not self.get_domain(name):
-                raise forms.ValidationError("No such domain")
-
 
 class VentureFilterForm(forms.Form):
     show_all = forms.BooleanField(required=False,

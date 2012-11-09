@@ -24,6 +24,7 @@ from ralph.account.models import Perm
 from ralph.business.models import RolePropertyValue
 from ralph.cmdb import models as cdb
 from ralph.dnsedit.models import DHCPEntry
+from ralph.dnsedit.util import get_domain, set_revdns_record
 from ralph.discovery.models import Device, DeviceType
 from ralph.util import presentation, pricing
 from ralph.ui.forms import (DeviceInfoForm, DeviceInfoVerifiedForm,
@@ -430,7 +431,8 @@ class Addresses(DeviceDetailView):
         names = set(ip.hostname for ip in self.object.ipaddress_set.all()
                  if ip.hostname)
         dotnames = set(name+'.' for name in names)
-        revnames = set(ip + '.in-addr.arpa' for ip in ips)
+        revnames = set('.'.join(reversed(ip.split('.'))) + '.in-addr.arpa'
+                       for ip in ips)
         starrevnames = set()
         for name in revnames:
             parts = name.split('.')
@@ -453,11 +455,10 @@ class Addresses(DeviceDetailView):
             while parts:
                 parts.pop(0)
                 starnames.add('.'.join(['*'] + parts))
-        for entry in Record.objects.filter(
+        return Record.objects.filter(
                 db.Q(content__in=ips | names) |
                 db.Q(name__in=names | revnames | starnames | starrevnames)
-            ).distinct():
-            yield entry
+            ).distinct().order_by('type', 'name', 'content')
 
     def post(self, *args, **kwargs):
         self.object = self.get_object()
@@ -473,9 +474,19 @@ class Addresses(DeviceDetailView):
                           'ttl', 'prio', 'type'):
                 setattr(record, label,
                         self.form.cleaned_data[prefix + label] or None)
-                record.domain = self.form.get_domain(record.name)
+            record.domain = get_domain(record.name)
+            if (record.type in ('A', 'AAAA') and
+                self.form.cleaned_data[prefix + 'ptr']):
+                try:
+                    set_revdns_record(record.content, record.name)
+                except ValueError:
+                    pass
+                else:
+                    messages.warning(self.request,
+                                 "Created a PTR DNS record for %s." %
+                                 record.content)
         if self.form.is_valid():
-            for record in self.form_records:
+            for record in self.form.records:
                 prefix = 'dns_%d_' % record.id
                 record_type = self.form.cleaned_data.get(prefix + 'type')
                 if record_type:
