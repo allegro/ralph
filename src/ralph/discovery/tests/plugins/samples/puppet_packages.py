@@ -1,4 +1,4 @@
-data_packages =[
+data_packages = [
 """apache2 2.2.22-1ubuntu1,
 mysql-client 5.5.28-0ubuntu0.12.04.2,
 mysql-server 5.5.28-0ubuntu0.12.04.2,
@@ -20,4 +20,3 @@ cron 3.0pl1-120ubuntu4,
 sed 4.1.1-9,
 """,
 ]
-

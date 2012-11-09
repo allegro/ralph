@@ -23,8 +23,10 @@ from ralph.discovery import hardware
 
 SAVE_PRIORITY = 52
 
+
 class UnknownUnitError(Exception):
     pass
+
 
 @nested_commit_on_success
 def parse_facts(facts, is_virtual):
@@ -55,8 +57,8 @@ def parse_facts(facts, is_virtual):
         prod_name = facts.get('productname')
         manufacturer = facts.get('manufacturer')
         if not prod_name or not manufacturer:
-            return False, "`productname` or `manufacturer` facts not "\
-                    "available. `lshw` not present."
+            return False, ("`productname` or `manufacturer` facts not "
+                           "available. `lshw` not present.")
         if manufacturer and manufacturer in prod_name:
             model_name = prod_name
         else:
@@ -86,11 +88,14 @@ def parse_facts(facts, is_virtual):
     handle_facts_disks(dev, facts, is_virtual=is_virtual)
     return dev, dev_name
 
+
 def network_prtconf(as_string):
     return None, as_string
 
+
 def _parse_prtconf(dev, prtconf, facts, is_virtual):
     prtconf, _ = network_prtconf(as_string=zlib.decompress(prtconf))
+
 
 def _parse_smbios(dev, data, facts, is_virtual):
     try:
@@ -99,6 +104,7 @@ def _parse_smbios(dev, data, facts, is_virtual):
         pass
     smb = hardware.parse_smbios(data)
     hardware.handle_smbios(dev, smb, is_virtual, SAVE_PRIORITY)
+
 
 def handle_facts_ethernets(facts):
     ethernets = []
@@ -115,6 +121,7 @@ def handle_facts_ethernets(facts):
         label = 'Ethernet {}'.format(interface)
         ethernets.append(Eth(label, mac, speed=None))
     return ip_addresses, ethernets
+
 
 def handle_facts_disks(dev, facts, is_virtual=False):
     disks = {}
@@ -153,14 +160,15 @@ def handle_facts_disks(dev, facts, is_virtual=False):
             continue
         sn = disk.get('serial', '').strip()
         if sn:
-            stor, created = Storage.concurrent_get_or_create(device=dev,
-                sn=sn)
+            stor, created = Storage.concurrent_get_or_create(
+                device=dev, sn=sn)
         else:
-            stor, created = Storage.concurrent_get_or_create(device=dev,
-                mount_point=label, sn=None)
+            stor, created = Storage.concurrent_get_or_create(
+                device=dev, mount_point=label, sn=None)
         stor.size = disk['size'] = int(int(disk['size']) / 1024 / 1024)
-        stor.label = '{} {} {}'.format(disk['vendor'].strip(),
-            disk['product'].strip(), disk['revision'].strip())
+        stor.label = '{} {} {}'.format(
+            disk['vendor'].strip(), disk['product'].strip(),
+            disk['revision'].strip())
         extra = """Vendor: {vendor}
 Product: {product}
 Firmware Revision: {revision}
@@ -172,6 +180,7 @@ Size: {size}""".format(**disk)
         stor.model.name = '{} {}MiB'.format(stor.label, stor.size)
         stor.model.save(priority=SAVE_PRIORITY)
         stor.save(priority=SAVE_PRIORITY)
+
 
 @nested_commit_on_success
 def handle_facts_os(dev, facts, is_virtual=False):
@@ -209,6 +218,7 @@ def handle_facts_os(dev, facts, is_virtual=False):
         pass
     os.save(priority=SAVE_PRIORITY)
 
+
 @nested_commit_on_success
 def handle_facts_packages(dev, facts):
     packages_list = parse_packages(facts)
@@ -222,9 +232,10 @@ def handle_facts_packages(dev, facts):
             family=package['name'],
         ).save()
 
+
 def parse_packages(facts):
     packages_list = []
-    packages  = facts.strip().replace('\n', '').split(',')
+    packages = facts.strip().replace('\n', '').split(',')
     for package in packages:
         p = package.split(' ')
         package = {}
