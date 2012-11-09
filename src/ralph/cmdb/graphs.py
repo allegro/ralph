@@ -54,6 +54,21 @@ def search_tree(tree, root=CI.objects.filter(name='DC2')[0]):
         search_tree(root=CI.objects.get(id=x.get('child')), tree=new)
 
 
+class GraphsThree(BaseCMDBView):
+    template_name = 'cmdb/graphs_three.html'
+
+    @staticmethod
+    def get_ajax_three(self):
+        root = CI.objects.filter(name='DC2')[0]
+        search_tree(total_tree, root)
+
+        response_dict = total_tree
+
+        return HttpResponse(
+            simplejson.dumps(response_dict),
+            mimetype='application/json',
+        )
+
 class Graphs(BaseCMDBView):
     template_name = 'cmdb/graphs.html'
 
@@ -76,18 +91,6 @@ class Graphs(BaseCMDBView):
 
     @staticmethod
     def get_ajax(self):
-        root = CI.objects.filter(name='DC2')[0]
-        search_tree(total_tree, root)
-
-        response_dict = total_tree
-
-        return HttpResponse(
-            simplejson.dumps(response_dict),
-            mimetype='application/json',
-        )
-
-    @staticmethod
-    def get_ajax2(self):
         root = CI.objects.filter(name='DC2')[0]
         models_to_display = [
             x.id for x in DeviceModel.objects.filter(type__in=[DeviceType.rack.id])
