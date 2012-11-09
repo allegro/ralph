@@ -9,38 +9,46 @@
     <script type="text/javascript" src="{{STATIC_URL}}cmdb/zoom.js"></script>
     <script type="text/javascript">
     
-function draw_graph(data) {
-    var graph = Viva.Graph.graph();
-    for (var i=0; i<data.nodes.length; i++)
-    {
-        graph.addNode(data.nodes[i][0], data.nodes[i][1]);
+    function draw_graph(data) {
+        var graph = Viva.Graph.graph();
+        for (var i=0; i<data.nodes.length; i++)
+        {
+            graph.addNode(data.nodes[i][0], data.nodes[i][1]);
+        }
+        for (var i=0; i<data.relations.length; i++)
+        {
+            graph.addLink(data.relations[i].parent, data.relations[i].child);
+        }
+        var graphics = Viva.Graph.View.svgGraphics();
+        graphics.node(function(node) {
+                e = Viva.Graph.svg('text')
+                .attr('width', 224)
+                .attr('height', 180);
+                e.textContent = node.data;
+                return e
+                })
+        .placeNode(function(nodeUI, pos){
+                nodeUI.attr('x', pos.x).attr('y', pos.y);
+                });
+        var renderer = Viva.Graph.View.renderer(graph, {
+             container  : document.getElementById('graphDiv'),
+            graphics : graphics
+        });
+        renderer.run();
     }
-    for (var i=0; i<data.relations.length; i++)
-    {
-        graph.addLink(data.relations[i].parent, data.relations[i].child);
-    }
-    var graphics = Viva.Graph.View.svgGraphics();
-    graphics.node(function(node) {
-            e = Viva.Graph.svg('text')
-            .attr('width', 224)
-            .attr('height', 180);
-            e.textContent = node.data;
-            return e
-            })
-    .placeNode(function(nodeUI, pos){
-            nodeUI.attr('x', pos.x).attr('y', pos.y);
-            });
-    var renderer = Viva.Graph.View.renderer(graph, {
-graphics : graphics
-});
-renderer.run();
-}
 </script>
+<style type='text/css'>
+    svg{
+        z-index: 1000;
+    }
 
+</style>
 <script type="text/javascript" charset="utf-8">
     $(document).ready(function()
     {
-      {{ graph_data }}
+    var graph_data = JSON.parse("{{ graph_data|escapejs}}");
+    draw_graph(graph_data);
+    
     });
 </script>
 
@@ -54,17 +62,29 @@ renderer.run();
     <table class="table table-striped table-condensed table-list table-bordered">
         <tbody>
         <tr>
-            <th> Name </th>
-            <th> UID </th>
+            <th>L.p</th>
+            <th>Name</th>
+            <th>Type</th>
+            <th>UID</th>
+            <th>Venture/Role</th>
         </tr>
         {% for row in rows %}
-        <tr><td> {{ row.name }} </td> <td> {{ row.uid }} </td></tr>
+        <tr>
+            <td>
+                {{ forloop.counter }}
+            </td>
+            <td>
+            <a href="/cmdb/ci/view/{{ row.ci.id }}">
+                <b><i class='fugue-icon {{ row.icon }}'></i> {{ row.ci.name }} </b> 
+            </a></td>
+            <td>{{ row.ci.type }} {{ row.ci.content_object.model}}</td>
+            <td>{{ row.ci.uid }}</td>
+            <td>{{ row.content_object.venture}} {{ row.content_object.role }}</td>
+        </tr>
         {% endfor %}
     </tbody>
     </table>
     <h4> Impact graph </h4>
-    <div id='container' style='width:800; height:800;border: solid #ddd 1px'>
-        <div id='chart' style='position: absolute; top: 0px; margin-top:300px' width='800' height='800'>
-        </div>
+    <div id='graphDiv' width=800 height=800 style='width:800px; height:800px;border: solid #ddd 1px'>
     </div>
 {% endblock %}

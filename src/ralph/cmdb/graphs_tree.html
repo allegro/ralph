@@ -51,7 +51,7 @@
                 return {x: x_new_topleft, y: y_new_topleft}
             }
 
-jQuery(document).bind('DOMMouseScroll mousewheel', function(e, delta) {
+        jQuery(document).bind('DOMMouseScroll mousewheel', function(e, delta) {
         delta = delta || e.detail || e.wheelDelta || e.originalEvent.wheelDeltaY;
         if (zoom_value + (delta / 500) >= 1)
         {
