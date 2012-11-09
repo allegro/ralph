@@ -68,7 +68,8 @@ class TestSearch(TestCase):
         self.client = login_as_su()
         venture = Venture(
             name=DEVICE['venture'], symbol=DEVICE['ventureSymbol']
-        ).save()
+        )
+        venture.save()
         self.venture = venture
         venture_role = VentureRole(
             name=DEVICE['venture_role'], venture=self.venture
