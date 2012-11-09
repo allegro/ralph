@@ -89,8 +89,11 @@ class TestReportsVentures(TestCase):
     """
     I need test!
     """
+    pass
+
 
 class TestReportsMargins(TestCase):
     """
     I need test!
     """
+    pass
