@@ -80,6 +80,10 @@
       <Project>{66ED9F1D-C781-4EBB-BC39-3D7E600C89E9}</Project>
       <Name>DonPedro.Utils</Name>
     </ProjectReference>
+    <ProjectReference Include="..\DonPedroOutput\DonPedroOutput.csproj">
+      <Project>{DAE64400-7EED-47D3-830C-3BA065E2183E}</Project>
+      <Name>DonPedroOutput</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
