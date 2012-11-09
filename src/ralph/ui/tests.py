@@ -308,3 +308,35 @@ class TestSearch(TestCase):
         context = device_search.context['object']
         self.assertEqual(self.device.model.type, DeviceType.unknown.id)
         self.assertEqual(context.model.type, DeviceType.unknown)
+
+
+class TestDeviceView(TestCase):
+    def setUp(self):
+        login = 'ralph'
+        password = 'ralph'
+        self.user = User.objects.create_user(
+            login, 'ralph@ralph.local', password
+        )
+        self.user.is_staff = True
+        self.user.is_superuser = True
+        self.user.save()
+        self.client = Client()
+        self.client.login(username=login, password=password)
+        self.device = Device.create(
+            sn=DEVICE['sn'],
+            barcode=DEVICE['barcode'],
+            remarks=DEVICE['remarks'],
+            model_name=DEVICE['model_name'],
+            model_type=DeviceType.unknown,
+            rack=DEVICE['rack'],
+            position=DEVICE['position'],
+            dc=DATACENTER,
+        )
+
+    def test_software(self):
+        url = '/ui/search/software/{}'.format(self.device.id)
+        device_software = self.client.get(url)
+        context = device_software
+#        context.context_data['components']
+    import pdb; pdb.set_trace()
+    # TODO 
