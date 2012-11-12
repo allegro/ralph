@@ -2,14 +2,31 @@
 
 {% load bob %}
 {% load icons %}
+{% block extra_headers %}
+<style type='text/css'>
+    svg
+    {
+        z-index: 1000; /* top-most */
+    }
+</style>
+{% endblock %}
+
 
 {% block scripts %}
     {{ block.super }}
     <script type="text/javascript" src="{{STATIC_URL}}cmdb/VivaGraphJS/vivagraph.js"></script>
-    <script type="text/javascript" src="{{STATIC_URL}}cmdb/zoom.js"></script>
     <script type="text/javascript">
-    
-    function draw_graph(data) {
+        function from_canvas_to_svg(sourceCanvas, targetSVG, x, y, width, height) {
+            var imageData = sourceCanvas.getContext('2d').getImageData(
+                x, y, width, height);
+            var newCanvas = document.createElement("canvas");
+            newCanvas.width = width; newCanvas.height = height;
+            newCanvas.getContext("2d").putImageData(imageData, 0, 0);
+            var img_dataurl = newCanvas.toDataURL("image/png");
+            targetSVG.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", img_dataurl);
+    }
+
+    function draw_graph(data, sprite_canvas) {
         var graph = Viva.Graph.graph();
         for (var i=0; i<data.nodes.length; i++)
         {
@@ -21,15 +38,21 @@
         }
         var graphics = Viva.Graph.View.svgGraphics();
         graphics.node(function(node) {
-                e = Viva.Graph.svg('text')
-                .attr('width', 224)
-                .attr('height', 180);
+                var image = Viva.Graph.svg('image');
+                from_canvas_to_svg(sprite_canvas, image, 0, 0, 16, 16);
+                image.attr('width', 16).attr('height', 16);
+                var g = Viva.Graph.svg('g').attr('width', 224).attr('height', 180);
+                var e = Viva.Graph.svg('text').attr('width', 224).attr('height', 180);
                 e.textContent = node.data;
-                return e
-                })
+                g.appendChild(e);
+                g.appendChild(image);
+                return g;
+        })
         .placeNode(function(nodeUI, pos){
-                nodeUI.attr('x', pos.x).attr('y', pos.y);
-                });
+                var nu = nodeUI;
+                nu.childNodes[0].attr('x', pos.x).attr('y', pos.y);
+                nu.childNodes[1].attr('x', pos.x).attr('y', pos.y);
+        });
         var renderer = Viva.Graph.View.renderer(graph, {
              container  : document.getElementById('graphDiv'),
             graphics : graphics
@@ -37,18 +60,35 @@
         renderer.run();
     }
 </script>
-<style type='text/css'>
-    svg{
-        z-index: 1000;
-    }
 
-</style>
 <script type="text/javascript" charset="utf-8">
+    var MAX_RELATIONS_COUNT = 100;
+
     $(document).ready(function()
     {
-    var graph_data = JSON.parse("{{ graph_data|escapejs}}");
-    draw_graph(graph_data);
-    
+        /* 
+          Don't make additional ajax call, just use graph_data directly. 
+         */
+        var graph_data = JSON.parse("{{graph_data|escapejs}}");
+        if (graph_data.nodes.length > MAX_RELATIONS_COUNT)
+        {
+            alert('To many relations to draw a graph.')
+        }
+        else
+        {
+            var can = document.createElement('canvas')
+            can.style.display = 'none';
+            var ctx = can.getContext('2d');
+            var img = new Image();
+            img.onload = function(){
+                can.width = img.width;
+                can.height = img.height;
+                ctx.drawImage(img, 0, 0, img.width, img.height);
+                draw_graph(graph_data, can);
+            }
+            var sprite_url = '/static/fugue-icons.png';
+            img.src = sprite_url; 
+        }
     });
 </script>
 
@@ -87,4 +127,5 @@
     <h4> Impact graph </h4>
     <div id='graphDiv' width=800 height=800 style='width:800px; height:800px;border: solid #ddd 1px'>
     </div>
+
 {% endblock %}

@@ -15,7 +15,6 @@ from ralph.cmdb.models import CI, CIRelation, CI_TYPES, CI_RELATION_TYPES
 from ralph.discovery.models import DeviceModel, DeviceType
 from ralph.cmdb.views import BaseCMDBView, get_icon_for
 
-
 import pygraph
 from pygraph.algorithms.searching import breadth_first_search
 
@@ -30,6 +29,7 @@ total_tree = dict()
 
 
 def search_tree(tree, root=CI.objects.filter(name='DC2')[0]):
+    # Draw compositon three of given devices
     models_to_display = [
         x.id for x in DeviceModel.objects.filter(type__in=[
             DeviceType.switch.id,
@@ -132,9 +132,11 @@ class Graphs(BaseCMDBView):
                 child=st.get(x),
                 parent_name=ci_names[x],
                 child_name=ci_names[st.get(x)]) for x in st.keys() if st.get(x)]
-            self.graph_data = dict(nodes = nodes,
-                    relations=relations)
-            self.rows = [dict( icon=get_icon_for(CI.objects.get(pk=x)), ci=CI.objects.get(pk=x)) for x in pre]
+            self.graph_data = dict(
+                nodes=nodes, relations=relations)
+            self.rows = [dict(
+                icon=get_icon_for(CI.objects.get(pk=x)),
+                ci=CI.objects.get(pk=x)) for x in pre]
         return super(BaseCMDBView, self).get(*args, **kwargs)
 
 
