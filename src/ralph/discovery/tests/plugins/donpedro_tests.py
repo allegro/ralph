@@ -39,7 +39,8 @@ class DonPedroPluginTest(TestCase):
         self.assertTrue(processors[0].cores == processors[1].cores == 1)
         self.assertTrue(
             processors[0].model.name == processors[1].model.name ==
-            u'CPU Intel(R) Xeon(R) CPU           E5640  @ 2.67GHz 2667Mhz multicore'
+            u'CPU Intel(R) Xeon(R) CPU           '
+            u'E5640  @ 2.67GHz 2667Mhz multicore'
         )
         self.assertTrue(
             processors[0].model.speed == processors[1].model.speed == 2667
@@ -66,7 +67,8 @@ class DonPedroPluginTest(TestCase):
         self.assertEqual(
             fc[1].model.name, u'QMH2462')
         self.assertTrue(
-            fc[0].label == fc[1].label == u'QLogic QMH2462 Fibre Channel Adapter')
+            fc[0].label == fc[1].label ==
+            u'QLogic QMH2462 Fibre Channel Adapter')
 
     def testMemory(self):
         memory = self.dev.memory_set.all()
