@@ -10,12 +10,12 @@ namespace DonPedro.Utils
 			"FEAD4D"
 		};
 		private static string[] diskVendorBlacklist = {
-			"lsi", "lsilogic", "vmware", "3pardata", "xensrc"
+			"lsi", "lsilogic", "vmware", "3pardata"
 		};
 		private static string[] diskProductBlacklist = {
 			"mr9261-8i", "9750-4i", "msa2324fc", "logical volume",
 			"virtualdisk", "virtual-disk", "multi-flex", "1815      fastt",
-			"comstar", "xensrc"
+			"comstar"
 		};
 		
 		public static string[] MacPrefixBlacklist
