@@ -9,7 +9,7 @@ namespace DonPedro.Utils
 			mac = mac.Replace(":", "");
 			mac = mac.Replace("-", "");
 			
-			return mac;
+			return mac.ToUpper();
 		}
 	}
 }
