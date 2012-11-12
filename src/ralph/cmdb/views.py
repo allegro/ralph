@@ -18,6 +18,7 @@ from django.http import HttpResponse
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 from lck.django.common import nested_commit_on_success
+from lck.django.filters import slugify
 
 from ralph.cmdb.forms import (
     CISearchForm, CIEditForm, CIViewForm, CIRelationEditForm
@@ -89,13 +90,30 @@ class BaseCMDBView(Base):
 
     def get_sidebar_items(self):
         ci = (
-            ('/cmdb/search', 'All Cis', 'fugue-magnifier'),
-            ('/cmdb/search?layer=7&top_level=1', 'Services',
-                'fugue-disc-share'),
             ('/cmdb/add', 'Add CI', 'fugue-block--plus'),
             ('/cmdb/changes/dashboard', 'Dashboard', 'fugue-dashboard'),
             ('/cmdb/changes/timeline', 'Timeline View', 'fugue-dashboard'),
             ('/admin/cmdb', 'Admin', 'fugue-toolbox'),
+        )
+
+        layers = (
+            ('/cmdb/search?layer=1&top_level=1', 'Applications',
+             'fugue-applications-blue'),
+            ('/cmdb/search?layer=2&top_level=1', 'Databases',
+             'fugue-database'),
+            ('/cmdb/search?layer=3&top_level=1', 'Documentation/Procedures',
+             'fugue-blue-documents'),
+            ('/cmdb/search?layer=4&top_level=1', 'Organization Unit/Support Group',
+             'fugue-books-brown'),
+            ('/cmdb/search?layer=5&top_level=1', 'Hardware',
+             'fugue-processor'),
+            ('/cmdb/search?layer=6&top_level=1', 'Network',
+             'fugue-network-ip'),
+            ('/cmdb/search?layer=7&top_level=1', 'Services',
+             'fugue-disc-share'),
+            ('/cmdb/search?layer=8&top_level=1', 'Roles',
+             'fugue-computer-network'),
+            ('/cmdb/search', 'All Cis', 'fugue-magnifier'),
         )
         reports = (
             ('/cmdb/changes/reports?kind=top_changes',
@@ -131,6 +149,12 @@ class BaseCMDBView(Base):
                 fugue_icon=t[2],
                 href=t[0]
             ) for t in ci] +
+            [MenuHeader('CI Layers')] +
+            [MenuItem(
+                label=t[1],
+                fugue_icon=t[2],
+                href=t[0]
+            ) for t in layers] +
             [MenuHeader('Reports')] +
             [MenuItem(
                 label=t[1],
@@ -768,8 +792,10 @@ class Search(BaseCMDBView):
             subsection += '%s - ' % CI_TYPES.DescFromName(type)
         subsection += 'Search'
         sidebar_selected = ''
-        if layer == str(CI_TYPES.SERVICE.id):
-            sidebar_selected = 'services'
+        layers = CILayer.objects.all()
+        for layer_item in layers:
+            if layer == str(layer_item.id):
+                sidebar_selected = slugify(layer_item.name)
         if not layer and not type:
             sidebar_selected = 'all cis'
         ret = super(Search, self).get_context_data(**kwargs)
