@@ -321,8 +321,12 @@ class ReportVentures(SidebarReports, Base):
                 venture.total = get_total_cost(query, start, end)
                 (venture.count, venture.count_now,
                  devices) = get_total_count(query, start, end)
-                venture.core_count = get_total_cores(query, end)
-                venture.virtual_core_count = get_total_virtual_cores(query, end)
+                venture.core_count = get_total_cores(query, start, end)
+                venture.virtual_core_count = get_total_virtual_cores(
+                    query,
+                    start,
+                    end
+                )
                 cloud_cost = get_total_cost(query.filter(
                         device__model__type=DeviceType.cloud_server.id
                     ), start, end)
