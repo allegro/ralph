@@ -13,16 +13,14 @@ namespace DonPedro.Detectors
 		protected enum SizeUnits {B, KB, MB, GB, TB};
 		protected string operatingSystemVersion;
 		protected string vendor;
+		protected int osVersionNumber;
 
 		public WMIDetectorSource()
 		{
 			operatingSystemVersion = GetOperatingSystemVersion();
 			vendor = GetVendor();
-		}
-		
-		public List<ProcessorDTOResponse> GetProcessorsInfo()
-		{
-			int osVersionNumber = 6;
+			
+			osVersionNumber = 6;
 			try
 			{
 				osVersionNumber = int.Parse(
@@ -33,7 +31,10 @@ namespace DonPedro.Detectors
 			{
 				Logger.Instance.LogError(e.ToString());
 			}
+		}
 
+		public List<ProcessorDTOResponse> GetProcessorsInfo()
+		{
 			if (osVersionNumber < 6)
 			{
 				return GetWinLTE6ProcessorsInfo();
@@ -168,16 +169,38 @@ namespace DonPedro.Detectors
 
 			try
 			{
-				SelectQuery diskDrivesQuery = new SelectQuery("select Caption, DeviceID, SerialNumber from Win32_DiskDrive");
+				string query;
+				if (osVersionNumber < 6)
+				{
+					query = "select Caption, DeviceID, Signature, Model from Win32_DiskDrive";
+				}
+				else
+				{
+					query = "select Caption, DeviceID, SerialNumber, Model from Win32_DiskDrive";
+				}
+				
+				SelectQuery diskDrivesQuery = new SelectQuery(query);
 				ManagementObjectSearcher diskDrivesSearcher = new ManagementObjectSearcher(diskDrivesQuery);
 				
 				foreach (ManagementObject diskDrive in diskDrivesSearcher.Get())
 				{
-//					string sn = GetValueAsString(diskDrive, "SerialNumber");
-//					if (sn.StartsWith("QM000"))
-//					{
-//						continue;
-//					}
+					string sn;
+					if (osVersionNumber < 6)
+					{
+						sn = GetValueAsString(diskDrive, "Signature");
+					}
+					else
+					{
+						sn = GetValueAsString(diskDrive, "SerialNumber");
+					}
+					
+					if (sn.StartsWith("QM000") || 
+					    Blacklists.IsDiscVendorInBlacklist(GetValueAsString(diskDrive, "Caption").ToLower()) ||
+					    Blacklists.IsDiskProductInBlacklist(GetValueAsString(diskDrive, "Model").ToLower())
+					)
+					{
+						continue;
+					}
 					
 					RelatedObjectQuery diskPartitionsQuery = new RelatedObjectQuery(
 						"associators of {Win32_DiskDrive.DeviceID='" +
@@ -199,7 +222,7 @@ namespace DonPedro.Detectors
 						{
 							StorageDTOResponse disk = new StorageDTOResponse();
 							disk.Label = GetValueAsString(diskDrive, "Caption");
-							disk.MountPoint = GetValueAsString(logicalDisk, "Caption");
+							disk.MountPoint = GetValueAsString(diskDrive, "DeviceID");
 							try
 							{
 								disk.Size = ConvertSizeToMiB(Int64.Parse(logicalDisk["Size"].ToString()), SizeUnits.B).ToString();
@@ -208,7 +231,7 @@ namespace DonPedro.Detectors
 							{
 								Logger.Instance.LogError(e.ToString());
 							}
-							disk.Sn = GetValueAsString(diskDrive, "SerialNumber");
+							disk.Sn = sn;
 							
 							storage.Add(disk);
 						}
@@ -238,18 +261,8 @@ namespace DonPedro.Detectors
 				
 				foreach (ManagementObject obj in searcher.Get())
 				{
-					string normalizedMac = MACAddressUtils.NormalizeMACAddress(GetValueAsString(obj, "MACAddress"));
-					normalizedMac = normalizedMac.ToUpper();
-					bool inBlackList = false;
-					for (int i = 0; i < Blacklists.MacPrefixBlacklist.Length; i++)
-					{
-						if (normalizedMac.Substring(0, 6) == Blacklists.MacPrefixBlacklist[i])
-						{
-							inBlackList = true;
-							break;
-						}
-					}
-					if (inBlackList) 
+					string mac = GetValueAsString(obj, "MACAddress");
+					if (Blacklists.IsMacInBlacklist(mac))
 					{
 						continue;
 					}
@@ -491,7 +504,7 @@ namespace DonPedro.Detectors
 				foreach (ManagementObject obj in searcher.Get())
 				{
 					ProcessorDTOResponse processor = new ProcessorDTOResponse();
-					if (vendor == "xen" || vendor == "vmware, inc." || vendor == "vmware")
+					if (vendor.IndexOf("xen") > -1 || vendor.IndexOf("vmware") > -1 || vendor.IndexOf("bochs") > -1)
 					{
 						processor.Label = "Virtual " + GetValueAsString(obj, "Name");	
 					}
@@ -560,7 +573,7 @@ namespace DonPedro.Detectors
 					}
 					
 					ProcessorDTOResponse processor = new ProcessorDTOResponse();
-					if (vendor == "xen" || vendor == "vmware, inc." || vendor == "vmware")
+					if (vendor.IndexOf("xen") > -1 || vendor.IndexOf("vmware") > -1 || vendor.IndexOf("bochs") > -1)
 					{
 						processor.Label = "Virtual " + GetValueAsString(obj, "Name");	
 					}
