@@ -228,8 +228,9 @@ def handle_facts_packages(dev, facts):
             dev=dev,
             path=package_name,
             model_name=package_name,
-            label=package_name,
+            label=package['name'],
             family=package['name'],
+            version=package['version'],
         ).save()
 
 
@@ -248,6 +249,6 @@ def parse_packages(facts):
         try:
             package['version'] = p[1]
         except IndexError:
-            package['version'] = 'lack'
+            package['version'] = None
         packages_list.append(package)
     return packages_list

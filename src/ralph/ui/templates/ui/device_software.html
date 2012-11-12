@@ -7,6 +7,7 @@
     <thead><tr>
         <th width="16"></th>
         <th>Label</th>
+        <th>Version</th>
         <th>Model Group</th>
         <th>Model</th>
     </tr></thead>
@@ -23,6 +24,9 @@
             {%  else %}
                 <td>{{ item.label }}</td>
             {%  endif %}
+            <td>
+                {{ item.version|default:'–' }}
+            </td>
             <td>
                 {% if item.model.group %}
                     {% if item.group == 'dev' %}
