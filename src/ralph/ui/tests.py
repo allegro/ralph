@@ -332,7 +332,7 @@ class TestDeviceView(TestCase):
             position=DEVICE['position'],
             dc=DATACENTER,
         )
-        self.software1 =  Software.create(
+        self.software1 = Software.create(
             dev=self.device,
             path='gcc',
             model_name='gcc 4.7.2',
@@ -340,7 +340,7 @@ class TestDeviceView(TestCase):
             family='compilers',
         )
         self.software1.save()
-        self.software2 =  Software.create(
+        self.software2 = Software.create(
             dev=self.device,
             path='apache2',
             model_name='apache2 2.4.3',
