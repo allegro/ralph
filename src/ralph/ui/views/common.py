@@ -30,7 +30,8 @@ from ralph.discovery.models_history import FOREVER_DATE, ALWAYS_DATE
 from ralph.util import presentation, pricing
 from ralph.ui.forms import (DeviceInfoForm, DeviceInfoVerifiedForm,
                             DevicePricesForm, DevicePurchaseForm,
-                            PropertyForm, DeviceBulkForm, DNSRecordsForm)
+                            PropertyForm, DeviceBulkForm, DNSRecordsForm,
+                            DHCPRecordsForm)
 
 SAVE_PRIORITY = 200
 HISTORY_PAGE_SIZE = 25
@@ -425,7 +426,8 @@ class Addresses(DeviceDetailView):
 
     def __init__(self, *args, **kwargs):
         super(Addresses, self).__init__(*args, **kwargs)
-        self.form = None
+        self.dns_form = None
+        self.dhcp_form = None
 
     def get_dns(self):
         ips = set(ip.address for ip in self.object.ipaddress_set.all())
@@ -468,47 +470,89 @@ class Addresses(DeviceDetailView):
             return HttpResponseForbidden(
                 "You don't have permission to edit this."
             )
-        dns_records = self.get_dns()
-        self.form = DNSRecordsForm(dns_records, self.request.POST)
-        def fill_record(prefix, record):
-            for label in ('name', 'type', 'content',
-                          'ttl', 'prio', 'type'):
-                setattr(record, label,
-                        self.form.cleaned_data[prefix + label] or None)
-            record.domain = get_domain(record.name)
-            if (record.type in ('A', 'AAAA') and
-                self.form.cleaned_data[prefix + 'ptr']):
-                try:
-                    set_revdns_record(record.content, record.name)
-                except ValueError:
-                    pass
-                else:
-                    messages.warning(self.request,
-                                 "Created a PTR DNS record for %s." %
-                                 record.content)
-        if self.form.is_valid():
-            for record in self.form.records:
-                prefix = 'dns_%d_' % record.id
-                record_type = self.form.cleaned_data.get(prefix + 'type')
-                if record_type:
-                    fill_record(prefix, record)
+        if 'dns' in self.request.POST:
+            dns_records = self.get_dns()
+            self.dns_form = DNSRecordsForm(dns_records, self.request.POST)
+            def fill_record(prefix, record):
+                for label in ('name', 'type', 'content',
+                              'ttl', 'prio', 'type'):
+                    setattr(record, label,
+                            self.dns_form.cleaned_data[prefix + label] or None)
+                record.domain = get_domain(record.name)
+                if (record.type in ('A', 'AAAA') and
+                    self.dns_form.cleaned_data[prefix + 'ptr']):
+                    try:
+                        set_revdns_record(record.content, record.name)
+                    except ValueError:
+                        pass
+                    else:
+                        messages.warning(self.request,
+                                     "Created a PTR DNS record for %s." %
+                                     record.content)
+            if self.dns_form.is_valid():
+                for record in self.dns_form.records:
+                    prefix = 'dns_%d_' % record.id
+                    record_type = self.dns_form.cleaned_data.get(
+                        prefix + 'type'
+                    )
+                    if record_type:
+                        fill_record(prefix, record)
+                        record.save()
+                    else:
+                        messages.warning(self.request,
+                                         "A %s DNS record for %s deleted." %
+                                         (record.type, record.name))
+                        record.delete()
+                if self.dns_form.cleaned_data.get('dns_new_type'):
+                    record = Record()
+                    fill_record('dns_new_', record)
                     record.save()
-                else:
-                    messages.warning(self.request,
-                                     "A %s DNS record for %s deleted." %
+                    messages.success(self.request,
+                                     "A %s DNS record for %s added." %
                                      (record.type, record.name))
-                    record.delete()
-            if self.form.cleaned_data.get('dns_new_type'):
-                record = Record()
-                fill_record('dns_new_', record)
-                record.save()
-                messages.warning(self.request,
-                                 "A %s DNS record for %s added." %
-                                 (record.type, record.name))
-            messages.success(self.request, "DNS records updated.")
-            return HttpResponseRedirect(self.request.path)
-        else:
-            messages.error(self.request, "There are errors in the form.")
+                messages.success(self.request, "DNS records updated.")
+                return HttpResponseRedirect(self.request.path)
+            else:
+                messages.error(self.request,
+                               "There are errors in the DNS form.")
+        elif 'dhcp' in self.request.POST:
+            dhcp_records = self.get_dhcp()
+            self.dhcp_form = DHCPRecordsForm(dhcp_records, self.request.POST)
+            if self.dhcp_form.is_valid():
+                for record in self.dhcp_form.records:
+                    prefix = 'dhcp_%d_' % record.id
+                    ip = self.dhcp_form.cleaned_data.get(prefix + 'ip')
+                    mac = self.dhcp_form.cleaned_data.get(prefix + 'mac')
+                    if (ip and mac):
+                        record.ip = ip
+                        record.mac = mac
+                        record.save()
+                    else:
+                        messages.warning(self.request,
+                                         "A DHCP record deleted.")
+                        record.delete()
+                prefix = 'dhcp_new_'
+                ip = self.dhcp_form.cleaned_data.get(prefix + 'ip')
+                mac = self.dhcp_form.cleaned_data.get(prefix + 'mac')
+                if (ip and mac):
+                    if DHCPEntry.objects.filter(ip=ip).exists():
+                        messages.warning(self.request,
+                                         "A DHCP record for %s already exists."
+                                         % ip)
+                    if DHCPEntry.objects.filter(mac=mac).exists():
+                        messages.warning(self.request,
+                                         "A DHCP record for %s already exists."
+                                         % mac)
+                    record = DHCPEntry(mac=mac, ip=ip)
+                    record.save()
+                    messages.success(self.request,
+                                     "A DHCP record for %s and %s added." %
+                                     (ip, mac))
+                messages.success(self.request, "DHCP records updated.")
+                return HttpResponseRedirect(self.request.path)
+            else:
+                messages.error(self.request,
+                               "There are errors in the DHCP form.")
         return self.get(*args, **kwargs)
 
     def get_dhcp(self):
@@ -517,12 +561,16 @@ class Addresses(DeviceDetailView):
 
     def get_context_data(self, **kwargs):
         ret = super(Addresses, self).get_context_data(**kwargs)
-        if self.form is None:
-            dns = self.get_dns()
-            self.form = DNSRecordsForm(dns)
+        if self.dns_form is None:
+            dns_records = self.get_dns()
+            self.dns_form = DNSRecordsForm(dns_records)
+        if self.dhcp_form is None:
+            dhcp_records = self.get_dhcp()
+            self.dhcp_form = DHCPRecordsForm(dhcp_records)
         ret.update({
             'balancers': list(_get_balancers(self.object)),
-            'dnsform': self.form,
+            'dnsform': self.dns_form,
+            'dhcpform': self.dhcp_form,
             'dhcp': self.get_dhcp(),
         })
         return ret
