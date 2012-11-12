@@ -33,12 +33,25 @@
         {% spaceless %}
 
             {% include 'cmdb/column-header.html' with sortable=1 label='Name' name='uid' always=1 %}
-            {% include 'cmdb/column-header.html' with sortable=1 label='Type' name='type' always=1%}
-            {% include 'cmdb/column-header.html' with label='Layer' name='layer' always=1%}
-            <!--
-            {% include 'cmdb/column-header.html' with label='State' name='state'  always=1%}
-            {% include 'cmdb/column-header.html' with label='Change status' name='status' always=1%}
-            !-->
+            {% include 'cmdb/column-header.html' with sortable=1 label='Type' name='type' always=1 %}
+            {% include 'cmdb/column-header.html' with label='Layer' name='layer' always=1 %}
+            {% if layer == '1' %}
+                {# Application #}
+            {% elif layer == '2' %}
+                {# Database #}
+            {% elif layer == '3' %}
+                {# Documentation/Procedures  #}
+            {% elif layer == '4' %}
+                {# Organization Unit/Support Group  #}
+            {% elif layer == '5' %}
+                {# Hardware #}
+            {% elif layer == '6' %}
+                {# Network #}
+            {% elif layer == '7' %}
+                {# Services #}
+            {% elif layer == '8' %}
+                {# Roles #}
+            {% endif %}
             {% include 'cmdb/column-header.html' with label='Operations' name='operations' always=1%}
 
         {% endspaceless %}
@@ -63,27 +76,31 @@
             <td>
                 {{ d.layers }}
             </td>
+            {% if layer == '1' %}
+                {# Application #}
+            {% elif layer == '2' %}
+                {# Database #}
+            {% elif layer == '3' %}
+                {# Documentation/Procedures  #}
+            {% elif layer == '4' %}
+                {# Organization Unit/Support Group  #}
+            {% elif layer == '5' %}
+                {# Hardware #}
+            {% elif layer == '6' %}
+                {# Network #}
+            {% elif layer == '7' %}
+                {# Services #}
+            {% elif layer == '8' %}
+                {# Roles #}
+            {% endif %}
+            <td>
+                {% if edit_configuration_item_info_generic_perm  %}
+                    <a href="./ci/edit/{{ d.id|default:''}}?{{url_query.urlencode }}"> Edit </a> |
+                {% endif %}
 
-            <!--
-            <td>
-                <i class='fugue-icon {% if d.state_id == 2 %} fugue-status-busy
-                    {% elif d.state_id == 1  %} fugue-status
-                    {% else %} fugue-status-offline
-                    {% endif %}' > </i>
-{{ d.state }}
-            </td>
-            <td>
-                {{ d.status}}
-            </td>
-            !-->
-            <td>
-                        {% if edit_configuration_item_info_generic_perm  %}
-                            <a href="./ci/edit/{{ d.id|default:''}}?{{url_query.urlencode }}"> Edit </a> | 
-                        {% endif %}
-
-                        {% if read_configuration_item_info_generic_perm  %}
-                            <a href="./ci/view/{{ d.id|default:''}}?{{url_query.urlencode }}"> View</a>
-                        {% endif %}
+                {% if read_configuration_item_info_generic_perm  %}
+                    <a href="./ci/view/{{ d.id|default:''}}?{{url_query.urlencode }}"> View</a>
+                {% endif %}
             </td>
         </tr>
         {% endfor %}

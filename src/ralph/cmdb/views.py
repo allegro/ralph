@@ -778,6 +778,7 @@ class Search(BaseCMDBView):
             'page': self.page,
             'pages': _get_pages(self.paginator, self.page_number),
             'sort': self.request.GET.get('sort', ''),
+            'layer': self.request.GET.get('layer', ''),
             'form': self.form,
             'sidebar_selected': sidebar_selected,
             'subsection': subsection,
