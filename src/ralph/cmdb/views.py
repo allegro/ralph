@@ -113,7 +113,7 @@ class BaseCMDBView(Base):
              'fugue-disc-share'),
             ('/cmdb/search?layer=8&top_level=1', 'Roles',
              'fugue-computer-network'),
-            ('/cmdb/search', 'All Cis', 'fugue-magnifier'),
+            ('/cmdb/search', 'All Cis (no label)', 'fugue-magnifier'),
         )
         reports = (
             ('/cmdb/changes/reports?kind=top_changes',
@@ -149,7 +149,7 @@ class BaseCMDBView(Base):
                 fugue_icon=t[2],
                 href=t[0]
             ) for t in ci] +
-            [MenuHeader('CI Layers')] +
+            [MenuHeader('CI by Layers')] +
             [MenuItem(
                 label=t[1],
                 fugue_icon=t[2],
