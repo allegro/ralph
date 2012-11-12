@@ -196,7 +196,7 @@ class ReportMargins(SidebarReports, Base):
                 db.Q(venture__parent__parent=venture) |
                 db.Q(venture__parent__parent__parent=venture) |
                 db.Q(venture__parent__parent__parent__parent=venture)
-            )
+            ).exclude(device__deleted=True)
             total_cost = 0
             total_sim = 0
             total_count = 0
@@ -317,7 +317,7 @@ class ReportVentures(SidebarReports, Base):
                     db.Q(venture__parent__parent=venture) |
                     db.Q(venture__parent__parent__parent=venture) |
                     db.Q(venture__parent__parent__parent__parent=venture)
-                )
+                ).exclude(device__deleted=True)
                 venture.total = get_total_cost(query, start, end)
                 (venture.count, venture.count_now,
                  devices) = get_total_count(query, start, end)
