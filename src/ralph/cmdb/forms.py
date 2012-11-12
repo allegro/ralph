@@ -19,7 +19,7 @@ from ralph.cmdb import models as db
 
 
 class CISearchForm(forms.Form):
-    uid = forms.CharField(label=' CI UID ', max_length=100)
+    uid = forms.CharField(label=' CI name or UID ', max_length=100)
     layer = forms.ModelChoiceField(
         label='Layer',
         queryset=CILayer.objects.all(),
