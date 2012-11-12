@@ -366,6 +366,8 @@ class Software(Component):
     # bash and widnows have a limit on the path length
     path = db.CharField(verbose_name=_("path"), max_length=255,
         null=True, blank=True, default=None)
+    version = db.CharField(verbose_name=_("version"), max_length=255,
+                           null=True, blank=True, default=None)
 
     @classmethod
     def create(cls, dev, path, model_name, label=None, sn=None, family=None):
