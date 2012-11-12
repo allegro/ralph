@@ -172,7 +172,7 @@ namespace DonPedro.Detectors
 				string query;
 				if (osVersionNumber < 6)
 				{
-					query = "select Caption, DeviceID, Signature, Model from Win32_DiskDrive";
+					query = "select Caption, DeviceID, Model from Win32_DiskDrive";
 				}
 				else
 				{
@@ -184,17 +184,25 @@ namespace DonPedro.Detectors
 				
 				foreach (ManagementObject diskDrive in diskDrivesSearcher.Get())
 				{
-					string sn;
+					string sn = "";
 					if (osVersionNumber < 6)
 					{
-						sn = GetValueAsString(diskDrive, "Signature");
+						SelectQuery snQuery = new SelectQuery("select SerialNumber from Win32_PhysicalMedia where tag='" + GetValueAsString(diskDrive, "DeviceID").Replace(@"\", @"\\") + "'");
+						ManagementObjectSearcher snSearcher = new ManagementObjectSearcher(snQuery);
+						
+						foreach (ManagementObject snObj in snSearcher.Get())
+						{
+							sn = GetValueAsString(snObj, "SerialNumber");
+							break;
+						}
 					}
 					else
 					{
 						sn = GetValueAsString(diskDrive, "SerialNumber");
 					}
 					
-					if (sn.StartsWith("QM000") || 
+					if (sn.Length == 0 ||
+						sn.StartsWith("QM000") ||
 					    Blacklists.IsDiscVendorInBlacklist(GetValueAsString(diskDrive, "Caption").ToLower()) ||
 					    Blacklists.IsDiskProductInBlacklist(GetValueAsString(diskDrive, "Model").ToLower())
 					)
@@ -354,7 +362,7 @@ namespace DonPedro.Detectors
 			try
 			{
 				SelectQuery query = new SelectQuery(
-					@"select Model, SerialNumber 
+					@"select Model, DeviceID 
 					  from Win32_DiskDrive 
 					  where Model like '3PARdata%'"
 				);
@@ -362,11 +370,22 @@ namespace DonPedro.Detectors
 				
 				foreach (ManagementObject obj in searcher.Get())
 				{
-					DiskShareMountDTOResponse share = new DiskShareMountDTOResponse();
-					share.Volume = GetValueAsString(obj, "Model");
-					share.Sn = GetValueAsString(obj, "SerialNumber");
+					SelectQuery snQuery = new SelectQuery(
+						"select SerialNumber from Win32_PhysicalMedia " +
+						"where tag='" + GetValueAsString(obj, "DeviceID").Replace(@"\", @"\\") + "'"
+					);
+					ManagementObjectSearcher snSearcher = new ManagementObjectSearcher(snQuery);
 					
-					mounts.Add(share);
+					foreach (ManagementObject snObj in snSearcher.Get())
+					{
+						DiskShareMountDTOResponse share = new DiskShareMountDTOResponse();
+						share.Volume = GetValueAsString(obj, "Model");
+						share.Sn = GetValueAsString(snObj, "SerialNumber");
+						
+						mounts.Add(share);
+						
+						break;
+					}
 				}
 			}
 			catch (ManagementException e)
