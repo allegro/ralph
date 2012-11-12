@@ -517,6 +517,7 @@ def details_other(dev, purchase_only=False):
             'label': soft.label,
             'model': soft.model,
             'serial': soft.sn,
+            'version': soft.version,
         }
     for os in dev.operatingsystem_set.order_by('label'):
         details = []

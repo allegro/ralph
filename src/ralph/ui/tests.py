@@ -334,18 +334,20 @@ class TestDeviceView(TestCase):
         )
         self.software1 = Software.create(
             dev=self.device,
-            path='gcc',
-            model_name='gcc 4.7.2',
-            label='gcc',
-            family='compilers',
-        )
-        self.software1.save()
-        self.software2 = Software.create(
-            dev=self.device,
             path='apache2',
             model_name='apache2 2.4.3',
             label='apache',
             family='http servers',
+            version='2.4.3',
+        )
+        self.software1.save()
+        self.software2 = Software.create(
+            dev=self.device,
+            path='gcc',
+            model_name='gcc 4.7.2',
+            label='gcc',
+            family='compilers',
+            version='4.7.2',
         )
         self.software2.save()
 
@@ -354,5 +356,5 @@ class TestDeviceView(TestCase):
         response = self.client.get(url)
         dev = response.context_data['object']
         software = dev.software_set.all()
-        self.assertEqual(software[0], self.software2)
-        self.assertEqual(software[1], self.software1)
+        self.assertEqual(software[0], self.software1)
+        self.assertEqual(software[1], self.software2)

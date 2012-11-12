@@ -370,7 +370,8 @@ class Software(Component):
                            null=True, blank=True, default=None)
 
     @classmethod
-    def create(cls, dev, path, model_name, label=None, sn=None, family=None):
+    def create(cls, dev, path, model_name, label=None, sn=None, family=None,
+               version=None):
         model, created = ComponentModel.concurrent_get_or_create(
                 type=ComponentType.software.id,
                 family=family,
@@ -384,6 +385,7 @@ class Software(Component):
         software.model = model
         software.label = label or model_name
         software.sn = sn
+        software.version = version
         return software
 
     class Meta:
