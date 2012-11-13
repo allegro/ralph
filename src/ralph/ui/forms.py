@@ -145,9 +145,9 @@ def _dns_type_field(label=None, initial=None, **kwargs):
         **kwargs
     )
 
-def _ptr_field(label=None, initial=None, **kwargs):
-    return forms.BooleanField(label=label, required=False, **kwargs)
 
+def _bool_field(label=None, initial=None, **kwargs):
+    return forms.BooleanField(label=label, required=False, **kwargs)
 
 def validate_mac(mac):
     if not mac:
@@ -181,6 +181,16 @@ def _dhcp_ip_field(label=None, initial=None, record=None, **kwargs):
     return _dns_char_field(label, initial, **kwargs)
 
 
+def _add_fields(new_fields, prefix, record, fields):
+    for label, field_class in fields:
+        initial = getattr(record, label, None)
+        field=field_class(label, initial)
+        field.initial = initial
+        field.record = record
+        field_id = prefix + label
+        new_fields[field_id] = field
+
+
 class DNSRecordsForm(forms.Form):
     def __init__(self, records, *args, **kwargs):
         super(DNSRecordsForm, self).__init__(*args, **kwargs)
@@ -191,23 +201,17 @@ class DNSRecordsForm(forms.Form):
             ('content', _dns_char_field),
             ('ttl', _dns_int_field),
             ('prio', _dns_int_field),
-            ('ptr', _ptr_field),
+            ('ptr', _bool_field),
+            ('del', _bool_field),
         ]
-        def _add_fields(prefix, record):
-            for label, field_class in fields:
-                initial = getattr(record, label, None)
-                field=field_class(label, initial)
-                field.initial = initial
-                field_id = prefix + label
-                self.fields[field_id] = field
         for record in self.records:
             record.ptr = bool(
                 record.type in ('A', 'AAAA') and
                 get_revdns_records(record.content)
             )
             prefix = 'dns_%d_' % record.id
-            _add_fields(prefix, record)
-        _add_fields('dns_new_', None)
+            _add_fields(self.fields, prefix, record, fields)
+        _add_fields(self.fields, 'dns_new_', None, fields)
 
 
 class DHCPRecordsForm(forms.Form):
@@ -217,18 +221,27 @@ class DHCPRecordsForm(forms.Form):
         fields =[
             ('ip', _dhcp_ip_field),
             ('mac', _dhcp_mac_field),
+            ('del', _bool_field),
         ]
-        def _add_fields(prefix, record):
-            for label, field_class in fields:
-                initial = getattr(record, label, None)
-                field=field_class(label, initial)
-                field.initial = initial
-                field_id = prefix + label
-                self.fields[field_id] = field
         for record in self.records:
             prefix = 'dhcp_%d_' % record.id
-            _add_fields(prefix, record)
-        _add_fields('dhcp_new_', None)
+            _add_fields(self.fields, prefix, record, fields)
+        _add_fields(self.fields, 'dhcp_new_', None, fields)
+
+
+class AddressesForm(forms.Form):
+    def __init__(self, records, *args, **kwargs):
+        super(AddressesForm, self).__init__(*args, **kwargs)
+        self.records = list(records)
+        fields =[
+            ('hostname', _dns_name_field),
+            ('address', _dhcp_ip_field),
+            ('del', _bool_field),
+        ]
+        for record in self.records:
+            prefix = 'ip_%d_' % record.id
+            _add_fields(self.fields, prefix, record, fields)
+        _add_fields(self.fields, 'ip_new_', None, fields)
 
 
 class VentureFilterForm(forms.Form):
