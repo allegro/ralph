@@ -27,7 +27,6 @@ class SearchImpactForm(forms.Form):
 
 total_tree = dict()
 
-
 def search_tree(tree, root=CI.objects.filter(name='DC2')[0]):
     # Draw compositon three of given devices
     models_to_display = [
@@ -73,7 +72,6 @@ class GraphsThree(BaseCMDBView):
 
 class Graphs(BaseCMDBView):
     template_name = 'cmdb/graphs.html'
-
     rows = ''
     graph_data = {}
 
@@ -92,32 +90,6 @@ class Graphs(BaseCMDBView):
             ci=self.request.GET.get('ci'),
         )
 
-    @staticmethod
-    def get_ajax(self):
-        root = CI.objects.filter(name='DC2')[0]
-        models_to_display = [
-            x.id for x in DeviceModel.objects.filter(
-                type__in=[DeviceType.rack.id])
-        ]
-        relations = [dict(
-            parent=x.parent.id, child=x.child.id, parent_name=x.parent.name,
-            child_name=x.child.name)
-            for x in CIRelation.objects.filter(
-                parent=root, child__type=CI_TYPES.DEVICE.id) if
-            x.child.content_object.model and
-            x.child.content_object.model.id in models_to_display]
-        nodes = dict()
-        for x in relations:
-            nodes[x.get('parent')] = x.get('parent_name')
-            nodes[x.get('child')] = x.get('child_name')
-
-        response_dict = dict(
-            nodes=nodes.items(), relations=relations
-        )
-        return HttpResponse(
-            simplejson.dumps(response_dict),
-            mimetype='application/json',
-        )
 
     def get(self, *args, **kwargs):
         ci_id = self.request.GET.get('ci')
@@ -126,12 +98,13 @@ class Graphs(BaseCMDBView):
             ci_names = dict([(x.id, x.name) for x in CI.objects.all()])
             i = ImpactCalculator()
             st, pre = i.find_affected_nodes(int(ci_id))
-            nodes = [(key, ci_names[key]) for key in st.keys()]
+            nodes = [(key, ci_names[key],get_icon_for(CI.objects.get(pk=key))) for key in st.keys()]
             relations = [dict(
                 parent=x,
                 child=st.get(x),
                 parent_name=ci_names[x],
-                child_name=ci_names[st.get(x)]) for x in st.keys() if st.get(x)]
+                type=CIRelation.objects.filter(child__id=x,parent__id=st.get(x))[0].type,
+                child_name=ci_names[st.get(x)]) for x in st.keys() if x and st.get(x) ]
             self.graph_data = dict(
                 nodes=nodes, relations=relations)
             self.rows = [dict(
