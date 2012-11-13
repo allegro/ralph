@@ -11,11 +11,13 @@
 </style>
 {% endblock %}
 
-
 {% block scripts %}
     {{ block.super }}
     <script type="text/javascript" src="{{STATIC_URL}}cmdb/VivaGraphJS/vivagraph.js"></script>
     <script type="text/javascript">
+	/* Performance hack alert. Instead of using svg viewport (painfully slow in every browser)
+	   we paint in-memory-canvases directly to the image svg element. 
+	   */
         function from_canvas_to_svg(sourceCanvas, targetSVG, x, y, width, height) {
             var imageData = sourceCanvas.getContext('2d').getImageData(
                 x, y, width, height);
@@ -27,7 +29,7 @@
     }
 
     function type_to_color(type)
-{
+    {
         if (type == 1) // contains
         {
                 return '#ddd';

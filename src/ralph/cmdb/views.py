@@ -94,6 +94,9 @@ class BaseCMDBView(Base):
                 'fugue-disc-share'),
             ('/cmdb/add', 'Add CI', 'fugue-block--plus'),
             ('/cmdb/changes/dashboard', 'Dashboard', 'fugue-dashboard'),
+            ('/cmdb/graphs', 'Impact report', 'fugue-dashboard'),
+            ('/cmdb/graphs_three', 'Three deps.', 'fugue-dashboard'),
+            ('/cmdb/changes/dashboard', 'Dashboard', 'fugue-dashboard'),
             ('/cmdb/changes/timeline', 'Timeline View', 'fugue-dashboard'),
             ('/admin/cmdb', 'Admin', 'fugue-toolbox'),
         )
@@ -146,7 +149,7 @@ class BaseCMDBView(Base):
         )
         return sidebar_items
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, *args, **kwargs):
         ret = super(BaseCMDBView, self).get_context_data(**kwargs)
         ret.update(self.get_permissions_dict())
         ret.update({

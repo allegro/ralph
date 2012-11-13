@@ -25,7 +25,7 @@
                     var height = el.style.height;
                     var left = el.style.left;
                     var top = el.style.top;
-                    values = calculate_new_xy(width, height, left, top, zoom); 
+                    values = calculate_new_xy(width, height, left, top, zoom_value); 
                     el.style.position = 'absolute'; 
                     el.style.left = values['x'];
                     el.style.top = values['y'];
@@ -99,6 +99,8 @@ function main(){
             .text(function(d) { return d.name; });
     });
 }
+$(document).ready(function(){ main(); });
+
 </script>
 {% endblock %}
 
@@ -127,7 +129,7 @@ function main(){
 
     <h4> Tree dependency chart </h4>
     <div id='container' style='width:800; height:800;border: solid #ddd 1px'>
-        <div id='chart' style='position: absolute; top: 0px; margin-top:300px' width='800' height='800'>
+	    <div id='chart' style='position: absolute; top: 0px; margin-top:300px' width='800' height='800'>
         </div>
     </div>
 {% endblock %}
