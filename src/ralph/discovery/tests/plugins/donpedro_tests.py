@@ -29,13 +29,13 @@ class DonPedroPluginTest(TestCase):
         self.total_storage_size = 40957
         self.total_cores_count = 2
 
-    def testDev(self):
+    def test_dev(self):
         self.assertEquals(
             self.dev.model.name, u'Computer System Product Xen 4.1.2')
         self.assertEquals(
             self.dev.model.get_type_display(), 'unknown')
 
-    def testProcessors(self):
+    def test_processors(self):
         processors = self.dev.processor_set.all()
         self.assertTrue(processors[0].speed == processors[1].speed == 2667)
         self.assertTrue(processors[0].cores == processors[1].cores == 1)
@@ -50,7 +50,7 @@ class DonPedroPluginTest(TestCase):
         self.assertTrue(
             processors[0].model.cores == processors[1].model.cores == 1)
 
-    def testStorage(self):
+    def test_storage(self):
         storage = self.dev.storage_set.all()
         self.assertEqual(len(storage), 1)
         storage = storage[0]
@@ -61,7 +61,7 @@ class DonPedroPluginTest(TestCase):
         self.assertEqual(storage.label, 'XENSRC PVDISK SCSI Disk Device')
         self.assertEqual(storage.size, 40957)
 
-    def testFC(self):
+    def test_fc(self):
         fc = self.dev.fibrechannel_set.all()
         self.assertEqual(len(fc), 2)
         self.assertEqual(
@@ -72,7 +72,7 @@ class DonPedroPluginTest(TestCase):
             fc[0].label == fc[1].label ==
             u'QLogic QMH2462 Fibre Channel Adapter')
 
-    def testMemory(self):
+    def test_memory(self):
         memory = self.dev.memory_set.all()
         self.assertEqual(len(memory), 1)
         memory = memory[0]
@@ -83,7 +83,7 @@ class DonPedroPluginTest(TestCase):
         self.assertEqual(memory.model.size, self.total_memory_size)
         self.assertEqual(memory.model.family, '')
 
-    def testOS(self):
+    def test_os(self):
         os = self.dev.operatingsystem_set.all()
         self.assertEqual(len(os), 1)
         os = os[0]
@@ -98,21 +98,19 @@ class DonPedroPluginTest(TestCase):
         self.assertEqual(os.storage, self.total_storage_size)
         self.assertEqual(os.cores_count, self.total_cores_count)
 
-    def testShares(self):
+    def test_shares(self):
         # only first share mount created, because DiskShare is presetn
         self.assertEqual(DiskShareMount.objects.count(), 1)
         self.assertEqual(DiskShareMount.objects.all()[0].share.wwn, '25D304C1')
 
-    def testIncompleteDataHandling(self):
+    def test_incomplete_data_handling(self):
         with self.assertRaises(NoRequiredDataError) as cm:
             save_device_data(json.loads(incomplete_data).get('data'),
                              '20.20.20.20')
-        self.assertEqual(type(cm.exception).__name__,
-                         "NoRequiredDataError")
         self.assertEqual(cm.exception.message,
                          'No MAC addresses and no device SN.')
 
-    def testNoEthDeviceCreation(self):
+    def test_no_eth_device_creation(self):
         save_device_data(json.loads(no_eth_data).get('data'),
                          '30.30.30.30')
         self.assertEqual(
