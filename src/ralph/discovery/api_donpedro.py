@@ -36,7 +36,7 @@ SAVE_PRIORITY = 51
 logger = logging.getLogger(__name__)
 
 
-class NoMACError(Exception):
+class NoRequiredDataError(Exception):
     pass
 
 
@@ -187,23 +187,16 @@ def str_to_ethspeed(str_value):
 
 def save_device_data(data, remote_ip):
     device = data['device']
-    shares = data['shares']
-    fcs = data['fcs']
-    storage = data['storage']
-    memory = data['memory']
-    processors = data['processors']
-    os = data['operating_system']
-    device = data['device']
     ethernets = [
         Eth(e.get('label'), MACAddressField.normalize(e.get('mac')),
             str_to_ethspeed(e.get('speed')))
         for e in data['ethernets']
-        if MACAddressField.normalize(e.get('mac'))
-        not in MAC_PREFIX_BLACKLIST]
-    if not ethernets:
-        raise NoMACError('No MAC addresses.')
+        if MACAddressField.normalize(e.get('mac')) not in MAC_PREFIX_BLACKLIST]
+    sn = device.get('sn')
+    if not ethernets and not sn:
+        raise NoRequiredDataError('No MAC addresses and no device SN.')
     dev = Device.create(
-        sn=device.get('sn'),
+        sn=sn,
         ethernets=ethernets,
         model_name='%s %s %s' % (
             device.get('caption'), device.get('vendor'),
@@ -211,6 +204,7 @@ def save_device_data(data, remote_ip):
         model_type=DeviceType.unknown, priority=SAVE_PRIORITY
     )
     dev.save(priority=SAVE_PRIORITY)
+    os = data['operating_system']
     if not dev.operatingsystem_set.exists():
         o = OperatingSystem.create(dev, os_name=os.get('label'),
                                    family='Windows')
@@ -222,11 +216,11 @@ def save_device_data(data, remote_ip):
     ip_address.device = dev
     ip_address.is_management = False
     ip_address.save()
-    save_processors(processors, dev)
-    save_memory(memory, dev)
-    save_storage(storage, dev)
-    save_shares(shares, dev, ip_address)
-    save_fibre_channel(fcs, dev)
+    save_processors(data['processors'], dev)
+    save_memory(data['memory'], dev)
+    save_storage(data['storage'], dev)
+    save_shares(data['shares'], dev, ip_address)
+    save_fibre_channel(data['fcs'], dev)
     return dev
 
 

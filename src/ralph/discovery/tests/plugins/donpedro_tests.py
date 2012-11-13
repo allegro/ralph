@@ -9,8 +9,10 @@ import json
 from django.test import TestCase
 
 from ralph.discovery.models import Device, DiskShare, DiskShareMount
-from ralph.discovery.tests.plugins.samples.donpedro import data
-from ralph.discovery.api_donpedro import save_device_data
+from ralph.discovery.tests.plugins.samples.donpedro import (data,
+                                                            incomplete_data,
+                                                            no_eth_data)
+from ralph.discovery.api_donpedro import save_device_data, NoRequiredDataError
 
 
 class DonPedroPluginTest(TestCase):
@@ -100,3 +102,20 @@ class DonPedroPluginTest(TestCase):
         # only first share mount created, because DiskShare is presetn
         self.assertEqual(DiskShareMount.objects.count(), 1)
         self.assertEqual(DiskShareMount.objects.all()[0].share.wwn, '25D304C1')
+
+    def testIncompleteDataHandling(self):
+        with self.assertRaises(NoRequiredDataError) as cm:
+            save_device_data(json.loads(incomplete_data).get('data'),
+                             '20.20.20.20')
+        self.assertEqual(type(cm.exception).__name__,
+                         "NoRequiredDataError")
+        self.assertEqual(cm.exception.message,
+                         'No MAC addresses and no device SN.')
+
+    def testNoEthDeviceCreation(self):
+        save_device_data(json.loads(no_eth_data).get('data'),
+                         '30.30.30.30')
+        self.assertEqual(
+            Device.objects.filter(
+                sn='7ddaaa4a-dc00-de38-e683-da037fd729ac').count(), 1)
+
