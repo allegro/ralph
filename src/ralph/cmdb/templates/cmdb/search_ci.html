@@ -33,9 +33,15 @@
         {% spaceless %}
 
             {% include 'cmdb/column-header.html' with sortable=1 label='Name' name='uid' always=1 %}
-            {% include 'cmdb/column-header.html' with sortable=1 label='Type' name='type' always=1 %}
-            {% include 'cmdb/column-header.html' with label='Layer' name='layer' always=1 %}
-            {% if layer == '1' %}
+            {% include 'cmdb/column-header.html' with label='CI UID' name='ci_uid' always=1 %}
+            {% if layer == '' %}
+                {# all cis #}
+                {% include 'cmdb/column-header.html' with sortable=1 label='Type' name='type' always=1 %}
+                {% include 'cmdb/column-header.html' with label='Layer' name='layer' always=1 %}
+                {% include 'cmdb/column-header.html' with label='Venture' name='Venture' always=1 %}
+                {% include 'cmdb/column-header.html' with label='Service' name='Service' always=1 %}
+                {% include 'cmdb/column-header.html' with label='PCI Scope' name='pci' always=1 %}
+            {% elif layer ==  '1' %}
                 {# Application #}
             {% elif layer == '2' %}
                 {# Database #}
@@ -45,10 +51,35 @@
                 {# Organization Unit/Support Group  #}
             {% elif layer == '5' %}
                 {# Hardware #}
+                {% include 'cmdb/column-header.html' with label='Parent Device' name='Parent Device' always=1 %}
+                {% include 'cmdb/column-header.html' with label='Network' name='Network' always=1 %}
+                {% include 'cmdb/column-header.html' with label='DC' name='DC' always=1 %}
+                {% include 'cmdb/column-header.html' with label='Venture' name='Venture' always=1 %}
+                {% include 'cmdb/column-header.html' with label='Service' name='Service' always=1 %}
+                {% include 'cmdb/column-header.html' with label='PCI Scope' name='PCI Scope' always=1 %}
             {% elif layer == '6' %}
                 {# Network #}
-            {% elif layer == '7' %}
-                {# Services #}
+            {% elif layer == '7' and type == '4' %}
+                {# Services - venture #}
+                {% include 'cmdb/column-header.html' with label='Parent venture' name='Parent venture' always=1 %}
+                {% include 'cmdb/column-header.html' with label='Child Ventures' name='Child Ventures' always=1 %}
+                {% include 'cmdb/column-header.html' with label='Service' name='Service' always=1 %}
+                {% include 'cmdb/column-header.html' with label='Technical Owner' name='Technical Owner' always=1 %}
+                {% include 'cmdb/column-header.html' with label='Business Owner' name='Business Owner' always=1 %}
+            {% elif layer == '7' and type == '5' %}
+                {# Services - venture role #}
+                {% include 'cmdb/column-header.html' with label='Parent venture' name='Parent venture' always=1 %}
+                {% include 'cmdb/column-header.html' with label='Service' name='Service' always=1 %}
+                {% include 'cmdb/column-header.html' with label='Technical Owner' name='Technical Owner' always=1 %}
+            {% elif layer == '7' and type == '6' %}
+                {# Services - venture role #}
+                {% include 'cmdb/column-header.html' with label='Services contained' name='Services contained' always=1 %}
+            {% elif layer == '7' and type == '7' %}
+                {# Services - service #}
+                {% include 'cmdb/column-header.html' with label='Contained Venture' name='Contained Venture' always=1 %}
+                {% include 'cmdb/column-header.html' with label='Business Line' name='Business Line' always=1 %}
+                {% include 'cmdb/column-header.html' with label='Technical Owner' name='Technical Owner' always=1 %}
+                {% include 'cmdb/column-header.html' with label='Business Owner' name='Business Owner' always=1 %}
             {% elif layer == '8' %}
                 {# Roles #}
             {% endif %}
@@ -69,14 +100,14 @@
                 {% endif %}
 
             </td>
-            <td>
-                {{ d.ci_type }}
-            </td>
-       
-            <td>
-                {{ d.layers }}
-            </td>
-            {% if layer == '1' %}
+            <td>{{ d.uid }}</td>
+            {% if layer == '' %}
+                <td>{{ d.ci_type }}</td>
+                <td>{{ d.layers }}</td>
+                <td>{{ d.parent_venture }}</td>
+                <td>{{ d.service }}</td>
+                <td>{{ d.pci_scope }}</td>
+            {% elif layer == '1' %}
                 {# Application #}
             {% elif layer == '2' %}
                 {# Database #}
@@ -86,10 +117,32 @@
                 {# Organization Unit/Support Group  #}
             {% elif layer == '5' %}
                 {# Hardware #}
+                <td>{{ d.dev.parent }}</td>
+                <td>{{ d.network }}</td>
+                <td>{{ d.dev.dc }}</td>
+                <td>{{ d.parent_venture }}</td>
+                <td>{{ d.service }}</td>
+                <td>{{ d.pci_scope }}</td>
             {% elif layer == '6' %}
                 {# Network #}
-            {% elif layer == '7' %}
+            {% elif layer == '7' and type == '7' %}
                 {# Services #}
+                <td>{{ d.parent_venture }}</td>
+                <td>{{ d.business_line</td>
+                <td>{{ d.owner_t }}</td>
+                <td>{{ d.owner_b }}</td>
+            {% elif layer == '7' and type == '4' %}
+                <td>{{ d.parent_venture }}</td>
+                <td>{{ d.child_venture }}</td>
+                <td>{{ d.service }}</td>
+                <td>{{ d.owner_t }}</td>
+                <td>{{ d.owner_b }}</td>
+            {% elif layer == '7' and type == '5' %}
+                <td>{{ d.parent_venture }}</td>
+                <td>{{ d.service }}</td>
+                <td>{{ d.owner_t }}</td>
+            {% elif layer == '7' and type == '6' %}
+                <td>{{ d.service }}</td>
             {% elif layer == '8' %}
                 {# Roles #}
             {% endif %}

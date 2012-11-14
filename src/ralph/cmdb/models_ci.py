@@ -99,6 +99,7 @@ class CIContentTypePrefix(TimeTrackable):
             except CIContentTypePrefix.DoesNotExist:
                 if fallback:
                     return fallback
+                    return fallback
                 raise
             return obj.prefix
 

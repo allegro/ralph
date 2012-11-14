@@ -24,10 +24,13 @@ from ralph.cmdb.forms import (
     CISearchForm, CIEditForm, CIViewForm, CIRelationEditForm
 )
 from ralph.cmdb.customfields import EditAttributeFormFactory
-from ralph.cmdb.models_ci import CIOwner, CIOwnership, CILayer, CI_TYPES, CI
+from ralph.cmdb.models_ci import (
+    CIOwner, CIOwnership, CILayer, CI_TYPES, CI, CIRelation
+)
 
 from ralph.account.models import Perm
-from ralph.ui.views.common import Base, BaseMixin, _get_details
+from ralph.discovery.models_network import Network
+from ralph.ui.views.common import Base, _get_details
 from ralph.util.presentation import (
     get_device_icon, get_venture_icon, get_network_icon
 )
@@ -805,6 +808,7 @@ class Search(BaseCMDBView):
             'pages': _get_pages(self.paginator, self.page_number),
             'sort': self.request.GET.get('sort', ''),
             'layer': self.request.GET.get('layer', ''),
+            'type': self.request.GET.get('type', ''),
             'form': self.form,
             'sidebar_selected': sidebar_selected,
             'subsection': subsection,
@@ -854,8 +858,42 @@ class Search(BaseCMDBView):
             page = self.paginator.num_pages
         self.page = cis
         rows = []
+        relations = CIRelation.objects.all()
         for i in cis:
             icon = get_icon_for(i)
+            owners_t, owners_b, parent_venture, child_venture = '', '', '', ''
+            business_line, services, network = '', '', ''
+            if layer == '5':
+                try:
+                    networks = i.content_object.ipaddress_set.all()
+                except AttributeError:
+                    pass
+                for network in networks:
+                    network = network
+            if layer == '7' and type_ in ['4', '5', '7']:
+                    for t in i.ciownership_set.filter(type=1):
+                        owners_t += '%s %s, ' % (
+                            t.owner.first_name, t.owner.last_name
+                        )
+                    for b in i.ciownership_set.filter(type=2):
+                        owners_b += '%s %s, ' % (
+                            b.owner.first_name, b.owner.last_name
+                        )
+            if layer == '7' and type_ == '4':
+                child_ven = relations.filter(parent=i.id, child__type=4)
+                for cv in child_ven:
+                    child_venture += cv.child.name
+            if layer == '7' and type_ == '7':
+                rel_bl = relations.filter(child=i.id, parent__type=6)
+                for bl in rel_bl:
+                    business_line += bl.parent.name
+            parent_ven = relations.filter(child=i.id, parent__type=4)
+            for pv in parent_ven:
+                parent_venture += pv.parent.name
+            serv = relations.filter(parent=i.id, child__type=7)
+            for s in serv:
+                services += '%s, ' % s.child.name
+
             rows.append({
                 'coun': i.relations.count(),
                 'uid': i.uid,
@@ -863,13 +901,23 @@ class Search(BaseCMDBView):
                 'ci_type': i.type.name,
                 'id': i.id,
                 'icon': icon,
-                'venture': '',
                 'layers': ', '.join(
                     unicode(x) for x in i.layers.select_related()),
                 'state': i.get_state_display(),
                 'state_id': i.state,
                 'status': i.get_status_display(),
+                'dev': i.content_object,
+                'owner_b': owners_b,
+                'owner_t': owners_t,
+                'parent_venture': parent_venture,
+                'child_venture': child_venture,
+                'business_line': business_line,
+                'network': network,
+                'service': services,
             })
+#            import pdb
+#            pdb.set_trace()
+
         self.rows = rows
         form_options = dict(
             label_suffix='',
