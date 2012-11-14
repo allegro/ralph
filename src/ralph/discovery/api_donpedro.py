@@ -60,10 +60,10 @@ def save_processors(processors, dev):
         extra = '%s %s %s ' % (
             p.get('manufacturer'), p.get('version'),
             '64bit' if is64bit else '')
-        name = 'CPU %s%s %s %s' % (
+        name = 'CPU %s%s %s%s' % (
             '64bit ' if is64bit else '',
             cpuname, '%dMhz' % speed if speed else '',
-            'multicore' if cores > 1 else '')
+            ' multicore' if cores > 1 else '')
         cpu.model, c = ComponentModel.concurrent_get_or_create(
             speed=speed, type=ComponentType.processor.id,
             family=cpuname, size=cores,
