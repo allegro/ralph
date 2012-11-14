@@ -909,9 +909,7 @@ class GraphsTree(BaseCMDBView):
     @staticmethod
     def get_ajax(request):
         root = CI.objects.get(pk=request.GET.get('ci_id'))
-        result = dict()
-        search_tree(result, root)
-        response_dict = result
+        response_dict = search_tree({}, root)
         return HttpResponse(
             simplejson.dumps(response_dict),
             mimetype='application/json',
