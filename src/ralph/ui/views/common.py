@@ -419,6 +419,84 @@ class Prices(DeviceUpdateView):
         return ret
 
 
+def _dns_fill_record(form, prefix, record, request):
+    for label in ('name', 'type', 'content', 'ttl', 'prio', 'type'):
+        setattr(record, label,
+                form.cleaned_data[prefix + label] or None)
+    record.domain = get_domain(record.name)
+    if (record.type in ('A', 'AAAA') and
+        form.cleaned_data[prefix + 'ptr']):
+        try:
+            set_revdns_record(record.content, record.name)
+        except ValueError:
+            pass
+        else:
+            messages.warning(request,
+                         "Created a PTR DNS record for %s." %
+                         record.content)
+
+
+def _dns_create_record(form, request, device):
+    if form.cleaned_data.get('dns_new_type'):
+        record = Record()
+        _dns_fill_record(form, 'dns_new_', record, request)
+        record.save()
+        messages.success(request, "A DNS record added.")
+
+
+def _dhcp_fill_record(form, prefix, record, request):
+    ip = form.cleaned_data.get(prefix + 'ip')
+    mac = form.cleaned_data.get(prefix + 'mac')
+    record.ip = ip
+    record.mac = mac
+
+
+def _dhcp_create_record(form, request, device):
+    ip = form.cleaned_data.get('dhcp_new_ip')
+    mac = form.cleaned_data.get('dhcp_new_mac')
+    if ip and mac:
+        if DHCPEntry.objects.filter(ip=ip).exists():
+            messages.warning(request,
+                             "A DHCP record for %s already exists."
+                             % ip)
+        if DHCPEntry.objects.filter(mac=mac).exists():
+            messages.warning(request,
+                             "A DHCP record for %s already exists."
+                             % mac)
+        record = DHCPEntry(mac=mac, ip=ip)
+        record.save()
+        messages.success(request,
+                         "A DHCP record for %s and %s added." %
+                         (ip, mac))
+
+
+def _ip_fill_record(form, prefix, record, request):
+    hostname = form.cleaned_data.get(prefix + 'hostname')
+    address = form.cleaned_data.get(prefix + 'address')
+    if hostname and address:
+        record.hostname = hostname
+        record.address = address
+
+
+def _ip_create_record(form, request, device):
+    hostname = form.cleaned_data.get('ip_new_hostname')
+    address = form.cleaned_data.get('ip_new_address')
+    print(hostname, address)
+    if hostname and address:
+        if IPAddress.objects.filter(address=address).exists():
+            messages.error(
+                request,
+                "An IP address entry for %s already exists."
+                % address
+            )
+            return
+        record = IPAddress(address=address, hostname=hostname,
+                           device=device)
+        record.save()
+        messages.success(request,
+                         "An IP address entry for %s created." %
+                         address)
+
 class Addresses(DeviceDetailView):
     template_name = 'ui/device_addresses.html'
     read_perm = Perm.read_device_info_generic
@@ -473,9 +551,9 @@ class Addresses(DeviceDetailView):
                                      "A %s record deleted." % form_name)
                     record.delete()
                 else:
-                    fill_record(form, prefix, record)
+                    fill_record(form, prefix, record, self.request)
                     record.save()
-            create_record(form)
+            create_record(form, self.request, self.object)
             messages.success(self.request,
                              "The %s records updated." % form_name)
             return HttpResponseRedirect(self.request.path)
@@ -493,91 +571,24 @@ class Addresses(DeviceDetailView):
         if 'dns' in self.request.POST:
             dns_records = self.get_dns()
             self.dns_form = DNSRecordsForm(dns_records, self.request.POST)
-            def fill_record(form, prefix, record):
-                for label in ('name', 'type', 'content', 'ttl', 'prio', 'type'):
-                    setattr(record, label,
-                            form.cleaned_data[prefix + label] or None)
-                record.domain = get_domain(record.name)
-                if (record.type in ('A', 'AAAA') and
-                    form.cleaned_data[prefix + 'ptr']):
-                    try:
-                        set_revdns_record(record.content, record.name)
-                    except ValueError:
-                        pass
-                    else:
-                        messages.warning(self.request,
-                                     "Created a PTR DNS record for %s." %
-                                     record.content)
-            def create_record(form):
-                if form.cleaned_data.get('dns_new_type'):
-                    record = Record()
-                    fill_record(form, 'dns_new_', record)
-                    record.save()
-                    messages.success(self.request, "A DNS record added.")
             return self.handle_form(
                 self.dns_form,
                 'dns',
-                fill_record,
-                create_record
+                _dns_fill_record,
+                _dns_create_record
             ) or self.get(*args, **kwargs)
         elif 'dhcp' in self.request.POST:
             dhcp_records = self.get_dhcp()
             self.dhcp_form = DHCPRecordsForm(dhcp_records, self.request.POST)
-            def fill_record(form, prefix, record):
-                ip = form.cleaned_data.get(prefix + 'ip')
-                mac = form.cleaned_data.get(prefix + 'mac')
-                record.ip = ip
-                record.mac = mac
-            def create_record(form):
-                ip = form.cleaned_data.get('dhcp_new_ip')
-                mac = form.cleaned_data.get('dhcp_new_mac')
-                if ip and mac:
-                    if DHCPEntry.objects.filter(ip=ip).exists():
-                        messages.warning(self.request,
-                                         "A DHCP record for %s already exists."
-                                         % ip)
-                    if DHCPEntry.objects.filter(mac=mac).exists():
-                        messages.warning(self.request,
-                                         "A DHCP record for %s already exists."
-                                         % mac)
-                    record = DHCPEntry(mac=mac, ip=ip)
-                    record.save()
-                    messages.success(self.request,
-                                     "A DHCP record for %s and %s added." %
-                                     (ip, mac))
             return self.handle_form(
                 self.dhcp_form,
                 'dhcp',
-                fill_record,
-                create_record
+                _dhcp_fill_record,
+                _dhcp_create_record
             ) or self.get(*args, **kwargs)
         elif 'ip' in self.request.POST:
             ip_records = self.object.ipaddress_set.order_by('address')
             self.ip_form = AddressesForm(ip_records, self.request.POST)
-            def fill_record(form, prefix, record):
-                hostname = form.cleaned_data.get(prefix + 'hostname')
-                address = form.cleaned_data.get(prefix + 'address')
-                if hostname and address:
-                    record.hostname = hostname
-                    record.address = address
-            def create_record(form):
-                hostname = form.cleaned_data.get('ip_new_hostname')
-                address = form.cleaned_data.get('ip_new_address')
-                print(hostname, address)
-                if hostname and address:
-                    if IPAddress.objects.filter(address=address).exists():
-                        messages.error(
-                            self.request,
-                            "An IP address entry for %s already exists."
-                            % address
-                        )
-                        return
-                    record = IPAddress(address=address, hostname=hostname,
-                                       device=self.object)
-                    record.save()
-                    messages.success(self.request,
-                                     "An IP address entry for %s created." %
-                                     address)
             return self.handle_form(
                 self.ip_form,
                 'ip',
