@@ -486,7 +486,7 @@ class Addresses(DeviceDetailView):
     def post(self, *args, **kwargs):
         self.object = self.get_object()
         profile = self.request.user.get_profile()
-        if not profile.has_perm(self.read_perm, self.object.venture):
+        if not profile.has_perm(self.edit_perm, self.object.venture):
             return HttpResponseForbidden(
                 "You don't have permission to edit this."
             )
@@ -601,7 +601,10 @@ class Addresses(DeviceDetailView):
         if self.ip_form is None:
             ip_records = self.object.ipaddress_set.order_by('address')
             self.ip_form = AddressesForm(ip_records)
+        profile = self.request.user.get_profile()
+        can_edit =  profile.has_perm(self.edit_perm, self.object.venture)
         ret.update({
+            'canedit': can_edit,
             'balancers': list(_get_balancers(self.object)),
             'dnsform': self.dns_form,
             'dhcpform': self.dhcp_form,
