@@ -27,7 +27,7 @@ from ralph.cmdb.forms import (
 from ralph.cmdb.customfields import EditAttributeFormFactory
 from ralph.cmdb.models_ci import (
         CIOwner, CIOwnership, CILayer, CI_TYPES, CI, CIRelation)
-from ralph.cmdb.graphs import Tree, ImpactCalculator
+from ralph.cmdb.graphs import search_tree, ImpactCalculator
 from ralph.account.models import Perm
 from ralph.ui.views.common import Base, _get_details
 from ralph.util.presentation import (
@@ -97,7 +97,7 @@ class BaseCMDBView(Base):
             ('/cmdb/add', 'Add CI', 'fugue-block--plus'),
             ('/cmdb/changes/dashboard', 'Dashboard', 'fugue-dashboard'),
             ('/cmdb/graphs', 'Impact report', 'fugue-dashboard'),
-            ('/cmdb/graphs_three', 'Three deps.', 'fugue-dashboard'),
+            ('/cmdb/graphs_tree', 'Tree deps.', 'fugue-dashboard'),
             ('/cmdb/changes/dashboard', 'Dashboard', 'fugue-dashboard'),
             ('/cmdb/changes/timeline', 'Timeline View', 'fugue-dashboard'),
             ('/admin/cmdb', 'Admin', 'fugue-toolbox'),
@@ -908,15 +908,27 @@ class GraphsTree(BaseCMDBView):
 
     @staticmethod
     def get_ajax(request):
-        root = CI.objects.filter(name='DC2')[0]
+        root = CI.objects.get(pk=request.GET.get('ci_id'))
         result = dict()
-        t = Tree()
-        t.search_tree(result, root)
+        search_tree(result, root)
         response_dict = result
         return HttpResponse(
             simplejson.dumps(response_dict),
             mimetype='application/json',
         )
+
+    def get_initial(self):
+        return dict(
+            ci=self.request.GET.get('ci'),
+        )
+
+    def get_context_data(self, *args, **kwargs):
+        ret = super(GraphsTree, self).get_context_data(**kwargs)
+        form = SearchImpactForm(initial=self.get_initial())
+        ret.update(dict(
+            form=form,
+        ))
+        return ret
 
 
 class Graphs(BaseCMDBView):
