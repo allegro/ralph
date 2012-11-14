@@ -13,34 +13,32 @@ from ralph.cmdb.models import CI, CIRelation, CI_TYPES, CI_RELATION_TYPES
 from ralph.discovery.models import DeviceModel, DeviceType
 
 
-class Tree(object):
+def search_tree(tree, root):
+    # Draw compositon tree of given devices
+    models_to_display = [
+        x.id for x in DeviceModel.objects.filter(type__in=[
+            DeviceType.switch.id,
+            DeviceType.router.id,
+            DeviceType.management.id,
+            DeviceType.storage.id,
+            DeviceType.rack.id,
+            DeviceType.blade_server.id,
+            DeviceType.data_center.id,
+            DeviceType.virtual_server.id
+        ])]
+    relations = [dict(
+        parent=x.parent.id, child=x.child.id, parent_name=x.parent.name,
+        child_name=x.child.name)
+        for x in CIRelation.objects.filter(parent=root, child__type=CI_TYPES.DEVICE.id) if
+        x.child.content_object.model and x.child.content_object.model.id in models_to_display]
 
-    def search_tree(self, tree, root):
-        # Draw compositon tree of given devices
-        models_to_display = [
-            x.id for x in DeviceModel.objects.filter(type__in=[
-                DeviceType.switch.id,
-                DeviceType.router.id,
-                DeviceType.management.id,
-                DeviceType.storage.id,
-                DeviceType.rack.id,
-                DeviceType.blade_server.id,
-                DeviceType.data_center.id,
-                DeviceType.virtual_server.id
-            ])]
-        relations = [dict(
-            parent=x.parent.id, child=x.child.id, parent_name=x.parent.name,
-            child_name=x.child.name)
-            for x in CIRelation.objects.filter(parent=root, child__type=CI_TYPES.DEVICE.id) if
-            x.child.content_object.model and x.child.content_object.model.id in models_to_display]
-
-        tree['name'] = root.name
-        tree['children'] = []
-        for x in relations:
-            new = dict(name=x.get('child'), children=[])
-            tree['children'].append(new)
-            self.search_tree(root=CI.objects.get(id=x.get('child')), tree=new)
-        return tree
+    tree['name'] = root.name
+    tree['children'] = []
+    for x in relations:
+        new = dict(name=x.get('child'), children=[])
+        tree['children'].append(new)
+        search_tree(root=CI.objects.get(id=x.get('child')), tree=new)
+    return tree
 
 
 class ImpactCalculator(object):

@@ -106,7 +106,6 @@ class CIImporterTest(TestCase):
         self.blade.parent = self.rack
         self.blade.save()
 
-
     def add_model(self, name, device_type):
         dm = DeviceModel()
         dm.model_type = device_type
