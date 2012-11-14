@@ -105,7 +105,8 @@ class BaseCMDBView(Base):
              'fugue-database'),
             ('/cmdb/search?layer=3&top_level=1', 'Documentation/Procedures',
              'fugue-blue-documents'),
-            ('/cmdb/search?layer=4&top_level=1', 'Organization Unit/Support Group',
+            ('/cmdb/search?layer=4&top_level=1',
+             'Organization Unit/Support Group',
              'fugue-books-brown'),
             ('/cmdb/search?layer=5&top_level=1', 'Hardware',
              'fugue-processor'),
@@ -612,9 +613,11 @@ class Edit(BaseCMDBView):
         if ci_id:
             self.ci = get_object_or_404(db.CI, id=ci_id)
             # preview only for devices
-            if self.ci.content_object and self.ci.content_type.name == 'device':
+            if (self.ci.content_object and
+                    self.ci.content_type.name == 'device'):
                 self.show_in_ralph = True
-                self.ralph_ci_link = "/ui/search/info/%d" % self.ci.content_object.id
+                self.ralph_ci_link = ("/ui/search/info/%d" %
+                                      self.ci.content_object.id)
             self.service_name = self.get_first_parent_venture_name(ci_id)
             self.problems = db.CIProblem.objects.filter(
                 ci=self.ci).order_by('-time').all()
@@ -632,8 +635,11 @@ class Edit(BaseCMDBView):
             ]
             reps = db.CIChangePuppet.objects.filter(ci=self.ci).all()
             for report in reps:
-                puppet_logs = db.PuppetLog.objects.filter(cichange=report).all()
-                self.puppet_reports.append(dict(report=report, logs=puppet_logs))
+                puppet_logs = db.PuppetLog.objects.filter(
+                    cichange=report).all()
+                self.puppet_reports.append(
+                    dict(report=report, logs=puppet_logs)
+                )
             self.zabbix_triggers = db.CIChangeZabbixTrigger.objects.filter(
                 ci=self.ci).order_by('-lastchange')
             self.so_events = db.CIChange.objects.filter(
@@ -870,9 +876,9 @@ class Search(BaseCMDBView):
                 for network in networks:
                     network = network
             if layer == str(CI_LAYER.SERVICES.id) and type_ in [
-                str(CI_TYPES.VENTURE.id),
-                str(CI_TYPES.VENTUREROLE.id),
-                str(CI_TYPES.SERVICE.id),
+                    str(CI_TYPES.VENTURE.id),
+                    str(CI_TYPES.VENTUREROLE.id),
+                    str(CI_TYPES.SERVICE.id),
                 ]:
                     for t in i.ciownership_set.filter(type=1):
                         owners_t += '%s %s, ' % (
@@ -883,7 +889,7 @@ class Search(BaseCMDBView):
                             b.owner.first_name, b.owner.last_name
                         )
             if (layer == str(CI_LAYER.SERVICES.id) and
-                type_ == str(CI_TYPES.VENTURE.id)):
+                    type_ == str(CI_TYPES.VENTURE.id)):
                 child_ven = relations.filter(
                     parent=i.id,
                     child__type=str(CI_TYPES.VENTURE.id)
@@ -891,7 +897,7 @@ class Search(BaseCMDBView):
                 for cv in child_ven:
                     child_venture += cv.child.name
             if (layer == str(CI_LAYER.SERVICES.id) and
-                type_ == str(CI_TYPES.SERVICE.id)):
+                    type_ == str(CI_TYPES.SERVICE.id)):
                 rel_bl = relations.filter(
                     child=i.id,
                     parent__type=str(CI_TYPES.BUSINESSLINE.id),
