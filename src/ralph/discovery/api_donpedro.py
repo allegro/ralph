@@ -67,7 +67,8 @@ def save_processors(processors, dev):
         cpu.model, c = ComponentModel.concurrent_get_or_create(
             speed=speed, type=ComponentType.processor.id,
             family=cpuname, size=cores,
-            cores=cores, extra_hash=hashlib.md5(extra).hexdigest())
+            cores=cores,
+            extra_hash=hashlib.md5(extra.encode('utf-8')).hexdigest())
         cpu.model.extra = extra
         cpu.model.name = name
         cpu.model.save(priority=SAVE_PRIORITY)
@@ -143,7 +144,7 @@ def save_memory(memory, dev):
         mem.model, c = ComponentModel.concurrent_get_or_create(
             family=family, size=size, speed=speed,
             type=ComponentType.memory.id,
-            extra_hash=hashlib.md5(extra).hexdigest())
+            extra_hash=hashlib.md5(extra.encode('utf-8')).hexdigest())
         mem.model.extra = extra
         mem.model.name = 'RAM Windows %dMiB' % size
         mem.model.save()
@@ -163,7 +164,7 @@ def save_fibre_channel(fcs, dev):
         extra = '%s %s %s %s' % (fib.label, pid, manufacturer, model)
         fib.model, c = ComponentModel.concurrent_get_or_create(
             type=ComponentType.fibre.id, family=fib.label,
-            extra_hash=hashlib.md5(extra).hexdigest())
+            extra_hash=hashlib.md5(extra.encode('utf-8')).hexdigest())
         fib.model.extra = extra
         fib.model.name = model if model else fib.label
         fib.model.save(priority=SAVE_PRIORITY)
