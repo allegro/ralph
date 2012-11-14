@@ -25,7 +25,7 @@ from ralph.cmdb.forms import (
 )
 from ralph.cmdb.customfields import EditAttributeFormFactory
 from ralph.cmdb.models_ci import (
-    CIOwner, CIOwnership, CILayer, CI_TYPES, CI, CIRelation
+    CIOwner, CIOwnership, CILayer, CI_TYPES, CI, CIRelation, CI_LAYER
 )
 
 from ralph.account.models import Perm
@@ -862,14 +862,18 @@ class Search(BaseCMDBView):
             icon = get_icon_for(i)
             owners_t, owners_b, parent_venture, child_venture = '', '', '', ''
             business_line, services, network = '', '', ''
-            if layer == '5':
+            if layer == str(CI_LAYER.HARDWARE.id):
                 try:
                     networks = i.content_object.ipaddress_set.all()
                 except AttributeError:
                     pass
                 for network in networks:
                     network = network
-            if layer == '7' and type_ in ['4', '5', '7']:
+            if layer == str(CI_LAYER.SERVICES.id) and type_ in [
+                str(CI_TYPES.VENTURE.id),
+                str(CI_TYPES.VENTUREROLE.id),
+                str(CI_TYPES.SERVICE.id),
+                ]:
                     for t in i.ciownership_set.filter(type=1):
                         owners_t += '%s %s, ' % (
                             t.owner.first_name, t.owner.last_name
@@ -878,18 +882,32 @@ class Search(BaseCMDBView):
                         owners_b += '%s %s, ' % (
                             b.owner.first_name, b.owner.last_name
                         )
-            if layer == '7' and type_ == '4':
-                child_ven = relations.filter(parent=i.id, child__type=4)
+            if (layer == str(CI_LAYER.SERVICES.id) and
+                type_ == str(CI_TYPES.VENTURE.id)):
+                child_ven = relations.filter(
+                    parent=i.id,
+                    child__type=str(CI_TYPES.VENTURE.id)
+                )
                 for cv in child_ven:
                     child_venture += cv.child.name
-            if layer == '7' and type_ == '7':
-                rel_bl = relations.filter(child=i.id, parent__type=6)
+            if (layer == str(CI_LAYER.SERVICES.id) and
+                type_ == str(CI_TYPES.SERVICE.id)):
+                rel_bl = relations.filter(
+                    child=i.id,
+                    parent__type=str(CI_TYPES.BUSINESSLINE.id),
+                )
                 for bl in rel_bl:
                     business_line += bl.parent.name
-            parent_ven = relations.filter(child=i.id, parent__type=4)
+            parent_ven = relations.filter(
+                child=i.id,
+                parent__type=str(CI_TYPES.VENTURE.id)
+            )
             for pv in parent_ven:
                 parent_venture += pv.parent.name
-            serv = relations.filter(parent=i.id, child__type=7)
+            serv = relations.filter(
+                parent=i.id,
+                child__type=str(CI_TYPES.SERVICE.id)
+            )
             for s in serv:
                 services += '%s, ' % s.child.name
 
