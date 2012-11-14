@@ -127,6 +127,7 @@ def get_revdns_records(ip):
     return Record.objects.filter(name=revname, type='PTR')
 
 
+@nested_commit_on_success
 def set_revdns_record(ip, name, ttl=None, prio=None, overwrite=False):
     revname = '.'.join(reversed(ip.split('.'))) + '.in-addr.arpa'
     domain_name = '.'.join(list(reversed(ip.split('.')))[1:]) + '.in-addr.arpa'
