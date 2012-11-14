@@ -592,8 +592,8 @@ class Addresses(DeviceDetailView):
             return self.handle_form(
                 self.ip_form,
                 'ip',
-                fill_record,
-                create_record
+                _ip_fill_record,
+                _ip_create_record
             ) or self.get(*args, **kwargs)
         return self.get(*args, **kwargs)
 
