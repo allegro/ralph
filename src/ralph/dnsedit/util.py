@@ -113,11 +113,13 @@ def generate_dhcp_config():
 
 
 def get_domain(name):
-    domains = [d for d in Domain.objects.all() if
-               name.endswith(d.name)]
-    domains.sort(key=lambda d: -len(d.name))
-    if domains:
-        return domains[0]
+    parts = name.split('.')
+    superdomains = [".".join(parts[i:]) for i in xrange(len(parts))]
+    domains = Domain.objects.filter(name__in=superdomains).extra(
+        select={'length': 'Length(name)'},
+    ).order_by('-length', 'name')
+    for domain in domains:
+        return domain
 
 
 def get_revdns_records(ip):
