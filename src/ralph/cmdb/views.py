@@ -29,7 +29,6 @@ from ralph.cmdb.models_ci import (
 )
 
 from ralph.account.models import Perm
-from ralph.discovery.models_network import Network
 from ralph.ui.views.common import Base, _get_details
 from ralph.util.presentation import (
     get_device_icon, get_venture_icon, get_network_icon
