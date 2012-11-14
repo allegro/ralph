@@ -239,7 +239,7 @@ class ReportMargins(SidebarReports, Base):
                 db.Q(venture__parent__parent=venture) |
                 db.Q(venture__parent__parent__parent=venture) |
                 db.Q(venture__parent__parent__parent__parent=venture)
-            )
+            ).exclude(device__deleted=True)
             total_cost = 0
             total_sim = 0
             total_count = 0
@@ -369,20 +369,38 @@ class ReportVentures(SidebarReports, Base):
                     db.Q(venture__parent__parent=venture) |
                     db.Q(venture__parent__parent__parent=venture) |
                     db.Q(venture__parent__parent__parent__parent=venture)
-                )
+                ).exclude(device__deleted=True)
                 venture.total = get_total_cost(query, start, end)
                 (venture.count, venture.count_now,
                  devices) = get_total_count(query, start, end)
-                venture.core_count = get_total_cores(devices, start, end)
+#<<<<<<< HEAD
+#
+#                venture.core_count = get_total_cores(devices, start, end)
+#                venture.virtual_core_count = get_total_virtual_cores(
+#                    devices, start, end
+#                )
+#                cloud_cost = get_total_cost(
+#                    query.filter(
+#                        device__model__type=DeviceType.cloud_server.id
+#                    ), start, end
+#                )
+#                venture.cloud_use = (cloud_cost or 0) / total_cloud_cost * 100
+#=======
+                venture.core_count = get_total_cores(query, start, end)
                 venture.virtual_core_count = get_total_virtual_cores(
-                    devices, start, end
+                    query,
+                    start,
+                    end
                 )
-                cloud_cost = get_total_cost(
-                    query.filter(
+                cloud_cost = get_total_cost(query.filter(
                         device__model__type=DeviceType.cloud_server.id
-                    ), start, end
-                )
-                venture.cloud_use = (cloud_cost or 0) / total_cloud_cost * 100
+                    ), start, end)
+                if total_cloud_cost:
+                    venture.cloud_use = (cloud_cost or
+                                         0) / total_cloud_cost * 100
+                else:
+                    venture.cloud_use = 0
+#>>>>>>> 02dcbfff5c37f6d0da4a2bd4b1a009fc9de4ae6f
         else:
             self.ventures = Venture.objects.none()
         if self.request.GET.get('export') == 'csv':
