@@ -321,7 +321,7 @@ class CI(TimeTrackable):
                 self.content_object, 'venture', None):
             return list([
                 unicode(x) for x in
-                self.content_object.venture.technical_owners()])
+                self.content_object.venture.technical_owners()] or ['-'])
         elif self.content_object and self.type.id == CI_TYPES.VENTURE.id:
             return list([
                 unicode(x) for x in self.content_object.technical_owners()
@@ -345,7 +345,6 @@ class CI(TimeTrackable):
         for edge in edges:
             gr.add_edge(edge)
         return find_cycle(gr)
-
 
     @classmethod
     def get_by_content_object(self, content_object):
