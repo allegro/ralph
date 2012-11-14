@@ -301,15 +301,12 @@ class HistoryCost(db.Model):
         )
         return query
 
+
 def update_core_count(device):
-    for span in HistoryCost.objects.filter(device=device).order_by('-end'):
-        break
-    else:
-        span = None
-    if span:
+    old_cores = 0
+    for span in device.historycost_set.order_by('-end'):
         old_cores = span.cores
-    else:
-        old_cores = 0
+        break
     if device.get_core_count() != old_cores:
         HistoryCost.start_span(device=device)
 
