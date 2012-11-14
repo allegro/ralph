@@ -16,10 +16,11 @@ from django.contrib import admin
 from ajax_select import urls as ajax_select_urls
 admin.autodiscover()
 
-from ralph.cmdb.api import BusinessLineResource, ServiceResource,\
-        CIRelationResource, CIResource
-
+from ralph.cmdb.api import (BusinessLineResource, ServiceResource,
+                            CILayersResource, CIRelationResource,
+                            CIResource, CITypesResource)
 v09_api = Api(api_name='v0.9')
+
 # business API
 for r in (VentureResource, VentureLightResource, RoleResource,\
           RoleLightResource, DepartmentResource, RolePropertyTypeResource,
@@ -35,7 +36,8 @@ for r in (
     v09_api.register(r())
 
 # CMDB API
-for r in (BusinessLineResource, ServiceResource, CIResource, CIRelationResource):
+for r in (BusinessLineResource, ServiceResource, CIResource, CIRelationResource,
+          CITypesResource, CILayersResource):
     v09_api.register(r())
 
 # deployment API
