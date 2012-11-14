@@ -34,7 +34,12 @@
             </td>
             {% endif %}
         {% endif %}
-        <td class="control-group {{ f.css_classes }} {% if f.errors %}error{% endif %}" style="vertical-align:middle;text-align:center">{{ f }}
+        <td class="control-group {{ f.css_classes }} {% if f.errors %}error{% endif %}" style="vertical-align:middle">
+            {% if canedit %}
+            {{ f }}
+            {% else %}
+            {{ f.value|default:'' }}
+            {% endif %}
             {% for e in f.errors %}
                 <div class="help-block">{{ e }}</div>
             {% empty %}
@@ -49,12 +54,14 @@
         {% endfor %}
     </tbody>
 </table>
+{% if canedit %}
 <div class="buttons pull-right">
     {% spaceless %}
     <button type="submit" name="dns" value="Save" class="btn btn-primary"
     >{% icon 'fugue-tick' %}&nbsp;Save</button>
     {% endspaceless %}
 </div>
+{% endif %}
 </form>
 
 <h3>DHCP Entries</h3>
@@ -73,7 +80,12 @@
         <tr>
             <td style="vertical-align:middle">{% icon 'fugue-network-ethernet' %}</td>
         {% endif %}
-        <td class="control-group {{ f.css_classes }} {% if f.errors %}error{% endif %}" style="vertical-align:middle;text-align:center">{{ f }}
+        <td class="control-group {{ f.css_classes }} {% if f.errors %}error{% endif %}" style="vertical-align:middle">
+            {% if canedit %}
+            {{ f }}
+            {% else %}
+            {{ f.value|default:'' }}
+            {% endif %}
             {% for e in f.errors %}
                 <div class="help-block">{{ e }}</div>
             {% empty %}
@@ -88,12 +100,14 @@
         {% endfor %}
     </tbody>
 </table>
+{% if canedit %}
 <div class="buttons pull-right">
     {% spaceless %}
     <button type="submit" name="dhcp" value="Save" class="btn btn-primary"
     >{% icon 'fugue-tick' %}&nbsp;Save</button>
     {% endspaceless %}
 </div>
+{% endif %}
 </form>
 
 </div>
@@ -125,7 +139,12 @@
         {% if f.label = 'del' %}
             <td style="vertical-align:middle">{{ f.field.record.last_seen|date:'Y-m-d H:i' }}</td>
         {% endif %}
-        <td class="control-group {{ f.css_classes }} {% if f.errors %}error{% endif %}" style="vertical-align:middle;text-align:center">{{ f }}
+        <td class="control-group {{ f.css_classes }} {% if f.errors %}error{% endif %}" style="vertical-align:middle">
+            {% if canedit %}
+            {{ f }}
+            {% else %}
+            {{ f.value|default:'' }}
+            {% endif %}
             {% for e in f.errors %}
                 <div class="help-block">{{ e }}</div>
             {% empty %}
@@ -140,12 +159,14 @@
         {% endfor %}
     </tbody>
 </table>
+{% if canedit %}
 <div class="buttons pull-right">
     {% spaceless %}
     <button type="submit" name="ip" value="Save" class="btn btn-primary"
     >{% icon 'fugue-tick' %}&nbsp;Save</button>
     {% endspaceless %}
 </div>
+{% endif %}
 </form>
 
 {% if balancers %}
