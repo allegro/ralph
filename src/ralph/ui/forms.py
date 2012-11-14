@@ -8,7 +8,6 @@ import decimal
 import ipaddr
 
 from django import forms
-from django.db import models as db
 from lck.django.choices import Choices
 from lck.django.common.models import MACAddressField
 from bob.forms import AutocompleteWidget
@@ -155,7 +154,7 @@ def validate_mac(mac):
     try:
         mac = MACAddressField.normalize(mac)
         if not mac:
-            raise ValueError();
+            raise ValueError()
     except ValueError:
         raise forms.ValidationError("Invalid MAC address")
     return mac
