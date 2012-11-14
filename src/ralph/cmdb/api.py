@@ -81,7 +81,7 @@ class CIResource(MResource):
             'pci_scope': ('exact',),
             'type': ('exact',),
             'technical_owners': ('exact',),
-            'busines_owners': ('exact',),
+            'bussiness_owners': ('exact',),
         }
         throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
                                  expiration=EXPIRATION)
