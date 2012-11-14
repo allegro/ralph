@@ -410,8 +410,10 @@ class ReportServices(SidebarReports, Base):
             return HttpResponseForbidden(
                 "You don't have permission to see reports.")
         services = CI.objects.filter(type=7)
-        relations = CIRelation.objects.filter(child__type=7, parent__type=4)
-        self.serv_with_ven = []
+        relations = CIRelation.objects.filter(
+            child__type=7, parent__type=4, type=1
+        )
+        self.invalid_relation = []
         for relation in relations:
             child = relation.child
             child.state = CI_STATE_TYPES.NameFromID(child.state)
@@ -419,10 +421,11 @@ class ReportServices(SidebarReports, Base):
             child.venture = relation.parent.name
             child.relation_type = CI_RELATION_TYPES.NameFromID(relation.type)
             child.relation_type_id = relation.type
-            self.serv_with_ven.append(relation.child)
+            self.invalid_relation.append(relation.child)
+
         self.serv_without_ven = []
         for service in services:
-            if service not in self.serv_with_ven:
+            if service not in self.invalid_relation:
                 service.state = CI_STATE_TYPES.NameFromID(service.state)
                 self.serv_without_ven.append(service)
         return super(ReportServices, self).get(*args, **kwargs)
@@ -431,7 +434,7 @@ class ReportServices(SidebarReports, Base):
         context = super(ReportServices, self).get_context_data(**kwargs)
         context.update(
             {
-                'serv_with_ven': self.serv_with_ven,
+                'invalid_relation': self.invalid_relation,
                 'serv_without_ven': self.serv_without_ven,
                 'profile': self.request.user.get_profile(),
             }

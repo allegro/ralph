@@ -11,7 +11,7 @@
         {% endif %}
     </tr>
     {% for service in services %}
-        <tr {% if service.relation_type_id == 1 %}class="error"{% endif %}>
+        <tr>
             <td><a href="/cmdb/ci/view/{{ service.id }}">{{ service.name }}</a></td>
             <td>
                 {% if service.venture_id %}
@@ -21,7 +21,6 @@
                 {% endif %}
             <td>
                 {{ service.relation_type|default:"None" }}
-                {% if service.relation_type_id == 1 %}(invalid relation type){% endif %}
             </td>
             <td>{{ service.state }}</td>
             {% if profile.is_staff %}
