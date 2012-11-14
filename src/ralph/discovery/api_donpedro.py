@@ -36,7 +36,7 @@ SAVE_PRIORITY = 51
 logger = logging.getLogger(__name__)
 
 
-class NoMACError(Exception):
+class NoRequiredDataError(Exception):
     pass
 
 
@@ -57,16 +57,18 @@ def save_processors(processors, dev):
         cpu.speed = speed
         cpu.cores = cores
         is64bit = p.get('is64bit') == 'true'
-        extra = '%s %s %s ' % (p.get('manufacturer'),
-                               p.get('version'), '64bit' if is64bit else '')
+        extra = '%s %s %s ' % (
+            p.get('manufacturer'), p.get('version'),
+            '64bit' if is64bit else '')
         name = 'CPU %s%s %s %s' % (
             '64bit ' if is64bit else '',
             cpuname, '%dMhz' % speed if speed else '',
-            'multicore' if cores else '')
+            'multicore' if cores > 1 else '')
         cpu.model, c = ComponentModel.concurrent_get_or_create(
             speed=speed, type=ComponentType.processor.id,
-            family=cpuname,
-            cores=cores, extra_hash=hashlib.md5(extra).hexdigest())
+            family=cpuname, size=cores,
+            cores=cores,
+            extra_hash=hashlib.md5(extra.encode('utf-8')).hexdigest())
         cpu.model.extra = extra
         cpu.model.name = name
         cpu.model.save(priority=SAVE_PRIORITY)
@@ -142,7 +144,7 @@ def save_memory(memory, dev):
         mem.model, c = ComponentModel.concurrent_get_or_create(
             family=family, size=size, speed=speed,
             type=ComponentType.memory.id,
-            extra_hash=hashlib.md5(extra).hexdigest())
+            extra_hash=hashlib.md5(extra.encode('utf-8')).hexdigest())
         mem.model.extra = extra
         mem.model.name = 'RAM Windows %dMiB' % size
         mem.model.save()
@@ -162,7 +164,7 @@ def save_fibre_channel(fcs, dev):
         extra = '%s %s %s %s' % (fib.label, pid, manufacturer, model)
         fib.model, c = ComponentModel.concurrent_get_or_create(
             type=ComponentType.fibre.id, family=fib.label,
-            extra_hash=hashlib.md5(extra).hexdigest())
+            extra_hash=hashlib.md5(extra.encode('utf-8')).hexdigest())
         fib.model.extra = extra
         fib.model.name = model if model else fib.label
         fib.model.save(priority=SAVE_PRIORITY)
@@ -186,30 +188,26 @@ def str_to_ethspeed(str_value):
 
 def save_device_data(data, remote_ip):
     device = data['device']
-    shares = data['shares']
-    fcs = data['fcs']
-    storage = data['storage']
-    memory = data['memory']
-    processors = data['processors']
-    os = data['operating_system']
-    device = data['device']
     ethernets = [
         Eth(e.get('label'), MACAddressField.normalize(e.get('mac')),
             str_to_ethspeed(e.get('speed')))
         for e in data['ethernets']
         if MACAddressField.normalize(e.get('mac')) not in MAC_PREFIX_BLACKLIST]
-    if not ethernets:
-        raise NoMACError('No MAC addresses.')
+    sn = device.get('sn')
+    if not ethernets and not sn:
+        raise NoRequiredDataError('No MAC addresses and no device SN.')
     dev = Device.create(
-        sn=device.get('sn'),
+        sn=sn,
         ethernets=ethernets,
         model_name='%s %s %s' % (
-            device.get('caption'),
-            device.get('vendor'), device.get('version')),
+            device.get('caption'), device.get('vendor'),
+            device.get('version')),
         model_type=DeviceType.unknown, priority=SAVE_PRIORITY
     )
     dev.save(priority=SAVE_PRIORITY)
-    o = OperatingSystem.create(dev, os_name=os.get('label'), family='Windows')
+    os = data['operating_system']
+    o = OperatingSystem.create(dev, os_name=os.get('label'),
+                               family='Windows')
     o.memory = int(os['memory'])
     o.storage = int(os['storage'])
     o.cores_count = int(os['corescount'])
@@ -218,11 +216,11 @@ def save_device_data(data, remote_ip):
     ip_address.device = dev
     ip_address.is_management = False
     ip_address.save()
-    save_processors(processors, dev)
-    save_memory(memory, dev)
-    save_storage(storage, dev)
-    save_shares(shares, dev, ip_address)
-    save_fibre_channel(fcs, dev)
+    save_processors(data['processors'], dev)
+    save_memory(data['memory'], dev)
+    save_storage(data['storage'], dev)
+    save_shares(data['shares'], dev, ip_address)
+    save_fibre_channel(data['fcs'], dev)
     return dev
 
 
