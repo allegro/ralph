@@ -25,15 +25,17 @@ THROTTLE_AT = settings.API_THROTTLING['throttle_at']
 TIMEFREME = settings.API_THROTTLING['timeframe']
 EXPIRATION = settings.API_THROTTLING['expiration']
 
+
 class BusinessLineResource(MResource):
     class Meta:
         # has only name, so skip content_object info
-        queryset = CI.objects.filter(type__id=db.CI_TYPES.BUSINESSLINE.id).all()
+        queryset = CI.objects.filter(
+            type__id=db.CI_TYPES.BUSINESSLINE.id).all()
         authentication = ApiKeyAuthentication()
         authorization = DjangoAuthorization()
         resource_name = 'businessline'
         throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
-                                expiration=EXPIRATION)
+                                 expiration=EXPIRATION)
 
 
 class ServiceResource(MResource):
@@ -43,13 +45,13 @@ class ServiceResource(MResource):
         authorization = DjangoAuthorization()
         resource_name = 'service'
         throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
-                                                                 expiration=EXPIRATION)
+                                 expiration=EXPIRATION)
 
     def dehydrate(self, bundle):
         # CMDB base info completed with content_object info
-        attrs = ('external_key', 'location', 'state', \
-                'it_person','it_person_mail', 'business_person', \
-                'business_person_mail', 'business_line')
+        attrs = ('external_key', 'location', 'state',
+                 'it_person', 'it_person_mail', 'business_person',
+                 'business_person_mail', 'business_line')
         ci = CI.objects.get(uid=bundle.data.get('uid'))
         for attr in attrs:
             bundle.data[attr] = getattr(ci.content_object, attr, '')
@@ -63,7 +65,7 @@ class CIRelationResource(MResource):
         authorization = DjangoAuthorization()
         resource_name = 'cirelation'
         throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
-                                expiration=EXPIRATION)
+                                 expiration=EXPIRATION)
 
 
 class CIResource(MResource):
