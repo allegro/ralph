@@ -273,15 +273,15 @@ class CIImporterTest(TestCase):
             set([(x.parent.name, x.child.name, x.type) for x in role_rels]),
             set([(u'child_role', u'blade', 3)]),
         )
+        from ralph.cmdb.graphs import ImpactCalculator
         # summarize relations - 9
         self.assertEqual(len(CIRelation.objects.all()), 9)
-        from ralph.cmdb.graphs import ImpactCalculator
-        from pygraph.algorithms.searching import breadth_first_search
+        # calculate impact/spanning tree for CI structure
         calc = ImpactCalculator()
-        breadth_first_search(calc.graph, 1)
-        import pdb; pdb.set_trace()
-
-
+        self.assertEqual(
+            calc.find_affected_nodes(1),
+            ({1: None, 2: 1, 3: 2, 4: 2, 6: 2, 7: 2}, [1, 2, 3, 4, 6, 7])
+        )
 
 
 class JiraRssTest(TestCase):
