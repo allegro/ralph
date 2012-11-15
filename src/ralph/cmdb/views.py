@@ -808,6 +808,7 @@ class Search(BaseCMDBView):
             sidebar_selected = 'all cis'
         ret = super(Search, self).get_context_data(**kwargs)
         ret.update({
+            'table_header': self.table_header,
             'rows': self.rows,
             'page': self.page,
             'pages': _get_pages(self.paginator, self.page_number),
@@ -822,6 +823,128 @@ class Search(BaseCMDBView):
 
     def form_initial(self, values):
         return values
+
+    def prepare_table(self, layer, type_):
+        table_header = (
+            {'label': 'Name', 'name': 'uid', 'sortable': 1},
+            {'label': 'CI UID', 'name': 'type', 'sortable': 0}
+            )
+        table_body = (
+
+        )
+        if layer is None:
+            table_header += (
+                {'label': 'Type', 'name': 'type', 'sortable': 1},
+                {'label': 'Layer', 'name': 'layer', 'sortable': 0},
+                {'label': 'Venture', 'name': 'Venture', 'sortable': 0},
+                {'label': 'Service', 'name': 'Service', 'sortable': 0},
+                {'label': 'CI Scope', 'name': 'pci', 'sortable': 0},
+                )
+            table_body = (
+
+            )
+        elif layer == str(CI_LAYER.APPLICATIONS.id):
+            table_header += (
+                {'label': 'Type', 'name': 'type', 'sortable': 1},
+                {'label': 'Layer', 'name': 'layer', 'sortable': 0},
+            )
+            table_body = (
+
+            )
+        elif layer == str(CI_LAYER.DATABASES.id):
+            table_header += (
+                {'label': 'Type', 'name': 'type', 'sortable': 1},
+                {'label': 'Layer', 'name': 'layer', 'sortable': 0},
+                )
+        elif layer == str(CI_LAYER.DOC.id):
+            table_header += (
+                {'label': 'Type', 'name': 'type', 'sortable': 1},
+                {'label': 'Layer', 'name': 'layer', 'sortable': 0},
+            )
+            table_body = (
+
+            )
+        elif layer == str(CI_LAYER.OU.id):
+            table_header += (
+                {'label': 'Type', 'name': 'type', 'sortable': 1},
+                {'label': 'Layer', 'name': 'layer', 'sortable': 0},
+            )
+            table_body = (
+
+            )
+        elif layer == str(CI_LAYER.HARDWARE.id):
+            table_header += (
+                {'label': 'Parent Device', 'name': 'Parent Device',
+                 'sortable': 1},
+                {'label': 'Network', 'name': 'Network', 'sortable': 0},
+                {'label': 'DC', 'name': 'DC', 'sortable': 0},
+                {'label': 'Venture', 'name': 'Venture', 'sortable': 0},
+                {'label': 'Service', 'name': 'Service', 'sortable': 0},
+                {'label': 'PCI Scope', 'name': 'PCI Scope', 'sortable': 0},
+            )
+            table_body = (
+
+            )
+        elif layer == str(CI_LAYER.NETWORK.id):
+            table_header += (
+                {'label': 'Type', 'name': 'type', 'sortable': 1},
+                {'label': 'Layer', 'name': 'layer', 'sortable': 0},
+            )
+            table_body = (
+
+            )
+        elif layer == str(CI_LAYER.SERVICES.id):
+            if type_ == str(CI_TYPES.VENTURE.id):
+                {'label': 'Parent venture', 'name': 'Parent venture',
+                 'sortable': 1},
+                {'label': 'Child Ventures', 'name': 'Child Ventures',
+                 'sortable': 1},
+                {'label': 'Service', 'name': 'Service', 'sortable': 1},
+                {'label': 'Technical Owner', 'name': 'Technical Owner',
+                 'sortable': 1},
+                {'label': 'Business Owner', 'name': 'Business Owner',
+                 'sortable': 1},
+            if type_ == str(CI_TYPES.VENTUREROLE.id):
+                {'label': 'Parent venture', 'name': 'Parent venture',
+                 'sortable': 1},
+                {'label': 'Service', 'name': 'Service', 'sortable': 1},
+                {'label': 'Technical Owner', 'name': 'Technical Owner',
+                 'sortable': 1},
+            if type_ == str(CI_TYPES.BUSINESSLINE.id):
+                table_header += (
+                    {'label': 'Services contained',
+                     'name': 'Services contained', 'sortable': 0},
+                    )
+            if type_ == str(CI_TYPES.SERVICE.id):
+                table_header += (
+                    {'label': 'Contained Venture',
+                     'name': 'Contained Venture', 'sortable': 1
+                    },
+                    {'label': 'Business Line', 'name': 'Business Line',
+                     'sortable': 0},
+                    {'label': 'Technical Owner', 'name': 'Technical Owner',
+                     'sortable': 0},
+                    {'label': 'Business Owner', 'name': 'Business Owner',
+                     'sortable': 0},
+                )
+                table_body = (
+
+                )
+        elif layer == str(CI_LAYER.ROLES.id):
+            table_header += (
+                {'label': 'Type', 'name': 'type', 'sortable': 1},
+                {'label': 'Layer', 'name': 'layer', 'sortable': 0},
+                )
+            table_body = (
+
+            )
+        table_header += (
+            {'label': 'Operations', 'name': 'operations', 'sortable': 0},
+            )
+        table_body = (
+
+        )
+        return table_header, table_body
 
     def get(self, *args, **kwargs):
         values = self.request.GET
@@ -952,9 +1075,7 @@ class Search(BaseCMDBView):
                 'network': network,
                 'service': services,
             })
-#            import pdb
-#            pdb.set_trace()
-
+        self.table = self.prepare_table(layer, type_)
         self.rows = rows
         form_options = dict(
             label_suffix='',
