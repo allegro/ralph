@@ -14,17 +14,21 @@ from lck.django.common import nested_commit_on_success
 
 from ralph.util import network, Eth
 from ralph.discovery.models import (DeviceType, Device, OperatingSystem,
-    ComponentModel, ComponentType, Storage, SERIAL_BLACKLIST,
-    DISK_VENDOR_BLACKLIST, DISK_PRODUCT_BLACKLIST)
+                                    ComponentModel, ComponentType, Storage,
+                                    SERIAL_BLACKLIST, DISK_VENDOR_BLACKLIST,
+                                    DISK_PRODUCT_BLACKLIST)
 
 from .util import assign_ips, get_default_mac
 from ralph.discovery import hardware
+from ralph.discovery.lshw import parse_lshw, get_storage_from_lshw
 
 
 SAVE_PRIORITY = 52
 
+
 class UnknownUnitError(Exception):
     pass
+
 
 @nested_commit_on_success
 def parse_facts(facts, is_virtual):
@@ -46,8 +50,8 @@ def parse_facts(facts, is_virtual):
             return False, "Invalid MAC address: {}".format(e)
         if not mac:
             return False, "Machine has no MAC addresses."
-        sn = "".join(("VIRT0_", mac, '_', hashlib.md5(facts.get('sshdsakey',
-            facts.get('sshrsakey', '#'))).hexdigest()[:8]))
+        sn = "".join(("VIRT0_", mac, '_', hashlib.md5(facts.get(
+            'sshdsakey', facts.get('sshrsakey', '#'))).hexdigest()[:8]))
     else:
         sn = facts.get('serialnumber')
         if sn in SERIAL_BLACKLIST:
@@ -55,8 +59,8 @@ def parse_facts(facts, is_virtual):
         prod_name = facts.get('productname')
         manufacturer = facts.get('manufacturer')
         if not prod_name or not manufacturer:
-            return False, "`productname` or `manufacturer` facts not "\
-                    "available. `lshw` not present."
+            return False, "`productname` or `manufacturer` facts not " \
+                "available. `lshw` not present."
         if manufacturer and manufacturer in prod_name:
             model_name = prod_name
         else:
@@ -82,11 +86,14 @@ def parse_facts(facts, is_virtual):
     handle_facts_disks(dev, facts, is_virtual=is_virtual)
     return dev, dev_name
 
+
 def network_prtconf(as_string):
     return None, as_string
 
+
 def _parse_prtconf(dev, prtconf, facts, is_virtual):
     prtconf, _ = network_prtconf(as_string=zlib.decompress(prtconf))
+
 
 def _parse_smbios(dev, data, facts, is_virtual):
     try:
@@ -95,6 +102,7 @@ def _parse_smbios(dev, data, facts, is_virtual):
         pass
     smb = hardware.parse_smbios(data)
     hardware.handle_smbios(dev, smb, is_virtual, SAVE_PRIORITY)
+
 
 def handle_facts_ethernets(facts):
     ethernets = []
@@ -111,6 +119,7 @@ def handle_facts_ethernets(facts):
         label = 'Ethernet {}'.format(interface)
         ethernets.append(Eth(label, mac, speed=None))
     return ip_addresses, ethernets
+
 
 def handle_facts_disks(dev, facts, is_virtual=False):
     disks = {}
@@ -150,13 +159,15 @@ def handle_facts_disks(dev, facts, is_virtual=False):
         sn = disk.get('serial', '').strip()
         if sn:
             stor, created = Storage.concurrent_get_or_create(device=dev,
-                sn=sn)
+                                                             sn=sn)
         else:
             stor, created = Storage.concurrent_get_or_create(device=dev,
-                mount_point=label, sn=None)
+                                                             mount_point=label,
+                                                             sn=None)
         stor.size = disk['size'] = int(int(disk['size']) / 1024 / 1024)
-        stor.label = '{} {} {}'.format(disk['vendor'].strip(),
-            disk['product'].strip(), disk['revision'].strip())
+        stor.label = '{} {} {}'.format(
+            disk['vendor'].strip(), disk['product'].strip(),
+            disk['revision'].strip())
         extra = """Vendor: {vendor}
 Product: {product}
 Firmware Revision: {revision}
@@ -168,6 +179,32 @@ Size: {size}""".format(**disk)
         stor.model.name = '{} {}MiB'.format(stor.label, stor.size)
         stor.model.save(priority=SAVE_PRIORITY)
         stor.save(priority=SAVE_PRIORITY)
+
+
+def get_storage_size_from_facts(facts):
+    disk_size = 0
+    smartctl_size = 0
+    reg = re.compile(r'^[0-9][0-9,]*')
+    for k, v in facts.iteritems():
+        if k.startswith('smartctl_') and k.endswith('_user_capacity'):
+            match = reg.match(v.strip())
+            if match:
+                try:
+                    size = int(match.group(0).replace(',', ''))
+                except ValueError:
+                    pass
+                else:
+                    size = int(size / 1024 / 1024)
+                    smartctl_size += size
+        if k.startswith('disk_') and k.endswith('_size'):
+            try:
+                size = int(int(v.strip()) / 1024 / 1024)
+            except ValueError:
+                pass
+            else:
+                disk_size += size
+    return smartctl_size if smartctl_size else disk_size
+
 
 @nested_commit_on_success
 def handle_facts_os(dev, facts, is_virtual=False):
@@ -203,5 +240,21 @@ def handle_facts_os(dev, facts, is_virtual=False):
         os.cores_count = int(cores_count)
     except TypeError:
         pass
+    storage_size = get_storage_size_from_facts(facts)
+    if not storage_size:
+        lshw = facts.get('lshw', None)
+        if lshw:
+            try:
+                lshw = zlib.decompress(lshw)
+            except zlib.error:
+                pass
+            else:
+                lshw = parse_lshw(as_string=lshw)
+                mount_point, storages = get_storage_from_lshw(lshw, True)
+                storage_size = 0
+                for storage in storages:
+                    storage_size += storage['size']
+    if storage_size:
+        os.storage = storage_size
     os.save(priority=SAVE_PRIORITY)
 
