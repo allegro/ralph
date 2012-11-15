@@ -509,6 +509,7 @@ class VenturesVenture(SidebarVentures, Base):
                 )
             start = self.form.cleaned_data['start']
             end = self.form.cleaned_data['end']
+            query = query.exclude(device__deleted=True)
             query = HistoryCost.filter_span(start, end, query)
             items = _get_summaries(query.all(), start, end, True, self.venture)
             cost_data = []
