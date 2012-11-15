@@ -824,14 +824,11 @@ class Search(BaseCMDBView):
     def form_initial(self, values):
         return values
 
-    def prepare_table(self, layer, type_):
+    def get_table_header(self, layer, type_):
         table_header = (
             {'label': 'Name', 'name': 'uid', 'sortable': 1},
             {'label': 'CI UID', 'name': 'type', 'sortable': 0}
             )
-        table_body = (
-
-        )
         if layer is None:
             table_header += (
                 {'label': 'Type', 'name': 'type', 'sortable': 1},
@@ -840,17 +837,11 @@ class Search(BaseCMDBView):
                 {'label': 'Service', 'name': 'Service', 'sortable': 0},
                 {'label': 'CI Scope', 'name': 'pci', 'sortable': 0},
                 )
-            table_body = (
-
-            )
         elif layer == str(CI_LAYER.APPLICATIONS.id):
             table_header += (
                 {'label': 'Type', 'name': 'type', 'sortable': 1},
                 {'label': 'Layer', 'name': 'layer', 'sortable': 0},
-            )
-            table_body = (
-
-            )
+                )
         elif layer == str(CI_LAYER.DATABASES.id):
             table_header += (
                 {'label': 'Type', 'name': 'type', 'sortable': 1},
@@ -860,18 +851,12 @@ class Search(BaseCMDBView):
             table_header += (
                 {'label': 'Type', 'name': 'type', 'sortable': 1},
                 {'label': 'Layer', 'name': 'layer', 'sortable': 0},
-            )
-            table_body = (
-
-            )
+                )
         elif layer == str(CI_LAYER.OU.id):
             table_header += (
                 {'label': 'Type', 'name': 'type', 'sortable': 1},
                 {'label': 'Layer', 'name': 'layer', 'sortable': 0},
-            )
-            table_body = (
-
-            )
+                )
         elif layer == str(CI_LAYER.HARDWARE.id):
             table_header += (
                 {'label': 'Parent Device', 'name': 'Parent Device',
@@ -881,18 +866,12 @@ class Search(BaseCMDBView):
                 {'label': 'Venture', 'name': 'Venture', 'sortable': 0},
                 {'label': 'Service', 'name': 'Service', 'sortable': 0},
                 {'label': 'PCI Scope', 'name': 'PCI Scope', 'sortable': 0},
-            )
-            table_body = (
-
-            )
+                )
         elif layer == str(CI_LAYER.NETWORK.id):
             table_header += (
                 {'label': 'Type', 'name': 'type', 'sortable': 1},
                 {'label': 'Layer', 'name': 'layer', 'sortable': 0},
-            )
-            table_body = (
-
-            )
+                )
         elif layer == str(CI_LAYER.SERVICES.id):
             if type_ == str(CI_TYPES.VENTURE.id):
                 {'label': 'Parent venture', 'name': 'Parent venture',
@@ -926,25 +905,16 @@ class Search(BaseCMDBView):
                      'sortable': 0},
                     {'label': 'Business Owner', 'name': 'Business Owner',
                      'sortable': 0},
-                )
-                table_body = (
-
-                )
+                    )
         elif layer == str(CI_LAYER.ROLES.id):
             table_header += (
                 {'label': 'Type', 'name': 'type', 'sortable': 1},
                 {'label': 'Layer', 'name': 'layer', 'sortable': 0},
                 )
-            table_body = (
-
-            )
         table_header += (
             {'label': 'Operations', 'name': 'operations', 'sortable': 0},
             )
-        table_body = (
-
-        )
-        return table_header, table_body
+        return table_header
 
     def get(self, *args, **kwargs):
         values = self.request.GET
@@ -1075,7 +1045,7 @@ class Search(BaseCMDBView):
                 'network': network,
                 'service': services,
             })
-        self.table = self.prepare_table(layer, type_)
+        self.table_header = self.get_table_header(layer, type_)
         self.rows = rows
         form_options = dict(
             label_suffix='',

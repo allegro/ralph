@@ -27,137 +27,91 @@
         <button type="submit" class="btn btn-primary">{% icon 'fugue-funnel' %}&nbsp;Filter</button>
     </form>
 
-<table class="table table-striped table-bordered table-condensed ">
-    <thead><tr>
+    <table class="table table-striped table-bordered table-condensed ">
+        <thead>
+            <tr>
+            {% spaceless %}
+                {% for td in table_header %}
+                    {% include 'cmdb/column-header.html' with sortable=td.sortable label=td.label name=td.name always=1 %}
+                {% endfor %}
+            {% endspaceless %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for d in rows %}
 
-        {% spaceless %}
+            {% endfor %}
+        </tbody>
 
-            {% include 'cmdb/column-header.html' with sortable=1 label='Name' name='uid' always=1 %}
-            {% include 'cmdb/column-header.html' with label='CI UID' name='ci_uid' always=1 %}
-            {% if layer == '' %}
-                {# all cis #}
-                {% include 'cmdb/column-header.html' with sortable=1 label='Type' name='type' always=1 %}
-                {% include 'cmdb/column-header.html' with label='Layer' name='layer' always=1 %}
-                {% include 'cmdb/column-header.html' with label='Venture' name='Venture' always=1 %}
-                {% include 'cmdb/column-header.html' with label='Service' name='Service' always=1 %}
-                {% include 'cmdb/column-header.html' with label='PCI Scope' name='pci' always=1 %}
-            {% elif layer ==  '1' %}
-                {# Application #}
-            {% elif layer == '2' %}
-                {# Database #}
-            {% elif layer == '3' %}
-                {# Documentation/Procedures  #}
-            {% elif layer == '4' %}
-                {# Organization Unit/Support Group  #}
-            {% elif layer == '5' %}
-                {# Hardware #}
-                {% include 'cmdb/column-header.html' with label='Parent Device' name='Parent Device' always=1 %}
-                {% include 'cmdb/column-header.html' with label='Network' name='Network' always=1 %}
-                {% include 'cmdb/column-header.html' with label='DC' name='DC' always=1 %}
-                {% include 'cmdb/column-header.html' with label='Venture' name='Venture' always=1 %}
-                {% include 'cmdb/column-header.html' with label='Service' name='Service' always=1 %}
-                {% include 'cmdb/column-header.html' with label='PCI Scope' name='PCI Scope' always=1 %}
-            {% elif layer == '6' %}
-                {# Network #}
-            {% elif layer == '7' and type == '4' %}
-                {# Services - venture #}
-                {% include 'cmdb/column-header.html' with label='Parent venture' name='Parent venture' always=1 %}
-                {% include 'cmdb/column-header.html' with label='Child Ventures' name='Child Ventures' always=1 %}
-                {% include 'cmdb/column-header.html' with label='Service' name='Service' always=1 %}
-                {% include 'cmdb/column-header.html' with label='Technical Owner' name='Technical Owner' always=1 %}
-                {% include 'cmdb/column-header.html' with label='Business Owner' name='Business Owner' always=1 %}
-            {% elif layer == '7' and type == '5' %}
-                {# Services - venture role #}
-                {% include 'cmdb/column-header.html' with label='Parent venture' name='Parent venture' always=1 %}
-                {% include 'cmdb/column-header.html' with label='Service' name='Service' always=1 %}
-                {% include 'cmdb/column-header.html' with label='Technical Owner' name='Technical Owner' always=1 %}
-            {% elif layer == '7' and type == '6' %}
-                {# Services - venture role #}
-                {% include 'cmdb/column-header.html' with label='Services contained' name='Services contained' always=1 %}
-            {% elif layer == '7' and type == '7' %}
-                {# Services - service #}
-                {% include 'cmdb/column-header.html' with label='Contained Venture' name='Contained Venture' always=1 %}
-                {% include 'cmdb/column-header.html' with label='Business Line' name='Business Line' always=1 %}
-                {% include 'cmdb/column-header.html' with label='Technical Owner' name='Technical Owner' always=1 %}
-                {% include 'cmdb/column-header.html' with label='Business Owner' name='Business Owner' always=1 %}
-            {% elif layer == '8' %}
-                {# Roles #}
-            {% endif %}
-            {% include 'cmdb/column-header.html' with label='Operations' name='operations' always=1%}
+            {% for d in rows %}
+            <tr>
+                <td>
+                    {% if d.count %}
+                    <a href="./search?parent={{ d.id|default:''}}">
+                        <b><i class='fugue-icon {{ d.icon }}'></i> {{ d.name }} ({{ d.count }}) &gt;&gt;</b> </a>
+                    {% else %}
+                    <a href="./ci/view/{{ d.id|default:''}}"> <i class='fugue-icon {{ d.icon }}'></i> {{ d.name }} </a>
+                    {% endif %}
 
-        {% endspaceless %}
-
-    </tr></thead>
-    <tbody>
-        {% for d in rows %}
-        <tr>
-            <td>
-                {% if d.count %}
-                <a href="./search?parent={{ d.id|default:''}}"> 
-                    <b><i class='fugue-icon {{ d.icon }}'></i> {{ d.name }} ({{ d.count }}) &gt;&gt;</b> </a>
-                {% else %}
-                <a href="./ci/view/{{ d.id|default:''}}"> <i class='fugue-icon {{ d.icon }}'></i> {{ d.name }} </a>
+                </td>
+                <td><a href="/cmdb/ci/view/{{ d.id }}">{{ d.uid }}</a></td>
+                {% if layer == '' %}
+                    <td>{{ d.ci_type }}</td>
+                    <td>{{ d.layers }}</td>
+                    <td>{% for parent_ven in d.parent_venture  %}<a href="/cmdb/ci/view/{{ parent_ven.id }}">{{ parent_ven.name }}</a>{% endfor%}</td>
+                    <td>{{ d.service }}</td>
+                    <td>{{ d.pci_scope }}</td>
+                {% elif layer == '1' %}
+                    {# Application #}
+                {% elif layer == '2' %}
+                    {# Database #}
+                {% elif layer == '3' %}
+                    {# Documentation/Procedures  #}
+                {% elif layer == '4' %}
+                    {# Organization Unit/Support Group  #}
+                {% elif layer == '5' %}
+                    {# Hardware #}
+                    <td><a href="/ui/search/info/{{ d.dev.id }}">{{ d.dev.parent }}</a></td>
+                    <td>{{ d.network }}</td>
+                    <td>{{ d.dev.dc }}</td>
+                    <td>{% for parent_ven in d.parent_venture  %}<a href="/cmdb/ci/view/{{ parent_ven.id }}">{{ parent_ven.name }}</a>{% endfor%}</td>
+                    <td>{{ d.service }}</td>
+                    <td>{{ d.pci_scope }}</td>
+                {% elif layer == '6' %}
+                    {# Network #}
+                {% elif layer == '7' and type == '7' %}
+                    {# Services #}
+                    <td>{% for parent_ven in d.parent_venture  %}<a href="/cmdb/ci/view/{{ parent_ven.id }}">{{ parent_ven.name }}</a>{% endfor%}</td>
+                    <td>{% for bl in d.business_line  %}<a href="/cmdb/ci/view/{{ bl.id }}">{{ bl.name }}</a>{% endfor%}</td>
+                    <td>{% include 'cmdb/table-owners.html' with data=d.owner_t %}</td>
+                    <td>{% include 'cmdb/table-owners.html' with data=d.owner_b %}</td>
+                {% elif layer == '7' and type == '4' %}
+                    <td>{% for parent_ven in d.parent_venture  %}<a href="/cmdb/ci/view/{{ parent_ven.id }}">{{ parent_ven.name }}</a>{% endfor%}</td>
+                    <td>{% for child_ven in d.child_venture  %}<a href="/cmdb/ci/view/{{ child_ven.id }}">{{ child_ven.name }}</a>{% endfor%}</td>
+                    <td>{{ d.service }}</td>
+                    <td>{% include 'cmdb/table-owners.html' with data=d.owner_t %}</td>
+                    <td>{% include 'cmdb/table-owners.html' with data=d.owner_b %}</td>
+                {% elif layer == '7' and type == '5' %}
+                    <td>{% for parent_ven in d.parent_venture  %}<a href="/cmdb/ci/view/{{ parent_ven.id }}">{{ parent_ven.name }}</a>{% endfor%}</td>
+                    <td>{{ d.service }}</td>
+                    <td>{% include 'cmdb/table-owners.html' with data=d.owner_t %}</td>
+                {% elif layer == '7' and type == '6' %}
+                    <td>{{ d.service }}</td>
+                {% elif layer == '8' %}
+                    {# Roles #}
                 {% endif %}
+                <td>
+                    {% if edit_configuration_item_info_generic_perm  %}
+                        <a href="./ci/edit/{{ d.id|default:''}}?{{url_query.urlencode }}"> Edit </a> |
+                    {% endif %}
 
-            </td>
-            <td><a href="/cmdb/ci/view/{{ d.id }}">{{ d.uid }}</a></td>
-            {% if layer == '' %}
-                <td>{{ d.ci_type }}</td>
-                <td>{{ d.layers }}</td>
-                <td>{% for parent_ven in d.parent_venture  %}<a href="/cmdb/ci/view/{{ parent_ven.id }}">{{ parent_ven.name }}</a>{% endfor%}</td>
-                <td>{{ d.service }}</td>
-                <td>{{ d.pci_scope }}</td>
-            {% elif layer == '1' %}
-                {# Application #}
-            {% elif layer == '2' %}
-                {# Database #}
-            {% elif layer == '3' %}
-                {# Documentation/Procedures  #}
-            {% elif layer == '4' %}
-                {# Organization Unit/Support Group  #}
-            {% elif layer == '5' %}
-                {# Hardware #}
-                <td><a href="/ui/search/info/{{ d.dev.id }}">{{ d.dev.parent }}</a></td>
-                <td>{{ d.network }}</td>
-                <td>{{ d.dev.dc }}</td>
-                <td>{% for parent_ven in d.parent_venture  %}<a href="/cmdb/ci/view/{{ parent_ven.id }}">{{ parent_ven.name }}</a>{% endfor%}</td>
-                <td>{{ d.service }}</td>
-                <td>{{ d.pci_scope }}</td>
-            {% elif layer == '6' %}
-                {# Network #}
-            {% elif layer == '7' and type == '7' %}
-                {# Services #}
-                <td>{% for parent_ven in d.parent_venture  %}<a href="/cmdb/ci/view/{{ parent_ven.id }}">{{ parent_ven.name }}</a>{% endfor%}</td>
-                <td>{% for bl in d.business_line  %}<a href="/cmdb/ci/view/{{ bl.id }}">{{ bl.name }}</a>{% endfor%}</td>
-                <td>{% include 'cmdb/table-owners.html' with data=d.owner_t %}</td>
-                <td>{% include 'cmdb/table-owners.html' with data=d.owner_b %}</td>
-            {% elif layer == '7' and type == '4' %}
-                <td>{% for parent_ven in d.parent_venture  %}<a href="/cmdb/ci/view/{{ parent_ven.id }}">{{ parent_ven.name }}</a>{% endfor%}</td>
-                <td>{% for child_ven in d.child_venture  %}<a href="/cmdb/ci/view/{{ child_ven.id }}">{{ child_ven.name }}</a>{% endfor%}</td>
-                <td>{{ d.service }}</td>
-                <td>{% include 'cmdb/table-owners.html' with data=d.owner_t %}</td>
-                <td>{% include 'cmdb/table-owners.html' with data=d.owner_b %}</td>
-            {% elif layer == '7' and type == '5' %}
-                <td>{% for parent_ven in d.parent_venture  %}<a href="/cmdb/ci/view/{{ parent_ven.id }}">{{ parent_ven.name }}</a>{% endfor%}</td>
-                <td>{{ d.service }}</td>
-                <td>{% include 'cmdb/table-owners.html' with data=d.owner_t %}</td>
-            {% elif layer == '7' and type == '6' %}
-                <td>{{ d.service }}</td>
-            {% elif layer == '8' %}
-                {# Roles #}
-            {% endif %}
-            <td>
-                {% if edit_configuration_item_info_generic_perm  %}
-                    <a href="./ci/edit/{{ d.id|default:''}}?{{url_query.urlencode }}"> Edit </a> |
-                {% endif %}
-
-                {% if read_configuration_item_info_generic_perm  %}
-                    <a href="./ci/view/{{ d.id|default:''}}?{{url_query.urlencode }}"> View</a>
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+                    {% if read_configuration_item_info_generic_perm  %}
+                        <a href="./ci/view/{{ d.id|default:''}}?{{url_query.urlencode }}"> View</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 {% pagination page url_query=url_query show_all=0 show_csv=0 fugue_icons=1 %}
 {% endblock %}
