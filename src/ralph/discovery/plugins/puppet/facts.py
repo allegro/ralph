@@ -11,14 +11,13 @@ import re
 import zlib
 
 from lck.django.common import nested_commit_on_success
+from .util import assign_ips, get_default_mac
 
 from ralph.util import network, Eth
+from ralph.discovery import hardware
 from ralph.discovery.models import (DeviceType, Device, OperatingSystem,
     ComponentModel, ComponentType, Software, Storage, SERIAL_BLACKLIST,
     DISK_VENDOR_BLACKLIST, DISK_PRODUCT_BLACKLIST)
-
-from .util import assign_ips, get_default_mac
-from ralph.discovery import hardware
 
 
 SAVE_PRIORITY = 52
