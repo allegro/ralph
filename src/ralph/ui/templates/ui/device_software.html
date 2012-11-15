@@ -7,19 +7,13 @@
     <thead><tr>
         <th width="16"></th>
         <th>Label</th>
+        <th>Version</th>
         <th>Model Group</th>
         <th>Model</th>
-        <th>Serial Number</th>
-        <th>Speed</th>
-        <th>Size</th>
-        <th>Count</th>
-        {% if user.is_staff %}
-        <th>Action</th>
-        {% endif %}
     </tr></thead>
     <tbody>
         {% for item in components %}
-        {% if not item.model.is_software %}
+        {% if item.model.is_software %}
         <tr>
             <td><i class="fugue-icon {{ item.icon }}"></i></td>
             {%  if item.hrefinfo %}
@@ -30,6 +24,9 @@
             {%  else %}
                 <td>{{ item.label }}</td>
             {%  endif %}
+            <td>
+                {{ item.version|default:'–' }}
+            </td>
             <td>
                 {% if item.model.group %}
                     {% if item.group == 'dev' %}
@@ -62,19 +59,6 @@
                     {% endif %}
                 {% endif %}
             </td>
-            <td>{{ item.serial|default:'' }}</td>
-            <td>{{ item.speed|default:'' }}</td>
-            <td>{{ item.size|default:'' }}</td>
-            <td>{{ item.count|default:'' }}</td>
-            {% if user.is_staff %}
-            <td>
-                {% if item.href %}
-                <a href="{{ item.href }}" style="white-space:nowrap">
-                    {% icon 'fugue-toolbox--pencil' %} Edit
-                </a>
-                {% endif %}
-            </td>
-            {% endif %}
         </tr>
         {% endif %}
         {% endfor %}

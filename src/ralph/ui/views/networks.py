@@ -15,7 +15,7 @@ from ralph.discovery.models import ReadOnlyDevice, Network, IPAddress
 from ralph.ui.forms import NetworksFilterForm
 from ralph.ui.views.common import (BaseMixin, DeviceDetailView, Info,
                                    Prices, Addresses, Costs, Purchase,
-                                   Components, History, Discover)
+                                   Components, History, Discover, Software)
 from ralph.cmdb.views import CMDB
 from ralph.ui.views.devices import BaseDeviceList
 from ralph.ui.views.reports import Reports, ReportDeviceList
@@ -152,6 +152,10 @@ class NetworksInfo(Networks, Info):
 
 
 class NetworksComponents(Networks, Components):
+    pass
+
+
+class NetworksSoftware(Networks, Software):
     pass
 
 
