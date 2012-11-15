@@ -100,11 +100,11 @@
                 {% endif %}
 
             </td>
-            <td>{{ d.uid }}</td>
+            <td><a href="/cmdb/ci/view/{{ d.id }}">{{ d.uid }}</a></td>
             {% if layer == '' %}
                 <td>{{ d.ci_type }}</td>
                 <td>{{ d.layers }}</td>
-                <td>{{ d.parent_venture }}</td>
+                <td>{% for parent_ven in d.parent_venture  %}<a href="/cmdb/ci/view/{{ parent_ven.id }}">{{ parent_ven.name }}</a>{% endfor%}</td>
                 <td>{{ d.service }}</td>
                 <td>{{ d.pci_scope }}</td>
             {% elif layer == '1' %}
@@ -117,30 +117,30 @@
                 {# Organization Unit/Support Group  #}
             {% elif layer == '5' %}
                 {# Hardware #}
-                <td>{{ d.dev.parent }}</td>
+                <td><a href="/ui/search/info/{{ d.dev.id }}">{{ d.dev.parent }}</a></td>
                 <td>{{ d.network }}</td>
                 <td>{{ d.dev.dc }}</td>
-                <td>{{ d.parent_venture }}</td>
+                <td>{% for parent_ven in d.parent_venture  %}<a href="/cmdb/ci/view/{{ parent_ven.id }}">{{ parent_ven.name }}</a>{% endfor%}</td>
                 <td>{{ d.service }}</td>
                 <td>{{ d.pci_scope }}</td>
             {% elif layer == '6' %}
                 {# Network #}
             {% elif layer == '7' and type == '7' %}
                 {# Services #}
-                <td>{{ d.parent_venture }}</td>
-                <td>{{ d.business_line }}</td>
-                <td>{{ d.owner_t }}</td>
-                <td>{{ d.owner_b }}</td>
+                <td>{% for parent_ven in d.parent_venture  %}<a href="/cmdb/ci/view/{{ parent_ven.id }}">{{ parent_ven.name }}</a>{% endfor%}</td>
+                <td>{% for bl in d.business_line  %}<a href="/cmdb/ci/view/{{ bl.id }}">{{ bl.name }}</a>{% endfor%}</td>
+                <td>{% include 'cmdb/table-owners.html' with data=d.owner_t %}</td>
+                <td>{% include 'cmdb/table-owners.html' with data=d.owner_b %}</td>
             {% elif layer == '7' and type == '4' %}
-                <td>{{ d.parent_venture }}</td>
-                <td>{{ d.child_venture }}</td>
+                <td>{% for parent_ven in d.parent_venture  %}<a href="/cmdb/ci/view/{{ parent_ven.id }}">{{ parent_ven.name }}</a>{% endfor%}</td>
+                <td>{% for child_ven in d.child_venture  %}<a href="/cmdb/ci/view/{{ child_ven.id }}">{{ child_ven.name }}</a>{% endfor%}</td>
                 <td>{{ d.service }}</td>
-                <td>{{ d.owner_t }}</td>
-                <td>{{ d.owner_b }}</td>
+                <td>{% include 'cmdb/table-owners.html' with data=d.owner_t %}</td>
+                <td>{% include 'cmdb/table-owners.html' with data=d.owner_b %}</td>
             {% elif layer == '7' and type == '5' %}
-                <td>{{ d.parent_venture }}</td>
+                <td>{% for parent_ven in d.parent_venture  %}<a href="/cmdb/ci/view/{{ parent_ven.id }}">{{ parent_ven.name }}</a>{% endfor%}</td>
                 <td>{{ d.service }}</td>
-                <td>{{ d.owner_t }}</td>
+                <td>{% include 'cmdb/table-owners.html' with data=d.owner_t %}</td>
             {% elif layer == '7' and type == '6' %}
                 <td>{{ d.service }}</td>
             {% elif layer == '8' %}

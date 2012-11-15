@@ -866,8 +866,9 @@ class Search(BaseCMDBView):
         relations = CIRelation.objects.all()
         for i in cis:
             icon = get_icon_for(i)
-            owners_t, owners_b, parent_venture, child_venture = '', '', '', ''
-            business_line, services, network = '', '', ''
+            child_venture, dev = [], []
+            services, network = '', ''
+            owners_t, owners_b, parent_venture, business_line = [], [], [], []
             if layer == str(CI_LAYER.HARDWARE.id):
                 try:
                     networks = i.content_object.ipaddress_set.all()
@@ -881,13 +882,18 @@ class Search(BaseCMDBView):
                     str(CI_TYPES.SERVICE.id),
                 ]:
                     for t in i.ciownership_set.filter(type=1):
-                        owners_t += '%s %s, ' % (
-                            t.owner.first_name, t.owner.last_name
-                        )
+                        owners_t.append({
+                            'id': t.owner.id,
+                            'first_name': t.owner.first_name,
+                            'last_name': t.owner.last_name,
+                        })
+
                     for b in i.ciownership_set.filter(type=2):
-                        owners_b += '%s %s, ' % (
-                            b.owner.first_name, b.owner.last_name
-                        )
+                        owners_b.append({
+                            'id': b.owner.id,
+                            'first_name': b.owner.first_name,
+                            'last_name': b.owner.last_name,
+                        })
             if (layer == str(CI_LAYER.SERVICES.id) and
                     type_ == str(CI_TYPES.VENTURE.id)):
                 child_ven = relations.filter(
@@ -895,7 +901,10 @@ class Search(BaseCMDBView):
                     child__type=str(CI_TYPES.VENTURE.id)
                 )
                 for cv in child_ven:
-                    child_venture += cv.child.name
+                    child_venture.append({
+                        'id': cv.child.id,
+                        'name': cv.child.name,
+                    })
             if (layer == str(CI_LAYER.SERVICES.id) and
                     type_ == str(CI_TYPES.SERVICE.id)):
                 rel_bl = relations.filter(
@@ -903,20 +912,25 @@ class Search(BaseCMDBView):
                     parent__type=str(CI_TYPES.BUSINESSLINE.id),
                 )
                 for bl in rel_bl:
-                    business_line += bl.parent.name
+                    business_line.append({
+                        'id': bl.parent.id,
+                        'name': bl.parent.name,
+                    })
             parent_ven = relations.filter(
                 child=i.id,
                 parent__type=str(CI_TYPES.VENTURE.id)
             )
             for pv in parent_ven:
-                parent_venture += pv.parent.name
+                parent_venture.append({
+                    'id': pv.parent.id,
+                    'name': pv.parent.name,
+                })
             serv = relations.filter(
                 parent=i.id,
                 child__type=str(CI_TYPES.SERVICE.id)
             )
             for s in serv:
                 services += '%s, ' % s.child.name
-
             rows.append({
                 'coun': i.relations.count(),
                 'uid': i.uid,
