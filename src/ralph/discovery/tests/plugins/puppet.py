@@ -36,9 +36,9 @@ class PuppetPluginTest(TestCase):
         self.assertEqual(os.model.get_type_display(), 'operating system')
 
     def test_handle_facts_packages(self):
-        handle_facts_packages(self.dev, data['packages_data'])
-        handle_facts_packages(self.dev2, data_second['packages_data'])
-        handle_facts_packages(self.dev2, data['packages_data'])
+        handle_facts_packages(self.dev, data['packages'])
+        handle_facts_packages(self.dev2, data_second['packages'])
+        handle_facts_packages(self.dev2, data['packages'])
         device = Device.objects.get(sn='device')
         device_packages = [
             (x.label, x.version) for x in device.software_set.all()
