@@ -43,7 +43,7 @@ setup (
         'fugue-icons==3.5.0',
         'gunicorn==0.14.6',
         'ipaddr==2.1.7',
-        'iscconf==1.0.0dev3',
+        'iscconf==1.0.0dev9',
         'jpath==1.2',
         'lck.django==0.8.0',
         'lxml==2.3.5',
