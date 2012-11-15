@@ -11,13 +11,13 @@ import re
 import zlib
 
 from lck.django.common import nested_commit_on_success
-from .util import assign_ips, get_default_mac
 
 from ralph.util import network, Eth
 from ralph.discovery import hardware
 from ralph.discovery.models import (DeviceType, Device, OperatingSystem,
     ComponentModel, ComponentType, Software, Storage, SERIAL_BLACKLIST,
     DISK_VENDOR_BLACKLIST, DISK_PRODUCT_BLACKLIST)
+from ralph.discovery.plugins.puppet.util import get_default_mac, assign_ips
 
 
 SAVE_PRIORITY = 52
@@ -80,10 +80,7 @@ def parse_facts(facts, is_virtual):
         _parse_smbios(dev, facts['smbios'], facts, is_virtual=is_virtual)
     except KeyError as e:
         pass
-    try:
-        handle_facts_packages(dev, facts['packages_data'])
-    except KeyError:
-        pass
+    handle_facts_packages(dev, facts.get('packages_data'))
     handle_facts_disks(dev, facts, is_virtual=is_virtual)
     return dev, dev_name
 
@@ -218,36 +215,40 @@ def handle_facts_os(dev, facts, is_virtual=False):
     os.save(priority=SAVE_PRIORITY)
 
 
+def decompress_packages(compressed_data):
+    try:
+        data = zlib.decompress(compressed_data)
+    except zlib.error:
+        return False
+    return data
+
 def parse_packages(facts):
-    packages_list = []
-    packages = facts.strip().split(',')
-    for package in packages:
-        p = package.split(' ')
-        package = {}
-        try:
-            package['name'] = p[0]
-        except IndexError:
-            continue
-        if package['name'] == '':
-            continue
-        try:
-            package['version'] = p[1]
-        except IndexError:
-            package['version'] = None
-        packages_list.append(package)
-    return packages_list
+    data = decompress_packages(facts)
+    if data:
+        packages_list = []
+        packages = data.strip().split(',')
+        for package in packages:
+            try:
+                name, version = package.split(None, 1)
+            except ValueError:
+                continue
+            yield {
+                'name': name,
+                'version': version,
+                }
 
 
 @nested_commit_on_success
 def handle_facts_packages(dev, facts):
     packages_list = parse_packages(facts)
-    for package in packages_list:
-        package_name = '{} - {}'.format(package['name'], package['version'])
-        Software.create(
-            dev=dev,
-            path=package_name,
-            model_name=package_name,
-            label=package['name'],
-            family=package['name'],
-            version=package['version'],
-        ).save()
+    if packages_list:
+        for package in packages_list:
+            package_name = '{} - {}'.format(package['name'], package['version'])
+            Software.create(
+                dev=dev,
+                path=package_name,
+                model_name=package_name,
+                label=package['name'],
+                family=package['name'],
+                version=package['version'],
+            ).save()

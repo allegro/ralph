@@ -72,7 +72,6 @@ class PuppetPluginTest(TestCase):
              ('mysql-server-5.4', '5.5.28-0ubuntu0.12.04.2'),
              ('mysql-server-5.5', '5.5.28-0ubuntu0.12.04.2'),
              ('mysql-server-core-5.5', '5.5.28-0ubuntu0.12.04.2'),
-             ('python', None),
              ('python', '2.7.3-0ubuntu2'),
              ('sed', '4.1.1-9'),
              ('sed', '4.3.1-9')]
