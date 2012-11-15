@@ -45,23 +45,25 @@
         <th>End</th>
         <th>Days</th>
         <th>Venture</th>
+        <th>Cores</th>
         <th>Daily Cost</th>
     </tr></thead>
     <tbody>
         {% for h in history_page.object_list %}
         <tr>
             <td>
-                {% if h.start.year != 0 %}
+                {% if h.start > ALWAYS_DATE %}
                     {{ h.start|date:'Y-m-d' }}
                 {% endif %}
             </td>
             <td>
-                {% if h.end.year != 9999 %}
+                {% if h.end < FOREVER_DATE %}
                     {{ h.end|date:'Y-m-d' }}
                 {% endif %}
             </td>
             <td>{{ h.span }}</td>
             <td>{{ h.venture.name }}</td>
+            <td class="count">{{ h.cores }}</td>
             <td class="currency">{{ h.daily_cost|currency:2 }}</td>
         </tr>
         {% endfor %}
