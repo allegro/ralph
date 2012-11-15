@@ -59,6 +59,6 @@ Global
 		{DAE64400-7EED-47D3-830C-3BA065E2183E}.Release|x86.Build.0 = Release|x86
 		{DAE64400-7EED-47D3-830C-3BA065E2183E}.Release|x86.ActiveCfg = Release|x86
 		{DAE64400-7EED-47D3-830C-3BA065E2183E}.Release|any.Build.0 = Release|x86
-		{DAE64400-7EED-47D3-830C-3BA065E2183E}.Release|any.ActiveCfg = Release|x86
+		{DAE64400-7EED-47D3-830C-3BA065E2183E}.Release|any.ActiveCfg = Release|any
 	EndGlobalSection
 EndGlobal
