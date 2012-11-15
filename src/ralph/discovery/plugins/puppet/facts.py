@@ -236,7 +236,7 @@ def handle_facts_packages(dev, facts):
 
 def parse_packages(facts):
     packages_list = []
-    packages = facts.strip().replace('\n', '').split(',')
+    packages = facts.strip().split(',')
     for package in packages:
         p = package.split(' ')
         package = {}
