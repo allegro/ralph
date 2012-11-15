@@ -170,7 +170,7 @@ namespace DonPedro.Detectors
 
 			try
 			{
-				// In Windows <= Windows Server 2003 Win32_DiskDrive don't have SerialNumber field.
+				// In Windows <= Windows Server 2003 Win32_DiskDrive doesn't have SerialNumber field.
 				string query;
 				if (osVersionNumber < 6)
 				{
@@ -189,7 +189,7 @@ namespace DonPedro.Detectors
 					string sn = "";
 					if (osVersionNumber < 6)
 					{
-						// In Windows <= Windows Server 2003 SerialNumber we can find in Win32_PhysicalMedia.
+						// In Windows <= Windows Server 2003 we can find SerialNumber in Win32_PhysicalMedia.
 						SelectQuery snQuery = new SelectQuery("select SerialNumber from Win32_PhysicalMedia where tag='" + GetValueAsString(diskDrive, "DeviceID").Replace(@"\", @"\\") + "'");
 						ManagementObjectSearcher snSearcher = new ManagementObjectSearcher(snQuery);
 						
