@@ -48,7 +48,7 @@
                 $(value).attr('class', '');
         });
 
-        $(node.ui.children().first()).attr('class', 'focused');
+        $(node.ui).children().first().attr('class', 'focused');
         
         $("#cmdb_name").html(node.data.name);
         $("#cmdb_link").html("<a target='_blank' href='/cmdb/ci/view/" + node.data.id + "'> View </a>");
