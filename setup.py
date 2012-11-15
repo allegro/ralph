@@ -32,7 +32,7 @@ setup (
     package_dir = {'':'src'},
     zip_safe = False, # because templates are loaded from file path
     install_requires = [
-        'django-ajax-selects==1.2.4',
+        'django-ajax-selects==1.2.5',
         'django-bob==1.4.0',
         'django-celery==3.0.10',
         'django-powerdns-dnssec==0.9.1',
@@ -40,10 +40,10 @@ setup (
         'django==1.4.2',
         'dnspython==1.10.0',
         'feedparser==5.1.2',
-        'fugue-icons==3.4.4',
+        'fugue-icons==3.5.0',
         'gunicorn==0.14.6',
         'ipaddr==2.1.7',
-        'iscconf==1.0.0dev3',
+        'iscconf==1.0.0dev9',
         'jpath==1.2',
         'lck.django==0.8.0',
         'lxml==2.3.5',

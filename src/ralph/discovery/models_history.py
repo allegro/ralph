@@ -12,7 +12,8 @@ from datetime import datetime, date
 
 from django.db import models as db
 from django.utils.translation import ugettext_lazy as _
-from django.db.models.signals import post_save, pre_save, pre_delete
+from django.db.models.signals import (post_save, pre_save, pre_delete,
+                                      post_delete)
 from django.dispatch import receiver
 
 from ralph.discovery.models_device import (Device, DeprecationKind,
@@ -28,6 +29,8 @@ from ralph.discovery.models_network import IPAddress
 
 FOREVER = '2199-1-1'  # not all DB backends will accept '9999-1-1'
 ALWAYS = '0001-1-1'  # not all DB backends will accept '0000-0-0'
+ALWAYS_DATE = date(1, 1, 1)
+FOREVER_DATE = date(2199, 1, 1)
 
 
 def _field_changes(instance, ignore=('last_seen',)):
@@ -220,6 +223,7 @@ class HistoryCost(db.Model):
     start = db.DateField(default=ALWAYS, null=True)
     end = db.DateField(default=FOREVER)
     daily_cost = db.FloatField(default=0)
+    cores = db.IntegerField(default=0)
     device = db.ForeignKey('Device', null=True, blank=True,
                            default=None, on_delete=db.SET_NULL)
     extra = db.ForeignKey('business.VentureExtraCost', null=True, blank=True,
@@ -253,6 +257,7 @@ class HistoryCost(db.Model):
             end=end or FOREVER,
             daily_cost=daily_cost,
             device=device,
+            cores=device.get_core_count() if device else 0,
             extra=extra,
             venture=venture
         )
@@ -295,6 +300,32 @@ class HistoryCost(db.Model):
             ],
         )
         return query
+
+
+def update_core_count(device):
+    old_cores = 0
+    for span in device.historycost_set.order_by('-end'):
+        old_cores = span.cores
+        break
+    if device.get_core_count() != old_cores:
+        HistoryCost.start_span(device=device)
+
+
+@receiver(post_save, sender=Processor, dispatch_uid='ralph.cores')
+def cores_post_save(sender, instance, raw, using, **kwargs):
+    """
+    A hook for updating the historical processor core count.
+    """
+    update_core_count(instance.device)
+
+
+@receiver(post_delete, sender=Processor, dispatch_uid='ralph.cores')
+def cores_post_delete(sender, instance, using, **kwargs):
+
+    """
+    A hook for updating the historical processor core count.
+    """
+    update_core_count(instance.device)
 
 
 @receiver(post_save, sender=Device, dispatch_uid='ralph.costhistory')

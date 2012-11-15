@@ -18,8 +18,10 @@ from lxml import etree as ET
 
 from ralph.util import units, Eth, untangle
 from ralph.discovery.models import (EthernetSpeed, Memory, Processor,
-        ComponentModel, ComponentType, Storage, DISK_VENDOR_BLACKLIST,
-        DISK_PRODUCT_BLACKLIST, FibreChannel, DeviceType, Device)
+                                    ComponentModel, ComponentType, Storage,
+                                    DISK_VENDOR_BLACKLIST,
+                                    DISK_PRODUCT_BLACKLIST, FibreChannel,
+                                    DeviceType, Device)
 
 
 class Error(Exception):
@@ -63,7 +65,7 @@ def parse_lshw(as_string):
             try:
                 v = element.attrib[k]
             except UnicodeDecodeError:
-                continue # value has bytes not possible to decode with UTF-8
+                continue   # value has bytes not possible to decode with UTF-8
             if (element.tag, k) in _tag_translation_pairs:
                 try:
                     element.tag = v
@@ -81,13 +83,14 @@ def parse_lshw(as_string):
             child = ET.Element(k)
             child.text = v
             element.append(child)
-    return nullify(etree_to_dict(response, _converters=[
-                _nullify,
-                int,
-                float,
-                lck.xml.converters._datetime,
-                lck.xml.converters._datetime_strip_tz,
-            ]))[1]
+    return nullify(
+        etree_to_dict(response, _converters=[
+            _nullify,
+            int,
+            float,
+            lck.xml.converters._datetime,
+            lck.xml.converters._datetime_strip_tz,
+        ]))[1]
 
 
 def handle_lshw(data, is_virtual=False, sn=None, priority=0):
@@ -110,17 +113,19 @@ def handle_lshw(data, is_virtual=False, sn=None, priority=0):
     if not ethernets:
         raise EthernetsError("Machine has no MAC addresses.")
     dev = Device.create(sn=sn, model_name=model_name, model_type=model_type,
-        ethernets=ethernets, priority=priority)
+                        ethernets=ethernets, priority=priority)
     handle_lshw_memory(dev, lshw['bus']['memory'], is_virtual=is_virtual)
-    handle_lshw_processors(dev, lshw['bus']['processor'], is_virtual=is_virtual)
+    handle_lshw_processors(dev, lshw['bus']['processor'],
+                           is_virtual=is_virtual)
     handle_lshw_storage(dev, lshw, is_virtual=is_virtual)
     handle_lshw_fibre_cards(dev, lshw, is_virtual=is_virtual)
     return dev
 
 
 def handle_lshw_ethernets(lshw):
-    ethernets = sorted((e for e in jpath.get_all('..network',
-        lshw) if e), key=get_logical_name)
+    ethernets = sorted(
+        (e for e in jpath.get_all('..network', lshw) if e),
+        key=get_logical_name)
     for i, ethernet in enumerate(untangle(ethernets)):
         try:
             mac = MACAddressField.normalize(ethernet['serial'])
@@ -197,22 +202,24 @@ def handle_lshw_processors(dev, processors, is_virtual=False, priority=0):
         if processor['disabled'] == 'true' or not processor['size']:
             continue
         label = 'CPU {}'.format(i + 1)
-        speed = int(processor['size']['value'] or 0) # 'size', sic!
+        speed = int(processor['size']['value'] or 0)   # 'size', sic!
         speed /= units.speed_divisor[processor['size']['units']]
         speed = int(speed)
         family = processor['version'] or ''
         caps = processor['capabilities']
-        extra = "\n".join([": ".join((key, ' '.join(e for e in
-            untangle(caps[key]) if e) or '')) for key in sorted(caps.keys())])
+        extra = "\n".join(
+            [": ".join(
+                (key, ' '.join(e for e in untangle(caps[key]) if e) or ''))
+                for key in sorted(caps.keys())])
         model, c = ComponentModel.concurrent_get_or_create(
             speed=speed, type=ComponentType.processor.id,
             extra_hash=hashlib.md5(extra).hexdigest(), family=family,
             cores=0)
         model.extra = extra
         model.name = processor['product'] or 'CPU {} {}MHz'.format(family,
-            speed)
+                                                                   speed)
         model.save(priority=priority)
-        detected_cpus[i+1] = label, model
+        detected_cpus[i + 1] = label, model
     for cpu in dev.processor_set.all():
         label, model = detected_cpus.get(cpu.index, (None, None))
         if cpu.label != label or cpu.model != model:
@@ -225,7 +232,7 @@ def handle_lshw_processors(dev, processors, is_virtual=False, priority=0):
         cpu.save(priority=priority)
 
 
-def handle_lshw_storage(dev, lshw, is_virtual=False, priority=0):
+def get_storage_from_lshw(lshw, no_ignore=False):
     storages = []
     for storage in jpath.get_all('..disk', lshw):
         if not storage:
@@ -234,17 +241,16 @@ def handle_lshw_storage(dev, lshw, is_virtual=False, priority=0):
             storages.extend(storage)
         else:
             storages.append(storage)
-    storages.sort(key=get_logical_name)
     mount_points = set()
-    for stor in storages:
-        if 'logicalname' not in stor:
+    for storage in storages:
+        if 'logicalname' not in storage:
             continue
-        ln = stor['logicalname']
+        ln = storage['logicalname']
         if isinstance(ln, list):
             mount_points.update(ln)
         else:
             mount_points.add(ln)
-    dev.storage_set.filter(mount_point__in=mount_points).delete()
+    parsed_storages = []
     for storage in storages:
         if 'size' in storage:
             size = storage['size']
@@ -254,37 +260,60 @@ def handle_lshw_storage(dev, lshw, is_virtual=False, priority=0):
             # empty slot
             continue
         sn = unicode(storage.get('serial') or '') or None
-        if not sn or sn.startswith('QM000') or \
-                storage.get('vendor', '').strip().lower() in DISK_VENDOR_BLACKLIST or \
-                storage.get('product', '').strip().lower() in DISK_PRODUCT_BLACKLIST:
+        if (not sn or (sn.startswith('QM000') and not no_ignore) or
+            (storage.get('vendor', '').strip().lower() in
+                DISK_VENDOR_BLACKLIST) or
+            (storage.get('product', '').strip().lower() in
+                DISK_PRODUCT_BLACKLIST)):
             continue
-        if sn:
-            stor, created = Storage.concurrent_get_or_create(sn=sn, device=dev)
-            stor.mount_point = storage.get('logicalname', None)
-        else:
-            stor, created = Storage.concurrent_get_or_create(sn=None, device=dev,
-                mount_point=storage.get('logicalname', None))
-        stor.size = int(size['value'])
-        stor.size /= units.size_divisor[size['units']]
-        stor.size = int(stor.size)
-        stor.speed = 0
+        mount_point = storage.get('logicalname', None)
+        storage_size = int(size['value'])
+        storage_size /= units.size_divisor[size['units']]
+        storage_size = int(storage_size)
+        storage_speed = 0
+        label = ''
         if storage.get('vendor', '').strip():
-            stor.label = storage['vendor'].strip() + ' '
-        else:
-            stor.label = ''
+            label = storage['vendor'].strip() + ' '
         if storage.get('product', '').strip():
-            stor.label += storage['product'].strip()
+            label += storage['product'].strip()
         elif storage.get('description', '').strip():
-            stor.label += storage['description'].strip()
+            label += storage['description'].strip()
         else:
-            stor.label += 'Generic disk'
+            label += 'Generic disk'
         caps = storage['capabilities']
-        extra = "\n".join([": ".join((unicode(key), unicode(caps[key]) or '')) for key in
-            sorted(caps.keys())])
+        extra = "\n".join([": ".join(
+            (unicode(key), unicode(caps[key]) or ''))
+            for key in sorted(caps.keys())])
+        parsed_storages.append({
+            'mount_point': mount_point,
+            'sn': sn,
+            'size': storage_size,
+            'speed': storage_speed,
+            'label': label,
+            'extra': extra
+        })
+    return mount_points, parsed_storages
+
+
+def handle_lshw_storage(dev, lshw, is_virtual=False, priority=0):
+    mount_points, storages = get_storage_from_lshw(lshw)
+    dev.storage_set.filter(mount_point__in=mount_points).delete()
+    for storage in storages:
+        if storage['sn']:
+            stor, created = Storage.concurrent_get_or_create(sn=storage['sn'],
+                                                             device=dev)
+            stor.mount_point = storage['mount_point']
+        else:
+            stor, created = Storage.concurrent_get_or_create(
+                sn=None, device=dev, mount_point=storage['mount_point'])
+        stor.size = storage['size']
+        stor.speed = storage['speed']
+        stor.label = storage['label']
         stor.model, c = ComponentModel.concurrent_get_or_create(
             size=stor.size, speed=stor.speed, type=ComponentType.disk.id,
-            family='', extra_hash=hashlib.md5(extra).hexdigest(), extra=extra)
-        stor.model.name =  '{} {}MiB'.format(stor.label, stor.size)
+            family='', extra_hash=hashlib.md5(storage['extra']).hexdigest())
+        stor.model.extra = storage['extra']
+        stor.model.name = '{} {}MiB'.format(stor.label, stor.size)
         stor.model.save(priority=priority)
         stor.save(priority=priority)
 
@@ -310,8 +339,8 @@ def handle_lshw_fibre_cards(dev, lshw, is_virtual=False, priority=0):
         physid = m.group(1)
         if physid in handled_buses:
             continue
-        fib, created = FibreChannel.concurrent_get_or_create(device=dev,
-            physical_id=physid)
+        fib, created = FibreChannel.concurrent_get_or_create(
+            device=dev, physical_id=physid)
         fib.label = "{} {}".format(bus['vendor'], bus['product'])
         extra = fib.label
         fib.model, c = ComponentModel.concurrent_get_or_create(
