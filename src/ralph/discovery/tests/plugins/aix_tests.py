@@ -9,7 +9,9 @@ from django.test import TestCase
 import mock
 
 from ralph.discovery.plugins import ssh_aix
-from ralph.discovery.models import DeviceType, Device, IPAddress, DiskShare
+from ralph.discovery.models import (DeviceType, Device, IPAddress, DiskShare,
+                                    OperatingSystem)
+
 from ralph.discovery.tests.util import MockSSH
 
 
@@ -129,6 +131,9 @@ class SshAixPluginTest(TestCase):
 (u'lscfg -vl hdisk83', u'  hdisk83          U5802.001.0087037-P1-C2-T1-W20510002AC000A9B-L138000000000000  3PAR InServ Virtual Volume\n\n        Manufacturer................3PARdata\n        Machine Type and Model......VV\n        Serial Number...............2AC000C50A9B5000\n\n'),
 (u'lscfg -vl hdisk84', u'  hdisk84          U5802.001.0087037-P1-C2-T1-W20510002AC000A9B-L168000000000000  3PAR InServ Virtual Volume\n\n        Manufacturer................3PARdata\n        Machine Type and Model......VV\n        Serial Number...............2AC000450A9B5000\n\n'),
 (u'lscfg -vl hdisk85', u'  hdisk85          U5802.001.0087037-P1-C2-T1-W20510002AC000A9B-L9F000000000000  3PAR InServ Virtual Volume\n\n        Manufacturer................3PARdata\n        Machine Type and Model......VV\n        Serial Number...............2AC000CE0A9B5000\n\n'),
+(u'oslevel', u'5.3.0.0\n'),
+(u'lsattr -El sys0 | grep ^realmem', u'realmem      4194304       Amount of usable physical memory in Kbytes        False\n'),
+(u'lparstat -i|grep ^Active\ Phys', u'Active Physical CPUs in system             : 8\n'),
             ])
             ssh_aix.run_ssh_aix('127.0.0.1')
         ip = IPAddress.objects.get(address='127.0.0.1')
@@ -137,9 +142,23 @@ class SshAixPluginTest(TestCase):
         self.assertEquals(dev.model.type, DeviceType.rack_server.id)
         self.assertEquals(dev.model.name, 'IBM Power 750 Express AIX')
         macs = [e.mac for e in dev.ethernet_set.all()]
-        self.assertEqual(macs, ['00215EE21898', '00215EE2189A', '00215EE21B50',
-            '00215EE21B52', '00215EE22DE0', '00215EE22DE2', 'E41F134E7E8E'])
+        self.assertEqual(
+            macs,
+            ['00215EE21898', '00215EE2189A', '00215EE21B50', '00215EE21B52',
+             '00215EE22DE0', '00215EE22DE2', 'E41F134E7E8E'])
         mounts = [m.share.wwn for m in dev.disksharemount_set.all()]
         self.assertEquals(mounts, ['2AC000250A9B5000'])
         disks = [s.sn for s in dev.storage_set.all()]
-        self.assertEquals(disks, ['3TB1RJQ2', '3TB1RJZS', '3TB1RKYY', '3TB1RKYZ'])
+        self.assertEquals(
+            disks, ['3TB1RJQ2', '3TB1RJZS', '3TB1RKYY', '3TB1RKYZ'])
+        os = None
+        try:
+            os = OperatingSystem.objects.get(device=dev)
+        except OperatingSystem.DoesNotExist:
+            pass
+        self.assertNotEquals(os, None)
+        self.assertEquals(os.label, 'AIX 5.3.0.0')
+        self.assertEquals(os.memory, 4096)
+        self.assertEquals(os.cores_count, 8)
+        self.assertEquals(os.storage, 587200)
+
