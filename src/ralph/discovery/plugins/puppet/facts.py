@@ -219,21 +219,6 @@ def handle_facts_os(dev, facts, is_virtual=False):
     os.save(priority=SAVE_PRIORITY)
 
 
-@nested_commit_on_success
-def handle_facts_packages(dev, facts):
-    packages_list = parse_packages(facts)
-    for package in packages_list:
-        package_name = '{} - {}'.format(package['name'], package['version'])
-        Software.create(
-            dev=dev,
-            path=package_name,
-            model_name=package_name,
-            label=package['name'],
-            family=package['name'],
-            version=package['version'],
-        ).save()
-
-
 def parse_packages(facts):
     packages_list = []
     packages = facts.strip().split(',')
@@ -252,3 +237,18 @@ def parse_packages(facts):
             package['version'] = None
         packages_list.append(package)
     return packages_list
+
+
+@nested_commit_on_success
+def handle_facts_packages(dev, facts):
+    packages_list = parse_packages(facts)
+    for package in packages_list:
+        package_name = '{} - {}'.format(package['name'], package['version'])
+        Software.create(
+            dev=dev,
+            path=package_name,
+            model_name=package_name,
+            label=package['name'],
+            family=package['name'],
+            version=package['version'],
+        ).save()
