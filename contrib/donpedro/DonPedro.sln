@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DonPedro.Detectors", "DonPe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DonPedro.Utils", "DonPedro.Utils\DonPedro.Utils.csproj", "{66ED9F1D-C781-4EBB-BC39-3D7E600C89E9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DonPedroOutput", "DonPedroOutput\DonPedroOutput.csproj", "{DAE64400-7EED-47D3-830C-3BA065E2183E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -50,5 +52,13 @@ Global
 		{2D5CC727-4B81-4980-80C8-D078B1559C55}.Release|any.ActiveCfg = Release|any
 		{0018F217-9DBD-494A-8FE3-0570E7D95367}.Release|any.Build.0 = Release|any
 		{0018F217-9DBD-494A-8FE3-0570E7D95367}.Release|any.ActiveCfg = Release|any
+		{DAE64400-7EED-47D3-830C-3BA065E2183E}.Debug|x86.Build.0 = Debug|x86
+		{DAE64400-7EED-47D3-830C-3BA065E2183E}.Debug|x86.ActiveCfg = Debug|x86
+		{DAE64400-7EED-47D3-830C-3BA065E2183E}.Debug|any.Build.0 = Debug|x86
+		{DAE64400-7EED-47D3-830C-3BA065E2183E}.Debug|any.ActiveCfg = Debug|x86
+		{DAE64400-7EED-47D3-830C-3BA065E2183E}.Release|x86.Build.0 = Release|x86
+		{DAE64400-7EED-47D3-830C-3BA065E2183E}.Release|x86.ActiveCfg = Release|x86
+		{DAE64400-7EED-47D3-830C-3BA065E2183E}.Release|any.Build.0 = Release|x86
+		{DAE64400-7EED-47D3-830C-3BA065E2183E}.Release|any.ActiveCfg = Release|any
 	EndGlobalSection
 EndGlobal
