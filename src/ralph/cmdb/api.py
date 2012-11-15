@@ -13,10 +13,15 @@ from __future__ import unicode_literals
 from django.conf import settings
 from tastypie.authentication import ApiKeyAuthentication
 from tastypie.authorization import DjangoAuthorization
+from tastypie.fields import ForeignKey as TastyForeignKey
 from tastypie.resources import ModelResource as MResource
 from tastypie.throttle import CacheThrottle
 
-from ralph.cmdb.models import CI, CIRelation
+from ralph.cmdb.models import (CI, CIRelation, CIChange, CIChangeGit,
+                               CIChangePuppet, CIChangeZabbixTrigger,
+                               CIChangeStatusOfficeIncident,
+                               CIChangeCMDBHistory)
+
 from ralph.cmdb import models as db
 
 THROTTLE_AT = settings.API_THROTTLING['throttle_at']
@@ -72,6 +77,69 @@ class CIResource(MResource):
         authentication = ApiKeyAuthentication()
         authorization = DjangoAuthorization()
         resource_name = 'ci'
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+                                 expiration=EXPIRATION)
+
+
+class CIChangeResource(MResource):
+    class Meta:
+        queryset = CIChange.objects.all()
+        authentication = ApiKeyAuthentication()
+        authorization = DjangoAuthorization()
+        resource_name = 'cichange'
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+                                 expiration=EXPIRATION)
+        allowed_methods = ['get']
+
+
+class CIChangeZabbixTriggerResource(MResource):
+    class Meta:
+        queryset = CIChangeZabbixTrigger.objects.all()
+        authentication = ApiKeyAuthentication()
+        authorization = DjangoAuthorization()
+        resource_name = 'cichangezabbixtrigger'
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+                                 expiration=EXPIRATION)
+
+
+class CIChangeStatusOfficeIncidentResource(MResource):
+    class Meta:
+        queryset = CIChangeStatusOfficeIncident.objects.all()
+        authentication = ApiKeyAuthentication()
+        authorization = DjangoAuthorization()
+        resource_name = 'cichangestatusofficeincident'
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+                                 expiration=EXPIRATION)
+
+
+class CIChangeGitResource(MResource):
+    class Meta:
+        queryset = CIChangeGit.objects.all()
+        authentication = ApiKeyAuthentication()
+        authorization = DjangoAuthorization()
+        resource_name = 'cichangegit'
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+                                 expiration=EXPIRATION)
+
+
+class CIChangePuppetResource(MResource):
+    class Meta:
+        queryset = CIChangePuppet.objects.all()
+        authentication = ApiKeyAuthentication()
+        authorization = DjangoAuthorization()
+        resource_name = 'cichangepuppet'
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+                                 expiration=EXPIRATION)
+
+
+class CIChangeCMDBHistoryResource(MResource):
+    ci = TastyForeignKey(CIResource, 'ci')
+
+    class Meta:
+        queryset = CIChangeCMDBHistory.objects.all()
+        authentication = ApiKeyAuthentication()
+        authorization = DjangoAuthorization()
+        resource_name = 'cichangecmdbhistory'
         throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
                                  expiration=EXPIRATION)
 

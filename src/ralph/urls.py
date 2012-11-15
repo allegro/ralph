@@ -13,7 +13,11 @@ from ralph.discovery.api import (IPAddressResource, ModelGroupResource,
                                  RackServerResource, VirtualServerResource,
                                  BladeServerResource, DevResource)
 from ralph.cmdb.api import (BusinessLineResource, ServiceResource,
-                            CIRelationResource, CIResource)
+                            CIRelationResource, CIResource, CIChangeResource,
+                            CIChangeGitResource, CIChangePuppetResource,
+                            CIChangeZabbixTriggerResource,
+                            CIChangeStatusOfficeIncidentResource,
+                            CIChangeCMDBHistoryResource)
 from ralph.discovery.api_donpedro import WindowsDeviceResource
 
 from django.conf import settings
@@ -39,7 +43,10 @@ for r in (IPAddressResource, ModelGroupResource, ModelResource,
 
 # CMDB API
 for r in (BusinessLineResource, ServiceResource, CIResource,
-          CIRelationResource):
+          CIRelationResource, CIChangeResource, CIChangeGitResource,
+          CIChangePuppetResource, CIChangeZabbixTriggerResource,
+          CIChangeStatusOfficeIncidentResource,
+          CIChangeCMDBHistoryResource):
     v09_api.register(r())
 
 # deployment API
