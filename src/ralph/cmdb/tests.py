@@ -955,6 +955,7 @@ class CMDBApiTest(TestCase):
         self.create_owners()
         self.create_cis()
         self.create_ownerships()
+        self.create_relations()
 
     def creatre_user(self):
         self.user = User.objects.create_user(
@@ -1036,6 +1037,13 @@ class CMDBApiTest(TestCase):
         )
         self.ciownership3.save()
 
+    def create_relations(self):
+        self.relation = CIRelation(
+            parent=self.ci1,
+            child=self.ci2,
+            type=CI_RELATION_TYPES.CONTAINS,
+        )
+
     def test_layers(self):
         path = "/api/v0.9/cilayers/"
         response = self.client.get(path=path, data=self.data, format='json')
@@ -1115,4 +1123,3 @@ class CMDBApiTest(TestCase):
             json_data['technical_owner'][0]['username'],
             '{}.{}'.format(self.owner2.first_name, self.owner2.last_name)
         )
-    
