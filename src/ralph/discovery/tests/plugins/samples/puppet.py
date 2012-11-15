@@ -76,11 +76,11 @@ data = {'--- !ruby/sym _timestamp': '2012-10-11 15:36:38',
 'uptime_seconds': '5348942',
 'virtual': 'kvm',
 'writecache': 'disabled',
-'packages_data': """apache2 2.2.22-1ubuntu1,mysql-client 5.5.28-0ubuntu0.12.04.2,mysql-server 5.5.28-0ubuntu0.12.04.2,mysql-server-5.4 5.5.28-0ubuntu0.12.04.2,mysql-server-core-5.5 5.5.28-0ubuntu0.12.04.2,python 2.7.3-0ubuntu2,gcc 4:4.6.3-1ubuntu5,cron 3.0pl1-120ubuntu4,sed 4.3.1-9,""",
+'packages_data': 'x\x9c\x8d\xcfM\x0e\x02!\x0c\x05\xe0\xabp\x00\xda@)\xfe\xddf\xac\xc41A\x06\x190\x99\xdbK".M&o\xd7\xf7-\xfa\xa6<\xc9\x1cH\x11\xf6\x10\xd8vm\xa96\xab\x9f\xdb\xfa\x8a \xf1\x11RU\x1e=\xd2\t\xcc\xb74h\t\r#\r\xb4\x86\xf2\x0ee\x17\x02\x8f\xbc\x0f\xcaRB\xd7\xfe\xaf\xce[\x9d\x97\xd4\xff>\xa2\xfb\xb5\xa4\xef"\x8a/\x8c\x87~\x1c[\xbc\x96\xd2\xa1C\x93\xa3\x05K\xc3\xb2^\xc3M1:\xb4p\xd6\x1f\x10\xb6Ne',
 'package_manager': 'rpm',
 }
 
 data_second = {
-'packages_data': """apache2 1.2.22-1ubuntu1,mysql-client 5.5.28-0ubuntu0.12.04.2,mysql-server 5.5.28-0ubuntu0.12.04.2,mysql-server-5.5 5.5.28-0ubuntu0.12.04.2,mysql-server-core-5.5 5.5.28-0ubuntu0.12.04.2,python,gcc 4:4.6.3-1ubuntu5,cron 3.0pl1-120ubuntu4,sed 4.1.1-9,""",
+'packages_data': 'x\x9c\x8d\xce[\n\x021\x0c\x85\xe1\xadt\x01Mh2\xad\xa8\xbb\x19cp\x84\xda\xd6^\x84\xd9\xbd\x82\xe3\xab\xcc\xf3\xf9\x0e\xfcs\x99eQ6\x84\x8c\xcc@\xe32R\x1fd\x1fk{F\x90x\xd7\xd4M\xc0\x80|\x04\xf7\x1d\x1d\x12\xa3\xf3\xc8\x1bjZ_Zw!\xf8\xa0}Pr\xd5\xbf\xba\xac}\xc9\xc9\xdeD\x8c?{<\xe0\xf4\x8b\x0fVjNfBW"\x01\xf1v\xf5\xb6\xe9\xd5x$$8\xd97\x9cuJ\x19',
 'package_manager': 'dpkg',
 }

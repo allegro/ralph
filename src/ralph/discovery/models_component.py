@@ -148,6 +148,8 @@ class ComponentModel(Named.NonUnique, SavePrioritized,
             'count': self.get_count()
         }
 
+    def is_software(self):
+        return True if self.type == ComponentType.software else False
 
 class Component(SavePrioritized, WithConcurrentGetOrCreate):
     device = db.ForeignKey('Device', verbose_name=_("device"))
