@@ -5,6 +5,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import datetime
+import json
 import mock
 import time
 
@@ -17,12 +18,14 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase, Client
+from tastypie.models import ApiKey
 
 from ralph.cmdb.importer import CIImporter
 from ralph.cmdb.models import (
     CI, CIRelation, CI_RELATION_TYPES, CIChange, CI_TYPES, CILayer, CIType,
     CIValueFloat, CIValueDate, CIValueString, CIChangePuppet, CIChangeGit,
     CI_CHANGE_TYPES, CI_CHANGE_REGISTRATION_TYPES)
+from ralph.cmdb.models_ci import CIOwner, CIOwnership, CIOwnershipType
 from ralph.discovery.models import (Device, DeviceType, DeviceModel,
                                     DataCenter, Network)
 from ralph.business.models import Venture, VentureRole, Service, BusinessLine
@@ -942,3 +945,149 @@ class CIFormsTest(TestCase):
         val = [x.value for x in ci_string_value]
         val.sort()
         self.assertListEqual(val, ['http://doc.local', 'name-test'])
+
+class CMDBApiTest(TestCase):
+    def setUp(self):
+        self.creatre_user()
+        self.create_cilayers()
+        self.create_citypes()
+        self.create_owners()
+        self.create_cis()
+        self.create_ownerships()
+
+    def creatre_user(self):
+        self.user = User.objects.create_user(
+            'api_user',
+            'test@mail.local',
+            'password'
+        )
+        self.user.save()
+        self.api_key = ApiKey.objects.get(user=self.user)
+        self.data = {
+            'format': 'json',
+            'username': self.user.username,
+            'api_key': self.api_key.key
+        }
+
+    def create_cilayers(self):
+        self.cilayer1 = CILayer(name='layer1')
+        self.cilayer1.save()
+        self.cilayer2 = CILayer(name='layer2')
+        self.cilayer2.save()
+
+    def create_citypes(self):
+        self.citype1 = CIType(name='type1')
+        self.citype1.save()
+        self.citype2 = CIType(name='type2')
+        self.citype2.save()
+
+    def create_owners(self):
+        self.owner1 = CIOwner(
+            first_name='first_name_owner1',
+            last_name='last_name_owner1',
+            email='first_name_owner1.last_name_owner1@ralph.local'
+        )
+        self.owner1.save()
+        self.owner2 = CIOwner(
+            first_name='first_name_owner2',
+            last_name='last_name_owner2',
+            email='first_name_owner2.last_name_owner2@ralph.local'
+        )
+        self.owner2.save()
+
+    def create_cis(self):
+        self.ci1 = CI(
+            uid='uid-ci1',
+            type=self.citype1,
+            barcode='barcodeci1',
+            name='ciname1',
+        )
+        self.ci1.save()
+        self.ci1.layers = [self.cilayer1, self.cilayer2]
+        self.ci1.save()
+        self.ci2 = CI(
+            uid='uid-ci2',
+            type=self.citype2,
+            barcode='barcodeci2',
+            name='ciname2',
+        )
+        self.ci2.save()
+        self.ci2.layers = [self.cilayer1]
+        self.ci2.save()
+
+    def create_ownerships(self):
+        self.ciownership1 = CIOwnership(
+            ci=self.ci1,
+            owner=self.owner1,
+            type=CIOwnershipType.technical
+        )
+        self.ciownership1.save()
+        self.ciownership2 = CIOwnership(
+            ci=self.ci1,
+            owner=self.owner2,
+            type=CIOwnershipType.business
+        )
+        self.ciownership2.save()
+        self.ciownership3 = CIOwnership(
+            ci=self.ci2,
+            owner=self.owner2,
+            type=CIOwnershipType.business
+        )
+        self.ciownership3.save()
+
+    def test_layers(self):
+        path = "/api/v0.9/cilayers/"
+        response = self.client.get(path=path, data=self.data, format='json')
+        json_string = response.content
+        json_data = json.loads(json_string)
+        resource_uris = [x['resource_uri'] for x in json_data['objects']]
+
+        response = self.client.get(path=resource_uris[0], data=self.data, format='json')
+        json_string = response.content
+        json_data = json.loads(json_string)
+        self.assertEqual(json_data['name'], self.cilayer1.name)
+
+        response = self.client.get(path=resource_uris[1], data=self.data, format='json')
+        json_string = response.content
+        json_data = json.loads(json_string)
+        self.assertEqual(json_data['name'], self.cilayer2.name)
+
+    def test_types(self):
+        path = "/api/v0.9/citypes/"
+        response = self.client.get(path=path, data=self.data, format='json')
+        json_string = response.content
+        json_data = json.loads(json_string)
+        resource_uris = [x['resource_uri'] for x in json_data['objects']]
+
+        response = self.client.get(path=resource_uris[0], data=self.data, format='json')
+        json_string = response.content
+        json_data = json.loads(json_string)
+        self.assertEqual(json_data['name'], self.citype1.name)
+
+        response = self.client.get(path=resource_uris[1], data=self.data, format='json')
+        json_string = response.content
+        json_data = json.loads(json_string)
+        self.assertEqual(json_data['name'], self.citype2.name)
+
+    def ttest_ci(self):
+        path = "/api/v0.9/ci/"
+        response = self.client.get(path=path, data=self.data, format='json')
+        json_string = response.content
+        json_data = json.loads(json_string)
+        resource_uris = [x['resource_uri'] for x in json_data['objects']]
+
+        response = self.client.get(
+            path=resource_uris[0], data=self.data, format='json'
+        )
+        json_string = response.content
+        json_data = json.loads(json_string)
+        self.assertEqual(json_data['layers'][0]['name'], self.cilayer1.name)
+        self.assertEqual(json_data['layers'][1]['name'], self.cilayer2.name)
+        self.assertEqual(json_data['barcode'], self.ci1.barcode)
+        self.assertEqual(json_data['name']['name'], self.ci1.name)
+        self.assertEqual(json_data['type'], self.ci1.type.name)
+        self.assertEqual(json_data['uid'], self.ci1.uid)
+        self.assertEqual(
+            json_data['technical_owner'][0],
+            '{}.{}'.format(self.owner1.first_name, self.owner1.last_name)
+        )
