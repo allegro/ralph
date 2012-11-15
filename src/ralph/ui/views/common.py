@@ -151,6 +151,8 @@ class BaseMixin(object):
                          href=tab_href('info')),
                 MenuItem('Components', fugue_icon='fugue-box',
                         href=tab_href('components')),
+                MenuItem('Software', fugue_icon='fugue-disc',
+                         href=tab_href('software')),
                 MenuItem('Addresses', fugue_icon='fugue-network-ip',
                         href=tab_href('addresses')),
             ])
@@ -819,4 +821,15 @@ class CMDB(BaseMixin):
             'url_query': self.request.GET,
             'components': _get_details(self.object, purchase_only=False),
         })
+        return ret
+
+class Software(DeviceDetailView):
+    template_name = 'ui/device_software.html'
+    read_perm = Perm.read_device_info_generic
+
+    def get_context_data(self, **kwargs):
+        ret = super(Software, self).get_context_data(**kwargs)
+        ret.update({
+            'components': _get_details(self.object, purchase_only=False),
+            })
         return ret

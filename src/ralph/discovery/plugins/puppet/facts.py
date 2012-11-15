@@ -13,14 +13,12 @@ import zlib
 from lck.django.common import nested_commit_on_success
 
 from ralph.util import network, Eth
-from ralph.discovery.models import (DeviceType, Device, OperatingSystem,
-                                    ComponentModel, ComponentType, Storage,
-                                    SERIAL_BLACKLIST, DISK_VENDOR_BLACKLIST,
-                                    DISK_PRODUCT_BLACKLIST)
-
-from .util import assign_ips, get_default_mac
 from ralph.discovery import hardware
 from ralph.discovery.lshw import parse_lshw, get_storage_from_lshw
+from ralph.discovery.models import (DeviceType, Device, OperatingSystem,
+    ComponentModel, ComponentType, Software, Storage, SERIAL_BLACKLIST,
+    DISK_VENDOR_BLACKLIST, DISK_PRODUCT_BLACKLIST)
+from ralph.discovery.plugins.puppet.util import get_default_mac, assign_ips
 
 
 SAVE_PRIORITY = 52
@@ -59,8 +57,8 @@ def parse_facts(facts, is_virtual):
         prod_name = facts.get('productname')
         manufacturer = facts.get('manufacturer')
         if not prod_name or not manufacturer:
-            return False, "`productname` or `manufacturer` facts not " \
-                "available. `lshw` not present."
+            return False, ("`productname` or `manufacturer` facts not "
+                           "available. `lshw` not present.")
         if manufacturer and manufacturer in prod_name:
             model_name = prod_name
         else:
@@ -83,6 +81,7 @@ def parse_facts(facts, is_virtual):
         _parse_smbios(dev, facts['smbios'], facts, is_virtual=is_virtual)
     except KeyError as e:
         pass
+    handle_facts_packages(dev, facts.get('packages_data'))
     handle_facts_disks(dev, facts, is_virtual=is_virtual)
     return dev, dev_name
 
@@ -158,12 +157,11 @@ def handle_facts_disks(dev, facts, is_virtual=False):
             continue
         sn = disk.get('serial', '').strip()
         if sn:
-            stor, created = Storage.concurrent_get_or_create(device=dev,
-                                                             sn=sn)
+            stor, created = Storage.concurrent_get_or_create(
+                device=dev, sn=sn)
         else:
-            stor, created = Storage.concurrent_get_or_create(device=dev,
-                                                             mount_point=label,
-                                                             sn=None)
+            stor, created = Storage.concurrent_get_or_create(
+                device=dev, mount_point=label, sn=None)
         stor.size = disk['size'] = int(int(disk['size']) / 1024 / 1024)
         stor.label = '{} {} {}'.format(
             disk['vendor'].strip(), disk['product'].strip(),
@@ -258,3 +256,41 @@ def handle_facts_os(dev, facts, is_virtual=False):
         os.storage = storage_size
     os.save(priority=SAVE_PRIORITY)
 
+
+def decompress_packages(compressed_data):
+    try:
+        data = zlib.decompress(compressed_data)
+    except zlib.error:
+        return False
+    return data
+
+def parse_packages(facts):
+    data = decompress_packages(facts)
+    if data:
+        packages_list = []
+        packages = data.strip().split(',')
+        for package in packages:
+            try:
+                name, version = package.split(None, 1)
+            except ValueError:
+                continue
+            yield {
+                'name': name,
+                'version': version,
+                }
+
+
+@nested_commit_on_success
+def handle_facts_packages(dev, facts):
+    packages_list = parse_packages(facts)
+    if packages_list:
+        for package in packages_list:
+            package_name = '{} - {}'.format(package['name'], package['version'])
+            Software.create(
+                dev=dev,
+                path=package_name,
+                model_name=package_name,
+                label=package['name'],
+                family=package['name'],
+                version=package['version'],
+            ).save()
