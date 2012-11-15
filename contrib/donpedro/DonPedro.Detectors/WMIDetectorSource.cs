@@ -35,6 +35,7 @@ namespace DonPedro.Detectors
 
 		public List<ProcessorDTOResponse> GetProcessorsInfo()
 		{
+			// Windows <= Windows Server 2003 have WMI bug. WMI reports cores as a different CPUs.
 			if (osVersionNumber < 6)
 			{
 				return GetWinLTE6ProcessorsInfo();
@@ -169,6 +170,7 @@ namespace DonPedro.Detectors
 
 			try
 			{
+				// In Windows <= Windows Server 2003 Win32_DiskDrive don't have SerialNumber field.
 				string query;
 				if (osVersionNumber < 6)
 				{
@@ -187,6 +189,7 @@ namespace DonPedro.Detectors
 					string sn = "";
 					if (osVersionNumber < 6)
 					{
+						// In Windows <= Windows Server 2003 SerialNumber we can find in Win32_PhysicalMedia.
 						SelectQuery snQuery = new SelectQuery("select SerialNumber from Win32_PhysicalMedia where tag='" + GetValueAsString(diskDrive, "DeviceID").Replace(@"\", @"\\") + "'");
 						ManagementObjectSearcher snSearcher = new ManagementObjectSearcher(snQuery);
 						
