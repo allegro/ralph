@@ -8,8 +8,7 @@ from __future__ import unicode_literals
 from django.test import TestCase
 
 from ralph.discovery.models import (Device, DeviceType, OperatingSystem)
-from ralph.discovery.tests.plugins.samples.puppet import data
-from ralph.discovery.tests.plugins.samples.puppet_packages import data_packages
+from ralph.discovery.tests.plugins.samples.puppet import data, data_second
 
 from ralph.discovery.plugins.puppet.facts import (
     handle_facts_os, handle_facts_packages)
@@ -37,9 +36,9 @@ class PuppetPluginTest(TestCase):
         self.assertEqual(os.model.get_type_display(), 'operating system')
 
     def test_handle_facts_packages(self):
-        handle_facts_packages(self.dev, data_packages[0])
-        handle_facts_packages(self.dev2, data_packages[1])
-        handle_facts_packages(self.dev2, data_packages[0])
+        handle_facts_packages(self.dev, data['packages_data'])
+        handle_facts_packages(self.dev2, data_second['packages_data'])
+        handle_facts_packages(self.dev2, data['packages_data'])
         device = Device.objects.get(sn='device')
         device_packages = [
             (x.label, x.version) for x in device.software_set.all()
