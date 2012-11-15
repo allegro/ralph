@@ -99,6 +99,7 @@ def _dns_char_field(label=None, initial=None, record=None, **kwargs):
         widget=forms.TextInput(attrs={
             'class': 'span12',
             'placeholder': label,
+            'style': 'min-width: 16ex',
         })
     )
     return forms.CharField(**kwargs)
