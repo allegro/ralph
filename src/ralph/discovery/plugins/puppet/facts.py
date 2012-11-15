@@ -81,7 +81,7 @@ def parse_facts(facts, is_virtual):
     except KeyError as e:
         pass
     try:
-        handle_facts_packages(dev, facts['packages'])
+        handle_facts_packages(dev, facts['packages_data'])
     except KeyError:
         pass
     handle_facts_disks(dev, facts, is_virtual=is_virtual)
