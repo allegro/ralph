@@ -946,6 +946,7 @@ class CIFormsTest(TestCase):
         val.sort()
         self.assertListEqual(val, ['http://doc.local', 'name-test'])
 
+
 class CMDBApiTest(TestCase):
     def setUp(self):
         self.creatre_user()
@@ -1042,12 +1043,16 @@ class CMDBApiTest(TestCase):
         json_data = json.loads(json_string)
         resource_uris = [x['resource_uri'] for x in json_data['objects']]
 
-        response = self.client.get(path=resource_uris[0], data=self.data, format='json')
+        response = self.client.get(
+            path=resource_uris[0], data=self.data, format='json'
+        )
         json_string = response.content
         json_data = json.loads(json_string)
         self.assertEqual(json_data['name'], self.cilayer1.name)
 
-        response = self.client.get(path=resource_uris[1], data=self.data, format='json')
+        response = self.client.get(
+            path=resource_uris[1], data=self.data, format='json'
+        )
         json_string = response.content
         json_data = json.loads(json_string)
         self.assertEqual(json_data['name'], self.cilayer2.name)
@@ -1059,17 +1064,21 @@ class CMDBApiTest(TestCase):
         json_data = json.loads(json_string)
         resource_uris = [x['resource_uri'] for x in json_data['objects']]
 
-        response = self.client.get(path=resource_uris[0], data=self.data, format='json')
+        response = self.client.get(
+            path=resource_uris[0], data=self.data, format='json'
+        )
         json_string = response.content
         json_data = json.loads(json_string)
         self.assertEqual(json_data['name'], self.citype1.name)
 
-        response = self.client.get(path=resource_uris[1], data=self.data, format='json')
+        response = self.client.get(
+            path=resource_uris[1], data=self.data, format='json'
+        )
         json_string = response.content
         json_data = json.loads(json_string)
         self.assertEqual(json_data['name'], self.citype2.name)
 
-    def ttest_ci(self):
+    def test_ci(self):
         path = "/api/v0.9/ci/"
         response = self.client.get(path=path, data=self.data, format='json')
         json_string = response.content
@@ -1084,10 +1093,26 @@ class CMDBApiTest(TestCase):
         self.assertEqual(json_data['layers'][0]['name'], self.cilayer1.name)
         self.assertEqual(json_data['layers'][1]['name'], self.cilayer2.name)
         self.assertEqual(json_data['barcode'], self.ci1.barcode)
-        self.assertEqual(json_data['name']['name'], self.ci1.name)
-        self.assertEqual(json_data['type'], self.ci1.type.name)
+        self.assertEqual(json_data['name'], self.ci1.name)
+        self.assertEqual(json_data['type']['name'], self.ci1.type.name)
         self.assertEqual(json_data['uid'], self.ci1.uid)
         self.assertEqual(
-            json_data['technical_owner'][0],
+            json_data['technical_owner'][0]['username'],
             '{}.{}'.format(self.owner1.first_name, self.owner1.last_name)
         )
+
+        response = self.client.get(
+            path=resource_uris[1], data=self.data, format='json'
+        )
+        json_string = response.content
+        json_data = json.loads(json_string)
+        self.assertEqual(json_data['layers'][0]['name'], self.cilayer1.name)
+        self.assertEqual(json_data['barcode'], self.ci2.barcode)
+        self.assertEqual(json_data['name'], self.ci2.name)
+        self.assertEqual(json_data['type']['name'], self.ci2.type.name)
+        self.assertEqual(json_data['uid'], self.ci2.uid)
+        self.assertEqual(
+            json_data['technical_owner'][0]['username'],
+            '{}.{}'.format(self.owner2.first_name, self.owner2.last_name)
+        )
+    
