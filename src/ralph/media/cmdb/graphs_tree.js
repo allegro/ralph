@@ -30,7 +30,6 @@ var CMDB = {};
         var left = el.style.left;
         var top = el.style.top;
         values = calculate_new_xy(width, height, left, top, CMDB.zoom_value); 
-//        el.style.position = 'absolute'; 
         el.style.left = values['x'];
         el.style.top = values['y'];
         el.style.webkitTransform = 'scale(' + parseFloat(CMDB.zoom_value) + ')';
