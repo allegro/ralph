@@ -92,7 +92,6 @@ var CMDB = {};
             .attr("height", radius * 2 - 150)
             .append("g")
             .attr("transform", "translate(" + radius + "," + radius + ")");
-        //$("#container").html('Please wait...');
         d3.json("/cmdb/graphs_ajax_tree?ci_id="+gup('ci'), function (json) {
             var nodes = tree.nodes(json);
             var link = vis.selectAll("path.link")
