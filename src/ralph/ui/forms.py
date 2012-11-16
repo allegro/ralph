@@ -247,6 +247,16 @@ class DNSRecordsForm(forms.Form):
         if self.hostnames:
             self.fields['dns_new_name'].initial = list(hostnames)[0]
 
+    def clean_dns_new_content(self):
+        name = self.cleaned_data.get('dns_new_name', '')
+        type = self.cleaned_data.get('dns_new_type', '')
+        content = self.cleaned_data.get('dns_new_content', '')
+        print(name, type, content)
+        if Record.objects.filter(name=name, type=type,
+                                 content=content).exists():
+            raise forms.ValidationError("This DNS record already exists.")
+        return content or ''
+
     def clean(self):
         for field_name, field in self.fields.iteritems():
             if field_name.endswith('_name'):
@@ -254,9 +264,12 @@ class DNSRecordsForm(forms.Form):
                 type = self.cleaned_data.get(
                     field_name.replace('_name', '_type')
                 )
-                if not name or type == 'CNAME':
+                content = self.cleaned_data.get(
+                    field_name.replace('_name', '_content')
+                )
+                if not content and field_name.startswith('dns_new_'):
                     continue
-                if name not in self.hostnames:
+                if type != 'CNAME' and name not in self.hostnames:
                     self._errors.setdefault(field_name, []).append(
                         "Invalid hostname for this device."
                     )
@@ -265,12 +278,27 @@ class DNSRecordsForm(forms.Form):
                 type = self.cleaned_data.get(
                     field_name.replace('_content', '_type')
                 )
-                if not content or type != 'CNAME':
-                    continue
-                if content not in self.hostnames:
+                if not content and not field_name.startswith('dns_new_'):
+                    self._errors.setdefault(field_name, []).append(
+                        "Content cannot be empty."
+                    )
+                if type == 'CNAME' and content not in self.hostnames:
                     self._errors.setdefault(field_name, []).append(
                         "Invalid hostname for this device."
                     )
+                if type == 'A':
+                    try:
+                        ip = str(validate_ip(content))
+                    except forms.ValidationError as e:
+                        self._errors.setdefault(field_name, []).append(
+                            "Invalid IP address."
+                        )
+                    if field_name.startswith('dns_new_'):
+                        for r in Record.objects.filter(type='A', content=ip):
+                            self._errors.setdefault(field_name, []).append(
+                                "There is already an A DNS record for this IP "
+                                "(%s)." % r.name
+                            )
         return self.cleaned_data
 
 
