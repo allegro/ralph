@@ -13,10 +13,15 @@ from __future__ import unicode_literals
 from django.conf import settings
 from tastypie.authentication import ApiKeyAuthentication
 from tastypie.authorization import DjangoAuthorization
+from tastypie.fields import ForeignKey as TastyForeignKey, ForeignKey
 from tastypie.resources import ModelResource as MResource
 from tastypie.throttle import CacheThrottle
 
-from ralph.cmdb.models import CI, CILayer, CIRelation, CIType
+from ralph.cmdb.models import (
+    CI, CIChange, CIChangeGit, CIChangePuppet,CIChangeZabbixTrigger,
+    CIChangeStatusOfficeIncident, CIChangeCMDBHistory,CILayer, CIRelation,
+    CIType,
+)
 from ralph.cmdb import models as db
 from ralph.cmdb.models_ci import CIOwner, CIOwnershipType
 from ralph.deployment.models import get_login_from_owner_name
@@ -66,6 +71,12 @@ class CIRelationResource(MResource):
         resource_name = 'cirelation'
         throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
                                  expiration=EXPIRATION)
+
+    def dehydrate(self, bundle):
+        cirelation = CIRelation.objects.get(pk=bundle.data.get('id'))
+        bundle.data['parent'] = cirelation.parent.id
+        bundle.data['child'] = cirelation.child.id
+        return bundle
 
 
 class CIResource(MResource):
@@ -121,6 +132,69 @@ class CILayersResource(MResource):
         resourse_name = 'cilayers'
         list_allowed_methods = ['get']
         excludes = ['cache_version', 'created', 'modified']
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+                                 expiration=EXPIRATION)
+
+
+class CIChangeResource(MResource):
+    class Meta:
+        queryset = CIChange.objects.all()
+        authentication = ApiKeyAuthentication()
+        authorization = DjangoAuthorization()
+        resource_name = 'cichange'
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+                                 expiration=EXPIRATION)
+        allowed_methods = ['get']
+
+
+class CIChangeZabbixTriggerResource(MResource):
+    class Meta:
+        queryset = CIChangeZabbixTrigger.objects.all()
+        authentication = ApiKeyAuthentication()
+        authorization = DjangoAuthorization()
+        resource_name = 'cichangezabbixtrigger'
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+                                 expiration=EXPIRATION)
+
+
+class CIChangeStatusOfficeIncidentResource(MResource):
+    class Meta:
+        queryset = CIChangeStatusOfficeIncident.objects.all()
+        authentication = ApiKeyAuthentication()
+        authorization = DjangoAuthorization()
+        resource_name = 'cichangestatusofficeincident'
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+                                 expiration=EXPIRATION)
+
+
+class CIChangeGitResource(MResource):
+    class Meta:
+        queryset = CIChangeGit.objects.all()
+        authentication = ApiKeyAuthentication()
+        authorization = DjangoAuthorization()
+        resource_name = 'cichangegit'
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+                                 expiration=EXPIRATION)
+
+
+class CIChangePuppetResource(MResource):
+    class Meta:
+        queryset = CIChangePuppet.objects.all()
+        authentication = ApiKeyAuthentication()
+        authorization = DjangoAuthorization()
+        resource_name = 'cichangepuppet'
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+                                 expiration=EXPIRATION)
+
+
+class CIChangeCMDBHistoryResource(MResource):
+    ci = TastyForeignKey(CIResource, 'ci')
+
+    class Meta:
+        queryset = CIChangeCMDBHistory.objects.all()
+        authentication = ApiKeyAuthentication()
+        authorization = DjangoAuthorization()
+        resource_name = 'cichangecmdbhistory'
         throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
                                  expiration=EXPIRATION)
 
