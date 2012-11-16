@@ -29,8 +29,7 @@
     function typeToColor(type) {
         if (type == 1) {
             return '#ddd';
-        }
-        else if (type == 2) {
+        } else if (type == 2) {
             return 'red';
         } else {
             return 'black';
