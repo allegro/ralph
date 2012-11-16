@@ -131,6 +131,8 @@
     </table>
 
     {% if ci_id %}
+    <span><h3>Impact report</h3></span>
+    <a target="_blank" href='/cmdb/graphs?ci={{ ci_id }}'>Run impact report</a>
          <span><h3>Custom Attributes</h3> </span>
             {% include 'cmdb/include_attributes.html' %}
             <hr>
