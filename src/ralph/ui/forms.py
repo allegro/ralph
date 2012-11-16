@@ -148,7 +148,8 @@ def _dns_type_field(label=None, initial=None, types=None, **kwargs):
 
 
 def _dns_type_limited_field(label=None, initial=None, **kwargs):
-    kwargs.update(types=[('A', 'A'), ('CNAME', 'CNAME'), ('TXT', 'TXT')])
+    kwargs.update(types=[('A', 'A'), ('CNAME', 'CNAME'), ('MX', 'MX'),
+                         ('TXT', 'TXT')])
     return _dns_type_field(label, initial, **kwargs)
 
 
@@ -211,8 +212,6 @@ class DNSRecordsForm(forms.Form):
             ('name', _dns_name_field),
             ('type', _dns_type_limited_field),
             ('content', _dns_char_field),
-            ('ttl', _dns_int_field),
-            ('prio', _dns_int_field),
             ('ptr', _bool_field),
             ('del', _bool_field),
         ]
@@ -227,8 +226,6 @@ class DNSRecordsForm(forms.Form):
             ('name', _dns_name_field),
             ('type', _dns_type_limited_field),
             ('content', _dns_char_field),
-            ('ttl', _dns_int_field),
-            ('prio', _dns_int_field),
             ('ptr', _bool_field),
             ('del', _bool_hidden_field),
         ]
