@@ -5,6 +5,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from ajax_select import LookupChannel
+from django.utils.html import escape
+from django.db.models import Q
 
 from ralph.cmdb.models_ci import (
     # constants
@@ -109,3 +112,18 @@ __all__ = [
 # hook signals, don't remove this.
 import ralph.cmdb.models_signals
 
+
+class CILookup(LookupChannel):
+    model = CI
+
+    def get_query(self, q, request):
+        return CI.objects.filter(Q(name__istartswith=q)).order_by('name')[:10]
+
+    def get_result(self, obj):
+        return obj.name
+
+    def format_match(self, obj):
+        return self.format_item_display(obj)
+
+    def format_item_display(self, obj):
+        return "%s<div><i>%s</i></div>" % (escape(obj.name), escape(obj.type))
