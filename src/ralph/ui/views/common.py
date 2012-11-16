@@ -24,7 +24,7 @@ from ralph.account.models import Perm
 from ralph.business.models import RolePropertyValue
 from ralph.cmdb import models as cdb
 from ralph.dnsedit.models import DHCPEntry
-from ralph.dnsedit.util import get_domain, set_revdns_record
+from ralph.dnsedit.util import get_domain, set_revdns_record, get_revdns_records
 from ralph.discovery.models import Device, DeviceType, IPAddress
 from ralph.discovery.models_history import FOREVER_DATE, ALWAYS_DATE
 from ralph.util import presentation, pricing
@@ -444,6 +444,13 @@ def _dns_create_record(form, request, device):
         messages.success(request, "A DNS record added.")
 
 
+def _dns_delete_record(form, record, request):
+    if record.type == 'A':
+        for r in get_revdns_records(record.content).filter(content=record.name):
+            r.delete()
+            messages.warning(request, "PTR record deleted.")
+
+
 def _dhcp_fill_record(form, prefix, record, request):
     ip = form.cleaned_data.get(prefix + 'ip')
     mac = form.cleaned_data.get(prefix + 'mac')
@@ -481,7 +488,6 @@ def _ip_fill_record(form, prefix, record, request):
 def _ip_create_record(form, request, device):
     hostname = form.cleaned_data.get('ip_new_hostname')
     address = form.cleaned_data.get('ip_new_address')
-    print(hostname, address)
     if hostname and address:
         if IPAddress.objects.filter(address=address).exists():
             messages.error(
@@ -496,6 +502,7 @@ def _ip_create_record(form, request, device):
         messages.success(request,
                          "An IP address entry for %s created." %
                          address)
+
 
 class Addresses(DeviceDetailView):
     template_name = 'ui/device_addresses.html'
@@ -563,17 +570,20 @@ class Addresses(DeviceDetailView):
             type='PTR',
             name__in=revnames,
         ):
-            hostnames.add(record.content)
+            hostnames.add(record.content.strip('.'))
         return hostnames
 
 
-    def handle_form(self, form, form_name, fill_record, create_record):
+    def handle_form(self, form, form_name, fill_record, create_record,
+                    delete_record=None):
         if form.is_valid():
             for record in form.records:
                 prefix = '%s_%d_' % (form_name, record.id)
                 if form.cleaned_data.get(prefix + 'del'):
                     messages.warning(self.request,
                                      "A %s record deleted." % form_name)
+                    if delete_record is not None:
+                        delete_record(form, record, self.request)
                     record.delete()
                 else:
                     fill_record(form, prefix, record, self.request)
@@ -602,7 +612,8 @@ class Addresses(DeviceDetailView):
                 self.dns_form,
                 'dns',
                 _dns_fill_record,
-                _dns_create_record
+                _dns_create_record,
+                _dns_delete_record,
             ) or self.get(*args, **kwargs)
         elif 'dhcp' in self.request.POST:
             dhcp_records = self.get_dhcp()
@@ -611,7 +622,7 @@ class Addresses(DeviceDetailView):
                 self.dhcp_form,
                 'dhcp',
                 _dhcp_fill_record,
-                _dhcp_create_record
+                _dhcp_create_record,
             ) or self.get(*args, **kwargs)
         elif 'ip' in self.request.POST:
             ip_records = self.object.ipaddress_set.order_by('address')
@@ -620,7 +631,7 @@ class Addresses(DeviceDetailView):
                 self.ip_form,
                 'ip',
                 _ip_fill_record,
-                _ip_create_record
+                _ip_create_record,
             ) or self.get(*args, **kwargs)
         return self.get(*args, **kwargs)
 

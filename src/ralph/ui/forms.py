@@ -233,7 +233,11 @@ class DNSRecordsForm(forms.Form):
         ]
         for record in self.records:
             if record.type in ('A', 'AAAA'):
-                record.ptr = bool(get_revdns_records(record.content))
+                record.ptr = False
+                for r in get_revdns_records(
+                    record.content
+                ).filter(content=record.name):
+                    record.ptr = True
             prefix = 'dns_%d_' % record.id
             _add_fields(self.fields, prefix, record, fields)
         fields = [
