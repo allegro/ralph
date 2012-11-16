@@ -17,8 +17,6 @@
     }
 
 </style>
-
-
     <form class="form-inline well">
     {% for f in form %}
             {{ f.label_tag }}
@@ -38,79 +36,15 @@
             </tr>
         </thead>
         <tbody>
-            {% for d in rows %}
-
+        {% for rows in table_body %}
+            {% for row in rows %}
+                <tr>
+                {% for td in row %}
+                    <td>{% autoescape off %}{{ td.value }}{% endautoescape %}</td>
+                {% endfor %}
+                </tr>
             {% endfor %}
-        </tbody>
-
-            {% for d in rows %}
-            <tr>
-                <td>
-                    {% if d.count %}
-                    <a href="./search?parent={{ d.id|default:''}}">
-                        <b><i class='fugue-icon {{ d.icon }}'></i> {{ d.name }} ({{ d.count }}) &gt;&gt;</b> </a>
-                    {% else %}
-                    <a href="./ci/view/{{ d.id|default:''}}"> <i class='fugue-icon {{ d.icon }}'></i> {{ d.name }} </a>
-                    {% endif %}
-
-                </td>
-                <td><a href="/cmdb/ci/view/{{ d.id }}">{{ d.uid }}</a></td>
-                {% if layer == '' %}
-                    <td>{{ d.ci_type }}</td>
-                    <td>{{ d.layers }}</td>
-                    <td>{% for parent_ven in d.parent_venture  %}<a href="/cmdb/ci/view/{{ parent_ven.id }}">{{ parent_ven.name }}</a>{% endfor%}</td>
-                    <td>{{ d.service }}</td>
-                    <td>{{ d.pci_scope }}</td>
-                {% elif layer == '1' %}
-                    {# Application #}
-                {% elif layer == '2' %}
-                    {# Database #}
-                {% elif layer == '3' %}
-                    {# Documentation/Procedures  #}
-                {% elif layer == '4' %}
-                    {# Organization Unit/Support Group  #}
-                {% elif layer == '5' %}
-                    {# Hardware #}
-                    <td><a href="/ui/search/info/{{ d.dev.id }}">{{ d.dev.parent }}</a></td>
-                    <td>{{ d.network }}</td>
-                    <td>{{ d.dev.dc }}</td>
-                    <td>{% for parent_ven in d.parent_venture  %}<a href="/cmdb/ci/view/{{ parent_ven.id }}">{{ parent_ven.name }}</a>{% endfor%}</td>
-                    <td>{{ d.service }}</td>
-                    <td>{{ d.pci_scope }}</td>
-                {% elif layer == '6' %}
-                    {# Network #}
-                {% elif layer == '7' and type == '7' %}
-                    {# Services #}
-                    <td>{% for parent_ven in d.parent_venture  %}<a href="/cmdb/ci/view/{{ parent_ven.id }}">{{ parent_ven.name }}</a>{% endfor%}</td>
-                    <td>{% for bl in d.business_line  %}<a href="/cmdb/ci/view/{{ bl.id }}">{{ bl.name }}</a>{% endfor%}</td>
-                    <td>{{ d.owner_t }}</td>
-                    <td>{{ d.owner_b }}</td>
-                {% elif layer == '7' and type == '4' %}
-                    <td>{% for parent_ven in d.parent_venture  %}<a href="/cmdb/ci/view/{{ parent_ven.id }}">{{ parent_ven.name }}</a>{% endfor%}</td>
-                    <td>{% for child_ven in d.child_venture  %}<a href="/cmdb/ci/view/{{ child_ven.id }}">{{ child_ven.name }}</a>{% endfor%}</td>
-                    <td>{{ d.service }}</td>
-                    <td>{% include 'cmdb/table-owners.html' with data=d.owner_t %}</td>
-                    <td>{% include 'cmdb/table-owners.html' with data=d.owner_b %}</td>
-                {% elif layer == '7' and type == '5' %}
-                    <td>{% for parent_ven in d.parent_venture  %}<a href="/cmdb/ci/view/{{ parent_ven.id }}">{{ parent_ven.name }}</a>{% endfor%}</td>
-                    <td>{{ d.service }}</td>
-                    <td>{% include 'cmdb/table-owners.html' with data=d.owner_t %}</td>
-                {% elif layer == '7' and type == '6' %}
-                    <td>{{ d.service }}</td>
-                {% elif layer == '8' %}
-                    {# Roles #}
-                {% endif %}
-                <td>
-                    {% if edit_configuration_item_info_generic_perm  %}
-                        <a href="./ci/edit/{{ d.id|default:''}}?{{url_query.urlencode }}"> Edit </a> |
-                    {% endif %}
-
-                    {% if read_configuration_item_info_generic_perm  %}
-                        <a href="./ci/view/{{ d.id|default:''}}?{{url_query.urlencode }}"> View</a>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
+        {% endfor %}
         </tbody>
     </table>
 {% pagination page url_query=url_query show_all=0 show_csv=0 fugue_icons=1 %}
