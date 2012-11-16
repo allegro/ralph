@@ -190,7 +190,7 @@ CELERY_ROUTES = (
 )
 # define the lookup channels in use on the site
 AJAX_LOOKUP_CHANNELS = {
-    'ci'  : {'model':'cmdb.CI', 'search_field':'name'}
+    'ci': ('ralph.cmdb.models', 'CILookup')
 }
 # magically include jqueryUI/js/css
 AJAX_SELECT_BOOTSTRAP = True

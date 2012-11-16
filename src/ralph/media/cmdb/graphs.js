@@ -26,21 +26,17 @@
         return s;
     }
 
-    function typeToColor(type)
-    {
+    function typeToColor(type) {
         if (type == 1) {
             return '#ddd';
-        }
-        else if (type == 2) {
+        } else if (type == 2) {
             return 'red';
-        }
-        else {
+        } else {
             return 'black';
-        }
+        };
     }
 
-    function handleMouseClick(node)
-    {
+    function handleMouseClick(node) {
         $('text').each(function (index, value) {
                 $(value).attr('class', '');
         });
@@ -48,7 +44,7 @@
                 $(value).attr('class', '');
         });
 
-        $(node.ui.children().first()).attr('class', 'focused');
+        $(node.ui).children().first().attr('class', 'focused');
         
         $("#cmdb_name").html(node.data.name);
         $("#cmdb_link").html("<a target='_blank' href='/cmdb/ci/view/" + node.data.id + "'> View </a>");
@@ -58,7 +54,13 @@
         );
     }
 
-    function saveSVG(){
+    function saveSVG() {
+    /* 
+        SVG element has no method to get content of it. 
+        To do it we must wrap it around html element to get inner content. 
+        To be able to download svg to browser the only way is to open datauri, 
+        and let user manually save svg.
+     */
         var svg = $("svg:first");
         $(svg).attr('xmlns:xlink', 'http://www.w3.org/1999/xlink');
         $(svg).attr('xmlns', 'http://www.w3.org/2000/svg');
@@ -174,12 +176,14 @@
           Don't make additional ajax call, just use graph_data directly. 
          */
         var graph_data = CMDB.graph_data;
-        if (graph_data.nodes.length > MAX_RELATIONS_COUNT)
-        {
+        if (typeof graph_data.nodes == 'undefined') {
+            // Displaying form, no data yet
+            return;
+        };
+        if (graph_data.nodes.length > MAX_RELATIONS_COUNT) {
             alert('To many relations to draw a graph.');
-        }
-        else
-        {
+        } else {
+            $("#save_svg_button").click(saveSVG);
             fugueData = "";
             jQuery.ajax({
                 url: '/static/cmdb/fugue-icons.json',
@@ -200,7 +204,7 @@
             });
             spriteURL = '/static/fugue-icons.png';
             img.src = spriteURL; 
-        }
+        };
     });
 })();
 
