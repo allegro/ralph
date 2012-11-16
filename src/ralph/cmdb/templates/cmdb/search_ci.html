@@ -83,8 +83,8 @@
                     {# Services #}
                     <td>{% for parent_ven in d.parent_venture  %}<a href="/cmdb/ci/view/{{ parent_ven.id }}">{{ parent_ven.name }}</a>{% endfor%}</td>
                     <td>{% for bl in d.business_line  %}<a href="/cmdb/ci/view/{{ bl.id }}">{{ bl.name }}</a>{% endfor%}</td>
-                    <td>{% include 'cmdb/table-owners.html' with data=d.owner_t %}</td>
-                    <td>{% include 'cmdb/table-owners.html' with data=d.owner_b %}</td>
+                    <td>{{ d.owner_t }}</td>
+                    <td>{{ d.owner_b }}</td>
                 {% elif layer == '7' and type == '4' %}
                     <td>{% for parent_ven in d.parent_venture  %}<a href="/cmdb/ci/view/{{ parent_ven.id }}">{{ parent_ven.name }}</a>{% endfor%}</td>
                     <td>{% for child_ven in d.child_venture  %}<a href="/cmdb/ci/view/{{ child_ven.id }}">{{ child_ven.name }}</a>{% endfor%}</td>

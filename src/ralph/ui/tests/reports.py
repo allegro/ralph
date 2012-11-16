@@ -72,10 +72,10 @@ class TestReportsServices(TestCase):
         self.assertEqual(serv_with_ven[0].name, 'allegro.pl')
         self.assertEqual(len(serv_with_ven), 1)
         self.assertEqual(len(serv_without_ven), 0)
-        #local service for tests
+        # local service for tests
         service = CI(name='ceneo.pl', type=CIType.objects.get(id=7))
         service.save()
-        #local venture for tests
+        # local venture for tests
         venture = CI(name='allegro_prod', type=CIType.objects.get(id=4))
         venture.save()
         reload_report = self.client.get(url, follow=True)

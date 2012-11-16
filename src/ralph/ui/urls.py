@@ -37,9 +37,9 @@ from ralph.ui.views.catalog import (Catalog, CatalogDevice,
 from ralph.ui.views.deploy import Deployment
 from ralph.ui.views.ventures import VenturesDeviceList, VenturesCMDB
 from ralph.ui.views.racks import RacksDeviceList
-from ralph.ui.views.reports import (ReportVentures, ReportMargins,
-        ReportServices
-        )
+from ralph.ui.views.reports import (
+    ReportVentures, ReportMargins,ReportServices
+)
 
 
 urlpatterns = patterns('',

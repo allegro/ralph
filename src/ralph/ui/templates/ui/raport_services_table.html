@@ -17,7 +17,7 @@
                 {% if service.venture_id %}
                     <a href="/cmdb/ci/view/{{ service.venture_id }}">{{ service.venture }}</a></td>
                 {% else %}
-                    None
+                    -
                 {% endif %}
             <td>
                 {{ service.relation_type|default:"None" }}
