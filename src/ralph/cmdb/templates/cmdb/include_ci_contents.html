@@ -131,9 +131,13 @@
     </table>
 
     {% if ci_id %}
-         <span><h3>Custom Attributes</h3> </span>
-            {% include 'cmdb/include_attributes.html' %}
-            <hr>
+    {% if not editable %}
+        <span><h3>Impact report</h3></span>
+        <a target="_blank" href='/cmdb/graphs?ci={{ ci_id }}'>Run impact report</a>
+    {% endif %}
+    <span><h3>Custom Attributes</h3> </span>
+        {% include 'cmdb/include_attributes.html' %}
+    <hr>
     {% endif %}
     <div class="row-fluid">
         <div class='span12'>
