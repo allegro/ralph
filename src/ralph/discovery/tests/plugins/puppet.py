@@ -8,7 +8,8 @@ from __future__ import unicode_literals
 from django.test import TestCase
 
 from ralph.discovery.models import (Device, DeviceType, OperatingSystem)
-from ralph.discovery.tests.plugins.samples.puppet import data, data_second
+from ralph.discovery.tests.plugins.samples.puppet import (
+    data, data_second, data_not_encoded)
 
 from ralph.discovery.plugins.puppet.facts import (
     handle_facts_os, handle_facts_packages)
@@ -37,7 +38,7 @@ class PuppetPluginTest(TestCase):
 
     def test_handle_facts_packages(self):
         handle_facts_packages(self.dev, data['packages'])
-        handle_facts_packages(self.dev2, data_second['packages'])
+        handle_facts_packages(self.dev2, data_not_encoded['packages'])
         handle_facts_packages(self.dev2, data['packages'])
         device = Device.objects.get(sn='device')
         device_packages = [
