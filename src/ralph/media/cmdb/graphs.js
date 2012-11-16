@@ -26,8 +26,7 @@
         return s;
     }
 
-    function typeToColor(type)
-    {
+    function typeToColor(type) {
         if (type == 1) {
             return '#ddd';
         }
@@ -39,8 +38,7 @@
         }
     }
 
-    function handleMouseClick(node)
-    {
+    function handleMouseClick(node) {
         $('text').each(function (index, value) {
                 $(value).attr('class', '');
         });
@@ -58,7 +56,13 @@
         );
     }
 
-    function saveSVG(){
+    function saveSVG() {
+    /* 
+        SVG element has no method to get content of it. 
+        To do it we must wrap it around html element to get inner content. 
+        To be able to download svg to browser the only way is to open datauri, 
+        and let user manually save svg.
+     */
         var svg = $("svg:first");
         $(svg).attr('xmlns:xlink', 'http://www.w3.org/1999/xlink');
         $(svg).attr('xmlns', 'http://www.w3.org/2000/svg');
@@ -174,12 +178,18 @@
           Don't make additional ajax call, just use graph_data directly. 
          */
         var graph_data = CMDB.graph_data;
+        if (typeof graph_data.nodes == 'undefined')
+        {
+            // Displaying form, no data yet
+            return;
+        }
         if (graph_data.nodes.length > MAX_RELATIONS_COUNT)
         {
             alert('To many relations to draw a graph.');
         }
         else
         {
+            $("#save_svg_button").click(saveSVG);
             fugueData = "";
             jQuery.ajax({
                 url: '/static/cmdb/fugue-icons.json',
