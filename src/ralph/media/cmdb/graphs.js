@@ -32,10 +32,9 @@
         }
         else if (type == 2) {
             return 'red';
-        }
-        else {
+        } else {
             return 'black';
-        }
+        };
     }
 
     function handleMouseClick(node) {
@@ -178,17 +177,13 @@
           Don't make additional ajax call, just use graph_data directly. 
          */
         var graph_data = CMDB.graph_data;
-        if (typeof graph_data.nodes == 'undefined')
-        {
+        if (typeof graph_data.nodes == 'undefined') {
             // Displaying form, no data yet
             return;
-        }
-        if (graph_data.nodes.length > MAX_RELATIONS_COUNT)
-        {
+        };
+        if (graph_data.nodes.length > MAX_RELATIONS_COUNT) {
             alert('To many relations to draw a graph.');
-        }
-        else
-        {
+        } else {
             $("#save_svg_button").click(saveSVG);
             fugueData = "";
             jQuery.ajax({
@@ -210,7 +205,7 @@
             });
             spriteURL = '/static/fugue-icons.png';
             img.src = spriteURL; 
-        }
+        };
     });
 })();
 
