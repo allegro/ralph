@@ -420,7 +420,7 @@ class Prices(DeviceUpdateView):
 
 
 def _dns_fill_record(form, prefix, record, request):
-    for label in ('name', 'type', 'content', 'ttl', 'prio', 'type'):
+    for label in ('name', 'type', 'content', 'type'):
         setattr(record, label,
                 form.cleaned_data[prefix + label] or None)
     record.domain = get_domain(record.name)
@@ -437,7 +437,7 @@ def _dns_fill_record(form, prefix, record, request):
 
 
 def _dns_create_record(form, request, device):
-    if form.cleaned_data.get('dns_new_name'):
+    if form.cleaned_data.get('dns_new_content'):
         record = Record()
         _dns_fill_record(form, 'dns_new_', record, request)
         record.save()
@@ -546,6 +546,27 @@ class Addresses(DeviceDetailView):
             query = query.filter(type__in=limit_types)
         return query
 
+
+    def get_hostnames(self):
+        ips = set(ip.address for ip in self.object.ipaddress_set.all())
+        names = set(ip.hostname for ip in self.object.ipaddress_set.all()
+                 if ip.hostname)
+        revnames = set('.'.join(reversed(ip.split('.'))) + '.in-addr.arpa'
+                       for ip in ips)
+        hostnames = set(names)
+        for record in Record.objects.filter(
+            type='A',
+            content__in=ips,
+        ):
+            hostnames.add(record.name)
+        for record in Record.objects.filter(
+            type='PTR',
+            name__in=revnames,
+        ):
+            hostnames.add(record.content)
+        return hostnames
+
+
     def handle_form(self, form, form_name, fill_record, create_record):
         if form.is_valid():
             for record in form.records:
@@ -574,7 +595,9 @@ class Addresses(DeviceDetailView):
             )
         if 'dns' in self.request.POST:
             dns_records = self.get_dns(self.limit_types)
-            self.dns_form = DNSRecordsForm(dns_records, self.request.POST)
+            self.dns_form = DNSRecordsForm(dns_records,
+                                           self.get_hostnames(),
+                                           self.request.POST)
             return self.handle_form(
                 self.dns_form,
                 'dns',
@@ -609,7 +632,7 @@ class Addresses(DeviceDetailView):
         ret = super(Addresses, self).get_context_data(**kwargs)
         if self.dns_form is None:
             dns_records = self.get_dns(self.limit_types)
-            self.dns_form = DNSRecordsForm(dns_records)
+            self.dns_form = DNSRecordsForm(dns_records, self.get_hostnames())
         if self.dhcp_form is None:
             dhcp_records = self.get_dhcp()
             self.dhcp_form = DHCPRecordsForm(dhcp_records)

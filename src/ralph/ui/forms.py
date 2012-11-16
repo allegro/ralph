@@ -118,19 +118,7 @@ def _dns_int_field(label=None, initial=None, **kwargs):
     return forms.IntegerField(**kwargs)
 
 
-def validate_domain_name(name):
-    if not name:
-        return
-    if '*' not in name and not is_valid_hostname(name):
-        raise forms.ValidationError("Invalid hostname")
-    if not get_domain(name):
-        raise forms.ValidationError("No such domain")
-    return name.lower()
 
-
-def _dns_name_field(label=None, initial=None, **kwargs):
-    kwargs.update(validators=[validate_domain_name])
-    return _dns_char_field(label, initial, **kwargs)
 
 
 def _dns_type_field(label=None, initial=None, types=None, **kwargs):
@@ -183,11 +171,22 @@ def validate_ip(ip):
         raise forms.ValidationError("Invalid IP address")
     return str(address)
 
+def validate_domain_name(name):
+    if not name:
+        return
+    if '*' not in name and not is_valid_hostname(name):
+        raise forms.ValidationError("Invalid hostname")
+    if not get_domain(name):
+        raise forms.ValidationError("No such domain")
+    return name.lower()
 
 def _dhcp_mac_field(label=None, initial=None, record=None, **kwargs):
     kwargs.update(validators=[validate_mac])
     return _dns_char_field(label, initial, **kwargs)
 
+def _ip_name_field(label=None, initial=None, record=None, **kwargs):
+    kwargs.update(validators=[validate_domain_name])
+    return _dns_char_field(label, initial, **kwargs)
 
 def _dhcp_ip_field(label=None, initial=None, record=None, **kwargs):
     kwargs.update(validators=[validate_ip])
@@ -197,7 +196,7 @@ def _dhcp_ip_field(label=None, initial=None, record=None, **kwargs):
 def _add_fields(new_fields, prefix, record, fields):
     for label, field_class in fields:
         initial = getattr(record, label, None)
-        field=field_class(label, initial)
+        field = field_class(label, initial)
         field.initial = initial
         field.record = record
         field_id = prefix + label
@@ -205,10 +204,27 @@ def _add_fields(new_fields, prefix, record, fields):
 
 
 class DNSRecordsForm(forms.Form):
-    def __init__(self, records, *args, **kwargs):
+    def __init__(self, records, hostnames, *args, **kwargs):
         super(DNSRecordsForm, self).__init__(*args, **kwargs)
         self.records = list(records)
-        fields =[
+        self.hostnames = hostnames
+        def _dns_name_field(label=None, initial=None, **kwargs):
+            kwargs.update(
+                label=label,
+                initial=initial,
+                required=False,
+                validators=[validate_domain_name],
+                widget=AutocompleteWidget(
+                    attrs={
+                        'class': 'span12',
+                        'placeholder': label,
+                        'style': 'min-width: 16ex',
+                    },
+                    choices=[(n, n) for n in hostnames],
+                ),
+            )
+            return forms.CharField(**kwargs)
+        fields = [
             ('name', _dns_name_field),
             ('type', _dns_type_limited_field),
             ('content', _dns_char_field),
@@ -216,13 +232,11 @@ class DNSRecordsForm(forms.Form):
             ('del', _bool_field),
         ]
         for record in self.records:
-            record.ptr = bool(
-                record.type in ('A', 'AAAA') and
-                get_revdns_records(record.content)
-            )
+            if record.type in ('A', 'AAAA'):
+                record.ptr = bool(get_revdns_records(record.content))
             prefix = 'dns_%d_' % record.id
             _add_fields(self.fields, prefix, record, fields)
-        fields =[
+        fields = [
             ('name', _dns_name_field),
             ('type', _dns_type_limited_field),
             ('content', _dns_char_field),
@@ -230,6 +244,35 @@ class DNSRecordsForm(forms.Form):
             ('del', _bool_hidden_field),
         ]
         _add_fields(self.fields, 'dns_new_', None, fields)
+        if self.hostnames:
+            self.fields['dns_new_name'].initial = list(hostnames)[0]
+
+    def clean(self):
+        for field_name, field in self.fields.iteritems():
+            if field_name.endswith('_name'):
+                name = self.cleaned_data.get(field_name, '')
+                type = self.cleaned_data.get(
+                    field_name.replace('_name', '_type')
+                )
+                if not name or type == 'CNAME':
+                    continue
+                if name not in self.hostnames:
+                    self._errors.setdefault(field_name, []).append(
+                        "Invalid hostname for this device."
+                    )
+            elif field_name.endswith('_content'):
+                content = self.cleaned_data.get(field_name, '')
+                type = self.cleaned_data.get(
+                    field_name.replace('_content', '_type')
+                )
+                if not content or type != 'CNAME':
+                    continue
+                if content not in self.hostnames:
+                    self._errors.setdefault(field_name, []).append(
+                        "Invalid hostname for this device."
+                    )
+        return self.cleaned_data
+
 
 
 class DHCPRecordsForm(forms.Form):
@@ -257,7 +300,7 @@ class AddressesForm(forms.Form):
         super(AddressesForm, self).__init__(*args, **kwargs)
         self.records = list(records)
         fields = [
-            ('hostname', _dns_name_field),
+            ('hostname', _ip_name_field),
             ('address', _dhcp_ip_field),
             ('del', _bool_field),
         ]
@@ -265,7 +308,7 @@ class AddressesForm(forms.Form):
             prefix = 'ip_%d_' % record.id
             _add_fields(self.fields, prefix, record, fields)
         fields = [
-            ('hostname', _dns_name_field),
+            ('hostname', _ip_name_field),
             ('address', _dhcp_ip_field),
             ('del', _bool_hidden_field),
         ]
