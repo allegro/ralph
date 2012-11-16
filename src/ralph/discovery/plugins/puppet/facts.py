@@ -81,7 +81,6 @@ def parse_facts(facts, is_virtual):
         _parse_smbios(dev, facts['smbios'], facts, is_virtual=is_virtual)
     except KeyError as e:
         pass
-    handle_facts_packages(dev, facts.get('packages_data'))
     handle_facts_disks(dev, facts, is_virtual=is_virtual)
     return dev, dev_name
 
