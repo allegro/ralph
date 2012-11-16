@@ -19,6 +19,7 @@
     </tr></thead>
     <tbody>
         {% for item in components %}
+        {% if not item.model.is_software %}
         <tr>
             <td><i class="fugue-icon {{ item.icon }}"></i></td>
             {%  if item.hrefinfo %}
@@ -75,6 +76,7 @@
             </td>
             {% endif %}
         </tr>
+        {% endif %}
         {% endfor %}
     </tbody>
 </table>

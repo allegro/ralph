@@ -7,6 +7,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import paramiko
+import re
 
 from django.conf import settings
 from lck.django.common import nested_commit_on_success
@@ -18,7 +19,7 @@ from ralph.discovery.hardware import normalize_wwn
 from ralph.discovery.models import (
     Device, DeviceType, DiskShareMount, DiskShare,
     ComponentType, ComponentModel, Storage,
-    Processor, Memory, IPAddress
+    Processor, Memory, IPAddress, OperatingSystem
 )
 
 
@@ -31,7 +32,6 @@ MODELS = {
     'IBM,8203-E4A': 'IBM P6 520',
     'IBM,8233-E8B': 'IBM Power 750 Express',
 }
-
 
 
 class Error(Exception):
@@ -64,24 +64,43 @@ def run_ssh_aix(ip):
             mac = ''.join('%02x' % int(o, 16) for o in octets).upper()
             ethernets.append(Eth(label=interface, mac=mac, speed=0))
         disks = {}
+        os_storage_size = 0
         for disk_line in _ssh_lines(ssh, 'lsdev -c disk'):
             disk, rest = disk_line.split(None, 1)
             wwn = None
             model = None
             for line in _ssh_lines(ssh, 'lscfg -vl %s' % disk):
-                if 'Serial Number...' in line:
+                if 'hdisk' in line:
+                    match = re.search(r'\(([0-9]+) MB\)', line)
+                    if match:
+                        os_storage_size += int(match.group(1))
+                elif 'Serial Number...' in line:
                     label, sn = line.split('.', 1)
                     sn = sn.strip('. \n')
                 elif 'Machine Type and Model.' in line:
                     label, model = line.split('.', 1)
                     model = model.strip('. \n')
             disks[disk] = (model, sn)
+        os_version = ''
+        for line in _ssh_lines(ssh, 'oslevel'):
+            os_version = line.strip()
+            break
+        os_memory = 0
+        for line in _ssh_lines(ssh, 'lsattr -El sys0 | grep ^realmem'):
+            match = re.search(r'[0-9]+', line)
+            if match:
+                os_memory = int(int(match.group(0)) / 1024)
+            break
+        os_corescount = 0
+        for line in _ssh_lines(ssh, 'lparstat -i|grep ^Active\ Phys'):
+            match = re.search(r'[0-9]+', line)
+            if match:
+                os_corescount += int(match.group(0))
     finally:
         ssh.close()
     dev = Device.create(
-                ethernets=ethernets,
-                model_type=DeviceType.rack_server,
-                model_name='%s AIX' % MODELS.get(machine_model, machine_model))
+        ethernets=ethernets, model_type=DeviceType.rack_server,
+        model_name='%s AIX' % MODELS.get(machine_model, machine_model))
     ipaddr = IPAddress.objects.get(address=ip)
     ipaddr.device = dev
     ipaddr.save()
@@ -107,12 +126,12 @@ def run_ssh_aix(ip):
             continue
         wwn = normalize_wwn(sn[-4:] + sn[:-4])
         mount, created = DiskShareMount.concurrent_get_or_create(
-                share=share, device=dev, is_virtual=False)
+            share=share, device=dev, is_virtual=False)
         mount.volume = disk
         mount.save()
     for disk, model_name, sn in stors:
         model, mcreated = ComponentModel.concurrent_get_or_create(
-                type=ComponentType.disk.id, family=model_name, extra_hash='')
+            type=ComponentType.disk.id, family=model_name, extra_hash='')
         model.name = model_name
         model.save()
         stor, created = Storage.concurrent_get_or_create(device=dev, sn=sn)
@@ -120,23 +139,31 @@ def run_ssh_aix(ip):
         stor.label = disk
         stor.save()
 
-
     mem, created = Memory.concurrent_get_or_create(device=dev, index=0)
     mem.label = 'Memory'
-    mem.model, c = ComponentModel.concurrent_get_or_create( size=0, speed=0,
-            type=ComponentType.memory.id, family='pSeries', extra_hash='')
+    mem.model, c = ComponentModel.concurrent_get_or_create(
+        size=0, speed=0, type=ComponentType.memory.id, family='pSeries',
+        extra_hash='')
     mem.model.name = 'pSeries Memory'
     mem.model.save()
     mem.save()
     cpu, created = Processor.concurrent_get_or_create(device=dev, index=0)
     cpu.label = 'CPU'
-    cpu.model, c = ComponentModel.concurrent_get_or_create(speed=0, cores=0,
-            type=ComponentType.processor.id, extra_hash='', family='pSeries CPU')
+    cpu.model, c = ComponentModel.concurrent_get_or_create(
+        speed=0, cores=0, type=ComponentType.processor.id, extra_hash='',
+        family='pSeries CPU')
     cpu.model.name = 'pSeries CPU'
     cpu.model.save()
     cpu.save()
+    os = OperatingSystem.create(dev=dev, os_name='AIX', version=os_version,
+                                family='AIX')
+    os.memory = os_memory if os_memory else None
+    os.cores_count = os_corescount if os_corescount else None
+    os.storage = os_storage_size if os_storage_size else None
+    os.save()
 
     return machine_model
+
 
 @plugin.register(chain='discovery', requires=['ping'])
 def ssh_aix(**kwargs):

@@ -106,7 +106,10 @@ def post_create_change(sender, instance, raw, using, **kwargs):
             priority = chdb.CI_CHANGE_PRIORITY_TYPES.WARNING.id
             change_type = chdb.CI_CHANGE_TYPES.CONF_GIT.id
             message = instance.comment
-            time = instance.time
+            if instance.time:
+                time = instance.time
+            else:
+                time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             ci = instance.ci
         elif isinstance(instance, chdb.CIChangeCMDBHistory):
             # register only user triggered cmdb history
