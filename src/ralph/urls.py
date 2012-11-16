@@ -1,42 +1,52 @@
 from django.conf.urls.defaults import patterns, include, url
 from django.views.generic import RedirectView
 from tastypie.api import Api
-from ralph.business.api import VentureResource, VentureLightResource,\
-    RoleResource, RoleLightResource, DepartmentResource,\
-    RolePropertyTypeResource, RolePropertyTypeValueResource,\
-    RolePropertyResource, RolePropertyValueResource
+from ralph.business.api import (VentureResource, VentureLightResource,
+                                RoleResource, RoleLightResource,
+                                DepartmentResource, RolePropertyTypeResource,
+                                RolePropertyTypeValueResource,
+                                RolePropertyResource,
+                                RolePropertyValueResource)
 from ralph.deployment.api import DeploymentResource
-from ralph.discovery.api import IPAddressResource, ModelGroupResource,\
-    ModelResource, PhysicalServerResource, RackServerResource,\
-    VirtualServerResource, BladeServerResource, DevResource
+from ralph.discovery.api import (IPAddressResource, ModelGroupResource,
+                                 ModelResource, PhysicalServerResource,
+                                 RackServerResource, VirtualServerResource,
+                                 BladeServerResource, DevResource)
+from ralph.cmdb.api import (BusinessLineResource, ServiceResource,
+                            CIRelationResource, CIResource, CIChangeResource,
+                            CIChangeGitResource, CIChangePuppetResource,
+                            CIChangeZabbixTriggerResource,
+                            CIChangeStatusOfficeIncidentResource,
+                            CIChangeCMDBHistoryResource, CILayersResource,
+                            CITypesResource)
 from ralph.discovery.api_donpedro import WindowsDeviceResource
 
 from django.conf import settings
 from django.contrib import admin
 from ajax_select import urls as ajax_select_urls
+
 admin.autodiscover()
 
-from ralph.cmdb.api import (BusinessLineResource, ServiceResource,
-                            CILayersResource, CIRelationResource,
-                            CIResource, CITypesResource)
 v09_api = Api(api_name='v0.9')
 
 # business API
-for r in (VentureResource, VentureLightResource, RoleResource,\
+for r in (VentureResource, VentureLightResource, RoleResource,
           RoleLightResource, DepartmentResource, RolePropertyTypeResource,
           RolePropertyTypeValueResource, RolePropertyResource,
           RolePropertyValueResource):
     v09_api.register(r())
 
 # discovery API
-for r in (
-    IPAddressResource, ModelGroupResource, ModelResource,
-    PhysicalServerResource, RackServerResource, BladeServerResource,
-    VirtualServerResource, DevResource, WindowsDeviceResource):
+for r in (IPAddressResource, ModelGroupResource, ModelResource,
+          PhysicalServerResource, RackServerResource, BladeServerResource,
+          VirtualServerResource, DevResource, WindowsDeviceResource):
     v09_api.register(r())
 
 # CMDB API
-for r in (BusinessLineResource, ServiceResource, CIResource, CIRelationResource,
+for r in (BusinessLineResource, ServiceResource, CIResource,
+          CIRelationResource, CIChangeResource, CIChangeGitResource,
+          CIChangePuppetResource, CIChangeZabbixTriggerResource,
+          CIChangeStatusOfficeIncidentResource, CIChangeCMDBHistoryResource,
           CITypesResource, CILayersResource):
     v09_api.register(r())
 
@@ -44,10 +54,11 @@ for r in (BusinessLineResource, ServiceResource, CIResource, CIRelationResource,
 for r in (DeploymentResource,):
     v09_api.register(r())
 
+
 class VhostRedirectView(RedirectView):
     def get_redirect_url(self, **kwargs):
-        host = self.request.META.get('HTTP_X_FORWARDED_HOST',
-            self.request.META['HTTP_HOST'])
+        host = self.request.META.get(
+            'HTTP_X_FORWARDED_HOST', self.request.META['HTTP_HOST'])
         if host == settings.DASHBOARD_SITE_DOMAIN:
             self.url = '/ventures/'
         else:
@@ -55,19 +66,23 @@ class VhostRedirectView(RedirectView):
         return super(VhostRedirectView, self).get_redirect_url(**kwargs)
 
 
-urlpatterns = patterns('',
+urlpatterns = patterns(
+    '',
     url(r'^$', VhostRedirectView.as_view(permanent=False)),
     url(r'^report-a-bug$', RedirectView.as_view(url=settings.BUGTRACKER_URL)),
-    url(r'^favicon\.ico$', RedirectView.as_view(url='/static/img/favicon.ico')),
+    url(r'^favicon\.ico$',
+        RedirectView.as_view(url='/static/img/favicon.ico')),
     url(r'^humans\.txt$', RedirectView.as_view(url='/static/humans.txt')),
     url(r'^robots\.txt$', RedirectView.as_view(url='/static/robots.txt')),
-    (r'^static/(?P<path>.*)$', 'django.views.static.serve', {'document_root':
-        settings.STATIC_ROOT, 'show_indexes': True}),
+    (r'^static/(?P<path>.*)$', 'django.views.static.serve',
+     {'document_root': settings.STATIC_ROOT, 'show_indexes': True}),
     (r'^u/(?P<path>.*)$', 'django.views.static.serve',
-        {'document_root': settings.MEDIA_ROOT, 'show_indexes': True}),
-    url(r'^login/', 'django.contrib.auth.views.login', {'template_name': 'admin/login.html'}),
-    url(r'^logout/', 'django.contrib.auth.views.logout'),# {'template_name': 'admin/logout.html'}),
-    url(r'^ventures/(?P<venture_id>.+)/$', 'ralph.business.views.show_ventures',
+     {'document_root': settings.MEDIA_ROOT, 'show_indexes': True}),
+    url(r'^login/', 'django.contrib.auth.views.login',
+        {'template_name': 'admin/login.html'}),
+    url(r'^logout/', 'django.contrib.auth.views.logout'),  # {'template_name': 'admin/logout.html'}),
+    url(r'^ventures/(?P<venture_id>.+)/$',
+        'ralph.business.views.show_ventures',
         name='business-show-venture'),
     url(r'^ventures/$', 'ralph.business.views.show_ventures',
         name='business-show-ventures'),
@@ -85,10 +100,14 @@ urlpatterns = patterns('',
     url(r'^cmdb/', include('ralph.cmdb.urls')),
     url(r'^api/', include(v09_api.urls)),
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^pxe/_(?P<file_type>[^/]+)$', 'ralph.deployment.views.preboot_type_view', name='preboot-type-view'),
-    url(r'^pxe/(?P<file_name>[^_][^/]+)$', 'ralph.deployment.views.preboot_raw_view', name='preboot-raw-view'),
-    url(r'^pxe/$', 'ralph.deployment.views.preboot_type_view', name='preboot-default-view', kwargs={'file_type': 'boot_ipxe'}),
-    url(r'^pxe/DONE/$', 'ralph.deployment.views.preboot_complete_view', name='preboot-complete-view'),
+    url(r'^pxe/_(?P<file_type>[^/]+)$',
+        'ralph.deployment.views.preboot_type_view', name='preboot-type-view'),
+    url(r'^pxe/(?P<file_name>[^_][^/]+)$',
+        'ralph.deployment.views.preboot_raw_view', name='preboot-raw-view'),
+    url(r'^pxe/$', 'ralph.deployment.views.preboot_type_view',
+        name='preboot-default-view', kwargs={'file_type': 'boot_ipxe'}),
+    url(r'^pxe/DONE/$', 'ralph.deployment.views.preboot_complete_view',
+        name='preboot-complete-view'),
 
     # include the lookup urls
     (r'^admin/lookups/', include(ajax_select_urls)),
