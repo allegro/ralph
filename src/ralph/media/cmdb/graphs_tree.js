@@ -8,7 +8,7 @@ var CMDB = {};
         var fn = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame
             || window.msRequestAnimationFrame;
         fn.apply(window, arguments);
-    }
+    };
 
     CMDB.graph_element = $("#chart")[0];
 
