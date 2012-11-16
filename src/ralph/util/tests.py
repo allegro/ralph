@@ -30,6 +30,7 @@ from ralph.discovery.models import Device, DeviceType
 from ralph.discovery.models import DeviceModelGroup
 from ralph.discovery.models import MarginKind, DeprecationKind
 from ralph.util import pricing
+from ralph.util.others import set_base64_compressed_data, get_base64_compressed_data
 from ralph.util.pricing import get_device_raw_price
 
 
@@ -228,3 +229,27 @@ class ApiTest(TestCase):
         gen_list.append(403)
         self.maxDiff = None
         self.assertListEqual(gen_list, status_list)
+
+
+class OthersTest(TestCase):
+    def setUp(self):
+        self.input_data = ('Ralph is an asset management system for your data '
+                           'center')
+        self.output_data = ('eJwNyckNgEAMA8BWXBMdWGAOiWRRHB7bPcx3Ft7PictggrYaw'
+                            'eShUDY83QrsozDHW9jYxPqP6gNJtxTW')
+        self.wrong_input_data = 'Ralph is an asset management system'
+        self.wrong_output_data = 'JwNyckNgEAMA8BWXBMdWGAOiWRRHB7bPcx3Ft7Pic'
+
+    def test_set_base64_compressed_data(self):
+        data = set_base64_compressed_data(self.input_data)
+        self.assertEqual(data, self.output_data)
+        data = set_base64_compressed_data(self.wrong_input_data)
+        self.assertNotEqual(data, self.wrong_output_data)
+
+    def test_get_base64_compressed_data(self):
+        data = get_base64_compressed_data(self.output_data)
+        self.assertEqual(data, self.input_data)
+        self.assertRaises(
+            TypeError,
+            set_base64_compressed_data(self.wrong_input_data)
+        )
