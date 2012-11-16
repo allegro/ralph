@@ -1,0 +1,27 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
+import base64
+import zlib
+
+
+def get_base64_compressed_data(data):
+    data = base64.b64decode(data)
+    try:
+        data = zlib.decompress(data)
+    except zlib.error:
+        return False, 'decompression error.'
+    return data
+
+def set_base64_compressed_data(data):
+    try:
+        data = zlib.compress(data)
+    except zlib.error:
+        return False, 'compression error.'
+    data = base64.b64encode(data)
+    return data
