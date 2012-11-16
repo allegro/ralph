@@ -133,9 +133,10 @@ def _dns_name_field(label=None, initial=None, **kwargs):
     return _dns_char_field(label, initial, **kwargs)
 
 
-def _dns_type_field(label=None, initial=None, **kwargs):
-    types = list(Record.RECORD_TYPE)
-    types.insert(0, ('', ''))
+def _dns_type_field(label=None, initial=None, types=None, **kwargs):
+    if types is None:
+        types = list(Record.RECORD_TYPE)
+        types.insert(0, ('', ''))
     return forms.ChoiceField(
         label=label,
         choices=types,
@@ -146,8 +147,19 @@ def _dns_type_field(label=None, initial=None, **kwargs):
     )
 
 
+def _dns_type_limited_field(label=None, initial=None, **kwargs):
+    kwargs.update(types=[('A', 'A'), ('CNAME', 'CNAME'), ('TXT', 'TXT')])
+    return _dns_type_field(label, initial, **kwargs)
+
+
 def _bool_field(label=None, initial=None, **kwargs):
     return forms.BooleanField(label=label, required=False, **kwargs)
+
+
+def _bool_hidden_field(label=None, initial=None, **kwargs):
+    kwargs.update(widget=forms.HiddenInput())
+    return forms.BooleanField(label=label, required=False, **kwargs)
+
 
 def validate_mac(mac):
     if not mac:
@@ -211,6 +223,15 @@ class DNSRecordsForm(forms.Form):
             )
             prefix = 'dns_%d_' % record.id
             _add_fields(self.fields, prefix, record, fields)
+        fields =[
+            ('name', _dns_name_field),
+            ('type', _dns_type_limited_field),
+            ('content', _dns_char_field),
+            ('ttl', _dns_int_field),
+            ('prio', _dns_int_field),
+            ('ptr', _bool_field),
+            ('del', _bool_hidden_field),
+        ]
         _add_fields(self.fields, 'dns_new_', None, fields)
 
 
@@ -218,7 +239,7 @@ class DHCPRecordsForm(forms.Form):
     def __init__(self, records, *args, **kwargs):
         super(DHCPRecordsForm, self).__init__(*args, **kwargs)
         self.records = list(records)
-        fields =[
+        fields = [
             ('ip', _dhcp_ip_field),
             ('mac', _dhcp_mac_field),
             ('del', _bool_field),
@@ -226,6 +247,11 @@ class DHCPRecordsForm(forms.Form):
         for record in self.records:
             prefix = 'dhcp_%d_' % record.id
             _add_fields(self.fields, prefix, record, fields)
+        fields = [
+            ('ip', _dhcp_ip_field),
+            ('mac', _dhcp_mac_field),
+            ('del', _bool_hidden_field),
+        ]
         _add_fields(self.fields, 'dhcp_new_', None, fields)
 
 
@@ -233,7 +259,7 @@ class AddressesForm(forms.Form):
     def __init__(self, records, *args, **kwargs):
         super(AddressesForm, self).__init__(*args, **kwargs)
         self.records = list(records)
-        fields =[
+        fields = [
             ('hostname', _dns_name_field),
             ('address', _dhcp_ip_field),
             ('del', _bool_field),
@@ -241,6 +267,11 @@ class AddressesForm(forms.Form):
         for record in self.records:
             prefix = 'ip_%d_' % record.id
             _add_fields(self.fields, prefix, record, fields)
+        fields = [
+            ('hostname', _dns_name_field),
+            ('address', _dhcp_ip_field),
+            ('del', _bool_hidden_field),
+        ]
         _add_fields(self.fields, 'ip_new_', None, fields)
 
 

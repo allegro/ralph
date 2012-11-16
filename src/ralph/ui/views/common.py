@@ -437,7 +437,7 @@ def _dns_fill_record(form, prefix, record, request):
 
 
 def _dns_create_record(form, request, device):
-    if form.cleaned_data.get('dns_new_type'):
+    if form.cleaned_data.get('dns_new_name'):
         record = Record()
         _dns_fill_record(form, 'dns_new_', record, request)
         record.save()
@@ -501,6 +501,7 @@ class Addresses(DeviceDetailView):
     template_name = 'ui/device_addresses.html'
     read_perm = Perm.read_device_info_generic
     edit_perm = Perm.edit_domain_name
+    limit_types = {'A', 'CNAME', 'TXT'}
 
     def __init__(self, *args, **kwargs):
         super(Addresses, self).__init__(*args, **kwargs)
@@ -508,7 +509,7 @@ class Addresses(DeviceDetailView):
         self.dhcp_form = None
         self.ip_form = None
 
-    def get_dns(self):
+    def get_dns(self, limit_types=None):
         ips = set(ip.address for ip in self.object.ipaddress_set.all())
         names = set(ip.hostname for ip in self.object.ipaddress_set.all()
                  if ip.hostname)
@@ -537,10 +538,13 @@ class Addresses(DeviceDetailView):
             while parts:
                 parts.pop(0)
                 starnames.add('.'.join(['*'] + parts))
-        return Record.objects.filter(
+        query = Record.objects.filter(
                 db.Q(content__in=ips | names) |
                 db.Q(name__in=names | revnames | starnames | starrevnames)
             ).distinct().order_by('type', 'name', 'content')
+        if limit_types is not None:
+            query = query.filter(type__in=limit_types)
+        return query
 
     def handle_form(self, form, form_name, fill_record, create_record):
         if form.is_valid():
@@ -569,7 +573,7 @@ class Addresses(DeviceDetailView):
                 "You don't have permission to edit this."
             )
         if 'dns' in self.request.POST:
-            dns_records = self.get_dns()
+            dns_records = self.get_dns(self.limit_types)
             self.dns_form = DNSRecordsForm(dns_records, self.request.POST)
             return self.handle_form(
                 self.dns_form,
@@ -604,7 +608,7 @@ class Addresses(DeviceDetailView):
     def get_context_data(self, **kwargs):
         ret = super(Addresses, self).get_context_data(**kwargs)
         if self.dns_form is None:
-            dns_records = self.get_dns()
+            dns_records = self.get_dns(self.limit_types)
             self.dns_form = DNSRecordsForm(dns_records)
         if self.dhcp_form is None:
             dhcp_records = self.get_dhcp()
