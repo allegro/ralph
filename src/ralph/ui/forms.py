@@ -209,7 +209,7 @@ class DNSRecordsForm(forms.Form):
         self.records = list(records)
         fields =[
             ('name', _dns_name_field),
-            ('type', _dns_type_field),
+            ('type', _dns_type_limited_field),
             ('content', _dns_char_field),
             ('ttl', _dns_int_field),
             ('prio', _dns_int_field),
