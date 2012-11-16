@@ -501,7 +501,7 @@ class Addresses(DeviceDetailView):
     template_name = 'ui/device_addresses.html'
     read_perm = Perm.read_device_info_generic
     edit_perm = Perm.edit_domain_name
-    limit_types = {'A', 'CNAME', 'TXT'}
+    limit_types = {'A', 'CNAME', 'MX', 'TXT'}
 
     def __init__(self, *args, **kwargs):
         super(Addresses, self).__init__(*args, **kwargs)
