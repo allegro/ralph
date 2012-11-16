@@ -19,7 +19,7 @@ from dj.choices import Choices
 from ralph.account.models import Perm
 from ralph.business.models import Venture
 from ralph.cmdb.models_ci import (
-    CI, CIRelation, CI_STATE_TYPES, CI_RELATION_TYPES
+    CI, CIRelation, CI_STATE_TYPES, CI_RELATION_TYPES, CI_TYPES
 )
 from ralph.deployment.models import DeploymentStatus
 from ralph.discovery.models_device import MarginKind, DeviceType
@@ -427,9 +427,11 @@ class ReportServices(SidebarReports, Base):
         if not has_perm(Perm.read_device_info_reports):
             return HttpResponseForbidden(
                 "You don't have permission to see reports.")
-        services = CI.objects.filter(type=7)
+        services = CI.objects.filter(type=CI_TYPES.SERVICE.id)
         relations = CIRelation.objects.filter(
-            child__type=7, parent__type=4, type=1
+            child__type=CI_TYPES.SERVICE.id,
+            parent__type=CI_TYPES.VENTURE.id,
+            type=CI_RELATION_TYPES.CONTAINS.id,
         )
         self.invalid_relation = []
         for relation in relations:

@@ -799,13 +799,11 @@ class Search(BaseCMDBView):
             type = CI_TYPES.NameFromID(int(type))
             subsection += '%s - ' % CI_TYPES.DescFromName(type)
         subsection += 'Search'
-        sidebar_selected = ''
-        layers = CILayer.objects.all()
-        for layer_item in layers:
-            if layer == str(layer_item.id):
-                sidebar_selected = slugify(layer_item.name)
-        if not layer and not type:
-            sidebar_selected = 'all cis'
+        if layer is not None:
+            select = CILayer.objects.get(id=layer)
+            sidebar_selected = slugify(select.name)
+        else:
+            sidebar_selected = 'all-cis'
         ret = super(Search, self).get_context_data(**kwargs)
         ret.update({
             'table_header': self.table_header,
@@ -965,10 +963,9 @@ class Search(BaseCMDBView):
             if layer == str(CI_LAYER.HARDWARE.id):
                 try:
                     networks = i.content_object.ipaddress_set.all()
+                    network =  ', '.join(unicode(x) for x in networks)
                 except AttributeError:
                     pass
-                for network in networks:
-                    network = network
             if layer == str(CI_LAYER.SERVICES.id) and type_ in [
                     str(CI_TYPES.VENTURE.id),
                     str(CI_TYPES.VENTUREROLE.id),
@@ -1037,8 +1034,12 @@ class Search(BaseCMDBView):
                 'state_id': i.state,
                 'status': i.get_status_display(),
                 'dev': i.content_object,
-                'owner_b': owners_b,
-                'owner_t': owners_t,
+                'owner_b': ', '.join(["%s %s" % (
+                    b.owner.first_name, b.owner.last_name
+                    ) for b in i.ciownership_set.filter(type=2)]),
+                'owner_t': ', '.join(["%s %s" % (
+                    t.owner.first_name, t.owner.last_name
+                    ) for t in i.ciownership_set.filter(type=1)]),
                 'parent_venture': parent_venture,
                 'child_venture': child_venture,
                 'business_line': business_line,
