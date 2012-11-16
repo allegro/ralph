@@ -21,7 +21,7 @@ from ralph.util import network, plugin
 from ralph.discovery.models import IPAddress, DiskShare, DiskShareMount
 from ralph.discovery import hardware
 
-from .facts import parse_facts, handle_facts_os
+from .facts import parse_facts, handle_facts_os, handle_facts_packages
 from .lshw import parse_lshw
 from .util import connect_db, get_ip_hostname_sets
 
@@ -72,7 +72,7 @@ def puppet(**kwargs):
     ip_address.save(update_last_seen=True) # no priorities for IP addresses
 
     handle_facts_os(dev, facts, is_virtual)
-
+    handle_facts_packages(dev, facts.get('packages'))
     return True, message, kwargs
 
 def get_all_facts_by_ip_set(db, ip_set):

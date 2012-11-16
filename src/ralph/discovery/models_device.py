@@ -490,6 +490,9 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
         else:
             return default_deprecation_kind
 
+    def get_core_count(self):
+        return sum(cpu.get_cores() for cpu in self.processor_set.all())
+
     @property
     def ipaddress(self):
         return self.ipaddress_set

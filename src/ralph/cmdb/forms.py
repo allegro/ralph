@@ -17,6 +17,7 @@ from ralph.ui.widgets import (ReadOnlyWidget, ReadOnlyMultipleChoiceWidget,
 from ralph.cmdb.models import CILayer, CIType
 from ralph.cmdb import models as db
 
+from ajax_select.fields import AutoCompleteSelectField
 
 class CISearchForm(forms.Form):
     uid = forms.CharField(label=' CI UID ', max_length=100)
@@ -173,3 +174,12 @@ class CIRelationEditForm(forms.ModelForm):
         super(CIRelationEditForm, self).__init__(*args, **kwargs)
         if self.data:
             self.data = self.data.copy()
+
+
+class SearchImpactForm(forms.Form):
+    ci = AutoCompleteSelectField(
+        'ci', required=True,
+        plugin_options={'minLength': 3}
+    )
+
+

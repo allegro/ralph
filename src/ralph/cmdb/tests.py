@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 
 import datetime
 import mock
+import random
 import time
 
 from lxml import objectify
@@ -17,12 +18,15 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase, Client
+from tastypie.bundle import Bundle
 
+from ralph.cmdb.api import (CIChangePuppetResource, CIChangeGitResource,
+                            CIChangeCMDBHistoryResource)
 from ralph.cmdb.importer import CIImporter
 from ralph.cmdb.models import (
     CI, CIRelation, CI_RELATION_TYPES, CIChange, CI_TYPES, CILayer, CIType,
     CIValueFloat, CIValueDate, CIValueString, CIChangePuppet, CIChangeGit,
-    CI_CHANGE_TYPES, CI_CHANGE_REGISTRATION_TYPES)
+    CIChangeCMDBHistory, CI_CHANGE_TYPES, CI_CHANGE_REGISTRATION_TYPES)
 from ralph.discovery.models import (Device, DeviceType, DeviceModel,
                                     DataCenter, Network)
 from ralph.business.models import Venture, VentureRole, Service, BusinessLine
@@ -273,8 +277,15 @@ class CIImporterTest(TestCase):
             set([(x.parent.name, x.child.name, x.type) for x in role_rels]),
             set([(u'child_role', u'blade', 3)]),
         )
+        from ralph.cmdb.graphs import ImpactCalculator
         # summarize relations - 9
         self.assertEqual(len(CIRelation.objects.all()), 9)
+        # calculate impact/spanning tree for CI structure
+        calc = ImpactCalculator()
+        self.assertEqual(
+            calc.find_affected_nodes(1),
+            ({1: None, 2: 1, 3: 2, 4: 2, 6: 2, 7: 2}, [1, 2, 3, 4, 6, 7])
+        )
 
 
 class AutoCIRemoveTest(TestCase):
@@ -462,10 +473,10 @@ class OPRegisterTest(TestCase):
         self.assertEqual(chg.content_object, c)
         self.assertEqual(chg.external_key, '#123456')
         self.assertEqual(
-            chg.registration_type, CI_CHANGE_REGISTRATION_TYPES.OP)
+            chg.registration_type, CI_CHANGE_REGISTRATION_TYPES.OP.id)
         CIChange.objects.all().delete()
 
-        #removing cichange remove cichangegit child too.
+        # removing cichange remove cichangegit child too.
         self.assertEqual(CIChangeGit.objects.count(), 0)
 
         # if change is registered before date of start, and change type is GIT,
@@ -942,3 +953,101 @@ class CIFormsTest(TestCase):
         val = [x.value for x in ci_string_value]
         val.sort()
         self.assertListEqual(val, ['http://doc.local', 'name-test'])
+
+
+class CIApiTest(TestCase):
+    fixtures = [
+        '0_types.yaml',
+        '1_attributes.yaml',
+        '2_layers.yaml',
+        '3_prefixes.yaml'
+    ]
+
+    def setUp(self):
+        self.puppet_cv = "v%s" % random.randrange(0, 1000)
+        puppet_bundle = Bundle(
+            data={
+                'configuration_version': self.puppet_cv,
+                'host': 's11111.dc2',
+                'kind': 'apply',
+                'status': 'failed',
+                'time': '2012-11-14 13:00:00'
+            })
+        puppet_resource = CIChangePuppetResource()
+        puppet_resource.obj_create(bundle=puppet_bundle)
+
+        self.git_changeset = "change:%s" % random.randrange(0, 1000)
+        self.git_comment = "comment:%s" % random.randrange(0, 1000)
+        git_bundle = Bundle(
+            data={
+                'author': 'Jan Kowalski',
+                'changeset': self.git_changeset,
+                'comment': self.git_comment,
+                'file_paths': '/some/path',
+            })
+        git_resource = CIChangeGitResource()
+        git_resource.obj_create(bundle=git_bundle)
+
+        temp_venture = Venture.objects.create(name='TempTestVenture')
+        self.ci = CI.objects.create(
+            name='TempTestVentureCI',
+            uid=CI.get_uid_by_content_object(temp_venture),
+            type_id=4)
+        self.cmdb_new_value = 'nv_%s' % random.randrange(0, 1000)
+        self.cmdb_old_value = 'ov_%s' % random.randrange(0, 1000)
+        cmdb_bundle = Bundle(
+            data={
+                'ci': '/api/v0.9/ci/%d/' % self.ci.pk,
+                'comment': 'test api',
+                'field_name': 'child',
+                'new_value': self.cmdb_new_value,
+                'old_value': self.cmdb_old_value,
+                'time': '2012-11-15 12:00:00'
+            })
+        cmdb_resource = CIChangeCMDBHistoryResource()
+        cmdb_resource.obj_create(bundle=cmdb_bundle)
+
+    def test_ci_change_puppet_registration(self):
+        puppet_change = None
+        try:
+            puppet_change = CIChangePuppet.objects.get(
+                host='s11111.dc2', configuration_version=self.puppet_cv)
+        except CIChangePuppet.DoesNotExist:
+            pass
+        self.assertNotEqual(puppet_change, None)
+        self.assertEqual(puppet_change.kind, 'apply')
+        self.assertEqual(puppet_change.status, 'failed')
+        self.assertEqual(
+            CIChange.objects.filter(
+                object_id=puppet_change.id,
+                type=CI_CHANGE_TYPES.CONF_AGENT.id).count(), 1)
+
+    def test_ci_change_git_registration(self):
+        git_change = None
+        try:
+            git_change = CIChangeGit.objects.get(changeset=self.git_changeset,
+                                                 comment=self.git_comment)
+        except CIChangePuppet.DoesNotExist:
+            pass
+        self.assertNotEqual(git_change, None)
+        self.assertEqual(git_change.author, 'Jan Kowalski')
+        self.assertEqual(git_change.file_paths, '/some/path')
+        self.assertEqual(
+            CIChange.objects.filter(
+                object_id=git_change.id,
+                type=CI_CHANGE_TYPES.CONF_GIT.id).count(), 1)
+
+    def test_ci_change_cmdbhistory_registration(self):
+        cmdb_change = None
+        try:
+            cmdb_change = CIChangeCMDBHistory.objects.get(
+                ci_id=self.ci.id, old_value=self.cmdb_old_value,
+                new_value=self.cmdb_new_value)
+        except CIChangeCMDBHistory.DoesNotExist:
+            pass
+        self.assertNotEqual(cmdb_change, None)
+        self.assertEqual(
+            CIChange.objects.filter(
+                object_id=cmdb_change.id,
+                type=CI_CHANGE_TYPES.CI.id).count(), 1)
+
