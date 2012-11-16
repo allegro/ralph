@@ -6,10 +6,11 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+
+import base64
 import zlib
 
 from lck.django.common import nested_commit_on_success
-
 
 from .facts import handle_facts_ethernets
 from .util import assign_ips
@@ -21,6 +22,10 @@ SAVE_PRIORITY = 53
 
 @nested_commit_on_success
 def parse_lshw(data, facts, is_virtual):
+    try:
+        data = base64.b64decode(data)
+    except TypeError:
+        return False, "lshw encoding base64 error."
     try:
         data = zlib.decompress(data)
     except zlib.error:

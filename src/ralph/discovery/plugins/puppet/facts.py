@@ -6,6 +6,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+
+import base64
 import hashlib
 import re
 import zlib
@@ -95,8 +97,12 @@ def _parse_prtconf(dev, prtconf, facts, is_virtual):
 
 def _parse_smbios(dev, data, facts, is_virtual):
     try:
-        data = zlib.decompress(data)
-    except zlib.error:
+        data = base64.b64decode(data)
+        try:
+            data = zlib.decompress(data)
+        except zlib.error:
+            pass
+    except TypeError:
         pass
     smb = hardware.parse_smbios(data)
     hardware.handle_smbios(dev, smb, is_virtual, SAVE_PRIORITY)
@@ -242,9 +248,14 @@ def handle_facts_os(dev, facts, is_virtual=False):
         lshw = facts.get('lshw', None)
         if lshw:
             try:
-                lshw = zlib.decompress(lshw)
-            except zlib.error:
+                lshw = base64.b64decode(lshw)
+                try:
+                    lshw = zlib.decompress(lshw)
+                except zlib.error:
+                    pass
+            except TypeError:
                 pass
+
             else:
                 lshw = parse_lshw(as_string=lshw)
                 mount_point, storages = get_storage_from_lshw(lshw, True)
@@ -256,9 +267,13 @@ def handle_facts_os(dev, facts, is_virtual=False):
     os.save(priority=SAVE_PRIORITY)
 
 
-def decompress_packages(compressed_data):
+def decompress_packages(data):
     try:
-        data = zlib.decompress(compressed_data)
+        data = base64.b64decode(data)
+    except TypeError:
+        return False
+    try:
+        data = zlib.decompress(data)
     except zlib.error:
         return False
     return data
