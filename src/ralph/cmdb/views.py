@@ -807,7 +807,7 @@ class Search(BaseCMDBView):
         ret = super(Search, self).get_context_data(**kwargs)
         ret.update({
             'table_header': self.table_header,
-            'rows': self.rows,
+            'table_body': self.table_body,
             'page': self.page,
             'pages': _get_pages(self.paginator, self.page_number),
             'sort': self.request.GET.get('sort', ''),
@@ -827,75 +827,54 @@ class Search(BaseCMDBView):
             {'label': 'Name', 'name': 'uid', 'sortable': 1},
             {'label': 'CI UID', 'name': 'type', 'sortable': 0}
             )
-        if layer is None:
-            table_header += (
-                {'label': 'Type', 'name': 'type', 'sortable': 1},
-                {'label': 'Layer', 'name': 'layer', 'sortable': 0},
-                {'label': 'Venture', 'name': 'Venture', 'sortable': 0},
-                {'label': 'Service', 'name': 'Service', 'sortable': 0},
-                {'label': 'CI Scope', 'name': 'pci', 'sortable': 0},
-                )
-        elif layer == str(CI_LAYER.APPLICATIONS.id):
-            table_header += (
-                {'label': 'Type', 'name': 'type', 'sortable': 1},
-                {'label': 'Layer', 'name': 'layer', 'sortable': 0},
-                )
-        elif layer == str(CI_LAYER.DATABASES.id):
-            table_header += (
-                {'label': 'Type', 'name': 'type', 'sortable': 1},
-                {'label': 'Layer', 'name': 'layer', 'sortable': 0},
-                )
-        elif layer == str(CI_LAYER.DOC.id):
-            table_header += (
-                {'label': 'Type', 'name': 'type', 'sortable': 1},
-                {'label': 'Layer', 'name': 'layer', 'sortable': 0},
-                )
-        elif layer == str(CI_LAYER.OU.id):
-            table_header += (
-                {'label': 'Type', 'name': 'type', 'sortable': 1},
-                {'label': 'Layer', 'name': 'layer', 'sortable': 0},
-                )
-        elif layer == str(CI_LAYER.HARDWARE.id):
-            table_header += (
-                {'label': 'Parent Device', 'name': 'Parent Device',
-                 'sortable': 1},
-                {'label': 'Network', 'name': 'Network', 'sortable': 0},
-                {'label': 'DC', 'name': 'DC', 'sortable': 0},
-                {'label': 'Venture', 'name': 'Venture', 'sortable': 0},
-                {'label': 'Service', 'name': 'Service', 'sortable': 0},
-                {'label': 'PCI Scope', 'name': 'PCI Scope', 'sortable': 0},
-                )
-        elif layer == str(CI_LAYER.NETWORK.id):
-            table_header += (
-                {'label': 'Type', 'name': 'type', 'sortable': 1},
-                {'label': 'Layer', 'name': 'layer', 'sortable': 0},
-                )
-        elif layer == str(CI_LAYER.SERVICES.id):
-            if type_ == str(CI_TYPES.VENTURE.id):
-                {'label': 'Parent venture', 'name': 'Parent venture',
-                 'sortable': 1},
-                {'label': 'Child Ventures', 'name': 'Child Ventures',
-                 'sortable': 1},
-                {'label': 'Service', 'name': 'Service', 'sortable': 1},
-                {'label': 'Technical Owner', 'name': 'Technical Owner',
-                 'sortable': 1},
-                {'label': 'Business Owner', 'name': 'Business Owner',
-                 'sortable': 1},
-            if type_ == str(CI_TYPES.VENTUREROLE.id):
-                {'label': 'Parent venture', 'name': 'Parent venture',
-                 'sortable': 1},
-                {'label': 'Service', 'name': 'Service', 'sortable': 1},
-                {'label': 'Technical Owner', 'name': 'Technical Owner',
-                 'sortable': 1},
-            if type_ == str(CI_TYPES.BUSINESSLINE.id):
+        if type_ is '' or type_ is None:
+            if layer is None:
                 table_header += (
-                    {'label': 'Services contained',
-                     'name': 'Services contained', 'sortable': 0},
+                    {'label': 'Type', 'name': 'type', 'sortable': 1},
+                    {'label': 'Layer', 'name': 'layer', 'sortable': 0},
+                    {'label': 'Venture', 'name': 'Venture', 'sortable': 0},
+                    {'label': 'Service', 'name': 'Service', 'sortable': 0},
+                    {'label': 'CI Scope', 'name': 'pci', 'sortable': 0},
                     )
-            if type_ == str(CI_TYPES.SERVICE.id):
+            elif layer == str(CI_LAYER.APPLICATIONS.id):
+                table_header += (
+                    {'label': 'Type', 'name': 'type', 'sortable': 1},
+                    {'label': 'Layer', 'name': 'layer', 'sortable': 0},
+                    )
+            elif layer == str(CI_LAYER.DATABASES.id):
+                table_header += (
+                    {'label': 'Type', 'name': 'type', 'sortable': 1},
+                    {'label': 'Layer', 'name': 'layer', 'sortable': 0},
+                    )
+            elif layer == str(CI_LAYER.DOC.id):
+                table_header += (
+                    {'label': 'Type', 'name': 'type', 'sortable': 1},
+                    {'label': 'Layer', 'name': 'layer', 'sortable': 0},
+                    )
+            elif layer == str(CI_LAYER.OU.id):
+                table_header += (
+                    {'label': 'Type', 'name': 'type', 'sortable': 1},
+                    {'label': 'Layer', 'name': 'layer', 'sortable': 0},
+                    )
+            elif layer == str(CI_LAYER.HARDWARE.id):
+                table_header += (
+                    {'label': 'Parent Device', 'name': 'Parent Device',
+                     'sortable': 1},
+                    {'label': 'Network', 'name': 'Network', 'sortable': 0},
+                    {'label': 'DC', 'name': 'DC', 'sortable': 0},
+                    {'label': 'Venture', 'name': 'Venture', 'sortable': 0},
+                    {'label': 'Service', 'name': 'Service', 'sortable': 0},
+                    {'label': 'PCI Scope', 'name': 'PCI Scope', 'sortable': 0},
+                    )
+            elif layer == str(CI_LAYER.NETWORK.id):
+                table_header += (
+                    {'label': 'Type', 'name': 'type', 'sortable': 1},
+                    {'label': 'Layer', 'name': 'layer', 'sortable': 0},
+                    )
+            elif layer == str(CI_LAYER.SERVICES.id):
                 table_header += (
                     {'label': 'Contained Venture',
-                     'name': 'Contained Venture', 'sortable': 1
+                     'name': 'Contained Venture', 'sortable': 0
                     },
                     {'label': 'Business Line', 'name': 'Business Line',
                      'sortable': 0},
@@ -904,15 +883,137 @@ class Search(BaseCMDBView):
                     {'label': 'Business Owner', 'name': 'Business Owner',
                      'sortable': 0},
                     )
-        elif layer == str(CI_LAYER.ROLES.id):
+            elif layer == str(CI_LAYER.ROLES.id):
+                table_header += (
+                    {'label': 'Type', 'name': 'type', 'sortable': 1},
+                    {'label': 'Layer', 'name': 'layer', 'sortable': 0},
+                    )
             table_header += (
-                {'label': 'Type', 'name': 'type', 'sortable': 1},
-                {'label': 'Layer', 'name': 'layer', 'sortable': 0},
+                {'label': 'Operations', 'name': 'operations', 'sortable': 0},
                 )
-        table_header += (
-            {'label': 'Operations', 'name': 'operations', 'sortable': 0},
-            )
+        elif type_ == str(CI_TYPES.VENTURE.id):
+            {'label': 'Parent venture', 'name': 'Parent venture',
+             'sortable': 1},
+            {'label': 'Child Ventures', 'name': 'Child Ventures',
+             'sortable': 1},
+            {'label': 'Service', 'name': 'Service', 'sortable': 1},
+            {'label': 'Technical Owner', 'name': 'Technical Owner',
+             'sortable': 1},
+            {'label': 'Business Owner', 'name': 'Business Owner',
+             'sortable': 1},
+        elif type_ == str(CI_TYPES.VENTUREROLE.id):
+            {'label': 'Parent venture', 'name': 'Parent venture',
+             'sortable': 1},
+            {'label': 'Service', 'name': 'Service', 'sortable': 1},
+            {'label': 'Technical Owner', 'name': 'Technical Owner',
+             'sortable': 1},
+        elif type_ == str(CI_TYPES.BUSINESSLINE.id):
+            table_header += (
+                {'label': 'Services contained',
+                 'name': 'Services contained', 'sortable': 0},
+                )
+        elif type_ == str(CI_TYPES.SERVICE.id):
+            table_header += (
+                {'label': 'Contained Venture',
+                 'name': 'Contained Venture', 'sortable': 1
+                },
+                {'label': 'Business Line', 'name': 'Business Line',
+                 'sortable': 0},
+                {'label': 'Technical Owner', 'name': 'Technical Owner',
+                 'sortable': 0},
+                {'label': 'Business Owner', 'name': 'Business Owner',
+                 'sortable': 0},
+                )
         return table_header
+
+
+    def get_name(self, i, icon):
+        return ('<a href="./ci/view/%s"> <i class="fugue-icon %s"></i> %s</a>' %
+        (i.id, icon, i.name))
+
+    def get_uid(self, i):
+        return ('<a href="./ci/view/%s">%s</a>' % (i.id, i.uid))
+
+    def get_layer(self, i):
+        return ', '.join(unicode(x) for x in i.layers.select_related())
+
+    def get_parent_dev(self, i):
+        parent = '-'
+        try:
+            parent = i.content_object.parent
+        except AttributeError:
+            pass
+        return parent
+
+    def get_network(self, i):
+        network = '-'
+        try:
+            networks = i.content_object.ipaddress_set.all()
+            network =  ', '.join(unicode(x) for x in networks)
+        except AttributeError:
+            pass
+        return network
+
+    def get_dc(self, i):
+        dc = '-'
+        try:
+            dc = i.content_object.dc
+        except AttributeError:
+            pass
+        return dc
+
+    def get_owners(self, i, filter):
+        owners =  ', '.join("%s %s" % (b.owner.first_name, b.owner.last_name)
+                          for b in i.ciownership_set.filter(type=filter)),
+        return owners[0]
+
+    def get_bl(self, i, relations):
+        business_line = '-'
+        rel_bl = relations.filter(
+            child=i.id, parent__type=str(CI_TYPES.BUSINESSLINE.id),
+        )
+        for bl in rel_bl:
+            business_line = ('<a href="%s">%s</a>' %
+                            (bl.parent.id, bl.parent.name))
+        return business_line
+
+
+    def get_venture(self, relations, i, child=False):
+        venture = []
+        if child is False:
+            ven = relations.filter(
+                child=i.id,
+                parent__type=str(CI_TYPES.VENTURE.id)
+            )
+            for v in ven:
+                venture.append(
+                    '<a href="/cmdb/ci/view/%s">%s</a>' % (
+                        v.parent.id, v.parent.name)
+                )
+        elif child is True:
+            ven = relations.filter(
+                parent=i.id,
+                child__type=str(CI_TYPES.VENTURE.id)
+            )
+            for v in ven:
+                venture.append(
+                    '<a href="/cmdb/ci/view/%s">%s</a>' % (
+                        v.child.id, v.child.name)
+                )
+        return ', '.join(x for x in venture)
+
+    def get_service(self, relations, i):
+        services = ''
+        servi = relations.filter(
+            parent=i.id, child__type=str(CI_TYPES.SERVICE.id)
+        )
+        for s in servi:
+            services += '%s, ' % s.child.name
+        return services
+    def get_operations(self, i):
+        return ('<a href="./ci/edit/%s">Edit</a> | '
+               '<a href="./ci/view/%s">View</a>') % (i.id, i.id)
+
 
     def get(self, *args, **kwargs):
         values = self.request.GET
@@ -953,101 +1054,111 @@ class Search(BaseCMDBView):
             cis = self.paginator.page(self.paginator.num_pages)
             page = self.paginator.num_pages
         self.page = cis
-        rows = []
+        table_body = []
         relations = CIRelation.objects.all()
+        t_owners = 1
+        b_owners = 2
         for i in cis:
             icon = get_icon_for(i)
-            child_venture, dev = [], []
-            services, network = '', ''
-            owners_t, owners_b, parent_venture, business_line = [], [], [], []
-            if layer == str(CI_LAYER.HARDWARE.id):
-                try:
-                    networks = i.content_object.ipaddress_set.all()
-                    network =  ', '.join(unicode(x) for x in networks)
-                except AttributeError:
-                    pass
-            if layer == str(CI_LAYER.SERVICES.id) and type_ in [
-                    str(CI_TYPES.VENTURE.id),
-                    str(CI_TYPES.VENTUREROLE.id),
-                    str(CI_TYPES.SERVICE.id),
-                ]:
-                    for t in i.ciownership_set.filter(type=1):
-                        owners_t.append({
-                            'id': t.owner.id,
-                            'first_name': t.owner.first_name,
-                            'last_name': t.owner.last_name,
-                        })
-
-                    for b in i.ciownership_set.filter(type=2):
-                        owners_b.append({
-                            'id': b.owner.id,
-                            'first_name': b.owner.first_name,
-                            'last_name': b.owner.last_name,
-                        })
-            if (layer == str(CI_LAYER.SERVICES.id) and
-                    type_ == str(CI_TYPES.VENTURE.id)):
-                child_ven = relations.filter(
-                    parent=i.id,
-                    child__type=str(CI_TYPES.VENTURE.id)
-                )
-                for cv in child_ven:
-                    child_venture.append({
-                        'id': cv.child.id,
-                        'name': cv.child.name,
-                    })
-            if (layer == str(CI_LAYER.SERVICES.id) and
-                    type_ == str(CI_TYPES.SERVICE.id)):
-                rel_bl = relations.filter(
-                    child=i.id,
-                    parent__type=str(CI_TYPES.BUSINESSLINE.id),
-                )
-                for bl in rel_bl:
-                    business_line.append({
-                        'id': bl.parent.id,
-                        'name': bl.parent.name,
-                    })
-            parent_ven = relations.filter(
-                child=i.id,
-                parent__type=str(CI_TYPES.VENTURE.id)
-            )
-            for pv in parent_ven:
-                parent_venture.append({
-                    'id': pv.parent.id,
-                    'name': pv.parent.name,
-                })
-            serv = relations.filter(
-                parent=i.id,
-                child__type=str(CI_TYPES.SERVICE.id)
-            )
-            for s in serv:
-                services += '%s, ' % s.child.name
-            rows.append({
-                'coun': i.relations.count(),
-                'uid': i.uid,
-                'name': i.name,
-                'ci_type': i.type.name,
-                'id': i.id,
-                'icon': icon,
-                'layers': ', '.join(
-                    unicode(x) for x in i.layers.select_related()),
-                'state': i.get_state_display(),
-                'state_id': i.state,
-                'status': i.get_status_display(),
-                'dev': i.content_object,
-                'owner_b': ', '.join(["%s %s" % (
-                    b.owner.first_name, b.owner.last_name
-                    ) for b in i.ciownership_set.filter(type=2)]),
-                'owner_t': ', '.join(["%s %s" % (
-                    t.owner.first_name, t.owner.last_name
-                    ) for t in i.ciownership_set.filter(type=1)]),
-                'parent_venture': parent_venture,
-                'child_venture': child_venture,
-                'business_line': business_line,
-                'network': network,
-                'service': services,
-            })
+            if layer is None:
+                venture = self.get_venture(relations, i)
+                service = self.get_service(relations, i)
+                row = [
+                    {'name': 'name', 'value': self.get_name(i, icon)},
+                    {'name': 'uid', 'value': self.get_uid(i)},
+                    {'name': 'type', 'value': i.type.name},
+                    {'name': 'layer', 'value': self.get_layer(i)},
+                    {'name': 'layer', 'value': venture},
+                    {'name': 'service', 'value': service},
+                    {'name': 'pci_scope', 'value': i.pci_scope},
+                    {'name': 'operations', 'value': self.get_operations(i)}
+                ]
+                table_body.append(row)
+            elif layer == str(CI_LAYER.APPLICATIONS.id):
+                row = [
+                    {'name': 'name', 'value': self.get_name(i, icon)},
+                    {'name': 'uid', 'value': self.get_uid(i)},
+                    {'name': 'type', 'value': i.type.name},
+                    {'name': 'layer', 'value': self.get_layer(i)},
+                    {'name': 'operations', 'value': self.get_operations(i)}
+                ]
+                table_body.append(row)
+            elif layer == str(CI_LAYER.DATABASES.id):
+                row = [
+                    {'name': 'name', 'value': self.get_name(i, icon)},
+                    {'name': 'uid', 'value': self.get_uid(i)},
+                    {'name': 'type', 'value': i.type.name},
+                    {'name': 'layer', 'value': self.get_layer(i)},
+                    {'name': 'operations', 'value': self.get_operations(i)}
+                ]
+                table_body.append(row)
+            elif layer == str(CI_LAYER.DOC.id):
+                row = [
+                    {'name': 'name', 'value': self.get_name(i, icon)},
+                    {'name': 'uid', 'value': self.get_uid(i)},
+                    {'name': 'type', 'value': i.type.name},
+                    {'name': 'layer', 'value': self.get_layer(i)},
+                    {'name': 'operations', 'value': self.get_operations(i)}
+                ]
+                table_body.append(row)
+            elif layer == str(CI_LAYER.OU.id):
+                row = [
+                    {'name': 'name', 'value': self.get_name(i, icon)},
+                    {'name': 'uid', 'value': self.get_uid(i)},
+                    {'name': 'type', 'value': i.type.name},
+                    {'name': 'layer', 'value': self.get_layer(i)},
+                    {'name': 'operations', 'value': self.get_operations(i)}
+                ]
+                table_body.append(row)
+            elif layer == str(CI_LAYER.HARDWARE.id):
+                venture = self.get_venture(relations, i)
+                service = self.get_service(relations, i)
+                row = [
+                    {'name': 'name', 'value': self.get_name(i, icon)},
+                    {'name': 'uid', 'value': self.get_uid(i)},
+                    {'name': 'parent-dev', 'value': self.get_parent_dev(i)},
+                    {'name': 'network', 'value': self.get_network(i)},
+                    {'name': 'dc', 'value': self.get_dc(i)},
+                    {'name': 'venture', 'value': venture},
+                    {'name': 'service', 'value': service},
+                    {'name': 'pci_scope', 'value': i.pci_scope},
+                    {'name': 'operations', 'value': self.get_operations(i)}
+                ]
+                table_body.append(row)
+            elif layer == str(CI_LAYER.NETWORK.id):
+                row = [
+                    {'name': 'name', 'value': self.get_name(i, icon)},
+                    {'name': 'uid', 'value': self.get_uid(i)},
+                    {'name': 'type', 'value': i.type.name},
+                    {'name': 'layer', 'value': self.get_layer(i)},
+                    {'name': 'operations', 'value': self.get_operations(i)}
+                ]
+                table_body.append(row)
+            elif layer == str(CI_LAYER.SERVICES.id):
+                venture = self.get_venture(relations, i)
+                b_own = self.get_owners(i, b_owners)
+                t_own = self.get_owners(i, t_owners)
+                row = [
+                    {'name': 'name', 'value': self.get_name(i, icon)},
+                    {'name': 'uid', 'value': self.get_uid(i)},
+                    {'name': 'venture', 'value': venture},
+                    {'name': 'bl', 'value': self.get_bl(i, relations)},
+                    {'name': 't_owners', 'value': t_own},
+                    {'name': 'b_owners', 'value': b_own},
+                    {'name': 'operations', 'value': self.get_operations(i)}
+                ]
+                table_body.append(row)
+            elif layer == str(CI_LAYER.ROLES.id):
+                row = [
+                    {'name': 'name', 'value': self.get_name(i, icon)},
+                    {'name': 'uid', 'value': self.get_uid(i)},
+                    {'name': 'type', 'value': i.type.name},
+                    {'name': 'layer', 'value': self.get_layer(i)},
+                    {'name': 'operations', 'value': self.get_operations(i)}
+                ]
+                table_body.append(row)
         self.table_header = self.get_table_header(layer, type_)
-        self.rows = rows
+        self.table_body = table_body,
         form_options = dict(
             label_suffix='',
             initial=self.form_initial(values),
