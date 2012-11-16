@@ -30,26 +30,27 @@
     <button id='save_svg_button' class='btn btn-primary'> View as SVG </button>
     <div id='container' style='width: 800px; height: 800px; border: solid #ddd 1px'>
 	    <div id='chart' style=''>
+            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+            <style type="text/css">
+                 <![CDATA[
+                    .node circle {
+                          fill: #fff;
+                          stroke: steelblue;
+                          stroke-width: 1.5px;
+                    }
 
-    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <style type="text/css" >
-                .node circle {
-                      fill: #fff;
-                      stroke: steelblue;
-                      stroke-width: 1.5px;
-                }
+                    .node {
+                      font: 3px sans-serif;
+                    }
 
-                .node {
-                  font: 3px sans-serif;
-                }
-
-                .link {
-                    fill: none;
-                    stroke: #ccc;
-                    stroke-width: 1px;
-               }
-            </style>
-        </svg>
+                    .link {
+                        fill: none;
+                        stroke: #ccc;
+                        stroke-width: 1px;
+                        }
+                ]]>
+                </style>
+            </svg>
         </div>
     </div>
 {% endblock %}
