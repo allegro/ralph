@@ -10,15 +10,11 @@ from django import forms
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 
-from lck.django.common.admin import ModelAdmin, ForeignKeyAutocompleteTabularInline
+from lck.django.common.admin import (
+    ModelAdmin, ForeignKeyAutocompleteTabularInline
+)
 
-from ralph.discovery.models import (Device, DeviceModel, IPAddress, Network,
-    NetworkTerminator, DataCenter, Processor, Memory, Ethernet,
-    DeprecationKind, MarginKind, LoadBalancerVirtualServer, LoadBalancerMember,
-    ComponentModel, ComponentModelGroup, DeviceModelGroup, IPAlias, DiskShare,
-    DiskShareMount, Storage, NetworkKind, FibreChannel, GenericComponent,
-    Software, OperatingSystem)
-from ralph.discovery.models_history import HistoryChange
+from ralph.discovery import models as m
 from ralph.business.admin import RolePropertyValueInline
 
 SAVE_PRIORITY = 200
@@ -37,47 +33,54 @@ class NetworkAdmin(ModelAdmin):
     filter_horizontal = ('terminators',)
     save_on_top = True
 
-admin.site.register(Network, NetworkAdmin)
+admin.site.register(m.Network, NetworkAdmin)
 
 
 class NetworkKindAdmin(ModelAdmin):
     list_display = ('name',)
     search_fields = ('name',)
 
-admin.site.register(NetworkKind, NetworkKindAdmin)
+admin.site.register(m.NetworkKind, NetworkKindAdmin)
 
 
 class NetworkTerminatorAdmin(ModelAdmin):
     list_display = ('name',)
     search_fields = ('name',)
 
-admin.site.register(NetworkTerminator, NetworkTerminatorAdmin)
+admin.site.register(m.NetworkTerminator, NetworkTerminatorAdmin)
 
 
 class DataCenterAdmin(ModelAdmin):
     list_display = ('name',)
     search_fields = ('name',)
 
-admin.site.register(DataCenter, DataCenterAdmin)
+admin.site.register(m.DataCenter, DataCenterAdmin)
+
+
+class DiscoveryQueueAdmin(ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)
+
+admin.site.register(m.DiscoveryQueue, DiscoveryQueueAdmin)
 
 
 class IPAddressForm(forms.ModelForm):
     class Meta:
-        model = IPAddress
+        model = m.IPAddress
 
     def clean(self):
         address = self.cleaned_data.get('address')
         hostname = self.cleaned_data.get('hostname')
         if not address and hostname:
             raise forms.ValidationError(_("Either address or hostname must "
-                "be provided."))
+                                          "be provided."))
 
 
 class IPAddressInline(ForeignKeyAutocompleteTabularInline):
-    model = IPAddress
+    model = m.IPAddress
     readonly_fields = ('snmp_name', 'last_seen')
-    exclude = ('created', 'modified', 'dns_info', 'http_family', 'snmp_community',
-               'last_puppet')
+    exclude = ('created', 'modified', 'dns_info', 'http_family',
+               'snmp_community', 'last_puppet')
     edit_separately = True
     extra = 0
     related_search_fields = {
@@ -87,7 +90,7 @@ class IPAddressInline(ForeignKeyAutocompleteTabularInline):
 
 
 class ChildDeviceInline(ForeignKeyAutocompleteTabularInline):
-    model = Device
+    model = m.Device
     edit_separately = True
     readonly_fields = ('name', 'model', 'sn', 'remarks', 'last_seen',)
     exclude = ('name2', 'created', 'modified', 'boot_firmware', 'barcode',
@@ -100,34 +103,37 @@ class ChildDeviceInline(ForeignKeyAutocompleteTabularInline):
         'model': ['^name', '^type__name'],
     }
 
+
 class DeviceModelAdmin(ModelAdmin):
     def count(self):
-        return Device.objects.filter(model=self).count()
+        return m.Device.objects.filter(model=self).count()
 
     list_display = ('name', 'type', count, 'created', 'modified')
     list_filter = ('type', 'group')
     search_fields = ('name',)
 
-admin.site.register(DeviceModel, DeviceModelAdmin)
+admin.site.register(m.DeviceModel, DeviceModelAdmin)
+
 
 class DeviceModelInline(admin.TabularInline):
-    model = DeviceModel
+    model = m.DeviceModel
     exclude = ('created', 'modified')
     extra = 0
 
+
 class DeviceModelGroupAdmin(ModelAdmin):
     def count(self):
-        return Device.objects.filter(model__group=self).count()
+        return m.Device.objects.filter(model__group=self).count()
 
     list_display = ('name', count, 'price')
     inlines = (DeviceModelInline,)
 
-admin.site.register(DeviceModelGroup, DeviceModelGroupAdmin)
+admin.site.register(m.DeviceModelGroup, DeviceModelGroupAdmin)
 
 
 class DeviceForm(forms.ModelForm):
     class Meta:
-        model = Device
+        model = m.Device
 
     def clean_sn(self):
         sn = self.cleaned_data['sn']
@@ -143,7 +149,7 @@ class DeviceForm(forms.ModelForm):
 
 
 class ProcessorInline(ForeignKeyAutocompleteTabularInline):
-    model = Processor
+    model = m.Processor
     #readonly_fields = ('label', 'index', 'speed')
     exclude = ('created', 'modified')
     extra = 0
@@ -153,7 +159,7 @@ class ProcessorInline(ForeignKeyAutocompleteTabularInline):
 
 
 class MemoryInline(ForeignKeyAutocompleteTabularInline):
-    model = Memory
+    model = m.Memory
     #readonly_fields = ('label', 'index', 'size', 'speed')
     exclude = ('created', 'modified')
     extra = 0
@@ -163,7 +169,7 @@ class MemoryInline(ForeignKeyAutocompleteTabularInline):
 
 
 class EthernetInline(ForeignKeyAutocompleteTabularInline):
-    model = Ethernet
+    model = m.Ethernet
     #readonly_fields = ('label', 'index', 'mac', 'speed')
     exclude = ('created', 'modified')
     extra = 0
@@ -175,14 +181,14 @@ class EthernetInline(ForeignKeyAutocompleteTabularInline):
 class DeviceAdmin(ModelAdmin):
     form = DeviceForm
     inlines = [ProcessorInline, MemoryInline, EthernetInline, IPAddressInline,
-        ChildDeviceInline, RolePropertyValueInline]
+               ChildDeviceInline, RolePropertyValueInline]
     list_display = ('name', 'sn', 'created', 'modified')
     list_filter = ('model__type',)
     list_per_page = 250
     readonly_fields = ('last_seen', 'raw')
     save_on_top = True
     search_fields = ('name', 'name2', 'sn', 'model__type',
-        'model__name', 'ethernet__mac')
+                     'model__name', 'ethernet__mac')
     related_search_fields = {
         'parent': ['^name'],
         'venture': ['^name'],
@@ -194,17 +200,18 @@ class DeviceAdmin(ModelAdmin):
     def save_model(self, request, obj, form, change):
         obj.save(user=request.user, priority=SAVE_PRIORITY)
 
-admin.site.register(Device, DeviceAdmin)
+admin.site.register(m.Device, DeviceAdmin)
 
 
 class IPAliasInline(admin.TabularInline):
-    model = IPAlias
+    model = m.IPAlias
     exclude = ('created', 'modified')
     extra = 0
 
 
 class IPAddressAdmin(ModelAdmin):
     inlines = [IPAliasInline]
+
     def ip_address(self):
         """Used for proper ordering."""
         return self.address
@@ -212,7 +219,7 @@ class IPAddressAdmin(ModelAdmin):
     ip_address.admin_order_field = 'number'
 
     list_display = (ip_address, 'hostname', 'device', 'snmp_name', 'created',
-        'modified')
+                    'modified')
     list_filter = ('snmp_community',)
     list_per_page = 250
     save_on_top = True
@@ -222,47 +229,47 @@ class IPAddressAdmin(ModelAdmin):
         'network': ['^name'],
     }
 
-admin.site.register(IPAddress, IPAddressAdmin)
+admin.site.register(m.IPAddress, IPAddressAdmin)
 
 
 class DeprecationKindAdmin(ModelAdmin):
     save_on_top = True
     list_display = ('name', 'months', 'default')
-admin.site.register(DeprecationKind, DeprecationKindAdmin)
+admin.site.register(m.DeprecationKind, DeprecationKindAdmin)
 
 
 class MarginKindAdmin(ModelAdmin):
     save_on_top = True
-admin.site.register(MarginKind, MarginKindAdmin)
+admin.site.register(m.MarginKind, MarginKindAdmin)
 
 
 class LoadBalancerMemberInline(admin.TabularInline):
-    model = LoadBalancerMember
+    model = m.LoadBalancerMember
     exclude = ('created', 'modified')
     extra = 0
 
 
 class LoadBalancerVirtualServerAdmin(ModelAdmin):
     inlines = [LoadBalancerMemberInline]
-admin.site.register(LoadBalancerVirtualServer, LoadBalancerVirtualServerAdmin)
-
+admin.site.register(m.LoadBalancerVirtualServer,
+                    LoadBalancerVirtualServerAdmin)
 
 
 class ComponentModelInline(admin.TabularInline):
-    model = ComponentModel
+    model = m.ComponentModel
     exclude = ('created', 'modified')
     extra = 0
 
 
 class ComponentModelAdmin(ModelAdmin):
-    search_fields = ('name', 'type', 'group__name', 'family')
     def count(self):
         return self.get_count()
 
     list_filter = ('type', 'group')
     list_display = ('name', 'type', count, 'family', 'group')
+    search_fields = ('name', 'type', 'group__name', 'family')
 
-admin.site.register(ComponentModel, ComponentModelAdmin)
+admin.site.register(m.ComponentModel, ComponentModelAdmin)
 
 
 class GenericComponentAdmin(ModelAdmin):
@@ -273,29 +280,29 @@ class GenericComponentAdmin(ModelAdmin):
         'model': ['^name']
     }
 
-admin.site.register(GenericComponent, GenericComponentAdmin)
+admin.site.register(m.GenericComponent, GenericComponentAdmin)
 
 
 class ComponentModelGroupAdmin(ModelAdmin):
     def count(self):
         return sum([
-            Memory.objects.filter(model__group=self).count(),
-            Processor.objects.filter(model__group=self).count(),
-            Storage.objects.filter(model__group=self).count(),
-            FibreChannel.objects.filter(model__group=self).count(),
-            DiskShare.objects.filter(model__group=self).count(),
-            Software.objects.filter(model__group=self).count(),
-            OperatingSystem.objects.filter(model__group=self).count(),
-            GenericComponent.objects.filter(model__group=self).count(),
+            m.Memory.objects.filter(model__group=self).count(),
+            m.Processor.objects.filter(model__group=self).count(),
+            m.Storage.objects.filter(model__group=self).count(),
+            m.FibreChannel.objects.filter(model__group=self).count(),
+            m.DiskShare.objects.filter(model__group=self).count(),
+            m.Software.objects.filter(model__group=self).count(),
+            m.OperatingSystem.objects.filter(model__group=self).count(),
+            m.GenericComponent.objects.filter(model__group=self).count(),
         ])
     inlines = [ComponentModelInline]
     list_display = ('name', count, 'price')
 
-admin.site.register(ComponentModelGroup, ComponentModelGroupAdmin)
+admin.site.register(m.ComponentModelGroup, ComponentModelGroupAdmin)
 
 
 class DiskShareMountInline(admin.TabularInline):
-    model = DiskShareMount
+    model = m.DiskShareMount
     exclude = ('created', 'modified')
     extra = 0
 
@@ -308,13 +315,15 @@ class DiskShareAdmin(ModelAdmin):
         'model': ['^name']
     }
 
-admin.site.register(DiskShare, DiskShareAdmin)
+admin.site.register(m.DiskShare, DiskShareAdmin)
 
 
 class HistoryChangeAdmin(ModelAdmin):
-    list_display = ('date', 'user', 'device', 'component', 'field_name', 'old_value', 'new_value')
+    list_display = ('date', 'user', 'device', 'component', 'field_name',
+                    'old_value', 'new_value')
     list_per_page = 250
-    readonly_fields = ('date', 'device', 'user', 'field_name', 'new_value', 'old_value', 'component')
+    readonly_fields = ('date', 'device', 'user', 'field_name', 'new_value',
+                       'old_value', 'component')
     search_fields = ('date', 'device', 'user', 'field_name', 'new_value')
 
-admin.site.register(HistoryChange, HistoryChangeAdmin)
+admin.site.register(m.HistoryChange, HistoryChangeAdmin)

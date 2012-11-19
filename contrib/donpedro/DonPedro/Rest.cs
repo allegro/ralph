@@ -17,6 +17,7 @@ namespace DonPedro
 			HttpWebRequest req = WebRequest.Create(new Uri(url)) as HttpWebRequest;
 			req.Method = "POST";
 			req.ContentType = "application/json";
+			req.UserAgent = "DonPedro " + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
 			StringBuilder s = new StringBuilder();
 			byte[] formData = UTF8Encoding.UTF8.GetBytes(jsonData.ToString());
 			req.ContentLength = formData.Length;
@@ -38,6 +39,7 @@ namespace DonPedro
 			HttpWebRequest req = WebRequest.Create(new Uri(url)) as HttpWebRequest;
 			req.Method = "GET";
 			req.ContentType = "application/json";
+			req.UserAgent = "DonPedro " + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
 			StringBuilder s = new StringBuilder();
 			string result = null;
 			using (HttpWebResponse resp = req.GetResponse() as HttpWebResponse)

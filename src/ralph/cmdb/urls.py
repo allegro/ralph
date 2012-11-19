@@ -9,18 +9,20 @@ from __future__ import unicode_literals
 from django.conf.urls.defaults import patterns, include, url
 from django.contrib.auth.decorators import login_required
 
-from ralph.cmdb.views import (Index, Search, Edit, Add, View,
-        ViewIframe, EditRelation, LastChanges, AddRelation,
-        ViewJira, ViewUnknown)
-from ralph.cmdb.views_changes import  (Changes, Problems, Incidents,
-        Change, Dashboard, Reports, DashboardDetails)
+from ralph.cmdb.views import (
+    Index, Search, Edit, Add, View,
+    ViewIframe, EditRelation, LastChanges, AddRelation,
+    ViewJira, ViewUnknown)
+from ralph.cmdb.views_changes import (
+    Changes, Problems, Incidents, Change, Dashboard, Reports, DashboardDetails)
 from ralph.cmdb.views_changes import TimeLine
+from ralph.cmdb.views import Graphs, GraphsTree
 
 
-urlpatterns = patterns('',
-    (r'^$', login_required(Index.as_view())),
+urlpatterns = patterns(
+    '', (r'^$', login_required(Index.as_view())),
     (r'^search$', login_required(Search.as_view())),
-    (r'^ci/view/(?P<ci_id>\w+)$', login_required(View.as_view())),
+    url(r'^ci/view/(?P<ci_id>\w+)$', login_required(View.as_view()), name='ci_view'),
     (r'^ci/view/(?P<ci_id>[a-z]{2}-[0-9]+)$', login_required(View.as_view())),
     (r'^ci/view_iframe/(?P<ci_id>\w+)$', login_required(ViewIframe.as_view())),
     (r'^ci/view_jira/(?P<ci_uid>.*)$', login_required(ViewJira.as_view())),
@@ -43,7 +45,10 @@ urlpatterns = patterns('',
     (r'^changes/dashboard$', login_required(Dashboard.as_view())),
     (r'^changes/dashboard_ajax$', login_required(Dashboard.get_ajax)),
     (r'^changes/dashboard_details/(?P<type>[0-9]+)/(?P<prio>[0-9]+)/'
-    '(?P<month>[0-9]+)/(?P<report_type>\w+)$', \
-            login_required(DashboardDetails.as_view())),
+    '(?P<month>[0-9]+)/(?P<report_type>\w+)$',
+        login_required(DashboardDetails.as_view())),
     (r'^changes/reports$', login_required(Reports.as_view())),
+    (r'^graphs$', login_required(Graphs.as_view())),
+    (r'^graphs_tree$', login_required(GraphsTree.as_view())),
+    (r'^graphs_ajax_tree$', login_required(GraphsTree.get_ajax))
 )

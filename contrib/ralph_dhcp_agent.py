@@ -1,52 +1,62 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys
-import argparse
-import urllib2
-import fcntl
+import atexit
 import errno
-import time
-import subprocess
+import fcntl
 import logging
-import datetime
+import optparse
+import os
 import re
+import subprocess
+import sys
+import urllib2
 
 
-DHCP_CONF_FILE = '' # put here path to your DHCP configuration file
-DHCP_SERVICE_NAME = '' # put here your DHCP service name
-LOG_FORMAT = '%(levelname)s\t%(asctime).19s %(filename)s:%(lineno)d\t%(message)s'
+def all(iterable):
+    """The built-in was unavailable no Python 2.4."""
+    for element in iterable:
+        if not element:
+            return False
+    return True
 
 
 class SimpleDHCPManager(object):
-    def __init__(self, ralph_url, ralph_api_username, ralph_api_key,
-                 log_path=None):
-        if ralph_url.endswith('/'):
-            self.ralph_url = ralph_url[:-1]
-        else:
-            self.ralph_url = ralph_url
-        self.ralph_api_username = ralph_api_username
-        self.ralph_api_key = ralph_api_key
-        self.log_path = log_path
-        if self.log_path:
-            logging.basicConfig(format=LOG_FORMAT, filename=self.log_path,
-                                level=logging.INFO)
+    def __init__(self, api_url, api_username, api_key, dhcp_config, restart,
+            logger, **kwargs):
+        self.api_url = api_url.rstrip('/')
+        self.api_username = api_username
+        self.api_key = api_key
+        self.dhcp_config_path = dhcp_config
+        self.dhcp_service_name = restart
+        self.logger = logger
+
+    def update_configuration(self):
+        config = self._get_configuration()
+        if self._configuration_is_valid(config):
+            if not self._should_change_configuration(config):
+                return True
+            if self._set_new_configuration(config):
+                return self._send_confirm()
+        return False
 
     def _get_configuration(self):
-        url = "%s/dhcp-config/?username=%s&api_key=%s" % (self.ralph_url,
-                                                          self.ralph_api_username,
-                                                          self.ralph_api_key)
+        url = "%s/dhcp-config/?username=%s&api_key=%s" % (self.api_url,
+                                                          self.api_username,
+                                                          self.api_key)
         req = urllib2.Request(url)
         try:
             resp = urllib2.urlopen(req)
         except urllib2.URLError, e:
-            if self.log_path:
-                logging.error('Could not get configuration from Ralph. Error '\
+            self.logger.error('Could not get configuration from Ralph. Error '\
                               'message: %s' % e)
             return None
-        return resp.read()
+        data = resp.read()
+        self.logger.info('Read %d kilobytes of DHCP configuration.' %
+            (len(data) / 1024))
+        return data
 
-    def _parse_configuration(self, config):
+    def _configuration_is_valid(self, config):
         if not config:
             return False
         config = config.strip()
@@ -55,38 +65,52 @@ class SimpleDHCPManager(object):
         return config.startswith(start_str) and config.endswith(stop_str)
 
     def _restart_dhcp_server(self):
-        command = ['service', DHCP_SERVICE_NAME, 'restart']
+        if not self.dhcp_service_name:
+            self.logger.info('No dhcpd service name provided to restart.')
+            return True
+        command = ['service', self.dhcp_service_name, 'restart']
         proc = subprocess.Popen(command, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
         proc.wait()
-        return proc.returncode == 0
+        restart_successful = proc.returncode == 0
+        if restart_successful:
+            self.logger.info('Service %s successfully restarted.' %
+                self.dhcp_service_name)
+        else:
+            self.logger.error('Failed to restart service %s.' %
+                self.dhcp_service_name)
+        return restart_successful
 
     def _set_new_configuration(self, config):
         try:
-            f = open(DHCP_CONF_FILE, 'w')
-            try:
-                f.write(config)
-            finally:
-                f.close()
+            if self.dhcp_config_path:
+                f = open(self.dhcp_config_path, 'w')
+                try:
+                    f.write(config)
+                finally:
+                    f.close()
+                self.logger.info('Configuration written to %s' %
+                    self.dhcp_config_path)
+            else:
+                sys.stdout.write(config)
+                self.logger.info('Configuration written to stdout.')
+            return self._restart_dhcp_server()
         except IOError, e:
-            if self.log_path:
-                logging.error('Could not write new DHCP configuration. Error '\
+            self.logger.error('Could not write new DHCP configuration. Error '\
                               'message: %s' % e)
             return False
-        return self._restart_dhcp_server()
 
     def _send_confirm(self):
-        url = "%s/dhcp-synch/?username=%s&api_key=%s" % (self.ralph_url,
-                                                        self.ralph_api_username,
-                                                        self.ralph_api_key)
+        url = "%s/dhcp-synch/?username=%s&api_key=%s" % (
+            self.api_url, self.api_username, self.api_key)
         req = urllib2.Request(url)
         try:
             resp = urllib2.urlopen(req)
         except urllib2.URLError, e:
-            if self.log_path:
-                logging.error('Could not send confirmation to Ralph. Error '\
+            self.logger.error('Could not send confirmation to Ralph. Error '\
                               'message: %s' % e)
             return False
+        self.logger.info('Confirmation sent to %s.' % self.api_url)
         return True
 
     def _get_time_from_config(self, config_part):
@@ -97,51 +121,87 @@ class SimpleDHCPManager(object):
         return None
 
     def _should_change_configuration(self, config):
+        if not self.dhcp_config_path or \
+           not os.path.exists(self.dhcp_config_path):
+            return True
         try:
-            f = open(DHCP_CONF_FILE)
+            f = open(self.dhcp_config_path)
             try:
                 current_config_header = f.readline()
             finally:
                 f.close()
         except IOError, e:
-            if self.log_path:
-                logging.error('Could not read current confirmation. Error '\
+            self.logger.error('Could not read current confirmation. Error '\
                               'message: %s' % e)
             return False
         current_conf_date = self._get_time_from_config(current_config_header)
         new_conf_date = self._get_time_from_config(config)
-        return current_conf_date < new_conf_date
-
-    def update_configuration(self):
-        config = self._get_configuration()
-        if self._parse_configuration(config):
-            if not self._should_change_configuration(config):
-                return True
-            if self._set_new_configuration(config):
-                return self._send_confirm()
-        return False
+        should_change = current_conf_date < new_conf_date
+        if not should_change:
+            self.logger.info('Configuration already up to date.')
+        return should_change
 
 
 def _get_cmd_options():
-    args_parser = argparse.ArgumentParser(
+    opts_parser = optparse.OptionParser(
         description='Update configuration in DHCP server.')
-    args_parser.add_argument('ralph_url', help='Ralph instance address.')
-    args_parser.add_argument('ralph_api_username', help='Ralph API username.')
-    args_parser.add_argument('ralph_api_key', help='Ralph API key.')
-    args_parser.add_argument('-l', '--log_path', help='Path to log file.')
-    return vars(args_parser.parse_args())
+    opts_parser.add_option('-a', '--api-url', help='Ralph instance address.')
+    opts_parser.add_option('-u', '--api-username', help='Ralph API username.')
+    opts_parser.add_option('-k', '--api-key', help='Ralph API key.')
+    opts_parser.add_option('-l', '--log-path', help='Path to log file. '
+        '[Default: STDOUT]', default='STDOUT')
+    opts_parser.add_option('-c', '--dhcp-config', help='Path to the DHCP '
+        'configuration file.')
+    opts_parser.add_option('-r', '--restart', help='Name of the service to '
+        'restart.')
+    opts_parser.add_option('-v', '--verbose', help='Increase verbosity.',
+        action="store_true", default=False)
+    opts = opts_parser.parse_args()[0]
+    result = vars(opts)
+    result['logger'] = _setup_logging(opts.log_path, opts.verbose)
+    return result
+
+
+def _setup_logging(filename, verbose):
+    log_size = 20 # MB
+    logger = logging.getLogger("RalphDHCPAgent")
+    if verbose:
+        logger.setLevel(logging.INFO)
+    else:
+        logger.setLevel(logging.WARNING)
+    if not filename or filename in ('-', 'STDOUT'):
+        # display to the screen
+        handler = logging.StreamHandler()
+    else:
+        handler = logging.handlers.RotatingFileHandler(
+            filename, maxBytes=(log_size * (1 << 20)), backupCount=5)
+    fmt = logging.Formatter("[%(asctime)-12s.%(msecs)03d] "
+                            "%(levelname)-8s %(filename)s:%(lineno)d  "
+                            "%(message)s", "%Y-%m-%d %H:%M:%S")
+    handler.setFormatter(fmt)
+
+    logger.addHandler(handler)
+    return logger
 
 
 if __name__ == "__main__":
-    f = open('/tmp/%s.lock' % sys.argv[0], 'w')
+    opts = _get_cmd_options()
+    if not all(opts[k] for k in 'api_url api_username api_key'.split()):
+        sys.stderr.write('error: --api-url, --api-username and --api-key '
+            'options are required.\n')
+        sys.exit(2)
+    lockfile = '/tmp/%s.lock' % sys.argv[0]
+    f = open(lockfile, 'w')
     try:
         fcntl.lockf(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        f.write('%d' % os.getpid())
+        f.flush()
+        atexit.register(os.unlink, lockfile)
     except IOError, e:
         if e.errno == errno.EAGAIN:
-            sys.stderr.write('[%s] Script already running.\n' % time.strftime('%c'))
-            sys.exit(-1)
+            opts['logger'].critical('Script already running.')
+            sys.exit(2)
         raise
-    args = _get_cmd_options()
-    sdm = SimpleDHCPManager(**args)
+    sdm = SimpleDHCPManager(**opts)
     if not sdm.update_configuration():
         sys.exit(1)
