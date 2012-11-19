@@ -17,9 +17,20 @@ from lck.django.common.models import MACAddressField
 from ralph.dnsedit.models import DHCPEntry
 
 
-
 HOSTNAME_CHUNK_PATTERN = re.compile(r'^([A-Z\d][A-Z\d-]{0,61}[A-Z\d]|[A-Z\d])$',
                                     re.IGNORECASE)
+
+
+class Error(Exception):
+    pass
+
+
+class RevDNSExists(Error):
+    """Trying to create a Reverse DNS record for IP that already has one."""
+
+
+class RevDNSNoDomain(Error):
+    """Trying to create a Reverse DNS record for IP that has no in-addr-arpa."""
 
 
 def is_valid_hostname(hostname):
@@ -128,15 +139,26 @@ def get_revdns_records(ip):
 
 
 @nested_commit_on_success
-def set_revdns_record(ip, name, ttl=None, prio=None, overwrite=False):
+def set_revdns_record(ip, name, ttl=None, prio=None, overwrite=False,
+                      create=False):
     revname = '.'.join(reversed(ip.split('.'))) + '.in-addr.arpa'
     domain_name = '.'.join(list(reversed(ip.split('.')))[1:]) + '.in-addr.arpa'
-    domain, created = Domain.objects.get_or_create(name=domain_name)
-    records = Record.objects.filter(name=revname, type='PTR')
-    if records:
-        if not overwrite:
-            raise ValueError('RevDNS record already exists')
+    if not create:
+        try:
+            domain = Domain.objects.get(name=domain_name)
+        except Domain.DoesNotExist:
+            raise RevDNSNoDomain('Domain %s not found.' %
+                                 domain_name)
     else:
+        domain, created = Domain.objects.get_or_create(name=domain_name)
+    records = Record.objects.filter(name=revname, type='PTR')
+    create = True
+    for record in records:
+        create = False
+        if not overwrite and record.content != name:
+            raise RevDNSExists('RevDNS record for %s already exists.' %
+                               revname)
+    if create:
         records = [Record(name=revname, type='PTR')]
     for record in records:
         record.content = name
@@ -146,3 +168,4 @@ def set_revdns_record(ip, name, ttl=None, prio=None, overwrite=False):
         if prio is not None:
             record.prio = prio
         record.save()
+    return create

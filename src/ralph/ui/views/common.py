@@ -25,6 +25,7 @@ from ralph.business.models import RolePropertyValue
 from ralph.cmdb import models as cdb
 from ralph.dnsedit.models import DHCPEntry
 from ralph.dnsedit.util import get_domain, set_revdns_record, get_revdns_records
+from ralph.dnsedit.util import Error as DNSError
 from ralph.discovery.models import Device, DeviceType, IPAddress
 from ralph.discovery.models_history import FOREVER_DATE, ALWAYS_DATE
 from ralph.util import presentation, pricing
@@ -427,13 +428,15 @@ def _dns_fill_record(form, prefix, record, request):
     if (record.type in ('A', 'AAAA') and
         form.cleaned_data[prefix + 'ptr']):
         try:
-            set_revdns_record(record.content, record.name)
-        except ValueError:
-            pass
+            created = set_revdns_record(record.content, record.name)
+        except DNSError as e:
+            messages.error(request, unicode(e))
         else:
-            messages.warning(request,
-                         "Created a PTR DNS record for %s." %
-                         record.content)
+            if created:
+                messages.warning(
+                    request,
+                    "Created a PTR DNS record for %s." % record.content
+                )
 
 
 def _dns_create_record(form, request, device):
