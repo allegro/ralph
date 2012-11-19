@@ -16,7 +16,7 @@ from django.http import HttpResponseRedirect
 from django.http import HttpResponseForbidden
 from django.http import HttpResponse
 from django.utils.translation import ugettext_lazy as _
-from django.utils.safestring import SafeString
+from django.utils.safestring import SafeString, mark_safe
 from django.conf import settings
 from lck.django.common import nested_commit_on_success
 from lck.django.filters import slugify
@@ -977,7 +977,10 @@ class Search(BaseCMDBView):
                     '<a href="/cmdb/ci/view/%s">%s</a>' % (
                         v.child.id, v.child.name)
                 )
-        return SafeString(', '.join(x for x in venture))
+        try:
+            return SafeString(', '.join(x for x in venture))
+        except UnicodeEncodeError:
+            return mark_safe(', '.join(x for x in venture))
 
     def get_service(self, relations, i):
         services = ''
