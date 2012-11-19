@@ -21,9 +21,7 @@ execfile(namespace_package_support)
 SITE_ID = 1
 USE_I18N = True
 USE_L10N = True  # FIXME: breaks contents of localized date fields on form reload
-MEDIA_ROOT = CURRENT_DIR + 'uploads'
 MEDIA_URL = '/u/'
-STATIC_ROOT = CURRENT_DIR + 'static'
 STATIC_URL = '/static/'
 STATICFILES_DIRS = (
     CURRENT_DIR + 'media',
@@ -33,7 +31,6 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'lck.django.staticfiles.LegacyAppDirectoriesFinder',
 )
-FILE_UPLOAD_TEMP_DIR = CURRENT_DIR + 'uploads-part'
 USE_XSENDFILE = False
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
@@ -193,7 +190,7 @@ CELERY_ROUTES = (
 )
 # define the lookup channels in use on the site
 AJAX_LOOKUP_CHANNELS = {
-    'ci'  : {'model':'cmdb.CI', 'search_field':'name'}
+    'ci': ('ralph.cmdb.models', 'CILookup')
 }
 # magically include jqueryUI/js/css
 AJAX_SELECT_BOOTSTRAP = True
@@ -241,6 +238,9 @@ CACHES = dict(
 )
 LOGGING['handlers']['file']['filename'] = CURRENT_DIR + 'runtime.log'
 BROKER_URL = "sqla+sqlite:///" + CURRENT_DIR + 'dbcelery.sqlite'
+MEDIA_ROOT = '~/.ralph/shared/uploads'
+STATIC_ROOT = '~/.ralph/shared/static'
+FILE_UPLOAD_TEMP_DIR = '~/.ralph/shared/uploads-part'
 SYNERGY_URL_BASE = "/"
 DASHBOARD_SITE_DOMAIN = "dashboard.local"
 IPMI_USER = None
@@ -359,3 +359,13 @@ for cfg_loc in [local_settings,
     if os.path.exists(cfg_loc):
         execfile(cfg_loc)
         break
+
+MEDIA_ROOT = os.path.expanduser(MEDIA_ROOT)
+STATIC_ROOT = os.path.expanduser(STATIC_ROOT)
+FILE_UPLOAD_TEMP_DIR = os.path.expanduser(FILE_UPLOAD_TEMP_DIR)
+
+for path in (MEDIA_ROOT, STATIC_ROOT, FILE_UPLOAD_TEMP_DIR):
+    try:
+        os.makedirs(path)
+    except (IOError, OSError):
+        continue

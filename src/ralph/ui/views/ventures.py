@@ -25,7 +25,7 @@ from ralph.ui.forms import (RolePropertyForm, DateRangeForm,
                             VentureFilterForm)
 from ralph.ui.views.common import (Info, Prices, Addresses, Costs, Purchase,
                                    Components, History, Discover, BaseMixin,
-                                   Base, DeviceDetailView)
+                                   Base, DeviceDetailView, Software)
 from ralph.cmdb.views import CMDB
 from ralph.ui.views.devices import BaseDeviceList
 from ralph.ui.views.reports import Reports, ReportDeviceList
@@ -164,6 +164,10 @@ class VenturesInfo(Ventures, Info):
 
 
 class VenturesComponents(Ventures, Components):
+    pass
+
+
+class VenturesSoftware(Ventures, Software):
     pass
 
 
@@ -509,6 +513,7 @@ class VenturesVenture(SidebarVentures, Base):
                 )
             start = self.form.cleaned_data['start']
             end = self.form.cleaned_data['end']
+            query = query.exclude(device__deleted=True)
             query = HistoryCost.filter_span(start, end, query)
             items = _get_summaries(query.all(), start, end, True, self.venture)
             cost_data = []
