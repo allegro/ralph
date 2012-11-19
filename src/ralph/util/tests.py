@@ -16,13 +16,12 @@ from __future__ import unicode_literals
 
 import re
 import textwrap
-import sys
 from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import TestCase
-from unittest import skipIf, skip
+from unittest import skip
 from tastypie.models import ApiKey
 
 from ralph.business.models import Venture
@@ -30,7 +29,6 @@ from ralph.discovery.models import Device, DeviceType
 from ralph.discovery.models import DeviceModelGroup
 from ralph.discovery.models import MarginKind, DeprecationKind
 from ralph.util import pricing
-from ralph.util.others import set_base64_compressed_data, get_base64_compressed_data
 from ralph.util.pricing import get_device_raw_price
 
 
