@@ -11,6 +11,7 @@ from django import forms
 from lck.django.choices import Choices
 from lck.django.common.models import MACAddressField
 from bob.forms import AutocompleteWidget
+from powerdns.models import Record
 
 from ralph.business.models import Venture, RoleProperty, VentureRole
 from ralph.deployment.models import Deployment
@@ -19,7 +20,7 @@ from ralph.discovery.models_component import is_mac_valid
 from ralph.discovery.models import (Device, ComponentModelGroup,
                                     DeviceModelGroup, DeviceType, IPAddress)
 from ralph.dnsedit.models import DHCPEntry
-from ralph.dnsedit.util import is_valid_hostname
+from ralph.dnsedit.util import is_valid_hostname, get_domain, get_revdns_records
 from ralph.util import Eth
 from ralph.ui.widgets import (DateWidget, CurrencyWidget,
                               ReadOnlySelectWidget, DeviceGroupWidget,
@@ -89,6 +90,157 @@ class MarginsReportForm(DateRangeForm):
                 return self.initial[field]
             except KeyError:
                 return self.fields[field].initial
+
+def _dns_char_field(label=None, initial=None, record=None, **kwargs):
+    kwargs.update(
+        label=label,
+        initial=initial,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'span12',
+            'placeholder': label,
+        })
+    )
+    return forms.CharField(**kwargs)
+
+
+def _dns_int_field(label=None, initial=None, **kwargs):
+    kwargs.update(
+        label=label,
+        initial=initial,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'span12',
+            'placeholder': label,
+        })
+    )
+    return forms.IntegerField(**kwargs)
+
+
+def validate_domain_name(name):
+    if not name:
+        return
+    if '*' not in name and not is_valid_hostname(name):
+        raise forms.ValidationError("Invalid hostname")
+    if not get_domain(name):
+        raise forms.ValidationError("No such domain")
+    return name.lower()
+
+
+def _dns_name_field(label=None, initial=None, **kwargs):
+    kwargs.update(validators=[validate_domain_name])
+    return _dns_char_field(label, initial, **kwargs)
+
+
+def _dns_type_field(label=None, initial=None, **kwargs):
+    types = list(Record.RECORD_TYPE)
+    types.insert(0, ('', ''))
+    return forms.ChoiceField(
+        label=label,
+        choices=types,
+        initial=initial,
+        widget=forms.Select(attrs={'class':'span12'}),
+        required=False,
+        **kwargs
+    )
+
+
+def _bool_field(label=None, initial=None, **kwargs):
+    return forms.BooleanField(label=label, required=False, **kwargs)
+
+def validate_mac(mac):
+    if not mac:
+        return
+    try:
+        mac = MACAddressField.normalize(mac)
+        if not mac:
+            raise ValueError()
+    except ValueError:
+        raise forms.ValidationError("Invalid MAC address")
+    return mac
+
+
+def validate_ip(ip):
+    if not ip:
+        return
+    try:
+        address = ipaddr.IPAddress(ip)
+    except ValueError:
+        raise forms.ValidationError("Invalid IP address")
+    return str(address)
+
+
+def _dhcp_mac_field(label=None, initial=None, record=None, **kwargs):
+    kwargs.update(validators=[validate_mac])
+    return _dns_char_field(label, initial, **kwargs)
+
+
+def _dhcp_ip_field(label=None, initial=None, record=None, **kwargs):
+    kwargs.update(validators=[validate_ip])
+    return _dns_char_field(label, initial, **kwargs)
+
+
+def _add_fields(new_fields, prefix, record, fields):
+    for label, field_class in fields:
+        initial = getattr(record, label, None)
+        field=field_class(label, initial)
+        field.initial = initial
+        field.record = record
+        field_id = prefix + label
+        new_fields[field_id] = field
+
+
+class DNSRecordsForm(forms.Form):
+    def __init__(self, records, *args, **kwargs):
+        super(DNSRecordsForm, self).__init__(*args, **kwargs)
+        self.records = list(records)
+        fields =[
+            ('name', _dns_name_field),
+            ('type', _dns_type_field),
+            ('content', _dns_char_field),
+            ('ttl', _dns_int_field),
+            ('prio', _dns_int_field),
+            ('ptr', _bool_field),
+            ('del', _bool_field),
+        ]
+        for record in self.records:
+            record.ptr = bool(
+                record.type in ('A', 'AAAA') and
+                get_revdns_records(record.content)
+            )
+            prefix = 'dns_%d_' % record.id
+            _add_fields(self.fields, prefix, record, fields)
+        _add_fields(self.fields, 'dns_new_', None, fields)
+
+
+class DHCPRecordsForm(forms.Form):
+    def __init__(self, records, *args, **kwargs):
+        super(DHCPRecordsForm, self).__init__(*args, **kwargs)
+        self.records = list(records)
+        fields =[
+            ('ip', _dhcp_ip_field),
+            ('mac', _dhcp_mac_field),
+            ('del', _bool_field),
+        ]
+        for record in self.records:
+            prefix = 'dhcp_%d_' % record.id
+            _add_fields(self.fields, prefix, record, fields)
+        _add_fields(self.fields, 'dhcp_new_', None, fields)
+
+
+class AddressesForm(forms.Form):
+    def __init__(self, records, *args, **kwargs):
+        super(AddressesForm, self).__init__(*args, **kwargs)
+        self.records = list(records)
+        fields =[
+            ('hostname', _dns_name_field),
+            ('address', _dhcp_ip_field),
+            ('del', _bool_field),
+        ]
+        for record in self.records:
+            prefix = 'ip_%d_' % record.id
+            _add_fields(self.fields, prefix, record, fields)
+        _add_fields(self.fields, 'ip_new_', None, fields)
 
 
 class VentureFilterForm(forms.Form):

@@ -67,7 +67,7 @@ uuid ( RO)             : 4c960326-0522-482f-9213-ffcc3acf8298
 """)])
         vms = ssh_xen.get_running_vms(ssh)
         self.assertEqual(vms, {
-            ('win2k8', 'c98c2e2b-a8cf-fe0a-a3c3-2e492c541ef9', 1, 1048548)
+            ('win2k8', 'c98c2e2b-a8cf-fe0a-a3c3-2e492c541ef9', 1, 1023)
         })
 
     def test_xen_disks(self):
@@ -108,7 +108,7 @@ uuid ( RO)            : 2150d8e4-d359-4f8b-889d-8dc63668c045
                 (
                     '2150d8e4-d359-4f8b-889d-8dc63668c045',
                     '9dd5d636-c90a-930d-c04f-897f9624731a',
-                    25165824,
+                    24576,
                     'hda'
                 ),
             ],
@@ -116,7 +116,7 @@ uuid ( RO)            : 2150d8e4-d359-4f8b-889d-8dc63668c045
                 (
                     'bea667bf-deba-44f6-997f-3af9b012ff5e',
                     '9dd5d636-c90a-930d-c04f-897f9624731a',
-                    8192,
+                    8,
                     'xvda'
                 ),
             ],
@@ -154,7 +154,7 @@ uuid ( RO)             : 9393c492-4311-4dde-9413-75150afdcd97
 """)])
         srs = ssh_xen.get_srs(ssh)
         self.assertEqual(srs, {
-            '9dd5d636-c90a-930d-c04f-897f9624731a': 63250432,
+            '9dd5d636-c90a-930d-c04f-897f9624731a': 61768,
         })
 
     def test_xen_shares(self):

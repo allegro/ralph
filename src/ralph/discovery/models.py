@@ -9,65 +9,67 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from ralph.discovery.models_device import (
-        Device, ReadOnlyDevice, DeviceType, DeviceModel, DeviceModelGroup,
-        MarginKind, DeprecationKind, LoadBalancerVirtualServer,
-        LoadBalancerPool, LoadBalancerMember, Warning, SERIAL_BLACKLIST,
-        DISK_VENDOR_BLACKLIST, DISK_PRODUCT_BLACKLIST
+    DISK_PRODUCT_BLACKLIST, DISK_VENDOR_BLACKLIST, DeprecationKind, Device,
+    DeviceModel, DeviceModelGroup, DeviceType, LoadBalancerMember,
+    LoadBalancerPool, LoadBalancerVirtualServer, MarginKind, ReadOnlyDevice,
+    SERIAL_BLACKLIST, Warning,
 )
 from ralph.discovery.models_network import (
-        IPAddress, Network, DataCenter, NetworkTerminator, IPAlias, NetworkKind
-    )
+    IPAddress, Network, DataCenter, NetworkTerminator, IPAlias, NetworkKind,
+    DiscoveryQueue,
+)
 from ralph.discovery.models_component import (
-        ComponentType, EthernetSpeed, ComponentModel, ComponentModelGroup,
-        GenericComponent, DiskShare, DiskShareMount, Processor, Memory,
-        Storage, FibreChannel, Ethernet, Software, SplunkUsage, OperatingSystem,
-        MAC_PREFIX_BLACKLIST,
-    )
+    ComponentModel, ComponentModelGroup, ComponentType, DiskShare,
+    DiskShareMount, Ethernet, EthernetSpeed, FibreChannel, GenericComponent,
+    MAC_PREFIX_BLACKLIST, Memory, OperatingSystem, Processor, Software,
+    SplunkUsage, Storage,
+)
 from ralph.discovery.models_history import HistoryChange, HistoryCost
 
 __all__ = [
-    IPAddress,
-    Network,
     DataCenter,
-    NetworkTerminator,
+    DiscoveryQueue,
+    IPAddress,
     IPAlias,
-    NetworkKind,
     MAC_PREFIX_BLACKLIST,
+    Network,
+    NetworkKind,
+    NetworkTerminator,
 
-    ComponentType,
-    EthernetSpeed,
     ComponentModel,
     ComponentModelGroup,
-    GenericComponent,
+    ComponentType,
     DiskShare,
     DiskShareMount,
-    Processor,
-    Memory,
-    Storage,
-    FibreChannel,
     Ethernet,
+    EthernetSpeed,
+    FibreChannel,
+    GenericComponent,
+    Memory,
+    OperatingSystem,
+    Processor,
     Software,
     SplunkUsage,
-    OperatingSystem,
+    Storage,
 
+    DISK_PRODUCT_BLACKLIST,
+    DISK_VENDOR_BLACKLIST,
+    DeprecationKind,
     Device,
-    ReadOnlyDevice,
-    DeviceType,
     DeviceModel,
     DeviceModelGroup,
-    MarginKind,
-    DeprecationKind,
-    LoadBalancerVirtualServer,
-    LoadBalancerPool,
+    DeviceType,
     LoadBalancerMember,
-    Warning,
+    LoadBalancerPool,
+    LoadBalancerVirtualServer,
+    MarginKind,
+    ReadOnlyDevice,
     SERIAL_BLACKLIST,
-    DISK_VENDOR_BLACKLIST,
-    DISK_PRODUCT_BLACKLIST,
+    Warning,
 
     HistoryChange,
     HistoryCost,
 ]
 
 # Load the plugins code
-import ralph.discovery.plugins
+import ralph.discovery.plugins  # noqa

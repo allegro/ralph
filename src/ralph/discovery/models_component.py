@@ -148,6 +148,8 @@ class ComponentModel(Named.NonUnique, SavePrioritized,
             'count': self.get_count()
         }
 
+    def is_software(self):
+        return True if self.type == ComponentType.software else False
 
 class Component(SavePrioritized, WithConcurrentGetOrCreate):
     device = db.ForeignKey('Device', verbose_name=_("device"))
@@ -366,9 +368,12 @@ class Software(Component):
     # bash and widnows have a limit on the path length
     path = db.CharField(verbose_name=_("path"), max_length=255,
         null=True, blank=True, default=None)
+    version = db.CharField(verbose_name=_("version"), max_length=255,
+                           null=True, blank=True, default=None)
 
     @classmethod
-    def create(cls, dev, path, model_name, label=None, sn=None, family=None):
+    def create(cls, dev, path, model_name, label=None, sn=None, family=None,
+               version=None):
         model, created = ComponentModel.concurrent_get_or_create(
                 type=ComponentType.software.id,
                 family=family,
@@ -382,6 +387,7 @@ class Software(Component):
         software.model = model
         software.label = label or model_name
         software.sn = sn
+        software.version = version
         return software
 
     class Meta:
