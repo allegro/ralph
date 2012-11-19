@@ -272,8 +272,8 @@ class ReportMargins(SidebarReports, Base):
                 )
                 mk.sim_margin = self.form.get('m_%d' % mk.id, 0) or 0
                 mk.sim_cost = (
-                    (mk.total or 0) / (1 + mk.margin / 100)
-                    * (1 + mk.sim_margin / 100)
+                    (mk.total or 0) / (1 + mk.margin / 100) *
+                    (1 + mk.sim_margin / 100)
                 )
                 total_sim += mk.sim_cost
                 total_cost += mk.total or 0
@@ -373,34 +373,16 @@ class ReportVentures(SidebarReports, Base):
                 venture.total = get_total_cost(query, start, end)
                 (venture.count, venture.count_now,
                  devices) = get_total_count(query, start, end)
-#<<<<<<< HEAD
-#
-#                venture.core_count = get_total_cores(devices, start, end)
-#                venture.virtual_core_count = get_total_virtual_cores(
-#                    devices, start, end
-#                )
-#                cloud_cost = get_total_cost(
-#                    query.filter(
-#                        device__model__type=DeviceType.cloud_server.id
-#                    ), start, end
-#                )
-#                venture.cloud_use = (cloud_cost or 0) / total_cloud_cost * 100
-#=======
-                venture.core_count = get_total_cores(query, start, end)
+                venture.core_count = get_total_cores(devices, start, end)
                 venture.virtual_core_count = get_total_virtual_cores(
-                    query,
-                    start,
-                    end
+                    devices, start, end
                 )
-                cloud_cost = get_total_cost(query.filter(
+                cloud_cost = get_total_cost(
+                    query.filter(
                         device__model__type=DeviceType.cloud_server.id
-                    ), start, end)
-                if total_cloud_cost:
-                    venture.cloud_use = (cloud_cost or
-                                         0) / total_cloud_cost * 100
-                else:
-                    venture.cloud_use = 0
-#>>>>>>> 02dcbfff5c37f6d0da4a2bd4b1a009fc9de4ae6f
+                    ), start, end
+                )
+                venture.cloud_use = (cloud_cost or 0) / total_cloud_cost * 100
         else:
             self.ventures = Venture.objects.none()
         if self.request.GET.get('export') == 'csv':
@@ -427,6 +409,9 @@ class ReportServices(SidebarReports, Base):
         if not has_perm(Perm.read_device_info_reports):
             return HttpResponseForbidden(
                 "You don't have permission to see reports.")
+        self.perm_edit = False
+        if has_perm(Perm.edit_configuration_item_relations):
+            self.perm_edit = True
         services = CI.objects.filter(type=CI_TYPES.SERVICE.id)
         relations = CIRelation.objects.filter(
             child__type=CI_TYPES.SERVICE.id,
@@ -456,7 +441,7 @@ class ReportServices(SidebarReports, Base):
             {
                 'invalid_relation': self.invalid_relation,
                 'serv_without_ven': self.serv_without_ven,
-                'profile': self.request.user.get_profile(),
+                'perm_to_edit': self.perm_edit,
             }
         )
         return context

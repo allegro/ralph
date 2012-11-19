@@ -16,6 +16,7 @@ from django.http import HttpResponseRedirect
 from django.http import HttpResponseForbidden
 from django.http import HttpResponse
 from django.utils.translation import ugettext_lazy as _
+from django.utils.safestring import SafeString
 from django.conf import settings
 from lck.django.common import nested_commit_on_success
 from lck.django.filters import slugify
@@ -799,11 +800,11 @@ class Search(BaseCMDBView):
             type = CI_TYPES.NameFromID(int(type))
             subsection += '%s - ' % CI_TYPES.DescFromName(type)
         subsection += 'Search'
-        if layer is not None:
+        if layer is None:
+            sidebar_selected = 'all-cis'
+        else:
             select = CILayer.objects.get(id=layer)
             sidebar_selected = slugify(select.name)
-        else:
-            sidebar_selected = 'all-cis'
         ret = super(Search, self).get_context_data(**kwargs)
         ret.update({
             'table_header': self.table_header,
@@ -904,14 +905,15 @@ class Search(BaseCMDBView):
         return table_header
 
     def get_name(self, i, icon):
-        return ('<a href="./ci/view/%s"> <i class="fugue-icon %s"></i> %s</a>'
-                % (i.id, icon, i.name))
+        return SafeString('<a href="./ci/view/%s"> <i class="fugue-icon %s">'
+                          '</i> %s</a>' % (i.id, icon, i.name))
 
     def get_uid(self, i):
-        return ('<a href="./ci/view/%s">%s</a>' % (i.id, i.uid))
+        return SafeString('<a href="./ci/view/%s">%s</a>' % (i.id, i.uid))
 
     def get_layer(self, i):
-        return ', '.join(unicode(x) for x in i.layers.select_related())
+        return SafeString(', '.join(
+            unicode(x) for x in i.layers.select_related()))
 
     def get_parent_dev(self, i):
         parent = '-'
@@ -919,7 +921,7 @@ class Search(BaseCMDBView):
             parent = i.content_object.parent
         except AttributeError:
             pass
-        return parent
+        return SafeString(parent)
 
     def get_network(self, i):
         network = '-'
@@ -928,7 +930,7 @@ class Search(BaseCMDBView):
             network = ', '.join(unicode(x) for x in networks)
         except AttributeError:
             pass
-        return network
+        return SafeString(network)
 
     def get_dc(self, i):
         dc = '-'
@@ -936,12 +938,12 @@ class Search(BaseCMDBView):
             dc = i.content_object.dc
         except AttributeError:
             pass
-        return dc
+        return SafeString(dc)
 
     def get_owners(self, i, filter):
         owners = ', '.join("%s %s" % (b.owner.first_name, b.owner.last_name)
                            for b in i.ciownership_set.filter(type=filter)),
-        return owners[0]
+        return SafeString(owners[0])
 
     def get_bl(self, i, relations):
         business_line = '-'
@@ -951,7 +953,7 @@ class Search(BaseCMDBView):
         for bl in rel_bl:
             business_line = ('<a href="%s">%s</a>' %
                             (bl.parent.id, bl.parent.name))
-        return business_line
+        return SafeString(business_line)
 
     def get_venture(self, relations, i, child=False):
         venture = []
@@ -975,7 +977,7 @@ class Search(BaseCMDBView):
                     '<a href="/cmdb/ci/view/%s">%s</a>' % (
                         v.child.id, v.child.name)
                 )
-        return ', '.join(x for x in venture)
+        return SafeString(', '.join(x for x in venture))
 
     def get_service(self, relations, i):
         services = ''
@@ -984,11 +986,11 @@ class Search(BaseCMDBView):
         )
         for s in servi:
             services += '%s, ' % s.child.name
-        return services
+        return SafeString(services)
 
     def get_operations(self, i):
-        return ('<a href="./ci/edit/%s">Edit</a> | '
-                '<a href="./ci/view/%s">View</a>') % (i.id, i.id)
+        return SafeString(('<a href="./ci/edit/%s">Edit</a> | '
+                           '<a href="./ci/view/%s">View</a>') % (i.id, i.id))
 
     def get(self, *args, **kwargs):
         values = self.request.GET
