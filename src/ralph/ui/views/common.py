@@ -119,9 +119,11 @@ class BaseMixin(object):
                          href='/cmdb/changes/timeline')
             )
         if settings.BUGTRACKER_URL:
-            footer_items.append(
-                MenuItem('Bugs', fugue_icon='fugue-bug',
-                         href=settings.BUGTRACKER_URL))
+            mainmenu_items.append(
+                MenuItem(
+                    'Report a bug', fugue_icon='fugue-bug', pull_right=True,
+                    href=settings.BUGTRACKER_URL)
+            )
         if self.request.user.is_staff:
             footer_items.append(
                 MenuItem('Admin', fugue_icon='fugue-toolbox', href='/admin'))
