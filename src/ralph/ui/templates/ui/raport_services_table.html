@@ -6,7 +6,7 @@
         <th>Venture</th>
         <th>Relation</th>
         <th>State</th>
-        {% if profile.is_staff %}
+        {% if perm_to_edit %}
             <th>Actions</th>
         {% endif %}
     </tr>
@@ -23,9 +23,9 @@
                 {{ service.relation_type|default:"None" }}
             </td>
             <td>{{ service.state }}</td>
-            {% if profile.is_staff %}
+            {% if perm_to_edit %}
                 <td>{% spaceless %}
-                    <a href="/cmdb/ci/edit/{{ service.id }}#relation">
+                    <a href="/cmdb/ci/edit/{{ service.id }}#relations">
                         {% icon 'fugue-toolbox--pencil' %}&nbsp;Edit
                     </a>
                 {% endspaceless %}</td>

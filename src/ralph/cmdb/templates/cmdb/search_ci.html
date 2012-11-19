@@ -40,7 +40,7 @@
             {% for row in rows %}
                 <tr>
                 {% for td in row %}
-                    <td>{% autoescape off %}{{ td.value }}{% endautoescape %}</td>
+                    <td>{{ td.value|safe }}</td>
                 {% endfor %}
                 </tr>
             {% endfor %}
