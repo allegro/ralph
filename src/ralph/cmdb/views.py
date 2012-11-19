@@ -880,19 +880,18 @@ class Search(BaseCMDBView):
             table_header += (
                 {'label': 'Services contained',
                  'name': 'Services contained', 'sortable': 0},
-                )
+            )
         elif type_ == str(CI_TYPES.SERVICE.id):
             table_header += (
                 {'label': 'Contained Venture',
-                 'name': 'Contained Venture', 'sortable': 1
-                },
+                 'name': 'Contained Venture', 'sortable': 1},
                 {'label': 'Business Line', 'name': 'Business Line',
                  'sortable': 0},
                 {'label': 'Technical Owner', 'name': 'Technical Owner',
                  'sortable': 0},
                 {'label': 'Business Owner', 'name': 'Business Owner',
                  'sortable': 0},
-                )
+            )
         elif type_ == str(CI_TYPES.NETWORK.id):
             table_header += DEFAULT_COLS
         elif type_ == str(CI_TYPES.DATACENTER.id):
@@ -900,14 +899,13 @@ class Search(BaseCMDBView):
         elif type_ == str(CI_TYPES.NETWORKTERMINATOR.id):
             table_header += DEFAULT_COLS
         table_header += (
-            {'label': 'Operations', 'name': 'Operations', 'sortable': 0 },
+            {'label': 'Operations', 'name': 'Operations', 'sortable': 0},
         )
         return table_header
 
-
     def get_name(self, i, icon):
-        return ('<a href="./ci/view/%s"> <i class="fugue-icon %s"></i> %s</a>' %
-        (i.id, icon, i.name))
+        return ('<a href="./ci/view/%s"> <i class="fugue-icon %s"></i> %s</a>'
+                % (i.id, icon, i.name))
 
     def get_uid(self, i):
         return ('<a href="./ci/view/%s">%s</a>' % (i.id, i.uid))
@@ -927,7 +925,7 @@ class Search(BaseCMDBView):
         network = '-'
         try:
             networks = i.content_object.ipaddress_set.all()
-            network =  ', '.join(unicode(x) for x in networks)
+            network = ', '.join(unicode(x) for x in networks)
         except AttributeError:
             pass
         return network
@@ -941,8 +939,8 @@ class Search(BaseCMDBView):
         return dc
 
     def get_owners(self, i, filter):
-        owners =  ', '.join("%s %s" % (b.owner.first_name, b.owner.last_name)
-                          for b in i.ciownership_set.filter(type=filter)),
+        owners = ', '.join("%s %s" % (b.owner.first_name, b.owner.last_name)
+                           for b in i.ciownership_set.filter(type=filter)),
         return owners[0]
 
     def get_bl(self, i, relations):
@@ -954,7 +952,6 @@ class Search(BaseCMDBView):
             business_line = ('<a href="%s">%s</a>' %
                             (bl.parent.id, bl.parent.name))
         return business_line
-
 
     def get_venture(self, relations, i, child=False):
         venture = []
@@ -988,10 +985,10 @@ class Search(BaseCMDBView):
         for s in servi:
             services += '%s, ' % s.child.name
         return services
+
     def get_operations(self, i):
         return ('<a href="./ci/edit/%s">Edit</a> | '
-               '<a href="./ci/view/%s">View</a>') % (i.id, i.id)
-
+                '<a href="./ci/view/%s">View</a>') % (i.id, i.id)
 
     def get(self, *args, **kwargs):
         values = self.request.GET
@@ -1095,7 +1092,7 @@ class Search(BaseCMDBView):
                 table_body.append(row)
             elif type_ == str(CI_TYPES.BUSINESSLINE):
                 ven = relations.filter(parent=i.id)
-                services_contained =  ', '.join(
+                services_contained = ', '.join(
                     '<a href="/cmdb/ci/view/%s">%s</a>' %
                     (v.child.id, v.child.name) for v in ven)
                 row = [
