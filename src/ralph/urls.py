@@ -17,7 +17,8 @@ from ralph.cmdb.api import (BusinessLineResource, ServiceResource,
                             CIChangeGitResource, CIChangePuppetResource,
                             CIChangeZabbixTriggerResource,
                             CIChangeStatusOfficeIncidentResource,
-                            CIChangeCMDBHistoryResource)
+                            CIChangeCMDBHistoryResource, CILayersResource,
+                            CITypesResource)
 from ralph.discovery.api_donpedro import WindowsDeviceResource
 
 from django.conf import settings
@@ -26,8 +27,8 @@ from ajax_select import urls as ajax_select_urls
 
 admin.autodiscover()
 
-
 v09_api = Api(api_name='v0.9')
+
 # business API
 for r in (VentureResource, VentureLightResource, RoleResource,
           RoleLightResource, DepartmentResource, RolePropertyTypeResource,
@@ -45,8 +46,8 @@ for r in (IPAddressResource, ModelGroupResource, ModelResource,
 for r in (BusinessLineResource, ServiceResource, CIResource,
           CIRelationResource, CIChangeResource, CIChangeGitResource,
           CIChangePuppetResource, CIChangeZabbixTriggerResource,
-          CIChangeStatusOfficeIncidentResource,
-          CIChangeCMDBHistoryResource):
+          CIChangeStatusOfficeIncidentResource, CIChangeCMDBHistoryResource,
+          CITypesResource, CILayersResource):
     v09_api.register(r())
 
 # deployment API
