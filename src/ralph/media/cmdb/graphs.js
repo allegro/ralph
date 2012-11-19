@@ -48,6 +48,7 @@
         
         $("#cmdb_name").html(node.data.name);
         $("#cmdb_link").html("<a target='_blank' href='/cmdb/ci/view/" + node.data.id + "'> View </a>");
+        $("#check_impact_link").html("<a target='_blank' href='/cmdb/graphs?ci=" + node.data.id + "'> View impact </a>");
         $(node.links).each(function (index, el) {
             $(el.ui).attr('class','focused');
         }
