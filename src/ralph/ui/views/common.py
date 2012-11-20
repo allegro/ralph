@@ -22,7 +22,7 @@ from powerdns.models import Record
 
 from ralph.account.models import Perm
 from ralph.business.models import RolePropertyValue
-from ralph.cmdb import models as cdb
+from ralph.cmdb.models import CI, CI_TYPES
 from ralph.dnsedit.models import DHCPEntry
 from ralph.dnsedit.util import get_domain, set_revdns_record
 from ralph.discovery.models import Device, DeviceType, IPAddress
@@ -181,10 +181,20 @@ class BaseMixin(object):
             ])
         if ('ralph.cmdb' in settings.INSTALLED_APPS and
             has_perm(Perm.read_configuration_item_info_generic)):
-            tab_items.extend([
-                MenuItem('CMDB', fugue_icon='fugue-thermometer',
-                         href=tab_href('cmdb')),
-            ])
+            try:
+                device = self.kwargs['device']
+            except KeyError:
+                device = ''
+
+            if device is not '':
+                ci = CI.objects.get(
+                    type=CI_TYPES.DEVICE.id,
+                    object_id=device
+                )
+                tab_items.extend([
+                    MenuItem('CMDB', fugue_icon='fugue-thermometer',
+                             href='/cmdb/ci/view/%s' % ci.id),
+                ])
         if has_perm(Perm.read_device_info_reports, venture):
             tab_items.extend([
                 MenuItem('Reports', fugue_icon='fugue-reports-stack',
@@ -796,27 +806,5 @@ class BulkEdit(BaseMixin, TemplateView):
             'devices': self.devices,
             'edit_fields': self.edit_fields,
             'different_fields': self.different_fields,
-        })
-        return ret
-
-
-class CMDB(BaseMixin):
-    template_name = 'cmdb/ralph_view_ci.html'
-    read_perm = Perm.read_configuration_item_info_generic
-
-    def get_context_data(self, **kwargs):
-        ret = super(CMDB, self).get_context_data(**kwargs)
-        device_id = self.kwargs.get('device')
-        try:
-            ci=cdb.CI.objects.get(
-                    type=cdb.CI_TYPES.DEVICE.id,
-                    object_id=device_id
-            )
-        except:
-            ci = None
-        ret.update({
-            'ci': ci,
-            'url_query': self.request.GET,
-            'components': _get_details(self.object, purchase_only=False),
         })
         return ret
