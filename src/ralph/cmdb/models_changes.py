@@ -125,6 +125,8 @@ class CIChangeGit(TimeTrackable):
     comment = models.CharField(max_length=1000)
     author = models.CharField(max_length=200)
     changeset = models.CharField(max_length=80, unique=True, db_index=True)
+    time = models.DateTimeField(
+        verbose_name=_("timestamp"), null=True, blank=True)
 
 
 class CIChangePuppet(TimeTrackable):

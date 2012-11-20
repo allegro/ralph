@@ -6,25 +6,24 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+
+import base64
 import zlib
 
 from lck.django.common import nested_commit_on_success
-
 
 from .facts import handle_facts_ethernets
 from .util import assign_ips
 from ralph.discovery import lshw
 from ralph.discovery.models import SERIAL_BLACKLIST
+from ralph.util.others import get_base64_compressed_data
 
 SAVE_PRIORITY = 53
 
 
 @nested_commit_on_success
 def parse_lshw(data, facts, is_virtual):
-    try:
-        data = zlib.decompress(data)
-    except zlib.error:
-        return False, "lshw decompression error."
+    data = get_base64_compressed_data(data)
     sn = facts.get('serialnumber') # use a Puppet fact because lshw gives
                                    # wrong serial numbers
     if sn in SERIAL_BLACKLIST:

@@ -60,10 +60,10 @@ def save_processors(processors, dev):
         extra = '%s %s %s ' % (
             p.get('manufacturer'), p.get('version'),
             '64bit' if is64bit else '')
-        name = 'CPU %s%s %s %s' % (
+        name = 'CPU %s%s %s%s' % (
             '64bit ' if is64bit else '',
             cpuname, '%dMhz' % speed if speed else '',
-            'multicore' if cores else '')
+            ' multicore' if cores > 1 else '')
         cpu.model, c = ComponentModel.concurrent_get_or_create(
             speed=speed, type=ComponentType.processor.id,
             family=cpuname, size=cores,
@@ -158,8 +158,8 @@ def save_fibre_channel(fcs, dev):
         pid = f.get('physicalid')
         model = f.get('model')
         manufacturer = f.get('manufacturer')
-        fib, created = FibreChannel.concurrent_get_or_create(
-            device=dev, physical_id=pid)
+        fib, created = FibreChannel.concurrent_get_or_create(device=dev,
+                                                             physical_id=pid)
         fib.label = f.get('label')
         extra = '%s %s %s %s' % (fib.label, pid, manufacturer, model)
         fib.model, c = ComponentModel.concurrent_get_or_create(
@@ -206,13 +206,12 @@ def save_device_data(data, remote_ip):
     )
     dev.save(priority=SAVE_PRIORITY)
     os = data['operating_system']
-    if not dev.operatingsystem_set.exists():
-        o = OperatingSystem.create(dev, os_name=os.get('label'),
-                                   family='Windows')
-        o.memory = int(os['memory'])
-        o.storage = int(os['storage'])
-        o.cores_count = int(os['corescount'])
-        o.save()
+    o = OperatingSystem.create(dev, os_name=os.get('label'),
+                               family='Windows')
+    o.memory = int(os['memory'])
+    o.storage = int(os['storage'])
+    o.cores_count = int(os['corescount'])
+    o.save()
     ip_address, _ = IPAddress.concurrent_get_or_create(address=str(remote_ip))
     ip_address.device = dev
     ip_address.is_management = False
@@ -245,3 +244,4 @@ class WindowsDeviceResource(MResource):
         cache = SimpleCache()
         throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
                                  expiration=EXPIRATION)
+

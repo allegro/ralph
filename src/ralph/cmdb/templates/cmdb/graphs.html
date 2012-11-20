@@ -1,0 +1,95 @@
+{%extends 'cmdb/base.html'%}
+
+{% load bob %}
+{% load icons %}
+{% block extra_headers %}
+    <style type='text/css'>
+        svg
+        {
+            z-index: 10;
+            width: 100%;
+            height: 100%;
+        }
+
+        text:hover
+        {
+            cursor: pointer;
+            stroke: red;
+        }
+
+        .focused
+        {
+            /*stroke: #ff9999;*/
+            stroke-width: 3 ;
+            font-size:13px;
+        }
+    </style>
+{% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+    <script type="text/javascript" src="{{STATIC_URL}}cmdb/VivaGraphJS/vivagraph.js"></script>
+    <script type="text/javascript">
+        /* Data container for cmdb/graphs.js */
+        CMDB = {'graph_data': JSON.parse("{{graph_data|escapejs}}") }
+    </script>
+    <script type="text/javascript" src="{{STATIC_URL}}cmdb/graphs.js"></script>
+{% endblock %}
+
+{% block contentarea %}
+    {{ block.super }}
+    <div class="row row-fluid">
+    {% form_horizontal form=form method="get" action="/cmdb/graphs" %}
+    <hr>
+        <div class="span8">
+        <h4>Impact graph</h4>
+            <div id="graphDiv" style="width:800px; height:800px;border: solid #ddd 1px">
+            </div>
+        </div>
+        <div class="span2">
+            <div>
+                <h4>Legend:</h4>
+                <span class="label">Relation contains</span><br/>
+                <span class="label label-important">Relation requires</span><br/>
+            </div>
+            <hr>
+            <h4>Selected item info</h4>
+            Name: <span id="cmdb_name"> </span><br>
+            CMDB Link: <span id="cmdb_link"> </span>
+            <hr>
+            <h4>Actions</h4>
+            <button class="btn" id="save_svg_button">Save graph as SVG</button>
+        </div>
+    </div>
+
+    <div class="row row-fluid">
+        <div class="span12">
+        <h4>Affected CIs</h4> 
+    <table class="table table-striped table-condensed table-list table-bordered">
+        <tbody>
+        <tr>
+            <th>L.p</th>
+            <th>Name</th>
+            <th>Type</th>
+            <th>UID</th>
+            <th>Venture/Role</th>
+        </tr>
+        {% for row in rows %}
+        <tr>
+            <td>
+                {{ forloop.counter }}
+            </td>
+            <td>
+            <a href="/cmdb/ci/view/{{ row.ci.id }}">
+                <b><i class="fugue-icon {{ row.icon }}"></i> {{ row.ci.name }} </b> 
+            </a></td>
+            <td>{{ row.ci.type }} {{ row.ci.content_object.model}}</td>
+            <td>{{ row.ci.uid }}</td>
+            <td>{{ row.content_object.venture}} {{ row.content_object.role }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    </table>
+    </div>
+    </div>
+{% endblock %}

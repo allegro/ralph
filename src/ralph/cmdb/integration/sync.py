@@ -121,7 +121,9 @@ class JiraEventsImporter(BaseImporter):
             prob = obj[0]
         else:
             prob = classtype()
-        prob.description = issue.get('description','') or ''
+        prob.description = issue.get('description','')
+        if prob.description and len(prob.description) > 1024:
+            prob.description = prob.description[0:1024]
         prob.summary = issue.get('summary')
         prob.status = issue.get('status')
         prob.assignee = issue.get('assignee')
@@ -131,18 +133,20 @@ class JiraEventsImporter(BaseImporter):
         prob.save()
 
     def import_problem(self):
-        issues = self.fetch_all('Problem')
+        type = settings.ISSUETRACKERS['default']['PROBLEMS']['ISSUETYPE']
+        issues = self.fetch_all(type)
         for issue in issues:
             self.import_obj(issue,db.CIProblem)
 
     def import_incident(self):
-        issues = self.fetch_all('Incident')
+        type = settings.ISSUETRACKERS['default']['INCIDENTS']['ISSUETYPE']
+        issues = self.fetch_all(type)
         for issue in issues:
             self.import_obj(issue, db.CIIncident)
 
     def fetch_all(self, type):
         ci_fieldname = settings.ISSUETRACKERS['default']['CI_FIELD_NAME']
-        params = dict(jql='project = AGS and type=%s' % type, maxResults=1024)
+        params = dict(jql='type=%s' % type, maxResults=1024)
         issues = Jira().find_issues(params)
         items_list = []
         for i in issues.get('issues'):

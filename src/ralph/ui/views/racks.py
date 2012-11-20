@@ -18,7 +18,7 @@ from ralph.discovery.models import ReadOnlyDevice, Device, DeviceType
 from ralph.ui.forms import DeviceCreateForm
 from ralph.ui.views.common import (Info, Prices, Addresses, Costs, Purchase,
                                    Components, History, Discover, BaseMixin,
-                                   DeviceDetailView, Base)
+                                   DeviceDetailView, Base, Software)
 from ralph.cmdb.views import CMDB
 from ralph.ui.views.devices import BaseDeviceList
 from ralph.ui.views.reports import Reports, ReportDeviceList
@@ -110,6 +110,10 @@ class RacksAddresses(Racks, Addresses):
 
 
 class RacksComponents(Racks, Components):
+    pass
+
+
+class RacksSoftware(Racks, Software):
     pass
 
 
