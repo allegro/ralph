@@ -286,7 +286,7 @@ class CIImporterTest(TestCase):
             set([(u'child_role', u'blade', 3)]),
         )
         from ralph.cmdb.graphs import ImpactCalculator
-        # summarize relations - 9
+        # summarize relations.
         self.assertEqual(len(CIRelation.objects.all()), 9)
         # calculate impact/spanning tree for CI structure
         calc = ImpactCalculator()
