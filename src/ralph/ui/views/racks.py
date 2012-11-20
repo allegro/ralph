@@ -164,9 +164,8 @@ class RacksDeviceList(SidebarRacks, BaseMixin, BaseDeviceList):
                 key = lambda x: x.get_position().rjust(100)
                 c.sort(key=key, reverse=not sort.startswith('-'))
             elif sort == '':
-                key = lambda x: (
-                    x.model.type if x.model else None,
-                    x.get_position().rjust(100) if x.get_position() else None)
+                key = lambda x: (x.model.type if x.model else None,
+                                 x.get_position().rjust(100))
                 c.sort(key=key, reverse=True)
             top.extend((depth + 1, i) for i in c)
             item.depth = depth
