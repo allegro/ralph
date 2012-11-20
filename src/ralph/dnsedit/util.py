@@ -154,13 +154,13 @@ def set_revdns_record(ip, name, ttl=None, prio=None, overwrite=False,
     else:
         domain, created = Domain.objects.get_or_create(name=domain_name)
     records = Record.objects.filter(name=revname, type='PTR')
-    create = True
+    creating = True
     for record in records:
-        create = False
+        creating = False
         if not overwrite and record.content != name:
             raise RevDNSExists('RevDNS record for %s already exists.' %
                                revname)
-    if create:
+    if creating:
         records = [Record(name=revname, type='PTR')]
     for record in records:
         record.content = name

@@ -45,11 +45,15 @@ class DNSHistory(db.Model):
     old_value = db.CharField(max_length=255, default='')
     new_value = db.CharField(max_length=255, default='')
 
+    class Meta:
+        verbose_name = _("DNS History entry")
+        verbose_name_plural = _("DNS History entries")
 
-@receiver(post_save, sender=Record, dispatch_uid='ralph.history')
+
+@receiver(post_save, sender=Record, dispatch_uid='ralph.history.dns')
 def record_post_save(sender, instance, raw, using, **kwargs):
     for field, orig, new in field_changes(instance, ignore={
-        'last_seen', 'change_date'}):
+        'last_seen', 'change_date', 'id'}):
         DNSHistory(
             record_name=instance.name,
             record_type=instance.type,
@@ -59,3 +63,17 @@ def record_post_save(sender, instance, raw, using, **kwargs):
             user=getattr(instance, 'saving_user', None),
             device=getattr(instance, 'saving_device', None),
         ).save()
+
+
+@receiver(pre_delete, sender=Record, dispatch_uid='ralph.history.dns')
+def record_pre_delete(sender, instance, using, **kwargs):
+    DNSHistory(
+        record_name=instance.name,
+        record_type=instance.type,
+        field_name='deleted',
+        old_value=instance.content,
+        new_value='',
+        user=getattr(instance, 'saving_user', None),
+        device=getattr(instance, 'saving_device', None),
+    ).save()
+
