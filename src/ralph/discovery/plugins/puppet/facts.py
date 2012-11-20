@@ -6,19 +6,22 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+
+import base64
 import hashlib
 import re
 import zlib
 
 from lck.django.common import nested_commit_on_success
 
-from ralph.util import network, Eth
 from ralph.discovery import hardware
 from ralph.discovery.lshw import parse_lshw, get_storage_from_lshw
 from ralph.discovery.models import (DeviceType, Device, OperatingSystem,
     ComponentModel, ComponentType, Software, Storage, SERIAL_BLACKLIST,
     DISK_VENDOR_BLACKLIST, DISK_PRODUCT_BLACKLIST)
 from ralph.discovery.plugins.puppet.util import get_default_mac, assign_ips
+from ralph.util import network, Eth
+from ralph.util.others import get_base64_compressed_data
 
 
 SAVE_PRIORITY = 52
@@ -94,10 +97,7 @@ def _parse_prtconf(dev, prtconf, facts, is_virtual):
 
 
 def _parse_smbios(dev, data, facts, is_virtual):
-    try:
-        data = zlib.decompress(data)
-    except zlib.error:
-        pass
+    data = get_base64_compressed_data(data)
     smb = hardware.parse_smbios(data)
     hardware.handle_smbios(dev, smb, is_virtual, SAVE_PRIORITY)
 
@@ -242,31 +242,28 @@ def handle_facts_os(dev, facts, is_virtual=False):
         lshw = facts.get('lshw', None)
         if lshw:
             try:
-                lshw = zlib.decompress(lshw)
-            except zlib.error:
+                lshw = base64.b64decode(lshw)
+            except TypeError:
                 pass
-            else:
-                lshw = parse_lshw(as_string=lshw)
-                mount_point, storages = get_storage_from_lshw(lshw, True)
-                storage_size = 0
-                for storage in storages:
-                    storage_size += storage['size']
+            finally:
+                try:
+                    lshw = zlib.decompress(lshw)
+                except zlib.error:
+                    pass
+                else:
+                    lshw = parse_lshw(as_string=lshw)
+                    mount_point, storages = get_storage_from_lshw(lshw, True)
+                    storage_size = 0
+                    for storage in storages:
+                        storage_size += storage['size']
     if storage_size:
         os.storage = storage_size
     os.save(priority=SAVE_PRIORITY)
 
 
-def decompress_packages(compressed_data):
-    try:
-        data = zlib.decompress(compressed_data)
-    except zlib.error:
-        return False
-    return data
-
 def parse_packages(facts):
-    data = decompress_packages(facts)
+    data = get_base64_compressed_data(facts)
     if data:
-        packages_list = []
         packages = data.strip().split(',')
         for package in packages:
             try:
