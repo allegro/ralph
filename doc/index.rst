@@ -16,6 +16,7 @@ This documentation
    pricing
    discovery
    cmdb
+   api
    faq
    changes
    license
