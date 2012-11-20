@@ -563,9 +563,9 @@ class Addresses(DeviceDetailView):
 
 
     def get_hostnames(self):
-        ips = set(ip.address for ip in self.object.ipaddress_set.all())
-        names = set(ip.hostname for ip in self.object.ipaddress_set.all()
-                 if ip.hostname)
+        ipaddresses = self.object.ipaddress_set.all()
+        ips = set(ip.address for ip in ipaddresses)
+        names = set(ip.hostname for ip in ipaddresses if ip.hostname)
         revnames = set('.'.join(reversed(ip.split('.'))) + '.in-addr.arpa'
                        for ip in ips)
         hostnames = set(names)

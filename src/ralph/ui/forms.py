@@ -248,14 +248,13 @@ class DNSRecordsForm(forms.Form):
             ('del', _bool_hidden_field),
         ]
         _add_fields(self.fields, 'dns_new_', None, fields)
-        if self.hostnames:
+        if hostnames:
             self.fields['dns_new_name'].initial = list(hostnames)[0]
 
     def clean_dns_new_content(self):
         name = self.cleaned_data.get('dns_new_name', '')
         type = self.cleaned_data.get('dns_new_type', '')
         content = self.cleaned_data.get('dns_new_content', '')
-        print(name, type, content)
         if Record.objects.filter(name=name, type=type,
                                  content=content).exists():
             raise forms.ValidationError("This DNS record already exists.")

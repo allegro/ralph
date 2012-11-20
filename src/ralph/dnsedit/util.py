@@ -173,6 +173,7 @@ def set_revdns_record(ip, name, ttl=None, prio=None, overwrite=False,
     return create
 
 
+@nested_commit_on_success
 def set_txt_record(domain, name, title, value):
     """Updates or creates a TXT record with the given title."""
     try:
@@ -189,15 +190,15 @@ def set_txt_record(domain, name, title, value):
 
 
 def get_location(device):
-    location = ''
+    location = []
     node = device
     while node:
         position = node.get_position() or ''
         if position:
             position = ' [%s]' % position
-        location = ' / ' + node.name + position + location
+        location.append(node.name + position)
         node = node.parent
-    return location
+    return " / ".join(reversed(location))
 
 
 def get_model(device):
