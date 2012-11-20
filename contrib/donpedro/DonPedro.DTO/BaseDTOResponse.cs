@@ -19,7 +19,7 @@ namespace DonPedro.DTO
 						string.Format(
 							"\"{0}\":\"{1}\"", 
 							property.Name.ToLower(),
-							property.GetValue(this, null).ToString().Replace("\"", "\\\"")
+							property.GetValue(this, null).ToString().Replace("\"", "\\\"").Replace(@"\", @"\\")
 						)
 					);
 				}

@@ -41,8 +41,7 @@ class DonPedroPluginTest(TestCase):
         self.assertTrue(processors[0].cores == processors[1].cores == 1)
         self.assertTrue(
             processors[0].model.name == processors[1].model.name ==
-            u'CPU Intel(R) Xeon(R) CPU           '
-            u'E5640  @ 2.67GHz 2667Mhz multicore'
+            u'CPU Intel(R) Xeon(R) CPU           E5640  @ 2.67GHz 2667Mhz'
         )
         self.assertTrue(
             processors[0].model.speed == processors[1].model.speed == 2667
