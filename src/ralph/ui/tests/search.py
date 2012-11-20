@@ -298,3 +298,53 @@ class TestSearch(TestCase):
         context = device_search.context['object']
         self.assertEqual(self.device.model.type, DeviceType.unknown.id)
         self.assertEqual(context.model.type, DeviceType.unknown)
+
+
+class TestDeviceView(TestCase):
+    def setUp(self):
+        login = 'ralph'
+        password = 'ralph'
+        self.user = User.objects.create_user(
+            login, 'ralph@ralph.local', password
+        )
+        self.user.is_staff = True
+        self.user.is_superuser = True
+        self.user.save()
+        self.client = Client()
+        self.client.login(username=login, password=password)
+        self.device = Device.create(
+            sn=DEVICE['sn'],
+            barcode=DEVICE['barcode'],
+            remarks=DEVICE['remarks'],
+            model_name=DEVICE['model_name'],
+            model_type=DeviceType.unknown,
+            rack=DEVICE['rack'],
+            position=DEVICE['position'],
+            dc=DATACENTER,
+        )
+        self.software1 = Software.create(
+            dev=self.device,
+            path='apache2',
+            model_name='apache2 2.4.3',
+            label='apache',
+            family='http servers',
+            version='2.4.3',
+        )
+        self.software1.save()
+        self.software2 = Software.create(
+            dev=self.device,
+            path='gcc',
+            model_name='gcc 4.7.2',
+            label='gcc',
+            family='compilers',
+            version='4.7.2',
+        )
+        self.software2.save()
+
+    def test_software(self):
+        url = '/ui/search/software/{}'.format(self.device.id)
+        response = self.client.get(url)
+        dev = response.context_data['object']
+        software = dev.software_set.all()
+        self.assertEqual(software[0], self.software1)
+        self.assertEqual(software[1], self.software2)

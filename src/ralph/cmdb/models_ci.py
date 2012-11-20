@@ -332,13 +332,16 @@ class CI(TimeTrackable):
     def get_technical_owners(self):
         if self.content_object and getattr(
                 self.content_object, 'venture', None):
-            return list([unicode(x)
-                for x in self.content_object.venture.technical_owners()])
+            return list([
+                unicode(x) for x in
+                self.content_object.venture.technical_owners()] or ['-'])
         elif self.content_object and self.type.id == CI_TYPES.VENTURE.id:
-            return list([unicode(x)
-                for x in self.content_object.technical_owners() ] or ['-'])
+            return list([
+                unicode(x) for x in self.content_object.technical_owners()
+            ] or ['-'])
         else:
             return ['-']
+
     @classmethod
     def get_cycle(cls):
         allci = CI.objects.all().values('pk')
@@ -355,7 +358,6 @@ class CI(TimeTrackable):
         for edge in edges:
             gr.add_edge(edge)
         return find_cycle(gr)
-
 
     @classmethod
     def get_by_content_object(self, content_object):
