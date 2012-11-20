@@ -56,7 +56,7 @@ function handle_manual_click(){
     display.style.fontSize = '30px';
 }
 
-function annotate_manual(plot, data, plot_title, min, max){
+function annotate_manual(plot, data, plot_title, issuetracker_url, min, max){
 
     var aggregatedData = [];
     var text_content = '';
@@ -64,7 +64,7 @@ function annotate_manual(plot, data, plot_title, min, max){
     var d;
     var href_link;
     var point_text_template = '<div style="display:none">{{comment}}</div><div class="pointer" onclick="handle_manual_click()"> * </div>';
-    var row_template = '<tr class="{{row_class}}"><td>{{date}}</td><td>{{comment}}</td><td>{{author}}</td><td>{{{href_link}}}</td><td>{{external_key}}<td>{{changed_cis}}</td><td>{{failed_cis}}</tr>';
+    var row_template = '<tr class="{{row_class}}"><td>{{date}}</td><td>{{comment}}</td><td>{{author}}</td><td>{{{href_link}}}</td><td><a href="{{issuetracker_url}}/{{external_key}}">{{external_key}}</a><td>{{changed_cis}}</td><td>{{failed_cis}}</tr>';
     $('#plot_title').html(plot_title);
     $("#changes_table").html('<tr><th>Time</th><th>Comment</th><th>Author</th><th>View</th><th>External key</th><th>Changed CIs</th><th>Failed CI</th></tr>');
 
@@ -100,6 +100,7 @@ function annotate_manual(plot, data, plot_title, min, max){
             'author': data[i].author,
             'href_link':  href_link,
             'external_key' : external_key,
+            'issuetracker_url' : issuetracker_url,
             'failed_cis': data[i].errors_count,
             'changed_cis': data[i].success_count,
             'row_class': row_class
@@ -164,7 +165,7 @@ function setup(data){
             $.extend(true, {}, options, {
                 xaxis: { min: ranges.xaxis.from, max: ranges.xaxis.to }
             }));
-        annotate_manual(plot, data.manual, data.plot_title, ranges.xaxis.from, ranges.xaxis.to);
+        annotate_manual(plot, data.manual, data.plot_title, data.issuetracker_url, ranges.xaxis.from, ranges.xaxis.to);
     });
 
     placeholder.bind("plotunselected", function (event) {
@@ -174,11 +175,11 @@ function setup(data){
         plot.setSelection({ xaxis: { from: 0, to: 0 } });
         plot.setupGrid();
         plot.draw();
-        annotate_manual(plot, data.manual, data.plot_title);
+        annotate_manual(plot, data.manual, data.plot_title, data.issuetracker_url);
     });
 
     plot = $.plot(placeholder, plotdata , options);
-    annotate_manual(plot, data.manual, data.plot_title);
+    annotate_manual(plot, data.manual, data.plot_title, data.issuetracker_url);
 
 };
 
