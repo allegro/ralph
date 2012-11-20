@@ -37,4 +37,4 @@ def csvify(func):
     return wrapper
 
 def build_url(*args):
-    return '/' + '/'.join(arg.replace('/', '') for arg in args) + '/'
+    return '/'.join(arg.replace('/', '') for arg in args)
