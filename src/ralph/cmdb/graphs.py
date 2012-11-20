@@ -72,7 +72,7 @@ class ImpactCalculator(object):
         self.graph.add_nodes([x['pk'] for x in allci])
         for x in relations:
             if x['type'] == CI_RELATION_TYPES.CONTAINS.id:
-                # the only relation which we can traverse going stright
+                # the only relation which we can traverse going straight
                 parent = x['parent_id']
                 child = x['child_id']
             else:
