@@ -10,11 +10,13 @@ import datetime
 
 from django.template import loader, Context
 from powerdns.models import Domain, Record
+from django.db import models as db
 
 from lck.django.common import nested_commit_on_success
 from lck.django.common.models import MACAddressField
 
 from ralph.dnsedit.models import DHCPEntry
+from ralph.discovery.models import DeviceType
 
 
 HOSTNAME_CHUNK_PATTERN = re.compile(r'^([A-Z\d][A-Z\d-]{0,61}[A-Z\d]|[A-Z\d])$',
@@ -169,3 +171,67 @@ def set_revdns_record(ip, name, ttl=None, prio=None, overwrite=False,
             record.prio = prio
         record.save()
     return create
+
+
+def set_txt_record(domain, name, title, value):
+    """Updates or creates a TXT record with the given title."""
+    try:
+        record = Record.objects.get(
+            type='TXT',
+            name=name,
+            domain=domain,
+            content__startswith=title + ': ',
+        )
+    except Record.DoesNotExist:
+        record = Record(name=name, type='TXT', domain=domain)
+    record.content = '%s: %s' % (title, value)
+    record.save()
+
+
+def get_location(device):
+    location = ''
+    node = device
+    while node:
+        position = node.get_position() or ''
+        if position:
+            position = ' [%s]' % position
+        location = ' / ' + node.name + position + location
+        node = node.parent
+    return location
+
+
+def get_model(device):
+    if not device.model:
+        return ''
+    model = '[%s] %s' % (DeviceType.name_from_id(device.model.type),
+                         device.model.name)
+    if device.model.group:
+        model += ' {%s}' % device.model.group.name
+    return model
+
+
+@nested_commit_on_success
+def update_txt_records(device):
+    """Update the TXT records for the given device."""
+    hostnames = set()
+    addresses = set()
+    for ipaddress in device.ipaddress_set.all():
+        if ipaddress.hostname:
+            hostnames.add(ipaddress.hostname)
+        addresses.add(ipaddress.address)
+    record_names = set()
+    for record in Record.objects.filter(
+        db.Q(name__in=hostnames) | db.Q(content__in=addresses),
+        type='A',
+    ):
+        if get_revdns_records(record.content).filter(content=record.name).exists():
+            # Only update those host names, that have both A and PTR records.
+            record_names.add(record.name)
+    for name in record_names:
+        set_txt_record(record.domain, name, 'VENTURE',
+               device.venture.name if device.venture else '')
+        set_txt_record(record.domain, name, 'ROLE',
+               device.venture_role.full_name if device.venture_role else '')
+        set_txt_record(record.domain, name, 'MODEL', get_model(device))
+        set_txt_record(record.domain, name, 'LOCATION', get_location(device))
+
