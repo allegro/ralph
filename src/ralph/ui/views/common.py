@@ -443,6 +443,8 @@ def _dns_create_record(form, request, device):
     if form.cleaned_data.get('dns_new_content'):
         record = Record()
         _dns_fill_record(form, 'dns_new_', record, request)
+        record.saving_user = request.user
+        record.saving_device = device
         record.save()
         messages.success(request, "A DNS record added.")
 
@@ -450,6 +452,7 @@ def _dns_create_record(form, request, device):
 def _dns_delete_record(form, record, request):
     if record.type == 'A':
         for r in get_revdns_records(record.content).filter(content=record.name):
+            r.saving_user = request.user
             r.delete()
             messages.warning(request, "PTR record deleted.")
 
@@ -587,9 +590,13 @@ class Addresses(DeviceDetailView):
                                      "A %s record deleted." % form_name)
                     if delete_record is not None:
                         delete_record(form, record, self.request)
+                    record.saving_user = self.request.user
+                    record.saving_device = self.object
                     record.delete()
                 else:
                     fill_record(form, prefix, record, self.request)
+                    record.saving_user = self.request.user
+                    record.saving_device = self.object
                     record.save()
             create_record(form, self.request, self.object)
             messages.success(self.request,
