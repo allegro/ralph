@@ -4,9 +4,16 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import datetime
+
 from django.db import models as db
 from django.utils.translation import ugettext_lazy as _
 from lck.django.common.models import TimeTrackable, MACAddressField
+from powerdns.models import Record
+from django.db.models.signals import post_save, pre_delete
+from django.dispatch import receiver
+
+from ralph.discovery.history import field_changes
 
 
 class DHCPEntry(TimeTrackable):
@@ -22,4 +29,51 @@ class DHCPEntry(TimeTrackable):
 class DHCPServer(db.Model):
     ip = db.IPAddressField(verbose_name=_("IP address"), unique=True)
     last_synchronized = db.DateTimeField(null=True)
+
+
+class DNSHistory(db.Model):
+    date = db.DateTimeField(verbose_name=_("date"),
+                            default=datetime.datetime.now)
+    user = db.ForeignKey('auth.User', verbose_name=_("user"), null=True,
+                         blank=True, default=None, on_delete=db.SET_NULL)
+    device = db.ForeignKey('discovery.Device', verbose_name=_("device"),
+                           null=True, blank=True, default=None,
+                           on_delete=db.SET_NULL)
+    record_name = db.CharField(max_length=255, default='')
+    record_type = db.CharField(max_length=8, default='')
+    field_name = db.CharField(max_length=64, default='')
+    old_value = db.CharField(max_length=255, default='')
+    new_value = db.CharField(max_length=255, default='')
+
+    class Meta:
+        verbose_name = _("DNS History entry")
+        verbose_name_plural = _("DNS History entries")
+
+
+@receiver(post_save, sender=Record, dispatch_uid='ralph.history.dns')
+def record_post_save(sender, instance, raw, using, **kwargs):
+    for field, orig, new in field_changes(instance, ignore={
+        'last_seen', 'change_date', 'id'}):
+        DNSHistory(
+            record_name=instance.name,
+            record_type=instance.type,
+            field_name=field,
+            old_value=unicode(orig),
+            new_value=unicode(new),
+            user=getattr(instance, 'saving_user', None),
+            device=getattr(instance, 'saving_device', None),
+        ).save()
+
+
+@receiver(pre_delete, sender=Record, dispatch_uid='ralph.history.dns')
+def record_pre_delete(sender, instance, using, **kwargs):
+    DNSHistory(
+        record_name=instance.name,
+        record_type=instance.type,
+        field_name='deleted',
+        old_value=instance.content,
+        new_value='',
+        user=getattr(instance, 'saving_user', None),
+        device=getattr(instance, 'saving_device', None),
+    ).save()
 
