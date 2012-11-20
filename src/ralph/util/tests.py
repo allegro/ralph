@@ -21,7 +21,7 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.cache import cache
-from django.test import TestCase, Client
+from django.test import TestCase
 from unittest import skip
 from tastypie.models import ApiKey
 
