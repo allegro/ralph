@@ -218,7 +218,8 @@ def ci_post_save(sender, instance, raw, using, **kwargs):
 def create_issue(change_id, retry_count=1):
     ch = chdb.CIChange.objects.get(id=change_id)
     if ch.registration_type == chdb.CI_CHANGE_REGISTRATION_TYPES.OP.id:
-        raise Exception('Already registered')
+        logger.warning('Already registered')
+        return
 
     user = ''
     if ch.type == chdb.CI_CHANGE_TYPES.CONF_GIT.id:
@@ -299,7 +300,8 @@ def create_issue(change_id, retry_count=1):
         ch = chdb.CIChange.objects.get(id=ch.id)
         # before save, check one more time
         if ch.registration_type == chdb.CI_CHANGE_REGISTRATION_TYPES.OP.id:
-            raise Exception('Already registered')
+            logger.warning('Already registered')
+            return
         ch.registration_type = chdb.CI_CHANGE_REGISTRATION_TYPES.OP.id
         ch.external_key = issue.get('key')
         ch.save()
