@@ -176,7 +176,6 @@ urlpatterns = patterns('',
     url(r'^networks/(?P<network>[^/]*)/(?P<details>\w+)/(?P<device>)$',
         login_required(NetworksDeviceList.as_view()), {}, 'networks'),
 
-
     url(r'^catalog/$', login_required(Catalog.as_view()), {}, 'catalog'),
     url(r'^catalog/history/$', login_required(CatalogHistory.as_view()), {},
         'catalog_history'),
