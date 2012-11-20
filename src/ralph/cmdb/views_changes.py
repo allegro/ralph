@@ -137,6 +137,7 @@ class Changes(ChangesBase, PaginatedView):
             'form': self.form,
             'subsection': subsection,
             'sidebar_selected': sidebar_selected,
+            'jira_url': build_url(settings.ISSUETRACKERS['default']['URL'], 'browse'),
         })
         return ret
 
