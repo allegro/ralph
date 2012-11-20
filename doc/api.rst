@@ -57,8 +57,7 @@ CMDB available resources
 +-------------------------------------+--------------------------------------------------+
 | :ref:`citypes`                      | returns a list of all available types CI's       |
 +-------------------------------------+--------------------------------------------------+
-| :ref:`service`                      | returns a list of CI's whose                     |
-|                                     | type is a service                                |
+| :ref:`service`                      | returns a list of CI's whose type is a service   |
 +-------------------------------------+--------------------------------------------------+
 
 .. _businessline:
