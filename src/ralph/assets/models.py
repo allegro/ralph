@@ -60,6 +60,7 @@ class Asset(TimeTrackable):
     support_type = models.CharField(max_length=512)  # FIXME: wyjasnic czy lista/hybryda czy text
     support_void_reporting = models.BooleanField()
     model = ForeignKey('Model')
+    backoffice_data = ForeignKey('BackOfficeData', null=True, blank=True)
 
 
 class AssetStatus(TimeTrackable):
@@ -97,15 +98,19 @@ class Model(TimeTrackable):
     name =  models.CharField(max_length=100)
     vendor = models.CharField(max_length=100)
 
+def content_file_name(instance, filename):
+    return '/'.join(['content', instance.user.username, filename])
 
 class BackOfficeData(TimeTrackable):
     cost_centre = models.CharField(max_length=100)
     license_key = models.CharField(max_length=255)
     version = models.IntegerField()
-    provider = models.CharField(max_length=255) # dostawca != producent
+    provider = models.CharField(max_length=255)  # dostawca != producent
     order_no = models.CharField(max_length=50)  # nr zamowienia
-    unit_price = models.DecimalField(default=0) # koszt jednostkowy
-    attachment = models.FileField()
+    unit_price = models.DecimalField(
+        max_digits=20,decimal_places=2,default=0
+    )  # koszt jednostkowy
+    attachment = models.FileField(upload_to=content_file_name)
     license_type = models.IntegerField(choices=LicenseTypes())
     date_of_last_inventory = models.DateField()
     last_logged_user = models.CharField(max_length=100)
