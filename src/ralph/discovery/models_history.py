@@ -25,44 +25,14 @@ from ralph.discovery.models_component import (
     GenericComponent, Ethernet, FibreChannel, OperatingSystem, ComponentModel,
     ComponentModelGroup)
 from ralph.discovery.models_network import IPAddress
+from ralph.dnsedit.util import update_txt_records
+from ralph.discovery.history import field_changes as _field_changes
 
 
 FOREVER = '2199-1-1'  # not all DB backends will accept '9999-1-1'
 ALWAYS = '0001-1-1'  # not all DB backends will accept '0000-0-0'
 ALWAYS_DATE = date(1, 1, 1)
 FOREVER_DATE = date(2199, 1, 1)
-
-
-def _field_changes(instance, ignore=('last_seen',)):
-    """
-    Yield the name, original value and new value for each changed field. Skip
-    all insignificant fields and those passed in ``ignore``.
-    """
-    for field, orig in instance.dirty_fields.iteritems():
-        if field in ignore:
-            continue
-        if field in instance.insignificant_fields:
-            continue
-        if field.endswith('_id'):
-            field = field[:-3]
-            parent_model = instance._meta.get_field_by_name(
-                field
-            )[0].related.parent_model
-            try:
-                if orig is not None:
-                    orig = parent_model.objects.get(pk=orig)
-                # instance -> parent_model
-                # example: IPAddress -> Device
-                # Sometimes `parent_model` is being set to None, e.g. when
-                # a `Device` is disconnected from an `IPAddress`. In this case
-                # the instance won't find the child.
-            except parent_model.DoesNotExist:
-                orig = None
-        try:
-            new = getattr(instance, field)
-        except AttributeError:
-            continue
-        yield field, orig, new
 
 
 class HistoryChange(db.Model):
@@ -99,9 +69,11 @@ class HistoryChange(db.Model):
 @receiver(post_save, sender=Device, dispatch_uid='ralph.history')
 def device_post_save(sender, instance, raw, using, **kwargs):
     """A hook for creating ``HistoryChange`` entries when a device changes."""
+    dirty = set()
     for field, orig, new in _field_changes(instance, ignore={
             'last_seen', 'cached_cost', 'cached_price', 'raw',
             'uptime_seconds', 'uptime_timestamp'}):
+        dirty.add(field)
         HistoryChange(
             device=instance,
             field_name=field,
@@ -110,6 +82,9 @@ def device_post_save(sender, instance, raw, using, **kwargs):
             user=instance.saving_user,
             comment=instance.save_comment,
         ).save()
+    if {'venture', 'venture_role', 'position', 'chassis_position',
+        'parent', 'model'} & dirty:
+        update_txt_records(instance)
 
 
 @receiver(pre_delete, sender=Device, dispatch_uid='ralph.history')
@@ -137,6 +112,22 @@ def device_pre_delete(sender, instance, using, **kwargs):
             new_value='None',
             user=instance.saving_user,
         ).save()
+
+
+@receiver(post_save, sender=IPAddress, dispatch_uid='ralph.history.dns')
+def device_ipaddress_post_save(sender, instance, raw, using, **kwargs):
+    """A hook for updating DNS TXT records when ipaddress is changed."""
+    if instance.device:
+        update_txt_records(instance.device)
+    if instance.dirty_fields.get('device'):
+        update_txt_records(instance.dirty_fields.get('device'))
+
+
+@receiver(post_delete, sender=IPAddress, dispatch_uid='ralph.history.dns')
+def device_related_post_delete(sender, instance, using, **kwargs):
+    """A hook for updating DNS TXT records when ipaddress is deleted."""
+    if instance.device:
+        update_txt_records(instance.device)
 
 
 @receiver(pre_save, sender=Memory, dispatch_uid='ralph.history')
