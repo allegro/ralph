@@ -573,10 +573,6 @@ class Reports(ChangesBase, PaginatedView):
         return super(Reports, self).get(*args)
 
 
-def make_jira_url(external_key):
-    return settings.ISSUETRACKERS['default']['URL'] + '/' + external_key
-
-
 class TimeLine(BaseCMDBView):
     template_name = 'cmdb/timeline.html'
 
@@ -662,7 +658,7 @@ class TimeLine(BaseCMDBView):
                 id=change.id,
                 time=change.time.isoformat(),
                 comment=change.message,
-                external_key=make_jira_url(change.external_key),
+                external_key=change.external_key,
             ))
         agent_errors = []
         for change in agent_changes_errors:
@@ -670,13 +666,16 @@ class TimeLine(BaseCMDBView):
                 id=change.id,
                 time=change.time.isoformat(),
                 comment=change.message,
-                external_key=make_jira_url(change.external_key),
+                external_key=change.external_key,
             ))
         response_dict = dict(
             manual=manual,
             agent_warnings=agent_warnings,
             agent_errors=agent_errors,
-            plot_title=plot_title
+            plot_title=plot_title,
+            issuetracker_url=build_url(
+                settings.ISSUETRACKERS['default']['URL'], 'browse'
+            )
         )
         return HttpResponse(
             simplejson.dumps(response_dict),
