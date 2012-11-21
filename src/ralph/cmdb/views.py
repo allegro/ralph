@@ -17,12 +17,12 @@ from django.http import HttpResponseRedirect
 from django.http import HttpResponseForbidden
 from django.http import HttpResponse
 from django.utils.translation import ugettext_lazy as _
-
+from django.utils.safestring import mark_safe
 from django.utils import simplejson
 from django.conf import settings
 from lck.django.common import nested_commit_on_success
 from bob.menu import MenuItem, MenuHeader
-from django.utils.safestring import SafeString, mark_safe
+from django.utils.html import escape
 from lck.django.filters import slugify
 
 from ralph.cmdb.forms import (
@@ -913,22 +913,22 @@ class Search(BaseCMDBView):
         return table_header
 
     def get_name(self, i, icon):
-        return ('<a href="./ci/view/%s"> <i class="fugue-icon %s">'
-                '</i> %s</a>' % (
-            mark_safe(i.id), mark_safe(icon), mark_safe(i.name))
-            )
+        return mark_safe('<a href="./ci/view/%s"> <i class="fugue-icon %s">'
+                         '</i> %s</a>' % (
+            escape(i.id), escape(icon), escape(i.name))
+        )
 
     def get_uid(self, i):
-        return '<a href="./ci/view/%s">%s</a>' % (
-            mark_safe(i.id), mark_safe(i.uid))
+        return mark_safe('<a href="./ci/view/%s">%s</a>' % (
+            escape(i.id), escape(i.uid)))
 
     def get_layer(self, i):
-        return ', '.join(mark_safe(unicode(x)) for x in i.layers.select_related())
+        return ', '.join(unicode(x) for x in i.layers.select_related())
 
     def get_parent_dev(self, i):
         parent = '-'
         try:
-            parent = mark_safe(i.content_object.parent)
+            parent = i.content_object.parent
         except AttributeError:
             pass
         return parent
@@ -937,7 +937,7 @@ class Search(BaseCMDBView):
         network = '-'
         try:
             networks = i.content_object.ipaddress_set.all()
-            network = ', '.join(mark_safe(unicode(x)) for x in networks)
+            network = ', '.join(unicode(x) for x in networks)
         except AttributeError:
             pass
         return network
@@ -948,12 +948,11 @@ class Search(BaseCMDBView):
             dc = i.content_object.dc
         except AttributeError:
             pass
-        return mark_safe(dc)
+        return dc
 
     def get_owners(self, i, filter):
-        owners = ', '.join("%s %s" % (
-            mark_safe(b.owner.first_name), mark_safe(b.owner.last_name)
-        ) for b in i.ciownership_set.filter(type=filter)),
+        owners = ', '.join("%s %s" % (b.owner.first_name, b.owner.last_name)
+            for b in i.ciownership_set.filter(type=filter)),
         return owners[0]
 
     def get_bl(self, i, relations):
@@ -962,9 +961,10 @@ class Search(BaseCMDBView):
             child=i.id, parent__type=str(CI_TYPES.BUSINESSLINE.id),
         )
         for bl in rel_bl:
-            business_line = ('<a href="%s">%s</a>' %
-                (mark_safe(bl.parent.id), mark_safe(bl.parent.name)))
-        return business_line
+            business_line = ('<a href="%s">%s</a>' % (
+                escape(bl.parent.id), escape(bl.parent.name))
+            )
+        return mark_safe(business_line)
 
     def get_venture(self, relations, i, child=False):
         venture = []
@@ -976,7 +976,7 @@ class Search(BaseCMDBView):
             for v in ven:
                 venture.append(
                     '<a href="/cmdb/ci/view/%s">%s</a>' % (
-                        v.parent.id, v.parent.name)
+                        escape(v.parent.id), escape(v.parent.name))
                 )
         elif child is True:
             ven = relations.filter(
@@ -986,10 +986,9 @@ class Search(BaseCMDBView):
             for v in ven:
                 venture.append(
                     '<a href="/cmdb/ci/view/%s">%s</a>' % (
-                        v.child.id, v.child.name)
+                        escape(v.child.id), escape(v.child.name))
                 )
-        return (', '.join(mark_safe(x) for x in venture))
-
+        return mark_safe(', '.join(escape(x) for x in venture))
 
     def get_service(self, relations, i):
         services = ''
@@ -997,14 +996,14 @@ class Search(BaseCMDBView):
             parent=i.id, child__type=str(CI_TYPES.SERVICE.id)
         )
         for s in servi:
-            services += '%s, ' % mark_safe(s.child.name)
-        return services
+            services += '%s, ' % escape(s.child.name)
+        return mark_safe(services)
 
     def get_operations(self, i):
-        return ('<a href="./ci/edit/%s">Edit</a> | '
+        return mark_safe('<a href="./ci/edit/%s">Edit</a> | '
                 '<a href="./ci/view/%s">View</a>') % (
-            mark_safe(i.id), mark_safe(i.id)
-            )
+                    escape(i.id), escape(i.id)
+                )
 
     def get(self, *args, **kwargs):
         values = self.request.GET
