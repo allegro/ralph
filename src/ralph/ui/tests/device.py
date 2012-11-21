@@ -63,7 +63,7 @@ class TestDeviceView(TestCase):
 
     def test_software(self):
         url = '/ui/search/software/{}'.format(self.device.id)
-        response = self.client.get(url, follow=True)
+        response = self.client.get(url, follow=False)
         dev = response.context_data['object']
         software = dev.software_set.all()
         self.assertEqual(software[0], self.software1)
