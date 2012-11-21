@@ -16,13 +16,12 @@ from __future__ import unicode_literals
 
 import re
 import textwrap
-import sys
 from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import TestCase
-from unittest import skipIf, skip
+from unittest import skip
 from tastypie.models import ApiKey
 
 from ralph.business.models import Venture

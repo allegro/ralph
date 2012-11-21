@@ -1,0 +1,68 @@
+{% extends "ui/base-devices.html" %}
+{% load icons %}
+{% load url from future %}
+
+{% block content %}
+<table class="table table-striped table-bordered details-components">
+    <thead><tr>
+        <th width="16"></th>
+        <th>Label</th>
+        <th>Version</th>
+        <th>Model Group</th>
+        <th>Model</th>
+    </tr></thead>
+    <tbody>
+        {% for item in components %}
+        {% if item.model.is_software %}
+        <tr>
+            <td><i class="fugue-icon {{ item.icon }}"></i></td>
+            {%  if item.hrefinfo %}
+                <td><a href="{{ item.hrefinfo }}" style="white-space:nowrap">
+                        {{ item.label }}
+                     </a>
+                </td>
+            {%  else %}
+                <td>{{ item.label }}</td>
+            {%  endif %}
+            <td>
+                {{ item.version|default:'–' }}
+            </td>
+            <td>
+                {% if item.model.group %}
+                    {% if item.group == 'dev' %}
+                        <a href="{% url 'catalog' 'device' item.model.type item.model.group.id|default:''%}">
+                            {{ item.model.group.name }}
+                        </a>
+                    {% else %}
+                        <a href="{% url 'catalog' 'component' item.model.type  item.model.group.id|default:''%}">
+                            {{ item.model.group.name }}
+                        </a>
+                    {% endif %}
+                {% endif %}
+            </td>
+            <td>
+                {% if item.model.group %}
+                    {% if item.group == 'dev' %}
+                        <a href="{% url 'search' 'component' '' %}?model={{ item.model.name }}">
+                            {{ item.model.name }}
+                        </a>
+                    {% else %}
+                        <a href="{% url 'search' 'component' '' %}?component={{ item.model }}">
+                            {{ item.model }}
+                        </a>
+                    {% endif %}
+                {% else %}
+                    {% if item.model.type %}
+                        <a href="{% url 'catalog' 'component' item.model.type %}">{{ item.model }}</a>
+                    {% else %}
+                        {{ item.model }}
+                    {% endif %}
+                {% endif %}
+            </td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock content %}
