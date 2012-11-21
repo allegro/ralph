@@ -55,6 +55,8 @@ def get_icon_for(ci):
         return get_device_icon(ci.content_object)
     elif ci.content_type.name == 'network':
         return get_network_icon(ci.content_object)
+    else:
+        return 'wall'
 
 
 class BaseCMDBView(Base):
@@ -1235,9 +1237,7 @@ class Graphs(BaseCMDBView):
                 child=x,
                 parent=st.get(x),
                 parent_name=ci_names[x],
-                type=CIRelation.objects.filter(
-                    child__id=x, parent__id=st.get(x)
-                )[0].type,
+                type=i.graph.edge_attributes((st.get(x), x))[0],
                 child_name=ci_names[st.get(x)])
                 for x in st.keys() if x and st.get(x)]
             self.graph_data = dict(
