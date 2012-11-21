@@ -913,32 +913,34 @@ class Search(BaseCMDBView):
         return table_header
 
     def get_name(self, i, icon):
-        return SafeString('<a href="./ci/view/%s"> <i class="fugue-icon %s">'
-                          '</i> %s</a>' % (i.id, icon, i.name))
+        return ('<a href="./ci/view/%s"> <i class="fugue-icon %s">'
+                '</i> %s</a>' % (
+            mark_safe(i.id), mark_safe(icon), mark_safe(i.name))
+            )
 
     def get_uid(self, i):
-        return SafeString('<a href="./ci/view/%s">%s</a>' % (i.id, i.uid))
+        return '<a href="./ci/view/%s">%s</a>' % (
+            mark_safe(i.id), mark_safe(i.uid))
 
     def get_layer(self, i):
-        return SafeString(', '.join(
-            unicode(x) for x in i.layers.select_related()))
+        return ', '.join(mark_safe(unicode(x)) for x in i.layers.select_related())
 
     def get_parent_dev(self, i):
         parent = '-'
         try:
-            parent = i.content_object.parent
+            parent = mark_safe(i.content_object.parent)
         except AttributeError:
             pass
-        return SafeString(parent)
+        return parent
 
     def get_network(self, i):
         network = '-'
         try:
             networks = i.content_object.ipaddress_set.all()
-            network = ', '.join(unicode(x) for x in networks)
+            network = ', '.join(mark_safe(unicode(x)) for x in networks)
         except AttributeError:
             pass
-        return SafeString(network)
+        return network
 
     def get_dc(self, i):
         dc = '-'
@@ -946,12 +948,13 @@ class Search(BaseCMDBView):
             dc = i.content_object.dc
         except AttributeError:
             pass
-        return SafeString(dc)
+        return mark_safe(dc)
 
     def get_owners(self, i, filter):
-        owners = ', '.join("%s %s" % (b.owner.first_name, b.owner.last_name)
-                           for b in i.ciownership_set.filter(type=filter)),
-        return SafeString(owners[0])
+        owners = ', '.join("%s %s" % (
+            mark_safe(b.owner.first_name), mark_safe(b.owner.last_name)
+        ) for b in i.ciownership_set.filter(type=filter)),
+        return owners[0]
 
     def get_bl(self, i, relations):
         business_line = '-'
@@ -960,8 +963,8 @@ class Search(BaseCMDBView):
         )
         for bl in rel_bl:
             business_line = ('<a href="%s">%s</a>' %
-                            (bl.parent.id, bl.parent.name))
-        return SafeString(business_line)
+                (mark_safe(bl.parent.id), mark_safe(bl.parent.name)))
+        return business_line
 
     def get_venture(self, relations, i, child=False):
         venture = []
@@ -985,10 +988,8 @@ class Search(BaseCMDBView):
                     '<a href="/cmdb/ci/view/%s">%s</a>' % (
                         v.child.id, v.child.name)
                 )
-        try:
-            return SafeString(', '.join(x for x in venture))
-        except UnicodeEncodeError:
-            return mark_safe(', '.join(x for x in venture))
+        return (', '.join(mark_safe(x) for x in venture))
+
 
     def get_service(self, relations, i):
         services = ''
@@ -996,12 +997,14 @@ class Search(BaseCMDBView):
             parent=i.id, child__type=str(CI_TYPES.SERVICE.id)
         )
         for s in servi:
-            services += '%s, ' % s.child.name
-        return SafeString(services)
+            services += '%s, ' % mark_safe(s.child.name)
+        return services
 
     def get_operations(self, i):
-        return SafeString(('<a href="./ci/edit/%s">Edit</a> | '
-                           '<a href="./ci/view/%s">View</a>') % (i.id, i.id))
+        return ('<a href="./ci/edit/%s">Edit</a> | '
+                '<a href="./ci/view/%s">View</a>') % (
+            mark_safe(i.id), mark_safe(i.id)
+            )
 
     def get(self, *args, **kwargs):
         values = self.request.GET
