@@ -38,6 +38,7 @@ class BusinessLineResource(MResource):
             type__id=db.CI_TYPES.BUSINESSLINE.id).all()
         authentication = ApiKeyAuthentication()
         authorization = DjangoAuthorization()
+        list_allowed_methods = ['get']
         resource_name = 'businessline'
         throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
                                  expiration=EXPIRATION)
@@ -48,6 +49,7 @@ class ServiceResource(MResource):
         queryset = CI.objects.filter(type__id=db.CI_TYPES.SERVICE.id).all()
         authentication = ApiKeyAuthentication()
         authorization = DjangoAuthorization()
+        list_allowed_methods = ['get']
         resource_name = 'service'
         throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
                                  expiration=EXPIRATION)
@@ -68,6 +70,7 @@ class CIRelationResource(MResource):
         queryset = CIRelation.objects.all()
         authentication = ApiKeyAuthentication()
         authorization = DjangoAuthorization()
+        list_allowed_methods = ['get']
         resource_name = 'cirelation'
         throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
                                  expiration=EXPIRATION)
@@ -84,6 +87,7 @@ class CIResource(MResource):
         queryset = CI.objects.all()
         authentication = ApiKeyAuthentication()
         authorization = DjangoAuthorization()
+        list_allowed_methods = ['get']
         resource_name = 'ci'
         filtering = {
             'name': ('startswith', 'exact',),
@@ -129,8 +133,8 @@ class CILayersResource(MResource):
         queryset = CILayer.objects.all()
         authentication = ApiKeyAuthentication()
         authorization = DjangoAuthorization()
-        resourse_name = 'cilayers'
         list_allowed_methods = ['get']
+        resourse_name = 'cilayers'
         excludes = ['cache_version', 'created', 'modified']
         throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
                                  expiration=EXPIRATION)
@@ -141,10 +145,10 @@ class CIChangeResource(MResource):
         queryset = CIChange.objects.all()
         authentication = ApiKeyAuthentication()
         authorization = DjangoAuthorization()
+        allowed_methods = ['get']
         resource_name = 'cichange'
         throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
                                  expiration=EXPIRATION)
-        allowed_methods = ['get']
 
 
 class CIChangeZabbixTriggerResource(MResource):
@@ -152,6 +156,7 @@ class CIChangeZabbixTriggerResource(MResource):
         queryset = CIChangeZabbixTrigger.objects.all()
         authentication = ApiKeyAuthentication()
         authorization = DjangoAuthorization()
+        list_allowed_methods = ['get', 'post']
         resource_name = 'cichangezabbixtrigger'
         throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
                                  expiration=EXPIRATION)
@@ -162,6 +167,7 @@ class CIChangeStatusOfficeIncidentResource(MResource):
         queryset = CIChangeStatusOfficeIncident.objects.all()
         authentication = ApiKeyAuthentication()
         authorization = DjangoAuthorization()
+        list_allowed_methods = ['get', 'post']
         resource_name = 'cichangestatusofficeincident'
         throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
                                  expiration=EXPIRATION)
@@ -172,6 +178,7 @@ class CIChangeGitResource(MResource):
         queryset = CIChangeGit.objects.all()
         authentication = ApiKeyAuthentication()
         authorization = DjangoAuthorization()
+        list_allowed_methods = ['get', 'post']
         resource_name = 'cichangegit'
         throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
                                  expiration=EXPIRATION)
@@ -182,6 +189,7 @@ class CIChangePuppetResource(MResource):
         queryset = CIChangePuppet.objects.all()
         authentication = ApiKeyAuthentication()
         authorization = DjangoAuthorization()
+        list_allowed_methods = ['get', 'post']
         resource_name = 'cichangepuppet'
         throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
                                  expiration=EXPIRATION)
@@ -194,6 +202,7 @@ class CIChangeCMDBHistoryResource(MResource):
         queryset = CIChangeCMDBHistory.objects.all()
         authentication = ApiKeyAuthentication()
         authorization = DjangoAuthorization()
+        list_allowed_methods = ['get']
         resource_name = 'cichangecmdbhistory'
         throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
                                  expiration=EXPIRATION)
@@ -204,8 +213,8 @@ class CITypesResource(MResource):
         queryset = CIType.objects.all()
         authentication = ApiKeyAuthentication()
         authorization = DjangoAuthorization()
-        resourse_name = 'citypes'
         list_allowed_methods = ['get']
+        resourse_name = 'citypes'
         excludes = ['cache_version', 'created', 'modified']
         throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
                                  expiration=EXPIRATION)

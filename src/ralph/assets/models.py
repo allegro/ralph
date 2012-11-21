@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
+"""Asset management models."""
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -9,8 +12,8 @@ import datetime
 
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-from django.db.models.fields.related import ForeignKey
-from lck.django.common.models import TimeTrackable
+
+from lck.django.common.models import TimeTrackable, EditorTrackable
 from lck.django.choices import Choices
 
 from ralph.discovery.models_device import Device as RalphDevice
@@ -22,8 +25,16 @@ class LicenseTypes(Choices):
     box = _("box")
 
 
-class Status(Choices):
+class AssetType(Choices):
     _ = Choices.Choice
+    back_office = _("back office")
+    data_center = _("data center")
+    administration = _("administration")
+
+
+class AssetStatus(Choices):
+    _ = Choices.Choice
+
     HARDWARE = Choices.Group(0)
     new = _("new")
     in_progress = _("in progress")
@@ -44,76 +55,81 @@ class Status(Choices):
 
 class AssetSource(Choices):
     _ = Choices.Choice
+
     shipment = _("shipment")
     recovery = _("recovery")
 
 
-class Asset(TimeTrackable):
-    source = models.IntegerField(choices=AssetSource())
-    invoice_no = models.CharField(max_length=30)
-    buy_date = models.DateField(default=datetime.datetime.now)
-    sn = models.CharField(max_length=200)
-    barcode = models.CharField(max_length=200)
-    support_period = models.IntegerField(
-        verbose_name="Support period in months")
-    support_type = models.CharField(max_length=512)  # FIXME: wyjasnic czy lista/hybryda czy text
-    support_void_reporting = models.BooleanField()
-    model = ForeignKey('Model')
-    backoffice_data = ForeignKey('BackOfficeData', null=True, blank=True)
+class AssetManufacturer(TimeTrackable, EditorTrackable):
+    name = models.CharField(max_length=250)
 
 
-class AssetStatus(TimeTrackable):
-    device = ForeignKey('Device')
-    status = models.IntegerField(
-        choices=Status(),
-        verbose_name=_("relation kind")
-    )
-
-
-class Device(TimeTrackable):
-    ralph_device = ForeignKey(RalphDevice, null=True)
-    size = models.IntegerField(
-        verbose_name='Size in units',
-        default=0
-    )
-    location = models.CharField(
-        max_length=255,
-        verbose_name="A place where device is currently located in."
-        " May be DC/Rack or City/branch"
-    )
-
-
-class Part(Asset,TimeTrackable):
-    barcode_recovery = models.CharField(max_length=50)
-    source_device = ForeignKey(
-        'Device',
-        related_name = 'source_device',
-        null=True, blank=True,
-    )
-    device = ForeignKey('Device', related_name='device',null=True, blank=True)
-
-
-class Model(TimeTrackable):
-    name =  models.CharField(max_length=100)
-    vendor = models.CharField(max_length=100)
+class AssetModel(TimeTrackable, EditorTrackable):
+    manufacturer = models.ForeignKey(AssetManufacturer,
+                                     on_delete=models.PROTECT)
+    name = models.CharField(max_length=250)
 
 
 def content_file_name(instance, filename):
     return '/'.join(['content', instance.user.username, filename])
 
 
-class BackOfficeData(TimeTrackable):
-    cost_centre = models.CharField(max_length=100)
-    license_key = models.CharField(max_length=255)
-    version = models.IntegerField()
-    provider = models.CharField(max_length=255)  # dostawca != producent
-    order_no = models.CharField(max_length=50)  # nr zamowienia
-    unit_price = models.DecimalField(
-        max_digits=20,decimal_places=2,default=0
-    )  # koszt jednostkowy
-    attachment = models.FileField(upload_to=content_file_name)
-    license_type = models.IntegerField(choices=LicenseTypes())
-    date_of_last_inventory = models.DateField()
-    last_logged_user = models.CharField(max_length=100)
+class BackOfficeData(models.Model):
+    license_key = models.CharField(max_length=255, null=True, blank=True)
+    version = models.CharField(max_length=50, null=True, blank=True)
+    order_no = models.CharField(max_length=50, null=True, blank=True)
+    unit_price = models.DecimalField(max_digits=20, decimal_places=2,
+                                     default=0)
+    attachment = models.FileField(upload_to=content_file_name, null=True,
+                                  blank=True)
+    license_type = models.IntegerField(choices=LicenseTypes(),
+                                       verbose_name=_("license type"),
+                                       null=True, blank=True)
+    date_of_last_inventory = models.DateField(null=True, blank=True)
+    last_logged_user = models.CharField(max_length=100, null=True, blank=True)
 
+
+class Asset(TimeTrackable, EditorTrackable):
+    type = models.PositiveSmallIntegerField(choices=AssetType())
+    model = models.ForeignKey(AssetModel, on_delete=models.PROTECT)
+    source = models.PositiveIntegerField(verbose_name=_("source"),
+                                         choices=AssetSource(),
+                                         db_index=True)
+    invoice_no = models.CharField(max_length=30, db_index=True)
+    buy_date = models.DateField(default=datetime.datetime.now())
+    sn = models.CharField(max_length=200, unique=True)
+    barcode = models.CharField(max_length=200, null=True, blank=True,
+                               unique=True)
+    support_period = models.PositiveSmallIntegerField(
+        verbose_name="support period in months")
+    support_type = models.CharField(max_length=150)
+    support_void_reporting = models.BooleanField(default=False, db_index=True)
+    provider = models.CharField(max_length=100, null=True, blank=True)
+    back_office_data = models.ForeignKey(BackOfficeData, null=True, blank=True,
+                                         on_delete=models.SET_NULL)
+    status = models.PositiveSmallIntegerField(verbose_name=_("status"),
+                                              choices=AssetStatus())
+
+    class Meta:
+        abstract = True
+
+
+class Device(Asset):
+    ralph_device = models.ForeignKey(RalphDevice, null=True, blank=True,
+                                     on_delete=models.SET_NULL)
+    size = models.PositiveSmallIntegerField(verbose_name='Size in units',
+                                            default=1)
+    location = models.CharField(
+        max_length=250,
+        verbose_name="A place where device is currently located in."
+        " May be DC/Rack or City/branch"
+    )
+
+
+class Part(Asset):
+    barcode_recovery = models.CharField(max_length=200, null=True, blank=True)
+    source_device = models.ForeignKey(
+        Device, null=True, blank=True, related_name='source_device')
+    device = models.ForeignKey(
+        Device, null=True, blank=True, related_name='device')
 
