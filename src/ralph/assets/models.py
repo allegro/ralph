@@ -20,8 +20,16 @@ from ralph.discovery.models_device import Device as RalphDevice
 
 
 class LicenseTypes(Choices):
+    _ = Choices.Choice
     oem = _("oem")
     box = _("box")
+
+
+class AssetType(Choices):
+    _ = Choices.Choice
+    back_office = _("back office")
+    data_center = _("data center")
+    administration = _("administration")
 
 
 class AssetStatus(Choices):
@@ -82,6 +90,7 @@ class BackOfficeData(models.Model):
 
 
 class Asset(TimeTrackable, EditorTrackable):
+    type = models.PositiveSmallIntegerField(choices=AssetType())
     model = models.ForeignKey(AssetModel, on_delete=models.PROTECT)
     source = models.PositiveIntegerField(verbose_name=_("source"),
                                          choices=AssetSource(),
@@ -119,6 +128,8 @@ class Device(Asset):
 
 class Part(Asset):
     barcode_recovery = models.CharField(max_length=200, null=True, blank=True)
-    source_device = models.ForeignKey(Device, null=True, blank=True)
-    device = models.ForeignKey(Device, null=True, blank=True)
+    source_device = models.ForeignKey(
+        Device, null=True, blank=True, related_name='source_device')
+    device = models.ForeignKey(
+        Device, null=True, blank=True, related_name='device')
 
