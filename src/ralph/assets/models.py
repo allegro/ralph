@@ -11,12 +11,12 @@ from __future__ import unicode_literals
 import datetime
 
 from django.db import models
-from ralph.discovery.models_device import Device as RalphDevice
+from django.utils.translation import ugettext_lazy as _
 
 from lck.django.common.models import TimeTrackable, EditorTrackable
 from lck.django.choices import Choices
 
-from django.utils.translation import ugettext_lazy as _
+from ralph.discovery.models_device import Device as RalphDevice
 
 
 class LicenseTypes(Choices):
@@ -87,7 +87,6 @@ class Asset(TimeTrackable, EditorTrackable):
                                          choices=AssetSource(),
                                          db_index=True)
     invoice_no = models.CharField(max_length=30, db_index=True)
-    unrelated_invoice = models.BooleanField(default=False)
     buy_date = models.DateField(default=datetime.datetime.now())
     sn = models.CharField(max_length=200, unique=True)
     barcode = models.CharField(max_length=200, null=True, blank=True,
