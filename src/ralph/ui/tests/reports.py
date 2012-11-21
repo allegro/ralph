@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 
 from django.conf import settings
 from django.test import TestCase
+
 from ralph.cmdb.models_ci import (
     CI, CIType, CIRelation, CI_RELATION_TYPES, CI_TYPES
 )
