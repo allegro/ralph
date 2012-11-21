@@ -25,7 +25,7 @@ class DNSHistoryAdmin(ModelAdmin):
                     'old_value', 'new_value')
     search_fields = ('record_name', 'old_value', 'new_value', 'field_name',
                      'date')
-    list_filter = ('record_type', 'date', 'field_name'),
+    list_filter = ('record_type', 'date', 'field_name')
     save_on_top = True
 
 admin.site.register(DNSHistory, DNSHistoryAdmin)
