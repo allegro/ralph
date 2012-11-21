@@ -186,17 +186,19 @@ class BaseMixin(object):
             try:
                 device = self.kwargs['device']
             except KeyError:
-                device = ''
-
-            if device is not '':
-                ci = CI.objects.get(
-                    type=CI_TYPES.DEVICE.id,
-                    object_id=device
-                )
-                tab_items.extend([
-                    MenuItem('CMDB', fugue_icon='fugue-thermometer',
-                             href='/cmdb/ci/view/%s' % ci.id),
-                ])
+                device = None
+            if device is not None:
+                try:
+                    ci = CI.objects.get(
+                        type=CI_TYPES.DEVICE.id,
+                        object_id=device
+                    )
+                    tab_items.extend([
+                        MenuItem('CMDB', fugue_icon='fugue-thermometer',
+                                 href='/cmdb/ci/view/%s' % ci.id),
+                    ])
+                except:
+                    pass
         if has_perm(Perm.read_device_info_reports, venture):
             tab_items.extend([
                 MenuItem('Reports', fugue_icon='fugue-reports-stack',
