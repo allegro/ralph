@@ -8,13 +8,12 @@ from __future__ import unicode_literals
 import datetime
 
 from django.db import models
-from ralph.discovery.models_device import Device as RalphDevice
-
+from django.utils.translation import ugettext_lazy as _
+from django.db.models.fields.related import ForeignKey
 from lck.django.common.models import TimeTrackable
 from lck.django.choices import Choices
 
-from django.utils.translation import ugettext_lazy as _
-from django.db.models.fields.related import ForeignKey
+from ralph.discovery.models_device import Device as RalphDevice
 
 
 class LicenseTypes(Choices):
@@ -98,8 +97,10 @@ class Model(TimeTrackable):
     name =  models.CharField(max_length=100)
     vendor = models.CharField(max_length=100)
 
+
 def content_file_name(instance, filename):
     return '/'.join(['content', instance.user.username, filename])
+
 
 class BackOfficeData(TimeTrackable):
     cost_centre = models.CharField(max_length=100)
