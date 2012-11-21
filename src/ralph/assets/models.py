@@ -16,8 +16,6 @@ from django.utils.translation import ugettext_lazy as _
 from lck.django.common.models import TimeTrackable, EditorTrackable
 from lck.django.choices import Choices
 
-from ralph.discovery.models_device import Device as RalphDevice
-
 
 class LicenseTypes(Choices):
     _ = Choices.Choice
@@ -57,7 +55,7 @@ class AssetSource(Choices):
     _ = Choices.Choice
 
     shipment = _("shipment")
-    recovery = _("recovery")
+    salvaged = _("salvaged")
 
 
 class AssetManufacturer(TimeTrackable, EditorTrackable):
@@ -74,7 +72,7 @@ def content_file_name(instance, filename):
     return '/'.join(['content', instance.user.username, filename])
 
 
-class BackOfficeData(models.Model):
+class OfficeData(models.Model):
     license_key = models.CharField(max_length=255, null=True, blank=True)
     version = models.CharField(max_length=50, null=True, blank=True)
     order_no = models.CharField(max_length=50, null=True, blank=True)
@@ -90,6 +88,11 @@ class BackOfficeData(models.Model):
 
 
 class Asset(TimeTrackable, EditorTrackable):
+    device_info = models.OneToOneField('DeviceInfo', null=True, blank=True)
+    part_info = models.OneToOneField('PartInfo', null=True, blank=True)
+    office_data = models.OneToOneField(
+        OfficeData, null=True, blank=True,
+        on_delete=models.SET_NULL)
     type = models.PositiveSmallIntegerField(choices=AssetType())
     model = models.ForeignKey(AssetModel, on_delete=models.PROTECT)
     source = models.PositiveIntegerField(verbose_name=_("source"),
@@ -105,31 +108,26 @@ class Asset(TimeTrackable, EditorTrackable):
     support_type = models.CharField(max_length=150)
     support_void_reporting = models.BooleanField(default=False, db_index=True)
     provider = models.CharField(max_length=100, null=True, blank=True)
-    back_office_data = models.ForeignKey(BackOfficeData, null=True, blank=True,
-                                         on_delete=models.SET_NULL)
     status = models.PositiveSmallIntegerField(verbose_name=_("status"),
                                               choices=AssetStatus())
 
-    class Meta:
-        abstract = True
 
-
-class Device(Asset):
-    ralph_device = models.ForeignKey(RalphDevice, null=True, blank=True,
+class DeviceInfo(TimeTrackable):
+    ralph_device = models.ForeignKey('discovery.Device', null=True, blank=True,
                                      on_delete=models.SET_NULL)
     size = models.PositiveSmallIntegerField(verbose_name='Size in units',
                                             default=1)
     location = models.CharField(
         max_length=250,
         verbose_name="A place where device is currently located in."
-        " May be DC/Rack or City/branch"
+                     " May be DC/Rack or City/branch"
     )
 
 
-class Part(Asset):
-    barcode_recovery = models.CharField(max_length=200, null=True, blank=True)
+class PartInfo(TimeTrackable):
+    barcode_salvaged = models.CharField(max_length=200, null=True, blank=True)
     source_device = models.ForeignKey(
-        Device, null=True, blank=True, related_name='source_device')
+        Asset, null=True, blank=True, related_name='source_device')
     device = models.ForeignKey(
-        Device, null=True, blank=True, related_name='device')
+        Asset, null=True, blank=True, related_name='device')
 
