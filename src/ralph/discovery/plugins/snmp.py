@@ -17,6 +17,7 @@ from ralph.discovery.models import MAC_PREFIX_BLACKLIST
 from ralph.discovery.snmp import snmp_command, snmp_macs, check_snmp_port
 
 
+SAVE_PRIORITY = 1
 SNMP_PLUGIN_COMMUNITIES = getattr(settings, 'SNMP_PLUGIN_COMMUNITIES',
     ['public'])
 
@@ -140,7 +141,7 @@ def _snmp_modular(ip, community, parent):
                     position = str(i),
                     parent=parent,
                 )
-            dev.save(update_last_seen=True)
+            dev.save(update_last_seen=True, priority=SAVE_PRIORITY)
 
 def snmp_f5(**kwargs):
     ip = str(kwargs['ip'])
@@ -281,7 +282,7 @@ def do_snmp_mac(snmp_name, community, snmp_version, ip, kwargs):
         dev.boot_firmware = 'AsyncOS %s %s' % (
                 pairs.get('AsyncOS Version'), pairs.get('Build Date'))
         dev.sn = pairs.get('Serial #')
-        dev.save(update_last_seen=True)
+        dev.save(update_last_seen=True, priority=SAVE_PRIORITY)
     elif model_name == 'Intel Modular Blade System':
         _snmp_modular(ip, community, dev)
     if not dev.operatingsystem_set.exists():

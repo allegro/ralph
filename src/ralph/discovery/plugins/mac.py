@@ -11,6 +11,8 @@ from lck.django.common import nested_commit_on_success
 from ralph.util import plugin
 from ralph.discovery.models import (Device, Ethernet, IPAddress)
 
+SAVE_PRIORITY=0
+
 
 @nested_commit_on_success
 def _merge_devs(dev, other_dev):
@@ -19,7 +21,7 @@ def _merge_devs(dev, other_dev):
             continue
         if not getattr(dev, field):
             setattr(dev, field, value)
-    dev.save()
+    dev.save(priority=SAVE_PRIORITY)
     for set_field in Device.__dict__.keys():
         if not set_field.endswith('_set'):
             continue
@@ -27,7 +29,7 @@ def _merge_devs(dev, other_dev):
             continue
         for child in getattr(other_dev, set_field).all():
             child.device = dev
-            child.save()
+            child.save(priority=SAVE_PRIORITY)
     other_dev.delete()
 
 def _connect_macs(dev):
