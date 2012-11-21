@@ -10,6 +10,7 @@ from django.test import TestCase
 from ralph.cmdb.models_ci import CI, CIType, CIRelation, CI_RELATION_TYPES
 from ralph.ui.tests.helper import login_as_su
 
+
 CURRENT_DIR = settings.CURRENT_DIR
 
 
