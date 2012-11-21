@@ -8,6 +8,7 @@ from __future__ import unicode_literals
 
 import pygraph
 from pygraph.algorithms.searching import breadth_first_search
+from pygraph.classes.exceptions import AdditionError
 
 from ralph.cmdb.models import CI, CIRelation, CI_TYPES, CI_RELATION_TYPES
 from ralph.discovery.models import DeviceModel, DeviceType
@@ -66,9 +67,22 @@ class ImpactCalculator(object):
         allci = CI.objects.all().values('pk')
         relations = CIRelation.objects.filter(
             type__in=self.relation_types
-        ).values('parent_id', 'child_id')
+        ).values('parent_id', 'child_id', 'type')
         self.graph = pygraph.classes.digraph.digraph()
         self.graph.add_nodes([x['pk'] for x in allci])
         for x in relations:
-            self.graph.add_edge((x['parent_id'], x['child_id']))
+            if x['type'] == CI_RELATION_TYPES.CONTAINS.id:
+                # the only relation which we can traverse going straight
+                parent = x['parent_id']
+                child = x['child_id']
+            else:
+                # opposite direction for graph traversal.
+                parent = x['child_id']
+                child = x['parent_id']
+            try:
+                self.graph.add_edge((parent, child), attrs=(x['type'],))
+            except AdditionError:
+                # ignore duplicated relations(types) in graph
+                pass
+
 
