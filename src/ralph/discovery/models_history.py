@@ -49,6 +49,7 @@ class HistoryChange(db.Model):
     component = db.CharField(max_length=255, default='')
     component_id = db.IntegerField(default=None, null=True, blank=True)
     comment = db.TextField(null=True)
+    plugin = db.CharField(max_length=64, default='')
 
     class Meta:
         verbose_name = _("history change")
@@ -81,6 +82,7 @@ def device_post_save(sender, instance, raw, using, **kwargs):
             new_value=unicode(new),
             user=instance.saving_user,
             comment=instance.save_comment,
+            plugin=instance.saving_plugin,
         ).save()
     if {'venture', 'venture_role', 'position', 'chassis_position',
         'parent', 'model'} & dirty:
@@ -101,6 +103,7 @@ def device_pre_delete(sender, instance, using, **kwargs):
         old_value=unicode(instance),
         new_value='',
         user=instance.saving_user,
+        plugin=instance.saving_plugin,
     ).save()
     for ip in instance.ipaddress_set.all():
         HistoryChange(
@@ -111,6 +114,7 @@ def device_pre_delete(sender, instance, using, **kwargs):
             old_value=unicode(instance),
             new_value='None',
             user=instance.saving_user,
+            plugin=instance.saving_plugin,
         ).save()
 
 
@@ -149,7 +153,10 @@ def device_related_pre_save(sender, instance, raw, using, **kwargs):
     A hook for creating ``HistoryChange`` entry when a component is changed.
     """
 
-    device = instance.device
+    try:
+        device = instance.device
+    except Device.DoesNotExist:
+        device = None
     for field, orig, new in _field_changes(instance, ignore={
             'last_seen', 'network_id', 'number', 'hostname', 'last_puppet',
             'dns_info'}):
@@ -161,6 +168,7 @@ def device_related_pre_save(sender, instance, raw, using, **kwargs):
             user=device.saving_user if device else None,
             component=unicode(instance),
             component_id=instance.id,
+            plugin=device.saving_plugin if device else '',
         ).save()
 
 
@@ -190,6 +198,7 @@ def device_related_pre_delete(sender, instance, using, **kwargs):
         new_value='None',
         component=unicode(instance),
         component_id=instance.id,
+        plugin=instance.device.saving_plugin if instance.device else '',
     ).save()
 
 
