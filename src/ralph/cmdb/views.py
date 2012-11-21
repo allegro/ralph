@@ -988,7 +988,7 @@ class Search(BaseCMDBView):
                     '<a href="/cmdb/ci/view/%s">%s</a>' % (
                         escape(v.child.id), escape(v.child.name))
                 )
-        return mark_safe(', '.join(escape(x) for x in venture))
+        return mark_safe(', '.join(x for x in venture))
 
     def get_service(self, relations, i):
         services = ''
