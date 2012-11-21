@@ -297,25 +297,7 @@ repository by running::
 API
 ----
 
-Ability to filter the resource CI
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Availability methods:
-
-- startswith
-    - fields ``name, barcode``
-- exact
-    - fields ``name, barcode, bussiness_owners, layers, pci_scope, type, technical_owners``
-
-Example usage:
-
-- startswith ::
-
-    http://localhost:/api/v0.9/ci/?field_name__startswith=phrase&username=your_username&api_key=your_api_key&format=json
-
-- exact ::
-
-    http://localhost:/api/v0.9/ci/?field_name=phrase&username=your_username&api_key=your_api_key&format=json
+More information about accessing to the CMDB can be found in :ref:`cmdb_resources`
 
 
 Future Releases
