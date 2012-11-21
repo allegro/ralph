@@ -968,7 +968,7 @@ class Graphs(BaseCMDBView):
                 child=x,
                 parent=st.get(x),
                 parent_name=ci_names[x],
-                type=i.graph.edge_attributes((st.get(x),x))[0],
+                type=i.graph.edge_attributes((st.get(x), x))[0],
                 child_name=ci_names[st.get(x)])
                 for x in st.keys() if x and st.get(x)]
             self.graph_data = dict(
