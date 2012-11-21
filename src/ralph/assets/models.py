@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-"""Asset management models."""
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -21,6 +18,7 @@ from django.db.models.fields.related import ForeignKey
 
 
 class LicenseTypes(Choices):
+    _ = Choices.Choice
     oem = _("oem")
     box = _("box")
 
@@ -52,15 +50,15 @@ class AssetSource(Choices):
 
 
 class Asset(TimeTrackable):
-    source = models.ForeignKey(AssetSource)
+    source = models.IntegerField(choices=AssetSource())
     invoice_no = models.CharField(max_length=30)
     buy_date = models.DateField(default=datetime.datetime.now)
     sn = models.CharField(max_length=200)
     barcode = models.CharField(max_length=200)
     support_period = models.IntegerField(
         verbose_name="Support period in months")
-    support_type = models.IntegerField(max_length=512)  # FIXME: wyjasnic czy lista/hybryda czy text
-    support_void_reporting = models.CharField()
+    support_type = models.CharField(max_length=512)  # FIXME: wyjasnic czy lista/hybryda czy text
+    support_void_reporting = models.BooleanField()
     model = ForeignKey('Model')
 
 
@@ -85,12 +83,14 @@ class Device(TimeTrackable):
     )
 
 
-class Part(TimeTrackable):
+class Part(Asset,TimeTrackable):
     barcode_recovery = models.CharField(max_length=50)
     source_device = ForeignKey(
-        Device, null=True, blank=True,
+        'Device',
+        related_name = 'source_device',
+        null=True, blank=True,
     )
-    device = ForeignKey(Device, null=True, blank=True)
+    device = ForeignKey('Device', related_name='device',null=True, blank=True)
 
 
 class Model(TimeTrackable):
@@ -98,7 +98,7 @@ class Model(TimeTrackable):
     vendor = models.CharField(max_length=100)
 
 
-class BackOfficeData:
+class BackOfficeData(TimeTrackable):
     cost_centre = models.CharField(max_length=100)
     license_key = models.CharField(max_length=255)
     version = models.IntegerField()

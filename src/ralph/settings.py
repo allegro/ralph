@@ -80,6 +80,7 @@ INSTALLED_APPS = [
     'ralph.dnsedit',
     'ralph.util',
     'ralph.deployment',
+    'ralph.assets',
     'ajax_select',
     'powerdns',
 ]
