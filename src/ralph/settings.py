@@ -80,6 +80,7 @@ INSTALLED_APPS = [
     'ralph.dnsedit',
     'ralph.util',
     'ralph.deployment',
+    'ralph.assets',
     'ajax_select',
     'powerdns',
 ]
@@ -281,7 +282,7 @@ ZABBIX_URL = None
 ZABBIX_USER = None
 ZABBIX_PASSWORD = None
 ZABBIX_DEFAULT_GROUP = 'test'
-BUGTRACKER_URL = 'https://github.com/allegro/ralph/issues'
+BUGTRACKER_URL = 'https://github.com/allegro/ralph/issues/new'
 SO_URL = None
 OPENSTACK_URL = None
 OPENSTACK_USER = None
