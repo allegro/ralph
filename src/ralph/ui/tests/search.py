@@ -191,7 +191,7 @@ class TestSearch(TestCase):
 
     def test_access_to_device(self):
         #User has perm to device list and device details
-        device_list = self.client.get('/ui/search/info/', follow=True)
+        device_list = self.client.get('/ui/search/info/')
         self.assertEqual(device_list.status_code, 200)
         url = '/ui/search/info/%s' % self.device.id
         device_details = self.client.get(url, follow=True)
@@ -200,13 +200,13 @@ class TestSearch(TestCase):
     def test_name_field_old(self):
         #Search objects in response.context
         url = '/ui/search/info/%s' % self.device.id
-        device_search = self.client.get(url, follow=True)
+        device_search = self.client.get(url)
         context = device_search.context['object']
         self.assertEqual(context.name, self.device.name)
 
     def test_address_or_network_field(self):
         url = '/ui/search/info/%s' % self.device.id
-        device_search = self.client.get(url, follow=True)
+        device_search = self.client.get(url)
         context = device_search.context['object']
         #test ip
         self.assertEqual(context.name, self.device.name)
@@ -219,13 +219,13 @@ class TestSearch(TestCase):
 
     def test_remarks_field(self):
         url = '/ui/search/info/%s' % self.device.id
-        device_search = self.client.get(url, follow=True)
+        device_search = self.client.get(url)
         context = device_search.context['object']
         self.assertEqual(context.remarks, DEVICE['remarks'])
 
     def test_venture_or_role_field(self):
         url = '/ui/search/info/%s' % self.device.id
-        device_search = self.client.get(url, follow=True)
+        device_search = self.client.get(url)
         context = device_search.context['object']
         self.assertEqual(self.device.venture.name, DEVICE['venture'])
         self.assertEqual(context.venture.name, DEVICE['venture'])
@@ -234,7 +234,7 @@ class TestSearch(TestCase):
 
     def test_model_field(self):
         url = '/ui/search/info/%s' % self.device.id
-        device_search = self.client.get(url, follow=True)
+        device_search = self.client.get(url)
         context = device_search.context['object']
         self.assertEqual(self.device.model.type, DeviceType.unknown)
         self.assertEqual(context.model.type, DeviceType.unknown)
@@ -242,14 +242,14 @@ class TestSearch(TestCase):
 
     def test_component_or_software_field(self):
         url = '/ui/search/info/%s' % self.device.id
-        device_search = self.client.get(url, follow=True)
+        device_search = self.client.get(url)
         context = device_search.context['object']
         processor = context.processor_set.filter(device=self.device.id).count()
         self.assertTrue(processor > 0)
 
     def test_serial_number_mac_or_wwn_field(self):
         url = '/ui/search/info/%s' % self.device.id
-        device_search = self.client.get(url, follow=True)
+        device_search = self.client.get(url)
         context = device_search.context['object']
         self.assertEqual(self.device.sn, context.sn)
         mac = context.ethernet_set.filter(mac=DEVICE['mac']).count()
@@ -300,51 +300,3 @@ class TestSearch(TestCase):
         self.assertEqual(context.model.type, DeviceType.unknown)
 
 
-class TestDeviceView(TestCase):
-    def setUp(self):
-        login = 'ralph'
-        password = 'ralph'
-        self.user = User.objects.create_user(
-            login, 'ralph@ralph.local', password
-        )
-        self.user.is_staff = True
-        self.user.is_superuser = True
-        self.user.save()
-        self.client = Client()
-        self.client.login(username=login, password=password)
-        self.device = Device.create(
-            sn=DEVICE['sn'],
-            barcode=DEVICE['barcode'],
-            remarks=DEVICE['remarks'],
-            model_name=DEVICE['model_name'],
-            model_type=DeviceType.unknown,
-            rack=DEVICE['rack'],
-            position=DEVICE['position'],
-            dc=DATACENTER,
-        )
-        self.software1 = Software.create(
-            dev=self.device,
-            path='apache2',
-            model_name='apache2 2.4.3',
-            label='apache',
-            family='http servers',
-            version='2.4.3',
-        )
-        self.software1.save()
-        self.software2 = Software.create(
-            dev=self.device,
-            path='gcc',
-            model_name='gcc 4.7.2',
-            label='gcc',
-            family='compilers',
-            version='4.7.2',
-        )
-        self.software2.save()
-
-    def test_software(self):
-        url = '/ui/search/software/{}'.format(self.device.id)
-        response = self.client.get(url)
-        dev = response.context_data['object']
-        software = dev.software_set.all()
-        self.assertEqual(software[0], self.software1)
-        self.assertEqual(software[1], self.software2)

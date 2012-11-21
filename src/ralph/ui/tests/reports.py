@@ -24,10 +24,6 @@ class TestReportsServices(TestCase):
 
     def setUp(self):
         self.client = login_as_su()
-        self.ci_type_venture = CIType(name='Venture')
-        self.ci_type_venture.save()
-        self.ci_type_service = CIType(name='Service')
-        self.ci_type_service.save()
         self.service = CI(
             name='allegro.pl',
             type=CIType.objects.get(id=7)
@@ -68,10 +64,10 @@ class TestReportsServices(TestCase):
         url = '/ui/reports/services/'
         report = self.client.get(url, follow=True)
         self.assertEqual(report.status_code, 200)
-        serv_with_ven = report.context['serv_with_ven']
+        invalid_relation = report.context['invalid_relation']
         serv_without_ven = report.context['serv_without_ven']
-        self.assertEqual(serv_with_ven[0].name, 'allegro.pl')
-        self.assertEqual(len(serv_with_ven), 1)
+        self.assertEqual(invalid_relation[0].name, 'allegro.pl')
+        self.assertEqual(len(invalid_relation), 1)
         self.assertEqual(len(serv_without_ven), 0)
         # local service for tests
         service = CI(name='ceneo.pl', type=CIType.objects.get(id=7))
@@ -80,9 +76,9 @@ class TestReportsServices(TestCase):
         venture = CI(name='allegro_prod', type=CIType.objects.get(id=4))
         venture.save()
         reload_report = self.client.get(url, follow=True)
-        re_serv_with_ven = reload_report.context['serv_with_ven']
+        re_invalid_relation = reload_report.context['invalid_relation']
         re_serv_without_ven = reload_report.context['serv_without_ven']
-        self.assertEqual(len(re_serv_with_ven), 1)
+        self.assertEqual(len(re_invalid_relation), 1)
         self.assertEqual(len(re_serv_without_ven), 1)
 
 
