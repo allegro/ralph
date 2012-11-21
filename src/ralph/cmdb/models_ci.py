@@ -14,9 +14,9 @@ from django.utils.translation import ugettext_lazy as _
 
 from lck.django.common.models import TimeTrackable, WithConcurrentGetOrCreate
 from lck.django.choices import Choices
+from lck.django.filters import slugify
 from pygraph.classes.digraph import digraph
 from pygraph.algorithms.cycles import find_cycle
-
 
 class CI_RELATION_TYPES(Choices):
     _ = Choices.Choice
@@ -49,6 +49,19 @@ class CI_ATTRIBUTE_TYPES(Choices):
     DATE = _('Date')
     FLOAT = _('Real')
     CHOICE = _('Choice List')
+
+
+class CI_LAYER(Choices):
+    _ = Choices.Choice
+
+    APPLICATIONS = _('Applications')
+    DATABASES = _('Databases')
+    DOC = _('Documentation/Procedures')
+    OU = _('Organization Unit/Support Group')
+    HARDWARE = _('Hardware')
+    NETWORK = _('Network')
+    SERVICES = _('Services')
+    ROLES = _('Roles')
 
 
 # Constants from  db

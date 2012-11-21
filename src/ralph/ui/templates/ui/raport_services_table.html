@@ -1,0 +1,35 @@
+{% load icons %}
+<h3>{{ title }}</h3>
+<table class="table table-striped table-bordered table-condensed">
+    <tr>
+        <th>Service</th>
+        <th>Venture</th>
+        <th>Relation</th>
+        <th>State</th>
+        {% if perm_to_edit %}
+            <th>Actions</th>
+        {% endif %}
+    </tr>
+    {% for service in services %}
+        <tr>
+            <td><a href="/cmdb/ci/view/{{ service.id }}">{{ service.name }}</a></td>
+            <td>
+                {% if service.venture_id %}
+                    <a href="/cmdb/ci/view/{{ service.venture_id }}">{{ service.venture }}</a></td>
+                {% else %}
+                    -
+                {% endif %}
+            <td>
+                {{ service.relation_type|default:"None" }}
+            </td>
+            <td>{{ service.state }}</td>
+            {% if perm_to_edit %}
+                <td>{% spaceless %}
+                    <a href="/cmdb/ci/edit/{{ service.id }}#relations">
+                        {% icon 'fugue-toolbox--pencil' %}&nbsp;Edit
+                    </a>
+                {% endspaceless %}</td>
+            {% endif %}
+        </tr>
+    {% endfor %}
+</table>

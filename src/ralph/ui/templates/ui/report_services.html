@@ -1,0 +1,19 @@
+{% extends "ui/report_base.html" %}
+{% load url from future %}
+{% load icons %}
+{% load formats %}
+{% load bob %}
+
+{% block contentarea %}
+    <div class="row-fluid">
+        <div class="span12">
+            {% include 'ui/raport_services_table.html' with title='Services with invalid relations' services=invalid_relation %}
+        </div>
+    </div>
+
+    <div class="row-fluid">
+        <div class="span12">
+            {% include 'ui/raport_services_table.html' with title='Services without a venture' services=serv_without_ven %}
+        </div>
+    </div>
+{% endblock %}
