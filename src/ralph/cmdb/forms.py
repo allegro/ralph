@@ -20,12 +20,7 @@ from ralph.cmdb import models as db
 from ajax_select.fields import AutoCompleteSelectField
 
 class CISearchForm(forms.Form):
-    uid = forms.CharField(label=' CI UID ', max_length=100)
-    layer = forms.ModelChoiceField(
-        label='Layer',
-        queryset=CILayer.objects.all(),
-        empty_label='----'
-    )
+    uid = forms.CharField(label='CI name or UID', max_length=100)
     type = forms.ModelChoiceField(
         label='CI Type',
         queryset=CIType.objects.all(),

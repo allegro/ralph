@@ -426,3 +426,7 @@ class SearchSoftware(Search, Software):
 
 class ReportSearchDeviceList(ReportDeviceList, SearchDeviceList):
     pass
+
+
+class SearchCmdb(Search):
+    pass
