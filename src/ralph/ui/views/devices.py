@@ -37,7 +37,7 @@ DEVICE_SORT_COLUMNS = {
     'deprecation_date': ('deprecation_date',),
     'warranty': ('warranty_expiration_date',),
     'support': ('support_expiration_date', 'support_kind'),
-    'sn' : ('serial_number'),
+    'sn': ('serial_number'),
     # FIXME: create a column for affected reports quantity
     'reports': ('remarks',),
 }
@@ -64,7 +64,6 @@ def _get_show_tabs(request, venture, device):
     if has_perm(Perm.run_discovery, venture):
         tabs.extend(['discover'])
     tabs.extend(['cmdb'])
-
     return tabs
 
 
@@ -96,10 +95,10 @@ class BaseDeviceList(ListView):
             query = self.get_queryset()
         rows = [
             ['Id', 'Name', 'Venture', 'Role', 'Model', 'Data Center', 'Rack',
-             'Position', 'Barcode', 'Margin', 'Deprecation', 'Price', 'Cost',
-             'Monthly Cost', 'Addresses', 'Management', 'Created', 'Last Seen',
-             'Purchased', 'Warranty Expiration', 'Support Expiration',
-             'Support Kind', 'Serial Number', 'Remarks'],
+             'SN','Position', 'Barcode', 'Margin', 'Deprecation', 'Price',
+             'Cost', 'Monthly Cost', 'Addresses', 'Management', 'Created',
+             'Last Seen', 'Purchased', 'Warranty Expiration',
+             'Support Expiration', 'Support Kind', 'Remarks'],
         ]
         for dev in query.all():
             show_tabs = set(_get_show_tabs(self.request, None, dev))
@@ -116,7 +115,7 @@ class BaseDeviceList(ListView):
                 dev.get_position() if 'info' in show_tabs else '',
                 dev.barcode or '' if 'info' in show_tabs else '',
                 dev.sn or '' if 'info' in show_tabs else '',
-                str(dev.get_margin())+'%' if 'prices' in show_tabs else '',
+                str(dev.get_margin()) + '%' if 'prices' in show_tabs else '',
                 (dev.deprecation_kind.name if dev.deprecation_kind and
                     'prices' in show_tabs else ''),
                 str(dev.cached_price) if 'prices' in show_tabs else '',
@@ -127,8 +126,8 @@ class BaseDeviceList(ListView):
                 dev.created or '' if 'history' in show_tabs else '',
                 dev.last_seen or '' if 'history' in show_tabs else '',
                 dev.purchase_date or '' if 'purchase' in show_tabs else '',
-                dev.warranty_expiration_date or '' if
-                    'purchase' in show_tabs else '',
+                dev.warranty_expiration_date or
+                    '' if 'purchase' in show_tabs else '',
                 dev.support_expiration_date or '' if
                     'purchase' in show_tabs else '',
                 dev.support_kind or '' if 'purchase' in show_tabs else '',
@@ -147,8 +146,10 @@ class BaseDeviceList(ListView):
 
     def get(self, *args, **kwargs):
         if not self.user_allowed():
-            messages.error(self.request,
-                    _("You don't have permission to view this."))
+            messages.error(
+                self.request,
+                _("You don't have permission to view this.")
+            )
             return HttpResponseRedirect('..')
         export = self.request.GET.get('export')
         if export == 'csv':
@@ -187,10 +188,13 @@ class BaseDeviceList(ListView):
 
     def paginate_queryset(self, queryset, page_size):
         """
-        Paginate the queryset, if needed. When page number is 0, don't paginate.
+        Paginate the queryset, if needed. When page number is 0, don't paginate
         """
-        paginator = self.get_paginator(queryset, page_size,
-                        allow_empty_first_page=self.get_allow_empty())
+        paginator = self.get_paginator(
+            queryset,
+            page_size,
+            allow_empty_first_page=self.get_allow_empty()
+        )
         page = self.kwargs.get('page')
         if page is None:
             page = self.request.GET.get('page')
@@ -203,7 +207,8 @@ class BaseDeviceList(ListView):
                 page_number = paginator.num_pages
             else:
                 raise Http404(
-                _(u"Page is not 'last', nor can it be converted to an int."))
+                    _(u"Page is not 'last', nor can it be converted to an int")
+                )
         if page_number == 0:
             return (None, None, queryset, False)
         try:
@@ -211,5 +216,5 @@ class BaseDeviceList(ListView):
             return (paginator, page, page.object_list, page.has_other_pages())
         except InvalidPage:
             raise Http404(_(u'Invalid page (%(page_number)s)') % {
-                                'page_number': page_number
+                'page_number': page_number
             })
