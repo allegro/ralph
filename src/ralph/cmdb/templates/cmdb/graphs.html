@@ -2,111 +2,96 @@
 
 {% load bob %}
 {% load icons %}
-
-{% block scripts %}
-    <!-- from now, include parent jquery version for normal use. !-->
-    {{ block.super }}
-    <!--
-    <script type="text/javascript" src="{{STATIC_URL}}cmdb/VivaGraphJS/vivagraph.js"></script>
-    !-->
-    <script type="text/javascript" src="{{STATIC_URL}}cmdb/d3.v2.min.js"></script>
-    <script type="text/javascript">
-
-        function main(){
-            var radius = 960 / 2;
-             
-             var tree = d3.layout.tree()
-                 .size([360, radius - 120])
-                 .separation(function(a, b) { return (a.parent == b.parent ? 1 : 2) / a.depth; });
-             
-             var diagonal = d3.svg.diagonal.radial()
-                 .projection(function(d) { return [d.y, d.x / 180 * Math.PI]; });
-             
-             var vis = d3.select("#chart").append("svg")
-                 .attr("width", radius * 2)
-                 .attr("height", radius * 2 - 150)
-               .append("g")
-                 .attr("transform", "translate(" + radius + "," + radius + ")");
-             
-              d3.json("../data/flare.json", function(json) {
-               var nodes = tree.nodes(json);
-             
-               var link = vis.selectAll("path.link")
-                   .data(tree.links(nodes))
-                 .enter().append("path")
-                   .attr("class", "link")
-                   .attr("d", diagonal);
-             
-               var node = vis.selectAll("g.node")
-                   .data(nodes)
-                 .enter().append("g")
-                   .attr("class", "node")
-                   .attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + d.y + ")"; })
-             
-               node.append("circle")
-                   .attr("r", 4.5);
-             
-               node.append("text")
-                   .attr("dy", ".31em")
-                   .attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
-                   .attr("transform", function(d) { return d.x < 180 ? "translate(8)" : "rotate(180)translate(-8)"; })
-                   .text(function(d) { return d.name; });
-             });
+{% block extra_headers %}
+    <style type='text/css'>
+        svg
+        {
+            z-index: 10;
+            width: 100%;
+            height: 100%;
         }
 
-        function mainer() {
-            var graph = Viva.Graph.graph();
-            $.get("/cmdb/graphs_ajax", function(data)
-                    {
-                        for (var i=0; i<data.nodes.length; i++)
-                        {
-                           graph.addNode(data.nodes[i][0], data.nodes[i][1]);
-                        }
-                        for (var i=0; i<data.relations.length; i++)
-                        {
-                           graph.addLink(data.relations[i].parent, data.relations[i].child);
-                        }
-                    }
-            );
-            var graphics = Viva.Graph.View.svgGraphics();
-            graphics.node(function(node) {
-                e = Viva.Graph.svg('text')
-                .attr('width', 224)
-                .attr('height', 180);
-                e.textContent = node.data;
-                return e
-                })
-            .placeNode(function(nodeUI, pos){
-                                nodeUI.attr('x', pos.x).attr('y', pos.y);
-            });
-            var renderer = Viva.Graph.View.renderer(graph, {
-             graphics : graphics
-            });
-            renderer.run();
+        text:hover
+        {
+            cursor: pointer;
+            stroke: red;
         }
-    </script>
-<script type="text/javascript" charset="utf-8">
-    $(document).ready(function()
-            {
-                main()
-            });
-</script>
 
+        .focused
+        {
+            /*stroke: #ff9999;*/
+            stroke-width: 3 ;
+            font-size:13px;
+        }
+    </style>
 {% endblock %}
 
-{% block extra_headers %}
+{% block scripts %}
     {{ block.super }}
+    <script type="text/javascript" src="{{STATIC_URL}}cmdb/VivaGraphJS/vivagraph.js"></script>
+    <script type="text/javascript">
+        /* Data container for cmdb/graphs.js */
+        CMDB = {'graph_data': JSON.parse("{{graph_data|escapejs}}") }
+    </script>
+    <script type="text/javascript" src="{{STATIC_URL}}cmdb/graphs.js"></script>
 {% endblock %}
 
 {% block contentarea %}
     {{ block.super }}
-
-    {% form_horizontal form=form method="get" action="/cmdb/graphs" title='Formularz' %}
+    <div class="row row-fluid">
+    {% form_horizontal form=form method="get" action="/cmdb/graphs" %}
     <hr>
-    <table class="table table-condensed">
-        {{ output }}
-    </table>
+        <div class="span8">
+        <h4>Impact graph</h4>
+            <div id="graphDiv" style="width:800px; height:800px;border: solid #ddd 1px">
+            </div>
+        </div>
+        <div class="span2">
+            <div>
+                <h4>Relations - legend:</h4>
+                <span class="label">Contains</span><br/>
+                <span class="label label-important">Requires</span><br/>
+                <span class="label label-inverse">Is role for</span><br/>
+            </div>
+            <hr>
+            <h4>Selected item info</h4>
+            Name: <span id="cmdb_name"></span><br/>
+            CMDB link: <span id="cmdb_link"></span><br/>
+            Check impact link: <span id="check_impact_link"></span><br/>
+            <hr>
+            <h4>Actions</h4>
+            <button class="btn" id="save_svg_button">Save graph as SVG</button>
+        </div>
+    </div>
 
-    <div id='chart' width='300' height='300' onload='mainer()'>
+    <div class="row row-fluid">
+        <div class="span12">
+        <h4>Affected CIs</h4> 
+    <table class="table table-striped table-condensed table-list table-bordered">
+        <tbody>
+        <tr>
+            <th>L.p</th>
+            <th>Name</th>
+            <th>Type</th>
+            <th>UID</th>
+            <th>Venture/Role</th>
+        </tr>
+        {% for row in rows %}
+        <tr>
+            <td>
+                {{ forloop.counter }}
+            </td>
+            <td>
+            <a href="/cmdb/ci/view/{{ row.ci.id }}">
+                <b><i class="fugue-icon {{ row.icon }}"></i> {{ row.ci.name }} </b> 
+            </a></td>
+            <td>{{ row.ci.type }} {{ row.ci.content_object.model}}</td>
+            <td>{{ row.ci.uid }}</td>
+            <td>{{ row.content_object.venture}} {{ row.content_object.role }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    </table>
+    </div>
     </div>
 {% endblock %}

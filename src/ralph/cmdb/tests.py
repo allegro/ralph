@@ -5,7 +5,9 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import datetime
+import json
 import mock
+import random
 import time
 
 from lxml import objectify
@@ -17,14 +19,25 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase, Client
+from tastypie.bundle import Bundle
+from tastypie.models import ApiKey
 
+
+from ralph.cmdb.api import (
+    CIChangePuppetResource, CIChangeGitResource, CIChangeCMDBHistoryResource
+)
 from ralph.cmdb.importer import CIImporter
 from ralph.cmdb.models import (
     CI, CIRelation, CI_RELATION_TYPES, CIChange, CI_TYPES, CILayer, CIType,
     CIValueFloat, CIValueDate, CIValueString, CIChangePuppet, CIChangeGit,
-    CI_CHANGE_TYPES, CI_CHANGE_REGISTRATION_TYPES)
-from ralph.discovery.models import Device, DeviceType, DeviceModel
-from ralph.business.models import Venture, VentureRole
+    CI_CHANGE_TYPES, CI_CHANGE_REGISTRATION_TYPES, CIOwner,
+    CIOwnershipType, CIChangeCMDBHistory
+)
+from ralph.cmdb.models_ci import CIOwnership
+
+from ralph.discovery.models import (Device, DeviceType, DeviceModel,
+                                    DataCenter, Network)
+from ralph.business.models import Venture, VentureRole, Service, BusinessLine
 from ralph.cmdb.integration.puppet import PuppetAgentsImporter
 from ralph.cmdb.models import PuppetLog
 from ralph.cmdb.integration.puppet import PuppetGitImporter as pgi
@@ -106,7 +119,6 @@ class CIImporterTest(TestCase):
         self.blade.parent = self.rack
         self.blade.save()
 
-
     def add_model(self, name, device_type):
         dm = DeviceModel()
         dm.model_type = device_type
@@ -163,7 +175,7 @@ class CIImporterTest(TestCase):
         CIImporter().import_relations(
             ContentType.objects.get_for_model(y), asset_id=y.id)
         with mock.patch(
-            'ralph.cmdb.integration.lib.fisheye.Fisheye') as Fisheye:
+                'ralph.cmdb.integration.lib.fisheye.Fisheye') as Fisheye:
             Fisheye.side_effect = MockFisheye
             x = pgi(fisheye_class=Fisheye)
             x.import_git()
@@ -273,15 +285,110 @@ class CIImporterTest(TestCase):
             set([(x.parent.name, x.child.name, x.type) for x in role_rels]),
             set([(u'child_role', u'blade', 3)]),
         )
-        # summarize relations - 9
-        self.assertEqual(len(CIRelation.objects.all()), 9)
         from ralph.cmdb.graphs import ImpactCalculator
-        from pygraph.algorithms.searching import breadth_first_search
+        # summarize relations.
+        self.assertEqual(len(CIRelation.objects.all()), 9)
+        # calculate impact/spanning tree for CI structure
         calc = ImpactCalculator()
-        breadth_first_search(calc.graph, 1)
-        import pdb; pdb.set_trace()
+        self.assertEqual(
+            calc.find_affected_nodes(1),
+            ({1: None, 2: 1, 4: 7, 6: 2, 7: 2}, [1, 2, 6, 7, 4])
+        )
 
 
+class AutoCIRemoveTest(TestCase):
+    fixtures = [
+        '0_types.yaml',
+        '1_attributes.yaml',
+        '2_layers.yaml',
+        '3_prefixes.yaml'
+    ]
+
+    def setUp(self):
+        # create Venture and CI
+        self.venture = Venture.objects.create(name='TestVenture')
+        uid = CI.get_uid_by_content_object(self.venture)
+        self.venture_ci_id = CI.objects.create(
+            name='TestVentureCI', uid=uid, type_id=4).pk
+
+        # create VentureRole and CI
+        v = Venture.objects.create(name='SomeAssignedVenture')
+        self.venture_role = VentureRole.objects.create(name='TestVentureRole',
+                                                       venture=v)
+        uid = CI.get_uid_by_content_object(self.venture_role)
+        self.venture_role_ci_id = CI.objects.create(
+            name='TestVentureRoleCI', uid=uid, type_id=5).pk
+
+        # create DataCenter and CI
+        self.data_center = DataCenter.objects.create(name='DC123')
+        uid = CI.get_uid_by_content_object(self.data_center)
+        self.data_center_ci_id = CI.objects.create(
+            name='TestDataCenterCI', uid=uid, type_id=9).pk
+
+        # create Network and CI
+        dc = DataCenter.objects.create(name='SomeDC')
+        self.network = Network.objects.create(name='TestNetwork',
+                                              address='192.168.56.1',
+                                              data_center=dc)
+        uid = CI.get_uid_by_content_object(self.network)
+        self.network_ci_id = CI.objects.create(
+            name='TestNetworkCI', uid=uid, type_id=8).pk
+
+        # create Device and CI
+        device_model = DeviceModel.objects.create(
+            name='SomeDeviceModel', type=DeviceType.rack_server.id)
+        self.device = Device.create(name='TestDevice', sn='sn123',
+                                    model=device_model)
+        uid = CI.get_uid_by_content_object(self.device)
+        self.device_ci_id = CI.objects.create(
+            name='TestDeviceCI', uid=uid, type_id=2).pk
+
+        # create Service and CI
+        bl = BusinessLine.objects.create(name='Some Business Line')
+        self.service = Service.objects.create(name='someservice.com',
+                                              external_key='abc123',
+                                              business_line=bl)
+        uid = CI.get_uid_by_content_object(self.service)
+        self.service_ci_id = CI.objects.create(
+            name='TestServiceCI', uid=uid, type_id=7).pk
+
+        # create BusinessLIne and CI
+        self.business_line = BusinessLine.objects.create(
+            name='TestBusinessLine')
+        uid = CI.get_uid_by_content_object(self.business_line)
+        self.business_line_ci_id = CI.objects.create(
+            name='TestBusinessLineCI', uid=uid, type_id=6).pk
+
+    def test_remove_venture(self):
+        self.venture.delete()
+        self.assertEqual(CI.objects.filter(pk=self.venture_ci_id).count(), 0)
+
+    def test_remove_venture_role(self):
+        self.venture_role.delete()
+        self.assertEqual(
+            CI.objects.filter(pk=self.venture_role_ci_id).count(), 0)
+
+    def test_remove_datacenter(self):
+        self.data_center.delete()
+        self.assertEqual(
+            CI.objects.filter(pk=self.data_center_ci_id).count(), 0)
+
+    def test_remove_network(self):
+        self.network.delete()
+        self.assertEqual(CI.objects.filter(pk=self.network_ci_id).count(), 0)
+
+    def test_remove_device(self):
+        self.device.delete()
+        self.assertEqual(CI.objects.filter(pk=self.device_ci_id).count(), 0)
+
+    def test_remove_service(self):
+        self.service.delete()
+        self.assertEqual(CI.objects.filter(pk=self.service_ci_id).count(), 0)
+
+    def test_remove_businessline(self):
+        self.business_line.delete()
+        self.assertEqual(
+            CI.objects.filter(pk=self.business_line_ci_id).count(), 0)
 
 
 class JiraRssTest(TestCase):
@@ -374,14 +481,14 @@ class OPRegisterTest(TestCase):
         self.assertEqual(chg.content_object, c)
         self.assertEqual(chg.external_key, '#123456')
         self.assertEqual(
-            chg.registration_type, CI_CHANGE_REGISTRATION_TYPES.OP)
+            chg.registration_type, CI_CHANGE_REGISTRATION_TYPES.OP.id)
         CIChange.objects.all().delete()
 
-        #removing cichange remove cichangegit child too.
+        # removing cichange remove cichangegit child too.
         self.assertEqual(CIChangeGit.objects.count(), 0)
 
-        # if change is registered before date of start, and change type is GIT, then
-        # ticket remains WAITING
+        # if change is registered before date of start, and change type is GIT,
+        # then ticket remains WAITING
         # forever. When date is changed, and signal is send to the model
         # ticket is going to be registrated again.
         c = CIChangeGit()
@@ -396,7 +503,8 @@ class OPRegisterTest(TestCase):
 
     @patch('ralph.cmdb.models_signals.OP_TEMPLATE', _PATCHED_OP_TEMPLATE)
     @patch('ralph.cmdb.models_signals.OP_START_DATE', _PATCHED_OP_START_DATE)
-    @patch('ralph.cmdb.models_signals.OP_TICKETS_ENABLE', _PATCHED_TICKETS_ENABLE_NO)
+    @patch('ralph.cmdb.models_signals.OP_TICKETS_ENABLE',
+           _PATCHED_TICKETS_ENABLE_NO)
     @patch('ralph.cmdb.models_common.USE_CELERY', _PATCHED_USE_CELERY)
     def test_create_ci_generate_change(self):
         # TICKETS REGISTRATION IN THIS TEST IS DISABLED.
@@ -420,8 +528,8 @@ class OPRegisterTest(TestCase):
         user = User.objects.create_user(
             'john', 'lennon@thebeatles.com', 'johnpassword')
 
-        # john reigstered change, change should be at WAITING because registering is
-        # not enabled in config
+        # john reigstered change, change should be at WAITING because
+        # registering is not enabled in config
         hostci = CI(name='s11401.dc2', uid='mm-1')
         hostci.type_id = CI_TYPES.DEVICE.id
         hostci.save(user=user)
@@ -438,10 +546,10 @@ class OPRegisterTest(TestCase):
                 ])
         )
 
-
     @patch('ralph.cmdb.models_signals.OP_TEMPLATE', _PATCHED_OP_TEMPLATE)
     @patch('ralph.cmdb.models_signals.OP_START_DATE', _PATCHED_OP_START_DATE)
-    @patch('ralph.cmdb.models_signals.OP_TICKETS_ENABLE', _PATCHED_TICKETS_ENABLE)
+    @patch('ralph.cmdb.models_signals.OP_TICKETS_ENABLE',
+           _PATCHED_TICKETS_ENABLE)
     @patch('ralph.cmdb.models_common.USE_CELERY', _PATCHED_USE_CELERY)
     def test_create_ci_register_change(self):
         # TICKETS REGISTRATION IN THIS TEST IS ENABLED
@@ -486,7 +594,7 @@ class OPRegisterTest(TestCase):
            _PATCHED_TICKETS_ENABLE_NO)
     @patch('ralph.cmdb.models_common.USE_CELERY', _PATCHED_USE_CELERY)
     def test_dont_create_issues(self):
-        # the date is ok, but tickets enabled is set to no.
+        # The date is ok, but tickets enabled is set to no.
         # Dont register ticket.
         c = CIChangeGit()
         c.time = datetime.datetime(year=2012, month=1, day=2)
@@ -853,3 +961,371 @@ class CIFormsTest(TestCase):
         val = [x.value for x in ci_string_value]
         val.sort()
         self.assertListEqual(val, ['http://doc.local', 'name-test'])
+
+
+class CMDBApiTest(TestCase):
+    def setUp(self):
+        self.creatre_user()
+        self.create_cilayers()
+        self.create_citypes()
+        self.create_owners()
+        self.create_cis()
+        self.create_ownerships()
+        self.create_relations()
+
+    def creatre_user(self):
+        self.user = User.objects.create_user(
+            'api_user',
+            'test@mail.local',
+            'password'
+        )
+        self.user.save()
+        self.api_key = ApiKey.objects.get(user=self.user)
+        self.data = {
+            'format': 'json',
+            'username': self.user.username,
+            'api_key': self.api_key.key
+        }
+
+    def create_cilayers(self):
+        self.cilayer1 = CILayer(name='layer1')
+        self.cilayer1.save()
+        self.cilayer2 = CILayer(name='layer2')
+        self.cilayer2.save()
+
+    def create_citypes(self):
+        self.citype1 = CIType(name='type1')
+        self.citype1.save()
+        self.citype2 = CIType(name='type2')
+        self.citype2.save()
+
+    def create_owners(self):
+        self.owner1 = CIOwner(
+            first_name='first_name_owner1',
+            last_name='last_name_owner1',
+            email='first_name_owner1.last_name_owner1@ralph.local'
+        )
+        self.owner1.save()
+        self.owner2 = CIOwner(
+            first_name='first_name_owner2',
+            last_name='last_name_owner2',
+            email='first_name_owner2.last_name_owner2@ralph.local'
+        )
+        self.owner2.save()
+
+    def create_cis(self):
+        self.ci1 = CI(
+            uid='uid-ci1',
+            type=self.citype1,
+            barcode='barcodeci1',
+            name='ciname1',
+        )
+        self.ci1.save()
+        self.ci1.layers = [self.cilayer1, self.cilayer2]
+        self.ci1.save()
+        self.ci2 = CI(
+            uid='uid-ci2',
+            type=self.citype2,
+            barcode='barcodeci2',
+            name='ciname2',
+        )
+        self.ci2.save()
+        self.ci2.layers = [self.cilayer1]
+        self.ci2.save()
+        self.ci3 = CI(
+            uid='other-ci3',
+            type=self.citype2,
+            barcode='otherbarcodeci3',
+            name='otherci',
+            )
+        self.ci3.save()
+        self.ci3.layers = [self.cilayer2]
+        self.ci3.save()
+
+    def create_ownerships(self):
+        self.ciownership1 = CIOwnership(
+            ci=self.ci1,
+            owner=self.owner1,
+            type=CIOwnershipType.technical
+        )
+        self.ciownership1.save()
+        self.ciownership2 = CIOwnership(
+            ci=self.ci1,
+            owner=self.owner2,
+            type=CIOwnershipType.business
+        )
+        self.ciownership2.save()
+        self.ciownership3 = CIOwnership(
+            ci=self.ci2,
+            owner=self.owner2,
+            type=CIOwnershipType.business
+        )
+        self.ciownership3.save()
+
+    def create_relations(self):
+        self.relation1 = CIRelation(
+            parent=self.ci1,
+            child=self.ci2,
+            type=CI_RELATION_TYPES.CONTAINS,
+        )
+        self.relation1.save()
+        self.relation2 = CIRelation(
+            parent=self.ci2,
+            child=self.ci3,
+            type=CI_RELATION_TYPES.HASROLE,
+            )
+        self.relation2.save()
+
+    def test_layers(self):
+        path = "/api/v0.9/cilayers/"
+        response = self.client.get(path=path, data=self.data, format='json')
+        json_string = response.content
+        json_data = json.loads(json_string)
+        resource_uris = [x['resource_uri'] for x in json_data['objects']]
+
+        response = self.client.get(
+            path=resource_uris[0], data=self.data, format='json'
+        )
+        json_string = response.content
+        json_data = json.loads(json_string)
+        self.assertEqual(json_data['name'], self.cilayer1.name)
+
+        response = self.client.get(
+            path=resource_uris[1], data=self.data, format='json'
+        )
+        json_string = response.content
+        json_data = json.loads(json_string)
+        self.assertEqual(json_data['name'], self.cilayer2.name)
+
+    def test_types(self):
+        path = "/api/v0.9/citypes/"
+        response = self.client.get(path=path, data=self.data, format='json')
+        json_string = response.content
+        json_data = json.loads(json_string)
+        resource_uris = [x['resource_uri'] for x in json_data['objects']]
+
+        response = self.client.get(
+            path=resource_uris[0], data=self.data, format='json'
+        )
+        json_string = response.content
+        json_data = json.loads(json_string)
+        self.assertEqual(json_data['name'], self.citype1.name)
+
+        response = self.client.get(
+            path=resource_uris[1], data=self.data, format='json'
+        )
+        json_string = response.content
+        json_data = json.loads(json_string)
+        self.assertEqual(json_data['name'], self.citype2.name)
+
+    def test_ci(self):
+        path = "/api/v0.9/ci/"
+        response = self.client.get(path=path, data=self.data, format='json')
+        json_string = response.content
+        json_data = json.loads(json_string)
+        resource_uris = [x['resource_uri'] for x in json_data['objects']]
+
+        response = self.client.get(
+            path=resource_uris[0], data=self.data, format='json'
+        )
+        json_string = response.content
+        json_data = json.loads(json_string)
+        self.assertEqual(json_data['layers'][0]['name'], self.cilayer1.name)
+        self.assertEqual(json_data['layers'][1]['name'], self.cilayer2.name)
+        self.assertEqual(json_data['barcode'], self.ci1.barcode)
+        self.assertEqual(json_data['name'], self.ci1.name)
+        self.assertEqual(json_data['type']['name'], self.ci1.type.name)
+        self.assertEqual(json_data['uid'], self.ci1.uid)
+        self.assertEqual(
+            json_data['technical_owner'][0]['username'],
+            '{}.{}'.format(self.owner1.first_name, self.owner1.last_name)
+        )
+
+        response = self.client.get(
+            path=resource_uris[1], data=self.data, format='json'
+        )
+        json_string = response.content
+        json_data = json.loads(json_string)
+        self.assertEqual(json_data['layers'][0]['name'], self.cilayer1.name)
+        self.assertEqual(json_data['barcode'], self.ci2.barcode)
+        self.assertEqual(json_data['name'], self.ci2.name)
+        self.assertEqual(json_data['type']['name'], self.ci2.type.name)
+        self.assertEqual(json_data['uid'], self.ci2.uid)
+        self.assertEqual(
+            json_data['technical_owner'][0]['username'],
+            '{}.{}'.format(self.owner2.first_name, self.owner2.last_name)
+        )
+
+    def test_relations(self):
+        path = "/api/v0.9/cirelation/"
+        response = self.client.get(path=path, data=self.data, format='json')
+        json_string = response.content
+        json_data = json.loads(json_string)
+        resource_uris = [x['resource_uri'] for x in json_data['objects']]
+
+        response = self.client.get(
+            path=resource_uris[0], data=self.data, format='json'
+        )
+        json_string = response.content
+        json_data = json.loads(json_string)
+        self.assertEqual(json_data['parent'], self.ci1.id)
+        self.assertEqual(json_data['child'], self.ci2.id)
+        self.assertEqual(json_data['type'], CI_RELATION_TYPES.CONTAINS)
+
+        response = self.client.get(
+            path=resource_uris[1], data=self.data, format='json',
+        )
+        json_string = response.content
+        json_data = json.loads(json_string)
+        self.assertEqual(json_data['parent'], self.ci2.id)
+        self.assertEqual(json_data['child'], self.ci3.id)
+        self.assertEqual(json_data['type'], CI_RELATION_TYPES.HASROLE)
+
+    def test_ci_filter_exact(self):
+        path = "/api/v0.9/ci/"
+        self.data['name__exact'] = 'otherci'
+        response = self.client.get(path=path, data=self.data, format='json')
+        json_string = response.content
+        json_data = json.loads(json_string)
+        resource_uris = [x['resource_uri'] for x in json_data['objects']]
+        self.assertEqual(len(resource_uris), 1)
+        response = self.client.get(
+            path=resource_uris[0], data=self.data, format='json'
+        )
+        json_string = response.content
+        json_data = json.loads(json_string)
+        self.assertEqual(json_data['layers'][0]['name'], self.cilayer2.name)
+        self.assertEqual(json_data['barcode'], self.ci3.barcode)
+        self.assertEqual(json_data['name'], self.ci3.name)
+        self.assertEqual(json_data['type']['name'], self.ci3.type.name)
+        self.assertEqual(json_data['uid'], self.ci3.uid)
+        del(self.data['name__exact'])
+
+    def test_ci_filter_startswith(self):
+        path = "/api/v0.9/ci/"
+        self.data['name__startswith'] = 'ciname'
+        response = self.client.get(path=path, data=self.data, format='json')
+        json_string = response.content
+        json_data = json.loads(json_string)
+        resource_uris = [x['resource_uri'] for x in json_data['objects']]
+        self.assertEqual(len(resource_uris), 2)
+        response = self.client.get(
+            path=resource_uris[0], data=self.data, format='json'
+        )
+        json_string = response.content
+        json_data = json.loads(json_string)
+        self.assertEqual(json_data['layers'][0]['name'], self.cilayer1.name)
+        self.assertEqual(json_data['barcode'], self.ci1.barcode)
+        self.assertEqual(json_data['name'], self.ci1.name)
+        self.assertEqual(json_data['type']['name'], self.ci1.type.name)
+        self.assertEqual(json_data['uid'], self.ci1.uid)
+
+        response = self.client.get(
+            path=resource_uris[1], data=self.data, format='json'
+        )
+        json_string = response.content
+        json_data = json.loads(json_string)
+        self.assertEqual(json_data['layers'][0]['name'], self.cilayer1.name)
+        self.assertEqual(json_data['barcode'], self.ci2.barcode)
+        self.assertEqual(json_data['name'], self.ci2.name)
+        self.assertEqual(json_data['type']['name'], self.ci2.type.name)
+        self.assertEqual(json_data['uid'], self.ci2.uid)
+
+        del(self.data['name__startswith'])
+
+
+class CIApiTest(TestCase):
+    fixtures = [
+        '0_types.yaml',
+        '1_attributes.yaml',
+        '2_layers.yaml',
+        '3_prefixes.yaml'
+    ]
+
+    def setUp(self):
+        self.puppet_cv = "v%s" % random.randrange(0, 1000)
+        puppet_bundle = Bundle(
+            data={
+                'configuration_version': self.puppet_cv,
+                'host': 's11111.dc2',
+                'kind': 'apply',
+                'status': 'failed',
+                'time': '2012-11-14 13:00:00'
+            })
+        puppet_resource = CIChangePuppetResource()
+        puppet_resource.obj_create(bundle=puppet_bundle)
+
+        self.git_changeset = "change:%s" % random.randrange(0, 1000)
+        self.git_comment = "comment:%s" % random.randrange(0, 1000)
+        git_bundle = Bundle(
+            data={
+                'author': 'Jan Kowalski',
+                'changeset': self.git_changeset,
+                'comment': self.git_comment,
+                'file_paths': '/some/path',
+            })
+        git_resource = CIChangeGitResource()
+        git_resource.obj_create(bundle=git_bundle)
+
+        temp_venture = Venture.objects.create(name='TempTestVenture')
+        self.ci = CI.objects.create(
+            name='TempTestVentureCI',
+            uid=CI.get_uid_by_content_object(temp_venture),
+            type_id=4)
+        self.cmdb_new_value = 'nv_%s' % random.randrange(0, 1000)
+        self.cmdb_old_value = 'ov_%s' % random.randrange(0, 1000)
+        cmdb_bundle = Bundle(
+            data={
+                'ci': '/api/v0.9/ci/%d/' % self.ci.pk,
+                'comment': 'test api',
+                'field_name': 'child',
+                'new_value': self.cmdb_new_value,
+                'old_value': self.cmdb_old_value,
+                'time': '2012-11-15 12:00:00'
+            })
+        cmdb_resource = CIChangeCMDBHistoryResource()
+        cmdb_resource.obj_create(bundle=cmdb_bundle)
+
+    def test_ci_change_puppet_registration(self):
+        puppet_change = None
+        try:
+            puppet_change = CIChangePuppet.objects.get(
+                host='s11111.dc2', configuration_version=self.puppet_cv)
+        except CIChangePuppet.DoesNotExist:
+            pass
+        self.assertNotEqual(puppet_change, None)
+        self.assertEqual(puppet_change.kind, 'apply')
+        self.assertEqual(puppet_change.status, 'failed')
+        self.assertEqual(
+            CIChange.objects.filter(
+                object_id=puppet_change.id,
+                type=CI_CHANGE_TYPES.CONF_AGENT.id).count(), 1)
+
+    def test_ci_change_git_registration(self):
+        git_change = None
+        try:
+            git_change = CIChangeGit.objects.get(changeset=self.git_changeset,
+                                                 comment=self.git_comment)
+        except CIChangePuppet.DoesNotExist:
+            pass
+        self.assertNotEqual(git_change, None)
+        self.assertEqual(git_change.author, 'Jan Kowalski')
+        self.assertEqual(git_change.file_paths, '/some/path')
+        self.assertEqual(
+            CIChange.objects.filter(
+                object_id=git_change.id,
+                type=CI_CHANGE_TYPES.CONF_GIT.id).count(), 1)
+
+    def test_ci_change_cmdbhistory_registration(self):
+        cmdb_change = None
+        try:
+            cmdb_change = CIChangeCMDBHistory.objects.get(
+                ci_id=self.ci.id, old_value=self.cmdb_old_value,
+                new_value=self.cmdb_new_value)
+        except CIChangeCMDBHistory.DoesNotExist:
+            pass
+        self.assertNotEqual(cmdb_change, None)
+        self.assertEqual(
+            CIChange.objects.filter(
+                object_id=cmdb_change.id,
+                type=CI_CHANGE_TYPES.CI.id).count(), 1)

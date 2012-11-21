@@ -37,7 +37,6 @@
             {% include 'cmdb/column-header.html' with label='Configuration Item' name='ci' always=1%}
             {% include 'cmdb/column-header.html' with label='Type' name='priority'  always=1%}
             {% include 'cmdb/column-header.html' with label='Source' name='type' always=1%}
-            {% include 'cmdb/column-header.html' with label='Acknowledged' name='acknowledge' always=1%}
             {% include 'cmdb/column-header.html' with label='Jira Ticket' name='ticket' always=1%}
             {% include 'cmdb/column-header.html' with label='Details' name='details' always=1%}
         {% endspaceless %}
@@ -82,8 +81,7 @@
                 {{ change.0.get_type_display}}
             </td>
             <td>
-            </td>
-            <td>
+                <a href="{{jira_url}}/{{ change.0.external_key}}"> {{ change.0.external_key }} </a>
             </td>
             <td>
                 {% if change.0.type == 4 %}

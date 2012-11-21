@@ -99,7 +99,7 @@ class Command(BaseCommand):
             for queue in options['queues'].split(','):
                 queue = queue.strip()
                 new_networks.update(n.address for n in Network.objects.filter(
-                    queue__iexact=queue))
+                    queue__name__iexact=queue))
         if new_networks:
             args.extend(new_networks)
         if not args:

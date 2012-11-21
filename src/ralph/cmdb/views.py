@@ -7,6 +7,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import datetime
+import ralph.cmdb.models as db
 
 from django.db.models import Q
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
@@ -16,22 +17,25 @@ from django.http import HttpResponseRedirect
 from django.http import HttpResponseForbidden
 from django.http import HttpResponse
 from django.utils.translation import ugettext_lazy as _
+from django.utils import simplejson
 from django.conf import settings
 from lck.django.common import nested_commit_on_success
+from bob.menu import MenuItem, MenuHeader
 
 from ralph.cmdb.forms import (
-    CISearchForm, CIEditForm, CIViewForm, CIRelationEditForm
+    CISearchForm, CIEditForm, CIViewForm, CIRelationEditForm, SearchImpactForm
 )
 from ralph.cmdb.customfields import EditAttributeFormFactory
-from ralph.cmdb.models_ci import CIOwner, CIOwnership, CILayer, CI_TYPES, CI
-
+from ralph.cmdb.models_ci import (
+        CIOwner, CIOwnership, CILayer, CI_TYPES, CI, CIRelation)
+from ralph.cmdb.graphs import search_tree, ImpactCalculator
 from ralph.account.models import Perm
-from ralph.ui.views.common import Base, BaseMixin, _get_details
+from ralph.ui.views.common import Base, _get_details
 from ralph.util.presentation import (
     get_device_icon, get_venture_icon, get_network_icon
 )
-import ralph.cmdb.models as db
-from bob.menu import MenuItem, MenuHeader
+from ralph.util.views import build_url
+
 
 
 ROWS_PER_PAGE = 20
@@ -47,6 +51,8 @@ def get_icon_for(ci):
         return get_device_icon(ci.content_object)
     elif ci.content_type.name == 'network':
         return get_network_icon(ci.content_object)
+    else:
+        return 'wall'
 
 
 class BaseCMDBView(Base):
@@ -93,6 +99,9 @@ class BaseCMDBView(Base):
             ('/cmdb/search?layer=7&top_level=1', 'Services',
                 'fugue-disc-share'),
             ('/cmdb/add', 'Add CI', 'fugue-block--plus'),
+            ('/cmdb/changes/dashboard', 'Dashboard', 'fugue-dashboard'),
+            ('/cmdb/graphs', 'Impact report', 'fugue-dashboard'),
+            ('/cmdb/graphs_tree', 'Tree deps.', 'fugue-dashboard'),
             ('/cmdb/changes/dashboard', 'Dashboard', 'fugue-dashboard'),
             ('/cmdb/changes/timeline', 'Timeline View', 'fugue-dashboard'),
             ('/admin/cmdb', 'Admin', 'fugue-toolbox'),
@@ -146,7 +155,7 @@ class BaseCMDBView(Base):
         )
         return sidebar_items
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, *args, **kwargs):
         ret = super(BaseCMDBView, self).get_context_data(**kwargs)
         ret.update(self.get_permissions_dict())
         ret.update({
@@ -373,6 +382,7 @@ class LastChanges(BaseCMDBView):
         ret = super(LastChanges, self).get_context_data(**kwargs)
         ret.update({
             'last_changes': self.last_changes,
+            'jira_url': build_url(settings.ISSUETRACKERS['default']['URL'], 'browse'),
         })
         return ret
 
@@ -896,3 +906,76 @@ class CMDB(View):
             )
         })
         return ret
+
+
+class GraphsTree(BaseCMDBView):
+    template_name = 'cmdb/graphs_tree.html'
+
+    @staticmethod
+    def get_ajax(request):
+        root = CI.objects.get(pk=request.GET.get('ci_id'))
+        response_dict = search_tree({}, root)
+        return HttpResponse(
+            simplejson.dumps(response_dict),
+            mimetype='application/json',
+        )
+
+    def get_initial(self):
+        return dict(
+            ci=self.request.GET.get('ci'),
+        )
+
+    def get_context_data(self, *args, **kwargs):
+        ret = super(GraphsTree, self).get_context_data(**kwargs)
+        form = SearchImpactForm(initial=self.get_initial())
+        ret.update(dict(
+            form=form,
+        ))
+        return ret
+
+
+class Graphs(BaseCMDBView):
+    template_name = 'cmdb/graphs.html'
+    rows = []
+    graph_data = {}
+
+    def get_context_data(self, *args, **kwargs):
+        ret = super(Graphs, self).get_context_data(**kwargs)
+        form = SearchImpactForm(initial=self.get_initial())
+        ret.update(dict(
+            form=form,
+            rows=self.rows,
+            graph_data=simplejson.dumps(self.graph_data),
+        ))
+        return ret
+
+    def get_initial(self):
+        return dict(
+            ci=self.request.GET.get('ci'),
+        )
+
+    def get(self, *args, **kwargs):
+        ci_id = self.request.GET.get('ci')
+        self.rows = []
+        if ci_id:
+            ci_names = dict([(x.id, x.name) for x in CI.objects.all()])
+            i = ImpactCalculator()
+            st, pre = i.find_affected_nodes(int(ci_id))
+            nodes = [(
+                key, ci_names[key],
+                get_icon_for(CI.objects.get(pk=key))) for key in st.keys()]
+            relations = [dict(
+                child=x,
+                parent=st.get(x),
+                parent_name=ci_names[x],
+                type=i.graph.edge_attributes((st.get(x),x))[0],
+                child_name=ci_names[st.get(x)])
+                for x in st.keys() if x and st.get(x)]
+            self.graph_data = dict(
+                nodes=nodes, relations=relations)
+            self.rows = [dict(
+                icon=get_icon_for(CI.objects.get(pk=x)),
+                ci=CI.objects.get(pk=x)) for x in pre]
+        return super(BaseCMDBView, self).get(*args, **kwargs)
+
+

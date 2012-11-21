@@ -9,7 +9,7 @@ import datetime
 from django.conf import settings
 from django.contrib import messages
 from django.core.urlresolvers import reverse
-from django.core.paginator import Paginator, EmptyPage
+from django.core.paginator import Paginator
 from django.db import models as db
 from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.utils import simplejson as json
@@ -24,11 +24,14 @@ from ralph.account.models import Perm
 from ralph.business.models import RolePropertyValue
 from ralph.cmdb import models as cdb
 from ralph.dnsedit.models import DHCPEntry
-from ralph.discovery.models import Device, DeviceType
+from ralph.dnsedit.util import get_domain, set_revdns_record
+from ralph.discovery.models import Device, DeviceType, IPAddress
+from ralph.discovery.models_history import FOREVER_DATE, ALWAYS_DATE
 from ralph.util import presentation, pricing
 from ralph.ui.forms import (DeviceInfoForm, DeviceInfoVerifiedForm,
                             DevicePricesForm, DevicePurchaseForm,
-                            PropertyForm, DeviceBulkForm)
+                            PropertyForm, DeviceBulkForm, DNSRecordsForm,
+                            DHCPRecordsForm, AddressesForm)
 
 SAVE_PRIORITY = 200
 HISTORY_PAGE_SIZE = 25
@@ -116,9 +119,11 @@ class BaseMixin(object):
                          href='/cmdb/changes/timeline')
             )
         if settings.BUGTRACKER_URL:
-            footer_items.append(
-                MenuItem('Bugs', fugue_icon='fugue-bug',
-                         href=settings.BUGTRACKER_URL))
+            mainmenu_items.append(
+                MenuItem(
+                    'Report a bug', fugue_icon='fugue-bug', pull_right=True,
+                    href=settings.BUGTRACKER_URL)
+            )
         if self.request.user.is_staff:
             footer_items.append(
                 MenuItem('Admin', fugue_icon='fugue-toolbox', href='/admin'))
@@ -148,6 +153,8 @@ class BaseMixin(object):
                          href=tab_href('info')),
                 MenuItem('Components', fugue_icon='fugue-box',
                         href=tab_href('components')),
+                MenuItem('Software', fugue_icon='fugue-disc',
+                         href=tab_href('software')),
                 MenuItem('Addresses', fugue_icon='fugue-network-ip',
                         href=tab_href('addresses')),
             ])
@@ -416,32 +423,183 @@ class Prices(DeviceUpdateView):
         return ret
 
 
+def _dns_fill_record(form, prefix, record, request):
+    for label in ('name', 'type', 'content', 'ttl', 'prio', 'type'):
+        setattr(record, label,
+                form.cleaned_data[prefix + label] or None)
+    record.domain = get_domain(record.name)
+    if (record.type in ('A', 'AAAA') and
+        form.cleaned_data[prefix + 'ptr']):
+        try:
+            set_revdns_record(record.content, record.name)
+        except ValueError:
+            pass
+        else:
+            messages.warning(request,
+                         "Created a PTR DNS record for %s." %
+                         record.content)
+
+
+def _dns_create_record(form, request, device):
+    if form.cleaned_data.get('dns_new_type'):
+        record = Record()
+        _dns_fill_record(form, 'dns_new_', record, request)
+        record.save()
+        messages.success(request, "A DNS record added.")
+
+
+def _dhcp_fill_record(form, prefix, record, request):
+    ip = form.cleaned_data.get(prefix + 'ip')
+    mac = form.cleaned_data.get(prefix + 'mac')
+    record.ip = ip
+    record.mac = mac
+
+
+def _dhcp_create_record(form, request, device):
+    ip = form.cleaned_data.get('dhcp_new_ip')
+    mac = form.cleaned_data.get('dhcp_new_mac')
+    if ip and mac:
+        if DHCPEntry.objects.filter(ip=ip).exists():
+            messages.warning(request,
+                             "A DHCP record for %s already exists."
+                             % ip)
+        if DHCPEntry.objects.filter(mac=mac).exists():
+            messages.warning(request,
+                             "A DHCP record for %s already exists."
+                             % mac)
+        record = DHCPEntry(mac=mac, ip=ip)
+        record.save()
+        messages.success(request,
+                         "A DHCP record for %s and %s added." %
+                         (ip, mac))
+
+
+def _ip_fill_record(form, prefix, record, request):
+    hostname = form.cleaned_data.get(prefix + 'hostname')
+    address = form.cleaned_data.get(prefix + 'address')
+    if hostname and address:
+        record.hostname = hostname
+        record.address = address
+
+
+def _ip_create_record(form, request, device):
+    hostname = form.cleaned_data.get('ip_new_hostname')
+    address = form.cleaned_data.get('ip_new_address')
+    print(hostname, address)
+    if hostname and address:
+        if IPAddress.objects.filter(address=address).exists():
+            messages.error(
+                request,
+                "An IP address entry for %s already exists."
+                % address
+            )
+            return
+        record = IPAddress(address=address, hostname=hostname,
+                           device=device)
+        record.save()
+        messages.success(request,
+                         "An IP address entry for %s created." %
+                         address)
+
 class Addresses(DeviceDetailView):
     template_name = 'ui/device_addresses.html'
     read_perm = Perm.read_device_info_generic
+    edit_perm = Perm.edit_domain_name
+
+    def __init__(self, *args, **kwargs):
+        super(Addresses, self).__init__(*args, **kwargs)
+        self.dns_form = None
+        self.dhcp_form = None
+        self.ip_form = None
 
     def get_dns(self):
         ips = set(ip.address for ip in self.object.ipaddress_set.all())
         names = set(ip.hostname for ip in self.object.ipaddress_set.all()
                  if ip.hostname)
         dotnames = set(name+'.' for name in names)
+        revnames = set('.'.join(reversed(ip.split('.'))) + '.in-addr.arpa'
+                       for ip in ips)
+        starrevnames = set()
+        for name in revnames:
+            parts = name.split('.')
+            while parts:
+                parts.pop(0)
+                starrevnames.add('.'.join(['*'] + parts))
         for entry in Record.objects.filter(
                 db.Q(content__in=ips) |
                 db.Q(name__in=names) |
                 db.Q(content__in=names | dotnames)
-            ):
+            ).distinct():
             names.add(entry.name)
             if entry.type == 'A':
                 ips.add(entry.content)
             elif entry.type == 'CNAME':
                 names.add(entry.content)
-        for entry in Record.objects.filter(
-                db.Q(content__in=ips) |
-                db.Q(name__in=names) |
-                db.Q(content__in=names)
-            ):
-            yield entry
+        starnames = set()
+        for name in names:
+            parts = name.split('.')
+            while parts:
+                parts.pop(0)
+                starnames.add('.'.join(['*'] + parts))
+        return Record.objects.filter(
+                db.Q(content__in=ips | names) |
+                db.Q(name__in=names | revnames | starnames | starrevnames)
+            ).distinct().order_by('type', 'name', 'content')
 
+    def handle_form(self, form, form_name, fill_record, create_record):
+        if form.is_valid():
+            for record in form.records:
+                prefix = '%s_%d_' % (form_name, record.id)
+                if form.cleaned_data.get(prefix + 'del'):
+                    messages.warning(self.request,
+                                     "A %s record deleted." % form_name)
+                    record.delete()
+                else:
+                    fill_record(form, prefix, record, self.request)
+                    record.save()
+            create_record(form, self.request, self.object)
+            messages.success(self.request,
+                             "The %s records updated." % form_name)
+            return HttpResponseRedirect(self.request.path)
+        else:
+            messages.error(self.request,
+                           "There are errors in the %s form." % form_name)
+
+    def post(self, *args, **kwargs):
+        self.object = self.get_object()
+        profile = self.request.user.get_profile()
+        if not profile.has_perm(self.edit_perm, self.object.venture):
+            return HttpResponseForbidden(
+                "You don't have permission to edit this."
+            )
+        if 'dns' in self.request.POST:
+            dns_records = self.get_dns()
+            self.dns_form = DNSRecordsForm(dns_records, self.request.POST)
+            return self.handle_form(
+                self.dns_form,
+                'dns',
+                _dns_fill_record,
+                _dns_create_record
+            ) or self.get(*args, **kwargs)
+        elif 'dhcp' in self.request.POST:
+            dhcp_records = self.get_dhcp()
+            self.dhcp_form = DHCPRecordsForm(dhcp_records, self.request.POST)
+            return self.handle_form(
+                self.dhcp_form,
+                'dhcp',
+                _dhcp_fill_record,
+                _dhcp_create_record
+            ) or self.get(*args, **kwargs)
+        elif 'ip' in self.request.POST:
+            ip_records = self.object.ipaddress_set.order_by('address')
+            self.ip_form = AddressesForm(ip_records, self.request.POST)
+            return self.handle_form(
+                self.ip_form,
+                'ip',
+                _ip_fill_record,
+                _ip_create_record
+            ) or self.get(*args, **kwargs)
+        return self.get(*args, **kwargs)
 
     def get_dhcp(self):
         macs = set(eth.mac for eth in self.object.ethernet_set.all())
@@ -449,10 +607,23 @@ class Addresses(DeviceDetailView):
 
     def get_context_data(self, **kwargs):
         ret = super(Addresses, self).get_context_data(**kwargs)
+        if self.dns_form is None:
+            dns_records = self.get_dns()
+            self.dns_form = DNSRecordsForm(dns_records)
+        if self.dhcp_form is None:
+            dhcp_records = self.get_dhcp()
+            self.dhcp_form = DHCPRecordsForm(dhcp_records)
+        if self.ip_form is None:
+            ip_records = self.object.ipaddress_set.order_by('address')
+            self.ip_form = AddressesForm(ip_records)
+        profile = self.request.user.get_profile()
+        can_edit =  profile.has_perm(self.edit_perm, self.object.venture)
         ret.update({
+            'canedit': can_edit,
             'balancers': list(_get_balancers(self.object)),
-            'dns': self.get_dns(),
-            'dhcp': self.get_dhcp(),
+            'dnsform': self.dns_form,
+            'dhcpform': self.dhcp_form,
+            'ipform': self.ip_form,
         })
         return ret
 
@@ -469,7 +640,7 @@ class Costs(DeviceDetailView):
         for h in history:
             if not has_perm(Perm.list_devices_financial, h.venture):
                 h.daily_cost = None
-            if h.end.year != 9999 and h.start:
+            if h.end < FOREVER_DATE and h.start:
                 h.span = (h.end - h.start).days
             elif h.start:
                 h.span = (datetime.date.today() - h.start).days
@@ -482,6 +653,8 @@ class Costs(DeviceDetailView):
             'history': history,
             'history_page': history_page,
             'query_variable_name': query_variable_name,
+            'ALWAYS_DATE': ALWAYS_DATE,
+            'FOREVER_DATE': FOREVER_DATE,
         })
         last_month = datetime.date.today() - datetime.timedelta(days=31)
         splunk = self.object.splunkusage_set.filter(
@@ -650,4 +823,15 @@ class CMDB(BaseMixin):
             'url_query': self.request.GET,
             'components': _get_details(self.object, purchase_only=False),
         })
+        return ret
+
+class Software(DeviceDetailView):
+    template_name = 'ui/device_software.html'
+    read_perm = Perm.read_device_info_generic
+
+    def get_context_data(self, **kwargs):
+        ret = super(Software, self).get_context_data(**kwargs)
+        ret.update({
+            'components': _get_details(self.object, purchase_only=False),
+            })
         return ret

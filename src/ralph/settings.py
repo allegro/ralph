@@ -190,7 +190,7 @@ CELERY_ROUTES = (
 )
 # define the lookup channels in use on the site
 AJAX_LOOKUP_CHANNELS = {
-    'ci'  : {'model':'cmdb.CI', 'search_field':'name'}
+    'ci': ('ralph.cmdb.models', 'CILookup')
 }
 # magically include jqueryUI/js/css
 AJAX_SELECT_BOOTSTRAP = True
@@ -281,7 +281,7 @@ ZABBIX_URL = None
 ZABBIX_USER = None
 ZABBIX_PASSWORD = None
 ZABBIX_DEFAULT_GROUP = 'test'
-BUGTRACKER_URL = 'https://github.com/allegro/ralph/issues'
+BUGTRACKER_URL = 'https://github.com/allegro/ralph/issues/new'
 SO_URL = None
 OPENSTACK_URL = None
 OPENSTACK_USER = None
