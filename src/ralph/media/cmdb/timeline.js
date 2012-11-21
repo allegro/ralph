@@ -99,8 +99,8 @@ function annotate_manual(plot, data, plot_title, issuetracker_url, min, max){
             'comment': data[i].comment,
             'author': data[i].author,
             'href_link':  href_link,
-            'external_key' : external_key,
-            'issuetracker_url' : issuetracker_url,
+            'external_key': external_key,
+            'issuetracker_url': issuetracker_url,
             'failed_cis': data[i].errors_count,
             'changed_cis': data[i].success_count,
             'row_class': row_class
