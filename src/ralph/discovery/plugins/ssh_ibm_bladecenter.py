@@ -191,7 +191,7 @@ def _dev(model_type, pairs, parent, raw):
         ethernets = []
     name = pairs.get('Name') or pairs.get('Product Name') or model_name
     dev = Device.create(ethernets=ethernets, model_name=model_name,
-            model_type=model_type, sn=sn, raw=raw, name=name, parent=parent,
+            model_type=model_type, sn=sn, name=name, parent=parent,
             priority=SAVE_PRIORITY)
     firmware = (pairs.get('AMM firmware') or pairs.get('FW/BIOS') or
             pairs.get('Main Application 2'))
