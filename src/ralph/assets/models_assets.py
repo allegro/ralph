@@ -74,6 +74,13 @@ class AssetModel(TimeTrackable, EditorTrackable):
         return "{}".format(self.name)
 
 
+class Magazine(TimeTrackable, EditorTrackable):
+    name = models.CharField(max_length=100)
+
+    def __unicode__(self):
+        return self.name
+
+
 def content_file_name(instance, filename):
     return '/'.join(['content', instance.user.username, filename])
 
@@ -81,9 +88,8 @@ def content_file_name(instance, filename):
 class OfficeData(models.Model):
     license_key = models.CharField(max_length=255, null=True, blank=True)
     version = models.CharField(max_length=50, null=True, blank=True)
-    order_no = models.CharField(max_length=50, null=True, blank=True)
-    unit_price = models.DecimalField(max_digits=20, decimal_places=2,
-                                     default=0)
+    unit_price = models.DecimalField(
+        max_digits=20, decimal_places=2, default=0)
     attachment = models.FileField(upload_to=content_file_name, null=True,
                                   blank=True)
     license_type = models.IntegerField(choices=LicenseTypes(),
@@ -111,9 +117,11 @@ class Asset(TimeTrackable, EditorTrackable):
     source = models.PositiveIntegerField(verbose_name=_("source"),
                                          choices=AssetSource(),
                                          db_index=True)
-    invoice_no = models.CharField(max_length=30, db_index=True)
+    invoice_no = models.CharField(
+        max_length=30, db_index=True, null=True, blank=True)
+    order_no = models.CharField(max_length=50, null=True, blank=True)
     buy_date = models.DateField(default=datetime.datetime.now())
-    sn = models.CharField(max_length=200, unique=True, null=True, blank=True)
+    sn = models.CharField(max_length=200, unique=True)
     barcode = models.CharField(max_length=200, null=True, blank=True,
                                unique=True)
     support_period = models.PositiveSmallIntegerField(
@@ -133,11 +141,7 @@ class DeviceInfo(TimeTrackable):
                                      on_delete=models.SET_NULL)
     size = models.PositiveSmallIntegerField(verbose_name='Size in units',
                                             default=1)
-    location = models.CharField(
-        max_length=250,
-        verbose_name="A place where device is currently located in."
-                     " May be DC/Rack or City/branch"
-    )
+    magazine = models.ForeignKey(Magazine, on_delete=models.PROTECT)
 
     def __unicode__(self):
         return "{}".format(self.ralph_device)

@@ -17,6 +17,7 @@ from ralph.assets.models_assets import (
     AssetStatus,
     LicenseTypes,
     AssetSource,
+    Magazine,
 )
 
 __all__ = [
@@ -30,5 +31,6 @@ __all__ = [
     AssetStatus,
     LicenseTypes,
     AssetSource,
+    Magazine,
 ]
 

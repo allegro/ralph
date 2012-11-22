@@ -11,7 +11,16 @@ from lck.django.common.admin import ModelAdmin
 
 from ralph.assets.models import (
     Asset, AssetManufacturer, AssetModel, OfficeData, DeviceInfo, PartInfo,
+    Magazine,
 )
+
+
+class MagazineAdmin(ModelAdmin):
+    save_on_top = True
+    list_display = ('name',)
+    search_fields = ('name',)
+
+admin.site.register(Magazine, MagazineAdmin)
 
 
 class AssetModelAdmin(ModelAdmin):
