@@ -24,7 +24,7 @@ from ralph.cmdb.models_ci import (
 from ralph.deployment.models import DeploymentStatus
 from ralph.discovery.models_device import MarginKind, DeviceType, Device
 from ralph.discovery.models_history import HistoryCost
-from ralph.ui.forms import DateRangeForm, MarginsReportForm, DevicesReportForm
+from ralph.ui.forms import DateRangeForm, MarginsReportForm
 from ralph.ui.reports import (
     get_total_cost, get_total_count, get_total_cores, get_total_virtual_cores
 )
@@ -483,72 +483,4 @@ class ReportDeviceList(object):
 
 
 class ReportDevices(SidebarReports, Base):
-    template_name = 'ui/report_devices.html'
-    subsection = 'devices'
-
-    def get(self, *args, **kwargs):
-        profile = self.request.user.get_profile()
-        has_perm = profile.has_perm
-        if not has_perm(Perm.read_device_info_reports):
-            return HttpResponseForbidden(
-                "You don't have permission to see reports.")
-        self.perm_edit = False
-        if has_perm(Perm.edit_device_info_financial):
-            self.perm_edit = True
-        self.form = DevicesReportForm()
-
-        radio = self.request.GET.get('radios', False)
-        depreciation = self.request.GET.get('e_depreciation', False)
-        support = self.request.GET.get('e_support', False)
-        if radio:
-            if radio =='a_depreciation':
-                self.title = 'Devices after depreciation'
-                self.headers = [
-                    'Device', 'Venture', 'Deprecation date'
-                ]
-                rows = []
-                devs = Device.objects.filter(
-                    deprecation_date__lte=datetime.date.today()
-                )
-                for dev in devs:
-                    dict = (dev.name, dev.venture, dev.deprecation_date)
-                    rows.append(dict)
-                self.rows = rows
-
-            if radio == 'w_purchase':
-                self.title = 'Devices without purchase date'
-                rows = []
-            if radio == 'w_depreciation':
-                self.title = 'Devices without depreciation date'
-                rows = []
-            if radio == 'w_support':
-                self.title = 'Devices without support date'
-                rows = []
-        elif depreciation:
-            self.title = 'Devices who depreciation ends (months) '
-            rows = []
-        elif support:
-            self.title = 'Devices who support ends (months)'
-            rows = []
-        else:
-            self.title = None
-            self.headers = None
-            self.rows = None
-
-
-#        import pdb
-#        pdb.set_trace()
-        return super(ReportDevices, self).get(*args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        context = super(ReportDevices, self).get_context_data(**kwargs)
-        context.update(
-            {
-                'form': self.form,
-                'title': self.title,
-                'tabele_header': self.headers,
-                'rows': self.rows,
-                'perm_to_edit': self.perm_edit,
-            }
-        )
-        return context
+    pass
