@@ -64,6 +64,7 @@ class AssetManufacturer(TimeTrackable, EditorTrackable):
     def __unicode__(self):
         return "{}".format(self.name)
 
+
 class AssetModel(TimeTrackable, EditorTrackable):
     manufacturer = models.ForeignKey(AssetManufacturer,
                                      on_delete=models.PROTECT)
