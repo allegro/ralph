@@ -185,7 +185,7 @@ class DeviceAdmin(ModelAdmin):
     list_display = ('name', 'sn', 'created', 'modified')
     list_filter = ('model__type',)
     list_per_page = 250
-    readonly_fields = ('last_seen')
+    readonly_fields = ('last_seen',)
     save_on_top = True
     search_fields = ('name', 'name2', 'sn', 'model__type',
                      'model__name', 'ethernet__mac')
