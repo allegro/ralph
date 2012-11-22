@@ -45,7 +45,7 @@ setup (
         'ipaddr==2.1.7',
         'iscconf==1.0.0dev9',
         'jpath==1.2',
-        'lck.django==0.8.0',
+        'lck.django==0.8.1',
         'lxml==2.3.5',
         'mock==0.8.0',
         'MySQL-python==1.2.3',
