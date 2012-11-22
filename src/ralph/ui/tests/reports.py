@@ -45,7 +45,6 @@ class TestReportsServices(TestCase):
             type=CI_RELATION_TYPES.CONTAINS,
         )
         self.relation.save()
-        self.db_relation = CI.objects.get(pk='1')
 
     def test_user_login(self):
         self.assertTrue(self.client)
