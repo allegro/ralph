@@ -260,6 +260,7 @@ def _add_dev_cpu(pairs, parent, raw, counts, dev_id):
         k not in ('Processor cores', 'Processor family',
                   'Speed', 'system>', 'Mach type/model'))
     cpu.model, c = ComponentModel.concurrent_get_or_create(
+        size=cores,
         cores=cores, speed=speed, type=ComponentType.processor.id,
         extra_hash=hashlib.md5(extra).hexdigest(), extra=extra,
         family=family)
