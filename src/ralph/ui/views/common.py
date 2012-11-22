@@ -193,6 +193,7 @@ class BaseMixin(object):
                 device = None
             if device:
                 ci = CI.get_by_content_object(Device.objects.get(pk=device))
+            if ci:
                 tab_items.extend([
                     MenuItem('CMDB', fugue_icon='fugue-thermometer',
                         href='/cmdb/ci/view/%s' % ci.id),
