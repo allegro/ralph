@@ -69,18 +69,18 @@ class ImpactCalculator(object):
             type__in=self.relation_types
         ).values('parent_id', 'child_id', 'type')
         self.graph = pygraph.classes.digraph.digraph()
-        self.graph.add_nodes([x['pk'] for x in allci])
-        for x in relations:
-            if x['type'] == CI_RELATION_TYPES.CONTAINS.id:
+        self.graph.add_nodes([ci['pk'] for ci in allci])
+        for relation in relations:
+            if relation['type'] == CI_RELATION_TYPES.CONTAINS.id:
                 # the only relation which we can traverse going straight
-                parent = x['parent_id']
-                child = x['child_id']
+                parent = relation['parent_id']
+                child = relation['child_id']
             else:
                 # opposite direction for graph traversal.
-                parent = x['child_id']
-                child = x['parent_id']
+                parent = relation['child_id']
+                child = relation['parent_id']
             try:
-                self.graph.add_edge((parent, child), attrs=(x['type'],))
+                self.graph.add_edge((parent, child), attrs=(relation['type'],))
             except AdditionError:
                 # ignore duplicated relations(types) in graph
                 pass
