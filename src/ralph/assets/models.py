@@ -19,12 +19,14 @@ from lck.django.choices import Choices
 
 class LicenseTypes(Choices):
     _ = Choices.Choice
+
     oem = _("oem")
     box = _("box")
 
 
 class AssetType(Choices):
     _ = Choices.Choice
+
     back_office = _("back office")
     data_center = _("data center")
     administration = _("administration")
@@ -63,8 +65,10 @@ class AssetManufacturer(TimeTrackable, EditorTrackable):
 
 
 class AssetModel(TimeTrackable, EditorTrackable):
-    manufacturer = models.ForeignKey(AssetManufacturer,
-                                     on_delete=models.PROTECT)
+    manufacturer = models.ForeignKey(
+        AssetManufacturer,
+        on_delete=models.PROTECT,
+    )
     name = models.CharField(max_length=250)
 
 
@@ -76,10 +80,10 @@ class OfficeData(models.Model):
     license_key = models.CharField(max_length=255, null=True, blank=True)
     version = models.CharField(max_length=50, null=True, blank=True)
     order_no = models.CharField(max_length=50, null=True, blank=True)
-    unit_price = models.DecimalField(max_digits=20, decimal_places=2,
-                                     default=0)
-    attachment = models.FileField(upload_to=content_file_name, null=True,
-                                  blank=True)
+    unit_price = models.DecimalField(
+        max_digits=20, decimal_places=2, default=0)
+    attachment = models.FileField(
+        upload_to=content_file_name, null=True, blank=True)
     license_type = models.IntegerField(choices=LicenseTypes(),
                                        verbose_name=_("license type"),
                                        null=True, blank=True)
@@ -100,7 +104,12 @@ class Asset(TimeTrackable, EditorTrackable):
                                          db_index=True)
     invoice_no = models.CharField(max_length=30, db_index=True)
     buy_date = models.DateField(default=datetime.datetime.now())
-    sn = models.CharField(max_length=200, unique=True)
+    sn = models.CharField(
+        max_length=200,
+        unique=True,
+        null=True,
+        blank=True,
+    )
     barcode = models.CharField(max_length=200, null=True, blank=True,
                                unique=True)
     support_period = models.PositiveSmallIntegerField(
