@@ -46,7 +46,6 @@ class TestReportsServices(TestCase):
         )
         self.relation.save()
 
-
     def test_user_login(self):
         self.assertTrue(self.client)
 
