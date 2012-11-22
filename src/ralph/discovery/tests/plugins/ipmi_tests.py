@@ -652,7 +652,7 @@ FRU Device Description : Builtin FRU Device (ID 0)
         ipmi.IPMI.get_mac = lambda o: 'ff:aa:cc:01:10:33'
 
         result = ipmi._run_ipmi('127.0.0.1')
-        self.assertEquals(result, 'SUN FIRE X4270 SERVER, ILOM INTEGRATED SP')
+        self.assertEquals(result, 'SUN FIRE X4270 SERVER')
 
         dev = None
         try:
@@ -660,20 +660,6 @@ FRU Device Description : Builtin FRU Device (ID 0)
         except Device.DoesNotExist:
             pass
         self.assertNotEqual(dev, None)
-        self.assertEqual(dev.ipaddress_set.count(), 0)
-
-        mgmt = None
-        try:
-            mgmt = Device.objects.get(sn='00:11:22:33:44:55')
-        except Device.DoesNotExist:
-            pass
-        self.assertNotEqual(mgmt, None)
-        self.assertEqual(mgmt.mgmt_firmware, 'rev 123')
-        ip = None
-        try:
-            ip = mgmt.ipaddress_set.get(address='127.0.0.1')
-        except IPAddress.DoesNotExist:
-            pass
-        self.assertNotEqual(ip, None)
-        self.assertTrue(dev.management.pk == ip.pk)
+        self.assertEqual(
+            dev.ipaddress_set.filter(is_management=True).count(), 1)
 
