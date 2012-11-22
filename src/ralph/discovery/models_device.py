@@ -230,9 +230,6 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
     remarks = db.TextField(verbose_name=_("remarks"),
         help_text=_("Additional information."),
         blank=True, default="")
-    raw = db.TextField(verbose_name=_("raw info"),
-        help_text=_("Response information as received."),
-        blank=True, default=None, null=True, editable=False)
     boot_firmware = db.CharField(verbose_name=_("boot firmware"), null=True,
             blank=True, max_length=255)
     hard_firmware = db.CharField(verbose_name=_("hardware firmware"),
