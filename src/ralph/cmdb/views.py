@@ -1119,6 +1119,19 @@ class Search(BaseCMDBView):
                     {'name': 'operations', 'value': self.get_operations(i)}
                 ]
                 table_body.append(row)
+            elif type_ == str(CI_TYPES.SERVICE.id):
+                b_own = self.get_owners(i, b_owners)
+                t_own = self.get_owners(i, t_owners)
+                row = [
+                    {'name': 'name', 'value': self.get_name(i, icon)},
+                    {'name': 'uid', 'value': self.get_uid(i)},
+                    {'name': 'venture-child', 'value': venture},
+                    {'name': 'bl', 'value': self.get_bl(i, relations)},
+                    {'name': 't_owners', 'value': t_own},
+                    {'name': 'b_owners', 'value': b_own},
+                    {'name': 'operations', 'value': self.get_operations(i)}
+                ]
+                table_body.append(row)
             else:
                 table_body.append(DEFAULT_ROWS)
         self.table_header = self.get_table_header(layer, type_)
