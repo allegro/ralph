@@ -26,7 +26,7 @@ from ralph.discovery.models_device import MarginKind, DeviceType, Device
 from ralph.discovery.models_history import HistoryCost
 from ralph.ui.forms import (
     DateRangeForm, MarginsReportForm, DevicesChoiceReportForm,
-    SupportRangeReportForm, SupportRangeReportForm
+    SupportRangeReportForm, DeprecationRangeReportForm
 )
 from ralph.ui.reports import (
     get_total_cost, get_total_count, get_total_cores, get_total_virtual_cores
@@ -570,8 +570,8 @@ class ReportDevices(SidebarReports, Base):
         context.update(
             {
                 'form_choice': self.form_choice,
-                'form_support_range': self.self.form_support_range,
-                'form_deprecation_range': self.self.form_deprecation_range,
+                'form_support_range': self.form_support_range,
+                'form_deprecation_range': self.form_deprecation_range,
                 'tabele_header': self.headers,
                 'rows': self.rows,
                 'perm_to_edit': self.perm_edit,
