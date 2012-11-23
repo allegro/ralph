@@ -466,6 +466,7 @@ class DiscoveryWarning(db.Model):
     plugin = db.CharField(max_length=64, default='')
     message = db.TextField(blank=True, default='')
     ip = db.IPAddressField(verbose_name=_("IP address"))
+    count = db.IntegerField(default=1)
     device = db.ForeignKey(
         'Device',
         null=True,

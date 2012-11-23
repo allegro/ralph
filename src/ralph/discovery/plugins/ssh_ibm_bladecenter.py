@@ -242,6 +242,11 @@ def _add_dev_cpu(pairs, parent, raw, counts, dev_id):
     try:
         model = pairs['Mach type/model']
     except KeyError:
+        DiscoveryWarning(
+            message="Processor model unknown",
+            plugin=__name__,
+            device=parent,
+        ).save()
         return
     counts.cpu += 1
     try:
@@ -273,6 +278,11 @@ def _add_dev_memory(pairs, parent, raw, counts, dev_id):
     try:
         model = pairs['Mach type/model']
     except KeyError:
+        DiscoveryWarning(
+            message="Memory model unknown",
+            plugin=__name__,
+            device=parent,
+        ).save()
         return
     counts.mem += 1
     try:
