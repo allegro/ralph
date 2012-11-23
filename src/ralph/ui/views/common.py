@@ -24,15 +24,34 @@ from ralph.account.models import Perm
 from ralph.business.models import RolePropertyValue
 from ralph.cmdb import models as cdb
 from ralph.dnsedit.models import DHCPEntry
-from ralph.dnsedit.util import get_domain, set_revdns_record, get_revdns_records
+from ralph.dnsedit.util import (
+    get_domain,
+    set_revdns_record,
+    get_revdns_records,
+)
 from ralph.dnsedit.util import Error as DNSError
-from ralph.discovery.models import Device, DeviceType, IPAddress
-from ralph.discovery.models_history import FOREVER_DATE, ALWAYS_DATE
+from ralph.discovery.models import (
+    Device,
+    DeviceType,
+    IPAddress,
+)
+from ralph.discovery.models_history import (
+    FOREVER_DATE,
+    ALWAYS_DATE,
+    DiscoveryWarning,
+)
 from ralph.util import presentation, pricing
-from ralph.ui.forms import (DeviceInfoForm, DeviceInfoVerifiedForm,
-                            DevicePricesForm, DevicePurchaseForm,
-                            PropertyForm, DeviceBulkForm, DNSRecordsForm,
-                            DHCPRecordsForm, AddressesForm)
+from ralph.ui.forms import (
+    DeviceInfoForm,
+    DeviceInfoVerifiedForm,
+    DevicePricesForm,
+    DevicePurchaseForm,
+    PropertyForm,
+    DeviceBulkForm,
+    DNSRecordsForm,
+    DHCPRecordsForm,
+    AddressesForm,
+)
 
 SAVE_PRIORITY = 200
 HISTORY_PAGE_SIZE = 25
@@ -773,9 +792,14 @@ class Discover(DeviceDetailView):
     def get_context_data(self, **kwargs):
         ret = super(Discover, self).get_context_data(**kwargs)
         addresses = [ip.address for ip in self.object.ipaddress_set.all()]
+        warnings = DiscoveryWarning.objects.filter(
+            db.Q(device=self.object),
+            db.Q(ip__in=addresses),
+        ).order_by('-date')
         ret.update({
             'address': addresses[0] if addresses else '',
-            'addresses': json.dumps(addresses)
+            'addresses': json.dumps(addresses),
+            'warnings': warnings,
         })
         return ret
 

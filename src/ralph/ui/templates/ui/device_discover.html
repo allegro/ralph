@@ -21,5 +21,21 @@
 </div>
 </form>
 
-
+<h2>Warnings</h2>
+<table class="table table-bordered">
+<tr>
+    <th>Date</th>
+    <th>Plugin</th>
+    <th>Address</th>
+    <th>Message</th>
+</tr>    
+{% for warning in warnings %}
+<tr>
+    <td>{{ warning.date }}</td>
+    <td>{{ warning.plugin }}</td>
+    <td>{{ warning.ip|default:'' }}</td>
+    <td>{{ warning.message }}</td>
+</tr>
+{% endfor %}
+</table>
 {% endblock content %}
