@@ -14,9 +14,11 @@ class AssetsMixin(Base):
     template_name = "assets/base.html"
 
     def get(self, *args, **kwargs):
+        # TODO
         return super(AssetsMixin, self).get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
+        # TODO
         return super(AssetsMixin, self).post(*args, **kwargs)
 
     def get_context_data(self, *args, **kwargs):
@@ -32,7 +34,7 @@ class AssetsMixin(Base):
         return ret
 
     def get_mainmenu_items(self):
-        return[MenuItem(label='Data center',
+        return [MenuItem(label='Data center',
                         name='dc',
                         fugue_icon='fugue-building',
                         href='/assets/dc'),
