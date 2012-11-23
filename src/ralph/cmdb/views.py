@@ -839,7 +839,7 @@ class Search(BaseCMDBView):
             {'label': 'Layer', 'name': 'layer', 'sortable': 0},
             {'label': 'Venture', 'name': 'Venture', 'sortable': 0},
             {'label': 'Service', 'name': 'Service', 'sortable': 0},
-            {'label': 'CI Scope', 'name': 'pci', 'sortable': 0},
+            {'label': 'PCI Scope', 'name': 'pci', 'sortable': 0},
         )
         table_header = (
             {'label': 'Name', 'name': 'uid', 'sortable': 1},
@@ -853,7 +853,7 @@ class Search(BaseCMDBView):
                 {'label': 'Layer', 'name': 'layer', 'sortable': 0},
                 {'label': 'Venture', 'name': 'Venture', 'sortable': 0},
                 {'label': 'Service', 'name': 'Service', 'sortable': 0},
-                {'label': 'CI Scope', 'name': 'pci', 'sortable': 0},
+                {'label': 'PCI Scope', 'name': 'pci', 'sortable': 0},
             )
         elif type_ == str(CI_TYPES.DEVICE.id):
             table_header += (
@@ -863,7 +863,7 @@ class Search(BaseCMDBView):
                 {'label': 'DC', 'name': 'DC', 'sortable': 0},
                 {'label': 'Venture', 'name': 'Venture', 'sortable': 0},
                 {'label': 'Service', 'name': 'Service', 'sortable': 0},
-                {'label': 'PCI Scope', 'name': 'PCI Scope', 'sortable': 0},
+                {'label': 'PPCI Scope', 'name': 'PPCI Scope', 'sortable': 0},
             )
         elif type_ == str(CI_TYPES.PROCEDURE.id):
             table_header += DEFAULT_COLS
