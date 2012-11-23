@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import
@@ -6,6 +5,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from bob.menu import MenuItem, MenuHeader
 from django.contrib import messages
 from django.db import IntegrityError, transaction
 from django.http import HttpResponseRedirect, Http404
@@ -19,8 +19,94 @@ from ralph.assets.models import (DeviceInfo, AssetSource, Asset, OfficeData)
 from ralph.ui.views.common import Base
 
 
-class Index(Base):
-    template_name = 'assets/base.html'
+class AssetsMixin(Base):
+    template_name = "assets/base.html"
+
+    def get(self, *args, **kwargs):
+        # TODO
+        return super(AssetsMixin, self).get(*args, **kwargs)
+
+    def post(self, *args, **kwargs):
+        # TODO
+        return super(AssetsMixin, self).post(*args, **kwargs)
+
+    def get_context_data(self, *args, **kwargs):
+        ret = super(AssetsMixin, self).get_context_data(**kwargs)
+        ret.update({
+            'sidebar_items': self.get_sidebar_items(),
+            'mainmenu_items': self.get_mainmenu_items(),
+            'section': 'assets',
+            'sidebar_selected': self.sidebar_selected,
+            'section': self.mainmenu_selected,
+        })
+
+        return ret
+
+    def get_mainmenu_items(self):
+        return [
+            MenuItem(
+                label='Data center',
+                name='dc',
+                fugue_icon='fugue-building',
+                href='/assets/dc'
+            ),
+            MenuItem(
+                label='BackOffice',
+                fugue_icon='fugue-printer',
+                name='back_office',
+                href='/assets/back_office'
+            ),
+        ]
+
+
+class DataCenterMixin(AssetsMixin):
+    mainmenu_selected = 'dc'
+
+    def get_sidebar_items(self):
+        items = (
+            ('/assets/dc/add/device/', 'Add device', 'fugue-block--plus'),
+            ('/assets/dc/add/part/', 'Add part', 'fugue-block--plus'),
+            ('/assets/dc/search', 'Search', 'fugue-magnifier'),
+        )
+        sidebar_menu = (
+            [MenuHeader('Data center actions')] +
+            [MenuItem(
+             label=t[1],
+             fugue_icon=t[2],
+             href=t[0]
+             ) for t in items]
+        )
+        return sidebar_menu
+
+
+class BackOfficeMixin(AssetsMixin):
+    mainmenu_selected = 'back_office'
+
+    def get_sidebar_items(self):
+        items = (
+                ('/assets/back_office/add/device/', 'Add device',
+                 'fugue-block--plus'),
+                ('/assets/back_office/add/part/', 'Add part',
+                 'fugue-block--plus'),
+                ('/assets/back_office/search', 'Search', 'fugue-magnifier'),
+        )
+        sidebar_menu = (
+            [MenuHeader('Back office actions')] +
+            [MenuItem(
+                label=t[1],
+                fugue_icon=t[2],
+                href=t[0]
+            ) for t in items]
+        )
+        return sidebar_menu
+
+
+class DataCenterSearch(DataCenterMixin):
+    sidebar_selected = 'search'
+
+
+class BackOfficeSearch(BackOfficeMixin):
+    sidebar_selected = 'search'
 
 
 class AddDeviceAssets(Base):
@@ -108,6 +194,14 @@ class AddDeviceAssets(Base):
         return super(AddDeviceAssets, self).get(*args, **kwargs)
 
 
+class BackOfficeAddDevice(AddDeviceAssets, BackOfficeMixin):
+    sidebar_selected = 'add device'
+
+
+class DataCenterAddDevice(AddDeviceAssets, DataCenterMixin):
+    sidebar_selected = 'add device'
+
+
 class AddPartAssets(Base):
     template_name = 'assets/add_part_assets.html'
 
@@ -167,6 +261,14 @@ class AddPartAssets(Base):
         else:
             messages.error(self.request, _("Please correct the errors."))
         return super(AddPartAssets, self).get(*args, **kwargs)
+
+
+class BackOfficeAddPart(AddPartAssets, BackOfficeMixin):
+    sidebar_selected = 'add part'
+
+
+class DataCenterAddPart(AddPartAssets, DataCenterMixin):
+    sidebar_selected = 'add part'
 
 
 class EditDeviceAsset(Base):
