@@ -396,7 +396,7 @@ class Add(BaseCMDBView):
                                       type=2,)
                     own.save()
                 messages.success(self.request, _("Changes saved."))
-                return HttpResponseRedirect('/cmdb/ci/edit/' + str(model.id))
+                return HttpResponseRedirect('/cmdb/ci/edit/' + unicode(model.id))
             else:
                 messages.error(self.request, _("Correct the errors."))
 
