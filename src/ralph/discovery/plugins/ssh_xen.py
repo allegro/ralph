@@ -17,6 +17,7 @@ from ralph.discovery.models import (Device, DeviceType, ComponentModel, Storage,
                                     Processor, ComponentType, Memory, IPAddress,
                                     DiskShare, DiskShareMount)
 from ralph.discovery import hardware
+from ralph.discovery.models_history import DiscoveryWarning
 
 
 XEN_USER = settings.XEN_USER
@@ -215,7 +216,13 @@ def run_ssh_xen(ipaddr, parent):
                     share = DiskShare.objects.get(wwn=wwn)
                     wwns.append(wwn)
                 except DiskShare.DoesNotExist:
-                    logger.warning('A share with WWN %r does not exist.' % wwn)
+                    logger.warning('A share with serial %r does not exist.' % wwn)
+                    DiscoveryWarning(
+                        message="A share with serial %r does not exist." % wwn,
+                        plugin=__name__,
+                        device=dev,
+                        ip=ipaddr,
+                    ).save()
                     continue
                 mount, created = DiskShareMount.concurrent_get_or_create(
                         share=share, device=dev)
@@ -254,6 +261,11 @@ def ssh_xen(**kwargs):
     if 'xen' not in kwargs.get('snmp_name', ''):
         return False, 'no match.', kwargs
     if not network.check_tcp_port(ip, 22):
+        DiscoveryWarning(
+            message="Port 22 closed on a XEN server.",
+            plugin=__name__,
+            ip=ip,
+        ).save()
         return False, 'closed.', kwargs
     ipaddr = IPAddress.objects.get(address=ip)
     dev = ipaddr.device
@@ -261,11 +273,12 @@ def ssh_xen(**kwargs):
         return False, 'no device.', kwargs
     try:
         name = run_ssh_xen(ipaddr, dev)
-    except (network.Error, Error) as e:
-        return False, str(e), kwargs
-    except paramiko.SSHException as e:
-        return False, str(e), kwargs
-    except Error as e:
+    except (network.Error, Error, paramiko.SSHException) as e:
+        DiscoveryWarning(
+            message="This is a XEN, but: " + str(e),
+            plugin=__name__,
+            ip=ip,
+        ).save()
         return False, str(e), kwargs
     return True, name, kwargs
 

@@ -25,6 +25,7 @@ from ralph.discovery.models import (Device, DeviceType, IPAddress, Memory,
                                     DiskShareMount, FibreChannel,
                                     MAC_PREFIX_BLACKLIST, EthernetSpeed)
 from ralph.util import Eth
+from ralph.discovery.models_history import DiscoveryWarning
 
 
 THROTTLE_AT = settings.API_THROTTLING['throttle_at']
@@ -196,14 +197,22 @@ def save_device_data(data, remote_ip):
     sn = device.get('sn')
     if not ethernets and not sn:
         raise NoRequiredDataError('No MAC addresses and no device SN.')
-    dev = Device.create(
-        sn=sn,
-        ethernets=ethernets,
-        model_name='%s %s %s' % (
-            device.get('caption'), device.get('vendor'),
-            device.get('version')),
-        model_type=DeviceType.unknown, priority=SAVE_PRIORITY
-    )
+    try:
+        dev = Device.create(
+            sn=sn,
+            ethernets=ethernets,
+            model_name='%s %s %s' % (
+                device.get('caption'), device.get('vendor'),
+                device.get('version')),
+            model_type=DeviceType.unknown, priority=SAVE_PRIORITY
+        )
+    except ValueError as e:
+        DiscoveryWarning(
+            message="Failed to create device: " + str(e),
+            plugin=__name__,
+            ip=str(remote_ip),
+        ).save()
+        return None
     dev.save(priority=SAVE_PRIORITY)
     os = data['operating_system']
     o = OperatingSystem.create(dev, os_name=os.get('label'),

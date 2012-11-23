@@ -456,3 +456,25 @@ def component_model_pre_save(sender, instance, raw, using, **kwargs):
             user=instance.saving_user,
         ).save()
 
+
+class DiscoveryWarning(db.Model):
+    """
+    Created by the discovery plugins to signal a possible problem with the
+    particular device or address.
+    """
+    date = db.DateTimeField(default=datetime.now)
+    plugin = db.CharField(max_length=64, default='')
+    message = db.TextField(blank=True, default='')
+    ip = db.IPAddressField(verbose_name=_("IP address"))
+    device = db.ForeignKey(
+        'Device',
+        null=True,
+        blank=True,
+        default=None,
+        on_delete=db.SET_NULL,
+    )
+
+    class Meta:
+        verbose_name = _("discovery warning")
+        verbose_name_plural = _("discovery warnings")
+
