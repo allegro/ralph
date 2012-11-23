@@ -19,6 +19,7 @@ from lck.django.choices import Choices
 
 class LicenseTypes(Choices):
     _ = Choices.Choice
+    not_applicable = _("not applicable")
     oem = _("oem")
     box = _("box")
 
@@ -82,7 +83,7 @@ class Magazine(TimeTrackable, EditorTrackable):
 
 
 def content_file_name(instance, filename):
-    return '/'.join(['content', instance.user.username, filename])
+    return '/'.join(['assets', str(instance.pk), filename])
 
 
 class OfficeData(models.Model):

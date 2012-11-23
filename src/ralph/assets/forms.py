@@ -119,11 +119,6 @@ class AddDeviceAssetForm(BaseDeviceAssetForm):
 
 class OfficeAssetForm(forms.Form):
     source = forms.ChoiceField(choices=AssetSource(), label=_("Source"))
-    license_key = forms.CharField(
-        label=_("License key"),
-        max_length=255,
-        required=False,
-    )
     version = forms.CharField(
         label=_("Version"),
         max_length=50,
@@ -135,7 +130,11 @@ class OfficeAssetForm(forms.Form):
         decimal_places=2,
         initial=0,
     )
-    attachment = forms.FileField(label=_("Attachment"), required=False)
+    license_key = forms.CharField(
+        label=_("License key"),
+        max_length=255,
+        required=False,
+    )
     license_type = forms.ChoiceField(
         choices=LicenseTypes(),
         label=_("License type"),
@@ -151,12 +150,21 @@ class OfficeAssetForm(forms.Form):
         required=False,
         max_length=100,
     )
+    attachment = forms.FileField(label=_("Attachment"), required=False)
 
 
 class EditPartAssetForm(BaseAssetForm, OfficeAssetForm):
-    pass
+    def __init__(self, *args, **kwargs):
+        super(EditPartAssetForm, self).__init__(*args, **kwargs)
+        self.fields['sn'].widget = forms.widgets.TextInput()
+        self.fields['sn'].label = _("SN")
 
 
-class EditDeviceAssetForm(BaseAssetForm, OfficeAssetForm):
-    pass
+class EditDeviceAssetForm(BaseDeviceAssetForm, OfficeAssetForm):
+    def __init__(self, *args, **kwargs):
+        super(EditDeviceAssetForm, self).__init__(*args, **kwargs)
+        self.fields['sn'].widget = forms.widgets.TextInput()
+        self.fields['sn'].label = _("SN")
+        self.fields['barcode'].widget = forms.widgets.TextInput()
+        self.fields['barcode'].label = _("Barcode")
 

@@ -8,10 +8,14 @@ from __future__ import unicode_literals
 
 from django.contrib import messages
 from django.db import IntegrityError, transaction
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, Http404
+from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
-from ralph.assets.forms import AddDeviceAssetForm, AddPartAssetForm
-from ralph.assets.models import DeviceInfo, AssetSource, Asset
+from lck.django.common import nested_commit_on_success
+from ralph.assets.forms import (
+    AddDeviceAssetForm, AddPartAssetForm, EditDeviceAssetForm,
+    EditPartAssetForm)
+from ralph.assets.models import (DeviceInfo, AssetSource, Asset, OfficeData)
 from ralph.ui.views.common import Base
 
 
@@ -26,7 +30,8 @@ class AddDeviceAssets(Base):
         ret = super(AddDeviceAssets, self).get_context_data(**kwargs)
         ret.update({
             'form': self.form,
-            'form_id': 'add_device_asset_form'
+            'form_id': 'add_device_asset_form',
+            'edit_mode': False
         })
         return ret
 
@@ -110,7 +115,8 @@ class AddPartAssets(Base):
         ret = super(AddPartAssets, self).get_context_data(**kwargs)
         ret.update({
             'form': self.form,
-            'form_id': 'add_part_asset_form'
+            'form_id': 'add_part_asset_form',
+            'edit_mode': False
         })
         return ret
 
@@ -150,7 +156,7 @@ class AddPartAssets(Base):
                         duplicated_sn.append(asset.sn)
             if duplicated_sn:
                 transaction.rollback()
-                msg = "Serial numbers with duplicates: %s. " % (
+                msg = "Serial numbers with duplicates: %s." % (
                     ", ".join(duplicated_sn))
                 messages.warning(self.request, msg)
             else:
@@ -161,4 +167,131 @@ class AddPartAssets(Base):
         else:
             messages.error(self.request, _("Please correct the errors."))
         return super(AddPartAssets, self).get(*args, **kwargs)
+
+
+class EditDeviceAsset(Base):
+    template_name = 'assets/edit_device_asset.html'
+
+    def get_context_data(self, **kwargs):
+        ret = super(EditDeviceAsset, self).get_context_data(**kwargs)
+        ret.update({
+            'form': self.form,
+            'form_id': 'edit_device_asset_form',
+            'edit_mode': True
+        })
+        return ret
+
+    def get(self, *args, **kwargs):
+        asset = get_object_or_404(Asset, id=kwargs.get('asset_id'))
+        if not asset.device_info:  # it isn't device asset
+            raise Http404()
+        initial_data = {
+            'type': asset.type,
+            'model': asset.model.id,
+            'invoice_no': asset.invoice_no,
+            'order_no': asset.order_no,
+            'buy_date': asset.buy_date,
+            'support_period': asset.support_period,
+            'support_type': asset.support_type,
+            'support_void_reporting': asset.support_void_reporting,
+            'provider': asset.provider,
+            'status': asset.status,
+            'sn': asset.sn,
+            'source': asset.source,
+            'barcode': asset.barcode,
+            'magazine': asset.device_info.magazine.id,
+            'size': asset.device_info.size
+        }
+        if asset.office_data:
+            initial_data.update({
+                'license_key': asset.office_data.license_key,
+                'version': asset.office_data.version,
+                'unit_price': asset.office_data.unit_price,
+                'license_type': asset.office_data.license_type,
+                'date_of_last_inventory': asset.office_data.date_of_last_inventory,
+                'last_logged_user': asset.office_data.last_logged_user
+            })
+        self.form = EditDeviceAssetForm(initial=initial_data)
+        return super(EditDeviceAsset, self).get(*args, **kwargs)
+
+    @nested_commit_on_success
+    def post(self, *args, **kwargs):
+        asset = get_object_or_404(Asset, id=kwargs.get('asset_id'))
+        self.form = EditDeviceAssetForm(self.request.POST, self.request.FILES)
+        if self.form.is_valid():
+            asset.__dict__.update(**self.form.cleaned_data)
+            if not asset.office_data:
+                office_data = OfficeData()
+            else:
+                office_data = asset.office_data
+            office_data.__dict__.update(**self.form.cleaned_data)
+            office_data.save()
+            asset.office_data = office_data
+            asset.device_info.__dict__.update(**self.form.cleaned_data)
+            asset.device_info.save()
+            asset.save()
+        else:
+            messages.error(self.request, _("Please correct the errors."))
+        return super(EditDeviceAsset, self).get(*args, **kwargs)
+
+
+class EditPartAsset(Base):
+    template_name = 'assets/edit_part_asset.html'
+
+    def get_context_data(self, **kwargs):
+        ret = super(EditPartAsset, self).get_context_data(**kwargs)
+        ret.update({
+            'form': self.form,
+            'form_id': 'edit_part_asset_form',
+            'edit_mode': True
+        })
+        return ret
+
+    def get(self, *args, **kwargs):
+        asset = get_object_or_404(Asset, id=kwargs.get('asset_id'))
+        if asset.device_info:  # it isn't part asset
+            raise Http404()
+        initial_data = {
+            'type': asset.type,
+            'model': asset.model.id,
+            'invoice_no': asset.invoice_no,
+            'order_no': asset.order_no,
+            'buy_date': asset.buy_date,
+            'support_period': asset.support_period,
+            'support_type': asset.support_type,
+            'support_void_reporting': asset.support_void_reporting,
+            'provider': asset.provider,
+            'status': asset.status,
+            'sn': asset.sn,
+            'source': asset.source
+        }
+        if asset.office_data:
+            initial_data.update({
+                'license_key': asset.office_data.license_key,
+                'version': asset.office_data.version,
+                'unit_price': asset.office_data.unit_price,
+                'license_type': asset.office_data.license_type,
+                'date_of_last_inventory': asset.office_data.date_of_last_inventory,
+                'last_logged_user': asset.office_data.last_logged_user
+            })
+        self.form = EditPartAssetForm(initial=initial_data)
+        return super(EditPartAsset, self).get(*args, **kwargs)
+
+    @nested_commit_on_success
+    def post(self, *args, **kwargs):
+        asset = get_object_or_404(Asset, id=kwargs.get('asset_id'))
+        self.form = EditPartAssetForm(self.request.POST, self.request.FILES)
+        if self.form.is_valid():
+            asset.__dict__.update(**self.form.cleaned_data)
+            if not asset.office_data:
+                office_data = OfficeData()
+            else:
+                office_data = asset.office_data
+            office_data.__dict__.update(**self.form.cleaned_data)
+            office_data.save()
+            asset.office_data = office_data
+            asset.save()
+        else:
+            messages.error(self.request, _("Please correct the errors."))
+        return super(EditPartAsset, self).get(*args, **kwargs)
 

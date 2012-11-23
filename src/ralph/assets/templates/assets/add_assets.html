@@ -5,11 +5,11 @@
   <h3>{% block form_title %}{% endblock %}</h3>
 </div>
 
-<form id='{{ form_id }}' class="form form-horizontal" method="POST">
+<form id='{{ form_id }}' class="form form-horizontal" method="POST"{% if edit_mode %} enctype="multipart/form-data"{% endif %}>
   {% csrf_token %}
   <div class="row">
     <div class="span6 well">
-      {% for field in form %}{% if field.html_name != 'barcode' and field.html_name != 'sn' %}
+      {% for field in form %}{% if field.html_name != 'barcode' and field.html_name != 'sn' or edit_mode %}
       <div class="control-group{% if field.errors %} error{% endif %}">
         <label class="control-label">{{ field.label }}</label>
         <div class="form-field controls">
@@ -31,5 +31,4 @@
     </div>
   </div>
 </form>
-
 {% endblock %}
