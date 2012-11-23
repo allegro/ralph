@@ -7,7 +7,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import datetime
-import ralph.cmdb.models as db
+from urlparse import urljoin
 
 from django.db.models import Q
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
@@ -21,9 +21,9 @@ from django.utils.safestring import mark_safe
 from django.utils import simplejson
 from django.conf import settings
 from lck.django.common import nested_commit_on_success
+from lck.django.filters import slugify
 from bob.menu import MenuItem, MenuHeader
 from django.utils.html import escape
-from lck.django.filters import slugify
 
 from ralph.cmdb.forms import (
     CISearchForm, CIEditForm, CIViewForm, CIRelationEditForm, SearchImpactForm
@@ -32,13 +32,13 @@ from ralph.cmdb.customfields import EditAttributeFormFactory
 from ralph.cmdb.models_ci import (
     CIOwner, CIOwnership, CILayer, CI_TYPES, CI, CIRelation, CI_LAYER
 )
+import ralph.cmdb.models as db
 from ralph.cmdb.graphs import search_tree, ImpactCalculator
 from ralph.account.models import Perm
 from ralph.ui.views.common import Base, _get_details
 from ralph.util.presentation import (
     get_device_icon, get_venture_icon, get_network_icon
 )
-from urlparse import urljoin
 
 
 ROWS_PER_PAGE = 20

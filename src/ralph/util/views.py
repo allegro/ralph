@@ -8,7 +8,6 @@ from __future__ import unicode_literals
 
 import functools
 import cStringIO as StringIO
-from urlparse import urljoin
 
 from django.http import HttpResponse, HttpResponseRedirect
 from django.utils import simplejson as json
