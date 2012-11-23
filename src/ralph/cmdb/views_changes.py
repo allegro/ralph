@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 
 import calendar
 import datetime
+from urlparse import urljoin
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -15,8 +16,6 @@ from django.db.models import (Count, Q)
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import simplejson
-
-from urlparse import urljoin
 
 import ralph.cmdb.models as db
 from ralph.cmdb.models_changes import CI_CHANGE_TYPES
