@@ -8,6 +8,7 @@ from __future__ import unicode_literals
 
 import functools
 import cStringIO as StringIO
+from urlparse import urljoin
 
 from django.http import HttpResponse, HttpResponseRedirect
 from django.utils import simplejson as json
@@ -25,6 +26,7 @@ def jsonify(func):
                             mimetype="application/javascript")
     return wrapper
 
+
 def csvify(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
@@ -36,5 +38,6 @@ def csvify(func):
         return HttpResponse(f.getvalue(), mimetype="application/csv")
     return wrapper
 
+
 def build_url(*args):
-    return '/'.join(arg.replace('/', '') for arg in args)
+    return urljoin(*args)
