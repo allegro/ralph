@@ -19,11 +19,11 @@ from django.http import HttpResponse
 from django.utils.translation import ugettext_lazy as _
 from django.utils.safestring import mark_safe
 from django.utils import simplejson
+from django.utils.html import escape
 from django.conf import settings
 from lck.django.common import nested_commit_on_success
 from lck.django.filters import slugify
 from bob.menu import MenuItem, MenuHeader
-from django.utils.html import escape
 
 from ralph.cmdb.forms import (
     CISearchForm, CIEditForm, CIViewForm, CIRelationEditForm, SearchImpactForm
