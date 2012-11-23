@@ -38,8 +38,7 @@ from ralph.ui.views.common import Base, _get_details
 from ralph.util.presentation import (
     get_device_icon, get_venture_icon, get_network_icon
 )
-from ralph.util.views import build_url
-
+from urlparse import urljoin
 
 
 ROWS_PER_PAGE = 20
@@ -410,7 +409,7 @@ class LastChanges(BaseCMDBView):
         ret = super(LastChanges, self).get_context_data(**kwargs)
         ret.update({
             'last_changes': self.last_changes,
-            'jira_url': build_url(settings.ISSUETRACKERS['default']['URL'], 'browse'),
+            'jira_url': urljoin(settings.ISSUETRACKERS['default']['URL'], 'browse'),
         })
         return ret
 
