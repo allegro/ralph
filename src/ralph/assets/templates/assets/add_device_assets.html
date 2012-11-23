@@ -1,0 +1,24 @@
+{% extends 'assets/add_assets.html' %}
+
+{% block form_title %}Add device type assets{% endblock %}
+
+{% block multivalue_input %}
+<div class="span3 well">
+  <div class="control-group{% if form.sn.errors %} error{% endif %}">
+    <label>{{ form.sn.label }}</label>
+    {{ form.sn }}
+    {% if form.sn.errors %}
+      <div class="help-block">{% for error in form.sn.errors %}{{ error }} {% endfor %}</div>
+    {% endif %}
+  </div>
+</div>
+<div class="span3 well">
+  <div class="control-group{% if form.barcode.errors %} error{% endif %}">
+    <label>{{ form.barcode.label }}</label>
+    {{ form.barcode }}
+    {% if form.barcode.errors %}
+      <div class="help-block">{% for error in form.barcode.errors %}{{ error }} {% endfor %}</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

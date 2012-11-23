@@ -10,7 +10,7 @@ from django.contrib import messages
 from django.db import IntegrityError, transaction
 from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
-from ralph.assets.forms import AddDeviceAssetForm
+from ralph.assets.forms import AddDeviceAssetForm, AddPartAssetForm
 from ralph.assets.models import DeviceInfo, AssetSource, Asset
 from ralph.ui.views.common import Base
 
@@ -102,4 +102,63 @@ class AddDeviceAssets(Base):
             messages.error(self.request, _("Please correct the errors."))
         return super(AddDeviceAssets, self).get(*args, **kwargs)
 
+
+class AddPartAssets(Base):
+    template_name = 'assets/add_part_assets.html'
+
+    def get_context_data(self, **kwargs):
+        ret = super(AddPartAssets, self).get_context_data(**kwargs)
+        ret.update({
+            'form': self.form,
+            'form_id': 'add_part_asset_form'
+        })
+        return ret
+
+    def get(self, *args, **kwargs):
+        self.form = AddPartAssetForm()
+        return super(AddPartAssets, self).get(*args, **kwargs)
+
+    def post(self, *args, **kwargs):
+        self.form = AddPartAssetForm(self.request.POST)
+        if self.form.is_valid():
+            transaction.enter_transaction_management()
+            transaction.managed()
+            transaction.commit()
+            data = {}
+            for field_name, field_value in self.form.cleaned_data.items():
+                if field_name in ["sn"]:
+                    continue
+                if field_name == "model":
+                    field_name = "%s_id" % field_name
+                data[field_name] = field_value
+            data['source'] = AssetSource.shipment
+            serial_numbers = self.form.cleaned_data['sn']
+            if serial_numbers.find(",") != -1:
+                serial_numbers = filter(len, serial_numbers.split(","))
+            else:
+                serial_numbers = filter(len, serial_numbers.split("\n"))
+            duplicated_sn = []
+            for sn in serial_numbers:
+                asset = Asset(
+                    sn=sn.strip(),
+                    **data
+                )
+                try:
+                    asset.save()
+                except IntegrityError as e:
+                    if "'sn'" in e[1]:
+                        duplicated_sn.append(asset.sn)
+            if duplicated_sn:
+                transaction.rollback()
+                msg = "Serial numbers with duplicates: %s. " % (
+                    ", ".join(duplicated_sn))
+                messages.warning(self.request, msg)
+            else:
+                transaction.commit()
+                transaction.managed(False)
+                messages.success(self.request, _("Assets saved."))
+                return HttpResponseRedirect('/assets/')
+        else:
+            messages.error(self.request, _("Please correct the errors."))
+        return super(AddPartAssets, self).get(*args, **kwargs)
 
