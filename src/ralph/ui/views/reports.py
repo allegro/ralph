@@ -541,7 +541,7 @@ class ReportDevices(SidebarReports, Base):
         self.form_deprecation_range = DeprecationRangeReportForm(request)
 
         rows = []
-        if queres != {Q()}:
+        if len(queres)>1:
             devices = Device.objects.filter(*queres)
             for dev in devices:
                 row =  []
