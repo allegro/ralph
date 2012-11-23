@@ -479,3 +479,26 @@ class DiscoveryWarning(db.Model):
         verbose_name = _("discovery warning")
         verbose_name_plural = _("discovery warnings")
 
+    @classmethod
+    def create(cls, message, plugin, ip=None, device=None):
+        """
+        Use this method to create warnings that are going to repeat a lot.
+        """
+        try:
+            warning = cls.objects.get(
+                plugin=plugin,
+                ip=ip,
+                device=device,
+                message=message,
+            )
+        except cls.DoesNotExist:
+            warning = cls(
+                message=message,
+                plugin=plugin,
+                ip=ip,
+                device=device,
+            )
+        else:
+            warning.date = datetime.now()
+            warning.count += 1
+        return warning
