@@ -39,5 +39,3 @@ def csvify(func):
     return wrapper
 
 
-def build_url(*args):
-    return urljoin(*args)
