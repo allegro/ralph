@@ -24,6 +24,51 @@ MAC_PREFIX_BLACKLIST = set([
     '505054', '33506F', '009876', '000000', '00000C', '204153', '149120',
     '020054', 'FEFFFF', '1AF920', '020820', 'DEAD2C', 'FEAD4D',
 ])
+CPU_CORES = {
+    '5160': 2,
+    'E5320': 4,
+    'E5430': 4,
+    'E5504': 4,
+    'E5506': 4,
+    'E5520': 4,
+    'E5540': 4,
+    'E5630': 4,
+    'E5620': 4,
+    'E5640': 4,
+    'E5645': 6,
+    'E5649': 6,
+    'L5520': 4,
+    'L5530': 4,
+    'L5420': 4,
+    'L5630': 4,
+    'X5460': 4,
+    'X5560': 4,
+    'X5570': 4,
+    'X5650': 6,
+    'X5660': 6,
+    'X5670': 6,
+    'E5-2670': 8,
+    'E7-8837': 8,
+    'E7- 8837': 8,
+    'Processor 275': 2,
+    'Processor 8216': 2,
+    'Processor 6276': 16,
+    'Dual-Core': 2,
+    'Quad-Core': 4,
+    'Six-Core': 6,
+    '2-core': 2,
+    '4-core': 4,
+    '6-core': 6,
+    '8-core': 8,
+}
+
+
+def cores_from_model(model_name):
+    for cores, name in CPU_CORES.iteritems():
+        if name in model_name:
+            return cores
+    return 0
+
 
 def is_mac_valid(eth):
     try:
@@ -112,6 +157,16 @@ class ComponentModel(Named.NonUnique, SavePrioritized,
         unique_together = ('speed', 'cores', 'size', 'type', 'family', 'extra_hash')
         verbose_name = _("component model")
         verbose_name_plural = _("component models")
+
+    def __init__(self, *args, **kwargs):
+        super(Processor, self).__init__(*args, **kwargs)
+        if kwargs.get('type') == ComponentType.processor.id:
+            # Make sure the cores are filled correctly
+            self.size = self.cores = max(
+                1,
+                self.cores,
+                cores_from_model(self.name),
+            )
 
     def get_price(self, size=None):
         if not self.group:
@@ -274,6 +329,10 @@ class Processor(Component):
         ordering = ('device', 'index')
         unique_together = ('device', 'index')
 
+    def __init__(self, *args, **kwargs):
+        super(Processor, self).__init__(*args, **kwargs)
+        self.cores = self.guess_core_count()
+
     def __unicode__(self):
         return '#{}: {} ({})'.format(self.index, self.label, self.model)
 
@@ -281,6 +340,23 @@ class Processor(Component):
         if self.model and self.model.cores:
             return self.model.cores
         return self.cores or 1
+
+    def guess_core_count(self):
+        """Guess the number of cores for a CPU model."""
+        if self.model:
+            return max(
+                1,
+                self.model.cores,
+                self.cores,
+                self.model.size,
+                cores_from_model(self.model.name),
+            )
+        return max(1, self.cores)
+
+    def save(self, *args, **kwargs):
+        if self.model:
+            self.cores = self.model.cores
+        return super(Processor, self).save(*args, **kwargs)
 
     @property
     def size(self):
