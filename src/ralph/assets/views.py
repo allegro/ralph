@@ -34,15 +34,20 @@ class AssetsMixin(Base):
         return ret
 
     def get_mainmenu_items(self):
-        return [MenuItem(label='Data center',
-                        name='dc',
-                        fugue_icon='fugue-building',
-                        href='/assets/dc'),
-               MenuItem(label='BackOffice',
-                        fugue_icon='fugue-printer',
-                        name='back_office',
-                        href='/assets/back_office'),
-               ]
+        return [
+            MenuItem(
+                label='Data center',
+                name='dc',
+                fugue_icon='fugue-building',
+                href='/assets/dc'
+            ),
+            MenuItem(
+                label='BackOffice',
+                fugue_icon='fugue-printer',
+                name='back_office',
+                href='/assets/back_office'
+            ),
+        ]
 
 
 class DataCenterMixin(AssetsMixin):
