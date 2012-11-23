@@ -22,6 +22,7 @@ from ralph.util import network, parse, plugin, Eth
 from ralph.discovery.models import (DeviceType,
         Device, Processor, Memory, Ethernet, IPAddress,
         ComponentModel, ComponentType, SERIAL_BLACKLIST, GenericComponent)
+from ralph.discovery.models_history import DiscoveryWarning
 
 
 SAVE_PRIORITY = 5
@@ -407,16 +408,20 @@ def ssh_ibm_bladecenter(**kwargs):
     if not kwargs.get('snmp_name', 'IBM').startswith('IBM'):
         return False, 'no match.', kwargs
     if not network.check_tcp_port(ip, 22):
+        DiscoveryWarning(
+            message="Port 22 closed on an IBM BladeServer.",
+            plugin=__name__,
+            ip=ip,
+        ).save()
         return False, 'closed.', kwargs
     try:
         name = run_ssh_bladecenter(ip)
-    except network.Error as e:
-        return False, str(e), kwargs
-    except Error as e:
-        return False, str(e), kwargs
-    except paramiko.SSHException as e:
-        return False, str(e), kwargs
-    except socket.error as e:
+    except (network.Error, Error, paramiko.SSHException, socket.error)  as e:
+        DiscoveryWarning(
+            message="This is an IBM BladeServer, but: " + str(e),
+            plugin=__name__,
+            ip=ip,
+        ).save()
         return False, str(e), kwargs
     return True, name, kwargs
 
