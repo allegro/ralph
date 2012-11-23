@@ -100,7 +100,6 @@ class BaseCMDBView(Base):
     def get_sidebar_items(self):
         ci = (
             ('/cmdb/add', 'Add CI', 'fugue-block--plus'),
-            ('/cmdb/changes/dashboard', 'Dashboard', 'fugue-dashboard'),
             ('/cmdb/graphs', 'Impact report', 'fugue-dashboard'),
             ('/cmdb/graphs_tree', 'Tree deps.', 'fugue-dashboard'),
             ('/cmdb/changes/dashboard', 'Dashboard', 'fugue-dashboard'),
