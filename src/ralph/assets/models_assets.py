@@ -125,7 +125,8 @@ class Asset(TimeTrackable, EditorTrackable):
                                               choices=AssetStatus())
 
     def __unicode__(self):
-        return "{} - {} - {}".format(self.model, self.sn,self.barcode)
+        return "{} - {} - {}".format(self.model, self.sn, self.barcode)
+
 
 class DeviceInfo(TimeTrackable):
     ralph_device = models.ForeignKey('discovery.Device', null=True, blank=True,
@@ -137,6 +138,7 @@ class DeviceInfo(TimeTrackable):
         verbose_name="A place where device is currently located in."
                      " May be DC/Rack or City/branch"
     )
+
     def __unicode__(self):
         return "{}".format(self.ralph_device)
 
