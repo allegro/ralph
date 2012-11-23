@@ -70,9 +70,10 @@ def save_processors(processors, dev):
             family=cpuname, size=cores,
             cores=cores,
             extra_hash=hashlib.md5(extra.encode('utf-8')).hexdigest())
-        cpu.model.extra = extra
-        cpu.model.name = name
-        cpu.model.save(priority=SAVE_PRIORITY)
+        if c:
+            cpu.model.extra = extra
+            cpu.model.name = name
+            cpu.model.save(priority=SAVE_PRIORITY)
         cpu.save(priority=SAVE_PRIORITY)
     for cpu in dev.processor_set.exclude(index__in=indexes):
         cpu.delete()

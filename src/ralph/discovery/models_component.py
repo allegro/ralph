@@ -64,7 +64,7 @@ CPU_CORES = {
 
 
 def cores_from_model(model_name):
-    for cores, name in CPU_CORES.iteritems():
+    for name, cores in CPU_CORES.iteritems():
         if name in model_name:
             return cores
     return 0
@@ -158,15 +158,19 @@ class ComponentModel(Named.NonUnique, SavePrioritized,
         verbose_name = _("component model")
         verbose_name_plural = _("component models")
 
-    def __init__(self, *args, **kwargs):
-        super(Processor, self).__init__(*args, **kwargs)
-        if kwargs.get('type') == ComponentType.processor.id:
-            # Make sure the cores are filled correctly
-            self.size = self.cores = max(
-                1,
-                self.cores,
-                cores_from_model(self.name),
-            )
+    @classmethod
+    def concurrent_get_or_create(cls, *args, **kwargs):
+        # Make sure the cores are filled correctly
+        if (kwargs.get('type') == ComponentType.processor and
+            'cores' in kwargs):
+                kwargs['cores'] = max(
+                    1,
+                    kwargs['cores'],
+                    cores_from_model(kwargs.get('name', '')),
+                )
+                kwargs['size'] = kwargs['cores']
+        return super(ComponentModel,
+                     cls).concurrent_get_or_create(*args, **kwargs)
 
     def get_price(self, size=None):
         if not self.group:
