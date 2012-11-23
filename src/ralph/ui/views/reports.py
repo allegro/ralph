@@ -24,13 +24,17 @@ from ralph.cmdb.models_ci import (
 from ralph.deployment.models import DeploymentStatus
 from ralph.discovery.models_device import MarginKind, DeviceType, Device
 from ralph.discovery.models_history import HistoryCost
-from ralph.ui.forms import DateRangeForm, MarginsReportForm, DevicesReportForm
+from ralph.ui.forms import (
+    DateRangeForm, MarginsReportForm, DevicesChoiceReportForm,
+    SupportRangeReportForm, SupportRangeReportForm
+)
 from ralph.ui.reports import (
     get_total_cost, get_total_count, get_total_cores, get_total_virtual_cores
 )
 from ralph.ui.views.common import Base, DeviceDetailView
 from ralph.ui.views.devices import DEVICE_SORT_COLUMNS
 from ralph.util import csvutil
+from django.db.models import Q
 
 
 def threshold(days):
@@ -486,6 +490,9 @@ class ReportDevices(SidebarReports, Base):
     template_name = 'ui/report_devices.html'
     subsection = 'devices'
 
+    def get_name(self, name, id):
+        return '%s (%s)' % (name, id)
+
     def get(self, *args, **kwargs):
         profile = self.request.user.get_profile()
         has_perm = profile.has_perm
@@ -495,57 +502,76 @@ class ReportDevices(SidebarReports, Base):
         self.perm_edit = False
         if has_perm(Perm.edit_device_info_financial):
             self.perm_edit = True
-        self.form = DevicesReportForm()
+        request = self.request.GET
+        # CheckboxInput
+        self.form_choice = DevicesChoiceReportForm(request)
+        queres = {Q()}
+        headers = ['Name']
+        dep = self.request.GET.get('deprecation', False)
+        no_dep = self.request.GET.get('no_deprecation', False)
+        no_mar = self.request.GET.get('no_margin', False)
+        no_sup = self.request.GET.get('no_support', False)
+        no_pur = self.request.GET.get('no_purchase', False)
+        no_ven = self.request.GET.get('no_venture', False)
+        no_rol = self.request.GET.get('no_role', False)
+        if dep:
+            headers.append('Depreciation date')
+            queres.update({Q(deprecation_date__lte=datetime.date.today())})
+        if no_dep:
+            headers.append('No depreciation date')
+            queres.update({Q(deprecation_date=None)})
+        if no_mar:
+            headers.append('No_margin')
+            queres.update({Q(deprecation_kind=None)})
+        if no_sup:
+            headers.append('No support')
+            queres.update({Q(support_expiration_date=None)})
+        if no_pur:
+            headers.append('No purchase')
+            queres.update({Q(purchase_date=None)})
+        if no_ven:
+            headers.append('No venture')
+            queres.update({Q(venture=None)})
+        if no_rol:
+            headers.append('No venture role')
+            queres.update({Q(venture_role=None)})
+        # Support Range
+        self.form_support_range = SupportRangeReportForm(request)
+        # Deprecation Range
+        self.form_deprecation_range = DeprecationRangeReportForm(request)
 
-        radio = self.request.GET.get('radios', False)
-        depreciation = self.request.GET.get('e_depreciation', False)
-        support = self.request.GET.get('e_support', False)
-        if radio:
-            if radio =='a_depreciation':
-                self.title = 'Devices after depreciation'
-                self.headers = [
-                    'Device', 'Venture', 'Deprecation date'
-                ]
-                rows = []
-                devs = Device.objects.filter(
-                    deprecation_date__lte=datetime.date.today()
-                )
-                for dev in devs:
-                    dict = (dev.name, dev.venture, dev.deprecation_date)
-                    rows.append(dict)
-                self.rows = rows
-
-            if radio == 'w_purchase':
-                self.title = 'Devices without purchase date'
-                rows = []
-            if radio == 'w_depreciation':
-                self.title = 'Devices without depreciation date'
-                rows = []
-            if radio == 'w_support':
-                self.title = 'Devices without support date'
-                rows = []
-        elif depreciation:
-            self.title = 'Devices who depreciation ends (months) '
-            rows = []
-        elif support:
-            self.title = 'Devices who support ends (months)'
-            rows = []
-        else:
-            self.title = None
-            self.headers = None
-            self.rows = None
-
-
-#        import pdb
-#        pdb.set_trace()
+        rows = []
+        if queres != {Q()}:
+            devices = Device.objects.filter(*queres)
+            for dev in devices:
+                row =  []
+                row.append(self.get_name(dev.name, dev.id))
+                if dep:
+                    row.append(dev.deprecation_date)
+                if no_dep:
+                    row.append(dev.deprecation_date)
+                if no_mar:
+                    row.append(dev.deprecation_kind)
+                if no_sup:
+                    row.append(dev.support_expiration_date)
+                if no_pur:
+                    row.append(dev.purchase_date)
+                if no_ven:
+                    row.append(dev.venture)
+                if no_rol:
+                    row.append(dev.venture_role)
+                rows.append(row)
+        self.headers = headers
+        self.rows = rows
         return super(ReportDevices, self).get(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(ReportDevices, self).get_context_data(**kwargs)
         context.update(
             {
-                'form': self.form,
-                'title': self.title,
+                'form_choice': self.form_choice,
+                'form_support_range': self.self.form_support_range,
+                'form_deprecation_range': self.self.form_deprecation_range,
                 'tabele_header': self.headers,
                 'rows': self.rows,
                 'perm_to_edit': self.perm_edit,
