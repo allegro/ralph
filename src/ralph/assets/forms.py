@@ -12,7 +12,7 @@ from django.utils.translation import ugettext_lazy as _
 from ralph.ui.widgets import DateWidget
 
 from assets.models import (
-    AssetType, AssetModel, AssetStatus, LicenseTypes, AssetSource)
+    AssetType, AssetModel, AssetStatus, LicenseTypes, AssetSource, Magazine)
 
 
 def _all_assets_models():
@@ -24,10 +24,19 @@ def _all_assets_models():
         )
 
 
+def _all_magazines():
+    yield '', '---------'
+    for magazine in Magazine.objects.all():
+        yield magazine.id, magazine.name
+
+
 class BaseAssetForm(forms.Form):
     type = forms.ChoiceField(choices=AssetType(), label=_("Type"))
     model = forms.ChoiceField(choices=_all_assets_models(), label=_("Model"))
-    invoice_no = forms.CharField(max_length=30)
+    invoice_no = forms.CharField(
+        max_length=30, required=False, label=_("Invoice number"))
+    order_no = forms.CharField(
+        max_length=50, required=False, label=_("Order number"))
     buy_date = forms.DateField(widget=DateWidget, label=_("Buy date"))
     support_period = forms.IntegerField(
         label=_("Support period in months"),
@@ -40,10 +49,14 @@ class BaseAssetForm(forms.Form):
     )
     provider = forms.CharField(label=_("Provider"), max_length=100)
     status = forms.ChoiceField(choices=AssetStatus(), label=_("Status"))
+    sn = forms.CharField(
+        label=_("SN/SNs"),
+        widget=forms.widgets.Textarea(attrs={'rows': 25})
+    )
 
-
-class BasePartAssetForm(BaseAssetForm):
-    sn = forms.CharField(label=_("SN/SNs"), widget=forms.widgets.Textarea)
+    def __init__(self, *args, **kwargs):
+        super(BaseAssetForm, self).__init__(*args, **kwargs)
+        self.fields['model'].choices = _all_assets_models()
 
 
 class BaseDeviceAssetForm(BaseAssetForm):
@@ -53,7 +66,11 @@ class BaseDeviceAssetForm(BaseAssetForm):
         widget=forms.widgets.Textarea(attrs={'rows': 25}),
     )
     size = forms.IntegerField(label=_("Size"), min_value=1)
-    location = forms.CharField(label=_("Location"), max_length=250)
+    magazine = forms.ChoiceField(choices=_all_magazines(), label=_("Magazine"))
+
+    def __init__(self, *args, **kwargs):
+        super(BaseDeviceAssetForm, self).__init__(*args, **kwargs)
+        self.fields['magazine'].choices = _all_magazines()
 
 
 def _validate_multivalue_data(data):
@@ -68,7 +85,7 @@ def _validate_multivalue_data(data):
         raise forms.ValidationError(error_msg)
 
 
-class AddPartAssetForm(BasePartAssetForm):
+class AddPartAssetForm(BaseAssetForm):
     def clean_sn(self):
         data = self.cleaned_data["sn"]
         _validate_multivalue_data(data)
@@ -76,9 +93,27 @@ class AddPartAssetForm(BasePartAssetForm):
 
 
 class AddDeviceAssetForm(BaseDeviceAssetForm):
-    def clean_barcode(self):
-        data = self.cleaned_data["barcode"]
+    def clean_sn(self):
+        data = self.cleaned_data["sn"]
         _validate_multivalue_data(data)
+        return data
+
+    def clean_barcode(self):
+        data = self.cleaned_data["barcode"].strip()
+        sn_data = self.cleaned_data.get("sn", "").strip()
+        if data:
+            if data.find(",") != -1:
+                barcodes_count = len(filter(len, data.split(",")))
+            else:
+                barcodes_count = len(filter(len, data.split("\n")))
+            if sn_data.find(",") != -1:
+                sn_count = len(filter(len, sn_data.split(",")))
+            else:
+                sn_count = len(filter(len, sn_data.split("\n")))
+            if sn_count != barcodes_count:
+                raise forms.ValidationError(_("Barcode list could be empty or "
+                                              "must have the same number of "
+                                              "items as a SN list."))
         return data
 
 
@@ -91,11 +126,6 @@ class OfficeAssetForm(forms.Form):
     )
     version = forms.CharField(
         label=_("Version"),
-        max_length=50,
-        required=False,
-    )
-    order_no = forms.CharField(
-        label=_("Order number"),
         max_length=50,
         required=False,
     )
