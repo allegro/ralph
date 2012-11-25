@@ -11,13 +11,13 @@ from ralph.assets.models_assets import (
     AssetManufacturer,
     AssetModel,
     DeviceInfo,
-    OfficeData,
+    OfficeInfo,
     PartInfo,
     AssetType,
     AssetStatus,
     LicenseTypes,
     AssetSource,
-    Magazine,
+    Warehouse,
 )
 
 __all__ = [
@@ -25,12 +25,12 @@ __all__ = [
     AssetManufacturer,
     AssetModel,
     DeviceInfo,
-    OfficeData,
+    OfficeInfo,
     PartInfo,
     AssetType,
     AssetStatus,
     LicenseTypes,
     AssetSource,
-    Magazine,
+    Warehouse,
 ]
 

@@ -75,7 +75,7 @@ class AssetModel(TimeTrackable, EditorTrackable):
         return "{}".format(self.name)
 
 
-class Magazine(TimeTrackable, EditorTrackable):
+class Warehouse(TimeTrackable, EditorTrackable):
     name = models.CharField(max_length=100)
 
     def __unicode__(self):
@@ -86,7 +86,7 @@ def content_file_name(instance, filename):
     return '/'.join(['assets', str(instance.pk), filename])
 
 
-class OfficeData(models.Model):
+class OfficeInfo(models.Model):
     license_key = models.CharField(max_length=255, null=True, blank=True)
     version = models.CharField(max_length=50, null=True, blank=True)
     unit_price = models.DecimalField(
@@ -110,8 +110,8 @@ class OfficeData(models.Model):
 class Asset(TimeTrackable, EditorTrackable):
     device_info = models.OneToOneField('DeviceInfo', null=True, blank=True)
     part_info = models.OneToOneField('PartInfo', null=True, blank=True)
-    office_data = models.OneToOneField(
-        OfficeData, null=True, blank=True,
+    office_info = models.OneToOneField(
+        OfficeInfo, null=True, blank=True,
         on_delete=models.SET_NULL)
     type = models.PositiveSmallIntegerField(choices=AssetType())
     model = models.ForeignKey(AssetModel, on_delete=models.PROTECT)
@@ -142,7 +142,7 @@ class DeviceInfo(TimeTrackable):
                                      on_delete=models.SET_NULL)
     size = models.PositiveSmallIntegerField(verbose_name='Size in units',
                                             default=1)
-    magazine = models.ForeignKey(Magazine, on_delete=models.PROTECT)
+    warehouse = models.ForeignKey(Warehouse, on_delete=models.PROTECT)
 
     def __unicode__(self):
         return "{}".format(self.ralph_device)

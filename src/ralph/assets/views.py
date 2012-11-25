@@ -5,6 +5,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import re
+
 from bob.menu import MenuItem, MenuHeader
 from django.contrib import messages
 from django.db import IntegrityError, transaction
@@ -12,11 +14,14 @@ from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
 from lck.django.common import nested_commit_on_success
+
 from ralph.assets.forms import (
-    AddDeviceAssetForm, AddPartAssetForm, EditDeviceAssetForm,
-    EditPartAssetForm)
-from ralph.assets.models import (DeviceInfo, AssetSource, Asset, OfficeData)
+    AddDeviceForm, AddPartForm, EditDeviceForm,
+    EditPartForm
+)
+from ralph.assets.models import (DeviceInfo, AssetSource, Asset, OfficeInfo)
 from ralph.ui.views.common import Base
+from ralph.assets.forms import SearchAssetForm
 
 
 class AssetsMixin(Base):
@@ -48,13 +53,13 @@ class AssetsMixin(Base):
                 label='Data center',
                 name='dc',
                 fugue_icon='fugue-building',
-                href='/assets/dc'
+                href='/assets/dc',
             ),
             MenuItem(
                 label='BackOffice',
                 fugue_icon='fugue-printer',
                 name='back_office',
-                href='/assets/back_office'
+                href='/assets/back_office',
             ),
         ]
 
@@ -101,61 +106,72 @@ class BackOfficeMixin(AssetsMixin):
         return sidebar_menu
 
 
-class DataCenterSearch(DataCenterMixin):
-    sidebar_selected = 'search'
-
-
 class BackOfficeSearch(BackOfficeMixin):
     sidebar_selected = 'search'
 
 
-class AddDeviceAssets(Base):
-    template_name = 'assets/add_device_assets.html'
+class DataCenterSearch(DataCenterMixin):
+    template_name = 'assets/search_asset.html'
+    sidebar_selected = 'search'
 
-    def get_context_data(self, **kwargs):
-        ret = super(AddDeviceAssets, self).get_context_data(**kwargs)
+    def get_context_data(self, *args, **kwargs):
+        ret = super(DataCenterSearch, self).get_context_data(*args, **kwargs)
+        self.data = Asset.objects.all()
         ret.update({
             'form': self.form,
-            'form_id': 'add_device_asset_form',
-            'edit_mode': False
+            'data': self.data,
         })
         return ret
 
     def get(self, *args, **kwargs):
-        self.form = AddDeviceAssetForm()
-        return super(AddDeviceAssets, self).get(*args, **kwargs)
+        self.form = SearchAssetForm()
+        self.data = Asset.objects.all()
+        return super(DataCenterSearch, self).get(*args, **kwargs)
+
+
+class AddDevice(Base):
+    template_name = 'assets/add_device.html'
+
+    def get_context_data(self, **kwargs):
+        ret = super(AddDevice, self).get_context_data(**kwargs)
+        ret.update({
+            'form': self.form,
+            'form_id': 'add_device_asset_form',
+            'edit_mode': False,
+        })
+        return ret
+
+    def get(self, *args, **kwargs):
+        self.form = AddDeviceForm()
+        return super(AddDevice, self).get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
-        self.form = AddDeviceAssetForm(self.request.POST)
+        self.form = AddDeviceForm(self.request.POST)
         if self.form.is_valid():
             transaction.enter_transaction_management()
             transaction.managed()
             transaction.commit()
             data = {}
             for field_name, field_value in self.form.cleaned_data.items():
-                if field_name in ["barcode", "size", "sn", "magazine"]:
+                if field_name in ["barcode", "size", "sn", "warehouse"]:
                     continue
                 if field_name == "model":
                     field_name = "%s_id" % field_name
                 data[field_name] = field_value
             data['source'] = AssetSource.shipment
             serial_numbers = self.form.cleaned_data['sn']
-            if serial_numbers.find(",") != -1:
-                serial_numbers = filter(len, serial_numbers.split(","))
-            else:
-                serial_numbers = filter(len, serial_numbers.split("\n"))
+            serial_numbers = filter(
+                len, re.split(",|\n", serial_numbers))
             barcodes = self.form.cleaned_data['barcode']
             if barcodes:
-                if barcodes.find(",") > 0:
-                    barcodes = filter(len, barcodes.split(","))
-                else:
-                    barcodes = filter(len, barcodes.split("\n"))
+                barcodes = filter(
+                    len, re.split(",|\n", barcodes))
             i = 0
             duplicated_sn = []
             duplicated_barcodes = []
             for sn in serial_numbers:
                 device_info = DeviceInfo(
-                    magazine_id=self.form.cleaned_data['magazine'],
+                    warehouse_id=self.form.cleaned_data['warehouse'],
                     size=self.form.cleaned_data['size']
                 )
                 device_info.save()
@@ -191,35 +207,35 @@ class AddDeviceAssets(Base):
                 return HttpResponseRedirect('/assets/')
         else:
             messages.error(self.request, _("Please correct the errors."))
-        return super(AddDeviceAssets, self).get(*args, **kwargs)
+        return super(AddDevice, self).get(*args, **kwargs)
 
 
-class BackOfficeAddDevice(AddDeviceAssets, BackOfficeMixin):
+class BackOfficeAddDevice(AddDevice, BackOfficeMixin):
     sidebar_selected = 'add device'
 
 
-class DataCenterAddDevice(AddDeviceAssets, DataCenterMixin):
+class DataCenterAddDevice(AddDevice, DataCenterMixin):
     sidebar_selected = 'add device'
 
 
-class AddPartAssets(Base):
-    template_name = 'assets/add_part_assets.html'
+class AddPart(Base):
+    template_name = 'assets/add_part.html'
 
     def get_context_data(self, **kwargs):
-        ret = super(AddPartAssets, self).get_context_data(**kwargs)
+        ret = super(AddPart, self).get_context_data(**kwargs)
         ret.update({
             'form': self.form,
-            'form_id': 'add_part_asset_form',
-            'edit_mode': False
+            'form_id': 'add_part_form',
+            'edit_mode': False,
         })
         return ret
 
     def get(self, *args, **kwargs):
-        self.form = AddPartAssetForm()
-        return super(AddPartAssets, self).get(*args, **kwargs)
+        self.form = AddPartForm()
+        return super(AddPart, self).get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
-        self.form = AddPartAssetForm(self.request.POST)
+        self.form = AddPartForm(self.request.POST)
         if self.form.is_valid():
             transaction.enter_transaction_management()
             transaction.managed()
@@ -233,10 +249,7 @@ class AddPartAssets(Base):
                 data[field_name] = field_value
             data['source'] = AssetSource.shipment
             serial_numbers = self.form.cleaned_data['sn']
-            if serial_numbers.find(",") != -1:
-                serial_numbers = filter(len, serial_numbers.split(","))
-            else:
-                serial_numbers = filter(len, serial_numbers.split("\n"))
+            serial_numbers = filter(len, re.split(",|\n", serial_numbers))
             duplicated_sn = []
             for sn in serial_numbers:
                 asset = Asset(
@@ -260,26 +273,26 @@ class AddPartAssets(Base):
                 return HttpResponseRedirect('/assets/')
         else:
             messages.error(self.request, _("Please correct the errors."))
-        return super(AddPartAssets, self).get(*args, **kwargs)
+        return super(AddPart, self).get(*args, **kwargs)
 
 
-class BackOfficeAddPart(AddPartAssets, BackOfficeMixin):
+class BackOfficeAddPart(AddPart, BackOfficeMixin):
     sidebar_selected = 'add part'
 
 
-class DataCenterAddPart(AddPartAssets, DataCenterMixin):
+class DataCenterAddPart(AddPart, DataCenterMixin):
     sidebar_selected = 'add part'
 
 
-class EditDeviceAsset(Base):
+class EditDevice(Base):
     template_name = 'assets/edit_device_asset.html'
 
     def get_context_data(self, **kwargs):
-        ret = super(EditDeviceAsset, self).get_context_data(**kwargs)
+        ret = super(EditDevice, self).get_context_data(**kwargs)
         ret.update({
             'form': self.form,
             'form_id': 'edit_device_asset_form',
-            'edit_mode': True
+            'edit_mode': True,
         })
         return ret
 
@@ -301,51 +314,51 @@ class EditDeviceAsset(Base):
             'sn': asset.sn,
             'source': asset.source,
             'barcode': asset.barcode,
-            'magazine': asset.device_info.magazine.id,
-            'size': asset.device_info.size
+            'warehouse': asset.device_info.warehouse.id,
+            'size': asset.device_info.size,
         }
-        if asset.office_data:
+        if asset.office_info:
             initial_data.update({
-                'license_key': asset.office_data.license_key,
-                'version': asset.office_data.version,
-                'unit_price': asset.office_data.unit_price,
-                'license_type': asset.office_data.license_type,
-                'date_of_last_inventory': asset.office_data.date_of_last_inventory,
-                'last_logged_user': asset.office_data.last_logged_user
+                'license_key': asset.office_info.license_key,
+                'version': asset.office_info.version,
+                'unit_price': asset.office_info.unit_price,
+                'license_type': asset.office_info.license_type,
+                'date_of_last_inventory': asset.office_info.date_of_last_inventory,
+                'last_logged_user': asset.office_info.last_logged_user,
             })
-        self.form = EditDeviceAssetForm(initial=initial_data)
-        return super(EditDeviceAsset, self).get(*args, **kwargs)
+        self.form = EditDeviceForm(initial=initial_data)
+        return super(EditDevice, self).get(*args, **kwargs)
 
     @nested_commit_on_success
     def post(self, *args, **kwargs):
         asset = get_object_or_404(Asset, id=kwargs.get('asset_id'))
-        self.form = EditDeviceAssetForm(self.request.POST, self.request.FILES)
+        self.form = EditDeviceForm(self.request.POST, self.request.FILES)
         if self.form.is_valid():
             asset.__dict__.update(**self.form.cleaned_data)
-            if not asset.office_data:
-                office_data = OfficeData()
+            if not asset.office_info:
+                office_info = OfficeInfo()
             else:
-                office_data = asset.office_data
-            office_data.__dict__.update(**self.form.cleaned_data)
-            office_data.save()
-            asset.office_data = office_data
+                office_info = asset.office_info
+            office_info.__dict__.update(**self.form.cleaned_data)
+            office_info.save()
+            asset.office_info = office_info
             asset.device_info.__dict__.update(**self.form.cleaned_data)
             asset.device_info.save()
             asset.save()
         else:
             messages.error(self.request, _("Please correct the errors."))
-        return super(EditDeviceAsset, self).get(*args, **kwargs)
+        return super(EditDevice, self).get(*args, **kwargs)
 
 
-class EditPartAsset(Base):
+class EditPart(Base):
     template_name = 'assets/edit_part_asset.html'
 
     def get_context_data(self, **kwargs):
-        ret = super(EditPartAsset, self).get_context_data(**kwargs)
+        ret = super(EditPart, self).get_context_data(**kwargs)
         ret.update({
             'form': self.form,
-            'form_id': 'edit_part_asset_form',
-            'edit_mode': True
+            'form_id': 'edit_part_form',
+            'edit_mode': True,
         })
         return ret
 
@@ -365,35 +378,34 @@ class EditPartAsset(Base):
             'provider': asset.provider,
             'status': asset.status,
             'sn': asset.sn,
-            'source': asset.source
+            'source': asset.source,
         }
-        if asset.office_data:
+        if asset.office_info:
             initial_data.update({
-                'license_key': asset.office_data.license_key,
-                'version': asset.office_data.version,
-                'unit_price': asset.office_data.unit_price,
-                'license_type': asset.office_data.license_type,
-                'date_of_last_inventory': asset.office_data.date_of_last_inventory,
-                'last_logged_user': asset.office_data.last_logged_user
+                'license_key': asset.office_info.license_key,
+                'version': asset.office_info.version,
+                'unit_price': asset.office_info.unit_price,
+                'license_type': asset.office_info.license_type,
+                'date_of_last_inventory': asset.office_info.date_of_last_inventory,
+                'last_logged_user': asset.office_info.last_logged_user,
             })
-        self.form = EditPartAssetForm(initial=initial_data)
-        return super(EditPartAsset, self).get(*args, **kwargs)
+        self.form = EditPartForm(initial=initial_data)
+        return super(EditPart, self).get(*args, **kwargs)
 
     @nested_commit_on_success
     def post(self, *args, **kwargs):
         asset = get_object_or_404(Asset, id=kwargs.get('asset_id'))
-        self.form = EditPartAssetForm(self.request.POST, self.request.FILES)
+        self.form = EditPartForm(self.request.POST, self.request.FILES)
         if self.form.is_valid():
             asset.__dict__.update(**self.form.cleaned_data)
-            if not asset.office_data:
-                office_data = OfficeData()
+            if not asset.office_info:
+                office_info = OfficeInfo()
             else:
-                office_data = asset.office_data
-            office_data.__dict__.update(**self.form.cleaned_data)
-            office_data.save()
-            asset.office_data = office_data
+                office_info = asset.office_info
+            office_info.__dict__.update(**self.form.cleaned_data)
+            office_info.save()
+            asset.office_info = office_info
             asset.save()
         else:
             messages.error(self.request, _("Please correct the errors."))
-        return super(EditPartAsset, self).get(*args, **kwargs)
-
+        return super(EditPart, self).get(*args, **kwargs)
