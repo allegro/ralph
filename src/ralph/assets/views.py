@@ -22,6 +22,7 @@ from ralph.assets.forms import (
 from ralph.assets.models import (DeviceInfo, AssetSource, Asset, OfficeInfo)
 from ralph.ui.views.common import Base
 from ralph.assets.forms import SearchAssetForm
+from django.db.models import Q
 
 
 class AssetsMixin(Base):
@@ -116,7 +117,6 @@ class DataCenterSearch(DataCenterMixin):
 
     def get_context_data(self, *args, **kwargs):
         ret = super(DataCenterSearch, self).get_context_data(*args, **kwargs)
-        self.data = Asset.objects.all()
         ret.update({
             'form': self.form,
             'data': self.data,
@@ -124,8 +124,20 @@ class DataCenterSearch(DataCenterMixin):
         return ret
 
     def get(self, *args, **kwargs):
-        self.form = SearchAssetForm()
-        self.data = Asset.objects.all()
+        search_fields = [
+            'model', 'invoice_no', 'order_no', 'buy_date',
+            'provider', 'status', 'sn'
+        ]
+        lookup_fields = []
+        all_q = Q()
+        for field in search_fields:
+            field_value = self.request.GET.get(field)
+            if field_value:
+                q = Q(**{'%s' % field: field_value})
+                all_q = all_q & q
+
+        self.form = SearchAssetForm(self.request.GET)
+        self.data = Asset.objects.filter(all_q)
         return super(DataCenterSearch, self).get(*args, **kwargs)
 
 
