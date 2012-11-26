@@ -107,6 +107,10 @@ class OfficeInfo(models.Model):
             self.license_type
         )
 
+    def __init__(self, *args, **kwargs):
+        self.save_comment = None
+        self.saving_user = None
+        super(OfficeInfo, self).__init__(*args, **kwargs)
 
 class Asset(TimeTrackable, EditorTrackable, SavingUser):
     device_info = models.OneToOneField('DeviceInfo', null=True, blank=True)
@@ -140,7 +144,6 @@ class Asset(TimeTrackable, EditorTrackable, SavingUser):
 
     def __init__(self, *args, **kwargs):
         self.save_comment = None
-        self.being_deleted = False
         self.saving_user = None
         super(Asset, self).__init__(*args, **kwargs)
 
@@ -154,6 +157,11 @@ class DeviceInfo(TimeTrackable):
     def __unicode__(self):
         return "{}".format(self.ralph_device)
 
+    def __init__(self, *args, **kwargs):
+        self.save_comment = None
+        self.saving_user = None
+        super(DeviceInfo, self).__init__(*args, **kwargs)
+
 
 class PartInfo(TimeTrackable):
     barcode_salvaged = models.CharField(max_length=200, null=True, blank=True)
@@ -164,3 +172,8 @@ class PartInfo(TimeTrackable):
 
     def __unicode__(self):
         return "{}".format(self.barcode_salvaged)
+
+    def __init__(self, *args, **kwargs):
+        self.save_comment = None
+        self.saving_user = None
+        super(PartInfo, self).__init__(*args, **kwargs)
