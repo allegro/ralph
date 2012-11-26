@@ -9,7 +9,7 @@
   {% csrf_token %}
   <div class="row">
     <div class="span6 well">
-      {% for field in form %}{% if field.html_name != 'barcode' and field.html_name != 'sn' or edit_mode %}
+      {% for field in asset_form %}{% if field.html_name != 'barcode' and field.html_name != 'sn' or edit_mode %}
       <div class="control-group{% if field.errors %} error{% endif %}">
         <label class="control-label">{{ field.label }}</label>
         <div class="form-field controls">
@@ -20,8 +20,9 @@
         </div>
       </div>
       {% endif %}{% endfor %}
+      {% block additional_inputs %}{% endblock %}
     </div>
-    {% block multivalue_input %}{% endblock %}
+    {% block multivalue_inputs %}{% endblock %}
   </div>
   <div class="row">
     <div class="span12">

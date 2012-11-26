@@ -6,6 +6,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import re
+
 from django import forms
 from django.forms import ModelForm
 from django.utils.translation import ugettext_lazy as _
@@ -25,20 +27,21 @@ class BaseAssetForm(ModelForm):
             'type', 'model', 'invoice_no', 'order_no',
             'buy_date', 'support_period', 'support_type',
             'support_void_reporting', 'provider', 'status',
-            'sn',
+            'sn', 'barcode',
         )
         widgets = {
             'sn': forms.widgets.Textarea(attrs={'rows': 25}),
-
+            'barcode': forms.widgets.Textarea(attrs={'rows': 25}),
+            'buy_date': DateWidget(),
         }
+
 
 class BaseDeviceForm(ModelForm):
     class Meta:
         model = DeviceInfo
         fields = (
-            'size', 'warehouse'
+            'size', 'warehouse',
         )
-    size = forms.IntegerField(label=_("Size"), min_value=1)
 
 
 def _validate_multivalue_data(data):
@@ -60,7 +63,7 @@ class AddPartForm(BaseAssetForm):
         return data
 
 
-class AddDeviceForm(BaseDeviceForm):
+class AddDeviceForm(BaseAssetForm):
     def clean_sn(self):
         data = self.cleaned_data["sn"]
         _validate_multivalue_data(data)
@@ -70,16 +73,8 @@ class AddDeviceForm(BaseDeviceForm):
         data = self.cleaned_data["barcode"].strip()
         sn_data = self.cleaned_data.get("sn", "").strip()
         if data:
-            if data.find(",") != -1:
-                #FIXME: use re.split
-                barcodes_count = len(filter(len, data.split(",")))
-            else:
-                #FIXME: use re.split
-                barcodes_count = len(filter(len, data.split("\n")))
-            if sn_data.find(",") != -1:
-                sn_count = len(filter(len, sn_data.split(",")))
-            else:
-                sn_count = len(filter(len, sn_data.split("\n")))
+            barcodes_count = len(filter(len, re.split(",|\n", data)))
+            sn_count = len(filter(len, re.split(",|\n", sn_data)))
             if sn_count != barcodes_count:
                 raise forms.ValidationError(_("Barcode list could be empty or "
                                               "must have the same number of "

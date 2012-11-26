@@ -17,7 +17,7 @@ from lck.django.common import nested_commit_on_success
 
 from ralph.assets.forms import (
     AddDeviceForm, AddPartForm, EditDeviceForm,
-    EditPartForm
+    EditPartForm, BaseDeviceForm
 )
 from ralph.assets.models import (DeviceInfo, AssetSource, Asset, OfficeInfo)
 from ralph.ui.views.common import Base
@@ -135,36 +135,35 @@ class AddDevice(Base):
     def get_context_data(self, **kwargs):
         ret = super(AddDevice, self).get_context_data(**kwargs)
         ret.update({
-            'form': self.form,
+            'asset_form': self.asset_form,
+            'device_info_form': self.device_info_form,
             'form_id': 'add_device_asset_form',
             'edit_mode': False,
         })
         return ret
 
     def get(self, *args, **kwargs):
-        self.form = AddDeviceForm()
+        self.asset_form = AddDeviceForm()
+        self.device_info_form = BaseDeviceForm()
         return super(AddDevice, self).get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
-        self.form = AddDeviceForm(self.request.POST)
-        if self.form.is_valid():
+        self.asset_form = AddDeviceForm(self.request.POST)
+        self.device_info_form = BaseDeviceForm(self.request.POST)
+        if self.asset_form.is_valid() and self.device_info_form.is_valid():
             transaction.enter_transaction_management()
             transaction.managed()
             transaction.commit()
-            #FIXME: use 2 forms, with prefix=..., validate each other, 
-            # and get given fields. don't join them.
-            data = {}
-            for field_name, field_value in self.form.cleaned_data.items():
-                if field_name in ["barcode", "size", "sn", "warehouse"]:
+            asset_data = {}
+            for f_name, f_value in self.asset_form.cleaned_data.items():
+                if f_name in ["barcode", "sn"]:
                     continue
-                if field_name == "model":
-                    field_name = "%s_id" % field_name
-                data[field_name] = field_value
-            data['source'] = AssetSource.shipment
-            serial_numbers = self.form.cleaned_data['sn']
+                asset_data[f_name] = f_value
+            asset_data['source'] = AssetSource.shipment
+            serial_numbers = self.asset_form.cleaned_data['sn']
             serial_numbers = filter(
                 len, re.split(",|\n", serial_numbers))
-            barcodes = self.form.cleaned_data['barcode']
+            barcodes = self.asset_form.cleaned_data['barcode']
             if barcodes:
                 barcodes = filter(
                     len, re.split(",|\n", barcodes))
@@ -173,14 +172,14 @@ class AddDevice(Base):
             duplicated_barcodes = []
             for sn in serial_numbers:
                 device_info = DeviceInfo(
-                    warehouse_id=self.form.cleaned_data['warehouse'],
-                    size=self.form.cleaned_data['size']
+                    warehouse=self.device_info_form.cleaned_data['warehouse'],
+                    size=self.device_info_form.cleaned_data['size']
                 )
                 device_info.save()
                 asset = Asset(
                     device_info=device_info,
                     sn=sn.strip(),
-                    **data
+                    **asset_data
                 )
                 if barcodes:
                     asset.barcode = barcodes[i].strip()
@@ -226,35 +225,36 @@ class AddPart(Base):
     def get_context_data(self, **kwargs):
         ret = super(AddPart, self).get_context_data(**kwargs)
         ret.update({
-            'form': self.form,
+            'asset_form': self.asset_form,
             'form_id': 'add_part_form',
             'edit_mode': False,
         })
         return ret
 
     def get(self, *args, **kwargs):
-        self.form = AddPartForm()
+        self.asset_form = AddPartForm()
         return super(AddPart, self).get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
-        self.form = AddPartForm(self.request.POST)
-        if self.form.is_valid():
+        self.asset_form = AddPartForm(self.request.POST)
+        if self.asset_form.is_valid():
             transaction.enter_transaction_management()
             transaction.managed()
             transaction.commit()
-            data = {}
-            for field_name, field_value in self.form.cleaned_data.items():
-                if field_name in ["sn"]:
+            asset_data = {}
+            for f_name, f_value in self.asset_form.cleaned_data.items():
+                if f_name in ["sn"]:
                     continue
-                data[field_name] = field_value
-            data['source'] = AssetSource.shipment
-            serial_numbers = self.form.cleaned_data['sn']
+                asset_data[f_name] = f_value
+            asset_data['source'] = AssetSource.shipment
+            asset_data['barcode'] = None
+            serial_numbers = self.asset_form.cleaned_data['sn']
             serial_numbers = filter(len, re.split(",|\n", serial_numbers))
             duplicated_sn = []
             for sn in serial_numbers:
                 asset = Asset(
                     sn=sn.strip(),
-                    **data
+                    **asset_data
                 )
                 try:
                     asset.save()
