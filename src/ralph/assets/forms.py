@@ -13,7 +13,7 @@ from django.forms import ModelForm
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models import (
-    Asset, OfficeInfo, DeviceInfo
+    Asset, OfficeInfo, DeviceInfo, PartInfo
 )
 from ralph.ui.widgets import DateWidget
 
@@ -40,6 +40,12 @@ class BaseDeviceForm(ModelForm):
         fields = (
             'size', 'warehouse',
         )
+
+
+class BasePartForm(ModelForm):
+    class Meta:
+        model = PartInfo
+        fields = ('device', 'source_device', 'barcode_salvaged',)
 
 
 def _validate_multivalue_data(data):

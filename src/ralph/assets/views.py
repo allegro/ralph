@@ -17,9 +17,12 @@ from lck.django.common import nested_commit_on_success
 
 from ralph.assets.forms import (
     AddDeviceForm, AddPartForm, EditDeviceForm,
-    EditPartForm, BaseDeviceForm, OfficeForm
+    EditPartForm, BaseDeviceForm, OfficeForm,
+    BasePartForm
 )
-from ralph.assets.models import (DeviceInfo, AssetSource, Asset, OfficeInfo)
+from ralph.assets.models import (
+    DeviceInfo, AssetSource, Asset, OfficeInfo, PartInfo,
+)
 from ralph.ui.views.common import Base
 from ralph.assets.forms import SearchAssetForm
 
@@ -232,6 +235,7 @@ class AddPart(Base):
         ret = super(AddPart, self).get_context_data(**kwargs)
         ret.update({
             'asset_form': self.asset_form,
+            'part_info_form': self.part_info_form,
             'form_id': 'add_part_form',
             'edit_mode': False,
         })
@@ -239,11 +243,13 @@ class AddPart(Base):
 
     def get(self, *args, **kwargs):
         self.asset_form = AddPartForm()
+        self.part_info_form = BasePartForm()
         return super(AddPart, self).get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
         self.asset_form = AddPartForm(self.request.POST)
-        if self.asset_form.is_valid():
+        self.part_info_form = BasePartForm(self.request.POST)
+        if self.asset_form.is_valid() and self.part_info_form.is_valid():
             transaction.enter_transaction_management()
             transaction.managed()
             transaction.commit()
@@ -258,7 +264,10 @@ class AddPart(Base):
             serial_numbers = filter(len, re.split(",|\n", serial_numbers))
             duplicated_sn = []
             for sn in serial_numbers:
+                part_info = PartInfo(**self.part_info_form.cleaned_data)
+                part_info.save()
                 asset = Asset(
+                    part_info=part_info,
                     sn=sn.strip(),
                     **asset_data
                 )
@@ -373,6 +382,7 @@ class EditPart(Base):
             raise Http404()
         self.asset_form = EditPartForm(instance=asset)
         self.office_info_form = OfficeForm(instance=asset.office_info)
+        self.part_info_form = BasePartForm(instance=asset.part_info)
         return super(EditPart, self).get(*args, **kwargs)
 
     @nested_commit_on_success
@@ -381,7 +391,12 @@ class EditPart(Base):
         self.asset_form = EditDeviceForm(self.request.POST, instance=asset)
         self.office_info_form = OfficeForm(
             self.request.POST, self.request.FILES)
-        if self.asset_form.is_valid() and self.office_info_form.is_valid():
+        self.part_info_form = BasePartForm(self.request.POST)
+        if all((
+            self.asset_form.is_valid(),
+            self.office_info_form.is_valid(),
+            self.part_info_form.is_valid()
+        )):
             asset_data = self.asset_form.cleaned_data
             asset_data.update({'barcode': None})
             asset.__dict__.update(
@@ -393,6 +408,13 @@ class EditPart(Base):
             office_info.__dict__.update(**self.office_info_form.cleaned_data)
             office_info.save()
             asset.office_info = office_info
+            if not asset.part_info:
+                part_info = PartInfo()
+            else:
+                part_info = asset.part_info
+            part_info.__dict__.update(**self.part_info_form.cleaned_data)
+            part_info.save()
+            asset.part_info = part_info
             asset.save()
             return HttpResponseRedirect(_get_return_link(self.request))
         else:
