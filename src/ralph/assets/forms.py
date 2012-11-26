@@ -13,9 +13,7 @@ from django.forms import ModelForm
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models import (
-    Asset, AssetType, AssetModel, AssetStatus,
-    LicenseTypes, AssetSource, Warehouse, OfficeInfo,
-    DeviceInfo
+    Asset, OfficeInfo, DeviceInfo
 )
 from ralph.ui.widgets import DateWidget
 
@@ -34,10 +32,6 @@ class BaseAssetForm(ModelForm):
             'barcode': forms.widgets.Textarea(attrs={'rows': 25}),
             'buy_date': DateWidget(),
         }
-
-    def clean_sn(self):
-        data = self.cleaned_data["sn"]
-        return data
 
 
 class BaseDeviceForm(ModelForm):
