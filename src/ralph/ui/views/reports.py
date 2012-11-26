@@ -184,14 +184,9 @@ class SidebarReports(object):
         context = super(SidebarReports, self).get_context_data(**kwargs)
         sidebar_items = [
             MenuItem(
-                "Ventures",
-                fugue_icon='fugue-store',
-                view_name='reports_ventures'
-            ),
-            MenuItem(
-                "Services",
-                fugue_icon='fugue-disc-share',
-                view_name='reports_services'
+                "Devices",
+                fugue_icon='fugue-computer',
+                view_name='reports_devices'
             ),
             MenuItem(
                 "Margins",
@@ -199,9 +194,14 @@ class SidebarReports(object):
                 view_name='reports_margins'
             ),
             MenuItem(
-                "Devices",
-                fugue_icon='fugue-computer',
-                view_name='reports_devices'
+                "Services",
+                fugue_icon='fugue-disc-share',
+                view_name='reports_services'
+            ),
+            MenuItem(
+                "Ventures",
+                fugue_icon='fugue-store',
+                view_name='reports_ventures'
             ),
         ]
         context.update({
@@ -557,7 +557,6 @@ class ReportDevices(SidebarReports, Base):
                 if no_rol:
                     row.append(dev.venture_role)
                 rows.append(row)
-
         # Support Range
         s_start = self.request.GET.get('s_start', None)
         s_end = self.request.GET.get('s_end', None)
