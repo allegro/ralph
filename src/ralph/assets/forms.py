@@ -9,15 +9,14 @@ from __future__ import unicode_literals
 import re
 
 from django import forms
-from django.forms import ModelForm
+from django.forms import ModelForm, Form
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models import (
-    Asset, AssetType, AssetModel, AssetStatus,
-    LicenseTypes, AssetSource, Warehouse, OfficeInfo,
-    DeviceInfo
+    Asset, OfficeInfo, DeviceInfo, PartInfo
 )
 from ralph.ui.widgets import DateWidget
+from ajax_select.fields import AutoCompleteSelectField
 
 
 class BaseAssetForm(ModelForm):
@@ -42,6 +41,12 @@ class BaseDeviceForm(ModelForm):
         fields = (
             'size', 'warehouse',
         )
+
+
+class BasePartForm(ModelForm):
+    class Meta:
+        model = PartInfo
+        fields = ('device', 'source_device', 'barcode_salvaged',)
 
 
 def _validate_multivalue_data(data):
@@ -91,14 +96,15 @@ class OfficeForm(forms.ModelForm):
         }
 
 
-class EditPartForm(BaseAssetForm, OfficeForm):
+class EditPartForm(BaseAssetForm):
     def __init__(self, *args, **kwargs):
         super(EditPartForm, self).__init__(*args, **kwargs)
         self.fields['sn'].widget = forms.widgets.TextInput()
         self.fields['sn'].label = _("SN")
+        del self.fields['barcode']
 
 
-class EditDeviceForm(BaseDeviceForm, OfficeForm):
+class EditDeviceForm(BaseAssetForm):
     def __init__(self, *args, **kwargs):
         super(EditDeviceForm, self).__init__(*args, **kwargs)
         self.fields['sn'].widget = forms.widgets.TextInput()
@@ -107,10 +113,15 @@ class EditDeviceForm(BaseDeviceForm, OfficeForm):
         self.fields['barcode'].label = _("Barcode")
 
 
-class SearchAssetForm(ModelForm):
-    class Meta:
-        model = Asset
-        fields = (
-            'model', 'invoice_no', 'order_no',
-            'buy_date', 'provider', 'status', 'sn',
-        )
+class SearchAssetForm(Form):
+    model = AutoCompleteSelectField('asset_model', required=False, help_text=None)
+    invoice_no = forms.CharField(required=False)
+    order_no = forms.CharField(required=False)
+    buy_date = forms.DateField(required=False)
+    provider = forms.CharField(required=False)
+    status = forms.ChoiceField(
+        required=False, choices=AssetStatus()
+    )
+    sn = forms.CharField(required=False)
+
+

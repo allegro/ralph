@@ -10,9 +10,10 @@ from django.contrib.auth.decorators import login_required
 from django.views.generic import RedirectView
 
 from ralph.assets.views import (
-    EditDevice, EditPart, BackOfficeSearch, DataCenterSearch,
-    BackOfficeAddDevice, BackOfficeAddPart, DataCenterAddDevice,
-    DataCenterAddPart)
+    BackOfficeSearch, DataCenterSearch, BackOfficeAddDevice, BackOfficeAddPart,
+    DataCenterAddDevice, DataCenterAddPart, BackOfficeEditDevice,
+    DataCenterEditDevice, BackOfficeEditPart, DataCenterEditPart
+)
 
 
 urlpatterns = patterns(
@@ -27,15 +28,18 @@ urlpatterns = patterns(
         login_required(DataCenterAddDevice.as_view())),
     url(r'dc/add/part/',
         login_required(DataCenterAddPart.as_view())),
+    url(r'dc/edit/device/(?P<asset_id>[0-9]+)/$',
+        login_required(DataCenterEditDevice.as_view())),
+    url(r'dc/edit/part/(?P<asset_id>[0-9]+)/$',
+        login_required(DataCenterEditPart.as_view())),
 
     url(r'back_office/search', login_required(BackOfficeSearch.as_view())),
     url(r'back_office/add/device/',
         login_required(BackOfficeAddDevice.as_view())),
     url(r'back_office/add/part/',
         login_required(BackOfficeAddPart.as_view())),
-
-    url(r'^device/edit/(?P<asset_id>[0-9]+)/$',
-        login_required(EditDevice.as_view())),
-    url(r'^part/edit/(?P<asset_id>[0-9]+)/$',
-        login_required(EditPart.as_view())),
+    url(r'back_office/edit/device/(?P<asset_id>[0-9]+)/$',
+        login_required(BackOfficeEditDevice.as_view())),
+    url(r'back_office/edit/part/(?P<asset_id>[0-9]+)/$',
+        login_required(BackOfficeEditPart.as_view())),
 )

@@ -27,8 +27,12 @@ class LicenseTypes(Choices):
 
 class AssetType(Choices):
     _ = Choices.Choice
-    back_office = _("back office")
+
+    DC = Choices.Group(0)
     data_center = _("data center")
+
+    BO = Choices.Group(100)
+    back_office = _("back office")
     administration = _("administration")
 
 
