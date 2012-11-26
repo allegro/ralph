@@ -9,13 +9,14 @@ from __future__ import unicode_literals
 import re
 
 from django import forms
-from django.forms import ModelForm
+from django.forms import ModelForm, Form
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models import (
     Asset, OfficeInfo, DeviceInfo, PartInfo
 )
 from ralph.ui.widgets import DateWidget
+from ajax_select.fields import AutoCompleteSelectField
 
 
 class BaseAssetForm(ModelForm):
@@ -112,10 +113,15 @@ class EditDeviceForm(BaseAssetForm):
         self.fields['barcode'].label = _("Barcode")
 
 
-class SearchAssetForm(ModelForm):
-    class Meta:
-        model = Asset
-        fields = (
-            'model', 'invoice_no', 'order_no',
-            'buy_date', 'provider', 'status', 'sn',
-        )
+class SearchAssetForm(Form):
+    model = AutoCompleteSelectField('asset_model', required=False, help_text=None)
+    invoice_no = forms.CharField(required=False)
+    order_no = forms.CharField(required=False)
+    buy_date = forms.DateField(required=False)
+    provider = forms.CharField(required=False)
+    status = forms.ChoiceField(
+        required=False, choices=AssetStatus()
+    )
+    sn = forms.CharField(required=False)
+
+
