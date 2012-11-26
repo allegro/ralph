@@ -24,9 +24,10 @@ from ralph.cmdb.models_ci import (
 from ralph.deployment.models import DeploymentStatus
 from ralph.discovery.models_device import MarginKind, DeviceType, Device
 from ralph.discovery.models_history import HistoryCost
+
 from ralph.ui.forms import (
     DateRangeForm, MarginsReportForm, DevicesChoiceReportForm,
-    SupportRangeReportForm, DeprecationRangeReportForm
+    SupportRangeReportForm, DeprecationRangeReportForm, WarrantyRangeReportForm
 )
 from ralph.ui.reports import (
     get_total_cost, get_total_count, get_total_cores, get_total_virtual_cores
@@ -507,13 +508,13 @@ class ReportDevices(SidebarReports, Base):
         self.form_choice = DevicesChoiceReportForm(request)
         queres = {Q()}
         headers = ['Name']
-        dep = self.request.GET.get('deprecation', False)
-        no_dep = self.request.GET.get('no_deprecation', False)
-        no_mar = self.request.GET.get('no_margin', False)
-        no_sup = self.request.GET.get('no_support', False)
-        no_pur = self.request.GET.get('no_purchase', False)
-        no_ven = self.request.GET.get('no_venture', False)
-        no_rol = self.request.GET.get('no_role', False)
+        dep = self.request.GET.get('deprecation', None)
+        no_dep = self.request.GET.get('no_deprecation', None)
+        no_mar = self.request.GET.get('no_margin', None)
+        no_sup = self.request.GET.get('no_support', None)
+        no_pur = self.request.GET.get('no_purchase', None)
+        no_ven = self.request.GET.get('no_venture', None)
+        no_rol = self.request.GET.get('no_role', None)
         if dep:
             headers.append('Depreciation date')
             queres.update({Q(deprecation_date__lte=datetime.date.today())})
@@ -535,11 +536,6 @@ class ReportDevices(SidebarReports, Base):
         if no_rol:
             headers.append('No venture role')
             queres.update({Q(venture_role=None)})
-        # Support Range
-        self.form_support_range = SupportRangeReportForm(request)
-        # Deprecation Range
-        self.form_deprecation_range = DeprecationRangeReportForm(request)
-
         rows = []
         if len(queres)>1:
             devices = Device.objects.filter(*queres)
@@ -561,6 +557,61 @@ class ReportDevices(SidebarReports, Base):
                 if no_rol:
                     row.append(dev.venture_role)
                 rows.append(row)
+
+        # Support Range
+        s_start = self.request.GET.get('s_start', None)
+        s_end = self.request.GET.get('s_end', None)
+        if s_start and s_end:
+            self.form_support_range = SupportRangeReportForm(request)
+            devices = Device.objects.all()
+            devs = devices.filter(
+                support_expiration_date__gte=s_start,
+                support_expiration_date__lte=s_end,
+            )
+            headers = ('Name', 'Support expiration date')
+            for dev in devs:
+                rows.append([dev.name, dev.support_expiration_date])
+        else:
+            self.form_support_range = SupportRangeReportForm(initial={
+                's_start': datetime.date.today() - datetime.timedelta(days=30),
+                's_end': datetime.date.today(),
+            })
+        # Deprecation Range
+        d_start = self.request.GET.get('d_start', None)
+        d_end = self.request.GET.get('d_end', None)
+        if d_start and d_end:
+            self.form_deprecation_range = DeprecationRangeReportForm(request)
+            devices = Device.objects.all()
+            devs = devices.filter(
+                deprecation_date__gte=d_start,
+                deprecation_date__lte=d_end,
+            )
+            headers = ('Name', 'Depreciation date')
+            for dev in devs:
+                rows.append([dev.name, dev.deprecation_date])
+        else:
+            self.form_deprecation_range = DeprecationRangeReportForm(initial={
+                'd_start': datetime.date.today() - datetime.timedelta(days=30),
+                'd_end': datetime.date.today(),
+            })
+        # warranty_expiration_date Range
+        w_start = self.request.GET.get('w_start', None)
+        w_end = self.request.GET.get('w_end', None)
+        if w_start and w_end:
+            self.form_warranty_range = WarrantyRangeReportForm(request)
+            devices = Device.objects.all()
+            devs = devices.filter(
+                warranty_expiration_date__gte=w_start,
+                warranty_expiration_date__lte=w_end,
+            )
+            headers = ('Name', 'Warranty expiration date')
+            for dev in devs:
+                rows.append([dev.name, dev.deprecation_date])
+        else:
+            self.form_warranty_range = WarrantyRangeReportForm(initial={
+                'w_start': datetime.date.today() - datetime.timedelta(days=30),
+                'w_end': datetime.date.today(),
+            })
         self.headers = headers
         self.rows = rows
         return super(ReportDevices, self).get(*args, **kwargs)
@@ -572,6 +623,7 @@ class ReportDevices(SidebarReports, Base):
                 'form_choice': self.form_choice,
                 'form_support_range': self.form_support_range,
                 'form_deprecation_range': self.form_deprecation_range,
+                'form_warranty_range': self.form_warranty_range,
                 'tabele_header': self.headers,
                 'rows': self.rows,
                 'perm_to_edit': self.perm_edit,

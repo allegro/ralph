@@ -6,26 +6,35 @@
 
 {% block contentarea %}
     <div class="row-fluid">
-        <div class="span12">
-            <div class="form-actions">
+        <div class="span12 form-actions">
+            <div class="span6 reports-form-right-line">
+                <h4>Filtering of the cross</h4>
                 <form class="form" method="get">
                     {% for f in form_choice %}
                         <div class="control-group">
                             {{ f }} {{ f.label }}
                         </div>
-{#                        {% if forloop.counter|divisibleby:3 %}<br />{% endif %}#}
                     {% endfor %}
                     <button class="btn pull-right"><i class="fugue-icon fugue-calculator"></i>&nbsp;Show</button>
                 </form>
-
-                <h1>form_support_range</h1>
+            </div>
+            <div class="span6">
+                <h4>Filtering of th range</h4>
+                <h5>Support</h5>
                 <form class="form" method="get">
                     {% for f in form_support_range %}
                         {{ f }}
                     {% endfor %}
                     <button class="btn pull-right"><i class="fugue-icon fugue-calculator"></i>&nbsp;Show</button>
                 </form>
-                <h1>form_deprecation_range</h1>
+                <h5>Warranty</h5>
+                <form class="form" method="get">
+                    {% for f in form_warranty_range %}
+                        {{ f }}
+                    {% endfor %}
+                    <button class="btn pull-right"><i class="fugue-icon fugue-calculator"></i>&nbsp;Show</button>
+                </form>
+                <h5>Deprecation</h5>
                 <form class="form" method="get">
                     {% for f in form_deprecation_range %}
                         {{ f }}
@@ -37,11 +46,11 @@
     </div>
     <div class="row-fluid">
         <div class="span12">
-{#            {% if rows == None %}#}
-{#                Use filter#}
-{#            {% else %}#}
+            {% if rows %}
                 {% include 'ui/report_devices_table.html' with title=title header=tabele_header rows=rows %}
-{#            {% endif %}#}
+            {% else %}
+                No rows
+            {% endif %}
         </div>
     </div>
 {% endblock %}

@@ -136,6 +136,11 @@ class DeprecationRangeReportForm(forms.Form):
     d_end = forms.DateField(widget=DateWidget, label='End date')
 
 
+class WarrantyRangeReportForm(forms.Form):
+    w_start = forms.DateField(widget=DateWidget, label='Start date')
+    w_end = forms.DateField(widget=DateWidget, label='End date')
+
+
 def _dns_char_field(label=None, initial=None, record=None, **kwargs):
     kwargs.update(
         label=label,
