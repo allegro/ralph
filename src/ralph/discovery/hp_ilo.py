@@ -235,7 +235,6 @@ class IloHost(object):
 
     def update(self, raw=None):
         tree, raw = self._get_tree(raw)
-        self.raw = raw
         (self.name, self.mac, self.firmware,
                 self.records) = self._parse_tree(tree)
         fields = self.records[1][0]

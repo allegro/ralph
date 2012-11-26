@@ -36,7 +36,6 @@ def make_device(ilo, ip):
             sn=ilo.sn,
             name=ilo.name,
             mgmt_firmware=ilo.firmware,
-            raw=ilo.raw,
         )
     dev.save(update_last_seen=True, priority=SAVE_PRIORITY)
 

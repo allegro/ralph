@@ -91,7 +91,6 @@ def _run_ssh_catalyst(ip):
         dev = Device.create(sn=dev_inv['sn'], model_name='Cisco %s' % dev_inv['pid'],
                 model_type=DeviceType.switch,
                 name=dev_inv['descr'][:255])
-    dev.raw = raw
     dev.save(update_last_seen=True)
 
     for inv in inventory:

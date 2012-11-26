@@ -17,6 +17,7 @@ from ralph.util import plugin
 from ralph.util import parse
 from ralph.discovery.models import (DeviceType, DeviceModel, Device, IPAddress,
                                     DiskShare, DiskShareMount)
+from ralph.discovery.models_history import DiscoveryWarning
 
 
 SSH_ONSTOR_USER = settings.SSH_ONSTOR_USER
@@ -179,14 +180,20 @@ def ssh_onstor(**kwargs):
     if kwargs.get('http_family') not in ('sscccc',):
         return False, 'no match.', kwargs
     if not network.check_tcp_port(ip, 22):
+        DiscoveryWarning(
+            message="Port 22 closed on an Onstor device.",
+            plugin=__name__,
+            ip=ip,
+        ).save()
         return False, 'closed.', kwargs
     try:
         name = _run_ssh_onstor(ip)
-    except (network.Error, Error) as e:
-        return False, str(e), kwargs
-    except paramiko.SSHException as e:
-        return False, str(e), kwargs
-    except Error as e:
+    except (network.Error, Error, paramiko.SSHException) as e:
+        DiscoveryWarning(
+            message="This is an Onstor, but: " + str(e),
+            plugin=__name__,
+            ip=ip,
+        ).save()
         return False, str(e), kwargs
     return True, name, kwargs
 

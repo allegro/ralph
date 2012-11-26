@@ -40,17 +40,26 @@ def hp_xmldata(hostname, timeout=10):
         finally:
             url.close()
     except (URLError, httplib.InvalidURL, httplib.BadStatusLine):
-        return None, ''
+        return
     else:
         if not url.info().get('Content-Type', '').startswith('text/xml'):
-            return None, ''
+            return
         data = data.decode('utf-8', 'replace').encode('utf-8')
         rimp = ET.fromstring(data)
         if rimp.tag.upper() != 'RIMP':
-            return None, data
-        return nullify(etree_to_dict(rimp, _converters=[_nullify, int, float,
-            lck.xml.converters._datetime,
-            lck.xml.converters._datetime_strip_tz]))[1], data
+            return
+        return nullify(
+            etree_to_dict(
+                rimp,
+                _converters=[
+                    _nullify,
+                    int,
+                    float,
+                    lck.xml.converters._datetime,
+                    lck.xml.converters._datetime_strip_tz
+                ],
+            )
+        )[1]
 
 
 def _get_ethernets(data):
@@ -161,14 +170,18 @@ def _add_hp_oa_devices(devices, device_type, parent=None):
         ip_address.device = dev
         ip_address.save(update_last_seen=True) # no priorities for IP addresses
 
-def make_encl(data, raw):
+def make_encl(data):
     encl_name = data['INFRA2']['PN'].strip()
     encl_sn = data['INFRA2']['ENCL_SN'].strip()
     if not encl_name.startswith('HP'):
         encl_name = 'HP ' + encl_name
-    encl = Device.create(sn=encl_sn, name=encl_name, raw=raw,
-            model_type=DeviceType.blade_system, model_name=encl_name,
-            priority=SAVE_PRIORITY)
+    encl = Device.create(
+        sn=encl_sn,
+        name=encl_name,
+        model_type=DeviceType.blade_system,
+        model_name=encl_name,
+        priority=SAVE_PRIORITY,
+    )
     encl.save(update_last_seen=True, priority=SAVE_PRIORITY)
     return encl
 
@@ -180,7 +193,7 @@ def hp_oa_xml(**kwargs):
     if kwargs.get('http_family', '') not in ('Unspecified', 'RomPager', 'HP'):
         return False, 'no match.', kwargs
     ip = str(kwargs['ip'])
-    data, raw = hp_xmldata(ip, timeout=30)
+    data = hp_xmldata(ip, timeout=30)
     if not data:
         return False, 'silent.', kwargs
     # For some reason those are sometimes ints instead of strings
@@ -191,7 +204,7 @@ def hp_oa_xml(**kwargs):
     encl_sn = unicode(data['INFRA2']['ENCL_SN']).strip()
     if not (name and sn and rack_name and encl_name and encl_sn):
         return False, 'incompatible answer.', kwargs
-    encl = make_encl(data, raw)
+    encl = make_encl(data)
     _add_hp_oa_devices(data['INFRA2']['MANAGERS']['MANAGER'],
         DeviceType.management, parent=encl)
     _add_hp_oa_devices(data['INFRA2']['SWITCHES']['SWITCH'],

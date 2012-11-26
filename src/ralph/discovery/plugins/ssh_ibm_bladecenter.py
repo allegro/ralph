@@ -22,6 +22,7 @@ from ralph.util import network, parse, plugin, Eth
 from ralph.discovery.models import (DeviceType,
         Device, Processor, Memory, Ethernet, IPAddress,
         ComponentModel, ComponentType, SERIAL_BLACKLIST, GenericComponent)
+from ralph.discovery.models_history import DiscoveryWarning
 
 
 SAVE_PRIORITY = 5
@@ -191,7 +192,7 @@ def _dev(model_type, pairs, parent, raw):
         ethernets = []
     name = pairs.get('Name') or pairs.get('Product Name') or model_name
     dev = Device.create(ethernets=ethernets, model_name=model_name,
-            model_type=model_type, sn=sn, raw=raw, name=name, parent=parent,
+            model_type=model_type, sn=sn, name=name, parent=parent,
             priority=SAVE_PRIORITY)
     firmware = (pairs.get('AMM firmware') or pairs.get('FW/BIOS') or
             pairs.get('Main Application 2'))
@@ -241,6 +242,11 @@ def _add_dev_cpu(pairs, parent, raw, counts, dev_id):
     try:
         model = pairs['Mach type/model']
     except KeyError:
+        DiscoveryWarning(
+            message="Processor model unknown",
+            plugin=__name__,
+            device=parent,
+        ).save()
         return
     counts.cpu += 1
     try:
@@ -260,6 +266,7 @@ def _add_dev_cpu(pairs, parent, raw, counts, dev_id):
         k not in ('Processor cores', 'Processor family',
                   'Speed', 'system>', 'Mach type/model'))
     cpu.model, c = ComponentModel.concurrent_get_or_create(
+        size=cores,
         cores=cores, speed=speed, type=ComponentType.processor.id,
         extra_hash=hashlib.md5(extra).hexdigest(), extra=extra,
         family=family)
@@ -271,6 +278,11 @@ def _add_dev_memory(pairs, parent, raw, counts, dev_id):
     try:
         model = pairs['Mach type/model']
     except KeyError:
+        DiscoveryWarning(
+            message="Memory model unknown",
+            plugin=__name__,
+            device=parent,
+        ).save()
         return
     counts.mem += 1
     try:
@@ -406,16 +418,20 @@ def ssh_ibm_bladecenter(**kwargs):
     if not kwargs.get('snmp_name', 'IBM').startswith('IBM'):
         return False, 'no match.', kwargs
     if not network.check_tcp_port(ip, 22):
+        DiscoveryWarning(
+            message="Port 22 closed on an IBM BladeServer.",
+            plugin=__name__,
+            ip=ip,
+        ).save()
         return False, 'closed.', kwargs
     try:
         name = run_ssh_bladecenter(ip)
-    except network.Error as e:
-        return False, str(e), kwargs
-    except Error as e:
-        return False, str(e), kwargs
-    except paramiko.SSHException as e:
-        return False, str(e), kwargs
-    except socket.error as e:
+    except (network.Error, Error, paramiko.SSHException, socket.error)  as e:
+        DiscoveryWarning(
+            message="This is an IBM BladeServer, but: " + str(e),
+            plugin=__name__,
+            ip=ip,
+        ).save()
         return False, str(e), kwargs
     return True, name, kwargs
 
