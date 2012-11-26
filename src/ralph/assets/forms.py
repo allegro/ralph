@@ -13,7 +13,8 @@ from django.forms import ModelForm, Form
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models import (
-    Asset, OfficeInfo, DeviceInfo, PartInfo
+    Asset, OfficeInfo, DeviceInfo, PartInfo, AssetStatus,
+    AssetType
 )
 from ralph.ui.widgets import DateWidget
 from ajax_select.fields import AutoCompleteSelectField
@@ -33,6 +34,15 @@ class BaseAssetForm(ModelForm):
             'barcode': forms.widgets.Textarea(attrs={'rows': 25}),
             'buy_date': DateWidget(),
         }
+
+    def __init__(self, mode=None, *args, **kwargs):
+        super(BaseAssetForm, self).__init__(*args, **kwargs)
+        if mode == "dc":
+            self.fields['type'].choices = [
+                (c.id, c.desc) for c in AssetType.DC.choices]
+        elif mode == "back_office":
+            self.fields['type'].choices = [
+                (c.id, c.desc) for c in AssetType.BO.choices]
 
 
 class BaseDeviceForm(ModelForm):
@@ -114,7 +124,11 @@ class EditDeviceForm(BaseAssetForm):
 
 
 class SearchAssetForm(Form):
-    model = AutoCompleteSelectField('asset_model', required=False, help_text=None)
+    model = AutoCompleteSelectField(
+        'asset_model',
+        required=False,
+        help_text=None
+    )
     invoice_no = forms.CharField(required=False)
     order_no = forms.CharField(required=False)
     buy_date = forms.DateField(required=False)
