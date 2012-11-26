@@ -35,6 +35,10 @@ class BaseAssetForm(ModelForm):
             'buy_date': DateWidget(),
         }
 
+    def clean_sn(self):
+        data = self.cleaned_data["sn"]
+        return data
+
 
 class BaseDeviceForm(ModelForm):
     class Meta:
@@ -91,14 +95,15 @@ class OfficeForm(forms.ModelForm):
         }
 
 
-class EditPartForm(BaseAssetForm, OfficeForm):
+class EditPartForm(BaseAssetForm):
     def __init__(self, *args, **kwargs):
         super(EditPartForm, self).__init__(*args, **kwargs)
         self.fields['sn'].widget = forms.widgets.TextInput()
         self.fields['sn'].label = _("SN")
+        del self.fields['barcode']
 
 
-class EditDeviceForm(BaseDeviceForm, OfficeForm):
+class EditDeviceForm(BaseAssetForm):
     def __init__(self, *args, **kwargs):
         super(EditDeviceForm, self).__init__(*args, **kwargs)
         self.fields['sn'].widget = forms.widgets.TextInput()

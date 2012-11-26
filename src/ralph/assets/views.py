@@ -17,7 +17,7 @@ from lck.django.common import nested_commit_on_success
 
 from ralph.assets.forms import (
     AddDeviceForm, AddPartForm, EditDeviceForm,
-    EditPartForm, BaseDeviceForm
+    EditPartForm, BaseDeviceForm, OfficeForm
 )
 from ralph.assets.models import (DeviceInfo, AssetSource, Asset, OfficeInfo)
 from ralph.ui.views.common import Base
@@ -129,6 +129,12 @@ class DataCenterSearch(DataCenterMixin):
         return super(DataCenterSearch, self).get(*args, **kwargs)
 
 
+def _get_return_link(request):
+    current_url = request.get_full_path()
+    section = 'back_office' if 'back_office' in current_url else 'dc'
+    return "/assets/%s/" % section
+
+
 class AddDevice(Base):
     template_name = 'assets/add_device.html'
 
@@ -205,7 +211,7 @@ class AddDevice(Base):
                 transaction.commit()
                 transaction.managed(False)
                 messages.success(self.request, _("Assets saved."))
-                return HttpResponseRedirect('/assets/')
+                return HttpResponseRedirect(_get_return_link(self.request))
         else:
             messages.error(self.request, _("Please correct the errors."))
         return super(AddDevice, self).get(*args, **kwargs)
@@ -270,7 +276,7 @@ class AddPart(Base):
                 transaction.commit()
                 transaction.managed(False)
                 messages.success(self.request, _("Assets saved."))
-                return HttpResponseRedirect('/assets/')
+                return HttpResponseRedirect(_get_return_link(self.request))
         else:
             messages.error(self.request, _("Please correct the errors."))
         return super(AddPart, self).get(*args, **kwargs)
@@ -285,12 +291,14 @@ class DataCenterAddPart(AddPart, DataCenterMixin):
 
 
 class EditDevice(Base):
-    template_name = 'assets/edit_device_asset.html'
+    template_name = 'assets/edit_device.html'
 
     def get_context_data(self, **kwargs):
         ret = super(EditDevice, self).get_context_data(**kwargs)
         ret.update({
-            'form': self.form,
+            'asset_form': self.asset_form,
+            'device_info_form': self.device_info_form,
+            'office_info_form': self.office_info_form,
             'form_id': 'edit_device_asset_form',
             'edit_mode': True,
         })
@@ -300,63 +308,60 @@ class EditDevice(Base):
         asset = get_object_or_404(Asset, id=kwargs.get('asset_id'))
         if not asset.device_info:  # it isn't device asset
             raise Http404()
-        initial_data = {
-            'type': asset.type,
-            'model': asset.model.id,
-            'invoice_no': asset.invoice_no,
-            'order_no': asset.order_no,
-            'buy_date': asset.buy_date,
-            'support_period': asset.support_period,
-            'support_type': asset.support_type,
-            'support_void_reporting': asset.support_void_reporting,
-            'provider': asset.provider,
-            'status': asset.status,
-            'sn': asset.sn,
-            'source': asset.source,
-            'barcode': asset.barcode,
-            'warehouse': asset.device_info.warehouse.id,
-            'size': asset.device_info.size,
-        }
-        if asset.office_info:
-            initial_data.update({
-                'license_key': asset.office_info.license_key,
-                'version': asset.office_info.version,
-                'unit_price': asset.office_info.unit_price,
-                'license_type': asset.office_info.license_type,
-                'date_of_last_inventory': asset.office_info.date_of_last_inventory,
-                'last_logged_user': asset.office_info.last_logged_user,
-            })
-        self.form = EditDeviceForm(initial=initial_data)
+        self.asset_form = EditDeviceForm(instance=asset)
+        self.device_info_form = BaseDeviceForm(instance=asset.device_info)
+        self.office_info_form = OfficeForm(instance=asset.office_info)
         return super(EditDevice, self).get(*args, **kwargs)
 
     @nested_commit_on_success
     def post(self, *args, **kwargs):
         asset = get_object_or_404(Asset, id=kwargs.get('asset_id'))
-        self.form = EditDeviceForm(self.request.POST, self.request.FILES)
-        if self.form.is_valid():
-            asset.__dict__.update(**self.form.cleaned_data)
+        self.asset_form = EditDeviceForm(self.request.POST, instance=asset)
+        self.device_info_form = BaseDeviceForm(self.request.POST)
+        self.office_info_form = OfficeForm(
+            self.request.POST, self.request.FILES)
+        if all((
+            self.asset_form.is_valid(),
+            self.device_info_form.is_valid(),
+            self.office_info_form.is_valid()
+        )):
+            asset_data = self.asset_form.cleaned_data
+            if not asset_data['barcode']:
+                asset_data['barcode'] = None
+            asset.__dict__.update(**asset_data)
             if not asset.office_info:
                 office_info = OfficeInfo()
             else:
                 office_info = asset.office_info
-            office_info.__dict__.update(**self.form.cleaned_data)
+            office_info.__dict__.update(**self.office_info_form.cleaned_data)
             office_info.save()
             asset.office_info = office_info
-            asset.device_info.__dict__.update(**self.form.cleaned_data)
+            asset.device_info.__dict__.update(
+                **self.device_info_form.cleaned_data)
             asset.device_info.save()
             asset.save()
+            return HttpResponseRedirect(_get_return_link(self.request))
         else:
             messages.error(self.request, _("Please correct the errors."))
         return super(EditDevice, self).get(*args, **kwargs)
 
 
+class BackOfficeEditDevice(EditDevice, BackOfficeMixin):
+    sidebar_selected = None
+
+
+class DataCenterEditDevice(EditDevice, DataCenterMixin):
+    sidebar_selected = None
+
+
 class EditPart(Base):
-    template_name = 'assets/edit_part_asset.html'
+    template_name = 'assets/edit_part.html'
 
     def get_context_data(self, **kwargs):
         ret = super(EditPart, self).get_context_data(**kwargs)
         ret.update({
-            'form': self.form,
+            'asset_form': self.asset_form,
+            'office_info_form': self.office_info_form,
             'form_id': 'edit_part_form',
             'edit_mode': True,
         })
@@ -366,46 +371,39 @@ class EditPart(Base):
         asset = get_object_or_404(Asset, id=kwargs.get('asset_id'))
         if asset.device_info:  # it isn't part asset
             raise Http404()
-        initial_data = {
-            'type': asset.type,
-            'model': asset.model.id,
-            'invoice_no': asset.invoice_no,
-            'order_no': asset.order_no,
-            'buy_date': asset.buy_date,
-            'support_period': asset.support_period,
-            'support_type': asset.support_type,
-            'support_void_reporting': asset.support_void_reporting,
-            'provider': asset.provider,
-            'status': asset.status,
-            'sn': asset.sn,
-            'source': asset.source,
-        }
-        if asset.office_info:
-            initial_data.update({
-                'license_key': asset.office_info.license_key,
-                'version': asset.office_info.version,
-                'unit_price': asset.office_info.unit_price,
-                'license_type': asset.office_info.license_type,
-                'date_of_last_inventory': asset.office_info.date_of_last_inventory,
-                'last_logged_user': asset.office_info.last_logged_user,
-            })
-        self.form = EditPartForm(initial=initial_data)
+        self.asset_form = EditPartForm(instance=asset)
+        self.office_info_form = OfficeForm(instance=asset.office_info)
         return super(EditPart, self).get(*args, **kwargs)
 
     @nested_commit_on_success
     def post(self, *args, **kwargs):
         asset = get_object_or_404(Asset, id=kwargs.get('asset_id'))
-        self.form = EditPartForm(self.request.POST, self.request.FILES)
-        if self.form.is_valid():
-            asset.__dict__.update(**self.form.cleaned_data)
+        self.asset_form = EditDeviceForm(self.request.POST, instance=asset)
+        self.office_info_form = OfficeForm(
+            self.request.POST, self.request.FILES)
+        if self.asset_form.is_valid() and self.office_info_form.is_valid():
+            asset_data = self.asset_form.cleaned_data
+            asset_data.update({'barcode': None})
+            asset.__dict__.update(
+                **asset_data)
             if not asset.office_info:
                 office_info = OfficeInfo()
             else:
                 office_info = asset.office_info
-            office_info.__dict__.update(**self.form.cleaned_data)
+            office_info.__dict__.update(**self.office_info_form.cleaned_data)
             office_info.save()
             asset.office_info = office_info
             asset.save()
+            return HttpResponseRedirect(_get_return_link(self.request))
         else:
             messages.error(self.request, _("Please correct the errors."))
         return super(EditPart, self).get(*args, **kwargs)
+
+
+class BackOfficeEditPart(EditPart, BackOfficeMixin):
+    sidebar_selected = None
+
+
+class DataCenterEditPart(EditPart, DataCenterMixin):
+    sidebar_selected = None
+
