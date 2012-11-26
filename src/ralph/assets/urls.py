@@ -10,7 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.generic import RedirectView
 
 from ralph.assets.views import (
-    EditDeviceAsset, EditPartAsset, BackOfficeSearch, DataCenterSearch,
+    EditDevice, EditPart, BackOfficeSearch, DataCenterSearch,
     BackOfficeAddDevice, BackOfficeAddPart, DataCenterAddDevice,
     DataCenterAddPart)
 
@@ -35,7 +35,7 @@ urlpatterns = patterns(
         login_required(BackOfficeAddPart.as_view())),
 
     url(r'^device/edit/(?P<asset_id>[0-9]+)/$',
-        login_required(EditDeviceAsset.as_view())),
+        login_required(EditDevice.as_view())),
     url(r'^part/edit/(?P<asset_id>[0-9]+)/$',
-        login_required(EditPartAsset.as_view())),
+        login_required(EditPart.as_view())),
 )

@@ -1,0 +1,15 @@
+{% extends 'assets/base.html' %}
+{% load bob %}
+
+{% block content %}
+
+<div class="row">
+
+	<div class="span4 well">
+		{% form form=form action='' method='GET' %}
+	</div>
+	<div class="span5 well">
+		{{ data }}
+	</div>
+</div>
+{% endblock %}
