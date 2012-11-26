@@ -20,6 +20,8 @@
     {% if sidebar_items %}
         {% sidebar_menu sidebar_items sidebar_selected %}
     {% endif %}
+    {% block sidebar_search %}
+    {% endblock %}
 {% endblock %}
 
 {% block titlesubsection %}

@@ -141,6 +141,16 @@ class Asset(TimeTrackable, EditorTrackable):
     def __unicode__(self):
         return "{} - {} - {}".format(self.model, self.sn, self.barcode)
 
+    @classmethod
+    def objects_bo(self):
+        """Returns back office assets queryset"""
+        return Asset.objects.filter(type=AssetType.back_office)
+
+    @classmethod
+    def objects_dc(self):
+        """Returns data center assets queryset"""
+        return Asset.objects.filter(type=AssetType.data_center)
+
 
 class DeviceInfo(TimeTrackable):
     ralph_device = models.ForeignKey('discovery.Device', null=True, blank=True,
@@ -162,3 +172,5 @@ class PartInfo(TimeTrackable):
 
     def __unicode__(self):
         return "{}".format(self.barcode_salvaged)
+
+

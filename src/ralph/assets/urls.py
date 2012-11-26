@@ -32,6 +32,7 @@ urlpatterns = patterns(
         login_required(DataCenterEditDevice.as_view())),
     url(r'dc/edit/part/(?P<asset_id>[0-9]+)/$',
         login_required(DataCenterEditPart.as_view())),
+    
     url(r'back_office/search', login_required(BackOfficeSearch.as_view())),
     url(r'back_office/add/device/',
         login_required(BackOfficeAddDevice.as_view())),
