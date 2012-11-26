@@ -414,7 +414,8 @@ def parse_dmidecode(data):
             'family': cpu['Family'],
             '64bit': any('64-bit capable' in char
                          for char in cpu.getlist('Characteristics') if char),
-            'flags': [f.keys() for f in cpu.getlist('Flags') if f][0],
+            'flags': [f.keys() for f in cpu.getlist('Flags')
+                      if f][0] if 'Flags' in cpu else [],
         } for cpu in p.getlist('Processor Information') if cpu],
         'mem': [{
             'label': mem['Locator'],
@@ -434,17 +435,18 @@ def handle_dmidecode(info, ethernets=(), save_priority=0):
     # We will let other plugins determine that.
     dev = Device.create(
         ethernets=ethernets, sn=info['sn'], uuid=info['uuid'],
-        model_name=info['model'], model_type=DeviceType.unknown,
+        model_name='DMI '+info['model'], model_type=DeviceType.unknown,
         priority=save_priority
     )
     for i, cpu_info in enumerate(info['cpu']):
         extra = ',\n'.join(cpu_info['flags'])
-        extra = ('threads: %d\n' % cpu_info['threads']) + extra
+        extra = ('threads: %d\n' % cpu_info['threads']
+                 if cpu_info['threads'] else '') + extra
         if cpu_info['64bit']:
             extra = '64bit\n' + extra
         model, created = ComponentModel.concurrent_get_or_create(
-            speed=cpu_info['speed'],
-            cores=cpu_info['cores'],
+            speed=cpu_info['speed'] or 0,
+            cores=cpu_info['cores'] or 0,
             family=cpu_info['family'],
             extra_hash=hashlib.md5(extra).hexdigest(),
             type=ComponentType.processor.id,
@@ -463,8 +465,8 @@ def handle_dmidecode(info, ethernets=(), save_priority=0):
         cpu.delete()
     for i, mem_info in enumerate(info['mem']):
         model, created = ComponentModel.concurrent_get_or_create(
-            speed=mem_info['speed'],
-            size=mem_info['size'],
+            speed=mem_info['speed'] or 0,
+            size=mem_info['size'] or 0,
             type=ComponentType.memory.id,
         )
         if created:
