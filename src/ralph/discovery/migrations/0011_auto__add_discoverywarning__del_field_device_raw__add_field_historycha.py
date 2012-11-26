@@ -20,10 +20,26 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal('discovery', ['DiscoveryWarning'])
 
+        # Deleting field 'Device.raw'
+        db.delete_column('discovery_device', 'raw')
+
+        # Adding field 'HistoryChange.plugin'
+        db.add_column('discovery_historychange', 'plugin',
+                      self.gf('django.db.models.fields.CharField')(default=u'', max_length=64),
+                      keep_default=False)
+
 
     def backwards(self, orm):
         # Deleting model 'DiscoveryWarning'
         db.delete_table('discovery_discoverywarning')
+
+        # Adding field 'Device.raw'
+        db.add_column('discovery_device', 'raw',
+                      self.gf('django.db.models.fields.TextField')(default=None, null=True, blank=True),
+                      keep_default=False)
+
+        # Deleting field 'HistoryChange.plugin'
+        db.delete_column('discovery_historychange', 'plugin')
 
 
     models = {
