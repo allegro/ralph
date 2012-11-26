@@ -29,10 +29,26 @@ def check_snmp_port(ip, port=161, timeout=1):
     return bool(reply)
 
 
+def user_data(community, snmp_version):
+    if snmp_version == '2c':
+        data = cmdgen.CommunityData('ralph', community, 1)
+    elif snmp_version in ('3', 3):
+        # XXX Find out the actual protocols and take keys from configuration.
+        data =  cmdgen.UsmUserData(
+            'usr-sha-aes128',
+            'authkey1',
+            'privkey1',
+            authProtocol=cmdgen.usmHMACSHAAuthProtocol,
+            privProtocol=cmdgen.usmAesCfb128Protocol,
+        )
+    else:
+        data = cmdgen.CommunityData('ralph', community, 0)
+    return data
+
+
 def snmp_command(hostname, community, oid, snmp_version='2c', timeout=1, attempts=3):
-    snmp_ver = 1 if snmp_version == '2c' else 0
     transport = cmdgen.UdpTransportTarget((hostname, 161), attempts, timeout)
-    data = cmdgen.CommunityData('ralph', community, snmp_ver)
+    data = user_data(community, snmp_version)
     gen = cmdgen.CommandGenerator()
     error, status, index, vars = gen.getCmd(data, transport, oid)
     if error:
@@ -42,11 +58,10 @@ def snmp_command(hostname, community, oid, snmp_version='2c', timeout=1, attempt
 
 
 def snmp_bulk(hostname, community, oid, snmp_version='2c', timeout=1, attempts=3):
-    snmp_ver = 1 if snmp_version == '2c' else 0
     transport = cmdgen.UdpTransportTarget((hostname, 161), attempts, timeout)
-    data = cmdgen.CommunityData('ralph', community, snmp_ver)
+    data = user_data(community, snmp_version)
     gen = cmdgen.CommandGenerator()
-    if snmp_version == '2c':
+    if snmp_version in ('2c', '3', 3):
         error, status, index, vars = gen.bulkCmd(data, transport, 0, 25, oid)
     else:
         error, status, index, vars = gen.nextCmd(data, transport, oid)
