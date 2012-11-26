@@ -1,6 +1,15 @@
 Change Log
 ----------
 
+1.1.9
+~~~~~
+
+Released on November 26, 2012.
+
+* Fixes for discovery regressions from 1.1.8
+
+* DiscoveryWarnings introduced
+
 1.1.8
 ~~~~~
 
