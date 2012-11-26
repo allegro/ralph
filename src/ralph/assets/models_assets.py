@@ -20,6 +20,7 @@ from ralph.discovery.models_util import SavingUser
 
 class LicenseTypes(Choices):
     _ = Choices.Choice
+    not_applicable = _("not applicable")
     oem = _("oem")
     box = _("box")
 
@@ -65,6 +66,7 @@ class AssetManufacturer(TimeTrackable, EditorTrackable):
     def __unicode__(self):
         return "{}".format(self.name)
 
+
 class AssetModel(TimeTrackable, EditorTrackable):
     manufacturer = models.ForeignKey(AssetManufacturer,
                                      on_delete=models.PROTECT)
@@ -74,16 +76,22 @@ class AssetModel(TimeTrackable, EditorTrackable):
         return "{}".format(self.name)
 
 
+class Warehouse(TimeTrackable, EditorTrackable):
+    name = models.CharField(max_length=100)
+
+    def __unicode__(self):
+        return self.name
+
+
 def content_file_name(instance, filename):
-    return '/'.join(['content', instance.user.username, filename])
+    return '/'.join(['assets', str(instance.pk), filename])
 
 
-class OfficeData(models.Model):
+class OfficeInfo(models.Model):
     license_key = models.CharField(max_length=255, null=True, blank=True)
     version = models.CharField(max_length=50, null=True, blank=True)
-    order_no = models.CharField(max_length=50, null=True, blank=True)
-    unit_price = models.DecimalField(max_digits=20, decimal_places=2,
-                                     default=0)
+    unit_price = models.DecimalField(
+        max_digits=20, decimal_places=2, default=0)
     attachment = models.FileField(upload_to=content_file_name, null=True,
                                   blank=True)
     license_type = models.IntegerField(choices=LicenseTypes(),
@@ -103,16 +111,18 @@ class OfficeData(models.Model):
 class Asset(TimeTrackable, EditorTrackable, SavingUser):
     device_info = models.OneToOneField('DeviceInfo', null=True, blank=True)
     part_info = models.OneToOneField('PartInfo', null=True, blank=True)
-    office_data = models.OneToOneField(
-        OfficeData, null=True, blank=True,
+    office_info = models.OneToOneField(
+        OfficeInfo, null=True, blank=True,
         on_delete=models.SET_NULL)
     type = models.PositiveSmallIntegerField(choices=AssetType())
     model = models.ForeignKey(AssetModel, on_delete=models.PROTECT)
     source = models.PositiveIntegerField(verbose_name=_("source"),
                                          choices=AssetSource(),
                                          db_index=True)
-    invoice_no = models.CharField(max_length=30, db_index=True)
-    buy_date = models.DateField(default=datetime.datetime.now())
+    invoice_no = models.CharField(
+        max_length=30, db_index=True, null=True, blank=True)
+    order_no = models.CharField(max_length=50, null=True, blank=True)
+    buy_date = models.DateField(default=datetime.date.today())
     sn = models.CharField(max_length=200, unique=True)
     barcode = models.CharField(max_length=200, null=True, blank=True,
                                unique=True)
@@ -125,7 +135,8 @@ class Asset(TimeTrackable, EditorTrackable, SavingUser):
                                               choices=AssetStatus())
 
     def __unicode__(self):
-        return "{} - {} - {}".format(self.model, self.sn,self.barcode)
+        return "{} - {} - {}".format(self.model, self.sn, self.barcode)
+
 
     def __init__(self, *args, **kwargs):
         self.save_comment = None
@@ -138,11 +149,8 @@ class DeviceInfo(TimeTrackable):
                                      on_delete=models.SET_NULL)
     size = models.PositiveSmallIntegerField(verbose_name='Size in units',
                                             default=1)
-    location = models.CharField(
-        max_length=250,
-        verbose_name="A place where device is currently located in."
-                     " May be DC/Rack or City/branch"
-    )
+    warehouse = models.ForeignKey(Warehouse, on_delete=models.PROTECT)
+
     def __unicode__(self):
         return "{}".format(self.ralph_device)
 

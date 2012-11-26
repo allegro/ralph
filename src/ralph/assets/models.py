@@ -10,20 +10,28 @@ from ralph.assets.models_assets import (
     Asset,
     AssetManufacturer,
     AssetModel,
+    AssetSource,
+    AssetStatus,
+    AssetType,
     DeviceInfo,
-    OfficeData,
+    LicenseTypes,
+    OfficeInfo,
     PartInfo,
+    Warehouse,
 )
 from ralph.assets.models_history import AssetHistoryChange
-
 
 __all__ = [
     Asset,
     AssetManufacturer,
     AssetModel,
+    AssetSource,
+    AssetStatus,
+    AssetType,
     DeviceInfo,
-    OfficeData,
+    LicenseTypes,
+    OfficeInfo,
     PartInfo,
-
+    Warehouse,
     AssetHistoryChange
 ]

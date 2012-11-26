@@ -10,8 +10,17 @@ from django.contrib import admin
 from lck.django.common.admin import ModelAdmin
 
 from ralph.assets.models import (
-    Asset, AssetManufacturer, AssetModel, OfficeData, DeviceInfo, PartInfo,
+    Asset, AssetManufacturer, AssetModel, OfficeInfo, DeviceInfo, PartInfo,
+    Warehouse,
 )
+
+
+class WarehouseAdmin(ModelAdmin):
+    save_on_top = True
+    list_display = ('name',)
+    search_fields = ('name',)
+
+admin.site.register(Warehouse, WarehouseAdmin)
 
 
 class AssetModelAdmin(ModelAdmin):
@@ -53,8 +62,8 @@ class PartInfoAdmin(ModelAdmin):
 admin.site.register(PartInfo, PartInfoAdmin)
 
 
-class OfficeDataAdmin(ModelAdmin):
+class OfficeInfoAdmin(ModelAdmin):
     list_display = ('license_key', 'license_type', 'date_of_last_inventory',)
     save_on_top = True
 
-admin.site.register(OfficeData, OfficeDataAdmin)
+admin.site.register(OfficeInfo, OfficeInfoAdmin)
