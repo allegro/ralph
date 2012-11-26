@@ -180,6 +180,13 @@ def validate_domain_name(name):
         raise forms.ValidationError("No such domain")
     return name.lower()
 
+def validate_hostname(name):
+    if not name:
+        return
+    if not is_valid_hostname(name):
+        raise forms.ValidationError("Invalid hostname")
+    return name.lower()
+
 def _dhcp_mac_field(label=None, initial=None, record=None, **kwargs):
     kwargs.update(validators=[validate_mac])
     return _dns_char_field(label, initial, **kwargs)
@@ -192,6 +199,9 @@ def _dhcp_ip_field(label=None, initial=None, record=None, **kwargs):
     kwargs.update(validators=[validate_ip])
     return _dns_char_field(label, initial, **kwargs)
 
+def _hostname_field(label=None, initial=None, record=None, **kwargs):
+    kwargs.update(validators=[validate_hostname])
+    return _dns_char_field(label, initial, **kwargs)
 
 def _add_fields(new_fields, prefix, record, fields):
     for label, field_class in fields:
@@ -331,7 +341,7 @@ class AddressesForm(forms.Form):
         super(AddressesForm, self).__init__(*args, **kwargs)
         self.records = list(records)
         fields = [
-            ('hostname', _ip_name_field),
+            ('hostname', _hostname_field),
             ('address', _dhcp_ip_field),
             ('del', _bool_field),
         ]
@@ -339,7 +349,7 @@ class AddressesForm(forms.Form):
             prefix = 'ip_%d_' % record.id
             _add_fields(self.fields, prefix, record, fields)
         fields = [
-            ('hostname', _ip_name_field),
+            ('hostname', _hostname_field),
             ('address', _dhcp_ip_field),
             ('del', _bool_hidden_field),
         ]
