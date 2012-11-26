@@ -144,10 +144,12 @@ class DataCenterSearch(DataCenterMixin):
         return super(DataCenterSearch, self).get(*args, **kwargs)
 
 
-def _get_return_link(request):
+def _get_mode(request):
     current_url = request.get_full_path()
-    section = 'back_office' if 'back_office' in current_url else 'dc'
-    return "/assets/%s/" % section
+    return 'back_office' if 'back_office' in current_url else 'dc'
+
+def _get_return_link(request):
+    return "/assets/%s/" % _get_mode(request)
 
 
 class AddDevice(Base):
@@ -164,12 +166,13 @@ class AddDevice(Base):
         return ret
 
     def get(self, *args, **kwargs):
-        self.asset_form = AddDeviceForm()
+        self.asset_form = AddDeviceForm(mode=_get_mode(self.request))
         self.device_info_form = BaseDeviceForm()
         return super(AddDevice, self).get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
-        self.asset_form = AddDeviceForm(self.request.POST)
+        self.asset_form = AddDeviceForm(
+            self.request.POST, mode=_get_mode(self.request))
         self.device_info_form = BaseDeviceForm(self.request.POST)
         if self.asset_form.is_valid() and self.device_info_form.is_valid():
             transaction.enter_transaction_management()
@@ -254,12 +257,13 @@ class AddPart(Base):
         return ret
 
     def get(self, *args, **kwargs):
-        self.asset_form = AddPartForm()
+        self.asset_form = AddPartForm(mode=_get_mode(self.request))
         self.part_info_form = BasePartForm()
         return super(AddPart, self).get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
-        self.asset_form = AddPartForm(self.request.POST)
+        self.asset_form = AddPartForm(
+            self.request.POST, mode=_get_mode(self.request))
         self.part_info_form = BasePartForm(self.request.POST)
         if self.asset_form.is_valid() and self.part_info_form.is_valid():
             transaction.enter_transaction_management()
@@ -329,7 +333,8 @@ class EditDevice(Base):
         asset = get_object_or_404(Asset, id=kwargs.get('asset_id'))
         if not asset.device_info:  # it isn't device asset
             raise Http404()
-        self.asset_form = EditDeviceForm(instance=asset)
+        self.asset_form = EditDeviceForm(
+            instance=asset, mode=_get_mode(self.request))
         self.device_info_form = BaseDeviceForm(instance=asset.device_info)
         self.office_info_form = OfficeForm(instance=asset.office_info)
         return super(EditDevice, self).get(*args, **kwargs)
@@ -337,7 +342,8 @@ class EditDevice(Base):
     @nested_commit_on_success
     def post(self, *args, **kwargs):
         asset = get_object_or_404(Asset, id=kwargs.get('asset_id'))
-        self.asset_form = EditDeviceForm(self.request.POST, instance=asset)
+        self.asset_form = EditDeviceForm(
+            self.request.POST, instance=asset, mode=_get_mode(self.request))
         self.device_info_form = BaseDeviceForm(self.request.POST)
         self.office_info_form = OfficeForm(
             self.request.POST, self.request.FILES)
@@ -392,7 +398,8 @@ class EditPart(Base):
         asset = get_object_or_404(Asset, id=kwargs.get('asset_id'))
         if asset.device_info:  # it isn't part asset
             raise Http404()
-        self.asset_form = EditPartForm(instance=asset)
+        self.asset_form = EditPartForm(
+            instance=asset, mode=_get_mode(self.request))
         self.office_info_form = OfficeForm(instance=asset.office_info)
         self.part_info_form = BasePartForm(instance=asset.part_info)
         return super(EditPart, self).get(*args, **kwargs)
@@ -400,7 +407,8 @@ class EditPart(Base):
     @nested_commit_on_success
     def post(self, *args, **kwargs):
         asset = get_object_or_404(Asset, id=kwargs.get('asset_id'))
-        self.asset_form = EditDeviceForm(self.request.POST, instance=asset)
+        self.asset_form = EditDeviceForm(
+            self.request.POST, instance=asset, mode=_get_mode(self.request))
         self.office_info_form = OfficeForm(
             self.request.POST, self.request.FILES)
         self.part_info_form = BasePartForm(self.request.POST)

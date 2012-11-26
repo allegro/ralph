@@ -42,7 +42,10 @@ class BaseAssetForm(ModelForm):
         plugin_options=dict(add_link='/admin/assets/assetmodel/add/?name=')
     )
 
-    def __init__(self, mode=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
+        mode = kwargs.get('mode')
+        if mode:
+            del kwargs['mode']
         super(BaseAssetForm, self).__init__(*args, **kwargs)
         if mode == "dc":
             self.fields['type'].choices = [
@@ -86,6 +89,9 @@ class AddPartForm(BaseAssetForm):
 
 
 class AddDeviceForm(BaseAssetForm):
+    def __init__(self, *args, **kwargs):
+        super(AddDeviceForm, self).__init__(*args, **kwargs)
+
     def clean_sn(self):
         data = self.cleaned_data["sn"]
         _validate_multivalue_data(data)
