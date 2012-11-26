@@ -4,11 +4,46 @@
 {% block content %}
 
 <div class="row">
-
-	<div class="span4 well">
-	</div>
-	<div class="span5 well">
-		{{ data }}
-	</div>
+    <div class="span3 well">
+        {% form form=form method="GET" action='' submit_label='Search' %}
+    </div>
+    <div class="span9">
+        <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>Index</th>
+                        <th>SN</th>
+                        <th>Barcode</th>
+                        <th>Model</th>
+                        <th>Invoice no.</th>
+                        <th>Order no.</th>
+                        <th>Buy date</th>
+                        <th>Status</th>
+                        <th>Warehouse</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in data %}
+                <tr>
+                    <td>{{forloop.counter}}</td>
+                    <td>{{row.sn}}</td>
+                    <td>{{row.barcode}}</td>
+                    <td>{{row.model.name}}</td>
+                    <td>{{row.invoice_no}}</td>
+                    <td>{{row.order_no}}</td>
+                    <td>{{row.buy_date}}</td>
+                    <td>{{row.status}}</td>
+                    <td>{{row.warehouse}}</td>
+                    {% if row.device_info %}
+                    <td><a href="./edit/device/{{row.id}}">Edit</a></td>
+                    {% elif row.part_info %}
+                    <td><a href="./edit/part/{{row.id}}">Edit</a></td>
+                    {% endif %}
+                </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+    </div>
 </div>
 {% endblock %}
