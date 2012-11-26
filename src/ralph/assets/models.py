@@ -26,7 +26,6 @@ from ralph.assets.models_assets import (
 
 
 
-
 class DeviceLookup(LookupChannel):
     model = DeviceInfo
 
@@ -44,7 +43,7 @@ class DeviceLookup(LookupChannel):
         return self.format_item_display(obj)
 
     def format_item_display(self, obj):
-        return "%s<div><i>%s</i></div>" % (escape(obj.sn), escape(obj.barcode))
+        return "%s<div><i>%s</i></div>" % (escape(obj.model), escape(obj.barcode))
 
 
 class AssetModelLookup(LookupChannel):

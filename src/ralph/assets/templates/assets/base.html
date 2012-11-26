@@ -1,7 +1,16 @@
 {% extends 'ui/base.html' %}
 {% load bob %}
 {% load icons %}
-
+{% block scripts %}
+{{ block.super }}
+<script type="text/javascript">
+	showAddAnotherPopup = function(e){
+		window.open(e.href + e.previousElementSibling.value);
+		this.event.preventDefault()
+		return false;
+}
+</script>
+{% endblock %}
 {% block contentarea %}
         {% block content %}
         {% endblock %}

@@ -136,6 +136,7 @@ class Asset(TimeTrackable, EditorTrackable):
     provider = models.CharField(max_length=100, null=True, blank=True)
     status = models.PositiveSmallIntegerField(verbose_name=_("status"),
                                               choices=AssetStatus())
+    remarks = models.CharField(max_length=1024)
 
     def __unicode__(self):
         return "{} - {} - {}".format(self.model, self.sn, self.barcode)

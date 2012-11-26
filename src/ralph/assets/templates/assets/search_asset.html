@@ -11,6 +11,7 @@
         <table class="table table-bordered table-striped">
                 <thead>
                     <tr>
+                        <th><i class="fugue-icon fugue-ui-check-boxes-series"></i></th>
                         <th>Index</th>
                         <th>SN</th>
                         <th>Barcode</th>
@@ -26,6 +27,7 @@
                 <tbody>
                     {% for row in data %}
                 <tr>
+                    <td class="column-checkbox"><input type="checkbox" name="select" value="{{row.id}}"></td>
                     <td>{{forloop.counter}}</td>
                     <td>{{row.sn}}</td>
                     <td>{{row.barcode}}</td>
@@ -44,6 +46,18 @@
                     {% endfor %}
                 </tbody>
             </table>
+
+            <div class="btn-group">
+              <a class="btn dropdown-toggle btn-primary" data-toggle="dropdown" href="#">
+                Bulk actions...
+                <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+                <li>
+                <input type='submit' value='test'></input>
+            </li>
+            </ul>
+            </div>
     </div>
 </div>
 {% endblock %}
