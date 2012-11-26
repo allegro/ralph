@@ -15,6 +15,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from lck.django.common.models import TimeTrackable, EditorTrackable
 from lck.django.choices import Choices
+from ralph.discovery.models_util import SavingUser
 
 
 class LicenseTypes(Choices):
@@ -99,7 +100,7 @@ class OfficeData(models.Model):
         )
 
 
-class Asset(TimeTrackable, EditorTrackable):
+class Asset(TimeTrackable, EditorTrackable, SavingUser):
     device_info = models.OneToOneField('DeviceInfo', null=True, blank=True)
     part_info = models.OneToOneField('PartInfo', null=True, blank=True)
     office_data = models.OneToOneField(
@@ -125,6 +126,12 @@ class Asset(TimeTrackable, EditorTrackable):
 
     def __unicode__(self):
         return "{} - {} - {}".format(self.model, self.sn,self.barcode)
+
+    def __init__(self, *args, **kwargs):
+        self.save_comment = None
+        self.being_deleted = False
+        self.saving_user = None
+        super(Asset, self).__init__(*args, **kwargs)
 
 class DeviceInfo(TimeTrackable):
     ralph_device = models.ForeignKey('discovery.Device', null=True, blank=True,

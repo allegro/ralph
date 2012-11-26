@@ -12,8 +12,10 @@ from ralph.assets.models_assets import (
     AssetModel,
     DeviceInfo,
     OfficeData,
-    PartInfo
+    PartInfo,
 )
+from ralph.assets.models_history import AssetHistoryChange
+
 
 __all__ = [
     Asset,
@@ -21,5 +23,7 @@ __all__ = [
     AssetModel,
     DeviceInfo,
     OfficeData,
-    PartInfo
+    PartInfo,
+
+    AssetHistoryChange
 ]
