@@ -151,6 +151,8 @@ class AddDevice(Base):
             transaction.enter_transaction_management()
             transaction.managed()
             transaction.commit()
+            #FIXME: use 2 forms, with prefix=..., validate each other, 
+            # and get given fields. don't join them.
             data = {}
             for field_name, field_value in self.form.cleaned_data.items():
                 if field_name in ["barcode", "size", "sn", "warehouse"]:
@@ -244,8 +246,6 @@ class AddPart(Base):
             for field_name, field_value in self.form.cleaned_data.items():
                 if field_name in ["sn"]:
                     continue
-                if field_name == "model":
-                    field_name = "%s_id" % field_name
                 data[field_name] = field_value
             data['source'] = AssetSource.shipment
             serial_numbers = self.form.cleaned_data['sn']
