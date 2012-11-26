@@ -91,7 +91,7 @@ def content_file_name(instance, filename):
     return '/'.join(['assets', str(instance.pk), filename])
 
 
-class OfficeInfo(models.Model):
+class OfficeInfo(TimeTrackable):
     license_key = models.CharField(max_length=255, null=True, blank=True)
     version = models.CharField(max_length=50, null=True, blank=True)
     unit_price = models.DecimalField(
