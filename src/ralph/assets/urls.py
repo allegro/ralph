@@ -40,6 +40,6 @@ urlpatterns = patterns(
         login_required(BackOfficeAddPart.as_view())),
     url(r'back_office/edit/device/(?P<asset_id>[0-9]+)/$',
         login_required(BackOfficeEditDevice.as_view())),
-    url(r'back_office/add/part/(?P<asset_id>[0-9]+)/$',
+    url(r'back_office/edit/part/(?P<asset_id>[0-9]+)/$',
         login_required(BackOfficeEditPart.as_view())),
 )
