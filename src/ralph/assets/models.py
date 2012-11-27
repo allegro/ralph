@@ -69,6 +69,23 @@ class AssetModelLookup(LookupChannel):
     def format_item_display(self, obj):
         return "%s %s" % (escape(obj.name), escape(obj.manufacturer))
 
+
+class WarehouseLookup(LookupChannel):
+    model = Warehouse
+
+    def get_query(self, q, request):
+        return Warehouse.objects.filter(Q(name__istartswith=q)).order_by('name')[:10]
+
+    def get_result(self, obj):
+        return obj.id
+
+    def format_match(self, obj):
+        return self.format_item_display(obj)
+
+    def format_item_display(self, obj):
+        return "%s" % (escape(obj.name))
+
+
 __all__ = [
     Asset,
     AssetManufacturer,
