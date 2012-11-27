@@ -37,6 +37,9 @@ from ralph.ui.views.devices import DEVICE_SORT_COLUMNS
 from ralph.util import csvutil
 from django.db.models import Q
 
+from django.utils.safestring import mark_safe
+from django.utils.html import escape
+
 
 def threshold(days):
     return datetime.date.today() + datetime.timedelta(days=days)
@@ -492,7 +495,10 @@ class ReportDevices(SidebarReports, Base):
     subsection = 'devices'
 
     def get_name(self, name, id):
-        return '%s (%s)' % (name, id)
+        id = escape(id)
+        name = escape(name)
+        html = '<a href="/ui/search/info/%s">%s</a> (%s)' % (id, name, id)
+        return mark_safe(html)
 
     def get(self, *args, **kwargs):
         profile = self.request.user.get_profile()
@@ -569,7 +575,8 @@ class ReportDevices(SidebarReports, Base):
             )
             headers = ('Name', 'Support expiration date')
             for dev in devs:
-                rows.append([dev.name, dev.support_expiration_date])
+                name=self.get_name(dev.name, dev.id)
+                rows.append([name,dev.support_expiration_date])
         else:
             self.form_support_range = SupportRangeReportForm(initial={
                 's_start': datetime.date.today() - datetime.timedelta(days=30),
@@ -587,7 +594,8 @@ class ReportDevices(SidebarReports, Base):
             )
             headers = ('Name', 'Depreciation date')
             for dev in devs:
-                rows.append([dev.name, dev.deprecation_date])
+                name=self.get_name(dev.name, dev.id)
+                rows.append([name, dev.deprecation_date])
         else:
             self.form_deprecation_range = DeprecationRangeReportForm(initial={
                 'd_start': datetime.date.today() - datetime.timedelta(days=30),
@@ -605,7 +613,8 @@ class ReportDevices(SidebarReports, Base):
             )
             headers = ('Name', 'Warranty expiration date')
             for dev in devs:
-                rows.append([dev.name, dev.warranty_expiration_date])
+                name=self.get_name(dev.name, dev.id)
+                rows.append([name, dev.warranty_expiration_date])
         else:
             self.form_warranty_range = WarrantyRangeReportForm(initial={
                 'w_start': datetime.date.today() - datetime.timedelta(days=30),

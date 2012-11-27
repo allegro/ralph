@@ -154,7 +154,10 @@ class TestReportsDevices(TestCase):
         form = report.context['rows']
         dev_name = self.device_after_deprecation.name
         dev_id = self.device_after_deprecation.id
-        self.assertEqual(form[0][0], u'%s (%s)' % (dev_name, dev_id))
+        name = u'<a href="/ui/search/info/%s">%s</a> (%s)' % (
+            dev_id, dev_name, dev_id
+            )
+        self.assertEqual(form[0][0], name)
         self.assertEqual(form[0][1], datetime.datetime(2002, 01, 01))
         self.assertEqual(len(form), 1)
 
@@ -165,7 +168,10 @@ class TestReportsDevices(TestCase):
         form = report.context['rows']
         dev_id = self.device_with_blanks.id
         dev_name = self.device_with_blanks.name
-        self.assertEqual(form[0][0], u'%s (%s)' % (dev_name, dev_id))
+        name = u'<a href="/ui/search/info/%s">%s</a> (%s)' % (
+            dev_id, dev_name, dev_id
+            )
+        self.assertEqual(form[0][0], name)
         self.assertEqual(form[0][1], None)
         self.assertEqual(len(form), 1)
 
@@ -176,7 +182,10 @@ class TestReportsDevices(TestCase):
         form = report.context['rows']
         dev_id = self.device_with_blanks.id
         dev_name = self.device_with_blanks.name
-        self.assertEqual(form[0][0], u'%s (%s)' % (dev_name, dev_id))
+        name = u'<a href="/ui/search/info/%s">%s</a> (%s)' % (
+            dev_id, dev_name, dev_id
+            )
+        self.assertEqual(form[0][0], name)
         self.assertEqual(form[0][1], None)
 
     def test_no_support_date(self):
@@ -186,7 +195,10 @@ class TestReportsDevices(TestCase):
         form = report.context['rows']
         dev_id = self.device_with_blanks.id
         dev_name = self.device_with_blanks.name
-        self.assertEqual(form[0][0], u'%s (%s)' % (dev_name, dev_id))
+        name = u'<a href="/ui/search/info/%s">%s</a> (%s)' % (
+            dev_id, dev_name, dev_id
+            )
+        self.assertEqual(form[0][0], name)
         self.assertEqual(form[0][1], None)
         self.assertEqual(len(form), 1)
         self.assertNotEqual(form[0][1], '2000-01-02 00:00:00')
@@ -198,7 +210,10 @@ class TestReportsDevices(TestCase):
         form = report.context['rows']
         dev_id = self.device_with_blanks.id
         dev_name = self.device_with_blanks.name
-        self.assertEqual(form[0][0], u'%s (%s)' % (dev_name, dev_id))
+        name = u'<a href="/ui/search/info/%s">%s</a> (%s)' % (
+            dev_id, dev_name, dev_id
+            )
+        self.assertEqual(form[0][0], name)
         self.assertEqual(form[0][1], None)
         self.assertEqual(len(form), 1)
         self.assertNotEqual(form[0][1], '2000-01-03 00:00:00')
@@ -210,7 +225,10 @@ class TestReportsDevices(TestCase):
         form = report.context['rows']
         dev_id = self.device_with_blanks.id
         dev_name = self.device_with_blanks.name
-        self.assertEqual(form[0][0], u'%s (%s)' % (dev_name, dev_id))
+        name = u'<a href="/ui/search/info/%s">%s</a> (%s)' % (
+            dev_id, dev_name, dev_id
+            )
+        self.assertEqual(form[0][0], name)
         self.assertEqual(form[0][1], None)
         self.assertEqual(len(form), 1)
         self.assertNotEqual(form[0][1], self.venture)
@@ -223,7 +241,10 @@ class TestReportsDevices(TestCase):
         dev_id = self.device_with_blanks.id
         dev_name = self.device_with_blanks.name
         self.assertEqual(len(form), 1)
-        self.assertEqual(form[0][0], u'%s (%s)' % (dev_name, dev_id))
+        name = u'<a href="/ui/search/info/%s">%s</a> (%s)' % (
+            dev_id, dev_name, dev_id
+            )
+        self.assertEqual(form[0][0], name)
         self.assertEqual(form[0][1], None)
         self.assertNotEqual(form[0][1], self.venture_role)
 
@@ -235,7 +256,10 @@ class TestReportsDevices(TestCase):
         dev_id = self.device_after_deprecation.id
         dev_name = self.device_after_deprecation.name
         self.assertEqual(len(form), 1)
-        self.assertEqual(form[0][0], dev_name)
+        name = u'<a href="/ui/search/info/%s">%s</a> (%s)' % (
+            dev_id, dev_name, dev_id
+            )
+        self.assertEqual(form[0][0], name)
         self.assertEqual(form[0][1], datetime.datetime(2003, 01, 02))
 
     def test_range_deprecation(self):
@@ -246,7 +270,10 @@ class TestReportsDevices(TestCase):
         dev_id = self.device_after_deprecation.id
         dev_name = self.device_after_deprecation.name
         self.assertEqual(len(form), 1)
-        self.assertEqual(form[0][0], dev_name)
+        name = u'<a href="/ui/search/info/%s">%s</a> (%s)' % (
+            dev_id, dev_name, dev_id
+            )
+        self.assertEqual(form[0][0], name)
         self.assertEqual(form[0][1], datetime.datetime(2002, 01, 01))
 
     def test_range_warranty(self):
@@ -257,7 +284,10 @@ class TestReportsDevices(TestCase):
         dev_id = self.device_after_deprecation.id
         dev_name = self.device_after_deprecation.name
         self.assertEqual(len(form), 1)
-        self.assertEqual(form[0][0], dev_name)
+        name = u'<a href="/ui/search/info/%s">%s</a> (%s)' % (
+            dev_id, dev_name, dev_id
+            )
+        self.assertEqual(form[0][0], name)
         self.assertEqual(form[0][1], datetime.datetime(2005, 01, 02))
 
 class TestReportsVentures(TestCase):

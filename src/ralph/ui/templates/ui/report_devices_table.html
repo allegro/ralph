@@ -5,23 +5,12 @@
     {% for th in header %}
         <th>{{ th }}</th>
     {% endfor %}
-    {% if perm_to_edit %}
-        <th>Actions</th>
-    {% endif %}
     </tr>
     {% for row in rows %}
         <tr>
             {% for td in row %}
                 <td>{{ td }}</td>
             {% endfor %}
-
-            {% if perm_to_edit %}
-                <td>{% spaceless %}
-                    <a href="/cmdb/ci/edit/{{ service.id }}#relations">
-                        {% icon 'fugue-toolbox--pencil' %}&nbsp;Edit
-                    </a>
-                {% endspaceless %}</td>
-            {% endif %}
         </tr>
     {% endfor %}
 </table>
