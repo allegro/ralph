@@ -499,6 +499,7 @@ class BulkEdit(Base):
         )
         return super(BulkEdit, self).get(*args, **kwargs)
 
+    @nested_commit_on_success
     def post(self, *args, **kwargs):
         AssetFormSet = modelformset_factory(
             Asset,
