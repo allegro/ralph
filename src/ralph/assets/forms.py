@@ -61,6 +61,10 @@ class BaseDeviceForm(ModelForm):
         fields = (
             'size', 'warehouse',
         )
+    warehouse = AutoCompleteSelectField(
+        'asset_warehouse', required=True,
+        plugin_options=dict(add_link='/admin/assets/warehouse/add/?name=')
+    )
 
 
 class BasePartForm(ModelForm):

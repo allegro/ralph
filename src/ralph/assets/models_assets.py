@@ -134,8 +134,11 @@ class Asset(TimeTrackable, EditorTrackable):
     support_type = models.CharField(max_length=150)
     support_void_reporting = models.BooleanField(default=True, db_index=True)
     provider = models.CharField(max_length=100, null=True, blank=True)
-    status = models.PositiveSmallIntegerField(verbose_name=_("status"),
-                                              choices=AssetStatus())
+    status = models.PositiveSmallIntegerField(
+        default=AssetStatus.new.id,
+        verbose_name=_("status"),
+        choices=AssetStatus()
+    )
     remarks = models.CharField(
         verbose_name='Additional remarks',
         max_length=1024, null=True, blank=True
