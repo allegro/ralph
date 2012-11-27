@@ -348,7 +348,7 @@ class EditDevice(Base):
         ret = super(EditDevice, self).get_context_data(**kwargs)
         status_history = AssetHistoryChange.objects.all().filter(
             asset=kwargs.get('asset_id'), field_name__exact='status'
-        )
+        ).order_by('-date')
         ret.update({
             'asset_form': self.asset_form,
             'device_info_form': self.device_info_form,
@@ -418,7 +418,7 @@ class EditPart(Base):
         ret = super(EditPart, self).get_context_data(**kwargs)
         status_history = AssetHistoryChange.objects.all().filter(
             asset=kwargs.get('asset_id'), field_name__exact='status'
-        )
+        ).order_by('-date')
         ret.update({
             'asset_form': self.asset_form,
             'office_info_form': self.office_info_form,
