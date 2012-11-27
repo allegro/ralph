@@ -33,12 +33,16 @@ def field_changes(instance, ignore=('last_seen', 'id')):
             continue
         if field in ('type', 'license_type', 'status', 'source'):
             if orig:
-                choices = instance._meta.get_field_by_name(field)[0].get_choices()
+                choices = instance._meta.get_field_by_name(
+                    field
+                )[0].get_choices()
                 for id, value in choices:
                     if id == orig:
                         orig = value
             if new:
-                choices = instance._meta.get_field_by_name(field)[0].get_choices()
+                choices = instance._meta.get_field_by_name(
+                    field
+                )[0].get_choices()
                 for id, value in choices:
                     if id == new:
                         new = value
