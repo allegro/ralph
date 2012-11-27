@@ -407,6 +407,7 @@ class EditPart(Base):
         ret.update({
             'asset_form': self.asset_form,
             'office_info_form': self.office_info_form,
+            'part_info_form': self.part_info_form,
             'form_id': 'edit_part_form',
             'edit_mode': True,
         })

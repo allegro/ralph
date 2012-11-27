@@ -73,7 +73,7 @@ class BasePartForm(ModelForm):
         fields = ('device', 'source_device', 'barcode_salvaged',)
 
     device = AutoCompleteSelectField(
-        'asset_device', required=True,
+        'asset_device', required=False,
         help_text='Enter barcode, sn, or model.'
     )
     source_device = AutoCompleteSelectField(
