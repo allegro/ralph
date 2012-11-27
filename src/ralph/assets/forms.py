@@ -38,7 +38,7 @@ class BaseAssetForm(ModelForm):
             'remarks': forms.widgets.Textarea(attrs={'rows': 3}),
         }
     model = AutoCompleteSelectField(
-        'asset_model', required=False,
+        'asset_model', required=True,
         plugin_options=dict(add_link='/admin/assets/assetmodel/add/?name=')
     )
 
@@ -67,6 +67,15 @@ class BasePartForm(ModelForm):
     class Meta:
         model = PartInfo
         fields = ('device', 'source_device', 'barcode_salvaged',)
+
+    device = AutoCompleteSelectField(
+        'asset_device', required=True,
+        help_text='Enter barcode, sn, or model.'
+    )
+    source_device = AutoCompleteSelectField(
+        'asset_device', required=False,
+        help_text='Enter barcode, sn, or model.'
+    )
 
 
 def _validate_multivalue_data(data):
@@ -145,7 +154,6 @@ class SearchAssetForm(Form):
     source_device = AutoCompleteSelectField(
         'asset_device',
         required=False,
-        help_text=None
     )
 
     invoice_no = forms.CharField(required=False)

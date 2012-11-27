@@ -110,8 +110,6 @@ class BackOfficeMixin(AssetsMixin):
         return sidebar_menu
 
 
-
-
 class AssetSearch(AssetsMixin):
     def handle_search_data(self):
         search_fields = [
@@ -134,6 +132,7 @@ class AssetSearch(AssetsMixin):
         ret.update({
             'form': self.form,
             'data': self.data,
+            'header': self.header,
         })
         return ret
 
@@ -144,6 +143,7 @@ class AssetSearch(AssetsMixin):
 
 
 class BackOfficeSearch(BackOfficeMixin, AssetSearch):
+    header = 'Search BO Assets'
     sidebar_selected = 'search'
     template_name = 'assets/search_asset.html'
 
@@ -152,16 +152,18 @@ class BackOfficeSearch(BackOfficeMixin, AssetSearch):
 
 
 class DataCenterSearch(DataCenterMixin, AssetSearch):
+    header = 'Search DC Assets'
     sidebar_selected = 'search'
     template_name = 'assets/search_asset.html'
-
 
     def get_all_items(self, query):
         return Asset.objects_dc().filter(query)
 
+
 def _get_mode(request):
     current_url = request.get_full_path()
     return 'back_office' if 'back_office' in current_url else 'dc'
+
 
 def _get_return_link(request):
     return "/assets/%s/" % _get_mode(request)
