@@ -4,6 +4,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+from django.core.paginator import Paginator
 
 import re
 
@@ -23,9 +24,15 @@ from ralph.assets.forms import (
 from ralph.assets.models import (
     DeviceInfo, AssetSource, Asset, OfficeInfo, PartInfo,
 )
+from ralph.assets.models_history import AssetHistoryChange
 from ralph.ui.views.common import Base
 from ralph.assets.forms import SearchAssetForm
 from django.db.models import Q
+
+
+SAVE_PRIORITY = 200
+HISTORY_PAGE_SIZE = 25
+MAX_PAGE_SIZE = 65535
 
 
 class AssetsMixin(Base):
@@ -199,7 +206,7 @@ class AddDevice(Base):
                     warehouse=self.device_info_form.cleaned_data['warehouse'],
                     size=self.device_info_form.cleaned_data['size']
                 )
-                device_info.save()
+                device_info.save(user=self.request.user)
                 asset = Asset(
                     device_info=device_info,
                     sn=sn.strip(),
@@ -208,7 +215,7 @@ class AddDevice(Base):
                 if barcodes:
                     asset.barcode = barcodes[i].strip()
                 try:
-                    asset.save()
+                    asset.save(user=self.request.user)
                 except IntegrityError as e:
                     if "'sn'" in e[1]:
                         duplicated_sn.append(asset.sn)
@@ -281,14 +288,14 @@ class AddPart(Base):
             duplicated_sn = []
             for sn in serial_numbers:
                 part_info = PartInfo(**self.part_info_form.cleaned_data)
-                part_info.save()
+                part_info.save(user=self.request.user)
                 asset = Asset(
                     part_info=part_info,
                     sn=sn.strip(),
                     **asset_data
                 )
                 try:
-                    asset.save()
+                    asset.save(user=self.request.user)
                 except IntegrityError as e:
                     if "'sn'" in e[1]:
                         duplicated_sn.append(asset.sn)
@@ -361,12 +368,12 @@ class EditDevice(Base):
             else:
                 office_info = asset.office_info
             office_info.__dict__.update(**self.office_info_form.cleaned_data)
-            office_info.save()
+            office_info.save(user=self.request.user)
             asset.office_info = office_info
             asset.device_info.__dict__.update(
                 **self.device_info_form.cleaned_data)
-            asset.device_info.save()
-            asset.save()
+            asset.device_info.save(user=self.request.user)
+            asset.save(user=self.request.user)
             return HttpResponseRedirect(_get_return_link(self.request))
         else:
             messages.error(self.request, _("Please correct the errors."))
@@ -426,16 +433,16 @@ class EditPart(Base):
             else:
                 office_info = asset.office_info
             office_info.__dict__.update(**self.office_info_form.cleaned_data)
-            office_info.save()
+            office_info.save(user=self.request.user)
             asset.office_info = office_info
             if not asset.part_info:
                 part_info = PartInfo()
             else:
                 part_info = asset.part_info
             part_info.__dict__.update(**self.part_info_form.cleaned_data)
-            part_info.save()
+            part_info.save(user=self.request.user)
             asset.part_info = part_info
-            asset.save()
+            asset.save(user=self.request.user)
             return HttpResponseRedirect(_get_return_link(self.request))
         else:
             messages.error(self.request, _("Please correct the errors."))
@@ -449,3 +456,36 @@ class BackOfficeEditPart(EditPart, BackOfficeMixin):
 class DataCenterEditPart(EditPart, DataCenterMixin):
     sidebar_selected = None
 
+
+class HistoryAsset(BackOfficeMixin):
+    template_name = 'assets/history_asset.html'
+    sidebar_selected = None
+    def get_context_data(self, **kwargs):
+        query_variable_name = 'history_page'
+        ret = super(HistoryAsset, self).get_context_data(**kwargs)
+        asset_id = kwargs.get('asset_id')
+        history = AssetHistoryChange.objects.all().filter(
+            asset_id=asset_id
+        ).order_by('-date')
+        asset = Asset.objects.get(id=asset_id)
+        status = bool(self.request.GET.get('status', ''))
+        if status:
+            history = history.filter(field_name__exact='status')
+        try:
+            page = int(self.request.GET.get(query_variable_name, 1))
+        except ValueError:
+            page = 1
+        if page == 0:
+            page = 1
+            page_size = MAX_PAGE_SIZE
+        else:
+            page_size = HISTORY_PAGE_SIZE
+        history_page = Paginator(history, HISTORY_PAGE_SIZE).page(page)
+        ret.update({
+            'history': history,
+            'history_page': history_page,
+            'status': status,
+            'query_variable_name': query_variable_name,
+            'asset': asset,
+            })
+        return ret

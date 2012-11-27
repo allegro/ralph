@@ -91,7 +91,7 @@ def content_file_name(instance, filename):
     return '/'.join(['assets', str(instance.pk), filename])
 
 
-class OfficeInfo(TimeTrackable):
+class OfficeInfo(TimeTrackable, SavingUser):
     license_key = models.CharField(max_length=255, null=True, blank=True)
     version = models.CharField(max_length=50, null=True, blank=True)
     unit_price = models.DecimalField(
@@ -151,7 +151,7 @@ class Asset(TimeTrackable, EditorTrackable, SavingUser):
         self.saving_user = None
         super(Asset, self).__init__(*args, **kwargs)
 
-class DeviceInfo(TimeTrackable):
+class DeviceInfo(TimeTrackable, SavingUser):
     ralph_device = models.ForeignKey('discovery.Device', null=True, blank=True,
                                      on_delete=models.SET_NULL)
     size = models.PositiveSmallIntegerField(verbose_name='Size in units',
@@ -167,7 +167,7 @@ class DeviceInfo(TimeTrackable):
         super(DeviceInfo, self).__init__(*args, **kwargs)
 
 
-class PartInfo(TimeTrackable):
+class PartInfo(TimeTrackable, SavingUser):
     barcode_salvaged = models.CharField(max_length=200, null=True, blank=True)
     source_device = models.ForeignKey(
         Asset, null=True, blank=True, related_name='source_device')

@@ -7,7 +7,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 
-def field_changes(instance, ignore=('last_seen',)):
+def field_changes(instance, ignore=('last_seen', 'id')):
     """
     Yield the name, original value and new value for each changed field. Skip
     all insignificant fields and those passed in ``ignore``.
@@ -31,4 +31,15 @@ def field_changes(instance, ignore=('last_seen',)):
             new = getattr(instance, field)
         except AttributeError:
             continue
+        if field in ('type', 'license_type', 'status', 'source'):
+            if orig:
+                choices = instance._meta.get_field_by_name(field)[0].get_choices()
+                for id, value in choices:
+                    if id == orig:
+                        orig = value
+            if new:
+                choices = instance._meta.get_field_by_name(field)[0].get_choices()
+                for id, value in choices:
+                    if id == new:
+                        new = value
         yield field, orig, new

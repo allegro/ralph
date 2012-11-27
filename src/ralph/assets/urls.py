@@ -12,8 +12,8 @@ from django.views.generic import RedirectView
 from ralph.assets.views import (
     BackOfficeSearch, DataCenterSearch, BackOfficeAddDevice, BackOfficeAddPart,
     DataCenterAddDevice, DataCenterAddPart, BackOfficeEditDevice,
-    DataCenterEditDevice, BackOfficeEditPart, DataCenterEditPart
-)
+    DataCenterEditDevice, BackOfficeEditPart, DataCenterEditPart,
+    HistoryAsset)
 
 
 urlpatterns = patterns(
@@ -42,4 +42,6 @@ urlpatterns = patterns(
         login_required(BackOfficeEditDevice.as_view())),
     url(r'back_office/edit/part/(?P<asset_id>[0-9]+)/$',
         login_required(BackOfficeEditPart.as_view())),
+    url(r'back_office/history/part/(?P<asset_id>[0-9]+)/$',
+        login_required(HistoryAsset.as_view())),
 )

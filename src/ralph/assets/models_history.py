@@ -60,7 +60,7 @@ class AssetHistoryChange(db.Model):
 def asset_post_save(sender, instance, raw, using, **kwargs):
     """A hook for creating ``HistoryChange`` entries when a asset changes."""
     for field, orig, new in field_changes(instance, ignore={}):
-#        update_releated_fields(instance)
+        update_releated_fields(instance)
         AssetHistoryChange(
             asset=instance,
             field_name=field,
@@ -119,20 +119,32 @@ def office_info_post_save(sender, instance, raw, using, **kwargs):
 
 def update_releated_fields(instance):
     if instance.device_info:
-        dev_info = AssetHistoryChange.objects.get(
-            device_info_id=instance.device_info.id
-        )
-        dev_info.asset_id = instance.id
-        dev_info.save()
+        try:
+            dev_info = AssetHistoryChange.objects.all().filter(
+                device_info_id=instance.device_info.id
+            )
+            for item in dev_info:
+                item.asset_id = instance.id
+                item.save()
+        except AssetHistoryChange.DoesNotExist:
+            pass
     if instance.office_info:
-        office_info = AssetHistoryChange.objects.get(
-            office_info_id=instance.office_info.id
-        )
-        office_info.asset_id = instance.id
-        office_info.save()
+        try:
+            office_info = AssetHistoryChange.objects.all().filter(
+                office_info_id=instance.office_info.id
+            )
+            for item in office_info:
+                item.asset_id = instance.id
+                item.save()
+        except AssetHistoryChange.DoesNotExist:
+            pass
     if instance.part_info:
-        part_info = AssetHistoryChange.objects.get(
-            part_info_id=instance.part_info.id
-        )
-        part_info.asset_id = instance.id
-        part_info.save()
+        try:
+            part_info = AssetHistoryChange.objects.all().filter(
+                part_info_id=instance.part_info.id
+            )
+            for item in part_info:
+                item.asset_id = instance.id
+                item.save()
+        except AssetHistoryChange.DoesNotExist:
+            pass
