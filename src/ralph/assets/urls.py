@@ -12,7 +12,8 @@ from django.views.generic import RedirectView
 from ralph.assets.views import (
     BackOfficeSearch, DataCenterSearch, BackOfficeAddDevice, BackOfficeAddPart,
     DataCenterAddDevice, DataCenterAddPart, BackOfficeEditDevice,
-    DataCenterEditDevice, BackOfficeEditPart, DataCenterEditPart
+    DataCenterEditDevice, BackOfficeEditPart, DataCenterEditPart,
+    BackOfficeBulkEdit, DataCenterBulkEdit
 )
 
 
@@ -32,7 +33,9 @@ urlpatterns = patterns(
         login_required(DataCenterEditDevice.as_view())),
     url(r'dc/edit/part/(?P<asset_id>[0-9]+)/$',
         login_required(DataCenterEditPart.as_view())),
-    
+    url(r'dc/bulkedit/$',
+        login_required(DataCenterBulkEdit.as_view())),
+
     url(r'back_office/search', login_required(BackOfficeSearch.as_view())),
     url(r'back_office/add/device/',
         login_required(BackOfficeAddDevice.as_view())),
@@ -42,4 +45,6 @@ urlpatterns = patterns(
         login_required(BackOfficeEditDevice.as_view())),
     url(r'back_office/edit/part/(?P<asset_id>[0-9]+)/$',
         login_required(BackOfficeEditPart.as_view())),
+    url(r'back_office/bulkedit/$',
+        login_required(BackOfficeBulkEdit.as_view())),
 )

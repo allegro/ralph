@@ -11,6 +11,7 @@ from bob.menu import MenuItem, MenuHeader
 from django.contrib import messages
 from django.db import IntegrityError, transaction
 from django.http import HttpResponseRedirect, Http404
+from django.forms.models import modelformset_factory
 from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
 from lck.django.common import nested_commit_on_success
@@ -18,7 +19,7 @@ from lck.django.common import nested_commit_on_success
 from ralph.assets.forms import (
     AddDeviceForm, AddPartForm, EditDeviceForm,
     EditPartForm, BaseDeviceForm, OfficeForm,
-    BasePartForm
+    BasePartForm, BaseAssetForm
 )
 from ralph.assets.models import (
     DeviceInfo, AssetSource, Asset, OfficeInfo, PartInfo,
@@ -464,5 +465,69 @@ class BackOfficeEditPart(EditPart, BackOfficeMixin):
 
 
 class DataCenterEditPart(EditPart, DataCenterMixin):
+    sidebar_selected = None
+
+
+class BulkEdit(Base):
+    template_name = 'assets/bulk_edit.html'
+
+    def get_context_data(self, **kwargs):
+        ret = super(BulkEdit, self).get_context_data(**kwargs)
+        ret.update({
+            'formset': self.asset_formset
+        })
+        return ret
+
+    def get(self, *args, **kwargs):
+        assets_count = Asset.objects.filter(
+            pk__in=self.request.GET.getlist('assets', [])).count()
+        if not assets_count:
+            messages.warning(self.request, _("Nothing to edit."))
+            return HttpResponseRedirect(_get_return_link(self.request))
+        AssetFormSet = modelformset_factory(
+            Asset,
+            extra=0,
+            exclude=(
+                'created', 'modified', 'part_info',
+                'office_info'
+            )
+        )
+        self.asset_formset = AssetFormSet(
+            queryset=Asset.objects.filter(
+                pk__in=self.request.GET.getlist('assets', [])
+            )
+        )
+        return super(BulkEdit, self).get(*args, **kwargs)
+
+    def post(self, *args, **kwargs):
+        AssetFormSet = modelformset_factory(
+            Asset,
+            extra=0,
+            exclude=(
+                'created', 'modified', 'part_info',
+                'office_info'
+            )
+        )
+        self.asset_formset = AssetFormSet(self.request.POST)
+        if self.asset_formset.is_valid():
+            device_infos = {}
+            for item in self.asset_formset.cleaned_data:
+                device_infos[item['id'].id] = item['id']
+            instances = self.asset_formset.save(commit=False)
+            for instance in instances:
+                instance.modified_by = self.request.user.get_profile()
+                instance.device_info = device_infos[instance.id].device_info
+                instance.save()
+            messages.success(self.request, _("Changes saved."))
+            return HttpResponseRedirect(self.request.get_full_path())
+        messages.error(self.request, _("Please correct the errors."))
+        return super(BulkEdit, self).get(*args, **kwargs)
+
+
+class BackOfficeBulkEdit(BulkEdit, BackOfficeMixin):
+    sidebar_selected = None
+
+
+class DataCenterBulkEdit(BulkEdit, DataCenterMixin):
     sidebar_selected = None
 
