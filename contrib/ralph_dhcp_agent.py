@@ -190,7 +190,7 @@ if __name__ == "__main__":
         sys.stderr.write('error: --api-url, --api-username and --api-key '
             'options are required.\n')
         sys.exit(2)
-    lockfile = '/tmp/%s.lock' % sys.argv[0]
+    lockfile = '/tmp/%s.lock' % os.path.split(sys.argv[0])[1]
     f = open(lockfile, 'w')
     try:
         fcntl.lockf(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
