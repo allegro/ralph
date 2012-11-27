@@ -13,7 +13,6 @@ from lck.django.common import remote_addr, render
 
 from ralph.deployment.models import (Deployment, DeploymentStatus, FileType,
     PrebootFile)
-from ralph.util import api
 
 
 def get_current_deployment(request):
@@ -21,12 +20,12 @@ def get_current_deployment(request):
     deployment = None
     try:
         deployment = Deployment.objects.get(ip=ip,
-            status=DeploymentStatus.in_deployment.id)
+            status=DeploymentStatus.in_deployment)
     except Deployment.DoesNotExist:
         if request.user.is_superuser and request.GET.get('ip'):
             ip = request.GET.get('ip')
             deployment = Deployment.objects.get(ip=ip,
-                status=DeploymentStatus.in_deployment.id)
+                status=DeploymentStatus.in_deployment)
     return deployment
 
 
@@ -84,6 +83,7 @@ def preboot_complete_view(request):
         deployment = get_current_deployment(request)
         deployment.status = DeploymentStatus.resolved_fixed
         deployment.save()
-    except (Deployment.DoesNotExist):
-        pass
-    return HttpResponse()
+        return HttpResponse()
+    except Deployment.DoesNotExist:
+        return HttpResponseForbidden('No deployment can be completed at this '
+                                     'point.')
