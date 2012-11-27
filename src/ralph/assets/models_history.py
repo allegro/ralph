@@ -60,7 +60,6 @@ class AssetHistoryChange(db.Model):
 def asset_post_save(sender, instance, raw, using, **kwargs):
     """A hook for creating ``HistoryChange`` entries when a asset changes."""
     for field, orig, new in field_changes(instance, ignore={}):
-        update_releated_fields(instance)
         AssetHistoryChange(
             asset=instance,
             field_name=field,
@@ -69,7 +68,7 @@ def asset_post_save(sender, instance, raw, using, **kwargs):
             user=instance.saving_user,
             comment=instance.save_comment,
         ).save()
-
+    update_releated_fields(instance)
 
 @receiver(post_save, sender=DeviceInfo, dispatch_uid='ralph.history_assets')
 def device_info_post_save(sender, instance, raw, using, **kwargs):

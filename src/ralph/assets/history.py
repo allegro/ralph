@@ -46,4 +46,7 @@ def field_changes(instance, ignore=('last_seen', 'id')):
                 for id, value in choices:
                     if id == new:
                         new = value
+        if field == 'attachment':
+            if str(orig).strip() == str(new).strip():
+                continue
         yield field, orig, new
