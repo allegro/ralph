@@ -537,10 +537,10 @@ class ReportDevices(SidebarReports, Base):
             headers.append('No venture role')
             queres.update({Q(venture_role=None)})
         rows = []
-        if len(queres)>1:
+        if len(queres) > 1:
             devices = Device.objects.filter(*queres)
             for dev in devices:
-                row =  []
+                row = []
                 row.append(self.get_name(dev.name, dev.id))
                 if dep:
                     row.append(dev.deprecation_date)
