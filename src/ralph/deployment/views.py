@@ -7,7 +7,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from django.conf import settings
-from django.core.servers.basehttp import FileWrapper
 from django.http import (HttpResponse, HttpResponseNotFound,
     HttpResponseForbidden)
 from lck.django.common import remote_addr, render
@@ -34,14 +33,16 @@ def get_current_deployment(request):
 def get_response(pbf):
     if pbf.file:
         if settings.USE_XSENDFILE:
-            response = HttpResponse(mimetype='application/force-download')
+            response = HttpResponse(content_type='application/force-download')
             response['X-Sendfile'] = pbf.file.path
         else:
-            response = HttpResponse(FileWrapper(open(pbf.file.path)),
-                mimetype='application/force-download')
+            # FIXME: in Django 1.5 use StreamingHttpResponse
+            with open(pbf.file.path) as file:
+                response = HttpResponse(file.read(),
+                    content_type='application/force-download')
         response['Content-Length'] = pbf.file.size
     else:
-        response = HttpResponse(pbf.raw_config, mimetype='text/plain')
+        response = HttpResponse(pbf.raw_config, content_type='text/plain')
     response['Content-Disposition'] = 'attachment; filename=%s' % pbf.name
     return response
 
