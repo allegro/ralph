@@ -25,8 +25,6 @@ from ralph.assets.models_assets import (
 )
 
 
-
-
 class DeviceLookup(LookupChannel):
     model = DeviceInfo
 
