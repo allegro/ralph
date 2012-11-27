@@ -36,7 +36,7 @@ class DeviceLookup(LookupChannel):
                 Q(model__name__istartswith=q)
             )
         )
-        return Asset.objects_dc().filter(query).order_by('sn')[:10]
+        return self.get_base_objects().filter(query).order_by('sn')[:10]
 
     def get_result(self, obj):
         return obj.id
@@ -86,6 +86,17 @@ class WarehouseLookup(LookupChannel):
         return "%s" % (escape(obj.name))
 
 
+class DCDeviceLookup(DeviceLookup):
+    def get_base_objects(self):
+        return Asset.objects_dc()
+
+
+class BODeviceLookup(DeviceLookup):
+    def get_base_objects(self):
+        return Asset.objects_bo()
+
+
+
 __all__ = [
     Asset,
     AssetManufacturer,
@@ -99,5 +110,7 @@ __all__ = [
     PartInfo,
     Warehouse,
     DeviceLookup,
+    DCDeviceLookup,
+    BODeviceLookup,
     AssetModelLookup,
 ]
