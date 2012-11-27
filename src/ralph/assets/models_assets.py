@@ -141,9 +141,20 @@ class Asset(TimeTrackable, EditorTrackable, SavingUser):
     provider = models.CharField(max_length=100, null=True, blank=True)
     status = models.PositiveSmallIntegerField(verbose_name=_("status"),
                                               choices=AssetStatus())
+    remarks = models.CharField(max_length=1024)
 
     def __unicode__(self):
         return "{} - {} - {}".format(self.model, self.sn, self.barcode)
+
+    @classmethod
+    def objects_bo(self):
+        """Returns back office assets queryset"""
+        return Asset.objects.filter(type=AssetType.back_office)
+
+    @classmethod
+    def objects_dc(self):
+        """Returns data center assets queryset"""
+        return Asset.objects.filter(type=AssetType.data_center)
 
 
     def __init__(self, *args, **kwargs):

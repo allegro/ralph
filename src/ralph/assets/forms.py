@@ -18,6 +18,8 @@ from ralph.assets.models import (
 )
 from ralph.ui.widgets import DateWidget
 from ajax_select.fields import AutoCompleteSelectField
+from ajax_select import make_ajax_field
+
 
 
 class BaseAssetForm(ModelForm):
@@ -27,13 +29,18 @@ class BaseAssetForm(ModelForm):
             'type', 'model', 'invoice_no', 'order_no',
             'buy_date', 'support_period', 'support_type',
             'support_void_reporting', 'provider', 'status',
-            'sn', 'barcode',
+            'sn', 'barcode', 'remarks',
         )
         widgets = {
             'sn': forms.widgets.Textarea(attrs={'rows': 25}),
             'barcode': forms.widgets.Textarea(attrs={'rows': 25}),
             'buy_date': DateWidget(),
+            'remarks': forms.widgets.Textarea(attrs={'rows': 3}),
         }
+    model = AutoCompleteSelectField(
+        'asset_model', required=False,
+        plugin_options=dict(add_link='/admin/assets/assetmodel/add/?name=')
+    )
 
     def __init__(self, *args, **kwargs):
         mode = kwargs.get('mode')
@@ -135,6 +142,12 @@ class SearchAssetForm(Form):
         required=False,
         help_text=None
     )
+    source_device = AutoCompleteSelectField(
+        'asset_device',
+        required=False,
+        help_text=None
+    )
+
     invoice_no = forms.CharField(required=False)
     order_no = forms.CharField(required=False)
     buy_date = forms.DateField(required=False)

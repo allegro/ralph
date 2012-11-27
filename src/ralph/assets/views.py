@@ -117,16 +117,27 @@ class BackOfficeMixin(AssetsMixin):
         return sidebar_menu
 
 
-class BackOfficeSearch(BackOfficeMixin):
-    sidebar_selected = 'search'
 
 
-class DataCenterSearch(DataCenterMixin):
-    template_name = 'assets/search_asset.html'
-    sidebar_selected = 'search'
+class AssetSearch(AssetsMixin):
+    def handle_search_data(self):
+        search_fields = [
+            'model', 'invoice_no', 'order_no', 'buy_date',
+            'provider', 'status', 'sn'
+        ]
+        all_q = Q()
+        for field in search_fields:
+            field_value = self.request.GET.get(field)
+            if field_value:
+                q = Q(**{'%s' % field: field_value})
+                all_q = all_q & q
+        return self.get_all_items(all_q)
+
+    def get_all_items(self, query):
+        return Asset.objects().filter(query)
 
     def get_context_data(self, *args, **kwargs):
-        ret = super(DataCenterSearch, self).get_context_data(*args, **kwargs)
+        ret = super(AssetSearch, self).get_context_data(*args, **kwargs)
         ret.update({
             'form': self.form,
             'data': self.data,
@@ -134,22 +145,26 @@ class DataCenterSearch(DataCenterMixin):
         return ret
 
     def get(self, *args, **kwargs):
-        search_fields = [
-            'model', 'invoice_no', 'order_no', 'buy_date',
-            'provider', 'status', 'sn'
-        ]
-        lookup_fields = []
-        all_q = Q()
-        for field in search_fields:
-            field_value = self.request.GET.get(field)
-            if field_value:
-                q = Q(**{'%s' % field: field_value})
-                all_q = all_q & q
-
         self.form = SearchAssetForm(self.request.GET)
-        self.data = Asset.objects.filter(all_q)
-        return super(DataCenterSearch, self).get(*args, **kwargs)
+        self.data = self.handle_search_data()
+        return super(AssetSearch, self).get(*args, **kwargs)
 
+
+class BackOfficeSearch(BackOfficeMixin, AssetSearch):
+    sidebar_selected = 'search'
+    template_name = 'assets/search_asset.html'
+
+    def get_all_items(self, query):
+        return Asset.objects_bo().filter(query)
+
+
+class DataCenterSearch(DataCenterMixin, AssetSearch):
+    sidebar_selected = 'search'
+    template_name = 'assets/search_asset.html'
+
+
+    def get_all_items(self, query):
+        return Asset.objects_dc().filter(query)
 
 def _get_mode(request):
     current_url = request.get_full_path()
