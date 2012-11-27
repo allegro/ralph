@@ -20,7 +20,9 @@ from ralph.discovery.models_component import is_mac_valid
 from ralph.discovery.models import (Device, ComponentModelGroup,
                                     DeviceModelGroup, DeviceType, IPAddress)
 from ralph.dnsedit.models import DHCPEntry
-from ralph.dnsedit.util import is_valid_hostname, get_domain, get_revdns_records
+from ralph.dnsedit.util import (
+    is_valid_hostname, get_domain, get_revdns_records
+)
 from ralph.util import Eth
 from ralph.ui.widgets import (DateWidget, CurrencyWidget,
                               ReadOnlySelectWidget, DeviceGroupWidget,
@@ -73,12 +75,17 @@ class MarginsReportForm(DateRangeForm):
         super(MarginsReportForm, self).__init__(*args, **kwargs)
         for mk in margin_kinds:
             field_id = 'm_%d' % mk.id
-            field = forms.IntegerField(label='', initial=mk.margin,
+            field = forms.IntegerField(
+                label='',
+                initial=mk.margin,
                 required=False,
-                widget=forms.TextInput(attrs={
-                    'class': 'span12',
-                    'style': 'text-align: right',
-                    }))
+                widget=forms.TextInput(
+                    attrs={
+                        'class': 'span12',
+                        'style': 'text-align: right',
+                    }
+                )
+            )
             field.initial = mk.margin
             self.fields[field_id] = field
 
@@ -160,15 +167,14 @@ def _dns_int_field(label=None, initial=None, **kwargs):
         label=label,
         initial=initial,
         required=False,
-        widget=forms.TextInput(attrs={
-            'class': 'span12',
-            'placeholder': label,
-            })
+        widget=forms.TextInput(
+            attrs={
+                'class': 'span12',
+                'placeholder': label,
+            }
+        )
     )
     return forms.IntegerField(**kwargs)
-
-
-
 
 
 def _dns_type_field(label=None, initial=None, types=None, **kwargs):
@@ -179,7 +185,7 @@ def _dns_type_field(label=None, initial=None, types=None, **kwargs):
         label=label,
         choices=types,
         initial=initial,
-        widget=forms.Select(attrs={'class':'span12'}),
+        widget=forms.Select(attrs={'class': 'span12'}),
         required=False,
         **kwargs
     )
@@ -221,6 +227,7 @@ def validate_ip(ip):
         raise forms.ValidationError("Invalid IP address")
     return str(address)
 
+
 def validate_domain_name(name):
     if not name:
         return
@@ -230,13 +237,16 @@ def validate_domain_name(name):
         raise forms.ValidationError("No such domain")
     return name.lower()
 
+
 def _dhcp_mac_field(label=None, initial=None, record=None, **kwargs):
     kwargs.update(validators=[validate_mac])
     return _dns_char_field(label, initial, **kwargs)
 
+
 def _ip_name_field(label=None, initial=None, record=None, **kwargs):
     kwargs.update(validators=[validate_domain_name])
     return _dns_char_field(label, initial, **kwargs)
+
 
 def _dhcp_ip_field(label=None, initial=None, record=None, **kwargs):
     kwargs.update(validators=[validate_ip])
@@ -258,6 +268,7 @@ class DNSRecordsForm(forms.Form):
         super(DNSRecordsForm, self).__init__(*args, **kwargs)
         self.records = list(records)
         self.hostnames = hostnames
+
         def _dns_name_field(label=None, initial=None, **kwargs):
             kwargs.update(
                 label=label,
@@ -280,7 +291,7 @@ class DNSRecordsForm(forms.Form):
             ('content', _dns_char_field),
             ('ptr', _bool_field),
             ('del', _bool_field),
-            ]
+        ]
         for record in self.records:
             if record.type in ('A', 'AAAA'):
                 record.ptr = False
@@ -355,7 +366,6 @@ class DNSRecordsForm(forms.Form):
         return self.cleaned_data
 
 
-
 class DHCPRecordsForm(forms.Form):
     def __init__(self, records, *args, **kwargs):
         super(DHCPRecordsForm, self).__init__(*args, **kwargs)
@@ -364,7 +374,7 @@ class DHCPRecordsForm(forms.Form):
             ('ip', _dhcp_ip_field),
             ('mac', _dhcp_mac_field),
             ('del', _bool_field),
-            ]
+        ]
         for record in self.records:
             prefix = 'dhcp_%d_' % record.id
             _add_fields(self.fields, prefix, record, fields)
@@ -384,7 +394,7 @@ class AddressesForm(forms.Form):
             ('hostname', _ip_name_field),
             ('address', _dhcp_ip_field),
             ('del', _bool_field),
-            ]
+        ]
         for record in self.records:
             prefix = 'ip_%d_' % record.id
             _add_fields(self.fields, prefix, record, fields)
@@ -397,155 +407,238 @@ class AddressesForm(forms.Form):
 
 
 class VentureFilterForm(forms.Form):
-    show_all = forms.BooleanField(required=False,
-        label="Show all ventures")
+    show_all = forms.BooleanField(
+        required=False,
+        label="Show all ventures"
+    )
 
 
 class NetworksFilterForm(forms.Form):
-    show_ip = forms.BooleanField(required=False,
-        label="Show as addresses")
-    contains = forms.CharField(required=False, label="Contains",
-        widget=forms.TextInput(attrs={'class':'span12'}))
+    show_ip = forms.BooleanField(
+        required=False,
+        label="Show as addresses"
+    )
+    contains = forms.CharField(
+        required=False,
+        label="Contains",
+        widget=forms.TextInput(attrs={'class': 'span12'})
+    )
 
 
 class SearchForm(forms.Form):
-    name = forms.CharField(required=False,
-        widget=forms.TextInput(attrs={'class':'span12'}))
-    address = forms.CharField(required=False,
-        widget=forms.TextInput(attrs={
-            'class':'span12',
-            'title': TooltipContent.empty_field,
-            }),
+    name = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'span12'})
+    )
+    address = forms.CharField(
+        required=False,
+        widget=forms.TextInput(
+            attrs={
+                'class': 'span12',
+                'title': TooltipContent.empty_field,
+            }
+        ),
         label="Address or network")
-    remarks = forms.CharField(required=False,
-        widget=forms.TextInput(attrs={
-            'class':'span12',
-            'title': TooltipContent.empty_field
-        }))
-    role = forms.CharField(required=False,
-        widget=forms.TextInput(attrs={
-            'class':'span12',
-            'title': TooltipContent.empty_field,
-            }),
+    remarks = forms.CharField(
+        required=False,
+        widget=forms.TextInput(
+            attrs={
+                'class': 'span12',
+                'title': TooltipContent.empty_field
+            }
+        )
+    )
+    role = forms.CharField(
+        required=False,
+        widget=forms.TextInput(
+            attrs={
+                'class': 'span12',
+                'title': TooltipContent.empty_field,
+            }
+        ),
         label="Venture or role")
-    model = forms.CharField(required=False,
-        widget=forms.TextInput(attrs={
-            'class':'span12',
-            'title': TooltipContent.empty_field_venture,
-            }))
-    component = forms.CharField(required=False,
-        widget=forms.TextInput(attrs={'class':'span12'}),
+    model = forms.CharField(
+        required=False,
+        widget=forms.TextInput(
+            attrs={
+                'class': 'span12',
+                'title': TooltipContent.empty_field_venture,
+            }
+        )
+    )
+    component = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'span12'}),
         label="Component or software")
-    serial = forms.CharField(required=False,
-        widget=forms.TextInput(attrs={
-            'class':'span12',
-            'title': TooltipContent.empty_field,
-            }),
+    serial = forms.CharField(
+        required=False,
+        widget=forms.TextInput(
+            attrs={
+                'class': 'span12',
+                'title': TooltipContent.empty_field,
+            }
+        ),
         label="Serial number, MAC or WWN")
-    barcode = forms.CharField(required=False,
-        widget=forms.TextInput(attrs={
-            'class':'span12',
-            'title': TooltipContent.empty_field,
-            }))
-    position = forms.CharField(required=False,
-        widget=forms.TextInput(attrs={
-            'class':'span12',
-            'title': TooltipContent.empty_field,
-            }),
+    barcode = forms.CharField(
+        required=False,
+        widget=forms.TextInput(
+            attrs={
+                'class': 'span12',
+                'title': TooltipContent.empty_field,
+            }
+        )
+    )
+    position = forms.CharField(
+        required=False,
+        widget=forms.TextInput(
+            attrs={
+                'class': 'span12',
+                'title': TooltipContent.empty_field,
+            }
+        ),
         label="Datacenter, rack or position")
-    history = forms.CharField(required=False,
-        widget=forms.TextInput(attrs={
-            'class':'span12'
-        }))
-    device_type = forms.MultipleChoiceField(required=False,
+    history = forms.CharField(
+        required=False,
+        widget=forms.TextInput(
+            attrs={
+                'class': 'span12'
+            }
+        )
+    )
+    device_type = forms.MultipleChoiceField(
+        required=False,
         widget=forms.SelectMultiple(attrs={'class': 'span12'}),
         choices=DeviceType(item=lambda e: (e.id, e.raw)),
     )
-    device_group = forms.IntegerField(required=False,
+    device_group = forms.IntegerField(
+        required=False,
         widget=DeviceGroupWidget, label="")
-    component_group = forms.IntegerField(required=False,
+    component_group = forms.IntegerField(
+        required=False,
         widget=ComponentGroupWidget, label="")
-    purchase_date_start = forms.DateField(required=False,
-        widget=DateWidget(attrs={
-            'class':'span12',
-            'placeholder': 'Start YYYY-MM-DD',
-            'data-collapsed': True,
-            }),
+    purchase_date_start = forms.DateField(
+        required=False,
+        widget=DateWidget(
+            attrs={
+                'class': 'span12',
+                'placeholder': 'Start YYYY-MM-DD',
+                'data-collapsed': True,
+            }
+        ),
         label='Purchase date', input_formats=['%Y-%m-%d'])
-    purchase_date_end = forms.DateField(required=False,
-        widget=DateWidget(attrs={
-            'class':'span12 end-date-field',
-            'placeholder': 'End YYYY-MM-DD',
-            'data-collapsed': True,
-            }),
+    purchase_date_end = forms.DateField(
+        required=False,
+        widget=DateWidget(
+            attrs={
+                'class': 'span12 end-date-field',
+                'placeholder': 'End YYYY-MM-DD',
+                'data-collapsed': True,
+            }
+        ),
         label='', input_formats=['%Y-%m-%d'])
-    no_purchase_date = forms.BooleanField(required=False,
+    no_purchase_date = forms.BooleanField(
+        required=False,
         label="Empty purchase date",
-        widget=forms.CheckboxInput(attrs={
-            'data-collapsed': True,
-            }))
-    deprecation_date_start = forms.DateField(required=False,
-        widget=DateWidget(attrs={
-            'class':'span12',
-            'placeholder': 'Start YYYY-MM-DD',
-            'data-collapsed': True,
-            }),
+        widget=forms.CheckboxInput(
+            attrs={
+                'data-collapsed': True,
+            }
+        )
+    )
+    deprecation_date_start = forms.DateField(
+        required=False,
+        widget=DateWidget(
+            attrs={
+                'class': 'span12',
+                'placeholder': 'Start YYYY-MM-DD',
+                'data-collapsed': True,
+            }
+        ),
         label='Deprecation date', input_formats=['%Y-%m-%d'])
-    deprecation_date_end = forms.DateField(required=False,
-        widget=DateWidget(attrs={
-            'class':'span12 end-date-field',
-            'placeholder': 'End YYYY-MM-DD',
-            'data-collapsed': True,
-            }),
+    deprecation_date_end = forms.DateField(
+        required=False,
+        widget=DateWidget(
+            attrs={
+                'class': 'span12 end-date-field',
+                'placeholder': 'End YYYY-MM-DD',
+                'data-collapsed': True,
+            }
+        ),
         label='', input_formats=['%Y-%m-%d'])
-    no_deprecation_date = forms.BooleanField(required=False,
+    no_deprecation_date = forms.BooleanField(
+        required=False,
         label="Empty deprecation date",
-        widget=forms.CheckboxInput(attrs={
-            'data-collapsed': True,
-            }))
-    warranty_expiration_date_start = forms.DateField(required=False,
-        widget=DateWidget(attrs={
-            'class':'span12',
-            'placeholder': 'Start YYYY-MM-DD',
-            'data-collapsed': True,
-            }),
+        widget=forms.CheckboxInput(
+            attrs={
+                'data-collapsed': True,
+            }
+        )
+    )
+    warranty_expiration_date_start = forms.DateField(
+        required=False,
+        widget=DateWidget(
+            attrs={
+                'class': 'span12',
+                'placeholder': 'Start YYYY-MM-DD',
+                'data-collapsed': True,
+            }
+        ),
         label='Warranty expiration date', input_formats=['%Y-%m-%d'])
-    warranty_expiration_date_end = forms.DateField(required=False,
+    warranty_expiration_date_end = forms.DateField(
+        required=False,
         widget=DateWidget(attrs={
-            'class':'span12 end-date-field',
+            'class': 'span12 end-date-field',
             'placeholder': 'End YYYY-MM-DD',
             'data-collapsed': True,
-            }),
-        label='', input_formats=['%Y-%m-%d'])
-    no_warranty_expiration_date = forms.BooleanField(required=False,
+        }),
+        label='', input_formats=['%Y-%m-%d']
+    )
+    no_warranty_expiration_date = forms.BooleanField(
+        required=False,
         label="Empty warranty expiration date",
-        widget=forms.CheckboxInput(attrs={
-            'data-collapsed': True,
-            }))
-    support_expiration_date_start = forms.DateField(required=False,
-        widget=DateWidget(attrs={
-            'class':'span12',
-            'placeholder': 'Start YYYY-MM-DD',
-            'data-collapsed': True,
-            }),
-        label='Support expiration date', input_formats=['%Y-%m-%d'])
-    support_expiration_date_end = forms.DateField(required=False,
-        widget=DateWidget(attrs={
-            'class':'span12 end-date-field ',
-            'placeholder': 'End YYYY-MM-DD',
-            'data-collapsed': True,
-            }),
+        widget=forms.CheckboxInput(
+            attrs={
+                'data-collapsed': True,
+            }
+        )
+    )
+    support_expiration_date_start = forms.DateField(
+        required=False,
+        widget=DateWidget(
+            attrs={
+                'class': 'span12',
+                'placeholder': 'Start YYYY-MM-DD',
+                'data-collapsed': True,
+            }
+        ),
+        label='Support expiration date', input_formats=['%Y-%m-%d']
+    )
+    support_expiration_date_end = forms.DateField(
+        required=False,
+        widget=DateWidget(
+            attrs={
+                'class': 'span12 end-date-field ',
+                'placeholder': 'End YYYY-MM-DD',
+                'data-collapsed': True,
+            }
+        ),
         label='', input_formats=['%Y-%m-%d'])
-    no_support_expiration_date = forms.BooleanField(required=False,
+    no_support_expiration_date = forms.BooleanField(
+        required=False,
         label="Empty support expiration date",
-        widget=forms.CheckboxInput(attrs={
-            'data-collapsed': True,
-            }))
+        widget=forms.CheckboxInput(
+            attrs={
+                'data-collapsed': True,
+            }
+        )
+    )
     deleted = forms.BooleanField(required=False, label="Include deleted")
 
     def clean_purchase_date_end(self):
-        validate_start_end_date_date(self.cleaned_data['purchase_date_start'],
-            self.cleaned_data['purchase_date_end'])
+        validate_start_end_date_date(
+            self.cleaned_data['purchase_date_start'],
+            self.cleaned_data['purchase_date_end']
+        )
         return self.cleaned_data['purchase_date_end']
 
     def clean_deprecation_date_end(self):
@@ -581,6 +674,7 @@ class SearchForm(forms.Form):
                     raise forms.ValidationError("Invalid address")
         return data
 
+
 class PropertyForm(forms.Form):
     icons = {}
 
@@ -592,8 +686,11 @@ class PropertyForm(forms.Form):
             else:
                 choices = [(tv.value, tv.value) for tv in
                            p.type.rolepropertytypevalue_set.all()]
-                field = forms.ChoiceField(label=p.symbol, required=False,
-                    choices=choices)
+                field = forms.ChoiceField(
+                    label=p.symbol,
+                    required=False,
+                    choices=choices
+                )
             self.fields[p.symbol] = field
 
 
@@ -602,12 +699,12 @@ class RolePropertyForm(forms.ModelForm):
         model = RoleProperty
         widgets = {
             'role': forms.HiddenInput,
-            }
+        }
 
     icons = {
         'symbol': 'fugue-hand-property',
         'type': 'fugue-property-blue',
-        }
+    }
 
 
 class ModelGroupForm(forms.ModelForm):
@@ -618,7 +715,7 @@ class ModelGroupForm(forms.ModelForm):
         'name': 'fugue-paper-bag',
         'price': 'fugue-money-coin',
         'per_size': 'fugue-ruler',
-        }
+    }
     has_delete = True
 
 
@@ -628,8 +725,10 @@ class ComponentModelGroupForm(ModelGroupForm):
         exclude = ModelGroupForm.Meta.exclude + [
             'price', 'size_modifier', 'size_unit', 'per_size']
 
-    human_price = forms.DecimalField(label="Purchase price",
-        widget=CurrencyWidget)
+    human_price = forms.DecimalField(
+        label="Purchase price",
+        widget=CurrencyWidget
+    )
     human_unit = forms.ChoiceField(label="This price is for", choices=[
         ('piece', '1 piece'),
         ('core', '1 CPU core'),
@@ -637,7 +736,7 @@ class ComponentModelGroupForm(ModelGroupForm):
         ('GiB', '1 GiB'),
         ('CPUh', '1 CPU hour'),
         ('GiBh', '1 GiB hour'),
-        ])
+    ])
 
     def __init__(self, *args, **kwargs):
         super(ComponentModelGroupForm, self).__init__(*args, **kwargs)
@@ -647,7 +746,7 @@ class ComponentModelGroupForm(ModelGroupForm):
                 unit = self.instance.size_unit
                 if unit == 'MiB' and modifier % 1024 == 0:
                     unit = 'GiB'
-                    modifier = int(modifier/1024)
+                    modifier = int(modifier / 1024)
                 price = decimal.Decimal(self.instance.price) / modifier
             else:
                 price = self.instance.price
@@ -656,7 +755,7 @@ class ComponentModelGroupForm(ModelGroupForm):
             self.fields['human_price'].initial = price
 
     def save(self, *args, **kwargs):
-        unit =  self.cleaned_data['human_unit']
+        unit = self.cleaned_data['human_unit']
         price = self.cleaned_data['human_price']
         if unit == 'piece':
             self.instance.per_size = False
@@ -693,12 +792,12 @@ class DeploymentForm(forms.ModelForm):
             'ip',
             'hostname',
             'preboot',
-            ]
+        ]
         widgets = {
             'device': DeviceWidget,
             'mac': AutocompleteWidget,
             'ip': AutocompleteWidget,
-            }
+        }
 
     def __init__(self, *args, **kwargs):
         super(DeploymentForm, self).__init__(*args, **kwargs)
@@ -715,7 +814,7 @@ class DeploymentForm(forms.ModelForm):
             'preboot': (device.venture_role.get_preboot() if
                         device.venture_role else ''),
             'hostname': device.name,
-            })
+        })
 
     def clean_hostname(self):
         hostname = self.cleaned_data['hostname'].strip().lower()
@@ -729,7 +828,9 @@ class DeploymentForm(forms.ModelForm):
         ip = self.cleaned_data.get('ip')
         venture_role = self.cleaned_data.get('venture_role')
         if venture_role.check_ip(ip) is False:
-            raise forms.ValidationError("Given IP isn't in the appropriate subnet")
+            raise forms.ValidationError(
+                "Given IP isn't in the appropriate subnet"
+            )
         return ip
 
     def clean_device(self):
@@ -742,8 +843,10 @@ class DeploymentForm(forms.ModelForm):
         return device
 
     def device_management_count(self, device):
-        managements = IPAddress.objects.filter(device_id= device.id,
-            is_management=True)
+        managements = IPAddress.objects.filter(
+            device_id=device.id,
+            is_management=True
+        )
         return len(managements)
 
 
@@ -762,13 +865,14 @@ class DeviceForm(forms.ModelForm):
             'deprecation_date': ReadOnlyWidget,
             'warranty_expiration_date': DateWidget,
             'support_expiration_date': DateWidget,
-            }
+        }
 
-    save_comment = forms.CharField(required=True,
+    save_comment = forms.CharField(
+        required=True,
         help_text="Describe your change",
         error_messages={
             'required': "You must describe your change",
-            },
+        },
     )
 
     icons = {
@@ -798,7 +902,7 @@ class DeviceForm(forms.ModelForm):
         'support_expiration_date': 'fugue-hammer-screwdriver',
         'support_kind': 'fugue-hammer-screwdriver',
         'deleted': 'fugue-skull',
-        }
+    }
 
     def manual_fields(self):
         device = self.instance
@@ -863,7 +967,7 @@ class DeviceCreateForm(DeviceForm):
             'purchase_date': DateWidget,
             'warranty_expiration_date': DateWidget,
             'support_expiration_date': DateWidget,
-            }
+        }
         fields = (
             'name',
             'venture',
@@ -882,7 +986,7 @@ class DeviceCreateForm(DeviceForm):
             'warranty_expiration_date',
             'support_expiration_date',
             'support_kind',
-            )
+        )
 
     macs = forms.CharField(widget=forms.Textarea, required=False)
 
@@ -936,7 +1040,7 @@ class DeviceBulkForm(DeviceForm):
             'support_expiration_date',
             'support_kind',
             'deleted',
-            )
+        )
 
     def __init__(self, *args, **kwargs):
         super(DeviceBulkForm, self).__init__(*args, **kwargs)
@@ -960,7 +1064,7 @@ class DeviceInfoForm(DeviceForm):
             'parent',
             'remarks',
             'deleted',
-            )
+        )
 
     def __init__(self, *args, **kwargs):
         super(DeviceInfoForm, self).__init__(*args, **kwargs)
@@ -991,7 +1095,7 @@ class DeviceInfoVerifiedForm(DeviceInfoForm):
             'deprecation_date': ReadOnlyWidget,
             'warranty_expiration_date': DateWidget,
             'support_expiration_date': DateWidget,
-            }
+        }
 
     def clean_venture(self):
         return self.instance.venture
@@ -1008,7 +1112,7 @@ class DevicePricesForm(DeviceForm):
             'cached_price',
             'cached_cost',
             'price',
-            )
+        )
 
     auto_price = forms.CharField(widget=ReadOnlyPriceWidget, required=False)
 
@@ -1032,7 +1136,7 @@ class DevicePurchaseForm(DeviceForm):
             'warranty_expiration_date',
             'support_expiration_date',
             'support_kind',
-            )
+        )
 
     def clean_deprecation_date(self):
         return self.instance.deprecation_date
@@ -1043,5 +1147,8 @@ class DevicePurchaseForm(DeviceForm):
             self.data = self.data.copy()
             self.data['model_name'] = self.initial['model_name']
 
-    model_name = forms.CharField(label="Model", widget=ReadOnlyWidget,
-        required=False)
+    model_name = forms.CharField(
+        label="Model",
+        widget=ReadOnlyWidget,
+        required=False
+    )
