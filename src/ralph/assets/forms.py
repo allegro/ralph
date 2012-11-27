@@ -83,7 +83,7 @@ class BasePartForm(ModelForm):
         mode = kwargs.get('mode')
         if mode:
             del kwargs['mode']
-        super(SearchAssetForm, self).__init__(*args, **kwargs)
+        super(BasePartForm, self).__init__(*args, **kwargs)
         channel = 'asset_dcdevice' if mode == 'dc' else 'asset_bodevice'
         for field in ('device', 'source_device'):
             self.fields[field].channel = channel
