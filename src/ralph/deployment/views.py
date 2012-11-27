@@ -80,8 +80,6 @@ def preboot_type_view(request, file_type):
 
 
 def preboot_complete_view(request):
-    if not api.is_authenticated(request):
-        return HttpResponseForbidden('API key required.')
     try:
         deployment = get_current_deployment(request)
         deployment.status = DeploymentStatus.resolved_fixed
