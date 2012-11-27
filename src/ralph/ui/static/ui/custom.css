@@ -154,3 +154,15 @@ tr.table-highlight td {
 {
     margin-top: -10px !important;
 }
+
+table.assets-bulk-edit input {
+    width: 60px;;
+}
+
+table.assets-bulk-edit .small input {
+    width: 20px;
+}
+
+table.assets-bulk-edit select {
+    width: auto;
+}

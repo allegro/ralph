@@ -27,23 +27,32 @@ from ralph.assets.models_history import AssetHistoryChange
 
 
 class DeviceLookup(LookupChannel):
-    model = DeviceInfo
+    model = Asset
 
     def get_query(self, q, request):
         query = Q(
-            Q(barcode__istartswith=q) |
-            Q(sn__istartswith=q)
+            Q(device_info__gt=0) & Q(
+                Q(barcode__istartswith=q) |
+                Q(sn__istartswith=q) |
+                Q(model__name__istartswith=q)
+            )
         )
-        return DeviceInfo.objects.filter(Q).order_by('name')[:10]
+        return Asset.objects_dc().filter(query).order_by('sn')[:10]
 
     def get_result(self, obj):
-        return obj.name
+        return obj.id
 
     def format_match(self, obj):
         return self.format_item_display(obj)
 
     def format_item_display(self, obj):
-        return "%s<div><i>%s</i></div>" % (escape(obj.model), escape(obj.barcode))
+        return """
+        <div style='border-bottom: solid #ddd 1px'>
+            <div>model: <b>%s</b></div>
+            <div>bc:<b>%s</b></div>
+            <div>sn:<b>%s</b></div>
+        </div>
+        """ % (escape(obj.model), escape(obj.barcode), escape(obj.sn))
 
 
 class AssetModelLookup(LookupChannel):
@@ -53,13 +62,13 @@ class AssetModelLookup(LookupChannel):
         return AssetModel.objects.filter(Q(name__istartswith=q)).order_by('name')[:10]
 
     def get_result(self, obj):
-        return obj.name
+        return obj.id
 
     def format_match(self, obj):
         return self.format_item_display(obj)
 
     def format_item_display(self, obj):
-        return "%s<div><i>%s</i></div>" % (escape(obj.name), escape(obj.id))
+        return "%s %s" % (escape(obj.name), escape(obj.manufacturer))
 
 __all__ = [
     Asset,

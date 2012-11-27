@@ -137,11 +137,14 @@ class Asset(TimeTrackable, EditorTrackable, SavingUser):
     support_period = models.PositiveSmallIntegerField(
         verbose_name="support period in months")
     support_type = models.CharField(max_length=150)
-    support_void_reporting = models.BooleanField(default=False, db_index=True)
+    support_void_reporting = models.BooleanField(default=True, db_index=True)
     provider = models.CharField(max_length=100, null=True, blank=True)
     status = models.PositiveSmallIntegerField(verbose_name=_("status"),
                                               choices=AssetStatus())
-    remarks = models.CharField(max_length=1024)
+    remarks = models.CharField(
+        verbose_name='Additional remarks',
+        max_length=1024, null=True, blank=True
+    )
 
     def __unicode__(self):
         return "{} - {} - {}".format(self.model, self.sn, self.barcode)
@@ -155,6 +158,23 @@ class Asset(TimeTrackable, EditorTrackable, SavingUser):
     def objects_dc(self):
         """Returns data center assets queryset"""
         return Asset.objects.filter(type=AssetType.data_center)
+
+    def get_data_type(self):
+        if self.device_info:
+            return 'device'
+        elif self.part_info:
+            return 'part'
+        else:
+            # should not return this value ;-)
+            return 'Unknown'
+
+    def get_data_icon(self):
+        if self.get_data_type() == 'device':
+            return 'fugue-computer'
+        elif self.get_data_type() == 'part':
+            return 'fugue-box'
+        else:
+            raise UserWarning('Unknown asset data type!')
 
 
     def __init__(self, *args, **kwargs):

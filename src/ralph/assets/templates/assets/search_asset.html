@@ -1,5 +1,6 @@
 {% extends 'assets/base.html' %}
 {% load bob %}
+{% load icons %}
 
 {% block extra_headers %}
 {{ block.super }}
@@ -12,14 +13,12 @@
     <script type="text/javascript">
         /* Different post urls for different actions ... */
         var postMoveAll = function (e) {
-            var dd=$('#table_form')[0]; 
-            dd.action='../move/';
-            dd.submit();
+            alert('Not implemented yet :)');
             return false;
         };
         var postEditAll = function (e) {
-             var dd=$('#table_form')[0]; 
-            dd.action='../edit/';
+             var dd=$('#table_form')[0];
+            dd.action='./bulkedit/';
             dd.submit();
             return false;
         }
@@ -38,13 +37,14 @@
     <div class='span1'>
     </div>
   <div class="span11">
-    <h3> Search Assets </h3>
+    <h3>{{header}}</h3>
     <form id="table_form" action="" method="GET">
         <table class="table table-bordered table-striped">
                 <thead>
                     <tr>
                         <th><i class="fugue-icon fugue-ui-check-boxes-series"></i></th>
                         <th>Index</th>
+                        <th>Type</th>
                         <th>SN</th>
                         <th>Barcode</th>
                         <th>Model</th>
@@ -60,23 +60,24 @@
                     {% for row in data %}
                 <tr>
                     <td class="column-checkbox">
-                        <input type="checkbox" name="select" value="{{row.id}}">
+                        <input type="checkbox" name="assets" value="{{row.id}}">
                     </td>
                     <td>{{forloop.counter}}</td>
+                    <td>{% icon row.get_data_icon %}&nbsp;{{row.get_data_type|capfirst}}</td>
                     <td>{{row.sn}}</td>
-                    <td>{{row.barcode}}</td>
+                    <td>{{row.barcode|default_if_none:'-'}}</td>
                     <td>{{row.model.name}}</td>
                     <td>{{row.invoice_no}}</td>
                     <td>{{row.order_no}}</td>
                     <td>{{row.buy_date}}</td>
-                    <td>{{row.status}}</td>
+                    <td>{{row.get_status_display}}</td>
                     <td>{{row.warehouse}}</td>
-                    {% if row.device_info %}
+                    {% if row.get_data_type == 'device' %}
                     <td>
                         <a href="./edit/device/{{row.id}}">Edit</a> |
                         <a href="./history/device/{{row.id}}">History</a>
                     </td>
-                    {% elif row.part_info %}
+                    {% else %}
                     <td>
                         <a href="./edit/part/{{row.id}}">Edit</a> |
                         <a href="./history/part/{{row.id}}">History</a>

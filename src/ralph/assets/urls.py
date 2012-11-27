@@ -13,7 +13,8 @@ from ralph.assets.views import (
     BackOfficeSearch, DataCenterSearch, BackOfficeAddDevice, BackOfficeAddPart,
     DataCenterAddDevice, DataCenterAddPart, BackOfficeEditDevice,
     DataCenterEditDevice, BackOfficeEditPart, DataCenterEditPart,
-    HistoryAsset)
+    HistoryAsset, BackOfficeBulkEdit, DataCenterBulkEdit
+)
 
 
 urlpatterns = patterns(
@@ -36,7 +37,9 @@ urlpatterns = patterns(
         login_required(HistoryAsset.as_view())),
     url(r'dc/history/part/(?P<asset_id>[0-9]+)/$',
         login_required(HistoryAsset.as_view())),
-    
+    url(r'dc/bulkedit/$',
+        login_required(DataCenterBulkEdit.as_view())),
+
     url(r'back_office/search', login_required(BackOfficeSearch.as_view())),
     url(r'back_office/add/device/',
         login_required(BackOfficeAddDevice.as_view())),
@@ -50,4 +53,6 @@ urlpatterns = patterns(
         login_required(HistoryAsset.as_view())),
     url(r'back_office/history/part/(?P<asset_id>[0-9]+)/$',
         login_required(HistoryAsset.as_view())),
+    url(r'back_office/bulkedit/$',
+        login_required(BackOfficeBulkEdit.as_view())),
 )

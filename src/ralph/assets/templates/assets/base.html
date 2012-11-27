@@ -4,7 +4,7 @@
 {% block scripts %}
 {{ block.super }}
 <script type="text/javascript">
-	showAddAnotherPopup = function(e){
+	showAddAnotherPopup = function(e) {
 		window.open(e.href + e.previousElementSibling.value);
 		this.event.preventDefault()
 		return false;
