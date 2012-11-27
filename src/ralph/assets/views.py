@@ -408,6 +408,7 @@ class EditPart(Base):
         ret.update({
             'asset_form': self.asset_form,
             'office_info_form': self.office_info_form,
+            'part_info_form': self.part_info_form,
             'form_id': 'edit_part_form',
             'edit_mode': True,
         })
@@ -500,6 +501,7 @@ class BulkEdit(Base):
         )
         return super(BulkEdit, self).get(*args, **kwargs)
 
+    @nested_commit_on_success
     def post(self, *args, **kwargs):
         AssetFormSet = modelformset_factory(
             Asset,
@@ -511,13 +513,13 @@ class BulkEdit(Base):
         )
         self.asset_formset = AssetFormSet(self.request.POST)
         if self.asset_formset.is_valid():
-            device_infos = {}
-            for item in self.asset_formset.cleaned_data:
-                device_infos[item['id'].id] = item['id']
+            #device_infos = {}
+            #for item in self.asset_formset.cleaned_data:
+            #    device_infos[item['id'].id] = item['id']
             instances = self.asset_formset.save(commit=False)
             for instance in instances:
                 instance.modified_by = self.request.user.get_profile()
-                instance.device_info = device_infos[instance.id].device_info
+                #instance.device_info = device_infos[instance.id].device_info
                 instance.save()
             messages.success(self.request, _("Changes saved."))
             return HttpResponseRedirect(self.request.get_full_path())

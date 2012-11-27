@@ -18,8 +18,6 @@ from ralph.assets.models import (
 )
 from ralph.ui.widgets import DateWidget
 from ajax_select.fields import AutoCompleteSelectField
-from ajax_select import make_ajax_field
-
 
 
 class BaseAssetForm(ModelForm):
@@ -73,7 +71,7 @@ class BasePartForm(ModelForm):
         fields = ('device', 'source_device', 'barcode_salvaged',)
 
     device = AutoCompleteSelectField(
-        'asset_dcdevice', required=True,
+        'asset_dcdevice', required=False,
         help_text='Enter barcode, sn, or model.'
     )
     source_device = AutoCompleteSelectField(
@@ -182,7 +180,5 @@ class SearchAssetForm(Form):
         super(SearchAssetForm, self).__init__(*args, **kwargs)
         self.fields['device'] = AutoCompleteSelectField(
             channel,
-            required=False,
+            required=False
         )
-
-
