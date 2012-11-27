@@ -1,0 +1,19 @@
+{% extends 'assets/add_assets.html' %}
+
+{% block form_title %}Edit part{% endblock %}
+
+{% block office_info_inputs %}
+<div class="span6 well">
+  {% for field in office_info_form %}
+    <div class="control-group{% if field.errors %} error{% endif %}">
+      <label class="control-label">{{ field.label }}</label>
+      <div class="form-field controls">
+        {{ field }}
+        {% if field.errors %}
+        <span class="help-inline">{% for error in field.errors %}{{ error }} {% endfor %}</span>
+        {% endif %}
+      </div>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -80,6 +80,7 @@ INSTALLED_APPS = [
     'ralph.dnsedit',
     'ralph.util',
     'ralph.deployment',
+    'ralph.assets',
     'ajax_select',
     'powerdns',
 ]
@@ -190,7 +191,10 @@ CELERY_ROUTES = (
 )
 # define the lookup channels in use on the site
 AJAX_LOOKUP_CHANNELS = {
-    'ci': ('ralph.cmdb.models', 'CILookup')
+    'ci': ('ralph.cmdb.models', 'CILookup'),
+    'asset_model': ('ralph.assets.models', 'AssetModelLookup'),
+    'asset_device': ('ralph.assets.models', 'DeviceLookup'),
+    'asset_warehouse': ('ralph.assets.models', 'WarehouseLookup'),
 }
 # magically include jqueryUI/js/css
 AJAX_SELECT_BOOTSTRAP = True
