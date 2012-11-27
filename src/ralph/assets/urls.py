@@ -32,6 +32,10 @@ urlpatterns = patterns(
         login_required(DataCenterEditDevice.as_view())),
     url(r'dc/edit/part/(?P<asset_id>[0-9]+)/$',
         login_required(DataCenterEditPart.as_view())),
+    url(r'dc/history/device/(?P<asset_id>[0-9]+)/$',
+        login_required(HistoryAsset.as_view())),
+    url(r'dc/history/part/(?P<asset_id>[0-9]+)/$',
+        login_required(HistoryAsset.as_view())),
     
     url(r'back_office/search', login_required(BackOfficeSearch.as_view())),
     url(r'back_office/add/device/',
@@ -42,6 +46,8 @@ urlpatterns = patterns(
         login_required(BackOfficeEditDevice.as_view())),
     url(r'back_office/edit/part/(?P<asset_id>[0-9]+)/$',
         login_required(BackOfficeEditPart.as_view())),
+    url(r'back_office/history/device/(?P<asset_id>[0-9]+)/$',
+        login_required(HistoryAsset.as_view())),
     url(r'back_office/history/part/(?P<asset_id>[0-9]+)/$',
         login_required(HistoryAsset.as_view())),
 )

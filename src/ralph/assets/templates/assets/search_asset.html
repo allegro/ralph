@@ -72,9 +72,15 @@
                     <td>{{row.status}}</td>
                     <td>{{row.warehouse}}</td>
                     {% if row.device_info %}
-                    <td><a href="./edit/device/{{row.id}}">Edit</a></td>
+                    <td>
+                        <a href="./edit/device/{{row.id}}">Edit</a> |
+                        <a href="./history/device/{{row.id}}">History</a>
+                    </td>
                     {% elif row.part_info %}
-                    <td><a href="./edit/part/{{row.id}}">Edit</a></td>
+                    <td>
+                        <a href="./edit/part/{{row.id}}">Edit</a> |
+                        <a href="./history/part/{{row.id}}">History</a>
+                    </td>
                     {% endif %}
                 </tr>
                     {% endfor %}
