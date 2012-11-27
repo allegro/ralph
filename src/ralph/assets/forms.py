@@ -169,4 +169,3 @@ class SearchAssetForm(Form):
     )
     sn = forms.CharField(required=False)
 
-
