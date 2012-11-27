@@ -522,7 +522,7 @@ class ReportDevices(SidebarReports, Base):
             headers.append('No depreciation date')
             queres.update({Q(deprecation_date=None)})
         if no_mar:
-            headers.append('No_margin')
+            headers.append('No depreciation kind')
             queres.update({Q(deprecation_kind=None)})
         if no_sup:
             headers.append('No support')
@@ -605,7 +605,7 @@ class ReportDevices(SidebarReports, Base):
             )
             headers = ('Name', 'Warranty expiration date')
             for dev in devs:
-                rows.append([dev.name, dev.deprecation_date])
+                rows.append([dev.name, dev.warranty_expiration_date])
         else:
             self.form_warranty_range = WarrantyRangeReportForm(initial={
                 'w_start': datetime.date.today() - datetime.timedelta(days=30),
