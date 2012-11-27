@@ -345,12 +345,16 @@ class EditDevice(Base):
 
     def get_context_data(self, **kwargs):
         ret = super(EditDevice, self).get_context_data(**kwargs)
+        status_history = AssetHistoryChange.objects.all().filter(
+            asset=kwargs.get('asset_id'), field_name__exact='status'
+        )
         ret.update({
             'asset_form': self.asset_form,
             'device_info_form': self.device_info_form,
             'office_info_form': self.office_info_form,
             'form_id': 'edit_device_asset_form',
             'edit_mode': True,
+            'status_history': status_history,
         })
         return ret
 
@@ -411,11 +415,15 @@ class EditPart(Base):
 
     def get_context_data(self, **kwargs):
         ret = super(EditPart, self).get_context_data(**kwargs)
+        status_history = AssetHistoryChange.objects.all().filter(
+            asset=kwargs.get('asset_id'), field_name__exact='status'
+        )
         ret.update({
             'asset_form': self.asset_form,
             'office_info_form': self.office_info_form,
             'form_id': 'edit_part_form',
             'edit_mode': True,
+            'status_history': status_history,
         })
         return ret
 
