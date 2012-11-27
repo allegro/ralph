@@ -59,7 +59,7 @@ class AssetHistoryChange(db.Model):
 @receiver(post_save, sender=Asset, dispatch_uid='ralph.history_assets')
 def asset_post_save(sender, instance, raw, using, **kwargs):
     """A hook for creating ``HistoryChange`` entries when a asset changes."""
-    for field, orig, new in field_changes(instance, ignore={}):
+    for field, orig, new in field_changes(instance):
         AssetHistoryChange(
             asset=instance,
             field_name=field,
@@ -75,7 +75,7 @@ def device_info_post_save(sender, instance, raw, using, **kwargs):
     """
     A hook for creating ``HistoryChange`` entries when a DeviceInfo changes.
     """
-    for field, orig, new in field_changes(instance, ignore={}):
+    for field, orig, new in field_changes(instance):
         AssetHistoryChange(
             device_info=instance,
             field_name=field,
@@ -91,7 +91,7 @@ def part_info_post_save(sender, instance, raw, using, **kwargs):
     """
     A hook for creating ``HistoryChange`` entries when a PartInfo changes.
     """
-    for field, orig, new in field_changes(instance, ignore={}):
+    for field, orig, new in field_changes(instance):
         AssetHistoryChange(
             part_info=instance,
             field_name=field,
@@ -105,7 +105,7 @@ def part_info_post_save(sender, instance, raw, using, **kwargs):
 @receiver(post_save, sender=OfficeInfo, dispatch_uid='ralph.history_assets')
 def office_info_post_save(sender, instance, raw, using, **kwargs):
     """A hook for creating ``HistoryChange`` entries when a Office changes."""
-    for field, orig, new in field_changes(instance, ignore={}):
+    for field, orig, new in field_changes(instance):
         AssetHistoryChange(
             office_info=instance,
             field_name=field,

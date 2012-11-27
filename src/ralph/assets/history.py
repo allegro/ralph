@@ -7,7 +7,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 
-def field_changes(instance, ignore=('last_seen', 'id')):
+def field_changes(instance, ignore=('id',)):
     """
     Yield the name, original value and new value for each changed field. Skip
     all insignificant fields and those passed in ``ignore``.
