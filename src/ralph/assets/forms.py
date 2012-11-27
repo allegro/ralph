@@ -18,8 +18,6 @@ from ralph.assets.models import (
 )
 from ralph.ui.widgets import DateWidget
 from ajax_select.fields import AutoCompleteSelectField
-from ajax_select import make_ajax_field
-
 
 
 class BaseAssetForm(ModelForm):
@@ -73,13 +71,22 @@ class BasePartForm(ModelForm):
         fields = ('device', 'source_device', 'barcode_salvaged',)
 
     device = AutoCompleteSelectField(
-        'asset_device', required=False,
+        'asset_dcdevice', required=False,
         help_text='Enter barcode, sn, or model.'
     )
     source_device = AutoCompleteSelectField(
-        'asset_device', required=False,
+        'asset_dcdevice', required=False,
         help_text='Enter barcode, sn, or model.'
     )
+
+    def __init__(self, *args, **kwargs):
+        mode = kwargs.get('mode')
+        if mode:
+            del kwargs['mode']
+        super(BasePartForm, self).__init__(*args, **kwargs)
+        channel = 'asset_dcdevice' if mode == 'dc' else 'asset_bodevice'
+        for field in ('device', 'source_device'):
+            self.fields[field].channel = channel
 
 
 def _validate_multivalue_data(data):
@@ -155,10 +162,6 @@ class SearchAssetForm(Form):
         required=False,
         help_text=None
     )
-    source_device = AutoCompleteSelectField(
-        'asset_device',
-        required=False,
-    )
 
     invoice_no = forms.CharField(required=False)
     order_no = forms.CharField(required=False)
@@ -169,3 +172,13 @@ class SearchAssetForm(Form):
     )
     sn = forms.CharField(required=False)
 
+    def __init__(self, *args, **kwargs):
+        mode = kwargs.get('mode')
+        if mode:
+            del kwargs['mode']
+        channel = 'asset_dcdevice' if mode == 'dc' else 'asset_bodevice'
+        super(SearchAssetForm, self).__init__(*args, **kwargs)
+        self.fields['device'] = AutoCompleteSelectField(
+            channel,
+            required=False
+        )

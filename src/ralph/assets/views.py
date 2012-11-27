@@ -138,7 +138,7 @@ class AssetSearch(AssetsMixin):
         return ret
 
     def get(self, *args, **kwargs):
-        self.form = SearchAssetForm(self.request.GET)
+        self.form = SearchAssetForm(self.request.GET, mode=_get_mode(self.request))
         self.data = self.handle_search_data()
         return super(AssetSearch, self).get(*args, **kwargs)
 
@@ -275,8 +275,9 @@ class AddPart(Base):
         return ret
 
     def get(self, *args, **kwargs):
-        self.asset_form = AddPartForm(mode=_get_mode(self.request))
-        self.part_info_form = BasePartForm()
+        mode = _get_mode(self.request)
+        self.asset_form = AddPartForm(mode=mode)
+        self.part_info_form = BasePartForm(mode=mode)
         return super(AddPart, self).get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
