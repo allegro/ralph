@@ -155,7 +155,9 @@ class Asset(TimeTrackable, EditorTrackable, SavingUser):
     @classmethod
     def objects_bo(self):
         """Returns back office assets queryset"""
-        return Asset.objects.filter(type=AssetType.back_office)
+        return Asset.objects.filter(
+            type__in=(AssetType.administration, AssetType.back_office)
+        )
 
     @classmethod
     def objects_dc(self):
