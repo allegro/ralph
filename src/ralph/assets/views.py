@@ -421,6 +421,7 @@ class EditPart(Base):
         ret.update({
             'asset_form': self.asset_form,
             'office_info_form': self.office_info_form,
+            'part_info_form': self.part_info_form,
             'form_id': 'edit_part_form',
             'edit_mode': True,
             'status_history': status_history,
@@ -548,6 +549,7 @@ class BulkEdit(Base):
         )
         return super(BulkEdit, self).get(*args, **kwargs)
 
+    @nested_commit_on_success
     def post(self, *args, **kwargs):
         AssetFormSet = modelformset_factory(
             Asset,

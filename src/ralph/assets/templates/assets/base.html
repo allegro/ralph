@@ -6,7 +6,9 @@
 <script type="text/javascript">
 	showAddAnotherPopup = function(e) {
 		window.open(e.href + e.previousElementSibling.value);
-		this.event.preventDefault()
+		if (typeof(this.event) != 'undefined') {
+			this.event.preventDefault();
+		};
 		return false;
 }
 </script>

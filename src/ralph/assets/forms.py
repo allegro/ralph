@@ -61,6 +61,10 @@ class BaseDeviceForm(ModelForm):
         fields = (
             'size', 'warehouse',
         )
+    warehouse = AutoCompleteSelectField(
+        'asset_warehouse', required=True,
+        plugin_options=dict(add_link='/admin/assets/warehouse/add/?name=')
+    )
 
 
 class BasePartForm(ModelForm):
@@ -69,7 +73,7 @@ class BasePartForm(ModelForm):
         fields = ('device', 'source_device', 'barcode_salvaged',)
 
     device = AutoCompleteSelectField(
-        'asset_device', required=True,
+        'asset_device', required=False,
         help_text='Enter barcode, sn, or model.'
     )
     source_device = AutoCompleteSelectField(
