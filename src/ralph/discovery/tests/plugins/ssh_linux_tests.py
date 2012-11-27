@@ -48,7 +48,7 @@ class SshLinuxPluginTest(TestCase):
             (u'PROC 2 DIMM 2A', u'RAM DDR3 4096MiB', 4096, 1333),
             (u'PROC 2 DIMM 4B', u'RAM DDR3 4096MiB', 4096, 1333),
         ])
-        self.assertEquals(dev.model.name, 'ProLiant BL460c G6')
+        self.assertEquals(dev.model.name, 'DMI ProLiant BL460c G6')
 
     def test_os_memory(self):
         ssh = MockSSH([

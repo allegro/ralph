@@ -20,8 +20,7 @@ from ralph.discovery.models import (DeviceType, Device, OperatingSystem,
     ComponentModel, ComponentType, Software, Storage, SERIAL_BLACKLIST,
     DISK_VENDOR_BLACKLIST, DISK_PRODUCT_BLACKLIST)
 from ralph.discovery.plugins.puppet.util import get_default_mac, assign_ips
-from ralph.util import network, Eth
-from ralph.util.others import get_base64_compressed_data
+from ralph.util import network, Eth, uncompress_base64_data
 
 
 SAVE_PRIORITY = 52
@@ -97,7 +96,7 @@ def _parse_prtconf(dev, prtconf, facts, is_virtual):
 
 
 def _parse_smbios(dev, data, facts, is_virtual):
-    data = get_base64_compressed_data(data)
+    data = uncompress_base64_data(data)
     smb = hardware.parse_smbios(data)
     hardware.handle_smbios(dev, smb, is_virtual, SAVE_PRIORITY)
 
@@ -262,7 +261,7 @@ def handle_facts_os(dev, facts, is_virtual=False):
 
 
 def parse_packages(facts):
-    data = get_base64_compressed_data(facts)
+    data = uncompress_base64_data(facts)
     if data:
         packages = data.strip().split(',')
         for package in packages:

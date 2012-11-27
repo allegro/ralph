@@ -1,25 +1,56 @@
 Change Log
 ----------
 
+1.1.9
+~~~~~
+
+Released on November 26, 2012.
+
+* Fixes for discovery regressions from 1.1.8
+
+* DiscoveryWarnings introduced
+
+1.1.8
+~~~~~
+
+Released on November 22, 2012.
+
+* system-level storage detection stored in the OperatingSystem component
+
+* improved CPU information in DonPedro Windows agent
+
+* CPU information is stored in history for financial reports
+
+* DNS entries can be edited on the Addresses tab for every device
+
+* CMDB: impact report introduced, API for CI changes, layers and types
+
+* Installed software packages reported by Puppet are stored in the inventory
+  database
+
+* Base64 support for compressed Puppet fact values
+
+* Minor bugfixes
+
 1.1.7
 ~~~~~
 
 Released on November 8, 2012.
 
-* Stability improved for discovering SSG firewalls.
+* Stability improved for discovering SSG firewalls
 
-* ``ralph_dhcp_agent.py`` is now compatible with Python 2.4.
+* ``ralph_dhcp_agent.py`` is now compatible with Python 2.4
 
 * Uses the forked ``django-powerdns-dnssec`` package for improved PowerDNS
-  support.
+  support
 
 * Xen discovery support fixed (memory was reported in wrong units)
 
-* IPMI discovery improved for Sun and Supermicro servers.
+* IPMI discovery improved for Sun and Supermicro servers
 
-* Minor CMDB improvements.
+* Minor CMDB improvements
 
-* Minor bugfixes.
+* Minor bugfixes
 
 1.1.6
 ~~~~~

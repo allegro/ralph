@@ -25,6 +25,7 @@ def jsonify(func):
                             mimetype="application/javascript")
     return wrapper
 
+
 def csvify(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
@@ -36,5 +37,4 @@ def csvify(func):
         return HttpResponse(f.getvalue(), mimetype="application/csv")
     return wrapper
 
-def build_url(*args):
-    return '/'.join(arg.replace('/', '') for arg in args)
+

@@ -7,7 +7,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import datetime
-import ralph.cmdb.models as db
+from urlparse import urljoin
 
 from django.db.models import Q
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
@@ -19,11 +19,11 @@ from django.http import HttpResponse
 from django.utils.translation import ugettext_lazy as _
 from django.utils.safestring import mark_safe
 from django.utils import simplejson
+from django.utils.html import escape
 from django.conf import settings
 from lck.django.common import nested_commit_on_success
-from bob.menu import MenuItem, MenuHeader
-from django.utils.html import escape
 from lck.django.filters import slugify
+from bob.menu import MenuItem, MenuHeader
 
 from ralph.cmdb.forms import (
     CISearchForm, CIEditForm, CIViewForm, CIRelationEditForm, SearchImpactForm
@@ -32,14 +32,13 @@ from ralph.cmdb.customfields import EditAttributeFormFactory
 from ralph.cmdb.models_ci import (
     CIOwner, CIOwnership, CILayer, CI_TYPES, CI, CIRelation, CI_LAYER
 )
+import ralph.cmdb.models as db
 from ralph.cmdb.graphs import search_tree, ImpactCalculator
 from ralph.account.models import Perm
 from ralph.ui.views.common import Base, _get_details
 from ralph.util.presentation import (
     get_device_icon, get_venture_icon, get_network_icon
 )
-from ralph.util.views import build_url
-
 
 
 ROWS_PER_PAGE = 20
@@ -55,6 +54,8 @@ def get_icon_for(ci):
         return get_device_icon(ci.content_object)
     elif ci.content_type.name == 'network':
         return get_network_icon(ci.content_object)
+    else:
+        return 'wall'
 
 
 class BaseCMDBView(Base):
@@ -394,7 +395,7 @@ class Add(BaseCMDBView):
                                       type=2,)
                     own.save()
                 messages.success(self.request, _("Changes saved."))
-                return HttpResponseRedirect('/cmdb/ci/edit/' + str(model.id))
+                return HttpResponseRedirect('/cmdb/ci/edit/' + unicode(model.id))
             else:
                 messages.error(self.request, _("Correct the errors."))
 
@@ -408,7 +409,7 @@ class LastChanges(BaseCMDBView):
         ret = super(LastChanges, self).get_context_data(**kwargs)
         ret.update({
             'last_changes': self.last_changes,
-            'jira_url': build_url(settings.ISSUETRACKERS['default']['URL'], 'browse'),
+            'jira_url': urljoin(settings.ISSUETRACKERS['default']['URL'], 'browse'),
         })
         return ret
 
@@ -837,7 +838,7 @@ class Search(BaseCMDBView):
             {'label': 'Layer', 'name': 'layer', 'sortable': 0},
             {'label': 'Venture', 'name': 'Venture', 'sortable': 0},
             {'label': 'Service', 'name': 'Service', 'sortable': 0},
-            {'label': 'CI Scope', 'name': 'pci', 'sortable': 0},
+            {'label': 'PCI Scope', 'name': 'pci', 'sortable': 0},
         )
         table_header = (
             {'label': 'Name', 'name': 'uid', 'sortable': 1},
@@ -845,15 +846,15 @@ class Search(BaseCMDBView):
         )
         if type_ is None:
             table_header += DEFAULT_COLS
-        elif type_ == str(CI_TYPES.APPLICATION.id):
+        elif type_ == CI_TYPES.APPLICATION.id:
             table_header += (
                 {'label': 'Type', 'name': 'type', 'sortable': 1},
                 {'label': 'Layer', 'name': 'layer', 'sortable': 0},
                 {'label': 'Venture', 'name': 'Venture', 'sortable': 0},
                 {'label': 'Service', 'name': 'Service', 'sortable': 0},
-                {'label': 'CI Scope', 'name': 'pci', 'sortable': 0},
+                {'label': 'PCI Scope', 'name': 'pci', 'sortable': 0},
             )
-        elif type_ == str(CI_TYPES.DEVICE.id):
+        elif type_ == CI_TYPES.DEVICE.id:
             table_header += (
                 {'label': 'Parent Device', 'name': 'Parent Device',
                  'sortable': 1},
@@ -861,11 +862,11 @@ class Search(BaseCMDBView):
                 {'label': 'DC', 'name': 'DC', 'sortable': 0},
                 {'label': 'Venture', 'name': 'Venture', 'sortable': 0},
                 {'label': 'Service', 'name': 'Service', 'sortable': 0},
-                {'label': 'PCI Scope', 'name': 'PCI Scope', 'sortable': 0},
+                {'label': 'PPCI Scope', 'name': 'PPCI Scope', 'sortable': 0},
             )
-        elif type_ == str(CI_TYPES.PROCEDURE.id):
+        elif type_ == CI_TYPES.PROCEDURE.id:
             table_header += DEFAULT_COLS
-        elif type_ == str(CI_TYPES.VENTURE.id):
+        elif type_ == CI_TYPES.VENTURE.id:
             table_header += (
                 {'label': 'Parent venture', 'name': 'Parent venture',
                  'sortable': 1},
@@ -877,7 +878,7 @@ class Search(BaseCMDBView):
                 {'label': 'Business Owner', 'name': 'Business Owner',
                  'sortable': 1},
             )
-        elif type_ == str(CI_TYPES.VENTUREROLE.id):
+        elif type_ == CI_TYPES.VENTUREROLE.id:
             table_header += (
                 {'label': 'Parent venture', 'name': 'Parent venture',
                  'sortable': 1},
@@ -885,12 +886,12 @@ class Search(BaseCMDBView):
                 {'label': 'Technical Owner', 'name': 'Technical Owner',
                  'sortable': 1},
             )
-        elif type_ == str(CI_TYPES.BUSINESSLINE.id):
+        elif type_ == CI_TYPES.BUSINESSLINE.id:
             table_header += (
                 {'label': 'Services contained',
                  'name': 'Services contained', 'sortable': 0},
             )
-        elif type_ == str(CI_TYPES.SERVICE.id):
+        elif type_ == CI_TYPES.SERVICE.id:
             table_header += (
                 {'label': 'Contained Venture',
                  'name': 'Contained Venture', 'sortable': 1},
@@ -901,11 +902,11 @@ class Search(BaseCMDBView):
                 {'label': 'Business Owner', 'name': 'Business Owner',
                  'sortable': 0},
             )
-        elif type_ == str(CI_TYPES.NETWORK.id):
+        elif type_ == CI_TYPES.NETWORK.id:
             table_header += DEFAULT_COLS
-        elif type_ == str(CI_TYPES.DATACENTER.id):
+        elif type_ == CI_TYPES.DATACENTER.id:
             table_header += DEFAULT_COLS
-        elif type_ == str(CI_TYPES.NETWORKTERMINATOR.id):
+        elif type_ == CI_TYPES.NETWORKTERMINATOR.id:
             table_header += DEFAULT_COLS
         table_header += (
             {'label': 'Operations', 'name': 'Operations', 'sortable': 0},
@@ -958,7 +959,7 @@ class Search(BaseCMDBView):
     def get_bl(self, i, relations):
         business_line = '-'
         rel_bl = relations.filter(
-            child=i.id, parent__type=str(CI_TYPES.BUSINESSLINE.id),
+            child=i.id, parent__type__id=CI_TYPES.BUSINESSLINE.id
         )
         for bl in rel_bl:
             business_line = ('<a href="%s">%s</a>' % (
@@ -971,7 +972,7 @@ class Search(BaseCMDBView):
         if child is False:
             ven = relations.filter(
                 child=i.id,
-                parent__type=str(CI_TYPES.VENTURE.id)
+                parent__type__id=CI_TYPES.VENTURE.id
             )
             for v in ven:
                 venture.append(
@@ -981,7 +982,7 @@ class Search(BaseCMDBView):
         elif child is True:
             ven = relations.filter(
                 parent=i.id,
-                child__type=str(CI_TYPES.VENTURE.id)
+                child__type__id=CI_TYPES.VENTURE.id
             )
             for v in ven:
                 venture.append(
@@ -993,7 +994,7 @@ class Search(BaseCMDBView):
     def get_service(self, relations, i):
         services = ''
         servi = relations.filter(
-            parent=i.id, child__type=str(CI_TYPES.SERVICE.id)
+            parent=i.id, child__type__id=CI_TYPES.SERVICE.id
         )
         for s in servi:
             services += '%s, ' % escape(s.child.name)
@@ -1011,7 +1012,7 @@ class Search(BaseCMDBView):
         uid = values.get('uid')
         state = values.get('state')
         status = values.get('status')
-        type_ = values.get('type')
+        type_ = int(values.get('type'))
         layer = values.get('layer')
         parent_id = int(values.get('parent', 0) or 0)
         if values:
@@ -1064,9 +1065,9 @@ class Search(BaseCMDBView):
             ]
             if type_ is None:
                 table_body.append(DEFAULT_ROWS)
-            elif type_ == str(CI_TYPES.APPLICATION):
+            elif type_ == CI_TYPES.APPLICATION:
                 table_body.append(DEFAULT_ROWS)
-            elif type_ == str(CI_TYPES.DEVICE):
+            elif type_ == CI_TYPES.DEVICE:
                 row = [
                     {'name': 'name', 'value': self.get_name(i, icon)},
                     {'name': 'uid', 'value': self.get_uid(i)},
@@ -1079,7 +1080,7 @@ class Search(BaseCMDBView):
                     {'name': 'operations', 'value': self.get_operations(i)}
                 ]
                 table_body.append(row)
-            elif type_ == str(CI_TYPES.VENTURE):
+            elif type_ == CI_TYPES.VENTURE:
                 venture_c = self.get_venture(relations, i, child=True)
                 b_own = self.get_owners(i, b_owners)
                 t_own = self.get_owners(i, t_owners)
@@ -1094,7 +1095,7 @@ class Search(BaseCMDBView):
                     {'name': 'operations', 'value': self.get_operations(i)}
                 ]
                 table_body.append(row)
-            elif type_ == str(CI_TYPES.VENTUREROLE):
+            elif type_ == CI_TYPES.VENTUREROLE:
                 t_own = self.get_owners(i, t_owners)
                 row = [
                     {'name': 'name', 'value': self.get_name(i, icon)},
@@ -1105,7 +1106,7 @@ class Search(BaseCMDBView):
                     {'name': 'operations', 'value': self.get_operations(i)}
                 ]
                 table_body.append(row)
-            elif type_ == str(CI_TYPES.BUSINESSLINE):
+            elif type_ == CI_TYPES.BUSINESSLINE:
                 ven = relations.filter(parent=i.id)
                 services_contained = ', '.join(
                     '<a href="/cmdb/ci/view/%s">%s</a>' %
@@ -1114,6 +1115,19 @@ class Search(BaseCMDBView):
                     {'name': 'name', 'value': self.get_name(i, icon)},
                     {'name': 'uid', 'value': self.get_uid(i)},
                     {'name': 'venture', 'value': services_contained},
+                    {'name': 'operations', 'value': self.get_operations(i)}
+                ]
+                table_body.append(row)
+            elif type_ == CI_TYPES.SERVICE.id:
+                b_own = self.get_owners(i, b_owners)
+                t_own = self.get_owners(i, t_owners)
+                row = [
+                    {'name': 'name', 'value': self.get_name(i, icon)},
+                    {'name': 'uid', 'value': self.get_uid(i)},
+                    {'name': 'venture-child', 'value': venture},
+                    {'name': 'bl', 'value': self.get_bl(i, relations)},
+                    {'name': 't_owners', 'value': t_own},
+                    {'name': 'b_owners', 'value': b_own},
                     {'name': 'operations', 'value': self.get_operations(i)}
                 ]
                 table_body.append(row)
@@ -1235,9 +1249,7 @@ class Graphs(BaseCMDBView):
                 child=x,
                 parent=st.get(x),
                 parent_name=ci_names[x],
-                type=CIRelation.objects.filter(
-                    child__id=x, parent__id=st.get(x)
-                )[0].type,
+                type=i.graph.edge_attributes((st.get(x), x))[0],
                 child_name=ci_names[st.get(x)])
                 for x in st.keys() if x and st.get(x)]
             self.graph_data = dict(

@@ -24,14 +24,34 @@ from ralph.account.models import Perm
 from ralph.business.models import RolePropertyValue
 from ralph.cmdb.models import CI, CI_TYPES
 from ralph.dnsedit.models import DHCPEntry
-from ralph.dnsedit.util import get_domain, set_revdns_record
-from ralph.discovery.models import Device, DeviceType, IPAddress
-from ralph.discovery.models_history import FOREVER_DATE, ALWAYS_DATE
+from ralph.dnsedit.util import (
+    get_domain,
+    set_revdns_record,
+    get_revdns_records,
+)
+from ralph.dnsedit.util import Error as DNSError
+from ralph.discovery.models import (
+    Device,
+    DeviceType,
+    IPAddress,
+)
+from ralph.discovery.models_history import (
+    FOREVER_DATE,
+    ALWAYS_DATE,
+    DiscoveryWarning,
+)
 from ralph.util import presentation, pricing
-from ralph.ui.forms import (DeviceInfoForm, DeviceInfoVerifiedForm,
-                            DevicePricesForm, DevicePurchaseForm,
-                            PropertyForm, DeviceBulkForm, DNSRecordsForm,
-                            DHCPRecordsForm, AddressesForm)
+from ralph.ui.forms import (
+    DeviceInfoForm,
+    DeviceInfoVerifiedForm,
+    DevicePricesForm,
+    DevicePurchaseForm,
+    PropertyForm,
+    DeviceBulkForm,
+    DNSRecordsForm,
+    DHCPRecordsForm,
+    AddressesForm,
+)
 
 SAVE_PRIORITY = 200
 HISTORY_PAGE_SIZE = 25
@@ -119,9 +139,11 @@ class BaseMixin(object):
                          href='/cmdb/changes/timeline')
             )
         if settings.BUGTRACKER_URL:
-            footer_items.append(
-                MenuItem('Bugs', fugue_icon='fugue-bug',
-                         href=settings.BUGTRACKER_URL))
+            mainmenu_items.append(
+                MenuItem(
+                    'Report a bug', fugue_icon='fugue-bug', pull_right=True,
+                    href=settings.BUGTRACKER_URL)
+            )
         if self.request.user.is_staff:
             footer_items.append(
                 MenuItem('Admin', fugue_icon='fugue-toolbox', href='/admin'))
@@ -430,28 +452,40 @@ class Prices(DeviceUpdateView):
 
 
 def _dns_fill_record(form, prefix, record, request):
-    for label in ('name', 'type', 'content', 'ttl', 'prio', 'type'):
+    for label in ('name', 'type', 'content', 'type'):
         setattr(record, label,
                 form.cleaned_data[prefix + label] or None)
     record.domain = get_domain(record.name)
     if (record.type in ('A', 'AAAA') and
         form.cleaned_data[prefix + 'ptr']):
         try:
-            set_revdns_record(record.content, record.name)
-        except ValueError:
-            pass
+            created = set_revdns_record(record.content, record.name)
+        except DNSError as e:
+            messages.error(request, unicode(e))
         else:
-            messages.warning(request,
-                         "Created a PTR DNS record for %s." %
-                         record.content)
+            if created:
+                messages.warning(
+                    request,
+                    "Created a PTR DNS record for %s." % record.content
+                )
 
 
 def _dns_create_record(form, request, device):
-    if form.cleaned_data.get('dns_new_type'):
+    if form.cleaned_data.get('dns_new_content'):
         record = Record()
         _dns_fill_record(form, 'dns_new_', record, request)
+        record.saving_user = request.user
+        record.saving_device = device
         record.save()
         messages.success(request, "A DNS record added.")
+
+
+def _dns_delete_record(form, record, request):
+    if record.type == 'A':
+        for r in get_revdns_records(record.content).filter(content=record.name):
+            r.saving_user = request.user
+            r.delete()
+            messages.warning(request, "PTR record deleted.")
 
 
 def _dhcp_fill_record(form, prefix, record, request):
@@ -491,7 +525,6 @@ def _ip_fill_record(form, prefix, record, request):
 def _ip_create_record(form, request, device):
     hostname = form.cleaned_data.get('ip_new_hostname')
     address = form.cleaned_data.get('ip_new_address')
-    print(hostname, address)
     if hostname and address:
         if IPAddress.objects.filter(address=address).exists():
             messages.error(
@@ -507,10 +540,12 @@ def _ip_create_record(form, request, device):
                          "An IP address entry for %s created." %
                          address)
 
+
 class Addresses(DeviceDetailView):
     template_name = 'ui/device_addresses.html'
     read_perm = Perm.read_device_info_generic
     edit_perm = Perm.edit_domain_name
+    limit_types = {'A', 'CNAME', 'MX', 'TXT'}
 
     def __init__(self, *args, **kwargs):
         super(Addresses, self).__init__(*args, **kwargs)
@@ -518,7 +553,7 @@ class Addresses(DeviceDetailView):
         self.dhcp_form = None
         self.ip_form = None
 
-    def get_dns(self):
+    def get_dns(self, limit_types=None):
         ips = set(ip.address for ip in self.object.ipaddress_set.all())
         names = set(ip.hostname for ip in self.object.ipaddress_set.all()
                  if ip.hostname)
@@ -547,21 +582,52 @@ class Addresses(DeviceDetailView):
             while parts:
                 parts.pop(0)
                 starnames.add('.'.join(['*'] + parts))
-        return Record.objects.filter(
+        query = Record.objects.filter(
                 db.Q(content__in=ips | names) |
                 db.Q(name__in=names | revnames | starnames | starrevnames)
             ).distinct().order_by('type', 'name', 'content')
+        if limit_types is not None:
+            query = query.filter(type__in=limit_types)
+        return query
 
-    def handle_form(self, form, form_name, fill_record, create_record):
+
+    def get_hostnames(self):
+        ipaddresses = self.object.ipaddress_set.all()
+        ips = set(ip.address for ip in ipaddresses)
+        names = set(ip.hostname for ip in ipaddresses if ip.hostname)
+        revnames = set('.'.join(reversed(ip.split('.'))) + '.in-addr.arpa'
+                       for ip in ips)
+        hostnames = set(names)
+        for record in Record.objects.filter(
+            type='A',
+            content__in=ips,
+        ):
+            hostnames.add(record.name)
+        for record in Record.objects.filter(
+            type='PTR',
+            name__in=revnames,
+        ):
+            hostnames.add(record.content.strip('.'))
+        return hostnames
+
+
+    def handle_form(self, form, form_name, fill_record, create_record,
+                    delete_record=None):
         if form.is_valid():
             for record in form.records:
                 prefix = '%s_%d_' % (form_name, record.id)
                 if form.cleaned_data.get(prefix + 'del'):
                     messages.warning(self.request,
                                      "A %s record deleted." % form_name)
+                    if delete_record is not None:
+                        delete_record(form, record, self.request)
+                    record.saving_user = self.request.user
+                    record.saving_device = self.object
                     record.delete()
                 else:
                     fill_record(form, prefix, record, self.request)
+                    record.saving_user = self.request.user
+                    record.saving_device = self.object
                     record.save()
             create_record(form, self.request, self.object)
             messages.success(self.request,
@@ -579,13 +645,16 @@ class Addresses(DeviceDetailView):
                 "You don't have permission to edit this."
             )
         if 'dns' in self.request.POST:
-            dns_records = self.get_dns()
-            self.dns_form = DNSRecordsForm(dns_records, self.request.POST)
+            dns_records = self.get_dns(self.limit_types)
+            self.dns_form = DNSRecordsForm(dns_records,
+                                           self.get_hostnames(),
+                                           self.request.POST)
             return self.handle_form(
                 self.dns_form,
                 'dns',
                 _dns_fill_record,
-                _dns_create_record
+                _dns_create_record,
+                _dns_delete_record,
             ) or self.get(*args, **kwargs)
         elif 'dhcp' in self.request.POST:
             dhcp_records = self.get_dhcp()
@@ -594,7 +663,7 @@ class Addresses(DeviceDetailView):
                 self.dhcp_form,
                 'dhcp',
                 _dhcp_fill_record,
-                _dhcp_create_record
+                _dhcp_create_record,
             ) or self.get(*args, **kwargs)
         elif 'ip' in self.request.POST:
             ip_records = self.object.ipaddress_set.order_by('address')
@@ -603,7 +672,7 @@ class Addresses(DeviceDetailView):
                 self.ip_form,
                 'ip',
                 _ip_fill_record,
-                _ip_create_record
+                _ip_create_record,
             ) or self.get(*args, **kwargs)
         return self.get(*args, **kwargs)
 
@@ -614,8 +683,8 @@ class Addresses(DeviceDetailView):
     def get_context_data(self, **kwargs):
         ret = super(Addresses, self).get_context_data(**kwargs)
         if self.dns_form is None:
-            dns_records = self.get_dns()
-            self.dns_form = DNSRecordsForm(dns_records)
+            dns_records = self.get_dns(self.limit_types)
+            self.dns_form = DNSRecordsForm(dns_records, self.get_hostnames())
         if self.dhcp_form is None:
             dhcp_records = self.get_dhcp()
             self.dhcp_form = DHCPRecordsForm(dhcp_records)
@@ -733,9 +802,14 @@ class Discover(DeviceDetailView):
     def get_context_data(self, **kwargs):
         ret = super(Discover, self).get_context_data(**kwargs)
         addresses = [ip.address for ip in self.object.ipaddress_set.all()]
+        warnings = DiscoveryWarning.objects.filter(
+            db.Q(device=self.object),
+            db.Q(ip__in=addresses),
+        ).order_by('-date')
         ret.update({
             'address': addresses[0] if addresses else '',
-            'addresses': json.dumps(addresses)
+            'addresses': json.dumps(addresses),
+            'warnings': warnings,
         })
         return ret
 
