@@ -193,7 +193,8 @@ CELERY_ROUTES = (
 AJAX_LOOKUP_CHANNELS = {
     'ci': ('ralph.cmdb.models', 'CILookup'),
     'asset_model': ('ralph.assets.models', 'AssetModelLookup'),
-    'asset_device': ('ralph.assets.models', 'DeviceLookup')
+    'asset_device': ('ralph.assets.models', 'DeviceLookup'),
+    'asset_warehouse': ('ralph.assets.models', 'WarehouseLookup'),
 }
 # magically include jqueryUI/js/css
 AJAX_SELECT_BOOTSTRAP = True
