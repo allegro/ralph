@@ -345,6 +345,17 @@ class DataCenterAddPart(AddPart, DataCenterMixin):
     sidebar_selected = 'add part'
 
 
+def _additional_office_data_clean(data):
+    if not data.get('attachment') and isinstance(data.get('attachment'), bool):
+        data.update({'attachment': None})
+    elif not data.get('attachment'):
+        try:
+            del data['attachment']
+        except KeyError:
+            pass
+    return data
+
+
 class EditDevice(Base):
     template_name = 'assets/edit_device.html'
 
@@ -394,7 +405,10 @@ class EditDevice(Base):
                 office_info = OfficeInfo()
             else:
                 office_info = asset.office_info
-            office_info.__dict__.update(**self.office_info_form.cleaned_data)
+            office_info_data = _additional_office_data_clean(
+                self.office_info_form.cleaned_data
+            )
+            office_info.__dict__.update(**office_info_data)
             office_info.save(user=self.request.user)
             asset.office_info = office_info
             asset.device_info.__dict__.update(
@@ -465,7 +479,10 @@ class EditPart(Base):
                 office_info = OfficeInfo()
             else:
                 office_info = asset.office_info
-            office_info.__dict__.update(**self.office_info_form.cleaned_data)
+            office_info_data = _additional_office_data_clean(
+                self.office_info_form.cleaned_data
+            )
+            office_info.__dict__.update(**office_info_data)
             office_info.save(user=self.request.user)
             asset.office_info = office_info
             if not asset.part_info:
