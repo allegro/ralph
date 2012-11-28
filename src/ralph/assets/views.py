@@ -467,7 +467,10 @@ class EditPart(Base):
                 part_info = PartInfo()
             else:
                 part_info = asset.part_info
-            part_info.__dict__.update(**self.part_info_form.cleaned_data)
+            part_info_data = self.part_info_form.cleaned_data
+            part_info.device = part_info_data.get('device')
+            part_info.source_device = part_info_data.get('source_device')
+            part_info.barcode_salvaged = part_info_data.get('barcode_salvaged')
             part_info.save(user=self.request.user)
             asset.part_info = part_info
             asset.save(user=self.request.user)
