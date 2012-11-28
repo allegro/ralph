@@ -120,15 +120,23 @@ class BackOfficeMixin(AssetsMixin):
 class AssetSearch(AssetsMixin):
     def handle_search_data(self):
         search_fields = [
-            'model', 'invoice_no', 'order_no', 'buy_date',
+            'model', 'invoice_no', 'order_no',
             'provider', 'status', 'sn'
         ]
+        # handle simple 'equals' search fields at once.
         all_q = Q()
         for field in search_fields:
             field_value = self.request.GET.get(field)
             if field_value:
                 q = Q(**{'%s' % field: field_value})
                 all_q = all_q & q
+        # now fields within ranges.
+        buy_date_from = self.request.GET.get('buy_date_from')
+        buy_date_to = self.request.GET.get('buy_date_to')
+        if buy_date_from:
+            all_q &= Q(buy_date__gte=buy_date_from)
+        if buy_date_to:
+            all_q &= Q(buy_date__lte=buy_date_to)
         return self.get_all_items(all_q)
 
     def get_all_items(self, query):
