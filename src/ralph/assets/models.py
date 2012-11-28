@@ -59,7 +59,9 @@ class AssetModelLookup(LookupChannel):
     model = AssetModel
 
     def get_query(self, q, request):
-        return AssetModel.objects.filter(Q(name__istartswith=q)).order_by('name')[:10]
+        return AssetModel.objects.filter(
+            Q(name__istartswith=q)
+        ).order_by('name')[:10]
 
     def get_result(self, obj):
         return obj.id
@@ -75,7 +77,9 @@ class WarehouseLookup(LookupChannel):
     model = Warehouse
 
     def get_query(self, q, request):
-        return Warehouse.objects.filter(Q(name__istartswith=q)).order_by('name')[:10]
+        return Warehouse.objects.filter(
+            Q(name__istartswith=q)
+        ).order_by('name')[:10]
 
     def get_result(self, obj):
         return obj.id
@@ -95,7 +99,6 @@ class DCDeviceLookup(DeviceLookup):
 class BODeviceLookup(DeviceLookup):
     def get_base_objects(self):
         return Asset.objects_bo()
-
 
 
 __all__ = [

@@ -7,12 +7,13 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from datetime import datetime
+
 from django.db import models as db
-from django.db.models.signals import pre_delete, post_save
+from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.translation import ugettext_lazy as _
-from ralph.assets.history import field_changes
 
+from ralph.assets.history import field_changes
 from ralph.assets.models_assets import Asset, DeviceInfo, PartInfo, OfficeInfo
 
 
@@ -69,6 +70,7 @@ def asset_post_save(sender, instance, raw, using, **kwargs):
             comment=instance.save_comment,
         ).save()
     update_releated_fields(instance)
+
 
 @receiver(post_save, sender=DeviceInfo, dispatch_uid='ralph.history_assets')
 def device_info_post_save(sender, instance, raw, using, **kwargs):

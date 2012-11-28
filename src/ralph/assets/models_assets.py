@@ -12,9 +12,9 @@ import datetime
 
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-
 from lck.django.common.models import TimeTrackable, EditorTrackable
 from lck.django.choices import Choices
+
 from ralph.discovery.models_util import SavingUser
 
 
@@ -116,6 +116,7 @@ class OfficeInfo(TimeTrackable, SavingUser):
         self.saving_user = None
         super(OfficeInfo, self).__init__(*args, **kwargs)
 
+
 class Asset(TimeTrackable, EditorTrackable, SavingUser):
     device_info = models.OneToOneField('DeviceInfo', null=True, blank=True)
     part_info = models.OneToOneField('PartInfo', null=True, blank=True)
@@ -181,11 +182,11 @@ class Asset(TimeTrackable, EditorTrackable, SavingUser):
         else:
             raise UserWarning('Unknown asset data type!')
 
-
     def __init__(self, *args, **kwargs):
         self.save_comment = None
         self.saving_user = None
         super(Asset, self).__init__(*args, **kwargs)
+
 
 class DeviceInfo(TimeTrackable, SavingUser):
     ralph_device = models.ForeignKey('discovery.Device', null=True, blank=True,
