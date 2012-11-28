@@ -8,16 +8,17 @@ from __future__ import unicode_literals
 
 import re
 
-from django import forms
-from django.forms import ModelForm, Form
+from ajax_select.fields import AutoCompleteSelectField
+from django.forms import (
+    ModelForm, Form, CharField, DateField, ChoiceField, ValidationError
+)
+from django.forms.widgets import Textarea, TextInput
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models import (
-    Asset, OfficeInfo, DeviceInfo, PartInfo, AssetStatus,
-    AssetType
+    Asset, OfficeInfo, DeviceInfo, PartInfo, AssetStatus, AssetType,
 )
 from ralph.ui.widgets import DateWidget, HiddenSelectWidget
-from ajax_select.fields import AutoCompleteSelectField
 
 
 class BaseAssetForm(ModelForm):
@@ -30,10 +31,10 @@ class BaseAssetForm(ModelForm):
             'sn', 'barcode', 'remarks',
         )
         widgets = {
-            'sn': forms.widgets.Textarea(attrs={'rows': 25}),
-            'barcode': forms.widgets.Textarea(attrs={'rows': 25}),
+            'sn': Textarea(attrs={'rows': 25}),
+            'barcode': Textarea(attrs={'rows': 25}),
             'buy_date': DateWidget(),
-            'remarks': forms.widgets.Textarea(attrs={'rows': 3}),
+            'remarks': Textarea(attrs={'rows': 3}),
         }
     model = AutoCompleteSelectField(
         'asset_model', required=True,
@@ -53,7 +54,7 @@ class BaseAssetForm(ModelForm):
                 (c.id, c.desc) for c in AssetType.BO.choices]
 
 
-class BarcodeField(forms.CharField):
+class BarcodeField(CharField):
     def to_python(self, value):
         return value if value else None
 
@@ -115,11 +116,11 @@ def _validate_multivalue_data(data):
                   "by new line or comma.")
     data = data.strip()
     if not data:
-        raise forms.ValidationError(error_msg)
+        raise ValidationError(error_msg)
     if data.find(" ") > 0:
-        raise forms.ValidationError(error_msg)
+        raise ValidationError(error_msg)
     if not filter(len, data.split("\n")) and not filter(len, data.split(",")):
-        raise forms.ValidationError(error_msg)
+        raise ValidationError(error_msg)
 
 
 class AddPartForm(BaseAssetForm):
@@ -145,13 +146,13 @@ class AddDeviceForm(BaseAssetForm):
             barcodes_count = len(filter(len, re.split(",|\n", data)))
             sn_count = len(filter(len, re.split(",|\n", sn_data)))
             if sn_count != barcodes_count:
-                raise forms.ValidationError(_("Barcode list could be empty or "
-                                              "must have the same number of "
-                                              "items as a SN list."))
+                raise ValidationError(_("Barcode list could be empty or "
+                                        "must have the same number of "
+                                        "items as a SN list."))
         return data
 
 
-class OfficeForm(forms.ModelForm):
+class OfficeForm(ModelForm):
     class Meta:
         model = OfficeInfo
         exclude = ('created', 'modified')
@@ -163,7 +164,7 @@ class OfficeForm(forms.ModelForm):
 class EditPartForm(BaseAssetForm):
     def __init__(self, *args, **kwargs):
         super(EditPartForm, self).__init__(*args, **kwargs)
-        self.fields['sn'].widget = forms.widgets.TextInput()
+        self.fields['sn'].widget = TextInput()
         self.fields['sn'].label = _("SN")
         del self.fields['barcode']
 
@@ -171,9 +172,9 @@ class EditPartForm(BaseAssetForm):
 class EditDeviceForm(BaseAssetForm):
     def __init__(self, *args, **kwargs):
         super(EditDeviceForm, self).__init__(*args, **kwargs)
-        self.fields['sn'].widget = forms.widgets.TextInput()
+        self.fields['sn'].widget = TextInput()
         self.fields['sn'].label = _("SN")
-        self.fields['barcode'].widget = forms.widgets.TextInput()
+        self.fields['barcode'].widget = TextInput()
         self.fields['barcode'].label = _("Barcode")
 
 
@@ -184,14 +185,12 @@ class SearchAssetForm(Form):
         help_text=None
     )
 
-    invoice_no = forms.CharField(required=False)
-    order_no = forms.CharField(required=False)
-    buy_date = forms.DateField(required=False)
-    provider = forms.CharField(required=False)
-    status = forms.ChoiceField(
-        required=False, choices=AssetStatus()
-    )
-    sn = forms.CharField(required=False)
+    invoice_no = CharField(required=False)
+    order_no = CharField(required=False)
+    buy_date = DateField(required=False, widget=DateWidget())
+    provider = CharField(required=False)
+    status = ChoiceField(required=False, choices=AssetStatus())
+    sn = CharField(required=False)
 
     def __init__(self, *args, **kwargs):
         mode = kwargs.get('mode')
