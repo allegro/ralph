@@ -19,7 +19,7 @@ from lck.django.common import nested_commit_on_success
 from ralph.assets.forms import (
     AddDeviceForm, AddPartForm, EditDeviceForm,
     EditPartForm, BaseDeviceForm, OfficeForm,
-    BasePartForm, BaseAssetForm
+    BasePartForm, BaseAssetForm, BulkEditAssetForm
 )
 from ralph.assets.models import (
     DeviceInfo, AssetSource, Asset, OfficeInfo, PartInfo,
@@ -482,21 +482,18 @@ class BulkEdit(Base):
 
     def get(self, *args, **kwargs):
         assets_count = Asset.objects.filter(
-            pk__in=self.request.GET.getlist('assets', [])).count()
+            pk__in=self.request.GET.getlist('assets')).count()
         if not assets_count:
             messages.warning(self.request, _("Nothing to edit."))
             return HttpResponseRedirect(_get_return_link(self.request))
         AssetFormSet = modelformset_factory(
             Asset,
-            extra=0,
-            exclude=(
-                'created', 'modified', 'part_info',
-                'office_info'
-            )
+            form=BulkEditAssetForm,
+            extra=0
         )
         self.asset_formset = AssetFormSet(
             queryset=Asset.objects.filter(
-                pk__in=self.request.GET.getlist('assets', [])
+                pk__in=self.request.GET.getlist('assets')
             )
         )
         return super(BulkEdit, self).get(*args, **kwargs)
@@ -505,25 +502,24 @@ class BulkEdit(Base):
     def post(self, *args, **kwargs):
         AssetFormSet = modelformset_factory(
             Asset,
-            extra=0,
-            exclude=(
-                'created', 'modified', 'part_info',
-                'office_info'
-            )
+            form=BulkEditAssetForm,
+            extra=0
         )
         self.asset_formset = AssetFormSet(self.request.POST)
         if self.asset_formset.is_valid():
-            #device_infos = {}
-            #for item in self.asset_formset.cleaned_data:
-            #    device_infos[item['id'].id] = item['id']
             instances = self.asset_formset.save(commit=False)
             for instance in instances:
                 instance.modified_by = self.request.user.get_profile()
-                #instance.device_info = device_infos[instance.id].device_info
                 instance.save()
             messages.success(self.request, _("Changes saved."))
             return HttpResponseRedirect(self.request.get_full_path())
         messages.error(self.request, _("Please correct the errors."))
+        form_error = self.asset_formset.get_form_error()
+        if form_error and 'duplicate' in form_error:
+            messages.error(
+                self.request,
+                _("Please correct duplicated serial numbers or barcodes.")
+            )
         return super(BulkEdit, self).get(*args, **kwargs)
 
 
