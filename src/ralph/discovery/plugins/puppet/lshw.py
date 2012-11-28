@@ -16,14 +16,14 @@ from .facts import handle_facts_ethernets
 from .util import assign_ips
 from ralph.discovery import lshw
 from ralph.discovery.models import SERIAL_BLACKLIST
-from ralph.util.others import get_base64_compressed_data
+from ralph.util import uncompress_base64_data
 
 SAVE_PRIORITY = 53
 
 
 @nested_commit_on_success
 def parse_lshw(data, facts, is_virtual):
-    data = get_base64_compressed_data(data)
+    data = uncompress_base64_data(data)
     sn = facts.get('serialnumber') # use a Puppet fact because lshw gives
                                    # wrong serial numbers
     if sn in SERIAL_BLACKLIST:

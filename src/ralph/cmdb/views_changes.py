@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 
 import calendar
 import datetime
+from urlparse import urljoin
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -21,7 +22,6 @@ from ralph.cmdb.models_changes import CI_CHANGE_TYPES
 from ralph.cmdb.views import BaseCMDBView, get_icon_for
 from ralph.cmdb.forms import CIChangeSearchForm, CIReportsParamsForm
 from ralph.cmdb.util import PaginatedView
-from ralph.util.views import build_url
 
 
 class ChangesBase(BaseCMDBView):
@@ -137,7 +137,7 @@ class Changes(ChangesBase, PaginatedView):
             'form': self.form,
             'subsection': subsection,
             'sidebar_selected': sidebar_selected,
-            'jira_url': build_url(settings.ISSUETRACKERS['default']['URL'], 'browse'),
+            'jira_url': urljoin(settings.ISSUETRACKERS['default']['URL'], 'browse'),
         })
         return ret
 
@@ -189,7 +189,7 @@ class Problems(ChangesBase, PaginatedView):
         ret = super(Problems, self).get_context_data(**kwargs)
         ret.update({
             'problems': self.data,
-            'jira_url': build_url(settings.ISSUETRACKERS['default']['URL'], 'browse'),
+            'jira_url': urljoin(settings.ISSUETRACKERS['default']['URL'], 'browse'),
             'subsection': 'Problems',
             'sidebar_selected': 'problems',
         })
@@ -209,7 +209,7 @@ class Incidents(ChangesBase, PaginatedView):
         ret = super(Incidents, self).get_context_data(**kwargs)
         ret.update({
             'incidents': self.data,
-            'jira_url': build_url(settings.ISSUETRACKERS['default']['URL'], 'browse'),
+            'jira_url': urljoin(settings.ISSUETRACKERS['default']['URL'], 'browse'),
             'subsection': 'Incidents',
             'sidebar_selected': 'incidents',
         })
@@ -673,7 +673,7 @@ class TimeLine(BaseCMDBView):
             agent_warnings=agent_warnings,
             agent_errors=agent_errors,
             plot_title=plot_title,
-            issuetracker_url=build_url(
+            issuetracker_url=urljoin(
                 settings.ISSUETRACKERS['default']['URL'], 'browse'
             )
         )

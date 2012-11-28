@@ -121,9 +121,12 @@ class JiraEventsImporter(BaseImporter):
             prob = obj[0]
         else:
             prob = classtype()
-        prob.description = issue.get('description','')
-        if prob.description and len(prob.description) > 1024:
-            prob.description = prob.description[0:1024]
+        prob.description = issue.get('description', '')
+        if prob.description is not None:
+            if prob.description and len(prob.description) > 1024:
+                prob.description = prob.description[0:1024]
+        else:
+            prob.description = ''
         prob.summary = issue.get('summary')
         prob.status = issue.get('status')
         prob.assignee = issue.get('assignee')

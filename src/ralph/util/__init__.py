@@ -6,7 +6,10 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import base64
 from collections import namedtuple
+import re
+import zlib
 
 
 Eth = namedtuple('Eth', 'label mac speed')
@@ -18,3 +21,23 @@ def untangle(seq):
                 yield e
     else:
         yield seq
+
+
+BASE64_ALPHABET = re.compile(b'^[A-Za-z0-9+/]*={0,2}$')
+
+
+def uncompress_base64_data(data):
+    """
+    Return `data` decompressed with zlib. If `data` is valid Base64, decode it
+    before decompression. If decompression fails, return raw data.
+    """
+    if BASE64_ALPHABET.match(data):
+        try:
+            data = base64.b64decode(data)
+        except TypeError:
+            pass # padding error
+    try:
+        data = zlib.decompress(data)
+    except zlib.error:
+        pass
+    return data

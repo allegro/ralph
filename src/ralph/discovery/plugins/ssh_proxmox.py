@@ -16,7 +16,6 @@ import json
 
 from django.conf import settings
 from lck.django.common import nested_commit_on_success
-from lxml import etree as ET
 
 from ralph.util import network
 from ralph.util import plugin, Eth
@@ -24,6 +23,7 @@ from ralph.discovery.models import (DeviceType, Device, IPAddress, Software,
         DiskShare, DiskShareMount, ComponentModel, Processor, ComponentType,
         Storage)
 from ralph.discovery.hardware import get_disk_shares
+from ralph.discovery.models_history import DiscoveryWarning
 
 
 logger = logging.getLogger(__name__)
@@ -40,13 +40,18 @@ def _connect_ssh(ip, username='root', password=''):
     return network.connect_ssh(ip, 'root', settings.SSH_PASSWORD)
 
 
-def _get_local_disk_size(ssh, disk):
+def _get_local_disk_size(ssh, disk, prent):
     """Return the size of a disk image file, in bytes"""
 
     path = os.path.join('/var/lib/vz/images', disk)
     stdin, stdout, stderr = ssh.exec_command("du -m '%s'" % path)
     line = stdout.read().strip()
     if not line:
+        DiscoveryWarning(
+            message="Local disk fiel %r does not exist." % path,
+            plugin=__name__,
+            device=parent,
+        ).save()
         return 0
     size = int(line.split(None, 1)[0])
     return size
@@ -82,6 +87,11 @@ def _add_virtual_machine(ssh, vmid, parent, master, storages):
         elif key.startswith('ide') or key.startswith('virtio'):
             disks[key] = value.strip()
     if lan_model is None:
+        DiscoveryWarning(
+            message="No LAN for virtual server %r." % vmid,
+            plugin=__name__,
+            device=parent,
+        ).save()
         return None
     dev = Device.create(
             model_name='Proxmox qemu kvm',
@@ -107,7 +117,7 @@ def _add_virtual_machine(ssh, vmid, parent, master, storages):
             vg = ''
             lv = disk
         if vg == 'local':
-            size = _get_local_disk_size(ssh, lv)
+            size = _get_local_disk_size(ssh, lv, parent)
             if not size > 0:
                 continue
             model, created = ComponentModel.concurrent_get_or_create(
@@ -128,12 +138,22 @@ def _add_virtual_machine(ssh, vmid, parent, master, storages):
             wwn, size = storages[lv]
         except KeyError:
             logger.warning('Volume %r does not exist.' % lv)
+            DiscoveryWarning(
+                message="Volume %r does not exist." % lv,
+                plugin=__name__,
+                device=dev,
+            ).save()
             continue
         try:
             share = DiskShare.objects.get(wwn=wwn)
             wwns.append(wwn)
         except DiskShare.DoesNotExist:
-            logger.warning('A share with WWN %r does not exist.' % wwn)
+            logger.warning('A share with serial %r does not exist.' % wwn)
+            DiscoveryWarning(
+                message="A share with serial %r does not exist." % wwn,
+                plugin=__name__,
+                device=dev,
+            ).save()
             continue
         mount, created = DiskShareMount.concurrent_get_or_create(
                 share=share, device=dev)
@@ -276,14 +296,20 @@ def ssh_proxmox(**kwargs):
     if kwargs.get('http_family') not in ('Proxmox',):
         return False, 'no match.', kwargs
     if not network.check_tcp_port(ip, 22):
+        DiscoveryWarning(
+            message="Port 22 closed on a Proxmox server.",
+            plugin=__name__,
+            ip=ip,
+        ).save()
         return False, 'closed.', kwargs
     try:
         name = run_ssh_proxmox(ip)
-    except (network.Error, Error) as e:
-        return False, str(e), kwargs
-    except paramiko.SSHException as e:
-        return False, str(e), kwargs
-    except Error as e:
+    except (network.Error, Error, paramiko.SSHException) as e:
+        DiscoveryWarning(
+            message="This is a Proxmox, but: " + str(e),
+            plugin=__name__,
+            ip=ip,
+        ).save()
         return False, str(e), kwargs
     return True, name, kwargs
 
