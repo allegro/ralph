@@ -100,11 +100,11 @@ class BackOfficeMixin(AssetsMixin):
 
     def get_sidebar_items(self):
         items = (
-                ('/assets/back_office/add/device/', 'Add device',
-                 'fugue-block--plus'),
-                ('/assets/back_office/add/part/', 'Add part',
-                 'fugue-block--plus'),
-                ('/assets/back_office/search', 'Search', 'fugue-magnifier'),
+            ('/assets/back_office/add/device/', 'Add device',
+                'fugue-block--plus'),
+            ('/assets/back_office/add/part/', 'Add part',
+                'fugue-block--plus'),
+            ('/assets/back_office/search', 'Search', 'fugue-magnifier'),
         )
         sidebar_menu = (
             [MenuHeader('Back office actions')] +
@@ -579,3 +579,15 @@ class BackOfficeBulkEdit(BulkEdit, BackOfficeMixin):
 
 class DataCenterBulkEdit(BulkEdit, DataCenterMixin):
     sidebar_selected = None
+
+
+class DeleteAsset(Base):
+    @nested_commit_on_success
+    def get(self, *args, **kwargs):
+        asset = get_object_or_404(Asset, id=kwargs.get('asset_id'))
+        if asset.device_info:
+            Asset.objects.filter(part_info__device=asset).update(deleted=True)
+        asset.deleted = True
+        asset.save()
+        return HttpResponseRedirect(_get_return_link(self.request))
+
