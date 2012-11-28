@@ -4,13 +4,14 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
-from django.core.paginator import Paginator
 
 import re
 
 from bob.menu import MenuItem, MenuHeader
 from django.contrib import messages
+from django.core.paginator import Paginator
 from django.db import IntegrityError, transaction
+from django.db.models import Q
 from django.http import HttpResponseRedirect, Http404
 from django.forms.models import modelformset_factory
 from django.shortcuts import get_object_or_404
@@ -20,15 +21,13 @@ from lck.django.common import nested_commit_on_success
 from ralph.assets.forms import (
     AddDeviceForm, AddPartForm, EditDeviceForm,
     EditPartForm, BaseDeviceForm, OfficeForm,
-    BasePartForm, BaseAssetForm, BulkEditAssetForm
+    BasePartForm, BulkEditAssetForm, SearchAssetForm
 )
 from ralph.assets.models import (
     DeviceInfo, AssetSource, Asset, OfficeInfo, PartInfo,
 )
 from ralph.assets.models_history import AssetHistoryChange
 from ralph.ui.views.common import Base
-from ralph.assets.forms import SearchAssetForm
-from django.db.models import Q
 
 
 SAVE_PRIORITY = 200
@@ -145,7 +144,8 @@ class AssetSearch(AssetsMixin):
         return ret
 
     def get(self, *args, **kwargs):
-        self.form = SearchAssetForm(self.request.GET, mode=_get_mode(self.request))
+        self.form = SearchAssetForm(
+            self.request.GET, mode=_get_mode(self.request))
         self.data = self.handle_search_data()
         return super(AssetSearch, self).get(*args, **kwargs)
 
@@ -488,6 +488,7 @@ class DataCenterEditPart(EditPart, DataCenterMixin):
 class HistoryAsset(BackOfficeMixin):
     template_name = 'assets/history_asset.html'
     sidebar_selected = None
+
     def get_context_data(self, **kwargs):
         query_variable_name = 'history_page'
         ret = super(HistoryAsset, self).get_context_data(**kwargs)
@@ -515,7 +516,7 @@ class HistoryAsset(BackOfficeMixin):
             'status': status,
             'query_variable_name': query_variable_name,
             'asset': asset,
-            })
+        })
         return ret
 
 
