@@ -29,7 +29,7 @@ from ralph.assets.models import (
 )
 from ralph.assets.models_assets import AssetType
 from ralph.assets.models_history import AssetHistoryChange
-from ralph.ui.views.common import Base, PaginatedMixin
+from ralph.ui.views.common import Base, PaginationMixin
 
 
 
@@ -79,8 +79,6 @@ class AssetsMixin(Base):
         ]
 
 
-
-
 class DataCenterMixin(AssetsMixin):
     mainmenu_selected = 'dc'
 
@@ -123,7 +121,7 @@ class BackOfficeMixin(AssetsMixin):
         return sidebar_menu
 
 
-class AssetSearch(AssetsMixin, PaginatedMixin):
+class AssetSearch(AssetsMixin, PaginationMixin):
     ROWS_PER_PAGE = 15
 
     def handle_search_data(self):
