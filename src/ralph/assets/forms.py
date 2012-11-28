@@ -107,10 +107,10 @@ class BasePartForm(ModelForm):
             channel, required=False,
             help_text='Enter barcode, sn, or model.',
         )
-        self.fields['source_device'].initial = self.instance.source_device
-
-    def save(self, *args, **kwargs):
-        super(BasePartForm, self).save(*args, **kwargs)
+        if self.instance.source_device:
+            self.fields['source_device'].initial = self.instance.source_device.id
+        if self.instance.device:
+            self.fields['device'].initial = self.instance.device.id
 
 
 def _validate_multivalue_data(data):
@@ -207,8 +207,7 @@ class SearchAssetForm(Form):
     sn = CharField(required=False, label='SN')
 
     def __init__(self, *args, **kwargs):
-        # Data source differs when using in DC/BO,
-        # use correctly AjaxSelect channel depending on mode.
+        # Ajax sources are different for DC/BO, use mode for distinguish
         mode = kwargs.get('mode')
         if mode:
             del kwargs['mode']

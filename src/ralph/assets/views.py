@@ -29,13 +29,15 @@ from ralph.assets.models import (
 )
 from ralph.assets.models_assets import AssetType
 from ralph.assets.models_history import AssetHistoryChange
-from ralph.ui.views.common import Base
+from ralph.ui.views.common import Base, PaginatedMixin
+
 
 
 SAVE_PRIORITY = 200
 HISTORY_PAGE_SIZE = 25
 MAX_PAGE_SIZE = 65535
 CONNECT_ASSET_WITH_DEVICE = settings.CONNECT_ASSET_WITH_DEVICE
+
 
 class AssetsMixin(Base):
     template_name = "assets/base.html"
@@ -75,6 +77,8 @@ class AssetsMixin(Base):
                 href='/assets/back_office',
             ),
         ]
+
+
 
 
 class DataCenterMixin(AssetsMixin):
@@ -119,7 +123,9 @@ class BackOfficeMixin(AssetsMixin):
         return sidebar_menu
 
 
-class AssetSearch(AssetsMixin):
+class AssetSearch(AssetsMixin, PaginatedMixin):
+    ROWS_PER_PAGE = 15
+
     def handle_search_data(self):
         search_fields = [
             'model', 'invoice_no', 'order_no',
@@ -139,16 +145,17 @@ class AssetSearch(AssetsMixin):
             all_q &= Q(buy_date__gte=buy_date_from)
         if buy_date_to:
             all_q &= Q(buy_date__lte=buy_date_to)
-        return self.get_all_items(all_q)
+        self.page = self.paginate(self.get_all_items(all_q))
+        return self.page_contents
 
     def get_all_items(self, query):
         return Asset.objects().filter(query)
 
     def get_context_data(self, *args, **kwargs):
         ret = super(AssetSearch, self).get_context_data(*args, **kwargs)
+        ret.update(super(AssetSearch, self).get_context_data_paginator(*args, **kwargs))
         ret.update({
             'form': self.form,
-            'data': self.data,
             'header': self.header,
         })
         return ret
@@ -156,7 +163,7 @@ class AssetSearch(AssetsMixin):
     def get(self, *args, **kwargs):
         self.form = SearchAssetForm(
             self.request.GET, mode=_get_mode(self.request))
-        self.data = self.handle_search_data()
+        self.page_data = self.handle_search_data()
         return super(AssetSearch, self).get(*args, **kwargs)
 
 
@@ -474,7 +481,7 @@ class EditPart(Base):
     @nested_commit_on_success
     def post(self, *args, **kwargs):
         asset = get_object_or_404(Asset, id=kwargs.get('asset_id'))
-        self.asset_form = EditDeviceForm(
+        self.asset_form = EditPartForm(
             self.request.POST, instance=asset, mode=_get_mode(self.request))
         self.office_info_form = OfficeForm(
             self.request.POST, self.request.FILES)
@@ -571,7 +578,7 @@ class BulkEdit(Base):
 
     def get(self, *args, **kwargs):
         assets_count = Asset.objects.filter(
-            pk__in=self.request.GET.getlist('assets')).count()
+            pk__in=self.request.GET.getlist('select')).count()
         if not assets_count:
             messages.warning(self.request, _("Nothing to edit."))
             return HttpResponseRedirect(_get_return_link(self.request))
@@ -582,7 +589,7 @@ class BulkEdit(Base):
         )
         self.asset_formset = AssetFormSet(
             queryset=Asset.objects.filter(
-                pk__in=self.request.GET.getlist('assets')
+                pk__in=self.request.GET.getlist('select')
             )
         )
         return super(BulkEdit, self).get(*args, **kwargs)

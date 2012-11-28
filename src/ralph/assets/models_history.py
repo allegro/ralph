@@ -60,6 +60,7 @@ class AssetHistoryChange(db.Model):
 @receiver(post_save, sender=Asset, dispatch_uid='ralph.history_assets')
 def asset_post_save(sender, instance, raw, using, **kwargs):
     """A hook for creating ``HistoryChange`` entries when a asset changes."""
+    return
     for field, orig, new in field_changes(instance):
         AssetHistoryChange(
             asset=instance,
