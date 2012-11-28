@@ -16,7 +16,7 @@ from ralph.assets.models import (
     Asset, OfficeInfo, DeviceInfo, PartInfo, AssetStatus,
     AssetType
 )
-from ralph.ui.widgets import DateWidget
+from ralph.ui.widgets import DateWidget, HiddenSelectWidget
 from ajax_select.fields import AutoCompleteSelectField
 
 
@@ -51,6 +51,27 @@ class BaseAssetForm(ModelForm):
         elif mode == "back_office":
             self.fields['type'].choices = [
                 (c.id, c.desc) for c in AssetType.BO.choices]
+
+
+class BarcodeField(forms.CharField):
+    def to_python(self, value):
+        return value if value else None
+
+
+class BulkEditAssetForm(ModelForm):
+    class Meta:
+        model = Asset
+        fields = (
+            'type', 'model', 'device_info', 'invoice_no', 'order_no',
+            'buy_date', 'support_period', 'support_type',
+            'support_void_reporting', 'provider', 'status', 'sn', 'barcode',
+            'source',
+        )
+        widgets = {
+            'buy_date': DateWidget(),
+            'device_info': HiddenSelectWidget(),
+        }
+    barcode = BarcodeField(max_length=200, required=False)
 
 
 class BaseDeviceForm(ModelForm):

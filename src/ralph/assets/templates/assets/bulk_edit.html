@@ -29,7 +29,7 @@
           <td style="vertical-align:middle">
             {{ forloop.counter }}
             {{ form.id }}
-            <div style="display:none">{{ form.device_info }}</div>
+            {{ form.device_info }}
           </td>
           <td class="control-group{% if form.type.errors %} error{% endif %}" style="vertical-align:middle">
             {{ form.type }}
