@@ -33,7 +33,7 @@ class HistoryAssetsView(TestCase):
             'buy_date': '2012-11-28',
             'support_period': 24,
             'support_type': 'standard',
-            'suppor:t_void_reporting': 'on',
+            'support_void_reporting': 'on',
             'provider': 'test_provider',
             'status': AssetStatus.new.id,
             'remarks': 'test_remarks',

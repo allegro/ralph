@@ -10,6 +10,7 @@ import re
 
 from bob.menu import MenuItem, MenuHeader
 from django.contrib import messages
+from django.conf import settings
 from django.db import IntegrityError, transaction
 from django.http import HttpResponseRedirect, Http404
 from django.forms.models import modelformset_factory
@@ -25,6 +26,7 @@ from ralph.assets.forms import (
 from ralph.assets.models import (
     DeviceInfo, AssetSource, Asset, OfficeInfo, PartInfo,
 )
+from ralph.assets.models_assets import AssetType
 from ralph.assets.models_history import AssetHistoryChange
 from ralph.ui.views.common import Base
 from ralph.assets.forms import SearchAssetForm
@@ -34,7 +36,7 @@ from django.db.models import Q
 SAVE_PRIORITY = 200
 HISTORY_PAGE_SIZE = 25
 MAX_PAGE_SIZE = 65535
-
+CONNECT_ASSET_WITH_DEVICE = settings.CONNECT_ASSET_WITH_DEVICE
 
 class AssetsMixin(Base):
     template_name = "assets/base.html"
@@ -230,6 +232,9 @@ class AddDevice(Base):
                     sn=sn.strip(),
                     **asset_data
                 )
+                if (asset.type == AssetType.data_center.id) and (
+                    CONNECT_ASSET_WITH_DEVICE):
+                    asset.create_stock_device()
                 if barcodes:
                     asset.barcode = barcodes[i].strip()
                 try:

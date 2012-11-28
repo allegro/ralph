@@ -15,7 +15,12 @@ from django.utils.translation import ugettext_lazy as _
 
 from lck.django.common.models import TimeTrackable, EditorTrackable
 from lck.django.choices import Choices
+from ralph.business.models import Venture
+from ralph.discovery.models_device import Device, DeviceType
 from ralph.discovery.models_util import SavingUser
+
+
+SAVE_PRIORITY = 0
 
 
 class LicenseTypes(Choices):
@@ -116,6 +121,7 @@ class OfficeInfo(TimeTrackable, SavingUser):
         self.saving_user = None
         super(OfficeInfo, self).__init__(*args, **kwargs)
 
+
 class Asset(TimeTrackable, EditorTrackable, SavingUser):
     device_info = models.OneToOneField('DeviceInfo', null=True, blank=True)
     part_info = models.OneToOneField('PartInfo', null=True, blank=True)
@@ -181,11 +187,31 @@ class Asset(TimeTrackable, EditorTrackable, SavingUser):
         else:
             raise UserWarning('Unknown asset data type!')
 
+    def create_stock_device(self):
+        try:
+            device = Device.objects.get(sn=self.sn)
+        except Device.DoesNotExist:
+            try:
+                venture = Venture.objects.get(name='Stock')
+            except Venture.DoesNotExist:
+                venture = Venture(name='Stock', symbol='stock')
+                venture.save()
+            device = Device.create(
+                sn=self.sn,
+                model_name='Unknown',
+                model_type=DeviceType.unknown,
+                priority=SAVE_PRIORITY,
+                venture=venture,
+                name='Unknown',
+            )
+        self.device_info.ralph_device = device
+        self.device_info.save()
 
     def __init__(self, *args, **kwargs):
         self.save_comment = None
         self.saving_user = None
         super(Asset, self).__init__(*args, **kwargs)
+
 
 class DeviceInfo(TimeTrackable, SavingUser):
     ralph_device = models.ForeignKey('discovery.Device', null=True, blank=True,
