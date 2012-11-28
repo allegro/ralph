@@ -219,6 +219,7 @@ class AddDevice(Base):
             i = 0
             duplicated_sn = []
             duplicated_barcodes = []
+            creator = self.request.user.get_profile()
             for sn in serial_numbers:
                 device_info = DeviceInfo(
                     warehouse=self.device_info_form.cleaned_data['warehouse'],
@@ -228,6 +229,7 @@ class AddDevice(Base):
                 asset = Asset(
                     device_info=device_info,
                     sn=sn.strip(),
+                    created_by=creator,
                     **asset_data
                 )
                 if barcodes:
@@ -305,12 +307,14 @@ class AddPart(Base):
             serial_numbers = self.asset_form.cleaned_data['sn']
             serial_numbers = filter(len, re.split(",|\n", serial_numbers))
             duplicated_sn = []
+            creator = self.request.user.get_profile()
             for sn in serial_numbers:
                 part_info = PartInfo(**self.part_info_form.cleaned_data)
                 part_info.save(user=self.request.user)
                 asset = Asset(
                     part_info=part_info,
                     sn=sn.strip(),
+                    created_by=creator,
                     **asset_data
                 )
                 try:
@@ -396,6 +400,7 @@ class EditDevice(Base):
             asset.device_info.__dict__.update(
                 **self.device_info_form.cleaned_data)
             asset.device_info.save(user=self.request.user)
+            asset.modified_by = self.request.user.get_profile()
             asset.save(user=self.request.user)
             return HttpResponseRedirect(_get_return_link(self.request))
         else:
@@ -473,6 +478,7 @@ class EditPart(Base):
             part_info.barcode_salvaged = part_info_data.get('barcode_salvaged')
             part_info.save(user=self.request.user)
             asset.part_info = part_info
+            asset.modified_by = self.request.user.get_profile()
             asset.save(user=self.request.user)
             return HttpResponseRedirect(_get_return_link(self.request))
         else:
