@@ -122,6 +122,7 @@ class BackOfficeMixin(AssetsMixin):
 
 
 class AssetSearch(AssetsMixin, PaginationMixin):
+    """The main-screen search form for all type of assets."""
     ROWS_PER_PAGE = 15
 
     def handle_search_data(self):
@@ -143,8 +144,7 @@ class AssetSearch(AssetsMixin, PaginationMixin):
             all_q &= Q(buy_date__gte=buy_date_from)
         if buy_date_to:
             all_q &= Q(buy_date__lte=buy_date_to)
-        self.page = self.paginate(self.get_all_items(all_q))
-        return self.page_contents
+        self.paginate_query(self.get_all_items(all_q))
 
     def get_all_items(self, query):
         return Asset.objects().filter(query)
@@ -161,7 +161,7 @@ class AssetSearch(AssetsMixin, PaginationMixin):
     def get(self, *args, **kwargs):
         self.form = SearchAssetForm(
             self.request.GET, mode=_get_mode(self.request))
-        self.page_data = self.handle_search_data()
+        self.handle_search_data()
         return super(AssetSearch, self).get(*args, **kwargs)
 
 

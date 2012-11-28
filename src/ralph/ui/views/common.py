@@ -975,27 +975,24 @@ class PaginationMixin(object):
             page = self.paginator.num_pages
         return page
 
-    def get(self, *args, **kwargs):
+    def export_requested(self, *args, **kwargs):
+        """Returns True if csv export was requested by the user or False in other case"""
         export = self.request.GET.get('export')
-        if export == 'csv':
-            return self.handle_csv_export()
-        return super(PaginatedView, self).get(*args)
+        return export == 'csv'
 
     def handle_csv_export(self):
-        """
-        Can overwite this for your needs
-        """
+        """Returns HTTPResponse with cvs stream data"""
         return self.do_csv_export()
 
     def do_csv_export(self):
         f = StringIO.StringIO()
-        data = self.get_csv_data()
+        data = self.get_csv_data()  # get_csv_data should returns generic rows
         csvutil.UnicodeWriter(f).writerows(data)
         response = HttpResponse(f.getvalue(), content_type="application/csv")
         response['Content-Disposition'] = 'attachment; filename=ralph.csv'
         return response
 
-    def get_pages(paginator, page):
+    def get_pages(self, paginator, page):
         pages = paginator.page_range[
             max(0, page - 4):min(paginator.num_pages, page + 3)
         ]
