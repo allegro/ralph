@@ -31,22 +31,19 @@ def field_changes(instance, ignore=('id',)):
             new = getattr(instance, field)
         except AttributeError:
             continue
+        if field in ('office_info', 'device_info', 'part_info'):
+            continue
         if field in ('type', 'license_type', 'status', 'source'):
-            if orig:
-                choices = instance._meta.get_field_by_name(
-                    field
-                )[0].get_choices()
-                for id, value in choices:
-                    if id == orig:
-                        orig = value
-            if new:
-                choices = instance._meta.get_field_by_name(
-                    field
-                )[0].get_choices()
-                for id, value in choices:
-                    if id == new:
-                        new = value
+            orig = get_choices(instance, field, orig)
+            new = get_choices(instance, field, new)
         if field == 'attachment':
             if str(orig).strip() == str(new).strip():
                 continue
         yield field, orig, new
+
+
+def get_choices(instance, field, id):
+    choices = instance._meta.get_field_by_name(field)[0].get_choices()
+    for choice_id, value in choices:
+        if choice_id == id:
+            return value
