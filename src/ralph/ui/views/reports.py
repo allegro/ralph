@@ -512,39 +512,39 @@ class ReportDevices(SidebarReports, Base):
         request = self.request.GET
         # CheckboxInput
         self.form_choice = DevicesChoiceReportForm(request)
-        queres = {Q()}
+        queries = {Q()}
         headers = ['Name']
-        dep = self.request.GET.get('deprecation', None)
-        no_dep = self.request.GET.get('no_deprecation', None)
-        no_mar = self.request.GET.get('no_margin', None)
-        no_sup = self.request.GET.get('no_support', None)
-        no_pur = self.request.GET.get('no_purchase', None)
-        no_ven = self.request.GET.get('no_venture', None)
-        no_rol = self.request.GET.get('no_role', None)
+        dep = self.request.GET.get('deprecation')
+        no_dep = self.request.GET.get('no_deprecation')
+        no_mar = self.request.GET.get('no_margin')
+        no_sup = self.request.GET.get('no_support')
+        no_pur = self.request.GET.get('no_purchase')
+        no_ven = self.request.GET.get('no_venture')
+        no_rol = self.request.GET.get('no_role')
         if dep:
             headers.append('Depreciation date')
-            queres.update({Q(deprecation_date__lte=datetime.date.today())})
+            queries.update({Q(deprecation_date__lte=datetime.date.today())})
         if no_dep:
             headers.append('No depreciation date')
-            queres.update({Q(deprecation_date=None)})
+            queries.update({Q(deprecation_date=None)})
         if no_mar:
             headers.append('No depreciation kind')
-            queres.update({Q(deprecation_kind=None)})
+            queries.update({Q(deprecation_kind=None)})
         if no_sup:
             headers.append('No support')
-            queres.update({Q(support_expiration_date=None)})
+            queries.update({Q(support_expiration_date=None)})
         if no_pur:
             headers.append('No purchase')
-            queres.update({Q(purchase_date=None)})
+            queries.update({Q(purchase_date=None)})
         if no_ven:
             headers.append('No venture')
-            queres.update({Q(venture=None)})
+            queries.update({Q(venture=None)})
         if no_rol:
             headers.append('No venture role')
-            queres.update({Q(venture_role=None)})
+            queries.update({Q(venture_role=None)})
         rows = []
-        if len(queres) > 1:
-            devices = Device.objects.filter(*queres)
+        if len(queries) > 1:
+            devices = Device.objects.filter(*queries)
             for dev in devices:
                 row = []
                 row.append(self.get_name(dev.name, dev.id))
