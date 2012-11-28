@@ -919,6 +919,91 @@ class Software(DeviceDetailView):
         ret = super(Software, self).get_context_data(**kwargs)
         ret.update({
             'components': _get_details(self.object, purchase_only=False),
-            })
+        })
         return ret
+
+
+class PaginationMixin(object):
+    """Add this Mixin to your django view to handle page pagination.
+
+    In your controller:
+    1. Inherit from this mixin
+    2. define ROW_PER_SIZE attribute
+    3. In get() function call self.paginate_query(your_query).
+
+    Result is stored in the self.page_contents.
+    Data for template (for use in get_context_data) can be obtained
+        from self.get_context_data_paginator() dict.
+    to the template.
+
+    In your template add code:
+    {% pagination page url_query=url_query show_all=0 show_csv=0 fugue_icons=1 %}
+
+    All done!
+
+    """
+
+    exporting_csv_file = False
+
+    def get_context_data_paginator(self, **kwargs):
+        """Returns paginator data dict, crafted for usage in template."""
+        return {
+            'page': self.page_contents,
+            'pages': self.get_pages(self.paginator, self.page_number),
+        }
+
+    def paginate_query(self, queryset):
+        """Paginate given query."""
+        if self.exporting_csv_file:
+            return queryset
+        else:
+            self.paginate(queryset)
+            return self.page_contents
+
+    def paginate(self, queryset):
+        """Internal pagination function"""
+        page = self.request.GET.get('page') or 1
+        self.page_number = int(page)
+        self.paginator = Paginator(queryset, self.ROWS_PER_PAGE)
+        try:
+            self.page_contents = self.paginator.page(page)
+        except PageNotAnInteger:
+            self.page_contents = self.paginator.page(1)
+            page = 1
+        except EmptyPage:
+            self.page_contents = self.paginator.page(self.paginator.num_pages)
+            page = self.paginator.num_pages
+        return page
+
+    def get(self, *args, **kwargs):
+        export = self.request.GET.get('export')
+        if export == 'csv':
+            return self.handle_csv_export()
+        return super(PaginatedView, self).get(*args)
+
+    def handle_csv_export(self):
+        """
+        Can overwite this for your needs
+        """
+        return self.do_csv_export()
+
+    def do_csv_export(self):
+        f = StringIO.StringIO()
+        data = self.get_csv_data()
+        csvutil.UnicodeWriter(f).writerows(data)
+        response = HttpResponse(f.getvalue(), content_type="application/csv")
+        response['Content-Disposition'] = 'attachment; filename=ralph.csv'
+        return response
+
+    def get_pages(paginator, page):
+        pages = paginator.page_range[
+            max(0, page - 4):min(paginator.num_pages, page + 3)
+        ]
+        if 1 not in pages:
+            pages.insert(0, 1)
+            pages.insert(1, '...')
+        if paginator.num_pages not in pages:
+            pages.append('...')
+            pages.append(paginator.num_pages)
+        return pages
 
