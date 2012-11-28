@@ -92,7 +92,7 @@ class DeviceResource(MResource):
         'rolepropertyvalue', related_name='device', full=True)
 
     class Meta:
-        excludes = ('raw', 'save_priorities', 'max_save_priority')
+        excludes = ('save_priorities', 'max_save_priority')
         filtering = {
             'model': ALL_WITH_RELATIONS,
             'sn': ALL,

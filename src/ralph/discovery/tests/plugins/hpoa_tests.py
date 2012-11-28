@@ -2827,7 +2827,7 @@ class HpOaPluginTest(TestCase):
  'RK_TPLGY': {'ICMB': {'LEFT': Null, 'RIGHT': Null}, 'RUID': '09GB8925V2C9'}}
 
     def test_encl(self):
-        encl = hp_oa.make_encl(self.DATA, '')
+        encl = hp_oa.make_encl(self.DATA)
         self.assertEquals(encl.name, '')
         self.assertEquals(encl.sn, '9B8925V2C9')
         self.assertEquals(encl.model.type, DeviceType.blade_system.id)
@@ -2835,7 +2835,7 @@ class HpOaPluginTest(TestCase):
 
 
     def test_devices(self):
-        encl = hp_oa.make_encl(self.DATA, '')
+        encl = hp_oa.make_encl(self.DATA)
         data = nullify(self.DATA)
         hp_oa._add_hp_oa_devices(data['INFRA2']['MANAGERS']['MANAGER'],
             DeviceType.management, parent=encl)

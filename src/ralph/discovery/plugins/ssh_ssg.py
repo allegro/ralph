@@ -86,12 +86,15 @@ def run_ssh_ssg(ip):
     model = '%s %s' % (name, version)
     mac = pairs['Base Mac'].replace('.', '').upper()
     sn = pairs['Serial Number'].split(',', 1)[0]
-    dev = Device.create(ethernets=[Eth(label='Base MAC', mac=mac, speed=0)],
-            model_name=model, model_type=DeviceType.firewall, sn=sn, name=name,
-            raw='\n'.join(lines))
+    dev = Device.create(
+        ethernets=[Eth(label='Base MAC', mac=mac, speed=0)],
+        model_name=model,
+        model_type=DeviceType.firewall,
+        sn=sn,
+        name=name,
+    )
     dev.boot_firmware = pairs['Software Version'].split(',', 1)[0]
     dev.save(update_last_seen=True)
-
     ipaddr, created = IPAddress.concurrent_get_or_create(address=ip)
     ipaddr.device = dev
     ipaddr.is_management = True

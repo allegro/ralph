@@ -11,6 +11,8 @@ from __future__ import unicode_literals
 from dateutil.relativedelta import relativedelta
 from datetime import datetime, timedelta
 import re
+import sys
+import os
 
 from django.db import models as db
 from django.db import IntegrityError, transaction
@@ -228,9 +230,6 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
     remarks = db.TextField(verbose_name=_("remarks"),
         help_text=_("Additional information."),
         blank=True, default="")
-    raw = db.TextField(verbose_name=_("raw info"),
-        help_text=_("Response information as received."),
-        blank=True, default=None, null=True, editable=False)
     boot_firmware = db.CharField(verbose_name=_("boot firmware"), null=True,
             blank=True, max_length=255)
     hard_firmware = db.CharField(verbose_name=_("hardware firmware"),
@@ -311,6 +310,7 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
         self.save_comment = None
         self.being_deleted = False
         self.saving_user = None
+        self.saving_plugin = ''
         super(Device, self).__init__(*args, **kwargs)
 
     def __unicode__(self):
@@ -511,6 +511,16 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
                     months=self.deprecation_kind.months
                 )
             )
+        try:
+            self.saving_plugin = kwargs.pop('plugin')
+        except KeyError:
+            # Try to guess the plugin name by the filename of the caller
+            filename = sys._getframe(1).f_code.co_filename
+            if filename.endswith('.py'):
+                name = os.path.basename(filename)
+            else:
+                name = filename
+            self.saving_plugin = name
         return super(Device, self).save(*args, **kwargs)
 
 

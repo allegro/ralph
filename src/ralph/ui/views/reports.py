@@ -193,11 +193,6 @@ class SidebarReports(object):
                 fugue_icon='fugue-piggy-bank',
                 view_name='reports_margins'
             ),
-            MenuItem(
-                "Devices",
-                fugue_icon='fugue-computer',
-                view_name='reports_devices'
-            ),
         ]
         context.update({
             'sidebar_items': sidebar_items,
