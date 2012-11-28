@@ -12,8 +12,11 @@ import datetime
 
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-from lck.django.common.models import TimeTrackable, EditorTrackable
+from lck.django.common.models import (
+    TimeTrackable, EditorTrackable, SoftDeletable,
+)
 from lck.django.choices import Choices
+from uuid import uuid4
 
 from ralph.discovery.models_util import SavingUser
 
@@ -88,7 +91,7 @@ class Warehouse(TimeTrackable, EditorTrackable):
 
 
 def content_file_name(instance, filename):
-    return '/'.join(['assets', str(instance.pk), filename])
+    return '/'.join(['assets', str(uuid4()), filename])
 
 
 class OfficeInfo(TimeTrackable, SavingUser):
@@ -117,7 +120,7 @@ class OfficeInfo(TimeTrackable, SavingUser):
         super(OfficeInfo, self).__init__(*args, **kwargs)
 
 
-class Asset(TimeTrackable, EditorTrackable, SavingUser):
+class Asset(TimeTrackable, EditorTrackable, SavingUser, SoftDeletable):
     device_info = models.OneToOneField('DeviceInfo', null=True, blank=True)
     part_info = models.OneToOneField('PartInfo', null=True, blank=True)
     office_info = models.OneToOneField(

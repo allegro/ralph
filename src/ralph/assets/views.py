@@ -100,11 +100,11 @@ class BackOfficeMixin(AssetsMixin):
 
     def get_sidebar_items(self):
         items = (
-                ('/assets/back_office/add/device/', 'Add device',
-                 'fugue-block--plus'),
-                ('/assets/back_office/add/part/', 'Add part',
-                 'fugue-block--plus'),
-                ('/assets/back_office/search', 'Search', 'fugue-magnifier'),
+            ('/assets/back_office/add/device/', 'Add device',
+                'fugue-block--plus'),
+            ('/assets/back_office/add/part/', 'Add part',
+                'fugue-block--plus'),
+            ('/assets/back_office/search', 'Search', 'fugue-magnifier'),
         )
         sidebar_menu = (
             [MenuHeader('Back office actions')] +
@@ -227,6 +227,7 @@ class AddDevice(Base):
             i = 0
             duplicated_sn = []
             duplicated_barcodes = []
+            creator = self.request.user.get_profile()
             for sn in serial_numbers:
                 device_info = DeviceInfo(
                     warehouse=self.device_info_form.cleaned_data['warehouse'],
@@ -236,6 +237,7 @@ class AddDevice(Base):
                 asset = Asset(
                     device_info=device_info,
                     sn=sn.strip(),
+                    created_by=creator,
                     **asset_data
                 )
                 if barcodes:
@@ -313,12 +315,14 @@ class AddPart(Base):
             serial_numbers = self.asset_form.cleaned_data['sn']
             serial_numbers = filter(len, re.split(",|\n", serial_numbers))
             duplicated_sn = []
+            creator = self.request.user.get_profile()
             for sn in serial_numbers:
                 part_info = PartInfo(**self.part_info_form.cleaned_data)
                 part_info.save(user=self.request.user)
                 asset = Asset(
                     part_info=part_info,
                     sn=sn.strip(),
+                    created_by=creator,
                     **asset_data
                 )
                 try:
@@ -347,6 +351,17 @@ class BackOfficeAddPart(AddPart, BackOfficeMixin):
 
 class DataCenterAddPart(AddPart, DataCenterMixin):
     sidebar_selected = 'add part'
+
+
+def _additional_office_data_clean(data):
+    if not data.get('attachment') and isinstance(data.get('attachment'), bool):
+        data.update({'attachment': None})
+    elif not data.get('attachment'):
+        try:
+            del data['attachment']
+        except KeyError:
+            pass
+    return data
 
 
 class EditDevice(Base):
@@ -398,12 +413,16 @@ class EditDevice(Base):
                 office_info = OfficeInfo()
             else:
                 office_info = asset.office_info
-            office_info.__dict__.update(**self.office_info_form.cleaned_data)
+            office_info_data = _additional_office_data_clean(
+                self.office_info_form.cleaned_data
+            )
+            office_info.__dict__.update(**office_info_data)
             office_info.save(user=self.request.user)
             asset.office_info = office_info
             asset.device_info.__dict__.update(
                 **self.device_info_form.cleaned_data)
             asset.device_info.save(user=self.request.user)
+            asset.modified_by = self.request.user.get_profile()
             asset.save(user=self.request.user)
             return HttpResponseRedirect(_get_return_link(self.request))
         else:
@@ -468,16 +487,23 @@ class EditPart(Base):
                 office_info = OfficeInfo()
             else:
                 office_info = asset.office_info
-            office_info.__dict__.update(**self.office_info_form.cleaned_data)
+            office_info_data = _additional_office_data_clean(
+                self.office_info_form.cleaned_data
+            )
+            office_info.__dict__.update(**office_info_data)
             office_info.save(user=self.request.user)
             asset.office_info = office_info
             if not asset.part_info:
                 part_info = PartInfo()
             else:
                 part_info = asset.part_info
-            part_info.__dict__.update(**self.part_info_form.cleaned_data)
+            part_info_data = self.part_info_form.cleaned_data
+            part_info.device = part_info_data.get('device')
+            part_info.source_device = part_info_data.get('source_device')
+            part_info.barcode_salvaged = part_info_data.get('barcode_salvaged')
             part_info.save(user=self.request.user)
             asset.part_info = part_info
+            asset.modified_by = self.request.user.get_profile()
             asset.save(user=self.request.user)
             return HttpResponseRedirect(_get_return_link(self.request))
         else:
@@ -587,3 +613,15 @@ class BackOfficeBulkEdit(BulkEdit, BackOfficeMixin):
 
 class DataCenterBulkEdit(BulkEdit, DataCenterMixin):
     sidebar_selected = None
+
+
+class DeleteAsset(Base):
+    @nested_commit_on_success
+    def get(self, *args, **kwargs):
+        asset = get_object_or_404(Asset, id=kwargs.get('asset_id'))
+        if asset.device_info:
+            Asset.objects.filter(part_info__device=asset).update(deleted=True)
+        asset.deleted = True
+        asset.save()
+        return HttpResponseRedirect(_get_return_link(self.request))
+
