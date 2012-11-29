@@ -24,13 +24,21 @@ from ralph.cmdb.models_ci import (
 from ralph.deployment.models import DeploymentStatus
 from ralph.discovery.models_device import MarginKind, DeviceType, Device
 from ralph.discovery.models_history import HistoryCost
-from ralph.ui.forms import DateRangeForm, MarginsReportForm
+
+from ralph.ui.forms import (
+    DateRangeForm, MarginsReportForm, DevicesChoiceReportForm,
+    SupportRangeReportForm, DeprecationRangeReportForm, WarrantyRangeReportForm
+)
 from ralph.ui.reports import (
     get_total_cost, get_total_count, get_total_cores, get_total_virtual_cores
 )
 from ralph.ui.views.common import Base, DeviceDetailView
 from ralph.ui.views.devices import DEVICE_SORT_COLUMNS
 from ralph.util import csvutil
+from django.db.models import Q
+
+from django.utils.safestring import mark_safe
+from django.utils.html import escape
 
 
 def threshold(days):
@@ -179,9 +187,14 @@ class SidebarReports(object):
         context = super(SidebarReports, self).get_context_data(**kwargs)
         sidebar_items = [
             MenuItem(
-                "Ventures",
-                fugue_icon='fugue-store',
-                view_name='reports_ventures'
+                "Devices",
+                fugue_icon='fugue-computer',
+                view_name='reports_devices'
+            ),
+            MenuItem(
+                "Margins",
+                fugue_icon='fugue-piggy-bank',
+                view_name='reports_margins'
             ),
             MenuItem(
                 "Services",
@@ -189,9 +202,9 @@ class SidebarReports(object):
                 view_name='reports_services'
             ),
             MenuItem(
-                "Margins",
-                fugue_icon='fugue-piggy-bank',
-                view_name='reports_margins'
+                "Ventures",
+                fugue_icon='fugue-store',
+                view_name='reports_ventures'
             ),
         ]
         context.update({
@@ -478,4 +491,150 @@ class ReportDeviceList(object):
 
 
 class ReportDevices(SidebarReports, Base):
-    pass
+    template_name = 'ui/report_devices.html'
+    subsection = 'devices'
+
+    def get_name(self, name, id):
+        id = escape(id)
+        name = escape(name)
+        html = '<a href="/ui/search/info/%s">%s</a> (%s)' % (id, name, id)
+        return mark_safe(html)
+
+    def get(self, *args, **kwargs):
+        profile = self.request.user.get_profile()
+        has_perm = profile.has_perm
+        if not has_perm(Perm.read_device_info_reports):
+            return HttpResponseForbidden(
+                "You don't have permission to see reports.")
+        self.perm_edit = False
+        if has_perm(Perm.edit_device_info_financial):
+            self.perm_edit = True
+        request = self.request.GET
+        # CheckboxInput
+        self.form_choice = DevicesChoiceReportForm(request)
+        queres = {Q()}
+        headers = ['Name']
+        dep = self.request.GET.get('deprecation', None)
+        no_dep = self.request.GET.get('no_deprecation', None)
+        no_mar = self.request.GET.get('no_margin', None)
+        no_sup = self.request.GET.get('no_support', None)
+        no_pur = self.request.GET.get('no_purchase', None)
+        no_ven = self.request.GET.get('no_venture', None)
+        no_rol = self.request.GET.get('no_role', None)
+        if dep:
+            headers.append('Depreciation date')
+            queres.update({Q(deprecation_date__lte=datetime.date.today())})
+        if no_dep:
+            headers.append('No depreciation date')
+            queres.update({Q(deprecation_date=None)})
+        if no_mar:
+            headers.append('No depreciation kind')
+            queres.update({Q(deprecation_kind=None)})
+        if no_sup:
+            headers.append('No support')
+            queres.update({Q(support_expiration_date=None)})
+        if no_pur:
+            headers.append('No purchase')
+            queres.update({Q(purchase_date=None)})
+        if no_ven:
+            headers.append('No venture')
+            queres.update({Q(venture=None)})
+        if no_rol:
+            headers.append('No venture role')
+            queres.update({Q(venture_role=None)})
+        rows = []
+        if len(queres) > 1:
+            devices = Device.objects.filter(*queres)
+            for dev in devices:
+                row = []
+                row.append(self.get_name(dev.name, dev.id))
+                if dep:
+                    row.append(dev.deprecation_date)
+                if no_dep:
+                    row.append(dev.deprecation_date)
+                if no_mar:
+                    row.append(dev.deprecation_kind)
+                if no_sup:
+                    row.append(dev.support_expiration_date)
+                if no_pur:
+                    row.append(dev.purchase_date)
+                if no_ven:
+                    row.append(dev.venture)
+                if no_rol:
+                    row.append(dev.venture_role)
+                rows.append(row)
+        # Support Range
+        s_start = self.request.GET.get('s_start', None)
+        s_end = self.request.GET.get('s_end', None)
+        if s_start and s_end:
+            self.form_support_range = SupportRangeReportForm(request)
+            devices = Device.objects.all()
+            devs = devices.filter(
+                support_expiration_date__gte=s_start,
+                support_expiration_date__lte=s_end,
+            )
+            headers = ('Name', 'Support expiration date')
+            for dev in devs:
+                name=self.get_name(dev.name, dev.id)
+                rows.append([name,dev.support_expiration_date])
+        else:
+            self.form_support_range = SupportRangeReportForm(initial={
+                's_start': datetime.date.today() - datetime.timedelta(days=30),
+                's_end': datetime.date.today(),
+            })
+        # Deprecation Range
+        d_start = self.request.GET.get('d_start', None)
+        d_end = self.request.GET.get('d_end', None)
+        if d_start and d_end:
+            self.form_deprecation_range = DeprecationRangeReportForm(request)
+            devices = Device.objects.all()
+            devs = devices.filter(
+                deprecation_date__gte=d_start,
+                deprecation_date__lte=d_end,
+            )
+            headers = ('Name', 'Depreciation date')
+            for dev in devs:
+                name=self.get_name(dev.name, dev.id)
+                rows.append([name, dev.deprecation_date])
+        else:
+            self.form_deprecation_range = DeprecationRangeReportForm(initial={
+                'd_start': datetime.date.today() - datetime.timedelta(days=30),
+                'd_end': datetime.date.today(),
+            })
+        # warranty_expiration_date Range
+        w_start = self.request.GET.get('w_start', None)
+        w_end = self.request.GET.get('w_end', None)
+        if w_start and w_end:
+            self.form_warranty_range = WarrantyRangeReportForm(request)
+            devices = Device.objects.all()
+            devs = devices.filter(
+                warranty_expiration_date__gte=w_start,
+                warranty_expiration_date__lte=w_end,
+            )
+            headers = ('Name', 'Warranty expiration date')
+            for dev in devs:
+                name=self.get_name(dev.name, dev.id)
+                rows.append([name, dev.warranty_expiration_date])
+        else:
+            self.form_warranty_range = WarrantyRangeReportForm(initial={
+                'w_start': datetime.date.today() - datetime.timedelta(days=30),
+                'w_end': datetime.date.today(),
+            })
+        self.headers = headers
+        self.rows = rows
+        return super(ReportDevices, self).get(*args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(ReportDevices, self).get_context_data(**kwargs)
+        context.update(
+            {
+                'form_choice': self.form_choice,
+                'form_support_range': self.form_support_range,
+                'form_deprecation_range': self.form_deprecation_range,
+                'form_warranty_range': self.form_warranty_range,
+                'tabele_header': self.headers,
+                'rows': self.rows,
+                'perm_to_edit': self.perm_edit,
+            }
+        )
+        return context

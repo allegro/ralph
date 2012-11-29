@@ -138,6 +138,11 @@ class BaseMixin(object):
                 MenuItem('CMDB', fugue_icon='fugue-thermometer',
                          href='/cmdb/changes/timeline')
             )
+        if ('ralph.assets' in settings.INSTALLED_APPS):
+            mainmenu_items.append(
+                MenuItem('Assets', fugue_icon='fugue-box-label',
+                        href='/assets')
+            )
         if settings.BUGTRACKER_URL:
             mainmenu_items.append(
                 MenuItem(
