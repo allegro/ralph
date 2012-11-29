@@ -61,18 +61,14 @@ class HistoryAssetsView(TestCase):
         self.edit_bo_device_asset()
 
     def add_bo_device_asset(self):
-        """
-        Test check adding Asset into backoffice through the form UI
-        """
+        """Test check adding Asset into backoffice through the form UI"""
         url = '/assets/back_office/add/device/'
         attrs = self.asset_params
         request = self.client.post(url, attrs)
         self.assertEqual(request.status_code, 302)
 
     def edit_bo_device_asset(self):
-        """
-        Test checks asset edition through the form UI
-        """
+        """Test checks asset edition through the form UI"""
         self.asset = Asset.objects.get(barcode='666666')
         url = '/assets/back_office/edit/device/{}/'.format(self.asset.id)
         attrs = dict(
@@ -82,9 +78,7 @@ class HistoryAssetsView(TestCase):
         self.assertEqual(request.status_code, 302)
 
     def test_change_status(self):
-        """
-        Test check the recording Asset status change in asset history
-        """
+        """Test check the recording Asset status change in asset history"""
         asset_history = AssetHistoryChange.objects.get(
             asset=self.asset, field_name='status'
         )
@@ -94,9 +88,7 @@ class HistoryAssetsView(TestCase):
         )
 
     def test_change_barcode(self):
-        """
-        Test check the recording Asset barcode change in asset history
-        """
+        """Test check the recording Asset barcode change in asset history"""
         asset_history = AssetHistoryChange.objects.all().filter(
             asset=self.asset, field_name='barcode'
         )
@@ -110,9 +102,7 @@ class HistoryAssetsView(TestCase):
         )
 
     def test_change_sn(self):
-        """
-        Test check the recording Asset serial number in asset history
-        """
+        """Test check the recording Asset serial number in asset history"""
         asset_history = AssetHistoryChange.objects.all().filter(
             asset=self.asset, field_name='sn'
         )
@@ -165,8 +155,7 @@ class ConnectAssetWithDevice(TestCase):
 
     @patch('ralph.assets.views.CONNECT_ASSET_WITH_DEVICE', True)
     def test_add_dc_device_asset_with_create_device(self):
-        """
-        Test check situation, when Asset is created and
+        """Test check situation, when Asset is created and
         the device is created with Asset serial_number
         """
         url = '/assets/dc/add/device/'
@@ -184,8 +173,7 @@ class ConnectAssetWithDevice(TestCase):
 
     @patch('ralph.assets.views.CONNECT_ASSET_WITH_DEVICE', True)
     def test_add_dc_device_asset_with_linked_device(self):
-        """
-        Test check situation, when Asset is created and device already
+        """Test check situation, when Asset is created and device already
         exist with the same serial number as the Asset, then creates
         an link between the asset and the device
         """
@@ -202,8 +190,7 @@ class ConnectAssetWithDevice(TestCase):
 
     @patch('ralph.assets.views.CONNECT_ASSET_WITH_DEVICE', False)
     def test_add_dc_device_asset_without_create_device(self):
-        """
-        Test check situation, when link beetwen the asset and the device
+        """Test check situation, when link beetwen the asset and the device
         is not created. This situation occurs when
         CONNECT_ASSET_WITH_DEVICE options set at False.
         """
