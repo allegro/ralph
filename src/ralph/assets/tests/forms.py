@@ -21,6 +21,7 @@ def get_menufacture(name):
     menufacture.save()
     return menufacture
 
+
 def get_model(menufacture, name):
     model = AssetModel(
         manufacturer=menufacture,
@@ -29,10 +30,12 @@ def get_model(menufacture, name):
     model.save()
     return model
 
+
 def get_warehouse(name):
     warehouse = Warehouse(name=name)
     warehouse.save()
     return warehouse
+
 
 def get_device(size, warehouse):
     device = DeviceInfo(
@@ -42,10 +45,12 @@ def get_device(size, warehouse):
     device.save()
     return device
 
+
 def get_asset(**kwargs):
     asset = Asset(**kwargs)
     asset.save()
     return asset
+
 
 class TestForms(TestCase):
     def setUp(self):
@@ -83,7 +88,7 @@ class TestForms(TestCase):
         self.assertEquals(db_asset1.sn, 'sn-123')
 
     def test_view(self):
-        url ='/assets/dc/search'
+        url = '/assets/dc/search'
         view = self.client.get(url, follow=True)
         self.assertEqual(view.status_code, 200)
         data = view.context_data['page'].object_list[0]
@@ -120,7 +125,9 @@ class TestForms(TestCase):
         }
         response = self.client.post(url, post_data, follow=True)
         self.assertRedirects(
-            response, '/assets/dc/search', status_code=302, target_status_code=200,
+            response, '/assets/dc/search',
+            status_code=302,
+            target_status_code=200,
         )
         # GET
         view = self.client.get('/assets/dc/search')
@@ -248,6 +255,7 @@ class TestForms(TestCase):
         # Last logged user
         self.assertEqual(new_office_info['last_logged_user'], 'James Bond')
 
+
 class TestBulkEdit(TestCase):
     def setUp(self):
         self.client = login_as_su()
@@ -283,6 +291,7 @@ class TestBulkEdit(TestCase):
             sn='sn-1232',
             barcode='bc-12342'
         )
+
 
 class TestTrolling(TestCase):
     def setUp(self):
