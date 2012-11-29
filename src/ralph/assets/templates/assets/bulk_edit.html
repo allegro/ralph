@@ -31,86 +31,27 @@
             {{ form.id }}
             {{ form.device_info }}
           </td>
-          <td class="control-group{% if form.type.errors %} error{% endif %}" style="vertical-align:middle">
-            {{ form.type }}
-            {% if form.type.errors %}
-              <span class="help-inline">{% for error in form.type.errors %}{{ error }} {% endfor %}</span>
+          {% for field in form %}
+            {% if "-device_info" in field.html_name or "-id" in field.html_name %}
+              {# do nothing... #}
+            {% elif "-barcode" in field.html_name  %}
+              <td class="control-group{% if form.device_info.value and field.errors %} error{% endif %}" style="vertical-align:middle">
+                {% if form.device_info.value %}
+                  {{ field }}
+                  {% if field.errors %}
+                    <span class="help-inline">{% for error in field.errors %}{{ error }} {% endfor %}</span>
+                  {% endif %}
+                {% endif %}
+              </td>
+            {% else %}
+              <td class="control-group{% if "-support_period" in field.html_name %} small{% endif %}{% if field.errors %} error{% endif %}" style="vertical-align:middle">
+                {{ field }}
+                {% if field.errors %}
+                  <span class="help-inline">{% for error in field.errors %}{{ error }} {% endfor %}</span>
+                {% endif %}
+              </td>
             {% endif %}
-          </td>
-          <td class="control-group{% if form.model.errors %} error{% endif %}" style="vertical-align:middle">
-            {{ form.model }}
-            {% if form.model.errors %}
-              <span class="help-inline">{% for error in form.model.errors %}{{ error }} {% endfor %}</span>
-            {% endif %}
-          </td>
-          <td class="control-group{% if form.invoice_no.errors %} error{% endif %}" style="vertical-align:middle">
-            {{ form.invoice_no }}
-            {% if form.invoice_no.errors %}
-              <span class="help-inline">{% for error in form.invoice_no.errors %}{{ error }} {% endfor %}</span>
-            {% endif %}
-          </td>
-          <td class="control-group{% if form.order_no.errors %} error{% endif %}" style="vertical-align:middle">
-            {{ form.order_no }}
-            {% if form.order_no.errors %}
-              <span class="help-inline">{% for error in form.order_no.errors %}{{ error }} {% endfor %}</span>
-            {% endif %}
-          </td>
-          <td class="control-group{% if form.buy_date.errors %} error{% endif %}" style="vertical-align:middle">
-            {{ form.buy_date }}
-            {% if form.buy_date.errors %}
-              <span class="help-inline">{% for error in form.buy_date.errors %}{{ error }} {% endfor %}</span>
-            {% endif %}
-          </td>
-          <td class="control-group{% if form.sn.errors %} error{% endif %}" style="vertical-align:middle">
-            {{ form.sn }}
-            {% if form.sn.errors %}
-              <span class="help-inline">{% for error in form.sn.errors %}{{ error }} {% endfor %}</span>
-            {% endif %}
-          </td>
-          <td class="control-group{% if form.device_info.value and form.barcode.errors %} error{% endif %}" style="vertical-align:middle">
-            {% if form.device_info.value %}
-              {{ form.barcode }}
-              {% if form.barcode.errors %}
-                <span class="help-inline">{% for error in form.barcode.errors %}{{ error }} {% endfor %}</span>
-              {% endif %}
-            {% endif %}
-          </td>
-          <td class="control-group small{% if form.support_period.errors %} error{% endif %}" style="vertical-align:middle">
-            {{ form.support_period }}
-            {% if form.support_period.errors %}
-              <span class="help-inline">{% for error in form.support_period.errors %}{{ error }} {% endfor %}</span>
-            {% endif %}
-          </td>
-          <td class="control-group{% if form.support_type.errors %} error{% endif %}" style="vertical-align:middle">
-            {{ form.support_type }}
-            {% if form.support_type.errors %}
-              <span class="help-inline">{% for error in form.support_type.errors %}{{ error }} {% endfor %}</span>
-            {% endif %}
-          </td>
-          <td class="control-group{% if form.support_void_reporting.errors %} error{% endif %}" style="vertical-align:middle">
-            {{ form.support_void_reporting }}
-            {% if form.support_void_reporting.errors %}
-              <span class="help-inline">{% for error in form.support_void_reporting.errors %}{{ error }} {% endfor %}</span>
-            {% endif %}
-          </td>
-          <td class="control-group{% if form.provider.errors %} error{% endif %}" style="vertical-align:middle">
-            {{ form.provider }}
-            {% if form.provider.errors %}
-              <span class="help-inline">{% for error in form.provider.errors %}{{ error }} {% endfor %}</span>
-            {% endif %}
-          </td>
-          <td class="control-group{% if form.source.errors %} error{% endif %}" style="vertical-align:middle">
-            {{ form.source }}
-            {% if form.source.errors %}
-              <span class="help-inline">{% for error in form.source.errors %}{{ error }} {% endfor %}</span>
-            {% endif %}
-          </td>
-          <td class="control-group{% if form.status.errors %} error{% endif %}" style="vertical-align:middle">
-            {{ form.status }}
-            {% if form.status.errors %}
-              <span class="help-inline">{% for error in form.status.errors %}{{ error }} {% endfor %}</span>
-            {% endif %}
-          </td>
+          {% endfor %}
         </tr>
       {% endfor %}</tbody>
     </table>

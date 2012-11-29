@@ -21,6 +21,10 @@ from ralph.assets.models import (
 from ralph.ui.widgets import DateWidget, HiddenSelectWidget
 
 
+class ModeNotSetException(Exception):
+    pass
+
+
 class BaseAssetForm(ModelForm):
     class Meta:
         model = Asset
@@ -64,9 +68,8 @@ class BulkEditAssetForm(ModelForm):
         model = Asset
         fields = (
             'type', 'model', 'device_info', 'invoice_no', 'order_no',
-            'buy_date', 'support_period', 'support_type',
-            'support_void_reporting', 'provider', 'status', 'sn', 'barcode',
-            'source',
+            'buy_date', 'sn', 'barcode', 'support_period', 'support_type',
+            'support_void_reporting', 'provider', 'source', 'status',
         )
         widgets = {
             'buy_date': DateWidget(),
@@ -93,9 +96,12 @@ class BasePartForm(ModelForm):
         fields = ('barcode_salvaged',)
 
     def __init__(self, *args, **kwargs):
+        """mode argument is required for distinguish ajax sources"""
         mode = kwargs.get('mode')
         if mode:
             del kwargs['mode']
+        else:
+            raise ModeNotSetException("mode argument not given.")
         super(BasePartForm, self).__init__(*args, **kwargs)
 
         channel = 'asset_dcdevice' if mode == 'dc' else 'asset_bodevice'

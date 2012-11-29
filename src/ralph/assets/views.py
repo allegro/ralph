@@ -160,7 +160,8 @@ class AssetSearch(AssetsMixin, PaginationMixin):
 
     def get(self, *args, **kwargs):
         self.form = SearchAssetForm(
-            self.request.GET, mode=_get_mode(self.request))
+            self.request.GET, mode=_get_mode(self.request)
+        )
         self.handle_search_data()
         return super(AssetSearch, self).get(*args, **kwargs)
 
@@ -310,7 +311,9 @@ class AddPart(Base):
     def post(self, *args, **kwargs):
         self.asset_form = AddPartForm(
             self.request.POST, mode=_get_mode(self.request))
-        self.part_info_form = BasePartForm(self.request.POST)
+        self.part_info_form = BasePartForm(
+            self.request.POST, mode=_get_mode(self.request)
+        )
         if self.asset_form.is_valid() and self.part_info_form.is_valid():
             transaction.enter_transaction_management()
             transaction.managed()
@@ -407,6 +410,7 @@ class EditDevice(Base):
         asset = get_object_or_404(Asset, id=kwargs.get('asset_id'))
         self.asset_form = EditDeviceForm(
             self.request.POST, instance=asset, mode=_get_mode(self.request))
+
         self.device_info_form = BaseDeviceForm(self.request.POST)
         self.office_info_form = OfficeForm(
             self.request.POST, self.request.FILES)
@@ -473,7 +477,9 @@ class EditPart(Base):
         self.asset_form = EditPartForm(
             instance=asset, mode=_get_mode(self.request))
         self.office_info_form = OfficeForm(instance=asset.office_info)
-        self.part_info_form = BasePartForm(instance=asset.part_info)
+        self.part_info_form = BasePartForm(
+            instance=asset.part_info, mode=_get_mode(self.request)
+        )
         return super(EditPart, self).get(*args, **kwargs)
 
     @nested_commit_on_success
@@ -483,7 +489,9 @@ class EditPart(Base):
             self.request.POST, instance=asset, mode=_get_mode(self.request))
         self.office_info_form = OfficeForm(
             self.request.POST, self.request.FILES)
-        self.part_info_form = BasePartForm(self.request.POST)
+        self.part_info_form = BasePartForm(
+            self.request.POST, mode=_get_mode(self.request)
+        )
         if all((
             self.asset_form.is_valid(),
             self.office_info_form.is_valid(),
@@ -629,8 +637,8 @@ class DeleteAsset(Base):
     @nested_commit_on_success
     def get(self, *args, **kwargs):
         asset = get_object_or_404(Asset, id=kwargs.get('asset_id'))
-        if asset.device_info:
-            Asset.objects.filter(part_info__device=asset).update(deleted=True)
+        if asset.get_data_type() == 'device':
+            PartInfo.objects.filter(device=asset).update(device=None)
         asset.deleted = True
         asset.save()
         return HttpResponseRedirect(_get_return_link(self.request))
