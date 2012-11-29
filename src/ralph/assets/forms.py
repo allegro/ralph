@@ -39,6 +39,7 @@ class BaseAssetForm(ModelForm):
             'barcode': Textarea(attrs={'rows': 25}),
             'buy_date': DateWidget(),
             'remarks': Textarea(attrs={'rows': 3}),
+            'support_type': Textarea(attrs={'rows': 5}),
         }
     model = AutoCompleteSelectField(
         'asset_model', required=True,
@@ -209,7 +210,10 @@ class SearchAssetForm(Form):
         required=False, widget=DateWidget(),
         label="Buy date to")
     provider = CharField(required=False, label='Provider')
-    status = ChoiceField(required=False, choices=AssetStatus(), label='Status')
+    status = ChoiceField(
+        required=False, choices=[('', '----')] + AssetStatus(),
+        label='Status'
+    )
     sn = CharField(required=False, label='SN')
 
     def __init__(self, *args, **kwargs):
