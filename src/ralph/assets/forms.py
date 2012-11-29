@@ -64,9 +64,8 @@ class BulkEditAssetForm(ModelForm):
         model = Asset
         fields = (
             'type', 'model', 'device_info', 'invoice_no', 'order_no',
-            'buy_date', 'support_period', 'support_type',
-            'support_void_reporting', 'provider', 'status', 'sn', 'barcode',
-            'source',
+            'buy_date', 'sn', 'barcode', 'support_period', 'support_type',
+            'support_void_reporting', 'provider', 'source', 'status',
         )
         widgets = {
             'buy_date': DateWidget(),
