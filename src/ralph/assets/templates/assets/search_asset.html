@@ -90,14 +90,14 @@
                     {% if row.get_data_type == 'device' %}
                         <a href="./edit/device/{{row.id}}">Edit</a> |
                         <a href="./history/device/{{row.id}}">History</a> |
-                        {% if row.device_info.ralph_device.id%}|
-                            <a href="{% url search 'info' row.device_info.ralph_device.id %}">View in ralph</a>
+                        {% if row.device_info.ralph_device.id%}
+                            <a href="{% url search 'info' row.device_info.ralph_device.id %}">View in ralph</a> | 
                         {% endif %}
                     {% else %}
                         <a href="./edit/part/{{row.id}}">Edit</a> |
                         <a href="./history/part/{{row.id}}">History</a> |
                     {% endif %}
-                        <a href="./delete/asset/{{ row.id }}">Delete</a>
+                        <a onclick="return confirm('Are you sure?');" href="./delete/asset/{{ row.id }}">Delete</a>
                     </td>
                 </tr>
                     {% endfor %}
