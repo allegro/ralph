@@ -477,7 +477,9 @@ class EditPart(Base):
         self.asset_form = EditPartForm(
             instance=asset, mode=_get_mode(self.request))
         self.office_info_form = OfficeForm(instance=asset.office_info)
-        self.part_info_form = BasePartForm(instance=asset.part_info)
+        self.part_info_form = BasePartForm(
+            instance=asset.part_info, mode=_get_mode(self.request)
+        )
         return super(EditPart, self).get(*args, **kwargs)
 
     @nested_commit_on_success
@@ -487,7 +489,9 @@ class EditPart(Base):
             self.request.POST, instance=asset, mode=_get_mode(self.request))
         self.office_info_form = OfficeForm(
             self.request.POST, self.request.FILES)
-        self.part_info_form = BasePartForm(self.request.POST)
+        self.part_info_form = BasePartForm(
+            self.request.POST, mode=_get_mode(self.request)
+        )
         if all((
             self.asset_form.is_valid(),
             self.office_info_form.is_valid(),
