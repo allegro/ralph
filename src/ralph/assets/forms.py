@@ -90,25 +90,27 @@ class BaseDeviceForm(ModelForm):
 class BasePartForm(ModelForm):
     class Meta:
         model = PartInfo
-        fields = ('device', 'source_device', 'barcode_salvaged',)
-
-    device = AutoCompleteSelectField(
-        'asset_dcdevice', required=False,
-        help_text='Enter barcode, sn, or model.'
-    )
-    source_device = AutoCompleteSelectField(
-        'asset_dcdevice', required=False,
-        help_text='Enter barcode, sn, or model.'
-    )
+        fields = ('barcode_salvaged',)
 
     def __init__(self, *args, **kwargs):
         mode = kwargs.get('mode')
         if mode:
             del kwargs['mode']
         super(BasePartForm, self).__init__(*args, **kwargs)
+
         channel = 'asset_dcdevice' if mode == 'dc' else 'asset_bodevice'
-        for field in ('device', 'source_device'):
-            self.fields[field].channel = channel
+        self.fields['device'] = AutoCompleteSelectField(
+            channel, required=False,
+            help_text='Enter barcode, sn, or model.',
+        )
+        self.fields['source_device'] = AutoCompleteSelectField(
+            channel, required=False,
+            help_text='Enter barcode, sn, or model.',
+        )
+        if self.instance.source_device:
+            self.fields['source_device'].initial = self.instance.source_device.id
+        if self.instance.device:
+            self.fields['device'].initial = self.instance.device.id
 
 
 def _validate_multivalue_data(data):
@@ -179,6 +181,12 @@ class EditDeviceForm(BaseAssetForm):
 
 
 class SearchAssetForm(Form):
+    """returns search asset form for DC and BO.
+
+    :param mode: one of `dc` for DataCenter or `bo` for Back Office
+    :returns Form
+    """
+
     model = AutoCompleteSelectField(
         'asset_model',
         required=False,
@@ -187,12 +195,19 @@ class SearchAssetForm(Form):
 
     invoice_no = CharField(required=False)
     order_no = CharField(required=False)
-    buy_date = DateField(required=False, widget=DateWidget())
-    provider = CharField(required=False)
-    status = ChoiceField(required=False, choices=AssetStatus())
-    sn = CharField(required=False)
+    buy_date_from = DateField(
+        required=False, widget=DateWidget(),
+        label="Buy date from",
+    )
+    buy_date_to = DateField(
+        required=False, widget=DateWidget(),
+        label="Buy date to")
+    provider = CharField(required=False, label='Provider')
+    status = ChoiceField(required=False, choices=AssetStatus(), label='Status')
+    sn = CharField(required=False, label='SN')
 
     def __init__(self, *args, **kwargs):
+        # Ajax sources are different for DC/BO, use mode for distinguish
         mode = kwargs.get('mode')
         if mode:
             del kwargs['mode']
