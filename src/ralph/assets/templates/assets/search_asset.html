@@ -9,20 +9,18 @@
             width: 90%;
         }
     </style>
+{% endblock %}
 
+{% block scripts %}
+    {{ block.super }}
     <script type="text/javascript">
-        /* Different post urls for different actions ... */
-        var postMoveAll = function (e) {
-            alert('Not implemented yet :)');
-            return false;
-        };
         var postEditAll = function (e) {
-             var dd=$('#table_form')[0];
+            var dd=$('#table_form')[0];
             dd.action='./bulkedit/';
             dd.submit();
             return false;
-        }
-    </script>
+        };
+        </script>
 {% endblock %}
 
 
@@ -42,8 +40,29 @@
         <table class="table table-bordered table-striped">
                 <thead>
                     <tr>
-                        <th><i class="fugue-icon fugue-ui-check-boxes-series"></i></th>
-                        <th>Index</th>
+                        <th>
+                            <div class="dropdown">
+                                <a href="#" data-toggle="dropdown" class="dropdown-toggle">
+                                    <i class="fugue-icon fugue-ui-check-boxes-series"></i>
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a href="#" class="select-all">
+                                        <i class="fugue-icon fugue-ui-check-box">
+                                        </i>&nbsp;Select all on this page</a>
+                                    </li>
+                                    <li>
+                                        <a href="#" class="select-toggle">
+                                            <i class="fugue-icon fugue-ui-check-box-mix">
+                                            </i>&nbsp;Reverse selection</a>
+                                        </li>
+                                        <li>
+                                            <a href="#" class="select-none">
+                                                <i class="fugue-icon fugue-ui-check-box-uncheck"></i>&nbsp;Deselect all
+                                            </a>
+                                        </li>
+                                    </ul>
+                            </div>
+                        </th>
                         <th>Type</th>
                         <th>SN</th>
                         <th>Barcode</th>
@@ -57,12 +76,11 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for row in data %}
+                    {% for row in page %}
                 <tr>
                     <td class="column-checkbox">
-                        <input type="checkbox" name="assets" value="{{row.id}}">
+                        <input type="checkbox" name="select" value="{{row.id}}">
                     </td>
-                    <td>{{forloop.counter}}</td>
                     <td>{% icon row.get_data_icon %}&nbsp;{{row.get_data_type|capfirst}}</td>
                     <td>{{row.sn}}</td>
                     <td>{{row.barcode|default_if_none:'-'}}</td>
@@ -72,16 +90,25 @@
                     <td>{{row.buy_date}}</td>
                     <td>{{row.get_status_display}}</td>
                     <td>{{row.device_info.warehouse}}</td>
+                    <td>
                     {% if row.get_data_type == 'device' %}
-                    <td><a href="./edit/device/{{row.id}}">Edit</a></td>
+                        <a href="./edit/device/{{row.id}}">Edit</a> |
+                        <a href="./history/device/{{row.id}}">History</a> |
+                        {% if row.device_info.ralph_device.id%}|
+                            <a href="{% url search 'info' row.device_info.ralph_device.id %}">View in ralph</a>
+                        {% endif %}
                     {% else %}
-                    <td><a href="./edit/part/{{row.id}}">Edit</a></td>
+                        <a href="./edit/part/{{row.id}}">Edit</a> |
+                        <a href="./history/part/{{row.id}}">History</a> |
                     {% endif %}
+                        <a href="./delete/asset/{{ row.id }}">Delete</a>
+                    </td>
                 </tr>
                     {% endfor %}
                 </tbody>
             </table>
 
+            {% pagination page url_query=url_query show_all=0 show_csv=0 fugue_icons=1 %}
             <div class="btn-group">
               <a class="btn dropdown-toggle btn-primary" data-toggle="dropdown" href="#">
                 Bulk actions...
@@ -89,8 +116,7 @@
             </a>
             <ul class="dropdown-menu">
                 <li>
-            <a href="#" onclick="return postMoveAll()">Move all</a>
-            <a href="#" onclick="return postEditAll()">Edit all</a>
+            <a href="#" onclick="return postEditAll()">Edit selected</a>
             </li>
             </ul>
             </div>

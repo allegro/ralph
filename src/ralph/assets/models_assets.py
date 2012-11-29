@@ -12,9 +12,17 @@ import datetime
 
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-
-from lck.django.common.models import TimeTrackable, EditorTrackable
+from lck.django.common.models import (
+    TimeTrackable, EditorTrackable, SoftDeletable,
+)
 from lck.django.choices import Choices
+from uuid import uuid4
+from ralph.business.models import Venture
+from ralph.discovery.models_device import Device, DeviceType
+from ralph.discovery.models_util import SavingUser
+
+
+SAVE_PRIORITY = 0
 
 
 class LicenseTypes(Choices):
@@ -87,10 +95,10 @@ class Warehouse(TimeTrackable, EditorTrackable):
 
 
 def content_file_name(instance, filename):
-    return '/'.join(['assets', str(instance.pk), filename])
+    return '/'.join(['assets', str(uuid4()), filename])
 
 
-class OfficeInfo(models.Model):
+class OfficeInfo(TimeTrackable, SavingUser):
     license_key = models.CharField(max_length=255, null=True, blank=True)
     version = models.CharField(max_length=50, null=True, blank=True)
     unit_price = models.DecimalField(
@@ -110,8 +118,13 @@ class OfficeInfo(models.Model):
             self.license_type
         )
 
+    def __init__(self, *args, **kwargs):
+        self.save_comment = None
+        self.saving_user = None
+        super(OfficeInfo, self).__init__(*args, **kwargs)
 
-class Asset(TimeTrackable, EditorTrackable):
+
+class Asset(TimeTrackable, EditorTrackable, SavingUser, SoftDeletable):
     device_info = models.OneToOneField('DeviceInfo', null=True, blank=True)
     part_info = models.OneToOneField('PartInfo', null=True, blank=True)
     office_info = models.OneToOneField(
@@ -150,7 +163,9 @@ class Asset(TimeTrackable, EditorTrackable):
     @classmethod
     def objects_bo(self):
         """Returns back office assets queryset"""
-        return Asset.objects.filter(type=AssetType.back_office)
+        return Asset.objects.filter(
+            type__in=(AssetType.administration, AssetType.back_office)
+        )
 
     @classmethod
     def objects_dc(self):
@@ -174,8 +189,33 @@ class Asset(TimeTrackable, EditorTrackable):
         else:
             raise UserWarning('Unknown asset data type!')
 
+    def create_stock_device(self):
+        try:
+            device = Device.objects.get(sn=self.sn)
+        except Device.DoesNotExist:
+            try:
+                venture = Venture.objects.get(name='Stock')
+            except Venture.DoesNotExist:
+                venture = Venture(name='Stock', symbol='stock')
+                venture.save()
+            device = Device.create(
+                sn=self.sn,
+                model_name='Unknown',
+                model_type=DeviceType.unknown,
+                priority=SAVE_PRIORITY,
+                venture=venture,
+                name='Unknown',
+            )
+        self.device_info.ralph_device = device
+        self.device_info.save()
 
-class DeviceInfo(TimeTrackable):
+    def __init__(self, *args, **kwargs):
+        self.save_comment = None
+        self.saving_user = None
+        super(Asset, self).__init__(*args, **kwargs)
+
+
+class DeviceInfo(TimeTrackable, SavingUser):
     ralph_device = models.ForeignKey('discovery.Device', null=True, blank=True,
                                      on_delete=models.SET_NULL)
     size = models.PositiveSmallIntegerField(verbose_name='Size in units',
@@ -185,8 +225,13 @@ class DeviceInfo(TimeTrackable):
     def __unicode__(self):
         return "{}".format(self.ralph_device)
 
+    def __init__(self, *args, **kwargs):
+        self.save_comment = None
+        self.saving_user = None
+        super(DeviceInfo, self).__init__(*args, **kwargs)
 
-class PartInfo(TimeTrackable):
+
+class PartInfo(TimeTrackable, SavingUser):
     barcode_salvaged = models.CharField(max_length=200, null=True, blank=True)
     source_device = models.ForeignKey(
         Asset, null=True, blank=True, related_name='source_device')
@@ -196,4 +241,7 @@ class PartInfo(TimeTrackable):
     def __unicode__(self):
         return "{}".format(self.barcode_salvaged)
 
-
+    def __init__(self, *args, **kwargs):
+        self.save_comment = None
+        self.saving_user = None
+        super(PartInfo, self).__init__(*args, **kwargs)

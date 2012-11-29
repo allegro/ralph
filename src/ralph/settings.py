@@ -193,7 +193,8 @@ CELERY_ROUTES = (
 AJAX_LOOKUP_CHANNELS = {
     'ci': ('ralph.cmdb.models', 'CILookup'),
     'asset_model': ('ralph.assets.models', 'AssetModelLookup'),
-    'asset_device': ('ralph.assets.models', 'DeviceLookup'),
+    'asset_dcdevice': ('ralph.assets.models', 'DCDeviceLookup'),
+    'asset_bodevice': ('ralph.assets.models', 'BODeviceLookup'),
     'asset_warehouse': ('ralph.assets.models', 'WarehouseLookup'),
 }
 # magically include jqueryUI/js/css
@@ -336,6 +337,7 @@ API_THROTTLING = {
     'timeframe': 3600,
     'expiration': None,
 }
+CONNECT_ASSET_WITH_DEVICE = False
 # </template>
 
 #

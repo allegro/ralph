@@ -23,6 +23,7 @@ from ralph.assets.models_assets import (
     PartInfo,
     Warehouse,
 )
+from ralph.assets.models_history import AssetHistoryChange
 
 
 class DeviceLookup(LookupChannel):
@@ -36,7 +37,7 @@ class DeviceLookup(LookupChannel):
                 Q(model__name__istartswith=q)
             )
         )
-        return Asset.objects_dc().filter(query).order_by('sn')[:10]
+        return self.get_base_objects().filter(query).order_by('sn')[:10]
 
     def get_result(self, obj):
         return obj.id
@@ -58,7 +59,9 @@ class AssetModelLookup(LookupChannel):
     model = AssetModel
 
     def get_query(self, q, request):
-        return AssetModel.objects.filter(Q(name__istartswith=q)).order_by('name')[:10]
+        return AssetModel.objects.filter(
+            Q(name__istartswith=q)
+        ).order_by('name')[:10]
 
     def get_result(self, obj):
         return obj.id
@@ -74,7 +77,9 @@ class WarehouseLookup(LookupChannel):
     model = Warehouse
 
     def get_query(self, q, request):
-        return Warehouse.objects.filter(Q(name__istartswith=q)).order_by('name')[:10]
+        return Warehouse.objects.filter(
+            Q(name__istartswith=q)
+        ).order_by('name')[:10]
 
     def get_result(self, obj):
         return obj.id
@@ -84,6 +89,16 @@ class WarehouseLookup(LookupChannel):
 
     def format_item_display(self, obj):
         return "%s" % (escape(obj.name))
+
+
+class DCDeviceLookup(DeviceLookup):
+    def get_base_objects(self):
+        return Asset.objects_dc()
+
+
+class BODeviceLookup(DeviceLookup):
+    def get_base_objects(self):
+        return Asset.objects_bo()
 
 
 __all__ = [
@@ -99,5 +114,8 @@ __all__ = [
     PartInfo,
     Warehouse,
     DeviceLookup,
+    DCDeviceLookup,
+    BODeviceLookup,
     AssetModelLookup,
+    AssetHistoryChange,
 ]
