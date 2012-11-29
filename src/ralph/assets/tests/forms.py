@@ -97,7 +97,7 @@ class TestFormsAdd(TestCase):
         url ='/assets/dc/search'
         view = self.client.get(url, follow=True)
         self.assertEqual(view.status_code, 200)
-        data = view.context['data']
+        data = view.context_data['page'].object_list
         self.assertEqual(data[0].type, AssetType.data_center)
         self.assertEqual(data[0].sn, 'sn-123')
         self.assertEqual(data[0].barcode, 'bc-1234')
@@ -131,13 +131,10 @@ class TestFormsAdd(TestCase):
         }
         post = self.client.post(url, post_data)
         self.assertEquals(post.status_code, 302)
-        # if not - find errors
-        #self.assertEqual(post.context_data['asset_form']._errors, {})
-        #self.assertEqual(post.context_data['device_info_form']._errors, {})
         # GET
         view = self.client.get('/assets/dc/search')
         self.assertEqual(view.status_code, 200)
-        data = view.context['data']
+        data = view.context_data['page'].object_list
         self.assertEqual(data[1].type, AssetType.data_center)
         self.assertEqual(data[1].sn, 'sn-321')
         self.assertEqual(data[1].barcode, 'bc-4321')
