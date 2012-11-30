@@ -485,6 +485,75 @@ class TestSearchForm(TestCase):
         output = ('AsModel2 - sn-123123123 - bc-1234123123')
         self.assertEqual(unicode(res[0]), output)
 
+    def test_date_range(self):
+        # start True - snd False
+        url = '/assets/dc/search?buy_date_from=%s&buy_date_to=%s' % (
+            '2001-01-01', '2001-01-01')
+        get = self.client.get(url)
+        self.assertEqual(get.status_code, 200)
+        res = get.context_data['page'].object_list
+        self.assertEqual(len(res), 1)
+        output = ('AsModel1 - sn-12332452345 - bc-123421141')
+        self.assertEqual(unicode(res[0]), output)
+        # start True - snd True
+        url = '/assets/dc/search?buy_date_from=%s&buy_date_to=%s' % (
+            '2001-01-01', '2002-01-01')
+        get = self.client.get(url)
+        self.assertEqual(get.status_code, 200)
+        res = get.context_data['page'].object_list
+        self.assertEqual(len(res), 2)
+        output = ('AsModel2 - sn-123123123 - bc-1234123123')
+        self.assertNotEqual(unicode(res[0]), output)
+        # start False end True
+        url = '/assets/dc/search?buy_date_from=%s&buy_date_to=%s' % (
+            '2011-01-01', '2002-01-01')
+        get = self.client.get(url)
+        self.assertEqual(get.status_code, 200)
+        res = get.context_data['page'].object_list
+        self.assertEqual(len(res), 0)
+        # start True end False
+        url = '/assets/dc/search?buy_date_from=%s&buy_date_to=%s' % (
+            '2001-01-01', '2052-01-01')
+        get = self.client.get(url)
+        self.assertEqual(get.status_code, 200)
+        res = get.context_data['page'].object_list
+        self.assertEqual(len(res), 3)
+        # start False end False
+        url = '/assets/dc/search?buy_date_from=%s&buy_date_to=%s' % (
+            '2051-01-01', '2052-01-01')
+        get = self.client.get(url)
+        self.assertEqual(get.status_code, 200)
+        res = get.context_data['page'].object_list
+        self.assertEqual(len(res), 0)
+        # start None end True
+        url = '/assets/dc/search?buy_date_from=%s&buy_date_to=%s' % (
+            '', '2001-01-01')
+        get = self.client.get(url)
+        self.assertEqual(get.status_code, 200)
+        res = get.context_data['page'].object_list
+        self.assertEqual(len(res), 1)
+        # start None end False
+        url = '/assets/dc/search?buy_date_from=%s&buy_date_to=%s' % (
+            '', '1999-01-01')
+        get = self.client.get(url)
+        self.assertEqual(get.status_code, 200)
+        res = get.context_data['page'].object_list
+        self.assertEqual(len(res), 0)
+        # start True end None
+        url = '/assets/dc/search?buy_date_from=%s&buy_date_to=%s' % (
+            '1999-01-01', '')
+        get = self.client.get(url)
+        self.assertEqual(get.status_code, 200)
+        res = get.context_data['page'].object_list
+        self.assertEqual(len(res), 3)
+        # start False end None
+        url = '/assets/dc/search?buy_date_from=%s&buy_date_to=%s' % (
+            '2999-01-01', '')
+        get = self.client.get(url)
+        self.assertEqual(get.status_code, 200)
+        res = get.context_data['page'].object_list
+        self.assertEqual(len(res), 0)
+
 
 class TestTrolling(TestCase):
     def setUp(self):
