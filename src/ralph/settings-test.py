@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'bob',
 #   slows down testing - disabled
     'tastypie',
+    'ralph.assets',
     'ralph.account',
     'ralph.business',
     'ralph.cmdb',
