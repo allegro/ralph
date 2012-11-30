@@ -658,7 +658,9 @@ class Addresses(DeviceDetailView):
             ) or self.get(*args, **kwargs)
         elif 'dhcp' in self.request.POST:
             dhcp_records = self.get_dhcp()
-            self.dhcp_form = DHCPRecordsForm(dhcp_records, self.request.POST)
+            macs = {e.mac for e in self.object.ethernet_set.all()}
+            self.dhcp_form = DHCPRecordsForm(dhcp_records, macs,
+                                             self.request.POST)
             return self.handle_form(
                 self.dhcp_form,
                 'dhcp',
@@ -687,7 +689,8 @@ class Addresses(DeviceDetailView):
             self.dns_form = DNSRecordsForm(dns_records, self.get_hostnames())
         if self.dhcp_form is None:
             dhcp_records = self.get_dhcp()
-            self.dhcp_form = DHCPRecordsForm(dhcp_records)
+            macs = {e.mac for e in self.object.ethernet_set.all()}
+            self.dhcp_form = DHCPRecordsForm(dhcp_records, macs)
         if self.ip_form is None:
             ip_records = self.object.ipaddress_set.order_by('address')
             self.ip_form = AddressesForm(ip_records)
