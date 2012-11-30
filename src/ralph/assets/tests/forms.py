@@ -374,10 +374,11 @@ class TestBulkEdit(TestCase):
 class TestSearchForm(TestCase):
     def setUp(self):
         self.client = login_as_su()
-        asset = get_asset(
+        model = get_model(get_menufacture('Menufac1'), 'AsModel1')
+        self.asset = get_asset(
             device_info=get_device(1, get_warehouse(name='Warehouse1')),
             type=AssetType.data_center,
-            model=get_model(get_menufacture('Menufac1'), 'AsModel1'),
+            model=model,
             source=AssetSource.shipment,
             invoice_no='Invoice No 1',
             order_no='Order No 1',
@@ -389,25 +390,25 @@ class TestSearchForm(TestCase):
             sn='sn-12332452345',
             barcode='bc-123421141'
         )
-        asset1 = get_asset(
+        self.asset1 = get_asset(
             device_info=get_device(1, get_warehouse(name='Warehouse2')),
             type=AssetType.data_center,
             model=get_model(get_menufacture('Menufac2'), 'AsModel2'),
             source=AssetSource.shipment,
-            invoice_no='Invoice No 3',
+            invoice_no='Invoice No 1',
             order_no='Order No 3',
             buy_date=datetime.datetime(2003, 01, 01),
             support_period=12,
             support_type='Support d2d',
-            provider='Provider 3',
+            provider='Provider 2',
             status=AssetStatus.in_service,
             sn='sn-123123123',
             barcode='bc-1234123123'
         )
-        asset2 = get_asset(
+        self.asset2 = get_asset(
             device_info=get_device(1, get_warehouse(name='Warehouse3')),
             type=AssetType.data_center,
-            model=get_model(get_menufacture('Menufac3'), 'AsModel3'),
+            model=model,
             source=AssetSource.shipment,
             invoice_no='Invoice No 3',
             order_no='Order No 3',
@@ -419,33 +420,70 @@ class TestSearchForm(TestCase):
             sn='sn-12323542345',
             barcode='bc-12341234124'
         )
+
     def test_model(self):
-        get = self.client.get('/assets/dc/search?model_text=%s' % 'AsModel1')
+        url = '/assets/dc/search?model=%s' % self.asset.id
+        get = self.client.get(url)
         self.assertEqual(get.status_code, 200)
         res = get.context_data['page'].object_list
-        import pdb
-        pdb.set_trace()
+        self.assertEqual(len(res), 2)
+        output = ('<Asset: AsModel2 - sn-123123123 - bc-1234123123>')
+        self.assertNotEqual(unicode(res[0]), output)
+        # Empty ?model=
+        url = '/assets/dc/search?model='
+        get = self.client.get(url)
+        self.assertEqual(get.status_code, 200)
+        res = get.context_data['page'].object_list
+        self.assertEqual(len(res), 3)
+############# Uncoment when fix this bug #############
+#        url = '/assets/dc/search?model=99999'
+#        get = self.client.get(url)
+#        self.assertEqual(len(res), 0)
 
     def test_invoice(self):
-        pass
+        url = '/assets/dc/search?invoice_no=%s' % 'Invoice No 1'
+        get = self.client.get(url)
+        self.assertEqual(get.status_code, 200)
+        res = get.context_data['page'].object_list
+        self.assertEqual(len(res), 2)
+        output = ('<Asset: AsModel3 - sn-12323542345 - bc-12341234124>')
+        self.assertNotEqual(unicode(res[0]), output)
 
     def test_order(self):
-        pass
-
-    def test_buy_date(self):
-        pass
+        url = '/assets/dc/search?order_no=%s' % 'Order No 3'
+        get = self.client.get(url)
+        self.assertEqual(get.status_code, 200)
+        res = get.context_data['page'].object_list
+        self.assertEqual(len(res), 2)
+        output = ('<Asset: AsModel1 - sn-12332452345 - bc-123421141>')
+        self.assertNotEqual(unicode(res[0]), output)
 
     def test_provider(self):
-        pass
+        url = '/assets/dc/search?provider=%s' % 'Provider 3'
+        get = self.client.get(url)
+        self.assertEqual(get.status_code, 200)
+        res = get.context_data['page'].object_list
+        self.assertEqual(len(res), 1)
+        output = ('<Asset: AsModel1 - sn-12332452345 - bc-123421141>')
+        self.assertNotEqual(unicode(res[0]), output)
 
-    def test_Status(self):
-        pass
+    def test_status(self):
+        url = '/assets/dc/search?status=%s' % AssetStatus.used.id
+        get = self.client.get(url)
+        self.assertEqual(get.status_code, 200)
+        res = get.context_data['page'].object_list
+        self.assertEqual(len(res), 1)
+        output = ('AsModel1 - sn-12323542345 - bc-12341234124')
+        self.assertEqual(unicode(res[0]), output)
 
     def test_sn(self):
-        pass
-
-    def test_device(self):
-        pass
+        url = '/assets/dc/search?sn=%s' % 'sn-123123123'
+        get = self.client.get(url)
+        self.assertEqual(get.status_code, 200)
+        res = get.context_data['page'].object_list
+        self.assertEqual(len(res), 1)
+        output = ('AsModel2 - sn-123123123 - bc-1234123123')
+        self.assertEqual(unicode(res[0]), output)
 
 
 class TestTrolling(TestCase):
