@@ -18,7 +18,7 @@ from ralph.assets.models_assets import Asset, DeviceInfo, PartInfo, OfficeInfo
 
 
 class AssetHistoryChange(db.Model):
-    """Represent a single change of a device or one of its components."""
+    """Represent a single change of a asset."""
 
     date = db.DateTimeField(verbose_name=_("date"), default=datetime.now)
     asset = db.ForeignKey(
@@ -69,13 +69,12 @@ def asset_post_save(sender, instance, raw, using, **kwargs):
             user=instance.saving_user,
             comment=instance.save_comment,
         ).save()
-    update_releated_fields(instance)
 
 
 @receiver(post_save, sender=DeviceInfo, dispatch_uid='ralph.history_assets')
 def device_info_post_save(sender, instance, raw, using, **kwargs):
-    """
-    A hook for creating ``HistoryChange`` entries when a DeviceInfo changes.
+    """A hook for creating ``HistoryChange`` entries
+    when a DeviceInfo changes.
     """
     for field, orig, new in field_changes(instance):
         AssetHistoryChange(
@@ -90,8 +89,8 @@ def device_info_post_save(sender, instance, raw, using, **kwargs):
 
 @receiver(post_save, sender=PartInfo, dispatch_uid='ralph.history_assets')
 def part_info_post_save(sender, instance, raw, using, **kwargs):
-    """
-    A hook for creating ``HistoryChange`` entries when a PartInfo changes.
+    """A hook for creating ``HistoryChange`` entries
+    when a PartInfo changes.
     """
     for field, orig, new in field_changes(instance):
         AssetHistoryChange(
@@ -116,36 +115,3 @@ def office_info_post_save(sender, instance, raw, using, **kwargs):
             user=instance.saving_user,
             comment=instance.save_comment,
         ).save()
-
-
-def update_releated_fields(instance):
-    if instance.device_info:
-        try:
-            dev_info = AssetHistoryChange.objects.all().filter(
-                device_info_id=instance.device_info.id
-            )
-            for item in dev_info:
-                item.asset_id = instance.id
-                item.save()
-        except AssetHistoryChange.DoesNotExist:
-            pass
-    if instance.office_info:
-        try:
-            office_info = AssetHistoryChange.objects.all().filter(
-                office_info_id=instance.office_info.id
-            )
-            for item in office_info:
-                item.asset_id = instance.id
-                item.save()
-        except AssetHistoryChange.DoesNotExist:
-            pass
-    if instance.part_info:
-        try:
-            part_info = AssetHistoryChange.objects.all().filter(
-                part_info_id=instance.part_info.id
-            )
-            for item in part_info:
-                item.asset_id = instance.id
-                item.save()
-        except AssetHistoryChange.DoesNotExist:
-            pass

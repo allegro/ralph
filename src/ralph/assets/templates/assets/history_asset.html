@@ -20,7 +20,6 @@
             <th>Field</th>
             <th>Before</th>
             <th>After</th>
-            <th>Comment</th>
         </tr></thead>
         <tbody>
         {% for h in history_page.object_list %}
@@ -30,7 +29,6 @@
                 <td>{{ h.field_name }}</td>
                 <td>{{ h.old_value }}</td>
                 <td>{{ h.new_value }}</td>
-                <td>{{ h.comment|default:'' }}</td>
             </tr>
         {% endfor %}
         </tbody>
