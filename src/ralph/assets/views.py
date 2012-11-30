@@ -639,8 +639,8 @@ class DeleteAsset(Base):
     @nested_commit_on_success
     def get(self, *args, **kwargs):
         asset = get_object_or_404(Asset, id=kwargs.get('asset_id'))
-        if asset.device_info:
-            Asset.objects.filter(part_info__device=asset).update(deleted=True)
+        if asset.get_data_type() == 'device':
+            PartInfo.objects.filter(device=asset).update(device=None)
         asset.deleted = True
         asset.save()
         return HttpResponseRedirect(_get_return_link(self.request))

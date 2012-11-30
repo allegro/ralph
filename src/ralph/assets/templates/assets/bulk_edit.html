@@ -44,7 +44,7 @@
                 {% endif %}
               </td>
             {% else %}
-            <td class="control-group{% if "-support_period" in field.html_name %} small{% endif %}{% if field.errors %} error{% endif %}" style="vertical-align:middle">
+              <td class="control-group{% if "-support_period" in field.html_name %} small{% endif %}{% if field.errors %} error{% endif %}" style="vertical-align:middle">
                 {{ field }}
                 {% if field.errors %}
                   <span class="help-inline">{% for error in field.errors %}{{ error }} {% endfor %}</span>
