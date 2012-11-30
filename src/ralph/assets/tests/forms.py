@@ -371,6 +371,83 @@ class TestBulkEdit(TestCase):
         self.assertEqual(fields[1].barcode, 'bc-4321-2012b')
 
 
+class TestSearchForm(TestCase):
+    def setUp(self):
+        self.client = login_as_su()
+        asset = get_asset(
+            device_info=get_device(1, get_warehouse(name='Warehouse1')),
+            type=AssetType.data_center,
+            model=get_model(get_menufacture('Menufac1'), 'AsModel1'),
+            source=AssetSource.shipment,
+            invoice_no='Invoice No 1',
+            order_no='Order No 1',
+            buy_date=datetime.datetime(2001, 01, 01),
+            support_period=12,
+            support_type='Support d2d',
+            provider='Provider 1',
+            status=AssetStatus.new,
+            sn='sn-12332452345',
+            barcode='bc-123421141'
+        )
+        asset1 = get_asset(
+            device_info=get_device(1, get_warehouse(name='Warehouse2')),
+            type=AssetType.data_center,
+            model=get_model(get_menufacture('Menufac2'), 'AsModel2'),
+            source=AssetSource.shipment,
+            invoice_no='Invoice No 3',
+            order_no='Order No 3',
+            buy_date=datetime.datetime(2003, 01, 01),
+            support_period=12,
+            support_type='Support d2d',
+            provider='Provider 3',
+            status=AssetStatus.in_service,
+            sn='sn-123123123',
+            barcode='bc-1234123123'
+        )
+        asset2 = get_asset(
+            device_info=get_device(1, get_warehouse(name='Warehouse3')),
+            type=AssetType.data_center,
+            model=get_model(get_menufacture('Menufac3'), 'AsModel3'),
+            source=AssetSource.shipment,
+            invoice_no='Invoice No 3',
+            order_no='Order No 3',
+            buy_date=datetime.datetime(2002, 01, 01),
+            support_period=12,
+            support_type='standard',
+            provider='Provider 3',
+            status=AssetStatus.used,
+            sn='sn-12323542345',
+            barcode='bc-12341234124'
+        )
+    def test_model(self):
+        get = self.client.get('/assets/dc/search?model_text=%s' % 'AsModel1')
+        self.assertEqual(get.status_code, 200)
+        res = get.context_data['page'].object_list
+        import pdb
+        pdb.set_trace()
+
+    def test_invoice(self):
+        pass
+
+    def test_order(self):
+        pass
+
+    def test_buy_date(self):
+        pass
+
+    def test_provider(self):
+        pass
+
+    def test_Status(self):
+        pass
+
+    def test_sn(self):
+        pass
+
+    def test_device(self):
+        pass
+
+
 class TestTrolling(TestCase):
     def setUp(self):
         self.client = login_as_su()
