@@ -18,7 +18,7 @@ from ralph.assets.models_assets import (
     AssetStatus,
     AssetType,
     DeviceInfo,
-    LicenseTypes,
+    LicenseType,
     OfficeInfo,
     PartInfo,
     Warehouse,
@@ -88,7 +88,7 @@ class WarehouseLookup(LookupChannel):
         return self.format_item_display(obj)
 
     def format_item_display(self, obj):
-        return "%s" % (escape(obj.name))
+        return escape(obj.name)
 
 
 class DCDeviceLookup(DeviceLookup):
@@ -102,20 +102,20 @@ class BODeviceLookup(DeviceLookup):
 
 
 __all__ = [
-    Asset,
-    AssetManufacturer,
-    AssetModel,
-    AssetSource,
-    AssetStatus,
-    AssetType,
-    DeviceInfo,
-    LicenseTypes,
-    OfficeInfo,
-    PartInfo,
-    Warehouse,
-    DeviceLookup,
-    DCDeviceLookup,
-    BODeviceLookup,
-    AssetModelLookup,
-    AssetHistoryChange,
+    'Asset',
+    'AssetManufacturer',
+    'AssetModel',
+    'AssetSource',
+    'AssetStatus',
+    'AssetType',
+    'DeviceInfo',
+    'LicenseType',
+    'OfficeInfo',
+    'PartInfo',
+    'Warehouse',
+    'DeviceLookup',
+    'DCDeviceLookup',
+    'BODeviceLookup',
+    'AssetModelLookup',
+    'AssetHistoryChange',
 ]

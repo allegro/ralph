@@ -8,7 +8,7 @@ from __future__ import unicode_literals
 from django.test import TestCase
 
 from ralph.assets.models_assets import (
-    AssetManufacturer, AssetModel, Warehouse, Asset, AssetStatus, LicenseTypes
+    AssetManufacturer, AssetModel, Warehouse, Asset, AssetStatus, LicenseType
 )
 from ralph.assets.models_history import AssetHistoryChange
 from ralph.ui.tests.helper import login_as_su
@@ -49,7 +49,7 @@ class HistoryAssetsView(TestCase):
             'license_key': '66-66-66',
             'version': '0.1',
             'unit_price': 666.6,
-            'license_type': LicenseTypes.oem.id,
+            'license_type': LicenseType.oem.id,
             'date_of_last_inventory': '2012-11-08',
             'last_logged_user': 'ralph',
         }
