@@ -73,8 +73,8 @@ def asset_post_save(sender, instance, raw, using, **kwargs):
 
 @receiver(post_save, sender=DeviceInfo, dispatch_uid='ralph.history_assets')
 def device_info_post_save(sender, instance, raw, using, **kwargs):
-    """
-    A hook for creating ``HistoryChange`` entries when a DeviceInfo changes.
+    """A hook for creating ``HistoryChange`` entries
+    when a DeviceInfo changes.
     """
     for field, orig, new in field_changes(instance):
         AssetHistoryChange(
@@ -89,8 +89,8 @@ def device_info_post_save(sender, instance, raw, using, **kwargs):
 
 @receiver(post_save, sender=PartInfo, dispatch_uid='ralph.history_assets')
 def part_info_post_save(sender, instance, raw, using, **kwargs):
-    """
-    A hook for creating ``HistoryChange`` entries when a PartInfo changes.
+    """A hook for creating ``HistoryChange`` entries
+    when a PartInfo changes.
     """
     for field, orig, new in field_changes(instance):
         AssetHistoryChange(
