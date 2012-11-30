@@ -8,9 +8,8 @@ from __future__ import unicode_literals
 
 
 def field_changes(instance, ignore=('id',)):
-    """
-    Yield the name, original value and new value for each changed field. Skip
-    all insignificant fields and those passed in ``ignore``.
+    """Yield the name, original value and new value for each changed field.
+    Skip all insignificant fields and those passed in ``ignore``.
     """
     for field, orig in instance.dirty_fields.iteritems():
         if field in ignore:
