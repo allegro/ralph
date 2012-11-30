@@ -187,10 +187,6 @@ def validate_hostname(name):
         raise forms.ValidationError("Invalid hostname")
     return name.lower()
 
-def _dhcp_mac_field(label=None, initial=None, record=None, **kwargs):
-    kwargs.update(validators=[validate_mac])
-    return _dns_char_field(label, initial, **kwargs)
-
 def _ip_name_field(label=None, initial=None, record=None, **kwargs):
     kwargs.update(validators=[validate_domain_name])
     return _dns_char_field(label, initial, **kwargs)
@@ -317,9 +313,28 @@ class DNSRecordsForm(forms.Form):
 
 
 class DHCPRecordsForm(forms.Form):
-    def __init__(self, records, *args, **kwargs):
+    def __init__(self, records, macs, *args, **kwargs):
         super(DHCPRecordsForm, self).__init__(*args, **kwargs)
         self.records = list(records)
+        macs = set(macs) - {r.mac for r in self.records}
+        def _dhcp_mac_field(label=None, initial=None, **kwargs):
+            if macs:
+                initial = list(macs)[0]
+            kwargs.update(
+                label=label,
+                initial=initial,
+                required=False,
+                validators=[validate_mac],
+                widget=AutocompleteWidget(
+                    attrs={
+                        'class': 'span12',
+                        'placeholder': label,
+                        'style': 'min-width: 16ex',
+                    },
+                    choices=[(n, n) for n in macs],
+                ),
+            )
+            return forms.CharField(**kwargs)
         fields = [
             ('ip', _dhcp_ip_field),
             ('mac', _dhcp_mac_field),
