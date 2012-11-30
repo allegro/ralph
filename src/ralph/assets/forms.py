@@ -180,6 +180,8 @@ class EditPartForm(BaseAssetForm):
         self.fields['sn'].widget = TextInput()
         self.fields['sn'].label = _("SN")
         self.fields['sn'].validators = [MaxLengthValidator(200), ]
+        if self.instance.sn:
+            self.fields['sn'].initial = self.instance.sn
         del self.fields['barcode']
 
 
@@ -189,9 +191,13 @@ class EditDeviceForm(BaseAssetForm):
         self.fields['sn'].widget = TextInput()
         self.fields['sn'].label = _("SN")
         self.fields['sn'].validators = [MaxLengthValidator(200), ]
+        if self.instance.sn:
+            self.fields['sn'].initial = self.instance.sn
         self.fields['barcode'].widget = TextInput()
         self.fields['barcode'].label = _("Barcode")
         self.fields['barcode'].validators = [MaxLengthValidator(200), ]
+        if self.instance.barcode:
+            self.fields['barcode'].initial = self.instance.barcode
 
 
 class SearchAssetForm(Form):

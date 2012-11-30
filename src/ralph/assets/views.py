@@ -401,7 +401,6 @@ class EditDevice(Base):
             raise Http404()
         self.asset_form = EditDeviceForm(
             instance=asset,
-            initial={'sn': asset.sn, 'barcode': asset.barcode},
             mode=_get_mode(self.request)
         )
         self.device_info_form = BaseDeviceForm(instance=asset.device_info)
@@ -479,7 +478,6 @@ class EditPart(Base):
             raise Http404()
         self.asset_form = EditPartForm(
             instance=asset,
-            initial={'sn': asset.sn},
             mode=_get_mode(self.request)
         )
         self.office_info_form = OfficeForm(instance=asset.office_info)
