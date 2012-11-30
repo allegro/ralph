@@ -29,17 +29,19 @@ def check_snmp_port(ip, port=161, timeout=1):
     return bool(reply)
 
 
-def user_data(community, snmp_version):
+def user_data(auth, snmp_version):
     if snmp_version == '2c':
+        community = auth
         data = cmdgen.CommunityData('ralph', community, 1)
     elif snmp_version in ('3', 3):
-        # XXX Find out the actual protocols and take keys from configuration.
+        # For snmpv3, auth is a tuple of password and encryption key
+        snmp_v3_auth, snmp_v3_priv = auth
         data =  cmdgen.UsmUserData(
-            'usr-sha-aes128',
-            'authkey1',
-            'privkey1',
+            'usr-sha-des',
+            snmp_v3_auth,
+            snmp_v3_priv,
             authProtocol=cmdgen.usmHMACSHAAuthProtocol,
-            privProtocol=cmdgen.usmAesCfb128Protocol,
+            privProtocol=cmdgen.usmDESPrivProtocol,
         )
     else:
         data = cmdgen.CommunityData('ralph', community, 0)
