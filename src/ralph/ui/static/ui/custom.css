@@ -156,7 +156,7 @@ tr.table-highlight td {
 }
 
 table.assets-bulk-edit input {
-    width: 60px;;
+    width: 60px;
 }
 
 table.assets-bulk-edit .small input {
@@ -166,3 +166,4 @@ table.assets-bulk-edit .small input {
 table.assets-bulk-edit select {
     width: auto;
 }
+

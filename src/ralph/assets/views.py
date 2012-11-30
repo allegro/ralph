@@ -32,7 +32,6 @@ from ralph.assets.models_history import AssetHistoryChange
 from ralph.ui.views.common import Base, PaginationMixin
 
 
-
 SAVE_PRIORITY = 200
 HISTORY_PAGE_SIZE = 25
 MAX_PAGE_SIZE = 65535
@@ -41,14 +40,6 @@ CONNECT_ASSET_WITH_DEVICE = settings.CONNECT_ASSET_WITH_DEVICE
 
 class AssetsMixin(Base):
     template_name = "assets/base.html"
-
-    def get(self, *args, **kwargs):
-        # TODO
-        return super(AssetsMixin, self).get(*args, **kwargs)
-
-    def post(self, *args, **kwargs):
-        # TODO
-        return super(AssetsMixin, self).post(*args, **kwargs)
 
     def get_context_data(self, *args, **kwargs):
         ret = super(AssetsMixin, self).get_context_data(**kwargs)
@@ -135,7 +126,7 @@ class AssetSearch(AssetsMixin, PaginationMixin):
         for field in search_fields:
             field_value = self.request.GET.get(field)
             if field_value:
-                q = Q(**{'%s' % field: field_value})
+                q = Q(**{field: field_value})
                 all_q = all_q & q
         # now fields within ranges.
         buy_date_from = self.request.GET.get('buy_date_from')
@@ -146,12 +137,17 @@ class AssetSearch(AssetsMixin, PaginationMixin):
             all_q &= Q(buy_date__lte=buy_date_to)
         self.paginate_query(self.get_all_items(all_q))
 
-    def get_all_items(self, query):
-        return Asset.objects().filter(query)
+    def get_all_items(self, q_object):
+        return Asset.objects.filter(q_object)
 
     def get_context_data(self, *args, **kwargs):
         ret = super(AssetSearch, self).get_context_data(*args, **kwargs)
-        ret.update(super(AssetSearch, self).get_context_data_paginator(*args, **kwargs))
+        ret.update(
+            super(AssetSearch, self).get_context_data_paginator(
+                *args,
+                **kwargs
+            )
+        )
         ret.update({
             'form': self.form,
             'header': self.header,
@@ -590,7 +586,7 @@ class BulkEdit(Base):
 
     def get(self, *args, **kwargs):
         assets_count = Asset.objects.filter(
-            pk__in=self.request.GET.getlist('select')).count()
+            pk__in=self.request.GET.getlist('select')).exists()
         if not assets_count:
             messages.warning(self.request, _("Nothing to edit."))
             return HttpResponseRedirect(_get_return_link(self.request))
