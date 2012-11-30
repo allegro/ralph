@@ -8,6 +8,7 @@ from __future__ import unicode_literals
 
 import re
 
+from django.core.validators import MaxLengthValidator
 from ajax_select.fields import AutoCompleteSelectField
 from django.forms import (
     ModelForm, Form, CharField, DateField, ChoiceField, ValidationError
@@ -32,7 +33,7 @@ class BaseAssetForm(ModelForm):
             'type', 'model', 'invoice_no', 'order_no',
             'buy_date', 'support_period', 'support_type',
             'support_void_reporting', 'provider', 'status',
-            'sn', 'barcode', 'remarks',
+            'remarks',
         )
         widgets = {
             'sn': Textarea(attrs={'rows': 25}),
@@ -44,6 +45,8 @@ class BaseAssetForm(ModelForm):
         'asset_model', required=True,
         plugin_options=dict(add_link='/admin/assets/assetmodel/add/?name=')
     )
+    sn = CharField(required=True, widget=Textarea(attrs={'rows': 25}))
+    barcode = CharField(required=False, widget=Textarea(attrs={'rows': 25}))
 
     def __init__(self, *args, **kwargs):
         mode = kwargs.get('mode')
@@ -114,7 +117,9 @@ class BasePartForm(ModelForm):
             help_text='Enter barcode, sn, or model.',
         )
         if self.instance.source_device:
-            self.fields['source_device'].initial = self.instance.source_device.id
+            self.fields[
+                'source_device'
+            ].initial = self.instance.source_device.id
         if self.instance.device:
             self.fields['device'].initial = self.instance.device.id
 
@@ -174,6 +179,7 @@ class EditPartForm(BaseAssetForm):
         super(EditPartForm, self).__init__(*args, **kwargs)
         self.fields['sn'].widget = TextInput()
         self.fields['sn'].label = _("SN")
+        self.fields['sn'].validators = [MaxLengthValidator(200), ]
         del self.fields['barcode']
 
 
@@ -182,8 +188,10 @@ class EditDeviceForm(BaseAssetForm):
         super(EditDeviceForm, self).__init__(*args, **kwargs)
         self.fields['sn'].widget = TextInput()
         self.fields['sn'].label = _("SN")
+        self.fields['sn'].validators = [MaxLengthValidator(200), ]
         self.fields['barcode'].widget = TextInput()
         self.fields['barcode'].label = _("Barcode")
+        self.fields['barcode'].validators = [MaxLengthValidator(200), ]
 
 
 class SearchAssetForm(Form):
