@@ -147,7 +147,7 @@ class AssetSearch(AssetsMixin, PaginationMixin):
         self.paginate_query(self.get_all_items(all_q))
 
     def get_all_items(self, query):
-        return Asset.objects().filter(query)
+        return Asset.objects().filter(query).order_by('id')
 
     def get_context_data(self, *args, **kwargs):
         ret = super(AssetSearch, self).get_context_data(*args, **kwargs)
