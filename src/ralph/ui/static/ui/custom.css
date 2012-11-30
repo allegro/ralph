@@ -155,6 +155,12 @@ tr.table-highlight td {
     margin-top: -10px !important;
 }
 
+<<<<<<< HEAD
+.reports-form-right-line
+{
+    border-right: 1px solid silver;
+    padding-right: 20px;
+=======
 table.assets-bulk-edit input {
     width: 60px;;
 }
@@ -165,4 +171,5 @@ table.assets-bulk-edit .small input {
 
 table.assets-bulk-edit select {
     width: auto;
+>>>>>>> 378edafae825025edff01ce323d261c1b90f9f40
 }
