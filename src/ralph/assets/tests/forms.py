@@ -263,7 +263,7 @@ class TestBulkEdit(TestCase):
         self.asset = get_asset(
             device_info=get_device(1, get_warehouse(name='Warehouse1')),
             type=AssetType.data_center,
-            model=get_model(get_menufacture('Menufac'), 'AsModel'),
+            model=get_model(get_menufacture('Menufac1'), 'AsModel1'),
             source=AssetSource.shipment,
             invoice_no='Invoice No 1',
             order_no='Order No 1',
@@ -291,6 +291,84 @@ class TestBulkEdit(TestCase):
             sn='sn-1232',
             barcode='bc-12342'
         )
+
+    def test_bulkedit_form(self):
+        # Before send POST
+        url = '/assets/dc/bulkedit/?select=%s&select=%s' % (
+            self.asset.id, self.asset2.id)
+        view = self.client.get(url)
+        self.assertEqual(view.status_code, 200)
+        model0 = get_model(get_menufacture('Menufac1a'), 'AsModel1a')
+        model1 = get_model(get_menufacture('Menufac2a'), 'AsModel2a')
+        post_data = {
+            'form-TOTAL_FORMS': u'2',
+            'form-INITIAL_FORMS': u'2',
+            'form-MAX_NUM_FORMS': u'',
+            'form-0-id': 1,
+            'form-0-type': AssetType.data_center.id,
+            'form-0-model': model0.id,
+            'form-0-invoice_no': 'Invoice No 1a',
+            'form-0-order_no': 'Order No 1a',
+            'form-0-buy_date': '2012-02-02',
+            'form-0-sn': 'sn-321-2012a',
+            'form-0-barcode': 'bc-4321-2012a',
+            'form-0-support_period': 24,
+            'form-0-support_type': 'standard1',
+            'form-0-support_void_reporting': 'on',
+            'form-0-provider': 'Provider 1a',
+            'form-0-status': AssetStatus.in_progress.id,
+            'form-0-source': AssetSource.shipment.id,
+            'form-1-id': 2,
+            'form-1-type': AssetType.data_center.id,
+            'form-1-model': model1.id,
+            'form-1-invoice_no': 'Invoice No 2a',
+            'form-1-order_no': 'Order No 2a',
+            'form-1-buy_date': '2011-02-03',
+            'form-1-sn': 'sn-321-2012b',
+            'form-1-barcode': 'bc-4321-2012b',
+            'form-1-support_period': 48,
+            'form-1-support_type': 'standard2',
+            'form-1-support_void_reporting': 'off',
+            'form-1-provider': 'Provider 2a',
+            'form-1-status': AssetStatus.waiting_for_release.id,
+            'form-1-source': AssetSource.shipment.id,
+        }
+        post = self.client.post(url, post_data, follow=True)
+        self.assertRedirects(
+            post, url, status_code=302, target_status_code=200,
+        )
+        new_view = self.client.get(url)
+        fields = new_view.context['formset'].queryset
+        # model
+        self.assertEqual(fields[0].model.id, model0.id)
+        self.assertEqual(fields[1].model.id, model1.id)
+        # invoice_no
+        self.assertEqual(fields[0].invoice_no, 'Invoice No 1a')
+        self.assertEqual(fields[1].invoice_no, 'Invoice No 2a')
+        # order_no
+        self.assertEqual(fields[0].order_no, 'Order No 1a')
+        self.assertEqual(fields[1].order_no, 'Order No 2a')
+        # Buy date
+        self.assertEqual(unicode(fields[0].buy_date), '2012-02-02')
+        self.assertEqual(unicode(fields[1].buy_date), '2011-02-03')
+        # Support period in months
+        self.assertEqual(fields[0].support_period, 24)
+        self.assertEqual(fields[1].support_period, 48)
+        # Support type
+        self.assertEqual(fields[0].support_type, 'standard1')
+        self.assertEqual(fields[1].support_type, 'standard2')
+        # Provider
+        self.assertEqual(fields[0].provider, 'Provider 1a')
+        self.assertEqual(fields[1].provider, 'Provider 2a')
+        # Status
+        self.assertEqual(fields[0].status, AssetStatus.in_progress.id)
+        self.assertEqual(fields[1].status, AssetStatus.waiting_for_release.id)
+        # SN
+        self.assertEqual(fields[0].sn, 'sn-321-2012a')
+        self.assertEqual(fields[1].sn, 'sn-321-2012b')
+        # Barcode
+        self.assertEqual(fields[0].barcode, 'bc-4321-2012a')
+        self.assertEqual(fields[1].barcode, 'bc-4321-2012b')
 
 
 class TestTrolling(TestCase):
