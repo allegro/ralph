@@ -89,7 +89,7 @@ class HistoryAssetsView(TestCase):
 
     def test_change_barcode(self):
         """Test check the recording Asset barcode change in asset history"""
-        asset_history = AssetHistoryChange.objects.all().filter(
+        asset_history = AssetHistoryChange.objects.filter(
             asset=self.asset, field_name='barcode'
         )
         self.assertListEqual(
@@ -103,7 +103,7 @@ class HistoryAssetsView(TestCase):
 
     def test_change_sn(self):
         """Test check the recording Asset serial number in asset history"""
-        asset_history = AssetHistoryChange.objects.all().filter(
+        asset_history = AssetHistoryChange.objects.filter(
             asset=self.asset, field_name='sn'
         )
         self.assertListEqual(

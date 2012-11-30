@@ -32,7 +32,6 @@ from ralph.assets.models_history import AssetHistoryChange
 from ralph.ui.views.common import Base, PaginationMixin
 
 
-
 SAVE_PRIORITY = 200
 HISTORY_PAGE_SIZE = 25
 MAX_PAGE_SIZE = 65535
@@ -545,10 +544,13 @@ class HistoryAsset(BackOfficeMixin):
         query_variable_name = 'history_page'
         ret = super(HistoryAsset, self).get_context_data(**kwargs)
         asset_id = kwargs.get('asset_id')
-        history = AssetHistoryChange.objects.all().filter(
-            asset_id=asset_id
-        ).order_by('-date')
         asset = Asset.objects.get(id=asset_id)
+        history = AssetHistoryChange.objects.filter(
+            Q(asset_id=asset.id) |
+            Q(device_info_id=getattr(asset.device_info, 'id', 0)) |
+            Q(part_info_id=getattr(asset.part_info, 'id', 0)) |
+            Q(office_info_id=getattr(asset.office_info, 'id', 0))
+        ).order_by('-date')
         status = bool(self.request.GET.get('status', ''))
         if status:
             history = history.filter(field_name__exact='status')
@@ -642,4 +644,3 @@ class DeleteAsset(Base):
         asset.deleted = True
         asset.save()
         return HttpResponseRedirect(_get_return_link(self.request))
-
