@@ -80,6 +80,11 @@ class BulkEditAssetForm(ModelForm):
         }
     barcode = BarcodeField(max_length=200, required=False)
 
+    def __init__(self, *args, **kwargs):
+        super(BulkEditAssetForm, self).__init__(*args, **kwargs)
+        for field_name in self.fields:
+            self.fields[field_name].widget.attrs = {'class': 'span12'}
+
 
 class BaseDeviceForm(ModelForm):
     class Meta:
