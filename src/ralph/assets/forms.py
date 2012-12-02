@@ -11,9 +11,10 @@ import re
 from django.core.validators import MaxLengthValidator
 from ajax_select.fields import AutoCompleteSelectField
 from django.forms import (
-    ModelForm, Form, CharField, DateField, ChoiceField, ValidationError
+    ModelForm, Form, CharField, DateField, ChoiceField, ValidationError,
+    IntegerField,
 )
-from django.forms.widgets import Textarea, TextInput
+from django.forms.widgets import Textarea, TextInput, HiddenInput
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models import (
@@ -242,3 +243,8 @@ class SearchAssetForm(Form):
             channel,
             required=False
         )
+
+
+class DeleteAssetConfirmForm(Form):
+    asset_id = IntegerField(widget=HiddenInput())
+
