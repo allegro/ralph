@@ -8,11 +8,13 @@ from __future__ import unicode_literals
 
 import re
 
+from django.core.validators import MaxLengthValidator
 from ajax_select.fields import AutoCompleteSelectField
 from django.forms import (
-    ModelForm, Form, CharField, DateField, ChoiceField, ValidationError
+    ModelForm, Form, CharField, DateField, ChoiceField, ValidationError,
+    IntegerField,
 )
-from django.forms.widgets import Textarea, TextInput
+from django.forms.widgets import Textarea, TextInput, HiddenInput
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models import (
@@ -32,7 +34,7 @@ class BaseAssetForm(ModelForm):
             'type', 'model', 'invoice_no', 'order_no',
             'buy_date', 'support_period', 'support_type',
             'support_void_reporting', 'provider', 'status',
-            'sn', 'barcode', 'remarks',
+            'remarks',
         )
         widgets = {
             'sn': Textarea(attrs={'rows': 25}),
@@ -45,6 +47,8 @@ class BaseAssetForm(ModelForm):
         'asset_model', required=True,
         plugin_options=dict(add_link='/admin/assets/assetmodel/add/?name=')
     )
+    sn = CharField(required=True, widget=Textarea(attrs={'rows': 25}))
+    barcode = CharField(required=False, widget=Textarea(attrs={'rows': 25}))
 
     def __init__(self, *args, **kwargs):
         mode = kwargs.get('mode')
@@ -77,6 +81,11 @@ class BulkEditAssetForm(ModelForm):
             'device_info': HiddenSelectWidget(),
         }
     barcode = BarcodeField(max_length=200, required=False)
+
+    def __init__(self, *args, **kwargs):
+        super(BulkEditAssetForm, self).__init__(*args, **kwargs)
+        for field_name in self.fields:
+            self.fields[field_name].widget.attrs = {'class': 'span12'}
 
 
 class BaseDeviceForm(ModelForm):
@@ -115,7 +124,9 @@ class BasePartForm(ModelForm):
             help_text='Enter barcode, sn, or model.',
         )
         if self.instance.source_device:
-            self.fields['source_device'].initial = self.instance.source_device.id
+            self.fields[
+                'source_device'
+            ].initial = self.instance.source_device.id
         if self.instance.device:
             self.fields['device'].initial = self.instance.device.id
 
@@ -175,6 +186,9 @@ class EditPartForm(BaseAssetForm):
         super(EditPartForm, self).__init__(*args, **kwargs)
         self.fields['sn'].widget = TextInput()
         self.fields['sn'].label = _("SN")
+        self.fields['sn'].validators = [MaxLengthValidator(200), ]
+        if self.instance.sn:
+            self.fields['sn'].initial = self.instance.sn
         del self.fields['barcode']
 
 
@@ -183,8 +197,14 @@ class EditDeviceForm(BaseAssetForm):
         super(EditDeviceForm, self).__init__(*args, **kwargs)
         self.fields['sn'].widget = TextInput()
         self.fields['sn'].label = _("SN")
+        self.fields['sn'].validators = [MaxLengthValidator(200), ]
+        if self.instance.sn:
+            self.fields['sn'].initial = self.instance.sn
         self.fields['barcode'].widget = TextInput()
         self.fields['barcode'].label = _("Barcode")
+        self.fields['barcode'].validators = [MaxLengthValidator(200), ]
+        if self.instance.barcode:
+            self.fields['barcode'].initial = self.instance.barcode
 
 
 class SearchAssetForm(Form):
@@ -227,3 +247,8 @@ class SearchAssetForm(Form):
             channel,
             required=False
         )
+
+
+class DeleteAssetConfirmForm(Form):
+    asset_id = IntegerField(widget=HiddenInput())
+

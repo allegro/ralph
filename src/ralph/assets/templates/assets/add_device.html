@@ -4,9 +4,6 @@
 
 {% block additional_inputs %}
   {% for field in device_info_form %}
-  {% if field.name == 'model' %}
-    test
-  {% endif %}
     <div class="control-group{% if field.errors %} error{% endif %}">
       <label class="control-label">{{ field.label }}</label>
       <div class="form-field controls">
