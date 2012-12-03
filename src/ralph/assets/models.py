@@ -34,7 +34,7 @@ class DeviceLookup(LookupChannel):
             Q(device_info__gt=0) & Q(
                 Q(barcode__istartswith=q) |
                 Q(sn__istartswith=q) |
-                Q(model__name__istartswith=q)
+                Q(model__name__icontains=q)
             )
         )
         return self.get_base_objects().filter(query).order_by('sn')[:10]
@@ -60,7 +60,7 @@ class AssetModelLookup(LookupChannel):
 
     def get_query(self, q, request):
         return AssetModel.objects.filter(
-            Q(name__istartswith=q)
+            Q(name__icontains=q)
         ).order_by('name')[:10]
 
     def get_result(self, obj):
@@ -78,7 +78,7 @@ class WarehouseLookup(LookupChannel):
 
     def get_query(self, q, request):
         return Warehouse.objects.filter(
-            Q(name__istartswith=q)
+            Q(name__icontains=q)
         ).order_by('name')[:10]
 
     def get_result(self, obj):

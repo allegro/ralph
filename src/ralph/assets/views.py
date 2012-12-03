@@ -546,10 +546,13 @@ class HistoryAsset(BackOfficeMixin):
         query_variable_name = 'history_page'
         ret = super(HistoryAsset, self).get_context_data(**kwargs)
         asset_id = kwargs.get('asset_id')
-        history = AssetHistoryChange.objects.all().filter(
-            asset_id=asset_id
-        ).order_by('-date')
         asset = Asset.objects.get(id=asset_id)
+        history = AssetHistoryChange.objects.filter(
+            Q(asset_id=asset.id) |
+            Q(device_info_id=getattr(asset.device_info, 'id', 0)) |
+            Q(part_info_id=getattr(asset.part_info, 'id', 0)) |
+            Q(office_info_id=getattr(asset.office_info, 'id', 0))
+        ).order_by('-date')
         status = bool(self.request.GET.get('status', ''))
         if status:
             history = history.filter(field_name__exact='status')
@@ -562,7 +565,7 @@ class HistoryAsset(BackOfficeMixin):
             page_size = MAX_PAGE_SIZE
         else:
             page_size = HISTORY_PAGE_SIZE
-        history_page = Paginator(history, HISTORY_PAGE_SIZE).page(page)
+        history_page = Paginator(history, page_size).page(page)
         ret.update({
             'history': history,
             'history_page': history_page,
