@@ -198,6 +198,13 @@ class TestForms(TestCase):
         new_fields = new_view.context['asset_form'].initial
         new_device_info = new_view.context['device_info_form'].initial
         new_office_info = new_view.context['office_info_form'].initial
+
+        correct_data = dict(
+            model=self.asset_model3.id,
+            invoice_no='Invoice No 3',
+            order_no='Order No 3',
+            buy_date='2001-02-02'
+        )
         # type
         self.assertEqual(old_fields['type'], new_fields['type'])
         # model
