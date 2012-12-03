@@ -49,8 +49,8 @@ from ralph.ui.forms import (
     PropertyForm,
     DeviceBulkForm,
     DNSRecordsForm,
-    DHCPRecordsForm,
-    AddressesForm,
+    DHCPFormSet,
+    IPAddressFormSet,
 )
 
 SAVE_PRIORITY = 200
@@ -478,32 +478,6 @@ def _dns_delete_record(form, record, request):
             messages.warning(request, "PTR record deleted.")
 
 
-def _dhcp_fill_record(form, prefix, record, request):
-    ip = form.cleaned_data.get(prefix + 'ip')
-    mac = form.cleaned_data.get(prefix + 'mac')
-    record.ip = ip
-    record.mac = mac
-
-
-def _dhcp_create_record(form, request, device):
-    ip = form.cleaned_data.get('dhcp_new_ip')
-    mac = form.cleaned_data.get('dhcp_new_mac')
-    if ip and mac:
-        if DHCPEntry.objects.filter(ip=ip).exists():
-            messages.warning(request,
-                             "A DHCP record for %s already exists."
-                             % ip)
-        if DHCPEntry.objects.filter(mac=mac).exists():
-            messages.warning(request,
-                             "A DHCP record for %s already exists."
-                             % mac)
-        record = DHCPEntry(mac=mac, ip=ip)
-        record.save()
-        messages.success(request,
-                         "A DHCP record for %s and %s added." %
-                         (ip, mac))
-
-
 def _ip_fill_record(form, prefix, record, request):
     hostname = form.cleaned_data.get(prefix + 'hostname')
     address = form.cleaned_data.get(prefix + 'address')
@@ -540,8 +514,8 @@ class Addresses(DeviceDetailView):
     def __init__(self, *args, **kwargs):
         super(Addresses, self).__init__(*args, **kwargs)
         self.dns_form = None
-        self.dhcp_form = None
-        self.ip_form = None
+        self.dhcp_formset = None
+        self.ip_formset = None
 
     def get_dns(self, limit_types=None):
         ips = set(ip.address for ip in self.object.ipaddress_set.all())
@@ -649,23 +623,33 @@ class Addresses(DeviceDetailView):
         elif 'dhcp' in self.request.POST:
             dhcp_records = self.get_dhcp()
             macs = {e.mac for e in self.object.ethernet_set.all()}
-            self.dhcp_form = DHCPRecordsForm(dhcp_records, macs,
-                                             self.request.POST)
-            return self.handle_form(
-                self.dhcp_form,
-                'dhcp',
-                _dhcp_fill_record,
-                _dhcp_create_record,
-            ) or self.get(*args, **kwargs)
+            self.dhcp_formset = DHCPFormSet(
+                dhcp_records,
+                macs,
+                self.request.POST,
+                prefix='dhcp',
+            )
+            if self.dhcp_formset.is_valid():
+                self.dhcp_formset.save()
+                messages.success(self.request, "DHCP records updated.")
+                return HttpResponseRedirect(self.request.path)
+            else:
+                messages.error(self.request, "Errors in the DHCP form.")
         elif 'ip' in self.request.POST:
-            ip_records = self.object.ipaddress_set.order_by('address')
-            self.ip_form = AddressesForm(ip_records, self.request.POST)
-            return self.handle_form(
-                self.ip_form,
-                'ip',
-                _ip_fill_record,
-                _ip_create_record,
-            ) or self.get(*args, **kwargs)
+            self.ip_formset = IPAddressFormSet(
+                self.request.POST,
+                queryset=self.object.ipaddress_set.order_by('address')
+            )
+            if self.ip_formset.is_valid():
+                for form in self.ip_formset.extra_forms:
+                    # Bind the newly created addresses to this device.
+                    if form.has_changed():
+                        form.instance.device = self.object
+                self.ip_formset.save()
+                messages.success(self.request, "IP addresses updated.")
+                return HttpResponseRedirect(self.request.path)
+            else:
+                messages.error(self.request, "Errors in the addresses form.")
         return self.get(*args, **kwargs)
 
     def get_dhcp(self):
@@ -677,21 +661,22 @@ class Addresses(DeviceDetailView):
         if self.dns_form is None:
             dns_records = self.get_dns(self.limit_types)
             self.dns_form = DNSRecordsForm(dns_records, self.get_hostnames())
-        if self.dhcp_form is None:
+        if self.dhcp_formset is None:
             dhcp_records = self.get_dhcp()
             macs = {e.mac for e in self.object.ethernet_set.all()}
-            self.dhcp_form = DHCPRecordsForm(dhcp_records, macs)
-        if self.ip_form is None:
-            ip_records = self.object.ipaddress_set.order_by('address')
-            self.ip_form = AddressesForm(ip_records)
+            self.dhcp_formset = DHCPFormSet(dhcp_records, macs, prefix='dhcp')
+        if self.ip_formset is None:
+            self.ip_formset = IPAddressFormSet(
+                queryset=self.object.ipaddress_set.order_by('address')
+            )
         profile = self.request.user.get_profile()
         can_edit =  profile.has_perm(self.edit_perm, self.object.venture)
         ret.update({
             'canedit': can_edit,
             'balancers': list(_get_balancers(self.object)),
             'dnsform': self.dns_form,
-            'dhcpform': self.dhcp_form,
-            'ipform': self.ip_form,
+            'dhcpformset': self.dhcp_formset,
+            'ipformset': self.ip_formset,
         })
         return ret
 

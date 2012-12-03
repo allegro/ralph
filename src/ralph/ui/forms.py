@@ -22,11 +22,19 @@ from ralph.discovery.models import (Device, ComponentModelGroup,
 from ralph.dnsedit.models import DHCPEntry
 from ralph.dnsedit.util import is_valid_hostname, get_domain, get_revdns_records
 from ralph.util import Eth
-from ralph.ui.widgets import (DateWidget, CurrencyWidget,
-                              ReadOnlySelectWidget, DeviceGroupWidget,
-                              ComponentGroupWidget, DeviceWidget,
-                              DeviceModelWidget, ReadOnlyWidget, RackWidget,
-                              ReadOnlyPriceWidget)
+from ralph.ui.widgets import (
+    DateWidget,
+    CurrencyWidget,
+    ReadOnlySelectWidget,
+    DeviceGroupWidget,
+    ComponentGroupWidget,
+    DeviceWidget,
+    DeviceModelWidget,
+    ReadOnlyWidget,
+    RackWidget,
+    ReadOnlyPriceWidget,
+    ReadOnlyDateWidget,
+)
 
 
 def _all_ventures():
@@ -91,6 +99,7 @@ class MarginsReportForm(DateRangeForm):
             except KeyError:
                 return self.fields[field].initial
 
+
 def _dns_char_field(label=None, initial=None, record=None, **kwargs):
     kwargs.update(
         label=label,
@@ -116,9 +125,6 @@ def _dns_int_field(label=None, initial=None, **kwargs):
         })
     )
     return forms.IntegerField(**kwargs)
-
-
-
 
 
 def _dns_type_field(label=None, initial=None, types=None, **kwargs):
@@ -150,18 +156,6 @@ def _bool_hidden_field(label=None, initial=None, **kwargs):
     return forms.BooleanField(label=label, required=False, **kwargs)
 
 
-def validate_mac(mac):
-    if not mac:
-        return
-    try:
-        mac = MACAddressField.normalize(mac)
-        if not mac:
-            raise ValueError()
-    except ValueError:
-        raise forms.ValidationError("Invalid MAC address")
-    return mac
-
-
 def validate_ip(ip):
     if not ip:
         return
@@ -180,24 +174,6 @@ def validate_domain_name(name):
         raise forms.ValidationError("No such domain")
     return name.lower()
 
-def validate_hostname(name):
-    if not name:
-        return
-    if not is_valid_hostname(name):
-        raise forms.ValidationError("Invalid hostname")
-    return name.lower()
-
-def _ip_name_field(label=None, initial=None, record=None, **kwargs):
-    kwargs.update(validators=[validate_domain_name])
-    return _dns_char_field(label, initial, **kwargs)
-
-def _dhcp_ip_field(label=None, initial=None, record=None, **kwargs):
-    kwargs.update(validators=[validate_ip])
-    return _dns_char_field(label, initial, **kwargs)
-
-def _hostname_field(label=None, initial=None, record=None, **kwargs):
-    kwargs.update(validators=[validate_hostname])
-    return _dns_char_field(label, initial, **kwargs)
 
 def _add_fields(new_fields, prefix, record, fields):
     for label, field_class in fields:
@@ -311,64 +287,111 @@ class DNSRecordsForm(forms.Form):
         return self.cleaned_data
 
 
+class DHCPEntryForm(forms.ModelForm):
+    class Meta:
+        model = DHCPEntry
+        fields = 'ip', 'mac'
+        widgets = {
+            'ip': forms.TextInput(
+                attrs={
+                    'class': 'span12',
+                    'placeholder': "IP address",
+                    'style': 'min-width: 16ex',
+                },
+            ),
+            'mac': AutocompleteWidget(
+                attrs={
+                    'class': 'span12',
+                    'placeholder': "MAC address",
+                    'style': 'min-width: 16ex',
+                },
+            ),
+        }
 
-class DHCPRecordsForm(forms.Form):
+    def clean_ip(self):
+        ip = self.cleaned_data['ip']
+        try:
+            ip = str(ipaddr.IPAddress(ip))
+        except ValueError:
+            raise forms.ValidationError("Invalid IP address")
+        return ip
+
+    def clean_mac(self):
+        mac = self.cleaned_data['mac']
+        try:
+            mac = MACAddressField.normalize(mac)
+            if not mac:
+                raise ValueError()
+        except ValueError:
+            raise forms.ValidationError("Invalid MAC address")
+        return mac
+
+
+class DHCPFormSetBase(forms.models.BaseModelFormSet):
     def __init__(self, records, macs, *args, **kwargs):
-        super(DHCPRecordsForm, self).__init__(*args, **kwargs)
+        kwargs['queryset'] = records.all()
         self.records = list(records)
-        macs = set(macs) - {r.mac for r in self.records}
-        def _dhcp_mac_field(label=None, initial=None, **kwargs):
-            if macs:
-                initial = list(macs)[0]
-            kwargs.update(
-                label=label,
-                initial=initial,
-                required=False,
-                validators=[validate_mac],
-                widget=AutocompleteWidget(
-                    attrs={
-                        'class': 'span12',
-                        'placeholder': label,
-                        'style': 'min-width: 16ex',
-                    },
-                    choices=[(n, n) for n in macs],
-                ),
-            )
-            return forms.CharField(**kwargs)
-        fields = [
-            ('ip', _dhcp_ip_field),
-            ('mac', _dhcp_mac_field),
-            ('del', _bool_field),
-        ]
-        for record in self.records:
-            prefix = 'dhcp_%d_' % record.id
-            _add_fields(self.fields, prefix, record, fields)
-        fields = [
-            ('ip', _dhcp_ip_field),
-            ('mac', _dhcp_mac_field),
-            ('del', _bool_hidden_field),
-        ]
-        _add_fields(self.fields, 'dhcp_new_', None, fields)
+        self.macs = set(macs) - {r.mac for r in self.records}
+        super(DHCPFormSetBase, self).__init__(*args, **kwargs)
+
+    def add_fields(self, form, index):
+        form.fields['mac'].widget.choices = [(m, m) for m in self.macs]
+        return super(DHCPFormSetBase, self).add_fields(form, index)
 
 
-class AddressesForm(forms.Form):
-    def __init__(self, records, *args, **kwargs):
-        super(AddressesForm, self).__init__(*args, **kwargs)
-        self.records = list(records)
-        fields = [
-            ('hostname', _hostname_field),
-            ('address', _dhcp_ip_field),
-            ('del', _bool_field),
-        ]
-        for record in self.records:
-            prefix = 'ip_%d_' % record.id
-            _add_fields(self.fields, prefix, record, fields)
-        fields = [
-            ('hostname', _hostname_field),
-            ('address', _dhcp_ip_field),
-            ('del', _bool_hidden_field),
-        ]
-        _add_fields(self.fields, 'ip_new_', None, fields)
+DHCPFormSet = forms.models.modelformset_factory(
+    DHCPEntry,
+    form=DHCPEntryForm,
+    formset=DHCPFormSetBase,
+    can_delete=True,
+)
+
+
+class IPAddressForm(forms.ModelForm):
+    class Meta:
+        model = IPAddress
+        fields = 'hostname', 'address'
+        widgets = {
+            'hostname': forms.TextInput(
+                attrs={
+                    'class': 'span12',
+                    'placeholder': "Hostname",
+                    'style': 'min-width: 16ex',
+                },
+            ),
+            'address': forms.TextInput(
+                attrs={
+                    'class': 'span12',
+                    'placeholder': "IP address",
+                    'style': 'min-width: 16ex',
+                },
+            ),
+        }
+
+    def clean_address(self):
+        ip = self.cleaned_data['address']
+        if not ip:
+            return ''
+        try:
+            ip = str(ipaddr.IPAddress(ip))
+        except ValueError:
+            raise forms.ValidationError("Invalid IP address")
+        return ip
+
+    def clean_hostname(self):
+        name = self.cleaned_data['hostname'].lower()
+        if not name:
+            return ''
+        if not is_valid_hostname(name):
+            raise forms.ValidationError("Invalid hostname")
+        return name
+
+
+IPAddressFormSet = forms.models.modelformset_factory(
+        IPAddress,
+        form=IPAddressForm,
+        can_delete=True,
+)
 
 
 class VentureFilterForm(forms.Form):
