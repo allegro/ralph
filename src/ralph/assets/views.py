@@ -32,7 +32,6 @@ from ralph.assets.models_history import AssetHistoryChange
 from ralph.ui.views.common import Base, PaginationMixin
 
 
-
 SAVE_PRIORITY = 200
 HISTORY_PAGE_SIZE = 25
 MAX_PAGE_SIZE = 65535
@@ -545,10 +544,13 @@ class HistoryAsset(BackOfficeMixin):
         query_variable_name = 'history_page'
         ret = super(HistoryAsset, self).get_context_data(**kwargs)
         asset_id = kwargs.get('asset_id')
-        history = AssetHistoryChange.objects.all().filter(
-            asset_id=asset_id
-        ).order_by('-date')
         asset = Asset.objects.get(id=asset_id)
+        history = AssetHistoryChange.objects.filter(
+            Q(asset_id=asset.id) |
+            Q(device_info_id=getattr(asset.device_info, 'id', 0)) |
+            Q(part_info_id=getattr(asset.part_info, 'id', 0)) |
+            Q(office_info_id=getattr(asset.office_info, 'id', 0))
+        ).order_by('-date')
         status = bool(self.request.GET.get('status', ''))
         if status:
             history = history.filter(field_name__exact='status')
@@ -561,7 +563,7 @@ class HistoryAsset(BackOfficeMixin):
             page_size = MAX_PAGE_SIZE
         else:
             page_size = HISTORY_PAGE_SIZE
-        history_page = Paginator(history, HISTORY_PAGE_SIZE).page(page)
+        history_page = Paginator(history, page_size).page(page)
         ret.update({
             'history': history,
             'history_page': history_page,
@@ -637,9 +639,8 @@ class DeleteAsset(Base):
     @nested_commit_on_success
     def get(self, *args, **kwargs):
         asset = get_object_or_404(Asset, id=kwargs.get('asset_id'))
-        if asset.device_info:
-            Asset.objects.filter(part_info__device=asset).update(deleted=True)
+        if asset.get_data_type() == 'device':
+            PartInfo.objects.filter(device=asset).update(device=None)
         asset.deleted = True
         asset.save()
         return HttpResponseRedirect(_get_return_link(self.request))
-
