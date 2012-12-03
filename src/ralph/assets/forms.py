@@ -193,22 +193,27 @@ class SearchAssetForm(Form):
     :param mode: one of `dc` for DataCenter or `bo` for Back Office
     :returns Form
     """
-
     model = AutoCompleteSelectField(
         'asset_model',
         required=False,
         help_text=None
     )
-
     invoice_no = CharField(required=False)
     order_no = CharField(required=False)
-    buy_date_from = DateField(
-        required=False, widget=DateWidget(),
-        label="Buy date from",
+    invoice_date_from = DateField(
+        required=False, widget=DateWidget(attrs={
+            'placeholder': 'Start YYYY-MM-DD',
+            'data-collapsed': True,
+        }),
+        label="Invoice date",
     )
-    buy_date_to = DateField(
-        required=False, widget=DateWidget(),
-        label="Buy date to")
+    invoice_date_to = DateField(
+        required=False, widget=DateWidget(attrs={
+            'class':'end-date-field ',
+            'placeholder': 'End YYYY-MM-DD',
+            'data-collapsed': True,
+        }),
+        label='')
     provider = CharField(required=False, label='Provider')
     status = ChoiceField(
         required=False, choices=[('', '----')] + AssetStatus(),
