@@ -532,6 +532,7 @@ class Addresses(DeviceDetailView):
                 queryset=dns_records,
                 prefix='dns',
                 hostnames=self.get_hostnames(),
+                limit_types=self.limit_types,
             )
             if self.dns_formset.is_valid():
                 for form in self.dns_formset.extra_forms:
@@ -638,6 +639,7 @@ class Addresses(DeviceDetailView):
                 hostnames=self.get_hostnames(),
                 queryset=dns_records,
                 prefix='dns',
+                limit_types=self.limit_types,
             )
         if self.dhcp_formset is None:
             dhcp_records = self.get_dhcp()

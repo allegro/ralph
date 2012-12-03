@@ -136,14 +136,10 @@ class DNSRecordForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         self.hostnames = kwargs.pop('hostnames')
+        limit_types = kwargs.pop('limit_types')
         super(DNSRecordForm, self).__init__(*args, **kwargs)
         self.is_extra = False
-        self.fields['type'].choices = [
-            ('A', 'A'),
-            ('CNAME', 'CNAME'),
-            ('MX', 'MX'),
-            ('TXT', 'TXT'),
-        ]
+        self.fields['type'].choices = [(t, t) for t in limit_types]
         if self.instance.type in ('A', 'AAAA') and get_revdns_records(
                 self.instance.content
             ).filter(
@@ -209,10 +205,12 @@ class DNSRecordForm(forms.ModelForm):
 class DNSFormSetBase(forms.models.BaseModelFormSet):
     def __init__(self, *args, **kwargs):
         self.hostnames = kwargs.pop('hostnames')
+        self.limit_types = kwargs.pop('limit_types')
         super(DNSFormSetBase, self).__init__(*args, **kwargs)
 
     def _construct_form(self, i, **kwargs):
         kwargs['hostnames'] = self.hostnames
+        kwargs['limit_types'] = self.limit_types
         return super(DNSFormSetBase, self)._construct_form(i, **kwargs)
 
 
