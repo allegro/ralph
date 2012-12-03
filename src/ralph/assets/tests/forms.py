@@ -5,10 +5,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from django.test import TestCase
-
 import datetime
 
+from django.test import TestCase
 from ralph.assets.models_assets import (
     Asset, AssetModel, AssetManufacturer, AssetSource, AssetStatus, AssetType,
     DeviceInfo, LicenseTypes, OfficeInfo, Warehouse
@@ -16,10 +15,10 @@ from ralph.assets.models_assets import (
 from ralph.ui.tests.helper import login_as_su
 
 
-def get_menufacture(name):
-    menufacture = AssetManufacturer(name=name)
-    menufacture.save()
-    return menufacture
+def get_menufacturer(name):
+    menufacturer = AssetManufacturer(name=name)
+    menufacturer.save()
+    return menufacturer
 
 
 def get_model(menufacture, name):
@@ -59,7 +58,7 @@ class TestForms(TestCase):
         asset = get_asset(
             device_info=get_device(1, get_warehouse(name='Warehouse1')),
             type=AssetType.data_center,
-            model=get_model(get_menufacture('Menufac'), 'AsModel'),
+            model=get_model(get_menufacturer('Menufac'), 'AsModel'),
             source=AssetSource.shipment,
             invoice_no='Invoice No 1',
             order_no='Order No 1',
@@ -72,10 +71,10 @@ class TestForms(TestCase):
             barcode='bc-1234'
         )
         # Prepare Asset 2
-        self.asset_model2 = get_model(get_menufacture('Menufac2'), 'AsModel2')
+        self.asset_model2 = get_model(get_menufacturer('Menufac2'), 'AsModel2')
         self.device_info2 = get_device(1, get_warehouse(name='Warehouse2'))
         # Prepare Asset 3
-        self.asset_model3 = get_model(get_menufacture('Menufac3'), 'AsModel3')
+        self.asset_model3 = get_model(get_menufacturer('Menufac3'), 'AsModel3')
 
     def test_models(self):
         db_menufacture = AssetManufacturer.objects.get(name='Menufac')
@@ -193,57 +192,77 @@ class TestForms(TestCase):
         new_fields = new_view.context['asset_form'].initial
         new_device_info = new_view.context['device_info_form'].initial
         new_office_info = new_view.context['office_info_form'].initial
+        # type
         self.assertEqual(old_fields['type'], new_fields['type'])
+        # model
         self.assertNotEqual(old_fields['model'], new_fields['model'])
         self.assertEqual(new_fields['model'], self.asset_model3.id)
+        # invoice_no
         self.assertNotEqual(old_fields['invoice_no'], new_fields['invoice_no'])
         self.assertEqual(new_fields['invoice_no'], 'Invoice No 3')
+        # order_no
         self.assertNotEqual(old_fields['order_no'], new_fields['order_no'])
         self.assertEqual(new_fields['order_no'], 'Order No 3')
+        # Buy date
         self.assertNotEqual(old_fields['buy_date'], new_fields['buy_date'])
         self.assertEqual(unicode(new_fields['buy_date']), '2001-02-02')
+        # Support period in months
         self.assertNotEqual(
             old_fields['support_period'], new_fields['support_period']
         )
         self.assertEqual(new_fields['support_period'], 24)
+        # Support type
         self.assertNotEqual(
             old_fields['support_type'], new_fields['support_type']
         )
         self.assertEqual(new_fields['support_type'], 'standard')
+        # Provider
         self.assertNotEqual(old_fields['provider'], new_fields['provider'])
         self.assertEqual(new_fields['provider'], 'Provider 3')
+        # Status
         self.assertNotEqual(old_fields['status'], new_fields['status'])
         self.assertEqual(new_fields['status'], AssetStatus.in_progress)
+        # SN
         self.assertNotEqual(old_fields['sn'], new_fields['sn'])
         self.assertEqual(new_fields['sn'], 'sn-321-2012')
+        # Barcode
         self.assertNotEqual(old_fields['barcode'], new_fields['barcode'])
         self.assertEqual(new_fields['barcode'], 'bc-4321-2012')
+        # Additional remarks
         self.assertEqual(old_fields['remarks'], None)
         self.assertEqual(new_fields['remarks'], 'any remarks')
+        # Size in units
         self.assertNotEqual(old_device_info['size'], new_device_info['size'])
         self.assertEqual(new_device_info['size'], 2)
+        # License key
         office = OfficeInfo.objects.filter(
             license_key='0000-0000-0000-0000'
         ).count()
         self.assertEqual(office, 1)
         self.assertEqual(old_office_info, {})
         self.assertEqual(new_office_info['license_key'], '0000-0000-0000-0000')
+        # Version
         self.assertEqual(new_office_info['version'], '1.0')
+        # Unit price
         self.assertEqual(new_office_info['unit_price'], 2.00)
+        # License type
         self.assertEqual(new_office_info['license_type'], LicenseTypes.oem)
+        # Date of last inventory
         self.assertEqual(
             unicode(new_office_info['date_of_last_inventory']), '2003-02-02'
         )
+        # Last logged user
         self.assertEqual(new_office_info['last_logged_user'], 'James Bond')
 
 
 class TestBulkEdit(TestCase):
     def setUp(self):
         self.client = login_as_su()
+        # Build asset
         self.asset = get_asset(
             device_info=get_device(1, get_warehouse(name='Warehouse1')),
             type=AssetType.data_center,
-            model=get_model(get_menufacture('Menufac1'), 'AsModel1'),
+            model=get_model(get_menufacturer('Menufac1'), 'AsModel1'),
             source=AssetSource.shipment,
             invoice_no='Invoice No 1',
             order_no='Order No 1',
@@ -255,10 +274,11 @@ class TestBulkEdit(TestCase):
             sn='sn-123',
             barcode='bc-1234'
         )
+        # Build asset 2
         self.asset2 = get_asset(
             device_info=get_device(1, get_warehouse(name='Warehouse2')),
             type=AssetType.data_center,
-            model=get_model(get_menufacture('Menufac2'), 'AsModel2'),
+            model=get_model(get_menufacturer('Menufac2'), 'AsModel2'),
             source=AssetSource.shipment,
             invoice_no='Invoice No 2',
             order_no='Order No 2',
@@ -277,8 +297,8 @@ class TestBulkEdit(TestCase):
             self.asset.id, self.asset2.id)
         view = self.client.get(url)
         self.assertEqual(view.status_code, 200)
-        model0 = get_model(get_menufacture('Menufac1a'), 'AsModel1a')
-        model1 = get_model(get_menufacture('Menufac2a'), 'AsModel2a')
+        model0 = get_model(get_menufacturer('Menufac1a'), 'AsModel1a')
+        model1 = get_model(get_menufacturer('Menufac2a'), 'AsModel2a')
         post_data = {
             'form-TOTAL_FORMS': u'2',
             'form-INITIAL_FORMS': u'2',
@@ -318,24 +338,34 @@ class TestBulkEdit(TestCase):
         )
         new_view = self.client.get(url)
         fields = new_view.context['formset'].queryset
+        # model
         self.assertEqual(fields[0].model.id, model0.id)
         self.assertEqual(fields[1].model.id, model1.id)
+        # invoice_no
         self.assertEqual(fields[0].invoice_no, 'Invoice No 1a')
         self.assertEqual(fields[1].invoice_no, 'Invoice No 2a')
+        # order_no
         self.assertEqual(fields[0].order_no, 'Order No 1a')
         self.assertEqual(fields[1].order_no, 'Order No 2a')
+        # Buy date
         self.assertEqual(unicode(fields[0].buy_date), '2012-02-02')
         self.assertEqual(unicode(fields[1].buy_date), '2011-02-03')
+        # Support period in months
         self.assertEqual(fields[0].support_period, 24)
         self.assertEqual(fields[1].support_period, 48)
+        # Support type
         self.assertEqual(fields[0].support_type, 'standard1')
         self.assertEqual(fields[1].support_type, 'standard2')
+        # Provider
         self.assertEqual(fields[0].provider, 'Provider 1a')
         self.assertEqual(fields[1].provider, 'Provider 2a')
+        # Status
         self.assertEqual(fields[0].status, AssetStatus.in_progress.id)
         self.assertEqual(fields[1].status, AssetStatus.waiting_for_release.id)
+        # SN
         self.assertEqual(fields[0].sn, 'sn-321-2012a')
         self.assertEqual(fields[1].sn, 'sn-321-2012b')
+        # Barcode
         self.assertEqual(fields[0].barcode, 'bc-4321-2012a')
         self.assertEqual(fields[1].barcode, 'bc-4321-2012b')
 
@@ -343,7 +373,7 @@ class TestBulkEdit(TestCase):
 class TestSearchForm(TestCase):
     def setUp(self):
         self.client = login_as_su()
-        model = get_model(get_menufacture('Menufac1'), 'AsModel1')
+        model = get_model(get_menufacturer('Menufac1'), 'AsModel1')
         self.asset = get_asset(
             device_info=get_device(1, get_warehouse(name='Warehouse1')),
             type=AssetType.data_center,
@@ -362,7 +392,7 @@ class TestSearchForm(TestCase):
         self.asset1 = get_asset(
             device_info=get_device(1, get_warehouse(name='Warehouse2')),
             type=AssetType.data_center,
-            model=get_model(get_menufacture('Menufac2'), 'AsModel2'),
+            model=get_model(get_menufacturer('Menufac2'), 'AsModel2'),
             source=AssetSource.shipment,
             invoice_no='Invoice No 1',
             order_no='Order No 3',
@@ -406,7 +436,7 @@ class TestSearchForm(TestCase):
         self.assertEqual(len(res), 3)
         url = '/assets/dc/search?model=99999'
         get = self.client.get(url)
-        self.assertEqual(len(res), 0)
+        self.assertEqual(get.status_code, 404)
 
     def test_invoice(self):
         url = '/assets/dc/search?invoice_no=%s' % 'Invoice No 1'
