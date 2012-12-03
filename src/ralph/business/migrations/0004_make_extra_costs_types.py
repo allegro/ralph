@@ -7,8 +7,6 @@ from django.db import models
 
 class Migration(SchemaMigration):
 
-    no_dry_run = True
-
     def forwards(self, orm):
         # Removing unique constraint on 'VentureExtraCost', fields ['name', 'venture']
         db.delete_unique('business_ventureextracost', ['name', 'venture_id'])
@@ -23,31 +21,26 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal('business', ['VentureExtraCostType'])
 
-        # Insert temp venture cost name
-        temp = orm['business.VentureExtraCostType'].objects.create(name='temp')
-
         # Adding field 'VentureExtraCost.type'
         db.add_column('business_ventureextracost', 'type',
-                      self.gf('django.db.models.fields.related.ForeignKey')(default=temp.pk, to=orm['business.VentureExtraCostType']),
+                      self.gf('django.db.models.fields.related.ForeignKey')(default=0, to=orm['business.VentureExtraCostType']),
                       keep_default=False)
 
-        # Migrate data
-        for venture_cost in orm['business.VentureExtraCost'].objects.all():
-            try:
-                cost_type = orm['business.VentureExtraCostType'].objects.get(name__exact=venture_cost.name)
-            except orm['business.VentureExtraCostType'].DoesNotExist:
-                cost_type = orm['business.VentureExtraCostType'].objects.create(name=venture_cost.name)
-            venture_cost.type = cost_type
-            venture_cost.save()
+        if not db.dry_run:
+            # Migrate data
+            for venture_cost in orm['business.VentureExtraCost'].objects.all():
+                try:
+                    cost_type = orm['business.VentureExtraCostType'].objects.get(name__exact=venture_cost.name)
+                except orm['business.VentureExtraCostType'].DoesNotExist:
+                    cost_type = orm['business.VentureExtraCostType'].objects.create(name=venture_cost.name)
+                venture_cost.type = cost_type
+                venture_cost.save()
 
         # Changing field 'VentureExtraCost.name'
         db.alter_column('business_ventureextracost', 'name', self.gf('django.db.models.fields.CharField')(max_length=75, null=True, blank=True))
 
         # Adding unique constraint on 'VentureExtraCost', fields ['type', 'venture']
         db.create_unique('business_ventureextracost', ['type_id', 'venture_id'])
-
-        # Delete temp venture cost name
-        temp.delete()
 
 
     def backwards(self, orm):

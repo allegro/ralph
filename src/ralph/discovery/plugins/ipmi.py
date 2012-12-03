@@ -208,50 +208,34 @@ def _run_ipmi(ip):
             ipmi = IPMI(ip, 'ADMIN', 'ADMIN')
             fru = ipmi.get_fru()
     mc = ipmi.get_mc()
-    firmware = mc.get('Firmware Revision')
-    names = []
-    if not fru['/SYS'] and not fru['Builtin FRU Device']:
-        raise AnswerError('Incompatible answer.')
-    ip_address, ip_address_created = IPAddress.concurrent_get_or_create(
-        address=str(ip))
     top = fru['/SYS']
-    if top:
-        name, sn, model_type = _get_base_device_info(top)
+    if not top:
+        top = fru['Builtin FRU Device']
+    if not top:
+        raise AnswerError('Incompatible answer.')
+    name, sn, model_type = _get_base_device_info(top)
+    mac = ipmi.get_mac()
+    if mac:
+        ethernets = [Eth(label='IPMI MAC', mac=mac, speed=0)]
+    else:
         ethernets = []
-        ethernets.extend(_get_ipmi_ethernets(fru))
-        dev = Device.create(ethernets=ethernets, priority=SAVE_PRIORITY,
-                            sn=sn, model_name=name.title(),
-                            model_type=model_type)
-        if firmware:
-            dev.mgmt_firmware = 'rev %s' % firmware
-        _add_ipmi_components(dev, fru)
-        dev.management = ip_address
-        dev.save(update_last_seen=True, priority=SAVE_PRIORITY)
-        names.append(name)
-    top = fru['Builtin FRU Device']
-    if top:
-        name, sn, model_type = _get_base_device_info(top)
-        mac = ipmi.get_mac()
-        if mac:
-            ethernets = [Eth(label='IPMI MAC', mac=mac, speed=0)]
-        else:
-            ethernets = []
-        dev = Device.create(ethernets=ethernets, priority=SAVE_PRIORITY,
-                            sn=sn, model_name=name.title(),
-                            model_type=model_type)
-        if firmware:
-            dev.mgmt_firmware = 'rev %s' % firmware
-        _add_ipmi_lan(dev, mac)
-        _add_ipmi_components(dev, fru)
-        ip_address.device = dev
-        ip_address.is_management = True
-        if ip_address_created:
-            ip_address.hostname = network.hostname(ip_address.address)
-            ip_address.snmp_name = name
-        ip_address.save(update_last_seen=True)
-        dev.save(update_last_seen=True, priority=SAVE_PRIORITY)
-        names.append(name)
-    return ", ".join(names)
+    ethernets.extend(_get_ipmi_ethernets(fru))
+    dev = Device.create(ethernets=ethernets, priority=SAVE_PRIORITY,
+                        sn=sn, model_name=name.title(), model_type=model_type)
+    firmware = mc.get('Firmware Revision')
+    if firmware:
+        dev.mgmt_firmware = 'rev %s' % firmware
+    _add_ipmi_lan(dev, mac)
+    _add_ipmi_components(dev, fru)
+    dev.save(update_last_seen=True, priority=SAVE_PRIORITY)
+    ip_address, created = IPAddress.concurrent_get_or_create(address=str(ip))
+    ip_address.device = dev
+    ip_address.is_management = True
+    if created:
+        ip_address.hostname = network.hostname(ip_address.address)
+        ip_address.snmp_name = name
+    ip_address.save(update_last_seen=True)
+    return name
 
 
 @plugin.register(chain='discovery', requires=['ping', 'http'])

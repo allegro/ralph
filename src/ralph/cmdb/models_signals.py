@@ -218,7 +218,8 @@ def ci_post_save(sender, instance, raw, using, **kwargs):
 def create_issue(change_id, retry_count=1):
     ch = chdb.CIChange.objects.get(id=change_id)
     if ch.registration_type == chdb.CI_CHANGE_REGISTRATION_TYPES.OP.id:
-        raise Exception('Already registered')
+        logger.warning('Already registered change id=%d' % change_id)
+        return
 
     user = ''
     if ch.type == chdb.CI_CHANGE_TYPES.CONF_GIT.id:
@@ -299,16 +300,15 @@ def create_issue(change_id, retry_count=1):
         ch = chdb.CIChange.objects.get(id=ch.id)
         # before save, check one more time
         if ch.registration_type == chdb.CI_CHANGE_REGISTRATION_TYPES.OP.id:
-            raise Exception('Already registered')
+            logger.warning('Already registered change id=%d' % change_id)
+            return
         ch.registration_type = chdb.CI_CHANGE_REGISTRATION_TYPES.OP.id
         ch.external_key = issue.get('key')
         ch.save()
     except IssueTrackerException as e:
-        raise create_issue.retry(
-            exc=e, args=[change_id, retry_count + 1],
-            countdown=60 * (2 ** retry_count),
-            max_retries=15,
-        )  # 22 days
+        logger.warning(
+            'Issue tracker exception for change: %d (%s)' % (change_id, e)
+        )
 
 
 def date_from_str(s):

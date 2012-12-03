@@ -56,3 +56,8 @@ class ModelsTest(TestCase):
         self.assertEqual(history[0].new_value, '1')
         self.assertEqual(history[1].old_value, '')
         self.assertEqual(history[1].new_value, dev.name)
+        self.assertEqual(history[1].new_value, 'dev1')
+        dev_db = Device.objects.get(id=dev.id)
+        self.assertEqual(dev_db.name, 'dev1')
+        self.assertEqual(dev_db.sn, 'xaxaxa')
+

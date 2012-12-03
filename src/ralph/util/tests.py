@@ -20,6 +20,7 @@ from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.test import TestCase
 from unittest import skip
 from tastypie.models import ApiKey
@@ -189,10 +190,13 @@ class PricingTest(TestCase):
         self.assertEqual(dev.cached_cost, 15)
         self.assertEqual(dev.cached_price, 100)
 
+
 THROTTLE_AT = settings.API_THROTTLING['throttle_at']
 
 
 class ApiTest(TestCase):
+    def setUp(self):
+        cache.delete("api_user_accesses")
 
     def _save_ventures(self, count):
         id_list = []
@@ -216,7 +220,7 @@ class ApiTest(TestCase):
             'api_key': api_key.key
         }
         status_list = []
-        id_list = self._save_ventures(THROTTLE_AT+2)
+        id_list = self._save_ventures(THROTTLE_AT + 2)
 
         for id in id_list:
             path = "/api/v0.9/venture/%s" % id
@@ -227,3 +231,44 @@ class ApiTest(TestCase):
         gen_list.append(403)
         self.maxDiff = None
         self.assertListEqual(gen_list, status_list)
+
+
+class UncompressBase64DataTest(TestCase):
+    def test_base64_encoded_data(self):
+        import base64
+        from ralph.util import uncompress_base64_data
+
+        raw = "Zażółć gęślą jaźń.".encode('utf8')
+        encoded = base64.b64encode(raw)
+        self.assertEqual(uncompress_base64_data(encoded), raw)
+
+    def test_zlib_compressed_data(self):
+        import zlib
+        from ralph.util import uncompress_base64_data
+
+        raw = "Zażółć gęślą jaźń.".encode('utf8')
+        compressed = zlib.compress(raw)
+        self.assertEqual(uncompress_base64_data(compressed), raw)
+
+    def test_base64_encoded_zlib_compressed_data(self):
+        import base64
+        import zlib
+        from ralph.util import uncompress_base64_data
+
+        raw = "Zażółć gęślą jaźń.".encode('utf8')
+        compressed = zlib.compress(raw)
+        encoded = base64.b64encode(compressed)
+        self.assertEqual(uncompress_base64_data(encoded), raw)
+
+    def test_wrong_way__zlib_compressed_base64_encoded_data(self):
+        """Here the input is made by zlib(base64(raw_data)) instead of
+        base64(zlib(raw_data)). uncompress_base64_data should return
+        the base64 representation."""
+        import base64
+        import zlib
+        from ralph.util import uncompress_base64_data
+
+        raw = "Zażółć gęślą jaźń.".encode('utf8')
+        encoded = base64.b64encode(raw)
+        compressed = zlib.compress(encoded)
+        self.assertEqual(uncompress_base64_data(compressed), encoded)

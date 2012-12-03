@@ -22,7 +22,7 @@ from powerdns.models import Record
 
 from ralph.account.models import Perm
 from ralph.business.models import RolePropertyValue
-from ralph.cmdb import models as cdb
+from ralph.cmdb.models import CI, CI_TYPES
 from ralph.dnsedit.models import DHCPEntry
 from ralph.dnsedit.util import (
     get_domain,
@@ -139,9 +139,11 @@ class BaseMixin(object):
                          href='/cmdb/changes/timeline')
             )
         if settings.BUGTRACKER_URL:
-            footer_items.append(
-                MenuItem('Bugs', fugue_icon='fugue-bug',
-                         href=settings.BUGTRACKER_URL))
+            mainmenu_items.append(
+                MenuItem(
+                    'Report a bug', fugue_icon='fugue-bug', pull_right=True,
+                    href=settings.BUGTRACKER_URL)
+            )
         if self.request.user.is_staff:
             footer_items.append(
                 MenuItem('Admin', fugue_icon='fugue-toolbox', href='/admin'))
@@ -203,10 +205,18 @@ class BaseMixin(object):
             ])
         if ('ralph.cmdb' in settings.INSTALLED_APPS and
             has_perm(Perm.read_configuration_item_info_generic)):
-            tab_items.extend([
-                MenuItem('CMDB', fugue_icon='fugue-thermometer',
-                         href=tab_href('cmdb')),
-            ])
+            ci = ''
+            try:
+                device = self.kwargs['device']
+            except KeyError:
+                device = None
+            if device:
+                ci = CI.get_by_content_object(Device.objects.get(pk=device))
+            if ci:
+                tab_items.extend([
+                    MenuItem('CMDB', fugue_icon='fugue-thermometer',
+                        href='/cmdb/ci/view/%s' % ci.id),
+                    ])
         if has_perm(Perm.read_device_info_reports, venture):
             tab_items.extend([
                 MenuItem('Reports', fugue_icon='fugue-reports-stack',
@@ -883,6 +893,7 @@ class CMDB(BaseMixin):
         })
         return ret
 
+
 class Software(DeviceDetailView):
     template_name = 'ui/device_software.html'
     read_perm = Perm.read_device_info_generic
@@ -893,3 +904,4 @@ class Software(DeviceDetailView):
             'components': _get_details(self.object, purchase_only=False),
             })
         return ret
+
