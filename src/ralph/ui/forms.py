@@ -192,6 +192,7 @@ class DNSRecordForm(forms.ModelForm):
         if ptr and type not in ('A', 'AAAA'):
             raise forms.ValidationError("Only A records can have PTR.")
         if self.instance:
+            # Dirty hack, so that the formset has access to this.
             self.instance.ptr = ptr
         return ptr
 

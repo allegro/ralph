@@ -532,7 +532,6 @@ class Addresses(DeviceDetailView):
                 queryset=dns_records,
                 prefix='dns',
                 hostnames=self.get_hostnames(),
-                # saving_user= self.request.user,
             )
             if self.dns_formset.is_valid():
                 for form in self.dns_formset.extra_forms:
