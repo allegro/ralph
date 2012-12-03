@@ -22,7 +22,8 @@ from lck.django.common import nested_commit_on_success
 from ralph.assets.forms import (
     AddDeviceForm, AddPartForm, EditDeviceForm,
     EditPartForm, BaseDeviceForm, OfficeForm,
-    BasePartForm, BulkEditAssetForm, SearchAssetForm
+    BasePartForm, BulkEditAssetForm, SearchAssetForm,
+    DeleteAssetConfirmForm
 )
 from ralph.assets.models import (
     DeviceInfo, AssetSource, Asset, OfficeInfo, PartInfo,
@@ -40,14 +41,6 @@ CONNECT_ASSET_WITH_DEVICE = settings.CONNECT_ASSET_WITH_DEVICE
 
 class AssetsMixin(Base):
     template_name = "assets/base.html"
-
-    def get(self, *args, **kwargs):
-        # TODO
-        return super(AssetsMixin, self).get(*args, **kwargs)
-
-    def post(self, *args, **kwargs):
-        # TODO
-        return super(AssetsMixin, self).post(*args, **kwargs)
 
     def get_context_data(self, *args, **kwargs):
         ret = super(AssetsMixin, self).get_context_data(**kwargs)
@@ -134,7 +127,7 @@ class AssetSearch(AssetsMixin, PaginationMixin):
         for field in search_fields:
             field_value = self.request.GET.get(field)
             if field_value:
-                q = Q(**{'%s' % field: field_value})
+                q = Q(**{field: field_value})
                 all_q = all_q & q
         # now fields within ranges.
         buy_date_from = self.request.GET.get('buy_date_from')
@@ -146,11 +139,16 @@ class AssetSearch(AssetsMixin, PaginationMixin):
         self.paginate_query(self.get_all_items(all_q))
 
     def get_all_items(self, query):
-        return Asset.objects().filter(query)
+        return Asset.objects().filter(query).order_by('id')
 
     def get_context_data(self, *args, **kwargs):
         ret = super(AssetSearch, self).get_context_data(*args, **kwargs)
-        ret.update(super(AssetSearch, self).get_context_data_paginator(*args, **kwargs))
+        ret.update(
+            super(AssetSearch, self).get_context_data_paginator(
+                *args,
+                **kwargs
+            )
+        )
         ret.update({
             'form': self.form,
             'header': self.header,
@@ -399,7 +397,9 @@ class EditDevice(Base):
         if not asset.device_info:  # it isn't device asset
             raise Http404()
         self.asset_form = EditDeviceForm(
-            instance=asset, mode=_get_mode(self.request))
+            instance=asset,
+            mode=_get_mode(self.request)
+        )
         self.device_info_form = BaseDeviceForm(instance=asset.device_info)
         self.office_info_form = OfficeForm(instance=asset.office_info)
         return super(EditDevice, self).get(*args, **kwargs)
@@ -474,7 +474,9 @@ class EditPart(Base):
         if asset.device_info:  # it isn't part asset
             raise Http404()
         self.asset_form = EditPartForm(
-            instance=asset, mode=_get_mode(self.request))
+            instance=asset,
+            mode=_get_mode(self.request)
+        )
         self.office_info_form = OfficeForm(instance=asset.office_info)
         self.part_info_form = BasePartForm(
             instance=asset.part_info, mode=_get_mode(self.request)
@@ -586,7 +588,7 @@ class BulkEdit(Base):
 
     def get(self, *args, **kwargs):
         assets_count = Asset.objects.filter(
-            pk__in=self.request.GET.getlist('select')).count()
+            pk__in=self.request.GET.getlist('select')).exists()
         if not assets_count:
             messages.warning(self.request, _("Nothing to edit."))
             return HttpResponseRedirect(_get_return_link(self.request))
@@ -635,12 +637,56 @@ class DataCenterBulkEdit(BulkEdit, DataCenterMixin):
     sidebar_selected = None
 
 
-class DeleteAsset(Base):
-    @nested_commit_on_success
+class DeleteAsset(AssetsMixin):
+    template_name = "assets/delete_asset_confirmation.html"
+    sidebar_selected = None
+    mainmenu_selected = None
+
+    def get_sidebar_items(self):
+        return None
+
+    def get_context_data(self, **kwargs):
+        ret = super(DeleteAsset, self).get_context_data(**kwargs)
+        ret.update({
+            'form': self.form,
+            'asset': self.asset,
+            'back_to': self.back_to
+        })
+        return ret
+
     def get(self, *args, **kwargs):
-        asset = get_object_or_404(Asset, id=kwargs.get('asset_id'))
-        if asset.get_data_type() == 'device':
-            PartInfo.objects.filter(device=asset).update(device=None)
-        asset.deleted = True
-        asset.save()
-        return HttpResponseRedirect(_get_return_link(self.request))
+        self.asset = get_object_or_404(Asset, id=kwargs.get('asset_id'))
+        self.form = DeleteAssetConfirmForm(initial={'asset_id': self.asset.id})
+        self.back_to = _get_return_link(self.request)
+        return super(DeleteAsset, self).get(*args, **kwargs)
+
+    @nested_commit_on_success
+    def post(self, *args, **kwargs):
+        self.form = DeleteAssetConfirmForm(self.request.POST)
+        if self.form.is_valid():
+            try:
+                self.asset = Asset.objects.get(
+                    pk=self.form.cleaned_data['asset_id']
+                )
+            except Asset.DoesNotExist:
+                messages.error(
+                    self.request, _("Selected asset doesn't exists.")
+                )
+                return HttpResponseRedirect(_get_return_link(self.request))
+            else:
+                if self.asset.type < AssetType.BO:
+                    self.back_to = '/assets/dc/'
+                else:
+                    self.back_to = '/assets/back_office/'
+                if self.asset.get_data_type() == 'device':
+                    PartInfo.objects.filter(
+                        device=self.asset
+                    ).update(device=None)
+                self.asset.deleted = True
+                self.asset.save()
+                return HttpResponseRedirect(self.back_to)
+        messages.error(
+            self.request, _("Error occured. Please try again.")
+        )
+        return super(DeleteAsset, self).get(*args, **kwargs)
+

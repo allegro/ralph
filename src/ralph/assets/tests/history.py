@@ -9,8 +9,13 @@ from django.test import TestCase
 from mock import patch
 
 from ralph.assets.models_assets import (
+<<<<<<< HEAD
+    AssetManufacturer, AssetModel, Warehouse, Asset, AssetStatus, LicenseType
+)
+=======
     AssetManufacturer, AssetModel, Warehouse, Asset, AssetStatus, LicenseTypes,
     SAVE_PRIORITY)
+>>>>>>> allegro/assets
 from ralph.assets.models_history import AssetHistoryChange
 from ralph.business.models import Venture
 from ralph.discovery.models_device import Device, DeviceType
@@ -52,7 +57,7 @@ class HistoryAssetsView(TestCase):
             'license_key': '66-66-66',
             'version': '0.1',
             'unit_price': 666.6,
-            'license_type': LicenseTypes.oem.id,
+            'license_type': LicenseType.oem.id,
             'date_of_last_inventory': '2012-11-08',
             'last_logged_user': 'ralph',
             }

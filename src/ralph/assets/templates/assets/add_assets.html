@@ -5,7 +5,7 @@
   <h3>{% block form_title %}{% endblock %}</h3>
 </div>
 
-<form id='{{ form_id }}' class="form form-horizontal" method="POST"{% if edit_mode %} enctype="multipart/form-data"{% endif %}>
+<form id="{{ form_id }}" class="form form-horizontal" method="POST"{% if edit_mode %} enctype="multipart/form-data"{% endif %}>
   {% csrf_token %}
   <div class="row">
     <div class="span6 well">

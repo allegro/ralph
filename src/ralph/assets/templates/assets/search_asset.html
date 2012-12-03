@@ -20,7 +20,22 @@
             dd.submit();
             return false;
         };
-        </script>
+
+        $(document).ready(function() {
+            $('a.del-asset-btn').click(function() {
+                if (confirm("Are you sure to delete Asset?")) {
+                    var href = $(this).attr('href');
+                    var hrefParts = href.split('/');
+                    var assetId = hrefParts[hrefParts.length - 1];
+                    $('#asset-to-del').val(assetId);
+                    var form = $('#delete-asset-form')[0];
+                    form.action = href + '/';
+                    form.submit();
+                }
+                return false;
+            });
+        });
+    </script>
 {% endblock %}
 
 
@@ -97,7 +112,7 @@
                         <a href="./edit/part/{{row.id}}">Edit</a> |
                         <a href="./history/part/{{row.id}}">History</a> |
                     {% endif %}
-                        <a onclick="return confirm('Are you sure to delete Asset?');" href="./delete/asset/{{ row.id }}">Delete</a>
+                        <a class="del-asset-btn"  href="./delete/asset/{{ row.id }}">Delete</a>
                     </td>
                 </tr>
                     {% endfor %}
@@ -116,5 +131,11 @@
             </li>
             </ul>
             </div>
-        </form>
+          </form>
+
+
+  <form action="" method="POST" id="delete-asset-form" style="display: none;">
+    {% csrf_token %}
+    <input id="asset-to-del" type="hidden" name="asset_id" value="">
+  </form>
 {% endblock %}
