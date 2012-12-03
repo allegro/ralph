@@ -97,17 +97,18 @@ def _get_file_path(instance, filename):
 
 
 class OfficeInfo(TimeTrackable, SavingUser):
-    license_key = models.CharField(max_length=255, null=True, blank=True)
-    version = models.CharField(max_length=50, null=True, blank=True)
+    license_key = models.CharField(max_length=255, blank=True)
+    version = models.CharField(max_length=50, blank=True)
     unit_price = models.DecimalField(
         max_digits=20, decimal_places=2, default=0)
     attachment = models.FileField(
-        upload_to=_get_file_path, null=True, blank=True)
+        upload_to=_get_file_path, blank=True)
     license_type = models.IntegerField(
         choices=LicenseType(), verbose_name=_("license type"),
         null=True, blank=True
     )
-    date_of_last_inventory = models.DateField(null=True, blank=True)
+    date_of_last_inventory = models.DateField(
+        null=True, blank=True)
     last_logged_user = models.CharField(max_length=100, null=True, blank=True)
 
     def __unicode__(self):
@@ -159,7 +160,7 @@ class Asset(TimeTrackable, EditorTrackable, SavingUser, SoftDeletable):
     )
     remarks = models.CharField(
         verbose_name='Additional remarks',
-        max_length=1024, null=True, blank=True
+        max_length=1024, blank=True
     )
 
     def __unicode__(self):
@@ -188,7 +189,7 @@ class Asset(TimeTrackable, EditorTrackable, SavingUser, SoftDeletable):
 
     def get_data_icon(self):
         if self.get_data_type() == 'device':
-            return 'fugue-wooden-box'
+            return 'fugue-computer'
         elif self.get_data_type() == 'part':
             return 'fugue-box'
         else:

@@ -5,8 +5,14 @@
 {% block extra_headers %}
 {{ block.super }}
     <style type="text/css">
+        input[type=submit] {
+            padding: 0px;
+        }
         div#sidebar_search input, div#sidebar_search select{
             width: 90%;
+        }
+        form.form-inline {
+            display: inline;
         }
     </style>
 {% endblock %}
@@ -20,19 +26,11 @@
             dd.submit();
             return false;
         };
-
         $(document).ready(function() {
-            $('a.del-asset-btn').click(function() {
-                if (confirm("Are you sure to delete Asset?")) {
-                    var href = $(this).attr('href');
-                    var hrefParts = href.split('/');
-                    var assetId = hrefParts[hrefParts.length - 1];
-                    $('#asset-to-del').val(assetId);
-                    var form = $('#delete-asset-form')[0];
-                    form.action = href + '/';
-                    form.submit();
+            $('.del-asset-btn').click(function() {
+                if (!confirm("Are you sure to delete Asset?")) {
+                    return false;
                 }
-                return false;
             });
         });
     </script>
@@ -112,7 +110,11 @@
                         <a href="./edit/part/{{row.id}}">Edit</a> |
                         <a href="./history/part/{{row.id}}">History</a> |
                     {% endif %}
-                        <a class="del-asset-btn"  href="./delete/asset/{{ row.id }}">Delete</a>
+                        <form class='form-inline' method="POST" action="./delete/asset/">
+                            {% csrf_token %}
+                            <input type='hidden' name='record_id' value='{{ row.id }}'/>
+                            <input class='btn btn-link del-asset-btn' value='Delete' type='submit'></input>
+                        </form>
                     </td>
                 </tr>
                     {% endfor %}
@@ -124,18 +126,13 @@
               <a class="btn dropdown-toggle btn-primary" data-toggle="dropdown" href="#">
                 Bulk actions...
                 <span class="caret"></span>
-            </a>
+              </a>
             <ul class="dropdown-menu">
                 <li>
-            <a href="#" onclick="return postEditAll()">Edit selected</a>
-            </li>
+                    <a href="#" onclick="return postEditAll()">Edit selected</a>
+                </li>
             </ul>
             </div>
           </form>
 
-
-  <form action="" method="POST" id="delete-asset-form" style="display: none;">
-    {% csrf_token %}
-    <input id="asset-to-del" type="hidden" name="asset_id" value="">
-  </form>
 {% endblock %}

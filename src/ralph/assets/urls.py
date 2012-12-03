@@ -39,7 +39,7 @@ urlpatterns = patterns(
         login_required(HistoryAsset.as_view())),
     url(r'dc/bulkedit/$',
         login_required(DataCenterBulkEdit.as_view())),
-    url(r'dc/delete/asset/(?P<asset_id>[0-9]+)/$',
+    url(r'dc/delete/asset/$',
         login_required(DeleteAsset.as_view())),
 
     url(r'back_office/search', login_required(BackOfficeSearch.as_view())),

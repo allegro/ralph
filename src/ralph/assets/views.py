@@ -22,8 +22,7 @@ from lck.django.common import nested_commit_on_success
 from ralph.assets.forms import (
     AddDeviceForm, AddPartForm, EditDeviceForm,
     EditPartForm, BaseDeviceForm, OfficeForm,
-    BasePartForm, BulkEditAssetForm, SearchAssetForm,
-    DeleteAssetConfirmForm
+    BasePartForm, BulkEditAssetForm, SearchAssetForm
 )
 from ralph.assets.models import (
     DeviceInfo, AssetSource, Asset, OfficeInfo, PartInfo,
@@ -638,55 +637,29 @@ class DataCenterBulkEdit(BulkEdit, DataCenterMixin):
 
 
 class DeleteAsset(AssetsMixin):
-    template_name = "assets/delete_asset_confirmation.html"
-    sidebar_selected = None
-    mainmenu_selected = None
-
-    def get_sidebar_items(self):
-        return None
-
-    def get_context_data(self, **kwargs):
-        ret = super(DeleteAsset, self).get_context_data(**kwargs)
-        ret.update({
-            'form': self.form,
-            'asset': self.asset,
-            'back_to': self.back_to
-        })
-        return ret
-
-    def get(self, *args, **kwargs):
-        self.asset = get_object_or_404(Asset, id=kwargs.get('asset_id'))
-        self.form = DeleteAssetConfirmForm(initial={'asset_id': self.asset.id})
-        self.back_to = _get_return_link(self.request)
-        return super(DeleteAsset, self).get(*args, **kwargs)
 
     @nested_commit_on_success
     def post(self, *args, **kwargs):
-        self.form = DeleteAssetConfirmForm(self.request.POST)
-        if self.form.is_valid():
-            try:
-                self.asset = Asset.objects.get(
-                    pk=self.form.cleaned_data['asset_id']
-                )
-            except Asset.DoesNotExist:
-                messages.error(
-                    self.request, _("Selected asset doesn't exists.")
-                )
-                return HttpResponseRedirect(_get_return_link(self.request))
+        record_id = self.request.POST.get('record_id')
+        try:
+            self.asset = Asset.objects.get(
+                pk=record_id
+            )
+        except Asset.DoesNotExist:
+            messages.error(
+                self.request, _("Selected asset doesn't exists.")
+            )
+            return HttpResponseRedirect(_get_return_link(self.request))
+        else:
+            if self.asset.type < AssetType.BO:
+                self.back_to = '/assets/dc/'
             else:
-                if self.asset.type < AssetType.BO:
-                    self.back_to = '/assets/dc/'
-                else:
-                    self.back_to = '/assets/back_office/'
-                if self.asset.get_data_type() == 'device':
-                    PartInfo.objects.filter(
-                        device=self.asset
-                    ).update(device=None)
-                self.asset.deleted = True
-                self.asset.save()
-                return HttpResponseRedirect(self.back_to)
-        messages.error(
-            self.request, _("Error occured. Please try again.")
-        )
-        return super(DeleteAsset, self).get(*args, **kwargs)
+                self.back_to = '/assets/back_office/'
+            if self.asset.get_data_type() == 'device':
+                PartInfo.objects.filter(
+                    device=self.asset
+                ).update(device=None)
+            self.asset.deleted = True
+            self.asset.save()
+            return HttpResponseRedirect(self.back_to)
 
