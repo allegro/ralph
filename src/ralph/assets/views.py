@@ -399,7 +399,9 @@ class EditDevice(Base):
         if not asset.device_info:  # it isn't device asset
             raise Http404()
         self.asset_form = EditDeviceForm(
-            instance=asset, mode=_get_mode(self.request))
+            instance=asset,
+            mode=_get_mode(self.request)
+        )
         self.device_info_form = BaseDeviceForm(instance=asset.device_info)
         self.office_info_form = OfficeForm(instance=asset.office_info)
         return super(EditDevice, self).get(*args, **kwargs)
@@ -474,7 +476,9 @@ class EditPart(Base):
         if asset.device_info:  # it isn't part asset
             raise Http404()
         self.asset_form = EditPartForm(
-            instance=asset, mode=_get_mode(self.request))
+            instance=asset,
+            mode=_get_mode(self.request)
+        )
         self.office_info_form = OfficeForm(instance=asset.office_info)
         self.part_info_form = BasePartForm(
             instance=asset.part_info, mode=_get_mode(self.request)
