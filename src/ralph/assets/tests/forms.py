@@ -15,28 +15,28 @@ from ralph.assets.models_assets import (
 from ralph.ui.tests.helper import login_as_su
 
 
-def get_menufacturer(name):
+def create_menufacturer(name):
     menufacturer = AssetManufacturer(name=name)
     menufacturer.save()
     return menufacturer
 
 
-def get_model(menufacture, name):
+def create_model(menufacturer, name):
     model = AssetModel(
-        manufacturer=menufacture,
+        manufacturer=menufacturer,
         name=name,
     )
     model.save()
     return model
 
 
-def get_warehouse(name):
+def create_warehouse(name):
     warehouse = Warehouse(name=name)
     warehouse.save()
     return warehouse
 
 
-def get_device(size, warehouse):
+def create_device(size, warehouse):
     device = DeviceInfo(
         size=size,
         warehouse=warehouse,
@@ -45,7 +45,7 @@ def get_device(size, warehouse):
     return device
 
 
-def get_asset(**kwargs):
+def create_asset(**kwargs):
     asset = Asset(**kwargs)
     asset.save()
     return asset
@@ -55,10 +55,10 @@ class TestForms(TestCase):
     def setUp(self):
         self.client = login_as_su()
         # Build asset
-        asset = get_asset(
-            device_info=get_device(1, get_warehouse(name='Warehouse1')),
+        asset = create_asset(
+            device_info=create_device(1, create_warehouse(name='Warehouse1')),
             type=AssetType.data_center,
-            model=get_model(get_menufacturer('Menufac'), 'AsModel'),
+            model=create_model(create_menufacturer('Menufac'), 'AsModel'),
             source=AssetSource.shipment,
             invoice_no='Invoice No 1',
             order_no='Order No 1',
@@ -71,14 +71,20 @@ class TestForms(TestCase):
             barcode='bc-1234'
         )
         # Prepare Asset 2
-        self.asset_model2 = get_model(get_menufacturer('Menufac2'), 'AsModel2')
-        self.device_info2 = get_device(1, get_warehouse(name='Warehouse2'))
+        self.asset_model2 = create_model(
+            create_menufacturer('Menufac2'), 'AsModel2'
+        )
+        self.device_info2 = create_device(
+            1, create_warehouse(name='Warehouse2')
+        )
         # Prepare Asset 3
-        self.asset_model3 = get_model(get_menufacturer('Menufac3'), 'AsModel3')
+        self.asset_model3 = create_model(
+            create_menufacturer('Menufac3'), 'AsModel3'
+        )
 
     def test_models(self):
-        db_menufacture = AssetManufacturer.objects.get(name='Menufac')
-        self.assertEquals(db_menufacture.name, 'Menufac')
+        db_menufacturer = AssetManufacturer.objects.get(name='Menufac')
+        self.assertEquals(db_menufacturer.name, 'Menufac')
         db_model = AssetModel.objects.get(name='AsModel')
         self.assertEquals(db_model.name, 'AsModel')
         db_warehouse = Warehouse.objects.get(name='Warehouse1')
@@ -97,7 +103,7 @@ class TestForms(TestCase):
         self.assertEqual(unicode(data.model), 'AsModel')
         self.assertEqual(data.invoice_no, 'Invoice No 1')
         self.assertEqual(data.order_no, 'Order No 1')
-        date = datetime.date(2001, 01, 01)
+        date = datetime.date(2001, 1, 1)
         self.assertEqual(data.buy_date, date)
         self.assertEqual(data.status, AssetStatus.new)
         self.assertEqual(unicode(data.device_info.warehouse), 'Warehouse1')
@@ -137,7 +143,7 @@ class TestForms(TestCase):
         self.assertEqual(unicode(data.model), 'AsModel2')
         self.assertEqual(data.invoice_no, 'Invoice No 2')
         self.assertEqual(data.order_no, 'Order No 2')
-        date = datetime.date(2001, 01, 02)
+        date = datetime.date(2001, 1, 2)
         self.assertEqual(data.buy_date, date)
         self.assertEqual(data.status, AssetStatus.new)
         self.assertEqual(unicode(data.device_info.warehouse), 'Warehouse2')
@@ -259,10 +265,10 @@ class TestBulkEdit(TestCase):
     def setUp(self):
         self.client = login_as_su()
         # Build asset
-        self.asset = get_asset(
-            device_info=get_device(1, get_warehouse(name='Warehouse1')),
+        self.asset = create_asset(
+            device_info=create_device(1, create_warehouse(name='Warehouse1')),
             type=AssetType.data_center,
-            model=get_model(get_menufacturer('Menufac1'), 'AsModel1'),
+            model=create_model(create_menufacturer('Menufac1'), 'AsModel1'),
             source=AssetSource.shipment,
             invoice_no='Invoice No 1',
             order_no='Order No 1',
@@ -275,10 +281,10 @@ class TestBulkEdit(TestCase):
             barcode='bc-1234'
         )
         # Build asset 2
-        self.asset2 = get_asset(
-            device_info=get_device(1, get_warehouse(name='Warehouse2')),
+        self.asset2 = create_asset(
+            device_info=create_device(1, create_warehouse(name='Warehouse2')),
             type=AssetType.data_center,
-            model=get_model(get_menufacturer('Menufac2'), 'AsModel2'),
+            model=create_model(create_menufacturer('Menufac2'), 'AsModel2'),
             source=AssetSource.shipment,
             invoice_no='Invoice No 2',
             order_no='Order No 2',
@@ -297,8 +303,8 @@ class TestBulkEdit(TestCase):
             self.asset.id, self.asset2.id)
         view = self.client.get(url)
         self.assertEqual(view.status_code, 200)
-        model0 = get_model(get_menufacturer('Menufac1a'), 'AsModel1a')
-        model1 = get_model(get_menufacturer('Menufac2a'), 'AsModel2a')
+        model0 = create_model(create_menufacturer('Menufac1a'), 'AsModel1a')
+        model1 = create_model(create_menufacturer('Menufac2a'), 'AsModel2a')
         post_data = {
             'form-TOTAL_FORMS': u'2',
             'form-INITIAL_FORMS': u'2',
@@ -373,9 +379,9 @@ class TestBulkEdit(TestCase):
 class TestSearchForm(TestCase):
     def setUp(self):
         self.client = login_as_su()
-        model = get_model(get_menufacturer('Menufac1'), 'AsModel1')
-        self.asset = get_asset(
-            device_info=get_device(1, get_warehouse(name='Warehouse1')),
+        model = create_model(create_menufacturer('Menufac1'), 'AsModel1')
+        self.asset = create_asset(
+            device_info=create_device(1, create_warehouse(name='Warehouse1')),
             type=AssetType.data_center,
             model=model,
             source=AssetSource.shipment,
@@ -389,10 +395,10 @@ class TestSearchForm(TestCase):
             sn='sn-12332452345',
             barcode='bc-123421141'
         )
-        self.asset1 = get_asset(
-            device_info=get_device(1, get_warehouse(name='Warehouse2')),
+        self.asset1 = create_asset(
+            device_info=create_device(1, create_warehouse(name='Warehouse2')),
             type=AssetType.data_center,
-            model=get_model(get_menufacturer('Menufac2'), 'AsModel2'),
+            model=create_model(create_menufacturer('Menufac2'), 'AsModel2'),
             source=AssetSource.shipment,
             invoice_no='Invoice No 1',
             order_no='Order No 3',
@@ -404,8 +410,8 @@ class TestSearchForm(TestCase):
             sn='sn-123123123',
             barcode='bc-1234123123'
         )
-        self.asset2 = get_asset(
-            device_info=get_device(1, get_warehouse(name='Warehouse3')),
+        self.asset2 = create_asset(
+            device_info=create_device(1, create_warehouse(name='Warehouse3')),
             type=AssetType.data_center,
             model=model,
             source=AssetSource.shipment,
@@ -484,7 +490,7 @@ class TestSearchForm(TestCase):
         self.assertEqual(unicode(res[0]), output)
 
     def test_date_range(self):
-        # start True - snd False
+        # beggining date should be equal than end date
         url = '/assets/dc/search?buy_date_from=%s&buy_date_to=%s' % (
             '2001-01-01', '2001-01-01')
         get = self.client.get(url)
@@ -493,7 +499,7 @@ class TestSearchForm(TestCase):
         self.assertEqual(len(res), 1)
         output = ('AsModel1 - sn-12332452345 - bc-123421141')
         self.assertEqual(unicode(res[0]), output)
-        # start True - snd True
+        # beggining date should be lower than end date
         url = '/assets/dc/search?buy_date_from=%s&buy_date_to=%s' % (
             '2001-01-01', '2002-01-01')
         get = self.client.get(url)
@@ -502,55 +508,34 @@ class TestSearchForm(TestCase):
         self.assertEqual(len(res), 2)
         output = ('AsModel2 - sn-123123123 - bc-1234123123')
         self.assertNotEqual(unicode(res[0]), output)
-        # start False end True
+        # beggining date cant be lower than end date
         url = '/assets/dc/search?buy_date_from=%s&buy_date_to=%s' % (
             '2011-01-01', '2002-01-01')
         get = self.client.get(url)
         self.assertEqual(get.status_code, 200)
         res = get.context_data['page'].object_list
         self.assertEqual(len(res), 0)
-        # start True end False
-        url = '/assets/dc/search?buy_date_from=%s&buy_date_to=%s' % (
-            '2001-01-01', '2052-01-01')
-        get = self.client.get(url)
-        self.assertEqual(get.status_code, 200)
-        res = get.context_data['page'].object_list
-        self.assertEqual(len(res), 3)
-        # start False end False
-        url = '/assets/dc/search?buy_date_from=%s&buy_date_to=%s' % (
-            '2051-01-01', '2052-01-01')
-        get = self.client.get(url)
-        self.assertEqual(get.status_code, 200)
-        res = get.context_data['page'].object_list
-        self.assertEqual(len(res), 0)
-        # start None end True
+        # beggining date is None, end date is desirable
         url = '/assets/dc/search?buy_date_from=%s&buy_date_to=%s' % (
             '', '2001-01-01')
         get = self.client.get(url)
         self.assertEqual(get.status_code, 200)
         res = get.context_data['page'].object_list
         self.assertEqual(len(res), 1)
-        # start None end False
+        # beggining date is None, end date is lower then youngest object
         url = '/assets/dc/search?buy_date_from=%s&buy_date_to=%s' % (
             '', '1999-01-01')
         get = self.client.get(url)
         self.assertEqual(get.status_code, 200)
         res = get.context_data['page'].object_list
         self.assertEqual(len(res), 0)
-        # start True end None
+        # beggining date is correct, end date is None
         url = '/assets/dc/search?buy_date_from=%s&buy_date_to=%s' % (
             '1999-01-01', '')
         get = self.client.get(url)
         self.assertEqual(get.status_code, 200)
         res = get.context_data['page'].object_list
         self.assertEqual(len(res), 3)
-        # start False end None
-        url = '/assets/dc/search?buy_date_from=%s&buy_date_to=%s' % (
-            '2999-01-01', '')
-        get = self.client.get(url)
-        self.assertEqual(get.status_code, 200)
-        res = get.context_data['page'].object_list
-        self.assertEqual(len(res), 0)
 
 
 class TestTrolling(TestCase):
@@ -579,6 +564,7 @@ class TestTrolling(TestCase):
         )
 
     def test_invalid_fueld_value(self):
+        # instead of integers we send strings, error should be thrown
         url = '/assets/back_office/add/device/'
         post_data = {
             'support_period': 'string',
