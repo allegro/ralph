@@ -9,13 +9,12 @@ from bob.menu import MenuItem, MenuHeader
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.conf import settings
-from django.db import IntegrityError, transaction
+from django.db import transaction
 from django.db.models import Q
 from django.http import HttpResponseRedirect, Http404
 from django.forms.models import modelformset_factory
 from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
-from lck.django.common import nested_commit_on_success
 
 from ralph.assets.forms import (
     AddDeviceForm, AddPartForm, EditDeviceForm,
@@ -330,17 +329,6 @@ class DataCenterAddPart(AddPart, DataCenterMixin):
     sidebar_selected = 'add part'
 
 
-def _additional_office_data_clean(data):
-    if not data.get('attachment') and isinstance(data.get('attachment'), bool):
-        data.update({'attachment': None})
-    elif not data.get('attachment'):
-        try:
-            del data['attachment']
-        except KeyError:
-            pass
-    return data
-
-
 @transaction.commit_on_success
 def _update_asset(modifier_profile, asset, asset_updated_data):
     if ('barcode' not in asset_updated_data or
@@ -357,7 +345,10 @@ def _update_office_info(user, asset, office_info_data):
         office_info = OfficeInfo()
     else:
         office_info = asset.office_info
-    office_info_data = _additional_office_data_clean(office_info_data)
+    if office_info_data['attachment'] is None:
+        del office_info_data['attachment']
+    elif office_info_data['attachment'] is False:
+        office_info_data['attachment'] = None
     office_info.__dict__.update(**office_info_data)
     office_info.save(user=user)
     asset.office_info = office_info
@@ -655,7 +646,6 @@ class DeleteAsset(AssetsMixin):
         self.back_to = _get_return_link(self.request)
         return super(DeleteAsset, self).get(*args, **kwargs)
 
-    @nested_commit_on_success
     def post(self, *args, **kwargs):
         self.form = DeleteAssetConfirmForm(self.request.POST)
         if self.form.is_valid():
@@ -673,12 +663,13 @@ class DeleteAsset(AssetsMixin):
                     self.back_to = '/assets/dc/'
                 else:
                     self.back_to = '/assets/back_office/'
-                if self.asset.get_data_type() == 'device':
-                    PartInfo.objects.filter(
-                        device=self.asset
-                    ).update(device=None)
-                self.asset.deleted = True
-                self.asset.save()
+                with transaction.commit_on_success():
+                    if self.asset.get_data_type() == 'device':
+                        PartInfo.objects.filter(
+                            device=self.asset
+                        ).update(device=None)
+                    self.asset.deleted = True
+                    self.asset.save()
                 return HttpResponseRedirect(self.back_to)
         messages.error(
             self.request, _("Error occured. Please try again.")

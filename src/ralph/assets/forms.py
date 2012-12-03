@@ -8,13 +8,12 @@ from __future__ import unicode_literals
 
 import re
 
-from django.core.validators import MaxLengthValidator
 from ajax_select.fields import AutoCompleteSelectField
 from django.forms import (
     ModelForm, Form, CharField, DateField, ChoiceField, ValidationError,
     IntegerField,
 )
-from django.forms.widgets import Textarea, TextInput, HiddenInput
+from django.forms.widgets import Textarea, HiddenInput
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models import (
@@ -34,11 +33,9 @@ class BaseAssetForm(ModelForm):
             'type', 'model', 'invoice_no', 'order_no',
             'buy_date', 'support_period', 'support_type',
             'support_void_reporting', 'provider', 'status',
-            'remarks',
+            'remarks', 'sn', 'barcode',
         )
         widgets = {
-            'sn': Textarea(attrs={'rows': 25}),
-            'barcode': Textarea(attrs={'rows': 25}),
             'buy_date': DateWidget(),
             'remarks': Textarea(attrs={'rows': 3}),
             'support_type': Textarea(attrs={'rows': 5}),
@@ -47,8 +44,6 @@ class BaseAssetForm(ModelForm):
         'asset_model', required=True,
         plugin_options=dict(add_link='/admin/assets/assetmodel/add/?name=')
     )
-    sn = CharField(required=True, widget=Textarea(attrs={'rows': 25}))
-    barcode = CharField(required=False, widget=Textarea(attrs={'rows': 25}))
 
     def __init__(self, *args, **kwargs):
         mode = kwargs.get('mode')
@@ -179,14 +174,58 @@ def _sn_additional_validation(serial_numbers):
         raise ValidationError(msg)
 
 
-class AddPartForm(BaseAssetForm):
+class BaseAddAssetForm(ModelForm):
+    class Meta:
+        model = Asset
+        fields = (
+            'type', 'model', 'invoice_no', 'order_no',
+            'buy_date', 'support_period', 'support_type',
+            'support_void_reporting', 'provider', 'status',
+            'remarks',
+        )
+        widgets = {
+            'buy_date': DateWidget(),
+            'remarks': Textarea(attrs={'rows': 3}),
+            'support_type': Textarea(attrs={'rows': 5}),
+        }
+    model = AutoCompleteSelectField(
+        'asset_model', required=True,
+        plugin_options=dict(add_link='/admin/assets/assetmodel/add/?name=')
+    )
+
+    def __init__(self, *args, **kwargs):
+        mode = kwargs.get('mode')
+        if mode:
+            del kwargs['mode']
+        super(BaseAddAssetForm, self).__init__(*args, **kwargs)
+        if mode == "dc":
+            self.fields['type'].choices = [
+                (c.id, c.desc) for c in AssetType.DC.choices]
+        elif mode == "back_office":
+            self.fields['type'].choices = [
+                (c.id, c.desc) for c in AssetType.BO.choices]
+
+
+class AddPartForm(BaseAddAssetForm):
+    sn = CharField(
+        label=_("SN/SNs"), required=True, widget=Textarea(attrs={'rows': 25})
+    )
+
     def clean_sn(self):
         data = _validate_multivalue_data(self.cleaned_data["sn"])
         _sn_additional_validation(data)
         return data
 
 
-class AddDeviceForm(BaseAssetForm):
+class AddDeviceForm(BaseAddAssetForm):
+    sn = CharField(
+        label=_("SN/SNs"), required=True, widget=Textarea(attrs={'rows': 25})
+    )
+    barcode = CharField(
+        label=_("Barcode/Barcodes"), required=False,
+        widget=Textarea(attrs={'rows': 25})
+    )
+
     def __init__(self, *args, **kwargs):
         super(AddDeviceForm, self).__init__(*args, **kwargs)
 
@@ -242,27 +281,11 @@ class OfficeForm(ModelForm):
 class EditPartForm(BaseAssetForm):
     def __init__(self, *args, **kwargs):
         super(EditPartForm, self).__init__(*args, **kwargs)
-        self.fields['sn'].widget = TextInput()
-        self.fields['sn'].label = _("SN")
-        self.fields['sn'].validators = [MaxLengthValidator(200), ]
-        if self.instance.sn:
-            self.fields['sn'].initial = self.instance.sn
         del self.fields['barcode']
 
 
 class EditDeviceForm(BaseAssetForm):
-    def __init__(self, *args, **kwargs):
-        super(EditDeviceForm, self).__init__(*args, **kwargs)
-        self.fields['sn'].widget = TextInput()
-        self.fields['sn'].label = _("SN")
-        self.fields['sn'].validators = [MaxLengthValidator(200), ]
-        if self.instance.sn:
-            self.fields['sn'].initial = self.instance.sn
-        self.fields['barcode'].widget = TextInput()
-        self.fields['barcode'].label = _("Barcode")
-        self.fields['barcode'].validators = [MaxLengthValidator(200), ]
-        if self.instance.barcode:
-            self.fields['barcode'].initial = self.instance.barcode
+    pass
 
 
 class SearchAssetForm(Form):
