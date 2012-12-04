@@ -425,9 +425,9 @@ class TestSearchForm(TestCase):
         self.assertEqual(get.status_code, 200)
         res = get.context_data['page'].object_list
         self.assertEqual(len(res), 3)
-#        url = '/assets/dc/search?model=99999'
-#        get = self.client.get(url)
-#        self.assertEqual(get.status_code, 404)
+        url = '/assets/dc/search?model=99999'
+        get = self.client.get(url)
+        self.assertEqual(get.status_code, 404)
 
     def test_invoice(self):
         url = '/assets/dc/search?invoice_no=%s' % 'Invoice No 1'
