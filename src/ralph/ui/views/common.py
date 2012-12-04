@@ -9,7 +9,7 @@ import datetime
 from django.conf import settings
 from django.contrib import messages
 from django.core.urlresolvers import reverse
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import models as db
 from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.utils import simplejson as json
