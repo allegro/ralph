@@ -175,9 +175,6 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                         'genericcomponent__label__icontains',
                         'genericcomponent__model__name__icontains',
                         'genericcomponent__model__group__name__icontains',
-                        'software__label__icontains',
-                        'software__model__name__icontains',
-                        'software__model__group__name__icontains',
                         'ethernet__mac__icontains',
                         'fibrechannel__label__icontains',
                         'fibrechannel__model__name__icontains',
@@ -197,6 +194,33 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                         'operatingsystem__model__name__icontains'
                     ], data['component'].split('|'))
                     self.query = self.query.filter(q).distinct()
+            if data['software']:
+                if data['software'].isdigit():
+                    q = _search_fields_or([
+                        'software__model__id',
+                    ], data['software'].split('|'))
+                    self.query = self.query.filter(q).distinct()
+                else:
+                    software = data['software'].strip().split(' ')
+                    if len(software) == 1:
+                        self.query = self.query.filter(
+                            Q(software__label__icontains=software[0]) |
+                            Q(software__model__name__icontains=data[
+                                'software'
+                            ]) |
+                            Q(software__model__group__name__icontains=data[
+                                'software'
+                            ])).distinct()
+                    elif len(software) == 2:
+                        self.query = self.query.filter(
+                            (Q(software__label__icontains=software[0]) &
+                             Q(software__version__startswith=software[1])) |
+                            Q(software__model__name__icontains=data[
+                                'software']
+                            ) |
+                            Q(software__model__group__name__icontains=data[
+                                'software']
+                            )).distinct()
             if data['serial']:
                 if data['serial'] == empty_field:
                     self.query = self.query.filter(
