@@ -33,7 +33,6 @@ from ralph.ui.widgets import (
     ReadOnlyWidget,
     RackWidget,
     ReadOnlyPriceWidget,
-    ReadOnlyDateWidget,
 )
 
 
@@ -131,7 +130,7 @@ class DNSRecordForm(forms.ModelForm):
                     'style': 'min-width: 16ex',
                 },
             ),
-            'type': forms.Select(attrs={ 'class': 'span12' }),
+            'type': forms.Select(attrs={'class': 'span12'}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -179,7 +178,7 @@ class DNSRecordForm(forms.ModelForm):
                         "There is already an A DNS record for this IP "
                         "(%s)." % r.name
                     )
-            return str(address)
+            return unicode(address)
         return content
 
     def clean_ptr(self):
@@ -246,7 +245,7 @@ class DHCPEntryForm(forms.ModelForm):
     def clean_ip(self):
         ip = self.cleaned_data['ip']
         try:
-            ip = str(ipaddr.IPAddress(ip))
+            ip = unicode(ipaddr.IPAddress(ip))
         except ValueError:
             raise forms.ValidationError("Invalid IP address")
         return ip
@@ -308,7 +307,7 @@ class IPAddressForm(forms.ModelForm):
         if not ip:
             return ''
         try:
-            ip = str(ipaddr.IPAddress(ip))
+            ip = unicode(ipaddr.IPAddress(ip))
         except ValueError:
             raise forms.ValidationError("Invalid IP address")
         return ip
