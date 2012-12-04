@@ -112,7 +112,7 @@ class DeviceForm(forms.ModelForm):
                 model__type__in=types
             ).order_by('parent', 'sn')
         )
-        if device.parent not in parents:
+        if device.parent and device.parent not in parents:
             parents.append(device.parent)
         return parents
 
