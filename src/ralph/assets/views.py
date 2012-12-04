@@ -5,19 +5,16 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import re
-
 from bob.menu import MenuItem, MenuHeader
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.conf import settings
-from django.db import IntegrityError, transaction
+from django.db import transaction
 from django.db.models import Q
 from django.http import HttpResponseRedirect, Http404
 from django.forms.models import modelformset_factory
 from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
-from lck.django.common import nested_commit_on_success
 
 from ralph.assets.forms import (
     AddDeviceForm, AddPartForm, EditDeviceForm,
@@ -138,8 +135,8 @@ class AssetSearch(AssetsMixin, PaginationMixin):
             all_q &= Q(buy_date__lte=buy_date_to)
         self.paginate_query(self.get_all_items(all_q))
 
-    def get_all_items(self, query):
-        return Asset.objects().filter(query).order_by('id')
+    def get_all_items(self, q_object):
+        return Asset.objects.filter(q_object).order_by('id')
 
     def get_context_data(self, *args, **kwargs):
         ret = super(AssetSearch, self).get_context_data(*args, **kwargs)
@@ -190,6 +187,27 @@ def _get_return_link(request):
     return "/assets/%s/" % _get_mode(request)
 
 
+@transaction.commit_on_success
+def _create_device(creator_profile, asset_data, device_info_data, sn,
+                   barcode=None):
+    device_info = DeviceInfo(
+        warehouse=device_info_data['warehouse'],
+        size=device_info_data['size']
+    )
+    device_info.save(user=creator_profile.user)
+    asset = Asset(
+        device_info=device_info,
+        sn=sn.strip(),
+        created_by=creator_profile,
+        **asset_data
+    )
+    if asset.type == AssetType.data_center.id and CONNECT_ASSET_WITH_DEVICE:
+        asset.create_stock_device()
+    if barcode:
+        asset.barcode = barcode
+    asset.save(user=creator_profile.user)
+
+
 class AddDevice(Base):
     template_name = 'assets/add_device.html'
 
@@ -213,9 +231,7 @@ class AddDevice(Base):
             self.request.POST, mode=_get_mode(self.request))
         self.device_info_form = BaseDeviceForm(self.request.POST)
         if self.asset_form.is_valid() and self.device_info_form.is_valid():
-            transaction.enter_transaction_management()
-            transaction.managed()
-            transaction.commit()
+            creator_profile = self.request.user.get_profile()
             asset_data = {}
             for f_name, f_value in self.asset_form.cleaned_data.items():
                 if f_name in ["barcode", "sn"]:
@@ -223,56 +239,15 @@ class AddDevice(Base):
                 asset_data[f_name] = f_value
             asset_data['source'] = AssetSource.shipment
             serial_numbers = self.asset_form.cleaned_data['sn']
-            serial_numbers = filter(
-                len, re.split(",|\n", serial_numbers))
             barcodes = self.asset_form.cleaned_data['barcode']
-            if barcodes:
-                barcodes = filter(
-                    len, re.split(",|\n", barcodes))
-            i = 0
-            duplicated_sn = []
-            duplicated_barcodes = []
-            creator = self.request.user.get_profile()
-            for sn in serial_numbers:
-                device_info = DeviceInfo(
-                    warehouse=self.device_info_form.cleaned_data['warehouse'],
-                    size=self.device_info_form.cleaned_data['size']
+            for sn, index in zip(serial_numbers, range(len(serial_numbers))):
+                barcode = barcodes[index] if barcodes else None
+                _create_device(
+                    creator_profile, asset_data,
+                    self.device_info_form.cleaned_data, sn, barcode
                 )
-                device_info.save(user=self.request.user)
-                asset = Asset(
-                    device_info=device_info,
-                    sn=sn.strip(),
-                    created_by=creator,
-                    **asset_data
-                )
-                if (asset.type == AssetType.data_center.id) and (
-                    CONNECT_ASSET_WITH_DEVICE):
-                    asset.create_stock_device()
-                if barcodes:
-                    asset.barcode = barcodes[i].strip()
-                try:
-                    asset.save(user=self.request.user)
-                except IntegrityError as e:
-                    if "'sn'" in e[1]:
-                        duplicated_sn.append(asset.sn)
-                    if barcodes and "'barcode'" in e[1]:
-                        duplicated_barcodes.append(asset.barcode)
-                i += 1
-            if duplicated_sn or duplicated_barcodes:
-                transaction.rollback()
-                msg = ""
-                if duplicated_sn:
-                    msg = "Serial numbers with duplicates: %s. " % (
-                        ", ".join(duplicated_sn))
-                if duplicated_barcodes:
-                    msg += "Barcodes with duplicates: %s. " % (
-                        ", ".join(duplicated_barcodes))
-                messages.warning(self.request, msg)
-            else:
-                transaction.commit()
-                transaction.managed(False)
-                messages.success(self.request, _("Assets saved."))
-                return HttpResponseRedirect(_get_return_link(self.request))
+            messages.success(self.request, _("Assets saved."))
+            return HttpResponseRedirect(_get_return_link(self.request))
         else:
             messages.error(self.request, _("Please correct the errors."))
         return super(AddDevice, self).get(*args, **kwargs)
@@ -284,6 +259,19 @@ class BackOfficeAddDevice(AddDevice, BackOfficeMixin):
 
 class DataCenterAddDevice(AddDevice, DataCenterMixin):
     sidebar_selected = 'add device'
+
+
+@transaction.commit_on_success
+def _create_part(creator_profile, asset_data, part_info_data, sn):
+    part_info = PartInfo(**part_info_data)
+    part_info.save(user=creator_profile.user)
+    asset = Asset(
+        part_info=part_info,
+        sn=sn.strip(),
+        created_by=creator_profile,
+        **asset_data
+    )
+    asset.save(user=creator_profile.user)
 
 
 class AddPart(Base):
@@ -312,9 +300,7 @@ class AddPart(Base):
             self.request.POST, mode=_get_mode(self.request)
         )
         if self.asset_form.is_valid() and self.part_info_form.is_valid():
-            transaction.enter_transaction_management()
-            transaction.managed()
-            transaction.commit()
+            creator_profile = self.request.user.get_profile()
             asset_data = {}
             for f_name, f_value in self.asset_form.cleaned_data.items():
                 if f_name in ["sn"]:
@@ -323,33 +309,13 @@ class AddPart(Base):
             asset_data['source'] = AssetSource.shipment
             asset_data['barcode'] = None
             serial_numbers = self.asset_form.cleaned_data['sn']
-            serial_numbers = filter(len, re.split(",|\n", serial_numbers))
-            duplicated_sn = []
-            creator = self.request.user.get_profile()
             for sn in serial_numbers:
-                part_info = PartInfo(**self.part_info_form.cleaned_data)
-                part_info.save(user=self.request.user)
-                asset = Asset(
-                    part_info=part_info,
-                    sn=sn.strip(),
-                    created_by=creator,
-                    **asset_data
+                _create_part(
+                    creator_profile, asset_data,
+                    self.part_info_form.cleaned_data, sn
                 )
-                try:
-                    asset.save(user=self.request.user)
-                except IntegrityError as e:
-                    if "'sn'" in e[1]:
-                        duplicated_sn.append(asset.sn)
-            if duplicated_sn:
-                transaction.rollback()
-                msg = "Serial numbers with duplicates: %s." % (
-                    ", ".join(duplicated_sn))
-                messages.warning(self.request, msg)
-            else:
-                transaction.commit()
-                transaction.managed(False)
-                messages.success(self.request, _("Assets saved."))
-                return HttpResponseRedirect(_get_return_link(self.request))
+            messages.success(self.request, _("Assets saved."))
+            return HttpResponseRedirect(_get_return_link(self.request))
         else:
             messages.error(self.request, _("Please correct the errors."))
         return super(AddPart, self).get(*args, **kwargs)
@@ -363,15 +329,54 @@ class DataCenterAddPart(AddPart, DataCenterMixin):
     sidebar_selected = 'add part'
 
 
-def _additional_office_data_clean(data):
-    if not data.get('attachment') and isinstance(data.get('attachment'), bool):
-        data.update({'attachment': None})
-    elif not data.get('attachment'):
-        try:
-            del data['attachment']
-        except KeyError:
-            pass
-    return data
+@transaction.commit_on_success
+def _update_asset(modifier_profile, asset, asset_updated_data):
+    if ('barcode' not in asset_updated_data or
+        not asset_updated_data['barcode']):
+        asset_updated_data['barcode'] = None
+    asset_updated_data.update({'modified_by': modifier_profile})
+    asset.__dict__.update(**asset_updated_data)
+    return asset
+
+
+@transaction.commit_on_success
+def _update_office_info(user, asset, office_info_data):
+    if not asset.office_info:
+        office_info = OfficeInfo()
+    else:
+        office_info = asset.office_info
+    if office_info_data['attachment'] is None:
+        del office_info_data['attachment']
+    elif office_info_data['attachment'] is False:
+        office_info_data['attachment'] = None
+    office_info.__dict__.update(**office_info_data)
+    office_info.save(user=user)
+    asset.office_info = office_info
+    return asset
+
+
+@transaction.commit_on_success
+def _update_device_info(user, asset, device_info_data):
+    asset.device_info.__dict__.update(
+        **device_info_data
+    )
+    asset.device_info.save(user=user)
+    return asset
+
+
+@transaction.commit_on_success
+def _update_part_info(user, asset, part_info_data):
+    if not asset.part_info:
+        part_info = PartInfo()
+    else:
+        part_info = asset.part_info
+    part_info.device = part_info_data.get('device')
+    part_info.source_device = part_info_data.get('source_device')
+    part_info.barcode_salvaged = part_info_data.get('barcode_salvaged')
+    part_info.save(user=user)
+    asset.part_info = part_info
+    asset.part_info.save(user=user)
+    return asset
 
 
 class EditDevice(Base):
@@ -388,7 +393,7 @@ class EditDevice(Base):
             'office_info_form': self.office_info_form,
             'form_id': 'edit_device_asset_form',
             'edit_mode': True,
-            'status_history': status_history,
+            'MaMaMastatus_history': status_history,
         })
         return ret
 
@@ -404,38 +409,32 @@ class EditDevice(Base):
         self.office_info_form = OfficeForm(instance=asset.office_info)
         return super(EditDevice, self).get(*args, **kwargs)
 
-    @nested_commit_on_success
     def post(self, *args, **kwargs):
         asset = get_object_or_404(Asset, id=kwargs.get('asset_id'))
         self.asset_form = EditDeviceForm(
-            self.request.POST, instance=asset, mode=_get_mode(self.request))
-
+            self.request.POST, instance=asset, mode=_get_mode(self.request)
+        )
         self.device_info_form = BaseDeviceForm(self.request.POST)
         self.office_info_form = OfficeForm(
-            self.request.POST, self.request.FILES)
+            self.request.POST, self.request.FILES
+        )
         if all((
             self.asset_form.is_valid(),
             self.device_info_form.is_valid(),
             self.office_info_form.is_valid()
         )):
-            asset_data = self.asset_form.cleaned_data
-            if not asset_data['barcode']:
-                asset_data['barcode'] = None
-            asset.__dict__.update(**asset_data)
-            if not asset.office_info:
-                office_info = OfficeInfo()
-            else:
-                office_info = asset.office_info
-            office_info_data = _additional_office_data_clean(
+            modifier_profile = self.request.user.get_profile()
+            asset = _update_asset(
+                modifier_profile, asset, self.asset_form.cleaned_data
+            )
+            asset = _update_office_info(
+                modifier_profile.user, asset,
                 self.office_info_form.cleaned_data
             )
-            office_info.__dict__.update(**office_info_data)
-            office_info.save(user=self.request.user)
-            asset.office_info = office_info
-            asset.device_info.__dict__.update(
-                **self.device_info_form.cleaned_data)
-            asset.device_info.save(user=self.request.user)
-            asset.modified_by = self.request.user.get_profile()
+            asset = _update_device_info(
+                modifier_profile.user, asset,
+                self.device_info_form.cleaned_data
+            )
             asset.save(user=self.request.user)
             return HttpResponseRedirect(_get_return_link(self.request))
         else:
@@ -483,7 +482,6 @@ class EditPart(Base):
         )
         return super(EditPart, self).get(*args, **kwargs)
 
-    @nested_commit_on_success
     def post(self, *args, **kwargs):
         asset = get_object_or_404(Asset, id=kwargs.get('asset_id'))
         self.asset_form = EditPartForm(
@@ -498,31 +496,19 @@ class EditPart(Base):
             self.office_info_form.is_valid(),
             self.part_info_form.is_valid()
         )):
-            asset_data = self.asset_form.cleaned_data
-            asset_data.update({'barcode': None})
-            asset.__dict__.update(
-                **asset_data)
-            if not asset.office_info:
-                office_info = OfficeInfo()
-            else:
-                office_info = asset.office_info
-            office_info_data = _additional_office_data_clean(
+            modifier_profile = self.request.user.get_profile()
+            asset = _update_asset(
+                modifier_profile, asset,
+                self.asset_form.cleaned_data
+            )
+            asset = _update_office_info(
+                modifier_profile.user, asset,
                 self.office_info_form.cleaned_data
             )
-            office_info.__dict__.update(**office_info_data)
-            office_info.save(user=self.request.user)
-            asset.office_info = office_info
-            if not asset.part_info:
-                part_info = PartInfo()
-            else:
-                part_info = asset.part_info
-            part_info_data = self.part_info_form.cleaned_data
-            part_info.device = part_info_data.get('device')
-            part_info.source_device = part_info_data.get('source_device')
-            part_info.barcode_salvaged = part_info_data.get('barcode_salvaged')
-            part_info.save(user=self.request.user)
-            asset.part_info = part_info
-            asset.modified_by = self.request.user.get_profile()
+            asset = _update_part_info(
+                modifier_profile.user, asset,
+                self.part_info_form.cleaned_data
+            )
             asset.save(user=self.request.user)
             return HttpResponseRedirect(_get_return_link(self.request))
         else:
@@ -604,7 +590,6 @@ class BulkEdit(Base):
         )
         return super(BulkEdit, self).get(*args, **kwargs)
 
-    @nested_commit_on_success
     def post(self, *args, **kwargs):
         AssetFormSet = modelformset_factory(
             Asset,
@@ -613,15 +598,16 @@ class BulkEdit(Base):
         )
         self.asset_formset = AssetFormSet(self.request.POST)
         if self.asset_formset.is_valid():
-            instances = self.asset_formset.save(commit=False)
-            for instance in instances:
-                instance.modified_by = self.request.user.get_profile()
-                instance.save()
+            with transaction.commit_on_success():
+                instances = self.asset_formset.save(commit=False)
+                for instance in instances:
+                    instance.modified_by = self.request.user.get_profile()
+                    instance.save()
             messages.success(self.request, _("Changes saved."))
             return HttpResponseRedirect(self.request.get_full_path())
         messages.error(self.request, _("Please correct the errors."))
         form_error = self.asset_formset.get_form_error()
-        if form_error and 'duplicate' in form_error:
+        if form_error:
             messages.error(
                 self.request,
                 _("Please correct duplicated serial numbers or barcodes.")
@@ -660,7 +646,6 @@ class DeleteAsset(AssetsMixin):
         self.back_to = _get_return_link(self.request)
         return super(DeleteAsset, self).get(*args, **kwargs)
 
-    @nested_commit_on_success
     def post(self, *args, **kwargs):
         self.form = DeleteAssetConfirmForm(self.request.POST)
         if self.form.is_valid():
@@ -678,12 +663,13 @@ class DeleteAsset(AssetsMixin):
                     self.back_to = '/assets/dc/'
                 else:
                     self.back_to = '/assets/back_office/'
-                if self.asset.get_data_type() == 'device':
-                    PartInfo.objects.filter(
-                        device=self.asset
-                    ).update(device=None)
-                self.asset.deleted = True
-                self.asset.save()
+                with transaction.commit_on_success():
+                    if self.asset.get_data_type() == 'device':
+                        PartInfo.objects.filter(
+                            device=self.asset
+                        ).update(device=None)
+                    self.asset.deleted = True
+                    self.asset.save()
                 return HttpResponseRedirect(self.back_to)
         messages.error(
             self.request, _("Error occured. Please try again.")
