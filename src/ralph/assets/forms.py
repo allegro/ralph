@@ -8,13 +8,12 @@ from __future__ import unicode_literals
 
 import re
 
-from django.core.validators import MaxLengthValidator
 from ajax_select.fields import AutoCompleteSelectField
 from django.forms import (
     ModelForm, Form, CharField, DateField, ChoiceField, ValidationError,
     IntegerField,
 )
-from django.forms.widgets import Textarea, TextInput, HiddenInput
+from django.forms.widgets import Textarea, HiddenInput
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models import (
@@ -34,11 +33,9 @@ class BaseAssetForm(ModelForm):
             'type', 'model', 'invoice_no', 'order_no',
             'buy_date', 'support_period', 'support_type',
             'support_void_reporting', 'provider', 'status',
-            'remarks',
+            'remarks', 'sn', 'barcode',
         )
         widgets = {
-            'sn': Textarea(attrs={'rows': 25}),
-            'barcode': Textarea(attrs={'rows': 25}),
             'buy_date': DateWidget(),
             'remarks': Textarea(attrs={'rows': 3}),
             'support_type': Textarea(attrs={'rows': 5}),
@@ -47,8 +44,6 @@ class BaseAssetForm(ModelForm):
         'asset_model', required=True,
         plugin_options=dict(add_link='/admin/assets/assetmodel/add/?name=')
     )
-    sn = CharField(required=True, widget=Textarea(attrs={'rows': 25}))
-    barcode = CharField(required=False, widget=Textarea(attrs={'rows': 25}))
 
     def __init__(self, *args, **kwargs):
         mode = kwargs.get('mode')
@@ -139,37 +134,139 @@ def _validate_multivalue_data(data):
         raise ValidationError(error_msg)
     if data.find(" ") > 0:
         raise ValidationError(error_msg)
-    if not filter(len, data.split("\n")) and not filter(len, data.split(",")):
+    items = []
+    for item in filter(len, re.split(",|\n", data)):
+        item = item.strip()
+        if item and item not in items:
+            items.append(item)
+    if not items:
         raise ValidationError(error_msg)
+    return items
 
 
-class AddPartForm(BaseAssetForm):
+def _check_serial_numbers_uniqueness(serial_numbers):
+    assets = Asset.objects.filter(sn__in=serial_numbers)
+    if not assets:
+        return True, []
+    not_unique = []
+    for asset in assets:
+        not_unique.append((asset.sn, asset.id, asset.type))
+    return False, not_unique
+
+
+def _check_barcodes_uniqueness(barcodes):
+    assets = Asset.objects.filter(barcode__in=barcodes)
+    if not assets:
+        return True, []
+    not_unique = []
+    for asset in assets:
+        not_unique.append((asset.barcode, asset.id, asset.type))
+    return False, not_unique
+
+
+def _sn_additional_validation(serial_numbers):
+    is_unique, not_unique_sn = _check_serial_numbers_uniqueness(serial_numbers)
+    if not is_unique:
+        # ToDo: links to assets with duplicate sn
+        msg = "Following serial number already exists in DB: %s" % (
+            ", ".join(item[0] for item in not_unique_sn)
+        )
+        raise ValidationError(msg)
+
+
+class BaseAddAssetForm(ModelForm):
+    class Meta:
+        model = Asset
+        fields = (
+            'type', 'model', 'invoice_no', 'order_no',
+            'buy_date', 'support_period', 'support_type',
+            'support_void_reporting', 'provider', 'status',
+            'remarks',
+        )
+        widgets = {
+            'buy_date': DateWidget(),
+            'remarks': Textarea(attrs={'rows': 3}),
+            'support_type': Textarea(attrs={'rows': 5}),
+        }
+    model = AutoCompleteSelectField(
+        'asset_model', required=True,
+        plugin_options=dict(add_link='/admin/assets/assetmodel/add/?name=')
+    )
+
+    def __init__(self, *args, **kwargs):
+        mode = kwargs.get('mode')
+        if mode:
+            del kwargs['mode']
+        super(BaseAddAssetForm, self).__init__(*args, **kwargs)
+        if mode == "dc":
+            self.fields['type'].choices = [
+                (c.id, c.desc) for c in AssetType.DC.choices]
+        elif mode == "back_office":
+            self.fields['type'].choices = [
+                (c.id, c.desc) for c in AssetType.BO.choices]
+
+
+class AddPartForm(BaseAddAssetForm):
+    sn = CharField(
+        label=_("SN/SNs"), required=True, widget=Textarea(attrs={'rows': 25})
+    )
+
     def clean_sn(self):
-        data = self.cleaned_data["sn"]
-        _validate_multivalue_data(data)
+        data = _validate_multivalue_data(self.cleaned_data["sn"])
+        _sn_additional_validation(data)
         return data
 
 
-class AddDeviceForm(BaseAssetForm):
+class AddDeviceForm(BaseAddAssetForm):
+    sn = CharField(
+        label=_("SN/SNs"), required=True, widget=Textarea(attrs={'rows': 25})
+    )
+    barcode = CharField(
+        label=_("Barcode/Barcodes"), required=False,
+        widget=Textarea(attrs={'rows': 25})
+    )
+
     def __init__(self, *args, **kwargs):
         super(AddDeviceForm, self).__init__(*args, **kwargs)
 
     def clean_sn(self):
-        data = self.cleaned_data["sn"]
-        _validate_multivalue_data(data)
+        data = _validate_multivalue_data(self.cleaned_data["sn"])
+        _sn_additional_validation(data)
         return data
 
     def clean_barcode(self):
         data = self.cleaned_data["barcode"].strip()
-        sn_data = self.cleaned_data.get("sn", "").strip()
+        barcodes = []
         if data:
-            barcodes_count = len(filter(len, re.split(",|\n", data)))
-            sn_count = len(filter(len, re.split(",|\n", sn_data)))
-            if sn_count != barcodes_count:
+            if data.find(" ") > 0:
+                raise ValidationError(_("Incorrect barcodes."))
+            for barcode in filter(len, re.split(",|\n", data)):
+                barcode = barcode.strip()
+                if barcode:
+                    barcodes.append(barcode)
+            if not barcodes:
                 raise ValidationError(_("Barcode list could be empty or "
                                         "must have the same number of "
                                         "items as a SN list."))
-        return data
+            is_unique, not_unique_bc = _check_barcodes_uniqueness(barcodes)
+            if not is_unique:
+                # ToDo: links to assets with duplicate barcodes
+                msg = "Following barcodes already exists in DB: %s" % (
+                    ", ".join(item[0] for item in not_unique_bc)
+                )
+                raise ValidationError(msg)
+        return barcodes
+
+    def clean(self):
+        cleaned_data = super(AddDeviceForm, self).clean()
+        serial_numbers = cleaned_data.get("sn", [])
+        barcodes = cleaned_data.get("barcode", [])
+        if barcodes and len(serial_numbers) != len(barcodes):
+            self._errors["barcode"] = self.error_class([
+                _("Barcode list could be empty or must have the same number "
+                  "of items as a SN list.")
+            ])
+        return cleaned_data
 
 
 class OfficeForm(ModelForm):
@@ -184,27 +281,11 @@ class OfficeForm(ModelForm):
 class EditPartForm(BaseAssetForm):
     def __init__(self, *args, **kwargs):
         super(EditPartForm, self).__init__(*args, **kwargs)
-        self.fields['sn'].widget = TextInput()
-        self.fields['sn'].label = _("SN")
-        self.fields['sn'].validators = [MaxLengthValidator(200), ]
-        if self.instance.sn:
-            self.fields['sn'].initial = self.instance.sn
         del self.fields['barcode']
 
 
 class EditDeviceForm(BaseAssetForm):
-    def __init__(self, *args, **kwargs):
-        super(EditDeviceForm, self).__init__(*args, **kwargs)
-        self.fields['sn'].widget = TextInput()
-        self.fields['sn'].label = _("SN")
-        self.fields['sn'].validators = [MaxLengthValidator(200), ]
-        if self.instance.sn:
-            self.fields['sn'].initial = self.instance.sn
-        self.fields['barcode'].widget = TextInput()
-        self.fields['barcode'].label = _("Barcode")
-        self.fields['barcode'].validators = [MaxLengthValidator(200), ]
-        if self.instance.barcode:
-            self.fields['barcode'].initial = self.instance.barcode
+    pass
 
 
 class SearchAssetForm(Form):
