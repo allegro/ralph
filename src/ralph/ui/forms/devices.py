@@ -9,7 +9,7 @@ from django import forms
 from lck.django.common.models import MACAddressField
 
 from ralph.discovery.models_component import is_mac_valid
-from ralph.discovery.models import Device
+from ralph.discovery.models import Device, DeviceType
 from ralph.util import Eth
 from ralph.ui.widgets import (
     DateWidget,
@@ -27,7 +27,6 @@ class DeviceForm(forms.ModelForm):
     class Meta:
         model = Device
         widgets = {
-            'parent': DeviceWidget,
             'model': DeviceModelWidget,
             'rack': RackWidget,
             'dc': RackWidget,
@@ -75,6 +74,47 @@ class DeviceForm(forms.ModelForm):
         'support_kind': 'fugue-hammer-screwdriver',
         'deleted': 'fugue-skull',
     }
+
+    def __init__(self, *args, **kwargs):
+        super(DeviceForm, self).__init__(*args, **kwargs)
+        if self.instance:
+            self.fields['parent'].choices = [
+                (None, '----'),
+            ] + [
+                (p.id, p.name) for p in
+                self.get_possible_parents(self.instance)
+            ]
+
+    def get_possible_parents(self, device):
+        types = {
+            DeviceType.rack,
+            DeviceType.data_center,
+        }
+        if device.model:
+            if device.model.type in {DeviceType.blade_server}:
+                types = {DeviceType.blade_system}
+            elif device.model.type in {DeviceType.virtual_server}:
+                types = {
+                    DeviceType.rack_server,
+                    DeviceType.blade_server,
+                }
+            elif device.model.type in {DeviceType.rack}:
+                types = {DeviceType.data_center}
+            elif device.model.type in {
+                DeviceType.switch,
+                DeviceType.management,
+                DeviceType.fibre_channel_switch,
+                DeviceType.power_distribution_unit,
+            }:
+                types.add(DeviceType.blade_system)
+        parents = list(
+            Device.objects.filter(
+                model__type__in=types
+            ).order_by('parent', 'sn')
+        )
+        if device.parent not in parents:
+            parents.append(device.parent)
+        return parents
 
     def manual_fields(self):
         device = self.instance
