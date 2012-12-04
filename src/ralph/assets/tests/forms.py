@@ -10,7 +10,7 @@ import datetime
 from django.test import TestCase
 from ralph.assets.models_assets import (
     Asset, AssetModel, AssetManufacturer, AssetSource, AssetStatus, AssetType,
-    DeviceInfo, LicenseTypes, OfficeInfo, Warehouse
+    DeviceInfo, LicenseType, OfficeInfo, Warehouse
 )
 from ralph.ui.tests.helper import login_as_su
 
@@ -100,7 +100,7 @@ class TestForms(TestCase):
         self.assertEqual(data.type, AssetType.data_center)
         self.assertEqual(data.sn, 'sn-123')
         self.assertEqual(data.barcode, 'bc-1234')
-        self.assertEqual(unicode(data.model), 'AsModel')
+        self.assertEqual(unicode(data.model), 'Menufac AsModel')
         self.assertEqual(data.invoice_no, 'Invoice No 1')
         self.assertEqual(data.order_no, 'Order No 1')
         date = datetime.date(2001, 1, 1)
@@ -140,7 +140,7 @@ class TestForms(TestCase):
         self.assertEqual(data.type, AssetType.data_center)
         self.assertEqual(data.sn, 'sn-321')
         self.assertEqual(data.barcode, 'bc-4321')
-        self.assertEqual(unicode(data.model), 'AsModel2')
+        self.assertEqual(unicode(data.model), 'Menufac2 AsModel2')
         self.assertEqual(data.invoice_no, 'Invoice No 2')
         self.assertEqual(data.order_no, 'Order No 2')
         date = datetime.date(2001, 1, 2)
@@ -181,7 +181,7 @@ class TestForms(TestCase):
             'license_key': '0000-0000-0000-0000',
             'version': '1.0',
             'unit_price': 2.00,
-            'license_type': LicenseTypes.oem,
+            'license_type': LicenseType.oem,
             'buy_date': '2001-02-02',
             'date_of_last_inventory': '2003-02-02',
             'last_logged_user': 'James Bond',
@@ -198,74 +198,49 @@ class TestForms(TestCase):
         new_fields = new_view.context['asset_form'].initial
         new_device_info = new_view.context['device_info_form'].initial
         new_office_info = new_view.context['office_info_form'].initial
-
-        correct_data = dict(
-            model=self.asset_model3.id,
-            invoice_no='Invoice No 3',
-            order_no='Order No 3',
-            buy_date='2001-02-02'
-        )
-        # type
-        self.assertEqual(old_fields['type'], new_fields['type'])
-        # model
-        self.assertNotEqual(old_fields['model'], new_fields['model'])
-        self.assertEqual(new_fields['model'], self.asset_model3.id)
-        # invoice_no
-        self.assertNotEqual(old_fields['invoice_no'], new_fields['invoice_no'])
-        self.assertEqual(new_fields['invoice_no'], 'Invoice No 3')
-        # order_no
-        self.assertNotEqual(old_fields['order_no'], new_fields['order_no'])
-        self.assertEqual(new_fields['order_no'], 'Order No 3')
-        # Buy date
-        self.assertNotEqual(old_fields['buy_date'], new_fields['buy_date'])
-        self.assertEqual(unicode(new_fields['buy_date']), '2001-02-02')
-        # Support period in months
-        self.assertNotEqual(
-            old_fields['support_period'], new_fields['support_period']
-        )
-        self.assertEqual(new_fields['support_period'], 24)
-        # Support type
-        self.assertNotEqual(
-            old_fields['support_type'], new_fields['support_type']
-        )
-        self.assertEqual(new_fields['support_type'], 'standard')
-        # Provider
-        self.assertNotEqual(old_fields['provider'], new_fields['provider'])
-        self.assertEqual(new_fields['provider'], 'Provider 3')
-        # Status
-        self.assertNotEqual(old_fields['status'], new_fields['status'])
-        self.assertEqual(new_fields['status'], AssetStatus.in_progress)
-        # SN
-        self.assertNotEqual(old_fields['sn'], new_fields['sn'])
-        self.assertEqual(new_fields['sn'], 'sn-321-2012')
-        # Barcode
-        self.assertNotEqual(old_fields['barcode'], new_fields['barcode'])
-        self.assertEqual(new_fields['barcode'], 'bc-4321-2012')
-        # Additional remarks
-        self.assertEqual(old_fields['remarks'], None)
-        self.assertEqual(new_fields['remarks'], 'any remarks')
-        # Size in units
+        correct_data = [
+            dict(
+                model=self.asset_model3.id,
+                invoice_no='Invoice No 3',
+                order_no='Order No 3',
+                buy_date='2001-02-02',
+                support_period=24,
+                support_type='standard',
+                provider='Provider 3',
+                status=AssetStatus.in_progress.id,
+                remarks='any remarks'
+            )
+        ]
+        correct_data_office = [
+            dict(
+                version='1.0',
+                unit_price=2,
+                license_type=LicenseType.oem.id,
+                date_of_last_inventory='2003-02-02',
+                last_logged_user='James Bond',
+            )
+        ]
+        for data in correct_data:
+            for key in data.keys():
+                self.assertNotEqual(
+                    unicode(old_fields[key]), unicode(new_fields[key])
+                )
+                self.assertEqual(
+                    unicode(new_fields[key]), unicode(data[key])
+                )
         self.assertNotEqual(old_device_info['size'], new_device_info['size'])
         self.assertEqual(new_device_info['size'], 2)
-        # License key
         office = OfficeInfo.objects.filter(
             license_key='0000-0000-0000-0000'
         ).count()
         self.assertEqual(office, 1)
         self.assertEqual(old_office_info, {})
         self.assertEqual(new_office_info['license_key'], '0000-0000-0000-0000')
-        # Version
-        self.assertEqual(new_office_info['version'], '1.0')
-        # Unit price
-        self.assertEqual(new_office_info['unit_price'], 2.00)
-        # License type
-        self.assertEqual(new_office_info['license_type'], LicenseTypes.oem)
-        # Date of last inventory
-        self.assertEqual(
-            unicode(new_office_info['date_of_last_inventory']), '2003-02-02'
-        )
-        # Last logged user
-        self.assertEqual(new_office_info['last_logged_user'], 'James Bond')
+        for office in correct_data_office:
+            for key in office.keys():
+                self.assertEqual(
+                    unicode(new_office_info[key]), unicode(office[key])
+                )
 
 
 class TestBulkEdit(TestCase):
@@ -353,7 +328,7 @@ class TestBulkEdit(TestCase):
         fields = new_view.context['formset'].queryset
         correct_data = [
             dict(
-                model=model0,
+                model=unicode(model0),
                 invoice_no='Invoice No 1a',
                 order_no='Order No 1a',
                 buy_date='2012-02-02',
@@ -365,7 +340,7 @@ class TestBulkEdit(TestCase):
                 barcode='bc-4321-2012a'
             ),
             dict(
-                model=model1,
+                model=unicode(model1),
                 invoice_no='Invoice No 2a',
                 order_no='Order No 2a',
                 buy_date='2011-02-03',
@@ -487,7 +462,7 @@ class TestSearchForm(TestCase):
         self.assertEqual(get.status_code, 200)
         res = get.context_data['page'].object_list
         self.assertEqual(len(res), 1)
-        output = ('AsModel1 - sn-12323542345 - bc-12341234124')
+        output = ('Menufac1 AsModel1 - sn-12323542345 - bc-12341234124')
         self.assertEqual(unicode(res[0]), output)
 
     def test_sn(self):
@@ -496,7 +471,7 @@ class TestSearchForm(TestCase):
         self.assertEqual(get.status_code, 200)
         res = get.context_data['page'].object_list
         self.assertEqual(len(res), 1)
-        output = ('AsModel2 - sn-123123123 - bc-1234123123')
+        output = ('Menufac2 AsModel2 - sn-123123123 - bc-1234123123')
         self.assertEqual(unicode(res[0]), output)
 
     def test_date_range(self):
@@ -507,7 +482,7 @@ class TestSearchForm(TestCase):
         self.assertEqual(get.status_code, 200)
         res = get.context_data['page'].object_list
         self.assertEqual(len(res), 1)
-        output = ('AsModel1 - sn-12332452345 - bc-123421141')
+        output = ('Menufac1 AsModel1 - sn-12332452345 - bc-123421141')
         self.assertEqual(unicode(res[0]), output)
         # beggining date should be lower than end date
         url = '/assets/dc/search?buy_date_from=%s&buy_date_to=%s' % (
