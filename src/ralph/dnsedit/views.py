@@ -6,8 +6,9 @@ from __future__ import unicode_literals
 
 import datetime
 
-
 from django.http import HttpResponse, HttpResponseForbidden
+from lck.django.common import remote_addr
+
 from ralph.dnsedit.models import DHCPServer
 from ralph.dnsedit.util import generate_dhcp_config
 from ralph.ui.views.common import Base
@@ -25,7 +26,7 @@ class Index(Base):
 def dhcp_synch(request):
     if not api.is_authenticated(request):
         return HttpResponseForbidden('API key required.')
-    address = request.META['REMOTE_ADDR']
+    address = remote_addr(request)
     server, created = DHCPServer.objects.get_or_create(ip=address)
     server.last_synchronized = datetime.datetime.now()
     server.save()
