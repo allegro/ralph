@@ -16,14 +16,24 @@ from lck.django.common import nested_commit_on_success
 
 from ralph.discovery import hardware
 from ralph.discovery.lshw import parse_lshw, get_storage_from_lshw
-from ralph.discovery.models import (DeviceType, Device, OperatingSystem,
-    ComponentModel, ComponentType, Software, Storage, SERIAL_BLACKLIST,
-    DISK_VENDOR_BLACKLIST, DISK_PRODUCT_BLACKLIST)
+from ralph.discovery.models import (
+    DeviceType,
+    Device,
+    OperatingSystem,
+    ComponentModel,
+    ComponentType,
+    Software,
+    Storage,
+    SERIAL_BLACKLIST,
+    DISK_VENDOR_BLACKLIST,
+    DISK_PRODUCT_BLACKLIST,
+)
 from ralph.discovery.plugins.puppet.util import get_default_mac, assign_ips
 from ralph.util import network, Eth, uncompress_base64_data
 
 
 SAVE_PRIORITY = 52
+SEPARATE_VERSION = re.compile('[~|+|\-]')
 
 
 class UnknownUnitError(Exception):
@@ -272,7 +282,7 @@ def parse_packages(facts):
             yield {
                 'name': name,
                 'version': version,
-                }
+            }
 
 
 @nested_commit_on_success
@@ -280,12 +290,16 @@ def handle_facts_packages(dev, facts):
     packages_list = parse_packages(facts)
     if packages_list:
         for package in packages_list:
-            package_name = '{} - {}'.format(package['name'], package['version'])
+            version = filter(
+                None,
+                SEPARATE_VERSION.split(package['version'], 1)
+            )[0]
+            package_name = '{} - {}'.format(package['name'], version)
             Software.create(
                 dev=dev,
                 path=package_name,
                 model_name=package_name,
                 label=package['name'],
                 family=package['name'],
-                version=package['version'],
+                version=version,
             ).save()
