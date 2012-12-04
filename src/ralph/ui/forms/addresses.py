@@ -13,11 +13,7 @@ from lck.django.common.models import MACAddressField
 
 from ralph.discovery.models import IPAddress
 from ralph.dnsedit.models import DHCPEntry
-from ralph.dnsedit.util import (
-    is_valid_hostname,
-    get_domain,
-    get_revdns_records,
-)
+from ralph.dnsedit.util import is_valid_hostname, get_domain, get_revdns_records
 
 
 def validate_domain_name(name):
