@@ -8,13 +8,13 @@ from __future__ import unicode_literals
 from django import forms
 from bob.forms import AutocompleteWidget
 
-from ralph.deployment.models import Deployment
 from ralph.business.models import RoleProperty
+from ralph.deployment.models import Deployment
 from ralph.discovery.models import IPAddress
 from ralph.dnsedit.models import DHCPEntry
-from ralph.ui.widgets import DateWidget, DeviceWidget
-from ralph.ui.forms.util import all_ventures
 from ralph.dnsedit.util import is_valid_hostname
+from ralph.ui.forms.util import all_ventures
+from ralph.ui.widgets import DateWidget, DeviceWidget
 
 
 class DateRangeForm(forms.Form):
@@ -38,7 +38,7 @@ class MarginsReportForm(DateRangeForm):
             field.initial = mk.margin
             self.fields[field_id] = field
 
-    def get(self, field, default=None):
+    def get(self, field):
         try:
             return self.cleaned_data[field]
         except (KeyError, AttributeError):
@@ -48,19 +48,22 @@ class MarginsReportForm(DateRangeForm):
                 return self.fields[field].initial
 
 
-
-
 class VentureFilterForm(forms.Form):
-    show_all = forms.BooleanField(required=False,
-            label="Show all ventures")
+    show_all = forms.BooleanField(
+        required=False,
+        label="Show all ventures",
+    )
 
 
 class NetworksFilterForm(forms.Form):
-    show_ip = forms.BooleanField(required=False,
-            label="Show as addresses")
-    contains = forms.CharField(required=False, label="Contains",
-            widget=forms.TextInput(attrs={'class':'span12'}))
-
+    show_ip = forms.BooleanField(
+        required=False,
+        label="Show as addresses",
+    )
+    contains = forms.CharField(
+        required=False, label="Contains",
+        widget=forms.TextInput(attrs={'class':'span12'}),
+    )
 
 
 class DeploymentForm(forms.ModelForm):
