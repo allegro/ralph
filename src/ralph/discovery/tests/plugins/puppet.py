@@ -47,15 +47,15 @@ class PuppetPluginTest(TestCase):
         device_packages.sort()
         self.assertListEqual(
             device_packages,
-            [('apache2', '2.2.22-1ubuntu1'),
-             ('cron', '3.0pl1-120ubuntu4'),
-             ('gcc', '4:4.6.3-1ubuntu5'),
-             ('mysql-client', '5.5.28-0ubuntu0.12.04.2'),
-             ('mysql-server', '5.5.28-0ubuntu0.12.04.2'),
-             ('mysql-server-5.4', '5.5.28-0ubuntu0.12.04.2'),
-             ('mysql-server-core-5.5', '5.5.28-0ubuntu0.12.04.2'),
-             ('python', '2.7.3-0ubuntu2'),
-             ('sed', '4.3.1-9')]
+            [('apache2', '2.2.22'),
+             ('cron', '3.0pl1'),
+             ('gcc', '4:4.6.3'),
+             ('mysql-client', '5.5.28'),
+             ('mysql-server', '5.5.28'),
+             ('mysql-server-5.4', '5.5.28'),
+             ('mysql-server-core-5.5', '5.5.28'),
+             ('python', '2.7.3'),
+             ('sed', '4.3.1')]
         )
         device2 = Device.objects.get(sn='device2')
         device_packages = [
@@ -64,16 +64,16 @@ class PuppetPluginTest(TestCase):
         device_packages.sort()
         self.assertListEqual(
             device_packages,
-            [('apache2', '1.2.22-1ubuntu1'),
-             ('apache2', '2.2.22-1ubuntu1'),
-             ('cron', '3.0pl1-120ubuntu4'),
-             ('gcc', '4:4.6.3-1ubuntu5'),
-             ('mysql-client', '5.5.28-0ubuntu0.12.04.2'),
-             ('mysql-server', '5.5.28-0ubuntu0.12.04.2'),
-             ('mysql-server-5.4', '5.5.28-0ubuntu0.12.04.2'),
-             ('mysql-server-5.5', '5.5.28-0ubuntu0.12.04.2'),
-             ('mysql-server-core-5.5', '5.5.28-0ubuntu0.12.04.2'),
-             ('python', '2.7.3-0ubuntu2'),
-             ('sed', '4.1.1-9'),
-             ('sed', '4.3.1-9')]
+            [('apache2', '1.2.22'),
+             ('apache2', '2.2.22'),
+             ('cron', '3.0pl1'),
+             ('gcc', '4:4.6.3'),
+             ('mysql-client', '5.5.28'),
+             ('mysql-server', '5.5.28'),
+             ('mysql-server-5.4', '5.5.28'),
+             ('mysql-server-5.5', '5.5.28'),
+             ('mysql-server-core-5.5', '5.5.28'),
+             ('python', '2.7.3'),
+             ('sed', '4.1.1'),
+             ('sed', '4.3.1')]
         )
