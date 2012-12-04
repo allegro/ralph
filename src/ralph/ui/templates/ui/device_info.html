@@ -46,6 +46,14 @@
 
 <table class="table table-striped table-bordered details-info-virtual">
     <tbody>
+        {% if device.parent %}
+        <tr>
+            <th>Parent device</th>
+            <td><a href="{{ device.parent.id }}"
+                 >{{ device.parent|device_icon }}
+                  {{ device.parent.name }}</a></td>
+        </tr>
+        {% endif %}
         {% if device.model.type == dt.blade_server.id %}
         <tr>
             <th>Blade System</th>
@@ -89,7 +97,14 @@
         {%  endif %}
         {% endif %}
 
-
+        {% for child in device.child_set.all %}
+        <tr>
+            <th>Child device</th>
+            <td><a href="{{ child.id }}"
+                 >{{ child|device_icon }}
+                  {{ child.name }}</a></td>
+        </tr>
+        {% endfor %}
     </tbody>
 </table>
 </div>

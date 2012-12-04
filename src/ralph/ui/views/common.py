@@ -40,13 +40,15 @@ from ralph.discovery.models_history import (
     DiscoveryWarning,
 )
 from ralph.util import presentation, pricing
-from ralph.ui.forms import (
+from ralph.ui.forms.devices import (
     DeviceInfoForm,
     DeviceInfoVerifiedForm,
     DevicePricesForm,
     DevicePurchaseForm,
     PropertyForm,
     DeviceBulkForm,
+)
+from ralph.ui.forms.addresses import (
     DHCPFormSet,
     IPAddressFormSet,
     DNSFormSet,
