@@ -24,7 +24,7 @@ from ralph.util import network, Eth, uncompress_base64_data
 
 
 SAVE_PRIORITY = 52
-
+SEPARATE_VERSION = re.compile('[~|+|\-]')
 
 class UnknownUnitError(Exception):
     pass
@@ -280,12 +280,17 @@ def handle_facts_packages(dev, facts):
     packages_list = parse_packages(facts)
     if packages_list:
         for package in packages_list:
-            package_name = '{} - {}'.format(package['name'], package['version'])
+            version = filter(
+                None,
+                SEPARATE_VERSION.split(package['version'], 1)
+            )[0]
+#            version = package['version'].split('-', 1)[0]
+            package_name = '{} - {}'.format(package['name'], version)
             Software.create(
                 dev=dev,
                 path=package_name,
                 model_name=package_name,
                 label=package['name'],
                 family=package['name'],
-                version=package['version'],
+                version=version,
             ).save()
