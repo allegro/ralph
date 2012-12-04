@@ -238,6 +238,19 @@ def device_update_cached(device):
     stack = [device]
     devices = [device]
     visited = {device}
+    if device.model and device.model.type == DeviceType.data_center:
+        dc = device
+    else:
+        dc = device.parent
+        while dc and not (dc.model and dc.model.type == DeviceType.data_center):
+            dc = dc.parent
+
+    if device.model and device.model.type == DeviceType.rack:
+        rack = device
+    else:
+        rack = device.parent
+        while rack and not (rack.model and rack.model.type == DeviceType.rack):
+            rack = rack.parent
     while stack:
         device = stack.pop()
         devices.append(device)
@@ -252,6 +265,8 @@ def device_update_cached(device):
         d.name = d.get_name()
         d.cached_price = get_device_price(d)
         d.cached_cost = get_device_cost(d)
+        d.rack = rack.name if rack else None
+        d.dc = dc.name if dc else None
         d.save()
 
 
