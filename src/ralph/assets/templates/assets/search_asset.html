@@ -85,7 +85,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for row in page %}
+                {% for row in page %}
                 <tr>
                     <td class="column-checkbox">
                         <input type="checkbox" name="select" value="{{row.id}}">
@@ -117,7 +117,7 @@
                         </form>
                     </td>
                 </tr>
-                    {% endfor %}
+                {% endfor %}
                 </tbody>
             </table>
 
