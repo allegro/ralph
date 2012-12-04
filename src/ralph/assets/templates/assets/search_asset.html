@@ -20,13 +20,13 @@
 {% block scripts %}
     {{ block.super }}
     <script type="text/javascript">
-        var postEditAll = function (e) {
-            var dd=$('#table_form')[0];
-            dd.action='./bulkedit/';
-            dd.submit();
-            return false;
-        };
-        $(document).ready(function() {
+      $(document).ready(function() {
+            $('#post_edit_all').click(function() {
+                var dd=$('#table_form')[0];
+                dd.action='./bulkedit/';
+                dd.submit();
+                return false;
+            });
             $('.del-asset-btn').click(function() {
                 if (!confirm("Are you sure to delete Asset?")) {
                     return false;
@@ -129,7 +129,7 @@
               </a>
             <ul class="dropdown-menu">
                 <li>
-                    <a href="#" onclick="return postEditAll()">Edit selected</a>
+                    <a href="#" id='post_edit_all'>Edit selected</a>
                 </li>
             </ul>
             </div>
