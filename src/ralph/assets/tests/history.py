@@ -45,7 +45,7 @@ class HistoryAssetsView(TestCase):
             'warehouse': self.warehouse.id,
             'sn': '666-666-666',
             'barcode': '666666',
-            }
+        }
         self.asset_change_params = {
             'barcode': '777777',
             'status': AssetStatus.damaged.id,
@@ -56,7 +56,7 @@ class HistoryAssetsView(TestCase):
             'license_type': LicenseType.oem.id,
             'date_of_last_inventory': '2012-11-08',
             'last_logged_user': 'ralph',
-            }
+        }
         self.asset = None
         self.add_bo_device_asset()
         self.edit_bo_device_asset()
@@ -139,7 +139,7 @@ class ConnectAssetWithDevice(TestCase):
             'size': 1,
             'warehouse': self.warehouse.id,
             'barcode': '7777',
-            }
+        }
         self.asset = None
 
     def create_device(self):
