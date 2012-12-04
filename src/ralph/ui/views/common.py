@@ -47,6 +47,8 @@ from ralph.ui.forms import (
     DevicePurchaseForm,
     PropertyForm,
     DeviceBulkForm,
+)
+from ralph.ui.forms.addresses import (
     DHCPFormSet,
     IPAddressFormSet,
     DNSFormSet,
