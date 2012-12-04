@@ -79,7 +79,7 @@ class DeviceForm(forms.ModelForm):
         super(DeviceForm, self).__init__(*args, **kwargs)
         if self.instance:
             self.fields['parent'].choices = [
-                (None, '----'),
+                ('', '----'),
             ] + [
                 (p.id, p.name) for p in
                 self.get_possible_parents(self.instance)
@@ -143,9 +143,6 @@ class DeviceForm(forms.ModelForm):
 
     def clean_rack(self):
         return self.instance.rack
-
-    def clean_parent(self):
-        return self.instance.parent
 
     def clean_verified(self):
         verified = self.cleaned_data['verified']
