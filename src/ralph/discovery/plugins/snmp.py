@@ -21,6 +21,10 @@ SAVE_PRIORITY = 1
 SNMP_PLUGIN_COMMUNITIES = getattr(settings, 'SNMP_PLUGIN_COMMUNITIES',
     ['public'])
 
+if settings.SNMP_V3_AUTH_KEY and settings.SNMP_V3_PRIV_KEY:
+    SNMP_V3_AUTH = settings.SNMP_V3_AUTH_KEY, settings.SNMP_V3_PRIV_KEY
+else:
+    SNMP_V3_AUTH = None
 
 _cisco_oids_std = (
     (1,3,6,1,2,1,47,1,1,1,1,2,1001),  # model
@@ -84,6 +88,7 @@ def snmp(**kwargs):
         if not check_snmp_port(ip):
             return False, 'port closed.', kwargs
     community = kwargs.get('community')
+    version = kwargs.get('snmp_version')
     oids = [
         ('2c', (1,3,6,1,2,1,1,1,0)), # sysDescr
         # Blade centers answer only to their own OIDs and to SNMP version 1
@@ -92,26 +97,56 @@ def snmp(**kwargs):
     ]
     if http_family in ('RomPager',):
         oids.append(('1', (1,3,6,1,2,1,1,1,0))) # sysDescr, snmp version 1
-    communities = SNMP_PLUGIN_COMMUNITIES[:]
-    if community:
-        if community in communities:
-            communities.remove(community)
-        communities.insert(0, community)
-    for community in communities:
-        for ver, oid in oids:
-            version = ver
-            is_up, message = _snmp(ip, community, oid, attempts=2, timeout=0.2,
-                                   snmp_version=ver)
-            if message == '':
-                is_up, message = _snmp(ip, community, oid, attempts=2, timeout=0.2,
-                                   snmp_version='1')
-                version = '1'
-            if is_up:
-                kwargs['community'] = community
-                kwargs['snmp_version'] = version
-                kwargs['snmp_name'] = message
-                return is_up, message, kwargs
+    if version != '3':
+        # Don't try SNMP v2 if v3 worked on this host.
+        communities = SNMP_PLUGIN_COMMUNITIES[:]
+        if community:
+            if community in communities:
+                communities.remove(community)
+            communities.insert(0, community)
+        for community in communities:
+            for ver, oid in oids:
+                version = ver
+                is_up, message = _snmp(
+                    ip,
+                    community,
+                    oid,
+                    attempts=2,
+                    timeout=0.2,
+                    snmp_version=version,
+                )
+                if message == '' and ver != '1':
+                    version = '1'
+                    is_up, message = _snmp(
+                        ip,
+                        community,
+                        oid,
+                        attempts=2,
+                        timeout=0.2,
+                        snmp_version=version,
+                    )
+                if is_up:
+                    kwargs['community'] = community
+                    kwargs['snmp_version'] = version
+                    kwargs['snmp_name'] = message
+                    return is_up, message, kwargs
+    if SNMP_V3_AUTH and version not in ('1', '2', '2c'):
+        is_up, message = _snmp(
+            ip, SNMP_V3_AUTH,
+            oid,
+            attempts=2,
+            timeout=0.2,
+            snmp_version='3',
+        )
+        if is_up:
+            kwargs['community'] = ''
+            kwargs['snmp_version'] = '3'
+            kwargs['snmp_name'] = message
+            return is_up, message, kwargs
+    kwargs['community'] = ''
+    kwargs['snmp_version'] = ''
     return False, 'no answer.', kwargs
+
 
 def _snmp_modular(ip, community, parent):
     oid = (1, 3, 6, 1, 4, 1, 343, 2, 19, 1, 2, 10, 12, 0) # Max blades
@@ -166,17 +201,22 @@ def snmp_vmware(parent, ipaddr, **kwargs):
                 model_name='VMware ESX virtual server',
                 model_type=DeviceType.virtual_server)
 
+
 @plugin.register(chain='discovery', requires=['ping', 'snmp'])
 def snmp_mac(**kwargs):
     snmp_name = kwargs.get('snmp_name', '')
     snmp_version = kwargs.get('snmp_version', '2c')
     ip = str(kwargs['ip'])
-    community = str(kwargs['community'])
+    if snmp_version == '3':
+        community = SNMP_V3_AUTH
+    else:
+        community = str(kwargs['community'])
     try:
         ethernets = do_snmp_mac(snmp_name, community, snmp_version, ip, kwargs)
     except Error as e:
         return False, str(e), kwargs
     return True, ', '.join(eth.mac for eth in ethernets), kwargs
+
 
 def do_snmp_mac(snmp_name, community, snmp_version, ip, kwargs):
     oid = (1, 3, 6, 1, 2, 1, 2, 2, 1, 6)
@@ -293,16 +333,32 @@ def do_snmp_mac(snmp_name, community, snmp_version, ip, kwargs):
 
 def _cisco_snmp_model(model_oid, sn_oid, **kwargs):
     ip = str(kwargs['ip'])
-    community = str(kwargs['community'])
-    model = snmp_command(ip, community, model_oid, attempts=2, timeout=3)
-    sn = snmp_command(ip, community, sn_oid, attempts=2, timeout=3)
+    version = kwargs.get('snmp_version')
+    if version == '3':
+        community = SNMP_V3_AUTH
+    else:
+        community = str(kwargs['community'])
+    model = snmp_command(
+        ip,
+        community,
+        model_oid,
+        attempts=2,
+        timeout=3,
+        snmp_version=version,
+    )
+    sn = snmp_command(
+        ip,
+        community,
+        sn_oid,
+        attempts=2,
+        timeout=3,
+        snmp_version=version,
+    )
     if not (model and sn):
         return False, "silent.", kwargs
     sn = unicode(sn[0][1])
     model = 'Cisco %s' % unicode(model[0][1])
-
     dev = Device.create(sn=sn, model_name=model, model_type=DeviceType.switch)
-
     ip_address = IPAddress.objects.get(address=str(ip))
     ip_address.device = dev
     ip_address.is_management = True
@@ -326,9 +382,29 @@ def nortel_snmp(**kwargs):
         substring in kwargs['snmp_name'].lower()):
         return False, "no match.", kwargs
     ip = str(kwargs['ip'])
-    community = str(kwargs['community'])
-    sn = (snmp_command(ip, community, sn_oid, attempts=2, timeout=3) or
-          snmp_command(ip, community, uuid_oid, attempts=2, timeout=3))
+    version = kwargs.get('snmp_version')
+    if version == '3':
+        community = SNMP_V3_AUTH
+    else:
+        community = str(kwargs['community'])
+    sn = (
+        snmp_command(
+            ip,
+            community,
+            sn_oid,
+            attempts=2,
+            timeout=3,
+            snmp_version=version,
+        ) or
+        snmp_command(
+            ip,
+            community,
+            uuid_oid,
+            attempts=2,
+            timeout=3,
+            snmp_version=version,
+        )
+    )
     if not sn:
         return False, "silent.", kwargs
     sn = unicode(sn[0][1])
