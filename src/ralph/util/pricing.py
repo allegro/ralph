@@ -235,22 +235,15 @@ def get_device_auto_price(device):
 
 
 def device_update_cached(device):
+    dc = device
+    while dc and not (dc.model and dc.model.type == DeviceType.data_center):
+        dc = dc.parent
+    rack = device
+    while rack and not (rack.model and rack.model.type == DeviceType.rack):
+        rack = rack.parent
     stack = [device]
     devices = [device]
     visited = {device}
-    if device.model and device.model.type == DeviceType.data_center:
-        dc = device
-    else:
-        dc = device.parent
-        while dc and not (dc.model and dc.model.type == DeviceType.data_center):
-            dc = dc.parent
-
-    if device.model and device.model.type == DeviceType.rack:
-        rack = device
-    else:
-        rack = device.parent
-        while rack and not (rack.model and rack.model.type == DeviceType.rack):
-            rack = rack.parent
     while stack:
         device = stack.pop()
         devices.append(device)
