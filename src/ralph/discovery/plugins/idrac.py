@@ -32,7 +32,6 @@ class IDRAC(object):
             "-N", namespace, "-u", self.user, "-p", self.password,
             "-h", self.host, "-P", 443, "-v", "-j", "urf-8",
             "-y", "basic", "-o" "-m", 256, "-V", "-c", self._get_cert(),
-            "-M", "epr"
         ]
         proc = subprocess.Popen(command, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
