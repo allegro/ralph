@@ -10,6 +10,7 @@ import re
 from bob.menu import MenuItem, MenuHeader
 from django.contrib import messages
 from django.core.paginator import Paginator
+from django.core.urlresolvers import resolve
 from django.conf import settings
 from django.db import IntegrityError, transaction
 from django.db.models import Q
@@ -184,8 +185,8 @@ class DataCenterSearch(DataCenterMixin, AssetSearch):
 
 
 def _get_mode(request):
-    current_url = request.get_full_path()
-    return 'back_office' if 'back_office' in current_url else 'dc'
+    current_url = resolve(request.get_full_path())
+    return current_url.url_name
 
 
 def _get_return_link(request):
@@ -317,15 +318,12 @@ class AddPart(Base):
             transaction.enter_transaction_management()
             transaction.managed()
             transaction.commit()
-            asset_data = {}
-            for f_name, f_value in self.asset_form.cleaned_data.items():
-                if f_name in ["sn"]:
-                    continue
-                asset_data[f_name] = f_value
+            asset_data = self.asset_form.cleaned_data
             asset_data['source'] = AssetSource.shipment
             asset_data['barcode'] = None
-            serial_numbers = self.asset_form.cleaned_data['sn']
+            serial_numbers = asset_data['sn']
             serial_numbers = filter(len, re.split(",|\n", serial_numbers))
+            del asset_data['sn']
             duplicated_sn = []
             creator = self.request.user.get_profile()
             for sn in serial_numbers:
