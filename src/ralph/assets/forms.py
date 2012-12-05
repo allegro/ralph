@@ -31,12 +31,14 @@ class BaseAssetForm(ModelForm):
         model = Asset
         fields = (
             'type', 'model', 'invoice_no', 'order_no',
-            'buy_date', 'support_period', 'support_type',
+            'invoice_date', 'support_period', 'support_type',
             'support_void_reporting', 'provider', 'status',
             'remarks', 'sn', 'barcode',
         )
         widgets = {
-            'buy_date': DateWidget(),
+            'sn': Textarea(attrs={'rows': 25}),
+            'barcode': Textarea(attrs={'rows': 25}),
+            'invoice_date': DateWidget(),
             'remarks': Textarea(attrs={'rows': 3}),
             'support_type': Textarea(attrs={'rows': 5}),
         }
@@ -68,11 +70,11 @@ class BulkEditAssetForm(ModelForm):
         model = Asset
         fields = (
             'type', 'model', 'device_info', 'invoice_no', 'order_no',
-            'buy_date', 'sn', 'barcode', 'support_period', 'support_type',
+            'invoice_date', 'sn', 'barcode', 'support_period', 'support_type',
             'support_void_reporting', 'provider', 'source', 'status',
         )
         widgets = {
-            'buy_date': DateWidget(),
+            'invoice_date': DateWidget(),
             'device_info': HiddenSelectWidget(),
         }
     barcode = BarcodeField(max_length=200, required=False)
@@ -294,22 +296,27 @@ class SearchAssetForm(Form):
     :param mode: one of `dc` for DataCenter or `bo` for Back Office
     :returns Form
     """
-
     model = AutoCompleteSelectField(
         'asset_model',
         required=False,
         help_text=None
     )
-
     invoice_no = CharField(required=False)
     order_no = CharField(required=False)
-    buy_date_from = DateField(
-        required=False, widget=DateWidget(),
-        label="Buy date from",
+    invoice_date_from = DateField(
+        required=False, widget=DateWidget(attrs={
+            'placeholder': 'Start YYYY-MM-DD',
+            'data-collapsed': True,
+        }),
+        label="Invoice date",
     )
-    buy_date_to = DateField(
-        required=False, widget=DateWidget(),
-        label="Buy date to")
+    invoice_date_to = DateField(
+        required=False, widget=DateWidget(attrs={
+            'class':'end-date-field ',
+            'placeholder': 'End YYYY-MM-DD',
+            'data-collapsed': True,
+        }),
+        label='')
     provider = CharField(required=False, label='Provider')
     status = ChoiceField(
         required=False, choices=[('', '----')] + AssetStatus(),
