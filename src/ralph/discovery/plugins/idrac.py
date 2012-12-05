@@ -6,23 +6,19 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import os
 import hashlib
-import ssl
-import subprocess
-
+import requests
+import uuid
+from xml.etree import cElementTree as ET
 
 from django.conf import settings
 from lck.django.common import nested_commit_on_success
-from tempfile import mkstemp
-from xml.etree import cElementTree as ET
 
 from ralph.discovery.models import (
     DeviceType, Device, Processor, IPAddress, ComponentModel, ComponentType,
     Memory
 )
 from ralph.util import plugin, Eth
-
 
 SAVE_PRIORITY = 52
 IDRAC_USER = settings.IDRAC_USER
@@ -34,43 +30,92 @@ XMLNS_WSEN = "{http://schemas.xmlsoap.org/ws/2004/09/enumeration}"
 XMLNS_WSMAN = "{http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd}"
 XMLNS_N1_BASE = "{http://schemas.dell.com/wbem/wscim/1/cim-schema/2/%s}"
 
+# Generic wsman-crafted soap message
+SOAP_ENUM_WSMAN_TEMPLATE = '''<?xml version="1.0"?>
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:wsman="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" xmlns:wsen="http://schemas.xmlsoap.org/ws/2004/09/enumeration">
+  <s:Header>
+    <wsa:Action s:mustUnderstand="true">http://schemas.xmlsoap.org/ws/2004/09/enumeration/Enumerate</wsa:Action>
+    <wsa:To s:mustUnderstand="true">%(management_url)s</wsa:To>
+    <wsman:ResourceURI s:mustUnderstand="true">%(resource)s</wsman:ResourceURI>
+    <wsa:MessageID s:mustUnderstand="true">uuid:%(uuid)s</wsa:MessageID>
+    <wsa:ReplyTo>
+      <wsa:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</wsa:Address>
+    </wsa:ReplyTo>
+    <wsman:SelectorSet>
+      <wsman:Selector Name="__cimnamespace">%(selector)s</wsman:Selector>
+    </wsman:SelectorSet>
+  </s:Header>
+  <s:Body>
+    <wsen:Enumerate>
+      <wsman:OptimizeEnumeration/>
+      <wsman:MaxElements>%(max_elements)s</wsman:MaxElements>
+    </wsen:Enumerate>
+  </s:Body>
+</s:Envelope>
+'''
+
+
+class SoapException(Exception):
+    pass
+
+
+def _send_soap(post_url, login, password, message):
+    """Try to send soap message to post_url using http basic authentication.
+    Note, that we don't store any session information, nor validate ssl certificate.
+    Any following requests will re-send basic auth header again.
+    """
+    r = requests.post(
+        post_url,
+        data=message,
+        auth=(login, password),
+        verify=False,
+        headers={
+            'Content-Type': 'application/soap+xml;charset=UTF-8'
+        }
+    )
+    if not r.ok:
+        raise SoapException(
+            "Reponse was: %s\nRequest was:%s" % (r.text, message)
+        )
+    # soap, how I hate you...
+    # sometimes errors are embedded INSIDE the envelope BUT response code is OK
+    # in this case, try to detect these errors as well.
+    errors_path = '{s}Body/{s}Fault'.format(s=XMLNS_S)
+    errors_list = []
+    errors_nodes = ET.XML(r.text).findall(errors_path)
+    if errors_nodes:
+        errors_list = [x for x in errors_nodes[0].itertext()]
+        raise SoapException(
+            'Request was:%s, Response errors were:%s' %
+            (message, ','.join(errors_list))
+        )
+    # return raw xml data...
+    return r.text
+
 
 class IDRAC(object):
     def __init__(self, host, user=IDRAC_USER, password=IDRAC_PASSWORD):
         self.host = host
         self.user = user
         self.password = password
-        self.cert_filename = ""
 
-    def cleanup(self):
-        if self.cert_filename:
-            os.remove(self.cert_filename)
-
-    def _get_cert(self):
-        return "cert"
-        (handle, path) = mkstemp()
-        cert = ssl.get_server_certificate((self.host, 443))
-        os.write(handle, cert)
-        os.close(handle)
-        self.cert_filename = path
-        return path
-
-    def _run_command(self, class_name, namespace='root/dcim'):
-        command = [
-            "wsman-emu", "enumerate", "%s/%s" % (SCHEMA, class_name),
-            "-N", namespace, "-u", self.user, "-p", self.password,
-            "-h", self.host, "-P", "443", "-v", "-j", "utf-8",
-            "-y", "basic", "-o", "-m", "256", "-V", "-c", self._get_cert(),
-        ]
-        print(' '.join(command))
-        proc = subprocess.Popen(command, stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
-        out, err = proc.communicate()
-        # todo - errors handling
-        return unicode(out, 'utf-8', 'replace')
+    def run_command(self, class_name, selector='root/dcim'):
+        management_url = "https://%s/wsman" % self.host
+        generated_uuid = uuid.uuid1()
+        message = SOAP_ENUM_WSMAN_TEMPLATE % dict(
+            resource=SCHEMA.rstrip('/') + '/' + class_name,
+            management_url=management_url,
+            uuid=generated_uuid,
+            selector=selector,
+            max_elements=255,
+        )
+        return _send_soap(
+            'https://%s/wsman' % self.host,
+            self.user, self.password, message
+        )
 
     def get_base_info(self):
-        soap_result = self._run_command('DCIM_SystemView')
+        soap_result = self.run_command('DCIM_SystemView')
         tree = ET.XML(soap_result)
         xmlns_n1 = XMLNS_N1_BASE % "DCIM_SystemView"
         q = "{}Body/{}EnumerateResponse/{}Items/{}DCIM_SystemView".format(
@@ -95,7 +140,7 @@ class IDRAC(object):
         return result
 
     def get_ethernets(self):
-        soap_result = self._run_command('DCIM_NICView')
+        soap_result = self.run_command('DCIM_NICView')
         tree = ET.XML(soap_result)
         xmlns_n1 = XMLNS_N1_BASE % "DCIM_NICView"
         q = "{}Body/{}EnumerateResponse/{}Items/{}DCIM_NICView".format(
@@ -112,13 +157,12 @@ class IDRAC(object):
                 ).text,
                 'label': record.find(
                     "{}{}".format(xmlns_n1, 'ProductName')
-                ).text,
-
+                ).text
             })
         return results
 
     def get_cpu(self):
-        soap_result = self._run_command('DCIM_CPUView')
+        soap_result = self.run_command('DCIM_CPUView')
         tree = ET.XML(soap_result)
         xmlns_n1 = XMLNS_N1_BASE % "DCIM_CPUView"
         q = "{}Body/{}EnumerateResponse/{}Items/{}DCIM_CPUView".format(
@@ -152,7 +196,7 @@ class IDRAC(object):
         return results
 
     def get_memory(self):
-        soap_result = self._run_command('DCIM_MemoryView')
+        soap_result = self.run_command('DCIM_MemoryView')
         tree = ET.XML(soap_result)
         xmlns_n1 = XMLNS_N1_BASE % "DCIM_MemoryView"
         q = "{}Body/{}EnumerateResponse/{}Items/{}DCIM_MemoryView".format(
@@ -250,7 +294,7 @@ def _save_memory(dev, data):
 
 
 @nested_commit_on_success
-def _run_idrac(ip):
+def run_idrac(ip):
     idrac = IDRAC(ip)
     base_info = idrac.get_base_info()
     model_name = "{} {}".format(
@@ -284,6 +328,6 @@ def idrac(**kwargs):
     http_family = kwargs.get('http_family')
     if http_family not in ('Dell', ):
         return False, 'no match', kwargs
-    name = _run_idrac(ip)
+    name = run_idrac(ip)
     return True, name, kwargs
 
