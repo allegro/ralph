@@ -301,11 +301,6 @@ class AddPart(Base):
         )
         if self.asset_form.is_valid() and self.part_info_form.is_valid():
             creator_profile = self.request.user.get_profile()
-            asset_data = {}
-            for f_name, f_value in self.asset_form.cleaned_data.items():
-                if f_name in ["sn"]:
-                    continue
-                asset_data[f_name] = f_value
             asset_data = self.asset_form.cleaned_data
             asset_data['source'] = AssetSource.shipment
             asset_data['barcode'] = None
