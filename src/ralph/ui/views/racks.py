@@ -15,7 +15,7 @@ from django.views.generic import CreateView
 
 from ralph.account.models import Perm
 from ralph.discovery.models import ReadOnlyDevice, Device, DeviceType
-from ralph.ui.forms import DeviceCreateForm
+from ralph.ui.forms.devices import DeviceCreateForm
 from ralph.ui.views.common import (Info, Prices, Addresses, Costs, Purchase,
                                    Components, History, Discover, BaseMixin,
                                    DeviceDetailView, Base, Software)
