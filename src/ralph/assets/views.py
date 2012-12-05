@@ -8,6 +8,7 @@ from __future__ import unicode_literals
 from bob.menu import MenuItem, MenuHeader
 from django.contrib import messages
 from django.core.paginator import Paginator
+from django.core.urlresolvers import resolve
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Q
@@ -178,8 +179,8 @@ class DataCenterSearch(DataCenterMixin, AssetSearch):
 
 
 def _get_mode(request):
-    current_url = request.get_full_path()
-    return 'back_office' if 'back_office' in current_url else 'dc'
+    current_url = resolve(request.get_full_path())
+    return current_url.url_name
 
 
 def _get_return_link(request):
@@ -300,14 +301,11 @@ class AddPart(Base):
         )
         if self.asset_form.is_valid() and self.part_info_form.is_valid():
             creator_profile = self.request.user.get_profile()
-            asset_data = {}
-            for f_name, f_value in self.asset_form.cleaned_data.items():
-                if f_name in ["sn"]:
-                    continue
-                asset_data[f_name] = f_value
+            asset_data = self.asset_form.cleaned_data
             asset_data['source'] = AssetSource.shipment
             asset_data['barcode'] = None
             serial_numbers = self.asset_form.cleaned_data['sn']
+            del asset_data['sn']
             for sn in serial_numbers:
                 _create_part(
                     creator_profile, asset_data,
