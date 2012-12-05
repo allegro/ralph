@@ -116,20 +116,6 @@ class DeploymentForm(forms.ModelForm):
             raise forms.ValidationError("Given IP isn't in the appropriate subnet")
         return ip
 
-    def clean_device(self):
-        device = self.cleaned_data['device']
-        managements = self.device_management_count(device)
-        if managements < 1:
-            raise forms.ValidationError("doesn't have a management address")
-        if managements > 1:
-            raise forms.ValidationError("has more than one management address")
-        return device
-
-    def device_management_count(self, device):
-        managements = IPAddress.objects.filter(device_id= device.id,
-                                               is_management=True)
-        return len(managements)
-
 
 class RolePropertyForm(forms.ModelForm):
     class Meta:
