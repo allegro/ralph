@@ -18,7 +18,7 @@ from ralph.assets.models_assets import (
     AssetStatus,
     AssetType,
     DeviceInfo,
-    LicenseTypes,
+    LicenseType,
     OfficeInfo,
     PartInfo,
     Warehouse,
@@ -34,7 +34,7 @@ class DeviceLookup(LookupChannel):
             Q(device_info__gt=0) & Q(
                 Q(barcode__istartswith=q) |
                 Q(sn__istartswith=q) |
-                Q(model__name__istartswith=q)
+                Q(model__name__icontains=q)
             )
         )
         return self.get_base_objects().filter(query).order_by('sn')[:10]
@@ -47,12 +47,12 @@ class DeviceLookup(LookupChannel):
 
     def format_item_display(self, obj):
         return """
-        <div style='border-bottom: solid #ddd 1px'>
-            <div>model: <b>%s</b></div>
-            <div>bc:<b>%s</b></div>
-            <div>sn:<b>%s</b></div>
-        </div>
-        """ % (escape(obj.model), escape(obj.barcode), escape(obj.sn))
+        <li class='das-container'>
+            <span class='das-model'>%s</span>
+            <span class='das-barcode'>%s</span>
+            <span class='das-sn'>%s</span>
+        </li>
+        """ % (escape(obj.model), escape(obj.barcode or ''), escape(obj.sn))
 
 
 class AssetModelLookup(LookupChannel):
@@ -60,7 +60,7 @@ class AssetModelLookup(LookupChannel):
 
     def get_query(self, q, request):
         return AssetModel.objects.filter(
-            Q(name__istartswith=q)
+            Q(name__icontains=q)
         ).order_by('name')[:10]
 
     def get_result(self, obj):
@@ -78,7 +78,7 @@ class WarehouseLookup(LookupChannel):
 
     def get_query(self, q, request):
         return Warehouse.objects.filter(
-            Q(name__istartswith=q)
+            Q(name__icontains=q)
         ).order_by('name')[:10]
 
     def get_result(self, obj):
@@ -88,7 +88,7 @@ class WarehouseLookup(LookupChannel):
         return self.format_item_display(obj)
 
     def format_item_display(self, obj):
-        return "%s" % (escape(obj.name))
+        return escape(obj.name)
 
 
 class DCDeviceLookup(DeviceLookup):
@@ -102,20 +102,20 @@ class BODeviceLookup(DeviceLookup):
 
 
 __all__ = [
-    Asset,
-    AssetManufacturer,
-    AssetModel,
-    AssetSource,
-    AssetStatus,
-    AssetType,
-    DeviceInfo,
-    LicenseTypes,
-    OfficeInfo,
-    PartInfo,
-    Warehouse,
-    DeviceLookup,
-    DCDeviceLookup,
-    BODeviceLookup,
-    AssetModelLookup,
-    AssetHistoryChange,
+    'Asset',
+    'AssetManufacturer',
+    'AssetModel',
+    'AssetSource',
+    'AssetStatus',
+    'AssetType',
+    'DeviceInfo',
+    'LicenseType',
+    'OfficeInfo',
+    'PartInfo',
+    'Warehouse',
+    'DeviceLookup',
+    'DCDeviceLookup',
+    'BODeviceLookup',
+    'AssetModelLookup',
+    'AssetHistoryChange',
 ]

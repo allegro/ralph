@@ -52,7 +52,7 @@ urlpatterns = patterns(
     url(r'dc/bulkedit/$',
         login_required(DataCenterBulkEdit.as_view()),
         name='dc'),
-    url(r'dc/delete/asset/(?P<asset_id>[0-9]+)/$',
+    url(r'dc/delete/asset/$',
         login_required(DeleteAsset.as_view()),
         name='dc'),
 

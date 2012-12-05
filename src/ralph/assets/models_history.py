@@ -51,7 +51,7 @@ class AssetHistoryChange(db.Model):
         verbose_name_plural = _("history changes")
 
     def __unicode__(self):
-        return "'{}'.{} = '{}' -> '{}' by {} on {} ({})".format(
+        return "{:r}.{:r} = {:r} -> {:r} by {:r} on {:r} ({:r})".format(
             self.asset, self.field_name, self.old_value, self.new_value,
             self.user, self.date, self.id
         )

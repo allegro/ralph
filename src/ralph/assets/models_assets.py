@@ -9,11 +9,12 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import datetime
+import os
 
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from lck.django.common.models import (
-    TimeTrackable, EditorTrackable, SoftDeletable,
+    TimeTrackable, EditorTrackable, SoftDeletable, Named
 )
 from lck.django.choices import Choices
 from uuid import uuid4
@@ -25,7 +26,7 @@ from ralph.discovery.models_util import SavingUser
 SAVE_PRIORITY = 0
 
 
-class LicenseTypes(Choices):
+class LicenseType(Choices):
     _ = Choices.Choice
     not_applicable = _("not applicable")
     oem = _("oem")
@@ -71,44 +72,43 @@ class AssetSource(Choices):
     salvaged = _("salvaged")
 
 
-class AssetManufacturer(TimeTrackable, EditorTrackable):
-    name = models.CharField(max_length=250)
-
-    def __unicode__(self):
-        return "{}".format(self.name)
-
-
-class AssetModel(TimeTrackable, EditorTrackable):
-    manufacturer = models.ForeignKey(AssetManufacturer,
-                                     on_delete=models.PROTECT)
-    name = models.CharField(max_length=250)
-
-    def __unicode__(self):
-        return "{}".format(self.name)
-
-
-class Warehouse(TimeTrackable, EditorTrackable):
-    name = models.CharField(max_length=100)
-
+class AssetManufacturer(TimeTrackable, EditorTrackable, Named.NonUnique):
     def __unicode__(self):
         return self.name
 
 
-def content_file_name(instance, filename):
-    return '/'.join(['assets', str(uuid4()), filename])
+class AssetModel(TimeTrackable, EditorTrackable, Named.NonUnique):
+    manufacturer = models.ForeignKey(
+        AssetManufacturer, on_delete=models.PROTECT)
+
+    def __unicode__(self):
+        return "%s %s" % (self.manufacturer.name, self.name)
+
+
+class Warehouse(TimeTrackable, EditorTrackable, Named.NonUnique):
+    def __unicode__(self):
+        return self.name
+
+
+def _get_file_path(instance, filename):
+    ext = filename.split('.')[-1]
+    filename = "%s.%s" % (uuid4(), ext)
+    return os.path.join('assets', filename)
 
 
 class OfficeInfo(TimeTrackable, SavingUser):
-    license_key = models.CharField(max_length=255, null=True, blank=True)
-    version = models.CharField(max_length=50, null=True, blank=True)
+    license_key = models.CharField(max_length=255, blank=True)
+    version = models.CharField(max_length=50, blank=True)
     unit_price = models.DecimalField(
         max_digits=20, decimal_places=2, default=0)
-    attachment = models.FileField(upload_to=content_file_name, null=True,
-                                  blank=True)
-    license_type = models.IntegerField(choices=LicenseTypes(),
-                                       verbose_name=_("license type"),
-                                       null=True, blank=True)
-    date_of_last_inventory = models.DateField(null=True, blank=True)
+    attachment = models.FileField(
+        upload_to=_get_file_path, blank=True)
+    license_type = models.IntegerField(
+        choices=LicenseType(), verbose_name=_("license type"),
+        null=True, blank=True
+    )
+    date_of_last_inventory = models.DateField(
+        null=True, blank=True)
     last_logged_user = models.CharField(max_length=100, null=True, blank=True)
 
     def __unicode__(self):
@@ -125,23 +125,29 @@ class OfficeInfo(TimeTrackable, SavingUser):
 
 
 class Asset(TimeTrackable, EditorTrackable, SavingUser, SoftDeletable):
-    device_info = models.OneToOneField('DeviceInfo', null=True, blank=True)
-    part_info = models.OneToOneField('PartInfo', null=True, blank=True)
+    device_info = models.OneToOneField(
+        'DeviceInfo', null=True, blank=True, on_delete=models.CASCADE
+    )
+    part_info = models.OneToOneField(
+        'PartInfo', null=True, blank=True, on_delete=models.CASCADE
+    )
     office_info = models.OneToOneField(
-        OfficeInfo, null=True, blank=True,
-        on_delete=models.SET_NULL)
+        OfficeInfo, null=True, blank=True, on_delete=models.CASCADE
+    )
     type = models.PositiveSmallIntegerField(choices=AssetType())
     model = models.ForeignKey(AssetModel, on_delete=models.PROTECT)
-    source = models.PositiveIntegerField(verbose_name=_("source"),
-                                         choices=AssetSource(),
-                                         db_index=True)
+    source = models.PositiveIntegerField(
+        verbose_name=_("source"), choices=AssetSource(), db_index=True
+    )
     invoice_no = models.CharField(
-        max_length=30, db_index=True, null=True, blank=True)
+        max_length=30, db_index=True, null=True, blank=True
+    )
     order_no = models.CharField(max_length=50, null=True, blank=True)
-    buy_date = models.DateField(default=datetime.date.today())
+    buy_date = models.DateField(default=datetime.date.today)
     sn = models.CharField(max_length=200, unique=True)
-    barcode = models.CharField(max_length=200, null=True, blank=True,
-                               unique=True)
+    barcode = models.CharField(
+        max_length=200, null=True, blank=True, unique=True
+    )
     support_period = models.PositiveSmallIntegerField(
         verbose_name="support period in months")
     support_type = models.CharField(max_length=150)
@@ -154,23 +160,23 @@ class Asset(TimeTrackable, EditorTrackable, SavingUser, SoftDeletable):
     )
     remarks = models.CharField(
         verbose_name='Additional remarks',
-        max_length=1024, null=True, blank=True
+        max_length=1024, blank=True
     )
 
     def __unicode__(self):
         return "{} - {} - {}".format(self.model, self.sn, self.barcode)
 
     @classmethod
-    def objects_bo(self):
+    def objects_bo(cls):
         """Returns back office assets queryset"""
-        return Asset.objects.filter(
+        return cls.objects.filter(
             type__in=(AssetType.administration, AssetType.back_office)
         )
 
     @classmethod
-    def objects_dc(self):
+    def objects_dc(cls):
         """Returns data center assets queryset"""
-        return Asset.objects.filter(type=AssetType.data_center)
+        return cls.objects.filter(type=AssetType.data_center)
 
     def get_data_type(self):
         if self.device_info:
@@ -216,14 +222,19 @@ class Asset(TimeTrackable, EditorTrackable, SavingUser, SoftDeletable):
 
 
 class DeviceInfo(TimeTrackable, SavingUser):
-    ralph_device = models.ForeignKey('discovery.Device', null=True, blank=True,
-                                     on_delete=models.SET_NULL)
-    size = models.PositiveSmallIntegerField(verbose_name='Size in units',
-                                            default=1)
+    ralph_device = models.ForeignKey(
+        'discovery.Device', null=True, blank=True, on_delete=models.SET_NULL
+    )
+    size = models.PositiveSmallIntegerField(
+        verbose_name='Size in units', default=1)
     warehouse = models.ForeignKey(Warehouse, on_delete=models.PROTECT)
 
     def __unicode__(self):
-        return "{}".format(self.ralph_device)
+        return "{} - {} - {}".format(
+            self.ralph_device,
+            self.size,
+            self.warehouse
+        )
 
     def __init__(self, *args, **kwargs):
         self.save_comment = None
@@ -234,14 +245,17 @@ class DeviceInfo(TimeTrackable, SavingUser):
 class PartInfo(TimeTrackable, SavingUser):
     barcode_salvaged = models.CharField(max_length=200, null=True, blank=True)
     source_device = models.ForeignKey(
-        Asset, null=True, blank=True, related_name='source_device')
+        Asset, null=True, blank=True, related_name='source_device'
+    )
     device = models.ForeignKey(
-        Asset, null=True, blank=True, related_name='device')
+        Asset, null=True, blank=True, related_name='device'
+    )
 
     def __unicode__(self):
-        return "{}".format(self.barcode_salvaged)
+        return "{} - {}".format(self.device, self.barcode_salvaged)
 
     def __init__(self, *args, **kwargs):
         self.save_comment = None
         self.saving_user = None
         super(PartInfo, self).__init__(*args, **kwargs)
+
