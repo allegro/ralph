@@ -194,11 +194,11 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                         'operatingsystem__model__name__icontains'
                     ], data['component'].split('|'))
                     self.query = self.query.filter(q).distinct()
-            if data.get('software'):
-                if data.get('software').isdigit():
+            if data['software']:
+                if data['software'].isdigit():
                     q = _search_fields_or([
                         'software__model__id',
-                    ], data.get('software').split('|'))
+                    ], data['software'].split('|'))
                     self.query = self.query.filter(q).distinct()
                 else:
                     software = data['software'].strip().split(' ')
