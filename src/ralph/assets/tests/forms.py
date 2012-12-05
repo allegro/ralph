@@ -62,7 +62,7 @@ class TestForms(TestCase):
             source=AssetSource.shipment,
             invoice_no='Invoice No 1',
             order_no='Order No 1',
-            buy_date=datetime.datetime(2001, 01, 01),
+            invoice_date=datetime.datetime(2001, 01, 01),
             support_period=12,
             support_type='Support d2d',
             provider='Provider 1',
@@ -104,7 +104,7 @@ class TestForms(TestCase):
         self.assertEqual(data.invoice_no, 'Invoice No 1')
         self.assertEqual(data.order_no, 'Order No 1')
         date = datetime.date(2001, 1, 1)
-        self.assertEqual(data.buy_date, date)
+        self.assertEqual(data.invoice_date, date)
         self.assertEqual(data.status, AssetStatus.new)
         self.assertEqual(unicode(data.device_info.warehouse), 'Warehouse1')
 
@@ -117,7 +117,7 @@ class TestForms(TestCase):
             'source': AssetSource.shipment,
             'invoice_no': 'Invoice No 2',
             'order_no': 'Order No 2',
-            'buy_date': '2001-01-02',
+            'invoice_date': '2001-01-02',
             'support_period': 12,
             'support_type': 'Support d2d',
             'support_void_reporting': 'on',
@@ -144,7 +144,7 @@ class TestForms(TestCase):
         self.assertEqual(data.invoice_no, 'Invoice No 2')
         self.assertEqual(data.order_no, 'Order No 2')
         date = datetime.date(2001, 1, 2)
-        self.assertEqual(data.buy_date, date)
+        self.assertEqual(data.invoice_date, date)
         self.assertEqual(data.status, AssetStatus.new)
         self.assertEqual(unicode(data.device_info.warehouse), 'Warehouse2')
 
@@ -166,7 +166,7 @@ class TestForms(TestCase):
             'model': self.asset_model3.id,
             'invoice_no': 'Invoice No 3',
             'order_no': 'Order No 3',
-            'buy_date': '2001-02-02',
+            'invoice_date': '2001-02-02',
             'support_period': 24,
             'support_type': 'standard',
             'support_void_reporting': 'on',
@@ -182,7 +182,7 @@ class TestForms(TestCase):
             'version': '1.0',
             'unit_price': 2.00,
             'license_type': LicenseType.oem,
-            'buy_date': '2001-02-02',
+            'invoice_date': '2001-02-02',
             'date_of_last_inventory': '2003-02-02',
             'last_logged_user': 'James Bond',
         }
@@ -203,7 +203,7 @@ class TestForms(TestCase):
                 model=self.asset_model3.id,
                 invoice_no='Invoice No 3',
                 order_no='Order No 3',
-                buy_date='2001-02-02',
+                invoice_date='2001-02-02',
                 support_period=24,
                 support_type='standard',
                 provider='Provider 3',
@@ -254,7 +254,7 @@ class TestBulkEdit(TestCase):
             source=AssetSource.shipment,
             invoice_no='Invoice No 1',
             order_no='Order No 1',
-            buy_date=datetime.datetime(2001, 01, 01),
+            invoice_date=datetime.datetime(2001, 01, 01),
             support_period=12,
             support_type='Support d2d',
             provider='Provider 1',
@@ -270,7 +270,7 @@ class TestBulkEdit(TestCase):
             source=AssetSource.shipment,
             invoice_no='Invoice No 2',
             order_no='Order No 2',
-            buy_date=datetime.datetime(2002, 01, 01),
+            invoice_date=datetime.datetime(2002, 01, 01),
             support_period=22,
             support_type='Support d2d',
             provider='Provider 2',
@@ -296,7 +296,7 @@ class TestBulkEdit(TestCase):
             'form-0-model': model0.id,
             'form-0-invoice_no': 'Invoice No 1a',
             'form-0-order_no': 'Order No 1a',
-            'form-0-buy_date': '2012-02-02',
+            'form-0-invoice_date': '2012-02-02',
             'form-0-sn': 'sn-321-2012a',
             'form-0-barcode': 'bc-4321-2012a',
             'form-0-support_period': 24,
@@ -310,7 +310,7 @@ class TestBulkEdit(TestCase):
             'form-1-model': model1.id,
             'form-1-invoice_no': 'Invoice No 2a',
             'form-1-order_no': 'Order No 2a',
-            'form-1-buy_date': '2011-02-03',
+            'form-1-invoice_date': '2011-02-03',
             'form-1-sn': 'sn-321-2012b',
             'form-1-barcode': 'bc-4321-2012b',
             'form-1-support_period': 48,
@@ -331,7 +331,7 @@ class TestBulkEdit(TestCase):
                 model=unicode(model0),
                 invoice_no='Invoice No 1a',
                 order_no='Order No 1a',
-                buy_date='2012-02-02',
+                invoice_date='2012-02-02',
                 support_period=24,
                 support_type='standard1',
                 provider='Provider 1a',
@@ -343,7 +343,7 @@ class TestBulkEdit(TestCase):
                 model=unicode(model1),
                 invoice_no='Invoice No 2a',
                 order_no='Order No 2a',
-                buy_date='2011-02-03',
+                invoice_date='2011-02-03',
                 support_period=48,
                 support_type='standard2',
                 provider='Provider 2a',
@@ -372,7 +372,7 @@ class TestSearchForm(TestCase):
             source=AssetSource.shipment,
             invoice_no='Invoice No 1',
             order_no='Order No 1',
-            buy_date=datetime.datetime(2001, 01, 01),
+            invoice_date=datetime.datetime(2001, 01, 01),
             support_period=12,
             support_type='Support d2d',
             provider='Provider 1',
@@ -387,7 +387,7 @@ class TestSearchForm(TestCase):
             source=AssetSource.shipment,
             invoice_no='Invoice No 1',
             order_no='Order No 3',
-            buy_date=datetime.datetime(2003, 01, 01),
+            invoice_date=datetime.datetime(2003, 01, 01),
             support_period=12,
             support_type='Support d2d',
             provider='Provider 2',
@@ -402,7 +402,7 @@ class TestSearchForm(TestCase):
             source=AssetSource.shipment,
             invoice_no='Invoice No 3',
             order_no='Order No 3',
-            buy_date=datetime.datetime(2002, 01, 01),
+            invoice_date=datetime.datetime(2002, 01, 01),
             support_period=12,
             support_type='standard',
             provider='Provider 3',
@@ -476,7 +476,7 @@ class TestSearchForm(TestCase):
 
     def test_date_range(self):
         # beggining date should be equal than end date
-        url = '/assets/dc/search?buy_date_from=%s&buy_date_to=%s' % (
+        url = '/assets/dc/search?invoice_date_from=%s&invoice_date_to=%s' % (
             '2001-01-01', '2001-01-01')
         get = self.client.get(url)
         self.assertEqual(get.status_code, 200)
@@ -485,7 +485,7 @@ class TestSearchForm(TestCase):
         output = ('Menufac1 AsModel1 - sn-12332452345 - bc-123421141')
         self.assertEqual(unicode(res[0]), output)
         # beggining date should be lower than end date
-        url = '/assets/dc/search?buy_date_from=%s&buy_date_to=%s' % (
+        url = '/assets/dc/search?invoice_date_from=%s&invoice_date_to=%s' % (
             '2001-01-01', '2002-01-01')
         get = self.client.get(url)
         self.assertEqual(get.status_code, 200)
@@ -494,28 +494,28 @@ class TestSearchForm(TestCase):
         output = ('AsModel2 - sn-123123123 - bc-1234123123')
         self.assertNotEqual(unicode(res[0]), output)
         # beggining date cant be lower than end date
-        url = '/assets/dc/search?buy_date_from=%s&buy_date_to=%s' % (
+        url = '/assets/dc/search?invoice_date_from=%s&invoice_date_to=%s' % (
             '2011-01-01', '2002-01-01')
         get = self.client.get(url)
         self.assertEqual(get.status_code, 200)
         res = get.context_data['page'].object_list
         self.assertEqual(len(res), 0)
         # beggining date is None, end date is desirable
-        url = '/assets/dc/search?buy_date_from=%s&buy_date_to=%s' % (
+        url = '/assets/dc/search?invoice_date_from=%s&invoice_date_to=%s' % (
             '', '2001-01-01')
         get = self.client.get(url)
         self.assertEqual(get.status_code, 200)
         res = get.context_data['page'].object_list
         self.assertEqual(len(res), 1)
         # beggining date is None, end date is lower then youngest object
-        url = '/assets/dc/search?buy_date_from=%s&buy_date_to=%s' % (
+        url = '/assets/dc/search?invoice_date_from=%s&invoice_date_to=%s' % (
             '', '1999-01-01')
         get = self.client.get(url)
         self.assertEqual(get.status_code, 200)
         res = get.context_data['page'].object_list
         self.assertEqual(len(res), 0)
         # beggining date is correct, end date is None
-        url = '/assets/dc/search?buy_date_from=%s&buy_date_to=%s' % (
+        url = '/assets/dc/search?invoice_date_from=%s&invoice_date_to=%s' % (
             '1999-01-01', '')
         get = self.client.get(url)
         self.assertEqual(get.status_code, 200)
@@ -541,7 +541,7 @@ class TestTrolling(TestCase):
             source=AssetSource.shipment,
             invoice_no='Invoice No 1',
             order_no='Order No 1',
-            buy_date=datetime.datetime(2001, 01, 01),
+            invoice_date=datetime.datetime(2001, 01, 01),
             support_period=12,
             support_type='Support d2d',
             provider='Provider 1',
@@ -557,7 +557,7 @@ class TestTrolling(TestCase):
             source=AssetSource.shipment,
             invoice_no='Invoice No 2',
             order_no='Order No 2',
-            buy_date=datetime.datetime(2002, 01, 01),
+            invoice_date=datetime.datetime(2002, 01, 01),
             support_period=22,
             support_type='Support d2d',
             provider='Provider 2',
@@ -600,7 +600,7 @@ class TestTrolling(TestCase):
             'form-0-model': model0.id,
             'form-0-invoice_no': 'Invoice No 1a',
             'form-0-order_no': 'Order No 1a',
-            'form-0-buy_date': 'wrong_field_data',
+            'form-0-invoice_date': 'wrong_field_data',
             'form-0-sn': 'sn-1232',
             'form-0-barcode': 'bc-4321-2012a',
             'form-0-support_period': 24,
@@ -614,7 +614,7 @@ class TestTrolling(TestCase):
             'form-1-model': '',
             'form-1-invoice_no': 'Invoice No 2a',
             'form-1-order_no': 'Order No 2a',
-            'form-1-buy_date': '2011-02-03',
+            'form-1-invoice_date': '2011-02-03',
             'form-1-sn': 'sn-321-2012a',
             'form-1-barcode': 'bc-4321-2012b',
             'form-1-support_period': 48,
@@ -636,7 +636,7 @@ class TestTrolling(TestCase):
         bulk_data = [
             dict(
                 row=0,
-                field='buy_date',
+                field='invoice_date',
                 error='Enter a valid date.',
             ),
             dict(
@@ -682,7 +682,7 @@ class TestTrolling(TestCase):
             'form-0-model': model0.id,
             'form-0-invoice_no': 'Invoice No 1a',
             'form-0-order_no': 'Order No 1a',
-            'form-0-buy_date': '2012-02-01',
+            'form-0-invoice_date': '2012-02-01',
             'form-0-sn': 'sn-1232aad',
             'form-0-barcode': 'bc-4321-2012a',
             'form-0-support_period': 24,
@@ -696,7 +696,7 @@ class TestTrolling(TestCase):
             'form-1-model': model1.id,
             'form-1-invoice_no': 'Invoice No 2a',
             'form-1-order_no': 'Order No 2a',
-            'form-1-buy_date': '2011-02-03',
+            'form-1-invoice_date': '2011-02-03',
             'form-1-sn': 'sn-321-2012a',
             'form-1-barcode': 'bc-4321-2012b',
             'form-1-support_period': 48,
@@ -724,7 +724,7 @@ class TestTrolling(TestCase):
         post_data = {
             'support_period': 'string',
             'size': 'string',
-            'buy_date': 'string'
+            'invoice_date': 'string'
         }
         post = self.client.post(url, post_data)
         self.assertEqual(post.status_code, 200)
@@ -735,5 +735,5 @@ class TestTrolling(TestCase):
             post, 'device_info_form', 'size', 'Enter a whole number.'
         )
         self.assertFormError(
-            post, 'asset_form', 'buy_date', 'Enter a valid date.'
+            post, 'asset_form', 'invoice_date', 'Enter a valid date.'
         )

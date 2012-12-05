@@ -181,12 +181,12 @@ class BaseAddAssetForm(ModelForm):
         model = Asset
         fields = (
             'type', 'model', 'invoice_no', 'order_no',
-            'buy_date', 'support_period', 'support_type',
+            'invoice_date', 'support_period', 'support_type',
             'support_void_reporting', 'provider', 'status',
             'remarks',
         )
         widgets = {
-            'buy_date': DateWidget(),
+            'invoice_date': DateWidget(),
             'remarks': Textarea(attrs={'rows': 3}),
             'support_type': Textarea(attrs={'rows': 5}),
         }
