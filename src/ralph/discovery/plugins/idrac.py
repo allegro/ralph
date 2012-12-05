@@ -19,7 +19,7 @@ from xml.etree import cElementTree as ET
 
 from ralph.discovery.models import (
     DeviceType, Device, Processor, IPAddress, ComponentModel, ComponentType,
-    Memory
+    Memory, Storage
 )
 from ralph.util import plugin, Eth
 
@@ -214,6 +214,34 @@ class IDRAC(object):
             })
         return results
 
+    def get_storage(self):
+        soap_result = self._run_command('DCIM_PhysicalDiskView')
+        tree = ET.XML(soap_result)
+        xmlns_n1 = XMLNS_N1_BASE % "DCIM_PhysicalDiskView"
+        q = "{}Body/{}EnumerateResponse/{}Items/{}DCIM_PhysicalDiskView".format(
+            XMLNS_S,
+            XMLNS_WSEN,
+            XMLNS_WSMAN,
+            xmlns_n1
+        )
+        results = []
+        for record in tree.findall(q):
+            results.append({
+                'size': record.find(
+                    "{}{}".format(xmlns_n1, 'SizeInBytes')
+                ).text,
+                'sn': record.find(
+                    "{}{}".format(xmlns_n1, 'SerialNumber')
+                ).text,
+                'model': record.find(
+                    "{}{}".format(xmlns_n1, 'Model')
+                ).text,
+                'manufacturer': record.find(
+                    "{}{}".format(xmlns_n1, 'Manufacturer')
+                ).text,
+            })
+        return results
+
 
 def _save_ethernets(data):
     ethernets = [Eth(label=eth['label'], mac=eth['mac'], speed=0)
@@ -278,6 +306,29 @@ def _save_memory(dev, data):
         memory.save(priority=SAVE_PRIORITY)
 
 
+def _save_storage(dev, data):
+    for disk in data:
+        model_name = "{} {}".format(
+            disk['manufacturer'].strip(),
+            disk['model'].strip()
+        )
+        size = int(int(disk['size']) / 1024 / 1024 / 1024)
+        model, _ = ComponentModel.concurrent_get_or_create(
+            size=size, type=ComponentType.disk, speed=0, cores=0,
+            extra='', extra_hash=hashlib.md5('').hexdigest(),
+            family=model_name
+        )
+        model.name = model_name
+        model.save(priority=SAVE_PRIORITY)
+        storage, _ = Storage.concurrent_get_or_create(
+            device=dev, sn=disk['sn']
+        )
+        storage.model = model
+        storage.label = "{} {}MiB".format(model_name, size)
+        storage.size = size
+        storage.save(priority=SAVE_PRIORITY)
+
+
 @nested_commit_on_success
 def _run_idrac(ip):
     idrac = IDRAC(ip)
@@ -302,6 +353,7 @@ def _run_idrac(ip):
     ip_address.save()
     _save_cpu(dev, idrac.get_cpu())
     _save_memory(dev, idrac.get_memory())
+    _save_storage(dev, idrac.get_storage())
     return model_name
 
 
