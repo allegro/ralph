@@ -9,13 +9,9 @@ from django.test import TestCase
 from mock import patch
 
 from ralph.assets.models_assets import (
-<<<<<<< HEAD
-    AssetManufacturer, AssetModel, Warehouse, Asset, AssetStatus, LicenseType
-)
-=======
-    AssetManufacturer, AssetModel, Warehouse, Asset, AssetStatus, LicenseTypes,
+    AssetManufacturer, AssetModel, Warehouse, Asset, AssetStatus, LicenseType,
     SAVE_PRIORITY)
->>>>>>> allegro/assets
+
 from ralph.assets.models_history import AssetHistoryChange
 from ralph.business.models import Venture
 from ralph.discovery.models_device import Device, DeviceType
