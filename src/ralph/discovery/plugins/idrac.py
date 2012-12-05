@@ -10,6 +10,7 @@ import os
 import hashlib
 import ssl
 import subprocess
+import time
 
 from django.conf import settings
 from lck.django.common import nested_commit_on_success
@@ -34,6 +35,22 @@ XMLNS_WSMAN = "{http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd}"
 XMLNS_N1_BASE = "{http://schemas.dell.com/wbem/wscim/1/cim-schema/2/%s}"
 
 
+class Error(Exception):
+    pass
+
+
+class AuthError(Error):
+    pass
+
+
+class IncorrectQuery(Error):
+    pass
+
+
+class IncorrectAnswer(Error):
+    pass
+
+
 class IDRAC(object):
     def __init__(self, host, user=IDRAC_USER, password=IDRAC_PASSWORD):
         self.host = host
@@ -47,6 +64,15 @@ class IDRAC(object):
         os.close(handle)
         return path
 
+    def _check_response(self, response, command):
+        tree = ET.XML(response)
+        q = "{0}Body/{0}Fault".format(XMLNS_S)
+        if tree.findall(q):
+            command = " ".join(command)
+            command = command.replace(" %s " % self.user, " ***** ")
+            command = command.replace(" %s " % self.password, " ***** ")
+            raise IncorrectQuery("Query: %s" % command)
+
     def _run_command(self, class_name, namespace='root/dcim'):
         command = [
             "wsman", "enumerate", "%s/%s" % (SCHEMA, class_name),
@@ -54,10 +80,20 @@ class IDRAC(object):
             "-h", self.host, "-P", "443", "-v", "-j", "utf-8",
             "-y", "basic", "-o", "-m", "256", "-V", "-c", self._get_cert(),
         ]
-        proc = subprocess.Popen(command, stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
-        out, err = proc.communicate()
-        # todo - errors handling
+        proc = subprocess.Popen(
+            command, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+        seconds = 0
+        max_time = 10
+        while proc.poll() is None:
+            time.sleep(1)
+            seconds += 1
+            if seconds > max_time:
+                proc.kill()
+        out = proc.stdout.read()
+        if 'authentication failed' in out.lower():
+            raise AuthError("Invalid username or password.")
+        self._check_response(out, command)
         return unicode(out, 'utf-8', 'replace')
 
     def get_base_info(self):
@@ -70,15 +106,17 @@ class IDRAC(object):
             XMLNS_WSMAN,
             xmlns_n1
         )
-        record = tree.findall(q)[0]
+        records = tree.findall(q)
+        if not records:
+            raise IncorrectAnswer("Incorrect answer in get_base_info.")
         result = {
-            'manufacturer': record.find(
+            'manufacturer': records[0].find(
                 "{}{}".format(xmlns_n1, 'Manufacturer')
             ).text,
-            'model': record.find(
+            'model': records[0].find(
                 "{}{}".format(xmlns_n1, 'Model')
             ).text,
-            'sn': record.find(
+            'sn': records[0].find(
                 "{}{}".format(xmlns_n1, 'ChassisServiceTag')
             ).text
 
