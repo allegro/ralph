@@ -5,15 +5,15 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import re
 import datetime
+import re
 
 from django.template import loader, Context
-from powerdns.models import Domain, Record
 from django.db import models as db
-
+import ipaddr
 from lck.django.common import nested_commit_on_success
 from lck.django.common.models import MACAddressField
+from powerdns.models import Domain, Record
 
 from ralph.dnsedit.models import DHCPEntry
 from ralph.discovery.models import DeviceType
@@ -101,25 +101,45 @@ def reset_dhcp(ip, mac):
     entry.save()
 
 
-def generate_dhcp_config():
+def generate_dhcp_config(dc=None):
+    """Generate host DHCP configuration. If `dc` is provided, only yield hosts
+    with addresses from networks of the specified DC.
+
+    If given, `dc` must be of type DataCenter.
+    """
     template = loader.get_template('dnsedit/dhcp.conf')
     try:
         last = DHCPEntry.objects.order_by('-modified')[0]
         last_modified_date = last.modified.strftime('%Y-%m-%d %H:%M:%S')
     except IndexError:
         last_modified_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    def entries():
+    if dc:
+        nets = {ipaddr.IPNetwork(net.address) for net in dc.network_set.all()}
+        def add_if_valid(ip, container):
+            ip_address = ipaddr.IPAddress(ip)
+            for net in nets:
+                if ip_address in net:
+                    container.append(ip)
+                    break
+    else:
+        def add_if_valid(ip, container):
+            container.append(ip)
+    def generate_entries():
         for macaddr, in DHCPEntry.objects.values_list('mac').distinct():
             ips = []
             for ip, in DHCPEntry.objects.filter(mac=macaddr).values_list('ip'):
-                ips.append(ip)
-            name = ips[0] # XXX Get the correct name from DNS
+                add_if_valid(ip, ips)
+            if not ips:
+                continue
+            rev = get_revdns_records(ips[0])   # FIXME: what makes the first
+                                               # address special? 
+            name = rev[0].content.rstrip('.') if rev.exists() else ips[0]
             address = ', '.join(ips)
             mac = ':'.join('%s%s' % c for c in zip(macaddr[::2],
                                                    macaddr[1::2])).upper()
             yield name, address, mac
     c = Context({
-        'entries': entries,
+        'entries': generate_entries(),
         'last_modified_date': last_modified_date,
     })
     return template.render(c)
