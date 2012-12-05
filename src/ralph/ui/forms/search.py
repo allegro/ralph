@@ -29,6 +29,8 @@ class TooltipContent(Choices):
 
     empty_field = _('Enter "none" to search for empty fields')
     empty_field_venture = _('Enter "none" or "-" to search for empty fields')
+    software_field = _('Enter "package_name" or "package_name version" to '
+                       'search software package')
 
 
 class SearchForm(forms.Form):
@@ -58,7 +60,13 @@ class SearchForm(forms.Form):
             }))
     component = forms.CharField(required=False,
             widget=forms.TextInput(attrs={'class':'span12'}),
-            label="Component or software")
+            label="Component")
+    software = forms.CharField(required=False,
+            widget=forms.TextInput(attrs={
+               'class':'span12',
+               'title': TooltipContent.software_field,
+               }),
+            label="Software")
     serial = forms.CharField(required=False,
             widget=forms.TextInput(attrs={
                 'class':'span12',
