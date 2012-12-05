@@ -15,15 +15,15 @@ from ralph.assets.models_assets import (
 from ralph.ui.tests.helper import login_as_su
 
 
-def create_menufacturer(name):
-    menufacturer = AssetManufacturer(name=name)
-    menufacturer.save()
-    return menufacturer
+def create_manufacturer(name):
+    manufacturer = AssetManufacturer(name=name)
+    manufacturer.save()
+    return manufacturer
 
 
-def create_model(menufacturer, name):
+def create_model(manufacturer, name):
     model = AssetModel(
-        manufacturer=menufacturer,
+        manufacturer=manufacturer,
         name=name,
     )
     model.save()
@@ -58,7 +58,7 @@ class TestForms(TestCase):
         asset = create_asset(
             device_info=create_device(1, create_warehouse(name='Warehouse1')),
             type=AssetType.data_center,
-            model=create_model(create_menufacturer('Menufac'), 'AsModel'),
+            model=create_model(create_manufacturer('Menufac'), 'AsModel'),
             source=AssetSource.shipment,
             invoice_no='Invoice No 1',
             order_no='Order No 1',
@@ -72,19 +72,19 @@ class TestForms(TestCase):
         )
         # Prepare Asset 2
         self.asset_model2 = create_model(
-            create_menufacturer('Menufac2'), 'AsModel2'
+            create_manufacturer('Menufac2'), 'AsModel2'
         )
         self.device_info2 = create_device(
             1, create_warehouse(name='Warehouse2')
         )
         # Prepare Asset 3
         self.asset_model3 = create_model(
-            create_menufacturer('Menufac3'), 'AsModel3'
+            create_manufacturer('Menufac3'), 'AsModel3'
         )
 
     def test_models(self):
-        db_menufacturer = AssetManufacturer.objects.get(name='Menufac')
-        self.assertEquals(db_menufacturer.name, 'Menufac')
+        db_manufacturer = AssetManufacturer.objects.get(name='Menufac')
+        self.assertEquals(db_manufacturer.name, 'Menufac')
         db_model = AssetModel.objects.get(name='AsModel')
         self.assertEquals(db_model.name, 'AsModel')
         db_warehouse = Warehouse.objects.get(name='Warehouse1')
@@ -250,7 +250,7 @@ class TestBulkEdit(TestCase):
         self.asset = create_asset(
             device_info=create_device(1, create_warehouse(name='Warehouse1')),
             type=AssetType.data_center,
-            model=create_model(create_menufacturer('Menufac1'), 'AsModel1'),
+            model=create_model(create_manufacturer('Menufac1'), 'AsModel1'),
             source=AssetSource.shipment,
             invoice_no='Invoice No 1',
             order_no='Order No 1',
@@ -266,7 +266,7 @@ class TestBulkEdit(TestCase):
         self.asset2 = create_asset(
             device_info=create_device(1, create_warehouse(name='Warehouse2')),
             type=AssetType.data_center,
-            model=create_model(create_menufacturer('Menufac2'), 'AsModel2'),
+            model=create_model(create_manufacturer('Menufac2'), 'AsModel2'),
             source=AssetSource.shipment,
             invoice_no='Invoice No 2',
             order_no='Order No 2',
@@ -285,8 +285,8 @@ class TestBulkEdit(TestCase):
             self.asset.id, self.asset2.id)
         view = self.client.get(url)
         self.assertEqual(view.status_code, 200)
-        model0 = create_model(create_menufacturer('Menufac1a'), 'AsModel1a')
-        model1 = create_model(create_menufacturer('Menufac2a'), 'AsModel2a')
+        model0 = create_model(create_manufacturer('Menufac1a'), 'AsModel1a')
+        model1 = create_model(create_manufacturer('Menufac2a'), 'AsModel2a')
         post_data = {
             'form-TOTAL_FORMS': u'2',
             'form-INITIAL_FORMS': u'2',
@@ -364,7 +364,7 @@ class TestBulkEdit(TestCase):
 class TestSearchForm(TestCase):
     def setUp(self):
         self.client = login_as_su()
-        model = create_model(create_menufacturer('Menufac1'), 'AsModel1')
+        model = create_model(create_manufacturer('Menufac1'), 'AsModel1')
         self.asset = create_asset(
             device_info=create_device(1, create_warehouse(name='Warehouse1')),
             type=AssetType.data_center,
@@ -383,7 +383,7 @@ class TestSearchForm(TestCase):
         self.asset1 = create_asset(
             device_info=create_device(1, create_warehouse(name='Warehouse2')),
             type=AssetType.data_center,
-            model=create_model(create_menufacturer('Menufac2'), 'AsModel2'),
+            model=create_model(create_manufacturer('Menufac2'), 'AsModel2'),
             source=AssetSource.shipment,
             invoice_no='Invoice No 1',
             order_no='Order No 3',
@@ -526,27 +526,200 @@ class TestSearchForm(TestCase):
 class TestTrolling(TestCase):
     def setUp(self):
         self.client = login_as_su()
+        # (formset_name, field_name)
+        self.required_fields = [
+            ('asset_form', 'model'),
+            ('asset_form', 'support_period'),
+            ('asset_form', 'support_type'),
+            ('device_info_form', 'warehouse'),
+            ('asset_form', 'sn')
+        ]
+        self.asset = create_asset(
+            device_info=create_device(1, create_warehouse(name='Warehouse1')),
+            type=AssetType.data_center,
+            model=create_model(create_manufacturer('Menufac1'), 'AsModel1'),
+            source=AssetSource.shipment,
+            invoice_no='Invoice No 1',
+            order_no='Order No 1',
+            buy_date=datetime.datetime(2001, 01, 01),
+            support_period=12,
+            support_type='Support d2d',
+            provider='Provider 1',
+            status=AssetStatus.new,
+            sn='sn-123',
+            barcode='bc-1234'
+        )
+        # Build asset 2
+        self.asset2 = create_asset(
+            device_info=create_device(1, create_warehouse(name='Warehouse2')),
+            type=AssetType.data_center,
+            model=create_model(create_manufacturer('Menufac2'), 'AsModel2'),
+            source=AssetSource.shipment,
+            invoice_no='Invoice No 2',
+            order_no='Order No 2',
+            buy_date=datetime.datetime(2002, 01, 01),
+            support_period=22,
+            support_type='Support d2d',
+            provider='Provider 2',
+            status=AssetStatus.new,
+            sn='sn-1232',
+            barcode='bc-12342'
+        )
 
-    def test_empty_form(self):
+    def test_empty_add_form(self):
         url = '/assets/back_office/add/device/'
         post_data = {}
         post = self.client.post(url, post_data)
         self.assertEqual(post.status_code, 200)
-        self.assertFormError(
-            post, 'asset_form', 'model', 'This field is required.'
+        for r in self.required_fields:
+            self.assertFormError(
+                post, r[0], r[1], 'This field is required.'
+            )
+
+    def test_empty_edit_form(self):
+        url = '/assets/dc/edit/device/1/'
+        post_data = {}
+        post = self.client.post(url, post_data)
+        self.assertEqual(post.status_code, 200)
+        for r in self.required_fields:
+            self.assertFormError(
+                post, r[0], r[1], 'This field is required.'
+            )
+
+    def test_bulkedit2_form(self):
+        url = '/assets/dc/bulkedit/?select=%s&select=%s' % (
+            self.asset.id, self.asset2.id)
+        model0 = create_model(create_manufacturer('Menufac1a'), 'AsModel1a')
+        model1 = create_model(create_manufacturer('Menufac2a'), 'AsModel2a')
+        post_data = {
+            'form-TOTAL_FORMS': u'2',
+            'form-INITIAL_FORMS': u'2',
+            'form-MAX_NUM_FORMS': u'',
+            'form-0-id': 1,
+            'form-0-type': AssetType.data_center.id,
+            'form-0-model': model0.id,
+            'form-0-invoice_no': 'Invoice No 1a',
+            'form-0-order_no': 'Order No 1a',
+            'form-0-buy_date': 'wrong_field_data',
+            'form-0-sn': 'sn-1232',
+            'form-0-barcode': 'bc-4321-2012a',
+            'form-0-support_period': 24,
+            'form-0-support_type': 'standard1',
+            'form-0-support_void_reporting': 'on',
+            'form-0-provider': 'Provider 1a',
+            'form-0-status': AssetStatus.in_progress.id,
+            'form-0-source': AssetSource.shipment.id,
+            'form-1-id': 2,
+            'form-1-type': AssetType.data_center.id,
+            'form-1-model': '',
+            'form-1-invoice_no': 'Invoice No 2a',
+            'form-1-order_no': 'Order No 2a',
+            'form-1-buy_date': '2011-02-03',
+            'form-1-sn': 'sn-321-2012a',
+            'form-1-barcode': 'bc-4321-2012b',
+            'form-1-support_period': 48,
+            'form-1-support_type': 'standard2',
+            'form-1-support_void_reporting': 'off',
+            'form-1-provider': 'Provider 2a',
+            'form-1-status': '',
+            'form-1-source': '',
+        }
+        post = self.client.post(url, post_data)
+        try:
+            self.assertRedirects(
+                post, url, status_code=302, target_status_code=200,
+            )
+            send_post = True
+        except AssertionError:
+            send_post = False
+        self.assertEqual(send_post, False)
+        bulk_data = [
+            dict(
+                row=0,
+                field='buy_date',
+                error='Enter a valid date.',
+            ),
+            dict(
+                row=0,
+                field='sn',
+                error='Asset with this Sn already exists.',
+            ),
+            dict(
+                row=1,
+                field='model',
+                error='This field is required.',
+            ),
+            dict(
+                row=1,
+                field='source',
+                error='This field is required.',
+            ),
+            dict(
+                row=1,
+                field='status',
+                error='This field is required.',
+            )
+        ]
+        for bulk in bulk_data:
+            formset = post.context_data['formset']
+            self.assertEqual(
+                formset[bulk['row']]._errors[bulk['field']][0],
+                bulk['error']
+            )
+
+        html = post.content
+        find = []
+        i = 0
+        msg_error = 'Please correct duplicated serial numbers or barcodes.'
+        for i in range(len(html)):
+            if html.startswith(msg_error, i - 1):
+                find.append(i)
+        self.assertTrue(len(find) == 1)
+        post_data = {
+            'form-TOTAL_FORMS': u'2',
+            'form-INITIAL_FORMS': u'2',
+            'form-MAX_NUM_FORMS': u'',
+            'form-0-id': 1,
+            'form-0-type': AssetType.data_center.id,
+            'form-0-model': model0.id,
+            'form-0-invoice_no': 'Invoice No 1a',
+            'form-0-order_no': 'Order No 1a',
+            'form-0-buy_date': '2012-02-01',
+            'form-0-sn': 'sn-1232aad',
+            'form-0-barcode': 'bc-4321-2012a',
+            'form-0-support_period': 24,
+            'form-0-support_type': 'standard1',
+            'form-0-support_void_reporting': 'on',
+            'form-0-provider': 'Provider 1a',
+            'form-0-status': AssetStatus.in_progress.id,
+            'form-0-source': AssetSource.shipment.id,
+            'form-1-id': 2,
+            'form-1-type': AssetType.data_center.id,
+            'form-1-model': model1.id,
+            'form-1-invoice_no': 'Invoice No 2a',
+            'form-1-order_no': 'Order No 2a',
+            'form-1-buy_date': '2011-02-03',
+            'form-1-sn': 'sn-321-2012a',
+            'form-1-barcode': 'bc-4321-2012b',
+            'form-1-support_period': 48,
+            'form-1-support_type': 'standard2',
+            'form-1-support_void_reporting': 'off',
+            'form-1-provider': 'Provider 2a',
+            'form-1-status': AssetStatus.waiting_for_release.id,
+            'form-1-source': AssetSource.shipment.id,
+        }
+        correct_post = self.client.post(url, post_data, follow=True)
+        self.assertRedirects(
+            correct_post, url, status_code=302, target_status_code=200,
         )
-        self.assertFormError(
-            post, 'asset_form', 'support_period', 'This field is required.'
-        )
-        self.assertFormError(
-            post, 'asset_form', 'support_type', 'This field is required.'
-        )
-        self.assertFormError(
-            post, 'device_info_form', 'warehouse', 'This field is required.'
-        )
-        self.assertFormError(
-            post, 'asset_form', 'sn', 'This field is required.'
-        )
+        html = correct_post.content
+        find = []
+        i = 0
+        msg_error = 'Changes saved.'
+        for i in range(len(html)):
+            if html.startswith(msg_error, i - 1):
+                find.append(i)
+        self.assertEqual(len(find), 1)
 
     def test_invalid_fueld_value(self):
         # instead of integers we send strings, error should be thrown
