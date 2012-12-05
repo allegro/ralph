@@ -666,13 +666,11 @@ class TestTrolling(TestCase):
                 formset[bulk['row']]._errors[bulk['field']][0],
                 bulk['error']
             )
-
-        html = post.content
         find = []
         i = 0
         msg_error = 'Please correct duplicated serial numbers or barcodes.'
-        for i in range(len(html)):
-            if html.startswith(msg_error, i - 1):
+        for i in range(len(post.content)):
+            if post.content.startswith(msg_error, i - 1):
                 find.append(i)
         self.assertTrue(len(find) == 1)
         post_data = {
@@ -712,12 +710,11 @@ class TestTrolling(TestCase):
         self.assertRedirects(
             correct_post, url, status_code=302, target_status_code=200,
         )
-        html = correct_post.content
         find = []
         i = 0
         msg_error = 'Changes saved.'
-        for i in range(len(html)):
-            if html.startswith(msg_error, i - 1):
+        for i in range(len(correct_post.content)):
+            if correct_post.content.startswith(msg_error, i - 1):
                 find.append(i)
         self.assertEqual(len(find), 1)
 
