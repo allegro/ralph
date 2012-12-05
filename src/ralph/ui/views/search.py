@@ -194,17 +194,17 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                         'operatingsystem__model__name__icontains'
                     ], data['component'].split('|'))
                     self.query = self.query.filter(q).distinct()
-            if data['software']:
-                if data['software'].isdigit():
+            if data.get('software'):
+                if data.get('software').isdigit():
                     q = _search_fields_or([
                         'software__model__id',
-                    ], data['software'].split('|'))
+                    ], data.get('software').split('|'))
                     self.query = self.query.filter(q).distinct()
                 else:
                     software = data['software'].strip().split(' ')
-                    """ We take 2 formats into the consideration:
-                    1) package name
-                    2) package name + space + version"""
+                    # We take 2 formats into the consideration:
+                    # 1) package name
+                    # 2) package name + space + version
                     if len(software) == 1:
                         self.query = self.query.filter(
                             Q(software__label__icontains=software[0]) |
