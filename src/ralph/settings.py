@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     'bob',
     'tastypie',
     'ralph.account',
+    'ralph.assets',
     'ralph.business',
     'ralph.cmdb',
     'ralph.discovery',
