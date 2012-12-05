@@ -5,14 +5,20 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import hashlib
 import json
 from django.test import TestCase
 
-from ralph.discovery.models import Device, DiskShare, DiskShareMount
-from ralph.discovery.tests.plugins.samples.donpedro import (data,
-                                                            incomplete_data,
-                                                            no_eth_data)
-from ralph.discovery.api_donpedro import save_device_data, NoRequiredDataError
+from ralph.discovery.models import (
+    Device, DiskShare, DiskShareMount, DeviceType, Storage, ComponentModel,
+    ComponentType
+)
+from ralph.discovery.tests.plugins.samples.donpedro import (
+    data, incomplete_data, no_eth_data
+)
+from ralph.discovery.api_donpedro import (
+    save_device_data, NoRequiredDataError, save_storage
+)
 
 
 class DonPedroPluginTest(TestCase):
@@ -28,6 +34,63 @@ class DonPedroPluginTest(TestCase):
         self.total_memory_size = 3068
         self.total_storage_size = 40957
         self.total_cores_count = 2
+        # create device to test special cases
+        self.special_dev = Device.create(
+            sn='sn_123_321_123_321',
+            model_name='SomeDeviceModelName',
+            model_type=DeviceType.unknown
+        )
+        model_name = 'TestStorageModel'
+        model, _ = ComponentModel.concurrent_get_or_create(
+            size=40960, type=ComponentType.disk, speed=0, cores=0,
+            extra='', extra_hash=hashlib.md5('').hexdigest(),
+            family=model_name
+        )
+        model.name = model_name
+        model.save()
+        incomplete_storage, _ = Storage.concurrent_get_or_create(
+            device=self.special_dev,
+            mount_point='C:'
+        )
+        incomplete_storage.label = 'TestStorage1'
+        incomplete_storage.size = 40960
+        incomplete_storage.model = model
+        incomplete_storage.save()
+        normal_storage, _ = Storage.concurrent_get_or_create(
+            device=self.special_dev,
+            mount_point='D:'
+        )
+        normal_storage.label = 'TestStorage2'
+        normal_storage.size = 40960
+        normal_storage.model = model
+        normal_storage.sn = 'stor_sn_123_321_2'
+        normal_storage.save()
+        to_del_storage, _ = Storage.concurrent_get_or_create(
+            device=self.special_dev,
+            mount_point='E:'
+        )
+        to_del_storage.label = 'TestStorage3'
+        to_del_storage.size = 40960
+        to_del_storage.model = model
+        to_del_storage.save()
+        save_storage(
+            [
+                {
+                    'sn': 'stor_sn_123_321_1',
+                    'mountpoint': 'C:',
+                    'label': 'TestStorage1',
+                    'size': '40960',
+                },
+                {
+                    'sn': 'stor_sn_123_321_2',
+                    'mountpoint': 'D:',
+                    'label': 'TestStorage2',
+                    'size': '40960',
+
+                }
+            ],
+            self.special_dev
+        )
 
     def test_dev(self):
         self.assertEquals(
@@ -61,6 +124,28 @@ class DonPedroPluginTest(TestCase):
         self.assertEqual(storage.mount_point, 'C:')
         self.assertEqual(storage.label, 'XENSRC PVDISK SCSI Disk Device')
         self.assertEqual(storage.size, 40957)
+        self.assertEqual(storage.sn, '03da1030-f25b-47')
+
+    def test_storage_special_cases(self):
+        self.assertTrue(
+            self.special_dev.storage_set.filter(
+                mount_point='C:',
+                sn='stor_sn_123_321_1',
+                size=40960,
+                label='TestStorage1'
+            )
+        )
+        self.assertTrue(
+            self.special_dev.storage_set.filter(
+                mount_point='D:',
+                sn='stor_sn_123_321_2',
+                size=40960,
+                label='TestStorage2'
+            )
+        )
+        self.assertFalse(
+            self.special_dev.storage_set.filter(mount_point='E:').exists()
+        )
 
     def test_fc(self):
         fc = self.dev.fibrechannel_set.all()
