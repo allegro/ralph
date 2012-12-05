@@ -85,5 +85,5 @@ def preboot_complete_view(request):
         deployment.save()
         return HttpResponse()
     except Deployment.DoesNotExist:
-        return HttpResponseForbidden('No deployment can be completed at this '
-                                     'point.')
+        return HttpResponseNotFound('No deployment can be completed at this '
+                                    'point.')
