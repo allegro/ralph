@@ -77,7 +77,7 @@ class DeviceForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(DeviceForm, self).__init__(*args, **kwargs)
-        if self.instance:
+        if self.instance and 'parent' in self.fields:
             self.fields['parent'].choices = [
                 ('', '----'),
             ] + [
