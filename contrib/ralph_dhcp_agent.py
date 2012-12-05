@@ -46,8 +46,7 @@ class SimpleDHCPManager(object):
                                                           self.api_username,
                                                           self.api_key)
         if self.dc:
-            url += '&dc='
-            url += self.dc
+            url += '&dc=' + self.dc
         req = urllib2.Request(url)
         try:
             resp = urllib2.urlopen(req)
