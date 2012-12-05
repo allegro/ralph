@@ -1,6 +1,22 @@
 Change Log
 ----------
 
+1.1.10
+~~~~~~
+
+Released on December 5, 2012.
+
+* support for SNMPv3 in discovery
+
+* DHCP config improvements: proper hostnames from PTR records; support for
+  syncing entries and networks from a specific DC only
+
+* DNS/DHCP addresses tab redesigned for usability and performance
+
+* improved search for software components and discovering software versions
+
+* discovery fixes
+
 1.1.9
 ~~~~~
 
