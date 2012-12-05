@@ -16,7 +16,7 @@ from powerdns.models import Record
 
 from ralph.account.models import Perm
 from ralph.discovery.models import ReadOnlyDevice, Device, ComponentModel
-from ralph.ui.forms import SearchForm
+from ralph.ui.forms.search import SearchForm
 from ralph.ui.views.common import (BaseMixin, Info, Prices, Addresses, Costs,
                                    Purchase, Components, History, Discover, Software)
 from ralph.ui.views.devices import BaseDeviceList
