@@ -9,6 +9,7 @@ import datetime
 from django.http import HttpResponse, HttpResponseForbidden
 from lck.django.common import remote_addr
 
+from ralph.discovery.models import DataCenter
 from ralph.dnsedit.models import DHCPServer
 from ralph.dnsedit.util import generate_dhcp_config
 from ralph.ui.views.common import Base
@@ -36,4 +37,8 @@ def dhcp_synch(request):
 def dhcp_config(request):
     if not api.is_authenticated(request):
         return HttpResponseForbidden('API key required.')
-    return HttpResponse(generate_dhcp_config(), content_type="text/plain")
+    if request.GET.get('dc'):
+        dc = DataCenter.objects.get(name__iexact=request.GET['dc'])
+    else:
+        dc = None
+    return HttpResponse(generate_dhcp_config(dc=dc), content_type="text/plain")
