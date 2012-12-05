@@ -47,12 +47,12 @@ class DeviceLookup(LookupChannel):
 
     def format_item_display(self, obj):
         return """
-        <div style='border-bottom: solid #ddd 1px'>
-            <div>model: <b>%s</b></div>
-            <div>bc:<b>%s</b></div>
-            <div>sn:<b>%s</b></div>
-        </div>
-        """ % (escape(obj.model), escape(obj.barcode), escape(obj.sn))
+        <li class='das-container'>
+            <span class='das-model'>%s</span>
+            <span class='das-barcode'>%s</span>
+            <span class='das-sn'>%s</span>
+        </li>
+        """ % (escape(obj.model), escape(obj.barcode or ''), escape(obj.sn))
 
 
 class AssetModelLookup(LookupChannel):
