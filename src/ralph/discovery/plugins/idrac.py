@@ -7,16 +7,17 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import hashlib
+import re
 import requests
 import uuid
-from xml.etree import cElementTree as ET
 
 from django.conf import settings
 from lck.django.common import nested_commit_on_success
+from xml.etree import cElementTree as ET
 
 from ralph.discovery.models import (
     DeviceType, Device, Processor, IPAddress, ComponentModel, ComponentType,
-    Memory
+    Memory, Storage, FibreChannel
 )
 from ralph.util import plugin, Eth
 
@@ -55,14 +56,26 @@ SOAP_ENUM_WSMAN_TEMPLATE = '''<?xml version="1.0"?>
 '''
 
 
-class SoapException(Exception):
+class Error(Exception):
+    pass
+
+
+class AuthError(Error):
+    pass
+
+
+class IncorrectAnswer(Error):
+    pass
+
+
+class SoapException(Error):
     pass
 
 
 def _send_soap(post_url, login, password, message):
     """Try to send soap message to post_url using http basic authentication.
-    Note, that we don't store any session information, nor validate ssl certificate.
-    Any following requests will re-send basic auth header again.
+    Note, that we don't store any session information, nor validate ssl
+    certificate. Any following requests will re-send basic auth header again.
     """
     r = requests.post(
         post_url,
@@ -74,6 +87,8 @@ def _send_soap(post_url, login, password, message):
         }
     )
     if not r.ok:
+        if r.status_code == 401:
+            raise AuthError("Invalid username or password.")
         raise SoapException(
             "Reponse was: %s\nRequest was:%s" % (r.text, message)
         )
@@ -124,15 +139,17 @@ class IDRAC(object):
             XMLNS_WSMAN,
             xmlns_n1
         )
-        record = tree.findall(q)[0]
+        records = tree.findall(q)
+        if not records:
+            raise IncorrectAnswer("Incorrect answer in get_base_info.")
         result = {
-            'manufacturer': record.find(
+            'manufacturer': records[0].find(
                 "{}{}".format(xmlns_n1, 'Manufacturer')
             ).text,
-            'model': record.find(
+            'model': records[0].find(
                 "{}{}".format(xmlns_n1, 'Model')
             ).text,
-            'sn': record.find(
+            'sn': records[0].find(
                 "{}{}".format(xmlns_n1, 'ChassisServiceTag')
             ).text
 
@@ -229,6 +246,70 @@ class IDRAC(object):
             })
         return results
 
+    def get_storage(self):
+        soap_result = self.run_command('DCIM_PhysicalDiskView')
+        tree = ET.XML(soap_result)
+        xmlns_n1 = XMLNS_N1_BASE % "DCIM_PhysicalDiskView"
+        q = "{}Body/{}EnumerateResponse/{}Items/{}DCIM_PhysicalDiskView".format(
+            XMLNS_S,
+            XMLNS_WSEN,
+            XMLNS_WSMAN,
+            xmlns_n1
+        )
+        results = []
+        for record in tree.findall(q):
+            results.append({
+                'size': record.find(
+                    "{}{}".format(xmlns_n1, 'SizeInBytes')
+                ).text,
+                'sn': record.find(
+                    "{}{}".format(xmlns_n1, 'SerialNumber')
+                ).text,
+                'model': record.find(
+                    "{}{}".format(xmlns_n1, 'Model')
+                ).text,
+                'manufacturer': record.find(
+                    "{}{}".format(xmlns_n1, 'Manufacturer')
+                ).text,
+            })
+        return results
+
+    def get_fc_cards(self):
+        soap_result = self.run_command('DCIM_PCIDeviceView')
+        tree = ET.XML(soap_result)
+        xmlns_n1 = XMLNS_N1_BASE % "DCIM_PCIDeviceView"
+        q = "{}Body/{}EnumerateResponse/{}Items/{}DCIM_PCIDeviceView".format(
+            XMLNS_S,
+            XMLNS_WSEN,
+            XMLNS_WSMAN,
+            xmlns_n1
+        )
+        used_ids = []
+        results = []
+        for record in tree.findall(q):
+            label = record.find(
+                "{}{}".format(xmlns_n1, "Description")
+            ).text
+            if 'fibre channel' not in label.lower():
+                continue
+            match = re.search(
+                r'([0-9]+)-[0-9]+',
+                record.find(
+                    "{}{}".format(xmlns_n1, "FQDD")
+                ).text
+            )
+            if not match:
+                continue
+            physical_id = match.group(1)
+            if physical_id in used_ids:
+                continue
+            used_ids.append(physical_id)
+            results.append({
+                'physical_id': physical_id,
+                'label': label
+            })
+        return results
+
 
 def _save_ethernets(data):
     ethernets = [Eth(label=eth['label'], mac=eth['mac'], speed=0)
@@ -237,6 +318,7 @@ def _save_ethernets(data):
 
 
 def _save_cpu(dev, data):
+    detected_cpus = []
     for cpu in data:
         try:
             index = int(cpu['socket'].split('.')[-1])
@@ -255,6 +337,7 @@ def _save_cpu(dev, data):
             cores=cpu['cores_count'],
             extra_hash=hashlib.md5(extra).hexdigest()
         )
+        model.extra = extra
         model.name = cpu['model']
         model.save(priority=SAVE_PRIORITY)
         processor, _ = Processor.concurrent_get_or_create(
@@ -266,9 +349,12 @@ def _save_cpu(dev, data):
         processor.speed = cpu['speed']
         processor.cores = cpu['cores_count']
         processor.save(priority=SAVE_PRIORITY)
+        detected_cpus.append(processor.pk)
+    dev.processor_set.exclude(pk__in=detected_cpus).delete()
 
 
 def _save_memory(dev, data):
+    detected_memory = []
     for mem, index in zip(data, range(1, len(data) + 1)):
         extra = "RAM {} {} {}MiB speed: {}".format(
             mem['manufacturer'],
@@ -277,12 +363,12 @@ def _save_memory(dev, data):
             mem['speed']
         )
         name = "{} {}".format(mem['manufacturer'], mem['model'])
-
         model, _ = ComponentModel.concurrent_get_or_create(
             speed=mem['speed'],
             type=ComponentType.memory,
             extra_hash=hashlib.md5(extra).hexdigest()
         )
+        model.extra = extra
         model.name = name
         model.save(priority=SAVE_PRIORITY)
         memory, _ = Memory.concurrent_get_or_create(index=index, device=dev)
@@ -291,6 +377,55 @@ def _save_memory(dev, data):
         memory.speed = mem['speed']
         memory.model = model
         memory.save(priority=SAVE_PRIORITY)
+        detected_memory.append(memory.pk)
+    dev.memory_set.exclude(pk__in=detected_memory).delete()
+
+
+def _save_storage(dev, data):
+    detected_storage = []
+    for disk in data:
+        model_name = "{} {}".format(
+            disk['manufacturer'].strip(),
+            disk['model'].strip()
+        )
+        size = int(int(disk['size']) / 1024 / 1024 / 1024)
+        model, _ = ComponentModel.concurrent_get_or_create(
+            size=size, type=ComponentType.disk, speed=0, cores=0,
+            extra='', extra_hash=hashlib.md5('').hexdigest(),
+            family=model_name
+        )
+        model.name = model_name
+        model.save(priority=SAVE_PRIORITY)
+        storage, _ = Storage.concurrent_get_or_create(
+            device=dev, sn=disk['sn']
+        )
+        storage.model = model
+        storage.label = "{} {}MiB".format(model_name, size)
+        storage.size = size
+        storage.save(priority=SAVE_PRIORITY)
+        detected_storage.append(storage.pk)
+    dev.storage_set.exclude(pk__in=detected_storage).delete()
+
+
+def _save_fc_cards(dev, data):
+    detected_fc_cards = []
+    for card in data:
+        model, _ = ComponentModel.concurrent_get_or_create(
+            size=0, type=ComponentType.fibre, speed=0, cores=0,
+            extra_hash=hashlib.md5(card['label']).hexdigest(),
+            family=card['label']
+        )
+        model.extra = card['label']
+        model.name = card['label']
+        model.save(priority=SAVE_PRIORITY)
+        fc, _ = FibreChannel.concurrent_get_or_create(
+            device=dev, physical_id=card['physical_id']
+        )
+        fc.model = model
+        fc.label = card['label']
+        fc.save(priority=SAVE_PRIORITY)
+        detected_fc_cards.append(fc.pk)
+    dev.fibrechannel_set.exclude(pk__in=detected_fc_cards).delete()
 
 
 @nested_commit_on_success
@@ -317,6 +452,8 @@ def run_idrac(ip):
     ip_address.save()
     _save_cpu(dev, idrac.get_cpu())
     _save_memory(dev, idrac.get_memory())
+    _save_storage(dev, idrac.get_storage())
+    _save_fc_cards(dev, idrac.get_fc_cards())
     return model_name
 
 
