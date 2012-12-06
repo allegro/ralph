@@ -7,6 +7,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import hashlib
+import re
 import requests
 import uuid
 
@@ -16,7 +17,7 @@ from xml.etree import cElementTree as ET
 
 from ralph.discovery.models import (
     DeviceType, Device, Processor, IPAddress, ComponentModel, ComponentType,
-    Memory, Storage
+    Memory, Storage, FibreChannel
 )
 from ralph.util import plugin, Eth
 
@@ -86,6 +87,8 @@ def _send_soap(post_url, login, password, message):
         }
     )
     if not r.ok:
+        if r.status_code == 401:
+            raise AuthError("Invalid username or password.")
         raise SoapException(
             "Reponse was: %s\nRequest was:%s" % (r.text, message)
         )
@@ -271,6 +274,42 @@ class IDRAC(object):
             })
         return results
 
+    def get_fc_cards(self):
+        soap_result = self.run_command('DCIM_PCIDeviceView')
+        tree = ET.XML(soap_result)
+        xmlns_n1 = XMLNS_N1_BASE % "DCIM_PCIDeviceView"
+        q = "{}Body/{}EnumerateResponse/{}Items/{}DCIM_PCIDeviceView".format(
+            XMLNS_S,
+            XMLNS_WSEN,
+            XMLNS_WSMAN,
+            xmlns_n1
+        )
+        used_ids = []
+        results = []
+        for record in tree.findall(q):
+            label = record.find(
+                "{}{}".format(xmlns_n1, "Description")
+            ).text
+            if 'fibre channel' not in label.lower():
+                continue
+            match = re.search(
+                r'([0-9]+)-[0-9]+',
+                record.find(
+                    "{}{}".format(xmlns_n1, "FQDD")
+                ).text
+            )
+            if not match:
+                continue
+            physical_id = match.group(1)
+            if physical_id in used_ids:
+                continue
+            used_ids.append(physical_id)
+            results.append({
+                'physical_id': physical_id,
+                'label': label
+            })
+        return results
+
 
 def _save_ethernets(data):
     ethernets = [Eth(label=eth['label'], mac=eth['mac'], speed=0)
@@ -297,6 +336,7 @@ def _save_cpu(dev, data):
             cores=cpu['cores_count'],
             extra_hash=hashlib.md5(extra).hexdigest()
         )
+        model.extra = extra
         model.name = cpu['model']
         model.save(priority=SAVE_PRIORITY)
         processor, _ = Processor.concurrent_get_or_create(
@@ -325,6 +365,7 @@ def _save_memory(dev, data):
             type=ComponentType.memory,
             extra_hash=hashlib.md5(extra).hexdigest()
         )
+        model.extra = extra
         model.name = name
         model.save(priority=SAVE_PRIORITY)
         memory, _ = Memory.concurrent_get_or_create(index=index, device=dev)
@@ -358,6 +399,27 @@ def _save_storage(dev, data):
         storage.save(priority=SAVE_PRIORITY)
 
 
+def _save_fc_cards(dev, data):
+    detected_fc_cards = []
+    for card in data:
+        model, _ = ComponentModel.concurrent_get_or_create(
+            size=0, type=ComponentType.fibre, speed=0, cores=0,
+            extra_hash=hashlib.md5(card['label']).hexdigest(),
+            family=card['label']
+        )
+        model.extra = card['label']
+        model.name = card['label']
+        model.save(priority=SAVE_PRIORITY)
+        fc, _ = FibreChannel.concurrent_get_or_create(
+            device=dev, physical_id=card['physical_id']
+        )
+        fc.model = model
+        fc.label = card['label']
+        fc.save(priority=SAVE_PRIORITY)
+        detected_fc_cards.append(fc.pk)
+    dev.fibrechannel_set.exclude(pk__in=detected_fc_cards).delete()
+
+
 @nested_commit_on_success
 def run_idrac(ip):
     idrac = IDRAC(ip)
@@ -383,6 +445,7 @@ def run_idrac(ip):
     _save_cpu(dev, idrac.get_cpu())
     _save_memory(dev, idrac.get_memory())
     _save_storage(dev, idrac.get_storage())
+    _save_fc_cards(dev, idrac.get_fc_cards())
     return model_name
 
 
