@@ -523,3 +523,561 @@ nic_info = """<?xml version="1.0" encoding="UTF-8"?>
 </s:Envelope>
 """
 
+pci_info = """<?xml version="1.0" encoding="UTF-8"?>
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:wsen="http://schemas.xmlsoap.org/ws/2004/09/enumeration" xmlns:wsman="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" xmlns:n1="http://schemas.dell.com/wbem/wscim/1/cim-schema/2/DCIM_PCIDeviceView">
+  <s:Header>
+    <wsa:To>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</wsa:To>
+    <wsa:Action>http://schemas.xmlsoap.org/ws/2004/09/enumeration/EnumerateResponse</wsa:Action>
+    <wsa:RelatesTo>uuid:07106f7a-d02b-102b-8002-9385bb730318</wsa:RelatesTo>
+    <wsa:MessageID>uuid:822daf08-d02d-102d-80f8-8a530f1cb190</wsa:MessageID>
+  </s:Header>
+  <s:Body>
+    <wsen:EnumerateResponse>
+      <wsman:Items>
+        <n1:DCIM_PCIDeviceView>
+          <n1:BusNumber>10</n1:BusNumber>
+          <n1:DataBusWidth>0002</n1:DataBusWidth>
+          <n1:Description> G200eR2</n1:Description>
+          <n1:DeviceNumber>0</n1:DeviceNumber>
+          <n1:FQDD>Video.Embedded.1-1</n1:FQDD>
+          <n1:FunctionNumber>0</n1:FunctionNumber>
+          <n1:InstanceID>Video.Embedded.1-1</n1:InstanceID>
+          <n1:LastSystemInventoryTime>20121129145825.000000+000</n1:LastSystemInventoryTime>
+          <n1:LastUpdateTime>20121031155945.000000+000</n1:LastUpdateTime>
+          <n1:Manufacturer>Matrox Graphics, Inc.</n1:Manufacturer>
+          <n1:PCIDeviceID>0534</n1:PCIDeviceID>
+          <n1:PCISubDeviceID>0528</n1:PCISubDeviceID>
+          <n1:PCISubVendorID>1028</n1:PCISubVendorID>
+          <n1:PCIVendorID>102B</n1:PCIVendorID>
+          <n1:SlotLength>0002</n1:SlotLength>
+          <n1:SlotType>0002</n1:SlotType>
+        </n1:DCIM_PCIDeviceView>
+        <n1:DCIM_PCIDeviceView>
+          <n1:BusNumber>0</n1:BusNumber>
+          <n1:DataBusWidth>0002</n1:DataBusWidth>
+          <n1:Description> Sandy Bridge DMI2</n1:Description>
+          <n1:DeviceNumber>0</n1:DeviceNumber>
+          <n1:FQDD>HostBridge.Embedded.1-1</n1:FQDD>
+          <n1:FunctionNumber>0</n1:FunctionNumber>
+          <n1:InstanceID>HostBridge.Embedded.1-1</n1:InstanceID>
+          <n1:LastSystemInventoryTime>20121129145825.000000+000</n1:LastSystemInventoryTime>
+          <n1:LastUpdateTime>20121031155945.000000+000</n1:LastUpdateTime>
+          <n1:Manufacturer>Intel Corporation</n1:Manufacturer>
+          <n1:PCIDeviceID>3C00</n1:PCIDeviceID>
+          <n1:PCISubDeviceID>0528</n1:PCISubDeviceID>
+          <n1:PCISubVendorID>1028</n1:PCISubVendorID>
+          <n1:PCIVendorID>8086</n1:PCIVendorID>
+          <n1:SlotLength>0002</n1:SlotLength>
+          <n1:SlotType>0002</n1:SlotType>
+        </n1:DCIM_PCIDeviceView>
+        <n1:DCIM_PCIDeviceView>
+          <n1:BusNumber>7</n1:BusNumber>
+          <n1:DataBusWidth>0002</n1:DataBusWidth>
+          <n1:Description> SH7757 PCIe Switch [PS]</n1:Description>
+          <n1:DeviceNumber>0</n1:DeviceNumber>
+          <n1:FQDD>P2PBridge.Embedded.1-1</n1:FQDD>
+          <n1:FunctionNumber>0</n1:FunctionNumber>
+          <n1:InstanceID>P2PBridge.Embedded.1-1</n1:InstanceID>
+          <n1:LastSystemInventoryTime>20121129145825.000000+000</n1:LastSystemInventoryTime>
+          <n1:LastUpdateTime>20121031155945.000000+000</n1:LastUpdateTime>
+          <n1:Manufacturer>Renesas Technology Corp.</n1:Manufacturer>
+          <n1:PCIDeviceID>0013</n1:PCIDeviceID>
+          <n1:PCISubDeviceID>0000</n1:PCISubDeviceID>
+          <n1:PCISubVendorID>0000</n1:PCISubVendorID>
+          <n1:PCIVendorID>1912</n1:PCIVendorID>
+          <n1:SlotLength>0002</n1:SlotLength>
+          <n1:SlotType>0002</n1:SlotType>
+        </n1:DCIM_PCIDeviceView>
+        <n1:DCIM_PCIDeviceView>
+          <n1:BusNumber>0</n1:BusNumber>
+          <n1:DataBusWidth>0002</n1:DataBusWidth>
+          <n1:Description> Patsburg USB2 Enhanced Host Controller #1</n1:Description>
+          <n1:DeviceNumber>29</n1:DeviceNumber>
+          <n1:FQDD>USBEHCI.Embedded.1-1</n1:FQDD>
+          <n1:FunctionNumber>0</n1:FunctionNumber>
+          <n1:InstanceID>USBEHCI.Embedded.1-1</n1:InstanceID>
+          <n1:LastSystemInventoryTime>20121129145825.000000+000</n1:LastSystemInventoryTime>
+          <n1:LastUpdateTime>20121031155945.000000+000</n1:LastUpdateTime>
+          <n1:Manufacturer>Intel Corporation</n1:Manufacturer>
+          <n1:PCIDeviceID>1D26</n1:PCIDeviceID>
+          <n1:PCISubDeviceID>0528</n1:PCISubDeviceID>
+          <n1:PCISubVendorID>1028</n1:PCISubVendorID>
+          <n1:PCIVendorID>8086</n1:PCIVendorID>
+          <n1:SlotLength>0002</n1:SlotLength>
+          <n1:SlotType>0002</n1:SlotType>
+        </n1:DCIM_PCIDeviceView>
+        <n1:DCIM_PCIDeviceView>
+          <n1:BusNumber>0</n1:BusNumber>
+          <n1:DataBusWidth>0002</n1:DataBusWidth>
+          <n1:Description> Patsburg LPC Controller</n1:Description>
+          <n1:DeviceNumber>31</n1:DeviceNumber>
+          <n1:FQDD>ISABridge.Embedded.1-1</n1:FQDD>
+          <n1:FunctionNumber>0</n1:FunctionNumber>
+          <n1:InstanceID>ISABridge.Embedded.1-1</n1:InstanceID>
+          <n1:LastSystemInventoryTime>20121129145825.000000+000</n1:LastSystemInventoryTime>
+          <n1:LastUpdateTime>20121031155945.000000+000</n1:LastUpdateTime>
+          <n1:Manufacturer>Intel Corporation</n1:Manufacturer>
+          <n1:PCIDeviceID>1D41</n1:PCIDeviceID>
+          <n1:PCISubDeviceID>0528</n1:PCISubDeviceID>
+          <n1:PCISubVendorID>1028</n1:PCISubVendorID>
+          <n1:PCIVendorID>8086</n1:PCIVendorID>
+          <n1:SlotLength>0002</n1:SlotLength>
+          <n1:SlotType>0002</n1:SlotType>
+        </n1:DCIM_PCIDeviceView>
+        <n1:DCIM_PCIDeviceView>
+          <n1:BusNumber>2</n1:BusNumber>
+          <n1:DataBusWidth>0002</n1:DataBusWidth>
+          <n1:Description>PERC H310 Mini Monolithics</n1:Description>
+          <n1:DeviceNumber>0</n1:DeviceNumber>
+          <n1:FQDD>RAID.Integrated.1-1</n1:FQDD>
+          <n1:FunctionNumber>0</n1:FunctionNumber>
+          <n1:InstanceID>RAID.Integrated.1-1</n1:InstanceID>
+          <n1:LastSystemInventoryTime>20121129145825.000000+000</n1:LastSystemInventoryTime>
+          <n1:LastUpdateTime>20121126162427.000000+000</n1:LastUpdateTime>
+          <n1:Manufacturer>LSI Logic / Symbios Logic</n1:Manufacturer>
+          <n1:PCIDeviceID>0073</n1:PCIDeviceID>
+          <n1:PCISubDeviceID>1F51</n1:PCISubDeviceID>
+          <n1:PCISubVendorID>1028</n1:PCISubVendorID>
+          <n1:PCIVendorID>1000</n1:PCIVendorID>
+          <n1:SlotLength>0002</n1:SlotLength>
+          <n1:SlotType>0002</n1:SlotType>
+        </n1:DCIM_PCIDeviceView>
+        <n1:DCIM_PCIDeviceView>
+          <n1:BusNumber>1</n1:BusNumber>
+          <n1:DataBusWidth>0002</n1:DataBusWidth>
+          <n1:Description>Intel GbE 4P I350crNDC</n1:Description>
+          <n1:DeviceNumber>0</n1:DeviceNumber>
+          <n1:FQDD>NIC.Integrated.1-1-1</n1:FQDD>
+          <n1:FunctionNumber>0</n1:FunctionNumber>
+          <n1:InstanceID>NIC.Integrated.1-1-1</n1:InstanceID>
+          <n1:LastSystemInventoryTime>20121129145825.000000+000</n1:LastSystemInventoryTime>
+          <n1:LastUpdateTime>20121129101636.000000+000</n1:LastUpdateTime>
+          <n1:Manufacturer>Intel Corporation</n1:Manufacturer>
+          <n1:PCIDeviceID>1521</n1:PCIDeviceID>
+          <n1:PCISubDeviceID>1F60</n1:PCISubDeviceID>
+          <n1:PCISubVendorID>1028</n1:PCISubVendorID>
+          <n1:PCIVendorID>8086</n1:PCIVendorID>
+          <n1:SlotLength>0002</n1:SlotLength>
+          <n1:SlotType>0002</n1:SlotType>
+        </n1:DCIM_PCIDeviceView>
+        <n1:DCIM_PCIDeviceView>
+          <n1:BusNumber>1</n1:BusNumber>
+          <n1:DataBusWidth>0002</n1:DataBusWidth>
+          <n1:Description>Intel GbE 4P I350crNDC</n1:Description>
+          <n1:DeviceNumber>0</n1:DeviceNumber>
+          <n1:FQDD>NIC.Integrated.1-2-1</n1:FQDD>
+          <n1:FunctionNumber>1</n1:FunctionNumber>
+          <n1:InstanceID>NIC.Integrated.1-2-1</n1:InstanceID>
+          <n1:LastSystemInventoryTime>20121129145825.000000+000</n1:LastSystemInventoryTime>
+          <n1:LastUpdateTime>20121129101636.000000+000</n1:LastUpdateTime>
+          <n1:Manufacturer>Intel Corporation</n1:Manufacturer>
+          <n1:PCIDeviceID>1521</n1:PCIDeviceID>
+          <n1:PCISubDeviceID>1F60</n1:PCISubDeviceID>
+          <n1:PCISubVendorID>1028</n1:PCISubVendorID>
+          <n1:PCIVendorID>8086</n1:PCIVendorID>
+          <n1:SlotLength>0002</n1:SlotLength>
+          <n1:SlotType>0002</n1:SlotType>
+        </n1:DCIM_PCIDeviceView>
+        <n1:DCIM_PCIDeviceView>
+          <n1:BusNumber>1</n1:BusNumber>
+          <n1:DataBusWidth>0002</n1:DataBusWidth>
+          <n1:Description>Intel GbE 4P I350crNDC</n1:Description>
+          <n1:DeviceNumber>0</n1:DeviceNumber>
+          <n1:FQDD>NIC.Integrated.1-3-1</n1:FQDD>
+          <n1:FunctionNumber>2</n1:FunctionNumber>
+          <n1:InstanceID>NIC.Integrated.1-3-1</n1:InstanceID>
+          <n1:LastSystemInventoryTime>20121129145825.000000+000</n1:LastSystemInventoryTime>
+          <n1:LastUpdateTime>20121031155945.000000+000</n1:LastUpdateTime>
+          <n1:Manufacturer>Intel Corporation</n1:Manufacturer>
+          <n1:PCIDeviceID>1521</n1:PCIDeviceID>
+          <n1:PCISubDeviceID>1F60</n1:PCISubDeviceID>
+          <n1:PCISubVendorID>1028</n1:PCISubVendorID>
+          <n1:PCIVendorID>8086</n1:PCIVendorID>
+          <n1:SlotLength>0002</n1:SlotLength>
+          <n1:SlotType>0002</n1:SlotType>
+        </n1:DCIM_PCIDeviceView>
+        <n1:DCIM_PCIDeviceView>
+          <n1:BusNumber>1</n1:BusNumber>
+          <n1:DataBusWidth>0002</n1:DataBusWidth>
+          <n1:Description>Intel GbE 4P I350crNDC</n1:Description>
+          <n1:DeviceNumber>0</n1:DeviceNumber>
+          <n1:FQDD>NIC.Integrated.1-4-1</n1:FQDD>
+          <n1:FunctionNumber>3</n1:FunctionNumber>
+          <n1:InstanceID>NIC.Integrated.1-4-1</n1:InstanceID>
+          <n1:LastSystemInventoryTime>20121129145825.000000+000</n1:LastSystemInventoryTime>
+          <n1:LastUpdateTime>20121031155945.000000+000</n1:LastUpdateTime>
+          <n1:Manufacturer>Intel Corporation</n1:Manufacturer>
+          <n1:PCIDeviceID>1521</n1:PCIDeviceID>
+          <n1:PCISubDeviceID>1F60</n1:PCISubDeviceID>
+          <n1:PCISubVendorID>1028</n1:PCISubVendorID>
+          <n1:PCIVendorID>8086</n1:PCIVendorID>
+          <n1:SlotLength>0002</n1:SlotLength>
+          <n1:SlotType>0002</n1:SlotType>
+        </n1:DCIM_PCIDeviceView>
+        <n1:DCIM_PCIDeviceView>
+          <n1:BusNumber>0</n1:BusNumber>
+          <n1:DataBusWidth>0002</n1:DataBusWidth>
+          <n1:Description> Sandy Bridge IIO PCI Express Root Port 1a</n1:Description>
+          <n1:DeviceNumber>1</n1:DeviceNumber>
+          <n1:FQDD>P2PBridge.Integrated.1-1</n1:FQDD>
+          <n1:FunctionNumber>0</n1:FunctionNumber>
+          <n1:InstanceID>P2PBridge.Integrated.1-1</n1:InstanceID>
+          <n1:LastSystemInventoryTime>20121129145825.000000+000</n1:LastSystemInventoryTime>
+          <n1:LastUpdateTime>20121031155945.000000+000</n1:LastUpdateTime>
+          <n1:Manufacturer>Intel Corporation</n1:Manufacturer>
+          <n1:PCIDeviceID>3C02</n1:PCIDeviceID>
+          <n1:PCISubDeviceID>0000</n1:PCISubDeviceID>
+          <n1:PCISubVendorID>0000</n1:PCISubVendorID>
+          <n1:PCIVendorID>8086</n1:PCIVendorID>
+          <n1:SlotLength>0002</n1:SlotLength>
+          <n1:SlotType>0002</n1:SlotType>
+        </n1:DCIM_PCIDeviceView>
+        <n1:DCIM_PCIDeviceView>
+          <n1:BusNumber>0</n1:BusNumber>
+          <n1:DataBusWidth>0002</n1:DataBusWidth>
+          <n1:Description> Sandy Bridge IIO PCI Express Root Port 2a</n1:Description>
+          <n1:DeviceNumber>2</n1:DeviceNumber>
+          <n1:FQDD>P2PBridge.Embedded.4-1</n1:FQDD>
+          <n1:FunctionNumber>0</n1:FunctionNumber>
+          <n1:InstanceID>P2PBridge.Embedded.4-1</n1:InstanceID>
+          <n1:LastSystemInventoryTime>20121129145825.000000+000</n1:LastSystemInventoryTime>
+          <n1:LastUpdateTime>20121031155945.000000+000</n1:LastUpdateTime>
+          <n1:Manufacturer>Intel Corporation</n1:Manufacturer>
+          <n1:PCIDeviceID>3C04</n1:PCIDeviceID>
+          <n1:PCISubDeviceID>0000</n1:PCISubDeviceID>
+          <n1:PCISubVendorID>0000</n1:PCISubVendorID>
+          <n1:PCIVendorID>8086</n1:PCIVendorID>
+          <n1:SlotLength>0002</n1:SlotLength>
+          <n1:SlotType>0002</n1:SlotType>
+        </n1:DCIM_PCIDeviceView>
+        <n1:DCIM_PCIDeviceView>
+          <n1:BusNumber>9</n1:BusNumber>
+          <n1:DataBusWidth>0002</n1:DataBusWidth>
+          <n1:Description> SH7757 PCIe-PCI Bridge [PPB]</n1:Description>
+          <n1:DeviceNumber>0</n1:DeviceNumber>
+          <n1:FQDD>P2PBridge.Embedded.4-3</n1:FQDD>
+          <n1:FunctionNumber>0</n1:FunctionNumber>
+          <n1:InstanceID>P2PBridge.Embedded.4-3</n1:InstanceID>
+          <n1:LastSystemInventoryTime>20121129145825.000000+000</n1:LastSystemInventoryTime>
+          <n1:LastUpdateTime>20121031155945.000000+000</n1:LastUpdateTime>
+          <n1:Manufacturer>Renesas Technology Corp.</n1:Manufacturer>
+          <n1:PCIDeviceID>0012</n1:PCIDeviceID>
+          <n1:PCISubDeviceID>0000</n1:PCISubDeviceID>
+          <n1:PCISubVendorID>0000</n1:PCISubVendorID>
+          <n1:PCIVendorID>1912</n1:PCIVendorID>
+          <n1:SlotLength>0002</n1:SlotLength>
+          <n1:SlotType>0002</n1:SlotType>
+        </n1:DCIM_PCIDeviceView>
+        <n1:DCIM_PCIDeviceView>
+          <n1:BusNumber>0</n1:BusNumber>
+          <n1:DataBusWidth>0002</n1:DataBusWidth>
+          <n1:Description> 82801 PCI Bridge</n1:Description>
+          <n1:DeviceNumber>30</n1:DeviceNumber>
+          <n1:FQDD>P2PBridge.Embedded.4-2</n1:FQDD>
+          <n1:FunctionNumber>0</n1:FunctionNumber>
+          <n1:InstanceID>P2PBridge.Embedded.4-2</n1:InstanceID>
+          <n1:LastSystemInventoryTime>20121129145825.000000+000</n1:LastSystemInventoryTime>
+          <n1:LastUpdateTime>20121031155945.000000+000</n1:LastUpdateTime>
+          <n1:Manufacturer>Intel Corporation</n1:Manufacturer>
+          <n1:PCIDeviceID>244E</n1:PCIDeviceID>
+          <n1:PCISubDeviceID>0000</n1:PCISubDeviceID>
+          <n1:PCISubVendorID>0000</n1:PCISubVendorID>
+          <n1:PCIVendorID>8086</n1:PCIVendorID>
+          <n1:SlotLength>0002</n1:SlotLength>
+          <n1:SlotType>0002</n1:SlotType>
+        </n1:DCIM_PCIDeviceView>
+        <n1:DCIM_PCIDeviceView>
+          <n1:BusNumber>0</n1:BusNumber>
+          <n1:DataBusWidth>0002</n1:DataBusWidth>
+          <n1:Description> Sandy Bridge IIO PCI Express Root Port 2c</n1:Description>
+          <n1:DeviceNumber>2</n1:DeviceNumber>
+          <n1:FQDD>P2PBridge.Embedded.6-1</n1:FQDD>
+          <n1:FunctionNumber>2</n1:FunctionNumber>
+          <n1:InstanceID>P2PBridge.Embedded.6-1</n1:InstanceID>
+          <n1:LastSystemInventoryTime>20121129145825.000000+000</n1:LastSystemInventoryTime>
+          <n1:LastUpdateTime>20121031155945.000000+000</n1:LastUpdateTime>
+          <n1:Manufacturer>Intel Corporation</n1:Manufacturer>
+          <n1:PCIDeviceID>3C06</n1:PCIDeviceID>
+          <n1:PCISubDeviceID>0000</n1:PCISubDeviceID>
+          <n1:PCISubVendorID>0000</n1:PCISubVendorID>
+          <n1:PCIVendorID>8086</n1:PCIVendorID>
+          <n1:SlotLength>0002</n1:SlotLength>
+          <n1:SlotType>0002</n1:SlotType>
+        </n1:DCIM_PCIDeviceView>
+        <n1:DCIM_PCIDeviceView>
+          <n1:BusNumber>0</n1:BusNumber>
+          <n1:DataBusWidth>0002</n1:DataBusWidth>
+          <n1:Description> Sandy Bridge IIO PCI Express Root Port 3a in PCI Express Mode</n1:Description>
+          <n1:DeviceNumber>3</n1:DeviceNumber>
+          <n1:FQDD>P2PBridge.Embedded.8-1</n1:FQDD>
+          <n1:FunctionNumber>0</n1:FunctionNumber>
+          <n1:InstanceID>P2PBridge.Embedded.8-1</n1:InstanceID>
+          <n1:LastSystemInventoryTime>20121129145825.000000+000</n1:LastSystemInventoryTime>
+          <n1:LastUpdateTime>20121031155945.000000+000</n1:LastUpdateTime>
+          <n1:Manufacturer>Intel Corporation</n1:Manufacturer>
+          <n1:PCIDeviceID>3C08</n1:PCIDeviceID>
+          <n1:PCISubDeviceID>0000</n1:PCISubDeviceID>
+          <n1:PCISubVendorID>0000</n1:PCISubVendorID>
+          <n1:PCIVendorID>8086</n1:PCIVendorID>
+          <n1:SlotLength>0002</n1:SlotLength>
+          <n1:SlotType>0002</n1:SlotType>
+        </n1:DCIM_PCIDeviceView>
+        <n1:DCIM_PCIDeviceView>
+          <n1:BusNumber>4</n1:BusNumber>
+          <n1:DataBusWidth>0002</n1:DataBusWidth>
+          <n1:Description> Saturn-X: LightPulse Fibre Channel Host Adapter</n1:Description>
+          <n1:DeviceNumber>0</n1:DeviceNumber>
+          <n1:FQDD>FC.Slot.6-1</n1:FQDD>
+          <n1:FunctionNumber>0</n1:FunctionNumber>
+          <n1:InstanceID>FC.Slot.6-1</n1:InstanceID>
+          <n1:LastSystemInventoryTime>20121129145825.000000+000</n1:LastSystemInventoryTime>
+          <n1:LastUpdateTime>20121031155945.000000+000</n1:LastUpdateTime>
+          <n1:Manufacturer>Emulex Corporation</n1:Manufacturer>
+          <n1:PCIDeviceID>F100</n1:PCIDeviceID>
+          <n1:PCISubDeviceID>F100</n1:PCISubDeviceID>
+          <n1:PCISubVendorID>10DF</n1:PCISubVendorID>
+          <n1:PCIVendorID>10DF</n1:PCIVendorID>
+          <n1:SlotLength>0002</n1:SlotLength>
+          <n1:SlotType>0002</n1:SlotType>
+        </n1:DCIM_PCIDeviceView>
+        <n1:DCIM_PCIDeviceView>
+          <n1:BusNumber>4</n1:BusNumber>
+          <n1:DataBusWidth>0002</n1:DataBusWidth>
+          <n1:Description> Saturn-X: LightPulse Fibre Channel Host Adapter</n1:Description>
+          <n1:DeviceNumber>0</n1:DeviceNumber>
+          <n1:FQDD>FC.Slot.6-2</n1:FQDD>
+          <n1:FunctionNumber>1</n1:FunctionNumber>
+          <n1:InstanceID>FC.Slot.6-2</n1:InstanceID>
+          <n1:LastSystemInventoryTime>20121129145825.000000+000</n1:LastSystemInventoryTime>
+          <n1:LastUpdateTime>20121031155945.000000+000</n1:LastUpdateTime>
+          <n1:Manufacturer>Emulex Corporation</n1:Manufacturer>
+          <n1:PCIDeviceID>F100</n1:PCIDeviceID>
+          <n1:PCISubDeviceID>F100</n1:PCISubDeviceID>
+          <n1:PCISubVendorID>10DF</n1:PCISubVendorID>
+          <n1:PCIVendorID>10DF</n1:PCIVendorID>
+          <n1:SlotLength>0002</n1:SlotLength>
+          <n1:SlotType>0002</n1:SlotType>
+        </n1:DCIM_PCIDeviceView>
+        <n1:DCIM_PCIDeviceView>
+          <n1:BusNumber>0</n1:BusNumber>
+          <n1:DataBusWidth>0002</n1:DataBusWidth>
+          <n1:Description> Patsburg PCI Express Virtual Root Port</n1:Description>
+          <n1:DeviceNumber>17</n1:DeviceNumber>
+          <n1:FQDD>P2PBridge.Embedded.20-1</n1:FQDD>
+          <n1:FunctionNumber>0</n1:FunctionNumber>
+          <n1:InstanceID>P2PBridge.Embedded.20-1</n1:InstanceID>
+          <n1:LastSystemInventoryTime>20121129145825.000000+000</n1:LastSystemInventoryTime>
+          <n1:LastUpdateTime>20121031155945.000000+000</n1:LastUpdateTime>
+          <n1:Manufacturer>Intel Corporation</n1:Manufacturer>
+          <n1:PCIDeviceID>1D3E</n1:PCIDeviceID>
+          <n1:PCISubDeviceID>0000</n1:PCISubDeviceID>
+          <n1:PCISubVendorID>0000</n1:PCISubVendorID>
+          <n1:PCIVendorID>8086</n1:PCIVendorID>
+          <n1:SlotLength>0002</n1:SlotLength>
+          <n1:SlotType>0002</n1:SlotType>
+        </n1:DCIM_PCIDeviceView>
+        <n1:DCIM_PCIDeviceView>
+          <n1:BusNumber>0</n1:BusNumber>
+          <n1:DataBusWidth>0002</n1:DataBusWidth>
+          <n1:Description> Patsburg USB2 Enhanced Host Controller #2</n1:Description>
+          <n1:DeviceNumber>26</n1:DeviceNumber>
+          <n1:FQDD>USBEHCI.Embedded.2-1</n1:FQDD>
+          <n1:FunctionNumber>0</n1:FunctionNumber>
+          <n1:InstanceID>USBEHCI.Embedded.2-1</n1:InstanceID>
+          <n1:LastSystemInventoryTime>20121129145825.000000+000</n1:LastSystemInventoryTime>
+          <n1:LastUpdateTime>20121031155945.000000+000</n1:LastUpdateTime>
+          <n1:Manufacturer>Intel Corporation</n1:Manufacturer>
+          <n1:PCIDeviceID>1D2D</n1:PCIDeviceID>
+          <n1:PCISubDeviceID>0528</n1:PCISubDeviceID>
+          <n1:PCISubVendorID>1028</n1:PCISubVendorID>
+          <n1:PCIVendorID>8086</n1:PCIVendorID>
+          <n1:SlotLength>0002</n1:SlotLength>
+          <n1:SlotType>0002</n1:SlotType>
+        </n1:DCIM_PCIDeviceView>
+        <n1:DCIM_PCIDeviceView>
+          <n1:BusNumber>8</n1:BusNumber>
+          <n1:DataBusWidth>0002</n1:DataBusWidth>
+          <n1:Description> SH7757 PCIe Switch [PS]</n1:Description>
+          <n1:DeviceNumber>0</n1:DeviceNumber>
+          <n1:FQDD>P2PBridge.Embedded.2-2</n1:FQDD>
+          <n1:FunctionNumber>0</n1:FunctionNumber>
+          <n1:InstanceID>P2PBridge.Embedded.2-2</n1:InstanceID>
+          <n1:LastSystemInventoryTime>20121129145825.000000+000</n1:LastSystemInventoryTime>
+          <n1:LastUpdateTime>20121031155945.000000+000</n1:LastUpdateTime>
+          <n1:Manufacturer>Renesas Technology Corp.</n1:Manufacturer>
+          <n1:PCIDeviceID>0013</n1:PCIDeviceID>
+          <n1:PCISubDeviceID>0000</n1:PCISubDeviceID>
+          <n1:PCISubVendorID>0000</n1:PCISubVendorID>
+          <n1:PCIVendorID>1912</n1:PCIVendorID>
+          <n1:SlotLength>0002</n1:SlotLength>
+          <n1:SlotType>0002</n1:SlotType>
+        </n1:DCIM_PCIDeviceView>
+        <n1:DCIM_PCIDeviceView>
+          <n1:BusNumber>0</n1:BusNumber>
+          <n1:DataBusWidth>0002</n1:DataBusWidth>
+          <n1:Description> Patsburg PCI Express Root Port 1</n1:Description>
+          <n1:DeviceNumber>28</n1:DeviceNumber>
+          <n1:FQDD>P2PBridge.Embedded.5-1</n1:FQDD>
+          <n1:FunctionNumber>0</n1:FunctionNumber>
+          <n1:InstanceID>P2PBridge.Embedded.5-1</n1:InstanceID>
+          <n1:LastSystemInventoryTime>20121129145825.000000+000</n1:LastSystemInventoryTime>
+          <n1:LastUpdateTime>20121031155945.000000+000</n1:LastUpdateTime>
+          <n1:Manufacturer>Intel Corporation</n1:Manufacturer>
+          <n1:PCIDeviceID>1D10</n1:PCIDeviceID>
+          <n1:PCISubDeviceID>0000</n1:PCISubDeviceID>
+          <n1:PCISubVendorID>0000</n1:PCISubVendorID>
+          <n1:PCIVendorID>8086</n1:PCIVendorID>
+          <n1:SlotLength>0002</n1:SlotLength>
+          <n1:SlotType>0002</n1:SlotType>
+        </n1:DCIM_PCIDeviceView>
+        <n1:DCIM_PCIDeviceView>
+          <n1:BusNumber>0</n1:BusNumber>
+          <n1:DataBusWidth>0002</n1:DataBusWidth>
+          <n1:Description> Patsburg PCI Express Root Port 8</n1:Description>
+          <n1:DeviceNumber>28</n1:DeviceNumber>
+          <n1:FQDD>P2PBridge.Embedded.12-1</n1:FQDD>
+          <n1:FunctionNumber>7</n1:FunctionNumber>
+          <n1:InstanceID>P2PBridge.Embedded.12-1</n1:InstanceID>
+          <n1:LastSystemInventoryTime>20121129145825.000000+000</n1:LastSystemInventoryTime>
+          <n1:LastUpdateTime>20121031155945.000000+000</n1:LastUpdateTime>
+          <n1:Manufacturer>Intel Corporation</n1:Manufacturer>
+          <n1:PCIDeviceID>1D1E</n1:PCIDeviceID>
+          <n1:PCISubDeviceID>0000</n1:PCISubDeviceID>
+          <n1:PCISubVendorID>0000</n1:PCISubVendorID>
+          <n1:PCIVendorID>8086</n1:PCIVendorID>
+          <n1:SlotLength>0002</n1:SlotLength>
+          <n1:SlotType>0002</n1:SlotType>
+        </n1:DCIM_PCIDeviceView>
+        <n1:DCIM_PCIDeviceView>
+          <n1:BusNumber>8</n1:BusNumber>
+          <n1:DataBusWidth>0002</n1:DataBusWidth>
+          <n1:Description> SH7757 PCIe Switch [PS]</n1:Description>
+          <n1:DeviceNumber>1</n1:DeviceNumber>
+          <n1:FQDD>P2PBridge.Embedded.3-1</n1:FQDD>
+          <n1:FunctionNumber>0</n1:FunctionNumber>
+          <n1:InstanceID>P2PBridge.Embedded.3-1</n1:InstanceID>
+          <n1:LastSystemInventoryTime>20121129145825.000000+000</n1:LastSystemInventoryTime>
+          <n1:LastUpdateTime>20121031155945.000000+000</n1:LastUpdateTime>
+          <n1:Manufacturer>Renesas Technology Corp.</n1:Manufacturer>
+          <n1:PCIDeviceID>0013</n1:PCIDeviceID>
+          <n1:PCISubDeviceID>0000</n1:PCISubDeviceID>
+          <n1:PCISubVendorID>0000</n1:PCISubVendorID>
+          <n1:PCIVendorID>1912</n1:PCIVendorID>
+          <n1:SlotLength>0002</n1:SlotLength>
+          <n1:SlotType>0002</n1:SlotType>
+        </n1:DCIM_PCIDeviceView>
+        <n1:DCIM_PCIDeviceView>
+          <n1:BusNumber>64</n1:BusNumber>
+          <n1:DataBusWidth>0002</n1:DataBusWidth>
+          <n1:Description> Sandy Bridge IIO PCI Express Root Port 1a</n1:Description>
+          <n1:DeviceNumber>1</n1:DeviceNumber>
+          <n1:FQDD>P2PBridge.Embedded.22-1</n1:FQDD>
+          <n1:FunctionNumber>0</n1:FunctionNumber>
+          <n1:InstanceID>P2PBridge.Embedded.22-1</n1:InstanceID>
+          <n1:LastSystemInventoryTime>20121129145825.000000+000</n1:LastSystemInventoryTime>
+          <n1:LastUpdateTime>20121031155945.000000+000</n1:LastUpdateTime>
+          <n1:Manufacturer>Intel Corporation</n1:Manufacturer>
+          <n1:PCIDeviceID>3C02</n1:PCIDeviceID>
+          <n1:PCISubDeviceID>0000</n1:PCISubDeviceID>
+          <n1:PCISubVendorID>0000</n1:PCISubVendorID>
+          <n1:PCIVendorID>8086</n1:PCIVendorID>
+          <n1:SlotLength>0002</n1:SlotLength>
+          <n1:SlotType>0002</n1:SlotType>
+        </n1:DCIM_PCIDeviceView>
+        <n1:DCIM_PCIDeviceView>
+          <n1:BusNumber>64</n1:BusNumber>
+          <n1:DataBusWidth>0002</n1:DataBusWidth>
+          <n1:Description> Sandy Bridge IIO PCI Express Root Port 2a</n1:Description>
+          <n1:DeviceNumber>2</n1:DeviceNumber>
+          <n1:FQDD>P2PBridge.Embedded.24-1</n1:FQDD>
+          <n1:FunctionNumber>0</n1:FunctionNumber>
+          <n1:InstanceID>P2PBridge.Embedded.24-1</n1:InstanceID>
+          <n1:LastSystemInventoryTime>20121129145825.000000+000</n1:LastSystemInventoryTime>
+          <n1:LastUpdateTime>20121031155945.000000+000</n1:LastUpdateTime>
+          <n1:Manufacturer>Intel Corporation</n1:Manufacturer>
+          <n1:PCIDeviceID>3C04</n1:PCIDeviceID>
+          <n1:PCISubDeviceID>0000</n1:PCISubDeviceID>
+          <n1:PCISubVendorID>0000</n1:PCISubVendorID>
+          <n1:PCIVendorID>8086</n1:PCIVendorID>
+          <n1:SlotLength>0002</n1:SlotLength>
+          <n1:SlotType>0002</n1:SlotType>
+        </n1:DCIM_PCIDeviceView>
+        <n1:DCIM_PCIDeviceView>
+          <n1:BusNumber>66</n1:BusNumber>
+          <n1:DataBusWidth>0002</n1:DataBusWidth>
+          <n1:Description> Saturn-X: LightPulse Fibre Channel Host Adapter</n1:Description>
+          <n1:DeviceNumber>0</n1:DeviceNumber>
+          <n1:FQDD>FC.Slot.4-1</n1:FQDD>
+          <n1:FunctionNumber>0</n1:FunctionNumber>
+          <n1:InstanceID>FC.Slot.4-1</n1:InstanceID>
+          <n1:LastSystemInventoryTime>20121129145825.000000+000</n1:LastSystemInventoryTime>
+          <n1:LastUpdateTime>20121031155945.000000+000</n1:LastUpdateTime>
+          <n1:Manufacturer>Emulex Corporation</n1:Manufacturer>
+          <n1:PCIDeviceID>F100</n1:PCIDeviceID>
+          <n1:PCISubDeviceID>F100</n1:PCISubDeviceID>
+          <n1:PCISubVendorID>10DF</n1:PCISubVendorID>
+          <n1:PCIVendorID>10DF</n1:PCIVendorID>
+          <n1:SlotLength>0002</n1:SlotLength>
+          <n1:SlotType>0002</n1:SlotType>
+        </n1:DCIM_PCIDeviceView>
+        <n1:DCIM_PCIDeviceView>
+          <n1:BusNumber>66</n1:BusNumber>
+          <n1:DataBusWidth>0002</n1:DataBusWidth>
+          <n1:Description> Saturn-X: LightPulse Fibre Channel Host Adapter</n1:Description>
+          <n1:DeviceNumber>0</n1:DeviceNumber>
+          <n1:FQDD>FC.Slot.4-2</n1:FQDD>
+          <n1:FunctionNumber>1</n1:FunctionNumber>
+          <n1:InstanceID>FC.Slot.4-2</n1:InstanceID>
+          <n1:LastSystemInventoryTime>20121129145825.000000+000</n1:LastSystemInventoryTime>
+          <n1:LastUpdateTime>20121031155945.000000+000</n1:LastUpdateTime>
+          <n1:Manufacturer>Emulex Corporation</n1:Manufacturer>
+          <n1:PCIDeviceID>F100</n1:PCIDeviceID>
+          <n1:PCISubDeviceID>F100</n1:PCISubDeviceID>
+          <n1:PCISubVendorID>10DF</n1:PCISubVendorID>
+          <n1:PCIVendorID>10DF</n1:PCIVendorID>
+          <n1:SlotLength>0002</n1:SlotLength>
+          <n1:SlotType>0002</n1:SlotType>
+        </n1:DCIM_PCIDeviceView>
+        <n1:DCIM_PCIDeviceView>
+          <n1:BusNumber>64</n1:BusNumber>
+          <n1:DataBusWidth>0002</n1:DataBusWidth>
+          <n1:Description> Sandy Bridge IIO PCI Express Root Port 3a in PCI Express Mode</n1:Description>
+          <n1:DeviceNumber>3</n1:DeviceNumber>
+          <n1:FQDD>P2PBridge.Embedded.28-1</n1:FQDD>
+          <n1:FunctionNumber>0</n1:FunctionNumber>
+          <n1:InstanceID>P2PBridge.Embedded.28-1</n1:InstanceID>
+          <n1:LastSystemInventoryTime>20121129145825.000000+000</n1:LastSystemInventoryTime>
+          <n1:LastUpdateTime>20121031155945.000000+000</n1:LastUpdateTime>
+          <n1:Manufacturer>Intel Corporation</n1:Manufacturer>
+          <n1:PCIDeviceID>3C08</n1:PCIDeviceID>
+          <n1:PCISubDeviceID>0000</n1:PCISubDeviceID>
+          <n1:PCISubVendorID>0000</n1:PCISubVendorID>
+          <n1:PCIVendorID>8086</n1:PCIVendorID>
+          <n1:SlotLength>0002</n1:SlotLength>
+          <n1:SlotType>0002</n1:SlotType>
+        </n1:DCIM_PCIDeviceView>
+        <n1:DCIM_PCIDeviceView>
+          <n1:BusNumber>64</n1:BusNumber>
+          <n1:DataBusWidth>0002</n1:DataBusWidth>
+          <n1:Description> Sandy Bridge IIO PCI Express Root Port 3c</n1:Description>
+          <n1:DeviceNumber>3</n1:DeviceNumber>
+          <n1:FQDD>P2PBridge.Embedded.30-1</n1:FQDD>
+          <n1:FunctionNumber>2</n1:FunctionNumber>
+          <n1:InstanceID>P2PBridge.Embedded.30-1</n1:InstanceID>
+          <n1:LastSystemInventoryTime>20121129145825.000000+000</n1:LastSystemInventoryTime>
+          <n1:LastUpdateTime>20121031155945.000000+000</n1:LastUpdateTime>
+          <n1:Manufacturer>Intel Corporation</n1:Manufacturer>
+          <n1:PCIDeviceID>3C0A</n1:PCIDeviceID>
+          <n1:PCISubDeviceID>0000</n1:PCISubDeviceID>
+          <n1:PCISubVendorID>0000</n1:PCISubVendorID>
+          <n1:PCIVendorID>8086</n1:PCIVendorID>
+          <n1:SlotLength>0002</n1:SlotLength>
+          <n1:SlotType>0002</n1:SlotType>
+        </n1:DCIM_PCIDeviceView>
+      </wsman:Items>
+      <wsen:EnumerationContext/>
+      <wsman:EndOfSequence/>
+    </wsen:EnumerateResponse>
+  </s:Body>
+</s:Envelope>
+"""
