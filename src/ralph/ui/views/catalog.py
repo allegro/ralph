@@ -20,7 +20,7 @@ from ralph.discovery.models import (DeviceType, ComponentType, DeviceModel,
                                     DiskShare, FibreChannel, GenericComponent,
                                     Software, OperatingSystem, Device)
 from ralph.discovery.models_history import HistoryModelChange
-from ralph.ui.forms import ComponentModelGroupForm, DeviceModelGroupForm
+from ralph.ui.forms.catalog import ComponentModelGroupForm, DeviceModelGroupForm
 from ralph.ui.views.common import Base
 from ralph.util import pricing
 from ralph.util.presentation import COMPONENT_ICONS, DEVICE_ICONS
