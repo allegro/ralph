@@ -244,7 +244,7 @@ class IDRAC(object):
         return results
 
     def get_storage(self):
-        soap_result = self._run_command('DCIM_PhysicalDiskView')
+        soap_result = self.run_command('DCIM_PhysicalDiskView')
         tree = ET.XML(soap_result)
         xmlns_n1 = XMLNS_N1_BASE % "DCIM_PhysicalDiskView"
         q = "{}Body/{}EnumerateResponse/{}Items/{}DCIM_PhysicalDiskView".format(
