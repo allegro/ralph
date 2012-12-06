@@ -97,9 +97,9 @@ def _send_soap(post_url, login, password, message):
     # in this case, try to detect these errors as well.
     errors_path = '{s}Body/{s}Fault'.format(s=XMLNS_S)
     errors_list = []
-    errors_nodes = ET.XML(r.text).findall(errors_path)
-    if errors_nodes:
-        errors_list = [x for x in errors_nodes[0].itertext()]
+    errors_node = ET.XML(r.text).find(errors_path)
+    if errors_node:
+        errors_list = [x for x in errors_node.itertext()]
         raise SoapException(
             'Request was:%s, Response errors were:%s' %
             (message, ','.join(errors_list))
