@@ -72,15 +72,15 @@
                                     </ul>
                             </div>
                         </th>
-                        <th>Type</th>
-                        <th>SN</th>
-                        <th>Barcode</th>
-                        <th>Model</th>
-                        <th>Invoice no.</th>
-                        <th>Order no.</th>
-                        <th>Buy date</th>
-                        <th>Status</th>
-                        <th>Warehouse</th>
+                        <td>Type</td>
+                        {% include 'assets/column-header.html' with label='SN' name='sn' %}
+                        {% include 'assets/column-header.html' with label='Barcode' name='barcode' %}
+                        {% include 'assets/column-header.html' with label='Model' name='model' %}
+                        {% include 'assets/column-header.html' with label='Invoice no.' name='invoice_no' %}
+                        {% include 'assets/column-header.html' with label='Order no.' name='order_no' %}
+                        {% include 'assets/column-header.html' with label='Buy date' name='buy_date' type='date' %}
+                        {% include 'assets/column-header.html' with label='Status' name='status' %}
+                        {% include 'assets/column-header.html' with label='Warehouse' name='warehouse' %}
                         <th>Actions</th>
                     </tr>
                 </thead>

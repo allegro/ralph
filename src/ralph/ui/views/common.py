@@ -928,8 +928,12 @@ class PaginationMixin(object):
 
     In your controller:
     1. Inherit from this mixin
-    2. define ROW_PER_SIZE attribute
-    3. In get() function call self.paginate_query(your_query).
+    2. Define ROW_PER_SIZE attribute
+    3. Add the key 'sort' of value 'self.sort' to `ret` variable
+       in get_context_data() function
+    4. Define attribute `columns` contain dict with column names and fields
+       to sort, example: columns = {'name': ('name',),}
+    5. In get() function call self.paginate_query(your_query, columns).
 
     Result is stored in the self.page_contents.
     Data for template (for use in get_context_data) can be obtained
@@ -938,6 +942,12 @@ class PaginationMixin(object):
 
     In your template add code:
     {% pagination page url_query=url_query show_all=0 show_csv=0 fugue_icons=1 %}
+
+    And in the definition of columns add:
+    {% include 'assets/column-header.html' with label='label' name='field_name' %}
+
+    assets/column-header.html - is an example of a file that is responsible
+    for display sorting buttons
 
     All done!
 
@@ -952,13 +962,26 @@ class PaginationMixin(object):
             'pages': self.get_pages(self.paginator, self.page_number),
         }
 
-    def paginate_query(self, queryset):
+    def paginate_query(self, queryset, columns=None):
         """Paginate given query."""
+        queryset = self.sort_queryset(queryset, columns=columns)
         if self.exporting_csv_file:
             return queryset
         else:
             self.paginate(queryset)
             return self.page_contents
+
+    def sort_queryset(self, queryset, columns, sort=None):
+        if columns:
+            if sort is None:
+                sort = self.request.GET.get('sort', '')
+            sort_columns = columns.get(sort.strip('-'), ())
+            if sort.startswith('-'):
+                sort_columns = ['-' + col for col in sort_columns]
+            if queryset and sort:
+                queryset = queryset.order_by(*sort_columns)
+        self.sort = sort
+        return queryset
 
     def paginate(self, queryset):
         """Internal pagination function"""

@@ -34,6 +34,17 @@ SAVE_PRIORITY = 200
 HISTORY_PAGE_SIZE = 25
 MAX_PAGE_SIZE = 65535
 CONNECT_ASSET_WITH_DEVICE = settings.CONNECT_ASSET_WITH_DEVICE
+ASSET_SORT_COLUMNS = {
+    'name': ('name',),
+    'sn': ('sn',),
+    'barcode': ('barcode',),
+    'model': ('model',),
+    'invoice_no': ('invoice_no',),
+    'order_no': ('order_no',),
+    'buy_date': ('buy_date',),
+    'status': ('status',),
+    'warehouse': ('device_info__warehouse',),
+}
 
 
 class AssetsMixin(Base):
@@ -113,6 +124,7 @@ class BackOfficeMixin(AssetsMixin):
 class AssetSearch(AssetsMixin, PaginationMixin):
     """The main-screen search form for all type of assets."""
     ROWS_PER_PAGE = 15
+    columns = ASSET_SORT_COLUMNS
 
     def handle_search_data(self):
         search_fields = [
@@ -136,7 +148,7 @@ class AssetSearch(AssetsMixin, PaginationMixin):
             all_q &= Q(buy_date__gte=buy_date_from)
         if buy_date_to:
             all_q &= Q(buy_date__lte=buy_date_to)
-        self.paginate_query(self.get_all_items(all_q))
+        self.paginate_query(self.get_all_items(all_q), ASSET_SORT_COLUMNS)
 
     def get_all_items(self, q_object):
         return Asset.objects.filter(q_object).order_by('id')
@@ -152,6 +164,7 @@ class AssetSearch(AssetsMixin, PaginationMixin):
         ret.update({
             'form': self.form,
             'header': self.header,
+            'sort': self.sort,
         })
         return ret
 
