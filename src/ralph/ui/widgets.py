@@ -61,10 +61,11 @@ class ReadOnlyMultipleChoiceWidget(FilteredSelectMultiple):
 
 class ReadOnlyWidget(forms.Widget):
     def render(self, name, value, attrs=None, choices=()):
+        attr_class =  escape(self.attrs.get('class', ''))
         return mark_safe('''
         <input type="hidden" name="%s" value="%s">
-        <div class="input uneditable-input">%s</div></input>''' % (
-            escape(name), escape(value), escape(value)))
+        <div class="input uneditable-input %s">%s</div></input>''' % (
+            escape(name), escape(value), attr_class, escape(value)))
 
 
 class DeviceModelWidget(forms.Widget):
@@ -204,6 +205,15 @@ class DateWidget(forms.DateInput):
                   'placeholder="%s" value="%s" data-date-format="yyyy-mm-dd">')
         return mark_safe(output % (escape(name), attr_class,
                                    attr_placeholder, escape(value or '')))
+
+
+class ReadOnlyDateWidget(forms.DateInput):
+    def render(self, name, value, attrs=None, choices=()):
+        formatted = escape(value) if value else ''
+        return mark_safe('''
+        <input type="hidden" name="%s" value="%s">
+        <div>%s</div></input>''' % (
+            escape(name), formatted, formatted))
 
 
 class CurrencyWidget(forms.TextInput):
