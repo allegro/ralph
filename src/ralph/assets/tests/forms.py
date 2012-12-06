@@ -493,7 +493,7 @@ class TestSearchForm(TestCase):
         self.assertEqual(len(res), 2)
         output = ('AsModel2 - sn-123123123 - bc-1234123123')
         self.assertNotEqual(unicode(res[0]), output)
-        # beggining date cant be lower than end date
+        # beggining date can't be lower than end date
         url = '/assets/dc/search?invoice_date_from=%s&invoice_date_to=%s' % (
             '2011-01-01', '2002-01-01')
         get = self.client.get(url)
