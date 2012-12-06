@@ -318,6 +318,7 @@ def _save_ethernets(data):
 
 
 def _save_cpu(dev, data):
+    detected_cpus = []
     for cpu in data:
         try:
             index = int(cpu['socket'].split('.')[-1])
@@ -348,9 +349,12 @@ def _save_cpu(dev, data):
         processor.speed = cpu['speed']
         processor.cores = cpu['cores_count']
         processor.save(priority=SAVE_PRIORITY)
+        detected_cpus.append(processor.pk)
+    dev.processor_set.exclude(pk__in=detected_cpus).delete()
 
 
 def _save_memory(dev, data):
+    detected_memory = []
     for mem, index in zip(data, range(1, len(data) + 1)):
         extra = "RAM {} {} {}MiB speed: {}".format(
             mem['manufacturer'],
@@ -359,7 +363,6 @@ def _save_memory(dev, data):
             mem['speed']
         )
         name = "{} {}".format(mem['manufacturer'], mem['model'])
-
         model, _ = ComponentModel.concurrent_get_or_create(
             speed=mem['speed'],
             type=ComponentType.memory,
@@ -374,9 +377,12 @@ def _save_memory(dev, data):
         memory.speed = mem['speed']
         memory.model = model
         memory.save(priority=SAVE_PRIORITY)
+        detected_memory.append(memory.pk)
+    dev.memory_set.exclude(pk__in=detected_memory).delete()
 
 
 def _save_storage(dev, data):
+    detected_storage = []
     for disk in data:
         model_name = "{} {}".format(
             disk['manufacturer'].strip(),
@@ -397,6 +403,8 @@ def _save_storage(dev, data):
         storage.label = "{} {}MiB".format(model_name, size)
         storage.size = size
         storage.save(priority=SAVE_PRIORITY)
+        detected_storage.append(storage.pk)
+    dev.storage_set.exclude(pk__in=detected_storage).delete()
 
 
 def _save_fc_cards(dev, data):
