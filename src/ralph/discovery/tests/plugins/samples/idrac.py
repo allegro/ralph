@@ -3,7 +3,7 @@ base_info = """<?xml version="1.0" encoding="UTF-8"?>
   <s:Header>
     <wsa:To>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</wsa:To>
     <wsa:Action>http://schemas.xmlsoap.org/ws/2004/09/enumeration/EnumerateResponse</wsa:Action>
-    <wsa:RelatesTo>uuid:d64eb446-d017-1017-8002-9385bb730318</wsa:RelatesTo>
+    <wsa:RelatesTo>uuid:d64eb446-d017-1017-8002-938FBb730318</wsa:RelatesTo>
     <wsa:MessageID>uuid:516ba3ac-d01a-101a-8067-8a530f1cb190</wsa:MessageID>
   </s:Header>
   <s:Body>
@@ -77,7 +77,7 @@ cpu_info = """<?xml version="1.0" encoding="UTF-8"?>
   <s:Header>
     <wsa:To>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</wsa:To>
     <wsa:Action>http://schemas.xmlsoap.org/ws/2004/09/enumeration/EnumerateResponse</wsa:Action>
-    <wsa:RelatesTo>uuid:ea6cd545-d017-1017-8002-9385bb730318</wsa:RelatesTo>
+    <wsa:RelatesTo>uuid:ea6cd545-d017-1017-8002-938FBb730318</wsa:RelatesTo>
     <wsa:MessageID>uuid:65935a16-d01a-101a-8069-8a530f1cb190</wsa:MessageID>
   </s:Header>
   <s:Body>
@@ -182,7 +182,7 @@ memory_info = """<?xml version="1.0" encoding="UTF-8"?>
   <s:Header>
     <wsa:To>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</wsa:To>
     <wsa:Action>http://schemas.xmlsoap.org/ws/2004/09/enumeration/EnumerateResponse</wsa:Action>
-    <wsa:RelatesTo>uuid:ec16203c-d017-1017-8002-9385bb730318</wsa:RelatesTo>
+    <wsa:RelatesTo>uuid:ec16203c-d017-1017-8002-938FBb730318</wsa:RelatesTo>
     <wsa:MessageID>uuid:67366fa6-d01a-101a-806b-8a530f1cb190</wsa:MessageID>
   </s:Header>
   <s:Body>
@@ -355,7 +355,7 @@ nic_info = """<?xml version="1.0" encoding="UTF-8"?>
           <n1:AutoNegotiation>2</n1:AutoNegotiation>
           <n1:BusNumber>1</n1:BusNumber>
           <n1:ControllerBIOSVersion xsi:nil="true"/>
-          <n1:CurrentMACAddress>BC:30:5B:F1:33:02</n1:CurrentMACAddress>
+          <n1:CurrentMACAddress>BC:30:FB:F1:33:02</n1:CurrentMACAddress>
           <n1:DataBusWidth>0002</n1:DataBusWidth>
           <n1:DeviceNumber>0</n1:DeviceNumber>
           <n1:EFIVersion xsi:nil="true"/>
@@ -378,9 +378,9 @@ nic_info = """<?xml version="1.0" encoding="UTF-8"?>
           <n1:PCISubVendorID>1028</n1:PCISubVendorID>
           <n1:PCIVendorID>8086</n1:PCIVendorID>
           <n1:PermanentFCOEMACAddress/>
-          <n1:PermanentMACAddress>BC:30:5B:F1:33:02</n1:PermanentMACAddress>
+          <n1:PermanentMACAddress>BC:30:FB:F1:33:02</n1:PermanentMACAddress>
           <n1:PermanentiSCSIMACAddress/>
-          <n1:ProductName>Intel(R) Gigabit 4P I350-t rNDC - BC:30:5B:F1:33:02</n1:ProductName>
+          <n1:ProductName>Intel(R) Gigabit 4P I350-t rNDC - BC:30:FB:F1:33:02</n1:ProductName>
           <n1:ReceiveFlowControl>3</n1:ReceiveFlowControl>
           <n1:SlotLength>0002</n1:SlotLength>
           <n1:SlotType>0002</n1:SlotType>
@@ -388,7 +388,7 @@ nic_info = """<?xml version="1.0" encoding="UTF-8"?>
           <n1:VendorName>Intel Corp</n1:VendorName>
           <n1:VirtWWN xsi:nil="true"/>
           <n1:VirtWWPN xsi:nil="true"/>
-          <n1:WWN>BC:30:5B:F1:33:02</n1:WWN>
+          <n1:WWN>BC:30:FB:F1:33:02</n1:WWN>
           <n1:WWPN xsi:nil="true"/>
           <n1:iScsiOffloadMode>3</n1:iScsiOffloadMode>
         </n1:DCIM_NICView>
@@ -396,7 +396,7 @@ nic_info = """<?xml version="1.0" encoding="UTF-8"?>
           <n1:AutoNegotiation>2</n1:AutoNegotiation>
           <n1:BusNumber>1</n1:BusNumber>
           <n1:ControllerBIOSVersion xsi:nil="true"/>
-          <n1:CurrentMACAddress>BC:30:5B:F1:33:03</n1:CurrentMACAddress>
+          <n1:CurrentMACAddress>BC:30:FB:F1:33:03</n1:CurrentMACAddress>
           <n1:DataBusWidth>0002</n1:DataBusWidth>
           <n1:DeviceNumber>0</n1:DeviceNumber>
           <n1:EFIVersion xsi:nil="true"/>
@@ -419,9 +419,9 @@ nic_info = """<?xml version="1.0" encoding="UTF-8"?>
           <n1:PCISubVendorID>1028</n1:PCISubVendorID>
           <n1:PCIVendorID>8086</n1:PCIVendorID>
           <n1:PermanentFCOEMACAddress/>
-          <n1:PermanentMACAddress>BC:30:5B:F1:33:03</n1:PermanentMACAddress>
+          <n1:PermanentMACAddress>BC:30:FB:F1:33:03</n1:PermanentMACAddress>
           <n1:PermanentiSCSIMACAddress/>
-          <n1:ProductName>Intel(R) Gigabit 4P I350-t rNDC - BC:30:5B:F1:33:03</n1:ProductName>
+          <n1:ProductName>Intel(R) Gigabit 4P I350-t rNDC - BC:30:FB:F1:33:03</n1:ProductName>
           <n1:ReceiveFlowControl>3</n1:ReceiveFlowControl>
           <n1:SlotLength>0002</n1:SlotLength>
           <n1:SlotType>0002</n1:SlotType>
@@ -429,7 +429,7 @@ nic_info = """<?xml version="1.0" encoding="UTF-8"?>
           <n1:VendorName>Intel Corp</n1:VendorName>
           <n1:VirtWWN xsi:nil="true"/>
           <n1:VirtWWPN xsi:nil="true"/>
-          <n1:WWN>BC:30:5B:F1:33:03</n1:WWN>
+          <n1:WWN>BC:30:FB:F1:33:03</n1:WWN>
           <n1:WWPN xsi:nil="true"/>
           <n1:iScsiOffloadMode>3</n1:iScsiOffloadMode>
         </n1:DCIM_NICView>
@@ -437,7 +437,7 @@ nic_info = """<?xml version="1.0" encoding="UTF-8"?>
           <n1:AutoNegotiation>2</n1:AutoNegotiation>
           <n1:BusNumber>1</n1:BusNumber>
           <n1:ControllerBIOSVersion xsi:nil="true"/>
-          <n1:CurrentMACAddress>BC:30:5B:F1:33:00</n1:CurrentMACAddress>
+          <n1:CurrentMACAddress>BC:30:FB:F1:33:00</n1:CurrentMACAddress>
           <n1:DataBusWidth>0002</n1:DataBusWidth>
           <n1:DeviceNumber>0</n1:DeviceNumber>
           <n1:EFIVersion xsi:nil="true"/>
@@ -460,9 +460,9 @@ nic_info = """<?xml version="1.0" encoding="UTF-8"?>
           <n1:PCISubVendorID>1028</n1:PCISubVendorID>
           <n1:PCIVendorID>8086</n1:PCIVendorID>
           <n1:PermanentFCOEMACAddress/>
-          <n1:PermanentMACAddress>BC:30:5B:F1:33:00</n1:PermanentMACAddress>
+          <n1:PermanentMACAddress>BC:30:FB:F1:33:00</n1:PermanentMACAddress>
           <n1:PermanentiSCSIMACAddress/>
-          <n1:ProductName>Intel(R) Gigabit 4P I350-t rNDC - BC:30:5B:F1:33:00</n1:ProductName>
+          <n1:ProductName>Intel(R) Gigabit 4P I350-t rNDC - BC:30:FB:F1:33:00</n1:ProductName>
           <n1:ReceiveFlowControl>2</n1:ReceiveFlowControl>
           <n1:SlotLength>0002</n1:SlotLength>
           <n1:SlotType>0002</n1:SlotType>
@@ -470,7 +470,7 @@ nic_info = """<?xml version="1.0" encoding="UTF-8"?>
           <n1:VendorName>Intel Corp</n1:VendorName>
           <n1:VirtWWN xsi:nil="true"/>
           <n1:VirtWWPN xsi:nil="true"/>
-          <n1:WWN>BC:30:5B:F1:33:00</n1:WWN>
+          <n1:WWN>BC:30:FB:F1:33:00</n1:WWN>
           <n1:WWPN xsi:nil="true"/>
           <n1:iScsiOffloadMode>3</n1:iScsiOffloadMode>
         </n1:DCIM_NICView>
@@ -478,7 +478,7 @@ nic_info = """<?xml version="1.0" encoding="UTF-8"?>
           <n1:AutoNegotiation>2</n1:AutoNegotiation>
           <n1:BusNumber>1</n1:BusNumber>
           <n1:ControllerBIOSVersion xsi:nil="true"/>
-          <n1:CurrentMACAddress>BC:30:5B:F1:33:01</n1:CurrentMACAddress>
+          <n1:CurrentMACAddress>BC:30:FB:F1:33:01</n1:CurrentMACAddress>
           <n1:DataBusWidth>0002</n1:DataBusWidth>
           <n1:DeviceNumber>0</n1:DeviceNumber>
           <n1:EFIVersion xsi:nil="true"/>
@@ -501,9 +501,9 @@ nic_info = """<?xml version="1.0" encoding="UTF-8"?>
           <n1:PCISubVendorID>1028</n1:PCISubVendorID>
           <n1:PCIVendorID>8086</n1:PCIVendorID>
           <n1:PermanentFCOEMACAddress/>
-          <n1:PermanentMACAddress>BC:30:5B:F1:33:01</n1:PermanentMACAddress>
+          <n1:PermanentMACAddress>BC:30:FB:F1:33:01</n1:PermanentMACAddress>
           <n1:PermanentiSCSIMACAddress/>
-          <n1:ProductName>Intel(R) Gigabit 4P I350-t rNDC - BC:30:5B:F1:33:01</n1:ProductName>
+          <n1:ProductName>Intel(R) Gigabit 4P I350-t rNDC - BC:30:FB:F1:33:01</n1:ProductName>
           <n1:ReceiveFlowControl>2</n1:ReceiveFlowControl>
           <n1:SlotLength>0002</n1:SlotLength>
           <n1:SlotType>0002</n1:SlotType>
@@ -511,7 +511,7 @@ nic_info = """<?xml version="1.0" encoding="UTF-8"?>
           <n1:VendorName>Intel Corp</n1:VendorName>
           <n1:VirtWWN xsi:nil="true"/>
           <n1:VirtWWPN xsi:nil="true"/>
-          <n1:WWN>BC:30:5B:F1:33:01</n1:WWN>
+          <n1:WWN>BC:30:FB:F1:33:01</n1:WWN>
           <n1:WWPN xsi:nil="true"/>
           <n1:iScsiOffloadMode>3</n1:iScsiOffloadMode>
         </n1:DCIM_NICView>
@@ -528,7 +528,7 @@ pci_info = """<?xml version="1.0" encoding="UTF-8"?>
   <s:Header>
     <wsa:To>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</wsa:To>
     <wsa:Action>http://schemas.xmlsoap.org/ws/2004/09/enumeration/EnumerateResponse</wsa:Action>
-    <wsa:RelatesTo>uuid:07106f7a-d02b-102b-8002-9385bb730318</wsa:RelatesTo>
+    <wsa:RelatesTo>uuid:07106f7a-d02b-102b-8002-938FBb730318</wsa:RelatesTo>
     <wsa:MessageID>uuid:822daf08-d02d-102d-80f8-8a530f1cb190</wsa:MessageID>
   </s:Header>
   <s:Body>
@@ -1081,3 +1081,284 @@ pci_info = """<?xml version="1.0" encoding="UTF-8"?>
   </s:Body>
 </s:Envelope>
 """
+physical_disk_info = """<?xml version="1.0" encoding="UTF-8"?>
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:wsen="http://schemas.xmlsoap.org/ws/2004/09/enumeration" xmlns:wsman="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" xmlns:n1="http://schemas.dell.com/wbem/wscim/1/cim-schema/2/DCIM_PhysicalDiskView">
+  <s:Header>
+    <wsa:To>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</wsa:To>
+    <wsa:Action>http://schemas.xmlsoap.org/ws/2004/09/enumeration/EnumerateResponse</wsa:Action>
+    <wsa:RelatesTo>uuid:8d59daa2-d01a-101a-8002-938FBb730318</wsa:RelatesTo>
+    <wsa:MessageID>uuid:3d9b1735-d01c-101c-8011-aeaa0255dbe0</wsa:MessageID>
+  </s:Header>
+  <s:Body>
+    <wsen:EnumerateResponse>
+      <wsman:Items>
+        <n1:DCIM_PhysicalDiskView>
+          <n1:BusProtocol>6</n1:BusProtocol>
+          <n1:Connector>0</n1:Connector>
+          <n1:DriveFormFactor>2</n1:DriveFormFactor>
+          <n1:FQDD>Disk.Bay.0:Enclosure.Internal.0-1:RAID.Integrated.1-1</n1:FQDD>
+          <n1:FreeSizeInBytes>0</n1:FreeSizeInBytes>
+          <n1:HotSpareStatus>0</n1:HotSpareStatus>
+          <n1:InstanceID>Disk.Bay.0:Enclosure.Internal.0-1:RAID.Integrated.1-1</n1:InstanceID>
+          <n1:LastSystemInventoryTime>20121120130848.000000+000</n1:LastSystemInventoryTime>
+          <n1:LastUpdateTime>20121120130848.000000+000</n1:LastUpdateTime>
+          <n1:Manufacturer>WD      </n1:Manufacturer>
+          <n1:ManufacturingDay>6</n1:ManufacturingDay>
+          <n1:ManufacturingWeek>24</n1:ManufacturingWeek>
+          <n1:ManufacturingYear>2012</n1:ManufacturingYear>
+          <n1:MaxCapableSpeed>3</n1:MaxCapableSpeed>
+          <n1:MediaType>0</n1:MediaType>
+          <n1:Model>WD3001BKHG      </n1:Model>
+          <n1:OperationName>None</n1:OperationName>
+          <n1:OperationPercentComplete>0</n1:OperationPercentComplete>
+          <n1:PPID>MY0CWHNN1255526DI1D7A01 </n1:PPID>
+          <n1:PredictiveFailureState>0</n1:PredictiveFailureState>
+          <n1:PrimaryStatus>1</n1:PrimaryStatus>
+          <n1:RaidStatus>2</n1:RaidStatus>
+          <n1:Revision>D1S4</n1:Revision>
+          <n1:RollupStatus>1</n1:RollupStatus>
+          <n1:SASAddress>50014EE7AAAC1616</n1:SASAddress>
+          <n1:SecurityState>0</n1:SecurityState>
+          <n1:SerialNumber>WXN1E32KSCNJ        </n1:SerialNumber>
+          <n1:SizeInBytes>299439751168</n1:SizeInBytes>
+          <n1:Slot>0</n1:Slot>
+          <n1:SupportedEncryptionTypes>None</n1:SupportedEncryptionTypes>
+          <n1:UsedSizeInBytes>299439751168</n1:UsedSizeInBytes>
+        </n1:DCIM_PhysicalDiskView>
+        <n1:DCIM_PhysicalDiskView>
+          <n1:BusProtocol>6</n1:BusProtocol>
+          <n1:Connector>0</n1:Connector>
+          <n1:DriveFormFactor>2</n1:DriveFormFactor>
+          <n1:FQDD>Disk.Bay.1:Enclosure.Internal.0-1:RAID.Integrated.1-1</n1:FQDD>
+          <n1:FreeSizeInBytes>0</n1:FreeSizeInBytes>
+          <n1:HotSpareStatus>0</n1:HotSpareStatus>
+          <n1:InstanceID>Disk.Bay.1:Enclosure.Internal.0-1:RAID.Integrated.1-1</n1:InstanceID>
+          <n1:LastSystemInventoryTime>20121120130848.000000+000</n1:LastSystemInventoryTime>
+          <n1:LastUpdateTime>20121120130848.000000+000</n1:LastUpdateTime>
+          <n1:Manufacturer>WD      </n1:Manufacturer>
+          <n1:ManufacturingDay>6</n1:ManufacturingDay>
+          <n1:ManufacturingWeek>24</n1:ManufacturingWeek>
+          <n1:ManufacturingYear>2012</n1:ManufacturingYear>
+          <n1:MaxCapableSpeed>3</n1:MaxCapableSpeed>
+          <n1:MediaType>0</n1:MediaType>
+          <n1:Model>WD3001BKHG      </n1:Model>
+          <n1:OperationName>None</n1:OperationName>
+          <n1:OperationPercentComplete>0</n1:OperationPercentComplete>
+          <n1:PPID>MY0CWHNN1255526DI294A01 </n1:PPID>
+          <n1:PredictiveFailureState>0</n1:PredictiveFailureState>
+          <n1:PrimaryStatus>1</n1:PrimaryStatus>
+          <n1:RaidStatus>2</n1:RaidStatus>
+          <n1:Revision>D1S4</n1:Revision>
+          <n1:RollupStatus>1</n1:RollupStatus>
+          <n1:SASAddress>50014EE75556C77A</n1:SASAddress>
+          <n1:SecurityState>0</n1:SecurityState>
+          <n1:SerialNumber>WXN1E32KTYEA        </n1:SerialNumber>
+          <n1:SizeInBytes>299439751168</n1:SizeInBytes>
+          <n1:Slot>1</n1:Slot>
+          <n1:SupportedEncryptionTypes>None</n1:SupportedEncryptionTypes>
+          <n1:UsedSizeInBytes>299439751168</n1:UsedSizeInBytes>
+        </n1:DCIM_PhysicalDiskView>
+        <n1:DCIM_PhysicalDiskView>
+          <n1:BusProtocol>6</n1:BusProtocol>
+          <n1:Connector>0</n1:Connector>
+          <n1:DriveFormFactor>2</n1:DriveFormFactor>
+          <n1:FQDD>Disk.Bay.2:Enclosure.Internal.0-1:RAID.Integrated.1-1</n1:FQDD>
+          <n1:FreeSizeInBytes>0</n1:FreeSizeInBytes>
+          <n1:HotSpareStatus>0</n1:HotSpareStatus>
+          <n1:InstanceID>Disk.Bay.2:Enclosure.Internal.0-1:RAID.Integrated.1-1</n1:InstanceID>
+          <n1:LastSystemInventoryTime>20121120130848.000000+000</n1:LastSystemInventoryTime>
+          <n1:LastUpdateTime>20121120130848.000000+000</n1:LastUpdateTime>
+          <n1:Manufacturer>WD      </n1:Manufacturer>
+          <n1:ManufacturingDay>6</n1:ManufacturingDay>
+          <n1:ManufacturingWeek>24</n1:ManufacturingWeek>
+          <n1:ManufacturingYear>2012</n1:ManufacturingYear>
+          <n1:MaxCapableSpeed>3</n1:MaxCapableSpeed>
+          <n1:MediaType>0</n1:MediaType>
+          <n1:Model>WD3001BKHG      </n1:Model>
+          <n1:OperationName>None</n1:OperationName>
+          <n1:OperationPercentComplete>0</n1:OperationPercentComplete>
+          <n1:PPID>MY0CWHNN1255526DI0DKA01 </n1:PPID>
+          <n1:PredictiveFailureState>0</n1:PredictiveFailureState>
+          <n1:PrimaryStatus>1</n1:PrimaryStatus>
+          <n1:RaidStatus>2</n1:RaidStatus>
+          <n1:Revision>D1S4</n1:Revision>
+          <n1:RollupStatus>1</n1:RollupStatus>
+          <n1:SASAddress>50014EE70001612E</n1:SASAddress>
+          <n1:SecurityState>0</n1:SecurityState>
+          <n1:SerialNumber>WXE1C5202177        </n1:SerialNumber>
+          <n1:SizeInBytes>299439751168</n1:SizeInBytes>
+          <n1:Slot>2</n1:Slot>
+          <n1:SupportedEncryptionTypes>None</n1:SupportedEncryptionTypes>
+          <n1:UsedSizeInBytes>299439751168</n1:UsedSizeInBytes>
+        </n1:DCIM_PhysicalDiskView>
+        <n1:DCIM_PhysicalDiskView>
+          <n1:BusProtocol>6</n1:BusProtocol>
+          <n1:Connector>0</n1:Connector>
+          <n1:DriveFormFactor>2</n1:DriveFormFactor>
+          <n1:FQDD>Disk.Bay.3:Enclosure.Internal.0-1:RAID.Integrated.1-1</n1:FQDD>
+          <n1:FreeSizeInBytes>0</n1:FreeSizeInBytes>
+          <n1:HotSpareStatus>0</n1:HotSpareStatus>
+          <n1:InstanceID>Disk.Bay.3:Enclosure.Internal.0-1:RAID.Integrated.1-1</n1:InstanceID>
+          <n1:LastSystemInventoryTime>20121120130848.000000+000</n1:LastSystemInventoryTime>
+          <n1:LastUpdateTime>20121120130848.000000+000</n1:LastUpdateTime>
+          <n1:Manufacturer>WD      </n1:Manufacturer>
+          <n1:ManufacturingDay>6</n1:ManufacturingDay>
+          <n1:ManufacturingWeek>24</n1:ManufacturingWeek>
+          <n1:ManufacturingYear>2012</n1:ManufacturingYear>
+          <n1:MaxCapableSpeed>3</n1:MaxCapableSpeed>
+          <n1:MediaType>0</n1:MediaType>
+          <n1:Model>WD3001BKHG      </n1:Model>
+          <n1:OperationName>None</n1:OperationName>
+          <n1:OperationPercentComplete>0</n1:OperationPercentComplete>
+          <n1:PPID>MY0CWHNN1255526DI150A01 </n1:PPID>
+          <n1:PredictiveFailureState>0</n1:PredictiveFailureState>
+          <n1:PrimaryStatus>1</n1:PrimaryStatus>
+          <n1:RaidStatus>2</n1:RaidStatus>
+          <n1:Revision>D1S4</n1:Revision>
+          <n1:RollupStatus>1</n1:RollupStatus>
+          <n1:SASAddress>50014EE700016912</n1:SASAddress>
+          <n1:SecurityState>0</n1:SecurityState>
+          <n1:SerialNumber>WXN1E32KUDHD        </n1:SerialNumber>
+          <n1:SizeInBytes>299439751168</n1:SizeInBytes>
+          <n1:Slot>3</n1:Slot>
+          <n1:SupportedEncryptionTypes>None</n1:SupportedEncryptionTypes>
+          <n1:UsedSizeInBytes>299439751168</n1:UsedSizeInBytes>
+        </n1:DCIM_PhysicalDiskView>
+        <n1:DCIM_PhysicalDiskView>
+          <n1:BusProtocol>6</n1:BusProtocol>
+          <n1:Connector>0</n1:Connector>
+          <n1:DriveFormFactor>2</n1:DriveFormFactor>
+          <n1:FQDD>Disk.Bay.4:Enclosure.Internal.0-1:RAID.Integrated.1-1</n1:FQDD>
+          <n1:FreeSizeInBytes>0</n1:FreeSizeInBytes>
+          <n1:HotSpareStatus>0</n1:HotSpareStatus>
+          <n1:InstanceID>Disk.Bay.4:Enclosure.Internal.0-1:RAID.Integrated.1-1</n1:InstanceID>
+          <n1:LastSystemInventoryTime>20121120130848.000000+000</n1:LastSystemInventoryTime>
+          <n1:LastUpdateTime>20121120130848.000000+000</n1:LastUpdateTime>
+          <n1:Manufacturer>WD      </n1:Manufacturer>
+          <n1:ManufacturingDay>6</n1:ManufacturingDay>
+          <n1:ManufacturingWeek>24</n1:ManufacturingWeek>
+          <n1:ManufacturingYear>2012</n1:ManufacturingYear>
+          <n1:MaxCapableSpeed>3</n1:MaxCapableSpeed>
+          <n1:MediaType>0</n1:MediaType>
+          <n1:Model>WD3001BKHG      </n1:Model>
+          <n1:OperationName>None</n1:OperationName>
+          <n1:OperationPercentComplete>0</n1:OperationPercentComplete>
+          <n1:PPID>MY0CWHNN1255526CI3J7A01 </n1:PPID>
+          <n1:PredictiveFailureState>0</n1:PredictiveFailureState>
+          <n1:PrimaryStatus>1</n1:PrimaryStatus>
+          <n1:RaidStatus>2</n1:RaidStatus>
+          <n1:Revision>D1S4</n1:Revision>
+          <n1:RollupStatus>1</n1:RollupStatus>
+          <n1:SASAddress>50014EE7AAAC0E4A</n1:SASAddress>
+          <n1:SecurityState>0</n1:SecurityState>
+          <n1:SerialNumber>WXE1C5201540        </n1:SerialNumber>
+          <n1:SizeInBytes>299439751168</n1:SizeInBytes>
+          <n1:Slot>4</n1:Slot>
+          <n1:SupportedEncryptionTypes>None</n1:SupportedEncryptionTypes>
+          <n1:UsedSizeInBytes>299439751168</n1:UsedSizeInBytes>
+        </n1:DCIM_PhysicalDiskView>
+        <n1:DCIM_PhysicalDiskView>
+          <n1:BusProtocol>6</n1:BusProtocol>
+          <n1:Connector>0</n1:Connector>
+          <n1:DriveFormFactor>2</n1:DriveFormFactor>
+          <n1:FQDD>Disk.Bay.5:Enclosure.Internal.0-1:RAID.Integrated.1-1</n1:FQDD>
+          <n1:FreeSizeInBytes>0</n1:FreeSizeInBytes>
+          <n1:HotSpareStatus>0</n1:HotSpareStatus>
+          <n1:InstanceID>Disk.Bay.5:Enclosure.Internal.0-1:RAID.Integrated.1-1</n1:InstanceID>
+          <n1:LastSystemInventoryTime>20121120130848.000000+000</n1:LastSystemInventoryTime>
+          <n1:LastUpdateTime>20121120130848.000000+000</n1:LastUpdateTime>
+          <n1:Manufacturer>WD      </n1:Manufacturer>
+          <n1:ManufacturingDay>6</n1:ManufacturingDay>
+          <n1:ManufacturingWeek>24</n1:ManufacturingWeek>
+          <n1:ManufacturingYear>2012</n1:ManufacturingYear>
+          <n1:MaxCapableSpeed>3</n1:MaxCapableSpeed>
+          <n1:MediaType>0</n1:MediaType>
+          <n1:Model>WD3001BKHG      </n1:Model>
+          <n1:OperationName>None</n1:OperationName>
+          <n1:OperationPercentComplete>0</n1:OperationPercentComplete>
+          <n1:PPID>MY0CWHNN1255526DI0G4A01 </n1:PPID>
+          <n1:PredictiveFailureState>0</n1:PredictiveFailureState>
+          <n1:PrimaryStatus>1</n1:PrimaryStatus>
+          <n1:RaidStatus>2</n1:RaidStatus>
+          <n1:Revision>D1S4</n1:Revision>
+          <n1:RollupStatus>1</n1:RollupStatus>
+          <n1:SASAddress>50014EE7000163C2</n1:SASAddress>
+          <n1:SecurityState>0</n1:SecurityState>
+          <n1:SerialNumber>WXE1C5200178        </n1:SerialNumber>
+          <n1:SizeInBytes>299439751168</n1:SizeInBytes>
+          <n1:Slot>5</n1:Slot>
+          <n1:SupportedEncryptionTypes>None</n1:SupportedEncryptionTypes>
+          <n1:UsedSizeInBytes>299439751168</n1:UsedSizeInBytes>
+        </n1:DCIM_PhysicalDiskView>
+        <n1:DCIM_PhysicalDiskView>
+          <n1:BusProtocol>6</n1:BusProtocol>
+          <n1:Connector>0</n1:Connector>
+          <n1:DriveFormFactor>2</n1:DriveFormFactor>
+          <n1:FQDD>Disk.Bay.6:Enclosure.Internal.0-1:RAID.Integrated.1-1</n1:FQDD>
+          <n1:FreeSizeInBytes>0</n1:FreeSizeInBytes>
+          <n1:HotSpareStatus>0</n1:HotSpareStatus>
+          <n1:InstanceID>Disk.Bay.6:Enclosure.Internal.0-1:RAID.Integrated.1-1</n1:InstanceID>
+          <n1:LastSystemInventoryTime>20121120130848.000000+000</n1:LastSystemInventoryTime>
+          <n1:LastUpdateTime>20121120130848.000000+000</n1:LastUpdateTime>
+          <n1:Manufacturer>WD      </n1:Manufacturer>
+          <n1:ManufacturingDay>6</n1:ManufacturingDay>
+          <n1:ManufacturingWeek>24</n1:ManufacturingWeek>
+          <n1:ManufacturingYear>2012</n1:ManufacturingYear>
+          <n1:MaxCapableSpeed>3</n1:MaxCapableSpeed>
+          <n1:MediaType>0</n1:MediaType>
+          <n1:Model>WD3001BKHG      </n1:Model>
+          <n1:OperationName>None</n1:OperationName>
+          <n1:OperationPercentComplete>0</n1:OperationPercentComplete>
+          <n1:PPID>MY0CWHNN1255526CI3QEA01 </n1:PPID>
+          <n1:PredictiveFailureState>0</n1:PredictiveFailureState>
+          <n1:PrimaryStatus>1</n1:PrimaryStatus>
+          <n1:RaidStatus>2</n1:RaidStatus>
+          <n1:Revision>D1S4</n1:Revision>
+          <n1:RollupStatus>1</n1:RollupStatus>
+          <n1:SASAddress>50014EE70001611A</n1:SASAddress>
+          <n1:SecurityState>0</n1:SecurityState>
+          <n1:SerialNumber>WXE1C5200307        </n1:SerialNumber>
+          <n1:SizeInBytes>299439751168</n1:SizeInBytes>
+          <n1:Slot>6</n1:Slot>
+          <n1:SupportedEncryptionTypes>None</n1:SupportedEncryptionTypes>
+          <n1:UsedSizeInBytes>299439751168</n1:UsedSizeInBytes>
+        </n1:DCIM_PhysicalDiskView>
+        <n1:DCIM_PhysicalDiskView>
+          <n1:BusProtocol>6</n1:BusProtocol>
+          <n1:Connector>0</n1:Connector>
+          <n1:DriveFormFactor>2</n1:DriveFormFactor>
+          <n1:FQDD>Disk.Bay.7:Enclosure.Internal.0-1:RAID.Integrated.1-1</n1:FQDD>
+          <n1:FreeSizeInBytes>0</n1:FreeSizeInBytes>
+          <n1:HotSpareStatus>0</n1:HotSpareStatus>
+          <n1:InstanceID>Disk.Bay.7:Enclosure.Internal.0-1:RAID.Integrated.1-1</n1:InstanceID>
+          <n1:LastSystemInventoryTime>20121120130848.000000+000</n1:LastSystemInventoryTime>
+          <n1:LastUpdateTime>20121120130848.000000+000</n1:LastUpdateTime>
+          <n1:Manufacturer>WD      </n1:Manufacturer>
+          <n1:ManufacturingDay>6</n1:ManufacturingDay>
+          <n1:ManufacturingWeek>24</n1:ManufacturingWeek>
+          <n1:ManufacturingYear>2012</n1:ManufacturingYear>
+          <n1:MaxCapableSpeed>3</n1:MaxCapableSpeed>
+          <n1:MediaType>0</n1:MediaType>
+          <n1:Model>WD3001BKHG      </n1:Model>
+          <n1:OperationName>None</n1:OperationName>
+          <n1:OperationPercentComplete>0</n1:OperationPercentComplete>
+          <n1:PPID>MY0CWHNN1255526DI0UJA01 </n1:PPID>
+          <n1:PredictiveFailureState>0</n1:PredictiveFailureState>
+          <n1:PrimaryStatus>1</n1:PrimaryStatus>
+          <n1:RaidStatus>2</n1:RaidStatus>
+          <n1:Revision>D1S4</n1:Revision>
+          <n1:RollupStatus>1</n1:RollupStatus>
+          <n1:SASAddress>50014EE7000166C2</n1:SASAddress>
+          <n1:SecurityState>0</n1:SecurityState>
+          <n1:SerialNumber>WXS1CC1J7098        </n1:SerialNumber>
+          <n1:SizeInBytes>299439751168</n1:SizeInBytes>
+          <n1:Slot>7</n1:Slot>
+          <n1:SupportedEncryptionTypes>None</n1:SupportedEncryptionTypes>
+          <n1:UsedSizeInBytes>299439751168</n1:UsedSizeInBytes>
+        </n1:DCIM_PhysicalDiskView>
+      </wsman:Items>
+      <wsen:EnumerationContext/>
+      <wsman:EndOfSequence/>
+    </wsen:EnumerateResponse>
+  </s:Body>
+</s:Envelope>"""
