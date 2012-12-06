@@ -15,7 +15,7 @@ from ralph.discovery.tests.plugins.samples.idrac import (
 from ralph.discovery.plugins.idrac import IDRAC, run_idrac
 from ralph.discovery.models import (
     Device, IPAddress, Memory, Processor, Ethernet,
-    FibreChannel, DiskShare, Storage
+    FibreChannel, Storage
 )
 
 
@@ -399,4 +399,8 @@ class IDRACPluginTest(TestCase):
             storage_result,
             storage_data
         )
-
+        # finally, check ip managment address.
+        ip = IPAddress.objects.get(device=dev)
+        self.assertTrue(ip.is_management)
+        self.assertEqual(ip.hostname, 'f5-vip01.dc3')
+        self.assertEqual(ip.address, '10.10.10.10')
