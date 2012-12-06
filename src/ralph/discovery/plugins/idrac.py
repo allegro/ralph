@@ -64,11 +64,11 @@ class AuthError(Error):
     pass
 
 
-class IncorrectAnswer(Error):
+class IncorrectAnswerError(Error):
     pass
 
 
-class SoapException(Error):
+class SoapError(Error):
     pass
 
 
@@ -89,7 +89,7 @@ def _send_soap(post_url, login, password, message):
     if not r.ok:
         if r.status_code == 401:
             raise AuthError("Invalid username or password.")
-        raise SoapException(
+        raise SoapError(
             "Reponse was: %s\nRequest was:%s" % (r.text, message)
         )
     # soap, how I hate you...
@@ -100,7 +100,7 @@ def _send_soap(post_url, login, password, message):
     errors_node = ET.XML(r.text).find(errors_path)
     if errors_node:
         errors_list = [x for x in errors_node.itertext()]
-        raise SoapException(
+        raise SoapError(
             'Request was:%s, Response errors were:%s' %
             (message, ','.join(errors_list))
         )
