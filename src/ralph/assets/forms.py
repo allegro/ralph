@@ -134,8 +134,6 @@ def _validate_multivalue_data(data):
     data = data.strip()
     if not data:
         raise ValidationError(error_msg)
-    if data.find(" ") > 0:
-        raise ValidationError(error_msg)
     items = []
     for item in filter(len, re.split(",|\n", data)):
         item = item.strip()
@@ -299,7 +297,7 @@ class SearchAssetForm(Form):
     model = AutoCompleteSelectField(
         'asset_model',
         required=False,
-        help_text=None
+        help_text=None,
     )
     invoice_no = CharField(required=False)
     order_no = CharField(required=False)
@@ -333,7 +331,7 @@ class SearchAssetForm(Form):
         super(SearchAssetForm, self).__init__(*args, **kwargs)
         self.fields['device'] = AutoCompleteSelectField(
             channel,
-            required=False
+            required=False,
         )
 
 
