@@ -141,7 +141,7 @@ class IDRAC(object):
         )
         records = tree.findall(q)
         if not records:
-            raise IncorrectAnswer("Incorrect answer in get_base_info.")
+            raise IncorrectAnswerError("Incorrect answer in the get_base_info.")
         result = {
             'manufacturer': records[0].find(
                 "{}{}".format(xmlns_n1, 'Manufacturer')
