@@ -134,8 +134,16 @@ class Catalog(Base):
                 MenuHeader('Tools'),
                 MenuItem(
                     'History',
+                    name='history',
                     fugue_icon='fugue-hourglass',
                     view_name='catalog_history',
+                ),
+                MenuItem(
+                    'Pricing groups',
+                    name='pricing',
+                    fugue_icon='fugue-shopping-basket',
+                    view_name='catalog_pricing',
+                    view_args=('pricing', '0', '0', ''),
                 ),
             ]
         )
@@ -425,4 +433,8 @@ class CatalogHistory(Catalog):
             'items': items,
         })
         return ret
+
+
+class CatalogPricing(Catalog):
+    template_name = 'ui/catalog/pricing.html'
 
