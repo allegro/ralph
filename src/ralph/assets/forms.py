@@ -7,6 +7,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import re
+import collections
 
 from ajax_select.fields import AutoCompleteSelectField
 from django.forms import (
@@ -244,6 +245,11 @@ class AddDeviceForm(BaseAddAssetForm):
                 barcode = barcode.strip()
                 if barcode:
                     barcodes.append(barcode)
+            dup = [x for x, y in collections.Counter(barcode).items() if y > 1]
+            if len(dup > 0):
+                raise ValidationError(
+                    _("There is dublicates barcodes in field.")
+                )
             if not barcodes:
                 raise ValidationError(_("Barcode list could be empty or "
                                         "must have the same number of "
@@ -310,7 +316,7 @@ class SearchAssetForm(Form):
     )
     invoice_date_to = DateField(
         required=False, widget=DateWidget(attrs={
-            'class':'end-date-field ',
+            'class': 'end-date-field ',
             'placeholder': 'End YYYY-MM-DD',
             'data-collapsed': True,
         }),
@@ -337,4 +343,3 @@ class SearchAssetForm(Form):
 
 class DeleteAssetConfirmForm(Form):
     asset_id = IntegerField(widget=HiddenInput())
-
