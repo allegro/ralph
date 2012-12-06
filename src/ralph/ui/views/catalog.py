@@ -14,11 +14,23 @@ from django.shortcuts import get_object_or_404
 from django.conf import settings
 
 from ralph.account.models import Perm
-from ralph.discovery.models import (DeviceType, ComponentType, DeviceModel,
-                                    DeviceModelGroup, ComponentModelGroup,
-                                    ComponentModel, Storage, Memory, Processor,
-                                    DiskShare, FibreChannel, GenericComponent,
-                                    Software, OperatingSystem, Device)
+from ralph.discovery.models import (
+    ComponentModel,
+    ComponentModelGroup,
+    ComponentType,
+    Device,
+    DeviceModel,
+    DeviceModelGroup,
+    DeviceType,
+    DiskShare,
+    FibreChannel,
+    GenericComponent,
+    Memory,
+    OperatingSystem,
+    Processor,
+    Software,
+    Storage,
+)
 from ralph.discovery.models_history import HistoryModelChange
 from ralph.ui.forms.catalog import ComponentModelGroupForm, DeviceModelGroupForm
 from ralph.ui.views.common import Base
@@ -81,7 +93,7 @@ def _prepare_model_groups(request, query, tree=False):
 
 class Catalog(Base):
     section = 'catalog'
-    template_name = 'ui/catalog.html'
+    template_name = 'ui/catalog/base.html'
 
     def get(self, *args, **kwargs):
         if not self.request.user.get_profile().has_perm(
@@ -98,44 +110,52 @@ class Catalog(Base):
             model_type_id = None
         kind = self.kwargs.get('kind')
         sidebar_items = (
-            [MenuHeader('Components')] +
-            [MenuItem(
+            [
+                MenuHeader('Component groups'),
+            ] + [
+                MenuItem(
                     label=t.raw.title(),
                     name='component-%d' % t.id,
                     fugue_icon = COMPONENT_ICONS[t.id],
                     view_name='catalog',
                     view_args=('component', t.id),
-                ) for t in ComponentType(item=lambda t: t)] +
-            [MenuHeader('Devices')] +
-            [MenuItem(
+                ) for t in ComponentType(item=lambda t: t)
+            ] + [
+                MenuHeader('Device groups'),
+            ] + [
+                MenuItem(
                         label=t.raw.title(),
                         name='device-%d' % t.id,
                         fugue_icon = DEVICE_ICONS[t.id],
                         view_name='catalog',
                         view_args=('device', t.id),
-                    ) for t in DeviceType(item=lambda t: t)] +
-            [MenuHeader('History'),
-             MenuItem('History', fugue_icon='fugue-hourglass',
-                      view_name='catalog_history'),
+                    ) for t in DeviceType(item=lambda t: t)
+            ] + [
+                MenuHeader('Tools'),
+                MenuItem(
+                    'History',
+                    fugue_icon='fugue-hourglass',
+                    view_name='catalog_history',
+                ),
             ]
         )
+        selected = '%s-%d' % (kind, model_type_id) if model_type_id else ''
         ret.update({
-            'sidebar_items': sidebar_items,
-            'sidebar_selected': '%s-%d' % (kind,
-                    model_type_id) if model_type_id else '',
-            'kind': kind,
             'component_model_types': ComponentType(item=lambda a: a),
-            'device_model_types': DeviceType(item=lambda a: a),
-            'model_type_id': model_type_id,
-            'subsection': model_type_id,
             'details': self.kwargs.get('details', 'info'),
+            'device_model_types': DeviceType(item=lambda a: a),
             'editable': True,
+            'kind': kind,
+            'model_type_id': model_type_id,
+            'sidebar_items': sidebar_items,
+            'sidebar_selected': selected,
+            'subsection': model_type_id,
         })
         return ret
 
 
 class CatalogDevice(Catalog):
-    template_name = 'ui/catalog-device.html'
+    template_name = 'ui/catalog/device.html'
 
     def __init__(self, *args, **kwargs):
         super(CatalogDevice, self).__init__(*args, **kwargs)
@@ -254,7 +274,7 @@ class CatalogDevice(Catalog):
         return ret
 
 class CatalogComponent(Catalog):
-    template_name = 'ui/catalog-component.html'
+    template_name = 'ui/catalog/component.html'
 
     def __init__(self, *args, **kwargs):
         super(CatalogComponent, self).__init__(*args, **kwargs)
@@ -385,7 +405,7 @@ class CatalogComponent(Catalog):
 
 
 class CatalogHistory(Catalog):
-    template_name = 'ui/catalog-history.html'
+    template_name = 'ui/catalog/history.html'
 
     def get_context_data(self, **kwargs):
         ret = super(CatalogHistory, self).get_context_data(**kwargs)
@@ -405,3 +425,4 @@ class CatalogHistory(Catalog):
             'items': items,
         })
         return ret
+
