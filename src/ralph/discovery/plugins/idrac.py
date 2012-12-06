@@ -145,10 +145,10 @@ class IDRAC(object):
         result = {
             'manufacturer': records[0].find(
                 "{}{}".format(xmlns_n1, 'Manufacturer')
-            ).text,
+            ).text.strip(),
             'model': records[0].find(
                 "{}{}".format(xmlns_n1, 'Model')
-            ).text,
+            ).text.strip(),
             'sn': records[0].find(
                 "{}{}".format(xmlns_n1, 'ChassisServiceTag')
             ).text
@@ -261,16 +261,16 @@ class IDRAC(object):
             results.append({
                 'size': record.find(
                     "{}{}".format(xmlns_n1, 'SizeInBytes')
-                ).text,
+                ).text.strip(),
                 'sn': record.find(
                     "{}{}".format(xmlns_n1, 'SerialNumber')
-                ).text,
+                ).text.strip(),
                 'model': record.find(
                     "{}{}".format(xmlns_n1, 'Model')
-                ).text,
+                ).text.strip(),
                 'manufacturer': record.find(
                     "{}{}".format(xmlns_n1, 'Manufacturer')
-                ).text,
+                ).text.strip(),
             })
         return results
 
@@ -385,8 +385,8 @@ def _save_storage(dev, data):
     detected_storage = []
     for disk in data:
         model_name = "{} {}".format(
-            disk['manufacturer'].strip(),
-            disk['model'].strip()
+            disk['manufacturer'],
+            disk['model']
         )
         size = int(int(disk['size']) / 1024 / 1024 / 1024)
         model, _ = ComponentModel.concurrent_get_or_create(
