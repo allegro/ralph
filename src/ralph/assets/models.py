@@ -64,7 +64,7 @@ class AssetModelLookup(LookupChannel):
         ).order_by('name')[:10]
 
     def get_result(self, obj):
-        return obj.id
+        return obj.name
 
     def format_match(self, obj):
         return self.format_item_display(obj)

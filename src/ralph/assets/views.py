@@ -124,8 +124,11 @@ class AssetSearch(AssetsMixin, PaginationMixin):
         for field in search_fields:
             field_value = self.request.GET.get(field)
             if field_value:
-                q = Q(**{field: field_value})
-                all_q = all_q & q
+                if field == 'model':
+                    all_q &= Q(model__name__startswith=field_value)
+                else:
+                    q = Q(**{field: field_value})
+                    all_q = all_q & q
         # now fields within ranges.
         buy_date_from = self.request.GET.get('buy_date_from')
         buy_date_to = self.request.GET.get('buy_date_to')
@@ -624,7 +627,6 @@ class DeleteAsset(AssetsMixin):
 
     def post(self, *args, **kwargs):
         record_id = self.request.POST.get('record_id')
-        import pdb; pdb.set_trace()
         try:
             self.asset = Asset.objects.get(
                 pk=record_id
@@ -646,4 +648,3 @@ class DeleteAsset(AssetsMixin):
             self.asset.deleted = True
             self.asset.save()
             return HttpResponseRedirect(self.back_to)
-
