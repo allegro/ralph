@@ -8,7 +8,7 @@ from __future__ import unicode_literals
 
 import re
 
-from ajax_select.fields import AutoCompleteSelectField
+from ajax_select.fields import AutoCompleteSelectField, AutoCompleteField
 from django.forms import (
     ModelForm, Form, CharField, DateField, ChoiceField, ValidationError,
     IntegerField,
@@ -295,7 +295,7 @@ class SearchAssetForm(Form):
     :returns Form
     """
 
-    model = AutoCompleteSelectField(
+    model = AutoCompleteField(
         'asset_model',
         required=False,
         help_text=None
@@ -332,4 +332,3 @@ class SearchAssetForm(Form):
 
 class DeleteAssetConfirmForm(Form):
     asset_id = IntegerField(widget=HiddenInput())
-
