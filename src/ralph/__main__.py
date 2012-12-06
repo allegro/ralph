@@ -14,6 +14,11 @@ def ubuntu_1020872_workaround():
         import _imaging
     finally:
         os.dup2(dup, 2)
+        try:
+            sys.__stderr__.close()
+            sys.stderr.close()
+        except IOError:
+            pass
         sys.__stderr__ = sys.stderr = os.fdopen(2, 'a')
 
 def main():
