@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 
+"""
+This class testing assets forms
+"""
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -14,7 +18,9 @@ from ralph.assets.models_assets import (
 )
 from ralph.ui.tests.helper import login_as_su
 
-
+"""
+Private methods
+"""
 def create_manufacturer(name):
     manufacturer = AssetManufacturer(name=name)
     manufacturer.save()
@@ -50,11 +56,18 @@ def create_asset(**kwargs):
     asset.save()
     return asset
 
-
+"""
+Testing classes
+"""
 class TestForms(TestCase):
+    """
+    This class testing adding, editing, deleting single asset
+    """
     def setUp(self):
+        # Hire we create django user and login him
         self.client = login_as_su()
-        # Build asset
+
+        # We build output data
         asset = create_asset(
             device_info=create_device(1, create_warehouse(name='Warehouse1')),
             type=AssetType.data_center,
@@ -70,46 +83,86 @@ class TestForms(TestCase):
             sn='sn-123',
             barcode='bc-1234'
         )
-        # Prepare Asset 2
+
+        # Now we add new manufacturer
         self.asset_model2 = create_model(
             create_manufacturer('Menufac2'), 'AsModel2'
         )
+
+        # Device info
         self.device_info2 = create_device(
             1, create_warehouse(name='Warehouse2')
         )
-        # Prepare Asset 3
+
+        # And another one model
         self.asset_model3 = create_model(
             create_manufacturer('Menufac3'), 'AsModel3'
         )
 
     def test_models(self):
+        """ Hire we testing setUp's """
+
+        # There is Menufac in db
         db_manufacturer = AssetManufacturer.objects.get(name='Menufac')
         self.assertEquals(db_manufacturer.name, 'Menufac')
+
+        # There is AsModel in db
         db_model = AssetModel.objects.get(name='AsModel')
         self.assertEquals(db_model.name, 'AsModel')
+
+        # There is  Warehouse1 in db
         db_warehouse = Warehouse.objects.get(name='Warehouse1')
         self.assertEquals(db_warehouse.name, 'Warehouse1')
+
+        # There is asset in db
         db_asset1 = Asset.objects.get(barcode='bc-1234')
         self.assertEquals(db_asset1.sn, 'sn-123')
 
     def test_view(self):
+        """ Here we testing whether correct data is displayed in table"""
+
+        # Request GET
         url = '/assets/dc/search'
         view = self.client.get(url, follow=True)
         self.assertEqual(view.status_code, 200)
+
+        # Geting first row to test
         data = view.context_data['page'].object_list[0]
+
+        # Type field
         self.assertEqual(data.type, AssetType.data_center)
+
+        # SN field
         self.assertEqual(data.sn, 'sn-123')
+
+        # Barcode field
         self.assertEqual(data.barcode, 'bc-1234')
+
+        # Model field
         self.assertEqual(unicode(data.model), 'Menufac AsModel')
+
+        # Invoice no field
         self.assertEqual(data.invoice_no, 'Invoice No 1')
+
+        # Order no field
         self.assertEqual(data.order_no, 'Order No 1')
+
+        # Invoice date field
         date = datetime.date(2001, 1, 1)
         self.assertEqual(data.invoice_date, date)
+
+        # Status field
         self.assertEqual(data.status, AssetStatus.new)
+
+        # Warehouse field
         self.assertEqual(unicode(data.device_info.warehouse), 'Warehouse1')
 
     def test_add_form(self):
-        # POST
+        """
+        Everything is ok? Now we trying add new data via form.
+        So let's dance!
+        """
+        # Hire we prepare some data and send it via form
         url = '/assets/dc/add/device/'
         post_data = {
             'type': AssetType.data_center,
@@ -129,37 +182,64 @@ class TestForms(TestCase):
             'warehouse': self.device_info2.warehouse_id,
         }
         response = self.client.post(url, post_data, follow=True)
+
+        # When everything was ok, server return response code = 302, and
+        # redirect as to /assets/dc/search given response code 200
         self.assertRedirects(
             response, '/assets/dc/search',
             status_code=302,
             target_status_code=200,
         )
-        # GET
+
+        # So see what was added (of course in secound table row)
         view = self.client.get('/assets/dc/search')
         data = view.context_data['page'].object_list[1]
+
+        # Type field
         self.assertEqual(data.type, AssetType.data_center)
+
+        # SN field
         self.assertEqual(data.sn, 'sn-321')
+
+        # Barcode field
         self.assertEqual(data.barcode, 'bc-4321')
+
+        # Model field
         self.assertEqual(unicode(data.model), 'Menufac2 AsModel2')
+
+        # Invoice no field
         self.assertEqual(data.invoice_no, 'Invoice No 2')
+
+        # Order no field
         self.assertEqual(data.order_no, 'Order No 2')
+
+        # Invoice data field
         date = datetime.date(2001, 1, 2)
         self.assertEqual(data.invoice_date, date)
+
+        # Status field
         self.assertEqual(data.status, AssetStatus.new)
+
+        # Warehosue field
         self.assertEqual(unicode(data.device_info.warehouse), 'Warehouse2')
 
     def test_edit_form(self):
-        # test before POST
+        # Done, Add data via form was correct!  Now change some informations
+
+        # Download old data
         view = self.client.get('/assets/dc/edit/device/1/')
         self.assertEqual(view.status_code, 200)
         old_fields = view.context['asset_form'].initial
         old_device_info = view.context['device_info_form'].initial
         old_office_info = view.context['office_info_form'].initial
+
+        # Now we checking what licese_key is None
         old_office = OfficeInfo.objects.filter(
             license_key='0000-0000-0000-0000'
         ).count()
         self.assertEqual(old_office, 0)
-        # Send POST
+
+        # Next way is send new data via form
         url = '/assets/dc/edit/device/1/'
         post_data = {
             'type': AssetType.data_center,
@@ -187,17 +267,22 @@ class TestForms(TestCase):
             'last_logged_user': 'James Bond',
         }
         post = self.client.post(url, post_data, follow=True)
+
+        # and checking whether data was added
         self.assertRedirects(
             post,
             '/assets/dc/search',
             status_code=302,
             target_status_code=200,
         )
-        # Tests after POST
+
+        # So now we downloading added data
         new_view = self.client.get('/assets/dc/edit/device/1/')
         new_fields = new_view.context['asset_form'].initial
         new_device_info = new_view.context['device_info_form'].initial
         new_office_info = new_view.context['office_info_form'].initial
+
+        # prepare correct data
         correct_data = [
             dict(
                 model=self.asset_model3.id,
@@ -211,6 +296,32 @@ class TestForms(TestCase):
                 remarks='any remarks'
             )
         ]
+
+        # and testing (new data is deferent old data, and new data is equal to
+        # correct data). Hire we testing: model, invoice_no, order_no,
+        # invoice_date, support_period, support_type, provider, status, remarks
+        for data in correct_data:
+            for key in data.keys():
+                self.assertNotEqual(
+                    unicode(old_fields[key]), unicode(new_fields[key])
+                )
+                self.assertEqual(
+                    unicode(new_fields[key]), unicode(data[key])
+                )
+
+        # Size field
+        self.assertNotEqual(old_device_info['size'], new_device_info['size'])
+        self.assertEqual(new_device_info['size'], 2)
+
+        # License field (download from db, new <> old data
+        office = OfficeInfo.objects.filter(
+            license_key='0000-0000-0000-0000'
+        ).count()
+        self.assertEqual(office, 1)
+        self.assertEqual(old_office_info, {})
+        self.assertEqual(new_office_info['license_key'], '0000-0000-0000-0000')
+
+        # Prepare ackoffice's fields
         correct_data_office = [
             dict(
                 version='1.0',
@@ -220,32 +331,28 @@ class TestForms(TestCase):
                 last_logged_user='James Bond',
             )
         ]
-        for data in correct_data:
-            for key in data.keys():
-                self.assertNotEqual(
-                    unicode(old_fields[key]), unicode(new_fields[key])
-                )
-                self.assertEqual(
-                    unicode(new_fields[key]), unicode(data[key])
-                )
-        self.assertNotEqual(old_device_info['size'], new_device_info['size'])
-        self.assertEqual(new_device_info['size'], 2)
-        office = OfficeInfo.objects.filter(
-            license_key='0000-0000-0000-0000'
-        ).count()
-        self.assertEqual(office, 1)
-        self.assertEqual(old_office_info, {})
-        self.assertEqual(new_office_info['license_key'], '0000-0000-0000-0000')
+
+        # And testing: version, unit_price, license_type,
+        # date_of_last_inventory, last_logged_user
         for office in correct_data_office:
             for key in office.keys():
                 self.assertEqual(
                     unicode(new_office_info[key]), unicode(office[key])
                 )
 
+    def test_delete_asset(self):
+        # FIXME!
+        pass
+
 
 class TestBulkEdit(TestCase):
+    """
+    This class testing forms for may actions
+    """
     def setUp(self):
+        # cerate and login django user
         self.client = login_as_su()
+
         # Build asset
         self.asset = create_asset(
             device_info=create_device(1, create_warehouse(name='Warehouse1')),
@@ -262,7 +369,7 @@ class TestBulkEdit(TestCase):
             sn='sn-123',
             barcode='bc-1234'
         )
-        # Build asset 2
+        # Build secound asset
         self.asset2 = create_asset(
             device_info=create_device(1, create_warehouse(name='Warehouse2')),
             type=AssetType.data_center,
@@ -280,11 +387,17 @@ class TestBulkEdit(TestCase):
         )
 
     def test_bulkedit_form(self):
-        # Before send POST
+        """
+         This class testing Bulk edit form
+        """
+
+        # Download base data
         url = '/assets/dc/bulkedit/?select=%s&select=%s' % (
             self.asset.id, self.asset2.id)
         view = self.client.get(url)
         self.assertEqual(view.status_code, 200)
+
+        # Prepare new data
         model0 = create_model(create_manufacturer('Menufac1a'), 'AsModel1a')
         model1 = create_model(create_manufacturer('Menufac2a'), 'AsModel2a')
         post_data = {
@@ -321,11 +434,18 @@ class TestBulkEdit(TestCase):
             'form-1-source': AssetSource.shipment.id,
         }
         post = self.client.post(url, post_data, follow=True)
+
+        # When everything was ok, server return response code = 302, and
+        # redirect as to /assets/dc/search given response code 200
         self.assertRedirects(
             post, url, status_code=302, target_status_code=200,
         )
+
+        # Download new data
         new_view = self.client.get(url)
         fields = new_view.context['formset'].queryset
+
+        # and prepare correct data
         correct_data = [
             dict(
                 model=unicode(model0),
@@ -352,6 +472,9 @@ class TestBulkEdit(TestCase):
                 barcode='bc-4321-2012b'
             )
         ]
+
+        # Testing fields in all rows: model, invoice_no, order_no, invoice_date
+        # support_period, support_type, provider, status, sn, barcode
         counter = 0
         for data in correct_data:
             for key in data.keys():
@@ -362,8 +485,14 @@ class TestBulkEdit(TestCase):
 
 
 class TestSearchForm(TestCase):
+    """
+    This class testing search form
+    """
     def setUp(self):
+        # new user and loging
         self.client = login_as_su()
+
+        # Prepare new asset
         model = create_model(create_manufacturer('Menufac1'), 'AsModel1')
         self.asset = create_asset(
             device_info=create_device(1, create_warehouse(name='Warehouse1')),
@@ -380,6 +509,8 @@ class TestSearchForm(TestCase):
             sn='sn-12332452345',
             barcode='bc-123421141'
         )
+
+        # Secound one
         self.asset1 = create_asset(
             device_info=create_device(1, create_warehouse(name='Warehouse2')),
             type=AssetType.data_center,
@@ -395,6 +526,7 @@ class TestSearchForm(TestCase):
             sn='sn-123123123',
             barcode='bc-1234123123'
         )
+        # Third one
         self.asset2 = create_asset(
             device_info=create_device(1, create_warehouse(name='Warehouse3')),
             type=AssetType.data_center,
@@ -412,69 +544,110 @@ class TestSearchForm(TestCase):
         )
 
     def test_model(self):
+        # Hire is testing model field
+
+        # Is there any asset?
         url = '/assets/dc/search?model=%s' % self.asset.id
         get = self.client.get(url)
         self.assertEqual(get.status_code, 200)
+
+        # yes, there are 2 assets (first and therd)
         res = get.context_data['page'].object_list
         self.assertEqual(len(res), 2)
+
+        # and is on list second asset?
         output = ('<Asset: AsModel2 - sn-123123123 - bc-1234123123>')
         self.assertNotEqual(unicode(res[0]), output)
-        # Empty ?model=
+
+        # now we go wronging!
+        # What do Ralph when we don't insert model id? (return all asset)
         url = '/assets/dc/search?model='
         get = self.client.get(url)
         self.assertEqual(get.status_code, 200)
         res = get.context_data['page'].object_list
         self.assertEqual(len(res), 3)
+
+        # or we insert wrond id (after range)?
         url = '/assets/dc/search?model=99999'
         get = self.client.get(url)
         self.assertEqual(get.status_code, 404)
 
     def test_invoice(self):
+        # Hire is testing invoice field
+
+        # There is any asset in Invoice No 1?
         url = '/assets/dc/search?invoice_no=%s' % 'Invoice No 1'
         get = self.client.get(url)
         self.assertEqual(get.status_code, 200)
+
+        # How many Ralph return results?
         res = get.context_data['page'].object_list
         self.assertEqual(len(res), 2)
+
+        # Is there third asset in list?
         output = ('<Asset: AsModel3 - sn-12323542345 - bc-12341234124>')
         self.assertNotEqual(unicode(res[0]), output)
 
     def test_order(self):
+        # Hire is testing order no field
+
+        # There is any asset in Order No 3?
         url = '/assets/dc/search?order_no=%s' % 'Order No 3'
         get = self.client.get(url)
         self.assertEqual(get.status_code, 200)
+
+        # How many Ralph returns results?
         res = get.context_data['page'].object_list
         self.assertEqual(len(res), 2)
+
+        # Is there first asset in list?
         output = ('<Asset: AsModel1 - sn-12332452345 - bc-123421141>')
         self.assertNotEqual(unicode(res[0]), output)
 
     def test_provider(self):
+        # Hire is testing provider field
         url = '/assets/dc/search?provider=%s' % 'Provider 3'
         get = self.client.get(url)
         self.assertEqual(get.status_code, 200)
+
+        # How many results Ralph return?
         res = get.context_data['page'].object_list
         self.assertEqual(len(res), 1)
+
+        # Is there first asset?
         output = ('<Asset: AsModel1 - sn-12332452345 - bc-123421141>')
         self.assertNotEqual(unicode(res[0]), output)
 
     def test_status(self):
+        # Hire is testing status field
         url = '/assets/dc/search?status=%s' % AssetStatus.used.id
         get = self.client.get(url)
         self.assertEqual(get.status_code, 200)
+
+        # How many results Ralph return?
         res = get.context_data['page'].object_list
         self.assertEqual(len(res), 1)
+
+        # Is there first asset?
         output = ('Menufac1 AsModel1 - sn-12323542345 - bc-12341234124')
         self.assertEqual(unicode(res[0]), output)
 
     def test_sn(self):
+        # Hire is testing sn field
         url = '/assets/dc/search?sn=%s' % 'sn-123123123'
         get = self.client.get(url)
         self.assertEqual(get.status_code, 200)
+
+        # How many results Ralph return?
         res = get.context_data['page'].object_list
         self.assertEqual(len(res), 1)
+
+        # Is there secound asset?
         output = ('Menufac2 AsModel2 - sn-123123123 - bc-1234123123')
         self.assertEqual(unicode(res[0]), output)
 
     def test_date_range(self):
+        # Hire is testing data range of invoice field
         # beggining date should be equal than end date
         url = '/assets/dc/search?invoice_date_from=%s&invoice_date_to=%s' % (
             '2001-01-01', '2001-01-01')
@@ -524,9 +697,14 @@ class TestSearchForm(TestCase):
 
 
 class TestTrolling(TestCase):
+    """
+    This class testing forms validation
+    """
     def setUp(self):
+        # create and loging django user
         self.client = login_as_su()
-        # (formset_name, field_name)
+
+        # Prepare required fields (formset_name, field_name)
         self.required_fields = [
             ('asset_form', 'model'),
             ('asset_form', 'support_period'),
@@ -534,6 +712,8 @@ class TestTrolling(TestCase):
             ('device_info_form', 'warehouse'),
             ('asset_form', 'sn')
         ]
+
+        # Build first asset
         self.asset = create_asset(
             device_info=create_device(1, create_warehouse(name='Warehouse1')),
             type=AssetType.data_center,
@@ -549,7 +729,7 @@ class TestTrolling(TestCase):
             sn='sn-123',
             barcode='bc-1234'
         )
-        # Build asset 2
+        # Build secound asset
         self.asset2 = create_asset(
             device_info=create_device(1, create_warehouse(name='Warehouse2')),
             type=AssetType.data_center,
@@ -567,26 +747,37 @@ class TestTrolling(TestCase):
         )
 
     def test_empty_add_form(self):
+        # try send empty form
         url = '/assets/back_office/add/device/'
         post_data = {}
         post = self.client.post(url, post_data)
         self.assertEqual(post.status_code, 200)
+
+        # seeing that all required fields returns error: model, support_period,
+        # support_type, warehouse, sn
         for r in self.required_fields:
             self.assertFormError(
                 post, r[0], r[1], 'This field is required.'
             )
 
     def test_empty_edit_form(self):
+        # try send empty form
         url = '/assets/dc/edit/device/1/'
         post_data = {}
         post = self.client.post(url, post_data)
         self.assertEqual(post.status_code, 200)
+
+        # seeing that all required fields returns error: model, support_period,
+        # support_type, warehouse, sn
         for r in self.required_fields:
             self.assertFormError(
                 post, r[0], r[1], 'This field is required.'
             )
 
     def test_bulkedit2_form(self):
+        # testing bulk edit form with wrong data
+
+        # prepare wrong data to send via bulk edit form
         url = '/assets/dc/bulkedit/?select=%s&select=%s' % (
             self.asset.id, self.asset2.id)
         model0 = create_model(create_manufacturer('Menufac1a'), 'AsModel1a')
@@ -625,6 +816,8 @@ class TestTrolling(TestCase):
             'form-1-source': '',
         }
         post = self.client.post(url, post_data)
+
+        # check whether post was send (correct = False)
         try:
             self.assertRedirects(
                 post, url, status_code=302, target_status_code=200,
@@ -633,6 +826,8 @@ class TestTrolling(TestCase):
         except AssertionError:
             send_post = False
         self.assertEqual(send_post, False)
+
+        # Prepare fields error
         bulk_data = [
             dict(
                 row=0,
@@ -660,12 +855,17 @@ class TestTrolling(TestCase):
                 error='This field is required.',
             )
         ]
+
+        # and testing
         for bulk in bulk_data:
             formset = post.context_data['formset']
             self.assertEqual(
                 formset[bulk['row']]._errors[bulk['field']][0],
                 bulk['error']
             )
+
+        # if sn was duplicated application send message, so seeing whether
+        # error message was displayed
         find = []
         i = 0
         msg_error = 'Please correct duplicated serial numbers or barcodes.'
@@ -673,6 +873,8 @@ class TestTrolling(TestCase):
             if post.content.startswith(msg_error, i - 1):
                 find.append(i)
         self.assertTrue(len(find) == 1)
+
+        # Next prepare correct data
         post_data = {
             'form-TOTAL_FORMS': u'2',
             'form-INITIAL_FORMS': u'2',
@@ -707,9 +909,11 @@ class TestTrolling(TestCase):
             'form-1-source': AssetSource.shipment.id,
         }
         correct_post = self.client.post(url, post_data, follow=True)
+        # See wither all is ok
         self.assertRedirects(
             correct_post, url, status_code=302, target_status_code=200,
         )
+        # And find success message
         find = []
         i = 0
         msg_error = 'Changes saved.'
@@ -728,6 +932,8 @@ class TestTrolling(TestCase):
         }
         post = self.client.post(url, post_data)
         self.assertEqual(post.status_code, 200)
+
+        # other fields error
         self.assertFormError(
             post, 'asset_form', 'support_period', 'Enter a whole number.'
         )
