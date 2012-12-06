@@ -61,6 +61,7 @@ setup (
         'South==0.7.6',
         'splunk-sdk==0.8.0',
         'SQLAlchemy==0.7.8',
+        'requests==0.14.2'
         ],
     entry_points={
         'console_scripts': [
