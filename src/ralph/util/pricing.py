@@ -255,7 +255,9 @@ def device_update_cached(device):
             stack.append(d)
     devices.reverse()   # Do the children before their parent.
     for d in devices:
-        d.name = d.get_name()
+        name = d.get_name()
+        if name != 'unknown':
+            d.name = name
         d.cached_price = get_device_price(d)
         d.cached_cost = get_device_cost(d)
         d.rack = rack.name if rack else None
