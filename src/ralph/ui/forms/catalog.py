@@ -11,6 +11,7 @@ from django import forms
 
 from ralph.ui.widgets import CurrencyWidget
 from ralph.discovery.models import ComponentModelGroup, DeviceModelGroup
+from ralph.discovery.models_pricing import PricingGroup
 
 
 class ModelGroupForm(forms.ModelForm):
@@ -84,4 +85,9 @@ class DeviceModelGroupForm(ModelGroupForm):
     class Meta(ModelGroupForm.Meta):
         model = DeviceModelGroup
 
+
+class PricingGroupForm(forms.ModelForm):
+    class Meta:
+        model = PricingGroup
+        fields = 'name',
 
