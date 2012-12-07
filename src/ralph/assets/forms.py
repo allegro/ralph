@@ -236,8 +236,6 @@ class AddDeviceForm(BaseAddAssetForm):
         return data
 
     def clean_barcode(self):
-        import pdb
-        pdb.set_trace()
         data = self.cleaned_data["barcode"].strip()
         barcodes = []
         if data:
