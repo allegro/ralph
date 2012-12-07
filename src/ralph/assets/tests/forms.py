@@ -55,8 +55,9 @@ class TestForms(TestCase):
     """
     This class testing adding, editing, deleting single asset
     Scenario:
-    1. Add something via form (only correct data)
-    2.
+    1. Add something via form
+    2. Edit added data via form
+    3. Delete asset
     """
     def setUp(self):
         # Create user and loging him
@@ -281,6 +282,8 @@ class TestForms(TestCase):
 class TestBulkEdit(TestCase):
     """
     This class testing forms for may actions
+    Scenario:
+    1. Add 2 assets and compare with old data
     """
     def setUp(self):
         self.client = login_as_su()
@@ -413,6 +416,9 @@ class TestBulkEdit(TestCase):
 class TestSearchForm(TestCase):
     """
     This class testing search form
+    Scenario:
+    1. Testing all fields
+    2. Insert incorrect data
     """
     def setUp(self):
         self.client = login_as_su()
@@ -616,6 +622,9 @@ class TestSearchForm(TestCase):
 class TestTrolling(TestCase):
     """
     This class testing forms validation
+    Scenario:
+    1. test validation (required fields) add, edit
+    2. test wrong data in fields
     """
     def setUp(self):
         self.client = login_as_su()
