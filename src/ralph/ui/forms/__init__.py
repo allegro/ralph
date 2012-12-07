@@ -135,3 +135,4 @@ class RolePropertyForm(forms.ModelForm):
         'type': 'fugue-property-blue',
     }
 
+

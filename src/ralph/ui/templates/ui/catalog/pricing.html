@@ -5,3 +5,44 @@
 {% load bob %}
 
 
+{% block contentarea %}
+</div>
+<div class="row-fluid">
+    <div class="span12">
+        <form class="form form-inline">
+            <div class="form-actions">
+                <div class="btn-group years" data-toggle="buttons-radio">
+                    {% for y in years %}
+                    <a
+                        href="/ui/catalog/pricing/{{ y|stringformat:'04d' }}-{{ month|stringformat:'02d' }}/{{ group }}"
+                        class="btn
+                            {% if year == y %}active{% endif %}
+                            {% if today.year == y %}btn-success{% endif %}
+                        "
+                    >{{ y }}</a>
+                    {% endfor %}
+                </div>
+                <div class="btn-group months" data-toggle="buttons-radio">
+                    {% for i, m in months %}
+                    <a
+                        href="/ui/catalog/pricing/{{ year|stringformat:'04d' }}-{{ i|stringformat:'02d' }}/{{ group }}"
+                        class="btn
+                            {% if month == i %} active{% endif %}
+                            {% if today.month == i %}btn-success{% endif %}
+                        "
+                    >{{ m }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="row-fluid">
+    <div class="span10">
+        {% form_horizontal form "" fugue_icons=1 %}
+    </div>
+    <div class="span2 group-tabs">
+        {% tab_menu group_items group side='right' %}
+    </div>
+{% endblock %}
+

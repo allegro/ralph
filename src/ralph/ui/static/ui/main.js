@@ -212,10 +212,11 @@ $(function ($) {
             var start_date = parseDate($start.val());
             start_date.setUTCFullYear($this.data('value'));
             $start.val(formatDate(start_date));
-
-            var end_date = parseDate($end.val());
-            end_date.setUTCFullYear($this.data('value'));
-            $end.val(formatDate(end_date));
+            if ($end) {
+                var end_date = parseDate($end.val());
+                end_date.setUTCFullYear($this.data('value'));
+                $end.val(formatDate(end_date));
+            };
         });
         $form.find('.months a').click(function (e) {
             var $this = $(this);
@@ -225,9 +226,11 @@ $(function ($) {
             date.setUTCDate(1);
             $start.val(formatDate(date));
 
-            date.setUTCMonth($this.data('value'));
-            date.setUTCDate(0);
-            $end.val(formatDate(date));
+            if ($end) {
+                date.setUTCMonth($this.data('value'));
+                date.setUTCDate(0);
+                $end.val(formatDate(date));
+            };
         });
     });
     $('form.search-form').submit(function () {

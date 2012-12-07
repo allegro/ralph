@@ -5,6 +5,8 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import decimal
+import calendar
+import datetime
 
 from bob.menu import MenuItem, MenuHeader
 from django.contrib import messages
@@ -32,7 +34,11 @@ from ralph.discovery.models import (
     Storage,
 )
 from ralph.discovery.models_history import HistoryModelChange
-from ralph.ui.forms.catalog import ComponentModelGroupForm, DeviceModelGroupForm
+from ralph.ui.forms.catalog import (
+    ComponentModelGroupForm,
+    DeviceModelGroupForm,
+    PricingGroupForm,
+)
 from ralph.ui.views.common import Base
 from ralph.util import pricing
 from ralph.util.presentation import COMPONENT_ICONS, DEVICE_ICONS
@@ -143,7 +149,7 @@ class Catalog(Base):
                     name='pricing',
                     fugue_icon='fugue-shopping-basket',
                     view_name='catalog_pricing',
-                    view_args=('pricing', '0', '0', ''),
+                    view_args=('pricing', ''),
                 ),
             ]
         )
@@ -438,3 +444,69 @@ class CatalogHistory(Catalog):
 class CatalogPricing(Catalog):
     template_name = 'ui/catalog/pricing.html'
 
+    def parse_args(self):
+        self.today = datetime.date.today()
+        self.year = int(self.kwargs.get('year', self.today.year))
+        self.month = int(self.kwargs.get('month', self.today.month))
+        self.group_name = self.kwargs.get('group', '')
+
+    def get(self, *args, **kwargs):
+        self.parse_args()
+        return super(CatalogPricing, self).get(*args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        ret = super(CatalogPricing, self).get_context_data(**kwargs)
+        group_items = [
+            MenuItem(
+                'Add a new group',
+                name='',
+                fugue_icon='fugue-shopping-basket--plus',
+                view_name='catalog_pricing',
+                view_args=('pricing', self.year, self.month),
+            ),
+        ]
+        min_year = min(self.year, self.today.year)
+        max_year = min(self.year, self.today.year)
+        ret.update({
+            'sidebar_selected': 'pricing',
+            'subsection': 'pricing',
+            'group_items': group_items,
+            'year': self.year,
+            'month': self.month,
+            'months': list(enumerate(calendar.month_abbr))[1:],
+            'years': range(min_year - 1, max_year + 2),
+            'today': self.today,
+            'form': PricingGroupForm(),
+            'group': self.group_name,
+        })
+        return ret
+
+class CatalogPricingNew(CatalogPricing):
+    def __init__(self, *args, **kwargs):
+        super(CatalogPricing, self).__init__(*args, **kwargs)
+        self.form = None
+
+    def post(self, *args, **kwargs):
+        self.parse_args()
+        self.form = PricingGroupForm(self.request.POST)
+        if self.form.is_valid():
+            self.form.save(commit=False)
+            self.form.instance.date = datetime.date(self.year, self.month, 1)
+            self.form.instance.save()
+            messages.success(
+                self.request,
+                "Group %s saved." % self.form.instance.name
+            )
+            return HttpResponseRedirect(self.request.path)
+        messages.error(self.request, "Errors in the form.")
+        return self.get(*args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        ret = super(CatalogPricingNew, self).get_context_data(**kwargs)
+        if self.form is None:
+            self.form = PricingGroupForm()
+        ret.update({
+            'form': self.form,
+            'group': '',
+        })
+        return ret

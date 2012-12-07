@@ -25,7 +25,7 @@ class PricingAggregate(Choices):
 class PricingGroup(db.Model):
     """A group of devices that are priced according to common rules for the given month."""
 
-    name = db.CharField(length=64)
+    name = db.CharField(max_length=64)
     devices = db.ManyToManyField('discovery.Device')
     date = db.DateField()
 
@@ -36,7 +36,7 @@ class PricingFormula(db.Model, WithConcurrentGetOrCreate):
     """
     group = db.ForeignKey('discovery.PricingGroup')
     component_group = db.ForeignKey('discovery.ComponentModelGroup')
-    formula = db.CharField(length=255)
+    formula = db.CharField(max_length=255)
 
 
 class PricingVariable(Named):
@@ -44,8 +44,8 @@ class PricingVariable(Named):
     A variable that is used in the pricing formulas.
     """
     group = db.ForeignKey('discovery.PricingGroup')
-    aggregate = PricingAggregate(
-        help="How are the values from different devices aggregated.",
+    aggregate = db.PositiveIntegerField(
+        choices=PricingAggregate(),
         default=PricingAggregate.sum,
     )
 
