@@ -7,7 +7,6 @@ from __future__ import unicode_literals
 
 from django.db import models as db
 
-from lck.django.common.models import Named, WithConcurrentGetOrCreate
 from lck.django.choices import Choices
 
 
@@ -29,20 +28,27 @@ class PricingGroup(db.Model):
     devices = db.ManyToManyField('discovery.Device')
     date = db.DateField()
 
+    class Meta:
+        unique_together = 'name', 'date'
 
-class PricingFormula(db.Model, WithConcurrentGetOrCreate):
+
+class PricingFormula(db.Model):
     """
     A formula for pricing a specific component in a specific pricing group.
     """
     group = db.ForeignKey('discovery.PricingGroup')
     component_group = db.ForeignKey('discovery.ComponentModelGroup')
-    formula = db.CharField(max_length=255)
+    formula = db.TextField()
+
+    class Meta:
+        unique_together = 'group', 'component_group'
 
 
-class PricingVariable(Named):
+class PricingVariable(db.Model):
     """
     A variable that is used in the pricing formulas.
     """
+    name = db.CharField(max_length=64)
     group = db.ForeignKey('discovery.PricingGroup')
     aggregate = db.PositiveIntegerField(
         choices=PricingAggregate(),
@@ -54,6 +60,10 @@ class PricingVariable(Named):
         d = self.pricingvalue_set.aggregate(function('value'))
         return d.values()[0]
 
+    class Meta:
+        unique_together = 'group', 'name'
+
+
 
 class PricingValue(db.Model):
     """
@@ -63,3 +73,5 @@ class PricingValue(db.Model):
     variable =  db.ForeignKey('discovery.PricingVariable')
     value = db.DecimalField()
 
+    class Meta:
+        unique_together = 'device', 'variable'
