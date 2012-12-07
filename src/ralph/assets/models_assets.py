@@ -250,6 +250,7 @@ class PartInfo(TimeTrackable, SavingUser):
     device = models.ForeignKey(
         Asset, null=True, blank=True, related_name='device'
     )
+    warehouse = models.ForeignKey(Warehouse, on_delete=models.PROTECT)
 
     def __unicode__(self):
         return "{} - {}".format(self.device, self.barcode_salvaged)

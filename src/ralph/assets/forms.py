@@ -101,7 +101,11 @@ class BaseDeviceForm(ModelForm):
 class BasePartForm(ModelForm):
     class Meta:
         model = PartInfo
-        fields = ('barcode_salvaged',)
+        fields = ('barcode_salvaged', 'warehouse')
+    warehouse = AutoCompleteSelectField(
+        'asset_warehouse', required=True,
+        plugin_options=dict(add_link='/admin/assets/warehouse/add/?name=')
+    )
 
     def __init__(self, *args, **kwargs):
         """mode argument is required for distinguish ajax sources"""
