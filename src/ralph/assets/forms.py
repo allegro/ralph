@@ -236,6 +236,8 @@ class AddDeviceForm(BaseAddAssetForm):
         return data
 
     def clean_barcode(self):
+        import pdb
+        pdb.set_trace()
         data = self.cleaned_data["barcode"].strip()
         barcodes = []
         if data:
@@ -243,13 +245,12 @@ class AddDeviceForm(BaseAddAssetForm):
                 raise ValidationError(_("Incorrect barcodes."))
             for barcode in filter(len, re.split(",|\n", data)):
                 barcode = barcode.strip()
-                if barcode:
+                if barcode not in barcodes:
                     barcodes.append(barcode)
-            dup = [x for x, y in collections.Counter(barcode).items() if y > 1]
-            if len(dup > 0):
-                raise ValidationError(
-                    _("There is dublicates barcodes in field.")
-                )
+                else:
+                    raise ValidationError(
+                        _("There is dublicates barcodes in field.")
+                    )
             if not barcodes:
                 raise ValidationError(_("Barcode list could be empty or "
                                         "must have the same number of "
