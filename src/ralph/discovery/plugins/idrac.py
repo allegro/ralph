@@ -99,7 +99,7 @@ def _send_soap(post_url, login, password, message):
     errors_list = []
     errors_node = ET.XML(r.text).find(errors_path)
     if errors_node:
-        errors_list = [x for x in errors_node.itertext()]
+        errors_list = [node_text for node_text in errors_node.itertext()]
         raise SoapError(
             'Request was:%s, Response errors were:%s' %
             (message, ','.join(errors_list))
