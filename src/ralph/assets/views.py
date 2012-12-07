@@ -13,7 +13,7 @@ from django.db import transaction
 from django.db.models import Q
 from django.http import HttpResponseRedirect, Http404
 from django.forms.models import modelformset_factory
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.forms import (
@@ -205,6 +205,7 @@ def _create_device(creator_profile, asset_data, device_info_data, sn,
     if barcode:
         asset.barcode = barcode
     asset.save(user=creator_profile.user)
+    return asset.id
 
 
 class AddDevice(Base):
@@ -239,14 +240,20 @@ class AddDevice(Base):
             asset_data['source'] = AssetSource.shipment
             serial_numbers = self.asset_form.cleaned_data['sn']
             barcodes = self.asset_form.cleaned_data['barcode']
+            ids = []
             for sn, index in zip(serial_numbers, range(len(serial_numbers))):
                 barcode = barcodes[index] if barcodes else None
-                _create_device(
-                    creator_profile, asset_data,
-                    self.device_info_form.cleaned_data, sn, barcode
+                ids.append(
+                    _create_device(
+                        creator_profile, asset_data,
+                        self.device_info_form.cleaned_data, sn, barcode
+                    )
                 )
             messages.success(self.request, _("Assets saved."))
-            return HttpResponseRedirect(_get_return_link(self.request))
+            return HttpResponseRedirect(
+                '/assets/dc/bulkedit/?select=%s' %
+                    ('&select='.join(["%s" % id for id in ids]))
+            )
         else:
             messages.error(self.request, _("Please correct the errors."))
         return super(AddDevice, self).get(*args, **kwargs)
@@ -626,7 +633,6 @@ class DeleteAsset(AssetsMixin):
 
     def post(self, *args, **kwargs):
         record_id = self.request.POST.get('record_id')
-        import pdb; pdb.set_trace()
         try:
             self.asset = Asset.objects.get(
                 pk=record_id
@@ -648,4 +654,3 @@ class DeleteAsset(AssetsMixin):
             self.asset.deleted = True
             self.asset.save()
             return HttpResponseRedirect(self.back_to)
-
