@@ -62,11 +62,11 @@ def _get_balancers(dev):
     for ip in dev.ipaddress_set.select_related().all():
         for member in ip.loadbalancermember_set.order_by('device'):
             yield {
-                    'balancer': member.device.name,
-                    'pool': member.pool.name,
-                    'enabled': member.enabled,
-                    'server': None,
-                    'port': member.port,
+                'balancer': member.device.name,
+                'pool': member.pool.name,
+                'enabled': member.enabled,
+                'server': None,
+                'port': member.port,
             }
     for vserv in dev.loadbalancervirtualserver_set.all():
         yield {
@@ -77,13 +77,18 @@ def _get_balancers(dev):
             'port': vserv.port,
         }
 
+
 def _get_details(dev, purchase_only=False, with_price=False):
     for detail in pricing.details_all(dev, purchase_only):
         if 'icon' not in detail:
             if detail['group'] == 'dev':
-                detail['icon'] = presentation.get_device_model_icon(detail.get('model'))
+                detail['icon'] = presentation.get_device_model_icon(
+                    detail.get('model')
+                )
             else:
-                detail['icon'] = presentation.get_component_model_icon(detail.get('model'))
+                detail['icon'] = presentation.get_component_model_icon(
+                    detail.get('model')
+                )
         if 'price' not in detail:
             if detail.get('model'):
                 detail['price'] = detail['model'].get_price()
@@ -141,7 +146,7 @@ class BaseMixin(object):
         if ('ralph.assets' in settings.INSTALLED_APPS):
             mainmenu_items.append(
                 MenuItem('Assets', fugue_icon='fugue-box-label',
-                        href='/assets')
+                         href='/assets')
             )
         if settings.BUGTRACKER_URL:
             mainmenu_items.append(
@@ -153,45 +158,48 @@ class BaseMixin(object):
             footer_items.append(
                 MenuItem('Admin', fugue_icon='fugue-toolbox', href='/admin'))
         footer_items.append(
-            MenuItem('%s (logout)' % self.request.user, fugue_icon='fugue-user',
-                     view_name='logout', view_args=[details or 'info', ''],
-                     pull_right=True, href=settings.LOGOUT_URL))
+            MenuItem('%s (logout)' % self.request.user,
+                     fugue_icon='fugue-user', view_name='logout',
+                     view_args=[details or 'info', ''], pull_right=True,
+                     href=settings.LOGOUT_URL))
         mainmenu_items.append(
             MenuItem('Advanced search', name='search',
-                     fugue_icon='fugue-magnifier', view_args=[details or 'info', ''],
+                     fugue_icon='fugue-magnifier',
+                     view_args=[details or 'info', ''],
                      view_name='search', pull_right=True))
         tab_items = []
         venture = (
-                self.venture if self.venture and self.venture != '*' else None
-            ) or (
-                self.object.venture if self.object else None
-            )
+            self.venture if self.venture and self.venture != '*' else None
+        ) or (
+            self.object.venture if self.object else None
+        )
+
         def tab_href(name):
             return '../%s/%s?%s' % (
-                    name,
-                    self.object.id if self.object else '',
-                    self.request.GET.urlencode()
-                )
+                name,
+                self.object.id if self.object else '',
+                self.request.GET.urlencode()
+            )
         if has_perm(Perm.read_device_info_generic, venture):
             tab_items.extend([
                 MenuItem('Info', fugue_icon='fugue-wooden-box',
                          href=tab_href('info')),
                 MenuItem('Components', fugue_icon='fugue-box',
-                        href=tab_href('components')),
+                         href=tab_href('components')),
                 MenuItem('Software', fugue_icon='fugue-disc',
                          href=tab_href('software')),
                 MenuItem('Addresses', fugue_icon='fugue-network-ip',
-                        href=tab_href('addresses')),
+                         href=tab_href('addresses')),
             ])
         if has_perm(Perm.edit_device_info_financial, venture):
             tab_items.extend([
                 MenuItem('Prices', fugue_icon='fugue-money-coin',
-                        href=tab_href('prices')),
+                         href=tab_href('prices')),
             ])
         if has_perm(Perm.read_device_info_financial, venture):
             tab_items.extend([
                 MenuItem('Costs', fugue_icon='fugue-wallet',
-                        href=tab_href('costs')),
+                         href=tab_href('costs')),
             ])
         if has_perm(Perm.read_device_info_history, venture):
             tab_items.extend([
@@ -208,8 +216,8 @@ class BaseMixin(object):
                 MenuItem('Discover', fugue_icon='fugue-flashlight',
                          href=tab_href('discover')),
             ])
-        if ('ralph.cmdb' in settings.INSTALLED_APPS and
-            has_perm(Perm.read_configuration_item_info_generic)):
+        if ('ralph.cmdb' in settings.INSTALLED_APPS and has_perm(
+                Perm.read_configuration_item_info_generic)):
             ci = ''
             try:
                 device = self.kwargs['device']
@@ -218,10 +226,15 @@ class BaseMixin(object):
             if device:
                 ci = CI.get_by_content_object(Device.objects.get(pk=device))
             if ci:
-                tab_items.extend([
-                    MenuItem('CMDB', fugue_icon='fugue-thermometer',
-                        href='/cmdb/ci/view/%s' % ci.id),
-                    ])
+                tab_items.extend(
+                    [
+                        MenuItem(
+                            'CMDB',
+                            fugue_icon='fugue-thermometer',
+                            href='/cmdb/ci/view/%s' % ci.id
+                        ),
+                    ]
+                )
         if has_perm(Perm.read_device_info_reports, venture):
             tab_items.extend([
                 MenuItem('Reports', fugue_icon='fugue-reports-stack',
@@ -306,14 +319,18 @@ class DeviceUpdateView(UpdateView):
         self.object = self.get_object()
         has_perm = self.request.user.get_profile().has_perm
         if not has_perm(self.read_perm, self.object.venture):
-            return HttpResponseForbidden("You don't have permission to see this.")
+            return HttpResponseForbidden(
+                "You don't have permission to see this."
+            )
         return super(DeviceUpdateView, self).get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
         self.object = self.get_object()
         has_perm = self.request.user.get_profile().has_perm
         if not has_perm(self.edit_perm, self.object.venture):
-            return HttpResponseForbidden("You don't have permission to edit this.")
+            return HttpResponseForbidden(
+                "You don't have permission to edit this."
+            )
         return super(DeviceUpdateView, self).post(*args, **kwargs)
 
 
@@ -336,7 +353,9 @@ class DeviceDetailView(DetailView):
         self.object = self.get_object()
         has_perm = self.request.user.get_profile().has_perm
         if not has_perm(self.read_perm, self.object.venture):
-            return HttpResponseForbidden("You don't have permission to see this.")
+            return HttpResponseForbidden(
+                "You don't have permission to see this."
+            )
         return super(DeviceDetailView, self).get(*args, **kwargs)
 
 
@@ -360,8 +379,10 @@ class Info(DeviceUpdateView):
     def get_context_data(self, **kwargs):
         ret = super(Info, self).get_context_data(**kwargs)
         if self.object:
-            tags = self.object.get_tags(official=False,
-                                      author=self.request.user)
+            tags = self.object.get_tags(
+                official=False,
+                author=self.request.user
+            )
         else:
             tags = []
         tags = ['"%s"' % t.name if ',' in t.name else t.name for t in tags]
@@ -380,7 +401,9 @@ class Info(DeviceUpdateView):
     def save_properties(self, device, properties):
         for symbol, value in properties.iteritems():
             p = device.venture_role.roleproperty_set.get(symbol=symbol)
-            pv, created = RolePropertyValue.concurrent_get_or_create(property=p, device=device)
+            pv, created = RolePropertyValue.concurrent_get_or_create(
+                property=p, device=device
+            )
             pv.value = value
             pv.save()
 
@@ -390,7 +413,9 @@ class Info(DeviceUpdateView):
             return None
         for p in self.object.venture_role.roleproperty_set.all():
             try:
-                value = p.rolepropertyvalue_set.filter(device=self.object)[0].value
+                value = p.rolepropertyvalue_set.filter(
+                    device=self.object
+                )[0].value
             except IndexError:
                 value = ''
             props[p.symbol] = value
@@ -403,14 +428,19 @@ class Info(DeviceUpdateView):
         self.object = self.get_object()
         has_perm = self.request.user.get_profile().has_perm
         if not has_perm(Perm.edit_device_info_generic, self.object.venture):
-            return HttpResponseForbidden("You don't have permission to edit this.")
+            return HttpResponseForbidden(
+                "You don't have permission to edit this."
+            )
         self.property_form = self.get_property_form()
         if 'propertiessave' in self.request.POST:
             properties = list(self.object.venture_role.roleproperty_set.all())
             self.property_form = PropertyForm(properties, self.request.POST)
             if self.property_form.is_valid():
                 messages.success(self.request, "Properties updated.")
-                self.save_properties(self.object, self.property_form.cleaned_data)
+                self.save_properties(
+                    self.object,
+                    self.property_form.cleaned_data
+                )
                 return HttpResponseRedirect(self.request.path)
         elif 'save-tags' in self.request.POST:
             tags = self.request.POST.get('tags', '')
@@ -438,7 +468,7 @@ class Components(DeviceDetailView):
 class Prices(DeviceUpdateView):
     form_class = DevicePricesForm
     template_name = 'ui/device_prices.html'
-    read_perm = Perm.edit_device_info_financial # sic
+    read_perm = Perm.edit_device_info_financial  # sic
     edit_perm = Perm.edit_device_info_financial
 
     def get_initial(self):
@@ -461,8 +491,7 @@ def _dns_fill_record(form, prefix, record, request):
         setattr(record, label,
                 form.cleaned_data[prefix + label] or None)
     record.domain = get_domain(record.name)
-    if (record.type in ('A', 'AAAA') and
-        form.cleaned_data[prefix + 'ptr']):
+    if (record.type in ('A', 'AAAA') and form.cleaned_data[prefix + 'ptr']):
         try:
             created = set_revdns_record(record.content, record.name)
         except DNSError as e:
@@ -560,9 +589,10 @@ class Addresses(DeviceDetailView):
 
     def get_dns(self, limit_types=None):
         ips = set(ip.address for ip in self.object.ipaddress_set.all())
-        names = set(ip.hostname for ip in self.object.ipaddress_set.all()
-                 if ip.hostname)
-        dotnames = set(name+'.' for name in names)
+        names = set(
+            ip.hostname for ip in self.object.ipaddress_set.all()if ip.hostname
+        )
+        dotnames = set(name + '.' for name in names)
         revnames = set('.'.join(reversed(ip.split('.'))) + '.in-addr.arpa'
                        for ip in ips)
         starrevnames = set()
@@ -572,10 +602,10 @@ class Addresses(DeviceDetailView):
                 parts.pop(0)
                 starrevnames.add('.'.join(['*'] + parts))
         for entry in Record.objects.filter(
-                db.Q(content__in=ips) |
-                db.Q(name__in=names) |
-                db.Q(content__in=names | dotnames)
-            ).distinct():
+            db.Q(content__in=ips) |
+            db.Q(name__in=names) |
+            db.Q(content__in=names | dotnames)
+        ).distinct():
             names.add(entry.name)
             if entry.type == 'A':
                 ips.add(entry.content)
@@ -588,13 +618,12 @@ class Addresses(DeviceDetailView):
                 parts.pop(0)
                 starnames.add('.'.join(['*'] + parts))
         query = Record.objects.filter(
-                db.Q(content__in=ips | names) |
-                db.Q(name__in=names | revnames | starnames | starrevnames)
-            ).distinct().order_by('type', 'name', 'content')
+            db.Q(content__in=ips | names) |
+            db.Q(name__in=names | revnames | starnames | starrevnames)
+        ).distinct().order_by('type', 'name', 'content')
         if limit_types is not None:
             query = query.filter(type__in=limit_types)
         return query
-
 
     def get_hostnames(self):
         ipaddresses = self.object.ipaddress_set.all()
@@ -614,7 +643,6 @@ class Addresses(DeviceDetailView):
         ):
             hostnames.add(record.content.strip('.'))
         return hostnames
-
 
     def handle_form(self, form, form_name, fill_record, create_record,
                     delete_record=None):
@@ -697,7 +725,7 @@ class Addresses(DeviceDetailView):
             ip_records = self.object.ipaddress_set.order_by('address')
             self.ip_form = AddressesForm(ip_records)
         profile = self.request.user.get_profile()
-        can_edit =  profile.has_perm(self.edit_perm, self.object.venture)
+        can_edit = profile.has_perm(self.edit_perm, self.object.venture)
         ret.update({
             'canedit': can_edit,
             'balancers': list(_get_balancers(self.object)),
@@ -738,11 +766,12 @@ class Costs(DeviceDetailView):
         })
         last_month = datetime.date.today() - datetime.timedelta(days=31)
         splunk = self.object.splunkusage_set.filter(
-                day__gte=last_month
-            ).order_by('-day')
+            day__gte=last_month
+        ).order_by('-day')
         if splunk.count():
             size = splunk.aggregate(db.Sum('size'))['size__sum'] or 0
-            cost = splunk[0].get_price(size=size) / splunk[0].model.group.size_modifier
+            cost = (splunk[0].get_price(size=size) /
+                    splunk[0].model.group.size_modifier)
             ret.update({
                 'splunk_size': size,
                 'splunk_monthly_cost': cost,
@@ -795,7 +824,11 @@ class Purchase(DeviceUpdateView):
     def get_context_data(self, **kwargs):
         ret = super(Purchase, self).get_context_data(**kwargs)
         ret.update({
-            'components': _get_details(self.object, purchase_only=False, with_price=True),
+            'components': _get_details(
+                self.object,
+                purchase_only=False,
+                with_price=True
+            ),
         })
         return ret
 
@@ -845,7 +878,10 @@ class BulkEdit(BaseMixin, TemplateView):
     def post(self, *args, **kwargs):
         profile = self.request.user.get_profile()
         if not profile.has_perm(Perm.bulk_edit):
-            messages.error(self.request, "You don't have permissions for bulk edit.")
+            messages.error(
+                self.request,
+                "You don't have permissions for bulk edit."
+            )
             return super(BulkEdit, self).get(*args, **kwargs)
         selected = self.request.POST.getlist('select')
         self.devices = Device.objects.filter(id__in=selected)
@@ -855,7 +891,9 @@ class BulkEdit(BaseMixin, TemplateView):
         for name in self.Form().fields:
             if name == 'save_comment':
                 continue
-            query = Device.objects.filter(id__in=selected).values(name).distinct()
+            query = Device.objects.filter(
+                id__in=selected
+            ).values(name).distinct()
             if query.count() > 1:
                 self.different_fields.append(name)
             elif query.count() > 0:
@@ -864,8 +902,8 @@ class BulkEdit(BaseMixin, TemplateView):
             self.form = self.Form(self.request.POST, initial=initial)
             if self.form.is_valid():
                 bulk_update(self.devices, self.edit_fields,
-                        self.form.cleaned_data, self.request.user)
-                return HttpResponseRedirect(self.request.path+'../info/')
+                            self.form.cleaned_data, self.request.user)
+                return HttpResponseRedirect(self.request.path + '../info/')
             else:
                 messages.error(self.request, 'Correct the errors.')
         elif 'bulk' in self.request.POST:
@@ -897,9 +935,9 @@ class CMDB(BaseMixin):
         ret = super(CMDB, self).get_context_data(**kwargs)
         device_id = self.kwargs.get('device')
         try:
-            ci=cdb.CI.objects.get(
-                    type=cdb.CI_TYPES.DEVICE.id,
-                    object_id=device_id
+            ci = cdb.CI.objects.get(
+                type=cdb.CI_TYPES.DEVICE.id,
+                object_id=device_id
             )
         except:
             ci = None
@@ -1006,7 +1044,8 @@ class PaginationMixin(object):
         return page
 
     def export_requested(self, *args, **kwargs):
-        """Returns True if csv export was requested by the user or False in other case"""
+        """Returns True if csv export was requested by the user or
+        False in other case"""
         export = self.request.GET.get('export')
         return export == 'csv'
 
@@ -1033,4 +1072,3 @@ class PaginationMixin(object):
             pages.append('...')
             pages.append(paginator.num_pages)
         return pages
-
