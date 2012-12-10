@@ -929,8 +929,19 @@ class PaginationMixin(object):
     In your controller:
     1. Inherit from this mixin
     2. Define ROW_PER_SIZE attribute
-    3. Add the key 'sort' of value 'self.sort' to `ret` variable
-       in get_context_data() function
+    3. Add the key 'sort' of value 'self.sort' and 'columns' of value 'column'
+       dict to `ret` variable in get_context_data() function.
+       'columns' should be contains a list columns in format:
+        [{
+            'name': 'column name',
+            'label': 'column label',
+            'type': 'sorted_type',
+            'dropdown: True,
+        },]
+        name - name sorted column, if None column wouldn't be sorted
+        label - label column
+        sorted_types - (alphabet, date, number, price, quantity, rating,)
+        dropdown - set tru if column contain dropdown selection menu
     4. Define attribute `columns` contain dict with column names and fields
        to sort, example: columns = {'name': ('name',),}
     5. In get() function call self.paginate_query(your_query, columns).
@@ -942,12 +953,8 @@ class PaginationMixin(object):
 
     In your template add code:
     {% pagination page url_query=url_query show_all=0 show_csv=0 fugue_icons=1 %}
-
-    And in the definition of columns add:
-    {% include 'assets/column-header.html' with label='label' name='field_name' %}
-
-    assets/column-header.html - is an example of a file that is responsible
-    for display sorting buttons
+    and
+    {% table_header columns url_query sort %}
 
     All done!
 
