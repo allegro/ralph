@@ -1,6 +1,13 @@
 Change Log
 ----------
 
+1.1.11
+~~~~~~
+
+Released on December 5, 2012.
+
+* Fix bugs in the search and add device forms
+
 1.1.10
 ~~~~~~
 
