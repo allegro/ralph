@@ -123,7 +123,12 @@ def preboot_file_name(instance, filename):
 class PrebootFile(Named):
     ftype = ChoiceField(verbose_name=_("file type"), choices=FileType,
         default=FileType.other)
-    raw_config = db.TextField(verbose_name=_("raw config"), blank=True)
+    raw_config = db.TextField(verbose_name=_("raw config"), blank=True,
+        help_text=_("All newline characters will be converted to Unix \\n "
+                    "newlines. You can use {{variables}} in the body. "
+                    "Available variables: filename, filetype, mac, ip, "
+                    "hostname, venture and venture_role."),
+    )
     file = db.FileField(verbose_name=_("file"), upload_to=preboot_file_name,
         null=True, blank=True, default=None)
 
@@ -173,6 +178,14 @@ class Deployment(Auditable):
     class Meta:
         verbose_name = _("deployment")
         verbose_name_plural = _("deployments")
+
+    def __unicode__(self):
+        return "{} as {}/{} - {}".format(
+            self.hostname,
+            self.venture.path,
+            self.venture_role.path,
+            self.get_status_display(),
+        )
 
     def create_issue(self):
         bowner = get_business_owner(self.device)
