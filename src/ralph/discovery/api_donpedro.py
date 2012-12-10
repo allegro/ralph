@@ -163,7 +163,6 @@ def save_storage(storage, dev):
             stor.size = size
             stor.save(priority=SAVE_PRIORITY)
         mount_points.append(mount_point)
-    # if unknown mount_point, probably disk was removed from this device...
     dev.storage_set.exclude(
         mount_point__in=mount_points
     ).update(mount_point=None)
