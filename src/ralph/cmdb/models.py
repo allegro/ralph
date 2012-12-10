@@ -110,7 +110,7 @@ __all__ = [
     'AuditStatus',
 ]
 
-# hook signals, don't remove this'.
+# hook signals, don't remove this.
 import ralph.cmdb.models_signals
 
 
@@ -128,6 +128,3 @@ class CILookup(LookupChannel):
 
     def format_item_display(self, obj):
         return "%s<div><i>%s</i></div>" % (escape(obj.name), escape(obj.type))
-
-
-

@@ -6,6 +6,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from datetime import datetime
+import unicodedata
 
 from django.conf import settings
 from django.db import models
@@ -15,7 +16,6 @@ from lck.django.common.models import TimeTrackable
 
 from ralph.cmdb.integration.issuetracker import IssueTracker
 from ralph.cmdb.models import CI
-import unicodedata
 
 
 def get_login_from_owner_name(owner):
