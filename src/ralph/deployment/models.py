@@ -14,8 +14,10 @@ from django.db import models as db
 from django.utils.translation import ugettext_lazy as _
 from dj.choices import Choices
 from dj.choices.fields import ChoiceField
-from lck.django.common.models import MACAddressField, Named, TimeTrackable,\
-                                    WithConcurrentGetOrCreate
+from lck.django.common.models import (
+    MACAddressField, Named, TimeTrackable,
+    WithConcurrentGetOrCreate,
+)
 
 from ralph.discovery.models import Device
 
@@ -25,8 +27,7 @@ class DeploymentStatus(Choices):
 
     open = _('open')
     in_progress = _('in progress')
-    in_deployment = _('in deployment')
-    resolved_fixed = _('resolved fixed')
+    done = _('done')
 
 
 class FileType(Choices):
@@ -50,10 +51,10 @@ def preboot_file_name(instance, filename):
 
 class PrebootFile(Named):
     ftype = ChoiceField(verbose_name=_("file type"), choices=FileType,
-        default=FileType.other)
+                        default=FileType.other)
     raw_config = db.TextField(verbose_name=_("raw config"), blank=True)
     file = db.FileField(verbose_name=_("file"), upload_to=preboot_file_name,
-        null=True, blank=True, default=None)
+                        null=True, blank=True, default=None)
 
     class Meta:
         verbose_name = _("preboot file")
@@ -71,7 +72,7 @@ class PrebootFile(Named):
 
 class Preboot(Named, TimeTrackable):
     files = db.ManyToManyField(PrebootFile, null=True, blank=True,
-        verbose_name=_("files"))
+                               verbose_name=_("files"))
 
     class Meta:
         verbose_name = _("preboot")
@@ -90,19 +91,22 @@ class Deployment(TimeTrackable):
     device = db.ForeignKey(Device)
     mac = MACAddressField()
     status = db.IntegerField(choices=DeploymentStatus(),
-        default=DeploymentStatus.open.id)
+                             default=DeploymentStatus.open.id)
     ip = db.IPAddressField(verbose_name=_("IP address"))
     hostname = db.CharField(verbose_name=_("hostname"), max_length=255,
-        unique=True)
+                            unique=True)
     preboot = db.ForeignKey(Preboot, verbose_name=_("preboot"), null=True,
-        on_delete=db.SET_NULL)
+                            on_delete=db.SET_NULL)
     venture = db.ForeignKey('business.Venture', verbose_name=_("venture"),
-        null=True, on_delete=db.SET_NULL)
-    venture_role = db.ForeignKey('business.VentureRole', null=True,
-        verbose_name=_("role"), on_delete=db.SET_NULL)
+                            null=True, on_delete=db.SET_NULL)
+    venture_role = db.ForeignKey(
+        'business.VentureRole', null=True,
+        verbose_name=_("role"), on_delete=db.SET_NULL
+    )
     done_plugins = db.TextField(verbose_name=_("done plugins"),
-        blank=True, default='')
-    is_running = db.BooleanField(verbose_name=_("is running"),
+                                blank=True, default='')
+    is_running = db.BooleanField(
+        verbose_name=_("is running"),
         default=False)   # a database-level lock for deployment-related tasks
     puppet_certificate_revoked = db.BooleanField(default=False)
 
@@ -110,12 +114,30 @@ class Deployment(TimeTrackable):
         verbose_name = _("deployment")
         verbose_name_plural = _("deployments")
 
+    def save(self, *args, **kwargs):
+        if self.status_changed():
+            self.status_lastchanged = datetime.datetime.now()
+        super(Deployment, self).save(*args, **kwargs)
+
+    def status_changed(self):
+        # newly created
+        if not self.id:
+            return True
+        # did not change status
+        if 'status' not in self.dirty_fields:
+            return False
+        # changed status
+        dirty_statusid = self.dirty_fields['status']
+        if not dirty_statusid or dirty_statusid == self.status:
+            return False
+        else:
+            return True
+
 
 class DeploymentPoll(db.Model, WithConcurrentGetOrCreate):
     key = db.CharField(max_length=255)
     date = db.DateTimeField()
     checked = db.BooleanField(default=False)
-
 
 
 # Import all the plugins
