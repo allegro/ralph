@@ -44,4 +44,5 @@ def in_progress(deployment_id):
     deployment = Deployment.objects.get(id=deployment_id)
     deployment.status = DeploymentStatus.in_progress
     deployment.save()
+    return True
 
