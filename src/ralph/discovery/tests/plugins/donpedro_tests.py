@@ -34,7 +34,10 @@ class DonPedroPluginTest(TestCase):
         self.total_memory_size = 3068
         self.total_storage_size = 40957
         self.total_cores_count = 2
-        # create device to test special cases
+        # prepare storage special cases
+        self._prepare_storage_special_cases()
+
+    def _prepare_storage_special_cases(self):
         self.special_dev = Device.create(
             sn='sn_123_321_123_321',
             model_name='SomeDeviceModelName',
@@ -52,54 +55,98 @@ class DonPedroPluginTest(TestCase):
         )
         model.name = model_name
         model.save()
-        incomplete_storage, _ = Storage.concurrent_get_or_create(
+        storage, _ = Storage.concurrent_get_or_create(
             device=self.special_dev,
             mount_point='C:'
         )
-        incomplete_storage.label = 'TestStorage'
-        incomplete_storage.size = 40960
-        incomplete_storage.model = model
-        incomplete_storage.save()
-        normal_storage, _ = Storage.concurrent_get_or_create(
+        storage.label = 'TestStorage'
+        storage.size = 40960
+        storage.model = model
+        storage.save()
+        storage, _ = Storage.concurrent_get_or_create(
             device=self.special_dev,
             mount_point='D:'
         )
-        normal_storage.label = 'TestStorage'
-        normal_storage.size = 40960
-        normal_storage.model = model
-        normal_storage.sn = 'stor_sn_123_321_2'
-        normal_storage.save()
-        to_del_storage, _ = Storage.concurrent_get_or_create(
+        storage.label = 'TestStorage'
+        storage.size = 40960
+        storage.model = model
+        storage.sn = 'stor_sn_123_321_2'
+        storage.save()
+        storage, _ = Storage.concurrent_get_or_create(
             device=self.special_dev,
             mount_point='E:',
             sn='stor_sn_123_321_3'
         )
-        to_del_storage.label = 'TestStorage'
-        to_del_storage.size = 40960
-        to_del_storage.model = model
-        to_del_storage.save()
-        to_move_storage, _ = Storage.concurrent_get_or_create(
+        storage.label = 'TestStorage'
+        storage.size = 40960
+        storage.model = model
+        storage.save()
+        storage, _ = Storage.concurrent_get_or_create(
             device=self.temp_dev,
             mount_point='G:',
             sn='stor_sn_123_321_5'
         )
-        to_move_storage.label = 'TestStorage'
-        to_move_storage.size = 40960
-        to_move_storage.model = model
-        to_move_storage.save()
+        storage.label = 'TestStorage'
+        storage.size = 40960
+        storage.model = model
+        storage.save()
+        storage, _ = Storage.concurrent_get_or_create(
+            device=self.special_dev,
+            mount_point='H:',
+            sn='stor_sn_123_321_6'
+        )
+        storage.label = 'TestStorage'
+        storage.size = 40960
+        storage.model = model
+        storage.save()
+        storage, _ = Storage.concurrent_get_or_create(
+            device=self.special_dev,
+            mount_point='X:',
+            sn='stor_sn_123_321_7'
+        )
+        storage.label = 'TestStorage'
+        storage.size = 40960
+        storage.model = model
+        storage.save()
+        storage, _ = Storage.concurrent_get_or_create(
+            device=self.special_dev,
+            mount_point='I:',
+            sn='stor_sn_123_321_8'
+        )
+        storage.label = 'TestStorage'
+        storage.size = 81920
+        storage.model = model
+        storage.save()
+        storage, _ = Storage.concurrent_get_or_create(
+            device=self.special_dev,
+            mount_point='Y:',
+            sn='stor_sn_123_321_9'
+        )
+        storage.label = 'TestStorage'
+        storage.size = 40960
+        storage.model = model
+        storage.save()
+        storage, _ = Storage.concurrent_get_or_create(
+            device=self.special_dev,
+            sn='stor_sn_123_321_10'
+        )
+        storage.label = 'TestStorage'
+        storage.size = 81920
+        storage.model = model
+        storage.save()
         save_storage(
             [
                 {
                     'sn': 'stor_sn_123_321_1',
                     'mountpoint': 'C:',
                     'label': 'TestStorage',
-                    'size': '40960',
+                    'size': 40960,
                 },
                 {
                     'sn': 'stor_sn_123_321_2',
                     'mountpoint': 'D:',
                     'label': 'TestStorage',
-                    'size': '40960',
+                    'size': 40960,
 
                 },
                 {
@@ -111,6 +158,24 @@ class DonPedroPluginTest(TestCase):
                 {
                     'sn': 'stor_sn_123_321_5',
                     'mountpoint': 'G:',
+                    'label': 'TestStorage',
+                    'size': 40960
+                },
+                {
+                    'sn': 'stor_sn_123_321_7',
+                    'mountpoint': 'H:',
+                    'label': 'TestStorage',
+                    'size': 40960
+                },
+                {
+                    'sn': 'stor_sn_123_321_9',
+                    'mountpoint': 'I:',
+                    'label': 'TestStorage',
+                    'size': 81920
+                },
+                {
+                    'sn': 'stor_sn_123_321_10',
+                    'mountpoint': 'J:',
                     'label': 'TestStorage',
                     'size': 40960
                 }
@@ -188,6 +253,51 @@ class DonPedroPluginTest(TestCase):
                 sn='stor_sn_123_321_5',
                 mount_point='G:',
                 size=40960,
+                label='TestStorage'
+            ).exists()
+        )
+        self.assertTrue(
+            self.special_dev.storage_set.filter(
+                sn='stor_sn_123_321_6',
+                mount_point__isnull=True
+            ).exists()
+        )
+        self.assertTrue(
+            self.special_dev.storage_set.filter(
+                sn='stor_sn_123_321_7',
+                mount_point='H:',
+                size=40960,
+                label='TestStorage'
+            ).exists()
+        )
+        self.assertTrue(
+            self.special_dev.storage_set.filter(
+                sn='stor_sn_123_321_8',
+                mount_point='I:',
+                size=81920,
+                label='TestStorage'
+            ).exists()
+        )
+        self.assertTrue(
+            self.special_dev.storage_set.filter(
+                sn='stor_sn_123_321_9',
+                mount_point__isnull=True,
+                size=40960,
+                label='TestStorage'
+            ).exists()
+        )
+        self.assertFalse(
+            self.special_dev.storage_set.filter(
+                mount_point='J:',
+                size=40960,
+                label='TestStorage'
+            ).exists()
+        )
+        self.assertTrue(
+            self.special_dev.storage_set.filter(
+                sn='stor_sn_123_321_10',
+                mount_point__isnull=True,
+                size=81920,
                 label='TestStorage'
             ).exists()
         )
