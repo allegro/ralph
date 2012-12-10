@@ -144,6 +144,10 @@ def _validate_multivalue_data(data):
         item = item.strip()
         if item and item not in items:
             items.append(item)
+        else:
+            raise ValidationError(
+                _("There is duplicate serial numbers in field.")
+            )
     if not items:
         raise ValidationError(error_msg)
     return items
