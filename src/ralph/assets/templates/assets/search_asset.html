@@ -43,47 +43,10 @@
     </div>
 {% endblock %}
 {% block content %}
-
     <h3>{{header}}</h3>
     <form id="table_form" action="" method="GET">
         <table class="table table-bordered table-striped">
-                <thead>
-                    <tr>
-                        <th>
-                            <div class="dropdown">
-                                <a href="#" data-toggle="dropdown" class="dropdown-toggle">
-                                    <i class="fugue-icon fugue-ui-check-boxes-series"></i>
-                                </a>
-                                <ul class="dropdown-menu">
-                                    <li><a href="#" class="select-all">
-                                        <i class="fugue-icon fugue-ui-check-box">
-                                        </i>&nbsp;Select all on this page</a>
-                                    </li>
-                                    <li>
-                                        <a href="#" class="select-toggle">
-                                            <i class="fugue-icon fugue-ui-check-box-mix">
-                                            </i>&nbsp;Reverse selection</a>
-                                        </li>
-                                        <li>
-                                            <a href="#" class="select-none">
-                                                <i class="fugue-icon fugue-ui-check-box-uncheck"></i>&nbsp;Deselect all
-                                            </a>
-                                        </li>
-                                    </ul>
-                            </div>
-                        </th>
-                        <td>Type</td>
-                        {% include 'assets/column-header.html' with label='SN' name='sn' %}
-                        {% include 'assets/column-header.html' with label='Barcode' name='barcode' %}
-                        {% include 'assets/column-header.html' with label='Model' name='model' %}
-                        {% include 'assets/column-header.html' with label='Invoice no.' name='invoice_no' %}
-                        {% include 'assets/column-header.html' with label='Order no.' name='order_no' %}
-                        {% include 'assets/column-header.html' with label='Buy date' name='buy_date' type='date' %}
-                        {% include 'assets/column-header.html' with label='Status' name='status' %}
-                        {% include 'assets/column-header.html' with label='Warehouse' name='warehouse' %}
-                        <th>Actions</th>
-                    </tr>
-                </thead>
+        {% table_header columns url_query sort %}
                 <tbody>
                 {% for row in page %}
                 <tr>
