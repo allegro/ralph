@@ -1,0 +1,299 @@
+{% extends "layout.html" %}
+
+{% block sidebar1 %}{% endblock %}
+{% block bsrelbar1 %}{% endblock %}
+{% block bsrelbar2 %}{% endblock %}
+{% block sidebarsearch %}{% endblock %}
+{% set title = 'Ralph archived downloads' %}
+
+{% block content %}
+    <div class="container">
+
+        <h1>Archived/Old Ralph downloads</h1>
+        <div class="page-header">
+            <h1>Ralph <small>1.1.11</small></h1>
+            <span class="muted">Released on December 5, 2012.</span>
+        </div>
+        <div class="row">
+            <div class="span8">
+                <p>This is a bugfix release. It fixes bugs in the search and device add forms introduced in version 1.1.10.</p>
+            </div>
+            <div class="span4">
+                <p><a href="https://github.com/allegro/ralph/zipball/1.1.11" class="btn btn-warning btn-large">
+                    <i class="icon-download-alt icon-white"></i>
+                    Download version 1.1.11</a></p>
+            </div>
+        </div>
+
+        <div class="page-header">
+            <h1>Ralph <small>1.1.10</small></h1>
+            <span class="muted">Released on December 5, 2012.</span>
+        </div>
+        <div class="row">
+            <div class="span8">
+                <p>Includes support for SNMP v3 in discovery and improvements in DNS/DHCP configuration.</p>
+                <p>Read the <a href="doc/{{ pathto('installation') }}">installation instructions</a> in the documentation for help with installing it.</p>
+                <p>A detailed <a href="doc/{{ pathto('changes') }}">change log</a> is available in the documentation.</p>
+            </div>
+            <div class="span4">
+                <p><a href="https://github.com/allegro/ralph/zipball/1.1.10" class="btn">
+                    <i class="icon-download-alt"></i>
+                    Download version 1.1.10</a></p>
+            </div>
+        </div>
+        <div class="page-header">
+            <h1>Ralph <small>1.1.9</small></h1>
+            <span class="muted">Released on November 26, 2012.</span>
+        </div>
+        <div class="row">
+            <div class="span8">
+                <p>This is a bugfix release. Fixes regressions in discovery from version 1.1.9 and introduces DiscoveryWarnings for tracking problems with discovery.</p>
+            </div>
+            <div class="span4">
+                <p><a href="https://github.com/allegro/ralph/zipball/1.1.9" class="btn">
+                    <i class="icon-download-alt"></i>
+                    Download version 1.1.9</a></p>
+            </div>
+        </div>
+
+        <div class="page-header">
+            <h1>Ralph <small>1.1.8</small></h1>
+            <span class="muted">Released on November 22, 2012.</span>
+        </div>
+        <div class="row">
+            <div class="span8">
+                <p>Includes system-level storage detection, improved CPU information for Windows machines, ability to edit DNS information straight from the Addresses tab on a device. CMDB now includes an impact report.</p>
+            </div>
+            <div class="span4">
+                <p><a href="https://github.com/allegro/ralph/zipball/1.1.8" class="btn">
+                    <i class="icon-download-alt"></i>
+                    Download version 1.1.8</a></p>
+            </div>
+        </div>
+
+        <div class="page-header">
+            <h1>Ralph <small>1.1.7</small></h1>
+            <span class="muted">Released on November 8, 2012.</span>
+        </div>
+        <div class="row">
+            <div class="span8">
+                <p>This is a bugfix release. Includes fixes in IPMI, SSG and Xen discovery as well as minor CMDB and DNS admin improvements. DHCP agent script is now compatible with Python 2.4 (for usage in RedHat 5.x environments).
+            </div>
+            <div class="span4">
+                <p><a href="https://github.com/allegro/ralph/zipball/1.1.7" class="btn">
+                    <i class="icon-download-alt"></i>
+                    Download version 1.1.7</a></p>
+            </div>
+        </div>
+
+        <div class="page-header">
+            <h1>Ralph <small>1.1.6</small></h1>
+            <span class="muted">Released on October 29, 2012.</span>
+        </div>
+        <div class="row">
+            <div class="span8">
+              <p>This is a bugfix release. Includes fixes in CMDB, device admin, device report and unit tests.
+            </div>
+            <div class="span4">
+                <p><a href="https://github.com/allegro/ralph/zipball/1.1.6" class="btn">
+                    <i class="icon-download-alt"></i>
+                    Download version 1.1.6</a></p>
+            </div>
+        </div>
+
+        <div class="page-header">
+            <h1>Ralph <small>1.1.5</small></h1>
+            <span class="muted">Released on October 19, 2012.</span>
+        </div>
+        <div class="row">
+            <div class="span8">
+              <p>This is a bugfix release. Fixes order of database migrations and several problems with running unit tests. Django version bumped to 1.4.2.</p>
+            </div>
+            <div class="span4">
+                <p><a href="https://github.com/allegro/ralph/zipball/1.1.5" class="btn">
+                    <i class="icon-download-alt"></i>
+                    Download version 1.1.5</a></p>
+            </div>
+        </div>
+
+        <div class="page-header">
+            <h1>Ralph <small>1.1.4</small></h1>
+            <span class="muted">Released on October 15, 2012.</span>
+        </div>
+        <div class="row">
+            <div class="span8">
+              <p>Adds role properties to the RESTful API. Fixes deprecation so that deprecated devices no longer report a monthly cost.</p>
+            </div>
+            <div class="span4">
+                <p><a href="https://github.com/allegro/ralph/zipball/1.1.4" class="btn">
+                    <i class="icon-download-alt"></i>
+                    Download version 1.1.4</a></p>
+            </div>
+        </div>
+
+        <div class="page-header">
+            <h1>Ralph <small>1.1.3</small></h1>
+            <span class="muted">Released on October 10, 2012.</span>
+        </div>
+        <div class="row">
+            <div class="span8">
+              <p>This is a bugfix release. Contains fixes in UI and discovery code, as well as shows cloud usage in the main venture report.</p>
+            </div>
+            <div class="span4">
+                <p><a href="https://github.com/allegro/ralph/zipball/1.1.3" class="btn">
+                    <i class="icon-download-alt"></i>
+                    Download version 1.1.3</a></p>
+            </div>
+        </div>
+
+        <div class="page-header">
+            <h1>Ralph <small>1.1.2</small></h1>
+            <span class="muted">Released on October 8, 2012.</span>
+        </div>
+        <div class="row">
+            <div class="span8">
+              <p>This is a bugfix release. Includes a new experimental discovery agent for Windows called <i>Donpedro</i> as well as two new discovery plugins for Xen hypervisors and Linux machines not controlled by Puppet. Fixes bugs in UI, CMDB and discovery.</p>
+            </div>
+            <div class="span4">
+                <p><a href="https://github.com/allegro/ralph/zipball/1.1.2" class="btn">
+                    <i class="icon-download-alt"></i>
+                    Download version 1.1.2</a></p>
+            </div>
+        </div>
+
+        <div class="page-header">
+            <h1>Ralph <small>1.1.1</small></h1>
+            <span class="muted">Released on September 24, 2012.</span>
+        </div>
+        <div class="row">
+            <div class="span8">
+                <p>This is a bugfix release. Includes fixes in discovery and UI code, as well as updates in the price catalog: history of changes is tracked and the UI for specifying price per unit of size is now easier to use.</p>
+            </div>
+            <div class="span4">
+                <p><a href="https://github.com/allegro/ralph/zipball/1.1.1" class="btn">
+                    <i class="icon-download-alt"></i>
+                    Download version 1.1.1</a></p>
+            </div>
+        </div>
+
+        <div class="page-header">
+            <h1>Ralph <small>1.1.0</small></h1>
+            <span class="muted">Released on September 19, 2012.</span>
+        </div>
+        <div class="row">
+            <div class="span8">
+                <p>This is a feature release. Includes support for deployment of physical hosts using PXE, simplified financial model (components can be now priced by unit of size, e.g. by core or GiB) and upgraded reporting system. Includes minor bug fixes. 
+            </div>
+            <div class="span4">
+                <p><a href="https://github.com/allegro/ralph/zipball/1.1.0" class="btn">
+                    <i class="icon-download-alt"></i>
+                    Download version 1.1.0</a></p>
+            </div>
+        </div>
+
+        <div class="page-header">
+            <h1>Ralph <small>1.0.6</small></h1>
+            <span class="muted">Released on August 20, 2012.</span>
+        </div>
+        <div class="row">
+            <div class="span8">
+                <p>This is a bugfix release. Includes fixes in CMDB and UI code, as well as a preliminary timeline view for CMDB, usability improvements in editing CI relations.</p>
+            </div>
+            <div class="span4">
+                <p><a href="https://github.com/allegro/ralph/zipball/1.0.5" class="btn">
+                    <i class="icon-download-alt"></i>
+                    Download version 1.0.6</a></p>
+            </div>
+        </div>
+
+        <div class="page-header">
+            <h1>Ralph <small>1.0.5</small></h1>
+            <span class="muted">Released on August 13, 2012.</span>
+        </div>
+        <div class="row">
+            <div class="span8">
+                <p>This is a bugfix release. Includes fixes in CMDB, discovery and UI code, as well as the possibility to specify extra queries for OpenStack. Local storage costs are now also counted for Proxmox virtual machines.</p>
+            </div>
+            <div class="span4">
+                <p><a href="https://github.com/allegro/ralph/zipball/1.0.5" class="btn">
+                    <i class="icon-download-alt"></i>
+                    Download version 1.0.5</a></p>
+            </div>
+        </div>
+
+        <div class="page-header">
+            <h1>Ralph <small>1.0.4</small></h1>
+            <span class="muted">Released on August 08, 2012.</span>
+        </div>
+        <div class="row">
+            <div class="span8">
+                <p>This version has report and rack views, as well as some improvements in the user interface and important bug fixes in the discovery plugins. You can now delete from the database old devices that are no longer needed.</p>
+            </div>
+            <div class="span4">
+                <p><a href="https://github.com/allegro/ralph/zipball/1.0.4" class="btn">
+                    <i class="icon-download-alt"></i>
+                    Download version 1.0.4</a></p>
+            </div>
+        </div>
+
+        <div class="page-header">
+            <h1>Ralph <small>1.0.3</small></h1>
+            <span class="muted">Released on August 01, 2012.</span>
+        </div>
+        <div class="row">
+            <div class="span8">
+                <p>This is a bugfix release. Includes fixes for minor issues in the Web app and ability to run CMDB integration plugins remotely. It introduces a rudimentary reports tab on device lists.</p>
+            </div>
+            <div class="span4">
+                <p><a href="https://github.com/allegro/ralph/zipball/1.0.3" class="btn">
+                    <i class="icon-download-alt"></i>
+                    Download version 1.0.3</a></p>
+            </div>
+        </div>
+
+        <div class="page-header">
+            <h1>Ralph <small>1.0.2</small></h1>
+            <span class="muted">Released on July 23, 2012.</span>
+        </div>
+        <div class="row">
+            <div class="span8">
+                <p>This is a bugfix release. It introduces the ability to create new devices manually (without autodiscovery) and fixes several minor issues.</p>
+            </div>
+            <div class="span4">
+                <p><a href="https://github.com/allegro/ralph/zipball/1.0.2" class="btn">
+                    <i class="icon-download-alt"></i>
+                    Download version 1.0.2</a></p>
+            </div>
+        </div>
+
+        <div class="page-header">
+            <h1>Ralph <small>1.0.1</small></h1>
+            <span class="muted">Released on July 18, 2012.</span>
+        </div>
+        <div class="row">
+            <div class="span8">
+                <p>This is a bugfix release. It fixes several small problems with initial setup and configuration, and makes it easier to manage settings.</p>
+            </div>
+            <div class="span4">
+                <p><a href="https://github.com/allegro/ralph/zipball/1.0.1" class="btn">
+                    <i class="icon-download-alt"></i>
+                    Download version 1.0.1</a></p>
+            </div>
+        </div>
+
+        <div class="page-header">
+            <h1>Ralph <small>1.0.0</small></h1>
+            <span class="muted">Released on July 16, 2012.</span>
+        </div>
+        <div class="row">
+            <div class="span8">
+                <p>This is the first release of Ralph.</p>
+            </div>
+            <div class="span4">
+                <p><a href="https://github.com/allegro/ralph/zipball/1.0.0" class="btn">
+                    <i class="icon-download-alt"></i>
+                    Download version 1.0.0</a></p>
+            </div>
+        </div>
+    </div> <!-- /container -->
+{% endblock %}
