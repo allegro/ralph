@@ -52,8 +52,8 @@ def create_asset(**kwargs):
 
 
 class TestForms(TestCase):
-    """
-    This class testing adding, editing, deleting single asset
+    """ This class testing adding, editing, deleting single asset
+
     Scenario:
     1. Add something via form
     2. Edit added data via form
@@ -92,9 +92,7 @@ class TestForms(TestCase):
         )
 
     def test_models(self):
-        """
-        Hire we testing, whether setUp add to database correct data.
-        """
+        """ Hire we testing, whether setUp add to database correct data."""
         db_manufacturer = AssetManufacturer.objects.get(name='Menufac')
         self.assertEquals(db_manufacturer.name, 'Menufac')
         db_model = AssetModel.objects.get(name='AsModel')
@@ -105,9 +103,7 @@ class TestForms(TestCase):
         self.assertEquals(db_asset1.sn, 'sn-123')
 
     def test_view(self):
-        """
-        Here we testing whether correct data is displayed in table
-        """
+        """ Here we testing whether correct data is displayed in table """
         url = '/assets/dc/search'
         view = self.client.get(url, follow=True)
         self.assertEqual(view.status_code, 200)
@@ -125,9 +121,7 @@ class TestForms(TestCase):
         self.assertEqual(unicode(data.device_info.warehouse), 'Warehouse1')
 
     def test_add_form(self):
-        """
-        Now we trying adding new data via form.
-        """
+        """ Now we trying adding new data via form. """
         url = '/assets/dc/add/device/'
         prepare_post_data = {
             'type': AssetType.data_center,
@@ -174,9 +168,7 @@ class TestForms(TestCase):
         """
 
     def test_edit_form(self):
-        """
-        Next change added data
-        """
+        """ Next change added data """
         # Download old data
         view = self.client.get('/assets/dc/edit/device/1/')
         self.assertEqual(view.status_code, 200)
@@ -280,8 +272,8 @@ class TestForms(TestCase):
 
 
 class TestBulkEdit(TestCase):
-    """
-    This class testing forms for may actions
+    """ This class testing forms for may actions
+
     Scenario:
     1. Add 2 assets and compare with old data
     """
@@ -321,9 +313,7 @@ class TestBulkEdit(TestCase):
         )
 
     def test_bulkedit_form(self):
-        """
-         This class testing Bulk edit form
-        """
+        """ This class testing Bulk edit form """
         # Download base data
         url = '/assets/dc/bulkedit/?select=%s&select=%s' % (
             self.asset.id, self.asset2.id)
@@ -414,8 +404,8 @@ class TestBulkEdit(TestCase):
 
 
 class TestSearchForm(TestCase):
-    """
-    This class testing search form
+    """ This class testing search form
+
     Scenario:
     1. Testing all fields
     2. Insert incorrect data
@@ -473,9 +463,7 @@ class TestSearchForm(TestCase):
         )
 
     def test_model_field(self):
-        """
-        This class testing base data (setUp)
-        """
+        """ Testing base asset fields """
         url = '/assets/dc/search?model=%s' % self.asset.id
         get = self.client.get(url)
         self.assertEqual(get.status_code, 200)
@@ -504,11 +492,9 @@ class TestSearchForm(TestCase):
         get = self.client.get(url)
         self.assertEqual(get.status_code, 200)
 
-        # How many Ralph return results?
         res = get.context_data['page'].object_list
         self.assertEqual(len(res), 2)
 
-        # # Correct: res not contain AsModel3
         output = ('<Asset: AsModel3 - sn-12323542345 - bc-12341234124>')
         self.assertNotEqual(unicode(res[0]), output)
 
@@ -517,11 +503,9 @@ class TestSearchForm(TestCase):
         get = self.client.get(url)
         self.assertEqual(get.status_code, 200)
 
-        # How many Ralph returns results?
         res = get.context_data['page'].object_list
         self.assertEqual(len(res), 2)
 
-        # Correct: res not contain AsModel1
         output = ('<Asset: AsModel1 - sn-12332452345 - bc-123421141>')
         self.assertNotEqual(unicode(res[0]), output)
 
@@ -530,11 +514,9 @@ class TestSearchForm(TestCase):
         get = self.client.get(url)
         self.assertEqual(get.status_code, 200)
 
-        # How many results Ralph return?
         res = get.context_data['page'].object_list
         self.assertEqual(len(res), 1)
 
-        # Correct: res not contain AsModel1
         output = ('<Asset: AsModel1 - sn-12332452345 - bc-123421141>')
         self.assertNotEqual(unicode(res[0]), output)
 
@@ -543,11 +525,9 @@ class TestSearchForm(TestCase):
         get = self.client.get(url)
         self.assertEqual(get.status_code, 200)
 
-        # How many results Ralph return?
         res = get.context_data['page'].object_list
         self.assertEqual(len(res), 1)
 
-        # Correct: res not contain AsModel1
         output = ('Menufac1 AsModel1 - sn-12323542345 - bc-12341234124')
         self.assertEqual(unicode(res[0]), output)
 
@@ -556,11 +536,9 @@ class TestSearchForm(TestCase):
         get = self.client.get(url)
         self.assertEqual(get.status_code, 200)
 
-        # How many results Ralph return?
         res = get.context_data['page'].object_list
         self.assertEqual(len(res), 1)
 
-        # Correct: res not contain AsModel2
         output = ('Menufac2 AsModel2 - sn-123123123 - bc-1234123123')
         self.assertEqual(unicode(res[0]), output)
 
@@ -619,9 +597,9 @@ class TestSearchForm(TestCase):
         self.assertEqual(len(res), 3)
 
 
-class TestTrolling(TestCase):
-    """
-    This class testing forms validation
+class TestValidations(TestCase):
+    """ This class tests forms validation
+
     Scenario:
     1. test validation (required fields) add, edit
     2. test wrong data in fields
@@ -645,7 +623,7 @@ class TestTrolling(TestCase):
             source=AssetSource.shipment,
             invoice_no='Invoice No 1',
             order_no='Order No 1',
-            invoice_date=datetime.datetime(2001, 01, 01),
+            invoice_date=datetime.datetime(2001, 1, 1),
             support_period=12,
             support_type='Support d2d',
             provider='Provider 1',
@@ -661,7 +639,7 @@ class TestTrolling(TestCase):
             source=AssetSource.shipment,
             invoice_no='Invoice No 2',
             order_no='Order No 2',
-            invoice_date=datetime.datetime(2002, 01, 01),
+            invoice_date=datetime.datetime(2002, 1, 1),
             support_period=22,
             support_type='Support d2d',
             provider='Provider 2',
@@ -686,7 +664,6 @@ class TestTrolling(TestCase):
         post_data = {}
         post = self.client.post(url, post_data)
         self.assertEqual(post.status_code, 200)
-
         for r in self.required_fields:
             self.assertFormError(
                 post, r[0], r[1], 'This field is required.'
@@ -775,8 +752,7 @@ class TestTrolling(TestCase):
                 bulk['error']
             )
 
-        # if sn was duplicated application send message, so seeing whether
-        # error message was displayed
+        # if sn was duplicated, the message should be shown on the screen
         find = []
         i = 0
         msg_error = 'Please correct duplicated serial numbers or barcodes.'
@@ -819,11 +795,11 @@ class TestTrolling(TestCase):
             'form-1-source': AssetSource.shipment.id,
         }
         correct_post = self.client.post(url, post_data, follow=True)
-        # See wither all is ok
+
         self.assertRedirects(
             correct_post, url, status_code=302, target_status_code=200,
         )
-        # And find success message
+        # Find success message
         find = []
         i = 0
         msg_error = 'Changes saved.'

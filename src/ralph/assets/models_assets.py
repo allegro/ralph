@@ -143,7 +143,7 @@ class Asset(TimeTrackable, EditorTrackable, SavingUser, SoftDeletable):
         max_length=30, db_index=True, null=True, blank=True
     )
     order_no = models.CharField(max_length=50, null=True, blank=True)
-    invoice_date = models.DateField(default=datetime.date.today())
+    invoice_date = models.DateField(default=datetime.date.today)
     sn = models.CharField(max_length=200, unique=True)
     barcode = models.CharField(
         max_length=200, null=True, blank=True, unique=True

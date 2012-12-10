@@ -251,7 +251,7 @@ class AddDeviceForm(BaseAddAssetForm):
                     barcodes.append(barcode)
                 else:
                     raise ValidationError(
-                        _("There is dublicates barcodes in field.")
+                        _("There is duplicate barcodes in field.")
                     )
             if not barcodes:
                 raise ValidationError(_("Barcode list could be empty or "
