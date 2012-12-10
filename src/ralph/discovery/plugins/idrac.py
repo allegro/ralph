@@ -8,11 +8,11 @@ from __future__ import unicode_literals
 
 import hashlib
 import re
-import requests
 import uuid
 
 from django.conf import settings
 from lck.django.common import nested_commit_on_success
+import requests
 from xml.etree import cElementTree as ET
 
 from ralph.discovery.models import (
