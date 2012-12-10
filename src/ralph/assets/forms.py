@@ -142,12 +142,16 @@ def _validate_multivalue_data(data):
     items = []
     for item in filter(len, re.split(",|\n", data)):
         item = item.strip()
-        if item and item not in items:
-            items.append(item)
-        else:
+        if item in items:
             raise ValidationError(
                 _("There is duplicate serial numbers in field.")
             )
+        elif ' ' in item:
+            raise ValidationError(
+                _("Serial number can't contain white characters.")
+            )
+        elif item:
+            items.append(item)
     if not items:
         raise ValidationError(error_msg)
     return items
