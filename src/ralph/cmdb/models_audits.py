@@ -15,6 +15,39 @@ from lck.django.common.models import TimeTrackable
 
 from ralph.cmdb.integration.issuetracker import IssueTracker
 from ralph.cmdb.models import CI
+import unicodedata
+
+
+def get_login_from_owner_name(owner):
+    def normalize_name(name):
+        # Polish Ł is not handled properly
+        ret = name.lower().replace(' ', '.').replace(
+            'Ł', 'L').replace('ł', 'l')
+        return unicodedata.normalize('NFD', ret).encode('ascii', 'ignore')
+    return normalize_name(owner.first_name) + '.' + normalize_name(
+        owner.last_name)
+
+
+def get_technical_owner(device):
+    if not device.venture:
+        return ''
+    owners = device.venture.technical_owners()
+    if not owners:
+        return ''
+    else:
+        owner = owners[0]
+        return get_login_from_owner_name(owner)
+
+
+def get_business_owner(device):
+    if not device.venture:
+        return ''
+    owners = device.venture.business_owners()
+    if not owners:
+        return ''
+    else:
+        owner = owners[0]
+        return get_login_from_owner_name(owner) if owners else ''
 
 
 class AuditStatus(Choices):
