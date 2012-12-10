@@ -250,10 +250,16 @@ class AddDevice(Base):
                     )
                 )
             messages.success(self.request, _("Assets saved."))
-            return HttpResponseRedirect(
-                '/assets/dc/bulkedit/?select=%s' %
-                    ('&select='.join(["%s" % id for id in ids]))
-            )
+            cat = self.request.path.split('/')[2]
+            if len(ids) == 1:
+                return HttpResponseRedirect(
+                    '/assets/%s/edit/device/%s/' % (cat, ids[0])
+                )
+            else:
+                return HttpResponseRedirect(
+                    '/assets/%s/bulkedit/?select=%s' %
+                        (cat, '&select='.join(["%s" % id for id in ids]))
+                )
         else:
             messages.error(self.request, _("Please correct the errors."))
         return super(AddDevice, self).get(*args, **kwargs)
