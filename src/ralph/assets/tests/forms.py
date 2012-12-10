@@ -70,7 +70,7 @@ class TestForms(TestCase):
             source=AssetSource.shipment,
             invoice_no='Invoice No 1',
             order_no='Order No 1',
-            invoice_date=datetime.datetime(2001, 01, 01),
+            invoice_date=datetime.datetime(2001, 1, 1),
             support_period=12,
             support_type='Support d2d',
             provider='Provider 1',
@@ -145,7 +145,7 @@ class TestForms(TestCase):
         # When everything was ok, server return response code = 302, and
         # redirect us to /assets/dc/search given response code 200
         self.assertRedirects(
-            response, '/assets/dc/search',
+            response, '/assets/dc/edit/device/2/',
             status_code=302,
             target_status_code=200,
         )
@@ -270,6 +270,122 @@ class TestForms(TestCase):
         # FIXME!
         pass
 
+class TestMultivalueFields(TestCase):
+    def setUp(self):
+        self.client = login_as_su()
+        self.warehouse = create_device(1, create_warehouse(name='Warehouse'))
+        self.model = create_model(create_manufacturer('Menufacturer'), 'Model')
+        self.addform = '/assets/dc/add/device/'
+
+    def test_add_form_testing_sn_and_barcode(self):
+        """
+        Hire we testing multivalue fields
+        Scenario:
+        1. add many sn in difrent forms
+        2. verify that form add empty sn
+        3. relationship between SNs and barcodes
+        4, verity names with white characters
+        """
+        test_data = [
+            dict(
+                type=AssetType.data_center,
+                model=self.model.id,
+                support_period='1',
+                support_type='standard',
+                invoice_date='2001-01-02',
+                warehouse=self.warehouse.id,
+                status=AssetStatus.new,
+                sn='sn1_1, sn2_1, sn1_1',
+                remarks='asset1',
+                size=1
+            ),
+            dict(
+                type=AssetType.data_center,
+                model=self.model.id,
+                support_period='1',
+                support_type='standard',
+                invoice_date='2001-01-02',
+                warehouse=self.warehouse.id,
+                status=AssetStatus.new,
+                sn='sn1_2, , , sn2_2',
+                remarks='asset2',
+                size=1
+            ),
+            dict(
+                type=AssetType.data_center,
+                model=self.model.id,
+                support_period='1',
+                support_type='standard',
+                invoice_date='2001-01-02',
+                warehouse=self.warehouse.id,
+                status=AssetStatus.new,
+                sn='sn1_3, ,, sn2_3',
+                remarks='asset3',
+                size=1
+            ),
+            dict(
+                type=AssetType.data_center,
+                model=self.model.id,
+                support_period='1',
+                support_type='standard',
+                invoice_date='2001-01-02',
+                warehouse=self.warehouse.id,
+                status=AssetStatus.new,
+                sn='sn1_4, ns2_4 \n sn3_4',
+                remarks='asset4',
+                size=1
+            ),
+            dict(
+                type=AssetType.data_center,
+                model=self.model.id,
+                support_period='1',
+                support_type='standard',
+                invoice_date='2001-01-02',
+                warehouse=self.warehouse.id,
+                status=AssetStatus.new,
+                sn='name with white spaces, 0000-0000-0000-0000',
+                remarks='asset5',
+                size=1
+            )
+        ]
+        for test in test_data:
+            post = self.client.post(self.addform, test)
+            added_assets = Asset.objects.filter(remarks=test['remarks'])
+            if test['remarks'] is 'asset1':
+                self.assertEqual(post.status_code, 200)
+                self.assertFormError(
+                    post, 'asset_form', 'sn',
+                    'There is duplicate serial numbers in field.'
+                )
+            elif test['remarks'] is 'asset2':
+                self.assertEqual(post.status_code, 302)
+                self.assertEqual(len(added_assets), 2)
+                self.assertEqual(
+                    ['sn1_2', 'sn2_2'], [asset.sn for asset in added_assets]
+                )
+            elif test['remarks'] is 'asset3':
+                self.assertEqual(post.status_code, 302)
+                self.assertEqual(len(added_assets), 2)
+                self.assertEqual(
+                    ['sn1_3', 'sn2_3'], [asset.sn for asset in added_assets]
+                )
+            elif test['remarks'] is 'asset4':
+                self.assertEqual(post.status_code, 302)
+                self.assertEqual(len(added_assets), 3)
+                self.assertEqual(
+                    ['sn1_4', 'ns2_4', 'sn3_4'],
+                    [asset.sn for asset in added_assets]
+                )
+            elif test['remarks'] is 'asset5':
+                self.assertEqual(post.status_code, 200)
+                self.assertFormError(
+                    post, 'asset_form', 'sn',
+                    "Serial number can't contain white characters."
+                )
+
+        empty_sn =  Asset.objects.filter(sn = ' ')
+        self.assertEqual(len(empty_sn), 0)
+
 
 class TestBulkEdit(TestCase):
     """ This class testing forms for may actions
@@ -287,7 +403,7 @@ class TestBulkEdit(TestCase):
             source=AssetSource.shipment,
             invoice_no='Invoice No 1',
             order_no='Order No 1',
-            invoice_date=datetime.datetime(2001, 01, 01),
+            invoice_date=datetime.datetime(2001, 1, 1),
             support_period=12,
             support_type='Support d2d',
             provider='Provider 1',
@@ -303,7 +419,7 @@ class TestBulkEdit(TestCase):
             source=AssetSource.shipment,
             invoice_no='Invoice No 2',
             order_no='Order No 2',
-            invoice_date=datetime.datetime(2002, 01, 01),
+            invoice_date=datetime.datetime(2002, 1, 1),
             support_period=22,
             support_type='Support d2d',
             provider='Provider 2',
@@ -421,7 +537,7 @@ class TestSearchForm(TestCase):
             source=AssetSource.shipment,
             invoice_no='Invoice No 1',
             order_no='Order No 1',
-            invoice_date=datetime.datetime(2001, 01, 01),
+            invoice_date=datetime.datetime(2001, 1, 1),
             support_period=12,
             support_type='Support d2d',
             provider='Provider 1',
@@ -437,7 +553,7 @@ class TestSearchForm(TestCase):
             source=AssetSource.shipment,
             invoice_no='Invoice No 1',
             order_no='Order No 3',
-            invoice_date=datetime.datetime(2003, 01, 01),
+            invoice_date=datetime.datetime(2003, 1, 1),
             support_period=12,
             support_type='Support d2d',
             provider='Provider 2',
@@ -453,7 +569,7 @@ class TestSearchForm(TestCase):
             source=AssetSource.shipment,
             invoice_no='Invoice No 3',
             order_no='Order No 3',
-            invoice_date=datetime.datetime(2002, 01, 01),
+            invoice_date=datetime.datetime(2002, 1, 1),
             support_period=12,
             support_type='standard',
             provider='Provider 3',
