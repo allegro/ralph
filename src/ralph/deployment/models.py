@@ -84,7 +84,7 @@ class Deployment(TimeTrackable):
         blank=True, default=None, on_delete=models.SET_NULL
     )
     status_lastchanged = models.DateTimeField(
-        default=datetime.now,
+        default=datetime.datetime.now,
         verbose_name=_("date")
     )
     device = db.ForeignKey(Device)
