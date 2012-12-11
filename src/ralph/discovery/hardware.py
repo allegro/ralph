@@ -464,12 +464,17 @@ def handle_dmidecode(info, ethernets=(), save_priority=0):
     for cpu in dev.processor_set.filter(index__gt=i + 1):
         cpu.delete()
     for i, mem_info in enumerate(info['mem']):
+        extra = "RAM %s %dMiB %dMHz" % (
+            mem_info['type'], mem_info['size'] or 0, mem_info['speed'] or 0
+        )
         model, created = ComponentModel.concurrent_get_or_create(
             speed=mem_info['speed'] or 0,
             size=mem_info['size'] or 0,
             type=ComponentType.memory.id,
+            extra_hash=hashlib.md5(extra).hexdigest()
         )
         if created:
+            model.extra = extra
             model.name = 'RAM %s %dMiB' % (mem_info['type'], mem_info['size'])
             model.save()
         mem, created = Memory.concurrent_get_or_create(device=dev, index=i + 1)
