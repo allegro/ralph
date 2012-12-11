@@ -347,7 +347,6 @@ class TestMultivalueFields(TestCase):
                 remarks='asset5',
                 size=1
             ),
-###############################################################################
             dict(
                 type=AssetType.data_center,
                 model=self.model.id,
@@ -422,7 +421,7 @@ class TestMultivalueFields(TestCase):
                 warehouse=self.warehouse.id,
                 status=AssetStatus.new,
                 sn='serialnumber9, serialnumber10, serialnumber11',
-                barcode='any8 ,\n, any9',
+                barcode='any8 , \n, any9',
                 remarks='asset11',
                 size=1
             ),
@@ -435,7 +434,7 @@ class TestMultivalueFields(TestCase):
                 warehouse=self.warehouse.id,
                 status=AssetStatus.new,
                 sn='serialnumber12',
-                barcode='any9',
+                barcode='dup1',
                 remarks='asset12',
                 size=1
             ),
@@ -468,22 +467,52 @@ class TestMultivalueFields(TestCase):
                     ['sn1_4', 'ns2_4', 'sn3_4'],
                     [asset.sn for asset in added_assets]
                 )
-            elif test['remarks'] is 'asset5':
+            elif test['remarks'] is ['asset5', 'asset9', 'asset10']:
                 self.assertEqual(post.status_code, 200)
                 self.assertFormError(
                     post, 'asset_form', 'sn',
                     "Serial number can't contain white characters."
                 )
             elif test['remarks'] is 'asset6':
+                self.assertFormError(
+                    post, 'asset_form', 'sn', 'This field is required.'
+                )
+            elif test['remarks'] in ['asset6', 'asset7', 'asset 8', 'asset11']:
                 self.assertEqual(post.status_code, 200)
                 self.assertFormError(
                     post, 'asset_form', 'barcode',
-                    "Barcode list could be empty or must have the same number of items as a SN list."
+                    "Barcode list could be empty or must have the same number "
+                    "of items as a SN list."
                 )
-
-
-            # TODO: test barcodes
+            elif test['remarks'] is 'asset9':
+                self.assertEqual(post.status_code, 200)
+                self.assertFormError(
+                    post, 'asset_form', 'barcode',
+                    "Serial number can't contain white characters."
+                )
+            elif test['remarks'] is 'asset12':
+                dup = dict(
+                    type=AssetType.data_center,
+                    model=self.model.id,
+                    support_period='1',
+                    support_type='standard',
+                    invoice_date='2001-01-02',
+                    warehouse=self.warehouse.id,
+                    status=AssetStatus.new,
+                    sn='serialnumber13',
+                    barcode='dup1',
+                    remarks='asset12',
+                    size=1
+                )
+                post = self.client.post(self.addform, dup)
+                self.assertEqual(post.status_code, 200)
+                self.assertFormError(
+                    post, 'asset_form', 'barcode',
+                    'Following barcodes already exists in DB: dup1'
+                )
         empty_sn =  Asset.objects.filter(sn = ' ')
+        self.assertEqual(len(empty_sn), 0)
+        empty_sn =  Asset.objects.filter(barcode = ' ')
         self.assertEqual(len(empty_sn), 0)
 
 
@@ -680,7 +709,7 @@ class TestSearchForm(TestCase):
 
     def test_model_field(self):
         """ Testing base asset fields """
-        url = '/assets/dc/search?model=%s' % self.asset.id
+        url = '/assets/dc/search?model=%s' % self.asset.model.name
         get = self.client.get(url)
         self.assertEqual(get.status_code, 200)
 
@@ -698,10 +727,12 @@ class TestSearchForm(TestCase):
         res = get.context_data['page'].object_list
         self.assertEqual(len(res), 3)
 
-        # or we insert wrond id (after range)?
-        url = '/assets/dc/search?model=99999'
+        # or we insert wrong model name (after range)?
+        url = '/assets/dc/search?model=Inferno+2000'
         get = self.client.get(url)
-        self.assertEqual(get.status_code, 404)
+        self.assertEqual(get.status_code, 200)
+        res = get.context_data['page'].object_list
+        self.assertEqual(len(res), 0)
 
     def test_invoice_field(self):
         url = '/assets/dc/search?invoice_no=%s' % 'Invoice No 1'
