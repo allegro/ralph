@@ -9,7 +9,7 @@ from __future__ import unicode_literals
 import re
 import collections
 
-from ajax_select.fields import AutoCompleteSelectField
+from ajax_select.fields import AutoCompleteSelectField, AutoCompleteField
 from django.forms import (
     ModelForm, Form, CharField, DateField, ChoiceField, ValidationError,
     IntegerField,
@@ -311,7 +311,7 @@ class SearchAssetForm(Form):
     :param mode: one of `dc` for DataCenter or `bo` for Back Office
     :returns Form
     """
-    model = AutoCompleteSelectField(
+    model = AutoCompleteField(
         'asset_model',
         required=False,
         help_text=None,

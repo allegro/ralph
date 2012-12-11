@@ -281,10 +281,10 @@ class TestMultivalueFields(TestCase):
         """
         Hire we testing multivalue fields
         Scenario:
-        1. add many sn in difrent forms
+        1. add many SNs and barcodes in difrent forms
         2. verify that form add empty sn
         3. relationship between SNs and barcodes
-        4, verity names with white characters
+        4, verity names with white characters (SNs, barcode)
         """
         test_data = [
             dict(
@@ -346,7 +346,99 @@ class TestMultivalueFields(TestCase):
                 sn='name with white spaces, 0000-0000-0000-0000',
                 remarks='asset5',
                 size=1
-            )
+            ),
+###############################################################################
+            dict(
+                type=AssetType.data_center,
+                model=self.model.id,
+                support_period='1',
+                support_type='standard',
+                invoice_date='2001-01-02',
+                warehouse=self.warehouse.id,
+                status=AssetStatus.new,
+                sn='',
+                barcode='any',
+                remarks='asset6',
+                size=1
+            ),
+            dict(
+                type=AssetType.data_center,
+                model=self.model.id,
+                support_period='1',
+                support_type='standard',
+                invoice_date='2001-01-02',
+                warehouse=self.warehouse.id,
+                status=AssetStatus.new,
+                sn='serialnumber1',
+                barcode='any1, any2',
+                remarks='asset7',
+                size=1
+            ),
+            dict(
+                type=AssetType.data_center,
+                model=self.model.id,
+                support_period='1',
+                support_type='standard',
+                invoice_date='2001-01-02',
+                warehouse=self.warehouse.id,
+                status=AssetStatus.new,
+                sn='serialnumber2, serialnumber3',
+                barcode='any3',
+                remarks='asset8',
+                size=1
+            ),
+            dict(
+                type=AssetType.data_center,
+                model=self.model.id,
+                support_period='1',
+                support_type='standard',
+                invoice_date='2001-01-02',
+                warehouse=self.warehouse.id,
+                status=AssetStatus.new,
+                sn='serialnumber4, serialnumber5',
+                barcode='any4, any 5',
+                remarks='asset9',
+                size=1
+            ),
+            dict(
+                type=AssetType.data_center,
+                model=self.model.id,
+                support_period='1',
+                support_type='standard',
+                invoice_date='2001-01-02',
+                warehouse=self.warehouse.id,
+                status=AssetStatus.new,
+                sn='serialnumber6, serialnumber7, serialnumber8',
+                barcode='any6 , , any 7',
+                remarks='asset10',
+                size=1
+            ),
+            dict(
+                type=AssetType.data_center,
+                model=self.model.id,
+                support_period='1',
+                support_type='standard',
+                invoice_date='2001-01-02',
+                warehouse=self.warehouse.id,
+                status=AssetStatus.new,
+                sn='serialnumber9, serialnumber10, serialnumber11',
+                barcode='any8 ,\n, any9',
+                remarks='asset11',
+                size=1
+            ),
+            dict(
+                type=AssetType.data_center,
+                model=self.model.id,
+                support_period='1',
+                support_type='standard',
+                invoice_date='2001-01-02',
+                warehouse=self.warehouse.id,
+                status=AssetStatus.new,
+                sn='serialnumber12',
+                barcode='any9',
+                remarks='asset12',
+                size=1
+            ),
         ]
         for test in test_data:
             post = self.client.post(self.addform, test)
@@ -382,7 +474,15 @@ class TestMultivalueFields(TestCase):
                     post, 'asset_form', 'sn',
                     "Serial number can't contain white characters."
                 )
+            elif test['remarks'] is 'asset6':
+                self.assertEqual(post.status_code, 200)
+                self.assertFormError(
+                    post, 'asset_form', 'barcode',
+                    "Barcode list could be empty or must have the same number of items as a SN list."
+                )
 
+
+            # TODO: test barcodes
         empty_sn =  Asset.objects.filter(sn = ' ')
         self.assertEqual(len(empty_sn), 0)
 

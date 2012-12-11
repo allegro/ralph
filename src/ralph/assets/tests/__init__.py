@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from ralph.assets.tests.forms import (
-    TestForms, TestTrolling, TestBulkEdit, TestSearchForm
+    TestForms, TestValidations, TestBulkEdit, TestSearchForm,
+    TestMultivalueFields
 )
 from ralph.assets.tests.history import (
     HistoryAssetsView
