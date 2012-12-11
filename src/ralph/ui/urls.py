@@ -77,7 +77,7 @@ from ralph.ui.views.catalog import (
     CatalogComponent,
     CatalogDevice,
     CatalogHistory,
-    CatalogPricing,
+    CatalogPricingGroup,
     CatalogPricingNew,
 )
 from ralph.ui.views.deploy import Deployment
@@ -239,9 +239,9 @@ urlpatterns = patterns('',
     url(r'^catalog/(?P<kind>component)/(?P<type>\d*)/$', login_required(CatalogComponent.as_view()), {}, 'catalog'),
     url(r'^catalog/(?P<kind>device)/(?P<type>\d*)/(?P<group>\d*)/$', login_required(CatalogDevice.as_view()), {}, 'catalog'),
     url(r'^catalog/(?P<kind>component)/(?P<type>\d*)/(?P<group>\d*)/$', login_required(CatalogComponent.as_view()), {}, 'catalog'),
-    url(r'^catalog/(?P<kind>pricing)/$', login_required(CatalogPricing.as_view()), {}, 'catalog_pricing'),
+    url(r'^catalog/(?P<kind>pricing)/$', login_required(CatalogPricingNew.as_view()), {}, 'catalog_pricing'),
     url(r'^catalog/(?P<kind>pricing)/(?P<year>\d\d\d\d)-(?P<month>\d\d)/$', login_required(CatalogPricingNew.as_view()), {}, 'catalog_pricing'),
-    url(r'^catalog/(?P<kind>pricing)/(?P<year>\d\d\d\d)-(?P<month>\d\d)/(?P<group>.*)/$', login_required(CatalogPricing.as_view()), {}, 'catalog_pricing'),
+    url(r'^catalog/(?P<kind>pricing)/(?P<year>\d\d\d\d)-(?P<month>\d\d)/(?P<group>.*)/$', login_required(CatalogPricingGroup.as_view()), {}, 'catalog_pricing'),
 
     url(r'^reports/$', login_required(ReportVentures.as_view()), {}, 'reports'),
     url(r'^reports/services/$', login_required(ReportServices.as_view()), {}, 'reports_services'),

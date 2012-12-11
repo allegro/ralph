@@ -32,12 +32,17 @@ from ralph.discovery.models import (
     Processor,
     Software,
     Storage,
+    PricingGroup,
+    PricingValue,
 )
 from ralph.discovery.models_history import HistoryModelChange
 from ralph.ui.forms.catalog import (
     ComponentModelGroupForm,
     DeviceModelGroupForm,
     PricingGroupForm,
+    PricingVariableFormSet,
+    PricingDeviceForm,
+    PricingValueFormSet,
 )
 from ralph.ui.views.common import Base
 from ralph.util import pricing
@@ -450,12 +455,10 @@ class CatalogPricing(Catalog):
         self.month = int(self.kwargs.get('month', self.today.month))
         self.group_name = self.kwargs.get('group', '')
 
-    def get(self, *args, **kwargs):
-        self.parse_args()
-        return super(CatalogPricing, self).get(*args, **kwargs)
-
     def get_context_data(self, **kwargs):
         ret = super(CatalogPricing, self).get_context_data(**kwargs)
+        self.parse_args()
+        date = datetime.date(self.year, self.month, 1)
         group_items = [
             MenuItem(
                 'Add a new group',
@@ -464,6 +467,14 @@ class CatalogPricing(Catalog):
                 view_name='catalog_pricing',
                 view_args=('pricing', self.year, self.month),
             ),
+        ] + [
+            MenuItem(
+                g.name,
+                name=g.name,
+                fugue_icon = 'fugue-shopping-basket',
+                view_name='catalog_pricing',
+                view_args=('pricing', self.year, self.month, g.name),
+            ) for g in PricingGroup.objects.filter(date=date)
         ]
         min_year = min(self.year, self.today.year)
         max_year = min(self.year, self.today.year)
@@ -476,14 +487,13 @@ class CatalogPricing(Catalog):
             'months': list(enumerate(calendar.month_abbr))[1:],
             'years': range(min_year - 1, max_year + 2),
             'today': self.today,
-            'form': PricingGroupForm(),
-            'group': self.group_name,
+            'group_name': self.group_name,
         })
         return ret
 
 class CatalogPricingNew(CatalogPricing):
     def __init__(self, *args, **kwargs):
-        super(CatalogPricing, self).__init__(*args, **kwargs)
+        super(CatalogPricingNew, self).__init__(*args, **kwargs)
         self.form = None
 
     def post(self, *args, **kwargs):
@@ -507,6 +517,116 @@ class CatalogPricingNew(CatalogPricing):
             self.form = PricingGroupForm()
         ret.update({
             'form': self.form,
-            'group': '',
+            'group_name': '',
         })
         return ret
+
+class CatalogPricingGroup(CatalogPricing):
+    def __init__(self, *args, **kwargs):
+        super(CatalogPricingGroup, self).__init__(*args, **kwargs)
+        self.variables_formset = None
+        self.device_form = None
+        self.devices = None
+
+    def get_devices(self, group, variables, post=None):
+        devices = list(group.devices.all())
+        for device in devices:
+            values = device.pricingvalue_set.filter(
+                variable__group=group,
+            ).order_by(
+                'variable__name',
+            )
+            device.formset = PricingValueFormSet(
+                post,
+                queryset=values,
+                prefix='values-%d' % device.id,
+            )
+        return devices
+
+    def post(self, *args, **kwargs):
+        if 'values-save' in self.request.POST:
+            return self.handle_values_form(*args, **kwargs)
+        return self.get(*args, **kwargs)
+
+    def handle_values_form(self, *args, **kwargs):
+        self.parse_args()
+        date = datetime.date(self.year, self.month, 1)
+        group = get_object_or_404(PricingGroup, name=self.group_name, date=date)
+        self.variables_formset = PricingVariableFormSet(
+            self.request.POST,
+            queryset=group.pricingvariable_set.all(),
+            prefix='variables',
+        )
+        self.device_form = PricingDeviceForm(self.request.POST)
+        variables = group.pricingvariable_set.order_by('name')
+        self.devices = self.get_devices(group, variables, self.request.POST)
+        values_formsets = [d.formset for d in self.devices]
+        if not all([
+            self.variables_formset.is_valid(),
+            self.device_form.is_valid(),
+            all(fs.is_valid() for fs in values_formsets),
+        ]):
+            messages.error(self.request, "Errors in the form.")
+            return self.get(*args, **kwargs)
+        device = self.device_form.cleaned_data['device']
+        if device:
+            group.devices.add(device)
+            group.save()
+            for variable in variables:
+                value = PricingValue(device=device, variable=variable, value=0)
+                value.save()
+            messages.success(
+                self.request,
+                "Device %s added to group %s." % (device.name, group.name),
+            )
+        for device in self.devices:
+            device.formset.save()
+        for name in self.request.POST:
+            if name.startswith('device-delete-'):
+                device_id = int(name[len('device-delete-'):])
+                device = get_object_or_404(Device, id=device_id)
+                group.devices.remove(device)
+                group.save()
+        for form in self.variables_formset.extra_forms:
+            if form.has_changed():
+                form.instance.group = group
+        self.variables_formset.save()
+        for form in self.variables_formset.extra_forms:
+            if form.has_changed():
+                for device in self.devices:
+                    value = PricingValue(
+                        device=device,
+                        variable=form.instance,
+                        value=0,
+                    )
+                    value.save()
+        messages.success(self.request, "Group %s saved." % group.name)
+        return HttpResponseRedirect(self.request.path)
+
+    def get_context_data(self, **kwargs):
+        ret = super(CatalogPricingGroup, self).get_context_data(**kwargs)
+        date = datetime.date(self.year, self.month, 1)
+        group = get_object_or_404(PricingGroup, name=self.group_name, date=date)
+        variables = group.pricingvariable_set.order_by('name')
+        if self.variables_formset is None:
+            self.variables_formset = PricingVariableFormSet(
+                queryset=variables,
+                prefix='variables',
+            )
+        if self.device_form is None:
+            self.device_form = PricingDeviceForm()
+        if self.devices is None:
+            self.devices = self.get_devices(group, variables)
+        ret.update({
+            'devices': self.devices,
+            'variablesformset': self.variables_formset,
+            'deviceform': self.device_form,
+            'group': group,
+        })
+        return ret
+
+
+class FakeQueryList(list):
+    """The formset constructor requires an ``ordered`` attribute."""
+
+    ordered = True
