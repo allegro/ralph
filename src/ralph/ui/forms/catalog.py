@@ -8,9 +8,19 @@ from __future__ import unicode_literals
 import decimal
 
 from django import forms
+import ajax_select
 
 from ralph.ui.widgets import CurrencyWidget
-from ralph.discovery.models import ComponentModelGroup, DeviceModelGroup
+from ralph.discovery.models import (
+    ComponentModelGroup,
+    DeviceModelGroup,
+)
+from ralph.discovery.models_pricing import (
+    PricingGroup,
+    PricingVariable,
+    PricingValue,
+    PricingFormula,
+)
 
 
 class ModelGroupForm(forms.ModelForm):
@@ -84,4 +94,125 @@ class DeviceModelGroupForm(ModelGroupForm):
     class Meta(ModelGroupForm.Meta):
         model = DeviceModelGroup
 
+
+class PricingGroupForm(forms.ModelForm):
+    class Meta:
+        model = PricingGroup
+        fields = 'name',
+
+
+class PricingDeviceForm(forms.Form):
+    device = ajax_select.fields.AutoCompleteSelectField(
+        'device',
+        help_text=None,
+        required=False,
+    )
+
+    def __init__(self, *args, **kwargs):
+        super(PricingDeviceForm, self).__init__(*args, **kwargs)
+        self.fields['device'].widget.attrs.update({
+            'placeholder': "Add more devices",
+            'class': 'span12',
+        })
+
+
+class PricingVariableForm(forms.ModelForm):
+    class Meta:
+        model = PricingVariable
+        fields = 'name', 'aggregate'
+        widgets = {
+            'name': forms.TextInput(
+                attrs={
+                    'class': 'span12',
+                    'placeholder': 'Name',
+                }
+            ),
+            'aggregate': forms.Select(
+                attrs={
+                    'class': 'span12',
+                }
+            ),
+        }
+
+    def clean_name(self):
+        name = self.cleaned_data['name'].strip()
+        if not name.isalpha():
+            raise forms.ValidationError(
+                "Variable names can only contain letters."
+            )
+        if name in {'size'}:
+            raise forms.ValidationError(
+                "Name 'size' is reserved."
+            )
+        return name
+
+PricingVariableFormSet = forms.models.modelformset_factory(
+    PricingVariable,
+    form=PricingVariableForm,
+    can_delete=True,
+)
+
+class PricingValueForm(forms.ModelForm):
+    class Meta:
+        model = PricingValue
+        fields = 'value',
+        widgets = {
+            'value': forms.TextInput(
+                attrs={
+                    'class': 'span12',
+                    'placeholder': 'Value',
+                },
+            ),
+        }
+
+
+PricingValueFormSet = forms.models.modelformset_factory(
+    PricingValue,
+    form=PricingValueForm,
+    extra=0,
+)
+
+
+class PricingFormulaForm(forms.ModelForm):
+    class Meta:
+        model = PricingFormula
+        fields = 'component_group', 'formula'
+        widgets = {
+            'formula': forms.TextInput(
+                attrs={
+                    'class': 'span12',
+                    'placeholder': 'Formula',
+                },
+            ),
+        }
+
+    def clean_formula(self):
+        formula = self.cleaned_data['formula']
+        variables = {
+            'size': 1,
+        }
+        for variable in self.group.pricingvariable_set.all():
+            variables[variable.name] = 1
+        try:
+            PricingFormula.eval_formula(formula, variables)
+        except Exception as e:
+            raise forms.ValidationError(e)
+        return formula
+
+class PricingFormulaFormSetBase(forms.models.BaseModelFormSet):
+    def __init__(self, group, *args, **kwargs):
+        self.group = group
+        super(PricingFormulaFormSetBase, self).__init__(*args, **kwargs)
+
+    def add_fields(self, form, index):
+        form.group = self.group
+        return super(PricingFormulaFormSetBase, self).add_fields(form, index)
+
+
+PricingFormulaFormSet = forms.models.modelformset_factory(
+    PricingFormula,
+    form=PricingFormulaForm,
+    formset=PricingFormulaFormSetBase,
+    can_delete=True,
+)
 

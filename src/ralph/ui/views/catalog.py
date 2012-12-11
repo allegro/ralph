@@ -5,6 +5,8 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import decimal
+import calendar
+import datetime
 
 from bob.menu import MenuItem, MenuHeader
 from django.contrib import messages
@@ -14,13 +16,35 @@ from django.shortcuts import get_object_or_404
 from django.conf import settings
 
 from ralph.account.models import Perm
-from ralph.discovery.models import (DeviceType, ComponentType, DeviceModel,
-                                    DeviceModelGroup, ComponentModelGroup,
-                                    ComponentModel, Storage, Memory, Processor,
-                                    DiskShare, FibreChannel, GenericComponent,
-                                    Software, OperatingSystem, Device)
+from ralph.discovery.models import (
+    ComponentModel,
+    ComponentModelGroup,
+    ComponentType,
+    Device,
+    DeviceModel,
+    DeviceModelGroup,
+    DeviceType,
+    DiskShare,
+    FibreChannel,
+    GenericComponent,
+    Memory,
+    OperatingSystem,
+    Processor,
+    Software,
+    Storage,
+    PricingGroup,
+    PricingValue,
+)
 from ralph.discovery.models_history import HistoryModelChange
-from ralph.ui.forms.catalog import ComponentModelGroupForm, DeviceModelGroupForm
+from ralph.ui.forms.catalog import (
+    ComponentModelGroupForm,
+    DeviceModelGroupForm,
+    PricingGroupForm,
+    PricingVariableFormSet,
+    PricingDeviceForm,
+    PricingValueFormSet,
+    PricingFormulaFormSet,
+)
 from ralph.ui.views.common import Base
 from ralph.util import pricing
 from ralph.util.presentation import COMPONENT_ICONS, DEVICE_ICONS
@@ -81,7 +105,7 @@ def _prepare_model_groups(request, query, tree=False):
 
 class Catalog(Base):
     section = 'catalog'
-    template_name = 'ui/catalog.html'
+    template_name = 'ui/catalog/base.html'
 
     def get(self, *args, **kwargs):
         if not self.request.user.get_profile().has_perm(
@@ -98,44 +122,60 @@ class Catalog(Base):
             model_type_id = None
         kind = self.kwargs.get('kind')
         sidebar_items = (
-            [MenuHeader('Components')] +
-            [MenuItem(
+            [
+                MenuHeader('Component groups'),
+            ] + [
+                MenuItem(
                     label=t.raw.title(),
                     name='component-%d' % t.id,
                     fugue_icon = COMPONENT_ICONS[t.id],
                     view_name='catalog',
                     view_args=('component', t.id),
-                ) for t in ComponentType(item=lambda t: t)] +
-            [MenuHeader('Devices')] +
-            [MenuItem(
+                ) for t in ComponentType(item=lambda t: t)
+            ] + [
+                MenuHeader('Device groups'),
+            ] + [
+                MenuItem(
                         label=t.raw.title(),
                         name='device-%d' % t.id,
                         fugue_icon = DEVICE_ICONS[t.id],
                         view_name='catalog',
                         view_args=('device', t.id),
-                    ) for t in DeviceType(item=lambda t: t)] +
-            [MenuHeader('History'),
-             MenuItem('History', fugue_icon='fugue-hourglass',
-                      view_name='catalog_history'),
+                    ) for t in DeviceType(item=lambda t: t)
+            ] + [
+                MenuHeader('Tools'),
+                MenuItem(
+                    'History',
+                    name='history',
+                    fugue_icon='fugue-hourglass',
+                    view_name='catalog_history',
+                ),
+                MenuItem(
+                    'Pricing groups',
+                    name='pricing',
+                    fugue_icon='fugue-shopping-basket',
+                    view_name='catalog_pricing',
+                    view_args=('pricing', ''),
+                ),
             ]
         )
+        selected = '%s-%d' % (kind, model_type_id) if model_type_id else ''
         ret.update({
-            'sidebar_items': sidebar_items,
-            'sidebar_selected': '%s-%d' % (kind,
-                    model_type_id) if model_type_id else '',
-            'kind': kind,
             'component_model_types': ComponentType(item=lambda a: a),
-            'device_model_types': DeviceType(item=lambda a: a),
-            'model_type_id': model_type_id,
-            'subsection': model_type_id,
             'details': self.kwargs.get('details', 'info'),
+            'device_model_types': DeviceType(item=lambda a: a),
             'editable': True,
+            'kind': kind,
+            'model_type_id': model_type_id,
+            'sidebar_items': sidebar_items,
+            'sidebar_selected': selected,
+            'subsection': model_type_id,
         })
         return ret
 
 
 class CatalogDevice(Catalog):
-    template_name = 'ui/catalog-device.html'
+    template_name = 'ui/catalog/device.html'
 
     def __init__(self, *args, **kwargs):
         super(CatalogDevice, self).__init__(*args, **kwargs)
@@ -254,7 +294,7 @@ class CatalogDevice(Catalog):
         return ret
 
 class CatalogComponent(Catalog):
-    template_name = 'ui/catalog-component.html'
+    template_name = 'ui/catalog/component.html'
 
     def __init__(self, *args, **kwargs):
         super(CatalogComponent, self).__init__(*args, **kwargs)
@@ -385,7 +425,7 @@ class CatalogComponent(Catalog):
 
 
 class CatalogHistory(Catalog):
-    template_name = 'ui/catalog-history.html'
+    template_name = 'ui/catalog/history.html'
 
     def get_context_data(self, **kwargs):
         ret = super(CatalogHistory, self).get_context_data(**kwargs)
@@ -405,3 +445,219 @@ class CatalogHistory(Catalog):
             'items': items,
         })
         return ret
+
+
+class CatalogPricing(Catalog):
+    template_name = 'ui/catalog/pricing.html'
+
+    def parse_args(self):
+        self.today = datetime.date.today()
+        self.year = int(self.kwargs.get('year', self.today.year))
+        self.month = int(self.kwargs.get('month', self.today.month))
+        self.group_name = self.kwargs.get('group', '')
+
+    def get_context_data(self, **kwargs):
+        ret = super(CatalogPricing, self).get_context_data(**kwargs)
+        self.parse_args()
+        date = datetime.date(self.year, self.month, 1)
+        group_items = [
+            MenuItem(
+                'Add a new group',
+                name='',
+                fugue_icon='fugue-shopping-basket--plus',
+                view_name='catalog_pricing',
+                view_args=('pricing', self.year, self.month),
+            ),
+        ] + [
+            MenuItem(
+                g.name,
+                name=g.name,
+                fugue_icon = 'fugue-shopping-basket',
+                view_name='catalog_pricing',
+                view_args=('pricing', self.year, self.month, g.name),
+            ) for g in PricingGroup.objects.filter(date=date)
+        ]
+        min_year = min(self.year, self.today.year)
+        max_year = min(self.year, self.today.year)
+        ret.update({
+            'sidebar_selected': 'pricing',
+            'subsection': 'pricing',
+            'group_items': group_items,
+            'year': self.year,
+            'month': self.month,
+            'months': list(enumerate(calendar.month_abbr))[1:],
+            'years': range(min_year - 1, max_year + 2),
+            'today': self.today,
+            'group_name': self.group_name,
+        })
+        return ret
+
+class CatalogPricingNew(CatalogPricing):
+    def __init__(self, *args, **kwargs):
+        super(CatalogPricingNew, self).__init__(*args, **kwargs)
+        self.form = None
+
+    def post(self, *args, **kwargs):
+        self.parse_args()
+        self.form = PricingGroupForm(self.request.POST)
+        if self.form.is_valid():
+            self.form.save(commit=False)
+            self.form.instance.date = datetime.date(self.year, self.month, 1)
+            self.form.instance.save()
+            messages.success(
+                self.request,
+                "Group %s saved." % self.form.instance.name
+            )
+            return HttpResponseRedirect(self.request.path)
+        messages.error(self.request, "Errors in the form.")
+        return self.get(*args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        ret = super(CatalogPricingNew, self).get_context_data(**kwargs)
+        if self.form is None:
+            self.form = PricingGroupForm()
+        ret.update({
+            'form': self.form,
+            'group_name': '',
+        })
+        return ret
+
+class CatalogPricingGroup(CatalogPricing):
+    def __init__(self, *args, **kwargs):
+        super(CatalogPricingGroup, self).__init__(*args, **kwargs)
+        self.variables_formset = None
+        self.device_form = None
+        self.devices = None
+        self.formulas_formset = None
+
+    def get_devices(self, group, variables, post=None):
+        devices = list(group.devices.all())
+        for device in devices:
+            values = device.pricingvalue_set.filter(
+                variable__group=group,
+            ).order_by(
+                'variable__name',
+            )
+            device.formset = PricingValueFormSet(
+                post,
+                queryset=values,
+                prefix='values-%d' % device.id,
+            )
+        return devices
+
+    def post(self, *args, **kwargs):
+        if 'values-save' in self.request.POST:
+            return self.handle_values_form(*args, **kwargs)
+        elif 'formulas-save' in self.request.POST:
+            return self.handle_formulas_form(*args, **kwargs)
+        return self.get(*args, **kwargs)
+
+    def handle_formulas_form(self, *args, **kwargs):
+        self.parse_args()
+        date = datetime.date(self.year, self.month, 1)
+        group = get_object_or_404(PricingGroup, name=self.group_name, date=date)
+        self.formulas_formset = PricingFormulaFormSet(
+            group,
+            self.request.POST,
+            queryset=group.pricingformula_set.all(),
+            prefix='formulas',
+        )
+        if not self.formulas_formset.is_valid():
+            messages.error(self.request, "Errors in the formulas form.")
+            return self.get(*args, **kwargs)
+        for form in self.formulas_formset.extra_forms:
+            if form.has_changed():
+                form.instance.group = group
+        self.formulas_formset.save()
+        messages.success(self.request, "Group %s saved." % group.name)
+        return HttpResponseRedirect(self.request.path)
+
+    def handle_values_form(self, *args, **kwargs):
+        self.parse_args()
+        date = datetime.date(self.year, self.month, 1)
+        group = get_object_or_404(PricingGroup, name=self.group_name, date=date)
+        self.variables_formset = PricingVariableFormSet(
+            self.request.POST,
+            queryset=group.pricingvariable_set.all(),
+            prefix='variables',
+        )
+        self.device_form = PricingDeviceForm(self.request.POST)
+        variables = group.pricingvariable_set.order_by('name')
+        self.devices = self.get_devices(group, variables, self.request.POST)
+        values_formsets = [d.formset for d in self.devices]
+        if not all([
+            self.variables_formset.is_valid(),
+            self.device_form.is_valid(),
+            all(fs.is_valid() for fs in values_formsets),
+        ]):
+            messages.error(self.request, "Errors in the variables form.")
+            return self.get(*args, **kwargs)
+        for device in self.devices:
+            device.formset.save()
+        for name in self.request.POST:
+            if name.startswith('device-delete-'):
+                device_id = int(name[len('device-delete-'):])
+                device = get_object_or_404(Device, id=device_id)
+                group.devices.remove(device)
+                device.pricingvalue_set.filter(variable__group=group).delete()
+                group.save()
+        for form in self.variables_formset.extra_forms:
+            if form.has_changed():
+                form.instance.group = group
+        self.variables_formset.save()
+        for form in self.variables_formset.extra_forms:
+            if form.has_changed():
+                for device in self.devices:
+                    value = PricingValue(
+                        device=device,
+                        variable=form.instance,
+                        value=0,
+                    )
+                    value.save()
+        device = self.device_form.cleaned_data['device']
+        if device:
+            group.devices.add(device)
+            group.save()
+            for variable in variables.all():
+                value = PricingValue(device=device, variable=variable, value=0)
+                value.save()
+            messages.success(
+                self.request,
+                "Device %s added to group %s." % (device.name, group.name),
+            )
+        messages.success(self.request, "Group %s saved." % group.name)
+        return HttpResponseRedirect(self.request.path)
+
+    def get_context_data(self, **kwargs):
+        ret = super(CatalogPricingGroup, self).get_context_data(**kwargs)
+        date = datetime.date(self.year, self.month, 1)
+        try:
+            group = PricingGroup.objects.get(name=self.group_name, date=date)
+        except PricingGroup.DoesNotExist:
+            group = None,
+        else:
+            variables = group.pricingvariable_set.order_by('name')
+            if self.variables_formset is None:
+                self.variables_formset = PricingVariableFormSet(
+                    queryset=variables,
+                    prefix='variables',
+                )
+            if self.device_form is None:
+                self.device_form = PricingDeviceForm()
+            if self.devices is None:
+                self.devices = self.get_devices(group, variables)
+            if self.formulas_formset is None:
+                self.formulas_formset = PricingFormulaFormSet(
+                    group,
+                    queryset=group.pricingformula_set.all(),
+                    prefix='formulas',
+                )
+        ret.update({
+            'devices': self.devices,
+            'variablesformset': self.variables_formset,
+            'deviceform': self.device_form,
+            'formulasformset': self.formulas_formset,
+            'group': group,
+        })
+        return ret
+
