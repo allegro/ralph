@@ -223,8 +223,6 @@ all_releases = [
         description_lines=[
             'Includes support for SNMP v3 in discovery and improvements'
             ' in DNS/DHCP configuration.'
-            'Read the installation instructions in the documentation for '
-            'help with installing it.'
         ],
     ),
     dict(
