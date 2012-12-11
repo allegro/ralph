@@ -14,6 +14,7 @@ from ralph.ui.widgets import CurrencyWidget
 from ralph.discovery.models import (
     ComponentModelGroup,
     DeviceModelGroup,
+    ComponentType,
 )
 from ralph.discovery.models_pricing import (
     PricingGroup,
@@ -205,7 +206,12 @@ class PricingFormulaFormSetBase(forms.models.BaseModelFormSet):
         super(PricingFormulaFormSetBase, self).__init__(*args, **kwargs)
 
     def add_fields(self, form, index):
+        types = {ComponentType.share}
         form.group = self.group
+        form.fields['component_group'].widget.choices = [
+            (g.id, g.name) for g in
+            ComponentModelGroup.objects.filter(type__in=types)
+        ]
         return super(PricingFormulaFormSetBase, self).add_fields(form, index)
 
 

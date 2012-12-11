@@ -11,6 +11,7 @@ import datetime
 from bob.menu import MenuItem, MenuHeader
 from django.contrib import messages
 from django.core.paginator import Paginator
+from django.db import models as db
 from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.conf import settings
@@ -477,8 +478,12 @@ class CatalogPricing(Catalog):
                 view_args=('pricing', self.year, self.month, g.name),
             ) for g in PricingGroup.objects.filter(date=date)
         ]
-        min_year = min(self.year, self.today.year)
-        max_year = min(self.year, self.today.year)
+        aggr = PricingGroup.objects.aggregate(db.Min('date'))
+        min_year = aggr['date__min'].year
+        aggr = PricingGroup.objects.aggregate(db.Max('date'))
+        max_year = aggr['date__max'].year
+        min_year = min(self.year, self.today.year, min_year)
+        max_year = max(self.year, self.today.year, max_year)
         ret.update({
             'sidebar_selected': 'pricing',
             'subsection': 'pricing',
@@ -634,7 +639,7 @@ class CatalogPricingGroup(CatalogPricing):
         try:
             group = PricingGroup.objects.get(name=self.group_name, date=date)
         except PricingGroup.DoesNotExist:
-            group = None,
+            group = None
         else:
             variables = group.pricingvariable_set.order_by('name')
             if self.variables_formset is None:
