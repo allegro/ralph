@@ -19,6 +19,7 @@ from ralph.discovery.models_pricing import (
     PricingGroup,
     PricingVariable,
     PricingValue,
+    PricingFormula,
 )
 
 
@@ -114,6 +115,7 @@ class PricingDeviceForm(forms.Form):
             'class': 'span12',
         })
 
+
 class PricingVariableForm(forms.ModelForm):
     class Meta:
         model = PricingVariable
@@ -132,10 +134,21 @@ class PricingVariableForm(forms.ModelForm):
             ),
         }
 
+    def clean_name(self):
+        name = self.cleaned_data['name'].strip()
+        if not name.isalpha():
+            raise forms.ValidationError(
+                "Variable names can only contain letters."
+            )
+        if name in {'size'}:
+            raise forms.ValidationError(
+                "Name 'size' is reserved."
+            )
+        return name
+
 PricingVariableFormSet = forms.models.modelformset_factory(
     PricingVariable,
     form=PricingVariableForm,
-    extra=1,
     can_delete=True,
 )
 
@@ -148,12 +161,46 @@ class PricingValueForm(forms.ModelForm):
                 attrs={
                     'class': 'span12',
                     'placeholder': 'Value',
-                }
+                },
             ),
         }
+
 
 PricingValueFormSet = forms.models.modelformset_factory(
     PricingValue,
     form=PricingValueForm,
     extra=0,
 )
+
+
+class PricingFormulaForm(forms.ModelForm):
+    class Meta:
+        model = PricingFormula
+        fields = 'component_group', 'formula'
+        widgets = {
+            'formula': forms.TextInput(
+                attrs={
+                    'class': 'span12',
+                    'placeholder': 'Formula',
+                },
+            ),
+        }
+
+    def clean_formula(self):
+        formula = self.cleaned_data['formula']
+        variables = {
+            'size': 1,
+        }
+        try:
+            PricingFormula.eval_formula(formula, variables)
+        except Exception as e:
+            raise forms.ValidationError(e)
+        return formula
+
+
+PricingFormulaFormSet = forms.models.modelformset_factory(
+    PricingFormula,
+    form=PricingFormulaForm,
+    can_delete=True,
+)
+

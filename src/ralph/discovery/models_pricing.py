@@ -40,6 +40,29 @@ class PricingFormula(db.Model):
     component_group = db.ForeignKey('discovery.ComponentModelGroup')
     formula = db.TextField()
 
+    @staticmethod
+    def eval_formula(formula, variables):
+        builtins = {
+            'sum': sum,
+            'max': max,
+            'min': min,
+        }
+        return eval(
+            formula,
+            {'__builtins__': builtins},
+            variables,
+        )
+
+    def get_value(self, **kwargs):
+        variables = {}
+        for variable in self.group.pricingvariable_set.all():
+            variables[variable.name] = variable.get_value()
+        variables.update(kwargs)
+        return PricingFormula.eval_formula(self.formula, variables)
+
+    def get_example(self):
+        return self.get_value(size=1)
+
     class Meta:
         unique_together = 'group', 'component_group'
 
