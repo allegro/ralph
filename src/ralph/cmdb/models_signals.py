@@ -214,7 +214,7 @@ def ci_post_save(sender, instance, raw, using, **kwargs):
         ch.save()
 
 
-@task
+@task(queue='cmdb_git')
 def create_issue(change_id, retry_count=1):
     ch = chdb.CIChange.objects.get(id=change_id)
     if ch.registration_type == chdb.CI_CHANGE_REGISTRATION_TYPES.OP.id:
