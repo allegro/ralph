@@ -86,9 +86,6 @@ class PricingVariable(db.Model):
         d = self.pricingvalue_set.aggregate(function('value'))
         return d.values()[0]
 
-    def get_x(self):
-        return 'x'
-
     class Meta:
         unique_together = 'group', 'name'
 
