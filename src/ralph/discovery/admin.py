@@ -37,7 +37,7 @@ class NetworkAdminForm(forms.ModelForm):
         min_ip = int(net.network)
         max_ip = int(net.broadcast)
         collisions = m.Network.objects.filter(
-            max_ip__gt=min_ip, min_ip__lt=max_ip
+            max_ip__gte=min_ip, min_ip__lte=max_ip
         )
         if collisions:
             msg = "Colliding networks: %s" % (
