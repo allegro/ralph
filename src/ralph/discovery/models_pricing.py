@@ -61,7 +61,10 @@ class PricingFormula(db.Model):
         return PricingFormula.eval_formula(self.formula, variables)
 
     def get_example(self):
-        return self.get_value(size=1)
+        try:
+            return self.get_value(size=1)
+        except Exception as e:
+            return unicode(e)
 
     class Meta:
         unique_together = 'group', 'component_group'
