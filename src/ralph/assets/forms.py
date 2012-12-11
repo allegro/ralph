@@ -251,16 +251,18 @@ class AddDeviceForm(BaseAddAssetForm):
         data = self.cleaned_data["barcode"].strip()
         barcodes = []
         if data:
-            if data.find(" ") > 0:
-                raise ValidationError(_("Incorrect barcodes."))
             for barcode in filter(len, re.split(",|\n", data)):
                 barcode = barcode.strip()
-                if barcode not in barcodes:
-                    barcodes.append(barcode)
-                else:
+                if barcode in barcodes:
                     raise ValidationError(
                         _("There is duplicate barcodes in field.")
                     )
+                elif ' ' in barcode:
+                    raise ValidationError(
+                        _("Serial number can't contain white characters.")
+                    )
+                elif barcode:
+                    barcodes.append(barcode)
             if not barcodes:
                 raise ValidationError(_("Barcode list could be empty or "
                                         "must have the same number of "
