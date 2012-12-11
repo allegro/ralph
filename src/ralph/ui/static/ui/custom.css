@@ -160,3 +160,15 @@ tr.table-highlight td {
     border-right: 1px solid silver;
     padding-right: 20px;
 }
+
+table.assets-bulk-edit input {
+    width: 60px;;
+}
+
+table.assets-bulk-edit .small input {
+    width: 20px;
+}
+
+table.assets-bulk-edit select {
+    width: auto;
+}

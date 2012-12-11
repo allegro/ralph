@@ -98,6 +98,7 @@ urlpatterns = patterns(
     url(r'^dhcp-synch/', 'ralph.dnsedit.views.dhcp_synch'),
     url(r'^dhcp-config/', 'ralph.dnsedit.views.dhcp_config'),
     url(r'^cmdb/', include('ralph.cmdb.urls')),
+    url(r'^assets/', include('ralph.assets.urls')),
     url(r'^api/', include(v09_api.urls)),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^pxe/_(?P<file_type>[^/]+)$',
