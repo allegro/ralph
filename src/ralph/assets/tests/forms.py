@@ -52,9 +52,17 @@ def create_asset(**kwargs):
 
 
 class TestForms(TestCase):
+    """ This class tests adds, edits, deletes single asset
+
+    Scenario:
+    1. Add something via form
+    2. Edit added data via form
+    3. Delete asset
+    """
     def setUp(self):
+        # Create user and loging him
         self.client = login_as_su()
-        # Build asset
+
         asset = create_asset(
             device_info=create_device(1, create_warehouse(name='Warehouse1')),
             type=AssetType.data_center,
@@ -62,7 +70,7 @@ class TestForms(TestCase):
             source=AssetSource.shipment,
             invoice_no='Invoice No 1',
             order_no='Order No 1',
-            buy_date=datetime.datetime(2001, 01, 01),
+            invoice_date=datetime.datetime(2001, 1, 1),
             support_period=12,
             support_type='Support d2d',
             provider='Provider 1',
@@ -70,19 +78,21 @@ class TestForms(TestCase):
             sn='sn-123',
             barcode='bc-1234'
         )
-        # Prepare Asset 2
+
         self.asset_model2 = create_model(
             create_manufacturer('Menufac2'), 'AsModel2'
         )
+
         self.device_info2 = create_device(
             1, create_warehouse(name='Warehouse2')
         )
-        # Prepare Asset 3
+
         self.asset_model3 = create_model(
             create_manufacturer('Menufac3'), 'AsModel3'
         )
 
     def test_models(self):
+        """ here we tests, whether setUp add to database correct data."""
         db_manufacturer = AssetManufacturer.objects.get(name='Menufac')
         self.assertEquals(db_manufacturer.name, 'Menufac')
         db_model = AssetModel.objects.get(name='AsModel')
@@ -93,9 +103,11 @@ class TestForms(TestCase):
         self.assertEquals(db_asset1.sn, 'sn-123')
 
     def test_view(self):
+        """ Here we tests whether correct data is displayed in table """
         url = '/assets/dc/search'
         view = self.client.get(url, follow=True)
         self.assertEqual(view.status_code, 200)
+
         data = view.context_data['page'].object_list[0]
         self.assertEqual(data.type, AssetType.data_center)
         self.assertEqual(data.sn, 'sn-123')
@@ -104,20 +116,20 @@ class TestForms(TestCase):
         self.assertEqual(data.invoice_no, 'Invoice No 1')
         self.assertEqual(data.order_no, 'Order No 1')
         date = datetime.date(2001, 1, 1)
-        self.assertEqual(data.buy_date, date)
+        self.assertEqual(data.invoice_date, date)
         self.assertEqual(data.status, AssetStatus.new)
         self.assertEqual(unicode(data.device_info.warehouse), 'Warehouse1')
 
     def test_add_form(self):
-        # POST
+        """ Now we trying adding new data via form. """
         url = '/assets/dc/add/device/'
-        post_data = {
+        prepare_post_data = {
             'type': AssetType.data_center,
             'model': self.asset_model2.id,
             'source': AssetSource.shipment,
             'invoice_no': 'Invoice No 2',
             'order_no': 'Order No 2',
-            'buy_date': '2001-01-02',
+            'invoice_date': '2001-01-02',
             'support_period': 12,
             'support_type': 'Support d2d',
             'support_void_reporting': 'on',
@@ -128,13 +140,16 @@ class TestForms(TestCase):
             'barcode': 'bc-4321',
             'warehouse': self.device_info2.warehouse_id,
         }
-        response = self.client.post(url, post_data, follow=True)
+        response = self.client.post(url, prepare_post_data, follow=True)
+
+        # If everything is ok, server returns response code = 302, and
+        # redirect us to /assets/dc/search given response code 200
         self.assertRedirects(
-            response, '/assets/dc/search',
+            response, '/assets/dc/edit/device/2/',
             status_code=302,
             target_status_code=200,
         )
-        # GET
+
         view = self.client.get('/assets/dc/search')
         data = view.context_data['page'].object_list[1]
         self.assertEqual(data.type, AssetType.data_center)
@@ -143,30 +158,32 @@ class TestForms(TestCase):
         self.assertEqual(unicode(data.model), 'Menufac2 AsModel2')
         self.assertEqual(data.invoice_no, 'Invoice No 2')
         self.assertEqual(data.order_no, 'Order No 2')
-        date = datetime.date(2001, 1, 2)
-        self.assertEqual(data.buy_date, date)
+        invoice_date = datetime.date(2001, 1, 2)
+        self.assertEqual(data.invoice_date, invoice_date)
         self.assertEqual(data.status, AssetStatus.new)
         self.assertEqual(unicode(data.device_info.warehouse), 'Warehouse2')
 
+        """
+        FIXME - check validation sn and barcode
+        """
+
     def test_edit_form(self):
-        # test before POST
+        # Next change added data
+        # Download old data
         view = self.client.get('/assets/dc/edit/device/1/')
         self.assertEqual(view.status_code, 200)
         old_fields = view.context['asset_form'].initial
         old_device_info = view.context['device_info_form'].initial
         old_office_info = view.context['office_info_form'].initial
-        old_office = OfficeInfo.objects.filter(
-            license_key='0000-0000-0000-0000'
-        ).count()
-        self.assertEqual(old_office, 0)
-        # Send POST
+
+        # Send changes
         url = '/assets/dc/edit/device/1/'
         post_data = {
             'type': AssetType.data_center,
             'model': self.asset_model3.id,
             'invoice_no': 'Invoice No 3',
             'order_no': 'Order No 3',
-            'buy_date': '2001-02-02',
+            'invoice_date': '2001-02-02',
             'support_period': 24,
             'support_type': 'standard',
             'support_void_reporting': 'on',
@@ -182,42 +199,38 @@ class TestForms(TestCase):
             'version': '1.0',
             'unit_price': 2.00,
             'license_type': LicenseType.oem,
-            'buy_date': '2001-02-02',
+            'invoice_date': '2001-02-02',
             'date_of_last_inventory': '2003-02-02',
             'last_logged_user': 'James Bond',
         }
         post = self.client.post(url, post_data, follow=True)
+
+        # if everything is ok, server return response code = 302, and
+        # redirect us to /assets/dc/search given response code 200
         self.assertRedirects(
             post,
             '/assets/dc/search',
             status_code=302,
             target_status_code=200,
         )
-        # Tests after POST
+
+        # Download added data
         new_view = self.client.get('/assets/dc/edit/device/1/')
         new_fields = new_view.context['asset_form'].initial
         new_device_info = new_view.context['device_info_form'].initial
         new_office_info = new_view.context['office_info_form'].initial
+
         correct_data = [
             dict(
                 model=self.asset_model3.id,
                 invoice_no='Invoice No 3',
                 order_no='Order No 3',
-                buy_date='2001-02-02',
+                invoice_date='2001-02-02',
                 support_period=24,
                 support_type='standard',
                 provider='Provider 3',
                 status=AssetStatus.in_progress.id,
                 remarks='any remarks'
-            )
-        ]
-        correct_data_office = [
-            dict(
-                version='1.0',
-                unit_price=2,
-                license_type=LicenseType.oem.id,
-                date_of_last_inventory='2003-02-02',
-                last_logged_user='James Bond',
             )
         ]
         for data in correct_data:
@@ -228,6 +241,7 @@ class TestForms(TestCase):
                 self.assertEqual(
                     unicode(new_fields[key]), unicode(data[key])
                 )
+
         self.assertNotEqual(old_device_info['size'], new_device_info['size'])
         self.assertEqual(new_device_info['size'], 2)
         office = OfficeInfo.objects.filter(
@@ -236,17 +250,282 @@ class TestForms(TestCase):
         self.assertEqual(office, 1)
         self.assertEqual(old_office_info, {})
         self.assertEqual(new_office_info['license_key'], '0000-0000-0000-0000')
+
+        correct_data_office = [
+            dict(
+                version='1.0',
+                unit_price=2,
+                license_type=LicenseType.oem.id,
+                date_of_last_inventory='2003-02-02',
+                last_logged_user='James Bond',
+            )
+        ]
         for office in correct_data_office:
             for key in office.keys():
                 self.assertEqual(
                     unicode(new_office_info[key]), unicode(office[key])
                 )
 
+    def test_delete_asset(self):
+        # FIXME!
+        pass
 
-class TestBulkEdit(TestCase):
+class TestMultivalueFields(TestCase):
     def setUp(self):
         self.client = login_as_su()
-        # Build asset
+        self.warehouse = create_device(1, create_warehouse(name='Warehouse'))
+        self.model = create_model(create_manufacturer('Menufacturer'), 'Model')
+        self.addform = '/assets/dc/add/device/'
+
+    def test_add_form_testing_sn_and_barcode(self):
+        """
+        here we tests multivalue fields
+
+        Scenario:
+        1. add many SNs and barcodes in different forms
+        2. verifyt that the form adds empty serial number
+        3. relationship between SNs and barcodes
+        4. verity names with white characters (SNs, barcode)
+        """
+        test_data = [
+            dict(
+                type=AssetType.data_center,
+                model=self.model.id,
+                support_period='1',
+                support_type='standard',
+                invoice_date='2001-01-02',
+                warehouse=self.warehouse.id,
+                status=AssetStatus.new,
+                sn='sn1_1, sn2_1, sn1_1',
+                remarks='asset1',
+                size=1,
+            ),
+            dict(
+                type=AssetType.data_center,
+                model=self.model.id,
+                support_period='1',
+                support_type='standard',
+                invoice_date='2001-01-02',
+                warehouse=self.warehouse.id,
+                status=AssetStatus.new,
+                sn='sn1_2, , , sn2_2',
+                remarks='asset2',
+                size=1,
+            ),
+            dict(
+                type=AssetType.data_center,
+                model=self.model.id,
+                support_period='1',
+                support_type='standard',
+                invoice_date='2001-01-02',
+                warehouse=self.warehouse.id,
+                status=AssetStatus.new,
+                sn='sn1_3, ,, sn2_3',
+                remarks='asset3',
+                size=1,
+            ),
+            dict(
+                type=AssetType.data_center,
+                model=self.model.id,
+                support_period='1',
+                support_type='standard',
+                invoice_date='2001-01-02',
+                warehouse=self.warehouse.id,
+                status=AssetStatus.new,
+                sn='sn1_4, ns2_4 \n sn3_4',
+                remarks='asset4',
+                size=1,
+            ),
+            dict(
+                type=AssetType.data_center,
+                model=self.model.id,
+                support_period='1',
+                support_type='standard',
+                invoice_date='2001-01-02',
+                warehouse=self.warehouse.id,
+                status=AssetStatus.new,
+                sn='name with white spaces, 0000-0000-0000-0000',
+                remarks='asset5',
+                size=1,
+            ),
+            dict(
+                type=AssetType.data_center,
+                model=self.model.id,
+                support_period='1',
+                support_type='standard',
+                invoice_date='2001-01-02',
+                warehouse=self.warehouse.id,
+                status=AssetStatus.new,
+                sn='',
+                barcode='any',
+                remarks='asset6',
+                size=1,
+            ),
+            dict(
+                type=AssetType.data_center,
+                model=self.model.id,
+                support_period='1',
+                support_type='standard',
+                invoice_date='2001-01-02',
+                warehouse=self.warehouse.id,
+                status=AssetStatus.new,
+                sn='serialnumber1',
+                barcode='any1, any2',
+                remarks='asset7',
+                size=1,
+            ),
+            dict(
+                type=AssetType.data_center,
+                model=self.model.id,
+                support_period='1',
+                support_type='standard',
+                invoice_date='2001-01-02',
+                warehouse=self.warehouse.id,
+                status=AssetStatus.new,
+                sn='serialnumber2, serialnumber3',
+                barcode='any3',
+                remarks='asset8',
+                size=1,
+            ),
+            dict(
+                type=AssetType.data_center,
+                model=self.model.id,
+                support_period='1',
+                support_type='standard',
+                invoice_date='2001-01-02',
+                warehouse=self.warehouse.id,
+                status=AssetStatus.new,
+                sn='serialnumber4, serialnumber5',
+                barcode='any4, any 5',
+                remarks='asset9',
+                size=1,
+            ),
+            dict(
+                type=AssetType.data_center,
+                model=self.model.id,
+                support_period='1',
+                support_type='standard',
+                invoice_date='2001-01-02',
+                warehouse=self.warehouse.id,
+                status=AssetStatus.new,
+                sn='serialnumber6, serialnumber7, serialnumber8',
+                barcode='any6 , , any 7',
+                remarks='asset10',
+                size=1,
+            ),
+            dict(
+                type=AssetType.data_center,
+                model=self.model.id,
+                support_period='1',
+                support_type='standard',
+                invoice_date='2001-01-02',
+                warehouse=self.warehouse.id,
+                status=AssetStatus.new,
+                sn='serialnumber9, serialnumber10, serialnumber11',
+                barcode='any8 , \n, any9',
+                remarks='asset11',
+                size=1,
+            ),
+            dict(
+                type=AssetType.data_center,
+                model=self.model.id,
+                support_period='1',
+                support_type='standard',
+                invoice_date='2001-01-02',
+                warehouse=self.warehouse.id,
+                status=AssetStatus.new,
+                sn='serialnumber12',
+                barcode='dup1',
+                remarks='asset12',
+                size=1,
+            ),
+        ]
+        for test in test_data:
+            post = self.client.post(self.addform, test)
+            added_assets = Asset.objects.filter(remarks=test['remarks'])
+            if test['remarks'] is 'asset1':
+                self.assertEqual(post.status_code, 200)
+                self.assertFormError(
+                    post, 'asset_form', 'sn',
+                    'There are duplicate serial numbers in field.'
+                )
+            elif test['remarks'] is 'asset2':
+                self.assertEqual(post.status_code, 302)
+                self.assertEqual(len(added_assets), 2)
+                self.assertEqual(
+                    ['sn1_2', 'sn2_2'], [asset.sn for asset in added_assets]
+                )
+            elif test['remarks'] is 'asset3':
+                self.assertEqual(post.status_code, 302)
+                self.assertEqual(len(added_assets), 2)
+                self.assertEqual(
+                    ['sn1_3', 'sn2_3'], [asset.sn for asset in added_assets]
+                )
+            elif test['remarks'] is 'asset4':
+                self.assertEqual(post.status_code, 302)
+                self.assertEqual(len(added_assets), 3)
+                self.assertEqual(
+                    ['sn1_4', 'ns2_4', 'sn3_4'],
+                    [asset.sn for asset in added_assets]
+                )
+            elif test['remarks'] is ['asset5', 'asset9', 'asset10']:
+                self.assertEqual(post.status_code, 200)
+                self.assertFormError(
+                    post, 'asset_form', 'sn',
+                    "Serial number can't contain white characters."
+                )
+            elif test['remarks'] is 'asset6':
+                self.assertFormError(
+                    post, 'asset_form', 'sn', 'This field is required.'
+                )
+            elif test['remarks'] in ['asset6', 'asset7', 'asset 8', 'asset11']:
+                self.assertEqual(post.status_code, 200)
+                self.assertFormError(
+                    post, 'asset_form', 'barcode',
+                    "Barcode list could be empty or must have the same number "
+                    "of items as a SN list."
+                )
+            elif test['remarks'] is 'asset9':
+                self.assertEqual(post.status_code, 200)
+                self.assertFormError(
+                    post, 'asset_form', 'barcode',
+                    "Serial number can't contain white characters."
+                )
+            elif test['remarks'] is 'asset12':
+                dup = dict(
+                    type=AssetType.data_center,
+                    model=self.model.id,
+                    support_period='1',
+                    support_type='standard',
+                    invoice_date='2001-01-02',
+                    warehouse=self.warehouse.id,
+                    status=AssetStatus.new,
+                    sn='serialnumber13',
+                    barcode='dup1',
+                    remarks='asset12',
+                    size=1
+                )
+                post = self.client.post(self.addform, dup)
+                self.assertEqual(post.status_code, 200)
+                self.assertFormError(
+                    post, 'asset_form', 'barcode',
+                    'Following barcodes already exists in DB: dup1'
+                )
+        empty_sn =  Asset.objects.filter(sn = ' ')
+        self.assertEqual(len(empty_sn), 0)
+        empty_sn =  Asset.objects.filter(barcode = ' ')
+        self.assertEqual(len(empty_sn), 0)
+
+
+class TestBulkEdit(TestCase):
+    """ This class tests forms for may actions
+
+    Scenario:
+    1. Add 2 assets and compare with old data
+    """
+    def setUp(self):
+        self.client = login_as_su()
+
         self.asset = create_asset(
             device_info=create_device(1, create_warehouse(name='Warehouse1')),
             type=AssetType.data_center,
@@ -254,15 +533,15 @@ class TestBulkEdit(TestCase):
             source=AssetSource.shipment,
             invoice_no='Invoice No 1',
             order_no='Order No 1',
-            buy_date=datetime.datetime(2001, 01, 01),
+            invoice_date=datetime.datetime(2001, 1, 1),
             support_period=12,
             support_type='Support d2d',
             provider='Provider 1',
             status=AssetStatus.new,
             sn='sn-123',
-            barcode='bc-1234'
+            barcode='bc-1234',
         )
-        # Build asset 2
+
         self.asset2 = create_asset(
             device_info=create_device(1, create_warehouse(name='Warehouse2')),
             type=AssetType.data_center,
@@ -270,21 +549,24 @@ class TestBulkEdit(TestCase):
             source=AssetSource.shipment,
             invoice_no='Invoice No 2',
             order_no='Order No 2',
-            buy_date=datetime.datetime(2002, 01, 01),
+            invoice_date=datetime.datetime(2002, 1, 1),
             support_period=22,
             support_type='Support d2d',
             provider='Provider 2',
             status=AssetStatus.new,
             sn='sn-1232',
-            barcode='bc-12342'
+            barcode='bc-12342',
         )
 
     def test_bulkedit_form(self):
-        # Before send POST
+        """ This class tests Bulk edit form """
+        # Download base data
         url = '/assets/dc/bulkedit/?select=%s&select=%s' % (
             self.asset.id, self.asset2.id)
         view = self.client.get(url)
         self.assertEqual(view.status_code, 200)
+
+        # Prepare new data
         model0 = create_model(create_manufacturer('Menufac1a'), 'AsModel1a')
         model1 = create_model(create_manufacturer('Menufac2a'), 'AsModel2a')
         post_data = {
@@ -296,7 +578,7 @@ class TestBulkEdit(TestCase):
             'form-0-model': model0.id,
             'form-0-invoice_no': 'Invoice No 1a',
             'form-0-order_no': 'Order No 1a',
-            'form-0-buy_date': '2012-02-02',
+            'form-0-invoice_date': '2012-02-02',
             'form-0-sn': 'sn-321-2012a',
             'form-0-barcode': 'bc-4321-2012a',
             'form-0-support_period': 24,
@@ -310,7 +592,7 @@ class TestBulkEdit(TestCase):
             'form-1-model': model1.id,
             'form-1-invoice_no': 'Invoice No 2a',
             'form-1-order_no': 'Order No 2a',
-            'form-1-buy_date': '2011-02-03',
+            'form-1-invoice_date': '2011-02-03',
             'form-1-sn': 'sn-321-2012b',
             'form-1-barcode': 'bc-4321-2012b',
             'form-1-support_period': 48,
@@ -321,35 +603,41 @@ class TestBulkEdit(TestCase):
             'form-1-source': AssetSource.shipment.id,
         }
         post = self.client.post(url, post_data, follow=True)
+
+        # if everything is ok, server return response code = 302, and
+        # redirect as to /assets/dc/search given response code 200
         self.assertRedirects(
             post, url, status_code=302, target_status_code=200,
         )
+
+        # Download new data
         new_view = self.client.get(url)
         fields = new_view.context['formset'].queryset
+
         correct_data = [
             dict(
                 model=unicode(model0),
                 invoice_no='Invoice No 1a',
                 order_no='Order No 1a',
-                buy_date='2012-02-02',
+                invoice_date='2012-02-02',
                 support_period=24,
                 support_type='standard1',
                 provider='Provider 1a',
                 status=AssetStatus.in_progress.id,
                 sn='sn-321-2012a',
-                barcode='bc-4321-2012a'
+                barcode='bc-4321-2012a',
             ),
             dict(
                 model=unicode(model1),
                 invoice_no='Invoice No 2a',
                 order_no='Order No 2a',
-                buy_date='2011-02-03',
+                invoice_date='2011-02-03',
                 support_period=48,
                 support_type='standard2',
                 provider='Provider 2a',
                 status=AssetStatus.waiting_for_release.id,
                 sn='sn-321-2012b',
-                barcode='bc-4321-2012b'
+                barcode='bc-4321-2012b',
             )
         ]
         counter = 0
@@ -362,8 +650,15 @@ class TestBulkEdit(TestCase):
 
 
 class TestSearchForm(TestCase):
+    """ This class tests search form
+
+    Scenario:
+    1. Tests all fields
+    2. Insert incorrect data
+    """
     def setUp(self):
         self.client = login_as_su()
+
         model = create_model(create_manufacturer('Menufac1'), 'AsModel1')
         self.asset = create_asset(
             device_info=create_device(1, create_warehouse(name='Warehouse1')),
@@ -372,14 +667,15 @@ class TestSearchForm(TestCase):
             source=AssetSource.shipment,
             invoice_no='Invoice No 1',
             order_no='Order No 1',
-            buy_date=datetime.datetime(2001, 01, 01),
+            invoice_date=datetime.datetime(2001, 1, 1),
             support_period=12,
             support_type='Support d2d',
             provider='Provider 1',
             status=AssetStatus.new,
             sn='sn-12332452345',
-            barcode='bc-123421141'
+            barcode='bc-123421141',
         )
+
         self.asset1 = create_asset(
             device_info=create_device(1, create_warehouse(name='Warehouse2')),
             type=AssetType.data_center,
@@ -387,14 +683,15 @@ class TestSearchForm(TestCase):
             source=AssetSource.shipment,
             invoice_no='Invoice No 1',
             order_no='Order No 3',
-            buy_date=datetime.datetime(2003, 01, 01),
+            invoice_date=datetime.datetime(2003, 1, 1),
             support_period=12,
             support_type='Support d2d',
             provider='Provider 2',
             status=AssetStatus.in_service,
             sn='sn-123123123',
-            barcode='bc-1234123123'
+            barcode='bc-1234123123',
         )
+
         self.asset2 = create_asset(
             device_info=create_device(1, create_warehouse(name='Warehouse3')),
             type=AssetType.data_center,
@@ -402,81 +699,101 @@ class TestSearchForm(TestCase):
             source=AssetSource.shipment,
             invoice_no='Invoice No 3',
             order_no='Order No 3',
-            buy_date=datetime.datetime(2002, 01, 01),
+            invoice_date=datetime.datetime(2002, 1, 1),
             support_period=12,
             support_type='standard',
             provider='Provider 3',
             status=AssetStatus.used,
             sn='sn-12323542345',
-            barcode='bc-12341234124'
+            barcode='bc-12341234124',
         )
 
-    def test_model(self):
-        url = '/assets/dc/search?model=%s' % self.asset.id
+    def test_model_field(self):
+        """ Tests base asset fields """
+        url = '/assets/dc/search?model=%s' % self.asset.model.name
         get = self.client.get(url)
         self.assertEqual(get.status_code, 200)
+
         res = get.context_data['page'].object_list
         self.assertEqual(len(res), 2)
+
+        # Correct: res not contain AsModel2
         output = ('<Asset: AsModel2 - sn-123123123 - bc-1234123123>')
         self.assertNotEqual(unicode(res[0]), output)
-        # Empty ?model=
+
+        # What do Ralph when we don't insert model id? (return all asset)
         url = '/assets/dc/search?model='
         get = self.client.get(url)
         self.assertEqual(get.status_code, 200)
         res = get.context_data['page'].object_list
         self.assertEqual(len(res), 3)
-        url = '/assets/dc/search?model=99999'
-        get = self.client.get(url)
-        self.assertEqual(get.status_code, 404)
 
-    def test_invoice(self):
+        # or we insert wrong model name (after range)?
+        url = '/assets/dc/search?model=Inferno+2000'
+        get = self.client.get(url)
+        self.assertEqual(get.status_code, 200)
+        res = get.context_data['page'].object_list
+        self.assertEqual(len(res), 0)
+
+    def test_invoice_field(self):
         url = '/assets/dc/search?invoice_no=%s' % 'Invoice No 1'
         get = self.client.get(url)
         self.assertEqual(get.status_code, 200)
+
         res = get.context_data['page'].object_list
         self.assertEqual(len(res), 2)
+
         output = ('<Asset: AsModel3 - sn-12323542345 - bc-12341234124>')
         self.assertNotEqual(unicode(res[0]), output)
 
-    def test_order(self):
+    def test_order_field(self):
         url = '/assets/dc/search?order_no=%s' % 'Order No 3'
         get = self.client.get(url)
         self.assertEqual(get.status_code, 200)
+
         res = get.context_data['page'].object_list
         self.assertEqual(len(res), 2)
+
         output = ('<Asset: AsModel1 - sn-12332452345 - bc-123421141>')
         self.assertNotEqual(unicode(res[0]), output)
 
-    def test_provider(self):
+    def test_provider_field(self):
         url = '/assets/dc/search?provider=%s' % 'Provider 3'
         get = self.client.get(url)
         self.assertEqual(get.status_code, 200)
+
         res = get.context_data['page'].object_list
         self.assertEqual(len(res), 1)
+
         output = ('<Asset: AsModel1 - sn-12332452345 - bc-123421141>')
         self.assertNotEqual(unicode(res[0]), output)
 
-    def test_status(self):
+    def test_status_status(self):
         url = '/assets/dc/search?status=%s' % AssetStatus.used.id
         get = self.client.get(url)
         self.assertEqual(get.status_code, 200)
+
         res = get.context_data['page'].object_list
         self.assertEqual(len(res), 1)
+
         output = ('Menufac1 AsModel1 - sn-12323542345 - bc-12341234124')
         self.assertEqual(unicode(res[0]), output)
 
-    def test_sn(self):
+    def test_sn_field(self):
         url = '/assets/dc/search?sn=%s' % 'sn-123123123'
         get = self.client.get(url)
         self.assertEqual(get.status_code, 200)
+
         res = get.context_data['page'].object_list
         self.assertEqual(len(res), 1)
+
         output = ('Menufac2 AsModel2 - sn-123123123 - bc-1234123123')
         self.assertEqual(unicode(res[0]), output)
 
-    def test_date_range(self):
+    def test_date_range_fields(self):
+        # here is tests data range of invoice field
         # beggining date should be equal than end date
-        url = '/assets/dc/search?buy_date_from=%s&buy_date_to=%s' % (
+        url = '/assets/dc/search?invoice_date_from=%s&invoice_date_to=%s' % (
             '2001-01-01', '2001-01-01')
         get = self.client.get(url)
         self.assertEqual(get.status_code, 200)
@@ -484,8 +801,9 @@ class TestSearchForm(TestCase):
         self.assertEqual(len(res), 1)
         output = ('Menufac1 AsModel1 - sn-12332452345 - bc-123421141')
         self.assertEqual(unicode(res[0]), output)
+
         # beggining date should be lower than end date
-        url = '/assets/dc/search?buy_date_from=%s&buy_date_to=%s' % (
+        url = '/assets/dc/search?invoice_date_from=%s&invoice_date_to=%s' % (
             '2001-01-01', '2002-01-01')
         get = self.client.get(url)
         self.assertEqual(get.status_code, 200)
@@ -493,29 +811,33 @@ class TestSearchForm(TestCase):
         self.assertEqual(len(res), 2)
         output = ('AsModel2 - sn-123123123 - bc-1234123123')
         self.assertNotEqual(unicode(res[0]), output)
-        # beggining date cant be lower than end date
-        url = '/assets/dc/search?buy_date_from=%s&buy_date_to=%s' % (
+
+        # beggining date can't be lower than end date
+        url = '/assets/dc/search?invoice_date_from=%s&invoice_date_to=%s' % (
             '2011-01-01', '2002-01-01')
         get = self.client.get(url)
         self.assertEqual(get.status_code, 200)
         res = get.context_data['page'].object_list
         self.assertEqual(len(res), 0)
+
         # beggining date is None, end date is desirable
-        url = '/assets/dc/search?buy_date_from=%s&buy_date_to=%s' % (
+        url = '/assets/dc/search?invoice_date_from=%s&invoice_date_to=%s' % (
             '', '2001-01-01')
         get = self.client.get(url)
         self.assertEqual(get.status_code, 200)
         res = get.context_data['page'].object_list
         self.assertEqual(len(res), 1)
+
         # beggining date is None, end date is lower then youngest object
-        url = '/assets/dc/search?buy_date_from=%s&buy_date_to=%s' % (
+        url = '/assets/dc/search?invoice_date_from=%s&invoice_date_to=%s' % (
             '', '1999-01-01')
         get = self.client.get(url)
         self.assertEqual(get.status_code, 200)
         res = get.context_data['page'].object_list
         self.assertEqual(len(res), 0)
+
         # beggining date is correct, end date is None
-        url = '/assets/dc/search?buy_date_from=%s&buy_date_to=%s' % (
+        url = '/assets/dc/search?invoice_date_from=%s&invoice_date_to=%s' % (
             '1999-01-01', '')
         get = self.client.get(url)
         self.assertEqual(get.status_code, 200)
@@ -523,17 +845,25 @@ class TestSearchForm(TestCase):
         self.assertEqual(len(res), 3)
 
 
-class TestTrolling(TestCase):
+class TestValidations(TestCase):
+    """ This class tests forms validation
+
+    Scenario:
+    1. test validation (required fields) add, edit
+    2. test wrong data in fields
+    """
     def setUp(self):
         self.client = login_as_su()
-        # (formset_name, field_name)
+
+        # Prepare required fields (formset_name, field_name)
         self.required_fields = [
             ('asset_form', 'model'),
             ('asset_form', 'support_period'),
             ('asset_form', 'support_type'),
             ('device_info_form', 'warehouse'),
-            ('asset_form', 'sn')
+            ('asset_form', 'sn'),
         ]
+
         self.asset = create_asset(
             device_info=create_device(1, create_warehouse(name='Warehouse1')),
             type=AssetType.data_center,
@@ -541,15 +871,15 @@ class TestTrolling(TestCase):
             source=AssetSource.shipment,
             invoice_no='Invoice No 1',
             order_no='Order No 1',
-            buy_date=datetime.datetime(2001, 01, 01),
+            invoice_date=datetime.datetime(2001, 1, 1),
             support_period=12,
             support_type='Support d2d',
             provider='Provider 1',
             status=AssetStatus.new,
             sn='sn-123',
-            barcode='bc-1234'
+            barcode='bc-1234',
         )
-        # Build asset 2
+
         self.asset2 = create_asset(
             device_info=create_device(1, create_warehouse(name='Warehouse2')),
             type=AssetType.data_center,
@@ -557,26 +887,27 @@ class TestTrolling(TestCase):
             source=AssetSource.shipment,
             invoice_no='Invoice No 2',
             order_no='Order No 2',
-            buy_date=datetime.datetime(2002, 01, 01),
+            invoice_date=datetime.datetime(2002, 1, 1),
             support_period=22,
             support_type='Support d2d',
             provider='Provider 2',
             status=AssetStatus.new,
             sn='sn-1232',
-            barcode='bc-12342'
+            barcode='bc-12342',
         )
 
-    def test_empty_add_form(self):
+    def test_try_send_empty_add_form(self):
         url = '/assets/back_office/add/device/'
         post_data = {}
         post = self.client.post(url, post_data)
         self.assertEqual(post.status_code, 200)
+
         for r in self.required_fields:
             self.assertFormError(
                 post, r[0], r[1], 'This field is required.'
             )
 
-    def test_empty_edit_form(self):
+    def test_try_send_empty_edit_form(self):
         url = '/assets/dc/edit/device/1/'
         post_data = {}
         post = self.client.post(url, post_data)
@@ -586,7 +917,7 @@ class TestTrolling(TestCase):
                 post, r[0], r[1], 'This field is required.'
             )
 
-    def test_bulkedit2_form(self):
+    def test_add_wrong_data_bulkedit_form(self):
         url = '/assets/dc/bulkedit/?select=%s&select=%s' % (
             self.asset.id, self.asset2.id)
         model0 = create_model(create_manufacturer('Menufac1a'), 'AsModel1a')
@@ -600,7 +931,7 @@ class TestTrolling(TestCase):
             'form-0-model': model0.id,
             'form-0-invoice_no': 'Invoice No 1a',
             'form-0-order_no': 'Order No 1a',
-            'form-0-buy_date': 'wrong_field_data',
+            'form-0-invoice_date': 'wrong_field_data',
             'form-0-sn': 'sn-1232',
             'form-0-barcode': 'bc-4321-2012a',
             'form-0-support_period': 24,
@@ -614,7 +945,7 @@ class TestTrolling(TestCase):
             'form-1-model': '',
             'form-1-invoice_no': 'Invoice No 2a',
             'form-1-order_no': 'Order No 2a',
-            'form-1-buy_date': '2011-02-03',
+            'form-1-invoice_date': '2011-02-03',
             'form-1-sn': 'sn-321-2012a',
             'form-1-barcode': 'bc-4321-2012b',
             'form-1-support_period': 48,
@@ -625,6 +956,7 @@ class TestTrolling(TestCase):
             'form-1-source': '',
         }
         post = self.client.post(url, post_data)
+
         try:
             self.assertRedirects(
                 post, url, status_code=302, target_status_code=200,
@@ -633,10 +965,11 @@ class TestTrolling(TestCase):
         except AssertionError:
             send_post = False
         self.assertEqual(send_post, False)
+
         bulk_data = [
             dict(
                 row=0,
-                field='buy_date',
+                field='invoice_date',
                 error='Enter a valid date.',
             ),
             dict(
@@ -666,6 +999,8 @@ class TestTrolling(TestCase):
                 formset[bulk['row']]._errors[bulk['field']][0],
                 bulk['error']
             )
+
+        # if sn was duplicated, the message should be shown on the screen
         find = []
         i = 0
         msg_error = 'Please correct duplicated serial numbers or barcodes.'
@@ -673,6 +1008,7 @@ class TestTrolling(TestCase):
             if post.content.startswith(msg_error, i - 1):
                 find.append(i)
         self.assertTrue(len(find) == 1)
+
         post_data = {
             'form-TOTAL_FORMS': u'2',
             'form-INITIAL_FORMS': u'2',
@@ -682,7 +1018,7 @@ class TestTrolling(TestCase):
             'form-0-model': model0.id,
             'form-0-invoice_no': 'Invoice No 1a',
             'form-0-order_no': 'Order No 1a',
-            'form-0-buy_date': '2012-02-01',
+            'form-0-invoice_date': '2012-02-01',
             'form-0-sn': 'sn-1232aad',
             'form-0-barcode': 'bc-4321-2012a',
             'form-0-support_period': 24,
@@ -696,7 +1032,7 @@ class TestTrolling(TestCase):
             'form-1-model': model1.id,
             'form-1-invoice_no': 'Invoice No 2a',
             'form-1-order_no': 'Order No 2a',
-            'form-1-buy_date': '2011-02-03',
+            'form-1-invoice_date': '2011-02-03',
             'form-1-sn': 'sn-321-2012a',
             'form-1-barcode': 'bc-4321-2012b',
             'form-1-support_period': 48,
@@ -707,9 +1043,11 @@ class TestTrolling(TestCase):
             'form-1-source': AssetSource.shipment.id,
         }
         correct_post = self.client.post(url, post_data, follow=True)
+
         self.assertRedirects(
             correct_post, url, status_code=302, target_status_code=200,
         )
+        # Find success message
         find = []
         i = 0
         msg_error = 'Changes saved.'
@@ -724,10 +1062,12 @@ class TestTrolling(TestCase):
         post_data = {
             'support_period': 'string',
             'size': 'string',
-            'buy_date': 'string'
+            'invoice_date': 'string',
         }
         post = self.client.post(url, post_data)
         self.assertEqual(post.status_code, 200)
+
+        # other fields error
         self.assertFormError(
             post, 'asset_form', 'support_period', 'Enter a whole number.'
         )
@@ -735,5 +1075,5 @@ class TestTrolling(TestCase):
             post, 'device_info_form', 'size', 'Enter a whole number.'
         )
         self.assertFormError(
-            post, 'asset_form', 'buy_date', 'Enter a valid date.'
+            post, 'asset_form', 'invoice_date', 'Enter a valid date.'
         )

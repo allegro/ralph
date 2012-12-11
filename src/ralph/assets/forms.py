@@ -7,6 +7,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import re
+import collections
 
 from ajax_select.fields import AutoCompleteSelectField, AutoCompleteField
 from django.forms import (
@@ -31,12 +32,14 @@ class BaseAssetForm(ModelForm):
         model = Asset
         fields = (
             'type', 'model', 'invoice_no', 'order_no',
-            'buy_date', 'support_period', 'support_type',
+            'invoice_date', 'support_period', 'support_type',
             'support_void_reporting', 'provider', 'status',
             'remarks', 'sn', 'barcode',
         )
         widgets = {
-            'buy_date': DateWidget(),
+            'sn': Textarea(attrs={'rows': 25}),
+            'barcode': Textarea(attrs={'rows': 25}),
+            'invoice_date': DateWidget(),
             'remarks': Textarea(attrs={'rows': 3}),
             'support_type': Textarea(attrs={'rows': 5}),
         }
@@ -68,11 +71,11 @@ class BulkEditAssetForm(ModelForm):
         model = Asset
         fields = (
             'type', 'model', 'device_info', 'invoice_no', 'order_no',
-            'buy_date', 'sn', 'barcode', 'support_period', 'support_type',
+            'invoice_date', 'sn', 'barcode', 'support_period', 'support_type',
             'support_void_reporting', 'provider', 'source', 'status',
         )
         widgets = {
-            'buy_date': DateWidget(),
+            'invoice_date': DateWidget(),
             'device_info': HiddenSelectWidget(),
         }
     barcode = BarcodeField(max_length=200, required=False)
@@ -87,7 +90,7 @@ class BaseDeviceForm(ModelForm):
     class Meta:
         model = DeviceInfo
         fields = (
-            'size', 'warehouse',
+            'size', 'warehouse'
         )
     warehouse = AutoCompleteSelectField(
         'asset_warehouse', required=True,
@@ -98,7 +101,11 @@ class BaseDeviceForm(ModelForm):
 class BasePartForm(ModelForm):
     class Meta:
         model = PartInfo
-        fields = ('barcode_salvaged',)
+        fields = ('barcode_salvaged', 'warehouse')
+    warehouse = AutoCompleteSelectField(
+        'asset_warehouse', required=True,
+        plugin_options=dict(add_link='/admin/assets/warehouse/add/?name=')
+    )
 
     def __init__(self, *args, **kwargs):
         """mode argument is required for distinguish ajax sources"""
@@ -126,18 +133,25 @@ class BasePartForm(ModelForm):
             self.fields['device'].initial = self.instance.device.id
 
 
+
 def _validate_multivalue_data(data):
     error_msg = _("Field can't be empty. Please put the items separated "
                   "by new line or comma.")
     data = data.strip()
     if not data:
         raise ValidationError(error_msg)
-    if data.find(" ") > 0:
-        raise ValidationError(error_msg)
     items = []
     for item in filter(len, re.split(",|\n", data)):
         item = item.strip()
-        if item and item not in items:
+        if item in items:
+            raise ValidationError(
+                _("There are duplicate serial numbers in field.")
+            )
+        elif ' ' in item:
+            raise ValidationError(
+                _("Serial number can't contain white characters.")
+            )
+        elif item:
             items.append(item)
     if not items:
         raise ValidationError(error_msg)
@@ -179,12 +193,12 @@ class BaseAddAssetForm(ModelForm):
         model = Asset
         fields = (
             'type', 'model', 'invoice_no', 'order_no',
-            'buy_date', 'support_period', 'support_type',
+            'invoice_date', 'support_period', 'support_type',
             'support_void_reporting', 'provider', 'status',
             'remarks',
         )
         widgets = {
-            'buy_date': DateWidget(),
+            'invoice_date': DateWidget(),
             'remarks': Textarea(attrs={'rows': 3}),
             'support_type': Textarea(attrs={'rows': 5}),
         }
@@ -238,11 +252,17 @@ class AddDeviceForm(BaseAddAssetForm):
         data = self.cleaned_data["barcode"].strip()
         barcodes = []
         if data:
-            if data.find(" ") > 0:
-                raise ValidationError(_("Incorrect barcodes."))
             for barcode in filter(len, re.split(",|\n", data)):
                 barcode = barcode.strip()
-                if barcode:
+                if barcode in barcodes:
+                    raise ValidationError(
+                        _("There is duplicate barcodes in field.")
+                    )
+                elif ' ' in barcode:
+                    raise ValidationError(
+                        _("Serial number can't contain white characters.")
+                    )
+                elif barcode:
                     barcodes.append(barcode)
             if not barcodes:
                 raise ValidationError(_("Barcode list could be empty or "
@@ -294,22 +314,27 @@ class SearchAssetForm(Form):
     :param mode: one of `dc` for DataCenter or `bo` for Back Office
     :returns Form
     """
-
     model = AutoCompleteField(
         'asset_model',
         required=False,
-        help_text=None
+        help_text=None,
     )
-
     invoice_no = CharField(required=False)
     order_no = CharField(required=False)
-    buy_date_from = DateField(
-        required=False, widget=DateWidget(),
-        label="Buy date from",
+    invoice_date_from = DateField(
+        required=False, widget=DateWidget(attrs={
+            'placeholder': 'Start YYYY-MM-DD',
+            'data-collapsed': True,
+        }),
+        label="Invoice date",
     )
-    buy_date_to = DateField(
-        required=False, widget=DateWidget(),
-        label="Buy date to")
+    invoice_date_to = DateField(
+        required=False, widget=DateWidget(attrs={
+            'class': 'end-date-field ',
+            'placeholder': 'End YYYY-MM-DD',
+            'data-collapsed': True,
+        }),
+        label='')
     provider = CharField(required=False, label='Provider')
     status = ChoiceField(
         required=False, choices=[('', '----')] + AssetStatus(),
@@ -326,7 +351,7 @@ class SearchAssetForm(Form):
         super(SearchAssetForm, self).__init__(*args, **kwargs)
         self.fields['device'] = AutoCompleteSelectField(
             channel,
-            required=False
+            required=False,
         )
 
 

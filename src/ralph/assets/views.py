@@ -14,7 +14,7 @@ from django.db import transaction
 from django.db.models import Q
 from django.http import HttpResponseRedirect, Http404
 from django.forms.models import modelformset_factory
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.forms import (
@@ -130,12 +130,12 @@ class AssetSearch(AssetsMixin, PaginationMixin):
                     q = Q(**{field: field_value})
                     all_q = all_q & q
         # now fields within ranges.
-        buy_date_from = self.request.GET.get('buy_date_from')
-        buy_date_to = self.request.GET.get('buy_date_to')
-        if buy_date_from:
-            all_q &= Q(buy_date__gte=buy_date_from)
-        if buy_date_to:
-            all_q &= Q(buy_date__lte=buy_date_to)
+        invoice_date_from = self.request.GET.get('invoice_date_from')
+        invoice_date_to = self.request.GET.get('invoice_date_to')
+        if invoice_date_from:
+            all_q &= Q(invoice_date__gte=invoice_date_from)
+        if invoice_date_to:
+            all_q &= Q(invoice_date__lte=invoice_date_to)
         self.paginate_query(self.get_all_items(all_q))
 
     def get_all_items(self, q_object):
@@ -209,6 +209,7 @@ def _create_device(creator_profile, asset_data, device_info_data, sn,
     if barcode:
         asset.barcode = barcode
     asset.save(user=creator_profile.user)
+    return asset.id
 
 
 class AddDevice(Base):
@@ -243,14 +244,26 @@ class AddDevice(Base):
             asset_data['source'] = AssetSource.shipment
             serial_numbers = self.asset_form.cleaned_data['sn']
             barcodes = self.asset_form.cleaned_data['barcode']
+            ids = []
             for sn, index in zip(serial_numbers, range(len(serial_numbers))):
                 barcode = barcodes[index] if barcodes else None
-                _create_device(
-                    creator_profile, asset_data,
-                    self.device_info_form.cleaned_data, sn, barcode
+                ids.append(
+                    _create_device(
+                        creator_profile, asset_data,
+                        self.device_info_form.cleaned_data, sn, barcode
+                    )
                 )
             messages.success(self.request, _("Assets saved."))
-            return HttpResponseRedirect(_get_return_link(self.request))
+            cat = self.request.path.split('/')[2]
+            if len(ids) == 1:
+                return HttpResponseRedirect(
+                    '/assets/%s/edit/device/%s/' % (cat, ids[0])
+                )
+            else:
+                return HttpResponseRedirect(
+                    '/assets/%s/bulkedit/?select=%s' %
+                        (cat, '&select='.join(["%s" % id for id in ids]))
+                )
         else:
             messages.error(self.request, _("Please correct the errors."))
         return super(AddDevice, self).get(*args, **kwargs)
