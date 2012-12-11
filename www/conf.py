@@ -188,8 +188,8 @@ htmlhelp_basename = 'ralphdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'ralph.tex', u'ralph Documentation',
-   u'Łukasz Langa', 'manual'),
+    ('index', 'ralph.tex', u'ralph Documentation',
+     u'Łukasz Langa', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -227,123 +227,155 @@ all_releases = [
             'help with installing it.'
         ],
     ),
-    dict(version='1.1.9',
-         release_date='November 26, 2012',
-         description_lines=[
-         'This is a bugfix release. Fixes regressions in discovery from version 1.1.9 and'
-         'introduces DiscoveryWarnings for tracking problems with discovery'
-         ]),
-    dict(version='1.1.8',
-         release_date='November 22, 2012',
-         description_lines=[
-         'Includes system-level storage detection, improved CPU information for Windows'
-         'machines, ability to edit DNS information straight from the Addresses tab on a'
-         'device. CMDB now includes an impact report',
-         ]),
-    dict(version='1.1.7',
-         release_date='November 8, 2012',
-         description_lines=[
-         'This is a bugfix release. Includes fixes in IPMI, SSG and Xen discovery as well'
-         'as minor CMDB and DNS admin improvements. DHCP agent script is now compatible'
-         'with Python 2.4 (for usage in RedHat 5.x environments)',
-         ]),
-    dict(version='1.1.6',
-         release_date='October 29, 2012',
-         description_lines=[
-         'This is a bugfix release. Includes fixes in CMDB, device admin, device report'
-         'and unit tests'
-         ]),
-    dict(version='1.1.5',
-         release_date='October 19, 2012',
-         description_lines=[
-         'This is a bugfix release. Fixes order of database migrations and several'
-         'problems with running unit tests. Django version bumped to 1.4.2'
-         ]),
-    dict(version='1.1.4',
-         release_date='October 15, 2012',
-         description_lines=[
-         'Adds role properties to the RESTful API. Fixes deprecation so that deprecated'
-         'devices no longer report a monthly cost'
-         ]),
-    dict(version='1.1.3',
-         release_date='October 10, 2012',
-         description_lines=[
-         'This is a bugfix release. Contains fixes in UI and discovery code, as well as'
-         'shows cloud usage in the main venture report'
-         ]),
-    dict(version='1.1.2',
-         release_date='October 8, 2012',
-         description_lines=[
-         'This is a bugfix release. Includes a new experimental discovery agent for'
-         'Windows called Donpedro as well as two new discovery plugins for Xen'
-         'hypervisors and Linux machines not controlled by Puppet. Fixes bugs in UI, CMDB'
-         'and discovery'
-         ]),
-    dict(version='1.1.1',
-         release_date='September 24, 2012',
-         description_lines=[
-         'This is a bugfix release. Includes fixes in discovery and UI code, as well as'
-         'updates in the price catalog: history of changes is tracked and the UI for'
-         'specifying price per unit of size is now easier to use',
-         ]),
-    dict(version='1.1.0',
-         release_date='September 19, 2012',
-         description_lines=[
-         'This is a feature release. Includes support for deployment of physical hosts'
-         'using PXE, simplified financial model (components can be now priced by unit of'
-         'size, e.g. by core or GiB) and upgraded reporting system. Includes minor bug'
-         'fixes',
-         ]),
-    dict(version='1.0.6',
-         release_date='August 20, 2012',
-         description_lines=[
-         'This is a bugfix release. Includes fixes in CMDB and UI code, as well as a'
-         'preliminary timeline view for CMDB, usability improvements in editing CI'
-         'relations',
-         ]),
-    dict(version='1.0.5',
-         release_date='August 13, 2012',
-         description_lines=[
-         'This is a bugfix release. Includes fixes in CMDB, discovery and UI code, as'
-         'well as the possibility to specify extra queries for OpenStack. Local storage'
-         'costs are now also counted for Proxmox virtual machines',
-         ]),
-    dict(version='1.0.4',
-         release_date='August 08, 2012',
-         description_lines=[
-         'This version has report and rack views, as well as some improvements in the'
-         'user interface and important bug fixes in the discovery plugins. You can now'
-         'delete from the database old devices that are no longer needed',
-         ]),
-    dict(version='1.0.3',
-         release_date='August 01, 2012',
-         description_lines=[
-         'This is a bugfix release. Includes fixes for minor issues in the Web app and'
-         'ability to run CMDB integration plugins remotely. It introduces a rudimentary'
-         'reports tab on device lists',
-         ]),
-    dict(version='1.0.2',
-         release_date='July 23, 2012',
-         description_lines=[
-         'This is a bugfix release. It introduces the ability to create new devices'
-         'manually (without autodiscovery) and fixes several minor issues'
-         ]),
-    dict(version='1.0.1',
-         release_date='July 18, 2012',
-         description_lines=[
-         'This is a bugfix release. It fixes several small problems with initial setup'
-         'and configuration, and makes it easier to manage settings'
-         ]),
-    dict(version='1.0.0',
-         release_date='July 16, 2012',
-         description_lines=[
-         'This is the first release of Ralph',
-         ])
+    dict(
+        version='1.1.9',
+        release_date='November 26, 2012',
+        description_lines=[
+            'This is a bugfix release. Fixes regressions in discovery from version 1.1.9 and'
+            'introduces DiscoveryWarnings for tracking problems with discovery'
+        ],
+    ),
+    dict(
+        version='1.1.8',
+        release_date='November 22, 2012',
+        description_lines=[
+            'Includes system-level storage detection, improved CPU information for Windows'
+            'machines, ability to edit DNS information straight from the Addresses tab on a'
+            'device. CMDB now includes an impact report',
+        ],
+    ),
+    dict(
+        version='1.1.7',
+        release_date='November 8, 2012',
+        description_lines=[
+            'This is a bugfix release. Includes fixes in IPMI, SSG and Xen discovery as well'
+            'as minor CMDB and DNS admin improvements. DHCP agent script is now compatible'
+            'with Python 2.4 (for usage in RedHat 5.x environments)',
+        ],
+    ),
+    dict(
+        version='1.1.6',
+        release_date='October 29, 2012',
+        description_lines=[
+            'This is a bugfix release. Includes fixes in CMDB, device admin, device report'
+            'and unit tests'
+        ],
+    ),
+    dict(
+        version='1.1.5',
+        release_date='October 19, 2012',
+        description_lines=[
+            'This is a bugfix release. Fixes order of database migrations and several'
+            'problems with running unit tests. Django version bumped to 1.4.2'
+        ],
+    ),
+    dict(
+        version='1.1.4',
+        release_date='October 15, 2012',
+        description_lines=[
+            'Adds role properties to the RESTful API. Fixes deprecation so that deprecated'
+            'devices no longer report a monthly cost'
+        ],
+    ),
+    dict(
+        version='1.1.3',
+        release_date='October 10, 2012',
+        description_lines=[
+            'This is a bugfix release. Contains fixes in UI and discovery code, as well as'
+            'shows cloud usage in the main venture report'
+        ],
+    ),
+    dict(
+        version='1.1.2',
+        release_date='October 8, 2012',
+        description_lines=[
+            'This is a bugfix release. Includes a new experimental discovery agent for'
+            'Windows called Donpedro as well as two new discovery plugins for Xen'
+            'hypervisors and Linux machines not controlled by Puppet. Fixes bugs in UI, CMDB'
+            'and discovery'
+        ],
+    ),
+    dict(
+        version='1.1.1',
+        release_date='September 24, 2012',
+        description_lines=[
+            'This is a bugfix release. Includes fixes in discovery and UI code, as well as'
+            'updates in the price catalog: history of changes is tracked and the UI for'
+            'specifying price per unit of size is now easier to use',
+        ],
+    ),
+    dict(
+        version='1.1.0',
+        release_date='September 19, 2012',
+        description_lines=[
+            'This is a feature release. Includes support for deployment of physical hosts'
+            'using PXE, simplified financial model (components can be now priced by unit of'
+            'size, e.g. by core or GiB) and upgraded reporting system. Includes minor bug'
+            'fixes',
+        ],
+    ),
+    dict(
+        version='1.0.6',
+        release_date='August 20, 2012',
+        description_lines=[
+            'This is a bugfix release. Includes fixes in CMDB and UI code, as well as a'
+            'preliminary timeline view for CMDB, usability improvements in editing CI'
+            'relations',
+        ],
+    ),
+    dict(
+        version='1.0.5',
+        release_date='August 13, 2012',
+        description_lines=[
+            'This is a bugfix release. Includes fixes in CMDB, discovery and UI code, as'
+            'well as the possibility to specify extra queries for OpenStack. Local storage'
+            'costs are now also counted for Proxmox virtual machines',
+        ],
+    ),
+    dict(
+        version='1.0.4',
+        release_date='August 08, 2012',
+        description_lines=[
+            'This version has report and rack views, as well as some improvements in the'
+            'user interface and important bug fixes in the discovery plugins. You can now'
+            'delete from the database old devices that are no longer needed',
+        ],
+    ),
+    dict(
+        version='1.0.3',
+        release_date='August 01, 2012',
+        description_lines=[
+            'This is a bugfix release. Includes fixes for minor issues in the Web app and'
+            'ability to run CMDB integration plugins remotely. It introduces a rudimentary'
+            'reports tab on device lists',
+        ],
+    ),
+    dict(
+        version='1.0.2',
+        release_date='July 23, 2012',
+        description_lines=[
+            'This is a bugfix release. It introduces the ability to create new devices'
+            'manually (without autodiscovery) and fixes several minor issues'
+        ],
+    ),
+    dict(
+        version='1.0.1',
+        release_date='July 18, 2012',
+        description_lines=[
+            'This is a bugfix release. It fixes several small problems with initial setup'
+            'and configuration, and makes it easier to manage settings'
+        ],
+    ),
+    dict(
+        version='1.0.0',
+        release_date='July 16, 2012',
+        description_lines=[
+            'This is the first release of Ralph',
+        ]
+    ),
 ]
-
 
 html_context = dict(
     main_releases=all_releases[0:2],
     archived_releases=all_releases[2:],
 )
-
