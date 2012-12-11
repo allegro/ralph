@@ -52,13 +52,16 @@ class PricingVariable(db.Model):
     group = db.ForeignKey('discovery.PricingGroup')
     aggregate = db.PositiveIntegerField(
         choices=PricingAggregate(),
-        default=PricingAggregate.sum,
+        default=PricingAggregate.sum.id,
     )
 
     def get_value(self):
-        function = self.aggregate.function
+        function = PricingAggregate.FromID(self.aggregate).function
         d = self.pricingvalue_set.aggregate(function('value'))
         return d.values()[0]
+
+    def get_x(self):
+        return 'x'
 
     class Meta:
         unique_together = 'group', 'name'
@@ -71,7 +74,7 @@ class PricingValue(db.Model):
     """
     device = db.ForeignKey('discovery.Device')
     variable =  db.ForeignKey('discovery.PricingVariable')
-    value = db.DecimalField()
+    value = db.DecimalField(max_digits=8, decimal_places=2)
 
     class Meta:
         unique_together = 'device', 'variable'

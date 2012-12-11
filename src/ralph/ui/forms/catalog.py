@@ -8,10 +8,18 @@ from __future__ import unicode_literals
 import decimal
 
 from django import forms
+import ajax_select
 
 from ralph.ui.widgets import CurrencyWidget
-from ralph.discovery.models import ComponentModelGroup, DeviceModelGroup
-from ralph.discovery.models_pricing import PricingGroup
+from ralph.discovery.models import (
+    ComponentModelGroup,
+    DeviceModelGroup,
+)
+from ralph.discovery.models_pricing import (
+    PricingGroup,
+    PricingVariable,
+    PricingValue,
+)
 
 
 class ModelGroupForm(forms.ModelForm):
@@ -91,3 +99,61 @@ class PricingGroupForm(forms.ModelForm):
         model = PricingGroup
         fields = 'name',
 
+
+class PricingDeviceForm(forms.Form):
+    device = ajax_select.fields.AutoCompleteSelectField(
+        'device',
+        help_text=None,
+        required=False,
+    )
+
+    def __init__(self, *args, **kwargs):
+        super(PricingDeviceForm, self).__init__(*args, **kwargs)
+        self.fields['device'].widget.attrs.update({
+            'placeholder': "Add more devices",
+            'class': 'span12',
+        })
+
+class PricingVariableForm(forms.ModelForm):
+    class Meta:
+        model = PricingVariable
+        fields = 'name', 'aggregate'
+        widgets = {
+            'name': forms.TextInput(
+                attrs={
+                    'class': 'span12',
+                    'placeholder': 'Name',
+                }
+            ),
+            'aggregate': forms.Select(
+                attrs={
+                    'class': 'span12',
+                }
+            ),
+        }
+
+PricingVariableFormSet = forms.models.modelformset_factory(
+    PricingVariable,
+    form=PricingVariableForm,
+    extra=1,
+    can_delete=True,
+)
+
+class PricingValueForm(forms.ModelForm):
+    class Meta:
+        model = PricingValue
+        fields = 'value',
+        widgets = {
+            'value': forms.TextInput(
+                attrs={
+                    'class': 'span12',
+                    'placeholder': 'Value',
+                }
+            ),
+        }
+
+PricingValueFormSet = forms.models.modelformset_factory(
+    PricingValue,
+    form=PricingValueForm,
+    extra=0,
+)

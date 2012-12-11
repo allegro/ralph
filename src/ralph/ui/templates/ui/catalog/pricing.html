@@ -2,6 +2,7 @@
 
 {% load url from future %}
 {% load icons %}
+{% load formats %}
 {% load bob %}
 
 
@@ -9,40 +10,119 @@
 </div>
 <div class="row-fluid">
     <div class="span12">
-        <form class="form form-inline">
-            <div class="form-actions">
-                <div class="btn-group years" data-toggle="buttons-radio">
-                    {% for y in years %}
-                    <a
-                        href="/ui/catalog/pricing/{{ y|stringformat:'04d' }}-{{ month|stringformat:'02d' }}/{{ group }}"
-                        class="btn
-                            {% if year == y %}active{% endif %}
-                            {% if today.year == y %}btn-success{% endif %}
-                        "
-                    >{{ y }}</a>
-                    {% endfor %}
-                </div>
-                <div class="btn-group months" data-toggle="buttons-radio">
-                    {% for i, m in months %}
-                    <a
-                        href="/ui/catalog/pricing/{{ year|stringformat:'04d' }}-{{ i|stringformat:'02d' }}/{{ group }}"
-                        class="btn
-                            {% if month == i %} active{% endif %}
-                            {% if today.month == i %}btn-success{% endif %}
-                        "
-                    >{{ m }}</a>
-                    {% endfor %}
-                </div>
+        <div class="form form-inline form-actions">
+            <div class="btn-group years" data-toggle="buttons-radio">
+                {% for y in years %}
+                <a
+                    href="/ui/catalog/pricing/{{ y|stringformat:'04d' }}-{{ month|stringformat:'02d' }}/{{ group }}"
+                    class="btn
+                        {% if year == y %}active{% endif %}
+                        {% if today.year == y %}btn-success{% endif %}
+                    "
+                >{{ y }}</a>
+                {% endfor %}
             </div>
-        </form>
+            <div class="btn-group months" data-toggle="buttons-radio">
+                {% for i, m in months %}
+                <a
+                    href="/ui/catalog/pricing/{{ year|stringformat:'04d' }}-{{ i|stringformat:'02d' }}/{{ group }}"
+                    class="btn
+                        {% if month == i %} active{% endif %}
+                        {% if today.month == i %}btn-success{% endif %}
+                    "
+                >{{ m }}</a>
+                {% endfor %}
+            </div>
+        </div>
     </div>
 </div>
 <div class="row-fluid">
     <div class="span10">
-        {% form_horizontal form "" fugue_icons=1 %}
+        {% if form %}
+            {% form_horizontal form "" fugue_icons=1 %}
+        {% endif %}
+        {% if variablesformset %}
+        <form class="form form-inline" method="POST">
+            {% csrf_token %}
+            {{ variablesformset.management_form }}
+            <table class="table table-bordered table-condensed">
+                <tr>
+                    <td>
+                    {% for f in deviceform %}
+                        {{ f }}
+                        {% for error in f.errors %}
+                        <div class="help-block">{{ error }}</div>
+                        {% endfor %}
+                    {% endfor %}
+                    </td>
+                    {% for form in variablesformset %}
+                    <th width="10%">
+                        {% for f in form %}
+                        <div class="control-group {% if f.errors %}error{% endif %}">
+                        {% if 'DELETE' in f.name %}
+                            <label class="checkbox inline">
+                                <div style="display:inline-block; vertical-align:bottom">{{ f }}</div>&nbsp;Delete
+                            </label>
+                        {% else %}
+                            {{ f }}
+                        {% endif %}
+                        {%   for error in f.errors %}
+                            <div class="help-block">{{ error }}</div>
+                        {%   endfor %}
+                        {% endfor %}
+                        </div>
+                    </th>
+                    {% endfor %}
+                </tr>
+                {% for device in devices %}
+                <tr>
+                    <td>
+                        {{ device|device_icon }}&nbsp;{{ device.name }}
+                        <div><small>{{ device.role }}/{{ device.venture_role }}</small></div>
+                        {{ device.formset.management_form }}
+                    </td>
+                    {% for form in  device.formset %}
+                    <td>
+                        {% for f in form %}
+                        <div class="control-group {% if f.errors %}error{% endif %}">
+                        {{ f }}
+                        {%   for error in f.errors %}
+                        <div class="help-block">{{ error }}</div>
+                        {%   endfor %}
+                        {% endfor %}
+                        </div>
+                    </td>
+                    {% endfor %}
+                    <td>
+                        <label class="checkbox inline">
+                            <div style="display:inline-block; vertical-align:bottom"><input type="checkbox" name="device-delete-{{ device.id }}"></div>&nbsp;Delete
+                        </label>
+                    </td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <th>Total</th>
+                    {% for form in variablesformset %}
+                    <td class="currency">
+                        {% if form.instance.id %}
+                            {{ form.instance.get_value }}
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+            </table>
+            <div class="form-actions">
+                {% spaceless %}
+                <button class="btn btn-primary pull-right" name="values-save">
+                    {% icon 'fugue-tick' %}&nbsp;Save
+                </button>
+                {% endspaceless %}
+            </div>
+        </form>
+        {% endif %}
     </div>
     <div class="span2 group-tabs">
-        {% tab_menu group_items group side='right' %}
+        {% tab_menu group_items group_name side='right' %}
     </div>
 {% endblock %}
 
