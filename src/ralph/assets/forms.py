@@ -90,7 +90,7 @@ class BaseDeviceForm(ModelForm):
     class Meta:
         model = DeviceInfo
         fields = (
-            'size', 'warehouse',
+            'size', 'warehouse'
         )
     warehouse = AutoCompleteSelectField(
         'asset_warehouse', required=True,
@@ -133,6 +133,7 @@ class BasePartForm(ModelForm):
             self.fields['device'].initial = self.instance.device.id
 
 
+
 def _validate_multivalue_data(data):
     error_msg = _("Field can't be empty. Please put the items separated "
                   "by new line or comma.")
@@ -144,7 +145,7 @@ def _validate_multivalue_data(data):
         item = item.strip()
         if item in items:
             raise ValidationError(
-                _("There is duplicate serial numbers in field.")
+                _("There are duplicate serial numbers in field.")
             )
         elif ' ' in item:
             raise ValidationError(

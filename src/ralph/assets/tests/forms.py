@@ -52,7 +52,7 @@ def create_asset(**kwargs):
 
 
 class TestForms(TestCase):
-    """ This class testing adding, editing, deleting single asset
+    """ This class tests adds, edits, deletes single asset
 
     Scenario:
     1. Add something via form
@@ -92,7 +92,7 @@ class TestForms(TestCase):
         )
 
     def test_models(self):
-        """ Hire we testing, whether setUp add to database correct data."""
+        """ here we tests, whether setUp add to database correct data."""
         db_manufacturer = AssetManufacturer.objects.get(name='Menufac')
         self.assertEquals(db_manufacturer.name, 'Menufac')
         db_model = AssetModel.objects.get(name='AsModel')
@@ -103,7 +103,7 @@ class TestForms(TestCase):
         self.assertEquals(db_asset1.sn, 'sn-123')
 
     def test_view(self):
-        """ Here we testing whether correct data is displayed in table """
+        """ Here we tests whether correct data is displayed in table """
         url = '/assets/dc/search'
         view = self.client.get(url, follow=True)
         self.assertEqual(view.status_code, 200)
@@ -142,7 +142,7 @@ class TestForms(TestCase):
         }
         response = self.client.post(url, prepare_post_data, follow=True)
 
-        # When everything was ok, server return response code = 302, and
+        # If everything is ok, server returns response code = 302, and
         # redirect us to /assets/dc/search given response code 200
         self.assertRedirects(
             response, '/assets/dc/edit/device/2/',
@@ -168,7 +168,7 @@ class TestForms(TestCase):
         """
 
     def test_edit_form(self):
-        """ Next change added data """
+        # Next change added data
         # Download old data
         view = self.client.get('/assets/dc/edit/device/1/')
         self.assertEqual(view.status_code, 200)
@@ -205,7 +205,7 @@ class TestForms(TestCase):
         }
         post = self.client.post(url, post_data, follow=True)
 
-        # When everything was ok, server return response code = 302, and
+        # if everything is ok, server return response code = 302, and
         # redirect us to /assets/dc/search given response code 200
         self.assertRedirects(
             post,
@@ -279,12 +279,13 @@ class TestMultivalueFields(TestCase):
 
     def test_add_form_testing_sn_and_barcode(self):
         """
-        Hire we testing multivalue fields
+        here we tests multivalue fields
+
         Scenario:
-        1. add many SNs and barcodes in difrent forms
-        2. verify that form add empty sn
+        1. add many SNs and barcodes in different forms
+        2. verifyt that the form adds empty serial number
         3. relationship between SNs and barcodes
-        4, verity names with white characters (SNs, barcode)
+        4. verity names with white characters (SNs, barcode)
         """
         test_data = [
             dict(
@@ -297,7 +298,7 @@ class TestMultivalueFields(TestCase):
                 status=AssetStatus.new,
                 sn='sn1_1, sn2_1, sn1_1',
                 remarks='asset1',
-                size=1
+                size=1,
             ),
             dict(
                 type=AssetType.data_center,
@@ -309,7 +310,7 @@ class TestMultivalueFields(TestCase):
                 status=AssetStatus.new,
                 sn='sn1_2, , , sn2_2',
                 remarks='asset2',
-                size=1
+                size=1,
             ),
             dict(
                 type=AssetType.data_center,
@@ -321,7 +322,7 @@ class TestMultivalueFields(TestCase):
                 status=AssetStatus.new,
                 sn='sn1_3, ,, sn2_3',
                 remarks='asset3',
-                size=1
+                size=1,
             ),
             dict(
                 type=AssetType.data_center,
@@ -333,7 +334,7 @@ class TestMultivalueFields(TestCase):
                 status=AssetStatus.new,
                 sn='sn1_4, ns2_4 \n sn3_4',
                 remarks='asset4',
-                size=1
+                size=1,
             ),
             dict(
                 type=AssetType.data_center,
@@ -345,7 +346,7 @@ class TestMultivalueFields(TestCase):
                 status=AssetStatus.new,
                 sn='name with white spaces, 0000-0000-0000-0000',
                 remarks='asset5',
-                size=1
+                size=1,
             ),
             dict(
                 type=AssetType.data_center,
@@ -358,7 +359,7 @@ class TestMultivalueFields(TestCase):
                 sn='',
                 barcode='any',
                 remarks='asset6',
-                size=1
+                size=1,
             ),
             dict(
                 type=AssetType.data_center,
@@ -371,7 +372,7 @@ class TestMultivalueFields(TestCase):
                 sn='serialnumber1',
                 barcode='any1, any2',
                 remarks='asset7',
-                size=1
+                size=1,
             ),
             dict(
                 type=AssetType.data_center,
@@ -384,7 +385,7 @@ class TestMultivalueFields(TestCase):
                 sn='serialnumber2, serialnumber3',
                 barcode='any3',
                 remarks='asset8',
-                size=1
+                size=1,
             ),
             dict(
                 type=AssetType.data_center,
@@ -397,7 +398,7 @@ class TestMultivalueFields(TestCase):
                 sn='serialnumber4, serialnumber5',
                 barcode='any4, any 5',
                 remarks='asset9',
-                size=1
+                size=1,
             ),
             dict(
                 type=AssetType.data_center,
@@ -410,7 +411,7 @@ class TestMultivalueFields(TestCase):
                 sn='serialnumber6, serialnumber7, serialnumber8',
                 barcode='any6 , , any 7',
                 remarks='asset10',
-                size=1
+                size=1,
             ),
             dict(
                 type=AssetType.data_center,
@@ -423,7 +424,7 @@ class TestMultivalueFields(TestCase):
                 sn='serialnumber9, serialnumber10, serialnumber11',
                 barcode='any8 , \n, any9',
                 remarks='asset11',
-                size=1
+                size=1,
             ),
             dict(
                 type=AssetType.data_center,
@@ -436,7 +437,7 @@ class TestMultivalueFields(TestCase):
                 sn='serialnumber12',
                 barcode='dup1',
                 remarks='asset12',
-                size=1
+                size=1,
             ),
         ]
         for test in test_data:
@@ -446,7 +447,7 @@ class TestMultivalueFields(TestCase):
                 self.assertEqual(post.status_code, 200)
                 self.assertFormError(
                     post, 'asset_form', 'sn',
-                    'There is duplicate serial numbers in field.'
+                    'There are duplicate serial numbers in field.'
                 )
             elif test['remarks'] is 'asset2':
                 self.assertEqual(post.status_code, 302)
@@ -517,7 +518,7 @@ class TestMultivalueFields(TestCase):
 
 
 class TestBulkEdit(TestCase):
-    """ This class testing forms for may actions
+    """ This class tests forms for may actions
 
     Scenario:
     1. Add 2 assets and compare with old data
@@ -538,7 +539,7 @@ class TestBulkEdit(TestCase):
             provider='Provider 1',
             status=AssetStatus.new,
             sn='sn-123',
-            barcode='bc-1234'
+            barcode='bc-1234',
         )
 
         self.asset2 = create_asset(
@@ -554,11 +555,11 @@ class TestBulkEdit(TestCase):
             provider='Provider 2',
             status=AssetStatus.new,
             sn='sn-1232',
-            barcode='bc-12342'
+            barcode='bc-12342',
         )
 
     def test_bulkedit_form(self):
-        """ This class testing Bulk edit form """
+        """ This class tests Bulk edit form """
         # Download base data
         url = '/assets/dc/bulkedit/?select=%s&select=%s' % (
             self.asset.id, self.asset2.id)
@@ -603,7 +604,7 @@ class TestBulkEdit(TestCase):
         }
         post = self.client.post(url, post_data, follow=True)
 
-        # When everything was ok, server return response code = 302, and
+        # if everything is ok, server return response code = 302, and
         # redirect as to /assets/dc/search given response code 200
         self.assertRedirects(
             post, url, status_code=302, target_status_code=200,
@@ -624,7 +625,7 @@ class TestBulkEdit(TestCase):
                 provider='Provider 1a',
                 status=AssetStatus.in_progress.id,
                 sn='sn-321-2012a',
-                barcode='bc-4321-2012a'
+                barcode='bc-4321-2012a',
             ),
             dict(
                 model=unicode(model1),
@@ -636,7 +637,7 @@ class TestBulkEdit(TestCase):
                 provider='Provider 2a',
                 status=AssetStatus.waiting_for_release.id,
                 sn='sn-321-2012b',
-                barcode='bc-4321-2012b'
+                barcode='bc-4321-2012b',
             )
         ]
         counter = 0
@@ -649,10 +650,10 @@ class TestBulkEdit(TestCase):
 
 
 class TestSearchForm(TestCase):
-    """ This class testing search form
+    """ This class tests search form
 
     Scenario:
-    1. Testing all fields
+    1. Tests all fields
     2. Insert incorrect data
     """
     def setUp(self):
@@ -672,7 +673,7 @@ class TestSearchForm(TestCase):
             provider='Provider 1',
             status=AssetStatus.new,
             sn='sn-12332452345',
-            barcode='bc-123421141'
+            barcode='bc-123421141',
         )
 
         self.asset1 = create_asset(
@@ -688,7 +689,7 @@ class TestSearchForm(TestCase):
             provider='Provider 2',
             status=AssetStatus.in_service,
             sn='sn-123123123',
-            barcode='bc-1234123123'
+            barcode='bc-1234123123',
         )
 
         self.asset2 = create_asset(
@@ -704,11 +705,11 @@ class TestSearchForm(TestCase):
             provider='Provider 3',
             status=AssetStatus.used,
             sn='sn-12323542345',
-            barcode='bc-12341234124'
+            barcode='bc-12341234124',
         )
 
     def test_model_field(self):
-        """ Testing base asset fields """
+        """ Tests base asset fields """
         url = '/assets/dc/search?model=%s' % self.asset.model.name
         get = self.client.get(url)
         self.assertEqual(get.status_code, 200)
@@ -790,7 +791,7 @@ class TestSearchForm(TestCase):
         self.assertEqual(unicode(res[0]), output)
 
     def test_date_range_fields(self):
-        # Hire is testing data range of invoice field
+        # here is tests data range of invoice field
         # beggining date should be equal than end date
         url = '/assets/dc/search?invoice_date_from=%s&invoice_date_to=%s' % (
             '2001-01-01', '2001-01-01')
@@ -860,7 +861,7 @@ class TestValidations(TestCase):
             ('asset_form', 'support_period'),
             ('asset_form', 'support_type'),
             ('device_info_form', 'warehouse'),
-            ('asset_form', 'sn')
+            ('asset_form', 'sn'),
         ]
 
         self.asset = create_asset(
@@ -876,7 +877,7 @@ class TestValidations(TestCase):
             provider='Provider 1',
             status=AssetStatus.new,
             sn='sn-123',
-            barcode='bc-1234'
+            barcode='bc-1234',
         )
 
         self.asset2 = create_asset(
@@ -892,7 +893,7 @@ class TestValidations(TestCase):
             provider='Provider 2',
             status=AssetStatus.new,
             sn='sn-1232',
-            barcode='bc-12342'
+            barcode='bc-12342',
         )
 
     def test_try_send_empty_add_form(self):
@@ -1061,7 +1062,7 @@ class TestValidations(TestCase):
         post_data = {
             'support_period': 'string',
             'size': 'string',
-            'invoice_date': 'string'
+            'invoice_date': 'string',
         }
         post = self.client.post(url, post_data)
         self.assertEqual(post.status_code, 200)
