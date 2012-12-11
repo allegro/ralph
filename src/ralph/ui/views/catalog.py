@@ -557,6 +557,7 @@ class CatalogPricingGroup(CatalogPricing):
         date = datetime.date(self.year, self.month, 1)
         group = get_object_or_404(PricingGroup, name=self.group_name, date=date)
         self.formulas_formset = PricingFormulaFormSet(
+            group,
             self.request.POST,
             queryset=group.pricingformula_set.all(),
             prefix='formulas',
@@ -647,6 +648,7 @@ class CatalogPricingGroup(CatalogPricing):
                 self.devices = self.get_devices(group, variables)
             if self.formulas_formset is None:
                 self.formulas_formset = PricingFormulaFormSet(
+                    group,
                     queryset=group.pricingformula_set.all(),
                     prefix='formulas',
                 )

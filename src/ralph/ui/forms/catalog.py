@@ -191,16 +191,28 @@ class PricingFormulaForm(forms.ModelForm):
         variables = {
             'size': 1,
         }
+        for variable in self.group.pricingvariable_set.all():
+            variables[variable.name] = 1
         try:
             PricingFormula.eval_formula(formula, variables)
         except Exception as e:
             raise forms.ValidationError(e)
         return formula
 
+class PricingFormulaFormSetBase(forms.models.BaseModelFormSet):
+    def __init__(self, group, *args, **kwargs):
+        self.group = group
+        super(PricingFormulaFormSetBase, self).__init__(*args, **kwargs)
+
+    def add_fields(self, form, index):
+        form.group = self.group
+        return super(PricingFormulaFormSetBase, self).add_fields(form, index)
+
 
 PricingFormulaFormSet = forms.models.modelformset_factory(
     PricingFormula,
     form=PricingFormulaForm,
+    formset=PricingFormulaFormSetBase,
     can_delete=True,
 )
 
