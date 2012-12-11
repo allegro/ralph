@@ -31,6 +31,8 @@ def uncompress_base64_data(data):
     Return `data` decompressed with zlib. If `data` is valid Base64, decode it
     before decompression. If decompression fails, return raw data.
     """
+    if not data:
+        return data
     if BASE64_ALPHABET.match(data):
         try:
             data = base64.b64decode(data)

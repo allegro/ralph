@@ -76,15 +76,15 @@ data = {'--- !ruby/sym _timestamp': '2012-10-11 15:36:38',
 'uptime_seconds': '5348942',
 'virtual': 'kvm',
 'writecache': 'disabled',
-'packages': 'eJyNz00OAiEMBeCrcADaQCn+3WasxDFBBhkwmdtLIi5NJm/X9y36pjzJHEgR9hDYdm2pNquf2/qKIPERUlUePdIJzLc0aAkNIw20hvIOZRcCj7wPylJC1/6vzludl9T/PqL7taTvIoovjId+HFu8ltKhQ5OjBUvDsl7DTTE6tHDWHxC2TmU=',
+'packages': 'eJyNz0sOAiEMBuCrsB9oaAEfc5sRG8cEmZGHyWw8uyTiysSY7tovbf9pnfzMJAhakcJ6qrFUlLct34Py4cqxCAcO6PDU76EGJNAWqKPM6cGpI/UTKQf2r23KL4mbdl0PX3rdyrzE9vcezOcoyYv3wo4Wdq3ZszjpU4MG9BpwQOrWysxnYcEAqqN8AYJQTwM=',
 'package_manager': 'rpm',
 }
 
 data_second = {
-'packages': 'eJyNzlsKAjEMheGtdAFNaDKtqLsZY3CE2tZehNm9guOrzPP5DvxzmWVRNoSMzEDjMlIfZB9re0aQeNfUTcCAfAT3HR0So/PIG2paX1p3IfigfVBy1b+6rH3Jyd5EjD97POD0iw9Wak5mQlciAfF29bbp1XgkJDjZN5x1Shk=',
+'packages': 'eJyNztEKAiEQheFX8T4dnFmN6m22aWgDU9M12Jt99oIMgiC6Pt+Bf8wjT0IKgYDIYDu2ODfU16XeguFwkTgrDx5ot9rXaAEJrAPqqEq5S+nI/ETmif6DnIp86M2Xzss8pajPzModHGxheMd7zSVFNYDNAVekfnW6ykk5QECz1w/kSEq5',
 'package_manager': 'dpkg',
 }
 data_not_encoded = {
-    'packages': 'x\x9c\x8d\xce[\n\x021\x0c\x85\xe1\xadt\x01Mh2\xad\xa8\xbb\x19cp\x84\xda\xd6^\x84\xd9\xbd\x82\xe3\xab\xcc\xf3\xf9\x0e\xfcs\x99eQ6\x84\x8c\xcc@\xe32R\x1fd\x1fk{F\x90x\xd7\xd4M\xc0\x80|\x04\xf7\x1d\x1d\x12\xa3\xf3\xc8\x1bjZ_Zw!\xf8\xa0}Pr\xd5\xbf\xba\xac}\xc9\xc9\xdeD\x8c?{<\xe0\xf4\x8b\x0fVjNfBW"\x01\xf1v\xf5\xb6\xe9\xd5x$$8\xd97\x9cuJ\x19',
+    'packages': 'x\x9c}\xce\xc1\n\xc20\x10\x04\xd0_\xc9\xddd\xc9n\x13Q\xff\xa6\xae\x8b\x15b\x12\xd3D\xe8\xa5\xdf\xae`\x04A\xe8y\xde\x0c3\xe6\x91\'!\x85@@d\xb0\x9d[\xac\r\xf5}\x99\x1f\xc1p\xb8I\xac\xca\x83\x07:\xec\xec\'\xb4\x80\x04\xd6\x01u4KyJ\xe9\xc8l"\xf3F\x1d\xae\xdb\x90S\x91\x1f\xfd?\x9b\x97:\xa5\xa8\xaf\xcc\xca\x9d\x1c\xeca\xf8\x9e\xf7\x9aK\x8aj\x00\x9b\x03\x1a\xa4^uz\x96\x8br\x80\x80\xebQ\xbf\x00\xc3\xfdJ\xb9',
     'package_manager': 'dpkg',
 }
