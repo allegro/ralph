@@ -256,7 +256,7 @@ class AddDeviceForm(BaseAddAssetForm):
                 barcode = barcode.strip()
                 if barcode in barcodes:
                     raise ValidationError(
-                        _("There is duplicate barcodes in field.")
+                        _("There are duplicate barcodes in field.")
                     )
                 elif ' ' in barcode:
                     raise ValidationError(
