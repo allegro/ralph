@@ -111,19 +111,62 @@ class BackOfficeMixin(AssetsMixin):
 
 
 class AssetSearch(AssetsMixin, PaginationMixin):
-    """The main-screen search form for all type of assets."""
+    """The main-screen search form for all type of assets.
+    :param columns_exportable - list columns exportable to cvs files,
+            {
+                'name': 'name_column',  # required
+                'field': 'name_field',  # required
+                'nested_field_name': 'office_info/device_info',  # optional
+                'choice': True,  # optional
+            },
+    """
     ROWS_PER_PAGE = 15
-    columns = {
-        'name': ('name',),
-        'sn': ('sn',),
-        'barcode': ('barcode',),
-        'model': ('model',),
-        'invoice_no': ('invoice_no',),
-        'order_no': ('order_no',),
-        'buy_date': ('buy_date',),
-        'status': ('status',),
-        'warehouse': ('device_info__warehouse',),
+    columns_sortable = {
+        'name': 'name',
+        'sn': 'sn',
+        'barcode': 'barcode',
+        'model': 'model',
+        'invoice_no': 'invoice_no',
+        'order_no': 'order_no',
+        'buy_date': 'buy_date',
+        'status': 'status',
+        'warehouse': 'device_info__warehouse',
     }
+    columns_exportable = [
+        {'name': 'barcode', 'field': 'barcode'},
+        {'name': 'barcode_salvaged', 'field': 'barcode_salvaged',
+         'nested_field_name': 'part_info'},
+        {'name': 'source_device', 'field': 'source_device',
+         'nested_field_name': 'part_info'},
+        {'name': 'device', 'field': 'device',
+         'nested_field_name': 'part_info'},
+        {'name': 'buy_date', 'field': 'buy_date'},
+        {'name': 'invoice_no', 'field': 'invoice_no'},
+        {'name': 'model', 'field': 'model'},
+        {'name': 'order_no', 'field': 'order_no'},
+        {'name': 'provider', 'field': 'provider'},
+        {'name': 'remarks', 'field': 'remarks'},
+        {'name': 'sn', 'field': 'sn'},
+        {'name': 'source', 'field': 'source', 'choice': True},
+        {'name': 'status', 'field': 'status', 'choice': True},
+        {'name': 'support_peroid', 'field': 'support_peroid'},
+        {'name': 'support_type', 'field': 'support_type'},
+        {'name': 'support_void_reporting', 'field': 'support_void_reporting'},
+        {'name': 'type', 'field': 'type', 'choice': True},
+    ]
+    table_header = [
+        {'label': 'Dropdown', 'dropdown':True, },
+        {'label': 'Type', },
+        {'name': 'sn', 'label': 'SN', },
+        {'name': 'barcode', 'label': 'Barcode', },
+        {'name': 'model', 'label': 'Model', },
+        {'name': 'invoice_no', 'label': 'Invoice no.', },
+        {'name': 'order_no', 'label': 'Order no.', },
+        {'name': 'buy_date', 'label': 'Buy date', 'type': 'date', },
+        {'name': 'status', 'label': 'Status', },
+        {'name': 'warehouse', 'label': 'Warehouse', },
+        {'label': 'Actions', }
+    ]
 
     def handle_search_data(self):
         search_fields = [
@@ -147,7 +190,45 @@ class AssetSearch(AssetsMixin, PaginationMixin):
             all_q &= Q(buy_date__gte=buy_date_from)
         if buy_date_to:
             all_q &= Q(buy_date__lte=buy_date_to)
-        self.paginate_query(self.get_all_items(all_q), self.columns)
+        self.paginate_query(self.get_all_items(all_q), self.columns_sortable)
+
+    def get_csv_header(self):
+        return ['type'] + [col['name'] for col in self.columns_exportable]
+
+    def get_choice_name(self, obj, field):
+        if obj:
+            try:
+                return getattr(obj, 'get_' + field + '_display')()
+            except AttributeError:
+                pass
+        return ''
+
+    def get_cell(self, obj, field, choice):
+        if choice:
+            cell = self.get_choice_name(obj, field)
+        else:
+            try:
+                cell = getattr(obj, field)
+            except AttributeError:
+                cell = ''
+        return cell
+
+    def get_csv_rows(self, queryset, type):
+        data = [self.get_csv_header()]
+        for asset in queryset:
+            row = ['part', ] if asset.part_info else ['device', ]
+            for item in self.columns_exportable:
+                field = item['field']
+                choice = item.get('choice')
+                if item.get('nested_field_name') == type:
+                    cell = self.get_cell(getattr(asset, type), field, choice)
+                elif item.get('nested_field_name') == 'part_info':
+                    cell = self.get_cell(asset.part_info, field, choice)
+                else:
+                    cell = self.get_cell(asset, field, choice)
+                row.append(unicode(cell) if cell else '')
+            data.append(row)
+        return data
 
     def get_all_items(self, q_object):
         return Asset.objects.filter(q_object).order_by('id')
@@ -160,26 +241,11 @@ class AssetSearch(AssetsMixin, PaginationMixin):
                 **kwargs
             )
         )
-
-        columns_header = [
-            {'label': 'Dropdown', 'dropdown':True, },
-            {'label': 'Type', },
-            {'name': 'sn', 'label': 'SN', },
-            {'name': 'barcode', 'label': 'Barcode', },
-            {'name': 'model', 'label': 'Model', },
-            {'name': 'invoice_no', 'label': 'Invoice no.', },
-            {'name': 'order_no', 'label': 'Order no.', },
-            {'name': 'buy_date', 'label': 'Buy date', 'type': 'date', },
-            {'name': 'status', 'label': 'Status', },
-            {'name': 'warehouse', 'label': 'Warehouse', },
-            {'label': 'Actions', }
-        ]
-
         ret.update({
             'form': self.form,
             'header': self.header,
             'sort': self.sort,
-            'columns': columns_header,
+            'columns': self.table_header,
         })
         return ret
 
@@ -188,6 +254,10 @@ class AssetSearch(AssetsMixin, PaginationMixin):
             self.request.GET, mode=_get_mode(self.request)
         )
         self.handle_search_data()
+        export = self.request.GET.get('export')
+        if export == 'csv':
+            return super(AssetSearch, self).get_context_data_paginator(
+                **kwargs)
         return super(AssetSearch, self).get(*args, **kwargs)
 
 
@@ -195,6 +265,51 @@ class BackOfficeSearch(BackOfficeMixin, AssetSearch):
     header = 'Search BO Assets'
     sidebar_selected = 'search'
     template_name = 'assets/search_asset.html'
+    columns_exportable_nested = [
+        {
+            'name': 'date_of_last_inventory',
+            'field': 'date_of_last_inventory',
+            'nested_field_name': 'office_info',
+        },
+        {
+            'name': 'last_logged_user',
+            'field': 'versilast_logged_useron',
+            'nested_field_name': 'office_info',
+        },
+        {
+            'name': 'license_key',
+            'field': 'license_key',
+            'nested_field_name': 'office_info',
+        },
+        {
+            'name': 'license_type',
+            'field': 'license_type',
+            'nested_field_name': 'office_info',
+            'choice': True,
+        },
+        {
+            'name': 'unit_price',
+            'field': 'unit_price',
+            'nested_field_name': 'office_info',
+        },
+        {
+            'name': 'version',
+            'field': 'version',
+            'nested_field_name': 'office_info',
+        },
+    ]
+
+    def __init__(self, *args, **kwargs):
+        super(BackOfficeSearch, self).__init__(*args, **kwargs)
+        self.columns_exportable = (
+            self.columns_exportable + self.columns_exportable_nested
+        )
+
+    def get_csv_data(self, queryset):
+        data = super(BackOfficeSearch, self).get_csv_rows(
+            queryset, 'office_info'
+        )
+        return data
 
     def get_all_items(self, query):
         return Asset.objects_bo().filter(query)
@@ -204,6 +319,35 @@ class DataCenterSearch(DataCenterMixin, AssetSearch):
     header = 'Search DC Assets'
     sidebar_selected = 'search'
     template_name = 'assets/search_asset.html'
+    columns_exportable_nested = [
+        {
+            'name': 'ralph_device',
+            'field': 'ralph_device',
+            'nested_field_name': 'device_info',
+        },
+        {
+            'name': 'size',
+            'field': 'size',
+            'nested_field_name': 'device_info',
+        },
+        {
+            'name': 'warehouse',
+            'field': 'warehouse',
+            'nested_field_name': 'device_info',
+        },
+    ]
+
+    def __init__(self, *args, **kwargs):
+        super(DataCenterSearch, self).__init__(*args, **kwargs)
+        self.columns_exportable = (
+            self.columns_exportable + self.columns_exportable_nested
+        )
+
+    def get_csv_data(self, queryset):
+        data = super(DataCenterSearch, self).get_csv_rows(
+            queryset, 'device_info'
+        )
+        return data
 
     def get_all_items(self, query):
         return Asset.objects_dc().filter(query)

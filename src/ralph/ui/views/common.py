@@ -5,13 +5,18 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import datetime
+import cStringIO as StringIO
 
 from django.conf import settings
 from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import models as db
-from django.http import HttpResponseRedirect, HttpResponseForbidden
+from django.http import (
+    HttpResponse,
+    HttpResponseRedirect,
+    HttpResponseForbidden,
+)
 from django.utils import simplejson as json
 from django.views.generic import UpdateView, DetailView, TemplateView
 
@@ -40,7 +45,7 @@ from ralph.discovery.models_history import (
     ALWAYS_DATE,
     DiscoveryWarning,
 )
-from ralph.util import presentation, pricing
+from ralph.util import presentation, pricing, csvutil
 from ralph.ui.forms import (
     DeviceInfoForm,
     DeviceInfoVerifiedForm,
@@ -1002,16 +1007,19 @@ class PaginationMixin(object):
 
     def get_context_data_paginator(self, **kwargs):
         """Returns paginator data dict, crafted for usage in template."""
+        if self.export_requested():
+            return self.page_contents
         return {
             'page': self.page_contents,
             'pages': self.get_pages(self.paginator, self.page_number),
         }
 
-    def paginate_query(self, queryset, columns=None):
+    def paginate_query(self, queryset, columns_sortable=None):
         """Paginate given query."""
-        queryset = self.sort_queryset(queryset, columns=columns)
-        if self.exporting_csv_file:
-            return queryset
+        queryset = self.sort_queryset(queryset, columns=columns_sortable)
+        if self.export_requested():
+            self.page_contents = self.handle_csv_export(queryset)
+            return self.page_contents
         else:
             self.paginate(queryset)
             return self.page_contents
@@ -1019,12 +1027,13 @@ class PaginationMixin(object):
     def sort_queryset(self, queryset, columns, sort=None):
         if columns:
             if sort is None:
-                sort = self.request.GET.get('sort', '')
-            sort_columns = columns.get(sort.strip('-'), ())
-            if sort.startswith('-'):
-                sort_columns = ['-' + col for col in sort_columns]
-            if queryset and sort:
-                queryset = queryset.order_by(*sort_columns)
+                sort = self.request.GET.get('sort')
+            if sort:
+                sort_columns = columns.get(sort.strip('-'))
+                if sort.startswith('-'):
+                    sort_columns = '-' + sort_columns
+                if queryset and sort:
+                    queryset = queryset.order_by(sort_columns)
         self.sort = sort
         return queryset
 
@@ -1049,13 +1058,18 @@ class PaginationMixin(object):
         export = self.request.GET.get('export')
         return export == 'csv'
 
-    def handle_csv_export(self):
+    def handle_csv_export(self, queryset):
         """Returns HTTPResponse with cvs stream data"""
-        return self.do_csv_export()
+        return self.do_csv_export(queryset)
 
-    def do_csv_export(self):
+    def get_csv_data(self, queryset):
+        """Should returns generic rows.
+         Override this method in inherited class"""
+        pass
+
+    def do_csv_export(self, queryset):
         f = StringIO.StringIO()
-        data = self.get_csv_data()  # get_csv_data should returns generic rows
+        data = self.get_csv_data(queryset)
         csvutil.UnicodeWriter(f).writerows(data)
         response = HttpResponse(f.getvalue(), content_type="application/csv")
         response['Content-Disposition'] = 'attachment; filename=ralph.csv'
