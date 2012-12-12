@@ -6,10 +6,12 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import re
+
 from django import forms
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
-
+import ipaddr
 from lck.django.common.admin import (
     ModelAdmin, ForeignKeyAutocompleteTabularInline
 )
@@ -18,6 +20,31 @@ from ralph.discovery import models as m
 from ralph.business.admin import RolePropertyValueInline
 
 SAVE_PRIORITY = 200
+
+
+class NetworkAdminForm(forms.ModelForm):
+    class Meta:
+        model = m.Network
+
+    def clean_address(self):
+        address = self.cleaned_data['address'].strip()
+        if not re.search(r'/[0-9]{1,2}$', address):
+            raise forms.ValidationError(_("It's not a valid network address."))
+        try:
+            net = ipaddr.IPNetwork(address)
+        except ValueError:
+            raise forms.ValidationError(_("It's not a valid network address."))
+        min_ip = int(net.network)
+        max_ip = int(net.broadcast)
+        collisions = m.Network.objects.filter(
+            max_ip__gte=min_ip, min_ip__lte=max_ip
+        )
+        if collisions:
+            msg = "Colliding networks: %s" % (
+                ", ".join([network.name for network in collisions])
+            )
+            raise forms.ValidationError(msg)
+        return address
 
 
 class NetworkAdmin(ModelAdmin):
@@ -32,6 +59,7 @@ class NetworkAdmin(ModelAdmin):
     search_fields = ('name', 'address', 'vlan')
     filter_horizontal = ('terminators',)
     save_on_top = True
+    form = NetworkAdminForm
 
 admin.site.register(m.Network, NetworkAdmin)
 
