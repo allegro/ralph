@@ -184,12 +184,12 @@ class AssetSearch(AssetsMixin, PaginationMixin):
                     q = Q(**{field: field_value})
                     all_q = all_q & q
         # now fields within ranges.
-        invoice_date_from = self.request.GET.get('buy_date_from')
-        invoice_date_to = self.request.GET.get('buy_date_to')
+        invoice_date_from = self.request.GET.get('invoice_date_from')
+        invoice_date_to = self.request.GET.get('invoice_date_to')
         if invoice_date_from:
-            all_q &= Q(buy_date__gte=invoice_date_from)
+            all_q &= Q(invoice_date__gte=invoice_date_from)
         if invoice_date_to:
-            all_q &= Q(buy_date__lte=invoice_date_to)
+            all_q &= Q(invoice_date__lte=invoice_date_to)
         self.paginate_query(self.get_all_items(all_q), self.columns_sortable)
 
     def get_csv_header(self):
