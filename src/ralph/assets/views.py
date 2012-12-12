@@ -134,24 +134,24 @@ class AssetSearch(AssetsMixin, PaginationMixin):
     }
     columns_exportable = [
         {'name': 'barcode', 'field': 'barcode'},
-        {'name': 'barcode_salvaged', 'field': 'barcode_salvaged',
+        {'name': 'barcode salvaged', 'field': 'barcode_salvaged',
          'nested_field_name': 'part_info'},
-        {'name': 'source_device', 'field': 'source_device',
+        {'name': 'source device', 'field': 'source_device',
          'nested_field_name': 'part_info'},
         {'name': 'device', 'field': 'device',
          'nested_field_name': 'part_info'},
-        {'name': 'buy_date', 'field': 'buy_date'},
-        {'name': 'invoice_no', 'field': 'invoice_no'},
+        {'name': 'buy date', 'field': 'buy_date'},
+        {'name': 'invoice number', 'field': 'invoice_no'},
         {'name': 'model', 'field': 'model'},
-        {'name': 'order_no', 'field': 'order_no'},
+        {'name': 'order number', 'field': 'order_no'},
         {'name': 'provider', 'field': 'provider'},
         {'name': 'remarks', 'field': 'remarks'},
         {'name': 'sn', 'field': 'sn'},
         {'name': 'source', 'field': 'source', 'choice': True},
         {'name': 'status', 'field': 'status', 'choice': True},
-        {'name': 'support_peroid', 'field': 'support_peroid'},
-        {'name': 'support_type', 'field': 'support_type'},
-        {'name': 'support_void_reporting', 'field': 'support_void_reporting'},
+        {'name': 'support peroid', 'field': 'support_peroid'},
+        {'name': 'support type', 'field': 'support_type'},
+        {'name': 'support void_reporting', 'field': 'support_void_reporting'},
         {'name': 'type', 'field': 'type', 'choice': True},
     ]
     table_header = [
@@ -213,6 +213,9 @@ class AssetSearch(AssetsMixin, PaginationMixin):
                 cell = ''
         return cell
 
+    def prepare_cell_value(self, cell, field):
+        return unicode(cell) if cell else '0' if field == 'unit_price' else ''
+
     def get_csv_rows(self, queryset, type):
         data = [self.get_csv_header()]
         for asset in queryset:
@@ -220,13 +223,14 @@ class AssetSearch(AssetsMixin, PaginationMixin):
             for item in self.columns_exportable:
                 field = item['field']
                 choice = item.get('choice')
-                if item.get('nested_field_name') == type:
+                nested_field_name = item.get('nested_field_name')
+                if nested_field_name == type:
                     cell = self.get_cell(getattr(asset, type), field, choice)
-                elif item.get('nested_field_name') == 'part_info':
+                elif nested_field_name == 'part_info':
                     cell = self.get_cell(asset.part_info, field, choice)
                 else:
                     cell = self.get_cell(asset, field, choice)
-                row.append(unicode(cell) if cell else '')
+                row.append(self.prepare_cell_value(cell, field))
             data.append(row)
         return data
 
@@ -267,28 +271,28 @@ class BackOfficeSearch(BackOfficeMixin, AssetSearch):
     template_name = 'assets/search_asset.html'
     columns_exportable_nested = [
         {
-            'name': 'date_of_last_inventory',
+            'name': 'date of last inventory',
             'field': 'date_of_last_inventory',
             'nested_field_name': 'office_info',
         },
         {
-            'name': 'last_logged_user',
-            'field': 'versilast_logged_useron',
+            'name': 'last logged user',
+            'field': 'last_logged_user',
             'nested_field_name': 'office_info',
         },
         {
-            'name': 'license_key',
+            'name': 'license key',
             'field': 'license_key',
             'nested_field_name': 'office_info',
         },
         {
-            'name': 'license_type',
+            'name': 'license type',
             'field': 'license_type',
             'nested_field_name': 'office_info',
             'choice': True,
         },
         {
-            'name': 'unit_price',
+            'name': 'unit price',
             'field': 'unit_price',
             'nested_field_name': 'office_info',
         },
@@ -322,7 +326,7 @@ class DataCenterSearch(DataCenterMixin, AssetSearch):
     columns_exportable_nested = [
         {
             'name': 'ralph_device',
-            'field': 'ralph_device',
+            'field': 'ralph device',
             'nested_field_name': 'device_info',
         },
         {
