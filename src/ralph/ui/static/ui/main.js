@@ -38,6 +38,13 @@ $(document).ajaxSend(function(event, xhr, settings) {
 
 
 $(function ($) {
+    /* Some buttons may require confirmation. */
+    $('button.[data-confirm]').click(function () {
+        var confirm_dialog = $(this).attr('data-confirm');
+        $(confirm_dialog).modal('show');
+        /* The actual button should be repeated in the modal dialog. */
+        return false;
+    });
     /* Clearing the "manual field" status. */
     $('a[data-clear-field]').click(function () {
         var field_name = $(this).attr('data-clear-field');

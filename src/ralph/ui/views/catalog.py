@@ -456,6 +456,7 @@ class CatalogPricing(Catalog):
         self.year = int(self.kwargs.get('year', self.today.year))
         self.month = int(self.kwargs.get('month', self.today.month))
         self.group_name = self.kwargs.get('group', '')
+        self.date = datetime.date(self.year, self.month, 1)
 
     def get_context_data(self, **kwargs):
         ret = super(CatalogPricing, self).get_context_data(**kwargs)
@@ -509,6 +510,13 @@ class CatalogPricingNew(CatalogPricing):
             self.form.save(commit=False)
             self.form.instance.date = datetime.date(self.year, self.month, 1)
             self.form.instance.save()
+            if self.form.cleaned_data['clone']:
+                sources = PricingGroup.objects.filter(
+                    name=self.form.instance.name,
+                    date__lt=self.form.instance.date,
+                    ).order_by('-date')[:1]
+                if sources.exists():
+                    self.form.instance.clone_contents(sources[0])
             messages.success(
                 self.request,
                 "Group %s saved." % self.form.instance.name
@@ -555,12 +563,22 @@ class CatalogPricingGroup(CatalogPricing):
             return self.handle_values_form(*args, **kwargs)
         elif 'formulas-save' in self.request.POST:
             return self.handle_formulas_form(*args, **kwargs)
+        elif 'group-delete' in self.request.POST:
+            self.parse_args()
+            get_object_or_404(
+                PricingGroup,
+                name=self.group_name,
+                date=self.date,
+            ).delete()
         return self.get(*args, **kwargs)
 
     def handle_formulas_form(self, *args, **kwargs):
         self.parse_args()
-        date = datetime.date(self.year, self.month, 1)
-        group = get_object_or_404(PricingGroup, name=self.group_name, date=date)
+        group = get_object_or_404(
+            PricingGroup,
+            name=self.group_name,
+            date=self.date,
+        )
         self.formulas_formset = PricingFormulaFormSet(
             group,
             self.request.POST,
@@ -579,8 +597,11 @@ class CatalogPricingGroup(CatalogPricing):
 
     def handle_values_form(self, *args, **kwargs):
         self.parse_args()
-        date = datetime.date(self.year, self.month, 1)
-        group = get_object_or_404(PricingGroup, name=self.group_name, date=date)
+        group = get_object_or_404(
+            PricingGroup,
+            name=self.group_name,
+            date=self.date,
+        )
         self.variables_formset = PricingVariableFormSet(
             self.request.POST,
             queryset=group.pricingvariable_set.all(),
@@ -648,9 +669,11 @@ class CatalogPricingGroup(CatalogPricing):
 
     def get_context_data(self, **kwargs):
         ret = super(CatalogPricingGroup, self).get_context_data(**kwargs)
-        date = datetime.date(self.year, self.month, 1)
         try:
-            group = PricingGroup.objects.get(name=self.group_name, date=date)
+            group = PricingGroup.objects.get(
+                name=self.group_name,
+                date=self.date,
+            )
         except PricingGroup.DoesNotExist:
             group = None
         else:

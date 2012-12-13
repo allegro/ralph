@@ -102,7 +102,12 @@ class DeviceModelGroupForm(ModelGroupForm):
 class PricingGroupForm(forms.ModelForm):
     class Meta:
         model = PricingGroup
-        fields = 'name',
+        fields = ('name', 'clone')
+
+    clone = forms.BooleanField(
+        label="Clone the last group with that name",
+        required=False,
+    )
 
 
 class PricingDeviceForm(forms.Form):
