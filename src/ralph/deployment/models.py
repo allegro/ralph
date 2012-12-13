@@ -86,7 +86,8 @@ class Deployment(TimeTrackable):
     )
     status_lastchanged = models.DateTimeField(
         default=datetime.datetime.now,
-        verbose_name=_("date")
+        verbose_name=_("last status change"),
+        help_text=_("the date of the last status change"),
     )
     device = db.ForeignKey(Device)
     mac = MACAddressField()
@@ -120,18 +121,7 @@ class Deployment(TimeTrackable):
         super(Deployment, self).save(*args, **kwargs)
 
     def status_changed(self):
-        # newly created
-        if not self.id:
-            return True
-        # did not change status
-        if 'status' not in self.dirty_fields:
-            return False
-        # changed status
-        dirty_statusid = self.dirty_fields['status']
-        if not dirty_statusid or dirty_statusid == self.status:
-            return False
-        else:
-            return True
+        return not self.id or 'status' in self.dirty_fields
 
 
 class DeploymentPoll(db.Model, WithConcurrentGetOrCreate):
