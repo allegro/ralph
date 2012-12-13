@@ -54,7 +54,7 @@ class IDRACPluginTest(TestCase):
         self.assertEqual(
             result,
             {'model': 'PowerEdge R720xd',
-             'sn': 'BLSFG5J',
+             'sn': 'AMSFG5J',
              'manufacturer': 'Dell Inc.'}
         )
 
@@ -115,49 +115,49 @@ class IDRACPluginTest(TestCase):
                     'manufacturer': 'WD',
                     'model': 'WD3001BKHG',
                     'size': '299439751168',
-                    'sn': 'WXN1E32KSCNJ',
+                    'sn': 'ABC1E32KSCNJ',
                 },
                 {
                     'manufacturer': 'WD',
                     'model': 'WD3001BKHG',
                     'size': '299439751168',
-                    'sn': 'WXN1E32KTYEA',
+                    'sn': 'ABC1E32KTYEA',
                 },
                 {
                     'manufacturer': 'WD',
                     'model': 'WD3001BKHG',
                     'size': '299439751168',
-                    'sn': 'WXE1C5202177',
+                    'sn': 'ABC1C5202177',
                 },
                 {
                     'manufacturer': 'WD',
                     'model': 'WD3001BKHG',
                     'size': '299439751168',
-                    'sn': 'WXN1E32KUDHD',
+                    'sn': 'ABC1E32KUDHD',
                 },
                 {
                     'manufacturer': 'WD',
                     'model': 'WD3001BKHG',
                     'size': '299439751168',
-                    'sn': 'WXE1C5201540',
+                    'sn': 'ABC1C5201540',
                 },
                 {
                     'manufacturer': 'WD',
                     'model': 'WD3001BKHG',
                     'size': '299439751168',
-                    'sn': 'WXE1C5200178',
+                    'sn': 'ABC1C5200178',
                 },
                 {
                     'manufacturer': 'WD',
                     'model': 'WD3001BKHG',
                     'size': '299439751168',
-                    'sn': 'WXE1C5200307',
+                    'sn': 'ABC1C5200307',
                 },
                 {
                     'manufacturer': 'WD',
                     'model': 'WD3001BKHG',
                     'size': '299439751168',
-                    'sn': 'WXS1CC1J7098',
+                    'sn': 'ABC1CC1J7098',
                 }
             ]
         )
@@ -258,7 +258,7 @@ class IDRACPluginTest(TestCase):
         and check resulting them all here.
         """
         run_idrac('10.10.10.10')
-        dev = Device.objects.get(sn='BLSFG5J')
+        dev = Device.objects.get(sn='AMSFG5J')
         # check memory objects.
         self.assertItemsEqual(
             [(mem.model.name, mem.label, mem.size, mem.speed)
@@ -339,7 +339,7 @@ class IDRACPluginTest(TestCase):
                 for st in Storage.objects.filter(device=dev)
         ]
         storage_data = [
-        ( 'WD WD3001BKHG 278MiB',
+        ('WD WD3001BKHG 278MiB',
           ' Saturn-X: LightPulse Fibre Channel Host Adapter',
           ' Saturn-X: LightPulse Fibre Channel Host Adapter',
           0,
@@ -402,5 +402,4 @@ class IDRACPluginTest(TestCase):
         # finally, check ip managment address.
         ip = IPAddress.objects.get(device=dev)
         self.assertTrue(ip.is_management)
-        self.assertEqual(ip.hostname, 'f5-vip01.dc3')
         self.assertEqual(ip.address, '10.10.10.10')
