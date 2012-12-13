@@ -140,6 +140,11 @@ class NetworkTerminator(Named):
 
 
 class DataCenter(Named):
+    hosts_naming_template = db.CharField(
+        max_length=30, default="dc{0:6}",
+        help_text=_("E.g. h{0:6}.dc will produce: h000001.dc, h000002.dc...")
+    )
+
     class Meta:
         verbose_name = _("data center")
         verbose_name_plural = _("data centers")

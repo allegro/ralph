@@ -79,7 +79,7 @@ admin.site.register(m.NetworkTerminator, NetworkTerminatorAdmin)
 
 
 class DataCenterAdmin(ModelAdmin):
-    list_display = ('name',)
+    list_display = ('name', 'hosts_naming_template')
     search_fields = ('name',)
 
 admin.site.register(m.DataCenter, DataCenterAdmin)
