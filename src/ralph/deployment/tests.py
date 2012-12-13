@@ -11,17 +11,18 @@ from ralph.business.models import Venture, VentureRole
 from ralph.deployment.models import Deployment
 
 
-
 class DeploymentTest(TestCase):
     def setUp(self):
         self.top_venture = Venture(name='top_venture')
         self.top_venture.save()
         self.child_venture = Venture(
-            name='child_venture', parent=self.top_venture
+            name='child_venture',
+            parent=self.top_venture,
         )
         self.child_venture.save()
         self.role = VentureRole(
-            name='role', venture=self.child_venture
+            name='role',
+            venture=self.child_venture,
         )
         self.role.save()
         self.child_role = VentureRole(
@@ -48,7 +49,7 @@ class DeploymentTest(TestCase):
             venture=self.child_venture,
             venturerole=self.child_role,
             sn='sn3',
-            model=dm
+            model=dm,
         )
         self.blade.name = 'blade'
         self.blade.parent = self.rack

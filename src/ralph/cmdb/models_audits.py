@@ -32,22 +32,14 @@ def get_technical_owner(device):
     if not device.venture:
         return ''
     owners = device.venture.technical_owners()
-    if not owners:
-        return ''
-    else:
-        owner = owners[0]
-        return get_login_from_owner_name(owner)
+    return get_login_from_owner_name(owners[0]) if owners else ''
 
 
 def get_business_owner(device):
     if not device.venture:
         return ''
     owners = device.venture.business_owners()
-    if not owners:
-        return ''
-    else:
-        owner = owners[0]
-        return get_login_from_owner_name(owner) if owners else ''
+    return get_login_from_owner_name(owners[0]) if owners else ''
 
 
 class AuditStatus(Choices):

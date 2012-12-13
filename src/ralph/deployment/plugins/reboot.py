@@ -20,20 +20,26 @@ from ralph.deployment.models import Deployment, DeploymentStatus
                  priority=0)
 def reboot(deployment_id):
     deployment = Deployment.objects.get(id=deployment_id)
+    if deployment.status == DeploymentStatus.done:
+        # Deployment chain requires status to be in_progress or open only.
+        # But before running script assure status didnt change
+        # in meantime.
+        return False
     management = deployment.device.find_management()
     user, password = settings.ILO_USER, settings.ILO_PASSWORD
     if user and IloHost(management, user, password).reboot(True):
-        return in_progress(deployment_id)
+        return _in_progress(deployment_id)
     user, password = settings.IPMI_USER, settings.IPMI_PASSWORD
     if user and ipmi_reboot(management, user, password, True):
-        return in_progress(deployment_id)
+        return _in_progress(deployment_id)
     user = settings.SSH_IBM_USER
     bay = deployment.device.chassis_position
     if user and bay and ssh_ibm_reboot(management, bay):
-        return in_progress(deployment_id)
+        return _in_progress(deployment_id)
     return False
 
-def in_progress(deployment_id):
+
+def _in_progress(deployment_id):
     """Change deployment status to in_progress and returns True
 
     Just after sending reboot command we set in_progress status.
