@@ -23,13 +23,14 @@ def all(iterable):
 
 class SimpleDHCPManager(object):
     def __init__(self, api_url, api_username, api_key, dhcp_config, restart,
-            logger, **kwargs):
+            logger, dc, **kwargs):
         self.api_url = api_url.rstrip('/')
         self.api_username = api_username
         self.api_key = api_key
         self.dhcp_config_path = dhcp_config
         self.dhcp_service_name = restart
         self.logger = logger
+        self.dc = dc
 
     def update_configuration(self):
         config = self._get_configuration()
@@ -44,6 +45,8 @@ class SimpleDHCPManager(object):
         url = "%s/dhcp-config/?username=%s&api_key=%s" % (self.api_url,
                                                           self.api_username,
                                                           self.api_key)
+        if self.dc:
+            url += '&dc=' + self.dc
         req = urllib2.Request(url)
         try:
             resp = urllib2.urlopen(req)
@@ -152,6 +155,8 @@ def _get_cmd_options():
         '[Default: STDOUT]', default='STDOUT')
     opts_parser.add_option('-c', '--dhcp-config', help='Path to the DHCP '
         'configuration file.')
+    opts_parser.add_option('-d', '--dc', help='Only get config for the '
+        'specified data center.')
     opts_parser.add_option('-r', '--restart', help='Name of the service to '
         'restart.')
     opts_parser.add_option('-v', '--verbose', help='Increase verbosity.',
@@ -190,7 +195,7 @@ if __name__ == "__main__":
         sys.stderr.write('error: --api-url, --api-username and --api-key '
             'options are required.\n')
         sys.exit(2)
-    lockfile = '/tmp/%s.lock' % sys.argv[0]
+    lockfile = '/tmp/%s.lock' % os.path.split(sys.argv[0])[1]
     f = open(lockfile, 'w')
     try:
         fcntl.lockf(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
