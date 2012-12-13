@@ -9,10 +9,8 @@ import datetime
 
 from django.test import TestCase
 
-from ralph.assets.models_assets import AssetStatus
-from ralph.assets.tests.util import (
-    create_asset, client_get, DEFAULT_ASSET_DATA
-)
+from ralph.assets.models_assets import (AssetStatus, AssetType)
+from ralph.assets.tests.util import create_asset
 from ralph.ui.tests.helper import login_as_su
 
 
@@ -21,19 +19,43 @@ class TestDataDisplay(TestCase):
 
     def setUp(self):
         self.client = login_as_su()
-        self.correct_data = dict(
+        asset_fields = dict(
             barcode='123456789',
             invoice_no='Invoice #1',
             order_no='Order #1',
             invoice_date=datetime.date(2001, 1, 1),
-            status=AssetStatus.new,
+            sn='0000-0000-0000-0000',
         )
-        self.new_asset = create_asset(self.correct_data)
-        self.correct_data.update(DEFAULT_ASSET_DATA)
+        self.asset = create_asset(**asset_fields)
 
     def test_display_data_in_table(self):
-        get_data_from_table = client_get(url='/assets/dc/search', follow=True)
-        self.assertEqual(get_data_from_table.status_code, 200)
+        get_search_page = self.client.get('/assets/dc/search')
+        self.assertEqual(get_search_page.status_code, 200)
 
         # Test if data from database are displayed in correct row.
-        self.assertItemsEqual(self.correct_data, self.new_asset)
+        first_table_row = get_search_page.context_data['page'][0]
+        self.assertEqual(self.asset, first_table_row)
+        self.assertItemsEqual(
+            [
+                first_table_row.barcode,
+                first_table_row.invoice_no,
+                first_table_row.order_no,
+                unicode(first_table_row.invoice_date),
+                first_table_row.sn,
+                AssetType.name_from_id(first_table_row.type),
+                AssetStatus.name_from_id(first_table_row.status),
+                first_table_row.model.name,
+                first_table_row.device_info.warehouse.name,
+            ],
+            [
+                u'123456789',
+                u'Invoice #1',
+                u'Order #1',
+                u'2001-01-01',
+                u'0000-0000-0000-0000',
+                u'Model1',
+                'data_center',
+                'new',
+                'Warehouse',
+            ]
+        )
