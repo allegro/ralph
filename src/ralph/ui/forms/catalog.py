@@ -64,7 +64,7 @@ class ComponentModelGroupForm(ModelGroupForm):
                 unit = self.instance.size_unit
                 if unit == 'MiB' and modifier % 1024 == 0:
                     unit = 'GiB'
-                    modifier = int(modifier/1024)
+                    modifier = int(modifier / 1024)
                 price = decimal.Decimal(self.instance.price) / modifier
             else:
                 price = self.instance.price
@@ -123,7 +123,7 @@ class PricingDeviceForm(forms.Form):
 class PricingVariableForm(forms.ModelForm):
     class Meta:
         model = PricingVariable
-        fields = 'name', 'aggregate'
+        fields = ('name', 'aggregate')
         widgets = {
             'name': forms.TextInput(
                 attrs={
@@ -159,7 +159,7 @@ PricingVariableFormSet = forms.models.modelformset_factory(
 class PricingValueForm(forms.ModelForm):
     class Meta:
         model = PricingValue
-        fields = 'value',
+        fields = ('value',)
         widgets = {
             'value': forms.TextInput(
                 attrs={
@@ -180,7 +180,7 @@ PricingValueFormSet = forms.models.modelformset_factory(
 class PricingFormulaForm(forms.ModelForm):
     class Meta:
         model = PricingFormula
-        fields = 'component_group', 'formula'
+        fields = ('component_group', 'formula')
         widgets = {
             'formula': forms.TextInput(
                 attrs={
