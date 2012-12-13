@@ -14,18 +14,18 @@ base_info = """<?xml version="1.0" encoding="UTF-8"?>
       <wsman:Items>
         <n1:DCIM_SystemView>
           <n1:AssetTag/>
-          <n1:BIOSReleaseDate>09/11/2012</n1:BIOSReleaseDate>
-          <n1:BIOSVersionString>1.3.6</n1:BIOSVersionString>
+          <n1:BIOSReleaseDate>01/01/2001</n1:BIOSReleaseDate>
+          <n1:BIOSVersionString>1.1.1</n1:BIOSVersionString>
           <n1:BaseBoardChassisSlot>NA</n1:BaseBoardChassisSlot>
           <n1:BatteryRollupStatus>1</n1:BatteryRollupStatus>
           <n1:BladeGeometry>4</n1:BladeGeometry>
-          <n1:BoardPartNumber>0X6H47A01</n1:BoardPartNumber>
-          <n1:BoardSerialNumber>CN1374029900VJ</n1:BoardSerialNumber>
+          <n1:BoardPartNumber>0Y5G47A01</n1:BoardPartNumber>
+          <n1:BoardSerialNumber>BM1374029600VJ</n1:BoardSerialNumber>
           <n1:CMCIP xsi:nil="true"/>
           <n1:CPLDVersion>1.0.3</n1:CPLDVersion>
           <n1:CPURollupStatus>1</n1:CPURollupStatus>
           <n1:ChassisName>Main System Chassis</n1:ChassisName>
-          <n1:ChassisServiceTag>BLSFG5J</n1:ChassisServiceTag>
+          <n1:ChassisServiceTag>AMSFG5J</n1:ChassisServiceTag>
           <n1:ChassisSystemHeight>2</n1:ChassisSystemHeight>
           <n1:ExpressServiceCode>25262145415</n1:ExpressServiceCode>
           <n1:FQDD>System.Embedded.1</n1:FQDD>
@@ -53,7 +53,7 @@ base_info = """<?xml version="1.0" encoding="UTF-8"?>
           <n1:PrimaryStatus>1</n1:PrimaryStatus>
           <n1:RollupStatus>1</n1:RollupStatus>
           <n1:ServerAllocation xsi:nil="true"/>
-          <n1:ServiceTag>BLSFG5J</n1:ServiceTag>
+          <n1:ServiceTag>AMSFG5J</n1:ServiceTag>
           <n1:StorageRollupStatus>1</n1:StorageRollupStatus>
           <n1:SysMemErrorMethodology>6</n1:SysMemErrorMethodology>
           <n1:SysMemFailOverState>NotInUse</n1:SysMemFailOverState>
@@ -1122,7 +1122,7 @@ physical_disk_info = """<?xml version="1.0" encoding="UTF-8"?>
           <n1:RollupStatus>1</n1:RollupStatus>
           <n1:SASAddress>50014EE7AAAC1616</n1:SASAddress>
           <n1:SecurityState>0</n1:SecurityState>
-          <n1:SerialNumber>WXN1E32KSCNJ        </n1:SerialNumber>
+          <n1:SerialNumber>ABC1E32KSCNJ        </n1:SerialNumber>
           <n1:SizeInBytes>299439751168</n1:SizeInBytes>
           <n1:Slot>0</n1:Slot>
           <n1:SupportedEncryptionTypes>None</n1:SupportedEncryptionTypes>
@@ -1155,7 +1155,7 @@ physical_disk_info = """<?xml version="1.0" encoding="UTF-8"?>
           <n1:RollupStatus>1</n1:RollupStatus>
           <n1:SASAddress>50014EE75556C77A</n1:SASAddress>
           <n1:SecurityState>0</n1:SecurityState>
-          <n1:SerialNumber>WXN1E32KTYEA        </n1:SerialNumber>
+          <n1:SerialNumber>ABC1E32KTYEA        </n1:SerialNumber>
           <n1:SizeInBytes>299439751168</n1:SizeInBytes>
           <n1:Slot>1</n1:Slot>
           <n1:SupportedEncryptionTypes>None</n1:SupportedEncryptionTypes>
@@ -1188,7 +1188,7 @@ physical_disk_info = """<?xml version="1.0" encoding="UTF-8"?>
           <n1:RollupStatus>1</n1:RollupStatus>
           <n1:SASAddress>50014EE70001612E</n1:SASAddress>
           <n1:SecurityState>0</n1:SecurityState>
-          <n1:SerialNumber>WXE1C5202177        </n1:SerialNumber>
+          <n1:SerialNumber>ABC1C5202177        </n1:SerialNumber>
           <n1:SizeInBytes>299439751168</n1:SizeInBytes>
           <n1:Slot>2</n1:Slot>
           <n1:SupportedEncryptionTypes>None</n1:SupportedEncryptionTypes>
@@ -1221,7 +1221,7 @@ physical_disk_info = """<?xml version="1.0" encoding="UTF-8"?>
           <n1:RollupStatus>1</n1:RollupStatus>
           <n1:SASAddress>50014EE700016912</n1:SASAddress>
           <n1:SecurityState>0</n1:SecurityState>
-          <n1:SerialNumber>WXN1E32KUDHD        </n1:SerialNumber>
+          <n1:SerialNumber>ABC1E32KUDHD        </n1:SerialNumber>
           <n1:SizeInBytes>299439751168</n1:SizeInBytes>
           <n1:Slot>3</n1:Slot>
           <n1:SupportedEncryptionTypes>None</n1:SupportedEncryptionTypes>
@@ -1254,7 +1254,7 @@ physical_disk_info = """<?xml version="1.0" encoding="UTF-8"?>
           <n1:RollupStatus>1</n1:RollupStatus>
           <n1:SASAddress>50014EE7AAAC0E4A</n1:SASAddress>
           <n1:SecurityState>0</n1:SecurityState>
-          <n1:SerialNumber>WXE1C5201540        </n1:SerialNumber>
+          <n1:SerialNumber>ABC1C5201540        </n1:SerialNumber>
           <n1:SizeInBytes>299439751168</n1:SizeInBytes>
           <n1:Slot>4</n1:Slot>
           <n1:SupportedEncryptionTypes>None</n1:SupportedEncryptionTypes>
@@ -1287,7 +1287,7 @@ physical_disk_info = """<?xml version="1.0" encoding="UTF-8"?>
           <n1:RollupStatus>1</n1:RollupStatus>
           <n1:SASAddress>50014EE7000163C2</n1:SASAddress>
           <n1:SecurityState>0</n1:SecurityState>
-          <n1:SerialNumber>WXE1C5200178        </n1:SerialNumber>
+          <n1:SerialNumber>ABC1C5200178        </n1:SerialNumber>
           <n1:SizeInBytes>299439751168</n1:SizeInBytes>
           <n1:Slot>5</n1:Slot>
           <n1:SupportedEncryptionTypes>None</n1:SupportedEncryptionTypes>
@@ -1320,7 +1320,7 @@ physical_disk_info = """<?xml version="1.0" encoding="UTF-8"?>
           <n1:RollupStatus>1</n1:RollupStatus>
           <n1:SASAddress>50014EE70001611A</n1:SASAddress>
           <n1:SecurityState>0</n1:SecurityState>
-          <n1:SerialNumber>WXE1C5200307        </n1:SerialNumber>
+          <n1:SerialNumber>ABC1C5200307        </n1:SerialNumber>
           <n1:SizeInBytes>299439751168</n1:SizeInBytes>
           <n1:Slot>6</n1:Slot>
           <n1:SupportedEncryptionTypes>None</n1:SupportedEncryptionTypes>
@@ -1353,7 +1353,7 @@ physical_disk_info = """<?xml version="1.0" encoding="UTF-8"?>
           <n1:RollupStatus>1</n1:RollupStatus>
           <n1:SASAddress>50014EE7000166C2</n1:SASAddress>
           <n1:SecurityState>0</n1:SecurityState>
-          <n1:SerialNumber>WXS1CC1J7098        </n1:SerialNumber>
+          <n1:SerialNumber>ABC1CC1J7098        </n1:SerialNumber>
           <n1:SizeInBytes>299439751168</n1:SizeInBytes>
           <n1:Slot>7</n1:Slot>
           <n1:SupportedEncryptionTypes>None</n1:SupportedEncryptionTypes>
