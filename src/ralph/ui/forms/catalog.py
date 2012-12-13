@@ -193,7 +193,7 @@ class PricingFormulaForm(forms.ModelForm):
     def clean_formula(self):
         formula = self.cleaned_data['formula']
         variables = {
-            'size': 1,
+            'size': decimal.Decimal(1),
         }
         for variable in self.group.pricingvariable_set.all():
             variables[variable.name] = 1
