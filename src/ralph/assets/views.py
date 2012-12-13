@@ -5,6 +5,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from bob.data_table import DataTableColumn
 from bob.menu import MenuItem, MenuHeader
 from django.contrib import messages
 from django.core.paginator import Paginator
@@ -27,7 +28,7 @@ from ralph.assets.models import (
 )
 from ralph.assets.models_assets import AssetType
 from ralph.assets.models_history import AssetHistoryChange
-from ralph.ui.views.common import Base, PaginationMixin, DataTableColumn
+from ralph.ui.views.common import Base, PaginationMixin
 
 
 SAVE_PRIORITY = 200
@@ -109,11 +110,27 @@ class BackOfficeMixin(AssetsMixin):
         )
         return sidebar_menu
 
+class DataTableColumnAssets(DataTableColumn):
+    """
+    A container object for all the information about a columns header
+
+    :param foreign_field_name - set if field comes from foreign key
+    :param choice - set if field is Choices object
+    :param sort_expression - example `device_info__warehouse`
+    :param export - set when the column is to be exported
+    """
+
+    def __init__(self, **kwargs):
+        super(DataTableColumnAssets, self).__init__(**kwargs)
+        self.foreign_field_name = kwargs.get('foreign_field_name')
+        self.choice = kwargs.get('choice')
+        self.sort_expression = kwargs.get('sort_expression')
+        self.export = kwargs.get('export')
 
 class AssetSearch(AssetsMixin, PaginationMixin):
     """The main-screen search form for all type of assets."""
     ROWS_PER_PAGE = 15
-    _ = DataTableColumn
+    _ = DataTableColumnAssets
     columns = [
         _(header_name='Dropdown', selectable=True, bob_tag=True),
         _(header_name='Type', bob_tag=True),
@@ -257,7 +274,7 @@ class BackOfficeSearch(BackOfficeMixin, AssetSearch):
     header = 'Search BO Assets'
     sidebar_selected = 'search'
     template_name = 'assets/search_asset.html'
-    _ = DataTableColumn
+    _ = DataTableColumnAssets
     columns_nested = [
         _(header_name='Date of last inventory', field='date_of_last_inventory',
           foreign_field_name='office_info', export=True),
@@ -293,7 +310,7 @@ class DataCenterSearch(DataCenterMixin, AssetSearch):
     header = 'Search DC Assets'
     sidebar_selected = 'search'
     template_name = 'assets/search_asset.html'
-    _ = DataTableColumn
+    _ = DataTableColumnAssets
     columns_nested = [
         _(header_name='Ralph device', field='ralph_device',
           foreign_field_name='device_info', export=True),
