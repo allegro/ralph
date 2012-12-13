@@ -11,6 +11,7 @@ from django.utils.html import escape
 from ralph.discovery.models import Device
 from ralph.util import presentation
 
+
 class DeviceLookup(LookupChannel):
     model = Device
 
