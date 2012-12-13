@@ -203,6 +203,18 @@ class PricingFormulaForm(forms.ModelForm):
             raise forms.ValidationError(e)
         return formula
 
+    def clean_component_group(self):
+        component_group = self.cleaned_data['component_group']
+        if self.instance and self.group.pricingformula_set.filter(
+            component_group=component_group,
+        ).exclude(
+            id=self.instance.id,
+        ).exists():
+            raise forms.ValidationError(
+                "This component group already has a formula."
+            )
+        return component_group
+
 
 class PricingFormulaFormSetBase(forms.models.BaseModelFormSet):
     def __init__(self, group, *args, **kwargs):
@@ -213,6 +225,8 @@ class PricingFormulaFormSetBase(forms.models.BaseModelFormSet):
         types = {ComponentType.share}
         form.group = self.group
         form.fields['component_group'].widget.choices = [
+            ('', '----'),
+        ] + [
             (g.id, g.name) for g in
             ComponentModelGroup.objects.filter(type__in=types)
         ]

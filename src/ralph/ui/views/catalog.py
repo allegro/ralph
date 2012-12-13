@@ -621,15 +621,28 @@ class CatalogPricingGroup(CatalogPricing):
                     value.save()
         device = self.device_form.cleaned_data['device']
         if device:
-            group.devices.add(device)
-            group.save()
-            for variable in variables.all():
-                value = PricingValue(device=device, variable=variable, value=0)
-                value.save()
-            messages.success(
-                self.request,
-                "Device %s added to group %s." % (device.name, group.name),
-            )
+            if group.devices.filter(id=device.id).exists():
+                messages.warning(
+                    self.request,
+                    "Device %s is already in group %s." % (
+                        device.name,
+                        group.name,
+                    ),
+                )
+            else:
+                group.devices.add(device)
+                group.save()
+                for variable in variables.all():
+                    value = PricingValue(
+                        device=device,
+                        variable=variable,
+                        value=0,
+                    )
+                    value.save()
+                messages.success(
+                    self.request,
+                    "Device %s added to group %s." % (device.name, group.name),
+                )
         messages.success(self.request, "Group %s saved." % group.name)
         return HttpResponseRedirect(self.request.path)
 
