@@ -6,6 +6,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from datetime import datetime
+import unicodedata
 
 from django.conf import settings
 from django.db import models
@@ -15,6 +16,30 @@ from lck.django.common.models import TimeTrackable
 
 from ralph.cmdb.integration.issuetracker import IssueTracker
 from ralph.cmdb.models import CI
+
+
+def get_login_from_owner_name(owner):
+    def normalize_name(name):
+        # Polish Ł is not handled properly
+        ret = name.lower().replace(' ', '.').replace(
+            'Ł', 'L').replace('ł', 'l')
+        return unicodedata.normalize('NFD', ret).encode('ascii', 'ignore')
+    return normalize_name(owner.first_name) + '.' + normalize_name(
+        owner.last_name)
+
+
+def get_technical_owner(device):
+    if not device.venture:
+        return ''
+    owners = device.venture.technical_owners()
+    return get_login_from_owner_name(owners[0]) if owners else ''
+
+
+def get_business_owner(device):
+    if not device.venture:
+        return ''
+    owners = device.venture.business_owners()
+    return get_login_from_owner_name(owners[0]) if owners else ''
 
 
 class AuditStatus(Choices):

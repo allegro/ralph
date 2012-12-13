@@ -1,0 +1,120 @@
+{% extends 'assets/base.html' %}
+{% load bob %}
+{% load icons %}
+
+{% block extra_headers %}
+{{ block.super }}
+    <style type="text/css">
+        div#sidebar_search input, div#sidebar_search select{
+            width: 90%;
+        }
+    </style>
+{% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+    <script type="text/javascript">
+        var postEditAll = function (e) {
+            var dd=$('#table_form')[0];
+            dd.action='./bulkedit/';
+            dd.submit();
+            return false;
+        };
+        </script>
+{% endblock %}
+
+
+{% block sidebar_search%}
+    <div class="form search-form well well-small" id="sidebar_search">
+        {% form form=form method="GET" action='' submit_label='Search' %}
+    </div>
+{% endblock %}
+{% block content %}
+
+    <h3>{{header}}</h3>
+    <form id="table_form" action="" method="GET">
+        <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>
+                            <div class="dropdown">
+                                <a href="#" data-toggle="dropdown" class="dropdown-toggle">
+                                    <i class="fugue-icon fugue-ui-check-boxes-series"></i>
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a href="#" class="select-all">
+                                        <i class="fugue-icon fugue-ui-check-box">
+                                        </i>&nbsp;Select all on this page</a>
+                                    </li>
+                                    <li>
+                                        <a href="#" class="select-toggle">
+                                            <i class="fugue-icon fugue-ui-check-box-mix">
+                                            </i>&nbsp;Reverse selection</a>
+                                        </li>
+                                        <li>
+                                            <a href="#" class="select-none">
+                                                <i class="fugue-icon fugue-ui-check-box-uncheck"></i>&nbsp;Deselect all
+                                            </a>
+                                        </li>
+                                    </ul>
+                            </div>
+                        </th>
+                        <th>Type</th>
+                        <th>SN</th>
+                        <th>Barcode</th>
+                        <th>Model</th>
+                        <th>Invoice no.</th>
+                        <th>Order no.</th>
+                        <th>Buy date</th>
+                        <th>Status</th>
+                        <th>Warehouse</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in page %}
+                <tr>
+                    <td class="column-checkbox">
+                        <input type="checkbox" name="select" value="{{row.id}}">
+                    </td>
+                    <td>{% icon row.get_data_icon %}&nbsp;{{row.get_data_type|capfirst}}</td>
+                    <td>{{row.sn}}</td>
+                    <td>{{row.barcode|default_if_none:'-'}}</td>
+                    <td>{{row.model.name}}</td>
+                    <td>{{row.invoice_no}}</td>
+                    <td>{{row.order_no}}</td>
+                    <td>{{row.buy_date}}</td>
+                    <td>{{row.get_status_display}}</td>
+                    <td>{{row.device_info.warehouse}}</td>
+                    <td>
+                    {% if row.get_data_type == 'device' %}
+                        <a href="./edit/device/{{row.id}}">Edit</a> |
+                        <a href="./history/device/{{row.id}}">History</a> |
+                        {% if row.device_info.ralph_device.id%}|
+                            <a href="{% url search 'info' row.device_info.ralph_device.id %}">View in ralph</a>
+                        {% endif %}
+                    {% else %}
+                        <a href="./edit/part/{{row.id}}">Edit</a> |
+                        <a href="./history/part/{{row.id}}">History</a> |
+                    {% endif %}
+                        <a href="./delete/asset/{{ row.id }}">Delete</a>
+                    </td>
+                </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            {% pagination page url_query=url_query show_all=0 show_csv=0 fugue_icons=1 %}
+            <div class="btn-group">
+              <a class="btn dropdown-toggle btn-primary" data-toggle="dropdown" href="#">
+                Bulk actions...
+                <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+                <li>
+            <a href="#" onclick="return postEditAll()">Edit selected</a>
+            </li>
+            </ul>
+            </div>
+        </form>
+{% endblock %}
