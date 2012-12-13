@@ -44,11 +44,13 @@ class BaseAssetForm(ModelForm):
             'support_type': Textarea(attrs={'rows': 5}),
         }
     model = AutoCompleteSelectField(
-        'asset_model', required=True,
+        'asset_model',
+        required=True,
         plugin_options=dict(add_link='/admin/assets/assetmodel/add/?name=')
     )
     warehouse = AutoCompleteSelectField(
-        'asset_warehouse', required=True,
+        'asset_warehouse',
+        required=True,
         plugin_options=dict(add_link='/admin/assets/warehouse/add/?name=')
     )
 
@@ -114,11 +116,13 @@ class BasePartForm(ModelForm):
 
         channel = 'asset_dcdevice' if mode == 'dc' else 'asset_bodevice'
         self.fields['device'] = AutoCompleteSelectField(
-            channel, required=False,
+            channel,
+            required=False,
             help_text='Enter barcode, sn, or model.',
         )
         self.fields['source_device'] = AutoCompleteSelectField(
-            channel, required=False,
+            channel,
+            required=False,
             help_text='Enter barcode, sn, or model.',
         )
         if self.instance.source_device:
@@ -198,11 +202,13 @@ class BaseAddAssetForm(ModelForm):
             'support_type': Textarea(attrs={'rows': 5}),
         }
     model = AutoCompleteSelectField(
-        'asset_model', required=True,
+        'asset_model',
+        required=True,
         plugin_options=dict(add_link='/admin/assets/assetmodel/add/?name=')
     )
     warehouse = AutoCompleteSelectField(
-        'asset_warehouse', required=True,
+        'asset_warehouse',
+        required=True,
         plugin_options=dict(add_link='/admin/assets/warehouse/add/?name=')
     )
 
