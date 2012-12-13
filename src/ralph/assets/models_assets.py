@@ -162,6 +162,7 @@ class Asset(TimeTrackable, EditorTrackable, SavingUser, SoftDeletable):
         verbose_name='Additional remarks',
         max_length=1024, blank=True
     )
+    warehouse = models.ForeignKey(Warehouse, on_delete=models.PROTECT)
 
     def __unicode__(self):
         return "{} - {} - {}".format(self.model, self.sn, self.barcode)
@@ -227,13 +228,11 @@ class DeviceInfo(TimeTrackable, SavingUser):
     )
     size = models.PositiveSmallIntegerField(
         verbose_name='Size in units', default=1)
-    warehouse = models.ForeignKey(Warehouse, on_delete=models.PROTECT)
 
     def __unicode__(self):
         return "{} - {} - {}".format(
             self.ralph_device,
             self.size,
-            self.warehouse
         )
 
     def __init__(self, *args, **kwargs):
@@ -250,7 +249,6 @@ class PartInfo(TimeTrackable, SavingUser):
     device = models.ForeignKey(
         Asset, null=True, blank=True, related_name='device'
     )
-    warehouse = models.ForeignKey(Warehouse, on_delete=models.PROTECT)
 
     def __unicode__(self):
         return "{} - {}".format(self.device, self.barcode_salvaged)
@@ -259,4 +257,3 @@ class PartInfo(TimeTrackable, SavingUser):
         self.save_comment = None
         self.saving_user = None
         super(PartInfo, self).__init__(*args, **kwargs)
-
