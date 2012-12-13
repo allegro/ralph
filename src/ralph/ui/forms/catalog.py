@@ -24,6 +24,9 @@ from ralph.discovery.models_pricing import (
 )
 
 
+RESERVED_VARIABLE_NAMES = {'size'}
+
+
 class ModelGroupForm(forms.ModelForm):
     class Meta:
         exclude = ['type', 'last_seen', 'created', 'modified']
@@ -141,7 +144,7 @@ class PricingVariableForm(forms.ModelForm):
             raise forms.ValidationError(
                 "Variable names can only contain letters."
             )
-        if name in {'size'}:
+        if name in RESERVED_VARIABLE_NAMES:
             raise forms.ValidationError(
                 "Name 'size' is reserved."
             )
@@ -199,6 +202,7 @@ class PricingFormulaForm(forms.ModelForm):
         except Exception as e:
             raise forms.ValidationError(e)
         return formula
+
 
 class PricingFormulaFormSetBase(forms.models.BaseModelFormSet):
     def __init__(self, group, *args, **kwargs):
