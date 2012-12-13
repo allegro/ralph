@@ -194,7 +194,6 @@ def _get_return_link(request):
 def _create_device(creator_profile, asset_data, device_info_data, sn,
                    barcode=None):
     device_info = DeviceInfo(
-        warehouse=device_info_data['warehouse'],
         size=device_info_data['size']
     )
     device_info.save(user=creator_profile.user)
@@ -261,8 +260,8 @@ class AddDevice(Base):
                 )
             else:
                 return HttpResponseRedirect(
-                    '/assets/%s/bulkedit/?select=%s' %
-                        (cat, '&select='.join(["%s" % id for id in ids]))
+                    '/assets/%s/bulkedit/?select=%s' % (
+                        cat, '&select='.join(["%s" % id for id in ids]))
                 )
         else:
             messages.error(self.request, _("Please correct the errors."))

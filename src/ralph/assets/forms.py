@@ -34,7 +34,7 @@ class BaseAssetForm(ModelForm):
             'type', 'model', 'invoice_no', 'order_no',
             'invoice_date', 'support_period', 'support_type',
             'support_void_reporting', 'provider', 'status',
-            'remarks', 'sn', 'barcode',
+            'remarks', 'sn', 'barcode', 'warehouse',
         )
         widgets = {
             'sn': Textarea(attrs={'rows': 25}),
@@ -44,8 +44,14 @@ class BaseAssetForm(ModelForm):
             'support_type': Textarea(attrs={'rows': 5}),
         }
     model = AutoCompleteSelectField(
-        'asset_model', required=True,
+        'asset_model',
+        required=True,
         plugin_options=dict(add_link='/admin/assets/assetmodel/add/?name=')
+    )
+    warehouse = AutoCompleteSelectField(
+        'asset_warehouse',
+        required=True,
+        plugin_options=dict(add_link='/admin/assets/warehouse/add/?name=')
     )
 
     def __init__(self, *args, **kwargs):
@@ -90,22 +96,14 @@ class BaseDeviceForm(ModelForm):
     class Meta:
         model = DeviceInfo
         fields = (
-            'size', 'warehouse'
+            'size',
         )
-    warehouse = AutoCompleteSelectField(
-        'asset_warehouse', required=True,
-        plugin_options=dict(add_link='/admin/assets/warehouse/add/?name=')
-    )
 
 
 class BasePartForm(ModelForm):
     class Meta:
         model = PartInfo
-        fields = ('barcode_salvaged', 'warehouse')
-    warehouse = AutoCompleteSelectField(
-        'asset_warehouse', required=True,
-        plugin_options=dict(add_link='/admin/assets/warehouse/add/?name=')
-    )
+        fields = ('barcode_salvaged',)
 
     def __init__(self, *args, **kwargs):
         """mode argument is required for distinguish ajax sources"""
@@ -118,11 +116,13 @@ class BasePartForm(ModelForm):
 
         channel = 'asset_dcdevice' if mode == 'dc' else 'asset_bodevice'
         self.fields['device'] = AutoCompleteSelectField(
-            channel, required=False,
+            channel,
+            required=False,
             help_text='Enter barcode, sn, or model.',
         )
         self.fields['source_device'] = AutoCompleteSelectField(
-            channel, required=False,
+            channel,
+            required=False,
             help_text='Enter barcode, sn, or model.',
         )
         if self.instance.source_device:
@@ -131,7 +131,6 @@ class BasePartForm(ModelForm):
             ].initial = self.instance.source_device.id
         if self.instance.device:
             self.fields['device'].initial = self.instance.device.id
-
 
 
 def _validate_multivalue_data(data):
@@ -203,8 +202,14 @@ class BaseAddAssetForm(ModelForm):
             'support_type': Textarea(attrs={'rows': 5}),
         }
     model = AutoCompleteSelectField(
-        'asset_model', required=True,
+        'asset_model',
+        required=True,
         plugin_options=dict(add_link='/admin/assets/assetmodel/add/?name=')
+    )
+    warehouse = AutoCompleteSelectField(
+        'asset_warehouse',
+        required=True,
+        plugin_options=dict(add_link='/admin/assets/warehouse/add/?name=')
     )
 
     def __init__(self, *args, **kwargs):
