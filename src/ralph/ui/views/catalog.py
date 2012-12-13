@@ -510,6 +510,13 @@ class CatalogPricingNew(CatalogPricing):
             self.form.save(commit=False)
             self.form.instance.date = datetime.date(self.year, self.month, 1)
             self.form.instance.save()
+            if self.form.cleaned_data['clone']:
+                sources = PricingGroup.objects.filter(
+                    name=self.form.instance.name,
+                    date__lt=self.form.instance.date,
+                    ).order_by('-date')[:1]
+                if sources.exists():
+                    self.form.instance.clone_contents(sources[0])
             messages.success(
                 self.request,
                 "Group %s saved." % self.form.instance.name
