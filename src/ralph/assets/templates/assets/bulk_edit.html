@@ -1,0 +1,66 @@
+{% extends 'assets/base.html' %}
+
+{% block content %}
+<div class="row"><h3>Bulk edit</h3></div>
+
+<form action="" method="POST" class="form form-inline">
+  {% csrf_token %}
+  {{ formset.management_form }}
+  <div class="row">
+      <table class="table table-striped table-bordered table-condensed">
+      <thead><tr>
+        <th></th>
+        <th>Type</th>
+        <th>Model</th>
+        <th>Invoice Number</th>
+        <th>Order Number</th>
+        <th>Invoice date</th>
+        <th>SN</th>
+        <th>Barcode</th>
+        <th width="20">Support period</th>
+        <th>Support type</th>
+        <th width="20">Support void reporting</th>
+        <th>Provider</th>
+        <th>Source</th>
+        <th>Status</th>
+      </tr></thead>
+      <tbody>{% for form in formset %}
+        <tr>
+          <td style="vertical-align:middle">
+            {{ forloop.counter }}
+            {{ form.id }}
+            {{ form.device_info }}
+          </td>
+          {% for field in form %}
+            {% if "-device_info" in field.html_name or "-id" in field.html_name %}
+              {# do nothing... #}
+            {% elif "-barcode" in field.html_name  %}
+              <td class="control-group{% if form.device_info.value and field.errors %} error{% endif %}" style="vertical-align:middle">
+                {% if form.device_info.value %}
+                  {{ field }}
+                  {% if field.errors %}
+                    <span class="help-inline">{% for error in field.errors %}{{ error }} {% endfor %}</span>
+                  {% endif %}
+                {% endif %}
+              </td>
+            {% else %}
+              <td class="control-group{% if "-support_period" in field.html_name %} small{% endif %}{% if field.errors %} error{% endif %}" style="vertical-align:middle">
+                {{ field }}
+                {% if field.errors %}
+                  <span class="help-inline">{% for error in field.errors %}{{ error }} {% endfor %}</span>
+                {% endif %}
+              </td>
+            {% endif %}
+          {% endfor %}
+        </tr>
+      {% endfor %}</tbody>
+    </table>
+  </div>
+  <div class="row">
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Save</button>
+    </div>
+  </div>
+</form>
+{% endblock %}
+
