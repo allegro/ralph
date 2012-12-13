@@ -11,8 +11,6 @@ from ralph.discovery.models import DataCenter, Device
 
 
 def get_nexthostname(dc_name):
-    #import pdb
-    #pdb.set_trace()
     try:
         dc = DataCenter.objects.get(name=dc_name)
     except DataCenter.DoesNotExist:
@@ -39,4 +37,8 @@ def get_nexthostname(dc_name):
     except IndexError:
         pass
     return True, dc.hosts_naming_template.format(next_num), ""
+
+
+def get_nextip(network_name):
+    pass
 
