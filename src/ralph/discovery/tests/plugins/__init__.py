@@ -12,3 +12,4 @@ from ralph.discovery.tests.plugins.system_x_tests import SystemXPluginTest
 from ralph.discovery.tests.plugins.donpedro_tests import DonPedroPluginTest
 from ralph.discovery.tests.plugins.puppet import PuppetPluginTest
 from ralph.discovery.tests.plugins.ssh_proxmox_tests import SshProxmoxTest
+from ralph.discovery.tests.plugins.idrac_tests import IDRACPluginTest
