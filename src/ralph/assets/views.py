@@ -194,7 +194,6 @@ def _get_return_link(request):
 def _create_device(creator_profile, asset_data, device_info_data, sn,
                    barcode=None):
     device_info = DeviceInfo(
-        warehouse=device_info_data['warehouse'],
         size=device_info_data['size']
     )
     device_info.save(user=creator_profile.user)

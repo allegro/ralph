@@ -34,7 +34,7 @@ class BaseAssetForm(ModelForm):
             'type', 'model', 'invoice_no', 'order_no',
             'invoice_date', 'support_period', 'support_type',
             'support_void_reporting', 'provider', 'status',
-            'remarks', 'sn', 'barcode',
+            'remarks', 'sn', 'barcode', 'warehouse',
         )
         widgets = {
             'sn': Textarea(attrs={'rows': 25}),
@@ -46,6 +46,10 @@ class BaseAssetForm(ModelForm):
     model = AutoCompleteSelectField(
         'asset_model', required=True,
         plugin_options=dict(add_link='/admin/assets/assetmodel/add/?name=')
+    )
+    warehouse = AutoCompleteSelectField(
+        'asset_warehouse', required=True,
+        plugin_options=dict(add_link='/admin/assets/warehouse/add/?name=')
     )
 
     def __init__(self, *args, **kwargs):
@@ -90,22 +94,14 @@ class BaseDeviceForm(ModelForm):
     class Meta:
         model = DeviceInfo
         fields = (
-            'size', 'warehouse'
+            'size',
         )
-    warehouse = AutoCompleteSelectField(
-        'asset_warehouse', required=True,
-        plugin_options=dict(add_link='/admin/assets/warehouse/add/?name=')
-    )
 
 
 class BasePartForm(ModelForm):
     class Meta:
         model = PartInfo
-        fields = ('barcode_salvaged', 'warehouse')
-    warehouse = AutoCompleteSelectField(
-        'asset_warehouse', required=True,
-        plugin_options=dict(add_link='/admin/assets/warehouse/add/?name=')
-    )
+        fields = ('barcode_salvaged',)
 
     def __init__(self, *args, **kwargs):
         """mode argument is required for distinguish ajax sources"""
@@ -205,6 +201,10 @@ class BaseAddAssetForm(ModelForm):
     model = AutoCompleteSelectField(
         'asset_model', required=True,
         plugin_options=dict(add_link='/admin/assets/assetmodel/add/?name=')
+    )
+    warehouse = AutoCompleteSelectField(
+        'asset_warehouse', required=True,
+        plugin_options=dict(add_link='/admin/assets/warehouse/add/?name=')
     )
 
     def __init__(self, *args, **kwargs):
