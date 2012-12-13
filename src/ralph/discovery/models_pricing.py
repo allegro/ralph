@@ -33,6 +33,33 @@ class PricingGroup(db.Model):
     class Meta:
         unique_together = ('name', 'date')
 
+    def clone_contents(self, source):
+        """
+        Copy all the devices, variables and values from the specified group.
+        """
+        for device in source.devices.all():
+            self.devices.add(device)
+        self.save()
+        for formula in source.pricingformula_set.all():
+            PricingFormula(
+                group=self,
+                component_group=formula.component_group,
+                formula=formula.formula,
+            ).save()
+        for variable in source.pricingvariable_set.all():
+            new_variable = PricingVariable(
+                name=variable.name,
+                group=self,
+                aggregate=variable.aggregate,
+            )
+            new_variable.save()
+            for value in variable.pricingvalue_set.all():
+                PricingValue(
+                    variable=new_variable,
+                    value=value.value,
+                    device=value.device,
+                ).save()
+
 
 class PricingFormula(db.Model):
     """
