@@ -10,6 +10,7 @@ from __future__ import unicode_literals
 
 import hashlib
 import datetime
+from decimal import Decimal
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models as db
@@ -301,7 +302,7 @@ class DiskShare(Component):
         formula = self.get_price_formula()
         if formula:
             try:
-                return formula.get_value(size=size)
+                return float(formula.get_value(size=Decimal(size)))
             except Exception:
                 return float('NaN')
         else:
@@ -344,10 +345,10 @@ class DiskShareMount(TimeTrackable, WithConcurrentGetOrCreate):
     def get_price(self):
         if self.size and self.share.model and self.share.model.group:
             size = self.get_size() / 1024
-            formula = self.get_price_formula()
+            formula = self.share.get_price_formula()
             if formula:
                 try:
-                    return formula.get_value(size=size)
+                    return float(formula.get_value(size=Decimal(size)))
                 except Exception:
                     return float('NaN')
             return (self.share.model.group.price or 0) * size

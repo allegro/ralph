@@ -31,7 +31,7 @@ class PricingGroup(db.Model):
     date = db.DateField()
 
     class Meta:
-        unique_together = 'name', 'date'
+        unique_together = ('name', 'date')
 
 
 class PricingFormula(db.Model):
@@ -69,7 +69,7 @@ class PricingFormula(db.Model):
             return unicode(e)
 
     class Meta:
-        unique_together = 'group', 'component_group'
+        unique_together = ('group', 'component_group')
 
 
 class PricingVariable(db.Model):
@@ -88,7 +88,7 @@ class PricingVariable(db.Model):
         return d.values()[0]
 
     class Meta:
-        unique_together = 'group', 'name'
+        unique_together = ('group', 'name')
 
 
 
@@ -100,4 +100,5 @@ class PricingValue(db.Model):
     value = db.DecimalField(max_digits=8, decimal_places=2)
 
     class Meta:
-        unique_together = 'device', 'variable'
+        unique_together = ('device', 'variable')
+
