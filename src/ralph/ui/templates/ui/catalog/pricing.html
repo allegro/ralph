@@ -112,11 +112,35 @@
                 </tr>
             </table>
             <div class="form-actions">
-                {% spaceless %}
-                <button class="btn btn-primary pull-right" name="values-save">
-                    {% icon 'fugue-tick' %}&nbsp;Save
-                </button>
-                {% endspaceless %}
+                <div class="pull-right">
+                    {% spaceless %}
+                    <button class="btn btn-danger" data-confirm="#delete-confirm" name="group-delet">
+                        {% icon 'fugue-skull' %}&nbsp;Delete
+                    </button>
+                    {% endspaceless %}
+                    {% spaceless %}
+                    <button class="btn btn-primary" name="values-save">
+                        {% icon 'fugue-tick' %}&nbsp;Save
+                    </button>
+                    {% endspaceless %}
+                </div>
+            </div>
+            <div class="modal hide fade" id="delete-confirm">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h3>Deleting a pricing group</h3>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure that you want to delete the group <strong>{{ group_name }}</strong> for <strong>{{ group.date.year }}-{{ group.date.month }}</strong>?</p>
+                </div>
+                <div class="modal-footer">
+                    <a href="#" class="btn" data-dismiss="modal">Don't delete</a>
+                    {% spaceless %}
+                    <button class="btn btn-danger" name="group-delete">
+                        {% icon 'fugue-skull' %}&nbsp;Delete
+                    </button>
+                    {% endspaceless %}
+                </div>
             </div>
         </form>
         <form class="form form-inline" method="POST">
@@ -170,4 +194,3 @@
         {% tab_menu group_items group_name side='right' %}
     </div>
 {% endblock %}
-
