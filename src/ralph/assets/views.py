@@ -260,8 +260,8 @@ class AddDevice(Base):
                 )
             else:
                 return HttpResponseRedirect(
-                    '/assets/%s/bulkedit/?select=%s' %
-                        (cat, '&select='.join(["%s" % id for id in ids]))
+                    '/assets/%s/bulkedit/?select=%s' % (
+                        cat, '&select='.join(["%s" % id for id in ids]))
                 )
         else:
             messages.error(self.request, _("Please correct the errors."))

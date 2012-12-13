@@ -129,7 +129,6 @@ class BasePartForm(ModelForm):
             self.fields['device'].initial = self.instance.device.id
 
 
-
 def _validate_multivalue_data(data):
     error_msg = _("Field can't be empty. Please put the items separated "
                   "by new line or comma.")

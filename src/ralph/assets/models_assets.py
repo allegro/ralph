@@ -257,4 +257,3 @@ class PartInfo(TimeTrackable, SavingUser):
         self.save_comment = None
         self.saving_user = None
         super(PartInfo, self).__init__(*args, **kwargs)
-
