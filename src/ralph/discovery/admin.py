@@ -39,6 +39,8 @@ class NetworkAdminForm(forms.ModelForm):
         collisions = m.Network.objects.filter(
             max_ip__gte=min_ip, min_ip__lte=max_ip
         )
+        if self.instance.id:
+            collisions = collisions.exclude(pk=self.instance.id)
         if collisions:
             msg = "Colliding networks: %s" % (
                 ", ".join([network.name for network in collisions])
