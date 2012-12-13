@@ -1,0 +1,36 @@
+{% extends 'assets/base.html' %}
+
+{% block content %}
+<div class="row">
+  <h3>{% block form_title %}{% endblock %}</h3>
+</div>
+
+<form id="{{ form_id }}" class="form form-horizontal" method="POST"{% if edit_mode %} enctype="multipart/form-data"{% endif %}>
+  {% csrf_token %}
+  <div class="row">
+    <div class="span6 well">
+      {% for field in asset_form %}{% if field.html_name != 'barcode' and field.html_name != 'sn' or edit_mode %}
+      <div class="control-group{% if field.errors %} error{% endif %}">
+        <label class="control-label">{{ field.label }}</label>
+        <div class="form-field controls">
+          {{ field }}
+          {% if field.errors %}
+          <span class="help-inline">{% for error in field.errors %}{{ error }} {% endfor %}</span>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}{% endfor %}
+      {% block additional_inputs %}{% endblock %}
+    </div>
+    {% block multivalue_inputs %}{% endblock %}
+    {% block office_info_inputs %}{% endblock %}
+  </div>
+  <div class="row">
+    <div class="span12">
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Save</button>
+      </div>
+    </div>
+  </div>
+</form>
+{% endblock %}

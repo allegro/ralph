@@ -1,0 +1,35 @@
+{% extends 'ui/base.html' %}
+{% load bob %}
+{% load icons %}
+{% block extra_headers %}
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}assets/css/style.css">
+  {% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+<script type="text/javascript">
+	showAddAnotherPopup = function(e) {
+		window.open(e.href + e.previousElementSibling.value);
+		if (typeof(this.event) != 'undefined') {
+			this.event.preventDefault();
+		};
+		return false;
+}
+</script>
+{% endblock %}
+{% block contentarea %}
+        {% block content %}
+        {% endblock %}
+{% endblock %}
+
+{% block sidebar %}
+    {% if sidebar_items %}
+        {% sidebar_menu sidebar_items sidebar_selected %}
+    {% endif %}
+    {% block sidebar_search %}
+    {% endblock %}
+{% endblock %}
+
+{% block titlesubsection %}
+    {{ subsection }}{% if subsection %} - {% endif %}
+{% endblock %}
