@@ -32,28 +32,27 @@ deployment_accepted = Signal(providing_args=['deployment_id'])
 
 # Sanity checks - when Issue Tracker engine set to '', or some fields
 # are missing - fallback to NullIssueTracker engine
-NULL_ISSUE_TRACKER=False
+NULL_ISSUE_TRACKER = False
 try:
     # engine is set?
     if settings.ISSUETRACKERS['default']['ENGINE']:
-        ACTION_IN_PROGRESS=settings.ISSUETRACKERS['default']['OPA']['ACTIONS']['IN_PROGRESS']
-        ACTION_IN_DEPLOYMENT=settings.ISSUETRACKERS['default']['OPA']['ACTIONS']['IN_DEPLOYMENT']
-        ACTION_RESOLVED_FIXED=settings.ISSUETRACKERS['default']['OPA']['ACTIONS']['RESOLVED_FIXED']
-        DEFAULT_ASSIGNEE=settings.ISSUETRACKERS['default']['OPA']['DEFAULT_ASSIGNEE']
-        NULL_ISSUE_TRACKER=False
+        ACTION_IN_PROGRESS = settings.ISSUETRACKERS['default']['OPA']['ACTIONS']['IN_PROGRESS']
+        ACTION_IN_DEPLOYMENT = settings.ISSUETRACKERS['default']['OPA']['ACTIONS']['IN_DEPLOYMENT']
+        ACTION_RESOLVED_FIXED = settings.ISSUETRACKERS['default']['OPA']['ACTIONS']['RESOLVED_FIXED']
+        DEFAULT_ASSIGNEE = settings.ISSUETRACKERS['default']['OPA']['DEFAULT_ASSIGNEE']
+        NULL_ISSUE_TRACKER = False
     else:
-        NULL_ISSUE_TRACKER=True
+        NULL_ISSUE_TRACKER = True
 except KeyError as e:
     # some keys not set
     raise ImproperlyConfigured("Expected %r in ISSUETRACKERS configuration." % e)
-    NULL_ISSUE_TRACKER=True
+    NULL_ISSUE_TRACKER = True
 
 if NULL_ISSUE_TRACKER:
-    ACTION_IN_PROGRESS=''
-    ACTION_IN_DEPLOYMENT=''
-    ACTION_RESOLVED_FIXED=''
-    DEFAULT_ASSIGNEE=''
-
+    ACTION_IN_PROGRESS = ''
+    ACTION_IN_DEPLOYMENT = ''
+    ACTION_RESOLVED_FIXED = ''
+    DEFAULT_ASSIGNEE = ''
 
 bugtracker_transition_ids = dict(
     opened=None,
@@ -61,6 +60,7 @@ bugtracker_transition_ids = dict(
     in_deployment=ACTION_IN_DEPLOYMENT,
     resolved_fixed=ACTION_RESOLVED_FIXED,
 )
+
 
 def get_login_from_owner_name(owner):
     def normalize_name(name):
@@ -137,7 +137,7 @@ class PrebootFile(Named):
     def get_filesize_display(self):
         template = """binary {size:.2f} MB"""
         return template.format(
-            size=self.file.size/1024/1024,
+            size=self.file.size / 1024 / 1024,
         )
 
 
@@ -152,7 +152,7 @@ class Preboot(Named, TimeTrackable):
 
 class Deployment(Auditable):
     device = db.ForeignKey(Device)
-    mac =  MACAddressField()
+    mac = MACAddressField()
     status = db.IntegerField(choices=DeploymentStatus(),
         default=DeploymentStatus.open.id)
     ip = db.IPAddressField(verbose_name=_("IP address"))
@@ -167,7 +167,7 @@ class Deployment(Auditable):
     done_plugins = db.TextField(verbose_name=_("done plugins"),
         blank=True, default='')
     is_running = db.BooleanField(verbose_name=_("is running"),
-        default=False) # a database-level lock for deployment-related tasks
+        default=False)   # a database-level lock for deployment-related tasks
     puppet_certificate_revoked = db.BooleanField(default=False)
 
     class Meta:
@@ -178,9 +178,9 @@ class Deployment(Auditable):
         bowner = get_business_owner(self.device)
         towner = get_technical_owner(self.device)
         params = dict(
-            ci_uid = CI.get_uid_by_content_object(self.device),
-            description = 'Please accept in order to continue deployment.',
-            summary = '%s - acceptance request for deployment' % unicode(self.device),
+            ci_uid=CI.get_uid_by_content_object(self.device),
+            description='Please accept in order to continue deployment.',
+            summary='%s - acceptance request for deployment' % unicode(self.device),
             technical_assignee=towner,
             business_assignee=bowner,
         )
@@ -204,4 +204,4 @@ def handle_deployment_accepted(sender, deployment_id, **kwargs):
     pass
 
 # Import all the plugins
-import ralph.deployment.plugins
+import ralph.deployment.plugins   # noqa

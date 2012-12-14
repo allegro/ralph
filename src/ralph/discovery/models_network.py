@@ -34,7 +34,8 @@ class NetworkKind(Named):
 
 class AbstractNetwork(db.Model):
     address = db.CharField(
-        _("network address"), help_text=_("Presented as string."),
+        _("network address"),
+        help_text=_("Presented as string (e.g. 192.168.0.0/24)"),
         max_length=len("xxx.xxx.xxx.xxx/xx"), unique=True,
     )
     gateway = db.IPAddressField(
