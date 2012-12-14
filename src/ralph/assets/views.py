@@ -614,7 +614,7 @@ class BulkEdit(Base):
                 instances = self.asset_formset.save(commit=False)
                 for instance in instances:
                     instance.modified_by = self.request.user.get_profile()
-                    instance.save()
+                    instance.save(user=self.request.user)
             messages.success(self.request, _("Changes saved."))
             return HttpResponseRedirect(self.request.get_full_path())
         messages.error(self.request, _("Please correct the errors."))
@@ -658,5 +658,5 @@ class DeleteAsset(AssetsMixin):
                     device=self.asset
                 ).update(device=None)
             self.asset.deleted = True
-            self.asset.save()
+            self.asset.save(user=self.request.user)
             return HttpResponseRedirect(self.back_to)
