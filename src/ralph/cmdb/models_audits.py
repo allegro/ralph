@@ -18,14 +18,15 @@ from ralph.cmdb.integration.issuetracker import IssueTracker
 from ralph.cmdb.models import CI
 
 
+def _normalize_name(name):
+    # Polish Ł is not handled properly
+    ret = name.lower().replace(' ', '.').replace(
+        'Ł', 'L').replace('ł', 'l')
+    return unicodedata.normalize('NFD', ret).encode('ascii', 'ignore')
+
+
 def get_login_from_owner_name(owner):
-    def normalize_name(name):
-        # Polish Ł is not handled properly
-        ret = name.lower().replace(' ', '.').replace(
-            'Ł', 'L').replace('ł', 'l')
-        return unicodedata.normalize('NFD', ret).encode('ascii', 'ignore')
-    return normalize_name(owner.first_name) + '.' + normalize_name(
-        owner.last_name)
+    return '.'.join(_normalize_name(n) for n in (owner.first_name, owner.last_name))
 
 
 def get_technical_owner(device):
