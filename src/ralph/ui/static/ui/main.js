@@ -142,12 +142,7 @@ $(function ($) {
     $('select#id_venture').each(venture_changed);
 
     $('.datepicker').datepicker({format: 'yyyy-mm-dd', autoclose: true}).click(function(){
-        if ($(this).attr('name') =='start'){
-            $("input[name='end']").datepicker('hide');
-        }
-        if ($(this).attr('name') =='end'){
-            $("input[name='start']").datepicker('hide');
-        }
+        $("input[name!='" + $(this).attr('name') + "']").datepicker('hide');
     });
 
     var parseDate = function (input, format) {

@@ -14,6 +14,7 @@ import zlib
 
 Eth = namedtuple('Eth', 'label mac speed')
 
+
 def untangle(seq):
     if isinstance(seq, (list, tuple, set)):
         for elem in seq:
@@ -23,7 +24,7 @@ def untangle(seq):
         yield seq
 
 
-BASE64_ALPHABET = re.compile(b'^[A-Za-z0-9+/\s]*={0,2}$')
+BASE64_ALPHABET = re.compile(b'^[A-Za-z0-9+/\s]*={0,2}$', flags=re.MULTILINE)
 
 
 def uncompress_base64_data(data):
@@ -37,7 +38,7 @@ def uncompress_base64_data(data):
         try:
             data = base64.b64decode(data)
         except TypeError:
-            pass # padding error
+            pass  # padding error
     try:
         data = zlib.decompress(data)
     except zlib.error:

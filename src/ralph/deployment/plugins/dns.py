@@ -11,7 +11,7 @@ from ralph.dnsedit.util import reset_dns
 from ralph.deployment.models import Deployment
 
 
-@plugin.register(chain='deployment', requires=['ticket'], priority=0)
+@plugin.register(chain='deployment', requires=[], priority=0)
 def dns(deployment_id):
     deployment = Deployment.objects.get(id=deployment_id)
     reset_dns(deployment.hostname, deployment.ip)
