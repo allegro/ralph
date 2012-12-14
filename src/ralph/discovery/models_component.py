@@ -12,7 +12,6 @@ import hashlib
 import datetime
 from decimal import Decimal
 
-from django.core.exceptions import ObjectDoesNotExist
 from django.db import models as db
 from django.utils.translation import ugettext_lazy as _
 from lck.django.common.models import (TimeTrackable, Named,
@@ -230,14 +229,12 @@ class Component(SavePrioritized, WithConcurrentGetOrCreate):
         if date is None:
             date = datetime.date.today()
         month = datetime.date(date.year, date.month, 1)
-        try:
-            formula = self.model.group.pricingformula_set.get(
-                group__date=month,
-                group__devices=self.device,
-            )
-        except ObjectDoesNotExist:
-            return None
-        return formula
+        for formula in self.model.group.pricingformula_set.filter(
+            group__date=month,
+            group__devices=self.device,
+        ):
+            return formula
+        return None
 
     def get_price(self):
         if not self.model:
@@ -296,6 +293,14 @@ class DiskShare(Component):
         return (self.size or 0) + (self.snapshot_size or 0)
 
     def get_price(self):
+        """
+        Return the price of the disk share. This is calculated as for all
+        other components, unless the share is in a currently active pricing
+        group -- then the formula for that particular component from that
+        pricing group is used. In case the formula is invalid in some way
+        for the specified values (for example, it has division by zero),
+        NaN is returned instead of a price.
+        """
         if not (self.model and self.model.group):
             return 0
         size = self.get_total_size() / 1024
@@ -305,8 +310,7 @@ class DiskShare(Component):
                 return float(formula.get_value(size=Decimal(size)))
             except Exception:
                 return float('NaN')
-        else:
-            return (self.model.group.price or 0) * size
+        return (self.model.group.price or 0) * size
 
 
 class DiskShareMount(TimeTrackable, WithConcurrentGetOrCreate):

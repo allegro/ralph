@@ -8,6 +8,7 @@ from __future__ import unicode_literals
 from django.db import models as db
 
 from lck.django.choices import Choices
+from lck.django.common import nested_commit_on_success
 
 
 class PricingAggregate(Choices):
@@ -32,10 +33,14 @@ class PricingGroup(db.Model):
 
     class Meta:
         unique_together = ('name', 'date')
+        ordering = ('name', 'date')
 
-    def clone_contents(self, source):
+    @nested_commit_on_success
+    def copy_from(self, source):
         """
-        Copy all the devices, variables and values from the specified group.
+        Copy the variables, formulas and values from the specified group.
+        Only call on empty groups right after creating them.
+        Don't call on itself.
         """
         for device in source.devices.all():
             self.devices.add(device)
@@ -60,6 +65,9 @@ class PricingGroup(db.Model):
                     device=value.device,
                 ).save()
 
+    def __unicode__(self):
+        return self.name
+
 
 class PricingFormula(db.Model):
     """
@@ -68,6 +76,13 @@ class PricingFormula(db.Model):
     group = db.ForeignKey('discovery.PricingGroup')
     component_group = db.ForeignKey('discovery.ComponentModelGroup')
     formula = db.TextField()
+
+    class Meta:
+        unique_together = ('group', 'component_group')
+        ordering = ('group', 'component_group')
+
+    def __unicode__(self):
+        return self.formula
 
     @staticmethod
     def eval_formula(formula, variables):
@@ -95,9 +110,6 @@ class PricingFormula(db.Model):
         except Exception as e:
             return unicode(e)
 
-    class Meta:
-        unique_together = ('group', 'component_group')
-
 
 class PricingVariable(db.Model):
     """A variable that is used in the pricing formulas."""
@@ -109,14 +121,17 @@ class PricingVariable(db.Model):
         default=PricingAggregate.sum.id,
     )
 
+    class Meta:
+        unique_together = ('group', 'name')
+        ordering = ('group', 'name')
+
     def get_value(self):
         function = PricingAggregate.FromID(self.aggregate).function
         d = self.pricingvalue_set.aggregate(function('value'))
         return d.values()[0]
 
-    class Meta:
-        unique_together = ('group', 'name')
-
+    def __unicode__(self):
+        return self.name
 
 
 class PricingValue(db.Model):
@@ -128,4 +143,8 @@ class PricingValue(db.Model):
 
     class Meta:
         unique_together = ('device', 'variable')
+        ordering = ('device', 'variable')
+
+    def __unicode__(self):
+        return unicode(self.value)
 
