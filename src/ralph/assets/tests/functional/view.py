@@ -45,7 +45,7 @@ class TestDataDisplay(TestCase):
                 AssetType.name_from_id(first_table_row.type),
                 AssetStatus.name_from_id(first_table_row.status),
                 first_table_row.model.name,
-                first_table_row.device_info.warehouse.name,
+                first_table_row.warehouse.name,
             ],
             [
                 u'123456789',
