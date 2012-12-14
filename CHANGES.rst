@@ -1,6 +1,12 @@
 Change Log
 ----------
 
+Development
+~~~~~~~~~~~
+
+* Introduced pricing groups for the disk shares
+
+
 1.1.11
 ~~~~~~
 
