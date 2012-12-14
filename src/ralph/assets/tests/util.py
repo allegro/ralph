@@ -19,6 +19,10 @@ DEFAULT_ASSET_DATA = dict(
     source=AssetSource.shipment,
 )
 
+SCREEN_ERROR_MESSAGES = dict(
+    duplicated_sn_or_bc='Please correct duplicated serial numbers or barcodes.'
+)
+
 
 def create_manufacturer(name=DEFAULT_ASSET_DATA['manufacturer']):
     manufacturer = AssetManufacturer(name=name)
@@ -44,13 +48,8 @@ def create_model(name=DEFAULT_ASSET_DATA['model'], manufacturer=None):
     return model
 
 
-def create_device(size=1, warehouse=None):
-    if not warehouse:
-        warehouse = create_warehouse()
-    device = DeviceInfo(
-        size=size,
-        warehouse=create_warehouse(warehouse),
-    )
+def create_device(size=1):
+    device = DeviceInfo(size=size)
     device.save()
     return device
 
@@ -71,6 +70,8 @@ def create_asset(**kwargs):
         kwargs.update(support_period=24)
     if not kwargs.get('support_type'):
         kwargs.update(support_type='standard')
+    if not kwargs.get('warehouse'):
+        kwargs.update(warehouse=create_warehouse())
     if kwargs.get('sn'):
         asset = Asset(**kwargs)
         asset.save()
