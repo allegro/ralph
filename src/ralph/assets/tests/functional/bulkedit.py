@@ -5,8 +5,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import datetime
-
 from django.test import TestCase
 
 from ralph.assets.models_assets import AssetType, AssetStatus, AssetSource
@@ -72,7 +70,7 @@ class TestBulkEdit(TestCase):
             'form-1-provider': 'Provider2',
             'form-1-status': AssetStatus.waiting_for_release.id,
             'form-1-source': AssetSource.shipment.id,
-            }
+        }
         post = self.client.post(url, post_data, follow=True)
 
         # if everything is ok, server return response code = 302, and
@@ -127,4 +125,3 @@ class TestBulkEdit(TestCase):
             if post.content.startswith(msg_error, i - 1):
                 find.append(i)
         self.assertEqual(len(find), 1)
-
