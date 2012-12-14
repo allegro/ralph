@@ -20,12 +20,12 @@ def get_current_deployment(request):
     deployment = None
     try:
         deployment = Deployment.objects.get(ip=ip,
-            status=DeploymentStatus.in_deployment)
+            status=DeploymentStatus.in_progress)
     except Deployment.DoesNotExist:
         if request.user.is_superuser and request.GET.get('ip'):
             ip = request.GET.get('ip')
             deployment = Deployment.objects.get(ip=ip,
-                status=DeploymentStatus.in_deployment)
+                status=DeploymentStatus.in_progress)
     return deployment
 
 
@@ -81,7 +81,7 @@ def preboot_type_view(request, file_type):
 def preboot_complete_view(request):
     try:
         deployment = get_current_deployment(request)
-        deployment.status = DeploymentStatus.resolved_fixed
+        deployment.status = DeploymentStatus.done
         deployment.save()
         return HttpResponse()
     except Deployment.DoesNotExist:
