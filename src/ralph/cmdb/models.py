@@ -63,51 +63,51 @@ from ralph.cmdb.models_audits import (
 
 __all__ = [
     # constants
-    CI_RELATION_TYPES,
-    CI_STATE_TYPES,
-    CI_STATUS_TYPES,
-    CI_ATTRIBUTE_TYPES,
-    CI_CHANGE_TYPES,
-    CI_CHANGE_PRIORITY_TYPES,
-    CI_TYPES,
-    CI_CHANGE_REGISTRATION_TYPES,
+    'CI_RELATION_TYPES',
+    'CI_STATE_TYPES',
+    'CI_STATUS_TYPES',
+    'CI_ATTRIBUTE_TYPES',
+    'CI_CHANGE_TYPES',
+    'CI_CHANGE_PRIORITY_TYPES',
+    'CI_TYPES',
+    'CI_CHANGE_REGISTRATION_TYPES',
 
-    #base types
-    CI,
-    CIRelation,
-    CILayer,
-    CIType,
-    CIAttribute,
-    CIValueDate,
-    CIValueInteger,
-    CIValueFloat,
-    CIValueString,
-    CIValueChoice,
-    CIContentTypePrefix,
+    # base types
+    'CI',
+    'CIRelation',
+    'CILayer',
+    'CIType',
+    'CIAttribute',
+    'CIValueDate',
+    'CIValueInteger',
+    'CIValueFloat',
+    'CIValueString',
+    'CIValueChoice',
+    'CIContentTypePrefix',
 
     # owners
-    CIOwner,
-    CIOwnershipType,
+    'CIOwner',
+    'CIOwnershipType',
 
-    #change management types
-    CIChange,
-    CIChangeZabbixTrigger,
-    CIChangeStatusOfficeIncident,
-    CIChangeCMDBHistory,
-    CIChangeGit,
-    CIChangePuppet,
+    # change management types
+    'CIChange',
+    'CIChangeZabbixTrigger',
+    'CIChangeStatusOfficeIncident',
+    'CIChangeCMDBHistory',
+    'CIChangeGit',
+    'CIChangePuppet',
 
-    #puppet logger types
-    PuppetLog,
-    PuppetResourceStatus,
-    CIAttributeValue,
-    CIEvent,
-    CIProblem,
-    CIIncident,
+    # puppet logger types
+    'PuppetLog',
+    'PuppetResourceStatus',
+    'CIAttributeValue',
+    'CIEvent',
+    'CIProblem',
+    'CIIncident',
 
-    #audit
-    Auditable,
-    AuditStatus,
+    # audits
+    'Auditable',
+    'AuditStatus',
 ]
 
 # hook signals, don't remove this.
