@@ -50,11 +50,26 @@ def preboot_file_name(instance, filename):
 
 
 class PrebootFile(Named):
-    ftype = ChoiceField(verbose_name=_("file type"), choices=FileType,
-                        default=FileType.other)
-    raw_config = db.TextField(verbose_name=_("raw config"), blank=True)
-    file = db.FileField(verbose_name=_("file"), upload_to=preboot_file_name,
-                        null=True, blank=True, default=None)
+    ftype = ChoiceField(
+        _("file type"),
+        choices=FileType,
+        default=FileType.other,
+    )
+    raw_config = db.TextField(
+        _("raw config"),
+        blank=True,
+        help_text=_("All newline characters will be converted to Unix \\n "
+                    "newlines. You can use {{variables}} in the body. "
+                    "Available variables: filename, filetype, mac, ip, "
+                    "hostname, venture and venture_role."),
+    )
+    file = db.FileField(
+        _("file"),
+        upload_to=preboot_file_name,
+        null=True,
+        blank=True,
+        default=None,
+    )
 
     class Meta:
         verbose_name = _("preboot file")
@@ -71,8 +86,12 @@ class PrebootFile(Named):
 
 
 class Preboot(Named, TimeTrackable):
-    files = db.ManyToManyField(PrebootFile, null=True, blank=True,
-                               verbose_name=_("files"))
+    files = db.ManyToManyField(
+        PrebootFile,
+        null=True,
+        blank=True,
+        verbose_name=_("files"),
+    )
 
     class Meta:
         verbose_name = _("preboot")
@@ -91,29 +110,55 @@ class Deployment(TimeTrackable):
     )
     device = db.ForeignKey(Device)
     mac = MACAddressField()
-    status = db.IntegerField(choices=DeploymentStatus(),
-                             default=DeploymentStatus.open.id)
-    ip = db.IPAddressField(verbose_name=_("IP address"))
-    hostname = db.CharField(verbose_name=_("hostname"), max_length=255,
-                            unique=True)
-    preboot = db.ForeignKey(Preboot, verbose_name=_("preboot"), null=True,
-                            on_delete=db.SET_NULL)
-    venture = db.ForeignKey('business.Venture', verbose_name=_("venture"),
-                            null=True, on_delete=db.SET_NULL)
-    venture_role = db.ForeignKey(
-        'business.VentureRole', null=True,
-        verbose_name=_("role"), on_delete=db.SET_NULL
+    status = db.IntegerField(
+        choices=DeploymentStatus(),
+        default=DeploymentStatus.open.id,
     )
-    done_plugins = db.TextField(verbose_name=_("done plugins"),
-                                blank=True, default='')
+    ip = db.IPAddressField(_("IP address"))
+    hostname = db.CharField(
+        _("hostname"),
+        max_length=255,
+        unique=True,
+    )
+    preboot = db.ForeignKey(
+        Preboot,
+        verbose_name=_("preboot"),
+        null=True,
+        on_delete=db.SET_NULL,
+    )
+    venture = db.ForeignKey(
+        'business.Venture',
+        verbose_name=_("venture"),
+        null=True,
+        on_delete=db.SET_NULL,
+    )
+    venture_role = db.ForeignKey(
+        'business.VentureRole',
+        null=True,
+        verbose_name=_("role"),
+        on_delete=db.SET_NULL,
+    )
+    done_plugins = db.TextField(
+        _("done plugins"),
+        blank=True,
+        default='',)
     is_running = db.BooleanField(
-        verbose_name=_("is running"),
-        default=False)   # a database-level lock for deployment-related tasks
+        _("is running"),
+        default=False,
+    )   # a database-level lock for deployment-related tasks
     puppet_certificate_revoked = db.BooleanField(default=False)
 
     class Meta:
         verbose_name = _("deployment")
         verbose_name_plural = _("deployments")
+
+    def __unicode__(self):
+        return "{} as {}/{} - {}".format(
+            self.hostname,
+            self.venture.path,
+            self.venture_role.path,
+            self.get_status_display(),
+        )
 
     def save(self, *args, **kwargs):
         if self.status_changed():
