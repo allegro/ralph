@@ -405,7 +405,7 @@ class EditDevice(Base):
             'office_info_form': self.office_info_form,
             'form_id': 'edit_device_asset_form',
             'edit_mode': True,
-            'MaMaMastatus_history': status_history,
+            'status_history': status_history,
         })
         return ret
 
