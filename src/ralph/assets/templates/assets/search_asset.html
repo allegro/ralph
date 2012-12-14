@@ -61,7 +61,7 @@
                     <td>{{row.order_no}}</td>
                     <td>{{row.invoice_date}}</td>
                     <td>{{row.get_status_display}}</td>
-                    <td>{{row.device_info.warehouse}}</td>
+                    <td>{{row.warehouse}}</td>
                     <td>
                     {% if row.get_data_type == 'device' %}
                         <a href="./edit/device/{{row.id}}">Edit</a> |
