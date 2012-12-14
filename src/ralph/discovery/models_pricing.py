@@ -126,7 +126,7 @@ class PricingVariable(db.Model):
         ordering = ('group', 'name')
 
     def get_value(self):
-        function = PricingAggregate.FromID(self.aggregate).function
+        function = PricingAggregate.from_id(self.aggregate).function
         d = self.pricingvalue_set.aggregate(function('value'))
         return d.values()[0]
 

@@ -40,11 +40,6 @@ class ModelGroupForm(forms.ModelForm):
 
 
 class ComponentModelGroupForm(ModelGroupForm):
-    class Meta(ModelGroupForm.Meta):
-        model = ComponentModelGroup
-        exclude = ModelGroupForm.Meta.exclude + [
-                'price', 'size_modifier', 'size_unit', 'per_size']
-
     human_price = forms.DecimalField(label="Purchase price",
                                      widget=CurrencyWidget)
     human_unit = forms.ChoiceField(label="This price is for", choices=[
@@ -55,6 +50,11 @@ class ComponentModelGroupForm(ModelGroupForm):
         ('CPUh', '1 CPU hour'),
         ('GiBh', '1 GiB hour'),
     ])
+
+    class Meta(ModelGroupForm.Meta):
+        model = ComponentModelGroup
+        exclude = ModelGroupForm.Meta.exclude + [
+                'price', 'size_modifier', 'size_unit', 'per_size']
 
     def __init__(self, *args, **kwargs):
         super(ComponentModelGroupForm, self).__init__(*args, **kwargs)
@@ -100,14 +100,41 @@ class DeviceModelGroupForm(ModelGroupForm):
 
 
 class PricingGroupForm(forms.ModelForm):
-    class Meta:
-        model = PricingGroup
-        fields = ('name', 'clone')
-
     clone = forms.BooleanField(
         label="Clone the last group with that name",
         required=False,
     )
+    upload = forms.FileField(
+        label="Import a CVS file with variables",
+        required=False,
+    )
+
+    class Meta:
+        model = PricingGroup
+        fields = ('name', 'clone', 'upload')
+
+    def __init__(self, date, *args, **kwargs):
+        super(PricingGroupForm, self).__init__(*args, **kwargs)
+        self.date = date
+
+    def clean_clone(self):
+        clone = self.cleaned_data['clone']
+        if clone and self.cleaned_data.get('upload'):
+            raise forms.ValidationError(
+                "Can't clone and import at the same time."
+            )
+        return clone
+
+    def clean_name(self):
+        name = self.cleaned_data['name']
+        if PricingGroup.objects.filter(
+            name=name,
+            date=self.date,
+        ).exclude(
+            id=self.instance.id
+        ).exists():
+            raise forms.ValidationError("This group already exists.")
+        return name
 
 
 class PricingDeviceForm(forms.Form):

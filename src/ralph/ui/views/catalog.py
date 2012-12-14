@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 
 import decimal
 import calendar
+import cStringIO
 import datetime
 
 from bob.menu import MenuItem, MenuHeader
@@ -15,6 +16,7 @@ from django.db import models as db
 from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.conf import settings
+from lck.django.common import nested_commit_on_success
 
 from ralph.account.models import Perm
 from ralph.discovery.models import (
@@ -35,6 +37,7 @@ from ralph.discovery.models import (
     Storage,
     PricingGroup,
     PricingValue,
+    PricingVariable,
 )
 from ralph.discovery.models_history import HistoryModelChange
 from ralph.ui.forms.catalog import (
@@ -47,7 +50,7 @@ from ralph.ui.forms.catalog import (
     PricingFormulaFormSet,
 )
 from ralph.ui.views.common import Base
-from ralph.util import pricing
+from ralph.util import pricing, csvutil
 from ralph.util.presentation import COMPONENT_ICONS, DEVICE_ICONS
 
 
@@ -505,7 +508,11 @@ class CatalogPricingNew(CatalogPricing):
 
     def post(self, *args, **kwargs):
         self.parse_args()
-        self.form = PricingGroupForm(self.request.POST)
+        self.form = PricingGroupForm(
+            self.date,
+            self.request.POST,
+            self.request.FILES,
+        )
         if self.form.is_valid():
             self.form.save(commit=False)
             self.form.instance.date = datetime.date(self.year, self.month, 1)
@@ -517,6 +524,11 @@ class CatalogPricingNew(CatalogPricing):
                     ).order_by('-date')[:1]
                 if sources.exists():
                     self.form.instance.clone_contents(sources[0])
+            elif self.form.cleaned_data['upload']:
+                self.import_csv(
+                    self.form.instance,
+                    self.request.FILES['upload']
+                )
             messages.success(
                 self.request,
                 "Group %s saved." % self.form.instance.name
@@ -525,15 +537,67 @@ class CatalogPricingNew(CatalogPricing):
         messages.error(self.request, "Errors in the form.")
         return self.get(*args, **kwargs)
 
+    @nested_commit_on_success
+    def import_csv(self, group, uploaded_file):
+        if uploaded_file.size > 4 * 1024 * 1024:
+            messages.error(self.request, "File too big to import.")
+            return
+        f = cStringIO.StringIO(uploaded_file.read())
+        rows = iter(csvutil.UnicodeReader(f))
+        header = list(rows.next())
+        if header[0].strip() != 'sn':
+            messages.error(
+                self.request,
+                "The first row should have 'sn' followed by variable names."
+            )
+            return
+        variables = [name.strip() for name in header[1:]]
+        devices = {}
+        try:
+            for row in rows:
+                if not row:
+                    continue
+                devices[row[0]] = dict(zip(
+                    variables,
+                    (decimal.Decimal(v) for v in row[1:]),
+                ))
+        except ValueError as e:
+            messages.error(self.request, "Invalid value: %s." % e)
+            return
+        variable_dict = {}
+        for name in variables:
+            v = PricingVariable(name=name, group=group)
+            v.save()
+            variable_dict[name] = v
+        for sn, values in devices.iteritems():
+            try:
+                device = Device.objects.get(sn=sn)
+            except Device.DoesNotExist:
+                messages.warning(
+                    self.request,
+                    "Serial number %s not found, skipping." % sn
+                )
+                continue
+            group.devices.add(device)
+            for name, value in values.iteritems():
+                PricingValue(
+                    variable=variable_dict[name],
+                    device=device,
+                    value=value,
+                ).save()
+        group.save()
+
     def get_context_data(self, **kwargs):
         ret = super(CatalogPricingNew, self).get_context_data(**kwargs)
+        self.parse_args()
         if self.form is None:
-            self.form = PricingGroupForm()
+            self.form = PricingGroupForm(self.date)
         ret.update({
             'form': self.form,
             'group_name': '',
         })
         return ret
+
 
 class CatalogPricingGroup(CatalogPricing):
     def __init__(self, *args, **kwargs):
