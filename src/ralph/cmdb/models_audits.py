@@ -26,7 +26,8 @@ def _normalize_name(name):
 
 
 def get_login_from_owner_name(owner):
-    return '.'.join(_normalize_name(n) for n in (owner.first_name, owner.last_name))
+    return '.'.join(_normalize_name(n) for n in (
+        owner.first_name, owner.last_name))
 
 
 def get_technical_owner(device):
