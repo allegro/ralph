@@ -32,6 +32,7 @@ DEVICE_SORT_COLUMNS = {
     'management': ('management__address',),
     'created': ('created',),
     'lastseen': ('last_seen',),
+    'lastping': ('ipaddress__last_seen',),
     'remarks': ('remarks',),
     'purchase_date': ('purchase_date',),
     'deprecation_date': ('deprecation_date',),
