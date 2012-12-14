@@ -11,8 +11,8 @@ from django.http import HttpResponseRedirect
 from django.contrib import messages
 
 from ralph.discovery.models import Device
-from ralph.ui.views.common import BaseMixin
-from ralph.ui.forms import DeploymentForm
+from ralph.ui.views.common import BaseMixin, Base
+from ralph.ui.forms import DeploymentForm, PrepareMultipleDeploymentForm
 
 
 class Deployment(BaseMixin, CreateView):
@@ -36,4 +36,31 @@ class Deployment(BaseMixin, CreateView):
         model.save()
         messages.success(self.request, "Deployment initiated.")
         return HttpResponseRedirect(
-                self.request.path + '/../../info/%d' % model.device.id)
+            self.request.path + '/../../info/%d' % model.device.id
+        )
+
+
+class PrepareMultipleServersDeployment(Base):
+    template_name = 'ui/prepare_multiple_deploy.html'
+
+    def get_context_data(self, *args, **kwargs):
+        ret = super(
+            PrepareMultipleServersDeployment, self
+        ).get_context_data(*args, **kwargs)
+        ret.update({
+            'form': self.form
+        })
+        return ret
+
+    def get(self, *args, **kwargs):
+        self.form = PrepareMultipleDeploymentForm()
+        return super(
+            PrepareMultipleServersDeployment, self
+        ).get(*args, **kwargs)
+
+    def post(self, *args, **kwargs):
+        self.form = PrepareMultipleDeploymentForm(self.request.POST)
+
+        return super(
+            PrepareMultipleServersDeployment, self
+        ).get(*args, **kwargs)
