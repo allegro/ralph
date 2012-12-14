@@ -24,6 +24,7 @@ FAMILIES = {
     'Allegro-Software-RomPager': 'RomPager',
     'cisco-IOS': 'Cisco',
     'IBM_HTTP_Server': 'IBM',
+    'Mbedthis-Appweb': 'Dell',
     '': 'Unspecified',
 }
 

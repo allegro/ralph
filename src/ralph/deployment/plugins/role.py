@@ -10,7 +10,7 @@ from ralph.util import plugin
 from ralph.deployment.models import Deployment
 
 
-@plugin.register(chain='deployment', requires=['ticket'], priority=0)
+@plugin.register(chain='deployment', requires=[], priority=0)
 def role(deployment_id):
     deployment = Deployment.objects.get(id=deployment_id)
     deployment.device.venture = deployment.venture
