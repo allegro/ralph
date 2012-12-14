@@ -7,9 +7,11 @@ from __future__ import unicode_literals
 
 import re
 
+import ipaddr
 from powerdns.models import Record
 
-from ralph.discovery.models import DataCenter
+from ralph.discovery.models import DataCenter, Network, IPAddress
+from ralph.dnsedit.models import DHCPEntry
 
 
 def get_nexthostname(dc_name):
@@ -34,7 +36,7 @@ def get_nexthostname(dc_name):
         next_number = min_number
         try:
             record = Record.objects.filter(
-                domain__name__iregex=regex
+                domain__name__iregex=regex, type='A'
             ).order_by('-domain__name')[0]
             name_match = re.search(
                 template.replace(
@@ -56,5 +58,25 @@ def get_nexthostname(dc_name):
 
 
 def get_nextip(network_name):
-    pass
-
+    try:
+        network = Network.objects.get(name=network_name)
+    except Network.DoesNotExist:
+        return False, "", "Specified network doesn't exists."
+    addresses_in_dhcp = DHCPEntry.objects.filter(
+        number__gte=network.min_ip,
+        number__lte=network.max_ip
+    ).values_list('number', flat=True).order_by('number')
+    addresses_in_discovery = IPAddress.objects.filter(
+        number__gte=network.min_ip,
+        number__lte=network.max_ip
+    ).values_list('number', flat=True).order_by('number')
+    addresses_in_dns = Record.objects.filter(
+        number__gte=network.min_ip,
+        number__lte=network.max_ip
+    ).values_list('number', flat=True).order_by('number')
+    for ip_number in range(network.min_ip + 1, network.max_ip + 1):
+        if (ip_number not in addresses_in_dhcp and
+            ip_number not in addresses_in_discovery and
+            ip_number not in addresses_in_dns):
+            return True, str(ipaddr.IPAddress(ip_number)), ""
+    return False, "", "Couldn't determine the first free IP."
