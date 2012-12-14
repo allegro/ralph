@@ -6,11 +6,16 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from ralph.assets.models_assets import Asset
+
 
 def field_changes(instance, ignore=('id',)):
     """Yield the name, original value and new value for each changed field.
     Skip all insignificant fields and those passed in ``ignore``.
+    When create asset, will be added first asset status into history
     """
+    if isinstance(instance, Asset) and instance.cache_version == 0:
+        yield 'status', '–', get_choices(instance, 'status', instance.status)
     for field, orig in instance.dirty_fields.iteritems():
         if field in ignore:
             continue
