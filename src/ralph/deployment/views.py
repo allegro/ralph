@@ -9,6 +9,7 @@ from __future__ import unicode_literals
 from django.conf import settings
 from django.http import (HttpResponse, HttpResponseNotFound,
     HttpResponseForbidden)
+from django.template import Template, Context
 from lck.django.common import remote_addr, render
 
 from ralph.deployment.models import (Deployment, DeploymentStatus, FileType,
@@ -29,7 +30,13 @@ def get_current_deployment(request):
     return deployment
 
 
-def get_response(pbf):
+def get_response(pbf, deployment):
+    """Return a HTTP response for the given preboot file object.
+
+    For an attachment, return its contents as-is. If settings.USE_XSENDFILE is
+    used, use that instead of sending raw data.
+
+    For raw configuration, render it as a Django template and serve it."""
     if pbf.file:
         if settings.USE_XSENDFILE:
             response = HttpResponse(content_type='application/force-download')
@@ -41,7 +48,21 @@ def get_response(pbf):
                     content_type='application/force-download')
         response['Content-Length'] = pbf.file.size
     else:
-        response = HttpResponse(pbf.raw_config, content_type='text/plain')
+        raw_config = pbf.raw_config.replace('\r\n', '\n').replace('\r', '\n')
+        raw_config = '{%load raw_config%}' + raw_config
+        tpl = Template(raw_config)
+        ctxt = Context(dict(
+            # preboot file
+            filename=pbf.name,
+            filetype=pbf.ftype.name,
+            # deployment
+            mac=deployment.mac,
+            ip=deployment.ip,
+            hostname=deployment.hostname,
+            venture=deployment.venture.symbol,
+            venture_role=deployment.venture_role.name,
+        ))
+        response = HttpResponse(tpl.render(ctxt), content_type='text/plain')
     response['Content-Disposition'] = 'attachment; filename=%s' % pbf.name
     return response
 
@@ -50,7 +71,7 @@ def preboot_raw_view(request, file_name):
     try:
         deployment = get_current_deployment(request)
         pbf = deployment.preboot.files.get(name=file_name)
-        return get_response(pbf)
+        return get_response(pbf, deployment)
     except (AttributeError, Deployment.DoesNotExist, PrebootFile.DoesNotExist,
         PrebootFile.MultipleObjectsReturned):
         pass
@@ -68,7 +89,7 @@ def preboot_type_view(request, file_type):
     try:
         deployment = get_current_deployment(request)
         pbf = deployment.preboot.files.get(ftype=ftype)
-        return get_response(pbf)
+        return get_response(pbf, deployment)
     except (AttributeError, Deployment.DoesNotExist, PrebootFile.DoesNotExist,
         PrebootFile.MultipleObjectsReturned):
         pass
