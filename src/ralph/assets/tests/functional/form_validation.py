@@ -27,7 +27,7 @@ class TestValidations(TestCase):
             sn='1234-1234-1234-1234'
         )
 
-        self.asset_with_duplicated_sn= create_asset(
+        self.asset_with_duplicated_sn = create_asset(
             sn='1111-1111-1111-1111'
         )
 
@@ -36,7 +36,7 @@ class TestValidations(TestCase):
             ('asset_form', 'model'),
             ('asset_form', 'support_period'),
             ('asset_form', 'support_type'),
-            ('device_info_form', 'warehouse'),
+            ('asset_form', 'warehouse'),
             ('asset_form', 'sn'),
         ]
 
@@ -60,14 +60,14 @@ class TestValidations(TestCase):
                 send_post, field[0], field[1], 'This field is required.'
             )
 
-    def test_invalid_fueld_value(self):
+    def test_invalid_field_value(self):
         # instead of integers we send strings, error should be thrown
         url = '/assets/back_office/add/device/'
         post_data = {
             'support_period': 'string',
             'size': 'string',
             'invoice_date': 'string',
-            }
+        }
         send_post = self.client.post(url, post_data)
         self.assertEqual(send_post.status_code, 200)
 
@@ -90,8 +90,8 @@ class TestValidations(TestCase):
             'form-INITIAL_FORMS': u'2',
             'form-MAX_NUM_FORMS': u'',
             'form-0-id': 1,
-            'form-0-type': AssetType.data_center.id, # Select field; value = 1
-            'form-0-model': self.model1.name, # u'Model1'
+            'form-0-type': AssetType.data_center.id,  # Select field; value = 1
+            'form-0-model': self.model1.name,  # u'Model1'
             'form-0-invoice_no': 'Invoice No1',
             'form-0-order_no': 'Order No1',
             'form-0-invoice_date': 'wrong_field_data',
@@ -101,10 +101,10 @@ class TestValidations(TestCase):
             'form-0-support_type': 'standard1',
             'form-0-support_void_reporting': 'on',
             'form-0-provider': 'Provider 1',
-            'form-0-status': AssetStatus.in_progress.id, # Select field; value = 2
-            'form-0-source': AssetSource.shipment.id, # Select field; value = 1
+            'form-0-status': AssetStatus.in_progress.id,  # Select field; value = 2
+            'form-0-source': AssetSource.shipment.id,  # Select field; value = 1
             'form-1-id': 2,
-            'form-1-type': AssetType.data_center.id, # Select field; value = 1
+            'form-1-type': AssetType.data_center.id,  # Select field; value = 1
             'form-1-model': '',
             'form-1-invoice_no': 'Invoice No2',
             'form-1-order_no': 'Order No2',
@@ -164,6 +164,7 @@ class TestValidations(TestCase):
         i = 0
         for i in range(len(send_post_with_empty_fields.content)):
             if send_post_with_empty_fields.content.startswith(
-                SCREEN_ERROR_MESSAGES['duplicated_sn_or_bc'], i - 1):
+                SCREEN_ERROR_MESSAGES['duplicated_sn_or_bc'], i - 1
+            ):
                 find.append(i)
         self.assertTrue(len(find) == 1)
