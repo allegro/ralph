@@ -241,4 +241,3 @@ class TestSearchDataRangeFields(TestCase):
 
         get_rows_from_table = get_content.context_data['page'].object_list
         self.assertEqual(len(get_rows_from_table), 3)
-
