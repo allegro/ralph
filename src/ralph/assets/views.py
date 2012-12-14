@@ -14,7 +14,7 @@ from django.db import transaction
 from django.db.models import Q
 from django.http import HttpResponseRedirect, Http404
 from django.forms.models import modelformset_factory
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.forms import (
