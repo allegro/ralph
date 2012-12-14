@@ -100,7 +100,7 @@ class DeviceForm(ModelForm):
 
     def clean_size(self):
         size = self.cleaned_data.get('size')
-        if size not in range(0, 65535):
+        if size not in range(0, 65536):
             raise ValidationError(
                 _("Invalid size, use range 0 to 65535")
             )

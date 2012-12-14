@@ -12,7 +12,7 @@ from ralph.assets.models_assets import Asset
 def field_changes(instance, ignore=('id',)):
     """Yield the name, original value and new value for each changed field.
     Skip all insignificant fields and those passed in ``ignore``.
-    When create asset, will be added first asset status into history
+    When creating asset, the first asset status will be added into the history.
     """
     if isinstance(instance, Asset) and instance.cache_version == 0:
         yield 'status', '–', get_choices(instance, 'status', instance.status)
