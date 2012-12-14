@@ -9,12 +9,17 @@ from django import forms
 from bob.forms import AutocompleteWidget
 
 from ralph.business.models import RoleProperty
+from ralph.deployment.util import (
+    is_mac_address_unknown, is_rack_exists, are_venture_and_role_exists,
+    is_preboot_exists
+)
 from ralph.deployment.models import Deployment
-from ralph.discovery.models import IPAddress
+from ralph.discovery.models_component import is_mac_valid
 from ralph.dnsedit.models import DHCPEntry
 from ralph.dnsedit.util import is_valid_hostname
 from ralph.ui.forms.util import all_ventures
 from ralph.ui.widgets import DateWidget, DeviceWidget
+from ralph.util import Eth
 
 
 class DateRangeForm(forms.Form):
@@ -115,6 +120,72 @@ class DeploymentForm(forms.ModelForm):
         if venture_role.check_ip(ip) is False:
             raise forms.ValidationError("Given IP isn't in the appropriate subnet")
         return ip
+
+
+class PrepareMultipleDeploymentForm(forms.Form):
+    csv = forms.CharField(
+        label="CSV", widget=forms.widgets.Textarea(attrs={'class': 'span12'}),
+        help_text="Template: mac;rack-serial-number;venture;role;preboot"
+    )
+
+    def clean_csv(self):
+        csv = self.cleaned_data['csv'].strip()
+        rows = csv.split("\n")
+        if not rows:
+            raise forms.ValidationError("Incorrect CSV format.")
+        parsed_macs = []
+        for row_number, row in enumerate(rows, start=1):
+            cols = row.split(";")
+            if len(cols) != 5:
+                raise forms.ValidationError(
+                    "Incorrect CSV format. See row %s" % row_number
+                )
+            for col_number, col in enumerate(cols, start=1):
+                value = col.strip()
+                if not value:
+                    raise forms.ValidationError(
+                        "Incorrect CSV format. See row %s col %s" % (
+                            row_number, col_number
+                        )
+                    )
+            mac = cols[0].strip()
+            if not is_mac_valid(Eth("", mac, "")):
+                raise forms.ValidationError(
+                    "Row %s: Invalid MAC address." % row_number
+                )
+            if not is_mac_address_unknown(mac):
+                raise forms.ValidationError(
+                    "Row %s: MAC address already exists." % row_number
+                )
+            if mac in parsed_macs:
+                raise forms.ValidationError(
+                    "Row %s: Duplicated MAC address. "
+                    "Please check previos rows..." % row_number
+                )
+            parsed_macs.append(mac)
+            rack_sn = cols[1].strip()
+            if not is_rack_exists(rack_sn):
+                raise forms.ValidationError(
+                    "Row %s: Rack with SN=%s doesn't exists." % (
+                        row_number, rack_sn
+                    )
+                )
+            venture = cols[2].strip()
+            venture_role = cols[3].strip()
+            if not are_venture_and_role_exists(venture, venture_role):
+                raise forms.ValidationError(
+                    "Row %s: Couldn't find venture %s with role %s" % (
+                        row_number, venture, venture_role
+                    )
+                )
+            preboot = cols[4].strip()
+            if not is_preboot_exists(preboot):
+                raise forms.ValidationError(
+                    "Row %s: Couldn't find preboot %s" % (
+                        row_number, preboot
+                    )
+                )
+        return csv
 
 
 class RolePropertyForm(forms.ModelForm):

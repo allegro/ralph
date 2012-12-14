@@ -8,9 +8,14 @@ from __future__ import unicode_literals
 import re
 
 import ipaddr
+from lck.django.common.models import MACAddressField
 from powerdns.models import Record
 
-from ralph.discovery.models import DataCenter, Network, IPAddress
+from ralph.business.models import VentureRole
+from ralph.deployment.models import Preboot
+from ralph.discovery.models import (
+    DataCenter, Network, IPAddress, Ethernet, DeviceType, Device
+)
 from ralph.dnsedit.models import DHCPEntry
 
 
@@ -57,7 +62,7 @@ def get_nexthostname(dc_name):
     return False, "", "Couldn't determine the next host name."
 
 
-def get_nextip(network_name):
+def get_firstfreeip(network_name):
     try:
         network = Network.objects.get(name=network_name)
     except Network.DoesNotExist:
@@ -80,3 +85,28 @@ def get_nextip(network_name):
             ip_number not in addresses_in_dns):
             return True, str(ipaddr.IPAddress(ip_number)), ""
     return False, "", "Couldn't determine the first free IP."
+
+
+def is_mac_address_unknown(mac):
+    return not Ethernet.objects.filter(
+        mac=MACAddressField.normalize(mac)
+    ).exists()
+
+
+def is_rack_exists(sn):
+    return Device.objects.filter(
+        model__type=DeviceType.rack,
+        sn=sn
+    ).exists()
+
+
+def are_venture_and_role_exists(venture_name, venture_role_name):
+    return VentureRole.objects.filter(
+        venture__name=venture_name,
+        name=venture_role_name
+    ).exists()
+
+
+def is_preboot_exists(name):
+    return Preboot.objects.filter(name=name).exists()
+
