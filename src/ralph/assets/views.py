@@ -14,12 +14,12 @@ from django.db import transaction
 from django.db.models import Q
 from django.http import HttpResponseRedirect, Http404
 from django.forms.models import modelformset_factory
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.forms import (
     AddDeviceForm, AddPartForm, EditDeviceForm,
-    EditPartForm, BaseDeviceForm, OfficeForm,
+    EditPartForm, DeviceForm, OfficeForm,
     BasePartForm, BulkEditAssetForm, SearchAssetForm
 )
 from ralph.assets.models import (
@@ -226,13 +226,13 @@ class AddDevice(Base):
 
     def get(self, *args, **kwargs):
         self.asset_form = AddDeviceForm(mode=_get_mode(self.request))
-        self.device_info_form = BaseDeviceForm()
+        self.device_info_form = DeviceForm()
         return super(AddDevice, self).get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
         self.asset_form = AddDeviceForm(
             self.request.POST, mode=_get_mode(self.request))
-        self.device_info_form = BaseDeviceForm(self.request.POST)
+        self.device_info_form = DeviceForm(self.request.POST)
         if self.asset_form.is_valid() and self.device_info_form.is_valid():
             creator_profile = self.request.user.get_profile()
             asset_data = {}
@@ -405,7 +405,7 @@ class EditDevice(Base):
             'office_info_form': self.office_info_form,
             'form_id': 'edit_device_asset_form',
             'edit_mode': True,
-            'MaMaMastatus_history': status_history,
+            'status_history': status_history,
         })
         return ret
 
@@ -417,7 +417,7 @@ class EditDevice(Base):
             instance=asset,
             mode=_get_mode(self.request)
         )
-        self.device_info_form = BaseDeviceForm(instance=asset.device_info)
+        self.device_info_form = DeviceForm(instance=asset.device_info)
         self.office_info_form = OfficeForm(instance=asset.office_info)
         return super(EditDevice, self).get(*args, **kwargs)
 
@@ -426,7 +426,7 @@ class EditDevice(Base):
         self.asset_form = EditDeviceForm(
             self.request.POST, instance=asset, mode=_get_mode(self.request)
         )
-        self.device_info_form = BaseDeviceForm(self.request.POST)
+        self.device_info_form = DeviceForm(self.request.POST)
         self.office_info_form = OfficeForm(
             self.request.POST, self.request.FILES
         )
@@ -614,7 +614,7 @@ class BulkEdit(Base):
                 instances = self.asset_formset.save(commit=False)
                 for instance in instances:
                     instance.modified_by = self.request.user.get_profile()
-                    instance.save()
+                    instance.save(user=self.request.user)
             messages.success(self.request, _("Changes saved."))
             return HttpResponseRedirect(self.request.get_full_path())
         messages.error(self.request, _("Please correct the errors."))
@@ -658,5 +658,5 @@ class DeleteAsset(AssetsMixin):
                     device=self.asset
                 ).update(device=None)
             self.asset.deleted = True
-            self.asset.save()
+            self.asset.save(user=self.request.user)
             return HttpResponseRedirect(self.back_to)

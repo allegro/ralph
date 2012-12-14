@@ -7,7 +7,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import re
-import collections
 
 from ajax_select.fields import AutoCompleteSelectField, AutoCompleteField
 from django.forms import (
@@ -92,12 +91,20 @@ class BulkEditAssetForm(ModelForm):
             self.fields[field_name].widget.attrs = {'class': 'span12'}
 
 
-class BaseDeviceForm(ModelForm):
+class DeviceForm(ModelForm):
     class Meta:
         model = DeviceInfo
         fields = (
             'size',
         )
+
+    def clean_size(self):
+        size = self.cleaned_data.get('size')
+        if size not in range(0, 65536):
+            raise ValidationError(
+                _("Invalid size, use range 0 to 65535")
+            )
+        return size
 
 
 class BasePartForm(ModelForm):
