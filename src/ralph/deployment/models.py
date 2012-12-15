@@ -16,7 +16,7 @@ from dj.choices import Choices
 from dj.choices.fields import ChoiceField
 from lck.django.common.models import (
     MACAddressField, Named, TimeTrackable,
-    WithConcurrentGetOrCreate,
+    WithConcurrentGetOrCreate, EditorTrackable,
 )
 
 from ralph.discovery.models import Device
@@ -98,6 +98,21 @@ class Preboot(Named, TimeTrackable):
         verbose_name_plural = _("preboots")
 
 
+class MultipleDeploymentInitialData(TimeTrackable, EditorTrackable):
+    csv = db.TextField()
+    is_done = db.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = _("multiple deployments initial data")
+        verbose_name_plural = _("multiple deployments initial data")
+
+    def __unicode__(self):
+        return "{} - {}".format(
+            self.created.strftime("%Y-%m-%d %H:%M"),
+            self.created_by
+        )
+
+
 class Deployment(TimeTrackable):
     user = models.ForeignKey(
         'auth.User', verbose_name=_("user"), null=True,
@@ -147,6 +162,11 @@ class Deployment(TimeTrackable):
         default=False,
     )   # a database-level lock for deployment-related tasks
     puppet_certificate_revoked = db.BooleanField(default=False)
+    multiple_deployment = models.ForeignKey(
+        MultipleDeploymentInitialData,
+        verbose_name=_("initiated by multiple deployment"), null=True,
+        blank=True, default=None, on_delete=models.SET_NULL, editable=False
+    )
 
     class Meta:
         verbose_name = _("deployment")
@@ -173,6 +193,9 @@ class DeploymentPoll(db.Model, WithConcurrentGetOrCreate):
     key = db.CharField(max_length=255)
     date = db.DateTimeField()
     checked = db.BooleanField(default=False)
+
+
+
 
 
 # Import all the plugins

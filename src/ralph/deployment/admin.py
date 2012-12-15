@@ -10,11 +10,30 @@ from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 from lck.django.common.admin import ModelAdmin
 
-from ralph.deployment.models import Deployment, Preboot, PrebootFile
+from ralph.deployment.models import (
+    Deployment, Preboot, PrebootFile, MultipleDeploymentInitialData,
+)
+
+
+class MultipleDeploymentInitialDataAdmin(ModelAdmin):
+    list_display = (
+        'created', 'modified', 'created_by', 'modified_by', 'is_done',
+    )
+    search_fields = (
+        'created_by__user__username', 'created_by__user__first_name',
+        'created_by__user__last_name',
+    )
+
+admin.site.register(
+    MultipleDeploymentInitialData, MultipleDeploymentInitialDataAdmin
+)
 
 
 class DeploymentAdmin(ModelAdmin):
-    list_display = ('device', 'mac', 'status', 'venture', 'venture_role')
+    list_display = (
+        'device', 'mac', 'status', 'venture', 'venture_role',
+        'multiple_deployment',
+    )
     list_filter = ('status', 'status_lastchanged')
     search_fields = (
         'device__name', 'mac', 'venture__name', 'venture__symbol',

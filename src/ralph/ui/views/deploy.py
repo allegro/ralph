@@ -10,6 +10,7 @@ from django.views.generic import CreateView
 from django.http import HttpResponseRedirect
 from django.contrib import messages
 
+from ralph.deployment.models import MultipleDeploymentInitialData
 from ralph.discovery.models import Device
 from ralph.ui.views.common import BaseMixin, Base
 from ralph.ui.forms import DeploymentForm, PrepareMultipleDeploymentForm
@@ -60,7 +61,17 @@ class PrepareMultipleServersDeployment(Base):
 
     def post(self, *args, **kwargs):
         self.form = PrepareMultipleDeploymentForm(self.request.POST)
-
+        if self.form.is_valid():
+            csv = self.form.cleaned_data['csv'].strip()
+            multiple_deployment = MultipleDeploymentInitialData(csv=csv)
+            multiple_deployment.created_by = self.request.user.get_profile()
+            multiple_deployment.save()
+            return HttpResponseRedirect(
+                '%s/../../../deployment/multiple/define/%s/' % (
+                    self.request.path, multiple_deployment.pk,
+                )
+            )
+        messages.error(self.request, "Please correct the errors.")
         return super(
             PrepareMultipleServersDeployment, self
         ).get(*args, **kwargs)
