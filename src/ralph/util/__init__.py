@@ -24,7 +24,7 @@ def untangle(seq):
         yield seq
 
 
-BASE64_ALPHABET = re.compile(b'^[A-Za-z0-9+/]*={0,2}$', flags=re.MULTILINE)
+BASE64_ALPHABET = re.compile(b'^[A-Za-z0-9+/\s]*={0,2}$', flags=re.MULTILINE)
 
 
 def uncompress_base64_data(data):
