@@ -12,7 +12,7 @@ from ralph.util import plugin
 from ralph.deployment.models import Deployment
 
 
-@plugin.register(chain='deployment', requires=['ticket'], priority=0)
+@plugin.register(chain='deployment', requires=[], priority=0)
 def puppet(deployment_id):
     if not settings.PUPPET_DB_URL:
         return True

@@ -25,6 +25,6 @@ class Command(BaseCommand):
             status__in=(
                 DeploymentStatus.open.id,
                 DeploymentStatus.in_progress.id,
-                DeploymentStatus.in_deployment.id,
-            )):
+            )
+        ):
             run_deployment(d)
