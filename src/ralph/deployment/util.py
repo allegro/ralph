@@ -7,16 +7,19 @@ from __future__ import unicode_literals
 
 import re
 
+from django.db import transaction
 import ipaddr
 from lck.django.common.models import MACAddressField
 from powerdns.models import Record
 
 from ralph.business.models import VentureRole
-from ralph.deployment.models import Preboot
+from ralph.deployment.models import Preboot, Deployment
 from ralph.discovery.models import (
-    DataCenter, Network, IPAddress, Ethernet, DeviceType, Device
+    DataCenter, Network, IPAddress, Ethernet, DeviceType, Device,
+    EthernetSpeed,
 )
 from ralph.dnsedit.models import DHCPEntry
+from ralph.util import Eth
 
 
 def get_nexthostname(dc_name, reserved_hostnames=[]):
@@ -135,4 +138,34 @@ def is_ip_address_exists(ip):
         IPAddress.objects.filter(number=number).exists(),
         Record.objects.filter(number=number, type='A').exists()
     ))
+
+
+def _create_device(data):
+    ethernets = [Eth(
+        'DEPLOYMENT MAC',
+        MACAddressField.normalize(data['mac']),
+        EthernetSpeed.unknown
+    )]
+    dev = Device.create(
+        ethernets=ethernets, model_type=DeviceType.unknown,
+        model_name='UNKNOWN',
+    )
+    try:
+        dev.parent = Device.objects.get(sn=data['rack_sn'])
+        dev.save()
+    except Device.DoesNotExist:
+        pass
+    return dev
+
+
+@transaction.commit_on_success
+def create_deployments(data, user, multiple_deployment):
+    for item in data:
+        dev = _create_device(item)
+        Deployment.objects.create(
+            user=user, device=dev, mac=item['mac'], ip=item['ip'],
+            hostname=item['hostname'], preboot=item['preboot'],
+            venture=item['venture'], venture_role=item['venture_role'],
+            multiple_deployment=multiple_deployment
+        )
 

@@ -12,7 +12,9 @@ from django.contrib import messages
 from django.shortcuts import get_object_or_404
 
 from ralph.deployment.models import MultipleDeploymentInitialData
-from ralph.deployment.util import get_nexthostname, get_firstfreeip
+from ralph.deployment.util import (
+    get_nexthostname, get_firstfreeip, create_deployments
+)
 from ralph.discovery.models import Device, Network
 from ralph.ui.views.common import BaseMixin, Base
 from ralph.ui.forms import (
@@ -95,7 +97,8 @@ class MultipleServersDeployment(Base):
 
     def get(self, *args, **kwargs):
         multiple_deployment = get_object_or_404(
-            MultipleDeploymentInitialData, id=kwargs.get('deployment')
+            MultipleDeploymentInitialData, id=kwargs.get('deployment'),
+            is_done=False
         )
         reserved_hostnames = []
         reserved_ip_addresses = []
@@ -138,9 +141,20 @@ class MultipleServersDeployment(Base):
         ).get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
+        multiple_deployment = get_object_or_404(
+            MultipleDeploymentInitialData, id=kwargs.get('deployment'),
+            is_done=False
+        )
         self.form = MultipleDeploymentForm(self.request.POST)
         if self.form.is_valid():
-            pass
+            create_deployments(
+                self.form.cleaned_data['csv'],
+                self.request.user,
+                multiple_deployment
+            )
+            multiple_deployment.is_done = True
+            multiple_deployment.save()
+            return HttpResponseRedirect('/')
         messages.error(self.request, "Please correct the errors.")
         return super(
             MultipleServersDeployment, self
