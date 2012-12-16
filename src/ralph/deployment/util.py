@@ -10,7 +10,7 @@ import re
 from django.db import transaction
 import ipaddr
 from lck.django.common.models import MACAddressField
-from powerdns.models import Record
+from powerdns.models import Domain, Record
 
 from ralph.business.models import VentureRole
 from ralph.deployment.models import Preboot, Deployment
@@ -162,10 +162,11 @@ def _create_device(data):
 def create_deployments(data, user, multiple_deployment):
     for item in data:
         dev = _create_device(item)
+        hostname, domain_name = item['hostname'].split('.', 1)
+        Domain.objects.get_or_create(name=domain_name)
         Deployment.objects.create(
             user=user, device=dev, mac=item['mac'], ip=item['ip'],
             hostname=item['hostname'], preboot=item['preboot'],
             venture=item['venture'], venture_role=item['venture_role'],
             multiple_deployment=multiple_deployment
         )
-
