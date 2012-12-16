@@ -19,7 +19,7 @@ from ralph.discovery.models import (
 from ralph.dnsedit.models import DHCPEntry
 
 
-def get_nexthostname(dc_name):
+def get_nexthostname(dc_name, reserved_hostnames=[]):
     try:
         dc = DataCenter.objects.get(name=dc_name)
     except DataCenter.DoesNotExist:
@@ -55,14 +55,25 @@ def get_nexthostname(dc_name):
                 continue
         except IndexError:
             pass
+        go_to_next_template = False
         next_hostname = template.replace(
             match.group(0), "{0:%s}" % number_len
         ).format(next_number).replace(" ", "0")
+        while next_hostname in reserved_hostnames:
+            next_number += 1
+            if next_number > max_number:
+                go_to_next_template = True
+                break
+            next_hostname = template.replace(
+                match.group(0), "{0:%s}" % number_len
+            ).format(next_number).replace(" ", "0")
+        if go_to_next_template:
+            continue
         return True, next_hostname, ""
     return False, "", "Couldn't determine the next host name."
 
 
-def get_firstfreeip(network_name):
+def get_firstfreeip(network_name, reserved_ip_addresses=[]):
     try:
         network = Network.objects.get(name=network_name)
     except Network.DoesNotExist:
@@ -77,12 +88,14 @@ def get_firstfreeip(network_name):
     ).values_list('number', flat=True).order_by('number')
     addresses_in_dns = Record.objects.filter(
         number__gte=network.min_ip,
-        number__lte=network.max_ip
+        number__lte=network.max_ip,
+        type='A'
     ).values_list('number', flat=True).order_by('number')
     for ip_number in range(network.min_ip + 1, network.max_ip + 1):
         if (ip_number not in addresses_in_dhcp and
             ip_number not in addresses_in_discovery and
-            ip_number not in addresses_in_dns):
+            ip_number not in addresses_in_dns and
+            str(ipaddr.IPAddress(ip_number)) not in reserved_ip_addresses):
             return True, str(ipaddr.IPAddress(ip_number)), ""
     return False, "", "Couldn't determine the first free IP."
 
@@ -109,4 +122,17 @@ def are_venture_and_role_exists(venture_name, venture_role_name):
 
 def is_preboot_exists(name):
     return Preboot.objects.filter(name=name).exists()
+
+
+def is_hostname_exists(hostname):
+    return Record.objects.filter(domain__name=hostname, type='A').exists()
+
+
+def is_ip_address_exists(ip):
+    number = int(ipaddr.IPAddress(ip))
+    return any((
+        DHCPEntry.objects.filter(number=number).exists(),
+        IPAddress.objects.filter(number=number).exists(),
+        Record.objects.filter(number=number, type='A').exists()
+    ))
 
