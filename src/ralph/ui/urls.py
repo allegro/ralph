@@ -34,7 +34,9 @@ from ralph.ui.views.networks import (NetworksDeviceList, NetworksInfo,
         NetworksSoftware)
 from ralph.ui.views.catalog import (Catalog, CatalogDevice,
                                     CatalogComponent, CatalogHistory)
-from ralph.ui.views.deploy import Deployment, PrepareMultipleServersDeployment
+from ralph.ui.views.deploy import (
+    Deployment, PrepareMultipleServersDeployment, MultipleServersDeployment,
+)
 from ralph.ui.views.ventures import VenturesDeviceList, VenturesCMDB
 from ralph.ui.views.racks import RacksDeviceList
 from ralph.ui.views.reports import (
@@ -199,4 +201,6 @@ urlpatterns = patterns('',
 
     url(r'^deployment/multiple/start/$',
         login_required(PrepareMultipleServersDeployment.as_view())),
+    url(r'^deployment/multiple/define/(?P<deployment>[0-9]+)/$',
+        login_required(MultipleServersDeployment.as_view())),
 )
