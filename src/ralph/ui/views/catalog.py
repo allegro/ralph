@@ -159,7 +159,7 @@ class Catalog(Base):
                     name='pricing',
                     fugue_icon='fugue-shopping-basket',
                     view_name='catalog_pricing',
-                    view_args=('pricing', ''),
+                    view_args=('pricing',),
                 ),
             ]
         )
