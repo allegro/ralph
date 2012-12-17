@@ -8,6 +8,7 @@ from __future__ import unicode_literals
 import re
 
 from django.db import transaction
+from django.db.models import Q
 import ipaddr
 from lck.django.common.models import MACAddressField
 from powerdns.models import Domain, Record
@@ -24,7 +25,7 @@ from ralph.util import Eth
 
 def get_nexthostname(dc_name, reserved_hostnames=[]):
     try:
-        dc = DataCenter.objects.get(name=dc_name)
+        dc = DataCenter.objects.get(name__iexact=dc_name.lower())
     except DataCenter.DoesNotExist:
         return False, "", "Specified data center doesn't exists."
     templates = dc.hosts_naming_template.split("|")
@@ -111,8 +112,9 @@ def is_mac_address_unknown(mac):
 
 def is_rack_exists(sn):
     return Device.objects.filter(
-        model__type=DeviceType.rack,
-        sn=sn
+        Q(model__type=DeviceType.rack) |
+        Q(model__type=DeviceType.blade_system),
+        Q(sn=sn)
     ).exists()
 
 
