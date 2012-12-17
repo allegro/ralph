@@ -24,7 +24,7 @@ from ralph.cmdb.models import (
 )
 from ralph.cmdb import models as db
 from ralph.cmdb.models_ci import CIOwner, CIOwnershipType
-from ralph.deployment.models import get_login_from_owner_name
+from ralph.cmdb.models_audits import get_login_from_owner_name
 
 THROTTLE_AT = settings.API_THROTTLING['throttle_at']
 TIMEFREME = settings.API_THROTTLING['timeframe']
