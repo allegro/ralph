@@ -305,6 +305,8 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
             self.diag_firmware = None
         if self.boot_firmware == '':
             self.boot_firmware = None
+        if self.barcode == '':
+            self.barcode = None
 
     def __init__(self, *args, **kwargs):
         self.save_comment = None
