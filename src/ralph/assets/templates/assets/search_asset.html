@@ -43,47 +43,10 @@
     </div>
 {% endblock %}
 {% block content %}
-
     <h3>{{header}}</h3>
     <form id="table_form" action="" method="GET">
         <table class="table table-bordered table-striped">
-                <thead>
-                    <tr>
-                        <th>
-                            <div class="dropdown">
-                                <a href="#" data-toggle="dropdown" class="dropdown-toggle">
-                                    <i class="fugue-icon fugue-ui-check-boxes-series"></i>
-                                </a>
-                                <ul class="dropdown-menu">
-                                    <li><a href="#" class="select-all">
-                                        <i class="fugue-icon fugue-ui-check-box">
-                                        </i>&nbsp;Select all on this page</a>
-                                    </li>
-                                    <li>
-                                        <a href="#" class="select-toggle">
-                                            <i class="fugue-icon fugue-ui-check-box-mix">
-                                            </i>&nbsp;Reverse selection</a>
-                                        </li>
-                                        <li>
-                                            <a href="#" class="select-none">
-                                                <i class="fugue-icon fugue-ui-check-box-uncheck"></i>&nbsp;Deselect all
-                                            </a>
-                                        </li>
-                                    </ul>
-                            </div>
-                        </th>
-                        <th>Type</th>
-                        <th>SN</th>
-                        <th>Barcode</th>
-                        <th>Model</th>
-                        <th>Invoice no.</th>
-                        <th>Order no.</th>
-                        <th>Invoice date</th>
-                        <th>Status</th>
-                        <th>Warehouse</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
+        {% table_header columns url_query sort %}
                 <tbody>
                 {% for row in page %}
                 <tr>
@@ -121,7 +84,7 @@
                 </tbody>
             </table>
 
-            {% pagination page url_query=url_query show_all=0 show_csv=0 fugue_icons=1 %}
+            {% pagination page url_query=url_query show_all=0 show_csv=1 fugue_icons=1 %}
             <div class="btn-group">
               <a class="btn dropdown-toggle btn-primary" data-toggle="dropdown" href="#">
                 Bulk actions...
