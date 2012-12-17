@@ -160,11 +160,5 @@ class TestValidations(TestCase):
             )
 
         # if sn was duplicated, the message should be shown on the screen
-        find = []
-        i = 0
-        for i in range(len(send_post_with_empty_fields.content)):
-            if send_post_with_empty_fields.content.startswith(
-                SCREEN_ERROR_MESSAGES['duplicated_sn_or_bc'], i - 1
-            ):
-                find.append(i)
-        self.assertTrue(len(find) == 1)
+        msg = SCREEN_ERROR_MESSAGES['duplicated_sn_or_bc']
+        self.assertTrue(msg in send_post_with_empty_fields.content)

@@ -116,12 +116,6 @@ class TestBulkEdit(TestCase):
                     unicode(getattr(fields[counter], key)), unicode(data[key])
                 )
             counter += 1
-            # Find success message
 
-        find = []
-        i = 0
-        msg_error = 'Changes saved.'
-        for i in range(len(post.content)):
-            if post.content.startswith(msg_error, i - 1):
-                find.append(i)
-        self.assertEqual(len(find), 1)
+        # Find success message
+        self.assertTrue('Changes saved.' in post.content)
