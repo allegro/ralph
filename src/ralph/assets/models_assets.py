@@ -90,40 +90,6 @@ class Warehouse(TimeTrackable, EditorTrackable, Named.NonUnique):
         return self.name
 
 
-def _get_file_path(instance, filename):
-    ext = filename.split('.')[-1]
-    filename = "%s.%s" % (uuid4(), ext)
-    return os.path.join('assets', filename)
-
-
-class OfficeInfo(TimeTrackable, SavingUser):
-    license_key = models.CharField(max_length=255, blank=True)
-    version = models.CharField(max_length=50, blank=True)
-    unit_price = models.DecimalField(
-        max_digits=20, decimal_places=2, default=0)
-    attachment = models.FileField(
-        upload_to=_get_file_path, blank=True)
-    license_type = models.IntegerField(
-        choices=LicenseType(), verbose_name=_("license type"),
-        null=True, blank=True
-    )
-    date_of_last_inventory = models.DateField(
-        null=True, blank=True)
-    last_logged_user = models.CharField(max_length=100, null=True, blank=True)
-
-    def __unicode__(self):
-        return "{} - {} - {}".format(
-            self.license_key,
-            self.version,
-            self.license_type
-        )
-
-    def __init__(self, *args, **kwargs):
-        self.save_comment = None
-        self.saving_user = None
-        super(OfficeInfo, self).__init__(*args, **kwargs)
-
-
 class Asset(TimeTrackable, EditorTrackable, SavingUser, SoftDeletable):
     device_info = models.OneToOneField(
         'DeviceInfo', null=True, blank=True, on_delete=models.CASCADE
@@ -241,6 +207,34 @@ class DeviceInfo(TimeTrackable, SavingUser):
         super(DeviceInfo, self).__init__(*args, **kwargs)
 
 
+class OfficeInfo(TimeTrackable, SavingUser):
+    license_key = models.CharField(max_length=255, blank=True)
+    version = models.CharField(max_length=50, blank=True)
+    unit_price = models.DecimalField(
+        max_digits=20, decimal_places=2, default=0)
+    attachment = models.FileField(
+        upload_to=_get_file_path, blank=True)
+    license_type = models.IntegerField(
+        choices=LicenseType(), verbose_name=_("license type"),
+        null=True, blank=True
+    )
+    date_of_last_inventory = models.DateField(
+        null=True, blank=True)
+    last_logged_user = models.CharField(max_length=100, null=True, blank=True)
+
+    def __unicode__(self):
+        return "{} - {} - {}".format(
+            self.license_key,
+            self.version,
+            self.license_type
+        )
+
+    def __init__(self, *args, **kwargs):
+        self.save_comment = None
+        self.saving_user = None
+        super(OfficeInfo, self).__init__(*args, **kwargs)
+
+
 class PartInfo(TimeTrackable, SavingUser):
     barcode_salvaged = models.CharField(max_length=200, null=True, blank=True)
     source_device = models.ForeignKey(
@@ -257,3 +251,9 @@ class PartInfo(TimeTrackable, SavingUser):
         self.save_comment = None
         self.saving_user = None
         super(PartInfo, self).__init__(*args, **kwargs)
+
+
+def _get_file_path(instance, filename):
+    ext = filename.split('.')[-1]
+    filename = "%s.%s" % (uuid4(), ext)
+    return os.path.join('assets', filename)
