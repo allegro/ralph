@@ -5,7 +5,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from bob.data_table import DataTableColumn
+from bob.data_table import DataTableColumn, DataTableMixin
 from bob.menu import MenuItem, MenuHeader
 from django.contrib import messages
 from django.core.paginator import Paginator
@@ -15,7 +15,7 @@ from django.db import transaction
 from django.db.models import Q
 from django.http import HttpResponseRedirect, Http404
 from django.forms.models import modelformset_factory
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.forms import (
@@ -28,7 +28,7 @@ from ralph.assets.models import (
 )
 from ralph.assets.models_assets import AssetType
 from ralph.assets.models_history import AssetHistoryChange
-from ralph.ui.views.common import Base, PaginationMixin
+from ralph.ui.views.common import Base
 
 
 SAVE_PRIORITY = 200
@@ -110,63 +110,64 @@ class BackOfficeMixin(AssetsMixin):
         )
         return sidebar_menu
 
+
 class DataTableColumnAssets(DataTableColumn):
     """
     A container object for all the information about a columns header
 
     :param foreign_field_name - set if field comes from foreign key
     :param choice - set if field is Choices object
-    :param sort_expression - example `device_info__warehouse`
+    :param sort_expression - example `device_info__size`
     :param export - set when the column is to be exported
     """
 
-    def __init__(self, **kwargs):
-        super(DataTableColumnAssets, self).__init__(**kwargs)
+    def __init__(self, header_name, **kwargs):
+        super(DataTableColumnAssets, self).__init__(header_name, **kwargs)
         self.foreign_field_name = kwargs.get('foreign_field_name')
         self.choice = kwargs.get('choice')
         self.sort_expression = kwargs.get('sort_expression')
         self.export = kwargs.get('export')
 
-class AssetSearch(AssetsMixin, PaginationMixin):
+
+class AssetSearch(AssetsMixin, DataTableMixin):
     """The main-screen search form for all type of assets."""
     ROWS_PER_PAGE = 15
+    FILE_NAME = 'ralph.csv'
     _ = DataTableColumnAssets
     columns = [
-        _(header_name='Dropdown', selectable=True, bob_tag=True),
-        _(header_name='Type', bob_tag=True),
-        _(header_name='SN', field='sn', sort_expression='sn', bob_tag=True,
+        _('Dropdown', selectable=True, bob_tag=True),
+        _('Type', bob_tag=True),
+        _('SN', field='sn', sort_expression='sn', bob_tag=True, export=True),
+        _('Barcode', field='barcode', sort_expression='barcode', bob_tag=True,
           export=True),
-        _(header_name='Barcode', field='barcode', sort_expression='barcode',
+        _('Model', field='model', sort_expression='model', bob_tag=True,
+          export=True),
+        _('Invoice no.', field='invoice_no', sort_expression='invoice_no',
           bob_tag=True, export=True),
-        _(header_name='Model', field='model', sort_expression='model',
+        _('Order no.', field='order_no', sort_expression='order_no',
           bob_tag=True, export=True),
-        _(header_name='Invoice no.', field='invoice_no',
-          sort_expression='invoice_no', bob_tag=True, export=True),
-        _(header_name='Order no.', field='order_no',
-          sort_expression='order_no', bob_tag=True, export=True),
-        _(header_name='Invoice date', field='invoice_date', type='date',
+        _('Invoice date', field='invoice_date', type='date',
           sort_expression='invoice_date', bob_tag=True, export=True),
-        _(header_name='Status', field='status', choice=True,
-          sort_expression='status', bob_tag=True, export=True),
-        _(header_name='Warehouse', field='warehouse',
-          foreign_field_name='device_info',
-          sort_expression='device_info__warehouse', bob_tag=True, export=True),
-        _(header_name='Actions', bob_tag=True),
+        _('Status', field='status', choice=True, sort_expression='status',
+          bob_tag=True, export=True),
+        _('Warehouse', field='warehouse', sort_expression='warehouse',
+          bob_tag=True, export=True),
+        _('Actions', bob_tag=True),
 
-        _(header_name='Barcode salvaged', field='barcode_salvaged',
+        _('Barcode salvaged', field='barcode_salvaged',
           foreign_field_name='part_info', export=True),
-        _(header_name='Source device', field='source_device',
+        _('Source device', field='source_device',
           foreign_field_name='part_info', export=True),
-        _(header_name='Device', field='device',
+        _('Device', field='device',
           foreign_field_name='part_info', export=True),
-        _(header_name='Provider', field='provider', export=True),
-        _(header_name='Remarks', field='remarks', export=True),
-        _(header_name='Source', field='source', choice=True, export=True),
-        _(header_name='Support peroid', field='support_peroid', export=True),
-        _(header_name='Support type', field='support_type', export=True),
-        _(header_name='Support void_reporting', field='support_void_reporting',
+        _('Provider', field='provider', export=True),
+        _('Remarks', field='remarks', export=True),
+        _('Source', field='source', choice=True, export=True),
+        _('Support peroid', field='support_peroid', export=True),
+        _('Support type', field='support_type', export=True),
+        _('Support void_reporting', field='support_void_reporting',
           export=True),
-        _(header_name='Type', field='type', choice=True, export=True),
+        _('Type', field='type', choice=True, export=True),
     ]
 
     def handle_search_data(self):
@@ -191,32 +192,11 @@ class AssetSearch(AssetsMixin, PaginationMixin):
             all_q &= Q(invoice_date__gte=invoice_date_from)
         if invoice_date_to:
             all_q &= Q(invoice_date__lte=invoice_date_to)
-        self.paginate_query(self.get_all_items(all_q), self.columns)
+        self.paginate_query(self.get_all_items(all_q))
 
     def get_csv_header(self):
-        return ['type'] + [col.header_name for col in self.columns
-                           if col.export]
-
-    def get_choice_name(self, obj, field):
-        if obj:
-            try:
-                return getattr(obj, 'get_' + field + '_display')()
-            except AttributeError:
-                pass
-        return ''
-
-    def get_cell(self, obj, field, choice):
-        if choice:
-            cell = self.get_choice_name(obj, field)
-        else:
-            try:
-                cell = getattr(obj, field)
-            except AttributeError:
-                cell = ''
-        return cell
-
-    def prepare_cell_value(self, cell, field):
-        return unicode(cell) if cell else '0' if field == 'unit_price' else ''
+        header = super(AssetSearch, self).get_csv_header()
+        return ['type'] + header
 
     def get_csv_rows(self, queryset, type):
         data = [self.get_csv_header()]
@@ -235,7 +215,7 @@ class AssetSearch(AssetsMixin, PaginationMixin):
                         cell = self.get_cell(asset.part_info, field, choice)
                     else:
                         cell = self.get_cell(asset, field, choice)
-                    row.append(self.prepare_cell_value(cell, field))
+                    row.append(unicode(cell))
             data.append(row)
         return data
 
@@ -263,8 +243,7 @@ class AssetSearch(AssetsMixin, PaginationMixin):
             self.request.GET, mode=_get_mode(self.request)
         )
         self.handle_search_data()
-        export = self.request.GET.get('export')
-        if export == 'csv':
+        if self.export_requested():
             return super(AssetSearch, self).get_context_data_paginator(
                 **kwargs)
         return super(AssetSearch, self).get(*args, **kwargs)
@@ -276,17 +255,17 @@ class BackOfficeSearch(BackOfficeMixin, AssetSearch):
     template_name = 'assets/search_asset.html'
     _ = DataTableColumnAssets
     columns_nested = [
-        _(header_name='Date of last inventory', field='date_of_last_inventory',
+        _('Date of last inventory', field='date_of_last_inventory',
           foreign_field_name='office_info', export=True),
-        _(header_name='Last logged user', field='last_logged_user',
+        _('Last logged user', field='last_logged_user',
           foreign_field_name='office_info', export=True),
-        _(header_name='License key', field='license_key',
+        _('License key', field='license_key',
           foreign_field_name='office_info', export=True),
-        _(header_name='License type', field='license_type',
+        _('License type', field='license_type',
           foreign_field_name='office_info', choice=True, export=True),
-        _(header_name='Unit price', field='unit_price',
+        _('Unit price', field='unit_price',
           foreign_field_name='office_info', export=True),
-        _(header_name='Version', field='version',
+        _('Version', field='version',
           foreign_field_name='office_info', export=True),
     ]
 
@@ -312,10 +291,9 @@ class DataCenterSearch(DataCenterMixin, AssetSearch):
     template_name = 'assets/search_asset.html'
     _ = DataTableColumnAssets
     columns_nested = [
-        _(header_name='Ralph device', field='ralph_device',
+        _('Ralph device', field='ralph_device',
           foreign_field_name='device_info', export=True),
-        _(header_name='Size', field='size',
-          foreign_field_name='device_info', export=True),
+        _('Size', field='size', foreign_field_name='device_info', export=True),
     ]
 
     def __init__(self, *args, **kwargs):
