@@ -66,8 +66,10 @@ class AbstractNetwork(db.Model):
         "DiscoveryQueue", verbose_name=_("discovery queue"), null=True,
         blank=True, default=None, on_delete=db.SET_NULL,
     )
-    rack = db.CharField(
-        _("rack"), max_length=16, null=True, blank=True, default=None,
+    racks = db.ManyToManyField(
+        'discovery.Device', verbose_name=_("racks"),
+        # We can't import DeviceType in here, so we use an integer.
+        limit_choices_to={'model__type': 1}, # DeviceType.rack.id
     )
 
     class Meta:
