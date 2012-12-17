@@ -34,8 +34,8 @@ class TestBulkEdit(TestCase):
     def test_edit_via_bulkedit_form(self):
         url = '/assets/dc/bulkedit/?select=%s&select=%s' % (
             self.asset.id, self.asset1.id)
-        get_content = self.client.get(url)
-        self.assertEqual(get_content.status_code, 200)
+        content = self.client.get(url)
+        self.assertEqual(content.status_code, 200)
 
         # Prepare data for send via form
         post_data = {
