@@ -1,8 +1,7 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-import pkgutil
-
-
-for loader, name, ispkg in pkgutil.iter_modules(__path__, __name__ + '.'):
-    __import__(name, globals(), locals(), [], -1)
+from ralph.assets.tests.functional.bulkedit import *
+from ralph.assets.tests.functional.crud import *
+from ralph.assets.tests.functional.form_validation import *
+from ralph.assets.tests.functional.multivalue_fields import *
+from ralph.assets.tests.functional.search import *
+from ralph.assets.tests.functional.view import *
