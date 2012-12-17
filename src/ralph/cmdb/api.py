@@ -19,9 +19,16 @@ from tastypie.resources import ModelResource as MResource
 from tastypie.throttle import CacheThrottle
 
 from ralph.cmdb.models import (
-    CI, CIChange, CIChangeGit, CIChangePuppet, CIChangeZabbixTrigger,
-    CIChangeStatusOfficeIncident, CIChangeCMDBHistory, CILayer, CIRelation,
+    CI,
+    CIChangeStatusOfficeIncident,
     CIType,
+    CIChange,
+    CIChangeCMDBHistory,
+    CIChangeGit,
+    CIChangePuppet,
+    CIChangeZabbixTrigger,
+    CILayer,
+    CIRelation,
 )
 from ralph.cmdb import models as db
 from ralph.cmdb.models_ci import CIOwner, CIOwnershipType

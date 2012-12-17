@@ -53,28 +53,25 @@ def uncompress_base64_data(data):
 
 
 class DiscoveryDjangoTestSuiteRunner(DjangoTestSuiteRunner):
-    """A test suite runner that uses unittest2 test discovery.
-    Courtesy of @carljm."""
-
+    """
+    A test suite runner that uses unittest2 test discovery.
+    Courtesy of @carljm.
+    """
     def build_suite(self, test_labels, extra_tests=None, **kwargs):
         suite = None
         discovery_root = settings.TEST_DISCOVERY_ROOT
-
         if test_labels:
             suite = defaultTestLoader.loadTestsFromNames(test_labels)
             # if single named module has no tests, do discovery within it
             if not suite.countTestCases() and len(test_labels) == 1:
                 suite = None
                 discovery_root = import_module(test_labels[0]).__path__[0]
-
         if suite is None:
             suite = defaultTestLoader.discover(
                 discovery_root,
                 top_level_dir=settings.CURRENT_DIR,
             )
-
         if extra_tests:
             for test in extra_tests:
                 suite.addTest(test)
-
         return reorder_suite(suite, (TestCase,))
