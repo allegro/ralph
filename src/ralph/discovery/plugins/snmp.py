@@ -21,17 +21,12 @@ SAVE_PRIORITY = 1
 SNMP_PLUGIN_COMMUNITIES = getattr(settings, 'SNMP_PLUGIN_COMMUNITIES',
     ['public'])
 
-if (
-    settings.SNMP_V3_USER and
-    settings.SNMP_V3_AUTH_KEY and
-    settings.SNMP_V3_PRIV_KEY
-):
-    SNMP_V3_AUTH = (
-        settings.SNMP_V3_USER,
-        settings.SNMP_V3_AUTH_KEY,
-        settings.SNMP_V3_PRIV_KEY,
-    )
-else:
+SNMP_V3_AUTH = (
+    settings.SNMP_V3_USER,
+    settings.SNMP_V3_AUTH_KEY,
+    settings.SNMP_V3_PRIV_KEY,
+)
+if not all(SNMP_V3_AUTH):
     SNMP_V3_AUTH = None
 
 _cisco_oids_std = (
