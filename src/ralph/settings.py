@@ -188,7 +188,14 @@ CELERYD_TASK_TIME_LIMIT = 900
 CELERY_ROUTES = (
     "ralph.discovery.tasks.DCRouter",
 )
-
+# define the lookup channels in use on the site
+AJAX_LOOKUP_CHANNELS = {
+    'ci': ('ralph.cmdb.models', 'CILookup'),
+    'asset_model': ('ralph.assets.models', 'AssetModelLookup'),
+    'asset_dcdevice': ('ralph.assets.models', 'DCDeviceLookup'),
+    'asset_bodevice': ('ralph.assets.models', 'BODeviceLookup'),
+    'asset_warehouse': ('ralph.assets.models', 'WarehouseLookup'),
+}
 # magically include jqueryUI/js/css
 AJAX_SELECT_BOOTSTRAP = True
 AJAX_SELECT_INLINES = 'inline'
