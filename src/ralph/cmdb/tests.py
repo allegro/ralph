@@ -1037,7 +1037,7 @@ class CMDBApiTest(TestCase):
             type=self.citype2,
             barcode='otherbarcodeci3',
             name='otherci',
-            )
+        )
         self.ci3.save()
         self.ci3.layers = [self.cilayer2]
         self.ci3.save()
@@ -1073,7 +1073,7 @@ class CMDBApiTest(TestCase):
             parent=self.ci2,
             child=self.ci3,
             type=CI_RELATION_TYPES.HASROLE,
-            )
+        )
         self.relation2.save()
 
     def test_layers(self):
@@ -1137,8 +1137,12 @@ class CMDBApiTest(TestCase):
         self.assertEqual(json_data['type']['name'], self.ci1.type.name)
         self.assertEqual(json_data['uid'], self.ci1.uid)
         self.assertEqual(
-            json_data['technical_owner'][0]['username'],
+            json_data['technical_owners'][0]['username'],
             '{}.{}'.format(self.owner1.first_name, self.owner1.last_name)
+        )
+        self.assertEqual(
+            json_data['business_owners'][0]['username'],
+            '{}.{}'.format(self.owner2.first_name, self.owner2.last_name)
         )
 
         response = self.client.get(
@@ -1151,8 +1155,9 @@ class CMDBApiTest(TestCase):
         self.assertEqual(json_data['name'], self.ci2.name)
         self.assertEqual(json_data['type']['name'], self.ci2.type.name)
         self.assertEqual(json_data['uid'], self.ci2.uid)
+        self.assertFalse(json_data['technical_owners'])
         self.assertEqual(
-            json_data['technical_owner'][0]['username'],
+            json_data['business_owners'][0]['username'],
             '{}.{}'.format(self.owner2.first_name, self.owner2.last_name)
         )
 
