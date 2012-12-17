@@ -15,7 +15,7 @@ from ralph.deployment.models import MultipleDeploymentInitialData
 from ralph.deployment.util import (
     get_nexthostname, get_firstfreeip, create_deployments
 )
-from ralph.discovery.models import Device, Network
+from ralph.discovery.models import DeviceType, Device, Network
 from ralph.ui.views.common import BaseMixin, Base
 from ralph.ui.forms import (
     DeploymentForm, PrepareMultipleDeploymentForm, MultipleDeploymentForm,
@@ -109,8 +109,12 @@ class MultipleServersDeployment(Base):
             ip = ""
             try:
                 rack = Device.objects.get(sn=cols[1])
+                dc_name = rack.dc if rack.dc else ""
+                if (rack.parent and rack.parent.model and
+                    rack.parent.model.type == DeviceType.data_center):
+                    dc_name = rack.parent.name
                 status, next_hostname, _ = get_nexthostname(
-                    rack.dc, reserved_hostnames=reserved_hostnames
+                    dc_name, reserved_hostnames=reserved_hostnames
                 )
                 if status:
                     hostname = next_hostname

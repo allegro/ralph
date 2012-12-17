@@ -8,6 +8,7 @@ from __future__ import unicode_literals
 import ipaddr
 from bob.forms import AutocompleteWidget
 from django import forms
+from django.db.models import Q
 
 from ralph.business.models import RoleProperty, VentureRole
 from ralph.deployment.util import (
@@ -15,6 +16,7 @@ from ralph.deployment.util import (
     is_preboot_exists, is_hostname_exists, is_ip_address_exists
 )
 from ralph.deployment.models import Deployment, Preboot
+from ralph.discovery.models import Device, DeviceType, Network
 from ralph.discovery.models_component import is_mac_valid
 from ralph.dnsedit.models import DHCPEntry
 from ralph.dnsedit.util import is_valid_hostname
@@ -230,9 +232,35 @@ class MultipleDeploymentForm(forms.Form):
                     "Please check previos rows..." % row_number
                 )
             parsed_hostnames.append(hostname)
+            rack_sn = cols[3].strip()
+            try:
+                rack = Device.objects.get(
+                    Q(sn=rack_sn),
+                    Q(model__type=DeviceType.rack) |
+                    Q(model__type=DeviceType.blade_system)
+                )
+            except Device.DoesNotExist:
+                raise forms.ValidationError(
+                    "Row %s: Rack with SN=%s doesn't exists." % (
+                        row_number, rack_sn
+                    )
+                )
+            try:
+                network = Network.objects.get(rack=rack.name)
+            except Network.DoesNotExist:
+                raise forms.ValidationError(
+                    "Row %s: Couldn't determine network for rack "
+                    "with SN=%s" % (row_number, rack_sn)
+                )
             ip = cols[1].strip()
             try:
-                ipaddr.IPAddress(ip)
+                ip_number = int(ipaddr.IPAddress(ip))
+                if ip_number < network.min_ip or ip_number > network.max_ip:
+                    raise forms.ValidationError(
+                        "Row %s: IP address is not valid for network %s." % (
+                            row_number, network.name
+                        )
+                    )
             except ValueError:
                 raise forms.ValidationError(
                     "Row %s: Invalid IP address." % row_number
@@ -262,13 +290,6 @@ class MultipleDeploymentForm(forms.Form):
                     "Please check previos rows..." % row_number
                 )
             parsed_macs.append(mac)
-            rack_sn = cols[3].strip()
-            if not is_rack_exists(rack_sn):
-                raise forms.ValidationError(
-                    "Row %s: Rack with SN=%s doesn't exists." % (
-                        row_number, rack_sn
-                    )
-                )
             try:
                 venture_role = VentureRole.objects.get(
                     venture__name=cols[4].strip(),
@@ -286,7 +307,7 @@ class MultipleDeploymentForm(forms.Form):
             except Preboot.DoesNotExist:
                 raise forms.ValidationError(
                     "Row %s: Couldn't find preboot %s" % (
-                        row_number, preboot
+                        row_number, cols[6].strip()
                     )
                 )
             cleaned_csv.append({
