@@ -21,6 +21,8 @@ from ralph.business.admin import RolePropertyValueInline
 
 SAVE_PRIORITY = 200
 
+HOSTS_NAMING_TEMPLATE_REGEX = re.compile(r'<[0-9]+,[0-9]+>.*\.[a-zA-Z0-9]+')
+
 
 class NetworkAdminForm(forms.ModelForm):
     class Meta:
@@ -80,9 +82,29 @@ class NetworkTerminatorAdmin(ModelAdmin):
 admin.site.register(m.NetworkTerminator, NetworkTerminatorAdmin)
 
 
+class DataCenterAdminForm(forms.ModelForm):
+    class Meta:
+        model = m.DataCenter
+
+    def clean_hosts_naming_template(self):
+        template = self.cleaned_data['hosts_naming_template']
+        if re.search(" ", template):
+            raise forms.ValidationError(
+                _("Please remove disallowed characters.")
+            )
+        for part in template.split("|"):
+            if not HOSTS_NAMING_TEMPLATE_REGEX.search(part):
+                raise forms.ValidationError(
+                    _("Incorrect template structure. Please see example "
+                      "below.")
+                )
+        return template
+
+
 class DataCenterAdmin(ModelAdmin):
     list_display = ('name', 'hosts_naming_template')
     search_fields = ('name',)
+    form = DataCenterAdminForm
 
 admin.site.register(m.DataCenter, DataCenterAdmin)
 
