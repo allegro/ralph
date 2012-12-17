@@ -116,7 +116,6 @@ class DataTableColumnAssets(DataTableColumn):
     A container object for all the information about a columns header
 
     :param foreign_field_name - set if field comes from foreign key
-    :param choice - set if field is Choices object
     :param sort_expression - example `device_info__size`
     :param export - set when the column is to be exported
     """
@@ -124,7 +123,6 @@ class DataTableColumnAssets(DataTableColumn):
     def __init__(self, header_name, **kwargs):
         super(DataTableColumnAssets, self).__init__(header_name, **kwargs)
         self.foreign_field_name = kwargs.get('foreign_field_name')
-        self.choice = kwargs.get('choice')
         self.sort_expression = kwargs.get('sort_expression')
         self.export = kwargs.get('export')
 
@@ -244,7 +242,7 @@ class AssetSearch(AssetsMixin, DataTableMixin):
         )
         self.handle_search_data()
         if self.export_requested():
-            return super(AssetSearch, self).get_context_data_paginator(
+            return super(AssetSearch, self).get_export_response(
                 **kwargs)
         return super(AssetSearch, self).get(*args, **kwargs)
 
