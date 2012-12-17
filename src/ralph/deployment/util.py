@@ -11,7 +11,7 @@ from django.db import transaction
 from django.db.models import Q
 import ipaddr
 from lck.django.common.models import MACAddressField
-from powerdns.models import Domain, Record
+from powerdns.models import Record
 
 from ralph.business.models import VentureRole
 from ralph.deployment.models import Preboot, Deployment
@@ -46,7 +46,7 @@ def get_nexthostname(dc_name, reserved_hostnames=[]):
         try:
             record = Record.objects.filter(
                 name__iregex=regex, type='A'
-            ).order_by('-domain__name')[0]
+            ).order_by('-name')[0]
             name_match = re.search(
                 template.replace(
                     match.group(0),
