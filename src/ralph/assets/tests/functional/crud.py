@@ -59,7 +59,7 @@ class TestAdding(TestCase):
         view = self.client.get('/assets/dc/search')
         row_from_table = view.context_data['page'].object_list[1]
 
-        # overwriting the variable objects
+        # Overwriting variables to use the object to test the output.
         data_in_add_form.update(
             model='Manufacturer1 Model1',
             warehouse='Warehouse',
@@ -75,7 +75,7 @@ class TestAdding(TestCase):
             self.assertEqual(unicode(input), unicode(output), msg)
 
     def test_send_data_via_edit_form(self):
-        # Download old data
+        # Fetch instead of Download
         view = self.client.get('/assets/dc/edit/device/1/')
         self.assertEqual(view.status_code, 200)
         old_fields = view.context['asset_form'].initial
@@ -117,7 +117,7 @@ class TestAdding(TestCase):
             status_code=302,
             target_status_code=200,
         )
-        # Download added data
+        # Fetch added data
         new_view = self.client.get('/assets/dc/edit/device/1/')
         new_fields = new_view.context['asset_form'].initial
         new_device_info = new_view.context['device_info_form'].initial

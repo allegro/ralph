@@ -120,7 +120,7 @@ class TestValidations(TestCase):
         }
         send_post_with_empty_fields = self.client.post(url, post_data)
 
-        # Try send post with empty field. send_post should be false
+        # Try to send post with empty field send_post should be false
         try:
             self.assertRedirects(
                 send_post_with_empty_fields,
@@ -131,7 +131,7 @@ class TestValidations(TestCase):
             send_post = True
         except AssertionError:
             send_post = False
-        # If not hire is error msg
+        # If not here is error msg
         self.assertFalse(send_post, 'Empty fields was send!')
 
         # Find what was wrong

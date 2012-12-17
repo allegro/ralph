@@ -54,7 +54,7 @@ def create_device(size=1):
     return device
 
 
-def create_asset(**kwargs):
+def create_asset(sn, **kwargs):
     """Required: sn"""
     if not kwargs.get('type'):
         kwargs.update(type=DEFAULT_ASSET_DATA['type'])
@@ -72,8 +72,6 @@ def create_asset(**kwargs):
         kwargs.update(support_type='standard')
     if not kwargs.get('warehouse'):
         kwargs.update(warehouse=create_warehouse())
-    if kwargs.get('sn'):
-        asset = Asset(**kwargs)
-        asset.save()
-        return asset
-    return False
+    asset = Asset(sn, **kwargs)
+    asset.save()
+    return asset

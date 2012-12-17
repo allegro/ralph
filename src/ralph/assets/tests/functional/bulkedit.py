@@ -13,11 +13,11 @@ from ralph.ui.tests.helper import login_as_su
 
 
 class TestBulkEdit(TestCase):
-    """Test forms for may actions
+    """Test bulkedit for generic actions
 
     Scenario:
     1. Add two assets
-    2. Chceck if data was saved
+    2. Check if data was saved
     """
 
     def setUp(self):
@@ -28,7 +28,7 @@ class TestBulkEdit(TestCase):
         self.asset1 = create_asset(
             sn='2222-2222-2222-2222'
         )
-        self.model = create_model()
+        self.model = create_model()  # u'Model1'
         self.model1 = create_model(name='Model2')
 
     def test_edit_via_bulkedit_form(self):
@@ -74,7 +74,7 @@ class TestBulkEdit(TestCase):
         post = self.client.post(url, post_data, follow=True)
 
         # if everything is ok, server return response code = 302, and
-        # redirect as to /assets/dc/search given response code 200
+        # redirect us to /assets/dc/search given response code 200
         self.assertRedirects(
             post, url, status_code=302, target_status_code=200,
         )

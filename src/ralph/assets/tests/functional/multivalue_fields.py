@@ -25,7 +25,7 @@ class TestMultivalueFields(TestCase):
 
         Scenario:
         1. Add many SNs and barcodes in different forms.
-        2. Verify that the form adds empty serial number.
+        2. Doesn't add empty serial number
         3. Test relationship between SNs and barcodes.
         4. Verity names with white spaces (SNs, barcode).
         """
