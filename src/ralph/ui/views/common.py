@@ -1122,39 +1122,3 @@ class PaginationMixin(object):
         except EmptyPage:
             self.page_contents = self.paginator.page(self.paginator.num_pages)
             page = self.paginator.num_pages
-        return page
-
-    def export_requested(self, *args, **kwargs):
-        """Returns True if csv export was requested by the user or
-        False in other case"""
-        export = self.request.GET.get('export')
-        return export == 'csv'
-
-    def handle_csv_export(self, queryset):
-        """Returns HTTPResponse with cvs stream data"""
-        return self.do_csv_export(queryset)
-
-    def get_csv_data(self, queryset):
-        """Should returns generic rows.
-         Override this method in inherited class"""
-        pass
-
-    def do_csv_export(self, queryset):
-        f = StringIO.StringIO()
-        data = self.get_csv_data(queryset)
-        csvutil.UnicodeWriter(f).writerows(data)
-        response = HttpResponse(f.getvalue(), content_type="application/csv")
-        response['Content-Disposition'] = 'attachment; filename=ralph.csv'
-        return response
-
-    def get_pages(self, paginator, page):
-        pages = paginator.page_range[
-            max(0, page - 4):min(paginator.num_pages, page + 3)
-        ]
-        if 1 not in pages:
-            pages.insert(0, 1)
-            pages.insert(1, '...')
-        if paginator.num_pages not in pages:
-            pages.append('...')
-            pages.append(paginator.num_pages)
-        return pages
