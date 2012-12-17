@@ -108,30 +108,32 @@ class MultipleServersDeployment(Base):
             hostname = ""
             ip = ""
             try:
-                rack = Device.objects.get(sn=cols[1])
-                dc_name = rack.dc if rack.dc else ""
-                if (rack.parent and rack.parent.model and
-                    rack.parent.model.type == DeviceType.data_center):
-                    dc_name = rack.parent.name
-                status, next_hostname, _ = get_nexthostname(
-                    dc_name, reserved_hostnames=reserved_hostnames
+                network = Network.objects.get(name=cols[2])
+                first_rack_sn = network.rack.split(",")[0].strip()
+                status, new_ip, _ = get_firstfreeip(
+                    network.name,
+                    reserved_ip_addresses=reserved_ip_addresses
                 )
                 if status:
-                    hostname = next_hostname
-                    reserved_hostnames.append(hostname)
+                    ip = new_ip
+                    reserved_ip_addresses.append(ip)
                 try:
-                    network = Network.objects.get(rack=rack.name)
-                    status, new_ip, _ = get_firstfreeip(
-                        network.name,
-                        reserved_ip_addresses=reserved_ip_addresses
+                    rack = Device.objects.get(sn=first_rack_sn)
+                    dc_name = rack.dc if rack.dc else ""
+                    if (rack.parent and rack.parent.model and
+                        rack.parent.model.type == DeviceType.data_center):
+                        dc_name = rack.parent.name
+                    status, next_hostname, _ = get_nexthostname(
+                        dc_name, reserved_hostnames=reserved_hostnames
                     )
                     if status:
-                        ip = new_ip
-                        reserved_ip_addresses.append(ip)
-                except Network.DoesNotExist:
+                        hostname = next_hostname
+                        reserved_hostnames.append(hostname)
+                except Device.DoesNotExist:
                     pass
-            except Device.DoesNotExist:
+            except Network.DoesNotExist:
                 pass
+            cols.insert(0, first_rack_sn)
             cols.insert(0, ip)
             cols.insert(0, hostname)
             csv_rows.append(

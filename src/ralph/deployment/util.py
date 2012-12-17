@@ -45,14 +45,14 @@ def get_nexthostname(dc_name, reserved_hostnames=[]):
         next_number = min_number
         try:
             record = Record.objects.filter(
-                domain__name__iregex=regex, type='A'
+                name__iregex=regex, type='A'
             ).order_by('-domain__name')[0]
             name_match = re.search(
                 template.replace(
                     match.group(0),
                     "(%s[0-9]{%s})" % (str(min_number)[0], number_len - 1)
                 ),
-                record.domain.name
+                record.name
             )
             next_number = int(name_match.group(1)) + 1
             if next_number > max_number:
@@ -130,7 +130,7 @@ def is_preboot_exists(name):
 
 
 def is_hostname_exists(hostname):
-    return Record.objects.filter(domain__name=hostname, type='A').exists()
+    return Record.objects.filter(name=hostname, type='A').exists()
 
 
 def is_ip_address_exists(ip):
@@ -142,6 +142,14 @@ def is_ip_address_exists(ip):
     ))
 
 
+def is_network_exists(name):
+    return Network.objects.filter(name=name).exists()
+
+
+def is_management_ip_unique(ip):
+    return not IPAddress.objects.filter(address=ip).exists()
+
+
 def _create_device(data):
     ethernets = [Eth(
         'DEPLOYMENT MAC',
@@ -150,13 +158,18 @@ def _create_device(data):
     )]
     dev = Device.create(
         ethernets=ethernets, model_type=DeviceType.unknown,
-        model_name='UNKNOWN',
+        model_name='Unknown',
     )
     try:
         dev.parent = Device.objects.get(sn=data['rack_sn'])
         dev.save()
     except Device.DoesNotExist:
         pass
+    IPAddress.objects.create(
+        address=data['management_ip'],
+        device=dev,
+        is_management=True
+    )
     return dev
 
 
@@ -164,8 +177,6 @@ def _create_device(data):
 def create_deployments(data, user, multiple_deployment):
     for item in data:
         dev = _create_device(item)
-        hostname, domain_name = item['hostname'].split('.', 1)
-        Domain.objects.get_or_create(name=domain_name)
         Deployment.objects.create(
             user=user, device=dev, mac=item['mac'], ip=item['ip'],
             hostname=item['hostname'], preboot=item['preboot'],
