@@ -13,7 +13,8 @@ from django.db.models import Q
 from ralph.business.models import RoleProperty, VentureRole
 from ralph.deployment.util import (
     is_mac_address_unknown, is_rack_exists, are_venture_and_role_exists,
-    is_preboot_exists, is_hostname_exists, is_ip_address_exists
+    is_preboot_exists, is_hostname_exists, is_ip_address_exists,
+    is_network_exists, is_management_ip_unique
 )
 from ralph.deployment.models import Deployment, Preboot
 from ralph.discovery.models import Device, DeviceType, Network
@@ -128,7 +129,7 @@ class DeploymentForm(forms.ModelForm):
 class PrepareMultipleDeploymentForm(forms.Form):
     csv = forms.CharField(
         label="CSV", widget=forms.widgets.Textarea(attrs={'class': 'span12'}),
-        help_text="Template: mac;rack-serial-number;venture;role;preboot"
+        help_text="Template: mac;management-ip;network;venture;role;preboot"
     )
 
     def clean_csv(self):
@@ -137,9 +138,10 @@ class PrepareMultipleDeploymentForm(forms.Form):
         if not rows:
             raise forms.ValidationError("Incorrect CSV format.")
         parsed_macs = []
+        parsed_management_ip_addresses = []
         for row_number, row in enumerate(rows, start=1):
             cols = row.split(";")
-            if len(cols) != 5:
+            if len(cols) != 6:
                 raise forms.ValidationError(
                     "Incorrect CSV format. See row %s" % row_number
                 )
@@ -163,25 +165,42 @@ class PrepareMultipleDeploymentForm(forms.Form):
             if mac in parsed_macs:
                 raise forms.ValidationError(
                     "Row %s: Duplicated MAC address. "
-                    "Please check previos rows..." % row_number
+                    "Please check previous rows..." % row_number
                 )
             parsed_macs.append(mac)
-            rack_sn = cols[1].strip()
-            if not is_rack_exists(rack_sn):
+            management_ip = cols[1].strip()
+            try:
+                ipaddr.IPAddress(management_ip)
+            except ValueError:
                 raise forms.ValidationError(
-                    "Row %s: Rack with SN=%s doesn't exists." % (
-                        row_number, rack_sn
+                    "Row %s: Incorrect management IP address." % row_number
+                )
+            if not is_management_ip_unique(management_ip):
+                raise forms.ValidationError(
+                    "Row %s: Management IP address already exists." % (
+                        row_number
                     )
                 )
-            venture = cols[2].strip()
-            venture_role = cols[3].strip()
+            if management_ip in parsed_management_ip_addresses:
+                raise forms.ValidationError(
+                    "Row %s: Duplicated management IP address. "
+                    "Please check previous rows..." % row_number
+                )
+            parsed_management_ip_addresses.append(management_ip)
+            network_name = cols[2].strip()
+            if not is_network_exists(network_name):
+                raise forms.ValidationError(
+                    "Row %s: Network doesn't exists." % row_number
+                )
+            venture = cols[3].strip()
+            venture_role = cols[4].strip()
             if not are_venture_and_role_exists(venture, venture_role):
                 raise forms.ValidationError(
                     "Row %s: Couldn't find venture %s with role %s" % (
                         row_number, venture, venture_role
                     )
                 )
-            preboot = cols[4].strip()
+            preboot = cols[5].strip()
             if not is_preboot_exists(preboot):
                 raise forms.ValidationError(
                     "Row %s: Couldn't find preboot %s" % (
@@ -194,8 +213,8 @@ class PrepareMultipleDeploymentForm(forms.Form):
 class MultipleDeploymentForm(forms.Form):
     csv = forms.CharField(
         label="CSV", widget=forms.widgets.Textarea(attrs={'class': 'span12'}),
-        help_text="Template: hostname;ip;mac;rack-serial-number;venture;"
-                  "role;preboot"
+        help_text="Template: hostname;ip;rack-sn;mac;management-ip;"
+                  "network;venture;role;preboot"
     )
 
     def clean_csv(self):
@@ -207,9 +226,10 @@ class MultipleDeploymentForm(forms.Form):
         parsed_hostnames = []
         parsed_ip_addresses = []
         parsed_macs = []
+        parsed_management_ip_addresses = []
         for row_number, row in enumerate(rows, start=1):
             cols = row.split(";")
-            if len(cols) != 7:
+            if len(cols) != 9:
                 raise forms.ValidationError(
                     "Incorrect CSV format. See row %s" % row_number
                 )
@@ -229,12 +249,12 @@ class MultipleDeploymentForm(forms.Form):
             if hostname in parsed_hostnames:
                 raise forms.ValidationError(
                     "Row %s: Duplicated hostname. "
-                    "Please check previos rows..." % row_number
+                    "Please check previous rows..." % row_number
                 )
             parsed_hostnames.append(hostname)
-            rack_sn = cols[3].strip()
+            rack_sn = cols[2].strip()
             try:
-                rack = Device.objects.get(
+                Device.objects.get(
                     Q(sn=rack_sn),
                     Q(model__type=DeviceType.rack) |
                     Q(model__type=DeviceType.blade_system)
@@ -245,12 +265,17 @@ class MultipleDeploymentForm(forms.Form):
                         row_number, rack_sn
                     )
                 )
+            network_name = cols[5].strip()
             try:
-                network = Network.objects.get(rack=rack.name)
+                network = Network.objects.get(name=network_name)
             except Network.DoesNotExist:
                 raise forms.ValidationError(
-                    "Row %s: Couldn't determine network for rack "
-                    "with SN=%s" % (row_number, rack_sn)
+                    "Row %s: Selected network doesn't exists." % row_number
+                )
+            if rack_sn not in network.rack:
+                raise forms.ValidationError(
+                    "Row %s: Selected rack isn't connected with selected "
+                    "network" % row_number
                 )
             ip = cols[1].strip()
             try:
@@ -272,10 +297,10 @@ class MultipleDeploymentForm(forms.Form):
             if ip in parsed_ip_addresses:
                 raise forms.ValidationError(
                     "Row %s: Duplicated IP address. "
-                    "Please check previos rows..." % row_number
+                    "Please check previous rows..." % row_number
                 )
             parsed_ip_addresses.append(ip)
-            mac = cols[2].strip()
+            mac = cols[3].strip()
             if not is_mac_valid(Eth("", mac, "")):
                 raise forms.ValidationError(
                     "Row %s: Invalid MAC address." % row_number
@@ -287,27 +312,46 @@ class MultipleDeploymentForm(forms.Form):
             if mac in parsed_macs:
                 raise forms.ValidationError(
                     "Row %s: Duplicated MAC address. "
-                    "Please check previos rows..." % row_number
+                    "Please check previous rows..." % row_number
                 )
             parsed_macs.append(mac)
+            management_ip = cols[4].strip()
+            try:
+                ipaddr.IPAddress(management_ip)
+            except ValueError:
+                raise forms.ValidationError(
+                    "Row %s: Invalid management IP address." % row_number
+                )
+            if not is_management_ip_unique(management_ip):
+                raise forms.ValidationError(
+                    "Row %s: Management IP address already exists." % (
+                        row_number
+                    )
+                )
+            if management_ip in parsed_management_ip_addresses:
+                raise forms.ValidationError(
+                    "Row %s: Duplicated management IP address. "
+                    "Please check previous rows..." % row_number
+                )
+            parsed_management_ip_addresses.append(management_ip)
             try:
                 venture_role = VentureRole.objects.get(
-                    venture__name=cols[4].strip(),
-                    name=cols[5].strip()
+                    venture__name=cols[6].strip(),
+                    name=cols[7].strip()
                 )
                 venture = venture_role.venture
             except VentureRole.DoesNotExist:
                 raise forms.ValidationError(
                     "Row %s: Couldn't find venture %s with role %s" % (
-                        row_number, cols[4].strip(), cols[5].strip()
+                        row_number, cols[6].strip(), cols[7].strip()
                     )
                 )
             try:
-                preboot = Preboot.objects.get(name=cols[6].strip())
+                preboot = Preboot.objects.get(name=cols[8].strip())
             except Preboot.DoesNotExist:
                 raise forms.ValidationError(
                     "Row %s: Couldn't find preboot %s" % (
-                        row_number, cols[6].strip()
+                        row_number, cols[8].strip()
                     )
                 )
             cleaned_csv.append({
@@ -317,7 +361,9 @@ class MultipleDeploymentForm(forms.Form):
                 'rack_sn': rack_sn,
                 'venture': venture,
                 'venture_role': venture_role,
-                'preboot': preboot
+                'preboot': preboot,
+                'management_ip': management_ip,
+                'network': network
             })
         return cleaned_csv
 
