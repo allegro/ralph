@@ -20,7 +20,13 @@ DEFAULT_ASSET_DATA = dict(
 )
 
 SCREEN_ERROR_MESSAGES = dict(
-    duplicated_sn_or_bc='Please correct duplicated serial numbers or barcodes.'
+    duplicated_sn_or_bc='Please correct duplicated serial numbers or barcodes.',
+    duplicated_sn_in_field='There are duplicate serial numbers in field.',
+    contain_white_character="Serial number can't contain white characters.",
+    django_required='This field is required.',
+    count_sn_and_bc='Barcode list could be empty or must have the same number '
+                    'of items as a SN list.',
+    barcode_already_exist='Following barcodes already exists in DB: '
 )
 
 
@@ -55,7 +61,6 @@ def create_device(size=1):
 
 
 def create_asset(sn, **kwargs):
-    """Required: sn"""
     if not kwargs.get('type'):
         kwargs.update(type=DEFAULT_ASSET_DATA['type'])
     if not kwargs.get('model'):
@@ -72,6 +77,7 @@ def create_asset(sn, **kwargs):
         kwargs.update(support_type='standard')
     if not kwargs.get('warehouse'):
         kwargs.update(warehouse=create_warehouse())
-    asset = Asset(sn, **kwargs)
+    kwargs.update(sn=sn)
+    asset = Asset(**kwargs)
     asset.save()
     return asset

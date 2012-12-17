@@ -8,7 +8,9 @@ from __future__ import unicode_literals
 from django.test import TestCase
 
 from ralph.assets.models_assets import Asset, AssetType, AssetStatus
-from ralph.assets.tests.util import create_model, create_warehouse
+from ralph.assets.tests.util import (
+    create_model, create_warehouse, SCREEN_ERROR_MESSAGES
+)
 from ralph.ui.tests.helper import login_as_su
 
 
@@ -191,7 +193,7 @@ class TestMultivalueFields(TestCase):
                 self.assertEqual(post.status_code, 200)
                 self.assertFormError(
                     post, 'asset_form', 'sn',
-                    'There are duplicate serial numbers in field.'
+                    SCREEN_ERROR_MESSAGES['duplicated_sn_in_field']
                 )
             elif test['remarks'] == 'asset2':
                 self.assertEqual(post.status_code, 302)
@@ -216,24 +218,24 @@ class TestMultivalueFields(TestCase):
                 self.assertEqual(post.status_code, 200)
                 self.assertFormError(
                     post, 'asset_form', 'sn',
-                    "Serial number can't contain white characters."
+                    SCREEN_ERROR_MESSAGES['contain_white_character']
                 )
             elif test['remarks'] == 'asset6':
                 self.assertFormError(
-                    post, 'asset_form', 'sn', 'This field is required.'
+                    post, 'asset_form', 'sn',
+                    SCREEN_ERROR_MESSAGES['django_required']
                 )
             elif test['remarks'] in ['asset6', 'asset7', 'asset 8', 'asset11']:
                 self.assertEqual(post.status_code, 200)
                 self.assertFormError(
                     post, 'asset_form', 'barcode',
-                    "Barcode list could be empty or must have the same number "
-                    "of items as a SN list."
+                    SCREEN_ERROR_MESSAGES['count_sn_and_bc']
                 )
             elif test['remarks'] == 'asset9':
                 self.assertEqual(post.status_code, 200)
                 self.assertFormError(
                     post, 'asset_form', 'barcode',
-                    "Serial number can't contain white characters."
+                    SCREEN_ERROR_MESSAGES['contain_white_character']
                 )
             elif test['remarks'] == 'asset12':
                 duplicate = dict(
@@ -253,7 +255,7 @@ class TestMultivalueFields(TestCase):
                 self.assertEqual(post.status_code, 200)
                 self.assertFormError(
                     post, 'asset_form', 'barcode',
-                    'Following barcodes already exists in DB: dup1'
+                    SCREEN_ERROR_MESSAGES['barcode_already_exist'] + 'dup1'
                 )
         empty_sn = Asset.objects.filter(sn=' ')
         self.assertEqual(len(empty_sn), 0)
