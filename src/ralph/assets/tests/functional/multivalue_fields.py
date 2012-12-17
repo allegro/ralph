@@ -214,10 +214,15 @@ class TestMultivalueFields(TestCase):
                     ['sn1_4', 'ns2_4', 'sn3_4'],
                     [asset.sn for asset in added_assets]
                 )
-            elif test['remarks'] in ['asset5', 'asset9', 'asset10']:
-                self.assertEqual(post.status_code, 200)
+            elif test['remarks'] == 'asset5':
                 self.assertFormError(
                     post, 'asset_form', 'sn',
+                    SCREEN_ERROR_MESSAGES['contain_white_character']
+                )
+            elif test['remarks'] in ['asset9', 'asset10']:
+                self.assertEqual(post.status_code, 200)
+                self.assertFormError(
+                    post, 'asset_form', 'barcode',
                     SCREEN_ERROR_MESSAGES['contain_white_character']
                 )
             elif test['remarks'] == 'asset6':
@@ -255,7 +260,7 @@ class TestMultivalueFields(TestCase):
                 self.assertEqual(post.status_code, 200)
                 self.assertFormError(
                     post, 'asset_form', 'barcode',
-                    SCREEN_ERROR_MESSAGES['barcode_already_exist'] + 'dup1'
+                    SCREEN_ERROR_MESSAGES['barcode_already_exist'] + 'barcode1'
                 )
         empty_sn = Asset.objects.filter(sn=' ')
         self.assertEqual(len(empty_sn), 0)
