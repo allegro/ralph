@@ -34,10 +34,10 @@ def user_data(auth, snmp_version):
         community = auth
         data = cmdgen.CommunityData('ralph', community, 1)
     elif snmp_version in ('3', 3):
-        # For snmpv3, auth is a tuple of password and encryption key
-        snmp_v3_auth, snmp_v3_priv = auth
+        # For snmpv3, auth is a tuple of user, password and encryption key
+        snmp_v3_user, snmp_v3_auth, snmp_v3_priv = auth
         data =  cmdgen.UsmUserData(
-            'usr-sha-des',
+            snmp_v3_user,
             snmp_v3_auth,
             snmp_v3_priv,
             authProtocol=cmdgen.usmHMACSHAAuthProtocol,
