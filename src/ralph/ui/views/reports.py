@@ -26,9 +26,12 @@ from ralph.discovery.models_device import MarginKind, DeviceType, Device
 from ralph.discovery.models_history import HistoryCost
 
 from ralph.ui.forms import (
-    DateRangeForm, MarginsReportForm, DevicesChoiceReportForm,
-    SupportRangeReportForm, DeprecationRangeReportForm, WarrantyRangeReportForm
+    DateRangeForm, MarginsReportForm,
 )
+
+from ralph.ui.forms.reports import (
+    SupportRangeReportForm, DeprecationRangeReportForm, WarrantyRangeReportForm,
+    DevicesChoiceReportForm)
 from ralph.ui.reports import (
     get_total_cost, get_total_count, get_total_cores, get_total_virtual_cores
 )
