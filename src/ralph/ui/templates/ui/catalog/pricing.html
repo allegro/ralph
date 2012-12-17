@@ -1,0 +1,196 @@
+{% extends "ui/catalog/base.html" %}
+
+{% load url from future %}
+{% load icons %}
+{% load formats %}
+{% load bob %}
+
+
+{% block contentarea %}
+</div>
+<div class="row-fluid">
+    <div class="span12">
+        <div class="form form-inline form-actions">
+            <div class="btn-group years" data-toggle="buttons-radio">
+                {% for y in years %}
+                <a
+                    href="/ui/catalog/pricing/{{ y|stringformat:'04d' }}-{{ month|stringformat:'02d' }}/{{ group_name|urlencode }}"
+                    class="btn
+                        {% if year == y %}active{% endif %}
+                        {% if today.year == y %}btn-success{% endif %}
+                    "
+                >{{ y }}</a>
+                {% endfor %}
+            </div>
+            <div class="btn-group months" data-toggle="buttons-radio">
+                {% for i, m in months %}
+                <a
+                    href="/ui/catalog/pricing/{{ year|stringformat:'04d' }}-{{ i|stringformat:'02d' }}/{{ group_name|urlencode }}"
+                    class="btn
+                        {% if month == i %} active{% endif %}
+                        {% if today.month == i %}btn-success{% endif %}
+                    "
+                >{{ m }}</a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row-fluid">
+    <div class="span10">
+        {% if form %}
+            {% form_horizontal form action="" fugue_icons=1 %}
+        {% endif %}
+        {% if variablesformset %}
+        <form class="form form-inline" method="POST">
+            {% csrf_token %}
+            {{ variablesformset.management_form }}
+            <table class="table table-bordered table-condensed">
+                <tr>
+                    <td>
+                    {% for f in deviceform %}
+                        {{ f }}
+                        {% for error in f.errors %}
+                        <div class="help-block">{{ error }}</div>
+                        {% endfor %}
+                    {% endfor %}
+                    </td>
+                    {% for form in variablesformset %}
+                    <th width="10%">
+                        {% for f in form %}
+                        <div class="control-group {% if f.errors %}error{% endif %}">
+                        {% if 'DELETE' in f.name %}
+                            <label class="checkbox inline">
+                                <div style="display:inline-block; vertical-align:bottom">{{ f }}</div>&nbsp;Delete
+                            </label>
+                        {% else %}
+                            {{ f }}
+                        {% endif %}
+                        {%   for error in f.errors %}
+                            <div class="help-block">{{ error }}</div>
+                        {%   endfor %}
+                        {% endfor %}
+                        </div>
+                    </th>
+                    {% endfor %}
+                </tr>
+                {% for device in devices %}
+                <tr>
+                    <td>
+                        {{ device|device_icon }}&nbsp;{{ device.name }}
+                        <div><small>{{ device.role }}/{{ device.venture_role }}</small></div>
+                        {{ device.formset.management_form }}
+                    </td>
+                    {% for form in  device.formset %}
+                    <td>
+                        {% for f in form %}
+                        <div class="control-group {% if f.errors %}error{% endif %}">
+                        {{ f }}
+                        {%   for error in f.errors %}
+                        <div class="help-block">{{ error }}</div>
+                        {%   endfor %}
+                        {% endfor %}
+                        </div>
+                    </td>
+                    {% endfor %}
+                    <td>
+                        <label class="checkbox inline">
+                            <div style="display:inline-block; vertical-align:bottom"><input type="checkbox" name="device-delete-{{ device.id }}"></div>&nbsp;Delete
+                        </label>
+                    </td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <th>Total</th>
+                    {% for form in variablesformset %}
+                    <td class="currency">
+                        {% if form.instance.id %}
+                            {{ form.instance.get_value }}
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+            </table>
+            <div class="form-actions">
+                <div class="pull-right">
+                    {% spaceless %}
+                    <button class="btn btn-danger" data-confirm="#delete-confirm" name="group-delet">
+                        {% icon 'fugue-skull' %}&nbsp;Delete
+                    </button>
+                    {% endspaceless %}
+                    {% spaceless %}
+                    <button class="btn btn-primary" name="values-save">
+                        {% icon 'fugue-tick' %}&nbsp;Save
+                    </button>
+                    {% endspaceless %}
+                </div>
+            </div>
+            <div class="modal hide fade" id="delete-confirm">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h3>Deleting a pricing group</h3>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure that you want to delete the group <strong>{{ group_name }}</strong> for <strong>{{ group.date.year }}-{{ group.date.month }}</strong>?</p>
+                </div>
+                <div class="modal-footer">
+                    <a href="#" class="btn" data-dismiss="modal">Don't delete</a>
+                    {% spaceless %}
+                    <button class="btn btn-danger" name="group-delete">
+                        {% icon 'fugue-skull' %}&nbsp;Delete
+                    </button>
+                    {% endspaceless %}
+                </div>
+            </div>
+        </form>
+        <form class="form form-inline" method="POST">
+            {% csrf_token %}
+            {{ formulasformset.management_form }}
+            <table class="table table-bordered table-condensed">
+                <tr>
+                    <th width="20%">Component model group</th>
+                    {% spaceless %}
+                    <th>Pricing formula (use variables:
+                        {% for form in variablesformset %}
+                        {%   if form.instance.id %}
+                        {{ form.instance.name }},
+                        {%   endif %}
+                        {% endfor %} size)
+                    </th>
+                    {% endspaceless %}
+                    <th width="16">Del</th>
+                    <th width="10%">Example (size=1)</th>
+                </tr>
+                {% for form in formulasformset %}
+                <tr>
+                    {% for f in form.hidden_fields %}{{ f }}{% endfor %}
+                    {% for f in form.visible_fields %}
+                    <td class="control-group {% if f.errors %}error{% endif %}">
+                        {{ f }}
+                        {% for error in f.errors %}
+                        <div class="help-block">{{ error }}</div>
+                        {% endfor %}
+                    </td>
+                    {% endfor %}
+                    <td class="currency">
+                        {% if form.instance %}
+                        {{ form.instance.get_example|currency }}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+            <div class="form-actions">
+                {% spaceless %}
+                <button class="btn btn-primary pull-right" name="formulas-save">
+                    {% icon 'fugue-tick' %}&nbsp;Save
+                </button>
+                {% endspaceless %}
+            </div>
+        </form>
+        {% endif %}
+    </div>
+    <div class="span2 group-tabs">
+        {% tab_menu group_items group_name side='right' %}
+    </div>
+{% endblock %}

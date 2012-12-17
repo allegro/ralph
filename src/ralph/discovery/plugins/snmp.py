@@ -21,9 +21,12 @@ SAVE_PRIORITY = 1
 SNMP_PLUGIN_COMMUNITIES = getattr(settings, 'SNMP_PLUGIN_COMMUNITIES',
     ['public'])
 
-if settings.SNMP_V3_AUTH_KEY and settings.SNMP_V3_PRIV_KEY:
-    SNMP_V3_AUTH = settings.SNMP_V3_AUTH_KEY, settings.SNMP_V3_PRIV_KEY
-else:
+SNMP_V3_AUTH = (
+    settings.SNMP_V3_USER,
+    settings.SNMP_V3_AUTH_KEY,
+    settings.SNMP_V3_PRIV_KEY,
+)
+if not all(SNMP_V3_AUTH):
     SNMP_V3_AUTH = None
 
 _cisco_oids_std = (
@@ -133,9 +136,9 @@ def snmp(**kwargs):
     if SNMP_V3_AUTH and version not in ('1', '2', '2c'):
         is_up, message = _snmp(
             ip, SNMP_V3_AUTH,
-            oid,
+            (1,3,6,1,2,1,1,1,0),
             attempts=2,
-            timeout=0.2,
+            timeout=0.5, # SNMP v3 usually needs more time
             snmp_version='3',
         )
         if is_up:

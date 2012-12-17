@@ -5,12 +5,11 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from django import forms
 from bob.forms import AutocompleteWidget
+from django import forms
 
 from ralph.business.models import RoleProperty
 from ralph.deployment.models import Deployment
-from ralph.discovery.models import IPAddress
 from ralph.dnsedit.models import DHCPEntry
 from ralph.dnsedit.util import is_valid_hostname
 from ralph.ui.forms.util import all_ventures
@@ -29,12 +28,17 @@ class MarginsReportForm(DateRangeForm):
         super(MarginsReportForm, self).__init__(*args, **kwargs)
         for mk in margin_kinds:
             field_id = 'm_%d' % mk.id
-            field = forms.IntegerField(label='', initial=mk.margin,
-                    required=False,
-                    widget=forms.TextInput(attrs={
+            field = forms.IntegerField(
+                label='',
+                initial=mk.margin,
+                required=False,
+                widget=forms.TextInput(
+                    attrs={
                         'class': 'span12',
                         'style': 'text-align: right',
-                    }))
+                    }
+                )
+            )
             field.initial = mk.margin
             self.fields[field_id] = field
 
@@ -113,7 +117,9 @@ class DeploymentForm(forms.ModelForm):
         ip = self.cleaned_data.get('ip')
         venture_role = self.cleaned_data.get('venture_role')
         if venture_role.check_ip(ip) is False:
-            raise forms.ValidationError("Given IP isn't in the appropriate subnet")
+            raise forms.ValidationError(
+                "Given IP isn't in the appropriate subnet"
+            )
         return ip
 
 
@@ -128,4 +134,5 @@ class RolePropertyForm(forms.ModelForm):
         'symbol': 'fugue-hand-property',
         'type': 'fugue-property-blue',
     }
+
 
