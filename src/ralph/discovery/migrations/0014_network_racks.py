@@ -7,23 +7,25 @@ from django.db import models
 class Migration(DataMigration):
 
     def forwards(self, orm):
-        for net in orm.Network.objects.all():
-            if not net.rack:
-                continue
-            for name in net.rack.split(','):
-                sn = 'Rack %s' % name.strip()
-                try:
-                    rack = orm.Device.objects.get(sn=sn)
-                except orm.Device.DoesNotExist:
-                    raise RuntimeError("Rack %r is referenced in network %r but doesn't exist!" % (sn, net.name))
-                net.racks.add(rack)
-            net.save()
+        if not db.dry_run:
+            for net in orm.Network.objects.all():
+                if not net.rack:
+                    continue
+                for name in net.rack.split(','):
+                    sn = 'Rack %s' % name.strip()
+                    try:
+                        rack = orm.Device.objects.get(sn=sn)
+                    except orm.Device.DoesNotExist:
+                        raise RuntimeError("Rack %r is referenced in network %r but doesn't exist!" % (sn, net.name))
+                    net.racks.add(rack)
+                net.save()
 
     def backwards(self, orm):
-        for net in orm.Network.objects.all():
-            net.rack = ', '.join(r.sn for r in net.racks)
-            net.racks = []
-            net.save()
+        if not db.dry_run:
+            for net in orm.Network.objects.all():
+                net.rack = ', '.join(r.sn for r in net.racks)
+                net.racks = []
+                net.save()
 
     models = {
         'account.profile': {
