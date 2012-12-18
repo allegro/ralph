@@ -16,9 +16,8 @@ from tastypie.cache import SimpleCache
 from tastypie.resources import ModelResource as MResource
 from tastypie.throttle import CacheThrottle
 from django.conf import settings
-from django.db.transaction import commit_on_success
 from lck.django.common.models import MACAddressField
-from lck.django.common import remote_addr
+from lck.django.common import remote_addr, nested_commit_on_success
 
 from ralph.discovery.models import (Device, DeviceType, IPAddress, Memory,
                                     Processor, ComponentModel, ComponentType,
@@ -100,7 +99,7 @@ def save_shares(shares, dev, ip):
         mount.delete()
 
 
-@commit_on_success
+@nested_commit_on_success
 def save_storage(storage, dev):
     mount_points = []
     for item in storage:
