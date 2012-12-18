@@ -14,21 +14,35 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from datetime import datetime, timedelta, date
 import re
 import textwrap
-from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.test import TestCase
-from unittest import skip
 from tastypie.models import ApiKey
+from unittest import skip
 
 from ralph.business.models import Venture
-from ralph.discovery.models import Device, DeviceType
-from ralph.discovery.models import DeviceModelGroup
-from ralph.discovery.models import MarginKind, DeprecationKind
+from ralph.discovery.models import (
+    ComponentModel,
+    ComponentModelGroup,
+    ComponentType,
+    DeprecationKind,
+    Device,
+    DeviceModelGroup,
+    DeviceType,
+    DiskShare,
+    DiskShareMount,
+    MarginKind,
+    PricingAggregate,
+    PricingFormula,
+    PricingGroup,
+    PricingValue,
+    PricingVariable,
+)
 from ralph.util import pricing
 from ralph.util.pricing import get_device_raw_price
 
@@ -40,9 +54,10 @@ NON_EXISTENT_HOST_IP = '11.255.255.254'
 IP2HOST_IP = settings.SANITY_CHECK_IP2HOST_IP
 IP2HOST_HOSTNAME_REGEX = settings.SANITY_CHECK_IP2HOST_HOSTNAME_REGEX
 
+THROTTLE_AT = settings.API_THROTTLING['throttle_at']
+
 
 class NetworkTest(TestCase):
-
     @skip('uses external resources')
     # @skipIf(sys.platform in ('darwin',), "Ping on MacOS X requires root.")
     def test_ping(self):
@@ -191,7 +206,85 @@ class PricingTest(TestCase):
         self.assertEqual(dev.cached_price, 100)
 
 
-THROTTLE_AT = settings.API_THROTTLING['throttle_at']
+class PricingGroupsTest(TestCase):
+    def test_disk_share(self):
+        storage_dev = Device.create(
+            sn='device',
+            model_type=DeviceType.storage,
+            model_name='storage device',
+        )
+        storage_dev.save()
+        share_group = ComponentModelGroup(
+            price=1,
+            type=ComponentType.share,
+            per_size=False,
+            size_unit='',
+            size_modifier=1,
+        )
+        share_group.save()
+        share_model = ComponentModel(
+            speed=0,
+            cores=0,
+            size=7,
+            type=ComponentType.share,
+            group=share_group,
+            extra='',
+            extra_hash='',
+            family='',
+        )
+        share_model.save()
+        disk_share = DiskShare(
+            device=storage_dev,
+            model=share_model,
+            share_id=1,
+            label="share",
+            size=7,
+            snapshot_size=5,
+            wwn='123456789012345678901234567890123',
+            full=True,
+        )
+        disk_share.save()
+        share_mount = DiskShareMount(
+            share=disk_share,
+            device=storage_dev,
+            size=17,
+        )
+        share_mount.save()
+        today = date.today()
+        this_month = date(year=today.year, month=today.month, day=1)
+        pricing_group = PricingGroup(
+            name='group',
+            date=this_month,
+        )
+        pricing_group.save()
+        pricing_group.devices.add(storage_dev)
+        pricing_group.save()
+        pricing_formula = PricingFormula(
+            group=pricing_group,
+            component_group=share_group,
+            formula='3+size+11*variable',
+        )
+        pricing_formula.save()
+        pricing_variable = PricingVariable(
+            name='variable',
+            group=pricing_group,
+            aggregate=PricingAggregate.sum,
+        )
+        pricing_variable.save()
+        pricing_value = PricingValue(
+            device=storage_dev,
+            variable=pricing_variable,
+            value=13,
+        )
+        pricing_value.save()
+        variable_value = pricing_variable.get_value()
+        self.assertEqual(variable_value, 13)
+        formula_value = pricing_formula.get_value(size=7)
+        self.assertEqual(formula_value, 3 + 7 + 11 * 13)
+        share_price = disk_share.get_price()
+        self.assertEqual(share_price, 3 + (7.0 + 5.0) / 1024 + 11 * 13)
+        mount_price = share_mount.get_price()
+        self.assertEqual(mount_price, 3 + 17.0 / 1024 + 11 * 13)
 
 
 class ApiTest(TestCase):
@@ -272,3 +365,4 @@ class UncompressBase64DataTest(TestCase):
         encoded = base64.b64encode(raw)
         compressed = zlib.compress(encoded)
         self.assertEqual(uncompress_base64_data(compressed), encoded)
+

@@ -5,6 +5,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from bob.data_table import DataTableColumn, DataTableMixin
 from bob.menu import MenuItem, MenuHeader
 from django.contrib import messages
 from django.core.paginator import Paginator
@@ -14,12 +15,12 @@ from django.db import transaction
 from django.db.models import Q
 from django.http import HttpResponseRedirect, Http404
 from django.forms.models import modelformset_factory
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.forms import (
     AddDeviceForm, AddPartForm, EditDeviceForm,
-    EditPartForm, BaseDeviceForm, OfficeForm,
+    EditPartForm, DeviceForm, OfficeForm,
     BasePartForm, BulkEditAssetForm, SearchAssetForm
 )
 from ralph.assets.models import (
@@ -27,7 +28,7 @@ from ralph.assets.models import (
 )
 from ralph.assets.models_assets import AssetType
 from ralph.assets.models_history import AssetHistoryChange
-from ralph.ui.views.common import Base, PaginationMixin
+from ralph.ui.views.common import Base
 
 
 SAVE_PRIORITY = 200
@@ -110,9 +111,62 @@ class BackOfficeMixin(AssetsMixin):
         return sidebar_menu
 
 
-class AssetSearch(AssetsMixin, PaginationMixin):
+class DataTableColumnAssets(DataTableColumn):
+    """
+    A container object for all the information about a columns header
+
+    :param foreign_field_name - set if field comes from foreign key
+    :param sort_expression - example `device_info__size`
+    :param export - set when the column is to be exported
+    """
+
+    def __init__(self, header_name, **kwargs):
+        super(DataTableColumnAssets, self).__init__(header_name, **kwargs)
+        self.foreign_field_name = kwargs.get('foreign_field_name')
+        self.sort_expression = kwargs.get('sort_expression')
+        self.export = kwargs.get('export')
+
+
+class AssetSearch(AssetsMixin, DataTableMixin):
     """The main-screen search form for all type of assets."""
     ROWS_PER_PAGE = 15
+    FILE_NAME = 'ralph.csv'
+    _ = DataTableColumnAssets
+    columns = [
+        _('Dropdown', selectable=True, bob_tag=True),
+        _('Type', bob_tag=True),
+        _('SN', field='sn', sort_expression='sn', bob_tag=True, export=True),
+        _('Barcode', field='barcode', sort_expression='barcode', bob_tag=True,
+          export=True),
+        _('Model', field='model', sort_expression='model', bob_tag=True,
+          export=True),
+        _('Invoice no.', field='invoice_no', sort_expression='invoice_no',
+          bob_tag=True, export=True),
+        _('Order no.', field='order_no', sort_expression='order_no',
+          bob_tag=True, export=True),
+        _('Invoice date', field='invoice_date', type='date',
+          sort_expression='invoice_date', bob_tag=True, export=True),
+        _('Status', field='status', choice=True, sort_expression='status',
+          bob_tag=True, export=True),
+        _('Warehouse', field='warehouse', sort_expression='warehouse',
+          bob_tag=True, export=True),
+        _('Actions', bob_tag=True),
+
+        _('Barcode salvaged', field='barcode_salvaged',
+          foreign_field_name='part_info', export=True),
+        _('Source device', field='source_device',
+          foreign_field_name='part_info', export=True),
+        _('Device', field='device',
+          foreign_field_name='part_info', export=True),
+        _('Provider', field='provider', export=True),
+        _('Remarks', field='remarks', export=True),
+        _('Source', field='source', choice=True, export=True),
+        _('Support peroid', field='support_peroid', export=True),
+        _('Support type', field='support_type', export=True),
+        _('Support void_reporting', field='support_void_reporting',
+          export=True),
+        _('Type', field='type', choice=True, export=True),
+    ]
 
     def handle_search_data(self):
         search_fields = [
@@ -138,6 +192,31 @@ class AssetSearch(AssetsMixin, PaginationMixin):
             all_q &= Q(invoice_date__lte=invoice_date_to)
         self.paginate_query(self.get_all_items(all_q))
 
+    def get_csv_header(self):
+        header = super(AssetSearch, self).get_csv_header()
+        return ['type'] + header
+
+    def get_csv_rows(self, queryset, type):
+        data = [self.get_csv_header()]
+        for asset in queryset:
+            row = ['part', ] if asset.part_info else ['device', ]
+            for item in self.columns:
+                field = item.field
+                if field:
+                    choice = item.choice
+                    nested_field_name = item.foreign_field_name
+                    if nested_field_name == type:
+                        cell = self.get_cell(
+                            getattr(asset, type), field, choice
+                        )
+                    elif nested_field_name == 'part_info':
+                        cell = self.get_cell(asset.part_info, field, choice)
+                    else:
+                        cell = self.get_cell(asset, field, choice)
+                    row.append(unicode(cell))
+            data.append(row)
+        return data
+
     def get_all_items(self, q_object):
         return Asset.objects.filter(q_object).order_by('id')
 
@@ -152,6 +231,8 @@ class AssetSearch(AssetsMixin, PaginationMixin):
         ret.update({
             'form': self.form,
             'header': self.header,
+            'sort': self.sort,
+            'columns': self.columns,
         })
         return ret
 
@@ -160,6 +241,9 @@ class AssetSearch(AssetsMixin, PaginationMixin):
             self.request.GET, mode=_get_mode(self.request)
         )
         self.handle_search_data()
+        if self.export_requested():
+            return super(AssetSearch, self).get_export_response(
+                **kwargs)
         return super(AssetSearch, self).get(*args, **kwargs)
 
 
@@ -167,6 +251,33 @@ class BackOfficeSearch(BackOfficeMixin, AssetSearch):
     header = 'Search BO Assets'
     sidebar_selected = 'search'
     template_name = 'assets/search_asset.html'
+    _ = DataTableColumnAssets
+    columns_nested = [
+        _('Date of last inventory', field='date_of_last_inventory',
+          foreign_field_name='office_info', export=True),
+        _('Last logged user', field='last_logged_user',
+          foreign_field_name='office_info', export=True),
+        _('License key', field='license_key',
+          foreign_field_name='office_info', export=True),
+        _('License type', field='license_type',
+          foreign_field_name='office_info', choice=True, export=True),
+        _('Unit price', field='unit_price',
+          foreign_field_name='office_info', export=True),
+        _('Version', field='version',
+          foreign_field_name='office_info', export=True),
+    ]
+
+    def __init__(self, *args, **kwargs):
+        super(BackOfficeSearch, self).__init__(*args, **kwargs)
+        self.columns = (
+            self.columns + self.columns_nested
+        )
+
+    def get_csv_data(self, queryset):
+        data = super(BackOfficeSearch, self).get_csv_rows(
+            queryset, 'office_info'
+        )
+        return data
 
     def get_all_items(self, query):
         return Asset.objects_bo().filter(query)
@@ -176,6 +287,24 @@ class DataCenterSearch(DataCenterMixin, AssetSearch):
     header = 'Search DC Assets'
     sidebar_selected = 'search'
     template_name = 'assets/search_asset.html'
+    _ = DataTableColumnAssets
+    columns_nested = [
+        _('Ralph device', field='ralph_device',
+          foreign_field_name='device_info', export=True),
+        _('Size', field='size', foreign_field_name='device_info', export=True),
+    ]
+
+    def __init__(self, *args, **kwargs):
+        super(DataCenterSearch, self).__init__(*args, **kwargs)
+        self.columns = (
+            self.columns + self.columns_nested
+        )
+
+    def get_csv_data(self, queryset):
+        data = super(DataCenterSearch, self).get_csv_rows(
+            queryset, 'device_info'
+        )
+        return data
 
     def get_all_items(self, query):
         return Asset.objects_dc().filter(query)
@@ -226,13 +355,13 @@ class AddDevice(Base):
 
     def get(self, *args, **kwargs):
         self.asset_form = AddDeviceForm(mode=_get_mode(self.request))
-        self.device_info_form = BaseDeviceForm()
+        self.device_info_form = DeviceForm()
         return super(AddDevice, self).get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
         self.asset_form = AddDeviceForm(
             self.request.POST, mode=_get_mode(self.request))
-        self.device_info_form = BaseDeviceForm(self.request.POST)
+        self.device_info_form = DeviceForm(self.request.POST)
         if self.asset_form.is_valid() and self.device_info_form.is_valid():
             creator_profile = self.request.user.get_profile()
             asset_data = {}
@@ -405,7 +534,7 @@ class EditDevice(Base):
             'office_info_form': self.office_info_form,
             'form_id': 'edit_device_asset_form',
             'edit_mode': True,
-            'MaMaMastatus_history': status_history,
+            'status_history': status_history,
         })
         return ret
 
@@ -417,7 +546,7 @@ class EditDevice(Base):
             instance=asset,
             mode=_get_mode(self.request)
         )
-        self.device_info_form = BaseDeviceForm(instance=asset.device_info)
+        self.device_info_form = DeviceForm(instance=asset.device_info)
         self.office_info_form = OfficeForm(instance=asset.office_info)
         return super(EditDevice, self).get(*args, **kwargs)
 
@@ -426,7 +555,7 @@ class EditDevice(Base):
         self.asset_form = EditDeviceForm(
             self.request.POST, instance=asset, mode=_get_mode(self.request)
         )
-        self.device_info_form = BaseDeviceForm(self.request.POST)
+        self.device_info_form = DeviceForm(self.request.POST)
         self.office_info_form = OfficeForm(
             self.request.POST, self.request.FILES
         )
@@ -614,7 +743,7 @@ class BulkEdit(Base):
                 instances = self.asset_formset.save(commit=False)
                 for instance in instances:
                     instance.modified_by = self.request.user.get_profile()
-                    instance.save()
+                    instance.save(user=self.request.user)
             messages.success(self.request, _("Changes saved."))
             return HttpResponseRedirect(self.request.get_full_path())
         messages.error(self.request, _("Please correct the errors."))
@@ -658,5 +787,5 @@ class DeleteAsset(AssetsMixin):
                     device=self.asset
                 ).update(device=None)
             self.asset.deleted = True
-            self.asset.save()
+            self.asset.save(user=self.request.user)
             return HttpResponseRedirect(self.back_to)

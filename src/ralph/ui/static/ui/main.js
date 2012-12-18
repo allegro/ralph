@@ -38,6 +38,13 @@ $(document).ajaxSend(function(event, xhr, settings) {
 
 
 $(function ($) {
+    /* Some buttons may require confirmation. */
+    $('button.[data-confirm]').click(function () {
+        var confirm_dialog = $(this).attr('data-confirm');
+        $(confirm_dialog).modal('show');
+        /* The actual button should be repeated in the modal dialog. */
+        return false;
+    });
     /* Clearing the "manual field" status. */
     $('a[data-clear-field]').click(function () {
         var field_name = $(this).attr('data-clear-field');
@@ -212,10 +219,11 @@ $(function ($) {
             var start_date = parseDate($start.val());
             start_date.setUTCFullYear($this.data('value'));
             $start.val(formatDate(start_date));
-
-            var end_date = parseDate($end.val());
-            end_date.setUTCFullYear($this.data('value'));
-            $end.val(formatDate(end_date));
+            if ($end) {
+                var end_date = parseDate($end.val());
+                end_date.setUTCFullYear($this.data('value'));
+                $end.val(formatDate(end_date));
+            };
         });
         $form.find('.months a').click(function (e) {
             var $this = $(this);
@@ -225,9 +233,11 @@ $(function ($) {
             date.setUTCDate(1);
             $start.val(formatDate(date));
 
-            date.setUTCMonth($this.data('value'));
-            date.setUTCDate(0);
-            $end.val(formatDate(date));
+            if ($end) {
+                date.setUTCMonth($this.data('value'));
+                date.setUTCDate(0);
+                $end.val(formatDate(date));
+            };
         });
     });
     $('form.search-form').submit(function () {
