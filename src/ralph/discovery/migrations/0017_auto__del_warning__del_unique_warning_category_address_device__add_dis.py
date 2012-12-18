@@ -1,31 +1,49 @@
 # -*- coding: utf-8 -*-
 import datetime
 from south.db import db
-from south.v2 import DataMigration
+from south.v2 import SchemaMigration
 from django.db import models
 
-class Migration(DataMigration):
+
+class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        if not db.dry_run:
-            for net in orm.Network.objects.all():
-                if not net.rack:
-                    continue
-                for name in net.rack.split(','):
-                    sn = 'Rack %s' % name.strip()
-                    try:
-                        rack = orm.Device.objects.get(sn=sn)
-                    except orm.Device.DoesNotExist:
-                        raise RuntimeError("Rack %r is referenced in network %r but doesn't exist!" % (sn, net.name))
-                    net.racks.add(rack)
-                net.save()
+        # Removing unique constraint on 'Warning', fields ['category', 'address', 'device']
+        db.delete_unique('discovery_warning', ['category', 'address_id', 'device_id'])
+
+        # Deleting model 'Warning'
+        db.delete_table('discovery_warning')
+
+        # Adding model 'DiscoveryValue'
+        db.create_table('discovery_discoveryvalue', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('date', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
+            ('ip', self.gf('django.db.models.fields.IPAddressField')(unique=True, max_length=15)),
+            ('plugin', self.gf('django.db.models.fields.CharField')(default=u'', max_length=64)),
+            ('key', self.gf('django.db.models.fields.TextField')(default=u'')),
+            ('value', self.gf('django.db.models.fields.TextField')(default=u'')),
+        ))
+        db.send_create_signal('discovery', ['DiscoveryValue'])
+
 
     def backwards(self, orm):
-        if not db.dry_run:
-            for net in orm.Network.objects.all():
-                net.rack = ', '.join(r.sn for r in net.racks)
-                net.racks = []
-                net.save()
+        # Adding model 'Warning'
+        db.create_table('discovery_warning', (
+            ('category', self.gf('django.db.models.fields.CharField')(max_length=128)),
+            ('aknowledged', self.gf('django.db.models.fields.CharField')(default=u'', max_length=128, blank=True)),
+            ('remarks', self.gf('django.db.models.fields.TextField')(default=u'', blank=True)),
+            ('address', self.gf('django.db.models.fields.related.ForeignKey')(related_name=u'warning_set', null=True, to=orm['discovery.IPAddress'])),
+            ('device', self.gf('django.db.models.fields.related.ForeignKey')(related_name=u'warning_set', null=True, to=orm['discovery.Device'])),
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+        ))
+        db.send_create_signal('discovery', ['Warning'])
+
+        # Adding unique constraint on 'Warning', fields ['category', 'address', 'device']
+        db.create_unique('discovery_warning', ['category', 'address_id', 'device_id'])
+
+        # Deleting model 'DiscoveryValue'
+        db.delete_table('discovery_discoveryvalue')
+
 
     models = {
         'account.profile': {
@@ -269,6 +287,15 @@ class Migration(DataMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '75', 'db_index': 'True'})
         },
+        'discovery.discoveryvalue': {
+            'Meta': {'object_name': 'DiscoveryValue'},
+            'date': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'ip': ('django.db.models.fields.IPAddressField', [], {'unique': 'True', 'max_length': '15'}),
+            'key': ('django.db.models.fields.TextField', [], {'default': "u''"}),
+            'plugin': ('django.db.models.fields.CharField', [], {'default': "u''", 'max_length': '64'}),
+            'value': ('django.db.models.fields.TextField', [], {'default': "u''"})
+        },
         'discovery.discoverywarning': {
             'Meta': {'object_name': 'DiscoveryWarning'},
             'count': ('django.db.models.fields.IntegerField', [], {'default': '1'}),
@@ -491,7 +518,6 @@ class Migration(DataMigration):
             'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '75', 'db_index': 'True'}),
             'queue': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': "orm['discovery.DiscoveryQueue']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
-            'rack': ('django.db.models.fields.CharField', [], {'default': 'None', 'max_length': '16', 'null': 'True', 'blank': 'True'}),
             'racks': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['discovery.Device']", 'symmetrical': 'False'}),
             'remarks': ('django.db.models.fields.TextField', [], {'default': "u''", 'blank': 'True'}),
             'terminators': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['discovery.NetworkTerminator']", 'symmetrical': 'False'}),
@@ -609,15 +635,6 @@ class Migration(DataMigration):
             'size': ('django.db.models.fields.PositiveIntegerField', [], {'null': 'True', 'blank': 'True'}),
             'sn': ('django.db.models.fields.CharField', [], {'default': 'None', 'max_length': '255', 'unique': 'True', 'null': 'True', 'blank': 'True'})
         },
-        'discovery.warning': {
-            'Meta': {'unique_together': "((u'category', u'address', u'device'),)", 'object_name': 'Warning'},
-            'address': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "u'warning_set'", 'null': 'True', 'to': "orm['discovery.IPAddress']"}),
-            'aknowledged': ('django.db.models.fields.CharField', [], {'default': "u''", 'max_length': '128', 'blank': 'True'}),
-            'category': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
-            'device': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "u'warning_set'", 'null': 'True', 'to': "orm['discovery.Device']"}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'remarks': ('django.db.models.fields.TextField', [], {'default': "u''", 'blank': 'True'})
-        },
         'tags.tag': {
             'Meta': {'object_name': 'Tag'},
             'author': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['account.Profile']"}),
@@ -642,4 +659,3 @@ class Migration(DataMigration):
     }
 
     complete_apps = ['discovery']
-    symmetrical = True
