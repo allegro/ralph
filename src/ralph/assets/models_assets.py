@@ -90,6 +90,12 @@ class Warehouse(TimeTrackable, EditorTrackable, Named.NonUnique):
         return self.name
 
 
+def _get_file_path(instance, filename):
+    ext = filename.split('.')[-1]
+    filename = "%s.%s" % (uuid4(), ext)
+    return os.path.join('assets', filename)
+
+
 class Asset(TimeTrackable, EditorTrackable, SavingUser, SoftDeletable):
     device_info = models.OneToOneField(
         'DeviceInfo', null=True, blank=True, on_delete=models.CASCADE
@@ -98,7 +104,7 @@ class Asset(TimeTrackable, EditorTrackable, SavingUser, SoftDeletable):
         'PartInfo', null=True, blank=True, on_delete=models.CASCADE
     )
     office_info = models.OneToOneField(
-        OfficeInfo, null=True, blank=True, on_delete=models.CASCADE
+        'OfficeInfo', null=True, blank=True, on_delete=models.CASCADE
     )
     type = models.PositiveSmallIntegerField(choices=AssetType())
     model = models.ForeignKey(AssetModel, on_delete=models.PROTECT)
@@ -251,9 +257,3 @@ class PartInfo(TimeTrackable, SavingUser):
         self.save_comment = None
         self.saving_user = None
         super(PartInfo, self).__init__(*args, **kwargs)
-
-
-def _get_file_path(instance, filename):
-    ext = filename.split('.')[-1]
-    filename = "%s.%s" % (uuid4(), ext)
-    return os.path.join('assets', filename)
