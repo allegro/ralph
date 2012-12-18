@@ -518,7 +518,13 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
             self.saving_plugin = kwargs.pop('plugin')
         except KeyError:
             # Try to guess the plugin name by the filename of the caller
-            filename = sys._getframe(1).f_code.co_filename
+            for i in range(1, 3):
+                try:
+                    filename = sys._getframe(1).f_code.co_filename
+                except ValueError:
+                    break
+                if 'plugin' in filename:
+                    break
             if filename.endswith('.py'):
                 name = os.path.basename(filename)
             else:

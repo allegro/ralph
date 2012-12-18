@@ -12,33 +12,81 @@ from ralph.cmdb.views import Search as SearchCmdb
 
 from ralph.ui.views import typeahead_roles, unlock_field, logout, discover
 from ralph.ui.views.common import Home, BulkEdit
-from ralph.ui.views.ventures import (VenturesRoles, VenturesVenture,
-        VenturesInfo, VenturesComponents, VenturesAddresses,
-        VenturesPrices, VenturesCosts, VenturesHistory, VenturesPurchase,
-        VenturesDiscover, VenturesReports, ReportVenturesDeviceList,
-        VenturesSoftware)
+from ralph.ui.views.ventures import (
+    ReportVenturesDeviceList,
+    VenturesAddresses,
+    VenturesComponents,
+    VenturesCosts,
+    VenturesDiscover,
+    VenturesHistory,
+    VenturesInfo,
+    VenturesPrices,
+    VenturesPurchase,
+    VenturesReports,
+    VenturesRoles,
+    VenturesSoftware,
+    VenturesVenture,
+)
 from ralph.ui.views.racks import (
-        RacksInfo, RacksComponents, RacksAddresses, RacksPrices,
-        RacksCosts, RacksHistory, RacksPurchase, RacksDiscover, RacksCMDB,
-        RacksAddDevice, RacksReports, ReportRacksDeviceList, RacksRack,
-        RacksSoftware)
-from ralph.ui.views.search import (SearchDeviceList,
-        SearchInfo, SearchComponents, SearchAddresses, SearchPrices,
-        SearchCosts, SearchHistory, SearchPurchase, SearchDiscover,
-        SearchReports, ReportSearchDeviceList,
-        SearchSoftware)
-from ralph.ui.views.networks import (NetworksDeviceList, NetworksInfo,
-        NetworksComponents, NetworksAddresses, NetworksPrices,NetworksCMDB,
-        NetworksCosts, NetworksHistory, NetworksPurchase, NetworksDiscover,
-        NetworksReports, ReportNetworksDeviceList,
-        NetworksSoftware)
-from ralph.ui.views.catalog import (Catalog, CatalogDevice,
-                                    CatalogComponent, CatalogHistory)
+    RacksAddDevice,
+    RacksAddresses,
+    RacksCMDB,
+    RacksComponents,
+    RacksCosts,
+    RacksDiscover,
+    RacksHistory,
+    RacksInfo,
+    RacksPrices,
+    RacksPurchase,
+    RacksRack,
+    RacksReports,
+    RacksSoftware,
+    ReportRacksDeviceList,
+)
+from ralph.ui.views.search import (
+    ReportSearchDeviceList,
+    SearchAddresses,
+    SearchComponents,
+    SearchCosts,
+    SearchDeviceList,
+    SearchDiscover,
+    SearchHistory,
+    SearchInfo,
+    SearchPrices,
+    SearchPurchase,
+    SearchReports,
+    SearchSoftware,
+)
+from ralph.ui.views.networks import (
+    NetworksAddresses,
+    NetworksCMDB,
+    NetworksComponents,
+    NetworksCosts,
+    NetworksDeviceList,
+    NetworksDiscover,
+    NetworksHistory,
+    NetworksInfo,
+    NetworksPrices,
+    NetworksPurchase,
+    NetworksReports,
+    NetworksSoftware,
+    ReportNetworksDeviceList,
+)
+from ralph.ui.views.catalog import (
+    Catalog,
+    CatalogComponent,
+    CatalogDevice,
+    CatalogHistory,
+    CatalogPricingGroup,
+    CatalogPricingNew,
+)
 from ralph.ui.views.deploy import Deployment
 from ralph.ui.views.ventures import VenturesDeviceList, VenturesCMDB
 from ralph.ui.views.racks import RacksDeviceList
 from ralph.ui.views.reports import (
-    ReportVentures, ReportMargins, ReportServices, ReportDevices,
+    ReportMargins,
+    ReportServices,
+    ReportVentures,
 )
 
 
@@ -191,6 +239,9 @@ urlpatterns = patterns('',
     url(r'^catalog/(?P<kind>component)/(?P<type>\d*)/$', login_required(CatalogComponent.as_view()), {}, 'catalog'),
     url(r'^catalog/(?P<kind>device)/(?P<type>\d*)/(?P<group>\d*)/$', login_required(CatalogDevice.as_view()), {}, 'catalog'),
     url(r'^catalog/(?P<kind>component)/(?P<type>\d*)/(?P<group>\d*)/$', login_required(CatalogComponent.as_view()), {}, 'catalog'),
+    url(r'^catalog/(?P<kind>pricing)/$', login_required(CatalogPricingNew.as_view()), {}, 'catalog_pricing'),
+    url(r'^catalog/(?P<kind>pricing)/(?P<year>\d\d\d\d)-(?P<month>\d\d)/$', login_required(CatalogPricingNew.as_view()), {}, 'catalog_pricing'),
+    url(r'^catalog/(?P<kind>pricing)/(?P<year>\d\d\d\d)-(?P<month>\d\d)/(?P<group>.*)/$', login_required(CatalogPricingGroup.as_view()), {}, 'catalog_pricing'),
 
     url(r'^reports/$', login_required(ReportVentures.as_view()), {}, 'reports'),
     url(r'^reports/services/$', login_required(ReportServices.as_view()), {}, 'reports_services'),
