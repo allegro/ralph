@@ -11,12 +11,12 @@ from django import forms
 from django.db.models import Q
 
 from ralph.business.models import RoleProperty, VentureRole
+from ralph.deployment.models import Deployment, Preboot
 from ralph.deployment.util import (
     is_mac_address_unknown, are_venture_and_role_exists, is_preboot_exists,
     is_hostname_exists, is_ip_address_exists, is_network_exists,
     is_management_ip_unique,
 )
-from ralph.deployment.models import Deployment, Preboot
 from ralph.discovery.models import Device, DeviceType, Network
 from ralph.discovery.models_component import is_mac_valid
 from ralph.dnsedit.models import DHCPEntry
@@ -38,12 +38,17 @@ class MarginsReportForm(DateRangeForm):
         super(MarginsReportForm, self).__init__(*args, **kwargs)
         for mk in margin_kinds:
             field_id = 'm_%d' % mk.id
-            field = forms.IntegerField(label='', initial=mk.margin,
-                    required=False,
-                    widget=forms.TextInput(attrs={
+            field = forms.IntegerField(
+                label='',
+                initial=mk.margin,
+                required=False,
+                widget=forms.TextInput(
+                    attrs={
                         'class': 'span12',
                         'style': 'text-align: right',
-                    }))
+                    }
+                )
+            )
             field.initial = mk.margin
             self.fields[field_id] = field
 
@@ -122,7 +127,9 @@ class DeploymentForm(forms.ModelForm):
         ip = self.cleaned_data.get('ip')
         venture_role = self.cleaned_data.get('venture_role')
         if venture_role.check_ip(ip) is False:
-            raise forms.ValidationError("Given IP isn't in the appropriate subnet")
+            raise forms.ValidationError(
+                "Given IP isn't in the appropriate subnet"
+            )
         return ip
 
 
@@ -379,4 +386,5 @@ class RolePropertyForm(forms.ModelForm):
         'symbol': 'fugue-hand-property',
         'type': 'fugue-property-blue',
     }
+
 

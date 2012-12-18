@@ -17,7 +17,7 @@ from tastypie.resources import ModelResource as MResource
 from tastypie.throttle import CacheThrottle
 from django.conf import settings
 from lck.django.common.models import MACAddressField
-from lck.django.common import remote_addr
+from lck.django.common import remote_addr, nested_commit_on_success
 
 from ralph.discovery.models import (Device, DeviceType, IPAddress, Memory,
                                     Processor, ComponentModel, ComponentType,
@@ -99,30 +99,72 @@ def save_shares(shares, dev, ip):
         mount.delete()
 
 
+@nested_commit_on_success
 def save_storage(storage, dev):
     mount_points = []
-    for s in storage:
-        if not s.get('sn'):
+    for item in storage:
+        sn = item.get('sn')
+        mount_point = item.get('mountpoint')
+        if not sn or not mount_point:
             continue
-        stor, created = Storage.concurrent_get_or_create(device=dev,
-                                                         sn=s.get('sn'))
+        label = item.get('label')
         try:
-            stor.size = int(s.get('size'))
+            size = int(item.get('size'))
         except ValueError:
-            pass
-        stor.label = s.get('label')
-        model = '{} {}MiB'.format(stor.label, stor.size)
-        stor.mount_point = s.get('mountpoint')
-        mount_points.append(stor.mount_point)
-        extra = ''
-        stor.model, c = ComponentModel.concurrent_get_or_create(
-            size=stor.size, type=ComponentType.disk.id, speed=0, cores=0,
-            extra=extra, extra_hash=hashlib.md5(extra).hexdigest(),
-            family=model)
-        stor.model.name = model
-        stor.model.save(priority=SAVE_PRIORITY)
-        stor.save(priority=SAVE_PRIORITY)
-    dev.storage_set.exclude(mount_point__in=mount_points).delete()
+            continue
+        model_name = '{} {}MiB'.format(label, size)
+        model, _ = ComponentModel.concurrent_get_or_create(
+            size=size, type=ComponentType.disk.id, speed=0, cores=0,
+            extra_hash=hashlib.md5('').hexdigest(),
+            family=model_name
+        )
+        model.name = model_name
+        model.save(priority=SAVE_PRIORITY)
+        stor = None
+        try:
+            stor = Storage.objects.get(device=dev, mount_point=mount_point)
+            if stor.sn != sn:
+                try:
+                    stor_found_by_sn = Storage.objects.get(sn=sn)
+                    if all((
+                        stor_found_by_sn.model == model,
+                        stor_found_by_sn.size == size,
+                        stor_found_by_sn.label == label
+                    )):
+                        stor.mount_point = None
+                        stor.save(priotity=SAVE_PRIORITY)
+                        stor = stor_found_by_sn
+                        stor.device = dev
+                        stor.mount_point = mount_point
+                    else:
+                        stor = None
+                except Storage.DoesNotExist:
+                    stor.sn = sn
+        except Storage.DoesNotExist:
+            try:
+                stor = Storage.objects.get(sn=sn)
+                if all((
+                    stor.model == model,
+                    stor.size == size,
+                    stor.label == label
+                )):
+                    stor.device = dev
+                    stor.mount_point = mount_point
+                else:
+                    stor = None
+            except Storage.DoesNotExist:
+                stor = Storage(
+                    device=dev, mount_point=mount_point, sn=sn
+                )
+        if stor:
+            stor.model = model
+            stor.label = label
+            stor.size = size
+            stor.save(priority=SAVE_PRIORITY)
+        mount_points.append(mount_point)
+    dev.storage_set.exclude(
+        mount_point__in=mount_points
+    ).update(mount_point=None)
 
 
 def save_memory(memory, dev):

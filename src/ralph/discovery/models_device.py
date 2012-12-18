@@ -305,6 +305,8 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
             self.diag_firmware = None
         if self.boot_firmware == '':
             self.boot_firmware = None
+        if self.barcode == '':
+            self.barcode = None
 
     def __init__(self, *args, **kwargs):
         self.save_comment = None
@@ -515,7 +517,13 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
             self.saving_plugin = kwargs.pop('plugin')
         except KeyError:
             # Try to guess the plugin name by the filename of the caller
-            filename = sys._getframe(1).f_code.co_filename
+            for i in range(1, 3):
+                try:
+                    filename = sys._getframe(1).f_code.co_filename
+                except ValueError:
+                    break
+                if 'plugin' in filename:
+                    break
             if filename.endswith('.py'):
                 name = os.path.basename(filename)
             else:
@@ -572,22 +580,3 @@ class LoadBalancerMember(SavePrioritized, WithConcurrentGetOrCreate):
         return "{}:{}@{}({})".format(
             self.address.address, self.port, self.pool.name, self.id)
 
-
-class Warning(db.Model, WithConcurrentGetOrCreate):
-    category = db.CharField(verbose_name=_("category"), max_length=128)
-    address = db.ForeignKey(
-        'IPAddress', verbose_name=_("address"), related_name='warning_set',
-        null=True
-    )
-    device = db.ForeignKey(
-        Device, verbose_name=_("device"), related_name='warning_set', null=True
-    )
-    remarks = db.TextField(verbose_name=_("remarks"), blank=True, default="")
-    aknowledged = db.CharField(
-        verbose_name=_("acknowledged"), max_length=128, default="", blank=True
-    )
-
-    class Meta:
-        verbose_name = _("warning")
-        verbose_name_plural = _("warnings")
-        unique_together = ('category', 'address', 'device')
