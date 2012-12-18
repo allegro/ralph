@@ -28,6 +28,14 @@ class ReadOnlySelectWidget(forms.Select):
                          (escape(name), escape(value), escape(display)))
 
 
+class HiddenSelectWidget(ReadOnlySelectWidget):
+    def render(self, name, value, attrs=None, choices=()):
+        return mark_safe(
+            '<input type="hidden" name="%s" value="%s">' %
+            (escape(name), escape(value if value is not None else ""))
+        )
+
+
 class ReadOnlyPriceWidget(forms.Widget):
     def render(self, name, value, attrs=None, choices=()):
         try:
@@ -191,7 +199,7 @@ class DateWidget(forms.DateInput):
     def render(self, name, value='', attrs=None, choices=()):
         if value == None:
             value = ''
-        attr_class =  escape(self.attrs.get('class', ''))
+        attr_class = escape(self.attrs.get('class', ''))
         attr_placeholder = escape(self.attrs.get('placeholder', ''))
         output = ('<input type="text" name="%s" class="datepicker %s" '
                   'placeholder="%s" value="%s" data-date-format="yyyy-mm-dd">')
