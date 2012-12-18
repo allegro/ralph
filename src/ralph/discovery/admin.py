@@ -59,7 +59,7 @@ class NetworkAdmin(ModelAdmin):
     list_per_page = 250
     radio_fields = {'data_center': admin.HORIZONTAL, 'kind': admin.HORIZONTAL}
     search_fields = ('name', 'address', 'vlan')
-    filter_horizontal = ('terminators',)
+    filter_horizontal = ('terminators', 'racks')
     save_on_top = True
     form = NetworkAdminForm
 
