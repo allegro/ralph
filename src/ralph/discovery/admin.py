@@ -354,6 +354,16 @@ class HistoryChangeAdmin(ModelAdmin):
     list_per_page = 250
     readonly_fields = ('date', 'device', 'user', 'field_name', 'new_value',
                        'old_value', 'component')
-    search_fields = ('date', 'device', 'user', 'field_name', 'new_value')
+    search_fields = ('user__name', 'field_name', 'new_value')
 
 admin.site.register(m.HistoryChange, HistoryChangeAdmin)
+
+
+class DiscoveryWarningAdmin(ModelAdmin):
+    list_display = ('message', 'count', 'date', 'plugin', 'ip', 'device')
+    list_per_page = 250
+    readonly_fields = ('date', 'plugin', 'message', 'ip', 'count', 'device')
+    search_fields = ('plugin', 'ip', 'message')
+
+admin.site.register(m.DiscoveryWarning, DiscoveryWarningAdmin)
+

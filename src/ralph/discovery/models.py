@@ -52,6 +52,7 @@ from ralph.discovery.models_component import (
 )
 from ralph.discovery.models_history import (
     DiscoveryValue,
+    DiscoveryWarning,
     HistoryChange,
     HistoryCost,
 )
