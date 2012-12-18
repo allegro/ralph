@@ -151,6 +151,11 @@ LOGGING = {
     },
 }
 FORCE_SCRIPT_NAME = ''
+# testing settings
+import os
+import ralph
+TEST_DISCOVERY_ROOT = os.path.realpath(os.path.dirname(ralph.__file__))
+TEST_RUNNER = b'ralph.util.DiscoveryDjangoTestSuiteRunner'
 # django.contrib.auth settings
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
@@ -298,6 +303,8 @@ OPENSTACK_USER = None
 OPENSTACK_PASS = None
 IBM_SYSTEM_X_USER = None
 IBM_SYSTEM_X_PASSWORD = None
+IDRAC_USER = None
+IDRAC_PASSWORD = None
 OPENSTACK_EXTRA_QUERIES = []
 FISHEYE_URL = ""
 FISHEYE_PROJECT_NAME = ""
