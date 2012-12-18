@@ -580,22 +580,3 @@ class LoadBalancerMember(SavePrioritized, WithConcurrentGetOrCreate):
         return "{}:{}@{}({})".format(
             self.address.address, self.port, self.pool.name, self.id)
 
-
-class Warning(db.Model, WithConcurrentGetOrCreate):
-    category = db.CharField(verbose_name=_("category"), max_length=128)
-    address = db.ForeignKey(
-        'IPAddress', verbose_name=_("address"), related_name='warning_set',
-        null=True
-    )
-    device = db.ForeignKey(
-        Device, verbose_name=_("device"), related_name='warning_set', null=True
-    )
-    remarks = db.TextField(verbose_name=_("remarks"), blank=True, default="")
-    aknowledged = db.CharField(
-        verbose_name=_("acknowledged"), max_length=128, default="", blank=True
-    )
-
-    class Meta:
-        verbose_name = _("warning")
-        verbose_name_plural = _("warnings")
-        unique_together = ('category', 'address', 'device')
