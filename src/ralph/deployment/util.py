@@ -14,7 +14,7 @@ from lck.django.common.models import MACAddressField
 from powerdns.models import Record
 
 from ralph.business.models import VentureRole
-from ralph.deployment.models import Preboot, Deployment
+from ralph.deployment.models import Preboot, Deployment, DeploymentStatus
 from ralph.discovery.models import (
     DataCenter, Network, IPAddress, Ethernet, DeviceType, Device,
     EthernetSpeed,
@@ -28,6 +28,9 @@ def get_nexthostname(dc_name, reserved_hostnames=[]):
         dc = DataCenter.objects.get(name__iexact=dc_name.lower())
     except DataCenter.DoesNotExist:
         return False, "", "Specified data center doesn't exists."
+    hostnames_in_deployments = Deployment.objects.filter().values_list(
+        'hostname', flat=True
+    ).order_by('hostname')
     templates = dc.hosts_naming_template.split("|")
     for template in templates:
         match = re.search('<([0-9]+),([0-9]+)>', template)
@@ -63,7 +66,8 @@ def get_nexthostname(dc_name, reserved_hostnames=[]):
         next_hostname = template.replace(
             match.group(0), "{0:%s}" % number_len
         ).format(next_number).replace(" ", "0")
-        while next_hostname in reserved_hostnames:
+        while (next_hostname in reserved_hostnames or
+               next_hostname in hostnames_in_deployments):
             next_number += 1
             if next_number > max_number:
                 go_to_next_template = True
@@ -95,11 +99,16 @@ def get_firstfreeip(network_name, reserved_ip_addresses=[]):
         number__lte=network.max_ip,
         type='A'
     ).values_list('number', flat=True).order_by('number')
+    addresses_in_running_deployments = Deployment.objects.filter(
+        status__in=(DeploymentStatus.open, DeploymentStatus.in_progress)
+    ).values_list('ip', flat=True).order_by('ip')
     for ip_number in range(network.min_ip + 1, network.max_ip + 1):
+        ip_string = str(ipaddr.IPAddress(ip_number))
         if (ip_number not in addresses_in_dhcp and
             ip_number not in addresses_in_discovery and
             ip_number not in addresses_in_dns and
-            str(ipaddr.IPAddress(ip_number)) not in reserved_ip_addresses):
+            ip_string not in addresses_in_running_deployments and
+            ip_string not in reserved_ip_addresses):
             return True, str(ipaddr.IPAddress(ip_number)), ""
     return False, "", "Couldn't determine the first free IP."
 
@@ -130,7 +139,10 @@ def is_preboot_exists(name):
 
 
 def is_hostname_exists(hostname):
-    return Record.objects.filter(name=hostname, type='A').exists()
+    return any((
+        Record.objects.filter(name=hostname, type='A').exists(),
+        Deployment.objects.filter(hostname=hostname).exists()
+    ))
 
 
 def is_ip_address_exists(ip):
@@ -138,7 +150,11 @@ def is_ip_address_exists(ip):
     return any((
         DHCPEntry.objects.filter(number=number).exists(),
         IPAddress.objects.filter(number=number).exists(),
-        Record.objects.filter(number=number, type='A').exists()
+        Record.objects.filter(number=number, type='A').exists(),
+        Deployment.objects.filter(
+            ip=ip,
+            status__in=(DeploymentStatus.open, DeploymentStatus.in_progress)
+        ).exists()
     ))
 
 
