@@ -87,6 +87,7 @@ from ralph.ui.views.reports import (
     ReportMargins,
     ReportServices,
     ReportVentures,
+    ReportDevices,
 )
 
 
