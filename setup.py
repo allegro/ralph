@@ -45,7 +45,7 @@ setup (
         'ipaddr==2.1.7',
         'iscconf==1.0.0dev9',
         'jpath==1.2',
-        'lck.django==0.8.2',
+        'lck.django==0.8.3',
         'lxml==2.3.5',
         'mock==0.8.0',
         'MySQL-python==1.2.3',
@@ -56,12 +56,13 @@ setup (
         'python-graph-core==1.8.2',
         'pytz',
         'pyzabbix==0.1',
+        'requests==0.14.2',
         'RestKit==4.2.0',
         'setproctitle==1.1.6',
         'South==0.7.6',
         'splunk-sdk==0.8.0',
         'SQLAlchemy==0.7.8',
-        ],
+    ],
     entry_points={
         'console_scripts': [
             'pping = ralph.util.network:ping_main',

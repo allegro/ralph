@@ -9,22 +9,52 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from ralph.discovery.models_device import (
-    DISK_PRODUCT_BLACKLIST, DISK_VENDOR_BLACKLIST, DeprecationKind, Device,
-    DeviceModel, DeviceModelGroup, DeviceType, LoadBalancerMember,
-    LoadBalancerPool, LoadBalancerVirtualServer, MarginKind, ReadOnlyDevice,
-    SERIAL_BLACKLIST, Warning,
+    DeprecationKind,
+    Device,
+    DeviceModel,
+    DeviceModelGroup,
+    DeviceType,
+    DISK_PRODUCT_BLACKLIST,
+    DISK_VENDOR_BLACKLIST,
+    LoadBalancerMember,
+    LoadBalancerPool,
+    LoadBalancerVirtualServer,
+    MarginKind,
+    ReadOnlyDevice,
+    SERIAL_BLACKLIST,
 )
 from ralph.discovery.models_network import (
-    IPAddress, Network, DataCenter, NetworkTerminator, IPAlias, NetworkKind,
+    DataCenter,
     DiscoveryQueue,
+    IPAddress,
+    IPAlias,
+    Network,
+    NetworkKind,
+    NetworkTerminator,
 )
 from ralph.discovery.models_component import (
-    ComponentModel, ComponentModelGroup, ComponentType, DiskShare,
-    DiskShareMount, Ethernet, EthernetSpeed, FibreChannel, GenericComponent,
-    MAC_PREFIX_BLACKLIST, Memory, OperatingSystem, Processor, Software,
-    SplunkUsage, Storage,
+    ComponentModel,
+    ComponentModelGroup,
+    ComponentType,
+    DiskShare,
+    DiskShareMount,
+    Ethernet,
+    EthernetSpeed,
+    FibreChannel,
+    GenericComponent,
+    MAC_PREFIX_BLACKLIST,
+    Memory,
+    OperatingSystem,
+    Processor,
+    Software,
+    SplunkUsage,
+    Storage,
 )
-from ralph.discovery.models_history import HistoryChange, HistoryCost
+from ralph.discovery.models_history import (
+    DiscoveryValue,
+    HistoryChange,
+    HistoryCost,
+)
 from ralph.discovery.models_pricing import  (
     PricingAggregate,
     PricingGroup,
@@ -72,10 +102,11 @@ __all__ = [
     'MarginKind',
     'ReadOnlyDevice',
     'SERIAL_BLACKLIST',
-    'Warning',
 
     'HistoryChange',
     'HistoryCost',
+    'DiscoveryValue',
+    'DiscoveryWarning',
 
     'PricingAggregate',
     'PricingGroup',

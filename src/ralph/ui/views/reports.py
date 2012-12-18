@@ -112,12 +112,6 @@ class ReportType(Choices):
         ),
         columns=['venture', 'remarks', 'position', 'barcode']
     )
-    deployment_running = _('Deployment running').extra(
-        filter=lambda device_list: device_list.filter(
-            deployment__status=DeploymentStatus.in_deployment
-        ),
-        columns=['venture', 'remarks', 'position', 'barcode']
-    )
     deprecation_devices = _('Deprecation devices').extra(
         filter=lambda device_list: device_list.filter(
             deprecation_date__lte=datetime.date.today()
