@@ -46,7 +46,7 @@
     <h3>{{header}}</h3>
     <form id="table_form" action="" method="GET">
         <table class="table table-bordered table-striped">
-        {% table_header columns url_query sort %}
+        {% table_header columns url_query sort fugue_icons=1%}
                 <tbody>
                 {% for row in page %}
                 <tr>

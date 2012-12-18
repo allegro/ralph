@@ -129,8 +129,8 @@ class DataTableColumnAssets(DataTableColumn):
 
 class AssetSearch(AssetsMixin, DataTableMixin):
     """The main-screen search form for all type of assets."""
-    ROWS_PER_PAGE = 15
-    FILE_NAME = 'ralph.csv'
+    rows_per_page = 15
+    csv_file_name = 'ralph.csv'
     _ = DataTableColumnAssets
     columns = [
         _('Dropdown', selectable=True, bob_tag=True),
