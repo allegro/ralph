@@ -11,6 +11,7 @@ from django.test.client import Client
 
 def login_as_su(username='ralph', password='ralph', email='ralph@ralph.local',
                 login=True):
+    """Create user and log him in"""
     user = User.objects.create_user(username, email, password)
     user.is_staff = True
     user.is_superuser = True
