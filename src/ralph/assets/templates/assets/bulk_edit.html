@@ -1,6 +1,83 @@
 {% extends 'assets/base.html' %}
 
+{% block extra_headers %}
+<style type="text/css">
+  #float_toolbar{
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    padding: 5px;
+    background-color: black;
+    border: solid #000 1px;
+    border-radius: 3px;
+    display: none;
+  }
+</style>
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+<script type='text/javascript'>
+  $("input[type=text].span12").click(function(event) {
+    var toolbar = $("#float_toolbar");
+    var offset = $(this).offset();
+    var width = this.clientWidth;
+    var distance_left = width + 10;
+    if (this.id === '') {
+      $(toolbar).data('input_name', this.name);
+    }
+    else {
+      $(toolbar).data('input_id', this.id);
+    }
+    //toolbar.css("position", "absolute");
+    toolbar.css("left", parseInt(offset.left) + distance_left + "px");
+    toolbar.css("top", parseInt(offset.top) + "px");
+    toolbar.css("display", "block");
+  });
+
+  $("#fill_all_rows").click(function(event) {
+    var MAX_ROWS = 100;
+    var input_id = $("#float_toolbar").data('input_id');
+    var input_name = $("#float_toolbar").data('input_name');
+    var matcher = /(.*)-([0-9]+)-(.*)/;
+    var results, pre, number, post, value_to_fill, el;
+
+    if (input_id) {
+      results = matcher.exec(input_id);
+      value_to_fill = $('#'+input_id).val();
+    } else if (input_name) {
+      // date picker
+      results = matcher.exec(input_name);
+      value_to_fill = $('input[name="'+input_name+'"]').val();
+    }
+
+    pre = results[1];
+    number = results[2];
+    post = results[3];
+    for (var i=0; i < MAX_ROWS; i++) {
+        if (input_id) {
+          el = $('#' + pre + "-" + i + "-" + post);
+        }
+        else {
+          el = $('input[name="' + pre + "-" + i + "-" + post + '"]');
+        }
+        if (!el.length) {
+        break;
+      }
+      el.val(value_to_fill);
+    }
+  });
+
+</script>
+{% endblock scripts %}
+
 {% block content %}
+<div id="float_toolbar">
+  <a id='fill_all_rows' href='#' style='color: white'>
+    Fill all column
+  </a>
+</div>
+
 <div class="row"><h3>Bulk edit</h3></div>
 
 <form action="" method="POST" class="form form-inline">
