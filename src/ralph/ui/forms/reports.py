@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 from django import forms
 from ralph.ui.widgets import DateWidget
 
+
 class DevicesChoiceReportForm(forms.Form):
     deprecation = forms.ChoiceField(
         label="Devices after deprecation",
