@@ -495,6 +495,9 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
     def get_core_count(self):
         return sum(cpu.get_cores() for cpu in self.processor_set.all())
 
+    def get_history(self, attr):
+        return self.historychange_set.filter(device=self.id, field_name=attr)
+
     @property
     def ipaddress(self):
         return self.ipaddress_set
