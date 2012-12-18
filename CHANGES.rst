@@ -1,6 +1,21 @@
 Change Log
 ----------
 
+1.1.12
+~~~~~~
+
+Released on December 17, 2012.
+
+* Dell PowerEdge servers supported
+
+* introduced pricing groups for the disk shares
+
+* interpolation of variables in preboot files supported
+
+* simplified deployment workflow (no issue tracked based acceptance involved)
+
+* discovery fixes
+
 1.1.11
 ~~~~~~
 

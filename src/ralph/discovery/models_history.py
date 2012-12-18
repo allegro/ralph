@@ -502,3 +502,12 @@ class DiscoveryWarning(db.Model):
             warning.date = datetime.now()
             warning.count += 1
         return warning
+
+
+class DiscoveryValue(db.Model):
+    date = db.DateTimeField(default=datetime.now)
+    ip = db.IPAddressField(verbose_name=_("IP address"), unique=True)
+    plugin = db.CharField(max_length=64, default='')
+    key = db.TextField(default='')
+    value = db.TextField(default='')
+

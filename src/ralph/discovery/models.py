@@ -9,33 +9,30 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from ralph.discovery.models_device import (
-    DISK_PRODUCT_BLACKLIST, DISK_VENDOR_BLACKLIST, DeprecationKind, Device,
-    DeviceModel, DeviceModelGroup, DeviceType, LoadBalancerMember,
-    LoadBalancerPool, LoadBalancerVirtualServer, MarginKind, ReadOnlyDevice,
-    SERIAL_BLACKLIST, Warning,
+    DeprecationKind,
+    Device,
+    DeviceModel,
+    DeviceModelGroup,
+    DeviceType,
+    DISK_PRODUCT_BLACKLIST,
+    DISK_VENDOR_BLACKLIST,
+    LoadBalancerMember,
+    LoadBalancerPool,
+    LoadBalancerVirtualServer,
+    MarginKind,
+    ReadOnlyDevice,
+    SERIAL_BLACKLIST,
 )
 from ralph.discovery.models_network import (
-    IPAddress, Network, DataCenter, NetworkTerminator, IPAlias, NetworkKind,
-    DiscoveryQueue,
-)
-from ralph.discovery.models_component import (
-    ComponentModel, ComponentModelGroup, ComponentType, DiskShare,
-    DiskShareMount, Ethernet, EthernetSpeed, FibreChannel, GenericComponent,
-    MAC_PREFIX_BLACKLIST, Memory, OperatingSystem, Processor, Software,
-    SplunkUsage, Storage,
-)
-from ralph.discovery.models_history import HistoryChange, HistoryCost
-
-__all__ = [
     DataCenter,
     DiscoveryQueue,
     IPAddress,
     IPAlias,
-    MAC_PREFIX_BLACKLIST,
     Network,
     NetworkKind,
     NetworkTerminator,
-
+)
+from ralph.discovery.models_component import (
     ComponentModel,
     ComponentModelGroup,
     ComponentType,
@@ -45,30 +42,77 @@ __all__ = [
     EthernetSpeed,
     FibreChannel,
     GenericComponent,
+    MAC_PREFIX_BLACKLIST,
     Memory,
     OperatingSystem,
     Processor,
     Software,
     SplunkUsage,
     Storage,
-
-    DISK_PRODUCT_BLACKLIST,
-    DISK_VENDOR_BLACKLIST,
-    DeprecationKind,
-    Device,
-    DeviceModel,
-    DeviceModelGroup,
-    DeviceType,
-    LoadBalancerMember,
-    LoadBalancerPool,
-    LoadBalancerVirtualServer,
-    MarginKind,
-    ReadOnlyDevice,
-    SERIAL_BLACKLIST,
-    Warning,
-
+)
+from ralph.discovery.models_history import (
+    DiscoveryValue,
     HistoryChange,
     HistoryCost,
+)
+from ralph.discovery.models_pricing import  (
+    PricingAggregate,
+    PricingGroup,
+    PricingFormula,
+    PricingVariable,
+    PricingValue,
+)
+
+__all__ = [
+    'DataCenter',
+    'DiscoveryQueue',
+    'IPAddress',
+    'IPAlias',
+    'MAC_PREFIX_BLACKLIST',
+    'Network',
+    'NetworkKind',
+    'NetworkTerminator',
+
+    'ComponentModel',
+    'ComponentModelGroup',
+    'ComponentType',
+    'DiskShare',
+    'DiskShareMount',
+    'Ethernet',
+    'EthernetSpeed',
+    'FibreChannel',
+    'GenericComponent',
+    'Memory',
+    'OperatingSystem',
+    'Processor',
+    'Software',
+    'SplunkUsage',
+    'Storage',
+
+    'DISK_PRODUCT_BLACKLIST',
+    'DISK_VENDOR_BLACKLIST',
+    'DeprecationKind',
+    'Device',
+    'DeviceModel',
+    'DeviceModelGroup',
+    'DeviceType',
+    'LoadBalancerMember',
+    'LoadBalancerPool',
+    'LoadBalancerVirtualServer',
+    'MarginKind',
+    'ReadOnlyDevice',
+    'SERIAL_BLACKLIST',
+
+    'HistoryChange',
+    'HistoryCost',
+    'DiscoveryValue',
+    'DiscoveryWarning',
+
+    'PricingAggregate',
+    'PricingGroup',
+    'PricingFormula',
+    'PricingVariable',
+    'PricingValue',
 ]
 
 # Load the plugins code

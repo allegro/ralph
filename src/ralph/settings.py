@@ -149,6 +149,11 @@ LOGGING = {
     },
 }
 FORCE_SCRIPT_NAME = ''
+# testing settings
+import os
+import ralph
+TEST_DISCOVERY_ROOT = os.path.realpath(os.path.dirname(ralph.__file__))
+TEST_RUNNER = b'ralph.util.DiscoveryDjangoTestSuiteRunner'
 # django.contrib.auth settings
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
@@ -190,7 +195,8 @@ CELERY_ROUTES = (
 )
 # define the lookup channels in use on the site
 AJAX_LOOKUP_CHANNELS = {
-    'ci': ('ralph.cmdb.models', 'CILookup')
+    'ci': ('ralph.cmdb.models', 'CILookup'),
+    'device': ('ralph.ui.channels', 'DeviceLookup'),
 }
 # magically include jqueryUI/js/css
 AJAX_SELECT_BOOTSTRAP = True
@@ -251,6 +257,7 @@ F5_USER2 = None
 F5_PASSWORD2 = None
 ILO_USER = None
 ILO_PASSWORD = None
+SSH_USER = None
 SSH_PASSWORD = None
 SSH_IBM_USER = None
 SSH_IBM_PASSWORD = None
@@ -266,6 +273,7 @@ AIX_KEY = None
 XEN_USER = None
 XEN_PASSWORD = None
 SNMP_PLUGIN_COMMUNITIES = ['public']
+SNMP_V3_USER = None
 SNMP_V3_AUTH_KEY = None
 SNMP_V3_PRIV_KEY = None
 DEFAULT_SAVE_PRIORITY = 0

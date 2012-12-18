@@ -122,3 +122,40 @@ Disk" or "Default CPU" model groups in the catalog.
 
 Finally, if none of this information is available, the missing components are
 not included in the pricing.
+
+
+Pricing Groups
+**************
+
+Sometimes it is not possible to calculate the prices of all devices of a
+specified type in the same way. In that case, you can use pricing groups in the
+catalog section to specify different rules for some of your devices.
+
+You need to create a separate pricing group for each month, with the list of
+devices that are going to be affected, a list of different variables for them,
+and a list of components and formulas for calculating their prices. The
+formulas can use the standard arithmetic operators (``+``, ``-``, ``*``, ``/``,
+etc.) as well as variables defined for the given group, and a special variable
+``size`` that is taken from the component itself. In the future, more special
+variables can be introduced.
+
+For the moment, the only components that can be handled this way are the disk
+shares.
+
+Because manual creation of all those pricing groups for every month can be
+tedious, there are two mechanisms that make it easier to create them. If you
+check the "Clone the last group with that name" checkbox, and there is a group
+with the same name for any earlier month, its contents will be copied to the
+newly created group. Alternatively, you can upload a CSV file with the
+definitions of the devices and variables for the group. The file should have
+the following format::
+
+    sn; variable1; variable2; variable3
+    102501X;    1.00;   2;      -3.1
+    C12324;    1.00;   2;      -3.1
+    242402;    1.00;   2;      -3.1
+
+It's important for the contents of the first cell in the CSV file to have the
+string "sn" in it, signifying that the column lists serial numbers of the
+devices. In the future, different ways of specifying the devices may be added.
+
