@@ -12,9 +12,9 @@ from django.db.models import Q
 
 from ralph.business.models import RoleProperty, VentureRole
 from ralph.deployment.util import (
-    is_mac_address_unknown, is_rack_exists, are_venture_and_role_exists,
-    is_preboot_exists, is_hostname_exists, is_ip_address_exists,
-    is_network_exists, is_management_ip_unique
+    is_mac_address_unknown, are_venture_and_role_exists, is_preboot_exists,
+    is_hostname_exists, is_ip_address_exists, is_network_exists,
+    is_management_ip_unique,
 )
 from ralph.deployment.models import Deployment, Preboot
 from ralph.discovery.models import Device, DeviceType, Network
