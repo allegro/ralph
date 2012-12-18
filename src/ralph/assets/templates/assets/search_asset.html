@@ -22,9 +22,15 @@
     <script type="text/javascript">
       $(document).ready(function() {
             $('#post_edit_all').click(function() {
-                var dd=$('#table_form')[0];
-                dd.action='./bulkedit/';
-                dd.submit();
+                var ids = [];
+                $("#assets_table input[type=checkbox]").each(
+                    function(index, val){
+                        if(val.checked) {
+                            ids.push($(val).val());
+                        };
+                    }
+                );
+                window.location.href = 'bulkedit?' + ids.join('&select=');
                 return false;
             });
             $('.del-asset-btn').click(function() {
@@ -44,8 +50,7 @@
 {% endblock %}
 {% block content %}
     <h3>{{header}}</h3>
-    <form id="table_form" action="" method="GET">
-        <table class="table table-bordered table-striped">
+        <table id='assets_table' class="table table-bordered table-striped">
         {% table_header columns url_query sort %}
                 <tbody>
                 {% for row in page %}
@@ -96,6 +101,4 @@
                 </li>
             </ul>
             </div>
-          </form>
-
 {% endblock %}
