@@ -30,10 +30,11 @@ class BaseAssetForm(ModelForm):
     class Meta:
         model = Asset
         fields = (
-            'type', 'model', 'invoice_no', 'order_no',
-            'invoice_date', 'price', 'support_price', 'support_period',
-            'support_type', 'support_void_reporting', 'provider', 'status',
-            'remarks', 'sn', 'barcode', 'warehouse',
+            'type', 'model', 'invoice_no', 'order_no', 'request_date',
+            'delivery_date', 'invoice_date', 'use_date', 'price',
+            'support_price', 'support_period', 'support_type',
+            'support_void_reporting', 'provider', 'status', 'remarks', 'sn',
+            'barcode', 'warehouse',
         )
         widgets = {
             'sn': Textarea(attrs={'rows': 25}),
@@ -81,7 +82,10 @@ class BulkEditAssetForm(ModelForm):
             'provider', 'source', 'status',
         )
         widgets = {
-            'invoice_date': DateWidget(),
+            'invoice_date': DateWidget(attrs={
+            'placeholder': 'Start YYYY-MM-DD',
+            'data-collapsed': True,
+            }),
             'device_info': HiddenSelectWidget(),
         }
     barcode = BarcodeField(max_length=200, required=False)
@@ -89,7 +93,8 @@ class BulkEditAssetForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super(BulkEditAssetForm, self).__init__(*args, **kwargs)
         for field_name in self.fields:
-            self.fields[field_name].widget.attrs = {'class': 'span12'}
+            if field_name != 'support_void_reporting':
+                self.fields[field_name].widget.attrs = {'class': 'span12'}
 
 
 class DeviceForm(ModelForm):
@@ -199,10 +204,10 @@ class BaseAddAssetForm(ModelForm):
     class Meta:
         model = Asset
         fields = (
-            'type', 'model', 'invoice_no', 'order_no', 'price',
-            'support_price', 'invoice_date', 'support_period', 'support_type',
-            'support_void_reporting', 'provider', 'status',
-            'remarks',
+            'type', 'model', 'invoice_no', 'order_no', 'price', 'request_date',
+            'delivery_date', 'invoice_date', 'use_date', 'invoice_date',
+            'support_period', 'support_type', 'support_void_reporting',
+            'provider', 'status', 'remarks',
         )
         widgets = {
             'invoice_date': DateWidget(),
