@@ -201,8 +201,6 @@ class ConnectAssetWithDevice(TestCase):
         attrs = self.asset_params
         attrs['sn'] = '888-888',
         request = self.client.post(url, attrs)
-        import pdb
-        pdb.set_trace()
         self.assertEqual(request.status_code, 302)
         asset = Asset.objects.get(sn='888-888')
         self.assertIsNone(asset.device_info.ralph_device)
