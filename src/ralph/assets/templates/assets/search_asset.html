@@ -39,14 +39,14 @@
 
 {% block sidebar_search%}
     <div class="form search-form well well-small" id="sidebar_search">
-        {% form form=form method="GET" action='' submit_label='Search' %}
+        {% form form=form method="GET" action='' submit_label='Search' css_class=''%}
     </div>
 {% endblock %}
 {% block content %}
     <h3>{{header}}</h3>
     <form id="table_form" action="" method="GET">
         <table class="table table-bordered table-striped">
-        {% table_header columns url_query sort fugue_icons=1%}
+        {% table_header columns url_query sort fugue_icons=1 sort_variable_name=sort_variable_name %}
                 <tbody>
                 {% for row in page %}
                 <tr>
@@ -84,7 +84,7 @@
                 </tbody>
             </table>
 
-            {% pagination page url_query=url_query show_all=0 show_csv=1 fugue_icons=1 %}
+            {% pagination page url_query=url_query show_all=0 show_csv=1 fugue_icons=1 export_variable_name=export_variable_name %}
             <div class="btn-group">
               <a class="btn dropdown-toggle btn-primary" data-toggle="dropdown" href="#">
                 Bulk actions...
