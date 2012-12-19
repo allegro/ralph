@@ -42,6 +42,7 @@ class HistoryAssetsView(TestCase):
             'status': AssetStatus.new.id,
             'remarks': 'test_remarks',
             'size': 1,
+            'price': 10,
             'warehouse': self.warehouse.id,
             'sn': '666-666-666',
             'barcode': '666666',
@@ -136,6 +137,7 @@ class ConnectAssetWithDevice(TestCase):
             'provider': 'test_provider',
             'status': AssetStatus.new.id,
             'remarks': 'test_remarks',
+            'price': 10,
             'size': 1,
             'warehouse': self.warehouse.id,
             'barcode': '7777',
@@ -199,6 +201,8 @@ class ConnectAssetWithDevice(TestCase):
         attrs = self.asset_params
         attrs['sn'] = '888-888',
         request = self.client.post(url, attrs)
+        import pdb
+        pdb.set_trace()
         self.assertEqual(request.status_code, 302)
         asset = Asset.objects.get(sn='888-888')
         self.assertIsNone(asset.device_info.ralph_device)
