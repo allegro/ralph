@@ -10,7 +10,7 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         # Adding field 'DataCenter.hosts_naming_template'
         db.add_column('discovery_datacenter', 'hosts_naming_template',
-                      self.gf('django.db.models.fields.CharField')(default=u'dc{0:6}', max_length=30),
+                      self.gf('django.db.models.fields.CharField')(default=u'h<10000,19999>.dc', max_length=30),
                       keep_default=False)
 
 
@@ -175,7 +175,7 @@ class Migration(SchemaMigration):
         },
         'discovery.datacenter': {
             'Meta': {'ordering': "(u'name',)", 'object_name': 'DataCenter'},
-            'hosts_naming_template': ('django.db.models.fields.CharField', [], {'default': "u'dc{0:6}'", 'max_length': '30'}),
+            'hosts_naming_template': ('django.db.models.fields.CharField', [], {'default': "u'h<10000,19999>.dc'", 'max_length': '30'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '75', 'db_index': 'True'})
         },

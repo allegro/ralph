@@ -143,7 +143,7 @@ class NetworkTerminator(Named):
 
 class DataCenter(Named):
     hosts_naming_template = db.CharField(
-        max_length=30, default="dc{0:6}",
+        max_length=30, default="h<10000,19999>.dc",
         help_text=_(
             "E.g. h<200,299>.dc|h<400,499>.dc will produce: h200.dc "
             "h201.dc ... h299.dc h400.dc h401.dc"

@@ -13,12 +13,12 @@ class Migration(SchemaMigration):
         db.add_column('dnsedit_dhcpentry', 'number',
                       self.gf('django.db.models.fields.BigIntegerField')(default=0),
                       keep_default=False)
-                      
+
         if not db.dry_run:
-	    dhcp_entries = orm['dnsedit.dhcpentry'].objects.all()
-	    for item in dhcp_entries:
-	      item.number = int(ipaddr.IPAddress(item.ip))
-	      item.save()
+            dhcp_entries = orm['dnsedit.dhcpentry'].objects.all()
+            for item in dhcp_entries:
+                item.number = int(ipaddr.IPAddress(item.ip))
+                item.save()
 
 
     def backwards(self, orm):
