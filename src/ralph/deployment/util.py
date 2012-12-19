@@ -25,7 +25,7 @@ from ralph.util import Eth
 
 def get_nexthostname(dc_name, reserved_hostnames=[]):
     try:
-        dc = DataCenter.objects.get(name__iexact=dc_name.lower())
+        dc = DataCenter.objects.get(name=dc_name)
     except DataCenter.DoesNotExist:
         return False, "", "Specified data center doesn't exists."
     hostnames_in_deployments = Deployment.objects.filter().values_list(
@@ -127,9 +127,9 @@ def is_rack_exists(sn):
     ).exists()
 
 
-def are_venture_and_role_exists(venture_name, venture_role_name):
+def are_venture_and_role_exists(venture_symbol, venture_role_name):
     return VentureRole.objects.filter(
-        venture__name=venture_name,
+        venture__symbol=venture_symbol,
         name=venture_role_name
     ).exists()
 

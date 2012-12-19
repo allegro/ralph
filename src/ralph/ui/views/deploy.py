@@ -48,14 +48,15 @@ class Deployment(BaseMixin, CreateView):
 
 
 class PrepareMultipleServersDeployment(Base):
-    template_name = 'ui/prepare_multiple_deploy.html'
+    template_name = 'ui/multiple_deploy.html'
 
     def get_context_data(self, *args, **kwargs):
         ret = super(
             PrepareMultipleServersDeployment, self
         ).get_context_data(*args, **kwargs)
         ret.update({
-            'form': self.form
+            'form': self.form,
+            'action_name': 'Next step'
         })
         return ret
 
@@ -73,9 +74,7 @@ class PrepareMultipleServersDeployment(Base):
             multiple_deployment.created_by = self.request.user.get_profile()
             multiple_deployment.save()
             return HttpResponseRedirect(
-                '%s/../../../../deployment/multiple/define/%s/' % (
-                    self.request.path, multiple_deployment.pk,
-                )
+                '/ui/deployment/multiple/define/%s/' % multiple_deployment.pk
             )
         messages.error(self.request, "Please correct the errors.")
         return super(
@@ -91,7 +90,8 @@ class MultipleServersDeployment(Base):
             MultipleServersDeployment, self
         ).get_context_data(*args, **kwargs)
         ret.update({
-            'form': self.form
+            'form': self.form,
+            'action_name': 'Deploy'
         })
         return ret
 
@@ -109,7 +109,6 @@ class MultipleServersDeployment(Base):
             ip = ""
             try:
                 network = Network.objects.get(name=cols[2])
-                first_rack_sn = network.rack.split(",")[0].strip()
                 status, new_ip, _ = get_firstfreeip(
                     network.name,
                     reserved_ip_addresses=reserved_ip_addresses
@@ -118,7 +117,7 @@ class MultipleServersDeployment(Base):
                     ip = new_ip
                     reserved_ip_addresses.append(ip)
                 try:
-                    rack = Device.objects.get(sn=first_rack_sn)
+                    rack = network.racks.order_by('name')[0]
                     dc_name = rack.dc if rack.dc else ""
                     if (rack.parent and rack.parent.model and
                         rack.parent.model.type == DeviceType.data_center):
@@ -129,15 +128,15 @@ class MultipleServersDeployment(Base):
                     if status:
                         hostname = next_hostname
                         reserved_hostnames.append(hostname)
-                except Device.DoesNotExist:
+                except IndexError:
                     pass
             except Network.DoesNotExist:
                 pass
-            cols.insert(0, first_rack_sn)
+            cols.insert(0, rack.sn)
             cols.insert(0, ip)
             cols.insert(0, hostname)
             csv_rows.append(
-                ";".join(cols)
+                " ; ".join(cols)
             )
         self.form = MultipleDeploymentForm(
             initial={'csv': "\n".join(csv_rows)}
@@ -160,6 +159,7 @@ class MultipleServersDeployment(Base):
             )
             multiple_deployment.is_done = True
             multiple_deployment.save()
+            messages.success(self.request, "Deployment initiated.")
             return HttpResponseRedirect('/')
         messages.error(self.request, "Please correct the errors.")
         return super(

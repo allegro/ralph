@@ -5,19 +5,20 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import re
+
 import ipaddr
 from bob.forms import AutocompleteWidget
 from django import forms
-from django.db.models import Q
 
 from ralph.business.models import RoleProperty, VentureRole
 from ralph.deployment.models import Deployment, Preboot
 from ralph.deployment.util import (
     is_mac_address_unknown, are_venture_and_role_exists, is_preboot_exists,
     is_hostname_exists, is_ip_address_exists, is_network_exists,
-    is_management_ip_unique,
+    is_management_ip_unique, is_rack_exists,
 )
-from ralph.discovery.models import Device, DeviceType, Network
+from ralph.discovery.models import Device, Network
 from ralph.discovery.models_component import is_mac_valid
 from ralph.dnsedit.models import DHCPEntry
 from ralph.dnsedit.util import is_valid_hostname
@@ -135,12 +136,14 @@ class DeploymentForm(forms.ModelForm):
 
 class PrepareMultipleDeploymentForm(forms.Form):
     csv = forms.CharField(
-        label="CSV", widget=forms.widgets.Textarea(attrs={'class': 'span12'}),
-        help_text="Template: mac;management-ip;network;venture;role;preboot"
+        label="CSV",
+        widget=forms.widgets.Textarea(attrs={'class': 'span12 csv-input'}),
+        help_text="Template: mac ; management-ip ; network ; venture-symbol ; "
+                  "role ; preboot"
     )
 
     def clean_csv(self):
-        csv = self.cleaned_data['csv'].strip()
+        csv = self.cleaned_data['csv'].strip().lower()
         rows = csv.split("\n")
         if not rows:
             raise forms.ValidationError("Incorrect CSV format.")
@@ -199,12 +202,13 @@ class PrepareMultipleDeploymentForm(forms.Form):
                 raise forms.ValidationError(
                     "Row %s: Network doesn't exists." % row_number
                 )
-            venture = cols[3].strip()
+            venture_symbol = cols[3].strip()
             venture_role = cols[4].strip()
-            if not are_venture_and_role_exists(venture, venture_role):
+            if not are_venture_and_role_exists(venture_symbol, venture_role):
                 raise forms.ValidationError(
-                    "Row %s: Couldn't find venture %s with role %s" % (
-                        row_number, venture, venture_role
+                    "Row %s: "
+                    "Couldn't find venture with symbol %s and role %s" % (
+                        row_number, venture_symbol, venture_role
                     )
                 )
             preboot = cols[5].strip()
@@ -219,13 +223,14 @@ class PrepareMultipleDeploymentForm(forms.Form):
 
 class MultipleDeploymentForm(forms.Form):
     csv = forms.CharField(
-        label="CSV", widget=forms.widgets.Textarea(attrs={'class': 'span12'}),
-        help_text="Template: hostname;ip;rack-sn;mac;management-ip;"
-                  "network;venture;role;preboot"
+        label="CSV",
+        widget=forms.widgets.Textarea(attrs={'class': 'span12 csv-input'}),
+        help_text="Template: hostname ; ip ; rack-sn ; mac ; management-ip ; "
+                  "network ; venture-symbol ; role ; preboot"
     )
 
     def clean_csv(self):
-        csv = self.cleaned_data['csv'].strip()
+        csv = self.cleaned_data['csv'].strip().lower()
         rows = csv.split("\n")
         if not rows:
             raise forms.ValidationError("Incorrect CSV format.")
@@ -260,13 +265,9 @@ class MultipleDeploymentForm(forms.Form):
                 )
             parsed_hostnames.append(hostname)
             rack_sn = cols[2].strip()
-            try:
-                Device.objects.get(
-                    Q(sn=rack_sn),
-                    Q(model__type=DeviceType.rack) |
-                    Q(model__type=DeviceType.blade_system)
-                )
-            except Device.DoesNotExist:
+            if re.match(r"^[0-9]+$", rack_sn):
+                rack_sn = "rack %s" % rack_sn
+            if not is_rack_exists(rack_sn):
                 raise forms.ValidationError(
                     "Row %s: Rack with SN=%s doesn't exists." % (
                         row_number, rack_sn
@@ -279,7 +280,9 @@ class MultipleDeploymentForm(forms.Form):
                 raise forms.ValidationError(
                     "Row %s: Selected network doesn't exists." % row_number
                 )
-            if rack_sn not in network.rack:
+            try:
+                network.racks.get(sn=rack_sn)
+            except Device.DoesNotExist:
                 raise forms.ValidationError(
                     "Row %s: Selected rack isn't connected with selected "
                     "network" % row_number
@@ -343,13 +346,14 @@ class MultipleDeploymentForm(forms.Form):
             parsed_management_ip_addresses.append(management_ip)
             try:
                 venture_role = VentureRole.objects.get(
-                    venture__name=cols[6].strip(),
+                    venture__symbol=cols[6].strip().upper(),
                     name=cols[7].strip()
                 )
                 venture = venture_role.venture
             except VentureRole.DoesNotExist:
                 raise forms.ValidationError(
-                    "Row %s: Couldn't find venture %s with role %s" % (
+                    "Row %s: "
+                    "Couldn't find venture with symbol %s and role %s" % (
                         row_number, cols[6].strip(), cols[7].strip()
                     )
                 )
