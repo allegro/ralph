@@ -8,8 +8,8 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding model 'MultipleDeploymentInitialData'
-        db.create_table('deployment_multipledeploymentinitialdata', (
+        # Adding model 'MassDeployment'
+        db.create_table('deployment_massdeployment', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('created', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
             ('modified', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
@@ -19,17 +19,17 @@ class Migration(SchemaMigration):
             ('csv', self.gf('django.db.models.fields.TextField')()),
             ('is_done', self.gf('django.db.models.fields.BooleanField')(default=False)),
         ))
-        db.send_create_signal('deployment', ['MultipleDeploymentInitialData'])
+        db.send_create_signal('deployment', ['MassDeployment'])
 
         # Adding field 'Deployment.multiple_deployment'
         db.add_column('deployment_deployment', 'multiple_deployment',
-                      self.gf('django.db.models.fields.related.ForeignKey')(default=None, to=orm['deployment.MultipleDeploymentInitialData'], null=True, on_delete=models.SET_NULL, blank=True),
+                      self.gf('django.db.models.fields.related.ForeignKey')(default=None, to=orm['deployment.MassDeployment'], null=True, on_delete=models.SET_NULL, blank=True),
                       keep_default=False)
 
 
     def backwards(self, orm):
-        # Deleting model 'MultipleDeploymentInitialData'
-        db.delete_table('deployment_multipledeploymentinitialdata')
+        # Deleting model 'MassDeployment'
+        db.delete_table('deployment_massdeployment')
 
         # Deleting field 'Deployment.multiple_deployment'
         db.delete_column('deployment_deployment', 'multiple_deployment_id')
@@ -134,7 +134,7 @@ class Migration(SchemaMigration):
             'is_running': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'mac': (u'lck.django.common.models.MACAddressField', [], {'unique': 'False', 'primary_key': 'False', 'db_column': 'None', 'blank': 'False', 'null': 'False', 'db_index': 'False'}),
             'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'multiple_deployment': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': "orm['deployment.MultipleDeploymentInitialData']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
+            'multiple_deployment': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': "orm['deployment.MassDeployment']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
             'preboot': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['deployment.Preboot']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
             'puppet_certificate_revoked': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'status': ('django.db.models.fields.IntegerField', [], {'default': '1'}),
@@ -150,14 +150,14 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'key': ('django.db.models.fields.CharField', [], {'max_length': '255'})
         },
-        'deployment.multipledeploymentinitialdata': {
-            'Meta': {'object_name': 'MultipleDeploymentInitialData'},
+        'deployment.massdeployment': {
+            'Meta': {'ordering': "(u'-created',)", 'object_name': 'MassDeployment'},
             'cache_version': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
             'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'created_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "u'+'", 'on_delete': 'models.SET_NULL', 'default': 'None', 'to': "orm['account.Profile']", 'blank': 'True', 'null': 'True'}),
             'csv': ('django.db.models.fields.TextField', [], {}),
-            'is_done': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'is_done': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'modified_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "u'+'", 'on_delete': 'models.SET_NULL', 'default': 'None', 'to': "orm['account.Profile']", 'blank': 'True', 'null': 'True'})
         },
@@ -180,7 +180,7 @@ class Migration(SchemaMigration):
         },
         'discovery.datacenter': {
             'Meta': {'ordering': "(u'name',)", 'object_name': 'DataCenter'},
-            'hosts_naming_template': ('django.db.models.fields.CharField', [], {'default': "u'dc{0:6}'", 'max_length': '30'}),
+            'hosts_naming_template': ('django.db.models.fields.CharField', [], {'default': "u'h<10000,19999>.dc'", 'max_length': '30'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '75', 'db_index': 'True'})
         },
@@ -307,7 +307,7 @@ class Migration(SchemaMigration):
             'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '75', 'db_index': 'True'}),
             'queue': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': "orm['discovery.DiscoveryQueue']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
-            'rack': ('django.db.models.fields.CharField', [], {'default': 'None', 'max_length': '16', 'null': 'True', 'blank': 'True'}),
+            'racks': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['discovery.Device']", 'symmetrical': 'False'}),
             'remarks': ('django.db.models.fields.TextField', [], {'default': "u''", 'blank': 'True'}),
             'terminators': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['discovery.NetworkTerminator']", 'symmetrical': 'False'}),
             'vlan': ('django.db.models.fields.PositiveIntegerField', [], {'default': 'None', 'null': 'True', 'blank': 'True'})
