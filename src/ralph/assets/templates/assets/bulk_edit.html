@@ -2,7 +2,6 @@
 
 {% block content %}
 <div class="row"><h3>Bulk edit</h3></div>
-
 <form action="" method="POST" class="form form-inline">
   {% csrf_token %}
   {{ formset.management_form }}
@@ -14,7 +13,10 @@
         <th>Model</th>
         <th>Invoice Number</th>
         <th>Order Number</th>
+        <th>Request date</th>
+        <th>Delivery date</th>
         <th>Invoice date</th>
+        <th>Use date</th>
         <th>SN</th>
         <th>Barcode</th>
         <th>Price</th>
