@@ -6,20 +6,23 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import cStringIO
+
 from django.views.generic import CreateView
 from django.http import HttpResponseRedirect
 from django.contrib import messages
 from django.shortcuts import get_object_or_404
 
-from ralph.deployment.models import MultipleDeploymentInitialData
+from ralph.deployment.models import MassDeployment
 from ralph.deployment.util import (
-    get_nexthostname, get_firstfreeip, create_deployments
+    get_next_free_hostname, get_first_free_ip, create_deployments
 )
-from ralph.discovery.models import DeviceType, Device, Network
+from ralph.discovery.models import DeviceType, Device, Network, DataCenter
 from ralph.ui.views.common import BaseMixin, Base
 from ralph.ui.forms import (
     DeploymentForm, PrepareMultipleDeploymentForm, MultipleDeploymentForm,
 )
+from ralph.util.csvutil import UnicodeReader, UnicodeWriter
 
 
 class Deployment(BaseMixin, CreateView):
@@ -70,7 +73,7 @@ class PrepareMultipleServersDeployment(Base):
         self.form = PrepareMultipleDeploymentForm(self.request.POST)
         if self.form.is_valid():
             csv = self.form.cleaned_data['csv'].strip()
-            multiple_deployment = MultipleDeploymentInitialData(csv=csv)
+            multiple_deployment = MassDeployment(csv=csv)
             multiple_deployment.created_by = self.request.user.get_profile()
             multiple_deployment.save()
             return HttpResponseRedirect(
@@ -97,23 +100,29 @@ class MultipleServersDeployment(Base):
 
     def get(self, *args, **kwargs):
         multiple_deployment = get_object_or_404(
-            MultipleDeploymentInitialData, id=kwargs.get('deployment'),
+            MassDeployment, id=kwargs.get('deployment'),
             is_done=False
         )
         reserved_hostnames = []
         reserved_ip_addresses = []
-        csv_rows = []
-        for row in multiple_deployment.csv.strip().split("\n"):
-            cols = row.split(";")
+        new_csv_rows = []
+        csv_rows = UnicodeReader(cStringIO.StringIO(
+            multiple_deployment.csv.strip()
+        ))
+        for raw_cols in csv_rows:
+            cols = []
+            for col in raw_cols:
+                cols.append(" %s " % col.strip())
             hostname = ""
             ip = ""
+            rack = None
             try:
-                network = Network.objects.get(name=cols[2])
-                status, new_ip, _ = get_firstfreeip(
+                network = Network.objects.get(name=cols[2].strip())
+                new_ip = get_first_free_ip(
                     network.name,
                     reserved_ip_addresses=reserved_ip_addresses
                 )
-                if status:
+                if new_ip:
                     ip = new_ip
                     reserved_ip_addresses.append(ip)
                 try:
@@ -122,24 +131,27 @@ class MultipleServersDeployment(Base):
                     if (rack.parent and rack.parent.model and
                         rack.parent.model.type == DeviceType.data_center):
                         dc_name = rack.parent.name
-                    status, next_hostname, _ = get_nexthostname(
-                        dc_name, reserved_hostnames=reserved_hostnames
-                    )
-                    if status:
-                        hostname = next_hostname
-                        reserved_hostnames.append(hostname)
+                    try:
+                        next_hostname = get_next_free_hostname(
+                            dc_name, reserved_hostnames=reserved_hostnames
+                        )
+                        if next_hostname:
+                            hostname = next_hostname
+                            reserved_hostnames.append(hostname)
+                    except DataCenter.DoesNotExist:
+                        pass
                 except IndexError:
                     pass
             except Network.DoesNotExist:
                 pass
-            cols.insert(0, rack.sn)
-            cols.insert(0, ip)
-            cols.insert(0, hostname)
-            csv_rows.append(
-                " ; ".join(cols)
-            )
+            cols.insert(0, " %s " % rack.sn if rack else " ")
+            cols.insert(0, " %s " % ip)
+            cols.insert(0, " %s " % hostname)
+            new_csv_rows.append(cols)
+        csv_string = cStringIO.StringIO()
+        UnicodeWriter(csv_string).writerows(new_csv_rows)
         self.form = MultipleDeploymentForm(
-            initial={'csv': "\n".join(csv_rows)}
+            initial={'csv': csv_string.getvalue()}
         )
         return super(
             MultipleServersDeployment, self
@@ -147,7 +159,7 @@ class MultipleServersDeployment(Base):
 
     def post(self, *args, **kwargs):
         multiple_deployment = get_object_or_404(
-            MultipleDeploymentInitialData, id=kwargs.get('deployment'),
+            MassDeployment, id=kwargs.get('deployment'),
             is_done=False
         )
         self.form = MultipleDeploymentForm(self.request.POST)

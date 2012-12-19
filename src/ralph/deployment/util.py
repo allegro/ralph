@@ -11,6 +11,7 @@ from django.db import transaction
 from django.db.models import Q
 import ipaddr
 from lck.django.common.models import MACAddressField
+from lck.django.common import nested_commit_on_success
 from powerdns.models import Record
 
 from ralph.business.models import VentureRole
@@ -23,11 +24,8 @@ from ralph.dnsedit.models import DHCPEntry
 from ralph.util import Eth
 
 
-def get_nexthostname(dc_name, reserved_hostnames=[]):
-    try:
-        dc = DataCenter.objects.get(name=dc_name)
-    except DataCenter.DoesNotExist:
-        return False, "", "Specified data center doesn't exists."
+def get_next_free_hostname(dc_name, reserved_hostnames=[]):
+    dc = DataCenter.objects.get(name=dc_name)
     hostnames_in_deployments = Deployment.objects.filter().values_list(
         'hostname', flat=True
     ).order_by('hostname')
@@ -35,9 +33,7 @@ def get_nexthostname(dc_name, reserved_hostnames=[]):
     for template in templates:
         match = re.search('<([0-9]+),([0-9]+)>', template)
         if not match:
-            return False, "", "Incorrect hosts names template in DC: %s" % (
-                dc_name
-            )
+            return
         min_number = int(match.group(1))
         max_number = int(match.group(2))
         number_len = len(match.group(2))
@@ -77,15 +73,11 @@ def get_nexthostname(dc_name, reserved_hostnames=[]):
             ).format(next_number).replace(" ", "0")
         if go_to_next_template:
             continue
-        return True, next_hostname, ""
-    return False, "", "Couldn't determine the next host name."
+        return next_hostname
 
 
-def get_firstfreeip(network_name, reserved_ip_addresses=[]):
-    try:
-        network = Network.objects.get(name=network_name)
-    except Network.DoesNotExist:
-        return False, "", "Specified network doesn't exists."
+def get_first_free_ip(network_name, reserved_ip_addresses=[]):
+    network = Network.objects.get(name=network_name)
     addresses_in_dhcp = DHCPEntry.objects.filter(
         number__gte=network.min_ip,
         number__lte=network.max_ip
@@ -109,17 +101,16 @@ def get_firstfreeip(network_name, reserved_ip_addresses=[]):
             ip_number not in addresses_in_dns and
             ip_string not in addresses_in_running_deployments and
             ip_string not in reserved_ip_addresses):
-            return True, str(ipaddr.IPAddress(ip_number)), ""
-    return False, "", "Couldn't determine the first free IP."
+            return str(ipaddr.IPAddress(ip_number))
 
 
-def is_mac_address_unknown(mac):
-    return not Ethernet.objects.filter(
+def is_mac_address_known(mac):
+    return Ethernet.objects.filter(
         mac=MACAddressField.normalize(mac)
     ).exists()
 
 
-def is_rack_exists(sn):
+def rack_exists(sn):
     return Device.objects.filter(
         Q(model__type=DeviceType.rack) |
         Q(model__type=DeviceType.blade_system),
@@ -127,25 +118,25 @@ def is_rack_exists(sn):
     ).exists()
 
 
-def are_venture_and_role_exists(venture_symbol, venture_role_name):
+def venture_and_role_exists(venture_symbol, venture_role_name):
     return VentureRole.objects.filter(
         venture__symbol=venture_symbol,
         name=venture_role_name
     ).exists()
 
 
-def is_preboot_exists(name):
+def preboot_exists(name):
     return Preboot.objects.filter(name=name).exists()
 
 
-def is_hostname_exists(hostname):
+def hostname_exists(hostname):
     return any((
         Record.objects.filter(name=hostname, type='A').exists(),
         Deployment.objects.filter(hostname=hostname).exists()
     ))
 
 
-def is_ip_address_exists(ip):
+def ip_address_exists(ip):
     number = int(ipaddr.IPAddress(ip))
     return any((
         DHCPEntry.objects.filter(number=number).exists(),
@@ -158,11 +149,11 @@ def is_ip_address_exists(ip):
     ))
 
 
-def is_network_exists(name):
+def network_exists(name):
     return Network.objects.filter(name=name).exists()
 
 
-def is_management_ip_unique(ip):
+def management_ip_unique(ip):
     return not IPAddress.objects.filter(address=ip).exists()
 
 
@@ -189,7 +180,7 @@ def _create_device(data):
     return dev
 
 
-@transaction.commit_on_success
+@nested_commit_on_success
 def create_deployments(data, user, multiple_deployment):
     for item in data:
         dev = _create_device(item)

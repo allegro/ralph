@@ -11,11 +11,11 @@ from django.utils.translation import ugettext_lazy as _
 from lck.django.common.admin import ModelAdmin
 
 from ralph.deployment.models import (
-    Deployment, Preboot, PrebootFile, MultipleDeploymentInitialData,
+    Deployment, Preboot, PrebootFile, MassDeployment,
 )
 
 
-class MultipleDeploymentInitialDataAdmin(ModelAdmin):
+class MassDeploymentAdmin(ModelAdmin):
     list_display = (
         'created', 'modified', 'created_by', 'modified_by', 'is_done',
     )
@@ -25,7 +25,7 @@ class MultipleDeploymentInitialDataAdmin(ModelAdmin):
     )
 
 admin.site.register(
-    MultipleDeploymentInitialData, MultipleDeploymentInitialDataAdmin
+    MassDeployment, MassDeploymentAdmin
 )
 
 

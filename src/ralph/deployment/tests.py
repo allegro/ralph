@@ -14,7 +14,7 @@ from ralph.discovery.models import (
 from ralph.business.models import Venture, VentureRole
 from ralph.deployment.models import Deployment
 from ralph.deployment.util import (
-    get_nexthostname, get_firstfreeip, _create_device
+    get_next_free_hostname, get_first_free_ip, _create_device
 )
 from ralph.dnsedit.models import DHCPEntry
 from ralph.util import Eth
@@ -122,15 +122,9 @@ class DeploymentUtilTest(TestCase):
         net.save()
 
     def test_get_nexthostname(self):
-        status, name, err = get_nexthostname('temp3')
-        self.assertFalse(status)
-        self.assertFalse(name)
-
-        status, name, err = get_nexthostname('temp1')
-        self.assertTrue(status)
+        name = get_next_free_hostname('temp1')
         self.assertEqual(name, 'h100.temp1')
-        status, name, err = get_nexthostname('temp2')
-        self.assertTrue(status)
+        name = get_next_free_hostname('temp2')
         self.assertEqual(name, 'h200.temp2')
 
         Record.objects.create(
@@ -139,8 +133,7 @@ class DeploymentUtilTest(TestCase):
             content='127.0.1.2',
             type='A'
         )
-        status, name, err = get_nexthostname('temp1')
-        self.assertTrue(status)
+        name = get_next_free_hostname('temp1')
         self.assertEqual(name, 'h104.temp1')
         Record.objects.create(
             domain=self.domain_temp1,
@@ -148,22 +141,16 @@ class DeploymentUtilTest(TestCase):
             content='127.0.1.3',
             type='A'
         )
-        status, name, err = get_nexthostname('temp1')
-        self.assertTrue(status)
+        name = get_next_free_hostname('temp1')
         self.assertEqual(name, 'h300.temp1')
 
-        status, name, err = get_nexthostname(
+        name = get_next_free_hostname(
             'temp2', ['h200.temp2', 'h201.temp2'],
         )
-        self.assertTrue(status)
         self.assertEqual(name, 'h203.temp2')
 
     def test_get_firstfreeip(self):
-        status, ip, err = get_firstfreeip('net2')
-        self.assertFalse(status)
-
-        status, ip, err = get_firstfreeip('net1')
-        self.assertTrue(status)
+        ip = get_first_free_ip('net1')
         self.assertEqual(ip, '127.0.1.1')
 
         Record.objects.create(
@@ -176,8 +163,7 @@ class DeploymentUtilTest(TestCase):
             mac='aa:43:c2:11:22:33',
             ip='127.0.1.5'
         )
-        status, ip, err = get_firstfreeip('net1', ['127.0.1.1'])
-        self.assertTrue(status)
+        ip = get_first_free_ip('net1', ['127.0.1.1'])
         # 127.0.1.1 - reserved
         # 127.0.1.2 - deployment
         # 127.0.1.3 - dns

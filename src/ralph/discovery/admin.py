@@ -88,7 +88,7 @@ class DataCenterAdminForm(forms.ModelForm):
 
     def clean_hosts_naming_template(self):
         template = self.cleaned_data['hosts_naming_template']
-        if re.search(" ", template):
+        if re.search("[^a-z0-9<>,\.|-]", template):
             raise forms.ValidationError(
                 _("Please remove disallowed characters.")
             )
