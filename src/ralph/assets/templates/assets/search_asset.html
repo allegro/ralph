@@ -30,7 +30,9 @@
                         };
                     }
                 );
-                window.location.href = 'bulkedit?' + ids.join('&select=');
+                if (ids.length) {
+                    window.location.href = 'bulkedit?select=' + ids.join('&select=');
+                }
                 return false;
             });
             $('.del-asset-btn').click(function() {
