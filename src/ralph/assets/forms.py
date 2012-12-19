@@ -87,8 +87,17 @@ class BulkEditAssetForm(ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(BulkEditAssetForm, self).__init__(*args, **kwargs)
+        fillable_fields = [
+             'type', 'model', 'device_info', 'invoice_no', 'order_no',
+            'invoice_date', 'sn', 'barcode', 'support_period', 'support_type',
+            'support_void_reporting', 'provider', 'source', 'status',
+        ]
         for field_name in self.fields:
-            self.fields[field_name].widget.attrs = {'class': 'span12'}
+            if field_name in fillable_fields:
+                classes = "span12 fillable"
+            else:
+                classes = "span12"
+            self.fields[field_name].widget.attrs = {'class': classes}
 
 
 class DeviceForm(ModelForm):
