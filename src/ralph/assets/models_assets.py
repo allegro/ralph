@@ -148,7 +148,7 @@ class Asset(TimeTrackable, EditorTrackable, SavingUser, SoftDeletable):
     barcode = models.CharField(
         max_length=200, null=True, blank=True, unique=True
     )
-    price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    price = models.DecimalField(max_digits=10, decimal_places=2, null=True)
     support_price = models.DecimalField(
         max_digits=10, decimal_places=2, null=True
     )

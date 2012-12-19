@@ -31,8 +31,8 @@ class BaseAssetForm(ModelForm):
         model = Asset
         fields = (
             'type', 'model', 'invoice_no', 'order_no',
-            'invoice_date', 'support_period', 'support_type',
-            'support_void_reporting', 'provider', 'status',
+            'invoice_date', 'price', 'support_price', 'support_period',
+            'support_type', 'support_void_reporting', 'provider', 'status',
             'remarks', 'sn', 'barcode', 'warehouse',
         )
         widgets = {
@@ -198,8 +198,8 @@ class BaseAddAssetForm(ModelForm):
     class Meta:
         model = Asset
         fields = (
-            'type', 'model', 'invoice_no', 'order_no',
-            'invoice_date', 'support_period', 'support_type',
+            'type', 'model', 'invoice_no', 'order_no', 'price',
+            'support_price', 'invoice_date', 'support_period', 'support_type',
             'support_void_reporting', 'provider', 'status',
             'remarks',
         )
