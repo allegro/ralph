@@ -1012,7 +1012,7 @@ class Search(BaseCMDBView):
         uid = values.get('uid')
         state = values.get('state')
         status = values.get('status')
-        type_ = int(values.get('type'))
+        type_ = int(values.get('type', 0) or 0)
         layer = values.get('layer')
         parent_id = int(values.get('parent', 0) or 0)
         if values:
