@@ -42,6 +42,7 @@ class TestAdding(TestCase):
             provider='Provider2',
             status=AssetStatus.new.id,  # 1
             size=1,
+            price=11,
             sn='2222-2222-2222-2222',
             barcode='bc-1111-1111-1111',
             warehouse=self.warehouse.id,  # 1
@@ -101,7 +102,7 @@ class TestAdding(TestCase):
             warehouse=self.warehouse.id,  # 1
             license_key='0000-0000-0000-0000',
             version='1.0',
-            unit_price=2.00,
+            price=2.00,
             license_type=LicenseType.oem,
             date_of_last_inventory='2003-02-02',
             last_logged_user='James Bond',
@@ -157,7 +158,6 @@ class TestAdding(TestCase):
         correct_data_office = [
             dict(
                 version='1.0',
-                unit_price=2,
                 license_type=LicenseType.oem.id,
                 date_of_last_inventory='2003-02-02',
                 last_logged_user='James Bond',

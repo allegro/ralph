@@ -54,6 +54,7 @@ class TestBulkEdit(TestCase):
             'form-0-support_type': 'standard1',
             'form-0-support_void_reporting': 'on',
             'form-0-provider': 'Provider1',
+            'form-0-price': 10,
             'form-0-status': AssetStatus.in_progress.id,
             'form-0-source': AssetSource.shipment.id,
             'form-1-id': 2,
@@ -68,6 +69,7 @@ class TestBulkEdit(TestCase):
             'form-1-support_type': 'standard2',
             'form-1-support_void_reporting': 'off',
             'form-1-provider': 'Provider2',
+            'form-1-price': 12,
             'form-1-status': AssetStatus.waiting_for_release.id,
             'form-1-source': AssetSource.shipment.id,
         }
