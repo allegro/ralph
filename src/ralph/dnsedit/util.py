@@ -78,6 +78,7 @@ def reset_dns(name, ip):
     clean_dns_name(name)
     clean_dns_address(ip)
     add_dns_address(name, ip)
+    set_revdns_record(ip, name)
 
 
 def clean_dhcp_mac(mac):
