@@ -43,6 +43,9 @@ class TestAdding(TestCase):
             status=AssetStatus.new.id,  # 1
             size=1,
             price=11,
+            request_date='2001-01-02',
+            delivery_date='2001-01-03',
+            use_date='2001-01-04',
             sn='2222-2222-2222-2222',
             barcode='bc-1111-1111-1111',
             warehouse=self.warehouse.id,  # 1
@@ -97,6 +100,9 @@ class TestAdding(TestCase):
             provider='Provider2',
             status=AssetStatus.in_progress.id,  # 1
             size=2,
+            request_date='2001-01-02',
+            delivery_date='2001-01-03',
+            use_date='2001-01-04',
             sn='3333-3333-3333-333',
             barcode='bc-3333-3333-333',
             warehouse=self.warehouse.id,  # 1
@@ -130,6 +136,9 @@ class TestAdding(TestCase):
                 invoice_no='Invoice No2',
                 order_no='Order No2',
                 invoice_date='2001-02-02',
+                request_date='2001-01-02',
+                delivery_date='2001-01-03',
+                use_date='2001-01-04',
                 support_period=12,
                 support_type='d2d',
                 provider='Provider2',
