@@ -12,7 +12,7 @@ from ralph.dnsedit.util import reset_dhcp
 from ralph.deployment.models import Deployment
 
 
-@plugin.register(chain='deployment', requires=['ticket', 'dns'], priority=0)
+@plugin.register(chain='deployment', requires=['dns'], priority=0)
 def dhcp(deployment_id):
     deployment = Deployment.objects.get(id=deployment_id)
     try:

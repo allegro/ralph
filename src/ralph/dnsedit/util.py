@@ -133,7 +133,7 @@ def generate_dhcp_config(dc=None):
             if not ips:
                 continue
             rev = get_revdns_records(ips[0])   # FIXME: what makes the first
-                                               # address special? 
+                                               # address special?
             name = rev[0].content.rstrip('.') if rev.exists() else ips[0]
             address = ', '.join(ips)
             mac = ':'.join('%s%s' % c for c in zip(macaddr[::2],
