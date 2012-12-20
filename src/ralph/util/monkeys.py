@@ -7,9 +7,12 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import ajax_select
-from django import forms
+import ajax_select.fields
 
 from ajax_select import get_lookup
+from ajax_select.fields import bootstrap, plugin_options
+
+from django import forms
 from django.forms.util import flatatt
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
@@ -35,11 +38,9 @@ class PatchedAutoCompleteSelectWidget(forms.widgets.TextInput):
         self.show_help_text = show_help_text
 
     def render(self, name, value, attrs=None):
-
         value = value or ''
         final_attrs = self.build_attrs(attrs)
         self.html_id = final_attrs.pop('id', name)
-
         current_repr = ''
         initial = None
         lookup = get_lookup(self.channel)
@@ -50,7 +51,7 @@ class PatchedAutoCompleteSelectWidget(forms.widgets.TextInput):
             except IndexError:
                 raise Exception("%s cannot find object:%s" % (lookup, value))
             current_repr = lookup.format_item_display(obj)
-            initial=[current_repr, obj.pk]
+            initial = [current_repr, obj.pk]
 
         if self.show_help_text:
             help_text = self.help_text
@@ -64,16 +65,24 @@ class PatchedAutoCompleteSelectWidget(forms.widgets.TextInput):
             'current_repr': current_repr,
             'help_text': help_text,
             'extra_attrs': mark_safe(flatatt(final_attrs)),
-            'func_slug': self.html_id.replace("-",""),
+            'func_slug': self.html_id.replace("-", ""),
             'add_link': self.add_link,
         }
-        context.update(plugin_options(lookup,self.channel,self.plugin_options,initial))
+        context.update(
+            plugin_options(lookup, self.channel, self.plugin_options, initial)
+        )
         context.update(bootstrap())
-
-        return mark_safe(render_to_string(('autocompleteselect_%s.html' % self.channel, 'autocompleteselect.html'),context))
+        ret = mark_safe(
+            render_to_string(
+                ('autocompleteselect_%s.html' % self.channel,
+                 'autocompleteselect.html'
+                ),
+                context,
+            )
+        )
+        return ret
 
     def value_from_datadict(self, data, files, name):
-
         got = data.get(name, None)
         if got:
             return long(got)
@@ -83,6 +92,4 @@ class PatchedAutoCompleteSelectWidget(forms.widgets.TextInput):
     def id_for_label(self, id_):
         return '%s_text' % id_
 
-
-
-ajax_select.AutoCompleteSelectWidget = PatchedAutoCompleteSelectWidget
+ajax_select.fields.AutoCompleteSelectWidget = PatchedAutoCompleteSelectWidget

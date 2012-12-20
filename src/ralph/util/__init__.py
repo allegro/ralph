@@ -17,7 +17,6 @@ from django.test.simple import DjangoTestSuiteRunner, reorder_suite
 from django.utils.importlib import import_module
 from django.utils.unittest.loader import defaultTestLoader
 
-
 Eth = namedtuple('Eth', 'label mac speed')
 
 
