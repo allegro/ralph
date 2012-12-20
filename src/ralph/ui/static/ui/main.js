@@ -111,7 +111,7 @@ $(function ($) {
                 $form.find('button, input').removeClass('disabled').attr('disabled', null);
                 $button.find('i').removeClass('loading')
                 $console.removeClass('loading')
-            
+
                 clearInterval(interval);
                 $console.val(request.responseText).removeClass('loading');
             }
@@ -149,7 +149,7 @@ $(function ($) {
     $('select#id_venture').each(venture_changed);
 
     $('.datepicker').datepicker({format: 'yyyy-mm-dd', autoclose: true}).click(function(){
-        $("input[name!='" + $(this).attr('name') + "']").datepicker('hide');
+        $("input[name!='" + $(this).attr('name') + "'].datepicker").datepicker('hide');
     });
 
     var parseDate = function (input, format) {
@@ -192,7 +192,7 @@ $(function ($) {
     var calendar_tmpl = '<div class="btn-toolbar">' +
             '<div class="btn-group years" data-toggle="buttons-radio">' +
             '{{#years}}' +
-            '<a href="#" class="btn {{css_class}}" data-value="{{value}}">' + 
+            '<a href="#" class="btn {{css_class}}" data-value="{{value}}">' +
             '{{label}}</a>' +
             '{{/years}}' +
             '</div>' +

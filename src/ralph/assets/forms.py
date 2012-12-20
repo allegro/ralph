@@ -87,8 +87,17 @@ class BulkEditAssetForm(ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(BulkEditAssetForm, self).__init__(*args, **kwargs)
+        fillable_fields = [
+             'type', 'model', 'device_info', 'invoice_no', 'order_no',
+            'invoice_date', 'sn', 'barcode', 'support_period', 'support_type',
+            'support_void_reporting', 'provider', 'source', 'status',
+        ]
         for field_name in self.fields:
-            self.fields[field_name].widget.attrs = {'class': 'span12'}
+            if field_name in fillable_fields:
+                classes = "span12 fillable"
+            else:
+                classes = "span12"
+            self.fields[field_name].widget.attrs = {'class': classes}
 
 
 class DeviceForm(ModelForm):
@@ -232,6 +241,50 @@ class BaseAddAssetForm(ModelForm):
                 (c.id, c.desc) for c in AssetType.BO.choices]
 
 
+class BaseEditAssetForm(ModelForm):
+    class Meta:
+        model = Asset
+        fields = (
+            'type', 'model', 'invoice_no', 'order_no',
+            'invoice_date', 'support_period', 'support_type',
+            'support_void_reporting', 'provider', 'status',
+            'remarks', 'sn', 'barcode', 'warehouse'
+        )
+        widgets = {
+            'invoice_date': DateWidget(),
+            'remarks': Textarea(attrs={'rows': 3}),
+            'support_type': Textarea(attrs={'rows': 5}),
+            'sn': Textarea(attrs={'rows': 1, 'readonly':True}),
+            'barcode': Textarea(attrs={'rows': 1}),
+        }
+    model = AutoCompleteSelectField(
+        'asset_model',
+        required=True,
+        plugin_options=dict(add_link='/admin/assets/assetmodel/add/?name=')
+    )
+    warehouse = AutoCompleteSelectField(
+        'asset_warehouse',
+        required=True,
+        plugin_options=dict(add_link='/admin/assets/warehouse/add/?name=')
+    )
+
+    def __init__(self, *args, **kwargs):
+        mode = kwargs.get('mode')
+        if mode:
+            del kwargs['mode']
+        super(BaseEditAssetForm, self).__init__(*args, **kwargs)
+        if mode == "dc":
+            self.fields['type'].choices = [
+                (c.id, c.desc) for c in AssetType.DC.choices]
+        elif mode == "back_office":
+            self.fields['type'].choices = [
+                (c.id, c.desc) for c in AssetType.BO.choices]
+
+    def clean_sn(self):
+        return self.instance.sn
+
+
+
 class AddPartForm(BaseAddAssetForm):
     sn = CharField(
         label=_("SN/SNs"), required=True, widget=Textarea(attrs={'rows': 25})
@@ -310,13 +363,11 @@ class OfficeForm(ModelForm):
         }
 
 
-class EditPartForm(BaseAssetForm):
-    def __init__(self, *args, **kwargs):
-        super(EditPartForm, self).__init__(*args, **kwargs)
-        del self.fields['barcode']
+class EditPartForm(BaseEditAssetForm):
+    pass
 
 
-class EditDeviceForm(BaseAssetForm):
+class EditDeviceForm(BaseEditAssetForm):
     pass
 
 
