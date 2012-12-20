@@ -8,153 +8,69 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding model 'AssetManufacturer'
-        db.create_table('assets_assetmanufacturer', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=75)),
-            ('created', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
-            ('modified', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
-            ('cache_version', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
-            ('created_by', self.gf('django.db.models.fields.related.ForeignKey')(related_name=u'+', on_delete=models.SET_NULL, default=None, to=orm['account.Profile'], blank=True, null=True)),
-            ('modified_by', self.gf('django.db.models.fields.related.ForeignKey')(related_name=u'+', on_delete=models.SET_NULL, default=None, to=orm['account.Profile'], blank=True, null=True)),
-        ))
-        db.send_create_signal('assets', ['AssetManufacturer'])
+        # Adding field 'Asset.price'
+        db.add_column('assets_asset', 'price',
+                      self.gf('django.db.models.fields.DecimalField')(default=0, max_digits=10, decimal_places=2),
+                      keep_default=False)
 
-        # Adding model 'AssetModel'
-        db.create_table('assets_assetmodel', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=75)),
-            ('created', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
-            ('modified', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
-            ('cache_version', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
-            ('created_by', self.gf('django.db.models.fields.related.ForeignKey')(related_name=u'+', on_delete=models.SET_NULL, default=None, to=orm['account.Profile'], blank=True, null=True)),
-            ('modified_by', self.gf('django.db.models.fields.related.ForeignKey')(related_name=u'+', on_delete=models.SET_NULL, default=None, to=orm['account.Profile'], blank=True, null=True)),
-            ('manufacturer', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['assets.AssetManufacturer'], on_delete=models.PROTECT)),
-        ))
-        db.send_create_signal('assets', ['AssetModel'])
+        # Adding field 'Asset.support_price'
+        db.add_column('assets_asset', 'support_price',
+                      self.gf('django.db.models.fields.DecimalField')(null=True, max_digits=10, decimal_places=2, blank=True),
+                      keep_default=False)
 
-        # Adding model 'Warehouse'
-        db.create_table('assets_warehouse', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=75)),
-            ('created', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
-            ('modified', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
-            ('cache_version', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
-            ('created_by', self.gf('django.db.models.fields.related.ForeignKey')(related_name=u'+', on_delete=models.SET_NULL, default=None, to=orm['account.Profile'], blank=True, null=True)),
-            ('modified_by', self.gf('django.db.models.fields.related.ForeignKey')(related_name=u'+', on_delete=models.SET_NULL, default=None, to=orm['account.Profile'], blank=True, null=True)),
-        ))
-        db.send_create_signal('assets', ['Warehouse'])
+        # Adding field 'Asset.request_date'
+        db.add_column('assets_asset', 'request_date',
+                      self.gf('django.db.models.fields.DateField')(null=True, blank=True),
+                      keep_default=False)
 
-        # Adding model 'OfficeInfo'
-        db.create_table('assets_officeinfo', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('created', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
-            ('modified', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
-            ('cache_version', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
-            ('license_key', self.gf('django.db.models.fields.CharField')(max_length=255, blank=True)),
-            ('version', self.gf('django.db.models.fields.CharField')(max_length=50, blank=True)),
-            ('unit_price', self.gf('django.db.models.fields.DecimalField')(default=0, max_digits=20, decimal_places=2)),
-            ('attachment', self.gf('django.db.models.fields.files.FileField')(max_length=100, blank=True)),
-            ('license_type', self.gf('django.db.models.fields.IntegerField')(null=True, blank=True)),
-            ('date_of_last_inventory', self.gf('django.db.models.fields.DateField')(null=True, blank=True)),
-            ('last_logged_user', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
-        ))
-        db.send_create_signal('assets', ['OfficeInfo'])
+        # Adding field 'Asset.delivery_date'
+        db.add_column('assets_asset', 'delivery_date',
+                      self.gf('django.db.models.fields.DateField')(null=True, blank=True),
+                      keep_default=False)
 
-        # Adding model 'Asset'
-        db.create_table('assets_asset', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('created', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
-            ('modified', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
-            ('cache_version', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
-            ('created_by', self.gf('django.db.models.fields.related.ForeignKey')(related_name=u'+', on_delete=models.SET_NULL, default=None, to=orm['account.Profile'], blank=True, null=True)),
-            ('modified_by', self.gf('django.db.models.fields.related.ForeignKey')(related_name=u'+', on_delete=models.SET_NULL, default=None, to=orm['account.Profile'], blank=True, null=True)),
-            ('deleted', self.gf('django.db.models.fields.BooleanField')(default=False, db_index=True)),
-            ('device_info', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['assets.DeviceInfo'], unique=True, null=True, blank=True)),
-            ('part_info', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['assets.PartInfo'], unique=True, null=True, blank=True)),
-            ('office_info', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['assets.OfficeInfo'], unique=True, null=True, blank=True)),
-            ('type', self.gf('django.db.models.fields.PositiveSmallIntegerField')()),
-            ('model', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['assets.AssetModel'], on_delete=models.PROTECT)),
-            ('source', self.gf('django.db.models.fields.PositiveIntegerField')(db_index=True)),
-            ('invoice_no', self.gf('django.db.models.fields.CharField')(db_index=True, max_length=30, null=True, blank=True)),
-            ('order_no', self.gf('django.db.models.fields.CharField')(max_length=50, null=True, blank=True)),
-            ('invoice_date', self.gf('django.db.models.fields.DateField')(default=datetime.date.today)),
-            ('sn', self.gf('django.db.models.fields.CharField')(unique=True, max_length=200)),
-            ('barcode', self.gf('django.db.models.fields.CharField')(max_length=200, unique=True, null=True, blank=True)),
-            ('support_period', self.gf('django.db.models.fields.PositiveSmallIntegerField')()),
-            ('support_type', self.gf('django.db.models.fields.CharField')(max_length=150)),
-            ('support_void_reporting', self.gf('django.db.models.fields.BooleanField')(default=True, db_index=True)),
-            ('provider', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
-            ('status', self.gf('django.db.models.fields.PositiveSmallIntegerField')(default=1)),
-            ('remarks', self.gf('django.db.models.fields.CharField')(max_length=1024, blank=True)),
-            ('warehouse', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['assets.Warehouse'], on_delete=models.PROTECT)),
-        ))
-        db.send_create_signal('assets', ['Asset'])
+        # Adding field 'Asset.production_use_date'
+        db.add_column('assets_asset', 'production_use_date',
+                      self.gf('django.db.models.fields.DateField')(null=True, blank=True),
+                      keep_default=False)
 
-        # Adding model 'DeviceInfo'
-        db.create_table('assets_deviceinfo', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('created', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
-            ('modified', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
-            ('cache_version', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
-            ('ralph_device', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['discovery.Device'], null=True, on_delete=models.SET_NULL, blank=True)),
-            ('size', self.gf('django.db.models.fields.PositiveSmallIntegerField')(default=1)),
-        ))
-        db.send_create_signal('assets', ['DeviceInfo'])
+        # Adding field 'Asset.provider_order_date'
+        db.add_column('assets_asset', 'provider_order_date',
+                      self.gf('django.db.models.fields.DateField')(null=True, blank=True),
+                      keep_default=False)
 
-        # Adding model 'PartInfo'
-        db.create_table('assets_partinfo', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('created', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
-            ('modified', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
-            ('cache_version', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
-            ('barcode_salvaged', self.gf('django.db.models.fields.CharField')(max_length=200, null=True, blank=True)),
-            ('source_device', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name=u'source_device', null=True, to=orm['assets.Asset'])),
-            ('device', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name=u'device', null=True, to=orm['assets.Asset'])),
-        ))
-        db.send_create_signal('assets', ['PartInfo'])
 
-        # Adding model 'AssetHistoryChange'
-        db.create_table('assets_assethistorychange', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('date', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
-            ('asset', self.gf('django.db.models.fields.related.ForeignKey')(default=None, to=orm['assets.Asset'], null=True, on_delete=models.SET_NULL, blank=True)),
-            ('device_info', self.gf('django.db.models.fields.related.ForeignKey')(default=None, to=orm['assets.DeviceInfo'], null=True, on_delete=models.SET_NULL, blank=True)),
-            ('part_info', self.gf('django.db.models.fields.related.ForeignKey')(default=None, to=orm['assets.PartInfo'], null=True, on_delete=models.SET_NULL, blank=True)),
-            ('office_info', self.gf('django.db.models.fields.related.ForeignKey')(default=None, to=orm['assets.OfficeInfo'], null=True, on_delete=models.SET_NULL, blank=True)),
-            ('user', self.gf('django.db.models.fields.related.ForeignKey')(default=None, to=orm['auth.User'], null=True, on_delete=models.SET_NULL, blank=True)),
-            ('field_name', self.gf('django.db.models.fields.CharField')(default=u'', max_length=64)),
-            ('old_value', self.gf('django.db.models.fields.CharField')(default=u'', max_length=255)),
-            ('new_value', self.gf('django.db.models.fields.CharField')(default=u'', max_length=255)),
-            ('comment', self.gf('django.db.models.fields.TextField')(null=True)),
-        ))
-        db.send_create_signal('assets', ['AssetHistoryChange'])
+        # Changing field 'Asset.invoice_date'
+        db.alter_column('assets_asset', 'invoice_date', self.gf('django.db.models.fields.DateField')(null=True))
+        # Deleting field 'OfficeInfo.unit_price'
+        db.delete_column('assets_officeinfo', 'unit_price')
 
 
     def backwards(self, orm):
-        # Deleting model 'AssetManufacturer'
-        db.delete_table('assets_assetmanufacturer')
+        # Deleting field 'Asset.price'
+        db.delete_column('assets_asset', 'price')
 
-        # Deleting model 'AssetModel'
-        db.delete_table('assets_assetmodel')
+        # Deleting field 'Asset.support_price'
+        db.delete_column('assets_asset', 'support_price')
 
-        # Deleting model 'Warehouse'
-        db.delete_table('assets_warehouse')
+        # Deleting field 'Asset.request_date'
+        db.delete_column('assets_asset', 'request_date')
 
-        # Deleting model 'OfficeInfo'
-        db.delete_table('assets_officeinfo')
+        # Deleting field 'Asset.delivery_date'
+        db.delete_column('assets_asset', 'delivery_date')
 
-        # Deleting model 'Asset'
-        db.delete_table('assets_asset')
+        # Deleting field 'Asset.production_use_date'
+        db.delete_column('assets_asset', 'production_use_date')
 
-        # Deleting model 'DeviceInfo'
-        db.delete_table('assets_deviceinfo')
+        # Deleting field 'Asset.provider_order_date'
+        db.delete_column('assets_asset', 'provider_order_date')
 
-        # Deleting model 'PartInfo'
-        db.delete_table('assets_partinfo')
 
-        # Deleting model 'AssetHistoryChange'
-        db.delete_table('assets_assethistorychange')
+        # Changing field 'Asset.invoice_date'
+        db.alter_column('assets_asset', 'invoice_date', self.gf('django.db.models.fields.DateField')())
+        # Adding field 'OfficeInfo.unit_price'
+        db.add_column('assets_officeinfo', 'unit_price',
+                      self.gf('django.db.models.fields.DecimalField')(default=0, max_digits=20, decimal_places=2),
+                      keep_default=False)
 
 
     models = {
@@ -178,9 +94,10 @@ class Migration(SchemaMigration):
             'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'created_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "u'+'", 'on_delete': 'models.SET_NULL', 'default': 'None', 'to': "orm['account.Profile']", 'blank': 'True', 'null': 'True'}),
             'deleted': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_index': 'True'}),
+            'delivery_date': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
             'device_info': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['assets.DeviceInfo']", 'unique': 'True', 'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'invoice_date': ('django.db.models.fields.DateField', [], {'default': 'datetime.date.today'}),
+            'invoice_date': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
             'invoice_no': ('django.db.models.fields.CharField', [], {'db_index': 'True', 'max_length': '30', 'null': 'True', 'blank': 'True'}),
             'model': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['assets.AssetModel']", 'on_delete': 'models.PROTECT'}),
             'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
@@ -188,12 +105,17 @@ class Migration(SchemaMigration):
             'office_info': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['assets.OfficeInfo']", 'unique': 'True', 'null': 'True', 'blank': 'True'}),
             'order_no': ('django.db.models.fields.CharField', [], {'max_length': '50', 'null': 'True', 'blank': 'True'}),
             'part_info': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['assets.PartInfo']", 'unique': 'True', 'null': 'True', 'blank': 'True'}),
+            'price': ('django.db.models.fields.DecimalField', [], {'default': '0', 'max_digits': '10', 'decimal_places': '2'}),
+            'production_use_date': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
             'provider': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
+            'provider_order_date': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
             'remarks': ('django.db.models.fields.CharField', [], {'max_length': '1024', 'blank': 'True'}),
+            'request_date': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
             'sn': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '200'}),
             'source': ('django.db.models.fields.PositiveIntegerField', [], {'db_index': 'True'}),
             'status': ('django.db.models.fields.PositiveSmallIntegerField', [], {'default': '1'}),
             'support_period': ('django.db.models.fields.PositiveSmallIntegerField', [], {}),
+            'support_price': ('django.db.models.fields.DecimalField', [], {'null': 'True', 'max_digits': '10', 'decimal_places': '2', 'blank': 'True'}),
             'support_type': ('django.db.models.fields.CharField', [], {'max_length': '150'}),
             'support_void_reporting': ('django.db.models.fields.BooleanField', [], {'default': 'True', 'db_index': 'True'}),
             'type': ('django.db.models.fields.PositiveSmallIntegerField', [], {}),
@@ -254,7 +176,6 @@ class Migration(SchemaMigration):
             'license_key': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
             'license_type': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
             'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'unit_price': ('django.db.models.fields.DecimalField', [], {'default': '0', 'max_digits': '20', 'decimal_places': '2'}),
             'version': ('django.db.models.fields.CharField', [], {'max_length': '50', 'blank': 'True'})
         },
         'assets.partinfo': {
@@ -369,6 +290,7 @@ class Migration(SchemaMigration):
         },
         'discovery.datacenter': {
             'Meta': {'ordering': "(u'name',)", 'object_name': 'DataCenter'},
+            'hosts_naming_template': ('django.db.models.fields.CharField', [], {'default': "u'h<10000,19999>.dc'", 'max_length': '30'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '75', 'db_index': 'True'})
         },
@@ -495,7 +417,7 @@ class Migration(SchemaMigration):
             'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '75', 'db_index': 'True'}),
             'queue': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': "orm['discovery.DiscoveryQueue']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
-            'rack': ('django.db.models.fields.CharField', [], {'default': 'None', 'max_length': '16', 'null': 'True', 'blank': 'True'}),
+            'racks': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['discovery.Device']", 'symmetrical': 'False'}),
             'remarks': ('django.db.models.fields.TextField', [], {'default': "u''", 'blank': 'True'}),
             'terminators': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['discovery.NetworkTerminator']", 'symmetrical': 'False'}),
             'vlan': ('django.db.models.fields.PositiveIntegerField', [], {'default': 'None', 'null': 'True', 'blank': 'True'})
