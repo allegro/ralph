@@ -168,7 +168,6 @@ class Deployment(Auditable):
         blank=True, default='')
     is_running = db.BooleanField(verbose_name=_("is running"),
         default=False)   # a database-level lock for deployment-related tasks
-    puppet_certificate_revoked = db.BooleanField(default=False)
 
     class Meta:
         verbose_name = _("deployment")

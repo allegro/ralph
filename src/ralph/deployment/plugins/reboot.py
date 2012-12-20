@@ -16,7 +16,7 @@ from ralph.deployment.models import Deployment
 
 
 @plugin.register(chain='deployment',
-                 requires=['ticket', 'dns', 'dhcp', 'puppet', 'role'],
+                 requires=['ticket', 'dns', 'dhcp', 'role'],
                  priority=0)
 def reboot(deployment_id):
     deployment = Deployment.objects.get(id=deployment_id)
