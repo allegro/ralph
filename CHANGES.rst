@@ -14,7 +14,7 @@ Released on December 19, 2012.
 
 * simplified deployment workflow (no issue tracked based acceptance involved)
 
-* multiple deployment
+* mass deployment
 
 * discovery fixes
 
