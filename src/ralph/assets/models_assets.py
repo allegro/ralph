@@ -160,11 +160,12 @@ class Asset(TimeTrackable, EditorTrackable, SavingUser, SoftDeletable):
     status = models.PositiveSmallIntegerField(
         default=AssetStatus.new.id,
         verbose_name=_("status"),
-        choices=AssetStatus()
+        choices=AssetStatus(),
     )
     remarks = models.CharField(
         verbose_name='Additional remarks',
-        max_length=1024, blank=True
+        max_length=1024,
+        blank=True,
     )
     warehouse = models.ForeignKey(Warehouse, on_delete=models.PROTECT)
     request_date = models.DateField(null=True, blank=True)
