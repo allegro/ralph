@@ -8,6 +8,7 @@ import datetime
 
 from django.http import HttpResponse, HttpResponseForbidden
 from lck.django.common import remote_addr
+from django.shortcuts import get_object_or_404
 
 from ralph.discovery.models import DataCenter
 from ralph.dnsedit.models import DHCPServer
@@ -28,7 +29,7 @@ def dhcp_synch(request):
     if not api.is_authenticated(request):
         return HttpResponseForbidden('API key required.')
     address = remote_addr(request)
-    server, created = DHCPServer.objects.get_or_create(ip=address)
+    server = get_object_or_404(DHCPServer, ip=address)
     server.last_synchronized = datetime.datetime.now()
     server.save()
     return HttpResponse('OK', content_type='text/plain')
