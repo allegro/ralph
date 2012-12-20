@@ -167,12 +167,10 @@ class Asset(TimeTrackable, EditorTrackable, SavingUser, SoftDeletable):
         max_length=1024, blank=True
     )
     warehouse = models.ForeignKey(Warehouse, on_delete=models.PROTECT)
-    ###########################################################################
-    ############################## HERE!!!! dates or names are correct?????????
-    ###########################################################################
     request_date = models.DateField(null=True, blank=True)
     delivery_date = models.DateField(null=True, blank=True)
     production_use_date = models.DateField(null=True, blank=True)
+    provider_order_date = models.DateField(null=True, blank=True)
 
     def __unicode__(self):
         return "{} - {} - {}".format(self.model, self.sn, self.barcode)
