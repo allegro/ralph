@@ -172,7 +172,7 @@ class Asset(TimeTrackable, EditorTrackable, SavingUser, SoftDeletable):
     ###########################################################################
     request_date = models.DateField(null=True, blank=True)
     delivery_date = models.DateField(null=True, blank=True)
-    use_date = models.DateField(null=True, blank=True)
+    production_use_date = models.DateField(null=True, blank=True)
 
     def __unicode__(self):
         return "{} - {} - {}".format(self.model, self.sn, self.barcode)
