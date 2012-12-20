@@ -144,14 +144,11 @@ class AssetSearch(AssetsMixin, DataTableMixin):
           bob_tag=True, export=True),
         _('Order no.', field='order_no', sort_expression='order_no',
           bob_tag=True, export=True),
-        _('Invoice date', field='invoice_date', type='date',
-          sort_expression='invoice_date', bob_tag=True, export=True),
         _('Status', field='status', choice=True, sort_expression='status',
           bob_tag=True, export=True),
         _('Warehouse', field='warehouse', sort_expression='warehouse',
           bob_tag=True, export=True),
         _('Actions', bob_tag=True),
-
         _('Barcode salvaged', field='barcode_salvaged',
           foreign_field_name='part_info', export=True),
         _('Source device', field='source_device',
@@ -751,13 +748,14 @@ class BulkEdit(Base):
                     instance.save(user=self.request.user)
             messages.success(self.request, _("Changes saved."))
             return HttpResponseRedirect(self.request.get_full_path())
-        messages.error(self.request, _("Please correct the errors."))
         form_error = self.asset_formset.get_form_error()
         if form_error:
             messages.error(
                 self.request,
                 _("Please correct duplicated serial numbers or barcodes.")
             )
+        else:
+            messages.error(self.request, _("Please correct the errors."))
         return super(BulkEdit, self).get(*args, **kwargs)
 
 

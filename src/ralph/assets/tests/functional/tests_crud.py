@@ -42,6 +42,10 @@ class TestAdding(TestCase):
             provider='Provider2',
             status=AssetStatus.new.id,  # 1
             size=1,
+            price=11,
+            request_date='2001-01-02',
+            delivery_date='2001-01-03',
+            production_use_date='2001-01-04',
             sn='2222-2222-2222-2222',
             barcode='bc-1111-1111-1111',
             warehouse=self.warehouse.id,  # 1
@@ -96,12 +100,15 @@ class TestAdding(TestCase):
             provider='Provider2',
             status=AssetStatus.in_progress.id,  # 1
             size=2,
+            request_date='2001-01-02',
+            delivery_date='2001-01-03',
+            production_use_date='2001-01-04',
             sn='3333-3333-3333-333',
             barcode='bc-3333-3333-333',
             warehouse=self.warehouse.id,  # 1
             license_key='0000-0000-0000-0000',
             version='1.0',
-            unit_price=2.00,
+            price=2.00,
             license_type=LicenseType.oem,
             date_of_last_inventory='2003-02-02',
             last_logged_user='James Bond',
@@ -129,6 +136,9 @@ class TestAdding(TestCase):
                 invoice_no='Invoice No2',
                 order_no='Order No2',
                 invoice_date='2001-02-02',
+                request_date='2001-01-02',
+                delivery_date='2001-01-03',
+                production_use_date='2001-01-04',
                 support_period=12,
                 support_type='d2d',
                 provider='Provider2',
@@ -157,7 +167,6 @@ class TestAdding(TestCase):
         correct_data_office = [
             dict(
                 version='1.0',
-                unit_price=2,
                 license_type=LicenseType.oem.id,
                 date_of_last_inventory='2003-02-02',
                 last_logged_user='James Bond',
