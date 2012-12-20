@@ -53,10 +53,14 @@ def save_processors(processors, dev):
             continue
         indexes.append(index)
         cpu, created = Processor.concurrent_get_or_create(
-            device=dev, index=index)
-        cpu.label = cpuname
-        cpu.speed = speed
-        cpu.cores = cores
+            device=dev,
+            index=index,
+            defaults={
+                'label': cpuname,
+                'speed': speed,
+                'cores': cores,
+            },
+        )
         is64bit = p.get('is64bit') == 'true'
         extra = '%s %s %s ' % (
             p.get('manufacturer'), p.get('version'),
@@ -65,16 +69,15 @@ def save_processors(processors, dev):
             '64bit ' if is64bit else '',
             cpuname, '%dMhz' % speed if speed else '',
             ' multicore' if cores > 1 else '')
-        cpu.model, c = ComponentModel.concurrent_get_or_create(
-            speed=speed, type=ComponentType.processor.id,
-            family=cpuname, size=cores,
+        cpu.model, c = ComponentModel.create(
             cores=cores,
-            extra_hash=hashlib.md5(extra.encode('utf-8')).hexdigest())
-        if c:
-            cpu.model.extra = extra
-            cpu.model.name = name
-            cpu.model.save(priority=SAVE_PRIORITY)
-        cpu.save(priority=SAVE_PRIORITY)
+            extra=extra,
+            family=cpuname,
+            speed=speed,
+            type=ComponentType.processor,
+            name=name,
+            priority=SAVE_PRIORITY,
+        )
     for cpu in dev.processor_set.exclude(index__in=indexes):
         cpu.delete()
 
@@ -113,13 +116,12 @@ def save_storage(storage, dev):
         except ValueError:
             continue
         model_name = '{} {}MiB'.format(label, size)
-        model, _ = ComponentModel.concurrent_get_or_create(
-            size=size, type=ComponentType.disk.id, speed=0, cores=0,
-            extra_hash=hashlib.md5('').hexdigest(),
-            family=model_name
+        model, c = ComponentModel.create(
+            size=size,
+            type=ComponentType.disk,
+            family=model_name,
+            priority=SAVE_PRIORITY,
         )
-        model.name = model_name
-        model.save(priority=SAVE_PRIORITY)
         stor = None
         try:
             stor = Storage.objects.get(device=dev, mount_point=mount_point)
@@ -185,13 +187,15 @@ def save_memory(memory, dev):
         mem.speed = speed
         family = 'Virtual' if 'Virtual' in label else ''
         extra = '%s %dMiB %s %s' % (label, size, speed, row.get('caption'))
-        mem.model, c = ComponentModel.concurrent_get_or_create(
-            family=family, size=size, speed=speed,
-            type=ComponentType.memory.id,
-            extra_hash=hashlib.md5(extra.encode('utf-8')).hexdigest())
-        mem.model.extra = extra
-        mem.model.name = 'RAM Windows %dMiB' % size
-        mem.model.save()
+        mem.model, c = ComponentModel.create(
+            family=family,
+            size=size,
+            speed=speed,
+            type=ComponentType.memory,
+            extra=extra,
+            name='RAM Windows %dMiB' % size,
+            priority=SAVE_PRIORITY,
+        )
         mem.save(priority=SAVE_PRIORITY)
     dev.memory_set.exclude(index__in=indexes).delete()
 
@@ -206,12 +210,13 @@ def save_fibre_channel(fcs, dev):
                                                              physical_id=pid)
         fib.label = f.get('label')
         extra = '%s %s %s %s' % (fib.label, pid, manufacturer, model)
-        fib.model, c = ComponentModel.concurrent_get_or_create(
-            type=ComponentType.fibre.id, family=fib.label,
-            extra_hash=hashlib.md5(extra.encode('utf-8')).hexdigest())
-        fib.model.extra = extra
-        fib.model.name = model if model else fib.label
-        fib.model.save(priority=SAVE_PRIORITY)
+        fib.model, c = ComponentModel.create(
+            type=ComponentType.fibre,
+            family=fib.label,
+            extra=extra,
+            name=model if model else fib.label,
+            priority=SAVE_PRIORITY,
+        )
         fib.save(priority=SAVE_PRIORITY)
         detected_fc_cards.append(fib.pk)
     dev.fibrechannel_set.exclude(pk__in=detected_fc_cards).delete()

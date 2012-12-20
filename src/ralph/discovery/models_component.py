@@ -162,17 +162,52 @@ class ComponentModel(Named.NonUnique, SavePrioritized,
 
     @classmethod
     def concurrent_get_or_create(cls, *args, **kwargs):
+        assert False, ("Direct usage of this method on ComponentModel is "
+                       "forbidden.")
+
+    @classmethod
+    def create(cls, **kwargs):
+        assert 'priority' in kwargs, ("`priority` not given.")
+        assert 'extra_hash' not in kwargs, ("`extra_hash` is computed "
+                                            "automatically from `extra`.")
+        kwargs.setdefault('speed', 0)
+        kwargs.setdefault('cores', 0)
+        kwargs.setdefault('size', 0)
+        kwargs.setdefault('type', ComponentType.unknown)
+        family = kwargs.setdefault('family', '')
+        group = kwargs.pop('group', None)
+        extra = kwargs.pop('extra', '')
+        name = kwargs.pop('name', family)
+        kwargs['extra_hash'] = hashlib.md5(extra.encode('utf-8')).hexdigest()
         # Make sure the cores are filled correctly
-        if (kwargs.get('type') == ComponentType.processor and
-            'cores' in kwargs):
-                kwargs['cores'] = max(
-                    1,
-                    kwargs['cores'],
-                    cores_from_model(kwargs.get('name', '')),
-                )
-                kwargs['size'] = kwargs['cores']
-        return super(ComponentModel,
-                     cls).concurrent_get_or_create(*args, **kwargs)
+        if kwargs.get('type') == ComponentType.processor:
+            kwargs['cores'] = max(
+                1,
+                kwargs['cores'],
+                cores_from_model(kwargs.get('name', '')),
+            )
+            kwargs['size'] = kwargs['cores']
+        kwargs['defaults'] = {
+            'name': name,
+            'extra': extra,
+            'group': group,
+        }
+        obj, c = super(ComponentModel, cls).concurrent_get_or_create(**kwargs)
+        if c:
+            obj.mark_dirty(
+                'cores',
+                'extra',
+                'extra_hash',
+                'family',
+                'group',
+                'name',
+                'size',
+                'speed',
+                'type',
+            )
+            obj.save(priority=kwargs['priority'])
+        return obj, c
+
 
     def get_price(self, size=None):
         if not self.group:

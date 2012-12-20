@@ -144,14 +144,22 @@ def handle_smbios(dev, smbios, is_virtual=False, priority=0):
         if not manufacturer.startswith('Manufacturer'):
             mem.label = manufacturer + ' ' + mem.label
         family = 'Virtual' if is_virtual else ''
-        mem.model, c = ComponentModel.concurrent_get_or_create(
-            size=mem.size, speed=0, type=ComponentType.memory.id,
-            family=family, extra_hash='')
         name = 'RAM %dMiB' % mem.size
         if family:
             name = '%s %s' % (family, name)
-        mem.model.name = name
-        mem.model.save(priority=priority)
+        extra = ''
+        mem.model, c = ComponentModel.concurrent_get_or_create(
+            size=mem.size,
+            speed=0,
+            cores=0,
+            type=ComponentType.memory.id,
+            family=family,
+            extra_hash=hashlib.md5(extra).hexdigest(),
+            defaults={
+                'name': name,
+                'extra': extra,
+            },
+        )
         mem.save(priority=priority)
     # CPUs
     detected_cpus = {}
