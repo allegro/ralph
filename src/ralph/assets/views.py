@@ -149,7 +149,7 @@ class AssetSearch(AssetsMixin, DataTableMixin):
           bob_tag=True, export=True),
         _('Invoice date', field='invoice_date', type='date',
           sort_expression='invoice_date', bob_tag=True, export=True),
-        _('Status', field='status', choice=True, sort_expression='status',
+        _('Status', field='status', sort_expression='status',
           bob_tag=True, export=True),
         _('Warehouse', field='warehouse', sort_expression='warehouse',
           bob_tag=True, export=True),
@@ -163,12 +163,12 @@ class AssetSearch(AssetsMixin, DataTableMixin):
           foreign_field_name='part_info', export=True),
         _('Provider', field='provider', export=True),
         _('Remarks', field='remarks', export=True),
-        _('Source', field='source', choice=True, export=True),
+        _('Source', field='source', export=True),
         _('Support peroid', field='support_peroid', export=True),
         _('Support type', field='support_type', export=True),
         _('Support void_reporting', field='support_void_reporting',
           export=True),
-        _('Type', field='type', choice=True, export=True),
+        _('Type', field='type', export=True),
     ]
 
     def handle_search_data(self):
@@ -199,40 +199,28 @@ class AssetSearch(AssetsMixin, DataTableMixin):
         header = super(AssetSearch, self).get_csv_header()
         return ['type'] + header
 
-    def get_csv_rows(self, queryset, type):
+    def get_csv_rows(self, queryset, type, model):
         data = [self.get_csv_header()]
         for asset in queryset:
             row = ['part', ] if asset.part_info else ['device', ]
             for item in self.columns:
                 field = item.field
                 if field:
-                    choice = item.choice
                     nested_field_name = item.foreign_field_name
                     if nested_field_name == type:
                         cell = self.get_cell(
-                            getattr(asset, type), field, choice
+                            getattr(asset, type), field, model
                         )
                     elif nested_field_name == 'part_info':
-                        cell = self.get_cell(asset.part_info, field, choice)
+                        cell = self.get_cell(asset.part_info, field, PartInfo)
                     else:
-                        cell = self.get_cell(asset, field, choice)
+                        cell = self.get_cell(asset, field, Asset)
                     row.append(unicode(cell))
             data.append(row)
         return data
 
     def get_all_items(self, q_object):
         return Asset.objects.filter(q_object).order_by('id')
-
-    def get_cell(self, obj, field, choice):
-        """Returns the contents of a cell"""
-        if choice:
-            cell = self.get_choice_name(obj, field)
-        else:
-            try:
-                cell = getattr(obj, field)
-            except AttributeError:
-                cell = ''
-        return cell
 
     def get_context_data(self, *args, **kwargs):
         ret = super(AssetSearch, self).get_context_data(*args, **kwargs)
@@ -276,7 +264,7 @@ class BackOfficeSearch(BackOfficeMixin, AssetSearch):
         _('License key', field='license_key',
           foreign_field_name='office_info', export=True),
         _('License type', field='license_type',
-          foreign_field_name='office_info', choice=True, export=True),
+          foreign_field_name='office_info', export=True),
         _('Unit price', field='unit_price',
           foreign_field_name='office_info', export=True),
         _('Version', field='version',
@@ -291,7 +279,7 @@ class BackOfficeSearch(BackOfficeMixin, AssetSearch):
 
     def get_csv_data(self, queryset):
         data = super(BackOfficeSearch, self).get_csv_rows(
-            queryset, 'office_info'
+            queryset, type='office_info', model=OfficeInfo
         )
         return data
 
@@ -318,7 +306,7 @@ class DataCenterSearch(DataCenterMixin, AssetSearch):
 
     def get_csv_data(self, queryset):
         data = super(DataCenterSearch, self).get_csv_rows(
-            queryset, 'device_info'
+            queryset, type='device_info', model=DeviceInfo
         )
         return data
 

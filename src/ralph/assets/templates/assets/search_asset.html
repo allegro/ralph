@@ -48,7 +48,7 @@
         <table class="table table-bordered table-striped">
         {% table_header columns url_query sort fugue_icons=1 sort_variable_name=sort_variable_name %}
                 <tbody>
-                {% for row in page %}
+                {% for row in bob_page %}
                 <tr>
                     <td class="column-checkbox">
                         <input type="checkbox" name="select" value="{{row.id}}">
@@ -84,7 +84,7 @@
                 </tbody>
             </table>
 
-            {% pagination page url_query=url_query show_all=0 show_csv=1 fugue_icons=1 export_variable_name=export_variable_name %}
+            {% pagination bob_page url_query=url_query show_all=0 show_csv=1 fugue_icons=1 export_variable_name=export_variable_name %}
             <div class="btn-group">
               <a class="btn dropdown-toggle btn-primary" data-toggle="dropdown" href="#">
                 Bulk actions...
