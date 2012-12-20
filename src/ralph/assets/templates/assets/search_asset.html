@@ -4,17 +4,17 @@
 
 {% block extra_headers %}
 {{ block.super }}
-    <style type="text/css">
-        input[type=submit] {
-            padding: 0px;
-        }
-        div#sidebar_search input, div#sidebar_search select{
-            width: 90%;
-        }
-        form.form-inline {
-            display: inline;
-        }
-    </style>
+<style type="text/css">
+input[type=submit] {
+    padding: 0px;
+}
+div#sidebar_search input, div#sidebar_search select{
+    width: 90%;
+}
+form.form-inline {
+    display: inline;
+}
+</style>
 {% endblock %}
 
 {% block scripts %}
@@ -46,10 +46,11 @@
 
 
 {% block sidebar_search%}
-    <div class="form search-form well well-small" id="sidebar_search">
-        {% form form=form method="GET" action='' submit_label='Search' %}
-    </div>
+<div class="form search-form well well-small" id="sidebar_search">
+    {% form form=form method="GET" action='' submit_label='Search' %}
+</div>
 {% endblock %}
+
 {% block content %}
     <h3>{{header}}</h3>
         <table id='assets_table' class="table table-bordered table-striped">
