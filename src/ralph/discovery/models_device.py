@@ -378,9 +378,18 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
                     sndev.delete()
         if model is None:
             model, model_created = DeviceModel.concurrent_get_or_create(
-                name=model_name, type=model_type.id)
+                name=model_name,
+                defaults={
+                    'type': model_type.id,
+                },
+            )
         if dev is None:
-            dev, created = Device.concurrent_get_or_create(sn=sn, model=model)
+            dev, created = Device.concurrent_get_or_create(
+                sn=sn,
+                defaults={
+                    'model': model,
+                },
+            )
         elif dev.deleted:
             dev.deleted = False
         if model and model.type != DeviceType.unknown.id:
