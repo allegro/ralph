@@ -217,11 +217,11 @@ class BaseAddAssetForm(ModelForm):
     class Meta:
         model = Asset
         fields = (
-            'type', 'model', 'invoice_no', 'order_no', 'price', 'request_date',
-            'delivery_date', 'invoice_date', 'production_use_date',
-            'provider_order_date', 'provider_order_date', 'support_period',
+            'type', 'model', 'warehouse', 'invoice_no', 'order_no', 'price', 'support_period',
             'support_type', 'support_void_reporting', 'provider', 'status',
-            'remarks',
+            'remarks', 'request_date',
+            'provider_order_date', 'delivery_date', 'invoice_date',
+            'production_use_date', 'provider_order_date',
         )
         widgets = {
             'request_date': DateWidget(),
