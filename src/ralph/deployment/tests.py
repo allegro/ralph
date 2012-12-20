@@ -4,43 +4,35 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from django.conf import settings
 from django.test import TestCase
-from django.core.exceptions import ImproperlyConfigured
+from powerdns.models import Domain, Record
 
-from ralph.discovery.models import Device, DeviceType, DeviceModel
+from ralph.discovery.models import (
+    Device, DeviceType, DeviceModel, DataCenter, EthernetSpeed, Network,
+    NetworkTerminator, IPAddress, Ethernet,
+)
 from ralph.business.models import Venture, VentureRole
-from ralph.cmdb.models_ci import CIOwner, CIOwnership, CIOwnershipType, CI
-from ralph.cmdb.importer import CIImporter
-from ralph.deployment.models import Deployment, DeploymentStatus
-from ralph.deployment.plugins.ticket import ticket
-from ralph.deployment.models import get_business_owner, get_technical_owner
-from django.contrib.contenttypes.models import ContentType
-
+from ralph.deployment.models import Deployment
+from ralph.deployment.util import (
+    get_next_free_hostname, get_first_free_ip, _create_device
+)
+from ralph.dnsedit.models import DHCPEntry
+from ralph.util import Eth
 
 
 class DeploymentTest(TestCase):
-    fixtures = [
-        '0_types.yaml', 
-        '1_attributes.yaml',
-        '2_layers.yaml', 
-        '3_prefixes.yaml'
-    ]
-
     def setUp(self):
-        engine = settings.ISSUETRACKERS['default']['ENGINE']
-        if engine != '':
-            raise ImproperlyConfigured(
-                '''Expected ISSUETRACKERS['default']['ENGINE']='' got: %r'''
-                % engine)
-        # usual stuff
         self.top_venture = Venture(name='top_venture')
         self.top_venture.save()
         self.child_venture = Venture(
-            name='child_venture', parent=self.top_venture
+            name='child_venture',
+            parent=self.top_venture,
         )
         self.child_venture.save()
-        self.role = VentureRole(name='role', venture=self.child_venture)
+        self.role = VentureRole(
+            name='role',
+            venture=self.child_venture,
+        )
         self.role.save()
         self.child_role = VentureRole(
             name='child_role',
@@ -48,26 +40,6 @@ class DeploymentTest(TestCase):
             parent=self.role,
         )
         self.child_role.save()
-        to = CIOwner(
-            first_name='Bufallo', last_name='Kudłaczek',
-        )
-        to.save()
-        bo = CIOwner(
-            first_name='Bill', last_name='Bąbelek',
-        )
-        bo.save()
-        ct = ContentType.objects.get_for_model(self.top_venture)
-        CIImporter().import_all_ci([ct])
-        CIOwnership(
-            owner=to,
-            ci=CI.get_by_content_object(self.child_venture),
-            type=CIOwnershipType.technical.id
-        ).save()
-        CIOwnership(
-            owner=bo,
-            ci=CI.get_by_content_object(self.child_venture),
-            type=CIOwnershipType.business.id
-        ).save()
         dm = self.add_model('DC model sample', DeviceType.data_center.id)
         self.dc = Device.create(sn='sn1', model=dm)
         self.dc.name = 'dc'
@@ -86,7 +58,7 @@ class DeploymentTest(TestCase):
             venture=self.child_venture,
             venturerole=self.child_role,
             sn='sn3',
-            model=dm
+            model=dm,
         )
         self.blade.name = 'blade'
         self.blade.parent = self.rack
@@ -99,29 +71,6 @@ class DeploymentTest(TestCase):
         self.deployment.hostname = 'test'
         self.deployment.save()
 
-    def test_acceptance(self):
-        # using issue null engine
-        self.assertEqual(self.deployment.status, DeploymentStatus.open.id)
-        self.deployment.create_issue()
-        self.assertEqual(self.deployment.issue_key, '#123456')
-        # status not changed, until plugin is run
-        self.assertEqual(self.deployment.status, DeploymentStatus.open.id)
-        # run ticket acceptance plugin
-        ticket(self.deployment.id)
-        # ticket already accepted
-        self.deployment = Deployment.objects.get(id=self.deployment.id)
-        self.assertEqual(
-            self.deployment.status, DeploymentStatus.in_deployment.id
-        )
-
-    def test_owners(self):
-        self.assertEqual(
-            get_technical_owner(self.deployment.device),
-            'bufallo.kudlaczek')
-        self.assertEqual(
-            get_business_owner(self.deployment.device),
-            'bill.babelek')
-
     def add_model(self, name, device_type):
         dm = DeviceModel()
         dm.model_type = device_type,
@@ -129,3 +78,110 @@ class DeploymentTest(TestCase):
         dm.save()
         return dm
 
+
+class DeploymentUtilTest(TestCase):
+    def setUp(self):
+        # create data centers
+        self.dc_temp1 = DataCenter.objects.create(
+            name='temp1',
+            hosts_naming_template='h<100,199>.temp1|h<300,399>.temp1'
+        )
+        self.dc_temp2 = DataCenter.objects.create(
+            name='temp2',
+            hosts_naming_template='h<200,299>.temp2'
+        )
+        # create domains
+        self.domain_temp1 = Domain.objects.create(name='temp1')
+        self.domain_temp2 = Domain.objects.create(name='temp2')
+        # create temp deployment
+        dev = Device.create(
+            ethernets=[Eth(
+                'SomeEthLabel', 'aa11cc2266bb', EthernetSpeed.unknown
+            )],
+            model_type=DeviceType.unknown,
+            model_name='Unknown'
+        )
+        IPAddress.objects.create(
+            address='127.0.1.4',
+            device=dev
+        )
+        Deployment.objects.create(
+            device=dev,
+            mac='aa11cc2266bb',
+            ip='127.0.1.2',
+            hostname='h202.temp2'
+        )
+        # create temp network
+        terminator = NetworkTerminator.objects.create(name='T100')
+        net = Network.objects.create(
+            name='net1',
+            address='127.0.1.0/24',
+            data_center=self.dc_temp1
+        )
+        net.terminators.add(terminator)
+        net.save()
+
+    def test_get_nexthostname(self):
+        name = get_next_free_hostname('temp1')
+        self.assertEqual(name, 'h100.temp1')
+        name = get_next_free_hostname('temp2')
+        self.assertEqual(name, 'h200.temp2')
+
+        Record.objects.create(
+            domain=self.domain_temp1,
+            name='h103.temp1',
+            content='127.0.1.2',
+            type='A'
+        )
+        name = get_next_free_hostname('temp1')
+        self.assertEqual(name, 'h104.temp1')
+        Record.objects.create(
+            domain=self.domain_temp1,
+            name='h199.temp1',
+            content='127.0.1.3',
+            type='A'
+        )
+        name = get_next_free_hostname('temp1')
+        self.assertEqual(name, 'h300.temp1')
+
+        name = get_next_free_hostname(
+            'temp2', ['h200.temp2', 'h201.temp2'],
+        )
+        self.assertEqual(name, 'h203.temp2')
+
+    def test_get_firstfreeip(self):
+        ip = get_first_free_ip('net1')
+        self.assertEqual(ip, '127.0.1.1')
+
+        Record.objects.create(
+            domain=self.domain_temp1,
+            name='host123.temp1',
+            content='127.0.1.3',
+            type='A'
+        )
+        DHCPEntry.objects.create(
+            mac='aa:43:c2:11:22:33',
+            ip='127.0.1.5'
+        )
+        ip = get_first_free_ip('net1', ['127.0.1.1'])
+        # 127.0.1.1 - reserved
+        # 127.0.1.2 - deployment
+        # 127.0.1.3 - dns
+        # 127.0.1.4 - discovery
+        # 127.0.1.5 - dhcp
+        # 127.0.1.6 - should be free
+        self.assertEqual(ip, '127.0.1.6')
+
+    def test_create_device(self):
+        data = {
+            'mac': '18:03:73:b1:85:93',
+            'rack_sn': 'rack_sn_123_321_1',
+            'management_ip': '10.20.10.1'
+        }
+        _create_device(data)
+        ethernet = Ethernet.objects.get(mac='18:03:73:b1:85:93')
+        self.assertEqual(ethernet.label, 'DEPLOYMENT MAC')
+        self.assertEqual(ethernet.device.model.type, DeviceType.unknown)
+        ip_address = IPAddress.objects.get(device=ethernet.device)
+        self.assertEqual(ip_address.address, '10.20.10.1')
+        self.assertTrue(ip_address.is_management)

@@ -1,0 +1,31 @@
+<div class="container">
+    {% for row in releases %}
+    <div class="page-header">
+        <h1>Ralph <small>{{row.version}}</small></h1>
+        <span class="muted">Released on {{row.release_date}}</span>
+    </div>
+    <div class="row">
+        <div class="span8">
+            {% for description_line in row.description_lines %}
+            <p>{{ description_line }}</p>
+            {% endfor %}
+            {% if loop.first and not archived %}
+            <p>Read the <a href="doc/{{ pathto('installation') }}">installation instructions</a> in the documentation for help with installing it.</p>
+            <p>A detailed <a href="doc/{{ pathto('changes') }}">change log</a> is available in the documentation.</p>
+            {% endif %}
+        </div>
+        <div class="span4">
+            <p><a href="https://github.com/allegro/ralph/zipball/{{row.version}}" class="btn {% if loop.first and not archived%}btn-warning btn-large{% endif %}">
+                <i class="icon-download-alt icon-white"></i>
+                Download version {{row.version}}</a></p>
+       </div>
+   </div>
+   {% if loop.last %}
+   <div class="row">
+       <div class="span8">
+       <p>See <a href="{{ pathto('download_archive') }}">download archive</a> of previous releases.</p>
+       </div>
+   </div>
+   {% endif %}
+   {% endfor %}
+</div> <!-- /container -->
