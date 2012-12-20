@@ -150,8 +150,10 @@ tr.table-highlight td {
     min-width: 200px;
 }
 
-.end-date-field
-{
+.end-date-field {
     margin-top: -10px !important;
 }
 
+.csv-input {
+    font-family: monospace;
+}

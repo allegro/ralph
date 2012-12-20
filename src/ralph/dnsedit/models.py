@@ -8,6 +8,7 @@ import datetime
 
 from django.db import models as db
 from django.utils.translation import ugettext_lazy as _
+import ipaddr
 from lck.django.common.models import TimeTrackable, MACAddressField
 from powerdns.models import Record
 from django.db.models.signals import post_save, pre_delete
@@ -20,10 +21,18 @@ class DHCPEntry(TimeTrackable):
     mac = MACAddressField(verbose_name=_("MAC address"), unique=False)
     ip = db.CharField(verbose_name=_("IP address"), blank=True, unique=False,
                       default="", max_length=len('xxx.xxx.xxx.xxx'))
+    number = db.BigIntegerField(
+        _("IP address"), help_text=_("Presented as int."), editable=False,
+        unique=False, default=0
+    )
 
     class Meta:
         verbose_name = _("DHCP entry")
         verbose_name_plural = _("DHCP entries")
+
+    def save(self, *args, **kwargs):
+        self.number = int(ipaddr.IPAddress(self.ip))
+        super(DHCPEntry, self).save(*args, **kwargs)
 
 
 class DHCPServer(db.Model):

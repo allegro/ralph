@@ -67,8 +67,10 @@ class AbstractNetwork(db.Model):
         "DiscoveryQueue", verbose_name=_("discovery queue"), null=True,
         blank=True, default=None, on_delete=db.SET_NULL,
     )
-    rack = db.CharField(
-        _("rack"), max_length=16, null=True, blank=True, default=None,
+    racks = db.ManyToManyField(
+        'discovery.Device', verbose_name=_("racks"),
+        # We can't import DeviceType in here, so we use an integer.
+        limit_choices_to={'model__type': 1}, # DeviceType.rack.id
     )
 
     class Meta:
@@ -140,6 +142,14 @@ class NetworkTerminator(Named):
 
 
 class DataCenter(Named):
+    hosts_naming_template = db.CharField(
+        max_length=30, default="h<10000,19999>.dc",
+        help_text=_(
+            "E.g. h<200,299>.dc|h<400,499>.dc will produce: h200.dc "
+            "h201.dc ... h299.dc h400.dc h401.dc"
+        )
+    )
+
     class Meta:
         verbose_name = _("data center")
         verbose_name_plural = _("data centers")
