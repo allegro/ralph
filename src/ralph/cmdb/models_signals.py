@@ -140,7 +140,7 @@ def post_create_change(sender, instance, raw, using, **kwargs):
         if chdb.CIChange.objects.filter(
             content_type=ContentType.objects.get_for_model(instance),
             object_id=instance.id,
-        ).count():
+        ).exists():
             # already created parent cichange(e.g while saving for 2 time). Skip it.
             return
         ch = chdb.CIChange()
