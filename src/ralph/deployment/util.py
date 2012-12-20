@@ -173,11 +173,12 @@ def _create_device(data):
     except Device.DoesNotExist:
         pass
     dev.save()
-    IPAddress.objects.create(
-        address=data['management_ip'],
-        device=dev,
-        is_management=True
-    )
+    if management_ip_unique(data['management_ip']):
+        IPAddress.objects.create(
+            address=data['management_ip'],
+            device=dev,
+            is_management=True
+        )
     return dev
 
 
