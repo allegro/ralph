@@ -120,17 +120,20 @@ class DataTableColumnAssets(DataTableColumn):
     :param export - set when the column is to be exported
     """
 
-    def __init__(self, header_name, **kwargs):
+    def __init__(self, header_name, foreign_field_name=None,
+                 sort_expression=None, export=None, **kwargs):
         super(DataTableColumnAssets, self).__init__(header_name, **kwargs)
-        self.foreign_field_name = kwargs.get('foreign_field_name')
-        self.sort_expression = kwargs.get('sort_expression')
-        self.export = kwargs.get('export')
+        self.foreign_field_name = foreign_field_name
+        self.sort_expression = sort_expression
+        self.export = export
 
 
 class AssetSearch(AssetsMixin, DataTableMixin):
     """The main-screen search form for all type of assets."""
     rows_per_page = 15
     csv_file_name = 'ralph.csv'
+    sort_variable_name = 'sort'
+    export_variable_name = 'export'
     _ = DataTableColumnAssets
     columns = [
         _('Dropdown', selectable=True, bob_tag=True),
@@ -190,7 +193,7 @@ class AssetSearch(AssetsMixin, DataTableMixin):
             all_q &= Q(invoice_date__gte=invoice_date_from)
         if invoice_date_to:
             all_q &= Q(invoice_date__lte=invoice_date_to)
-        self.paginate_query(self.get_all_items(all_q))
+        self.data_table_query(self.get_all_items(all_q))
 
     def get_csv_header(self):
         header = super(AssetSearch, self).get_csv_header()
@@ -220,6 +223,17 @@ class AssetSearch(AssetsMixin, DataTableMixin):
     def get_all_items(self, q_object):
         return Asset.objects.filter(q_object).order_by('id')
 
+    def get_cell(self, obj, field, choice):
+        """Returns the contents of a cell"""
+        if choice:
+            cell = self.get_choice_name(obj, field)
+        else:
+            try:
+                cell = getattr(obj, field)
+            except AttributeError:
+                cell = ''
+        return cell
+
     def get_context_data(self, *args, **kwargs):
         ret = super(AssetSearch, self).get_context_data(*args, **kwargs)
         ret.update(
@@ -233,6 +247,8 @@ class AssetSearch(AssetsMixin, DataTableMixin):
             'header': self.header,
             'sort': self.sort,
             'columns': self.columns,
+            'sort_variable_name': self.sort_variable_name,
+            'export_variable_name': self.export_variable_name,
         })
         return ret
 
