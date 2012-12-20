@@ -6,10 +6,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-
-import base64
-import zlib
-
 from lck.django.common import nested_commit_on_success
 
 from .facts import handle_facts_ethernets
@@ -24,8 +20,8 @@ SAVE_PRIORITY = 53
 @nested_commit_on_success
 def parse_lshw(data, facts, is_virtual):
     data = uncompress_base64_data(data)
-    sn = facts.get('serialnumber') # use a Puppet fact because lshw gives
-                                   # wrong serial numbers
+    sn = facts.get('serialnumber')  # use a Puppet fact because lshw gives
+                                    # wrong serial numbers
     if sn in SERIAL_BLACKLIST:
         sn = None
     try:

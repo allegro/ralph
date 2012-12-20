@@ -30,7 +30,9 @@ WSGIPythonHome /home/ralph
 
 	CustomLog ${APACHE_LOG_DIR}/access.log combined
 
-  WSGIScriptAlias / /home/ralph/lib/python2.7/site-packages/ralph/scripts/ralph.wsgi
+  # You can get an example ralph.wsgi file from
+  # http://ralph.allegrogroup.com/doc/_static/ralph.wsgi
+  WSGIScriptAlias / /home/ralph/ralph.wsgi
   WSGIDaemonProcess ralph user=ralph group=ralph processes=5 threads=3 display-name=ralph
   WSGIProcessGroup ralph
 </VirtualHost>

@@ -6,10 +6,12 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import re
+
 from django import forms
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
-
+import ipaddr
 from lck.django.common.admin import (
     ModelAdmin, ForeignKeyAutocompleteTabularInline
 )
@@ -18,6 +20,35 @@ from ralph.discovery import models as m
 from ralph.business.admin import RolePropertyValueInline
 
 SAVE_PRIORITY = 200
+
+HOSTS_NAMING_TEMPLATE_REGEX = re.compile(r'<[0-9]+,[0-9]+>.*\.[a-zA-Z0-9]+')
+
+
+class NetworkAdminForm(forms.ModelForm):
+    class Meta:
+        model = m.Network
+
+    def clean_address(self):
+        address = self.cleaned_data['address'].strip()
+        if not re.search(r'/[0-9]{1,2}$', address):
+            raise forms.ValidationError(_("It's not a valid network address."))
+        try:
+            net = ipaddr.IPNetwork(address)
+        except ValueError:
+            raise forms.ValidationError(_("It's not a valid network address."))
+        min_ip = int(net.network)
+        max_ip = int(net.broadcast)
+        collisions = m.Network.objects.filter(
+            max_ip__gte=min_ip, min_ip__lte=max_ip
+        )
+        if self.instance.id:
+            collisions = collisions.exclude(pk=self.instance.id)
+        if collisions:
+            msg = "Colliding networks: %s" % (
+                ", ".join([network.name for network in collisions])
+            )
+            raise forms.ValidationError(msg)
+        return address
 
 
 class NetworkAdmin(ModelAdmin):
@@ -32,6 +63,7 @@ class NetworkAdmin(ModelAdmin):
     search_fields = ('name', 'address', 'vlan')
     filter_horizontal = ('terminators', 'racks')
     save_on_top = True
+    form = NetworkAdminForm
 
 admin.site.register(m.Network, NetworkAdmin)
 
@@ -50,9 +82,29 @@ class NetworkTerminatorAdmin(ModelAdmin):
 admin.site.register(m.NetworkTerminator, NetworkTerminatorAdmin)
 
 
+class DataCenterAdminForm(forms.ModelForm):
+    class Meta:
+        model = m.DataCenter
+
+    def clean_hosts_naming_template(self):
+        template = self.cleaned_data['hosts_naming_template']
+        if re.search("[^a-z0-9<>,\.|-]", template):
+            raise forms.ValidationError(
+                _("Please remove disallowed characters.")
+            )
+        for part in template.split("|"):
+            if not HOSTS_NAMING_TEMPLATE_REGEX.search(part):
+                raise forms.ValidationError(
+                    _("Incorrect template structure. Please see example "
+                      "below.")
+                )
+        return template
+
+
 class DataCenterAdmin(ModelAdmin):
-    list_display = ('name',)
+    list_display = ('name', 'hosts_naming_template')
     search_fields = ('name',)
+    form = DataCenterAdminForm
 
 admin.site.register(m.DataCenter, DataCenterAdmin)
 

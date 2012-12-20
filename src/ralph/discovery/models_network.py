@@ -34,7 +34,8 @@ class NetworkKind(Named):
 
 class AbstractNetwork(db.Model):
     address = db.CharField(
-        _("network address"), help_text=_("Presented as string."),
+        _("network address"),
+        help_text=_("Presented as string (e.g. 192.168.0.0/24)"),
         max_length=len("xxx.xxx.xxx.xxx/xx"), unique=True,
     )
     gateway = db.IPAddressField(
@@ -141,6 +142,14 @@ class NetworkTerminator(Named):
 
 
 class DataCenter(Named):
+    hosts_naming_template = db.CharField(
+        max_length=30, default="h<10000,19999>.dc",
+        help_text=_(
+            "E.g. h<200,299>.dc|h<400,499>.dc will produce: h200.dc "
+            "h201.dc ... h299.dc h400.dc h401.dc"
+        )
+    )
+
     class Meta:
         verbose_name = _("data center")
         verbose_name_plural = _("data centers")
