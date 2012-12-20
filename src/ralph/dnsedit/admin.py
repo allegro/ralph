@@ -9,7 +9,7 @@ from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 from lck.django.common.admin import ModelAdmin
 
-from ralph.dnsedit.models import DHCPEntry, DNSHistory
+from ralph.dnsedit.models import DHCPEntry, DNSHistory, DHCPServer
 
 
 class DHCPEntryAdmin(ModelAdmin):
@@ -23,6 +23,14 @@ class DHCPEntryAdmin(ModelAdmin):
     save_on_top = True
 
 admin.site.register(DHCPEntry, DHCPEntryAdmin)
+
+
+class DHCPServerAdmin(ModelAdmin):
+    list_display = ('ip', 'last_synchronized')
+    search_fields = ('ip',)
+    save_on_top = True
+
+admin.site.register(DHCPServer, DHCPServerAdmin)
 
 
 class DNSHistoryAdmin(ModelAdmin):
