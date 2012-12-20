@@ -546,8 +546,11 @@ class EditDevice(Base):
             instance=asset,
             mode=_get_mode(self.request)
         )
+        if asset.type > AssetType.BO:
+            self.office_info_form = OfficeForm(instance=asset.office_info)
+        else:
+            self.office_info_form = None
         self.device_info_form = DeviceForm(instance=asset.device_info)
-        self.office_info_form = OfficeForm(instance=asset.office_info)
         return super(EditDevice, self).get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
@@ -556,22 +559,24 @@ class EditDevice(Base):
             self.request.POST, instance=asset, mode=_get_mode(self.request)
         )
         self.device_info_form = DeviceForm(self.request.POST)
-        self.office_info_form = OfficeForm(
-            self.request.POST, self.request.FILES
-        )
+
+        if asset.type > AssetType.BO:
+            self.office_info_form = OfficeForm(
+                self.request.POST, self.request.FILES)
         if all((
             self.asset_form.is_valid(),
             self.device_info_form.is_valid(),
-            self.office_info_form.is_valid()
+            asset.type < AssetType.BO or self.office_info_form.is_valid()
         )):
             modifier_profile = self.request.user.get_profile()
             asset = _update_asset(
                 modifier_profile, asset, self.asset_form.cleaned_data
             )
-            asset = _update_office_info(
-                modifier_profile.user, asset,
-                self.office_info_form.cleaned_data
-            )
+            if asset.type > AssetType.BO:
+                asset = _update_office_info(
+                    modifier_profile.user, asset,
+                    self.office_info_form.cleaned_data
+                )
             asset = _update_device_info(
                 modifier_profile.user, asset,
                 self.device_info_form.cleaned_data

@@ -4,17 +4,17 @@
 
 {% block extra_headers %}
 {{ block.super }}
-    <style type="text/css">
-        input[type=submit] {
-            padding: 0px;
-        }
-        div#sidebar_search input, div#sidebar_search select{
-            width: 90%;
-        }
-        form.form-inline {
-            display: inline;
-        }
-    </style>
+<style type="text/css">
+input[type=submit] {
+    padding: 0px;
+}
+div#sidebar_search input, div#sidebar_search select{
+    width: 90%;
+}
+form.form-inline {
+    display: inline;
+}
+</style>
 {% endblock %}
 
 {% block scripts %}
@@ -22,9 +22,17 @@
     <script type="text/javascript">
       $(document).ready(function() {
             $('#post_edit_all').click(function() {
-                var dd=$('#table_form')[0];
-                dd.action='./bulkedit/';
-                dd.submit();
+                var ids = [];
+                $("#assets_table input[type=checkbox]").each(
+                    function(index, val){
+                        if(val.checked) {
+                            ids.push($(val).val());
+                        };
+                    }
+                );
+                if (ids.length) {
+                    window.location.href = 'bulkedit?select=' + ids.join('&select=');
+                }
                 return false;
             });
             $('.del-asset-btn').click(function() {
@@ -38,14 +46,14 @@
 
 
 {% block sidebar_search%}
-    <div class="form search-form well well-small" id="sidebar_search">
-        {% form form=form method="GET" action='' submit_label='Search' %}
-    </div>
+<div class="form search-form well well-small" id="sidebar_search">
+    {% form form=form method="GET" action='' submit_label='Search' %}
+</div>
 {% endblock %}
+
 {% block content %}
     <h3>{{header}}</h3>
-    <form id="table_form" action="" method="GET">
-        <table class="table table-bordered table-striped">
+        <table id='assets_table' class="table table-bordered table-striped">
         {% table_header columns url_query sort %}
                 <tbody>
                 {% for row in page %}
@@ -96,6 +104,4 @@
                 </li>
             </ul>
             </div>
-          </form>
-
 {% endblock %}
