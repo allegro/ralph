@@ -202,6 +202,7 @@ class IPAddress(LastSeen, TimeTrackable, WithConcurrentGetOrCreate):
         Network, verbose_name=_("network"), null=True, blank=True,
         default=None,
     )
+    last_plugins = db.TextField(_("last plugins"),  blank=True)
 
     class Meta:
         verbose_name = _("IP address")
