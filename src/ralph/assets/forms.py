@@ -95,12 +95,12 @@ class BulkEditAssetForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super(BulkEditAssetForm, self).__init__(*args, **kwargs)
         fillable_fields = [
-             'type', 'model', 'device_info', 'invoice_no', 'order_no',
+            'type', 'model', 'device_info', 'invoice_no', 'order_no',
             'invoice_date', 'sn', 'barcode', 'support_period', 'support_type',
             'support_void_reporting', 'provider', 'source', 'status',
         ]
         for field_name in self.fields:
-            if field_name in fillable_fields:
+            if (field_name != 'support_void_reporting' and field_name in fillable_fields):
                 classes = "span12 fillable"
             else:
                 classes = "span12"
@@ -262,7 +262,7 @@ class BaseEditAssetForm(ModelForm):
             'invoice_date': DateWidget(),
             'remarks': Textarea(attrs={'rows': 3}),
             'support_type': Textarea(attrs={'rows': 5}),
-            'sn': Textarea(attrs={'rows': 1, 'readonly':True}),
+            'sn': Textarea(attrs={'rows': 1, 'readonly': True}),
             'barcode': Textarea(attrs={'rows': 1}),
         }
     model = AutoCompleteSelectField(
@@ -290,7 +290,6 @@ class BaseEditAssetForm(ModelForm):
 
     def clean_sn(self):
         return self.instance.sn
-
 
 
 class AddPartForm(BaseAddAssetForm):
