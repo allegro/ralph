@@ -177,12 +177,6 @@ def _validate_management_ip(ip, parsed_management_ip_addresses, row_number):
         raise forms.ValidationError(
             "Row %s: Incorrect management IP address." % row_number
         )
-    if not management_ip_unique(ip):
-        raise forms.ValidationError(
-            "Row %s: Management IP address already exists." % (
-                row_number
-            )
-        )
     if ip in parsed_management_ip_addresses:
         raise forms.ValidationError(
             "Row %s: Duplicated management IP address. "
