@@ -31,15 +31,14 @@ class BaseAssetForm(ModelForm):
         model = Asset
         fields = (
             'type', 'model', 'invoice_no', 'order_no', 'request_date',
-            'delivery_date', 'invoice_date', 'production_use_date', 'price',
-            'support_price', 'support_period', 'support_type',
-            'support_void_reporting', 'provider', 'status', 'remarks', 'sn',
-            'barcode', 'warehouse',
+            'delivery_date', 'invoice_date', 'production_use_date',
+            'provider_order_date', 'price', 'support_price', 'support_period',
+            'support_type', 'support_void_reporting', 'provider', 'status',
+            'remarks', 'sn', 'barcode', 'warehouse',
         )
         widgets = {
             'sn': Textarea(attrs={'rows': 25}),
             'barcode': Textarea(attrs={'rows': 25}),
-            'invoice_date': DateWidget(),
             'remarks': Textarea(attrs={'rows': 3}),
             'support_type': Textarea(attrs={'rows': 5}),
         }
@@ -78,10 +77,10 @@ class BulkEditAssetForm(ModelForm):
         fields = (
             'type', 'model', 'device_info', 'invoice_no', 'order_no',
             'request_date', 'delivery_date', 'invoice_date',
-            'production_use_date', 'provider_order_date', 'sn',
-            'barcode', 'price', 'support_price', 'support_period',
-            'support_type', 'support_void_reporting', 'provider', 'source',
-            'status',
+            'production_use_date', 'provider_order_date',
+            'provider_order_date', 'sn', 'barcode', 'price', 'support_price',
+            'support_period', 'support_type', 'support_void_reporting',
+            'provider', 'source', 'status',
         )
         widgets = {
             'invoice_date': DateWidget(attrs={
@@ -96,12 +95,16 @@ class BulkEditAssetForm(ModelForm):
         super(BulkEditAssetForm, self).__init__(*args, **kwargs)
         fillable_fields = [
             'type', 'model', 'device_info', 'invoice_no', 'order_no',
-            'invoice_date', 'sn', 'barcode', 'support_period', 'support_type',
-            'support_void_reporting', 'provider', 'source', 'status',
+            'request_date', 'delivery_date', 'invoice_date',
+            'production_use_date', 'provider_order_date',
+            'provider_order_date', 'support_period', 'support_type',
+            'provider', 'source', 'status',
         ]
         for field_name in self.fields:
-            if (field_name != 'support_void_reporting' and field_name in fillable_fields):
+            if field_name in fillable_fields:
                 classes = "span12 fillable"
+            elif field_name == 'support_void_reporting':
+                classes = ""
             else:
                 classes = "span12"
             self.fields[field_name].widget.attrs = {'class': classes}
@@ -216,12 +219,16 @@ class BaseAddAssetForm(ModelForm):
         fields = (
             'type', 'model', 'invoice_no', 'order_no', 'price', 'request_date',
             'delivery_date', 'invoice_date', 'production_use_date',
-            'invoice_date', 'provider_order_date', 'support_period',
+            'provider_order_date', 'provider_order_date', 'support_period',
             'support_type', 'support_void_reporting', 'provider', 'status',
             'remarks',
         )
         widgets = {
+            'request_date': DateWidget(),
+            'delivery_date': DateWidget(),
             'invoice_date': DateWidget(),
+            'production_use_date': DateWidget(),
+            'provider_order_date': DateWidget(),
             'remarks': Textarea(attrs={'rows': 3}),
             'support_type': Textarea(attrs={'rows': 5}),
         }
@@ -253,13 +260,18 @@ class BaseEditAssetForm(ModelForm):
     class Meta:
         model = Asset
         fields = (
-            'type', 'model', 'invoice_no', 'order_no',
-            'invoice_date', 'support_period', 'support_type',
+            'type', 'model', 'invoice_no', 'order_no', 'request_date',
+            'delivery_date', 'invoice_date', 'production_use_date',
+            'provider_order_date', 'support_period', 'support_type',
             'support_void_reporting', 'provider', 'status',
             'remarks', 'sn', 'barcode', 'warehouse'
         )
         widgets = {
+            'request_date': DateWidget(),
+            'delivery_date': DateWidget(),
             'invoice_date': DateWidget(),
+            'production_use_date': DateWidget(),
+            'provider_order_date': DateWidget(),
             'remarks': Textarea(attrs={'rows': 3}),
             'support_type': Textarea(attrs={'rows': 5}),
             'sn': Textarea(attrs={'rows': 1, 'readonly': True}),
