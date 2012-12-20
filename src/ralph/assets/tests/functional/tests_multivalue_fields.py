@@ -43,6 +43,7 @@ class TestMultivalueFields(TestCase):
                 status=AssetStatus.new,
                 sn='sn1_1, sn2_1, sn1_1',
                 remarks='asset1',
+                price='10',
                 size=1,
             ),
             dict(
@@ -55,6 +56,7 @@ class TestMultivalueFields(TestCase):
                 status=AssetStatus.new,
                 sn='sn1_2, , , sn2_2',
                 remarks='asset2',
+                price='10',
                 size=1,
             ),
             dict(
@@ -67,6 +69,7 @@ class TestMultivalueFields(TestCase):
                 status=AssetStatus.new,
                 sn='sn1_3, ,, sn2_3',
                 remarks='asset3',
+                price='10',
                 size=1,
             ),
             dict(
@@ -79,6 +82,7 @@ class TestMultivalueFields(TestCase):
                 status=AssetStatus.new,
                 sn='sn1_4, ns2_4 \n sn3_4',
                 remarks='asset4',
+                price='10',
                 size=1,
             ),
             dict(
@@ -91,6 +95,7 @@ class TestMultivalueFields(TestCase):
                 status=AssetStatus.new,
                 sn='name with white spaces, 0000-0000-0000-0000',
                 remarks='asset5',
+                price='10',
                 size=1,
             ),
             dict(
@@ -104,6 +109,7 @@ class TestMultivalueFields(TestCase):
                 sn='',
                 barcode='any',
                 remarks='asset6',
+                price='10',
                 size=1,
             ),
             dict(
@@ -117,6 +123,7 @@ class TestMultivalueFields(TestCase):
                 sn='serialnumber1',
                 barcode='any1, any2',
                 remarks='asset7',
+                price='10',
                 size=1,
             ),
             dict(
@@ -130,6 +137,7 @@ class TestMultivalueFields(TestCase):
                 sn='serialnumber2, serialnumber3',
                 barcode='any3',
                 remarks='asset8',
+                price='10',
                 size=1,
             ),
             dict(
@@ -143,6 +151,7 @@ class TestMultivalueFields(TestCase):
                 sn='serialnumber4, serialnumber5',
                 barcode='any4, any 5',
                 remarks='asset9',
+                price='10',
                 size=1,
             ),
             dict(
@@ -156,6 +165,7 @@ class TestMultivalueFields(TestCase):
                 sn='serialnumber6, serialnumber7, serialnumber8',
                 barcode='any6 , , any 7',
                 remarks='asset10',
+                price='10',
                 size=1,
             ),
             dict(
@@ -169,6 +179,7 @@ class TestMultivalueFields(TestCase):
                 sn='serialnumber9, serialnumber10, serialnumber11',
                 barcode='any8 , \n, any9',
                 remarks='asset11',
+                price='10',
                 size=1,
             ),
             dict(
@@ -182,6 +193,7 @@ class TestMultivalueFields(TestCase):
                 sn='serialnumber12',
                 barcode='barcode1',
                 remarks='asset12',
+                price='10',
                 size=1,
             ),
         ]
