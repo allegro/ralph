@@ -155,3 +155,6 @@ tr.table-highlight td {
     margin-top: -10px !important;
 }
 
+.csv-input {
+    font-family: monospace;
+}
