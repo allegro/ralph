@@ -75,7 +75,7 @@ class TestAdding(TestCase):
             self.assertEqual(unicode(input), unicode(output), msg)
 
     def test_send_data_via_edit_form(self):
-        # Fetch instead of Download
+        # Fetch data
         view = self.client.get('/assets/dc/edit/device/1/')
         self.assertEqual(view.status_code, 200)
         old_fields = view.context['asset_form'].initial
