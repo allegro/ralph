@@ -32,7 +32,7 @@ admin.site.register(
 class DeploymentAdmin(ModelAdmin):
     list_display = (
         'device', 'mac', 'status', 'venture', 'venture_role',
-        'multiple_deployment',
+        'mass_deployment',
     )
     list_filter = ('status', 'status_lastchanged')
     search_fields = (

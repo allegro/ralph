@@ -21,8 +21,8 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal('deployment', ['MassDeployment'])
 
-        # Adding field 'Deployment.multiple_deployment'
-        db.add_column('deployment_deployment', 'multiple_deployment',
+        # Adding field 'Deployment.mass_deployment'
+        db.add_column('deployment_deployment', 'mass_deployment',
                       self.gf('django.db.models.fields.related.ForeignKey')(default=None, to=orm['deployment.MassDeployment'], null=True, on_delete=models.SET_NULL, blank=True),
                       keep_default=False)
 
@@ -31,8 +31,8 @@ class Migration(SchemaMigration):
         # Deleting model 'MassDeployment'
         db.delete_table('deployment_massdeployment')
 
-        # Deleting field 'Deployment.multiple_deployment'
-        db.delete_column('deployment_deployment', 'multiple_deployment_id')
+        # Deleting field 'Deployment.mass_deployment'
+        db.delete_column('deployment_deployment', 'mass_deployment_id')
 
 
     models = {
@@ -133,8 +133,8 @@ class Migration(SchemaMigration):
             'ip': ('django.db.models.fields.IPAddressField', [], {'max_length': '15'}),
             'is_running': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'mac': (u'lck.django.common.models.MACAddressField', [], {'unique': 'False', 'primary_key': 'False', 'db_column': 'None', 'blank': 'False', 'null': 'False', 'db_index': 'False'}),
+            'mass_deployment': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': "orm['deployment.MassDeployment']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
             'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'multiple_deployment': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': "orm['deployment.MassDeployment']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
             'preboot': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['deployment.Preboot']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
             'puppet_certificate_revoked': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'status': ('django.db.models.fields.IntegerField', [], {'default': '1'}),

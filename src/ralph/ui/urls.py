@@ -82,8 +82,8 @@ from ralph.ui.views.catalog import (
 )
 from ralph.ui.views.deploy import (
     Deployment,
-    PrepareMultipleServersDeployment,
-    MultipleServersDeployment,
+    PrepareMassDeployment,
+    MassDeployment,
 )
 from ralph.ui.views.ventures import VenturesDeviceList, VenturesCMDB
 from ralph.ui.views.racks import RacksDeviceList
@@ -252,8 +252,8 @@ urlpatterns = patterns('',
     url(r'^reports/ventures/$', login_required(ReportVentures.as_view()), {}, 'reports_ventures'),
     url(r'^reports/margins/$', login_required(ReportMargins.as_view()), {}, 'reports_margins'),
 
-    url(r'^deployment/multiple/start/$',
-        login_required(PrepareMultipleServersDeployment.as_view())),
-    url(r'^deployment/multiple/define/(?P<deployment>[0-9]+)/$',
-        login_required(MultipleServersDeployment.as_view())),
+    url(r'^deployment/mass/start/$',
+        login_required(PrepareMassDeployment.as_view())),
+    url(r'^deployment/mass/define/(?P<deployment>[0-9]+)/$',
+        login_required(MassDeployment.as_view())),
 )

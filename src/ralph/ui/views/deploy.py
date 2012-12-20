@@ -13,14 +13,14 @@ from django.http import HttpResponseRedirect
 from django.contrib import messages
 from django.shortcuts import get_object_or_404
 
-from ralph.deployment.models import MassDeployment
+from ralph.deployment.models import MassDeployment as MassDeploymentModel
 from ralph.deployment.util import (
     get_next_free_hostname, get_first_free_ip, create_deployments
 )
 from ralph.discovery.models import DeviceType, Device, Network, DataCenter
 from ralph.ui.views.common import BaseMixin, Base
 from ralph.ui.forms import (
-    DeploymentForm, PrepareMultipleDeploymentForm, MultipleDeploymentForm,
+    DeploymentForm, PrepareMassDeploymentForm, MassDeploymentForm,
 )
 from ralph.util.csvutil import UnicodeReader, UnicodeWriter
 
@@ -50,12 +50,12 @@ class Deployment(BaseMixin, CreateView):
         )
 
 
-class PrepareMultipleServersDeployment(Base):
-    template_name = 'ui/multiple_deploy.html'
+class PrepareMassDeployment(Base):
+    template_name = 'ui/mass_deploy.html'
 
     def get_context_data(self, *args, **kwargs):
         ret = super(
-            PrepareMultipleServersDeployment, self
+            PrepareMassDeployment, self
         ).get_context_data(*args, **kwargs)
         ret.update({
             'form': self.form,
@@ -64,33 +64,33 @@ class PrepareMultipleServersDeployment(Base):
         return ret
 
     def get(self, *args, **kwargs):
-        self.form = PrepareMultipleDeploymentForm()
+        self.form = PrepareMassDeploymentForm()
         return super(
-            PrepareMultipleServersDeployment, self
+            PrepareMassDeployment, self
         ).get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
-        self.form = PrepareMultipleDeploymentForm(self.request.POST)
+        self.form = PrepareMassDeploymentForm(self.request.POST)
         if self.form.is_valid():
             csv = self.form.cleaned_data['csv'].strip()
-            multiple_deployment = MassDeployment(csv=csv)
-            multiple_deployment.created_by = self.request.user.get_profile()
-            multiple_deployment.save()
+            mass_deployment = MassDeploymentModel(csv=csv)
+            mass_deployment.created_by = self.request.user.get_profile()
+            mass_deployment.save()
             return HttpResponseRedirect(
-                '/ui/deployment/multiple/define/%s/' % multiple_deployment.pk
+                '/ui/deployment/mass/define/%s/' % mass_deployment.pk
             )
         messages.error(self.request, "Please correct the errors.")
         return super(
-            PrepareMultipleServersDeployment, self
+            PrepareMassDeployment, self
         ).get(*args, **kwargs)
 
 
-class MultipleServersDeployment(Base):
-    template_name = 'ui/multiple_deploy.html'
+class MassDeployment(Base):
+    template_name = 'ui/mass_deploy.html'
 
     def get_context_data(self, *args, **kwargs):
         ret = super(
-            MultipleServersDeployment, self
+            MassDeployment, self
         ).get_context_data(*args, **kwargs)
         ret.update({
             'form': self.form,
@@ -99,15 +99,15 @@ class MultipleServersDeployment(Base):
         return ret
 
     def get(self, *args, **kwargs):
-        multiple_deployment = get_object_or_404(
-            MassDeployment, id=kwargs.get('deployment'),
+        mass_deployment = get_object_or_404(
+            MassDeploymentModel, id=kwargs.get('deployment'),
             is_done=False
         )
         reserved_hostnames = []
         reserved_ip_addresses = []
         new_csv_rows = []
         csv_rows = UnicodeReader(cStringIO.StringIO(
-            multiple_deployment.csv.strip()
+            mass_deployment.csv.strip()
         ))
         for raw_cols in csv_rows:
             cols = []
@@ -150,30 +150,30 @@ class MultipleServersDeployment(Base):
             new_csv_rows.append(cols)
         csv_string = cStringIO.StringIO()
         UnicodeWriter(csv_string).writerows(new_csv_rows)
-        self.form = MultipleDeploymentForm(
+        self.form = MassDeploymentForm(
             initial={'csv': csv_string.getvalue()}
         )
         return super(
-            MultipleServersDeployment, self
+            MassDeployment, self
         ).get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
-        multiple_deployment = get_object_or_404(
-            MassDeployment, id=kwargs.get('deployment'),
+        mass_deployment = get_object_or_404(
+            MassDeploymentModel, id=kwargs.get('deployment'),
             is_done=False
         )
-        self.form = MultipleDeploymentForm(self.request.POST)
+        self.form = MassDeploymentForm(self.request.POST)
         if self.form.is_valid():
             create_deployments(
                 self.form.cleaned_data['csv'],
                 self.request.user,
-                multiple_deployment
+                mass_deployment
             )
-            multiple_deployment.is_done = True
-            multiple_deployment.save()
+            mass_deployment.is_done = True
+            mass_deployment.save()
             messages.success(self.request, "Deployment initiated.")
             return HttpResponseRedirect('/')
         messages.error(self.request, "Please correct the errors.")
         return super(
-            MultipleServersDeployment, self
+            MassDeployment, self
         ).get(*args, **kwargs)

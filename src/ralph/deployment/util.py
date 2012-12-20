@@ -181,12 +181,12 @@ def _create_device(data):
 
 
 @nested_commit_on_success
-def create_deployments(data, user, multiple_deployment):
+def create_deployments(data, user, mass_deployment):
     for item in data:
         dev = _create_device(item)
         Deployment.objects.create(
             user=user, device=dev, mac=item['mac'], ip=item['ip'],
             hostname=item['hostname'], preboot=item['preboot'],
             venture=item['venture'], venture_role=item['venture_role'],
-            multiple_deployment=multiple_deployment
+            mass_deployment=mass_deployment
         )

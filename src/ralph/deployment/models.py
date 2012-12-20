@@ -163,9 +163,9 @@ class Deployment(TimeTrackable):
         default=False,
     )   # a database-level lock for deployment-related tasks
     puppet_certificate_revoked = db.BooleanField(default=False)
-    multiple_deployment = db.ForeignKey(
+    mass_deployment = db.ForeignKey(
         MassDeployment,
-        verbose_name=_("initiated by multiple deployment"), null=True,
+        verbose_name=_("initiated by mass deployment"), null=True,
         blank=True, default=None, on_delete=models.SET_NULL, editable=False
     )
 
