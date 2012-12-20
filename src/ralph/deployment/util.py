@@ -167,11 +167,12 @@ def _create_device(data):
         ethernets=ethernets, model_type=DeviceType.unknown,
         model_name='Unknown',
     )
+    dev.name = data['hostname']
     try:
         dev.parent = Device.objects.get(sn=data['rack_sn'])
-        dev.save()
     except Device.DoesNotExist:
         pass
+    dev.save()
     IPAddress.objects.create(
         address=data['management_ip'],
         device=dev,
