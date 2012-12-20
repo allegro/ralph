@@ -216,7 +216,7 @@ def _validate_preboot(preboot, row_number):
         )
 
 
-class PrepareMultipleDeploymentForm(forms.Form):
+class PrepareMassDeploymentForm(forms.Form):
     csv = forms.CharField(
         label="CSV",
         widget=forms.widgets.Textarea(attrs={'class': 'span12 csv-input'}),
@@ -288,7 +288,7 @@ def _validate_ip_address(ip, network, parsed_ip_addresses, row_number):
         )
 
 
-class MultipleDeploymentForm(forms.Form):
+class MassDeploymentForm(forms.Form):
     csv = forms.CharField(
         label="CSV",
         widget=forms.widgets.Textarea(attrs={'class': 'span12 csv-input'}),
