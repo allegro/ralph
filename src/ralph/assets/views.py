@@ -751,13 +751,14 @@ class BulkEdit(Base):
                     instance.save(user=self.request.user)
             messages.success(self.request, _("Changes saved."))
             return HttpResponseRedirect(self.request.get_full_path())
-        messages.error(self.request, _("Please correct the errors."))
         form_error = self.asset_formset.get_form_error()
         if form_error:
             messages.error(
                 self.request,
                 _("Please correct duplicated serial numbers or barcodes.")
             )
+        else:
+            messages.error(self.request, _("Please correct the errors."))
         return super(BulkEdit, self).get(*args, **kwargs)
 
 
