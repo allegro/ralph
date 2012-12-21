@@ -35,8 +35,6 @@ class SimpleDHCPManager(object):
     def update_configuration(self):
         config = self._get_configuration()
         if self._configuration_is_valid(config):
-            if not self._should_change_configuration(config):
-                return True
             if self._set_new_configuration(config):
                 return self._send_confirm()
         return False
@@ -122,27 +120,6 @@ class SimpleDHCPManager(object):
         if m:
             return m.group(1)
         return None
-
-    def _should_change_configuration(self, config):
-        if not self.dhcp_config_path or \
-           not os.path.exists(self.dhcp_config_path):
-            return True
-        try:
-            f = open(self.dhcp_config_path)
-            try:
-                current_config_header = f.readline()
-            finally:
-                f.close()
-        except IOError, e:
-            self.logger.error('Could not read current confirmation. Error '\
-                              'message: %s' % e)
-            return False
-        current_conf_date = self._get_time_from_config(current_config_header)
-        new_conf_date = self._get_time_from_config(config)
-        should_change = current_conf_date < new_conf_date
-        if not should_change:
-            self.logger.info('Configuration already up to date.')
-        return should_change
 
 
 def _get_cmd_options():
