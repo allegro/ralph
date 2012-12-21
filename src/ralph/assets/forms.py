@@ -404,11 +404,18 @@ class SearchAssetForm(Form):
     )
     invoice_no = CharField(required=False)
     order_no = CharField(required=False)
+    provider = CharField(required=False, label='Provider')
+    status = ChoiceField(
+        required=False, choices=[('', '----')] + AssetStatus(),
+        label='Status'
+    )
+    sn = CharField(required=False, label='SN')
+
     invoice_date_from = DateField(
         required=False, widget=DateWidget(attrs={
             'placeholder': 'Start YYYY-MM-DD',
             'data-collapsed': True,
-        }),
+            }),
         label="Invoice date",
     )
     invoice_date_to = DateField(
@@ -416,14 +423,65 @@ class SearchAssetForm(Form):
             'class': 'end-date-field ',
             'placeholder': 'End YYYY-MM-DD',
             'data-collapsed': True,
-        }),
+            }),
         label='')
-    provider = CharField(required=False, label='Provider')
-    status = ChoiceField(
-        required=False, choices=[('', '----')] + AssetStatus(),
-        label='Status'
+
+    request_date_from = DateField(
+        required=False, widget=DateWidget(attrs={
+            'placeholder': 'Start YYYY-MM-DD',
+            'data-collapsed': True,
+            }),
+        label="Request date",
     )
-    sn = CharField(required=False, label='SN')
+    request_date_to = DateField(
+        required=False, widget=DateWidget(attrs={
+            'class': 'end-date-field ',
+            'placeholder': 'End YYYY-MM-DD',
+            'data-collapsed': True,
+            }),
+        label='')
+    delivery_date_from = DateField(
+        required=False, widget=DateWidget(attrs={
+            'placeholder': 'Start YYYY-MM-DD',
+            'data-collapsed': True,
+            }),
+        label="Delivery date",
+    )
+    delivery_date_to = DateField(
+        required=False, widget=DateWidget(attrs={
+            'class': 'end-date-field ',
+            'placeholder': 'End YYYY-MM-DD',
+            'data-collapsed': True,
+            }),
+        label='')
+    production_use_date_from = DateField(
+        required=False, widget=DateWidget(attrs={
+            'placeholder': 'Start YYYY-MM-DD',
+            'data-collapsed': True,
+            }),
+        label="Production use date",
+    )
+    production_use_date_to = DateField(
+        required=False, widget=DateWidget(attrs={
+            'class': 'end-date-field ',
+            'placeholder': 'End YYYY-MM-DD',
+            'data-collapsed': True,
+            }),
+        label='')
+    provider_order_date_from = DateField(
+        required=False, widget=DateWidget(attrs={
+            'placeholder': 'Start YYYY-MM-DD',
+            'data-collapsed': True,
+            }),
+        label="Provider order date",
+    )
+    provider_order_date_to = DateField(
+        required=False, widget=DateWidget(attrs={
+            'class': 'end-date-field ',
+            'placeholder': 'End YYYY-MM-DD',
+            'data-collapsed': True,
+            }),
+        label='')
 
     def __init__(self, *args, **kwargs):
         # Ajax sources are different for DC/BO, use mode for distinguish

@@ -187,6 +187,45 @@ class AssetSearch(AssetsMixin, DataTableMixin):
             all_q &= Q(invoice_date__gte=invoice_date_from)
         if invoice_date_to:
             all_q &= Q(invoice_date__lte=invoice_date_to)
+
+        request_date_from = self.request.GET.get('request_date_from')
+        request_date_to = self.request.GET.get('request_date_to')
+        if request_date_from:
+            all_q &= Q(request_date__gte=request_date_from)
+        if request_date_to:
+            all_q &= Q(request_date__lte=request_date_to)
+
+        delivery_date_from = self.request.GET.get('delivery_date_from')
+        delivery_date_to = self.request.GET.get('delivery_date_to')
+        if delivery_date_from:
+            all_q &= Q(delivery_date__gte=delivery_date_from)
+        if delivery_date_to:
+            all_q &= Q(delivery_date__lte=delivery_date_to)
+
+        production_use_date_from = self.request.GET.get('production_use_date_from')
+        production_use_date_to = self.request.GET.get('production_use_date_to')
+        if delivery_date_from:
+            all_q &= Q(production_use_date__gte=production_use_date_from)
+        if delivery_date_to:
+            all_q &= Q(production_use_date__lte=production_use_date_to)
+
+        provider_order_date_from = self.request.GET.get('provider_order_date_from')
+        provider_order_date_to = self.request.GET.get('provider_order_date_to')
+        if delivery_date_from:
+            all_q &= Q(provider_order_date__gte=provider_order_date_from)
+        if delivery_date_to:
+            all_q &= Q(provider_order_date__lte=provider_order_date_to)
+
+
+
+
+
+
+
+
+
+
+
         self.paginate_query(self.get_all_items(all_q))
 
     def get_csv_header(self):
