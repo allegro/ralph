@@ -243,8 +243,7 @@ class AssetSearch(AssetsMixin, DataTableMixin):
         )
         self.handle_search_data()
         if self.export_requested():
-            return super(AssetSearch, self).get_export_response(
-                **kwargs)
+            return self.response
         return super(AssetSearch, self).get(*args, **kwargs)
 
 
