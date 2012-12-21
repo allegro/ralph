@@ -166,6 +166,7 @@ def _create_device(data):
     dev = Device.create(
         ethernets=ethernets, model_type=DeviceType.unknown,
         model_name='Unknown',
+        verified=True,
     )
     dev.name = data['hostname']
     try:
