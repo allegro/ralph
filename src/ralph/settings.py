@@ -364,7 +364,7 @@ else:
     raise ValueError, ("Unsupported settings path mode '%s'"
                        "" % SETTINGS_PATH_MODE)
 
-# search for ~/.ralph/settings.d directory for modules config files, and
+# recursive search ~/.ralph/settings.d directories for modules config files
 # and exec them in first place.
 modules_settings_files = []
 for root, dirs, files in os.walk(os.path.expanduser('~/.ralph/settings.d/')):
