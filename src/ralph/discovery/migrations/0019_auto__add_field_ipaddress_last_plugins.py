@@ -175,6 +175,7 @@ class Migration(SchemaMigration):
         },
         'discovery.datacenter': {
             'Meta': {'ordering': "(u'name',)", 'object_name': 'DataCenter'},
+            'hosts_naming_template': ('django.db.models.fields.CharField', [], {'default': "u'h<10000,19999>.dc'", 'max_length': '30'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '75', 'db_index': 'True'})
         },
