@@ -96,32 +96,6 @@ def _get_file_path(instance, filename):
     return os.path.join('assets', filename)
 
 
-class OfficeInfo(TimeTrackable, SavingUser):
-    license_key = models.CharField(max_length=255, blank=True)
-    version = models.CharField(max_length=50, blank=True)
-    attachment = models.FileField(
-        upload_to=_get_file_path, blank=True)
-    license_type = models.IntegerField(
-        choices=LicenseType(), verbose_name=_("license type"),
-        null=True, blank=True
-    )
-    date_of_last_inventory = models.DateField(
-        null=True, blank=True)
-    last_logged_user = models.CharField(max_length=100, null=True, blank=True)
-
-    def __unicode__(self):
-        return "{} - {} - {}".format(
-            self.license_key,
-            self.version,
-            self.license_type
-        )
-
-    def __init__(self, *args, **kwargs):
-        self.save_comment = None
-        self.saving_user = None
-        super(OfficeInfo, self).__init__(*args, **kwargs)
-
-
 class Asset(TimeTrackable, EditorTrackable, SavingUser, SoftDeletable):
     device_info = models.OneToOneField(
         'DeviceInfo', null=True, blank=True, on_delete=models.CASCADE
@@ -130,7 +104,7 @@ class Asset(TimeTrackable, EditorTrackable, SavingUser, SoftDeletable):
         'PartInfo', null=True, blank=True, on_delete=models.CASCADE
     )
     office_info = models.OneToOneField(
-        OfficeInfo, null=True, blank=True, on_delete=models.CASCADE
+        'OfficeInfo', null=True, blank=True, on_delete=models.CASCADE
     )
     type = models.PositiveSmallIntegerField(choices=AssetType())
     model = models.ForeignKey(AssetModel, on_delete=models.PROTECT)
@@ -248,6 +222,32 @@ class DeviceInfo(TimeTrackable, SavingUser):
         self.save_comment = None
         self.saving_user = None
         super(DeviceInfo, self).__init__(*args, **kwargs)
+
+
+class OfficeInfo(TimeTrackable, SavingUser):
+    license_key = models.CharField(max_length=255, blank=True)
+    version = models.CharField(max_length=50, blank=True)
+    attachment = models.FileField(
+        upload_to=_get_file_path, blank=True)
+    license_type = models.IntegerField(
+        choices=LicenseType(), verbose_name=_("license type"),
+        null=True, blank=True
+    )
+    date_of_last_inventory = models.DateField(
+        null=True, blank=True)
+    last_logged_user = models.CharField(max_length=100, null=True, blank=True)
+
+    def __unicode__(self):
+        return "{} - {} - {}".format(
+            self.license_key,
+            self.version,
+            self.license_type
+        )
+
+    def __init__(self, *args, **kwargs):
+        self.save_comment = None
+        self.saving_user = None
+        super(OfficeInfo, self).__init__(*args, **kwargs)
 
 
 class PartInfo(TimeTrackable, SavingUser):
