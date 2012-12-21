@@ -10,14 +10,35 @@ from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 from lck.django.common.admin import ModelAdmin
 
-from ralph.deployment.models import Deployment, Preboot, PrebootFile
+from ralph.deployment.models import (
+    Deployment, Preboot, PrebootFile, MassDeployment,
+)
+
+
+class MassDeploymentAdmin(ModelAdmin):
+    list_display = (
+        'created', 'modified', 'created_by', 'modified_by', 'is_done',
+    )
+    search_fields = (
+        'created_by__user__username', 'created_by__user__first_name',
+        'created_by__user__last_name',
+    )
+
+admin.site.register(
+    MassDeployment, MassDeploymentAdmin
+)
 
 
 class DeploymentAdmin(ModelAdmin):
-    list_display = ('device', 'mac', 'status', 'venture', 'venture_role')
+    list_display = (
+        'device', 'mac', 'status', 'venture', 'venture_role',
+        'mass_deployment',
+    )
     list_filter = ('status', 'status_lastchanged')
-    search_fields = ('device__name', 'mac', 'venture__name', 'venture__symbol',
-        'venture_role__name', 'venture_role__symbol', 'issue_key')
+    search_fields = (
+        'device__name', 'mac', 'venture__name', 'venture__symbol',
+        'venture_role__name', 'venture_role__symbol', 'issue_key',
+    )
     save_on_top = True
     related_search_fields = {
         'device': ['^name', '^model__name', '^ipaddress__hostname'],
@@ -52,8 +73,16 @@ class PrebootFileAdmin(ModelAdmin):
         return slug
     config_slug.short_description = _("details")
 
+    fieldsets = (
+        (None, {'fields': ['name', 'ftype']}),
+        (_("content").capitalize(), {
+            'fields': ['file', 'raw_config'],
+            'description': _("Fill either <b>file</b> or <b>raw config</b>."),
+        }),
+    )
     list_display = ('name', 'ftype', config_slug)
     list_filter = ('ftype',)
+    radio_fields = {'ftype': admin.HORIZONTAL}
     search_fields = ('name', 'raw_config')
     save_on_top = True
 

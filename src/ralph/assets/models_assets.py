@@ -115,10 +115,16 @@ class Asset(TimeTrackable, EditorTrackable, SavingUser, SoftDeletable):
         max_length=30, db_index=True, null=True, blank=True
     )
     order_no = models.CharField(max_length=50, null=True, blank=True)
-    invoice_date = models.DateField(default=datetime.date.today)
+    invoice_date = models.DateField(null=True, blank=True)
     sn = models.CharField(max_length=200, unique=True)
     barcode = models.CharField(
         max_length=200, null=True, blank=True, unique=True
+    )
+    price = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0
+    )
+    support_price = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
     )
     support_period = models.PositiveSmallIntegerField(
         verbose_name="support period in months")
@@ -128,13 +134,18 @@ class Asset(TimeTrackable, EditorTrackable, SavingUser, SoftDeletable):
     status = models.PositiveSmallIntegerField(
         default=AssetStatus.new.id,
         verbose_name=_("status"),
-        choices=AssetStatus()
+        choices=AssetStatus(),
     )
     remarks = models.CharField(
         verbose_name='Additional remarks',
-        max_length=1024, blank=True
+        max_length=1024,
+        blank=True,
     )
     warehouse = models.ForeignKey(Warehouse, on_delete=models.PROTECT)
+    request_date = models.DateField(null=True, blank=True)
+    delivery_date = models.DateField(null=True, blank=True)
+    production_use_date = models.DateField(null=True, blank=True)
+    provider_order_date = models.DateField(null=True, blank=True)
 
     def __unicode__(self):
         return "{} - {} - {}".format(self.model, self.sn, self.barcode)
@@ -216,8 +227,6 @@ class DeviceInfo(TimeTrackable, SavingUser):
 class OfficeInfo(TimeTrackable, SavingUser):
     license_key = models.CharField(max_length=255, blank=True)
     version = models.CharField(max_length=50, blank=True)
-    unit_price = models.DecimalField(
-        max_digits=20, decimal_places=2, default=0)
     attachment = models.FileField(
         upload_to=_get_file_path, blank=True)
     license_type = models.IntegerField(

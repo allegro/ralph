@@ -7,9 +7,16 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from ralph.util import plugin
-from ralph.discovery.models import (Device, DeviceType, DeviceModel, IPAddress, Network)
+from ralph.discovery.models import (
+    Device,
+    DeviceModel,
+    DeviceType,
+    IPAddress,
+    Network,
+)
 
-def _make_dc_rack(dc_no, rack_no):
+
+def _make_dc(dc_no):
     if dc_no is None:
         return None, None
     dev_model, created = DeviceModel.concurrent_get_or_create(
@@ -19,35 +26,21 @@ def _make_dc_rack(dc_no, rack_no):
     if created:
         dc.name = dc_no
     dc.save(update_last_seen=True)
+    return dc
 
-    if rack_no is None:
-        rack = None
-    else:
-        rack_name = 'Rack %s' % rack_no
-        dev_model, created = DeviceModel.concurrent_get_or_create(
-                name='Rack', type=DeviceType.rack.id)
-        rack, created = Device.concurrent_get_or_create(
-                sn=rack_name, model=dev_model)
-        if created:
-            rack.name = rack_name
-        rack.parent = dc
-        rack.save(update_last_seen=True)
-    return dc, rack
 
 def _connect_dc(ip, dev):
     try:
         network = Network.from_ip(ip)
-        dc_no = network.data_center.name if network.data_center else None
-        if network.rack:
-            rack_no = network.rack
-            if ',' in rack_no:
-                rack_no = rack_no.split(',', 1)[0].strip()
-        else:
-            rack_no = None
     except IndexError:
         dc_no = None
-        rack_no = None
-    dc, rack = _make_dc_rack(dc_no, rack_no)
+        rack = None
+    else:
+        dc_no = network.data_center.name if network.data_center else None
+        rack = None
+        for rack in network.racks.all()[:1]:
+            break
+    dc = _make_dc(dc_no)
     if rack:
         dev.parent = rack
     elif dev.parent == None:
@@ -66,6 +59,7 @@ def _connect_dc(ip, dev):
             dev.dc = dc_no
         dev.save()
     return '%s %s' % (dc_no, rack.name if rack else '?')
+
 
 @plugin.register(chain='postprocess', requires=['ping'])
 def position(ip, **kwargs):

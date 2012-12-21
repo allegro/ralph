@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+
+{% block sidebar1 %}{% endblock %}
+{% block bsrelbar1 %}{% endblock %}
+{% block bsrelbar2 %}{% endblock %}
+{% block sidebarsearch %}{% endblock %}
+{% set title = 'Download archives' %}
+
+{% block content %}
+    {% set releases = archived_releases %}
+    {% set archived = True %}
+    {% include 'download_include.html' %}
+{% endblock %}

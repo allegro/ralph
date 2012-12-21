@@ -1,7 +1,7 @@
 $(document).ajaxSend(function(event, xhr, settings) {
     function getCookie(name) {
         var cookieValue = null;
-        if (document.cookie && document.cookie != '') {
+        if (document.cookie && document.cookie !== '') {
             var cookies = document.cookie.split(';');
             for (var i = 0; i < cookies.length; i++) {
                 var cookie = $.trim(cookies[i]);
@@ -96,12 +96,12 @@ $(function ($) {
 
     $('form#disco-form').submit(function () {
         var $form = $(this);
-        var $console = $('#disco-console')
-        var $button = $form.find('button')
+        var $console = $('#disco-console');
+        var $button = $form.find('button');
         var interval = null;
         $form.find('button, input').addClass('disabled').attr('disabled', '');
-        $button.find('i').addClass('loading')
-        $console.addClass('loading')
+        $button.find('i').addClass('loading');
+        $console.addClass('loading');
         var request = $.ajax({
             type: 'POST',
             url: '/ui/discover/',
@@ -109,9 +109,9 @@ $(function ($) {
             timeout: 600000,
             success: function (data, textStatus, request) {
                 $form.find('button, input').removeClass('disabled').attr('disabled', null);
-                $button.find('i').removeClass('loading')
-                $console.removeClass('loading')
-            
+                $button.find('i').removeClass('loading');
+                $console.removeClass('loading');
+
                 clearInterval(interval);
                 $console.val(request.responseText).removeClass('loading');
             }
@@ -149,12 +149,7 @@ $(function ($) {
     $('select#id_venture').each(venture_changed);
 
     $('.datepicker').datepicker({format: 'yyyy-mm-dd', autoclose: true}).click(function(){
-        if ($(this).attr('name') =='start'){
-            $("input[name='end']").datepicker('hide');
-        }
-        if ($(this).attr('name') =='end'){
-            $("input[name='start']").datepicker('hide');
-        }
+        $("input[name!='" + $(this).attr('name') + "'].datepicker").datepicker('hide');
     });
 
     var parseDate = function (input, format) {
@@ -168,7 +163,7 @@ $(function ($) {
         return date;
     };
     var formatDate = function (d) {
-        var pad = function (n) { return n < 10 ? '0' + n : n };
+        var pad = function (n) { return n < 10 ? '0' + n : n; };
         return  d.getUTCFullYear() + '-' +
                 pad(d.getUTCMonth()+1) + '-' +
                 pad(d.getUTCDate());
@@ -184,7 +179,7 @@ $(function ($) {
         }
         calendar.years.push({ label: year, value: year });
         year += 1;
-    };
+    }
     ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct',
      'Nov', 'Dec'].forEach(function (label, i) {
          if (i === now.getUTCMonth()) {
@@ -197,7 +192,7 @@ $(function ($) {
     var calendar_tmpl = '<div class="btn-toolbar">' +
             '<div class="btn-group years" data-toggle="buttons-radio">' +
             '{{#years}}' +
-            '<a href="#" class="btn {{css_class}}" data-value="{{value}}">' + 
+            '<a href="#" class="btn {{css_class}}" data-value="{{value}}">' +
             '{{label}}</a>' +
             '{{/years}}' +
             '</div>' +
@@ -223,7 +218,7 @@ $(function ($) {
                 var end_date = parseDate($end.val());
                 end_date.setUTCFullYear($this.data('value'));
                 $end.val(formatDate(end_date));
-            };
+            }
         });
         $form.find('.months a').click(function (e) {
             var $this = $(this);
@@ -237,11 +232,11 @@ $(function ($) {
                 date.setUTCMonth($this.data('value'));
                 date.setUTCDate(0);
                 $end.val(formatDate(date));
-            };
+            }
         });
     });
     $('form.search-form').submit(function () {
-        var $form = $(this)
+        var $form = $(this);
         var fields = $form.find('input[value!=""],textarea,select').serialize();
         var action = $form.attr('action') || '';
         window.location = action + '?' + fields;
@@ -250,23 +245,24 @@ $(function ($) {
     $('.close').click(function () {
         if ($(this).attr('data-dismiss') == 'alert'){
             $(this).parents('.alerts').filter(':first').remove();
-        };
-    })
+        }
+    });
 
     ActiveTab = function (){
-        var hash = location.hash
-            , hashPieces = hash.split('?')
-            , activeTab = $('[href=' + hashPieces[0] + ']');
-        activeTab && activeTab.tab('show');
-    }
-    $('body').off('click.tab.data-api')
+        var hash = location.hash;
+        var hashPieces = hash.split('?');
+        var activeTab = $('[href=' + hashPieces[0] + ']');
+        if (activeTab) { activeTab.tab('show'); }
+    };
+
+    $('body').off('click.tab.data-api');
     $('body').on('click.scrolling-tabs', '[data-toggle="tab"], [data-toggle="pill"]', function (e) {
-        $(this).tab('show')
+        $(this).tab('show');
     });
     $(window).on('hashchange', function (){
-        ActiveTab()
+        ActiveTab();
     });
     $(window).load(function (){
-        ActiveTab()
+        ActiveTab();
     });
 });
