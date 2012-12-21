@@ -7,7 +7,6 @@ from __future__ import unicode_literals
 
 import re
 
-from django.db import transaction
 from django.db.models import Q
 import ipaddr
 from lck.django.common.models import MACAddressField
@@ -94,7 +93,8 @@ def get_first_free_ip(network_name, reserved_ip_addresses=[]):
     addresses_in_running_deployments = Deployment.objects.filter(
         status__in=(DeploymentStatus.open, DeploymentStatus.in_progress)
     ).values_list('ip', flat=True).order_by('ip')
-    for ip_number in range(network.min_ip + 1, network.max_ip + 1):
+    min_ip_number = network.min_ip + network.reserved
+    for ip_number in range(min_ip_number, network.max_ip + 1):
         ip_string = str(ipaddr.IPAddress(ip_number))
         if (ip_number not in addresses_in_dhcp and
             ip_number not in addresses_in_discovery and
