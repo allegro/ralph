@@ -63,7 +63,7 @@ class TestSearchForm(TestCase):
         content = self.client.get(url)
         self.assertEqual(content.status_code, 200)
 
-        rows_from_table = content.context_data['page'].object_list
+        rows_from_table = content.context_data['bob_page'].object_list
         self.assertEqual(len(rows_from_table), 2)
 
         # Test if search form find correct data
@@ -79,13 +79,13 @@ class TestSearchForm(TestCase):
         # What do Ralph when we don't insert model name? (return all asset)
         content = self.client.get('/assets/dc/search?model=')
         self.assertEqual(content.status_code, 200)
-        empty_model_rows = content.context_data['page'].object_list
+        empty_model_rows = content.context_data['bob_page'].object_list
         self.assertEqual(len(empty_model_rows), 3)
 
         # or we insert wrong model name (outside range)?
         content = self.client.get('/assets/dc/search?model=Ralph0')
         self.assertEqual(content.status_code, 200)
-        outside_range_rows = content.context_data['page'].object_list
+        outside_range_rows = content.context_data['bob_page'].object_list
         self.assertEqual(len(outside_range_rows), 0)
 
     def test_invoice_no_field(self):
@@ -95,7 +95,7 @@ class TestSearchForm(TestCase):
         content = self.client.get(url)
         self.assertEqual(content.status_code, 200)
 
-        rows_from_table = content.context_data['page'].object_list
+        rows_from_table = content.context_data['bob_page'].object_list
         self.assertEqual(len(rows_from_table), 2)
 
         # Test if search form find correct data
@@ -114,7 +114,7 @@ class TestSearchForm(TestCase):
         content = self.client.get(url)
         self.assertEqual(content.status_code, 200)
 
-        rows_from_table = content.context_data['page'].object_list
+        rows_from_table = content.context_data['bob_page'].object_list
         self.assertEqual(len(rows_from_table), 2)
 
         # Test if search form find correct data
@@ -133,7 +133,7 @@ class TestSearchForm(TestCase):
         content = self.client.get(url)
         self.assertEqual(content.status_code, 200)
 
-        rows_from_table = content.context_data['page'].object_list
+        rows_from_table = content.context_data['bob_page'].object_list
         self.assertEqual(len(rows_from_table), 1)
 
         # Test if search form find correct data
@@ -148,7 +148,7 @@ class TestSearchForm(TestCase):
         content = self.client.get(url)
         self.assertEqual(content.status_code, 200)
 
-        rows_from_table = content.context_data['page'].object_list
+        rows_from_table = content.context_data['bob_page'].object_list
         self.assertEqual(len(rows_from_table), 1)
 
         # Test if search form find correct data
@@ -164,7 +164,7 @@ class TestSearchForm(TestCase):
         content = self.client.get(url)
         self.assertEqual(content.status_code, 200)
 
-        rows_from_table = content.context_data['page'].object_list
+        rows_from_table = content.context_data['bob_page'].object_list
         self.assertEqual(len(rows_from_table), 1)
 
         # Test if search form find correct data
@@ -196,7 +196,7 @@ class TestSearchDataRangeFields(TestCase):
         content = self.client.get(url)
         self.assertEqual(content.status_code, 200)
 
-        rows_from_table = content.context_data['page'].object_list
+        rows_from_table = content.context_data['bob_page'].object_list
         self.assertEqual(len(rows_from_table), 1)
         self.assertEqual(rows_from_table[0].sn, '1234-1234-1234-1234')
 
@@ -206,7 +206,7 @@ class TestSearchDataRangeFields(TestCase):
         content = self.client.get(url)
         self.assertEqual(content.status_code, 200)
 
-        rows_from_table = content.context_data['page'].object_list
+        rows_from_table = content.context_data['bob_page'].object_list
         self.assertEqual(len(rows_from_table), 0)
 
     def test_find_more_assets_lte_gte(self):
@@ -215,7 +215,7 @@ class TestSearchDataRangeFields(TestCase):
         content = self.client.get(url)
         self.assertEqual(content.status_code, 200)
 
-        rows_from_table = content.context_data['page'].object_list
+        rows_from_table = content.context_data['bob_page'].object_list
         self.assertEqual(len(rows_from_table), 2)
 
         self.assertItemsEqual(
@@ -229,7 +229,7 @@ class TestSearchDataRangeFields(TestCase):
         content = self.client.get(url)
         self.assertEqual(content.status_code, 200)
 
-        rows_from_table = content.context_data['page'].object_list
+        rows_from_table = content.context_data['bob_page'].object_list
         self.assertEqual(len(rows_from_table), 1)
         self.assertEqual(rows_from_table[0].sn, '1234-1234-1234-1234')
 
@@ -239,5 +239,5 @@ class TestSearchDataRangeFields(TestCase):
         content = self.client.get(url)
         self.assertEqual(content.status_code, 200)
 
-        rows_from_table = content.context_data['page'].object_list
+        rows_from_table = content.context_data['bob_page'].object_list
         self.assertEqual(len(rows_from_table), 3)

@@ -61,7 +61,7 @@ class TestAdding(TestCase):
         )
 
         view = self.client.get('/assets/dc/search')
-        row_from_table = view.context_data['page'].object_list[1]
+        row_from_table = view.context_data['bob_page'].object_list[1]
 
         # Overwriting variables to use the object to test the output.
         data_in_add_form.update(
@@ -84,8 +84,6 @@ class TestAdding(TestCase):
         self.assertEqual(view.status_code, 200)
         old_fields = view.context['asset_form'].initial
         old_device_info = view.context['device_info_form'].initial
-        old_office_info = view.context['office_info_form'].initial
-
         url = '/assets/dc/edit/device/1/'
         data_in_edit_form = dict(
             type=AssetType.data_center.id,  # 1
