@@ -163,7 +163,6 @@ class Deployment(TimeTrackable):
         _("is running"),
         default=False,
     )   # a database-level lock for deployment-related tasks
-    puppet_certificate_revoked = db.BooleanField(default=False)
     mass_deployment = db.ForeignKey(
         MassDeployment,
         verbose_name=_("initiated by mass deployment"), null=True,
