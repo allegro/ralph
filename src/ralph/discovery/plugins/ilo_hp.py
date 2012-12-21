@@ -20,7 +20,8 @@ from ralph.discovery.models import (Device, Processor, Memory,
 
 
 ILO_USER, ILO_PASSWORD = settings.ILO_USER, settings.ILO_PASSWORD
-SAVE_PRIORITY = 0
+SAVE_PRIORITY = 4   # FIXME: was 0. I'm not sure why, it's for sure better
+                    # than snmp.
 
 
 def make_device(ilo, ip):
@@ -58,27 +59,27 @@ def make_components(ilo, dev):
         mem.size = size
         mem.speed = speed
         mem.label = label
-        mem.model, c = ComponentModel.concurrent_get_or_create(
-            size=mem.size, speed=mem.speed, type=ComponentType.memory.id,
-            family='', extra_hash='')
-        if c:
-            mem.model.name = 'RAM %dMiB, %dMHz' % (mem.size, mem.speed)
-            mem.model.save()
-        mem.save()
+        mem.model, c = ComponentModel.create(
+            ComponentType.memory,
+            size=mem.size,
+            speed=mem.speed,
+            priority=SAVE_PRIORITY,
+        )
+        mem.save(priority=SAVE_PRIORITY)
 
     for i, (label, speed, cores, extra, family) in enumerate(ilo.cpus):
         cpu, created = Processor.concurrent_get_or_create(device=dev,
                                                           index=i + 1)
-        family = family or ''
         cpu.label = label
-        cpu.model, c = ComponentModel.concurrent_get_or_create(
-            speed=speed, type=ComponentType.processor.id, extra=extra,
-            extra_hash=hashlib.md5(extra).hexdigest(), cores=cores,
-            family=family)
-        if c:
-            cpu.model.name = 'CPU %s %dMHz, %s-core' % (family, speed, cores)
-            cpu.model.save()
-        cpu.save()
+        cpu.model, c = ComponentModel.create(
+            ComponentType.processor,
+            speed=speed,
+            cores=cores,
+            family=family,
+            name='CPU %s %dMHz, %s-core' % (family, speed, cores),
+            priority=SAVE_PRIORITY,
+        )
+        cpu.save(priority=SAVE_PRIORITY)
 
 @nested_commit_on_success
 def _run_ilo(ip):

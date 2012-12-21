@@ -414,12 +414,15 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
         dev.save(user=user, update_last_seen=True, priority=priority)
         for eth in ethernets:
             ethernet, eth_created = Ethernet.concurrent_get_or_create(
-                device=dev, mac=eth.mac
+                mac=eth.mac,
+                defaults={
+                    'device': dev,
+                },
             )
-            if eth_created:
-                ethernet.label = eth.label or 'Autocreated'
-                if eth.speed:
-                    ethernet.speed = eth.speed
+            ethernet.device = dev
+            ethernet.label = eth.label or 'Autocreated'
+            if eth.speed:
+                ethernet.speed = eth.speed
             ethernet.save(priority=priority)
         return dev
 

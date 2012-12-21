@@ -6,7 +6,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import hashlib
 import logging
 import traceback
 
@@ -62,19 +61,15 @@ def save_processors(processors, dev):
             },
         )
         is64bit = p.get('is64bit') == 'true'
-        extra = '%s %s %s ' % (
-            p.get('manufacturer'), p.get('version'),
-            '64bit' if is64bit else '')
         name = 'CPU %s%s %s%s' % (
             '64bit ' if is64bit else '',
             cpuname, '%dMhz' % speed if speed else '',
             ' multicore' if cores > 1 else '')
         cpu.model, c = ComponentModel.create(
+            ComponentType.processor,
             cores=cores,
-            extra=extra,
             family=cpuname,
             speed=speed,
-            type=ComponentType.processor,
             name=name,
             priority=SAVE_PRIORITY,
         )
@@ -117,8 +112,8 @@ def save_storage(storage, dev):
             continue
         model_name = '{} {}MiB'.format(label, size)
         model, c = ComponentModel.create(
+            ComponentType.disk,
             size=size,
-            type=ComponentType.disk,
             family=model_name,
             priority=SAVE_PRIORITY,
         )
@@ -185,15 +180,12 @@ def save_memory(memory, dev):
         mem.size = size
         mem.label = 'RAM %dMiB' % size
         mem.speed = speed
-        family = 'Virtual' if 'Virtual' in label else ''
-        extra = '%s %dMiB %s %s' % (label, size, speed, row.get('caption'))
+        family = 'Virtual Windows' if 'Virtual' in label else 'Windows'
         mem.model, c = ComponentModel.create(
+            ComponentType.memory,
             family=family,
             size=size,
             speed=speed,
-            type=ComponentType.memory,
-            extra=extra,
-            name='RAM Windows %dMiB' % size,
             priority=SAVE_PRIORITY,
         )
         mem.save(priority=SAVE_PRIORITY)
@@ -209,12 +201,10 @@ def save_fibre_channel(fcs, dev):
         fib, created = FibreChannel.concurrent_get_or_create(device=dev,
                                                              physical_id=pid)
         fib.label = f.get('label')
-        extra = '%s %s %s %s' % (fib.label, pid, manufacturer, model)
         fib.model, c = ComponentModel.create(
-            type=ComponentType.fibre,
-            family=fib.label,
-            extra=extra,
-            name=model if model else fib.label,
+            ComponentType.fibre,
+            family=manufacturer or fib.label,
+            name=model or fib.label,
             priority=SAVE_PRIORITY,
         )
         fib.save(priority=SAVE_PRIORITY)
@@ -264,7 +254,7 @@ def save_device_data(data, remote_ip):
     dev.save(priority=SAVE_PRIORITY)
     os = data['operating_system']
     o = OperatingSystem.create(dev, os_name=os.get('label'),
-                               family='Windows')
+                               family='Windows', priority=SAVE_PRIORITY)
     o.memory = int(os['memory'])
     o.storage = int(os['storage'])
     o.cores_count = int(os['corescount'])

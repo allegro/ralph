@@ -324,22 +324,14 @@ def _save_cpu(dev, data):
             index = int(cpu['socket'].split('.')[-1])
         except (ValueError, IndexError):
             continue
-        extra = "{} family: {} speed: {} cores: {}".format(
-            cpu['model'],
-            cpu['family'],
-            cpu['speed'],
-            cpu['cores_count']
-        )
-        model, _ = ComponentModel.concurrent_get_or_create(
+        model, _ = ComponentModel.create(
+            ComponentType.processor,
             speed=cpu['speed'],
-            type=ComponentType.processor,
             family=cpu['family'],
             cores=cpu['cores_count'],
-            extra_hash=hashlib.md5(extra).hexdigest()
+            name = cpu['model'],
+            priority=SAVE_PRIORITY,
         )
-        model.extra = extra
-        model.name = cpu['model']
-        model.save(priority=SAVE_PRIORITY)
         processor, _ = Processor.concurrent_get_or_create(
             device=dev,
             index=index
@@ -356,23 +348,14 @@ def _save_cpu(dev, data):
 def _save_memory(dev, data):
     detected_memory = []
     for mem, index in zip(data, range(1, len(data) + 1)):
-        extra = "RAM {} {} {}MiB speed: {}".format(
-            mem['manufacturer'],
-            mem['model'],
-            mem['size'],
-            mem['speed']
-        )
-        name = "{} {}".format(mem['manufacturer'], mem['model'])
-        model, _ = ComponentModel.concurrent_get_or_create(
+        model, _ = ComponentModel.create(
+            ComponentType.memory,
+            size=mem['size'],
             speed=mem['speed'],
-            type=ComponentType.memory,
-            extra_hash=hashlib.md5(extra).hexdigest()
+            priority=SAVE_PRIORITY,
         )
-        model.extra = extra
-        model.name = name
-        model.save(priority=SAVE_PRIORITY)
         memory, _ = Memory.concurrent_get_or_create(index=index, device=dev)
-        memory.label = name
+        memory.label = "{} {}".format(mem['manufacturer'], mem['model'])
         memory.size = mem['size']
         memory.speed = mem['speed']
         memory.model = model
@@ -389,18 +372,17 @@ def _save_storage(dev, data):
             disk['model']
         )
         size = int(int(disk['size']) / 1024 / 1024 / 1024)
-        model, _ = ComponentModel.concurrent_get_or_create(
-            size=size, type=ComponentType.disk, speed=0, cores=0,
-            extra='', extra_hash=hashlib.md5('').hexdigest(),
-            family=model_name
+        model, _ = ComponentModel.create(
+            ComponentType.disk,
+            size=size,
+            family=model_name,
+            priority=SAVE_PRIORITY,
         )
-        model.name = model_name
-        model.save(priority=SAVE_PRIORITY)
         storage, _ = Storage.concurrent_get_or_create(
             device=dev, sn=disk['sn']
         )
         storage.model = model
-        storage.label = "{} {}MiB".format(model_name, size)
+        storage.label = model.name
         storage.size = size
         storage.save(priority=SAVE_PRIORITY)
         detected_storage.append(storage.pk)
@@ -410,14 +392,12 @@ def _save_storage(dev, data):
 def _save_fc_cards(dev, data):
     detected_fc_cards = []
     for card in data:
-        model, _ = ComponentModel.concurrent_get_or_create(
-            size=0, type=ComponentType.fibre, speed=0, cores=0,
-            extra_hash=hashlib.md5(card['label']).hexdigest(),
-            family=card['label']
+        model, _ = ComponentModel.create(
+            ComponentType.fibre,
+            family=card['label'],
+            name=card['label'],
+            priority=SAVE_PRIORITY,
         )
-        model.extra = card['label']
-        model.name = card['label']
-        model.save(priority=SAVE_PRIORITY)
         fc, _ = FibreChannel.concurrent_get_or_create(
             device=dev, physical_id=card['physical_id']
         )
