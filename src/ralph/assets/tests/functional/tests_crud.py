@@ -83,7 +83,8 @@ class TestAdding(TestCase):
         view = self.client.get('/assets/dc/edit/device/1/')
         self.assertEqual(view.status_code, 200)
         old_fields = view.context['asset_form'].initial
-        old_device_info = view.context['device_info_form'].initial
+        if view.context['device_info_form']:
+            old_device_info = view.context['device_info_form'].initial
         url = '/assets/dc/edit/device/1/'
         data_in_edit_form = dict(
             type=AssetType.data_center.id,  # 1
@@ -91,16 +92,17 @@ class TestAdding(TestCase):
             source=AssetSource.shipment.id,  # 1
             invoice_no='Invoice No2',
             order_no='Order No2',
-            invoice_date='2001-02-02',
             support_period=12,
             support_type='d2d',
             support_void_reporting=True,
             provider='Provider2',
             status=AssetStatus.in_progress.id,  # 1
             size=2,
+            invoice_date='2001-02-02',
             request_date='2001-01-02',
             delivery_date='2001-01-03',
             production_use_date='2001-01-04',
+            provider_order_date='2001-01-05',
             sn='3333-3333-3333-333',
             barcode='bc-3333-3333-333',
             warehouse=self.warehouse.id,  # 1
@@ -118,7 +120,7 @@ class TestAdding(TestCase):
         # redirect us to /assets/dc/search with target status code 200
         self.assertRedirects(
             post,
-            '/assets/dc/search',
+            '/assets/dc/edit/device/1/',
             status_code=302,
             target_status_code=200,
         )
@@ -126,7 +128,8 @@ class TestAdding(TestCase):
         new_view = self.client.get('/assets/dc/edit/device/1/')
         new_fields = new_view.context['asset_form'].initial
         new_device_info = new_view.context['device_info_form'].initial
-        new_office_info = new_view.context['office_info_form'].initial
+        if new_view.context['office_info_form']:
+            new_office_info = new_view.context['office_info_form'].initial
 
         correct_data = [
             dict(
@@ -137,6 +140,7 @@ class TestAdding(TestCase):
                 request_date='2001-01-02',
                 delivery_date='2001-01-03',
                 production_use_date='2001-01-04',
+                provider_order_date='2001-01-05',
                 support_period=12,
                 support_type='d2d',
                 provider='Provider2',
@@ -158,9 +162,12 @@ class TestAdding(TestCase):
         office = OfficeInfo.objects.filter(
             license_key='0000-0000-0000-0000'
         ).count()
-        self.assertEqual(office, 1)
-        self.assertEqual(old_office_info, {})
-        self.assertEqual(new_office_info['license_key'], '0000-0000-0000-0000')
+        if new_view.context['office_info_form']:
+            self.assertEqual(office, 1)
+            self.assertEqual(old_office_info, {})
+            self.assertEqual(
+                new_office_info['license_key'], '0000-0000-0000-0000'
+            )
 
         correct_data_office = [
             dict(
@@ -170,11 +177,12 @@ class TestAdding(TestCase):
                 last_logged_user='James Bond',
             )
         ]
-        for office in correct_data_office:
-            for key in office.keys():
-                self.assertEqual(
-                    unicode(new_office_info[key]), unicode(office[key])
-                )
+        if new_view.context['office_info_form']:
+            for office in correct_data_office:
+                for key in office.keys():
+                    self.assertEqual(
+                        unicode(new_office_info[key]), unicode(office[key])
+                    )
 
     def test_delete_asset(self):
         """todo"""
