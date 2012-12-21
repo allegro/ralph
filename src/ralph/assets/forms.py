@@ -425,8 +425,9 @@ class SearchAssetForm(Form):
         required=False, choices=[('', '----')] + AssetStatus(),
         label='Status'
     )
-    type = ChoiceField(
-        required=False, choices=[('', '----')] + AssetType(),
+    part_info = ChoiceField(
+        required=False,
+        choices=[('', '----'), ('device','Device'), ('part', 'Part')],
         label='Asset type'
     )
     sn = CharField(required=False, label='SN')
