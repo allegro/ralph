@@ -42,6 +42,11 @@ class AbstractNetwork(db.Model):
         _("gateway address"), help_text=_("Presented as string."), blank=True,
         null=True, default=None,
     )
+    reserved = db.PositiveIntegerField(
+        _("reserved"), default=10,
+        help_text=_("If you put here 10, the first ten IP addresses will be "
+                    "omitted in the automatic determine IP address.")
+    )
     remarks = db.TextField(
         _("remarks"), help_text=_("Additional information."), blank=True,
         default="",
