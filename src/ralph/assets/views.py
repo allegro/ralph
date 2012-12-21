@@ -566,11 +566,12 @@ class EditDevice(Base):
             instance=asset,
             mode=_get_mode(self.request)
         )
-        if asset.type > AssetType.BO:
+        if asset.type in AssetType.BO.choices:
             self.office_info_form = OfficeForm(instance=asset.office_info)
         else:
             self.office_info_form = None
         self.device_info_form = DeviceForm(instance=asset.device_info)
+        self.parts = Asset.obj
         return super(EditDevice, self).get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
@@ -580,7 +581,7 @@ class EditDevice(Base):
         )
         self.device_info_form = DeviceForm(self.request.POST)
 
-        if asset.type > AssetType.BO:
+        if asset.type in AssetType.BO.choices:
             self.office_info_form = OfficeForm(
                 self.request.POST, self.request.FILES)
         if all((
@@ -592,7 +593,7 @@ class EditDevice(Base):
             asset = _update_asset(
                 modifier_profile, asset, self.asset_form.cleaned_data
             )
-            if asset.type > AssetType.BO:
+            if asset.type in AssetType.BO.choices:
                 asset = _update_office_info(
                     modifier_profile.user, asset,
                     self.office_info_form.cleaned_data
