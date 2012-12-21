@@ -20,8 +20,8 @@ $(".code_field").each(function(index, el) {
     editor = ace.edit(el.id);
     var that = this;
     editor.getSelection().on('changeCursor', function(ev){
-        console.log(that.id);
-        console.log($(".code_fiel[id!=" + that.id + "]"));
+        //console.log(that.id);
+        //console.log($(".code_fiel[id!=" + that.id + "]"));
     })
 });
 </script>

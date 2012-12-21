@@ -285,7 +285,7 @@ class BaseEditAssetForm(ModelForm):
             'provider_order_date': DateWidget(),
             'remarks': Textarea(attrs={'rows': 3}),
             'support_type': Textarea(attrs={'rows': 5}),
-            'sn': CodeWidget(),
+            'sn': Textarea(attrs={'rows': 25}),
             'barcode': Textarea(attrs={'rows': 1}),
         }
     model = AutoCompleteSelectField(
@@ -317,7 +317,7 @@ class BaseEditAssetForm(ModelForm):
 
 class AddPartForm(BaseAddAssetForm):
     sn = CharField(
-        label=_("SN/SNs"), required=True, widget=CodeWidget()
+        label=_("SN/SNs"), required=True, widget=Textarea(attrs={'rows': 25}),
     )
 
     def clean_sn(self):
@@ -328,11 +328,11 @@ class AddPartForm(BaseAddAssetForm):
 
 class AddDeviceForm(BaseAddAssetForm):
     sn = CharField(
-        label=_("SN/SNs"), required=True, widget=CodeWidget(), initial='dupa'
+        label=_("SN/SNs"), required=True, widget=Textarea(attrs={'rows': 25}),
     )
     barcode = CharField(
         label=_("Barcode/Barcodes"), required=False,
-        widget=CodeWidget()
+        widget=Textarea(attrs={'rows': 25}),
     )
 
     def __init__(self, *args, **kwargs):
