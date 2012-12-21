@@ -364,6 +364,15 @@ else:
     raise ValueError, ("Unsupported settings path mode '%s'"
                        "" % SETTINGS_PATH_MODE)
 
+# search for ~/.ralph/settings.d directory for modules config files, and
+# and exec them in first place.
+modules_settings_files = []
+for root, dirs, files in os.walk(os.path.expanduser('~/.ralph/settings.d/')):
+    modules_settings_files += [os.path.join(root, f) for f in files]
+for cfg_loc in modules_settings_files:
+    execfile(cfg_loc)
+
+# now handle user config file, and defaults.
 for cfg_loc in [local_settings,
                 '~/.ralph/settings',
                 '/etc/ralph/settings']:
