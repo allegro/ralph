@@ -33,7 +33,7 @@ class TestDataDisplay(TestCase):
         self.assertEqual(get_search_page.status_code, 200)
 
         # Test if data from database are displayed in correct row.
-        first_table_row = get_search_page.context_data['page'][0]
+        first_table_row = get_search_page.context_data['bob_page'][0]
         self.assertEqual(self.asset, first_table_row)
         self.assertItemsEqual(
             [
