@@ -78,9 +78,9 @@ class BulkEditAssetForm(ModelForm):
             'type', 'model', 'device_info', 'invoice_no', 'order_no',
             'sn', 'barcode', 'price', 'support_price',
             'support_period', 'support_type', 'support_void_reporting',
-            'provider', 'source', 'status',
-            'request_date', 'delivery_date', 'invoice_date',
-            'production_use_date', 'provider_order_date',
+            'provider', 'source', 'status', 'request_date',
+            'delivery_date', 'invoice_date', 'production_use_date',
+            'provider_order_date',
         )
         widgets = {
             'request_date': DateWidget(),
@@ -410,22 +410,6 @@ class SearchAssetForm(Form):
         label='Status'
     )
     sn = CharField(required=False, label='SN')
-
-    invoice_date_from = DateField(
-        required=False, widget=DateWidget(attrs={
-            'placeholder': 'Start YYYY-MM-DD',
-            'data-collapsed': True,
-            }),
-        label="Invoice date",
-    )
-    invoice_date_to = DateField(
-        required=False, widget=DateWidget(attrs={
-            'class': 'end-date-field ',
-            'placeholder': 'End YYYY-MM-DD',
-            'data-collapsed': True,
-            }),
-        label='')
-
     request_date_from = DateField(
         required=False, widget=DateWidget(attrs={
             'placeholder': 'Start YYYY-MM-DD',
@@ -434,6 +418,20 @@ class SearchAssetForm(Form):
         label="Request date",
     )
     request_date_to = DateField(
+        required=False, widget=DateWidget(attrs={
+            'class': 'end-date-field ',
+            'placeholder': 'End YYYY-MM-DD',
+            'data-collapsed': True,
+            }),
+        label='')
+    provider_order_date_from = DateField(
+        required=False, widget=DateWidget(attrs={
+            'placeholder': 'Start YYYY-MM-DD',
+            'data-collapsed': True,
+            }),
+        label="Provider order date",
+    )
+    provider_order_date_to = DateField(
         required=False, widget=DateWidget(attrs={
             'class': 'end-date-field ',
             'placeholder': 'End YYYY-MM-DD',
@@ -454,6 +452,21 @@ class SearchAssetForm(Form):
             'data-collapsed': True,
             }),
         label='')
+    invoice_date_from = DateField(
+        required=False, widget=DateWidget(attrs={
+            'placeholder': 'Start YYYY-MM-DD',
+            'data-collapsed': True,
+            }),
+        label="Invoice date",
+    )
+    invoice_date_to = DateField(
+        required=False, widget=DateWidget(attrs={
+            'class': 'end-date-field ',
+            'placeholder': 'End YYYY-MM-DD',
+            'data-collapsed': True,
+            }),
+        label='')
+
     production_use_date_from = DateField(
         required=False, widget=DateWidget(attrs={
             'placeholder': 'Start YYYY-MM-DD',
@@ -462,20 +475,6 @@ class SearchAssetForm(Form):
         label="Production use date",
     )
     production_use_date_to = DateField(
-        required=False, widget=DateWidget(attrs={
-            'class': 'end-date-field ',
-            'placeholder': 'End YYYY-MM-DD',
-            'data-collapsed': True,
-            }),
-        label='')
-    provider_order_date_from = DateField(
-        required=False, widget=DateWidget(attrs={
-            'placeholder': 'Start YYYY-MM-DD',
-            'data-collapsed': True,
-            }),
-        label="Provider order date",
-    )
-    provider_order_date_to = DateField(
         required=False, widget=DateWidget(attrs={
             'class': 'end-date-field ',
             'placeholder': 'End YYYY-MM-DD',
