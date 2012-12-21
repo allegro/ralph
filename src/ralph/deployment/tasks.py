@@ -6,6 +6,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import traceback
+
 from ralph.util import plugin
 
 
@@ -23,8 +25,17 @@ def run_deployment(deployment):
                 break
             name = plugin.highest_priority('deployment', plugins)
             tried.add(name)
-            if plugin.run('deployment', name, deployment_id=deployment.id):
-                done.add(name)
+            try:
+                success = plugin.run(
+                    'deployment',
+                    name,
+                    deployment_id=deployment.id,
+                )
+            except:
+                traceback.print_exc()
+            else:
+                if success:
+                    done.add(name)
         deployment.done_plugins = ', '.join(done)
         deployment.save()
     finally:
