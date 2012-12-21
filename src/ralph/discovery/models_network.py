@@ -42,6 +42,11 @@ class AbstractNetwork(db.Model):
         _("gateway address"), help_text=_("Presented as string."), blank=True,
         null=True, default=None,
     )
+    reserved = db.PositiveIntegerField(
+        _("reserved"), default=10,
+        help_text=_("If you put here 10, the first ten IP addresses will be "
+                    "omitted in the automatic determine IP address.")
+    )
     remarks = db.TextField(
         _("remarks"), help_text=_("Additional information."), blank=True,
         default="",
@@ -142,6 +147,14 @@ class NetworkTerminator(Named):
 
 
 class DataCenter(Named):
+    hosts_naming_template = db.CharField(
+        max_length=30, default="h<10000,19999>.dc",
+        help_text=_(
+            "E.g. h<200,299>.dc|h<400,499>.dc will produce: h200.dc "
+            "h201.dc ... h299.dc h400.dc h401.dc"
+        )
+    )
+
     class Meta:
         verbose_name = _("data center")
         verbose_name_plural = _("data centers")
@@ -203,6 +216,7 @@ class IPAddress(LastSeen, TimeTrackable, WithConcurrentGetOrCreate):
         Network, verbose_name=_("network"), null=True, blank=True,
         default=None,
     )
+    last_plugins = db.TextField(_("last plugins"),  blank=True)
 
     class Meta:
         verbose_name = _("IP address")

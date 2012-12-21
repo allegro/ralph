@@ -316,6 +316,13 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
         super(Device, self).__init__(*args, **kwargs)
 
     def __unicode__(self):
+        if self.model and self.model.type == DeviceType.rack:
+            if (self.parent and
+                self.parent.model and
+                self.parent.model.type == DeviceType.data_center):
+                return "{}::{} ({})".format(
+                    self.parent.name, self.name, self.id,
+                )
         return "{} ({})".format(self.name, self.id)
 
     @classmethod

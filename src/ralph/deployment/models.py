@@ -16,7 +16,7 @@ from dj.choices import Choices
 from dj.choices.fields import ChoiceField
 from lck.django.common.models import (
     MACAddressField, Named, TimeTrackable,
-    WithConcurrentGetOrCreate,
+    WithConcurrentGetOrCreate, EditorTrackable,
 )
 
 from ralph.discovery.models import Device
@@ -98,6 +98,23 @@ class Preboot(Named, TimeTrackable):
         verbose_name_plural = _("preboots")
 
 
+class MassDeployment(TimeTrackable, EditorTrackable):
+    csv = db.TextField(blank=True)
+    generated_csv = db.TextField(blank=True)
+    is_done = db.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = _("mass deployment")
+        verbose_name_plural = _("mass deployments")
+        ordering = ('-created',)
+
+    def __unicode__(self):
+        return "{} - {}".format(
+            self.created.strftime("%Y-%m-%d %H:%M"),
+            self.created_by
+        )
+
+
 class Deployment(TimeTrackable):
     user = models.ForeignKey(
         'auth.User', verbose_name=_("user"), null=True,
@@ -146,7 +163,11 @@ class Deployment(TimeTrackable):
         _("is running"),
         default=False,
     )   # a database-level lock for deployment-related tasks
-    puppet_certificate_revoked = db.BooleanField(default=False)
+    mass_deployment = db.ForeignKey(
+        MassDeployment,
+        verbose_name=_("initiated by mass deployment"), null=True,
+        blank=True, default=None, on_delete=models.SET_NULL, editable=False
+    )
 
     class Meta:
         verbose_name = _("deployment")
@@ -155,8 +176,8 @@ class Deployment(TimeTrackable):
     def __unicode__(self):
         return "{} as {}/{} - {}".format(
             self.hostname,
-            self.venture.path,
-            self.venture_role.path,
+            self.venture.path if self.venture else '-',
+            self.venture_role.path if self.venture_role else '-',
             self.get_status_display(),
         )
 
