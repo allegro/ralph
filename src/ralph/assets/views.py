@@ -195,7 +195,8 @@ class AssetSearch(AssetsMixin, DataTableMixin):
                 all_q &= Q(**{date + '__gte': start})
             if end:
                 all_q &= Q(**{date + '__lte': end})
-        self.paginate_query(self.get_all_items(all_q))
+        self.data_table_query(self.get_all_items(all_q))
+
 
     def get_csv_header(self):
         header = super(AssetSearch, self).get_csv_header()
@@ -248,8 +249,7 @@ class AssetSearch(AssetsMixin, DataTableMixin):
         )
         self.handle_search_data()
         if self.export_requested():
-            return super(AssetSearch, self).get_export_response(
-                **kwargs)
+            return self.response
         return super(AssetSearch, self).get(*args, **kwargs)
 
 
