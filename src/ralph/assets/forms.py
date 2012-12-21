@@ -509,10 +509,6 @@ class SearchAssetForm(Form):
             del kwargs['mode']
         channel = 'asset_dcdevice' if mode == 'dc' else 'asset_bodevice'
         super(SearchAssetForm, self).__init__(*args, **kwargs)
-        self.fields['device'] = AutoCompleteSelectField(
-            channel,
-            required=False,
-        )
 
 
 class DeleteAssetConfirmForm(Form):
