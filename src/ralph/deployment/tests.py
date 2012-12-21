@@ -111,15 +111,23 @@ class DeploymentUtilTest(TestCase):
             ip='127.0.1.2',
             hostname='h202.temp2'
         )
-        # create temp network
+        # create temp networks
         terminator = NetworkTerminator.objects.create(name='T100')
-        net = Network.objects.create(
+        net1 = Network.objects.create(
             name='net1',
             address='127.0.1.0/24',
+            data_center=self.dc_temp1,
+            reserved=1
+        )
+        net1.terminators.add(terminator)
+        net1.save()
+        net2 = Network.objects.create(
+            name='net2',
+            address='127.0.0.0/24',
             data_center=self.dc_temp1
         )
-        net.terminators.add(terminator)
-        net.save()
+        net2.terminators.add(terminator)
+        net2.save()
 
     def test_get_nexthostname(self):
         name = get_next_free_hostname('temp1')
@@ -150,8 +158,8 @@ class DeploymentUtilTest(TestCase):
         self.assertEqual(name, 'h203.temp2')
 
     def test_get_firstfreeip(self):
-        ip = get_first_free_ip('net1')
-        self.assertEqual(ip, '127.0.1.1')
+        ip = get_first_free_ip('net2')
+        self.assertEqual(ip, '127.0.0.10')  # first ten addresses are reserved
 
         Record.objects.create(
             domain=self.domain_temp1,
@@ -176,7 +184,8 @@ class DeploymentUtilTest(TestCase):
         data = {
             'mac': '18:03:73:b1:85:93',
             'rack_sn': 'rack_sn_123_321_1',
-            'management_ip': '10.20.10.1'
+            'management_ip': '10.20.10.1',
+            'hostname': 'test123.dc',
         }
         _create_device(data)
         ethernet = Ethernet.objects.get(mac='18:03:73:b1:85:93')
