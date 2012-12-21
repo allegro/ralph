@@ -37,7 +37,7 @@ class DeploymentAdmin(ModelAdmin):
     list_filter = ('status', 'status_lastchanged')
     search_fields = (
         'device__name', 'mac', 'venture__name', 'venture__symbol',
-        'venture_role__name', 'venture_role__symbol', 'issue_key',
+        'venture_role__name',
     )
     save_on_top = True
     related_search_fields = {
