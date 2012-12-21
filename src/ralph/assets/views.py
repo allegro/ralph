@@ -422,6 +422,7 @@ def _create_part(creator_profile, asset_data, part_info_data, sn):
         **asset_data
     )
     asset.save(user=creator_profile.user)
+    return asset.id
 
 
 class AddPart(Base):
@@ -456,12 +457,25 @@ class AddPart(Base):
             asset_data['barcode'] = None
             serial_numbers = self.asset_form.cleaned_data['sn']
             del asset_data['sn']
+            ids = []
             for sn in serial_numbers:
-                _create_part(
-                    creator_profile, asset_data,
-                    self.part_info_form.cleaned_data, sn
+                ids.append(
+                    _create_part(
+                        creator_profile, asset_data,
+                        self.part_info_form.cleaned_data, sn
+                    )
                 )
             messages.success(self.request, _("Assets saved."))
+            cat = self.request.path.split('/')[2]
+            if len(ids) == 1:
+                return HttpResponseRedirect(
+                    '/assets/%s/edit/part/%s/' % (cat, ids[0])
+                )
+            else:
+                return HttpResponseRedirect(
+                    '/assets/%s/bulkedit/?select=%s' % (
+                        cat, '&select='.join(["%s" % id for id in ids]))
+                )
             return HttpResponseRedirect(_get_return_link(self.request))
         else:
             messages.error(self.request, _("Please correct the errors."))
@@ -588,7 +602,11 @@ class EditDevice(Base):
                 self.device_info_form.cleaned_data
             )
             asset.save(user=self.request.user)
-            return HttpResponseRedirect(_get_return_link(self.request))
+            messages.success(self.request, _("Assets edited."))
+            cat = self.request.path.split('/')[2]
+            return HttpResponseRedirect(
+                '/assets/%s/edit/device/%s/' % (cat, asset.id)
+            )
         else:
             messages.error(self.request, _("Please correct the errors."))
         return super(EditDevice, self).get(*args, **kwargs)
@@ -662,7 +680,11 @@ class EditPart(Base):
                 self.part_info_form.cleaned_data
             )
             asset.save(user=self.request.user)
-            return HttpResponseRedirect(_get_return_link(self.request))
+            messages.success(self.request, _("Part of asset was edited."))
+            cat = self.request.path.split('/')[2]
+            return HttpResponseRedirect(
+                '/assets/%s/edit/part/%s/' % (cat, asset.id)
+            )
         else:
             messages.error(self.request, _("Please correct the errors."))
         return super(EditPart, self).get(*args, **kwargs)
