@@ -102,6 +102,13 @@ def reset_dhcp(ip, mac):
     entry.save()
 
 
+def _get_first_rev(ips):
+    for ip in ips:
+        for rev in get_revdns_records(ip):
+            return rev.content
+    return ips[0] if ips else ''
+
+
 def generate_dhcp_config(dc=None):
     """Generate host DHCP configuration. If `dc` is provided, only yield hosts
     with addresses from networks of the specified DC.
@@ -109,32 +116,30 @@ def generate_dhcp_config(dc=None):
     If given, `dc` must be of type DataCenter.
     """
     template = loader.get_template('dnsedit/dhcp.conf')
-    try:
-        last = DHCPEntry.objects.order_by('-modified')[0]
+    last_modified_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    for last in  DHCPEntry.objects.order_by('-modified'):
         last_modified_date = last.modified.strftime('%Y-%m-%d %H:%M:%S')
-    except IndexError:
-        last_modified_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     if dc:
         nets = {ipaddr.IPNetwork(net.address) for net in dc.network_set.all()}
-        def add_if_valid(ip, container):
-            ip_address = ipaddr.IPAddress(ip)
-            for net in nets:
-                if ip_address in net:
-                    container.append(ip)
-                    break
+        def filter_ips(ips):
+            for ip in ips:
+                ip_address = ipaddr.IPAddress(ip)
+                for net in nets:
+                    if ip_address in net:
+                        yield ip
+                        break
     else:
-        def add_if_valid(ip, container):
-            container.append(ip)
+        def filter_ips(ips):
+            return ips
     def generate_entries():
         for macaddr, in DHCPEntry.objects.values_list('mac').distinct():
-            ips = []
-            for ip, in DHCPEntry.objects.filter(mac=macaddr).values_list('ip'):
-                add_if_valid(ip, ips)
+            ips = list(filter_ips(
+                (ip,) for ip in
+                DHCPEntry.objects.filter(mac=macaddr).values_list('ip')
+            ))
             if not ips:
                 continue
-            rev = get_revdns_records(ips[0])   # FIXME: what makes the first
-                                               # address special?
-            name = rev[0].content.rstrip('.') if rev.exists() else ips[0]
+            name = _get_first_rev(ips)
             address = ', '.join(ips)
             mac = ':'.join('%s%s' % c for c in zip(macaddr[::2],
                                                    macaddr[1::2])).upper()
