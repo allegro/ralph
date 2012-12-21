@@ -120,17 +120,20 @@ class DataTableColumnAssets(DataTableColumn):
     :param export - set when the column is to be exported
     """
 
-    def __init__(self, header_name, **kwargs):
+    def __init__(self, header_name, foreign_field_name=None,
+                 sort_expression=None, export=None, **kwargs):
         super(DataTableColumnAssets, self).__init__(header_name, **kwargs)
-        self.foreign_field_name = kwargs.get('foreign_field_name')
-        self.sort_expression = kwargs.get('sort_expression')
-        self.export = kwargs.get('export')
+        self.foreign_field_name = foreign_field_name
+        self.sort_expression = sort_expression
+        self.export = export
 
 
 class AssetSearch(AssetsMixin, DataTableMixin):
     """The main-screen search form for all type of assets."""
-    ROWS_PER_PAGE = 15
-    FILE_NAME = 'ralph.csv'
+    rows_per_page = 15
+    csv_file_name = 'ralph.csv'
+    sort_variable_name = 'sort'
+    export_variable_name = 'export'
     _ = DataTableColumnAssets
     columns = [
         _('Dropdown', selectable=True, bob_tag=True),
@@ -144,7 +147,7 @@ class AssetSearch(AssetsMixin, DataTableMixin):
           bob_tag=True, export=True),
         _('Order no.', field='order_no', sort_expression='order_no',
           bob_tag=True, export=True),
-        _('Status', field='status', choice=True, sort_expression='status',
+        _('Status', field='status', sort_expression='status',
           bob_tag=True, export=True),
         _('Warehouse', field='warehouse', sort_expression='warehouse',
           bob_tag=True, export=True),
@@ -157,12 +160,12 @@ class AssetSearch(AssetsMixin, DataTableMixin):
           foreign_field_name='part_info', export=True),
         _('Provider', field='provider', export=True),
         _('Remarks', field='remarks', export=True),
-        _('Source', field='source', choice=True, export=True),
+        _('Source', field='source', export=True),
         _('Support peroid', field='support_peroid', export=True),
         _('Support type', field='support_type', export=True),
         _('Support void_reporting', field='support_void_reporting',
           export=True),
-        _('Type', field='type', choice=True, export=True),
+        _('Type', field='type', export=True),
     ]
 
     def handle_search_data(self):
@@ -183,7 +186,7 @@ class AssetSearch(AssetsMixin, DataTableMixin):
         # now fields within ranges.
         search_date_fields = [
             'invoice_date', 'request_date', 'delivery_date',
-            'production_use_date', 'provider_order_date'
+            'production_use_date', 'provider_order_date',
         ]
         for date in search_date_fields:
             start = self.request.GET.get(date + '_from')
@@ -198,23 +201,22 @@ class AssetSearch(AssetsMixin, DataTableMixin):
         header = super(AssetSearch, self).get_csv_header()
         return ['type'] + header
 
-    def get_csv_rows(self, queryset, type):
+    def get_csv_rows(self, queryset, type, model):
         data = [self.get_csv_header()]
         for asset in queryset:
             row = ['part', ] if asset.part_info else ['device', ]
             for item in self.columns:
                 field = item.field
                 if field:
-                    choice = item.choice
                     nested_field_name = item.foreign_field_name
                     if nested_field_name == type:
                         cell = self.get_cell(
-                            getattr(asset, type), field, choice
+                            getattr(asset, type), field, model
                         )
                     elif nested_field_name == 'part_info':
-                        cell = self.get_cell(asset.part_info, field, choice)
+                        cell = self.get_cell(asset.part_info, field, PartInfo)
                     else:
-                        cell = self.get_cell(asset, field, choice)
+                        cell = self.get_cell(asset, field, Asset)
                     row.append(unicode(cell))
             data.append(row)
         return data
@@ -235,6 +237,8 @@ class AssetSearch(AssetsMixin, DataTableMixin):
             'header': self.header,
             'sort': self.sort,
             'columns': self.columns,
+            'sort_variable_name': self.sort_variable_name,
+            'export_variable_name': self.export_variable_name,
         })
         return ret
 
@@ -262,7 +266,7 @@ class BackOfficeSearch(BackOfficeMixin, AssetSearch):
         _('License key', field='license_key',
           foreign_field_name='office_info', export=True),
         _('License type', field='license_type',
-          foreign_field_name='office_info', choice=True, export=True),
+          foreign_field_name='office_info', export=True),
         _('Unit price', field='unit_price',
           foreign_field_name='office_info', export=True),
         _('Version', field='version',
@@ -277,7 +281,7 @@ class BackOfficeSearch(BackOfficeMixin, AssetSearch):
 
     def get_csv_data(self, queryset):
         data = super(BackOfficeSearch, self).get_csv_rows(
-            queryset, 'office_info'
+            queryset, type='office_info', model=OfficeInfo
         )
         return data
 
@@ -304,7 +308,7 @@ class DataCenterSearch(DataCenterMixin, AssetSearch):
 
     def get_csv_data(self, queryset):
         data = super(DataCenterSearch, self).get_csv_rows(
-            queryset, 'device_info'
+            queryset, type='device_info', model=DeviceInfo
         )
         return data
 
