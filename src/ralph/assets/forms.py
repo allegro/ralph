@@ -229,9 +229,11 @@ class BaseAddAssetForm(ModelForm):
     class Meta:
         model = Asset
         fields = (
-            'type', 'model', 'warehouse', 'invoice_no', 'order_no', 'price',
-            'support_period', 'support_type', 'support_void_reporting',
-            'provider', 'status', 'remarks', 'request_date',
+            'sn', 'type', 'model', 'status', 'warehouse', 'invoice_no',
+            'order_no', 'price',
+            'support_price',
+            'support_type', 'support_period', 'support_void_reporting',
+            'provider', 'remarks', 'request_date',
             'provider_order_date', 'delivery_date', 'invoice_date',
             'production_use_date',
         )
@@ -272,9 +274,11 @@ class BaseEditAssetForm(ModelForm):
     class Meta:
         model = Asset
         fields = (
-            'type', 'model', 'invoice_no', 'order_no', 'support_period',
-            'support_type', 'support_void_reporting', 'provider', 'status',
-            'remarks', 'sn', 'barcode', 'warehouse', 'request_date',
+            'sn','type', 'model', 'status', 'warehouse', 'invoice_no',
+            'order_no',
+            'price', 'support_price', 'support_type', 'support_period',
+            'support_void_reporting', 'provider',
+            'remarks', 'sn', 'barcode', 'request_date',
             'provider_order_date', 'delivery_date', 'invoice_date',
             'production_use_date',
 
