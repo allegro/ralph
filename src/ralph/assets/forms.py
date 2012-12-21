@@ -410,6 +410,10 @@ class SearchAssetForm(Form):
         required=False, choices=[('', '----')] + AssetStatus(),
         label='Status'
     )
+    type = ChoiceField(
+        required=False, choices=[('', '----')] + AssetType(),
+        label='Asset type'
+    )
     sn = CharField(required=False, label='SN')
     request_date_from = DateField(
         required=False, widget=DateWidget(attrs={
