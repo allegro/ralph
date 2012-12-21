@@ -5,10 +5,19 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from django.test import TestCase
+from powerdns.models import Domain, Record
 
-from ralph.discovery.models import Device, DeviceType, DeviceModel
+from ralph.discovery.models import (
+    Device, DeviceType, DeviceModel, DataCenter, EthernetSpeed, Network,
+    NetworkTerminator, IPAddress, Ethernet,
+)
 from ralph.business.models import Venture, VentureRole
 from ralph.deployment.models import Deployment
+from ralph.deployment.util import (
+    get_next_free_hostname, get_first_free_ip, _create_device
+)
+from ralph.dnsedit.models import DHCPEntry
+from ralph.util import Eth
 
 
 class DeploymentTest(TestCase):
@@ -69,3 +78,119 @@ class DeploymentTest(TestCase):
         dm.save()
         return dm
 
+
+class DeploymentUtilTest(TestCase):
+    def setUp(self):
+        # create data centers
+        self.dc_temp1 = DataCenter.objects.create(
+            name='temp1',
+            hosts_naming_template='h<100,199>.temp1|h<300,399>.temp1'
+        )
+        self.dc_temp2 = DataCenter.objects.create(
+            name='temp2',
+            hosts_naming_template='h<200,299>.temp2'
+        )
+        # create domains
+        self.domain_temp1 = Domain.objects.create(name='temp1')
+        self.domain_temp2 = Domain.objects.create(name='temp2')
+        # create temp deployment
+        dev = Device.create(
+            ethernets=[Eth(
+                'SomeEthLabel', 'aa11cc2266bb', EthernetSpeed.unknown
+            )],
+            model_type=DeviceType.unknown,
+            model_name='Unknown'
+        )
+        IPAddress.objects.create(
+            address='127.0.1.4',
+            device=dev
+        )
+        Deployment.objects.create(
+            device=dev,
+            mac='aa11cc2266bb',
+            ip='127.0.1.2',
+            hostname='h202.temp2'
+        )
+        # create temp networks
+        terminator = NetworkTerminator.objects.create(name='T100')
+        net1 = Network.objects.create(
+            name='net1',
+            address='127.0.1.0/24',
+            data_center=self.dc_temp1,
+            reserved=1
+        )
+        net1.terminators.add(terminator)
+        net1.save()
+        net2 = Network.objects.create(
+            name='net2',
+            address='127.0.0.0/24',
+            data_center=self.dc_temp1
+        )
+        net2.terminators.add(terminator)
+        net2.save()
+
+    def test_get_nexthostname(self):
+        name = get_next_free_hostname('temp1')
+        self.assertEqual(name, 'h100.temp1')
+        name = get_next_free_hostname('temp2')
+        self.assertEqual(name, 'h200.temp2')
+
+        Record.objects.create(
+            domain=self.domain_temp1,
+            name='h103.temp1',
+            content='127.0.1.2',
+            type='A'
+        )
+        name = get_next_free_hostname('temp1')
+        self.assertEqual(name, 'h104.temp1')
+        Record.objects.create(
+            domain=self.domain_temp1,
+            name='h199.temp1',
+            content='127.0.1.3',
+            type='A'
+        )
+        name = get_next_free_hostname('temp1')
+        self.assertEqual(name, 'h300.temp1')
+
+        name = get_next_free_hostname(
+            'temp2', ['h200.temp2', 'h201.temp2'],
+        )
+        self.assertEqual(name, 'h203.temp2')
+
+    def test_get_firstfreeip(self):
+        ip = get_first_free_ip('net2')
+        self.assertEqual(ip, '127.0.0.10')  # first ten addresses are reserved
+
+        Record.objects.create(
+            domain=self.domain_temp1,
+            name='host123.temp1',
+            content='127.0.1.3',
+            type='A'
+        )
+        DHCPEntry.objects.create(
+            mac='aa:43:c2:11:22:33',
+            ip='127.0.1.5'
+        )
+        ip = get_first_free_ip('net1', ['127.0.1.1'])
+        # 127.0.1.1 - reserved
+        # 127.0.1.2 - deployment
+        # 127.0.1.3 - dns
+        # 127.0.1.4 - discovery
+        # 127.0.1.5 - dhcp
+        # 127.0.1.6 - should be free
+        self.assertEqual(ip, '127.0.1.6')
+
+    def test_create_device(self):
+        data = {
+            'mac': '18:03:73:b1:85:93',
+            'rack_sn': 'rack_sn_123_321_1',
+            'management_ip': '10.20.10.1',
+            'hostname': 'test123.dc',
+        }
+        _create_device(data)
+        ethernet = Ethernet.objects.get(mac='18:03:73:b1:85:93')
+        self.assertEqual(ethernet.label, 'DEPLOYMENT MAC')
+        self.assertEqual(ethernet.device.model.type, DeviceType.unknown)
+        ip_address = IPAddress.objects.get(device=ethernet.device)
+        self.assertEqual(ip_address.address, '10.20.10.1')
+        self.assertTrue(ip_address.is_management)
