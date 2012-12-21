@@ -171,14 +171,19 @@ class AssetSearch(AssetsMixin, DataTableMixin):
     def handle_search_data(self):
         search_fields = [
             'model', 'invoice_no', 'order_no',
-            'provider', 'status', 'sn', 'type',
+            'provider', 'status', 'sn', 'part_info'
         ]
         # handle simple 'equals' search fields at once.
         all_q = Q()
         for field in search_fields:
             field_value = self.request.GET.get(field)
             if field_value:
-                if field == 'model':
+                if field == 'part_info':
+                    if field_value == 'device':
+                        all_q &= Q(part_info__isnull=True)
+                    elif field_value == 'part':
+                        all_q &= Q(part_info__gte=0)
+                elif field == 'model':
                     all_q &= Q(model__name__startswith=field_value)
                 else:
                     q = Q(**{field: field_value})
