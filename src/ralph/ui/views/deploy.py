@@ -169,6 +169,7 @@ class MassDeployment(Base):
                 self.request.user,
                 mass_deployment
             )
+            mass_deployment.generated_csv = self.form.data['csv'].strip()
             mass_deployment.is_done = True
             mass_deployment.save()
             messages.success(self.request, "Deployment initiated.")
