@@ -76,17 +76,18 @@ class BulkEditAssetForm(ModelForm):
         model = Asset
         fields = (
             'type', 'model', 'device_info', 'invoice_no', 'order_no',
-            'request_date', 'delivery_date', 'invoice_date',
-            'production_use_date', 'provider_order_date',
-            'provider_order_date', 'sn', 'barcode', 'price', 'support_price',
+            'sn', 'barcode', 'price', 'support_price',
             'support_period', 'support_type', 'support_void_reporting',
             'provider', 'source', 'status',
+            'request_date', 'delivery_date', 'invoice_date',
+            'production_use_date', 'provider_order_date',
         )
         widgets = {
-            'invoice_date': DateWidget(attrs={
-            'placeholder': 'Start YYYY-MM-DD',
-            'data-collapsed': True,
-            }),
+            'request_date': DateWidget(),
+            'delivery_date': DateWidget(),
+            'invoice_date': DateWidget(),
+            'production_use_date': DateWidget(),
+            'provider_order_date': DateWidget(),
             'device_info': HiddenSelectWidget(),
         }
     barcode = BarcodeField(max_length=200, required=False)
