@@ -99,7 +99,8 @@ class Preboot(Named, TimeTrackable):
 
 
 class MassDeployment(TimeTrackable, EditorTrackable):
-    csv = db.TextField()
+    csv = db.TextField(blank=True)
+    generated_csv = db.TextField(blank=True)
     is_done = db.BooleanField(default=False)
 
     class Meta:
