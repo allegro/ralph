@@ -19,6 +19,12 @@
       border-radius: 3px;
       display: none;
     }
+    .overflow-x {
+        overflow-x: scroll;
+    }
+    .scrollable-table {
+        min-width: 2000px;
+    }
   </style>
 {% endblock %}
 
@@ -116,29 +122,29 @@
 <form action="" method="POST" class="form form-inline">
   {% csrf_token %}
   {{ formset.management_form }}
-  <div class="row">
-      <table class="table table-striped table-bordered table-condensed">
+  <div class="row overflow-x">
+      <table class="table table-striped table-bordered table-condensed scrollable-table">
       <thead><tr>
         <th></th>
         <th>Type</th>
         <th>Model</th>
         <th>Invoice Number</th>
         <th>Order Number</th>
+        <th>SN</th>
+        <th>Barcode</th>
+        <th>Price</th>
+        <th>Support price</th>
+        <th>Support period</th>
+        <th>Support type</th>
+        <th>Support void reporting</th>
+        <th>Provider</th>
+        <th>Source</th>
+        <th>Status</th>
         <th>Request date</th>
         <th>Delivery date</th>
         <th>Invoice date</th>
         <th>Production use date</th>
         <th>Provider order date</th>
-        <th>SN</th>
-        <th>Barcode</th>
-        <th>Price</th>
-        <th>Support price</th>
-        <th width="20">Support period</th>
-        <th>Support type</th>
-        <th width="20">Support void reporting</th>
-        <th>Provider</th>
-        <th>Source</th>
-        <th>Status</th>
       </tr></thead>
       <tbody>{% for form in formset %}
         <tr>

@@ -181,12 +181,17 @@ class AssetSearch(AssetsMixin, DataTableMixin):
                     q = Q(**{field: field_value})
                     all_q = all_q & q
         # now fields within ranges.
-        invoice_date_from = self.request.GET.get('invoice_date_from')
-        invoice_date_to = self.request.GET.get('invoice_date_to')
-        if invoice_date_from:
-            all_q &= Q(invoice_date__gte=invoice_date_from)
-        if invoice_date_to:
-            all_q &= Q(invoice_date__lte=invoice_date_to)
+        search_date_fields = [
+            'invoice_date', 'request_date', 'delivery_date',
+            'production_use_date', 'provider_order_date'
+        ]
+        for date in search_date_fields:
+            start = self.request.GET.get(date + '_from')
+            end = self.request.GET.get(date + '_to')
+            if start:
+                all_q &= Q(**{date + '__gte': start})
+            if end:
+                all_q &= Q(**{date + '__lte': end})
         self.paginate_query(self.get_all_items(all_q))
 
     def get_csv_header(self):
