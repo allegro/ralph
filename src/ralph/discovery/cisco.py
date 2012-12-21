@@ -53,22 +53,14 @@ def cisco_type(pid):
     return comp_type
 
 def cisco_component(dev, inv):
-    extra = '' # '\n'.join('%s: %s' % i for i in inv.iteritems())
     comp_type = cisco_type(inv['pid'])
     name = inv['descr']
     if not name.lower().startswith('cisco'):
         name = 'Cisco %s' % name
-    model, created = ComponentModel.concurrent_get_or_create(
-        type=comp_type.id,
-        size=0,
-        speed=0,
-        cores=0,
+    model, created = ComponentModel.create(
+        comp_type,
         family=inv['pid'],
-        extra_hash=hashlib.md5(extra).hexdigest(),
-        defaults={
-            'extra': extra,
-            'name': name[:50],
-        },
+        name=name[:50],
     )
     if model.name != name[:50]:
         # FIXME: doesn't this cause name race conditions?

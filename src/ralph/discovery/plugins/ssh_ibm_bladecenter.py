@@ -117,7 +117,6 @@ def _component(model_type, pairs, parent, raw):
     if not sn:
         raise DeviceError('No serial no.')
     name = pairs.get('Name') or pairs.get('Product Name') or model_name
-    extra = model_name
     if 'Management' in model_name:
         model_type = ComponentType.management
     elif 'Fibre Channel' in model_name:
@@ -131,11 +130,12 @@ def _component(model_type, pairs, parent, raw):
         model_type = ComponentType.cooling
     elif 'Fan' in model_name:
         model_type = ComponentType.cooling
-    model, mcreated = ComponentModel.concurrent_get_or_create(
-            type=model_type.id,
-            extra_hash=hashlib.md5(extra).hexdigest(), extra=extra)
-    model.name = model_name
-    model.save(priority=SAVE_PRIORITY)
+    model, mcreated = ComponentModel.create(
+        model_type,
+        family=model_name,
+        name=model_name,
+        priority=SAVE_PRIORITY,
+    )
     component, created = GenericComponent.concurrent_get_or_create(device=parent,
             sn=sn)
     component.model = model
@@ -261,17 +261,14 @@ def _add_dev_cpu(pairs, parent, raw, counts, dev_id):
         family = cpu.label[len('Intel '):]
     speed = int(float(pairs['Speed'].replace('GHz', '')) * 1000)
     cores = int(pairs['Processor cores'])
-    extra = '\n'.join('%s: %s' % (k, v) for (k, v) in sorted(pairs.iteritems()) if
-        v not in ('Not Available', '', None, 'Not Available (Not Available)') and
-        k not in ('Processor cores', 'Processor family',
-                  'Speed', 'system>', 'Mach type/model'))
-    cpu.model, c = ComponentModel.concurrent_get_or_create(
-        size=cores,
-        cores=cores, speed=speed, type=ComponentType.processor.id,
-        extra_hash=hashlib.md5(extra).hexdigest(), extra=extra,
-        family=family)
-    cpu.model.name = 'CPU %s %d MHz, %s-core' % (family, speed, cores)
-    cpu.model.save(priority=SAVE_PRIORITY)
+    cpu.model, c = ComponentModel.create(
+        ComponentType.processor,
+        speed=speed,
+        cores=cores,
+        name='CPU %s %d MHz, %s-core' % (family, speed, cores),
+        family=family,
+        priority=SAVE_PRIORITY,
+    )
     cpu.save(priority=SAVE_PRIORITY)
 
 def _add_dev_memory(pairs, parent, raw, counts, dev_id):
@@ -290,15 +287,15 @@ def _add_dev_memory(pairs, parent, raw, counts, dev_id):
     except ValueError:
         index = counts.mem
     mem, created = Memory.concurrent_get_or_create(device=parent, index=index)
-    family = pairs.get('Memory type', '')
     size = int(pairs['Size'].replace('GB', '')) * 1024
     speed = int(pairs.get('Speed', '0').replace('MHz', ''))
     mem.label = pairs.get('Mach type/model', '')
-    mem.model, c = ComponentModel.concurrent_get_or_create(
-        family=family, size=size, speed=speed, type=ComponentType.memory.id,
-        extra_hash='')
-    mem.model.name = 'RAM %s %dMiB %dMHz' % (family, size, speed)
-    mem.model.save(priority=SAVE_PRIORITY)
+    mem.model, c = ComponentModel.create(
+        ComponentType.memory,
+        size=size,
+        speed=speed,
+        priority=SAVE_PRIORITY,
+    )
     mem.save(priority=SAVE_PRIORITY)
 
 

@@ -6,7 +6,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import hashlib
 import re
 
 from ralph.util import units, parse
@@ -144,23 +143,12 @@ def handle_smbios(dev, smbios, is_virtual=False, priority=0):
         if not manufacturer.startswith('Manufacturer'):
             mem.label = manufacturer + ' ' + mem.label
         family = 'Virtual' if is_virtual else ''
-        name = 'RAM %dMiB' % mem.size
-        if family:
-            name = '%s %s' % (family, name)
-        extra = ''
-        mem.model, c = ComponentModel.concurrent_get_or_create(
+        mem.model, c = ComponentModel.create(
+            ComponentType.memory,
             size=mem.size,
-            speed=0,
-            cores=0,
-            type=ComponentType.memory.id,
             family=family,
-            extra_hash=hashlib.md5(extra).hexdigest(),
-            defaults={
-                'name': name,
-                'extra': extra,
-            },
+            priority=priority,
         )
-        mem.save(priority=priority)
     # CPUs
     detected_cpus = {}
     for cpu in smbios.get('PROCESSOR', ()):
@@ -184,13 +172,13 @@ def handle_smbios(dev, smbios, is_virtual=False, priority=0):
             except ValueError:
                 continue
         index = reduce(lambda x, y: x * y, index_parts)
-        extra = "CPUID: {}".format(cpu['CPUID'])
-        model, c = ComponentModel.concurrent_get_or_create(
-            speed=speed, type=ComponentType.processor.id, extra=extra,
-            extra_hash=hashlib.md5(extra).hexdigest(), family=family,
-            cores=0)
-        model.name = " ".join(cpu.get('Version', family).split())
-        model.save(priority=priority)
+        model, c = ComponentModel.create(
+            ComponentType.processor,
+            family=family,
+            speed=speed,
+            name=" ".join(cpu.get('Version', family).split()),
+            priority=priority,
+        )
         detected_cpus[index] = label, model
     for cpu in dev.processor_set.all():
         label, model = detected_cpus.get(cpu.index, (None, None))
@@ -280,16 +268,13 @@ def handle_smartctl(dev, disks, priority=0):
             user_capacity='unknown',
         )
         disk_default.update(disk)
-        extra = """Model: {vendor} {product}
-Firmware Revision: {revision}
-Interface: {transport_protocol}
-Size: {user_capacity}
-""".format(**disk_default)
-        stor.model, c = ComponentModel.concurrent_get_or_create(
-            size=stor.size, speed=stor.speed, type=ComponentType.disk.id,
-            family='', extra_hash=hashlib.md5(extra).hexdigest(), extra=extra)
-        stor.model.name = '{} {}MiB'.format(stor.label, stor.size)
-        stor.model.save(priority=priority)
+        stor.model, c = ComponentModel.create(
+            ComponentType.disk,
+            size=stor.size,
+            speed=stor.speed,
+            family=stor.label,
+            priority=priority,
+        )
         stor.save(priority=priority)
 
 
@@ -343,16 +328,13 @@ def handle_megaraid(dev, disks, priority=0):
             coerced_size='unknown',
         )
         disk_default.update(disk)
-        extra = """Model: {vendor} {product}
-Firmware Revision: {device_firmware_level}
-Interface: {pd_type}
-Size: {coerced_size}
-""".format(**disk_default)
-        stor.model, c = ComponentModel.concurrent_get_or_create(
-            size=stor.size, speed=stor.speed, type=ComponentType.disk.id,
-            family='', extra_hash=hashlib.md5(extra).hexdigest(), extra=extra)
-        stor.model.name = '{} {}MiB'.format(stor.label, stor.size)
-        stor.model.save(priority=priority)
+        stor.model, c = ComponentModel.create(
+            ComponentType.disk,
+            size=stor.size,
+            speed=stor.speed,
+            family=stor.label,
+            priority=priority,
+        )
         stor.save(priority=priority)
 
 
@@ -377,17 +359,13 @@ def handle_hpacu(dev, disks, priority=0):
             status='unknown',
         )
         disk_default.update(disk)
-        extra = """Model: {model}
-Firmware Revision: {firmware_revision}
-Interface: {interface_type}
-Size: {size}
-Rotational Speed: {rotational_speed}
-Status: {status}""".format(**disk_default)
-        stor.model, c = ComponentModel.concurrent_get_or_create(
-            size=stor.size, speed=stor.speed, type=ComponentType.disk.id,
-            family='', extra_hash=hashlib.md5(extra).hexdigest(), extra=extra)
-        stor.model.name = '{} {}MiB'.format(stor.label, stor.size)
-        stor.model.save(priority=priority)
+        stor.model, c = ComponentModel.create(
+            ComponentType.disk,
+            size=stor.size,
+            speed=stor.speed,
+            family=stor.label,
+            priority=priority,
+        )
         stor.save(priority=priority)
 
 
@@ -437,7 +415,7 @@ def parse_dmidecode(data):
     return result
 
 
-def handle_dmidecode(info, ethernets=(), save_priority=0):
+def handle_dmidecode(info, ethernets=(), priority=0):
     """Take the data collected by parse_dmidecode and apply it to a device."""
 
     # It's either a rack or a blade server, who knows?
@@ -445,25 +423,17 @@ def handle_dmidecode(info, ethernets=(), save_priority=0):
     dev = Device.create(
         ethernets=ethernets, sn=info['sn'], uuid=info['uuid'],
         model_name='DMI '+info['model'], model_type=DeviceType.unknown,
-        priority=save_priority
+        priority=priority,
     )
     for i, cpu_info in enumerate(info['cpu']):
-        extra = ',\n'.join(cpu_info['flags'])
-        extra = ('threads: %d\n' % cpu_info['threads']
-                 if cpu_info['threads'] else '') + extra
-        if cpu_info['64bit']:
-            extra = '64bit\n' + extra
-        model, created = ComponentModel.concurrent_get_or_create(
+        model, created = ComponentModel.create(
+            ComponentType.processor,
             speed=cpu_info['speed'] or 0,
             cores=cpu_info['cores'] or 0,
             family=cpu_info['family'],
-            extra_hash=hashlib.md5(extra).hexdigest(),
-            type=ComponentType.processor.id,
+            name = cpu_info['model'],
+            priority=priority,
         )
-        if created:
-            model.name = cpu_info['model']
-            model.extra = extra
-            model.save()
         cpu, created = Processor.concurrent_get_or_create(device=dev,
                                                           index=i + 1)
         if created:
@@ -473,14 +443,13 @@ def handle_dmidecode(info, ethernets=(), save_priority=0):
     for cpu in dev.processor_set.filter(index__gt=i + 1):
         cpu.delete()
     for i, mem_info in enumerate(info['mem']):
-        model, created = ComponentModel.concurrent_get_or_create(
+        model, created = ComponentModel.create(
+            ComponentType.memory,
             speed=mem_info['speed'] or 0,
             size=mem_info['size'] or 0,
-            type=ComponentType.memory.id,
+            family=mem_info['type'],
+            priority=priority,
         )
-        if created:
-            model.name = 'RAM %s %dMiB' % (mem_info['type'], mem_info['size'])
-            model.save()
         mem, created = Memory.concurrent_get_or_create(device=dev, index=i + 1)
         if created:
             mem.label = mem_info['label']

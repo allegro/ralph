@@ -33,6 +33,8 @@ MODELS = {
     'IBM,8233-E8B': 'IBM Power 750 Express',
 }
 
+SAVE_PRIORITY = 4
+
 
 class Error(Exception):
     pass
@@ -128,40 +130,46 @@ def run_ssh_aix(ip):
         mount, created = DiskShareMount.concurrent_get_or_create(
             share=share, device=dev, is_virtual=False)
         mount.volume = disk
-        mount.save()
+        mount.save(priority=SAVE_PRIORITY)
     for disk, model_name, sn in stors:
-        model, mcreated = ComponentModel.concurrent_get_or_create(
-            type=ComponentType.disk.id, family=model_name, extra_hash='')
-        model.name = model_name
-        model.save()
+        # FIXME: storage with no size
+        model, c = ComponentModel.create(
+            ComponentType.disk,
+            family=model_name,
+            priority=SAVE_PRIORITY,
+        )
         stor, created = Storage.concurrent_get_or_create(device=dev, sn=sn)
         stor.model = model
         stor.label = disk
-        stor.save()
-
+        stor.save(priority=SAVE_PRIORITY)
+    # FIXME: memory with no size
     mem, created = Memory.concurrent_get_or_create(device=dev, index=0)
     mem.label = 'Memory'
-    mem.model, c = ComponentModel.concurrent_get_or_create(
-        size=0, speed=0, type=ComponentType.memory.id, family='pSeries',
-        extra_hash='')
-    mem.model.name = 'pSeries Memory'
-    mem.model.save()
-    mem.save()
+    mem.model, c = ComponentModel.create(
+        ComponentType.memory,
+        family='pSeries',
+        priority=SAVE_PRIORITY,
+    )
+    mem.save(priority=SAVE_PRIORITY)
+    # FIXME: CPUs without info
     cpu, created = Processor.concurrent_get_or_create(device=dev, index=0)
     cpu.label = 'CPU'
-    cpu.model, c = ComponentModel.concurrent_get_or_create(
-        speed=0, cores=0, type=ComponentType.processor.id, extra_hash='',
-        family='pSeries CPU')
-    cpu.model.name = 'pSeries CPU'
-    cpu.model.save()
-    cpu.save()
-    os = OperatingSystem.create(dev=dev, os_name='AIX', version=os_version,
-                                family='AIX')
-    os.memory = os_memory if os_memory else None
-    os.cores_count = os_corescount if os_corescount else None
-    os.storage = os_storage_size if os_storage_size else None
-    os.save()
-
+    cpu.model, c = ComponentModel.create(
+        ComponentType.processor,
+        family='pSeries',
+        name='pSeries CPU',
+        priority=SAVE_PRIORITY,
+    )
+    cpu.save(priority=SAVE_PRIORITY)
+    OperatingSystem.create(dev=dev,
+        os_name='AIX',
+        version=os_version,
+        family='AIX',
+        memory=os_memory or None,
+        cores_count=os_corescount or None,
+        storage=os_storage_size or None,
+        priority=SAVE_PRIORITY
+    )
     return machine_model
 
 

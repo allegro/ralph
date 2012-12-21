@@ -5,7 +5,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import hashlib
 import json
 from django.test import TestCase
 
@@ -49,14 +48,10 @@ class DonPedroPluginTest(TestCase):
             model_type=DeviceType.unknown
         )
         model_name = 'TestStorage 40960MiB'
-        model, _ = ComponentModel.concurrent_get_or_create(
-            cores=0,
-            extra_hash=hashlib.md5('').hexdigest(),
-            family=model_name,
+        model, _ = ComponentModel.create(
+            ComponentType.disk,
             size=40960,
-            speed=0,
-            type=ComponentType.disk,
-            defaults={'name': model_name},
+            family=model_name,
         )
         storage, _ = Storage.concurrent_get_or_create(
             device=self.special_dev,
@@ -117,6 +112,8 @@ class DonPedroPluginTest(TestCase):
                 'sn': 'stor_sn_123_321_7',
             },
         )
+        # FIXME: this assigns a 40GB model to a 80GB device. How to handles
+        # cases like this?
         storage, _ = Storage.concurrent_get_or_create(
             device=self.special_dev,
             mount_point='I:',
