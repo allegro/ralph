@@ -186,7 +186,7 @@ class AssetSearch(AssetsMixin, DataTableMixin):
         # now fields within ranges.
         search_date_fields = [
             'invoice_date', 'request_date', 'delivery_date',
-            'production_use_date', 'provider_order_date'
+            'production_use_date', 'provider_order_date',
         ]
         for date in search_date_fields:
             start = self.request.GET.get(date + '_from')
@@ -196,6 +196,7 @@ class AssetSearch(AssetsMixin, DataTableMixin):
             if end:
                 all_q &= Q(**{date + '__lte': end})
         self.data_table_query(self.get_all_items(all_q))
+
 
     def get_csv_header(self):
         header = super(AssetSearch, self).get_csv_header()
