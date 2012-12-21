@@ -2,6 +2,7 @@
 
 {% load url from future %}
 {% load icons %}
+{% load bob %}
 
 {% block contentarea %}
   <div class="row-fluid">
@@ -38,8 +39,8 @@
         </div>
         </form>
     </div>
-    <div class="span2 report-tabs">
-      {% tab_menu report_menu_items report_selected side='right' %}
+    <div class="span2 template-tabs">
+      {% tab_menu template_menu_items template_selected side='right' %}
     </div>
   </div>
 {% endblock %}
