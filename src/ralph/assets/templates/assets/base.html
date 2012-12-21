@@ -13,6 +13,18 @@
 		return false;
 }
 </script>
+<script type="text/javascript" src="/static/assets/js/ace.js"></script>
+<script type="text/javascript">
+var editor;
+$(".code_field").each(function(index, el) {
+    editor = ace.edit(el.id);
+    var that = this;
+    editor.getSelection().on('changeCursor', function(ev){
+        console.log(that.id);
+        console.log($(".code_fiel[id!=" + that.id + "]"));
+    })
+});
+</script>
 {% endblock %}
 {% block contentarea %}
         {% block content %}

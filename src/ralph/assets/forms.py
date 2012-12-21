@@ -13,6 +13,8 @@ from django.forms import (
     ModelForm, Form, CharField, DateField, ChoiceField, ValidationError,
     IntegerField,
 )
+from django import forms
+
 from django.forms.widgets import Textarea, HiddenInput
 from django.utils.translation import ugettext_lazy as _
 
@@ -21,6 +23,17 @@ from ralph.assets.models import (
 )
 from ralph.ui.widgets import DateWidget, HiddenSelectWidget
 
+from django.utils.html import escape
+from django.utils.safestring import mark_safe
+
+
+class CodeWidget(forms.TextInput):
+    def render(self, name, value, attrs=None, choices=()):
+        formatted = escape(value) if value else ''
+        return mark_safe('''
+        <div class='code_field' id="id_%s" name="%s" width=200 height=500 style='width:200px;height:500px;' >
+        %s</div>''' % (
+            escape(name), escape(name), formatted))
 
 class ModeNotSetException(Exception):
     pass
@@ -37,8 +50,6 @@ class BaseAssetForm(ModelForm):
             'remarks', 'sn', 'barcode', 'warehouse',
         )
         widgets = {
-            'sn': Textarea(attrs={'rows': 25}),
-            'barcode': Textarea(attrs={'rows': 25}),
             'remarks': Textarea(attrs={'rows': 3}),
             'support_type': Textarea(attrs={'rows': 5}),
         }
@@ -274,7 +285,7 @@ class BaseEditAssetForm(ModelForm):
             'provider_order_date': DateWidget(),
             'remarks': Textarea(attrs={'rows': 3}),
             'support_type': Textarea(attrs={'rows': 5}),
-            'sn': Textarea(attrs={'rows': 1, 'readonly': True}),
+            'sn': CodeWidget(),
             'barcode': Textarea(attrs={'rows': 1}),
         }
     model = AutoCompleteSelectField(
@@ -306,7 +317,7 @@ class BaseEditAssetForm(ModelForm):
 
 class AddPartForm(BaseAddAssetForm):
     sn = CharField(
-        label=_("SN/SNs"), required=True, widget=Textarea(attrs={'rows': 25})
+        label=_("SN/SNs"), required=True, widget=CodeWidget()
     )
 
     def clean_sn(self):
@@ -317,11 +328,11 @@ class AddPartForm(BaseAddAssetForm):
 
 class AddDeviceForm(BaseAddAssetForm):
     sn = CharField(
-        label=_("SN/SNs"), required=True, widget=Textarea(attrs={'rows': 25})
+        label=_("SN/SNs"), required=True, widget=CodeWidget(), initial='dupa'
     )
     barcode = CharField(
         label=_("Barcode/Barcodes"), required=False,
-        widget=Textarea(attrs={'rows': 25})
+        widget=CodeWidget()
     )
 
     def __init__(self, *args, **kwargs):

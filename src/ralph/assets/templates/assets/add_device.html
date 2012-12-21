@@ -17,7 +17,7 @@
 {% endblock %}
 
 {% block multivalue_inputs %}
-<div class="span3 well">
+<div class="span3">
   <div class="control-group{% if asset_form.sn.errors %} error{% endif %}">
     <label>{{ asset_form.sn.label }}</label>
     {{ asset_form.sn }}
@@ -26,7 +26,7 @@
     {% endif %}
   </div>
 </div>
-<div class="span3 well">
+<div class="span3">
   <div class="control-group{% if asset_form.barcode.errors %} error{% endif %}">
     <label>{{ asset_form.barcode.label }}</label>
     {{ asset_form.barcode }}
