@@ -147,8 +147,6 @@ class AssetSearch(AssetsMixin, DataTableMixin):
           bob_tag=True, export=True),
         _('Order no.', field='order_no', sort_expression='order_no',
           bob_tag=True, export=True),
-        _('Invoice date', field='invoice_date', type='date',
-          sort_expression='invoice_date', bob_tag=True, export=True),
         _('Status', field='status', sort_expression='status',
           bob_tag=True, export=True),
         _('Warehouse', field='warehouse', sort_expression='warehouse',
