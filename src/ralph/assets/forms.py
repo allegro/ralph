@@ -229,9 +229,9 @@ class BaseAddAssetForm(ModelForm):
     class Meta:
         model = Asset
         fields = (
-            'type', 'model', 'warehouse', 'invoice_no', 'order_no', 'price', 'support_period',
-            'support_type', 'support_void_reporting', 'provider', 'status',
-            'remarks', 'request_date',
+            'type', 'model', 'warehouse', 'invoice_no', 'order_no', 'price',
+            'support_period', 'support_type', 'support_void_reporting',
+            'provider', 'status', 'remarks', 'request_date',
             'provider_order_date', 'delivery_date', 'invoice_date',
             'production_use_date',
         )
@@ -420,6 +420,10 @@ class SearchAssetForm(Form):
     status = ChoiceField(
         required=False, choices=[('', '----')] + AssetStatus(),
         label='Status'
+    )
+    type = ChoiceField(
+        required=False, choices=[('', '----')] + AssetType(),
+        label='Asset type'
     )
     sn = CharField(required=False, label='SN')
     request_date_from = DateField(
