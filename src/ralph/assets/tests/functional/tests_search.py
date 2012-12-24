@@ -170,6 +170,27 @@ class TestSearchForm(TestCase):
         # Test if search form find correct data
         self.assertEqual(rows_from_table[0].sn, '1234-1234-1234-1234')
 
+    def test_type_filed(self):
+
+        device = '/assets/dc/search?part_info=device'
+        part = '/assets/dc/search?part_info=part'
+        device_content = self.client.get(device)
+        part_content = self.client.get(part)
+
+        self.assertEqual(device_content.status_code, 200)
+        self.assertEqual(part_content.status_code, 200)
+
+        dev_data = device_content.context_data['bob_page'].object_list
+        part_data = part_content.context_data['bob_page'].object_list
+
+        # Here we tests if in page see only devices.
+        for dev in dev_data:
+            self.assertEqual(dev.part_info, None)
+
+        # Here we tests if in page see only a parts..
+        for part in part_data:
+            self.assertNotEqual(part.part_info, None)
+
 
 class TestSearchDataRangeFields(TestCase):
     def setUp(self):
@@ -241,3 +262,15 @@ class TestSearchDataRangeFields(TestCase):
 
         rows_from_table = content.context_data['bob_page'].object_list
         self.assertEqual(len(rows_from_table), 3)
+
+    def test_request_date_field(self):
+        pass
+
+    def test_provider_date_field(self):
+        pass
+
+    def test_delivery_date_field(self):
+        pass
+
+    def test_production_date_field(self):
+        pass
