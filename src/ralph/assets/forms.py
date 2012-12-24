@@ -107,10 +107,9 @@ class BulkEditAssetForm(ModelForm):
         super(BulkEditAssetForm, self).__init__(*args, **kwargs)
         fillable_fields = [
             'type', 'model', 'device_info', 'invoice_no', 'order_no',
-            'request_date', 'delivery_date', 'invoice_date',
-            'production_use_date', 'provider_order_date',
-            'provider_order_date', 'support_period', 'support_type',
-            'provider', 'source', 'status',
+            'support_period', 'support_type', 'provider', 'source', 'status',
+            'price', 'support_price', 'request_date', 'delivery_date',
+            'invoice_date', 'production_use_date', 'provider_order_date',
         ]
         for field_name in self.fields:
             if field_name in fillable_fields:
