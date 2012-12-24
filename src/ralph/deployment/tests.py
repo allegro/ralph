@@ -186,11 +186,15 @@ class DeploymentUtilTest(TestCase):
             'rack_sn': 'rack_sn_123_321_1',
             'management_ip': '10.20.10.1',
             'hostname': 'test123.dc',
+            'ip': '10.22.10.1',
         }
         _create_device(data)
         ethernet = Ethernet.objects.get(mac='18:03:73:b1:85:93')
         self.assertEqual(ethernet.label, 'DEPLOYMENT MAC')
         self.assertEqual(ethernet.device.model.type, DeviceType.unknown)
-        ip_address = IPAddress.objects.get(device=ethernet.device)
+        ip_address = IPAddress.objects.get(
+            device=ethernet.device,
+            is_management=True,
+        )
         self.assertEqual(ip_address.address, '10.20.10.1')
         self.assertTrue(ip_address.is_management)
