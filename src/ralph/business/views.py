@@ -44,4 +44,3 @@ def show_ventures(request, venture_id=None):
     side_ventures = Venture.objects.filter(parent=None).order_by('name')
     synergy_url_base = SYNERGY_URL_BASE
     return render(request, template, locals())
-
