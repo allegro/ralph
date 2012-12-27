@@ -134,7 +134,7 @@ def generate_dhcp_config(dc=None):
     def generate_entries():
         for macaddr, in DHCPEntry.objects.values_list('mac').distinct():
             ips = list(filter_ips(
-                (ip,) for ip in
+                ip for (ip,) in
                 DHCPEntry.objects.filter(mac=macaddr).values_list('ip')
             ))
             if not ips:
