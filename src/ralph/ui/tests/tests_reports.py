@@ -15,7 +15,7 @@ from ralph.cmdb.models_ci import (
 )
 from ralph.business.models import Venture, VentureRole
 from ralph.discovery.models import Device, DeviceType, DeprecationKind
-from ralph.ui.tests.helper import login_as_su
+from ralph.ui.tests.global_utils import login_as_su
 
 CURRENT_DIR = settings.CURRENT_DIR
 
