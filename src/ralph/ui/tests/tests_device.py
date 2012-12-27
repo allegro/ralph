@@ -6,7 +6,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from django.test import TestCase
-from ralph.ui.tests.helper import login_as_su
+from ralph.ui.tests.global_utils import login_as_su
 from ralph.discovery.models import Device, DeviceType
 from ralph.discovery.models_component import Software
 
