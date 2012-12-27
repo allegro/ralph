@@ -7,7 +7,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import re
-import hashlib
 
 from ralph.discovery.models import (
     ComponentModel,

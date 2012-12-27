@@ -8,7 +8,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import ssl
-import hashlib
 
 from django.conf import settings
 from lck.django.common import nested_commit_on_success
