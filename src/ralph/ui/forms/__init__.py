@@ -365,7 +365,8 @@ class MassDeploymentForm(forms.Form):
                 network = Network.objects.get(name=network_name)
             except Network.DoesNotExist:
                 raise forms.ValidationError(
-                    "Row %s: Selected network doesn't exists." % row_number
+                    "Row %s: Network '%s' doesn't exists." %
+                    (row_number, network_name)
                 )
             rack_sn = cols[2].strip()
             if re.match(r"^[0-9]+$", rack_sn):
@@ -375,16 +376,14 @@ class MassDeploymentForm(forms.Form):
                 )
             if not rack_exists(rack_sn):
                 raise forms.ValidationError(
-                    "Row %s: Rack with SN=%s doesn't exists." % (
-                        row_number, rack_sn
-                    )
+                    "Row %s: Rack with serial number '%s' doesn't exists." %                        (row_number, rack_sn)
                 )
             try:
                 network.racks.get(sn=rack_sn)
             except Device.DoesNotExist:
                 raise forms.ValidationError(
-                    "Row %s: Selected rack isn't connected with selected "
-                    "network" % row_number
+                    "Row %s: Rack '%s' isn't connected to "
+                    "network '%s'." % (row_number, rack_sn, network.name)
                 )
             ip = cols[1].strip()
             mac = cols[3].strip()
