@@ -15,7 +15,7 @@ from ralph.discovery.models_component import (
 from ralph.discovery.models_history import HistoryChange
 from ralph.discovery.models_network import (
     IPAddress, NetworkTerminator, Network, DataCenter)
-from ralph.ui.tests.helper import login_as_su
+from ralph.ui.tests.global_utils import login_as_su
 
 DEVICE = {
     'name': 'SimpleDevice',
