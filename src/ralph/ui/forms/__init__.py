@@ -11,13 +11,18 @@ import re
 import ipaddr
 from bob.forms import AutocompleteWidget
 from django import forms
+from lck.django.common.models import MACAddressField
 
 from ralph.business.models import RoleProperty, VentureRole
 from ralph.deployment.models import Deployment, Preboot
 from ralph.deployment.util import (
-    is_mac_address_known, venture_and_role_exists, preboot_exists,
-    hostname_exists, ip_address_exists, network_exists,
-    management_ip_unique, rack_exists,
+    hostname_exists,
+    ip_address_exists,
+    is_mac_address_known,
+    network_exists,
+    preboot_exists,
+    rack_exists,
+    venture_and_role_exists,
 )
 from ralph.discovery.models import Device, Network
 from ralph.discovery.models_component import is_mac_valid
@@ -27,6 +32,7 @@ from ralph.ui.forms.util import all_ventures
 from ralph.ui.widgets import DateWidget, DeviceWidget
 from ralph.util import Eth
 from ralph.util.csvutil import UnicodeReader
+
 
 
 class DateRangeForm(forms.Form):
@@ -139,7 +145,8 @@ class DeploymentForm(forms.ModelForm):
 def _validate_cols_count(expected_count, cols, row_number):
     if len(cols) != expected_count:
         raise forms.ValidationError(
-            "Incorrect CSV format. See row %s" % row_number
+            "Incorrect number of columns (got %d, expected %d) at row %d" %
+            (len(cols), expected_count, row_number),
         )
 
 
@@ -148,7 +155,7 @@ def _validate_cols_not_empty(cols, row_number):
         value = col.strip()
         if not value:
             raise forms.ValidationError(
-                "Incorrect CSV format. See row %s col %s" % (
+                "Empty value at row %d column %d" % (
                     row_number, col_number
                 )
             )
@@ -158,10 +165,6 @@ def _validate_mac(mac, parsed_macs, row_number):
     if not is_mac_valid(Eth("", mac, "")):
         raise forms.ValidationError(
             "Row %s: Invalid MAC address." % row_number
-        )
-    if is_mac_address_known(mac):
-        raise forms.ValidationError(
-            "Row %s: MAC address already exists." % row_number
         )
     if mac in parsed_macs:
         raise forms.ValidationError(
@@ -210,6 +213,36 @@ def _validate_preboot(preboot, row_number):
         )
 
 
+def _validate_deploy_children(mac, row_number):
+    mac = MACAddressField.normalize(mac)
+    try:
+        device = Device.admin_objects.get(ethernet__mac=mac)
+    except Device.DoesNotExist:
+        return
+    if device.deleted:
+        return
+    children = device.child_set.filter(deleted=False)
+    if children.exists():
+        raise forms.ValidationError(
+            "Row %d: Device with mac %s exists and has child devices "
+            "[%s]." % (row_number, mac, ', '.join(children.all()))
+        )
+    if device.servermount_set.filter(device__deleted=False).exists():
+        raise forms.ValidationError(
+            "Row %d: Device with mac %s exists and exports shares" %
+            (row_number, mac)
+        )
+    for share in device.diskshare_set.all():
+        if any((
+            share.disksharemount_set.filter(device__deleted=False).exists(),
+            share.disksharemount_set.filter(server__deleted=False).exists(),
+        )):
+            raise forms.ValidationError(
+                "Row %d: Device with mac %s exists and exports disks" %
+                (row_number, mac)
+            )
+
+
 class PrepareMassDeploymentForm(forms.Form):
     csv = forms.CharField(
         label="CSV",
@@ -225,9 +258,9 @@ class PrepareMassDeploymentForm(forms.Form):
         parsed_management_ip_addresses = []
         for row_number, cols in enumerate(rows, start=1):
             _validate_cols_count(6, cols, row_number)
-            _validate_cols_not_empty(cols, row_number)
             mac = cols[0].strip()
             _validate_mac(mac, parsed_macs, row_number)
+            _validate_deploy_children(mac, row_number)
             parsed_macs.append(mac)
             management_ip = cols[1].strip()
             _validate_management_ip(
@@ -235,7 +268,9 @@ class PrepareMassDeploymentForm(forms.Form):
             )
             parsed_management_ip_addresses.append(management_ip)
             network_name = cols[2].strip()
-            _validate_network_name(network_name, row_number)
+            if not (is_mac_address_known(mac) and network_name == ''):
+                # Allow empty network when the device already exists.
+                _validate_network_name(network_name, row_number)
             venture_symbol = cols[3].strip()
             venture_role = cols[4].strip()
             _validate_venture_and_role(
@@ -260,26 +295,43 @@ def _validate_hostname(hostname, parsed_hostnames, row_number):
 
 def _validate_ip_address(ip, network, parsed_ip_addresses, row_number):
     try:
-        ip_number = int(ipaddr.IPAddress(ip))
-        if ip_number < network.min_ip or ip_number > network.max_ip:
-            raise forms.ValidationError(
-                "Row %s: IP address is not valid for network %s." % (
-                    row_number, network.name
-                )
-            )
+        ipaddr.IPAddress(ip)
     except ValueError:
         raise forms.ValidationError(
             "Row %s: Invalid IP address." % row_number
         )
-    if ip_address_exists(ip):
+    if ip not in network:
         raise forms.ValidationError(
-            "Row %s: IP address already exists." % row_number
+            "Row %s: IP address is not valid for network %s." % (
+                row_number, network.name
+            )
         )
     if ip in parsed_ip_addresses:
         raise forms.ValidationError(
             "Row %s: Duplicated IP address. "
             "Please check previous rows..." % row_number
         )
+
+def _validate_ip_owner(ip, mac):
+    """If the MAC is unique, make sure the IP address is not used anywhere.
+    If the MAC address belongs to an existing device, make sure the IP address
+    also belongs to that device.
+    """
+    mac = MACAddressField.normalize(mac)
+    try:
+        dev = Device.admin_objects.get(ethernet__mac=mac)
+    except Device.DoesNotExist:
+        if ip_address_exists(ip):
+            raise forms.ValidationError(
+                "Row %s: IP address already exists." % row_number
+            )
+    else:
+        if not dev.ipaddress_set.filter(
+            number=int(ipaddr.IPAddress(ip))
+        ).exists():
+            raise forms.ValidationError(
+                "Row %s: IP address used by another device." % row_number
+            )
 
 
 class MassDeploymentForm(forms.Form):
@@ -328,9 +380,10 @@ class MassDeploymentForm(forms.Form):
                     "network" % row_number
                 )
             ip = cols[1].strip()
-            _validate_ip_address(ip, network, parsed_ip_addresses, row_number)
-            parsed_ip_addresses.append(ip)
             mac = cols[3].strip()
+            _validate_ip_address(ip, network, parsed_ip_addresses, row_number)
+            _validate_ip_owner(ip, mac)
+            parsed_ip_addresses.append(ip)
             _validate_mac(mac, parsed_macs, row_number)
             parsed_macs.append(mac)
             management_ip = cols[4].strip()
