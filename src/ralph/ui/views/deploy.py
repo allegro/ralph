@@ -254,7 +254,7 @@ class MassDeployment(Base):
             new_csv_rows.append(cols)
             if device:
                 self.actions.append((
-                    'error',
+                    'warning',
                     "An old device %s will be re-used. Make sure it's not "
                     "used in production anymore!" % device,
                 ))
