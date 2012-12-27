@@ -21,6 +21,8 @@ from ralph.business.admin import RolePropertyValueInline
 
 SAVE_PRIORITY = 200
 
+HOSTS_NAMING_TEMPLATE_REGEX = re.compile(r'<[0-9]+,[0-9]+>.*\.[a-zA-Z0-9]+')
+
 
 class NetworkAdminForm(forms.ModelForm):
     class Meta:
@@ -59,7 +61,7 @@ class NetworkAdmin(ModelAdmin):
     list_per_page = 250
     radio_fields = {'data_center': admin.HORIZONTAL, 'kind': admin.HORIZONTAL}
     search_fields = ('name', 'address', 'vlan')
-    filter_horizontal = ('terminators',)
+    filter_horizontal = ('terminators', 'racks')
     save_on_top = True
     form = NetworkAdminForm
 
@@ -80,9 +82,29 @@ class NetworkTerminatorAdmin(ModelAdmin):
 admin.site.register(m.NetworkTerminator, NetworkTerminatorAdmin)
 
 
+class DataCenterAdminForm(forms.ModelForm):
+    class Meta:
+        model = m.DataCenter
+
+    def clean_hosts_naming_template(self):
+        template = self.cleaned_data['hosts_naming_template']
+        if re.search("[^a-z0-9<>,\.|-]", template):
+            raise forms.ValidationError(
+                _("Please remove disallowed characters.")
+            )
+        for part in template.split("|"):
+            if not HOSTS_NAMING_TEMPLATE_REGEX.search(part):
+                raise forms.ValidationError(
+                    _("Incorrect template structure. Please see example "
+                      "below.")
+                )
+        return template
+
+
 class DataCenterAdmin(ModelAdmin):
-    list_display = ('name',)
+    list_display = ('name', 'hosts_naming_template')
     search_fields = ('name',)
+    form = DataCenterAdminForm
 
 admin.site.register(m.DataCenter, DataCenterAdmin)
 
@@ -354,6 +376,16 @@ class HistoryChangeAdmin(ModelAdmin):
     list_per_page = 250
     readonly_fields = ('date', 'device', 'user', 'field_name', 'new_value',
                        'old_value', 'component')
-    search_fields = ('date', 'device', 'user', 'field_name', 'new_value')
+    search_fields = ('user__name', 'field_name', 'new_value')
 
 admin.site.register(m.HistoryChange, HistoryChangeAdmin)
+
+
+class DiscoveryWarningAdmin(ModelAdmin):
+    list_display = ('message', 'count', 'date', 'plugin', 'ip', 'device')
+    list_per_page = 250
+    readonly_fields = ('date', 'plugin', 'message', 'ip', 'count', 'device')
+    search_fields = ('plugin', 'ip', 'message')
+
+admin.site.register(m.DiscoveryWarning, DiscoveryWarningAdmin)
+

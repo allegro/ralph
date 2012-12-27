@@ -6,18 +6,31 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from django.contrib import admin
-
+from django.utils.translation import ugettext_lazy as _
 from lck.django.common.admin import ModelAdmin
 
-from ralph.dnsedit.models import DHCPEntry, DNSHistory
+from ralph.dnsedit.models import DHCPEntry, DNSHistory, DHCPServer
 
 
 class DHCPEntryAdmin(ModelAdmin):
-    list_display = ('ip', 'mac')
+    def ip_address(self):
+        return self.ip
+    ip_address.short_description = _("IP address")
+    ip_address.admin_order_field = 'number'
+
+    list_display = (ip_address, 'mac')
     search_fields = ('ip', 'mac')
     save_on_top = True
 
 admin.site.register(DHCPEntry, DHCPEntryAdmin)
+
+
+class DHCPServerAdmin(ModelAdmin):
+    list_display = ('ip', 'last_synchronized')
+    search_fields = ('ip',)
+    save_on_top = True
+
+admin.site.register(DHCPServer, DHCPServerAdmin)
 
 
 class DNSHistoryAdmin(ModelAdmin):

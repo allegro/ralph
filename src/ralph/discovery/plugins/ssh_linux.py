@@ -156,7 +156,7 @@ def ssh_linux(**kwargs):
         return False, 'closed.', kwargs
     ssh = None
     auths = [
-        ('root', settings.SSH_PASSWORD),
+        (settings.SSH_USER or 'root', settings.SSH_PASSWORD),
         (settings.XEN_USER, settings.XEN_PASSWORD),
     ]
     try:

@@ -7,18 +7,17 @@
 {% block contentarea %}
   <div class="row-fluid">
     <div class="span10">
-        <form class="form form-horizontal device-create-form" method="POST">
-            {% csrf_token %}
-            {% for d in devices %}
-            <input type="hidden" name="select" value="{{ d.id }}">
-            {% endfor %}
+        <form class="form form-horizontal device-deploy-form" method="POST">
+        {% csrf_token %}
+        <div class="row"><div class="span10">
             {% for f in form.visible_fields %}
-            <div class="control-group {{ f.css_classes }}
-                {% if f.errors %}error{% endif %}
-            ">
-                <label class="control-label {% if f.field.required %}required{% endif %}"
-                    >{{ f.label }}</label>
-                <div class="controls">
+                <div class="control-group {{ f.css_classes }}
+                    {% if f.errors %}error{% endif %}
+                ">
+                <label class="{% if f.field.required %}required{% endif %}">
+                    {{ f.label }}
+                </label>
+                <div>
                     {{ f }}
                     {% for e in f.errors %}
                         <span class="help-inline">{{ e }}</span>
@@ -30,13 +29,14 @@
                 </div>
             </div>
             {% endfor %}
-        <div class="form-actions">
-            <div class="control-group" style="white-space:nowrap">
-                <button class="btn btn-primary" type="submit" name="save">
-                        {% icon 'fugue-tick' %}&nbsp;Save
+        </div></div>
+        <div class="row"><div class="form-actions span10">
+            <div style="white-space:nowrap">
+                <button class="btn btn-primary" type="submit" name="deploy">
+                    {% icon 'fugue-wand-hat' %}&nbsp;{{ action_name }}
                 </button>
             </div>
-        </div>
+        </div></div>
         </form>
     </div>
     <div class="span2 template-tabs">
