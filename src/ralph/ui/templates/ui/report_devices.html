@@ -1,0 +1,56 @@
+{% extends "ui/report_base.html" %}
+{% load url from future %}
+{% load icons %}
+{% load formats %}
+{% load bob %}
+
+{% block contentarea %}
+    <div class="row-fluid">
+        <div class="span12 form-actions">
+            <div class="span6 reports-form-right-line">
+                <h4>Filtering of the cross</h4>
+                <form class="form" method="get">
+                    {% for f in form_choice %}
+                        <div class="control-group">
+                            {{ f }} {{ f.label }}
+                        </div>
+                    {% endfor %}
+                    <button class="btn pull-right"><i class="fugue-icon fugue-calculator"></i>&nbsp;Show</button>
+                </form>
+            </div>
+            <div class="span6">
+                <h4>Filtering of th range</h4>
+                <h5>Support</h5>
+                <form class="form" method="get">
+                    {% for f in form_support_range %}
+                        {{ f }}
+                    {% endfor %}
+                    <button class="btn pull-right"><i class="fugue-icon fugue-calculator"></i>&nbsp;Show</button>
+                </form>
+                <h5>Warranty</h5>
+                <form class="form" method="get">
+                    {% for f in form_warranty_range %}
+                        {{ f }}
+                    {% endfor %}
+                    <button class="btn pull-right"><i class="fugue-icon fugue-calculator"></i>&nbsp;Show</button>
+                </form>
+                <h5>Deprecation</h5>
+                <form class="form" method="get">
+                    {% for f in form_deprecation_range %}
+                        {{ f }}
+                    {% endfor %}
+                    <button class="btn pull-right"><i class="fugue-icon fugue-calculator"></i>&nbsp;Show</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="row-fluid">
+        <div class="span12">
+            {% if rows %}
+                {% include 'ui/report_devices_table.html' with title=title header=tabele_header rows=rows %}
+            {% else %}
+                No rows
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
