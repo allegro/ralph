@@ -155,6 +155,12 @@ tr.table-highlight td {
     margin-top: -10px !important;
 }
 
+.reports-form-right-line
+{
+    border-right: 1px solid silver;
+    padding-right: 20px;
+}
+
 .csv-input {
     font-family: monospace;
 }

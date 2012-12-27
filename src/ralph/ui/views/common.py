@@ -875,6 +875,5 @@ class Software(DeviceDetailView):
         ret = super(Software, self).get_context_data(**kwargs)
         ret.update({
             'components': _get_details(self.object, purchase_only=False),
-            })
+        })
         return ret
-
