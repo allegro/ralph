@@ -57,6 +57,18 @@ def clean_dns_address(ip):
         r.delete()
 
 
+def clean_dns_entries(ip):
+    """Remove all entries for the specified IP address from the DNS,
+    including PTR entries.
+    May leave behind some CNAME entries pointing to that IP address.
+    """
+    ip = str(ip).strip().strip('.')
+    for r in Record.objects.filter(content=ip):
+        r.delete()
+    for rev in get_revdns_records(ip):
+        rev.delete()
+
+
 def add_dns_address(name, ip):
     """Add a new DNS record in the right domain."""
     name = name.strip().strip('.')

@@ -23,8 +23,7 @@ from ralph.dnsedit.models import DHCPEntry
 from ralph.util import Eth
 
 
-def get_next_free_hostname(dc_name, reserved_hostnames=[]):
-    dc = DataCenter.objects.get(name=dc_name)
+def get_next_free_hostname(dc, reserved_hostnames=[]):
     hostnames_in_deployments = Deployment.objects.filter().values_list(
         'hostname', flat=True
     ).order_by('hostname')
@@ -191,10 +190,19 @@ def _create_device(data):
 @nested_commit_on_success
 def create_deployments(data, user, mass_deployment):
     for item in data:
-        dev = _create_device(item)
+        mac = MACAddressField.normalize(item['mac'])
+        try:
+            dev = Device.objects.get(ethernet__mac=mac)
+        except Device.DoesNotExist:
+            dev = _create_device(item)
         Deployment.objects.create(
-            user=user, device=dev, mac=item['mac'], ip=item['ip'],
-            hostname=item['hostname'], preboot=item['preboot'],
-            venture=item['venture'], venture_role=item['venture_role'],
-            mass_deployment=mass_deployment
+            user=user,
+            device=dev,
+            mac=mac,
+            ip=item['ip'],
+            hostname=item['hostname'],
+            preboot=item['preboot'],
+            venture=item['venture'],
+            venture_role=item['venture_role'],
+            mass_deployment=mass_deployment,
         )
