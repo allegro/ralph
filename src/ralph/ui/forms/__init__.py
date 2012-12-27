@@ -360,21 +360,24 @@ class MassDeploymentForm(forms.Form):
             hostname = cols[0].strip()
             _validate_hostname(hostname, parsed_hostnames, row_number)
             parsed_hostnames.append(hostname)
-            rack_sn = cols[2].strip()
-            if re.match(r"^[0-9]+$", rack_sn):
-                rack_sn = "rack %s" % rack_sn
-            if not rack_exists(rack_sn):
-                raise forms.ValidationError(
-                    "Row %s: Rack with SN=%s doesn't exists." % (
-                        row_number, rack_sn
-                    )
-                )
             network_name = cols[5].strip()
             try:
                 network = Network.objects.get(name=network_name)
             except Network.DoesNotExist:
                 raise forms.ValidationError(
                     "Row %s: Selected network doesn't exists." % row_number
+                )
+            rack_sn = cols[2].strip()
+            if re.match(r"^[0-9]+$", rack_sn):
+                rack_sn = "Rack %s %s" % (
+                    rack_sn,
+                    network.data_center.name.upper(),
+                )
+            if not rack_exists(rack_sn):
+                raise forms.ValidationError(
+                    "Row %s: Rack with SN=%s doesn't exists." % (
+                        row_number, rack_sn
+                    )
                 )
             try:
                 network.racks.get(sn=rack_sn)
