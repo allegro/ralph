@@ -716,8 +716,10 @@ class CIFormsTest(TestCase):
             ci2 = CI.objects.get(name='CI2')
             ci2.content_object = self.device
             ci2.save()
-        self.assertEqual('columns content_type_id, object_id are not unique',
-                         e.exception.message)
+        self.assertEqual(
+            'columns content_type_id, object_id are not unique',
+            unicode(e.exception),
+        )
 
     def test_two_ci_without_content_object(self):
         response_ci1 = self.add_ci(name='CI1')
@@ -965,7 +967,7 @@ class CIFormsTest(TestCase):
 
 class CMDBApiTest(TestCase):
     def setUp(self):
-        self.creatre_user()
+        self.create_user()
         self.create_cilayers()
         self.create_citypes()
         self.create_owners()
@@ -973,7 +975,7 @@ class CMDBApiTest(TestCase):
         self.create_ownerships()
         self.create_relations()
 
-    def creatre_user(self):
+    def create_user(self):
         self.user = User.objects.create_user(
             'api_user',
             'test@mail.local',
@@ -1080,7 +1082,11 @@ class CMDBApiTest(TestCase):
         path = "/api/v0.9/cilayers/"
         response = self.client.get(path=path, data=self.data, format='json')
         json_string = response.content
-        json_data = json.loads(json_string)
+        try:
+            json_data = json.loads(json_string)
+        except ValueError:
+            print(response.content)
+            raise
         resource_uris = [x['resource_uri'] for x in json_data['objects']]
 
         response = self.client.get(
