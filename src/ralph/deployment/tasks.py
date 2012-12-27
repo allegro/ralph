@@ -22,7 +22,7 @@ def run_deployment(deployment):
             name.strip() for
             name in
             deployment.done_plugins.split(',')
-            if name
+            if name.strip()
         )
         tried = set(done)
         while True:
@@ -37,7 +37,7 @@ def run_deployment(deployment):
                     name,
                     deployment_id=deployment.id,
                 )
-            except:
+            except Exception:
                 traceback.print_exc()
             else:
                 if success:
