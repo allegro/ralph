@@ -18,6 +18,7 @@ from django.db.utils import IntegrityError
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
+from django.core.cache import cache
 from django.test import TestCase, Client
 from tastypie.bundle import Bundle
 from tastypie.models import ApiKey
@@ -988,6 +989,7 @@ class CMDBApiTest(TestCase):
             'username': self.user.username,
             'api_key': self.api_key.key
         }
+        cache.delete("api_user_accesses")
 
     def create_cilayers(self):
         self.cilayer1 = CILayer(name='layer1')
