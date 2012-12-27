@@ -344,7 +344,6 @@ API_THROTTLING = {
     'timeframe': 3600,
     'expiration': None,
 }
-CONNECT_ASSET_WITH_DEVICE = False
 # </template>
 
 #
