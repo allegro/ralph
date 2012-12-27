@@ -182,35 +182,39 @@ def _find_hostname(network, reserved_hostnames, device=None, ip=None):
 class MassDeployment(Base):
     template_name = 'ui/mass_deploy.html'
 
+    def __init__(self, *args, **kwargs):
+        super(MassDeployment, self).__init__(*args, **kwargs)
+        self.actions = []
+
     def get_context_data(self, *args, **kwargs):
-        ret = super(
-            MassDeployment, self
-        ).get_context_data(*args, **kwargs)
+        ret = super(MassDeployment, self).get_context_data(*args, **kwargs)
         ret.update({
             'form': self.form,
-            'action_name': 'Deploy'
+            'action_name': 'Deploy',
+            'template_menu_items': [
+                MenuItem(
+                    'Manual device',
+                    name='device',
+                    fugue_icon='fugue-wooden-box',
+                    href='/ui/racks//add_device/',
+                ),
+                MenuItem(
+                    'Servers',
+                    name='servers',
+                    fugue_icon='fugue-computer',
+                    href='/ui/deployment/mass/start/',
+                ),
+            ],
+            'template_selected': 'servers',
+            'actions': self.actions,
         })
-        ret['template_menu_items'] = [
-            MenuItem(
-                'Manual device',
-                name='device',
-                fugue_icon='fugue-wooden-box',
-                href='/ui/racks//add_device/',
-            ),
-            MenuItem(
-                'Servers',
-                name='servers',
-                fugue_icon='fugue-computer',
-                href='/ui/deployment/mass/start/',
-            ),
-        ]
-        ret['template_selected'] = 'servers'
         return ret
 
     def get(self, *args, **kwargs):
         mass_deployment = get_object_or_404(
-            MassDeploymentModel, id=kwargs.get('deployment'),
-            is_done=False
+            MassDeploymentModel,
+            id=kwargs.get('deployment'),
+            is_done=False,
         )
         reserved_hostnames = []
         reserved_ip_addresses = []
@@ -248,6 +252,77 @@ class MassDeployment(Base):
             cols.insert(0, " %s " % ip)
             cols.insert(0, " %s " % hostname)
             new_csv_rows.append(cols)
+            if device:
+                self.actions.append((
+                    'error',
+                    "An old device %s will be re-used. Make sure it's not "
+                    "used in production anymore!" % device,
+                ))
+                if device.deleted:
+                    self.actions.append((
+                        'info',
+                        "Device %s will be undeleted." % device,
+                    ))
+                if device.ipaddress_set.exists():
+                    self.actions.append((
+                        'info',
+                        "All DNS entries for IP addresses [%s] will be deleted." %
+                        ', '.join(
+                            ip.address for ip in device.ipaddress_set.all()
+                        ),
+                    ))
+                    self.actions.append(
+                        "All DHCP entries for IP addresses [%s] "
+                        "will be deleted." % (
+                            ', '.join(
+                                ip.address for ip in device.ipaddress_set.all()
+                            ),
+                        ),
+                    )
+                if device.ethernet_set.exists():
+                    self.actions.append((
+                        'info',
+                        "All DHCP entries for  "
+                        "MAC addresses [%s] will be deleted." % (
+                            ', '.join(
+                                eth.mac for eth in device.ethernet_set.all()
+                            ),
+                        ),
+                    ))
+                if device.disksharemount_set.exists():
+                    self.actions.append((
+                        'info',
+                        "All disk shares mounted on %s will be disconnected "
+                        "from it." % device,
+                    ))
+                self.actions.append((
+                    'info',
+                    "The uptime, operating system and software list for %s "
+                    "will be reset." % device,
+                ))
+            else:
+                if hostname:
+                    self.actions.append((
+                        'success',
+                        "A new device %s will be created." % hostname,
+                    ))
+            if hostname and ip:
+                self.actions.append((
+                    'info',
+                    "An A DNS entry for %s and %s will be created." %
+                    (hostname, ip),
+                ))
+                self.actions.append((
+                    'info',
+                    "A PTR DNS entry for %s and %s will be created." %
+                    (hostname, ip),
+                ))
+            if cols[0].strip() and ip:
+                self.actions.append((
+                    'info',
+                    "A DHCP entry for %s and %s will be created." %
+                    (cols[3], ip),
+                ))
         csv_string = cStringIO.StringIO()
         UnicodeWriter(csv_string).writerows(new_csv_rows)
         self.form = MassDeploymentForm(

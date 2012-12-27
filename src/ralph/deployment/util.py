@@ -16,8 +16,12 @@ from powerdns.models import Record
 from ralph.business.models import VentureRole
 from ralph.deployment.models import Preboot, Deployment, DeploymentStatus
 from ralph.discovery.models import (
-    DataCenter, Network, IPAddress, Ethernet, DeviceType, Device,
+    Device,
+    DeviceType,
+    Ethernet,
     EthernetSpeed,
+    IPAddress,
+    Network,
 )
 from ralph.dnsedit.models import DHCPEntry
 from ralph.util import Eth

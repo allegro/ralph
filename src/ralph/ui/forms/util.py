@@ -14,7 +14,14 @@ def all_ventures():
             ).order_by(
                 '-is_infrastructure', 'path'
             ):
-        yield v.id, '\u00A0' * 4 * v.path.count('/') + v.name
+        yield (
+            v.id,
+            "%s%s [%s]" % (
+                '\u00A0' * 4 * v.path.count('/'),
+                v.name,
+                v.symbol,
+            )
+        )
 
 
 def all_roles():

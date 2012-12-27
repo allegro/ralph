@@ -224,12 +224,16 @@ def _validate_deploy_children(mac, row_number):
     children = device.child_set.filter(deleted=False)
     if children.exists():
         raise forms.ValidationError(
-            "Row %d: Device with mac %s exists and has child devices "
-            "[%s]." % (row_number, mac, ', '.join(children.all()))
+            "Row %d: Device with MAC %s exists and has child devices "
+            "[%s]. Delete the child devices first." % (
+                row_number,
+                mac,
+                ', '.join(str(d) for d in children.all()),
+            )
         )
     if device.servermount_set.filter(device__deleted=False).exists():
         raise forms.ValidationError(
-            "Row %d: Device with mac %s exists and exports shares" %
+            "Row %d: Device with MAC %s exists and exports shares." %
             (row_number, mac)
         )
     for share in device.diskshare_set.all():
@@ -238,7 +242,7 @@ def _validate_deploy_children(mac, row_number):
             share.disksharemount_set.filter(server__deleted=False).exists(),
         )):
             raise forms.ValidationError(
-                "Row %d: Device with mac %s exists and exports disks" %
+                "Row %d: Device with MAC %s exists and exports disks." %
                 (row_number, mac)
             )
 
