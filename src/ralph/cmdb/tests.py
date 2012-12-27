@@ -1084,11 +1084,7 @@ class CMDBApiTest(TestCase):
         path = "/api/v0.9/cilayers/"
         response = self.client.get(path=path, data=self.data, format='json')
         json_string = response.content
-        try:
-            json_data = json.loads(json_string)
-        except ValueError:
-            print(response.content)
-            raise
+        json_data = json.loads(json_string)
         resource_uris = [x['resource_uri'] for x in json_data['objects']]
 
         response = self.client.get(
