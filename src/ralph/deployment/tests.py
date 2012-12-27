@@ -130,9 +130,9 @@ class DeploymentUtilTest(TestCase):
         net2.save()
 
     def test_get_nexthostname(self):
-        name = get_next_free_hostname(self.domain_temp1)
+        name = get_next_free_hostname(self.dc_temp1)
         self.assertEqual(name, 'h100.temp1')
-        name = get_next_free_hostname(self.domain_temp2)
+        name = get_next_free_hostname(self.dc_temp2)
         self.assertEqual(name, 'h200.temp2')
 
         Record.objects.create(
@@ -141,7 +141,7 @@ class DeploymentUtilTest(TestCase):
             content='127.0.1.2',
             type='A',
         )
-        name = get_next_free_hostname(self.domain_temp1)
+        name = get_next_free_hostname(self.dc_temp1)
         self.assertEqual(name, 'h104.temp1')
         Record.objects.create(
             domain=self.domain_temp1,
@@ -149,11 +149,11 @@ class DeploymentUtilTest(TestCase):
             content='127.0.1.3',
             type='A',
         )
-        name = get_next_free_hostname(self.domain_temp1)
+        name = get_next_free_hostname(self.dc_temp1)
         self.assertEqual(name, 'h300.temp1')
 
         name = get_next_free_hostname(
-            self.domain_temp2, ['h200.temp2', 'h201.temp2'],
+            self.dc_temp2, ['h200.temp2', 'h201.temp2'],
         )
         self.assertEqual(name, 'h203.temp2')
 
