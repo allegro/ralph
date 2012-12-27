@@ -483,9 +483,9 @@ class CatalogPricing(Catalog):
             ) for g in PricingGroup.objects.filter(date=date)
         ]
         aggr = PricingGroup.objects.aggregate(db.Min('date'))
-        min_year = aggr['date__min'].year
+        min_year = aggr['date__min'].year if aggr['date__min'] else self.year
         aggr = PricingGroup.objects.aggregate(db.Max('date'))
-        max_year = aggr['date__max'].year
+        max_year = aggr['date__max'].year if aggr['date__max'] else self.year
         min_year = min(self.year, self.today.year, min_year)
         max_year = max(self.year, self.today.year, max_year)
         ret.update({
