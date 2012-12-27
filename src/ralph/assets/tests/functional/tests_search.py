@@ -192,7 +192,8 @@ class TestSearchForm(TestCase):
             self.assertNotEqual(part.part_info, None)
 
 
-class TestSearchDataRangeFields(TestCase):
+
+class TestSearchInvoiceDateFields(TestCase):
     def setUp(self):
         self.client = login_as_su()
 
@@ -263,14 +264,292 @@ class TestSearchDataRangeFields(TestCase):
         rows_from_table = content.context_data['bob_page'].object_list
         self.assertEqual(len(rows_from_table), 3)
 
-    def test_request_date_field(self):
-        pass
 
-    def test_provider_date_field(self):
-        pass
+class TestSearchProviderDateFields(TestCase):
+    def setUp(self):
+        self.client = login_as_su()
+        self.base_url = '/assets/dc/search'
 
-    def test_delivery_date_field(self):
-        pass
+        self.first_asset = create_asset(
+            provider_order_date=datetime.date(2001, 1, 1),
+            sn='1234-1234-1234-1234',
+        )
 
-    def test_production_date_field(self):
-        pass
+        self.second_asset = create_asset(
+            provider_order_date=datetime.date(2002, 1, 1),
+            sn='1235-1235-1235-1235',
+        )
+
+        self.third_asset = create_asset(
+            provider_order_date=datetime.date(2003, 1, 1),
+            sn='1236-1236-1236-1236',
+        )
+
+    def test_start_date_is_equal_end_date(self):
+        url = '?provider_order_date_from=%s&provider_order_date_to=%s' % (
+            '2001-01-01', '2001-01-01')
+        content = self.client.get(self.base_url + url)
+        self.assertEqual(content.status_code, 200)
+
+        rows_from_table = content.context_data['bob_page'].object_list
+        self.assertEqual(len(rows_from_table), 1)
+        self.assertEqual(rows_from_table[0].sn, '1234-1234-1234-1234')
+
+    def test_start_date_is_less_then_end_date(self):
+        url = '?provider_order_date_from=%s&provider_order_date_to=%s' % (
+            '2011-01-01', '2002-01-01')
+        content = self.client.get(self.base_url + url)
+        self.assertEqual(content.status_code, 200)
+
+        rows_from_table = content.context_data['bob_page'].object_list
+        self.assertEqual(len(rows_from_table), 0)
+
+    def test_find_more_assets_lte_gte(self):
+        url = '?provider_order_date_from=%s&provider_order_date_to=%s' % (
+            '2001-01-01', '2002-01-01')
+        content = self.client.get(self.base_url + url)
+        self.assertEqual(content.status_code, 200)
+
+        rows_from_table = content.context_data['bob_page'].object_list
+        self.assertEqual(len(rows_from_table), 2)
+
+        self.assertItemsEqual(
+            [asset.sn for asset in rows_from_table],
+            ['1234-1234-1234-1234', '1235-1235-1235-1235']
+        )
+
+    def test_start_date_is_empty(self):
+        url = '?provider_order_date_from=%s&provider_order_date_to=%s' % (
+            '', '2001-01-01')
+        content = self.client.get(self.base_url + url)
+        self.assertEqual(content.status_code, 200)
+
+        rows_from_table = content.context_data['bob_page'].object_list
+        self.assertEqual(len(rows_from_table), 1)
+        self.assertEqual(rows_from_table[0].sn, '1234-1234-1234-1234')
+
+    def test_end_date_is_empty(self):
+        url = '?provider_order_date_from=%s&provider_order_date_to=%s' % (
+            '1999-01-01', '')
+        content = self.client.get(self.base_url + url)
+        self.assertEqual(content.status_code, 200)
+
+        rows_from_table = content.context_data['bob_page'].object_list
+        self.assertEqual(len(rows_from_table), 3)
+
+
+class TestSearchDeliveryDateFields(TestCase):
+    def setUp(self):
+        self.client = login_as_su()
+
+        self.first_asset = create_asset(
+            delivery_date=datetime.date(2001, 1, 1),
+            sn='1234-1234-1234-1234',
+        )
+
+        self.second_asset = create_asset(
+            delivery_date=datetime.date(2002, 1, 1),
+            sn='1235-1235-1235-1235',
+        )
+
+        self.third_asset = create_asset(
+            delivery_date=datetime.date(2003, 1, 1),
+            sn='1236-1236-1236-1236',
+        )
+
+    def test_start_date_is_equal_end_date(self):
+        url = '/assets/dc/search?delivery_date_form=%s&delivery_date_to=%s' % (
+            '2001-01-01', '2001-01-01')
+        content = self.client.get(url)
+        self.assertEqual(content.status_code, 200)
+
+        rows_from_table = content.context_data['bob_page'].object_list
+        self.assertEqual(len(rows_from_table), 1)
+        self.assertEqual(rows_from_table[0].sn, '1234-1234-1234-1234')
+
+    def test_start_date_is_less_then_end_date(self):
+        url = '/assets/dc/search?delivery_date_form=%s&delivery_date_to=%s' % (
+            '2011-01-01', '2002-01-01')
+        content = self.client.get(url)
+        self.assertEqual(content.status_code, 200)
+
+        rows_from_table = content.context_data['bob_page'].object_list
+        self.assertEqual(len(rows_from_table), 0)
+
+    def test_find_more_assets_lte_gte(self):
+        url = '/assets/dc/search?delivery_date_form=%s&delivery_date_to=%s' % (
+            '2001-01-01', '2002-01-01')
+        content = self.client.get(url)
+        self.assertEqual(content.status_code, 200)
+
+        rows_from_table = content.context_data['bob_page'].object_list
+        self.assertEqual(len(rows_from_table), 2)
+
+        self.assertItemsEqual(
+            [asset.sn for asset in rows_from_table],
+            ['1234-1234-1234-1234', '1235-1235-1235-1235']
+        )
+
+    def test_start_date_is_empty(self):
+        url = '/assets/dc/search?delivery_date_form=%s&delivery_date_to=%s' % (
+            '', '2001-01-01')
+        content = self.client.get(url)
+        self.assertEqual(content.status_code, 200)
+
+        rows_from_table = content.context_data['bob_page'].object_list
+        self.assertEqual(len(rows_from_table), 1)
+        self.assertEqual(rows_from_table[0].sn, '1234-1234-1234-1234')
+
+    def test_end_date_is_empty(self):
+        url = '/assets/dc/search?delivery_date_form=%s&delivery_date_to=%s' % (
+            '1999-01-01', '')
+        content = self.client.get(url)
+        self.assertEqual(content.status_code, 200)
+
+        rows_from_table = content.context_data['bob_page'].object_list
+        self.assertEqual(len(rows_from_table), 3)
+
+
+class TestSearchRequestDateFields(TestCase):
+    def setUp(self):
+        self.client = login_as_su()
+
+        self.first_asset = create_asset(
+            request_date=datetime.date(2001, 1, 1),
+            sn='1234-1234-1234-1234',
+        )
+
+        self.second_asset = create_asset(
+            request_date=datetime.date(2002, 1, 1),
+            sn='1235-1235-1235-1235',
+        )
+
+        self.third_asset = create_asset(
+            request_date=datetime.date(2003, 1, 1),
+            sn='1236-1236-1236-1236',
+        )
+
+    def test_start_date_is_equal_end_date(self):
+        url = '/assets/dc/search?request_date_from=%s&request_date_to=%s' % (
+            '2001-01-01', '2001-01-01')
+        content = self.client.get(url)
+        self.assertEqual(content.status_code, 200)
+
+        rows_from_table = content.context_data['bob_page'].object_list
+        self.assertEqual(len(rows_from_table), 1)
+        self.assertEqual(rows_from_table[0].sn, '1234-1234-1234-1234')
+
+    def test_start_date_is_less_then_end_date(self):
+        url = '/assets/dc/search?request_date_from=%s&request_date_to=%s' % (
+            '2011-01-01', '2002-01-01')
+        content = self.client.get(url)
+        self.assertEqual(content.status_code, 200)
+
+        rows_from_table = content.context_data['bob_page'].object_list
+        self.assertEqual(len(rows_from_table), 0)
+
+    def test_find_more_assets_lte_gte(self):
+        url = '/assets/dc/search?request_date_from=%s&request_date_to=%s' % (
+            '2001-01-01', '2002-01-01')
+        content = self.client.get(url)
+        self.assertEqual(content.status_code, 200)
+
+        rows_from_table = content.context_data['bob_page'].object_list
+        self.assertEqual(len(rows_from_table), 2)
+
+        self.assertItemsEqual(
+            [asset.sn for asset in rows_from_table],
+            ['1234-1234-1234-1234', '1235-1235-1235-1235']
+        )
+
+    def test_start_date_is_empty(self):
+        url = '/assets/dc/search?request_date_from=%s&request_date_to=%s' % (
+            '', '2001-01-01')
+        content = self.client.get(url)
+        self.assertEqual(content.status_code, 200)
+
+        rows_from_table = content.context_data['bob_page'].object_list
+        self.assertEqual(len(rows_from_table), 1)
+        self.assertEqual(rows_from_table[0].sn, '1234-1234-1234-1234')
+
+    def test_end_date_is_empty(self):
+        url = '/assets/dc/search?request_date_from=%s&request_date_to=%s' % (
+            '1999-01-01', '')
+        content = self.client.get(url)
+        self.assertEqual(content.status_code, 200)
+
+        rows_from_table = content.context_data['bob_page'].object_list
+        self.assertEqual(len(rows_from_table), 3)
+
+
+class TestSearchProductionUseDateFields(TestCase):
+    def setUp(self):
+        self.client = login_as_su()
+        self.base_url = '/assets/dc/search'
+
+        self.first_asset = create_asset(
+            production_use_date=datetime.date(2001, 1, 1),
+            sn='1234-1234-1234-1234',
+        )
+
+        self.second_asset = create_asset(
+            production_use_date=datetime.date(2002, 1, 1),
+            sn='1235-1235-1235-1235',
+        )
+
+        self.third_asset = create_asset(
+            production_use_date=datetime.date(2003, 1, 1),
+            sn='1236-1236-1236-1236',
+        )
+
+    def test_start_date_is_equal_end_date(self):
+        url = '?production_use_date_from=%s&production_use_date_to=%s' % (
+            '2001-01-01', '2001-01-01')
+        content = self.client.get(self.base_url + url)
+        self.assertEqual(content.status_code, 200)
+
+        rows_from_table = content.context_data['bob_page'].object_list
+        self.assertEqual(len(rows_from_table), 1)
+        self.assertEqual(rows_from_table[0].sn, '1234-1234-1234-1234')
+
+    def test_start_date_is_less_then_end_date(self):
+        url = '?production_use_date_from=%s&production_use_date_to=%s' % (
+            '2011-01-01', '2002-01-01')
+        content = self.client.get(self.base_url + url)
+        self.assertEqual(content.status_code, 200)
+
+        rows_from_table = content.context_data['bob_page'].object_list
+        self.assertEqual(len(rows_from_table), 0)
+
+    def test_find_more_assets_lte_gte(self):
+        url = '?production_use_date_from=%s&production_use_date_to=%s' % (
+            '2001-01-01', '2002-01-01')
+        content = self.client.get(self.base_url + url)
+        self.assertEqual(content.status_code, 200)
+
+        rows_from_table = content.context_data['bob_page'].object_list
+        self.assertEqual(len(rows_from_table), 2)
+
+        self.assertItemsEqual(
+            [asset.sn for asset in rows_from_table],
+            ['1234-1234-1234-1234', '1235-1235-1235-1235']
+        )
+
+    def test_start_date_is_empty(self):
+        url = '?production_use_date_from=%s&production_use_date_to=%s' % (
+            '', '2001-01-01')
+        content = self.client.get(self.base_url + url)
+        self.assertEqual(content.status_code, 200)
+
+        rows_from_table = content.context_data['bob_page'].object_list
+        self.assertEqual(len(rows_from_table), 1)
+        self.assertEqual(rows_from_table[0].sn, '1234-1234-1234-1234')
+
+    def test_end_date_is_empty(self):
+        url = '?production_use_date_from=%s&production_use_date_to=%s' % (
+            '1999-01-01', '')
+        content = self.client.get(self.base_url + url)
+        self.assertEqual(content.status_code, 200)
+
+        rows_from_table = content.context_data['bob_page'].object_list
+        self.assertEqual(len(rows_from_table), 3)
