@@ -24,7 +24,6 @@ FAMILIES = {
     'Allegro-Software-RomPager': 'RomPager',
     'cisco-IOS': 'Cisco',
     'IBM_HTTP_Server': 'IBM',
-    'Mbedthis-Appweb': 'mbedthis',
     '': 'Unspecified',
 }
 
@@ -95,7 +94,7 @@ def guess_family(headers, document):
     elif family in ('Thomas-Krenn',):
         if 'ERIC_RESPONSE_OK' in document:
             family = 'VTL'
-    elif family in ('mbedthis',):
+    elif family in ('Mbedthis-Appweb',):
         if '/sclogin.html?console' in document:
             family = 'Dell'
         elif 'Juniper' in document:
