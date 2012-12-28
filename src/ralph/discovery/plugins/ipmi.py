@@ -151,11 +151,11 @@ def _add_ipmi_components(device, data):
             family=proc.label,
             speed=speed,
             cores=cores,
-            name=('CPU %s %dMHz %d-core' % (
+            name='CPU %s %dMHz %d-core' % (
                 proc.label,
                 speed,
                 cores,
-            ))[:50],
+            ),
             priority=0,   # FIXME: why 0?
         )
         proc.save()

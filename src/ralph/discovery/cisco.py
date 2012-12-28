@@ -59,12 +59,9 @@ def cisco_component(dev, inv):
     model, created = ComponentModel.create(
         comp_type,
         family=inv['pid'],
-        name=name[:50],
+        name=name,
+        priority=0,   # FIXME: why 0?
     )
-    if model.name != name[:50]:
-        # FIXME: doesn't this cause name race conditions?
-        model.name = name[:50]
-        model.save()
     comp, created = GenericComponent.concurrent_get_or_create(
         sn=inv['sn'],
         defaults={
