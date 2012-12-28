@@ -25,6 +25,17 @@ class HttpPluginTest(TestCase):
         family = http.guess_family({'Server': 'Apache'}, '<title>BIG-IP</title>')
         self.assertEqual(family, 'F5')
 
+    def test_guess_family_juniper(self):
+        test_string = '<title>Log In - Juniper Web Device Manager</title>'
+        family = http.guess_family({'Server': 'Mbedthis-Appweb/2.4.2'},
+                                   test_string)
+        self.assertEqual(family, 'Juniper')
+
+    def test_guess_family_dell(self):
+        test_string = 'top.document.location.href = "/sclogin.html?console"'
+        family = http.guess_family({'Server': 'Mbedthis-Appweb/2.4.2'},
+                                   test_string)
+        self.assertEqual(family, 'Dell')
 
 class HttpSupermicroPluginTest(TestCase):
     def test_macs(self):
