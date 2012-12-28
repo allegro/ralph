@@ -174,6 +174,8 @@ class ComponentModel(Named.NonUnique, SavePrioritized,
         All other arguments are optional and sensible defaults are given. For
         each ComponentModel type a minimal sensible set of arguments should be
         given.
+
+        name is truncated to 50 characters.
         """
         # sanitize None, 0 and empty strings
         for field in ('speed', 'cores', 'size', 'family', 'group', 'name'):
@@ -201,20 +203,18 @@ class ComponentModel(Named.NonUnique, SavePrioritized,
                 name += ' %dMiB' % kwargs['size']
             if kwargs['speed']:
                 name += ', %dRPM' % kwargs['speed']
-        elif kwargs['type'] == ComponentType.processor:
-            assert family, "`family` not given (required for CPUs)."
         else:
             name = kwargs.pop('name', family)
         kwargs['defaults'] = {
             'group': group,
-            'name': name,
+            'name': name[:50],
         }
-        # Make sure the cores are filled correctly
         if kwargs['type'] == ComponentType.processor:
+            assert family, "`family` not given (required for CPUs)."
             kwargs['cores'] = max(
                 1,
                 kwargs['cores'],
-                cores_from_model(kwargs.get('name', '')),
+                cores_from_model(name),
             )
             kwargs['size'] = kwargs['cores']
         obj, c = super(ComponentModel, cls).concurrent_get_or_create(**kwargs)
@@ -559,9 +559,8 @@ class Software(Component):
         return '%r at %r (%r)' % (self.label, self.path, self.model)
 
     @classmethod
-    def create(cls, dev, path, model_name, label=None, sn=None, family=None,
-               version=None, priority=None):
-        assert priority is not None, "priority argument not used."
+    def create(cls, dev, path, model_name, priority, label=None, sn=None,
+               family=None, version=None):
         model, created = ComponentModel.create(
             ComponentType.software,
             family=family,
@@ -634,9 +633,8 @@ class OperatingSystem(Component):
         return self.label
 
     @classmethod
-    def create(cls, dev, os_name, version='', memory=None, storage=None,
-               cores_count=None, family=None, priority=None):
-        assert priority is not None, "priority argument not used."
+    def create(cls, dev, os_name, priority, version='', memory=None,
+               storage=None, cores_count=None, family=None):
         model, created = ComponentModel.create(
             ComponentType.os,
             family=family,
