@@ -63,8 +63,57 @@ class Migration(SchemaMigration):
         # Adding unique constraint on 'PricingFormula', fields ['group', 'component_group']
         db.create_unique('discovery_pricingformula', ['group_id', 'component_group_id'])
 
+        # Adding M2M table for field racks on 'Network'
+        db.create_table('discovery_network_racks', (
+            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
+            ('network', models.ForeignKey(orm['discovery.network'], null=False)),
+            ('device', models.ForeignKey(orm['discovery.device'], null=False))
+        ))
+        db.create_unique('discovery_network_racks', ['network_id', 'device_id'])
+
+        # Adding model 'DiscoveryValue'
+        db.create_table('discovery_discoveryvalue', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('date', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
+            ('ip', self.gf('django.db.models.fields.IPAddressField')(unique=True, max_length=15)),
+            ('plugin', self.gf('django.db.models.fields.CharField')(default=u'', max_length=64)),
+            ('key', self.gf('django.db.models.fields.TextField')(default=u'')),
+            ('value', self.gf('django.db.models.fields.TextField')(default=u'')),
+        ))
+        db.send_create_signal('discovery', ['DiscoveryValue'])
+
+        # Adding field 'DataCenter.hosts_naming_template'
+        db.add_column('discovery_datacenter', 'hosts_naming_template',
+                      self.gf('django.db.models.fields.CharField')(default=u'h<10000,19999>.dc', max_length=30),
+                      keep_default=False)
+
+        # Adding field 'IPAddress.last_plugins'
+        db.add_column('discovery_ipaddress', 'last_plugins',
+                      self.gf('django.db.models.fields.TextField')(default='', blank=True),
+                      keep_default=False)
+
+        # Adding field 'Network.reserved'
+        db.add_column('discovery_network', 'reserved',
+                      self.gf('django.db.models.fields.PositiveIntegerField')(default=10),
+                      keep_default=False)
+
 
     def backwards(self, orm):
+        # Deleting field 'Network.reserved'
+        db.delete_column('discovery_network', 'reserved')
+
+        # Deleting field 'IPAddress.last_plugins'
+        db.delete_column('discovery_ipaddress', 'last_plugins')
+
+        # Deleting field 'DataCenter.hosts_naming_template'
+        db.delete_column('discovery_datacenter', 'hosts_naming_template')
+
+        # Deleting model 'DiscoveryValue'
+        db.delete_table('discovery_discoveryvalue')
+
+        # Removing M2M table for field racks on 'Network'
+        db.delete_table('discovery_network_racks')
+
         # Removing unique constraint on 'PricingFormula', fields ['group', 'component_group']
         db.delete_unique('discovery_pricingformula', ['group_id', 'component_group_id'])
 
@@ -249,6 +298,7 @@ class Migration(SchemaMigration):
         },
         'discovery.datacenter': {
             'Meta': {'ordering': "(u'name',)", 'object_name': 'DataCenter'},
+            'hosts_naming_template': ('django.db.models.fields.CharField', [], {'default': "u'h<10000,19999>.dc'", 'max_length': '30'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '75', 'db_index': 'True'})
         },
@@ -334,6 +384,15 @@ class Migration(SchemaMigration):
             'Meta': {'ordering': "(u'name',)", 'object_name': 'DiscoveryQueue'},
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '75', 'db_index': 'True'})
+        },
+        'discovery.discoveryvalue': {
+            'Meta': {'object_name': 'DiscoveryValue'},
+            'date': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'ip': ('django.db.models.fields.IPAddressField', [], {'unique': 'True', 'max_length': '15'}),
+            'key': ('django.db.models.fields.TextField', [], {'default': "u''"}),
+            'plugin': ('django.db.models.fields.CharField', [], {'default': "u''", 'max_length': '64'}),
+            'value': ('django.db.models.fields.TextField', [], {'default': "u''"})
         },
         'discovery.discoverywarning': {
             'Meta': {'object_name': 'DiscoveryWarning'},
@@ -469,6 +528,7 @@ class Migration(SchemaMigration):
             'http_family': ('django.db.models.fields.TextField', [], {'default': 'None', 'max_length': '64', 'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'is_management': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'last_plugins': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'last_puppet': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True', 'blank': 'True'}),
             'last_seen': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
@@ -558,7 +618,9 @@ class Migration(SchemaMigration):
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '75', 'db_index': 'True'}),
             'queue': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': "orm['discovery.DiscoveryQueue']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
             'rack': ('django.db.models.fields.CharField', [], {'default': 'None', 'max_length': '16', 'null': 'True', 'blank': 'True'}),
+            'racks': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['discovery.Device']", 'symmetrical': 'False'}),
             'remarks': ('django.db.models.fields.TextField', [], {'default': "u''", 'blank': 'True'}),
+            'reserved': ('django.db.models.fields.PositiveIntegerField', [], {'default': '10'}),
             'terminators': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['discovery.NetworkTerminator']", 'symmetrical': 'False'}),
             'vlan': ('django.db.models.fields.PositiveIntegerField', [], {'default': 'None', 'null': 'True', 'blank': 'True'})
         },
@@ -589,28 +651,28 @@ class Migration(SchemaMigration):
             'storage': ('django.db.models.fields.PositiveIntegerField', [], {'null': 'True', 'blank': 'True'})
         },
         'discovery.pricingformula': {
-            'Meta': {'unique_together': "((u'group', u'component_group'),)", 'object_name': 'PricingFormula'},
+            'Meta': {'ordering': "(u'group', u'component_group')", 'unique_together': "((u'group', u'component_group'),)", 'object_name': 'PricingFormula'},
             'component_group': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['discovery.ComponentModelGroup']"}),
             'formula': ('django.db.models.fields.TextField', [], {}),
             'group': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['discovery.PricingGroup']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
         },
         'discovery.pricinggroup': {
-            'Meta': {'unique_together': "((u'name', u'date'),)", 'object_name': 'PricingGroup'},
+            'Meta': {'ordering': "(u'name', u'date')", 'unique_together': "((u'name', u'date'),)", 'object_name': 'PricingGroup'},
             'date': ('django.db.models.fields.DateField', [], {}),
             'devices': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['discovery.Device']", 'symmetrical': 'False'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '64'})
         },
         'discovery.pricingvalue': {
-            'Meta': {'unique_together': "((u'device', u'variable'),)", 'object_name': 'PricingValue'},
+            'Meta': {'ordering': "(u'device', u'variable')", 'unique_together': "((u'device', u'variable'),)", 'object_name': 'PricingValue'},
             'device': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['discovery.Device']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'value': ('django.db.models.fields.DecimalField', [], {'max_digits': '8', 'decimal_places': '2'}),
             'variable': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['discovery.PricingVariable']"})
         },
         'discovery.pricingvariable': {
-            'Meta': {'unique_together': "((u'group', u'name'),)", 'object_name': 'PricingVariable'},
+            'Meta': {'ordering': "(u'group', u'name')", 'unique_together': "((u'group', u'name'),)", 'object_name': 'PricingVariable'},
             'aggregate': ('django.db.models.fields.PositiveIntegerField', [], {'default': '1'}),
             'group': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['discovery.PricingGroup']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),

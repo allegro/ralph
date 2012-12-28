@@ -1,26 +1,50 @@
 # -*- coding: utf-8 -*-
 import datetime
 from south.db import db
-from south.v2 import SchemaMigration
+from south.v2 import DataMigration
 from django.db import models
 
-
-class Migration(SchemaMigration):
+class Migration(DataMigration):
 
     def forwards(self, orm):
-        # Adding M2M table for field racks on 'Network'
-        db.create_table('discovery_network_racks', (
-            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('network', models.ForeignKey(orm['discovery.network'], null=False)),
-            ('device', models.ForeignKey(orm['discovery.device'], null=False))
-        ))
-        db.create_unique('discovery_network_racks', ['network_id', 'device_id'])
+        for net in orm.Network.objects.all():
+            if not net.rack:
+                continue
+            for name in net.rack.split(','):
+                sn = 'Rack %s' % name.strip()
+                try:
+                    rack = orm.Device.objects.get(sn=sn)
+                except orm.Device.DoesNotExist:
+                    continue   # drop non-existing racks silently
+                net.racks.add(rack)
+            net.save()
 
+        if not orm.ComponentModel.objects.exists():
+            return
+        related = [attr for attr in dir(orm.ComponentModel.objects.all()[0]) if attr.endswith('_set')]
+        cm_set = {cm for cm in orm.ComponentModel.objects.values_list('family', 'speed', 'cores', 'type', 'size')}
+        count = 0
+        for f, sp, c, t, si in cm_set:
+            cms = orm.ComponentModel.objects.filter(family=f, speed=sp, cores=c, type=t, size=si).order_by('id')
+            if 2 > cms.count():
+                continue
+            count += 1
+            continue
+            cm = cms[0]
+            rest = cms.exclude(pk=cm.pk)
+            for r in rest:
+                for attr in related:
+                    cm_objects = getattr(cm, attr)
+                    r_objects = getattr(r, attr)
+                    for obj in r_objects.all():
+                        cm_objects.add(obj)
+            rest.delete()
 
     def backwards(self, orm):
-        # Removing M2M table for field racks on 'Network'
-        db.delete_table('discovery_network_racks')
-
+        for net in orm.Network.objects.all():
+            net.rack = ', '.join(r.sn for r in net.racks)
+            net.racks = []
+            net.save()
 
     models = {
         'account.profile': {
@@ -178,6 +202,7 @@ class Migration(SchemaMigration):
         },
         'discovery.datacenter': {
             'Meta': {'ordering': "(u'name',)", 'object_name': 'DataCenter'},
+            'hosts_naming_template': ('django.db.models.fields.CharField', [], {'default': "u'h<10000,19999>.dc'", 'max_length': '30'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '75', 'db_index': 'True'})
         },
@@ -263,6 +288,15 @@ class Migration(SchemaMigration):
             'Meta': {'ordering': "(u'name',)", 'object_name': 'DiscoveryQueue'},
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '75', 'db_index': 'True'})
+        },
+        'discovery.discoveryvalue': {
+            'Meta': {'object_name': 'DiscoveryValue'},
+            'date': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'ip': ('django.db.models.fields.IPAddressField', [], {'unique': 'True', 'max_length': '15'}),
+            'key': ('django.db.models.fields.TextField', [], {'default': "u''"}),
+            'plugin': ('django.db.models.fields.CharField', [], {'default': "u''", 'max_length': '64'}),
+            'value': ('django.db.models.fields.TextField', [], {'default': "u''"})
         },
         'discovery.discoverywarning': {
             'Meta': {'object_name': 'DiscoveryWarning'},
@@ -398,6 +432,7 @@ class Migration(SchemaMigration):
             'http_family': ('django.db.models.fields.TextField', [], {'default': 'None', 'max_length': '64', 'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'is_management': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'last_plugins': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'last_puppet': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True', 'blank': 'True'}),
             'last_seen': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
@@ -489,6 +524,7 @@ class Migration(SchemaMigration):
             'rack': ('django.db.models.fields.CharField', [], {'default': 'None', 'max_length': '16', 'null': 'True', 'blank': 'True'}),
             'racks': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['discovery.Device']", 'symmetrical': 'False'}),
             'remarks': ('django.db.models.fields.TextField', [], {'default': "u''", 'blank': 'True'}),
+            'reserved': ('django.db.models.fields.PositiveIntegerField', [], {'default': '10'}),
             'terminators': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['discovery.NetworkTerminator']", 'symmetrical': 'False'}),
             'vlan': ('django.db.models.fields.PositiveIntegerField', [], {'default': 'None', 'null': 'True', 'blank': 'True'})
         },
@@ -637,3 +673,4 @@ class Migration(SchemaMigration):
     }
 
     complete_apps = ['discovery']
+    symmetrical = True
