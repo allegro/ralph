@@ -19,6 +19,10 @@ from ralph.dnsedit.util import (
 
 @nested_commit_on_success
 def do_clean(dev, user):
+    # Reset save priorities
+    dev.save_priorities = ''
+    dev.max_save_priority = 0
+    dev.save()
     # Set comment and user here, so that all changes have it
     save_comment = "Deployment"
     dev.save_comment = save_comment
@@ -44,7 +48,7 @@ def do_clean(dev, user):
         d.save_comment = save_comment
         d.save(user=user)
     # Delete all disk share mounts
-    for m in dev.disksharemount.all():
+    for m in dev.disksharemount_set.all():
         m.delete()
     for m in dev.servermount_set.all():
         m.delete()
@@ -59,13 +63,10 @@ def do_clean(dev, user):
     dev.deleted = False
     remark = "-- Remarks below are for old role %s/%s from %s --\n" % (
         dev.venture.name if dev.venture else '-',
-        dev.venture_role.full_name if dev.venture.role else '-',
-        datetime.date.today.strftime('%Y-%m-%d'),
+        dev.venture_role.full_name if dev.venture_role else '-',
+        datetime.date.today().strftime('%Y-%m-%d'),
     )
     dev.remarks = remark + dev.remarks
-    # Reset save priorities
-    dev.save_priorities = ''
-    dev.max_save_priority = 0
     dev.save()
 
 
