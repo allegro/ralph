@@ -354,6 +354,7 @@ djcelery.setup_loader()
 
 import os
 local_profile = os.environ.get('DJANGO_SETTINGS_PROFILE', 'local')
+ralph_settings_path = os.environ.get('RALPH_SETTINGS_PATH', '~/.ralph')
 
 if SETTINGS_PATH_MODE == 'flat':
     local_settings = '%s-%s.py' % (SETTINGS_PATH_PREFIX, local_profile)
@@ -365,7 +366,7 @@ else:
                        "" % SETTINGS_PATH_MODE)
 
 for cfg_loc in [local_settings,
-                '~/.ralph/settings',
+                '{}/settings'.format(ralph_settings_path),
                 '/etc/ralph/settings']:
     cfg_loc = os.path.expanduser(cfg_loc)
     if os.path.exists(cfg_loc):

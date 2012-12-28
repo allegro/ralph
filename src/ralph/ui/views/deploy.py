@@ -8,6 +8,7 @@ from __future__ import unicode_literals
 
 import cStringIO
 
+from bob.menu import MenuItem
 from django.views.generic import CreateView
 from django.http import HttpResponseRedirect
 from django.contrib import messages
@@ -61,6 +62,21 @@ class PrepareMassDeployment(Base):
             'form': self.form,
             'action_name': 'Next step'
         })
+        ret['template_menu_items'] = [
+            MenuItem(
+                'Manual device',
+                name='device',
+                fugue_icon='fugue-wooden-box',
+                href='/ui/racks//add_device/',
+            ),
+            MenuItem(
+                'Servers',
+                name='servers',
+                fugue_icon='fugue-computer',
+                href='/ui/deployment/mass/start/',
+            ),
+        ]
+        ret['template_selected'] = 'servers'
         return ret
 
     def get(self, *args, **kwargs):
@@ -96,6 +112,21 @@ class MassDeployment(Base):
             'form': self.form,
             'action_name': 'Deploy'
         })
+        ret['template_menu_items'] = [
+            MenuItem(
+                'Manual device',
+                name='device',
+                fugue_icon='fugue-wooden-box',
+                href='/ui/racks//add_device/',
+            ),
+            MenuItem(
+                'Servers',
+                name='servers',
+                fugue_icon='fugue-computer',
+                href='/ui/deployment/mass/start/',
+            ),
+        ]
+        ret['template_selected'] = 'servers'
         return ret
 
     def get(self, *args, **kwargs):
