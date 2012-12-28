@@ -158,11 +158,12 @@ class ComponentModel(Named.NonUnique, SavePrioritized,
 
     @classmethod
     def concurrent_get_or_create(cls, *args, **kwargs):
-        assert False, ("Direct usage of this method on ComponentModel is "
-                       "forbidden.")
+        raise AssertionError(
+            "Direct usage of this method on ComponentModel is forbidden."
+        )
 
     @classmethod
-    def create(cls, type, **kwargs):
+    def create(cls, type, priority, **kwargs):
         """More robust API for concurrent_get_or_create. All arguments should be
         given flat.
 
@@ -174,8 +175,6 @@ class ComponentModel(Named.NonUnique, SavePrioritized,
         each ComponentModel type a minimal sensible set of arguments should be
         given.
         """
-        assert 'priority' in kwargs, ("`priority` not given.")
-        assert 'type' in kwargs, ("`type` not given.")
         # sanitize None, 0 and empty strings
         for field in ('speed', 'cores', 'size', 'family', 'group', 'name'):
             if field in kwargs and not kwargs[field]:
@@ -187,14 +186,14 @@ class ComponentModel(Named.NonUnique, SavePrioritized,
         kwargs['type'] = type or ComponentType.unknown
         family = kwargs.setdefault('family', '')
         group = kwargs.pop('group', None)
-        if kwargs['type'] in ComponentType.memory:
+        if kwargs['type'] == ComponentType.memory:
             assert 'name' not in kwargs, "Custom `name` forbidden for memory."
             name = ' '.join('RAM', family)
             if kwargs['size']:
                 name += ' %dMiB' % kwargs['size']
             if kwargs['speed']:
                 name += ', %dMHz' % kwargs['speed']
-        elif kwargs['type'] in ComponentType.disk:
+        elif kwargs['type'] == ComponentType.disk:
             assert 'name' not in kwargs, "Custom `name` forbidden for disks."
             assert family, "`family` not given (required for disks)."
             name = family
@@ -202,7 +201,7 @@ class ComponentModel(Named.NonUnique, SavePrioritized,
                 name += ' %dMiB' % kwargs['size']
             if kwargs['speed']:
                 name += ', %dRPM' % kwargs['speed']
-        elif kwargs['type'] in ComponentType.processor:
+        elif kwargs['type'] == ComponentType.processor:
             assert family, "`family` not given (required for CPUs)."
         else:
             name = kwargs.pop('name', family)
