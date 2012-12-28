@@ -317,7 +317,7 @@ def _validate_ip_address(ip, network, parsed_ip_addresses, row_number):
             "Please check previous rows..." % row_number
         )
 
-def _validate_ip_owner(ip, mac):
+def _validate_ip_owner(ip, mac, row_number):
     """If the MAC is unique, make sure the IP address is not used anywhere.
     If the MAC address belongs to an existing device, make sure the IP address
     also belongs to that device.
@@ -389,7 +389,7 @@ class MassDeploymentForm(forms.Form):
             ip = cols[1].strip()
             mac = cols[3].strip()
             _validate_ip_address(ip, network, parsed_ip_addresses, row_number)
-            _validate_ip_owner(ip, mac)
+            _validate_ip_owner(ip, mac, row_number)
             parsed_ip_addresses.append(ip)
             _validate_mac(mac, parsed_macs, row_number)
             parsed_macs.append(mac)
