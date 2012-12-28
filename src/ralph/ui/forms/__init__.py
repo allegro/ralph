@@ -41,7 +41,7 @@ class DateRangeForm(forms.Form):
 
 
 class MarginsReportForm(DateRangeForm):
-    margin_venture = forms.ChoiceField(choices=all_ventures())
+    margin_venture = forms.ChoiceField()
 
     def __init__(self, margin_kinds, *args, **kwargs):
         super(MarginsReportForm, self).__init__(*args, **kwargs)
@@ -60,6 +60,7 @@ class MarginsReportForm(DateRangeForm):
             )
             field.initial = mk.margin
             self.fields[field_id] = field
+        self.fields['margin_venture'].choices = all_ventures()
 
     def get(self, field):
         try:
