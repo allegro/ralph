@@ -27,7 +27,7 @@ from ralph.discovery.models import Device, DataCenter, Network
 from ralph.business.models import Venture, VentureRole, Service, BusinessLine
 
 
-logger = logging.Logger(__file__)
+logger = logging.Logger(__name__)
 
 user_match = re.compile(r".*\<(.*)@.*\>")
 register_issue_signal = django.dispatch.Signal(providing_args=["change_id"])
@@ -342,4 +342,3 @@ def remove_moved_cis_pre_delete(sender, instance, using, **kwargs):
     ci = cdb.CI.get_by_content_object(instance)
     if ci:
         ci.delete()
-
