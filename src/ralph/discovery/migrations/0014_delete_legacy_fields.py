@@ -8,16 +8,63 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding field 'Network.reserved'
-        db.add_column('discovery_network', 'reserved',
-                      self.gf('django.db.models.fields.PositiveIntegerField')(default=10),
-                      keep_default=False)
+        # Deleting field 'Network.rack'
+        db.delete_column('discovery_network', 'rack')
+
+        # Removing unique constraint on 'Warning', fields ['category', 'address', 'device']
+        db.delete_unique('discovery_warning', ['category', 'address_id', 'device_id'])
+
+        # Deleting model 'Warning'
+        db.delete_table('discovery_warning')
+
+        # Removing unique constraint on 'ComponentModel', fields ['extra_hash', 'family', 'speed', 'cores', 'type', 'size']
+        db.delete_unique('discovery_componentmodel', ['extra_hash', 'family', 'speed', 'cores', 'type', 'size'])
+
+        # Deleting field 'ComponentModel.extra_hash'
+        db.delete_column('discovery_componentmodel', 'extra_hash')
+
+        # Deleting field 'ComponentModel.extra'
+        db.delete_column('discovery_componentmodel', 'extra')
+
+        # Adding unique constraint on 'ComponentModel', fields ['cores', 'type', 'speed', 'family', 'size']
+        db.create_unique('discovery_componentmodel', ['cores', 'type', 'speed', 'family', 'size'])
 
 
     def backwards(self, orm):
-        # Deleting field 'Network.reserved'
-        db.delete_column('discovery_network', 'reserved')
+        # Removing unique constraint on 'ComponentModel', fields ['cores', 'type', 'speed', 'family', 'size']
+        db.delete_unique('discovery_componentmodel', ['cores', 'type', 'speed', 'family', 'size'])
 
+        # Adding field 'ComponentModel.extra_hash'
+        db.add_column('discovery_componentmodel', 'extra_hash',
+                      self.gf('django.db.models.fields.CharField')(default=u'', max_length=32, blank=True),
+                      keep_default=False)
+
+        # Adding field 'ComponentModel.extra'
+        db.add_column('discovery_componentmodel', 'extra',
+                      self.gf('django.db.models.fields.TextField')(default=None, null=True, blank=True),
+                      keep_default=False)
+
+        # Adding unique constraint on 'ComponentModel', fields ['extra_hash', 'family', 'speed', 'cores', 'type', 'size']
+        db.create_unique('discovery_componentmodel', ['extra_hash', 'family', 'speed', 'cores', 'type', 'size'])
+
+        # Adding model 'Warning'
+        db.create_table('discovery_warning', (
+            ('category', self.gf('django.db.models.fields.CharField')(max_length=128)),
+            ('aknowledged', self.gf('django.db.models.fields.CharField')(default=u'', max_length=128, blank=True)),
+            ('remarks', self.gf('django.db.models.fields.TextField')(default=u'', blank=True)),
+            ('address', self.gf('django.db.models.fields.related.ForeignKey')(related_name=u'warning_set', null=True, to=orm['discovery.IPAddress'])),
+            ('device', self.gf('django.db.models.fields.related.ForeignKey')(related_name=u'warning_set', null=True, to=orm['discovery.Device'])),
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+        ))
+        db.send_create_signal('discovery', ['Warning'])
+
+        # Adding unique constraint on 'Warning', fields ['category', 'address', 'device']
+        db.create_unique('discovery_warning', ['category', 'address_id', 'device_id'])
+
+        # Adding field 'Network.rack'
+        db.add_column('discovery_network', 'rack',
+                      self.gf('django.db.models.fields.CharField')(default=None, max_length=16, null=True, blank=True),
+                      keep_default=False)
 
     models = {
         'account.profile': {
@@ -143,12 +190,10 @@ class Migration(SchemaMigration):
             'raw_config': ('django.db.models.fields.TextField', [], {'blank': 'True'})
         },
         'discovery.componentmodel': {
-            'Meta': {'unique_together': "((u'speed', u'cores', u'size', u'type', u'family', u'extra_hash'),)", 'object_name': 'ComponentModel'},
+            'Meta': {'unique_together': "((u'speed', u'cores', u'size', u'type', u'family'),)", 'object_name': 'ComponentModel'},
             'cache_version': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
             'cores': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0', 'blank': 'True'}),
             'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'extra': ('django.db.models.fields.TextField', [], {'default': 'None', 'null': 'True', 'blank': 'True'}),
-            'extra_hash': ('django.db.models.fields.CharField', [], {'default': "u''", 'max_length': '32', 'blank': 'True'}),
             'family': ('django.db.models.fields.CharField', [], {'default': "u''", 'max_length': '128', 'blank': 'True'}),
             'group': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': "orm['discovery.ComponentModelGroup']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
