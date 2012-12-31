@@ -787,6 +787,18 @@ def bulk_update(devices, fields, data, user):
         pricing.device_update_cached(d)
 
 
+def edit_fields_form(edit_fields, form):
+    """ Validate only edit fields """
+    old_form_fields = form.fields
+    fields_to_remove = []
+    for field in old_form_fields:
+        if field not in edit_fields and field != 'save_comment':
+            fields_to_remove.append(field)
+    for field in fields_to_remove:
+        del(form.fields[field])
+    return form
+
+
 class BulkEdit(BaseMixin, TemplateView):
     template_name = 'ui/bulk-edit.html'
     Form = DeviceBulkForm
@@ -816,16 +828,28 @@ class BulkEdit(BaseMixin, TemplateView):
                 self.different_fields.append(name)
             elif query.count() > 0:
                 initial[name] = query[0][name]
-        if 'save' in self.request.POST:
-            self.form = self.Form(self.request.POST, initial=initial)
-            if self.form.is_valid():
-                bulk_update(self.devices, self.edit_fields,
-                        self.form.cleaned_data, self.request.user)
+        if 'save' in self.request.POST and self.edit_fields != []:
+            self.form = edit_fields_form(
+                self.edit_fields,
+                self.Form(self.request.POST, initial=initial)
+            )
+            if self.form.is_valid and self.form.data['save_comment']:
+                bulk_update(
+                    self.devices,
+                    self.edit_fields,
+                    self.form.data,
+                    self.request.user
+                )
                 return HttpResponseRedirect(self.request.path+'../info/')
             else:
                 messages.error(self.request, 'Correct the errors.')
         elif 'bulk' in self.request.POST:
             self.form = self.Form(initial=initial)
+        elif self.edit_fields == []:
+            self.form = self.Form(initial=initial)
+            messages.error(
+                self.request, 'You have to mark which fields you changed'
+            )
         return super(BulkEdit, self).get(*args, **kwargs)
 
     def get(self, *args, **kwargs):
