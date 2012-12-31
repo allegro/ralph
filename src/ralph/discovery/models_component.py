@@ -8,7 +8,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import hashlib
 import datetime
 from decimal import Decimal
 
@@ -150,29 +149,88 @@ class ComponentModel(Named.NonUnique, SavePrioritized,
         choices=ComponentType(), default=ComponentType.unknown.id)
     group = db.ForeignKey(ComponentModelGroup, verbose_name=_("group"),
         null=True, blank=True, default=None, on_delete=db.SET_NULL)
-    extra = db.TextField(verbose_name=_("additional information"),
-        help_text=_("Additional information."), blank=True, default=None, null=True)
-    extra_hash = db.CharField(blank=True, default='', max_length=32)
     family = db.CharField(blank=True, default='', max_length=128)
 
     class Meta:
-        unique_together = ('speed', 'cores', 'size', 'type', 'family', 'extra_hash')
+        unique_together = ('speed', 'cores', 'size', 'type', 'family')
         verbose_name = _("component model")
         verbose_name_plural = _("component models")
 
     @classmethod
     def concurrent_get_or_create(cls, *args, **kwargs):
-        # Make sure the cores are filled correctly
-        if (kwargs.get('type') == ComponentType.processor and
-            'cores' in kwargs):
-                kwargs['cores'] = max(
-                    1,
-                    kwargs['cores'],
-                    cores_from_model(kwargs.get('name', '')),
-                )
-                kwargs['size'] = kwargs['cores']
-        return super(ComponentModel,
-                     cls).concurrent_get_or_create(*args, **kwargs)
+        raise AssertionError(
+            "Direct usage of this method on ComponentModel is forbidden."
+        )
+
+    @classmethod
+    def create(cls, type, priority, **kwargs):
+        """More robust API for concurrent_get_or_create. All arguments should be
+        given flat.
+
+        Required arguments: type; priority; family (for processors and disks)
+
+        Forbidden arguments: name (for memory and disks)
+
+        All other arguments are optional and sensible defaults are given. For
+        each ComponentModel type a minimal sensible set of arguments should be
+        given.
+
+        name is truncated to 50 characters.
+        """
+        # sanitize None, 0 and empty strings
+        for field in ('speed', 'cores', 'size', 'family', 'group', 'name'):
+            if field in kwargs and not kwargs[field]:
+                del kwargs[field]
+        # put sensible empty values
+        kwargs.setdefault('speed', 0)
+        kwargs.setdefault('cores', 0)
+        kwargs.setdefault('size', 0)
+        kwargs['type'] = type or ComponentType.unknown
+        family = kwargs.setdefault('family', '')
+        group = kwargs.pop('group', None)
+        if kwargs['type'] == ComponentType.memory:
+            assert 'name' not in kwargs, "Custom `name` forbidden for memory."
+            name = ' '.join('RAM', family)
+            if kwargs['size']:
+                name += ' %dMiB' % kwargs['size']
+            if kwargs['speed']:
+                name += ', %dMHz' % kwargs['speed']
+        elif kwargs['type'] == ComponentType.disk:
+            assert 'name' not in kwargs, "Custom `name` forbidden for disks."
+            assert family, "`family` not given (required for disks)."
+            name = family
+            if kwargs['size']:
+                name += ' %dMiB' % kwargs['size']
+            if kwargs['speed']:
+                name += ', %dRPM' % kwargs['speed']
+        else:
+            name = kwargs.pop('name', family)
+        kwargs['defaults'] = {
+            'group': group,
+            'name': name[:50],
+        }
+        if kwargs['type'] == ComponentType.processor:
+            assert family, "`family` not given (required for CPUs)."
+            kwargs['cores'] = max(
+                1,
+                kwargs['cores'],
+                cores_from_model(name),
+            )
+            kwargs['size'] = kwargs['cores']
+        obj, c = super(ComponentModel, cls).concurrent_get_or_create(**kwargs)
+        if c:
+            obj.mark_dirty(
+                'cores',
+                'family',
+                'group',
+                'name',
+                'size',
+                'speed',
+                'type',
+            )
+            obj.save(priority=priority)
+        return obj, c
+
 
     def get_price(self, size=None):
         if not self.group:
@@ -205,7 +263,6 @@ class ComponentModel(Named.NonUnique, SavePrioritized,
             'speed': self.speed,
             'size': self.size,
             'cores': self.cores,
-            'extra': escape(self.extra or ''),
             'count': self.get_count()
         }
 
@@ -492,25 +549,6 @@ class Software(Component):
     version = db.CharField(verbose_name=_("version"), max_length=255,
                            null=True, blank=True, default=None)
 
-    @classmethod
-    def create(cls, dev, path, model_name, label=None, sn=None, family=None,
-               version=None):
-        model, created = ComponentModel.concurrent_get_or_create(
-                type=ComponentType.software.id,
-                family=family,
-                extra_hash=hashlib.md5(model_name.encode('utf-8', 'replace')).hexdigest(),
-            )
-        if created:
-            model.extra = model_name
-            model.name = model_name
-            model.save()
-        software, created = cls.concurrent_get_or_create(device=dev, path=path)
-        software.model = model
-        software.label = label or model_name
-        software.sn = sn
-        software.version = version
-        return software
-
     class Meta:
         verbose_name = _("software")
         verbose_name_plural = _("software")
@@ -519,6 +557,39 @@ class Software(Component):
 
     def __unicode__(self):
         return '%r at %r (%r)' % (self.label, self.path, self.model)
+
+    @classmethod
+    def create(cls, dev, path, model_name, priority, label=None, sn=None,
+               family=None, version=None):
+        model, created = ComponentModel.create(
+            ComponentType.software,
+            family=family,
+            name=model_name,
+            priority=priority,
+        )
+        software, created = cls.concurrent_get_or_create(
+            device=dev,
+            path=path,
+            defaults={
+                'model': model,
+                'label': label or model_name,
+                'sn': sn,
+                'version': version,
+            }
+        )
+        if created:
+            software.mark_dirty(
+                'device',
+                'path',
+                'model',
+                'label',
+                'sn',
+                'version',
+            )
+            software.save(priority=priority)
+        # FIXME: should model, label, sn and version be updated for
+        #        existing objects?
+        return software
 
 
 class SplunkUsage(Component):
@@ -552,25 +623,6 @@ class OperatingSystem(Component):
     cores_count = db.PositiveIntegerField(verbose_name=_("cores count"),
         null=True, blank=True)
 
-    @classmethod
-    def create(cls, dev, os_name, version='', memory=None, storage=None,
-               cores_count=None, family=None):
-        model, created = ComponentModel.concurrent_get_or_create(
-            type=ComponentType.os.id,
-            family=family,
-            extra_hash=hashlib.md5(os_name.encode('utf-8', 'replace')).hexdigest()
-        )
-        if created:
-            model.name = os_name
-            model.save()
-        operating_system, created = cls.concurrent_get_or_create(device=dev)
-        operating_system.model = model
-        operating_system.label = '%s %s' % (os_name, version)
-        operating_system.memory = memory
-        operating_system.storage = storage
-        operating_system.cores_count = cores_count
-        return operating_system
-
     class Meta:
         verbose_name = _("operating system")
         verbose_name_plural = _("operating systems")
@@ -579,3 +631,25 @@ class OperatingSystem(Component):
 
     def __unicode__(self):
         return self.label
+
+    @classmethod
+    def create(cls, dev, os_name, priority, version='', memory=None,
+               storage=None, cores_count=None, family=None):
+        model, created = ComponentModel.create(
+            ComponentType.os,
+            family=family,
+            name=os_name,
+            priority=priority,
+        )
+        operating_system, created = cls.concurrent_get_or_create(
+            device=dev,
+            defaults={
+                'model': model,
+            }
+        )
+        operating_system.label = '%s %s' % (os_name, version)
+        operating_system.memory = memory
+        operating_system.storage = storage
+        operating_system.cores_count = cores_count
+        operating_system.save(priority=priority)
+        return operating_system
