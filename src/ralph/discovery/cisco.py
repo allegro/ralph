@@ -7,10 +7,14 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import re
-import hashlib
 
-from ralph.discovery.models import (SERIAL_BLACKLIST,
-                                    ComponentModel, GenericComponent, ComponentType)
+from ralph.discovery.models import (
+    ComponentModel,
+    ComponentType,
+    GenericComponent,
+    SERIAL_BLACKLIST,
+)
+from ralph.discovery.models_history import DiscoveryWarning
 
 INVENTORY_RE = re.compile(
 r"""(NAME|Name):\s*(?P<name>"[^"]*"|\S*)\s*,\s*DESCR:\s*(?P<descr>"[^"]*"|\S*)\s*
@@ -48,24 +52,35 @@ def cisco_type(pid):
     return comp_type
 
 def cisco_component(dev, inv):
-    extra = '' # '\n'.join('%s: %s' % i for i in inv.iteritems())
     comp_type = cisco_type(inv['pid'])
-    model, created = ComponentModel.concurrent_get_or_create(
-        type=comp_type.id, size=0, speed=0, cores=0, family=inv['pid'],
-        extra_hash=hashlib.md5(extra).hexdigest(), extra=extra)
     name = inv['descr']
     if not name.lower().startswith('cisco'):
         name = 'Cisco %s' % name
-    if created:
-        model.name = name[:50]
-        model.save()
-    elif model.name != name[:50]:
-        model.name = name[:50]
-        model.save()
+    model, created = ComponentModel.create(
+        comp_type,
+        family=inv['pid'],
+        name=name,
+        priority=0,   # FIXME: why 0?
+    )
     comp, created = GenericComponent.concurrent_get_or_create(
-            sn=inv['sn'], device=dev)
-    comp.model = model
-    comp.label = inv['name'][:255]
-    comp.save()
+        sn=inv['sn'],
+        defaults={
+            'device': dev,
+        },
+    )
+    if comp.device == dev:
+        comp.model = model
+        comp.label = inv['name'][:255]
+        comp.save()
+    else:
+        DiscoveryWarning(
+            message="GenericComponent(id={}) belongs to Device(id={})".format(
+                comp.id,
+                comp.device.id,
+            ),
+            plugin=__name__,
+            device=dev,
+        ).save()
+        comp = None
     return comp
 

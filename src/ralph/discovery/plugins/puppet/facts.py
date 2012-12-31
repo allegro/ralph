@@ -174,16 +174,12 @@ def handle_facts_disks(dev, facts, is_virtual=False):
         stor.label = '{} {} {}'.format(
             disk['vendor'].strip(), disk['product'].strip(),
             disk['revision'].strip())
-        extra = """Vendor: {vendor}
-Product: {product}
-Firmware Revision: {revision}
-Size: {size}""".format(**disk)
-        stor.model, c = ComponentModel.concurrent_get_or_create(
-            size=stor.size, speed=0, type=ComponentType.disk.id,
+        stor.model, c = ComponentModel.create(
+            ComponentType.disk,
+            size=stor.size,
             family=disk['vendor'].strip(),
-            extra_hash=hashlib.md5(extra).hexdigest(), extra=extra)
-        stor.model.name = '{} {}MiB'.format(stor.label, stor.size)
-        stor.model.save(priority=SAVE_PRIORITY)
+            priority=SAVE_PRIORITY,
+        )
         stor.save(priority=SAVE_PRIORITY)
 
 
@@ -221,8 +217,6 @@ def handle_facts_os(dev, facts, is_virtual=False):
         os_version = facts.get('kernelrelease', '')
     except KeyError:
         return
-    os = OperatingSystem.create(dev=dev, os_name=os_name, version=os_version,
-                                family=family)
     memory_size = None
     try:
         memory_size, unit = re.split('\s+', facts['memorysize'].lower())
@@ -237,15 +231,11 @@ def handle_facts_os(dev, facts, is_virtual=False):
             raise UnknownUnitError('Got unit: ' + unit)
     except (KeyError, ValueError):
         pass
-    os.memory = memory_size
-    if is_virtual:
-        cores_count = facts.get('processorcount', None)
-    else:
-        cores_count = facts.get('physicalprocessorcorecount', None)
+    cores_key = ('physical' if not is_virtual else '') + 'processorcount'
     try:
-        os.cores_count = int(cores_count)
+        cores_count = int(facts.get(cores_key))
     except TypeError:
-        pass
+        cores_count = None
     storage_size = get_storage_size_from_facts(facts)
     if not storage_size:
         lshw = facts.get('lshw', None)
@@ -265,9 +255,16 @@ def handle_facts_os(dev, facts, is_virtual=False):
                     storage_size = 0
                     for storage in storages:
                         storage_size += storage['size']
-    if storage_size:
-        os.storage = storage_size
-    os.save(priority=SAVE_PRIORITY)
+    OperatingSystem.create(
+        dev=dev,
+        os_name=os_name,
+        vfamily=family,
+        ersion=os_version,
+        cores_count=cores_count,
+        storage=storage_size,
+        memory=memory_size,
+        priority=SAVE_PRIORITY
+    )
 
 
 def parse_packages(facts):
@@ -302,4 +299,5 @@ def handle_facts_packages(dev, facts):
                 label=package['name'],
                 family=package['name'],
                 version=version,
-            ).save()
+                priority=SAVE_PRIORITY,
+            )
