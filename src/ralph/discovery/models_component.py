@@ -228,7 +228,7 @@ class ComponentModel(Named.NonUnique, SavePrioritized,
                 'speed',
                 'type',
             )
-            obj.save(priority=kwargs['priority'])
+            obj.save(priority=priority)
         return obj, c
 
 
