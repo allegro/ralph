@@ -259,19 +259,19 @@ class PrepareMassDeploymentForm(forms.Form):
     def clean_csv(self):
         csv_string = self.cleaned_data['csv'].strip().lower()
         rows = UnicodeReader(cStringIO.StringIO(csv_string))
-        parsed_macs = []
-        parsed_management_ip_addresses = []
+        parsed_macs = set()
+        parsed_management_ip_addresses = set()
         for row_number, cols in enumerate(rows, start=1):
             _validate_cols_count(6, cols, row_number)
             mac = cols[0].strip()
             _validate_mac(mac, parsed_macs, row_number)
             _validate_deploy_children(mac, row_number)
-            parsed_macs.append(mac)
+            parsed_macs.add(mac)
             management_ip = cols[1].strip()
             _validate_management_ip(
                 management_ip, parsed_management_ip_addresses, row_number,
             )
-            parsed_management_ip_addresses.append(management_ip)
+            parsed_management_ip_addresses.add(management_ip)
             network_name = cols[2].strip()
             if not (is_mac_address_known(mac) and network_name == ''):
                 # Allow empty network when the device already exists.
@@ -351,16 +351,16 @@ class MassDeploymentForm(forms.Form):
         csv_string = self.cleaned_data['csv'].strip().lower()
         rows = UnicodeReader(cStringIO.StringIO(csv_string))
         cleaned_csv = []
-        parsed_hostnames = []
-        parsed_ip_addresses = []
-        parsed_macs = []
-        parsed_management_ip_addresses = []
+        parsed_hostnames = set()
+        parsed_ip_addresses = set()
+        parsed_macs = set()
+        parsed_management_ip_addresses = set()
         for row_number, cols in enumerate(rows, start=1):
             _validate_cols_count(9, cols, row_number)
             _validate_cols_not_empty(cols, row_number)
             hostname = cols[0].strip()
             _validate_hostname(hostname, parsed_hostnames, row_number)
-            parsed_hostnames.append(hostname)
+            parsed_hostnames.add(hostname)
             network_name = cols[5].strip()
             try:
                 network = Network.objects.get(name=network_name)
@@ -390,14 +390,14 @@ class MassDeploymentForm(forms.Form):
             mac = cols[3].strip()
             _validate_ip_address(ip, network, parsed_ip_addresses, row_number)
             _validate_ip_owner(ip, mac, row_number)
-            parsed_ip_addresses.append(ip)
+            parsed_ip_addresses.add(ip)
             _validate_mac(mac, parsed_macs, row_number)
-            parsed_macs.append(mac)
+            parsed_macs.add(mac)
             management_ip = cols[4].strip()
             _validate_management_ip(
                 management_ip, parsed_management_ip_addresses, row_number,
             )
-            parsed_management_ip_addresses.append(management_ip)
+            parsed_management_ip_addresses.add(management_ip)
             try:
                 venture_role = VentureRole.objects.get(
                     venture__symbol=cols[6].strip().upper(),

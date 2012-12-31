@@ -245,7 +245,7 @@ class MassDeployment(Base):
                     device,
                     ip,
                 )
-                for rack in network.racks.order_by('name'):
+                for rack in network.racks.order_by('name')[:1]:
                     break
                 cols[2] = " %s " % network.name
             cols.insert(0, " %s " % rack.sn if rack else " ")
