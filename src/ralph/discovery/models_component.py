@@ -190,7 +190,7 @@ class ComponentModel(Named.NonUnique, SavePrioritized,
         group = kwargs.pop('group', None)
         if kwargs['type'] == ComponentType.memory:
             assert 'name' not in kwargs, "Custom `name` forbidden for memory."
-            name = ' '.join('RAM', family)
+            name = ' '.join(['RAM', family])
             if kwargs['size']:
                 name += ' %dMiB' % kwargs['size']
             if kwargs['speed']:
