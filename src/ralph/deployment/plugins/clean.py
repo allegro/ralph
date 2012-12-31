@@ -17,6 +17,7 @@ from ralph.dnsedit.util import (
     clean_dhcp_ip,
 )
 
+
 @nested_commit_on_success
 def do_clean(dev, user):
     # Reset save priorities
