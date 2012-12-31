@@ -1,23 +1,49 @@
 # -*- coding: utf-8 -*-
 import datetime
 from south.db import db
-from south.v2 import SchemaMigration
+from south.v2 import DataMigration
 from django.db import models
 
-
-class Migration(SchemaMigration):
+class Migration(DataMigration):
 
     def forwards(self, orm):
-        # Adding field 'Network.reserved'
-        db.add_column('discovery_network', 'reserved',
-                      self.gf('django.db.models.fields.PositiveIntegerField')(default=10),
-                      keep_default=False)
+        for net in orm.Network.objects.all():
+            if not net.rack:
+                continue
+            for name in net.rack.split(','):
+                sn = 'Rack %s' % name.strip()
+                try:
+                    rack = orm.Device.objects.get(sn=sn)
+                except orm.Device.DoesNotExist:
+                    continue   # drop non-existing racks silently
+                net.racks.add(rack)
+            net.save()
 
+        if not orm.ComponentModel.objects.exists():
+            return
+        related = [attr for attr in dir(orm.ComponentModel.objects.all()[0]) if attr.endswith('_set')]
+        cm_set = {cm for cm in orm.ComponentModel.objects.values_list('family', 'speed', 'cores', 'type', 'size')}
+        count = 0
+        for f, sp, c, t, si in cm_set:
+            cms = orm.ComponentModel.objects.filter(family=f, speed=sp, cores=c, type=t, size=si).order_by('id')
+            if 2 > cms.count():
+                continue
+            count += 1
+            cm = cms[0]
+            rest = cms.exclude(pk=cm.pk)
+            for r in rest:
+                for attr in related:
+                    cm_objects = getattr(cm, attr)
+                    r_objects = getattr(r, attr)
+                    for obj in r_objects.all():
+                        cm_objects.add(obj)
+            rest.delete()
 
     def backwards(self, orm):
-        # Deleting field 'Network.reserved'
-        db.delete_column('discovery_network', 'reserved')
-
+        for net in orm.Network.objects.all():
+            net.rack = ', '.join(r.sn for r in net.racks)
+            net.racks = []
+            net.save()
 
     models = {
         'account.profile': {
@@ -494,6 +520,7 @@ class Migration(SchemaMigration):
             'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '75', 'db_index': 'True'}),
             'queue': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': "orm['discovery.DiscoveryQueue']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
+            'rack': ('django.db.models.fields.CharField', [], {'default': 'None', 'max_length': '16', 'null': 'True', 'blank': 'True'}),
             'racks': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['discovery.Device']", 'symmetrical': 'False'}),
             'remarks': ('django.db.models.fields.TextField', [], {'default': "u''", 'blank': 'True'}),
             'reserved': ('django.db.models.fields.PositiveIntegerField', [], {'default': '10'}),
@@ -612,6 +639,15 @@ class Migration(SchemaMigration):
             'size': ('django.db.models.fields.PositiveIntegerField', [], {'null': 'True', 'blank': 'True'}),
             'sn': ('django.db.models.fields.CharField', [], {'default': 'None', 'max_length': '255', 'unique': 'True', 'null': 'True', 'blank': 'True'})
         },
+        'discovery.warning': {
+            'Meta': {'unique_together': "((u'category', u'address', u'device'),)", 'object_name': 'Warning'},
+            'address': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "u'warning_set'", 'null': 'True', 'to': "orm['discovery.IPAddress']"}),
+            'aknowledged': ('django.db.models.fields.CharField', [], {'default': "u''", 'max_length': '128', 'blank': 'True'}),
+            'category': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
+            'device': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "u'warning_set'", 'null': 'True', 'to': "orm['discovery.Device']"}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'remarks': ('django.db.models.fields.TextField', [], {'default': "u''", 'blank': 'True'})
+        },
         'tags.tag': {
             'Meta': {'object_name': 'Tag'},
             'author': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['account.Profile']"}),
@@ -636,3 +672,4 @@ class Migration(SchemaMigration):
     }
 
     complete_apps = ['discovery']
+    symmetrical = True

@@ -5,7 +5,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import hashlib
 import json
 from django.test import TestCase
 
@@ -49,91 +48,101 @@ class DonPedroPluginTest(TestCase):
             model_type=DeviceType.unknown
         )
         model_name = 'TestStorage 40960MiB'
-        model, _ = ComponentModel.concurrent_get_or_create(
-            size=40960, type=ComponentType.disk, speed=0, cores=0,
-            extra_hash=hashlib.md5('').hexdigest(), family=model_name
+        model, _ = ComponentModel.create(
+            ComponentType.disk,
+            size=40960,
+            family=model_name,
         )
-        model.name = model_name
-        model.save()
         storage, _ = Storage.concurrent_get_or_create(
             device=self.special_dev,
-            mount_point='C:'
+            mount_point='C:',
+            defaults={
+                'label': 'TestStorage',
+                'model': model,
+                'size': 40960,
+            },
         )
-        storage.label = 'TestStorage'
-        storage.size = 40960
-        storage.model = model
-        storage.save()
         storage, _ = Storage.concurrent_get_or_create(
             device=self.special_dev,
-            mount_point='D:'
+            mount_point='D:',
+            defaults={
+                'label': 'TestStorage',
+                'model': model,
+                'size': 40960,
+                'sn': 'stor_sn_123_321_2',
+            },
         )
-        storage.label = 'TestStorage'
-        storage.size = 40960
-        storage.model = model
-        storage.sn = 'stor_sn_123_321_2'
-        storage.save()
         storage, _ = Storage.concurrent_get_or_create(
             device=self.special_dev,
             mount_point='E:',
-            sn='stor_sn_123_321_3'
+            defaults={
+                'label': 'TestStorage',
+                'model': model,
+                'size': 40960,
+                'sn': 'stor_sn_123_321_3',
+            },
         )
-        storage.label = 'TestStorage'
-        storage.size = 40960
-        storage.model = model
-        storage.save()
         storage, _ = Storage.concurrent_get_or_create(
             device=self.temp_dev,
             mount_point='G:',
-            sn='stor_sn_123_321_5'
+            defaults={
+                'label': 'TestStorage',
+                'model': model,
+                'size': 40960,
+                'sn': 'stor_sn_123_321_5',
+            },
         )
-        storage.label = 'TestStorage'
-        storage.size = 40960
-        storage.model = model
-        storage.save()
         storage, _ = Storage.concurrent_get_or_create(
             device=self.special_dev,
             mount_point='H:',
-            sn='stor_sn_123_321_6'
+            defaults={
+                'label': 'TestStorage',
+                'model': model,
+                'size': 40960,
+                'sn': 'stor_sn_123_321_6',
+            },
         )
-        storage.label = 'TestStorage'
-        storage.size = 40960
-        storage.model = model
-        storage.save()
         storage, _ = Storage.concurrent_get_or_create(
             device=self.special_dev,
             mount_point='X:',
-            sn='stor_sn_123_321_7'
+            defaults={
+                'label': 'TestStorage',
+                'model': model,
+                'size': 40960,
+                'sn': 'stor_sn_123_321_7',
+            },
         )
-        storage.label = 'TestStorage'
-        storage.size = 40960
-        storage.model = model
-        storage.save()
+        # FIXME: this assigns a 40GB model to a 80GB device. How to handles
+        # cases like this?
         storage, _ = Storage.concurrent_get_or_create(
             device=self.special_dev,
             mount_point='I:',
-            sn='stor_sn_123_321_8'
+            defaults={
+                'label': 'TestStorage',
+                'model': model,
+                'size': 81920,
+                'sn': 'stor_sn_123_321_8',
+            },
         )
-        storage.label = 'TestStorage'
-        storage.size = 81920
-        storage.model = model
-        storage.save()
         storage, _ = Storage.concurrent_get_or_create(
             device=self.special_dev,
             mount_point='Y:',
-            sn='stor_sn_123_321_9'
+            defaults={
+                'label': 'TestStorage',
+                'model': model,
+                'size': 40960,
+                'sn': 'stor_sn_123_321_9',
+            },
         )
-        storage.label = 'TestStorage'
-        storage.size = 40960
-        storage.model = model
-        storage.save()
         storage, _ = Storage.concurrent_get_or_create(
-            device=self.special_dev,
-            sn='stor_sn_123_321_10'
+            sn='stor_sn_123_321_10',
+            defaults={
+                'device': self.special_dev,
+                'label': 'TestStorage',
+                'model': model,
+                'size': 81920,
+            },
         )
-        storage.label = 'TestStorage'
-        storage.size = 81920
-        storage.model = model
-        storage.save()
         save_storage(
             [
                 {
