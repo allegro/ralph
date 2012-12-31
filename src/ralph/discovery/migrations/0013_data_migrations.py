@@ -29,7 +29,6 @@ class Migration(DataMigration):
             if 2 > cms.count():
                 continue
             count += 1
-            continue
             cm = cms[0]
             rest = cms.exclude(pk=cm.pk)
             for r in rest:
