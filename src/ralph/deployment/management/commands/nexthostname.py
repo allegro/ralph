@@ -20,9 +20,10 @@ class Command(BaseCommand):
         if not args:
             raise CommandError('Please specify the DC name.')
         try:
-            hostname = get_next_free_hostname(args[0])
+            dc = DataCenter.objects.get(name=args[0])
         except DataCenter.DoesNotExist:
             raise CommandError("Specified data center doesn't exists.")
+        hostname = get_next_free_hostname(dc)
         if not hostname:
             raise CommandError("Couldn't determine the next host name.")
         self.stdout.write("Next host name: %s\n" % hostname)
