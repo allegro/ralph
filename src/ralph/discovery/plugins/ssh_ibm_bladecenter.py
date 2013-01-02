@@ -338,7 +338,7 @@ def _add_dev_switch(pairs, parent, raw, counts, dev_id):
         eth, created = Ethernet.concurrent_get_or_create(
             mac=MACAddressField.normalize(mac),
             defaults=dict(device=dev),
-            )
+        )
         eth.label = 'Ethernet'
         eth.save(priority=SAVE_PRIORITY)
     return dev
