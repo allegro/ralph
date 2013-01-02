@@ -10,7 +10,7 @@ import datetime
 from lck.django.common import nested_commit_on_success
 
 from ralph.util import plugin
-from ralph.deployment.models import Deployment
+from ralph.deployment.models import Deployment, DeploymentStatus
 from ralph.dnsedit.util import (
     clean_dns_entries,
     clean_dhcp_mac,
@@ -75,5 +75,7 @@ def do_clean(dev, user):
 def clean(deployment_id):
     """Prepare an existing device for deployment by cleaning old information."""
     deployment = Deployment.objects.get(id=deployment_id)
+    if deployment.status != DeploymentStatus.open:
+        return False
     do_clean(deployment.device, deployment.user)
     return True
