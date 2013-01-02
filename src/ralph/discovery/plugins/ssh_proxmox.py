@@ -120,10 +120,13 @@ def _add_virtual_machine(ssh, vmid, parent, master, storages):
             size = _get_local_disk_size(ssh, lv, parent)
             if not size > 0:
                 continue
-            model, created = ComponentModel.concurrent_get_or_create(
-                type=ComponentType.disk.id, family='QEMU disk image')
-            if created:
-                model.save()
+            model, created = ComponentModel.create(
+                ComponentType.disk,
+                family='QEMU disk image',
+                priority=0,   # FIXME: why 0?
+            )
+            # The model's size is deliberately 0 because it's a virtual
+            # volume: there would be potentially as many models as volumes.
             storage, created = Storage.concurrent_get_or_create(
                 device=dev, mount_point=lv)
             storage.size = size
@@ -169,12 +172,12 @@ def _add_virtual_machine(ssh, vmid, parent, master, storages):
             is_virtual=True).exclude(share__wwn__in=wwns):
         ds.delete()
 
-    cpu_model, cpu_model_created = ComponentModel.concurrent_get_or_create(
-        speed=0, type=ComponentType.processor.id, family='QEMU Virtual',
-        cores=0)
-    if cpu_model_created:
-        cpu_model.name = 'QEMU Virtual CPU version 0.12.4'
-        cpu_model.save()
+    cpu_model, cpu_model_created = ComponentModel.create(
+        ComponentType.processor,
+        family='QEMU Virtual',
+        name='QEMU Virtual CPU version 0.12.4',   # FIXME: why so specific?
+        priority=0,   # FIXME: why 0?
+    )
     for i in range(cpu_count):
         cpu, cpu_created = Processor.concurrent_get_or_create(device=dev,
                                                               index=i+1)

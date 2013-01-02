@@ -93,12 +93,12 @@ class WarehouseLookup(LookupChannel):
 
 class DCDeviceLookup(DeviceLookup):
     def get_base_objects(self):
-        return Asset.objects_dc()
+        return Asset.objects_dc
 
 
 class BODeviceLookup(DeviceLookup):
     def get_base_objects(self):
-        return Asset.objects_bo()
+        return Asset.objects_bo
 
 
 __all__ = [

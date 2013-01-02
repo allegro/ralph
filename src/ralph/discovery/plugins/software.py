@@ -11,23 +11,42 @@ from lck.django.common import nested_commit_on_success
 from ralph.util import plugin, network
 from ralph.discovery.models import Software, IPAddress
 
+SAVE_PRIORITY=20
 
 @nested_commit_on_success
 def _detect_software(ip, dev, http_family):
     detected = []
     if network.check_tcp_port(ip, 1521):
         detected.append('Oracle')
-        Software.create(dev, 'oracle', 'Oracle', family='Database').save()
+        Software.create(
+            dev,
+            'oracle',
+            'Oracle',
+            family='Database',
+            priority=SAVE_PRIORITY
+        )
     else:
         dev.software_set.filter(path='oracle').all().delete()
     if network.check_tcp_port(ip, 3306):
         detected.append('MySQL')
-        Software.create(dev, 'mysql', 'MySQL', family='Database').save()
+        Software.create(
+            dev,
+            'mysql',
+            'MySQL',
+            family='Database',
+            priority=SAVE_PRIORITY
+        )
     else:
         dev.software_set.filter(path='mysql').all().delete()
     if network.check_tcp_port(ip, 80) or network.check_tcp_port(ip, 443):
         detected.append('WWW')
-        Software.create(dev, 'www', 'WWW', label=http_family, family='WWW').save()
+        Software.create(dev,
+            'www',
+            'WWW',
+            label=http_family,
+            family='WWW',
+            priority=SAVE_PRIORITY
+        )
     else:
         dev.software_set.filter(path='www').all().delete()
     return ', '.join(detected)
