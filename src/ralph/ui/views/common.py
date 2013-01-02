@@ -850,9 +850,12 @@ class BulkEdit(BaseMixin, TemplateView):
             messages.error(
                 self.request, 'You have to mark which fields you changed'
             )
+        elif not self.devices:
+            messages.error(self.request, 'Did not select any device')
         return super(BulkEdit, self).get(*args, **kwargs)
 
     def get(self, *args, **kwargs):
+        messages.error(self.request, 'Did not select any device')
         return super(BulkEdit, self).get(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
