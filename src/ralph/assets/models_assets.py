@@ -99,15 +99,15 @@ def _get_file_path(instance, filename):
 class BOManager(models.Manager):
     def get_query_set(self):
         return super(BOManager, self).get_query_set().filter(
-            type__in=(AssetType.BO.choices
-                      ))
+            type__in=(AssetType.BO.choices)
+        )
 
 
 class DCManager(models.Manager):
     def get_query_set(self):
         return super(DCManager, self).get_query_set().filter(
-            type__in=(AssetType.DC.choices
-                      ))
+            type__in=(AssetType.DC.choices)
+        )
 
 
 class Asset(TimeTrackable, EditorTrackable, SavingUser, SoftDeletable):
