@@ -19,6 +19,7 @@ from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Language, TagStem
 from bob.menu import MenuItem
 from powerdns.models import Record
+from discovery.models_device import DeprecationKind
 
 from ralph.account.models import Perm
 from ralph.business.models import RolePropertyValue
@@ -781,7 +782,10 @@ def bulk_update(devices, fields, data, user):
         if 'venture' in fields:
             d.venture_role = None
         for name in fields:
-            setattr(d, name, data[name])
+            if name == 'deprecation_kind':
+                setattr(d, name, DeprecationKind.objects.get(id=data[name]))
+            else:
+                setattr(d, name, data[name])
         d.save_comment = data.get('save_comment')
         d.save(priority=SAVE_PRIORITY, user=user)
         pricing.device_update_cached(d)
