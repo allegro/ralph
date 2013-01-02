@@ -96,6 +96,20 @@ def _get_file_path(instance, filename):
     return os.path.join('assets', filename)
 
 
+class BOManager(models.Manager):
+    def get_query_set(self):
+        return super(BOManager, self).get_query_set().filter(
+            type__in=(AssetType.BO.choices)
+        )
+
+
+class DCManager(models.Manager):
+    def get_query_set(self):
+        return super(DCManager, self).get_query_set().filter(
+            type__in=(AssetType.DC.choices)
+        )
+
+
 class Asset(TimeTrackable, EditorTrackable, SavingUser, SoftDeletable):
     device_info = models.OneToOneField(
         'DeviceInfo', null=True, blank=True, on_delete=models.CASCADE
@@ -147,20 +161,12 @@ class Asset(TimeTrackable, EditorTrackable, SavingUser, SoftDeletable):
     production_use_date = models.DateField(null=True, blank=True)
     provider_order_date = models.DateField(null=True, blank=True)
 
+    objects = models.Manager()
+    objects_bo = BOManager()
+    objects_dc = DCManager()
+
     def __unicode__(self):
         return "{} - {} - {}".format(self.model, self.sn, self.barcode)
-
-    @classmethod
-    def objects_bo(cls):
-        """Returns back office assets queryset"""
-        return cls.objects.filter(
-            type__in=(AssetType.administration, AssetType.back_office)
-        )
-
-    @classmethod
-    def objects_dc(cls):
-        """Returns data center assets queryset"""
-        return cls.objects.filter(type=AssetType.data_center)
 
     def get_data_type(self):
         if self.device_info:
