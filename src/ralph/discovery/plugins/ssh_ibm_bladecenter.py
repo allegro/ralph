@@ -120,7 +120,7 @@ def _component(model_type, pairs, parent, raw):
         model_type = ComponentType.management
     elif 'Fibre Channel' in model_name:
         model_type = ComponentType.fibre
-        return None # FIXME: merge GenericComponent(model__type=fibre) and FibreChannel 
+        return None # FIXME: merge GenericComponent(model__type=fibre) and FibreChannel
     elif 'Power' in model_name:
         model_type = ComponentType.power
     elif 'Media' in model_name:
@@ -135,8 +135,12 @@ def _component(model_type, pairs, parent, raw):
         name=model_name,
         priority=SAVE_PRIORITY,
     )
-    component, created = GenericComponent.concurrent_get_or_create(device=parent,
-            sn=sn)
+    component, created = GenericComponent.concurrent_get_or_create(
+            sn=sn,
+            defaults=dict(
+                device=parent,
+            )
+    )
     component.model = model
     component.label = name
     firmware = (pairs.get('AMM firmware') or pairs.get('FW/BIOS') or
@@ -265,7 +269,7 @@ def _add_dev_cpu(pairs, parent, raw, counts, dev_id):
         speed=speed,
         cores=cores,
         name='CPU %s %d MHz, %s-core' % (family, speed, cores),
-        family=family,
+        family=family or 'Unknown',
         priority=SAVE_PRIORITY,
     )
     cpu.save(priority=SAVE_PRIORITY)
@@ -316,8 +320,10 @@ def _add_dev_blade(pairs, parent, raw, counts, dev_id):
         mac = pairs.get(name)
         if mac == 'Not Available' or mac is None:
             continue
-        eth, created = Ethernet.concurrent_get_or_create(device=dev,
-            mac=MACAddressField.normalize(mac))
+        eth, created = Ethernet.concurrent_get_or_create(
+            mac=MACAddressField.normalize(mac),
+            defaults=dict(device=dev),
+        )
         eth.label = name
         eth.save(priority=SAVE_PRIORITY)
     return dev
@@ -329,8 +335,10 @@ def _add_dev_switch(pairs, parent, raw, counts, dev_id):
     dev = _dev(dev_type, pairs, parent, raw)
     mac = pairs.get('MAC Address')
     if mac:
-        eth, created = Ethernet.concurrent_get_or_create(device=dev,
-            mac=MACAddressField.normalize(mac))
+        eth, created = Ethernet.concurrent_get_or_create(
+            mac=MACAddressField.normalize(mac),
+            defaults=dict(device=dev),
+            )
         eth.label = 'Ethernet'
         eth.save(priority=SAVE_PRIORITY)
     return dev
