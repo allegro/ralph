@@ -28,6 +28,7 @@ SANITY_CHECK_PING_ADDRESS = settings.SANITY_CHECK_PING_ADDRESS
 NETWORK_TASK_DELEGATION_TIMEOUT = settings.NETWORK_TASK_DELEGATION_TIMEOUT
 SINGLE_DISCOVERY_TIMEOUT = settings.SINGLE_DISCOVERY_TIMEOUT
 
+
 class DCRouter(object):
     """Route the discovery tasks to the right data center for them.
        Use the default queue if no network matches the IP address."""
@@ -48,8 +49,10 @@ class DCRouter(object):
             args[0]['queue'] = queue
         return queue
 
+
 def sanity_check(perform_network_checks=True):
-    """Checks configuration integrity by pinging www.allegro.pl."""
+    """Checks configuration integrity by pinging the SANITY_CHECK_PING_ADDRESS.
+    """
     if not perform_network_checks:
         return
 
@@ -66,6 +69,7 @@ def sanity_check(perform_network_checks=True):
                or
              * are you using setuid bin/python""").strip().format(
                  SANITY_CHECK_PING_ADDRESS))
+
 
 def _run_plugin(context, chain, plugin_name, requirements, interactive,
                 clear_down, done_requirements, outputs=None):
@@ -110,6 +114,8 @@ def _run_plugin(context, chain, plugin_name, requirements, interactive,
     finally:
         done_requirements.add(plugin_name)
     context.update(new_context)
+    context['successful_plugins'] = ', '.join(sorted(requirements))
+
 
 def run_next_plugin(context, requirements=None, interactive=False,
                     clear_down=True, done_requirements=None, outputs=None):
@@ -127,6 +133,7 @@ def run_next_plugin(context, requirements=None, interactive=False,
         _run_plugin(context, 'postprocess', plugin_name, requirements,
                     interactive, clear_down, done_requirements, outputs)
 
+
 @task(ignore_result=True, expires=3600)
 def dummy_task(interactive=False, index=None):
     stdout = output.get(interactive)
@@ -134,6 +141,7 @@ def dummy_task(interactive=False, index=None):
         stdout("Ping {}.".format(index))
     else:
         stdout("Ping.")
+
 
 @task(ignore_result=True, expires=3600)
 def dummy_horde(interactive=False, how_many=1000):
@@ -200,7 +208,9 @@ def discover_single(context, plugin_name='ping', requirements=None,
         run_next_plugin(context, requirements, interactive, clear_down,
                         done_requirements, outputs)
 
+
 def discover_single_synchro(ip):
+    """Run discovery of a single host in a synchronous way."""
     requirements = set()
     done_requirements = set()
     to_run = ['ping']
@@ -296,6 +306,7 @@ def discover_network(network, plugin_name='ping', requirements=None,
     else:
         stdout('Scanning network {} finished.'.format(net))
 
+
 @task(ignore_result=True)
 def discover_all(interactive=False, update_existing=False, outputs=None):
     """Runs discovery on all networks defined in the database."""
@@ -313,3 +324,4 @@ def discover_all(interactive=False, update_existing=False, outputs=None):
             discover_network.delay(net.network,
                 update_existing=update_existing)
     stdout()
+

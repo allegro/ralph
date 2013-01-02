@@ -57,4 +57,26 @@
           </table>
       </div>
 {% endif %}
+      <div class="span6 ">
+          <h5>Device parts</h5>
+          {% if parts %}
+          <table class="table table-striped table-bordered details-history">
+              <thead><tr>
+                  <th>Name</th>
+                  <th>Source device</th>
+                  <th>Author</th>
+              </tr></thead>
+              <tbody>
+              {% for part in parts%}
+                  <tr>
+                      <td><a href="../../../edit/part/{{ part.id }}">{{ part }}</a></td>
+                      <td><a href="../../../edit/device/{{ part.part_info.source_device.id }}">{{ part.part_info.source_device|default:'-'}}</a></td>
+                      <td>{{ part.user|default:'-'}}</td>
+                  </tr>
+              {% endfor %}
+              </tbody>
+          </table>
+          {% endif %}
+          <a href="../../../add/part?device={{asset.id}}">Add part</a>
+      </div>
 {% endblock %}

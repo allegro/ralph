@@ -99,7 +99,8 @@ class Preboot(Named, TimeTrackable):
 
 
 class MassDeployment(TimeTrackable, EditorTrackable):
-    csv = db.TextField()
+    csv = db.TextField(blank=True)
+    generated_csv = db.TextField(blank=True)
     is_done = db.BooleanField(default=False)
 
     class Meta:
@@ -162,7 +163,6 @@ class Deployment(TimeTrackable):
         _("is running"),
         default=False,
     )   # a database-level lock for deployment-related tasks
-    puppet_certificate_revoked = db.BooleanField(default=False)
     mass_deployment = db.ForeignKey(
         MassDeployment,
         verbose_name=_("initiated by mass deployment"), null=True,
@@ -176,8 +176,8 @@ class Deployment(TimeTrackable):
     def __unicode__(self):
         return "{} as {}/{} - {}".format(
             self.hostname,
-            self.venture.path,
-            self.venture_role.path,
+            self.venture.path if self.venture else '-',
+            self.venture_role.path if self.venture_role else '-',
             self.get_status_display(),
         )
 

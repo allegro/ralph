@@ -6,10 +6,10 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import time
-import paramiko
 
 from lck.django.common import nested_commit_on_success
 from lxml import etree as ET
+import paramiko
 
 from ralph.util import Eth
 from ralph.discovery.models import (DeviceType, Device, IPAddress,
@@ -123,12 +123,16 @@ def run(ssh, ip):
 @nested_commit_on_success
 def _save_shares(dev, volumes):
     wwns = []
-    for (label, serial, size, type, speed) in volumes:
+    for (label, serial, size, volume_type, speed) in volumes:
         wwn = normalize_wwn(serial)
         wwns.append(wwn)
-        model, created = ComponentModel.concurrent_get_or_create(
-            name='MSA %s disk share' % type, type=ComponentType.share.id,
-            family=type, speed=speed)
+        model, created = ComponentModel.create(
+            ComponentType.share,
+            speed=speed,
+            family=volume_type,
+            name='MSA %s disk share' % volume_type,
+            priority=0, # FIXME: why 0?
+        )
         share, created = DiskShare.concurrent_get_or_create(wwn=wwn, device=dev)
         share.model = model
         share.label = label

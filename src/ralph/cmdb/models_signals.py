@@ -11,6 +11,7 @@ import logging
 import re
 
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.dispatch import receiver
 from django.db.models.signals import post_delete, post_save, pre_delete
 from django.db import IntegrityError
@@ -27,7 +28,7 @@ from ralph.discovery.models import Device, DataCenter, Network
 from ralph.business.models import Venture, VentureRole, Service, BusinessLine
 
 
-logger = logging.Logger(__file__)
+logger = logging.Logger(__name__)
 
 user_match = re.compile(r".*\<(.*)@.*\>")
 register_issue_signal = django.dispatch.Signal(providing_args=["change_id"])
@@ -136,10 +137,12 @@ def post_create_change(sender, instance, raw, using, **kwargs):
                 instance.host, instance.configuration_version
             )
 
-        # now decide if this is a change included into the statistics
-        # by default create for every hooked change type.
-        # dont register tickets  before start date.
-
+        if chdb.CIChange.objects.filter(
+            content_type=ContentType.objects.get_for_model(instance),
+            object_id=instance.id,
+        ).exists():
+            # already created parent cichange(e.g while saving for 2 time). Skip it.
+            return
         ch = chdb.CIChange()
         ch.time = time
         ch.ci = ci
@@ -342,4 +345,3 @@ def remove_moved_cis_pre_delete(sender, instance, using, **kwargs):
     ci = cdb.CI.get_by_content_object(instance)
     if ci:
         ci.delete()
-

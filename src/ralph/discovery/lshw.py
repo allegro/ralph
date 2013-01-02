@@ -6,7 +6,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import hashlib
 import re
 
 import jpath
@@ -170,15 +169,12 @@ def handle_lshw_memory(dev, bus_memory, is_virtual=False, priority=0):
         size = int(size)
         label = memory['slot']
         family = 'Virtual' if is_virtual else ''
-        model, created = ComponentModel.concurrent_get_or_create(
-            size=size, speed=0, type=ComponentType.memory.id,
-            family=family, extra_hash='')
-        if created:
-            name = 'RAM %dMiB' % size
-            if family:
-                name = '%s %s' % (family, name)
-            model.name = name
-            model.save(priority=priority)
+        model, created = ComponentModel.create(
+            ComponentType.memory,
+            family=family,
+            size=size,
+            priority=priority,
+        )
         detected_memory[index] = label, model
     for mem in dev.memory_set.all():
         label, model = detected_memory.get(mem.index, (None, None))
@@ -206,19 +202,13 @@ def handle_lshw_processors(dev, processors, is_virtual=False, priority=0):
         speed /= units.speed_divisor[processor['size']['units']]
         speed = int(speed)
         family = processor['version'] or ''
-        caps = processor['capabilities']
-        extra = "\n".join(
-            [": ".join(
-                (key, ' '.join(e for e in untangle(caps[key]) if e) or ''))
-                for key in sorted(caps.keys())])
-        model, c = ComponentModel.concurrent_get_or_create(
-            speed=speed, type=ComponentType.processor.id,
-            extra_hash=hashlib.md5(extra).hexdigest(), family=family,
-            cores=0)
-        model.extra = extra
-        model.name = processor['product'] or 'CPU {} {}MHz'.format(family,
-                                                                   speed)
-        model.save(priority=priority)
+        model, c = ComponentModel.create(
+            ComponentType.processor,
+            speed=speed,
+            family=family,
+            name=processor['product'] or 'CPU {} {}MHz'.format(family, speed),
+            priority=priority
+        )
         detected_cpus[i + 1] = label, model
     for cpu in dev.processor_set.all():
         label, model = detected_cpus.get(cpu.index, (None, None))
@@ -280,17 +270,12 @@ def get_storage_from_lshw(lshw, no_ignore=False):
             label += storage['description'].strip()
         else:
             label += 'Generic disk'
-        caps = storage['capabilities']
-        extra = "\n".join([": ".join(
-            (unicode(key), unicode(caps[key]) or ''))
-            for key in sorted(caps.keys())])
         parsed_storages.append({
             'mount_point': mount_point,
             'sn': sn,
             'size': storage_size,
             'speed': storage_speed,
             'label': label,
-            'extra': extra
         })
     return mount_points, parsed_storages
 
@@ -309,12 +294,13 @@ def handle_lshw_storage(dev, lshw, is_virtual=False, priority=0):
         stor.size = storage['size']
         stor.speed = storage['speed']
         stor.label = storage['label']
-        stor.model, c = ComponentModel.concurrent_get_or_create(
-            size=stor.size, speed=stor.speed, type=ComponentType.disk.id,
-            family='', extra_hash=hashlib.md5(storage['extra']).hexdigest())
-        stor.model.extra = storage['extra']
-        stor.model.name = '{} {}MiB'.format(stor.label, stor.size)
-        stor.model.save(priority=priority)
+        stor.model, c = ComponentModel.create(
+            ComponentType.disk,
+            size=stor.size,
+            speed=stor.speed,
+            family=stor.label,
+            priority=priority,
+        )
         stor.save(priority=priority)
 
 
@@ -342,15 +328,13 @@ def handle_lshw_fibre_cards(dev, lshw, is_virtual=False, priority=0):
         fib, created = FibreChannel.concurrent_get_or_create(
             device=dev, physical_id=physid)
         fib.label = "{} {}".format(bus['vendor'], bus['product'])
-        extra = fib.label
-        fib.model, c = ComponentModel.concurrent_get_or_create(
-            type=ComponentType.fibre.id, family=bus['vendor'],
-            extra_hash=hashlib.md5(extra).hexdigest())
-        fib.model.extra = extra
-        fib.model.name = bus['product']
-        fib.model.save(priority=priority)
+        fib.model, c= ComponentModel.create(
+            ComponentType.fibre,
+            family=bus['vendor'],
+            name=bus['product'],
+            priority=priority,
+        )
         fib.save(priority=priority)
         handled_buses.add(physid)
         detected_fc_cards.add(fib.pk)
     dev.fibrechannel_set.exclude(pk__in=detected_fc_cards).delete()
-

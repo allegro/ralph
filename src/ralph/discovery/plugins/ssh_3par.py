@@ -32,13 +32,17 @@ def _connect_ssh(ip):
 @nested_commit_on_success
 def _save_shares(dev, shares):
     wwns = []
-    for share_id, (label, wwn, snapshot_size, size, type,
+    for share_id, (label, wwn, snapshot_size, size, share_type,
                    speed, full) in shares.iteritems():
         wwn = normalize_wwn(wwn)
         wwns.append(wwn)
-        model, created = ComponentModel.concurrent_get_or_create(
-            name='3PAR %s disk share' % type, type=ComponentType.share.id,
-            family=type, speed=speed)
+        model, created = ComponentModel.create(
+            ComponentType.share,
+            name='3PAR %s disk share' % share_type,
+            family=share_type,
+            speed=speed,
+            priority=0,   # FIXME: why 0?
+        )
         share, created = DiskShare.concurrent_get_or_create(wwn=wwn, device=dev)
         share.model = model
         share.label = label
