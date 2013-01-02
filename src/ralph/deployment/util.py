@@ -7,7 +7,6 @@ from __future__ import unicode_literals
 
 import re
 
-from django.db import transaction
 from django.db.models import Q
 import ipaddr
 from lck.django.common.models import MACAddressField
@@ -17,15 +16,18 @@ from powerdns.models import Record
 from ralph.business.models import VentureRole
 from ralph.deployment.models import Preboot, Deployment, DeploymentStatus
 from ralph.discovery.models import (
-    DataCenter, Network, IPAddress, Ethernet, DeviceType, Device,
+    Device,
+    DeviceType,
+    Ethernet,
     EthernetSpeed,
+    IPAddress,
+    Network,
 )
 from ralph.dnsedit.models import DHCPEntry
 from ralph.util import Eth
 
 
-def get_next_free_hostname(dc_name, reserved_hostnames=[]):
-    dc = DataCenter.objects.get(name=dc_name)
+def get_next_free_hostname(dc, reserved_hostnames=[]):
     hostnames_in_deployments = Deployment.objects.filter().values_list(
         'hostname', flat=True
     ).order_by('hostname')
@@ -94,7 +96,8 @@ def get_first_free_ip(network_name, reserved_ip_addresses=[]):
     addresses_in_running_deployments = Deployment.objects.filter(
         status__in=(DeploymentStatus.open, DeploymentStatus.in_progress)
     ).values_list('ip', flat=True).order_by('ip')
-    for ip_number in range(network.min_ip + 1, network.max_ip + 1):
+    min_ip_number = network.min_ip + network.reserved
+    for ip_number in range(min_ip_number, network.max_ip + 1):
         ip_string = str(ipaddr.IPAddress(ip_number))
         if (ip_number not in addresses_in_dhcp and
             ip_number not in addresses_in_discovery and
@@ -166,27 +169,44 @@ def _create_device(data):
     dev = Device.create(
         ethernets=ethernets, model_type=DeviceType.unknown,
         model_name='Unknown',
+        verified=True,
     )
+    dev.name = data['hostname']
     try:
         dev.parent = Device.objects.get(sn=data['rack_sn'])
-        dev.save()
     except Device.DoesNotExist:
         pass
+    dev.save()
     IPAddress.objects.create(
-        address=data['management_ip'],
+        address=data['ip'],
         device=dev,
-        is_management=True
+        hostname=data['hostname'],
     )
+    if management_ip_unique(data['management_ip']):
+        IPAddress.objects.create(
+            address=data['management_ip'],
+            device=dev,
+            is_management=True
+        )
     return dev
 
 
 @nested_commit_on_success
 def create_deployments(data, user, mass_deployment):
     for item in data:
-        dev = _create_device(item)
+        mac = MACAddressField.normalize(item['mac'])
+        try:
+            dev = Device.objects.get(ethernet__mac=mac)
+        except Device.DoesNotExist:
+            dev = _create_device(item)
         Deployment.objects.create(
-            user=user, device=dev, mac=item['mac'], ip=item['ip'],
-            hostname=item['hostname'], preboot=item['preboot'],
-            venture=item['venture'], venture_role=item['venture_role'],
-            mass_deployment=mass_deployment
+            user=user,
+            device=dev,
+            mac=mac,
+            ip=item['ip'],
+            hostname=item['hostname'],
+            preboot=item['preboot'],
+            venture=item['venture'],
+            venture_role=item['venture_role'],
+            mass_deployment=mass_deployment,
         )

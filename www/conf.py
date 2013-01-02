@@ -210,6 +210,15 @@ latex_documents = [
 # latex_use_modindex = True
 all_releases = [
     dict(
+        version='1.1.13',
+        release_date='December 31, 2012',
+        description_lines=[
+            'Introduce bulk deployment for servers, add support for '
+            'Dell PowerEdge servers, implement support for pricing groups for '
+            'disk shares, simplified deployment workflow.'
+        ],
+    ),
+    dict(
         version='1.1.11',
         release_date='December 5, 2012',
         description_lines=[

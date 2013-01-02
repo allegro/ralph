@@ -146,13 +146,18 @@ def _add_ipmi_components(device, data):
         else:
             speed = 0
         cores = 0
-        proc.model, c = ComponentModel.concurrent_get_or_create(
-            family=proc.label, speed=speed, type=ComponentType.processor.id,
-            cores=cores, extra_hash='', size=0)
-        if c:
-            proc.model.name = ('CPU %s %dMHz %d-core' % (
-                proc.label, speed, cores))[:50]
-            proc.model.save()
+        proc.model, c = ComponentModel.create(
+            ComponentType.processor,
+            family=proc.label,
+            speed=speed,
+            cores=cores,
+            name='CPU %s %dMHz %d-core' % (
+                proc.label,
+                speed,
+                cores,
+            ),
+            priority=0,   # FIXME: why 0?
+        )
         proc.save()
         # Memory
         mem_index = 0
@@ -173,11 +178,11 @@ def _add_ipmi_components(device, data):
                 index=total_mem_index + 1, device=device)
             mem.label = memory['Product Name']
             size = int(size_match.group(1)) * 1024
-            speed = 0
-            mem.model, c = ComponentModel.concurrent_get_or_create(
-                name='RAM %s %dMiB' % (mem.label, size), size=size,
-                speed=speed, type=ComponentType.memory.id, extra='',
-                extra_hash='', family=mem.label, cores=0)
+            mem.model, c = ComponentModel.create(
+                ComponentType.memory,
+                size=size,
+                priority=0,  # FIXME: why 0?
+            )
             mem.save()
             mem_index += 1
             total_mem_index += 1

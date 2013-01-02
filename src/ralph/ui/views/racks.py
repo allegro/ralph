@@ -220,8 +220,8 @@ class RacksDeviceList(SidebarRacks, BaseMixin, BaseDeviceList):
                     self.rack else None):
             tab_items.append(
                 MenuItem(
-                    'Add Device',
-                    fugue_icon='fugue-wooden-box--plus',
+                    'Deploy',
+                    fugue_icon='fugue-wand-hat',
                     name='add_device',
                     href='../add_device/?%s' % (self.request.GET.urlencode())
                 )
@@ -422,6 +422,21 @@ class RacksAddDevice(Racks, DeviceCreateView):
     def get_context_data(self, **kwargs):
         ret = super(RacksAddDevice, self).get_context_data(**kwargs)
         tab_items = ret['tab_items']
+        ret['template_menu_items'] = [
+            MenuItem(
+                'Manual device',
+                name='device',
+                fugue_icon='fugue-wooden-box',
+                href='../add_device/',
+            ),
+            MenuItem(
+                'Servers',
+                name='servers',
+                fugue_icon='fugue-computer',
+                href='/ui/deployment/mass/start/',
+            ),
+        ]
+        ret['template_selected'] = 'device'
         if ret['subsection'] is not '':
             tab_items.append(
                 MenuItem(
@@ -433,9 +448,9 @@ class RacksAddDevice(Racks, DeviceCreateView):
 
         tab_items.append(
             MenuItem(
-                'Add Device',
+                'Deploy',
                 name='add_device',
-                fugue_icon='fugue-wooden-box--plus',
+                fugue_icon='fugue-wand-hat',
                 href='../add_device/?%s' % (self.request.GET.urlencode())
             )
         )

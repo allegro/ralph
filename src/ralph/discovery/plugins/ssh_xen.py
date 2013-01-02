@@ -164,7 +164,7 @@ def run_ssh_xen(ipaddr, parent):
             sn__in=[vm_uuid for (vm_name, vm_uuid, vm_cores, vm_memory) in vms]
         ):
         dev.deleted = True
-        dev.save()
+        dev.save(priority=SAVE_PRIORITY)
     for vm_name, vm_uuid, vm_cores, vm_memory in vms:
         ethernets = [Eth('vif %d' % i, mac, 0) for
                      i, mac in enumerate(macs.get(vm_name, []))]
@@ -173,12 +173,12 @@ def run_ssh_xen(ipaddr, parent):
                 model_name='XEN Virtual Server', priority=SAVE_PRIORITY)
         dev.name = vm_name
         dev.save(priority=SAVE_PRIORITY)
-        cpu_model, cpu_model_created = ComponentModel.concurrent_get_or_create(
-            speed=0, type=ComponentType.processor.id, family='XEN Virtual',
-            cores=0)
-        if cpu_model_created:
-            cpu_model.name = 'XEN Virtual CPU'
-            cpu_model.save()
+        cpu_model, cpu_model_created = ComponentModel.create(
+            ComponentType.processor,
+            family='XEN Virtual',
+            name='XEN Virtual CPU',
+            priority=SAVE_PRIORITY,
+        )
         for i in xrange(vm_cores):
             cpu, created = Processor.concurrent_get_or_create(device=dev,
                                                               index=i + 1)
@@ -186,27 +186,27 @@ def run_ssh_xen(ipaddr, parent):
                 cpu.label = 'CPU %d' % i
                 cpu.model = cpu_model
                 cpu.family = 'XEN Virtual'
-                cpu.save()
+                cpu.save(priority=SAVE_PRIORITY)
         for cpu in dev.processor_set.filter(index__gt=vm_cores+1):
             cpu.delete()
-        mem_model, mem_model_created = ComponentModel.concurrent_get_or_create(
-            speed=0, type=ComponentType.memory.id, family='XEN Virtual',
-            cores=0, size=0)
-        if mem_model_created:
-            mem_model.name = 'XEN Virtual Memory'
-            mem_model.save()
+        mem_model, mem_model_created = ComponentModel.create(
+            ComponentType.memory,
+            family='Virtual',
+            size=vm_memory,
+            priority=SAVE_PRIORITY,
+        )
         memory, created = Memory.concurrent_get_or_create(device=dev, index=1)
         memory.size = vm_memory
         memory.model = mem_model
         memory.label = 'XEN Memory'
-        memory.save()
+        memory.save(priority=SAVE_PRIORITY)
         for mem in dev.memory_set.filter(index__gt=1):
             mem.delete()
-        disk_model, created = ComponentModel.concurrent_get_or_create(
-                type=ComponentType.disk.id, family='XEN virtual disk')
-        if created:
-            disk_model.name = 'XEN virtual disk'
-            disk_model.save()
+        disk_model, created = ComponentModel.create(
+            ComponentType.disk,
+            family='XEN Virtual',
+            priority=SAVE_PRIORITY,
+        )
         vm_disks = disks.get(vm_name, [])
         wwns = []
         for uuid, sr_uuid, size, device in vm_disks:
@@ -230,14 +230,14 @@ def run_ssh_xen(ipaddr, parent):
                 mount.server = parent
                 mount.size = mount_size
                 mount.volume = device
-                mount.save()
+                mount.save(priority=SAVE_PRIORITY)
             else:
                 storage, created = Storage.concurrent_get_or_create(
                     device=dev, mount_point=device, sn=uuid)
                 storage.size = size
                 storage.model = disk_model
                 storage.label = device
-                storage.save()
+                storage.save(priority=SAVE_PRIORITY)
         for disk in dev.storage_set.exclude(sn__in={
             uuid for uuid, x , y , z in vm_disks
         }):
