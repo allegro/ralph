@@ -49,8 +49,10 @@ class CleanPluginTest(TestCase):
         share = DiskShare(wwn='x'*33, device=device, model=share_model)
         share.save()
         DiskShareMount(share=share, device=device).save()
-        OperatingSystem.create(os_name='GladOS', dev=device, family='')
-        Software.create(dev=device, model_name='soft', path='/', family='')
+        OperatingSystem.create(os_name='GladOS', dev=device, family='',
+                               priority=0)
+        Software.create(dev=device, model_name='soft', path='/', family='',
+                        priority=0)
 
     def test_clean_plugin(self):
         clean(self.deployment.id)
