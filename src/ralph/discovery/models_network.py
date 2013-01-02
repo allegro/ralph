@@ -42,6 +42,11 @@ class AbstractNetwork(db.Model):
         _("gateway address"), help_text=_("Presented as string."), blank=True,
         null=True, default=None,
     )
+    reserved = db.PositiveIntegerField(
+        _("reserved"), default=10,
+        help_text=_("Number of addresses to be omitted in the automatic"
+                    "determination process, counted from the first in range.")
+    )
     remarks = db.TextField(
         _("remarks"), help_text=_("Additional information."), blank=True,
         default="",
@@ -211,6 +216,7 @@ class IPAddress(LastSeen, TimeTrackable, WithConcurrentGetOrCreate):
         Network, verbose_name=_("network"), null=True, blank=True,
         default=None,
     )
+    last_plugins = db.TextField(_("last plugins"),  blank=True)
 
     class Meta:
         verbose_name = _("IP address")

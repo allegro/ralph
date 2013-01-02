@@ -112,26 +112,28 @@ def get_disk(ssh):
     return total
 
 
-def make_system(ssh, dev):
-    """Create the OperatingSystem component. Also update the hostname."""
-
-    stdin, stdout, stderr = ssh.exec_command("/bin/uname -a")
-    family, host, version, release, rest = stdout.read().strip().split(None, 4)
-    os = OperatingSystem.create(dev=dev, os_name=release, version=version,
-                                family=family)
-    dev.name = host
-    dev.save(priority=SAVE_PRIORITY)
-    return os
-
-
 def update_os(ssh, dev):
     """Update the OperatingSystem component."""
 
-    os = make_system(ssh, dev)
-    os.memory = get_memory(ssh)
-    os.cores_count = get_cores(ssh)
-    os.storage = get_disk(ssh)
-    os.save()
+    stdin, stdout, stderr = ssh.exec_command("/bin/uname -a")
+    family, host, version, release, rest = stdout.read().strip().split(None, 4)
+    return OperatingSystem.create(
+        dev=dev,
+        os_name=release,
+        version=version,
+        family=family,
+        memory=get_memory(ssh),
+        storage=get_disk(ssh),
+        cores_count=get_cores(ssh),
+        priority=SAVE_PRIORITY
+    )
+
+
+def update_hostname(ssh, dev):
+    """Update the hostname using a fully qualified name."""
+    stdin, stdout, stderr = ssh.exec_command("/bin/hostname -f")
+    dev.name = stdout.read().strip()
+    dev.save(priority=SAVE_PRIORITY)
 
 
 def run_ssh_linux(ssh, ip):
@@ -141,6 +143,7 @@ def run_ssh_linux(ssh, ip):
         attach_ip(dev, ip)
         update_shares(ssh, dev)
         update_os(ssh, dev)
+        update_hostname(ssh, dev)
     return dev.name if dev else ''
 
 

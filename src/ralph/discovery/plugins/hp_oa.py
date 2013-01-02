@@ -6,7 +6,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import hashlib
 from urllib2 import urlopen, URLError
 import httplib
 
@@ -111,12 +110,11 @@ def _add_hp_oa_devices(devices, device_type, parent=None):
             if  parent and not parent.management:
                 parent.management = ip_address
                 parent.save(priority=SAVE_PRIORITY)
-            extra = name
-            model, mcreated = ComponentModel.concurrent_get_or_create(
-                    type=ComponentType.management.id,
-                    extra_hash=hashlib.md5(extra).hexdigest(), extra=extra)
-            model.name = name
-            model.save(priority=SAVE_PRIORITY)
+            model, mcreated = ComponentModel.create(
+                ComponentType.management,
+                name=name,
+                priority=SAVE_PRIORITY,
+            )
             component, created = GenericComponent.concurrent_get_or_create(
                     device=parent, sn=sn)
             component.model = model
@@ -139,7 +137,10 @@ def _add_hp_oa_devices(devices, device_type, parent=None):
 
         dev = None
 
+        # FIXME: isn't ip already known as not empty?
         if ip and device_type in (DeviceType.switch, DeviceType.fibre_channel_switch):
+            # FIXME: isn't this IP address already created as `ip_address`
+            # above?
             ip_addr, ip_created = IPAddress.concurrent_get_or_create(address=ip)
             if ip_addr.device:
                 dev = ip_addr.device

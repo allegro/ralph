@@ -1,14 +1,26 @@
 Change Log
 ----------
 
+1.1.13
+~~~~~~
+
+Released on December 31, 2012
+
+* Allow bulk deployment to re-use existing devices
+
+* Clean up the way in which the discovery plugins create components
+
+* Allow racks in different data centers to have the same name
+
+
 1.1.12
 ~~~~~~
 
-Released on December 19, 2012.
+Released on December 20, 2012.
 
 * Dell PowerEdge servers supported
 
-* introduced pricing groups for the disk shares
+* introduced pricing groups for disk shares
 
 * interpolation of variables in preboot files supported
 
