@@ -613,7 +613,7 @@ class EditDevice(Base):
         )):
             modifier_profile = self.request.user.get_profile()
             self.asset = _update_asset(
-                modifier_profile, self.asset, self.self.asset_form.cleaned_data
+                modifier_profile, self.asset, self.asset_form.cleaned_data
             )
             if self.asset.type in AssetType.BO.choices:
                 self.asset = _update_office_info(
