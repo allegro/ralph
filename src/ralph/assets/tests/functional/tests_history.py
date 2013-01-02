@@ -50,7 +50,6 @@ class HistoryAssetsView(TestCase):
         self.asset_change_params = {
             'barcode': '777777',
             'status': AssetStatus.damaged.id,
-            'sn': '777-777-777',
             'license_key': '66-66-66',
             'version': '0.1',
             'unit_price': 666.6,
@@ -101,16 +100,6 @@ class HistoryAssetsView(TestCase):
         self.assertListEqual(
             [asset_history[1].old_value, asset_history[1].new_value],
             [self.asset_params['barcode'], self.asset_change_params['barcode']]
-        )
-
-    def test_change_sn(self):
-        """Test check the recording Asset serial number in asset history"""
-        asset_history = AssetHistoryChange.objects.filter(
-            asset=self.asset, field_name='sn'
-        )
-        self.assertListEqual(
-            [asset_history[0].old_value, asset_history[0].new_value],
-            [self.asset_params['sn'], self.asset_change_params['sn']]
         )
 
 
