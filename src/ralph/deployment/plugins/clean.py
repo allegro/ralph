@@ -11,6 +11,7 @@ from lck.django.common import nested_commit_on_success
 
 from ralph.util import plugin
 from ralph.deployment.models import Deployment, DeploymentStatus
+from ralph.discovery.models import IPAddress
 from ralph.dnsedit.util import (
     clean_dns_entries,
     clean_dhcp_mac,
@@ -78,4 +79,8 @@ def clean(deployment_id):
     if deployment.status != DeploymentStatus.open:
         return False
     do_clean(deployment.device, deployment.user)
+    ip, created = IPAddress.concurrent_get_or_create(address=deployment.ip)
+    ip.device=deployment.device
+    ip.hostname=deployment.hostname
+    ip.save()
     return True
