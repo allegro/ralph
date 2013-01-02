@@ -291,7 +291,7 @@ class BackOfficeSearch(BackOfficeMixin, AssetSearch):
         return data
 
     def get_all_items(self, query):
-        return Asset.objects_bo().filter(query)
+        return Asset.objects_bo.filter(query)
 
 
 class DataCenterSearch(DataCenterMixin, AssetSearch):
@@ -318,7 +318,7 @@ class DataCenterSearch(DataCenterMixin, AssetSearch):
         return data
 
     def get_all_items(self, query):
-        return Asset.objects_dc().filter(query)
+        return Asset.objects_dc.filter(query)
 
 
 def _get_mode(request):
@@ -443,13 +443,23 @@ class AddPart(Base):
         })
         return ret
 
+    def initialize_vars(self):
+        self.device_id = None
+
     def get(self, *args, **kwargs):
+        self.initialize_vars()
         mode = _get_mode(self.request)
         self.asset_form = AddPartForm(mode=mode)
-        self.part_info_form = BasePartForm(mode=mode)
+        self.device_id = self.request.GET.get('device')
+        part_form_initial = {}
+        if self.device_id:
+            part_form_initial['device'] = self.device_id
+        self.part_info_form = BasePartForm(
+            initial=part_form_initial, mode=mode)
         return super(AddPart, self).get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
+        self.initialize_vars()
         self.asset_form = AddPartForm(
             self.request.POST, mode=_get_mode(self.request))
         self.part_info_form = BasePartForm(
@@ -548,6 +558,11 @@ def _update_part_info(user, asset, part_info_data):
 class EditDevice(Base):
     template_name = 'assets/edit_device.html'
 
+    def initialize_vars(self):
+        self.parts = []
+        self.office_info_form = None
+        self.asset = None
+
     def get_context_data(self, **kwargs):
         ret = super(EditDevice, self).get_context_data(**kwargs)
         status_history = AssetHistoryChange.objects.all().filter(
@@ -560,58 +575,60 @@ class EditDevice(Base):
             'form_id': 'edit_device_asset_form',
             'edit_mode': True,
             'status_history': status_history,
+            'parts': self.parts,
+            'asset': self.asset,
         })
         return ret
 
     def get(self, *args, **kwargs):
-        asset = get_object_or_404(Asset, id=kwargs.get('asset_id'))
-        if not asset.device_info:  # it isn't device asset
+        self.initialize_vars()
+        self.asset = get_object_or_404(Asset, id=kwargs.get('asset_id'))
+        if not self.asset.device_info:  # it isn't device asset
             raise Http404()
         self.asset_form = EditDeviceForm(
-            instance=asset,
+            instance=self.asset,
             mode=_get_mode(self.request)
         )
-        if asset.type in AssetType.BO.choices:
-            self.office_info_form = OfficeForm(instance=asset.office_info)
-        else:
-            self.office_info_form = None
-        self.device_info_form = DeviceForm(instance=asset.device_info)
-        self.parts = Asset.obj
+        if self.asset.type in AssetType.BO.choices:
+            self.office_info_form = OfficeForm(instance=self.asset.office_info)
+        self.device_info_form = DeviceForm(instance=self.asset.device_info)
+        self.parts = Asset.objects.filter(part_info__device=self.asset)
         return super(EditDevice, self).get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
-        asset = get_object_or_404(Asset, id=kwargs.get('asset_id'))
+        self.initialize_vars()
+        self.asset = get_object_or_404(Asset, id=kwargs.get('asset_id'))
         self.asset_form = EditDeviceForm(
-            self.request.POST, instance=asset, mode=_get_mode(self.request)
+            self.request.POST, instance=self.asset, mode=_get_mode(self.request)
         )
         self.device_info_form = DeviceForm(self.request.POST)
 
-        if asset.type in AssetType.BO.choices:
+        if self.asset.type in AssetType.BO.choices:
             self.office_info_form = OfficeForm(
                 self.request.POST, self.request.FILES)
         if all((
             self.asset_form.is_valid(),
             self.device_info_form.is_valid(),
-            asset.type < AssetType.BO or self.office_info_form.is_valid()
+            self.asset.type < AssetType.BO or self.office_info_form.is_valid()
         )):
             modifier_profile = self.request.user.get_profile()
-            asset = _update_asset(
-                modifier_profile, asset, self.asset_form.cleaned_data
+            self.asset = _update_asset(
+                modifier_profile, self.asset, self.self.asset_form.cleaned_data
             )
-            if asset.type in AssetType.BO.choices:
-                asset = _update_office_info(
-                    modifier_profile.user, asset,
+            if self.asset.type in AssetType.BO.choices:
+                self.asset = _update_office_info(
+                    modifier_profile.user, self.asset,
                     self.office_info_form.cleaned_data
                 )
-            asset = _update_device_info(
-                modifier_profile.user, asset,
+            self.asset = _update_device_info(
+                modifier_profile.user, self.asset,
                 self.device_info_form.cleaned_data
             )
-            asset.save(user=self.request.user)
+            self.asset.save(user=self.request.user)
             messages.success(self.request, _("Assets edited."))
             cat = self.request.path.split('/')[2]
             return HttpResponseRedirect(
-                '/assets/%s/edit/device/%s/' % (cat, asset.id)
+                '/assets/%s/edit/device/%s/' % (cat, self.asset.id)
             )
         else:
             messages.error(self.request, _("Please correct the errors."))
