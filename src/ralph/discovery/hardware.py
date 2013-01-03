@@ -249,7 +249,7 @@ def handle_smartctl(dev, disks, priority=0):
         if disk['product'].lower() in DISK_PRODUCT_BLACKLIST:
             continue
         stor, created = Storage.concurrent_get_or_create(
-            device=dev, sn=disk['serial_number']
+            device=dev, sn=disk['serial_number'], mount_point=None,
         )
         stor.device = dev
         size_value, size_unit, rest = disk['user_capacity'].split(' ', 2)
@@ -310,7 +310,7 @@ def handle_megaraid(dev, disks, priority=0):
         if disk['product'].lower() in DISK_PRODUCT_BLACKLIST:
             continue
         stor, created = Storage.concurrent_get_or_create(
-            device=dev, sn=disk['serial_number'])
+            device=dev, sn=disk['serial_number'], mount_point=None)
         stor.device = dev
         size_value, size_unit, rest = disk['coerced_size'].split(' ', 2)
         size_value = size_value.replace(',', '')
@@ -343,7 +343,7 @@ def handle_hpacu(dev, disks, priority=0):
         if not disk.get('serial_number'):
             continue
         stor, created = Storage.concurrent_get_or_create(
-            device=dev, sn=disk['serial_number'])
+            device=dev, sn=disk['serial_number'], mount_point=None)
         stor.device = dev
         size_value, size_unit = disk['size'].split()
         stor.size = int(float(size_value) / units.size_divisor[size_unit])
