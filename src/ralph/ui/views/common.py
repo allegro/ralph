@@ -208,11 +208,21 @@ class BaseMixin(object):
             has_perm(Perm.read_configuration_item_info_generic)):
             ci = ''
             try:
-                device = self.kwargs['device']
+                device_id = self.kwargs['device']
             except KeyError:
-                device = None
-            if device:
-                ci = CI.get_by_content_object(Device.objects.get(pk=device))
+                device_id = None
+            if device_id:
+                deleted = False
+                if self.request.GET.get('deleted', '').lower() == 'on':
+                    deleted = True
+                try:
+                    if deleted:
+                        device = Device.admin_objects.get(pk=device_id)
+                    else:
+                        device = Device.objects.get(pk=device_id)
+                    ci = CI.get_by_content_object(device)
+                except Device.DoesNotExist:
+                    pass
             if ci:
                 tab_items.extend([
                     MenuItem('CMDB', fugue_icon='fugue-thermometer',
@@ -370,6 +380,10 @@ class Info(DeviceUpdateView):
 
     def get(self, *args, **kwargs):
         self.object = self.get_object()
+        if (self.request.GET.get('deleted', '').lower() != 'on' and
+            self.object.deleted):
+            messages.warning(self.request, "Couldn't find selected device.")
+            return HttpResponseRedirect('/')
         self.property_form = self.get_property_form()
         return super(Info, self).get(*args, **kwargs)
 
