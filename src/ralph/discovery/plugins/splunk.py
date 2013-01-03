@@ -52,13 +52,12 @@ def splunk(**options):
             continue
         name = 'Splunk Volume 100 GiB'
         symbol = 'splunkvolume'
-        model, created = ComponentModel.concurrent_get_or_create(
-                type=ComponentType.unknown.id,
-                speed=0, cores=0, size=0, family=symbol, extra_hash=''
-            )
-        if created:
-            model.name = name
-            model.save()
+        model, created = ComponentModel.create(
+            ComponentType.unknown,
+            family=symbol,
+            name=name,
+            priority=0,
+        )
         res, created = SplunkUsage.concurrent_get_or_create(
                 model=model, device=dev, day=date.today())
         res.size = usage

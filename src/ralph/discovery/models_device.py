@@ -385,9 +385,18 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
                     sndev.delete()
         if model is None:
             model, model_created = DeviceModel.concurrent_get_or_create(
-                name=model_name, type=model_type.id)
+                name=model_name,
+                defaults={
+                    'type': model_type.id,
+                },
+            )
         if dev is None:
-            dev, created = Device.concurrent_get_or_create(sn=sn, model=model)
+            dev, created = Device.concurrent_get_or_create(
+                sn=sn,
+                defaults={
+                    'model': model,
+                },
+            )
         elif dev.deleted:
             dev.deleted = False
         if model and model.type != DeviceType.unknown.id:
@@ -405,12 +414,15 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
         dev.save(user=user, update_last_seen=True, priority=priority)
         for eth in ethernets:
             ethernet, eth_created = Ethernet.concurrent_get_or_create(
-                device=dev, mac=eth.mac
+                mac=eth.mac,
+                defaults={
+                    'device': dev,
+                },
             )
-            if eth_created:
-                ethernet.label = eth.label or 'Autocreated'
-                if eth.speed:
-                    ethernet.speed = eth.speed
+            ethernet.device = dev
+            ethernet.label = eth.label or 'Autocreated'
+            if eth.speed:
+                ethernet.speed = eth.speed
             ethernet.save(priority=priority)
         return dev
 
