@@ -19,10 +19,10 @@ from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Language, TagStem
 from bob.menu import MenuItem
 from powerdns.models import Record
-from discovery.models_device import DeprecationKind
+from discovery.models_device import DeprecationKind, MarginKind
 
 from ralph.account.models import Perm
-from ralph.business.models import RolePropertyValue
+from ralph.business.models import RolePropertyValue, Venture, VentureRole
 from ralph.cmdb.models import CI
 from ralph.dnsedit.models import DHCPEntry
 from ralph.dnsedit.util import (
@@ -784,6 +784,12 @@ def bulk_update(devices, fields, data, user):
         for name in fields:
             if name == 'deprecation_kind':
                 setattr(d, name, DeprecationKind.objects.get(id=data[name]))
+            elif name == 'venture':
+                setattr(d, name, Venture.objects.get(id=data[name]))
+            elif name == 'venture_role':
+                setattr(d, name, VentureRole.objects.get(id=data[name]))
+            elif name == 'margin_kind':
+                setattr(d, name, MarginKind.objects.get(id=data[name]))
             else:
                 setattr(d, name, data[name])
         d.save_comment = data.get('save_comment')
