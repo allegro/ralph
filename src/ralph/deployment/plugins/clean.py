@@ -77,7 +77,7 @@ def clean(deployment_id):
     """Prepare an existing device for deployment by cleaning old information."""
     deployment = Deployment.objects.get(id=deployment_id)
     if deployment.status != DeploymentStatus.open:
-        return False
+        return True
     do_clean(deployment.device, deployment.user)
     ip, created = IPAddress.concurrent_get_or_create(address=deployment.ip)
     ip.device=deployment.device
