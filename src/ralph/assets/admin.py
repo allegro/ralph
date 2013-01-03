@@ -40,7 +40,7 @@ admin.site.register(AssetModel, AssetModelAdmin)
 class AssetCategoryAdmin(ModelAdmin):
     def name(self):
         if self.parent:
-            name =  '|-- {}'.format(self.name)
+            name = '|-- {}'.format(self.name)
         else:
             name = self.name
         return name
