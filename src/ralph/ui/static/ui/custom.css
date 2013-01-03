@@ -158,3 +158,9 @@ tr.table-highlight td {
 .csv-input {
     font-family: monospace;
 }
+
+.reports-form-right-line
+{
+    border-right: 1px solid silver;
+    padding-right: 20px;
+}

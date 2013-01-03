@@ -228,11 +228,10 @@ def run_http_ibm_system_x(ip):
         mem, _ = Memory.concurrent_get_or_create(index=index, device=dev)
         mem.label = m['label']
         mem.size = m['size']
-        mem.save(priority=SAVE_PRIORITY)
-        mem.model, c = ComponentModel.concurrent_get_or_create(
-            name='RAM %s %dMiB' % (mem.label, mem.size), size=mem.size,
-            type=ComponentType.memory.id,
-            family=mem.label, cores=0
+        mem.model, c = ComponentModel.create(
+            ComponentType.memory,
+            size=mem.size,
+            priority=SAVE_PRIORITY,
         )
         mem.save(priority=SAVE_PRIORITY)
     detected_processors = get_processors(management_url, session_id)
@@ -241,12 +240,13 @@ def run_http_ibm_system_x(ip):
         cpu.delete()
     # add new
     for p in detected_processors:
-        processor_model, _ = ComponentModel.concurrent_get_or_create(
-            name=p.get('label'),
+        processor_model, _ = ComponentModel.create(
+            ComponentType.processor,
             speed=p.get('speed'),
-            type=ComponentType.processor.id,
             family=p.get('family'),
-            cores=p.get('cores')
+            cores=p.get('cores'),
+            name=p.get('label'),
+            priority=SAVE_PRIORITY,
         )
         processor, _ = Processor.concurrent_get_or_create(
             device=dev,
@@ -255,7 +255,7 @@ def run_http_ibm_system_x(ip):
         processor.label = p.get('label')
         processor.model = processor_model
         processor.speed = p.get('speed')
-        processor.save()
+        processor.save(priority=SAVE_PRIORITY)
     return model_name
 
 

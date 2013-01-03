@@ -57,6 +57,18 @@ def clean_dns_address(ip):
         r.delete()
 
 
+def clean_dns_entries(ip):
+    """Remove all entries for the specified IP address from the DNS,
+    including PTR entries.
+    May leave behind some CNAME entries pointing to that IP address.
+    """
+    ip = str(ip).strip().strip('.')
+    for r in Record.objects.filter(content=ip):
+        r.delete()
+    for rev in get_revdns_records(ip):
+        rev.delete()
+
+
 def add_dns_address(name, ip):
     """Add a new DNS record in the right domain."""
     name = name.strip().strip('.')
@@ -78,7 +90,7 @@ def reset_dns(name, ip):
     clean_dns_name(name)
     clean_dns_address(ip)
     add_dns_address(name, ip)
-    set_revdns_record(ip, name)
+    set_revdns_record(ip, name, overwrite=True)
 
 
 def clean_dhcp_mac(mac):
@@ -134,7 +146,7 @@ def generate_dhcp_config(dc=None):
     def generate_entries():
         for macaddr, in DHCPEntry.objects.values_list('mac').distinct():
             ips = list(filter_ips(
-                (ip,) for ip in
+                ip for (ip,) in
                 DHCPEntry.objects.filter(mac=macaddr).values_list('ip')
             ))
             if not ips:

@@ -176,8 +176,8 @@ class Deployment(TimeTrackable):
     def __unicode__(self):
         return "{} as {}/{} - {}".format(
             self.hostname,
-            self.venture.path,
-            self.venture_role.path,
+            self.venture.path if self.venture else '-',
+            self.venture_role.path if self.venture_role else '-',
             self.get_status_display(),
         )
 

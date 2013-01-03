@@ -228,8 +228,6 @@ class PricingGroupsTest(TestCase):
             size=7,
             type=ComponentType.share,
             group=share_group,
-            extra='',
-            extra_hash='',
             family='',
         )
         share_model.save()

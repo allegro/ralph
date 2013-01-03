@@ -44,8 +44,8 @@ class AbstractNetwork(db.Model):
     )
     reserved = db.PositiveIntegerField(
         _("reserved"), default=10,
-        help_text=_("If you put here 10, the first ten IP addresses will be "
-                    "omitted in the automatic determine IP address.")
+        help_text=_("Number of addresses to be omitted in the automatic"
+                    "determination process, counted from the first in range.")
     )
     remarks = db.TextField(
         _("remarks"), help_text=_("Additional information."), blank=True,
