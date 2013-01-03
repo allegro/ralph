@@ -48,6 +48,7 @@ setup (
         'lck.django==0.8.4',
         'lxml==2.3.5',
         'mock==0.8.0',
+        'mptt==0.5.5',
         'MySQL-python==1.2.3',
         'paramiko==1.8.0',
         'ping==0.2',

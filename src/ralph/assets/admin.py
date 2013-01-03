@@ -10,7 +10,13 @@ from django.contrib import admin
 from lck.django.common.admin import ModelAdmin
 
 from ralph.assets.models import (
-    Asset, AssetManufacturer, AssetModel, OfficeInfo, DeviceInfo, PartInfo,
+    Asset,
+    AssetCategory,
+    AssetManufacturer,
+    AssetModel,
+    OfficeInfo,
+    DeviceInfo,
+    PartInfo,
     Warehouse,
 )
 
@@ -29,6 +35,21 @@ class AssetModelAdmin(ModelAdmin):
     search_fields = ('name',)
 
 admin.site.register(AssetModel, AssetModelAdmin)
+
+
+class AssetCategoryAdmin(ModelAdmin):
+    def name(self):
+        if self.parent:
+            name =  '|-- {}'.format(self.name)
+        else:
+            name = self.name
+        return name
+    save_on_top = True
+    list_display = (name, 'parent')
+    search_fields = ('name',)
+
+
+admin.site.register(AssetCategory, AssetCategoryAdmin)
 
 
 class AssetManufacturerAdmin(ModelAdmin):

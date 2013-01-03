@@ -8,7 +8,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import datetime
 import os
 
 from django.db import models
@@ -17,7 +16,10 @@ from lck.django.common.models import (
     TimeTrackable, EditorTrackable, SoftDeletable, Named
 )
 from lck.django.choices import Choices
+from mptt.fields import TreeForeignKey
+from mptt.models import MPTTModel
 from uuid import uuid4
+
 from ralph.business.models import Venture
 from ralph.discovery.models_device import Device, DeviceType
 from ralph.discovery.models_util import SavingUser
@@ -85,6 +87,22 @@ class AssetModel(TimeTrackable, EditorTrackable, Named.NonUnique):
         return "%s %s" % (self.manufacturer.name, self.name)
 
 
+class AssetCategory(MPTTModel, TimeTrackable, EditorTrackable):
+    name = models.CharField(max_length=50, unique=True)
+    parent = TreeForeignKey(
+        'self',
+        null=True,
+        blank=True,
+        related_name='children',
+    )
+
+    class MPTTMeta:
+        order_insertion_by = ['name']
+
+    def __unicode__(self):
+        return self.name
+
+
 class Warehouse(TimeTrackable, EditorTrackable, Named.NonUnique):
     def __unicode__(self):
         return self.name
@@ -121,7 +139,7 @@ class Asset(TimeTrackable, EditorTrackable, SavingUser, SoftDeletable):
         'OfficeInfo', null=True, blank=True, on_delete=models.CASCADE
     )
     type = models.PositiveSmallIntegerField(choices=AssetType())
-    model = models.ForeignKey(AssetModel, on_delete=models.PROTECT)
+    model = models.ForeignKey('AssetModel', on_delete=models.PROTECT)
     source = models.PositiveIntegerField(
         verbose_name=_("source"), choices=AssetSource(), db_index=True
     )
@@ -160,6 +178,7 @@ class Asset(TimeTrackable, EditorTrackable, SavingUser, SoftDeletable):
     delivery_date = models.DateField(null=True, blank=True)
     production_use_date = models.DateField(null=True, blank=True)
     provider_order_date = models.DateField(null=True, blank=True)
+    category = models.ForeignKey('AssetCategory')
 
     objects = models.Manager()
     objects_bo = BOManager()

@@ -12,6 +12,7 @@ from django.db.models import Q
 
 from ralph.assets.models_assets import (
     Asset,
+    AssetCategory,
     AssetManufacturer,
     AssetModel,
     AssetSource,
@@ -103,6 +104,7 @@ class BODeviceLookup(DeviceLookup):
 
 __all__ = [
     'Asset',
+    'AssetCategory',
     'AssetManufacturer',
     'AssetModel',
     'AssetSource',

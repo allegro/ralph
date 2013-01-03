@@ -14,12 +14,12 @@ from django.forms import (
     IntegerField,
 )
 from django import forms
-
 from django.forms.widgets import Textarea, HiddenInput
 from django.utils.translation import ugettext_lazy as _
+from mptt.forms import TreeNodeChoiceField
 
 from ralph.assets.models import (
-    Asset, OfficeInfo, DeviceInfo, PartInfo, AssetStatus, AssetType,
+    Asset, OfficeInfo, DeviceInfo, PartInfo, AssetStatus, AssetType, AssetCategory
 )
 from ralph.ui.widgets import DateWidget, HiddenSelectWidget
 
@@ -229,7 +229,7 @@ class BaseAddAssetForm(ModelForm):
     class Meta:
         model = Asset
         fields = (
-            'sn', 'type', 'model', 'status', 'warehouse', 'invoice_no',
+            'sn', 'type', 'category', 'model', 'status', 'warehouse', 'invoice_no',
             'order_no', 'price',
             'support_price',
             'support_type', 'support_period', 'support_void_reporting',
@@ -256,6 +256,11 @@ class BaseAddAssetForm(ModelForm):
         required=True,
         plugin_options=dict(add_link='/admin/assets/warehouse/add/?name=')
     )
+    category = TreeNodeChoiceField(
+        queryset=AssetCategory.tree.all(),
+        level_indicator='|---',
+        empty_label="---"
+    )
 
     def __init__(self, *args, **kwargs):
         mode = kwargs.get('mode')
@@ -274,7 +279,7 @@ class BaseEditAssetForm(ModelForm):
     class Meta:
         model = Asset
         fields = (
-            'sn','type', 'model', 'status', 'warehouse', 'invoice_no',
+            'sn','type', 'category', 'model', 'status', 'warehouse', 'invoice_no',
             'order_no',
             'price', 'support_price', 'support_type', 'support_period',
             'support_void_reporting', 'provider',
@@ -304,6 +309,11 @@ class BaseEditAssetForm(ModelForm):
         required=True,
         plugin_options=dict(add_link='/admin/assets/warehouse/add/?name=')
     )
+    category = TreeNodeChoiceField(
+        queryset=AssetCategory.tree.all(),
+        level_indicator='|---',
+        empty_label="---"
+    )
 
     def __init__(self, *args, **kwargs):
         mode = kwargs.get('mode')
@@ -319,6 +329,14 @@ class BaseEditAssetForm(ModelForm):
 
     def clean_sn(self):
         return self.instance.sn
+
+    def clean_category(self):
+        data = self.cleaned_data["category"]
+        if not data.parent:
+            raise ValidationError(
+                _("Category must be selected from the subcategory")
+            )
+        return data
 
 
 class AddPartForm(BaseAddAssetForm):
