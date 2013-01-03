@@ -599,9 +599,11 @@ class Addresses(DeviceDetailView):
         elif 'dhcp' in self.request.POST:
             dhcp_records = self.get_dhcp()
             macs = {e.mac for e in self.object.ethernet_set.all()}
+            ips = {ip.address for ip in self.object.ipaddress_set.all()}
             self.dhcp_formset = DHCPFormSet(
                 dhcp_records,
                 macs,
+                ips,
                 self.request.POST,
                 prefix='dhcp',
             )
@@ -646,7 +648,13 @@ class Addresses(DeviceDetailView):
         if self.dhcp_formset is None:
             dhcp_records = self.get_dhcp()
             macs = {e.mac for e in self.object.ethernet_set.all()}
-            self.dhcp_formset = DHCPFormSet(dhcp_records, macs, prefix='dhcp')
+            ips = {ip.address for ip in self.object.ipaddress_set.all()}
+            self.dhcp_formset = DHCPFormSet(
+                dhcp_records,
+                macs,
+                ips,
+                prefix='dhcp',
+            )
         if self.ip_formset is None:
             self.ip_formset = IPAddressFormSet(
                 queryset=self.object.ipaddress_set.order_by('address'),
