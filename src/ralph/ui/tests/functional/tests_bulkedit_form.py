@@ -131,6 +131,9 @@ class TestBulkedit(TestCase):
             else:
                 self.assertEqual(db_data, form_data, msg)
 
+        # Check if change can see in History change
+       #TODO
+
 
     def test_many_devices_edit(self):
         pass

@@ -531,9 +531,14 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
                 self.position = self.get_position()
         if self.purchase_date and self.deprecation_kind:
             if not isinstance(self.purchase_date, datetime.date):
-                self.purchase_date = datetime.datetime.strptime(
-                    self.purchase_date, '%Y-%m-%d'
-                )
+                try:
+                    self.purchase_date = datetime.datetime.strptime(
+                        self.purchase_date, '%Y-%m-%d %H:%M:%S'
+                    )
+                except ValueError:
+                    self.purchase_date = datetime.datetime.strptime(
+                        self.purchase_date, '%Y-%m-%d'
+                    )
             self.deprecation_date = (
                 self.purchase_date + relativedelta(
                     months=self.deprecation_kind.months
