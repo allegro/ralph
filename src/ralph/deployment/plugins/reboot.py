@@ -27,6 +27,8 @@ def reboot(deployment_id):
         return False
     _in_progress(deployment)
     management = deployment.device.find_management()
+    if not management:
+        return False
     user, password = settings.ILO_USER, settings.ILO_PASSWORD
     if user:
         return IloHost(management, user, password).reboot(True)

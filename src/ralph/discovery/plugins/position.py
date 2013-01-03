@@ -20,9 +20,17 @@ def _make_dc(dc_no):
     if dc_no is None:
         return None, None
     dev_model, created = DeviceModel.concurrent_get_or_create(
-            name='Data center', type=DeviceType.data_center.id)
-    dc, created = Device.concurrent_get_or_create(sn=dc_no,
-                                                   model=dev_model)
+        name='Data center',
+        defaults={
+            'type': DeviceType.data_center.id,
+        },
+    )
+    dc, created = Device.concurrent_get_or_create(
+        sn=dc_no,
+        defaults={
+            'model': dev_model,
+        },
+    )
     if created:
         dc.name = dc_no
     dc.save(update_last_seen=True)

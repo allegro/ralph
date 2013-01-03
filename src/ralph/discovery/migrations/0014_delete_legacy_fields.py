@@ -8,19 +8,63 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding M2M table for field racks on 'Network'
-        db.create_table('discovery_network_racks', (
-            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('network', models.ForeignKey(orm['discovery.network'], null=False)),
-            ('device', models.ForeignKey(orm['discovery.device'], null=False))
-        ))
-        db.create_unique('discovery_network_racks', ['network_id', 'device_id'])
+        # Deleting field 'Network.rack'
+        db.delete_column('discovery_network', 'rack')
+
+        # Removing unique constraint on 'Warning', fields ['category', 'address', 'device']
+        db.delete_unique('discovery_warning', ['category', 'address_id', 'device_id'])
+
+        # Deleting model 'Warning'
+        db.delete_table('discovery_warning')
+
+        # Removing unique constraint on 'ComponentModel', fields ['extra_hash', 'family', 'speed', 'cores', 'type', 'size']
+        db.delete_unique('discovery_componentmodel', ['extra_hash', 'family', 'speed', 'cores', 'type', 'size'])
+
+        # Deleting field 'ComponentModel.extra_hash'
+        db.delete_column('discovery_componentmodel', 'extra_hash')
+
+        # Deleting field 'ComponentModel.extra'
+        db.delete_column('discovery_componentmodel', 'extra')
+
+        # Adding unique constraint on 'ComponentModel', fields ['cores', 'type', 'speed', 'family', 'size']
+        db.create_unique('discovery_componentmodel', ['cores', 'type', 'speed', 'family', 'size'])
 
 
     def backwards(self, orm):
-        # Removing M2M table for field racks on 'Network'
-        db.delete_table('discovery_network_racks')
+        # Removing unique constraint on 'ComponentModel', fields ['cores', 'type', 'speed', 'family', 'size']
+        db.delete_unique('discovery_componentmodel', ['cores', 'type', 'speed', 'family', 'size'])
 
+        # Adding field 'ComponentModel.extra_hash'
+        db.add_column('discovery_componentmodel', 'extra_hash',
+                      self.gf('django.db.models.fields.CharField')(default=u'', max_length=32, blank=True),
+                      keep_default=False)
+
+        # Adding field 'ComponentModel.extra'
+        db.add_column('discovery_componentmodel', 'extra',
+                      self.gf('django.db.models.fields.TextField')(default=None, null=True, blank=True),
+                      keep_default=False)
+
+        # Adding unique constraint on 'ComponentModel', fields ['extra_hash', 'family', 'speed', 'cores', 'type', 'size']
+        db.create_unique('discovery_componentmodel', ['extra_hash', 'family', 'speed', 'cores', 'type', 'size'])
+
+        # Adding model 'Warning'
+        db.create_table('discovery_warning', (
+            ('category', self.gf('django.db.models.fields.CharField')(max_length=128)),
+            ('aknowledged', self.gf('django.db.models.fields.CharField')(default=u'', max_length=128, blank=True)),
+            ('remarks', self.gf('django.db.models.fields.TextField')(default=u'', blank=True)),
+            ('address', self.gf('django.db.models.fields.related.ForeignKey')(related_name=u'warning_set', null=True, to=orm['discovery.IPAddress'])),
+            ('device', self.gf('django.db.models.fields.related.ForeignKey')(related_name=u'warning_set', null=True, to=orm['discovery.Device'])),
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+        ))
+        db.send_create_signal('discovery', ['Warning'])
+
+        # Adding unique constraint on 'Warning', fields ['category', 'address', 'device']
+        db.create_unique('discovery_warning', ['category', 'address_id', 'device_id'])
+
+        # Adding field 'Network.rack'
+        db.add_column('discovery_network', 'rack',
+                      self.gf('django.db.models.fields.CharField')(default=None, max_length=16, null=True, blank=True),
+                      keep_default=False)
 
     models = {
         'account.profile': {
@@ -146,12 +190,10 @@ class Migration(SchemaMigration):
             'raw_config': ('django.db.models.fields.TextField', [], {'blank': 'True'})
         },
         'discovery.componentmodel': {
-            'Meta': {'unique_together': "((u'speed', u'cores', u'size', u'type', u'family', u'extra_hash'),)", 'object_name': 'ComponentModel'},
+            'Meta': {'unique_together': "((u'speed', u'cores', u'size', u'type', u'family'),)", 'object_name': 'ComponentModel'},
             'cache_version': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
             'cores': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0', 'blank': 'True'}),
             'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'extra': ('django.db.models.fields.TextField', [], {'default': 'None', 'null': 'True', 'blank': 'True'}),
-            'extra_hash': ('django.db.models.fields.CharField', [], {'default': "u''", 'max_length': '32', 'blank': 'True'}),
             'family': ('django.db.models.fields.CharField', [], {'default': "u''", 'max_length': '128', 'blank': 'True'}),
             'group': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': "orm['discovery.ComponentModelGroup']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
@@ -178,6 +220,7 @@ class Migration(SchemaMigration):
         },
         'discovery.datacenter': {
             'Meta': {'ordering': "(u'name',)", 'object_name': 'DataCenter'},
+            'hosts_naming_template': ('django.db.models.fields.CharField', [], {'default': "u'h<10000,19999>.dc'", 'max_length': '30'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '75', 'db_index': 'True'})
         },
@@ -263,6 +306,15 @@ class Migration(SchemaMigration):
             'Meta': {'ordering': "(u'name',)", 'object_name': 'DiscoveryQueue'},
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '75', 'db_index': 'True'})
+        },
+        'discovery.discoveryvalue': {
+            'Meta': {'object_name': 'DiscoveryValue'},
+            'date': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'ip': ('django.db.models.fields.IPAddressField', [], {'unique': 'True', 'max_length': '15'}),
+            'key': ('django.db.models.fields.TextField', [], {'default': "u''"}),
+            'plugin': ('django.db.models.fields.CharField', [], {'default': "u''", 'max_length': '64'}),
+            'value': ('django.db.models.fields.TextField', [], {'default': "u''"})
         },
         'discovery.discoverywarning': {
             'Meta': {'object_name': 'DiscoveryWarning'},
@@ -398,6 +450,7 @@ class Migration(SchemaMigration):
             'http_family': ('django.db.models.fields.TextField', [], {'default': 'None', 'max_length': '64', 'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'is_management': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'last_plugins': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'last_puppet': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True', 'blank': 'True'}),
             'last_seen': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
@@ -486,9 +539,9 @@ class Migration(SchemaMigration):
             'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '75', 'db_index': 'True'}),
             'queue': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': "orm['discovery.DiscoveryQueue']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
-            'rack': ('django.db.models.fields.CharField', [], {'default': 'None', 'max_length': '16', 'null': 'True', 'blank': 'True'}),
             'racks': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['discovery.Device']", 'symmetrical': 'False'}),
             'remarks': ('django.db.models.fields.TextField', [], {'default': "u''", 'blank': 'True'}),
+            'reserved': ('django.db.models.fields.PositiveIntegerField', [], {'default': '10'}),
             'terminators': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['discovery.NetworkTerminator']", 'symmetrical': 'False'}),
             'vlan': ('django.db.models.fields.PositiveIntegerField', [], {'default': 'None', 'null': 'True', 'blank': 'True'})
         },
@@ -603,15 +656,6 @@ class Migration(SchemaMigration):
             'save_priorities': ('django.db.models.fields.TextField', [], {'default': "u''"}),
             'size': ('django.db.models.fields.PositiveIntegerField', [], {'null': 'True', 'blank': 'True'}),
             'sn': ('django.db.models.fields.CharField', [], {'default': 'None', 'max_length': '255', 'unique': 'True', 'null': 'True', 'blank': 'True'})
-        },
-        'discovery.warning': {
-            'Meta': {'unique_together': "((u'category', u'address', u'device'),)", 'object_name': 'Warning'},
-            'address': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "u'warning_set'", 'null': 'True', 'to': "orm['discovery.IPAddress']"}),
-            'aknowledged': ('django.db.models.fields.CharField', [], {'default': "u''", 'max_length': '128', 'blank': 'True'}),
-            'category': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
-            'device': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "u'warning_set'", 'null': 'True', 'to': "orm['discovery.Device']"}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'remarks': ('django.db.models.fields.TextField', [], {'default': "u''", 'blank': 'True'})
         },
         'tags.tag': {
             'Meta': {'object_name': 'Tag'},

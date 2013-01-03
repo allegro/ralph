@@ -18,6 +18,7 @@ from django.db.utils import IntegrityError
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
+from django.core.cache import cache
 from django.test import TestCase, Client
 from tastypie.bundle import Bundle
 from tastypie.models import ApiKey
@@ -716,8 +717,10 @@ class CIFormsTest(TestCase):
             ci2 = CI.objects.get(name='CI2')
             ci2.content_object = self.device
             ci2.save()
-        self.assertEqual('columns content_type_id, object_id are not unique',
-                         e.exception.message)
+        self.assertEqual(
+            'columns content_type_id, object_id are not unique',
+            unicode(e.exception),
+        )
 
     def test_two_ci_without_content_object(self):
         response_ci1 = self.add_ci(name='CI1')
@@ -965,7 +968,7 @@ class CIFormsTest(TestCase):
 
 class CMDBApiTest(TestCase):
     def setUp(self):
-        self.creatre_user()
+        self.create_user()
         self.create_cilayers()
         self.create_citypes()
         self.create_owners()
@@ -973,7 +976,7 @@ class CMDBApiTest(TestCase):
         self.create_ownerships()
         self.create_relations()
 
-    def creatre_user(self):
+    def create_user(self):
         self.user = User.objects.create_user(
             'api_user',
             'test@mail.local',
@@ -986,6 +989,7 @@ class CMDBApiTest(TestCase):
             'username': self.user.username,
             'api_key': self.api_key.key
         }
+        cache.delete("api_user_accesses")
 
     def create_cilayers(self):
         self.cilayer1 = CILayer(name='layer1')

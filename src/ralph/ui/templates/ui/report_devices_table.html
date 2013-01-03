@@ -1,0 +1,16 @@
+{% load icons %}
+<h3>Report {{ title }}</h3>
+<table class="table table-striped table-bordered table-condensed">
+    <tr>
+        {% for th in header %}
+            <th>{{ th }}</th>
+        {% endfor %}
+    </tr>
+    {% for row in rows %}
+        <tr>
+            {% for td in row %}
+                <td>{{ td }}</td>
+            {% endfor %}
+        </tr>
+    {% endfor %}
+</table>
