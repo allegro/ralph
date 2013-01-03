@@ -28,18 +28,18 @@ def reboot(deployment_id):
     _in_progress(deployment)
     management = deployment.device.find_management()
     if not management:
-        return False
+        return True
     user, password = settings.ILO_USER, settings.ILO_PASSWORD
-    if user:
-        return IloHost(management, user, password).reboot(True)
+    if user and IloHost(management, user, password).reboot(True):
+        return True
     user, password = settings.IPMI_USER, settings.IPMI_PASSWORD
-    if user:
-        return ipmi_reboot(management, user, password, True)
+    if user and ipmi_reboot(management, user, password, True):
+        return True
     user = settings.SSH_IBM_USER
     bay = deployment.device.chassis_position
     if user and bay:
-        return ssh_ibm_reboot(management, bay)
-    return False
+        ssh_ibm_reboot(management, bay)
+    return True
 
 
 def _in_progress(deployment):
