@@ -6,7 +6,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from django.test import TestCase
-from ralph.ui.tests.helper import login_as_su
+from ralph.ui.tests.global_utils import login_as_su
 from ralph.discovery.models import Device, DeviceType
 from ralph.discovery.models_component import Software
 
@@ -49,8 +49,8 @@ class TestDeviceView(TestCase):
             label='apache',
             family='http servers',
             version='2.4.3',
+            priority=69,
         )
-        self.software1.save()
         self.software2 = Software.create(
             dev=self.device,
             path='gcc',
@@ -58,8 +58,8 @@ class TestDeviceView(TestCase):
             label='gcc',
             family='compilers',
             version='4.7.2',
+            priority=69,
         )
-        self.software2.save()
 
     def test_software(self):
         url = '/ui/search/software/{}'.format(self.device.id)

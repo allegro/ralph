@@ -32,13 +32,12 @@ def make_tenant(tenant):
     def make_component(name, symbol, key, multiplier, unit):
         if key not in tenant:
             return
-        model, created = ComponentModel.concurrent_get_or_create(
-                type=ComponentType.unknown.id,
-                speed=0, cores=0, size=0, family=symbol, extra_hash=''
-            )
-        if created:
-            model.name = name
-            model.save()
+        model, created = ComponentModel.create(
+            ComponentType.unknown,
+            family=symbol,
+            name=name,
+            priority=0,
+        )
         res, created = GenericComponent.concurrent_get_or_create(
                 model=model, device=dev,
                 sn='%s-%s' % (symbol, tenant['tenant_id']))

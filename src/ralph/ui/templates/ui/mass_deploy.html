@@ -8,10 +8,9 @@
   <div class="row-fluid">
     <div class="span10">
         <form class="form form-horizontal device-deploy-form" method="POST">
-        {% csrf_token %}
-        <div class="row"><div class="span10">
+            {% csrf_token %}
             {% for f in form.visible_fields %}
-                <div class="control-group {{ f.css_classes }}
+            <div class="control-group {{ f.css_classes }}
                     {% if f.errors %}error{% endif %}
                 ">
                 <label class="{% if f.field.required %}required{% endif %}">
@@ -19,24 +18,25 @@
                 </label>
                 <div>
                     {{ f }}
-                    {% for e in f.errors %}
-                        <span class="help-inline">{{ e }}</span>
-                    {% empty %}
                     {%  if f.help_text %}
                         <span class="help-inline">{{ f.help_text }}</span>
                     {%  endif %}
+                    {% for e in f.errors %}
+                        <div class="alert alert-error">{{ e }}</div>
                     {% endfor %}
                 </div>
             </div>
             {% endfor %}
-        </div></div>
-        <div class="row"><div class="form-actions span10">
-            <div style="white-space:nowrap">
-                <button class="btn btn-primary" type="submit" name="deploy">
+            <div class="action-list">
+                {% for kind, action in actions %}
+                <div class="alert alert-{{ kind }}">{{ action }}</div>
+                {% endfor %}
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-inverse pull-right" type="submit" name="deploy">
                     {% icon 'fugue-wand-hat' %}&nbsp;{{ action_name }}
                 </button>
             </div>
-        </div></div>
         </form>
     </div>
     <div class="span2 template-tabs">

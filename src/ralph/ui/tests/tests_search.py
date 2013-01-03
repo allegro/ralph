@@ -138,7 +138,9 @@ class TestSearch(TestCase):
         self.disksharemount = DiskShareMount.concurrent_get_or_create(
             share=self.diskshare,
             device=self.device,
-            volume=COMPONENT['DiskShareMount'],
+            defaults={
+                'volume': COMPONENT['DiskShareMount'],
+            },
         )
         self.processor = Processor(
             device=self.device,

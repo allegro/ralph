@@ -8,15 +8,48 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding field 'MassDeployment.generated_csv'
-        db.add_column('deployment_massdeployment', 'generated_csv',
-                      self.gf('django.db.models.fields.TextField')(default='', blank=True),
+        # Adding model 'MassDeployment'
+        db.create_table('deployment_massdeployment', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('created', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
+            ('modified', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
+            ('cache_version', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
+            ('created_by', self.gf('django.db.models.fields.related.ForeignKey')(related_name=u'+', on_delete=models.SET_NULL, default=None, to=orm['account.Profile'], blank=True, null=True)),
+            ('modified_by', self.gf('django.db.models.fields.related.ForeignKey')(related_name=u'+', on_delete=models.SET_NULL, default=None, to=orm['account.Profile'], blank=True, null=True)),
+            ('csv', self.gf('django.db.models.fields.TextField')(blank=True)),
+            ('generated_csv', self.gf('django.db.models.fields.TextField')(blank=True)),
+            ('is_done', self.gf('django.db.models.fields.BooleanField')(default=False)),
+        ))
+        db.send_create_signal('deployment', ['MassDeployment'])
+
+        # Deleting field 'Deployment.puppet_certificate_revoked'
+        db.delete_column('deployment_deployment', 'puppet_certificate_revoked')
+
+        # Deleting field 'Deployment.issue_key'
+        db.delete_column('deployment_deployment', 'issue_key')
+
+        # Adding field 'Deployment.mass_deployment'
+        db.add_column('deployment_deployment', 'mass_deployment',
+                      self.gf('django.db.models.fields.related.ForeignKey')(default=None, to=orm['deployment.MassDeployment'], null=True, on_delete=models.SET_NULL, blank=True),
                       keep_default=False)
 
 
     def backwards(self, orm):
-        # Deleting field 'MassDeployment.generated_csv'
-        db.delete_column('deployment_massdeployment', 'generated_csv')
+        # Deleting field 'Deployment.mass_deployment'
+        db.delete_column('deployment_deployment', 'mass_deployment_id')
+
+        # Deleting model 'MassDeployment'
+        db.delete_table('deployment_massdeployment')
+
+        # Adding field 'Deployment.puppet_certificate_revoked'
+        db.add_column('deployment_deployment', 'puppet_certificate_revoked',
+                      self.gf('django.db.models.fields.BooleanField')(default=False),
+                      keep_default=False)
+
+        # Adding field 'Deployment.issue_key'
+        db.add_column('deployment_deployment', 'issue_key',
+                      self.gf('django.db.models.fields.CharField')(default=None, max_length=30, null=True, blank=True),
+                      keep_default=False)
 
 
     models = {
@@ -120,7 +153,6 @@ class Migration(SchemaMigration):
             'mass_deployment': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': "orm['deployment.MassDeployment']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
             'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'preboot': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['deployment.Preboot']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
-            'puppet_certificate_revoked': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'status': ('django.db.models.fields.IntegerField', [], {'default': '1'}),
             'status_lastchanged': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': "orm['auth.User']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
