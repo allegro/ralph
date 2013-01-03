@@ -207,10 +207,7 @@ class BaseMixin(object):
         if ('ralph.cmdb' in settings.INSTALLED_APPS and
             has_perm(Perm.read_configuration_item_info_generic)):
             ci = ''
-            try:
-                device_id = self.kwargs['device']
-            except KeyError:
-                device_id = None
+            device_id = self.kwargs.get('device')
             if device_id:
                 deleted = False
                 if self.request.GET.get('deleted', '').lower() == 'on':
