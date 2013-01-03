@@ -44,6 +44,7 @@ def hp_xmldata(hostname, timeout=10):
         if not url.info().get('Content-Type', '').startswith('text/xml'):
             return
         data = data.decode('utf-8', 'replace').encode('utf-8')
+        import pdb; pdb.set_trace()
         rimp = ET.fromstring(data)
         if rimp.tag.upper() != 'RIMP':
             return
@@ -116,7 +117,9 @@ def _add_hp_oa_devices(devices, device_type, parent=None):
                 priority=SAVE_PRIORITY,
             )
             component, created = GenericComponent.concurrent_get_or_create(
-                    device=parent, sn=sn)
+                sn=sn,
+                defaults=dict(device=parent),
+            )
             component.model = model
             component.label = name
             component.save(priority=SAVE_PRIORITY)
