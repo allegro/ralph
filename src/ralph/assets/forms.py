@@ -487,6 +487,12 @@ class SearchAssetForm(Form):
         choices=[('', '----'), ('device', 'Device'), ('part', 'Part')],
         label='Asset type'
     )
+    category = TreeNodeChoiceField(
+        required=False,
+        queryset=AssetCategory.tree.all(),
+        level_indicator='|---',
+        empty_label="---"
+    )
     sn = CharField(required=False, label='SN')
     request_date_from = DateField(
         required=False, widget=DateWidget(attrs={
