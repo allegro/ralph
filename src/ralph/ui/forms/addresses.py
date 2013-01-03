@@ -143,7 +143,7 @@ class DHCPEntryForm(forms.ModelForm):
         model = DHCPEntry
         fields = 'ip', 'mac'
         widgets = {
-            'ip': forms.TextInput(
+            'ip': AutocompleteWidget(
                 attrs={
                     'class': 'span12',
                     'placeholder': "IP address",
@@ -179,14 +179,16 @@ class DHCPEntryForm(forms.ModelForm):
 
 
 class DHCPFormSetBase(forms.models.BaseModelFormSet):
-    def __init__(self, records, macs, *args, **kwargs):
+    def __init__(self, records, macs, ips, *args, **kwargs):
         kwargs['queryset'] = records.all()
         self.records = list(records)
         self.macs = set(macs) - {r.mac for r in self.records}
+        self.ips = set(ips) - {r.ip for r in self.records}
         super(DHCPFormSetBase, self).__init__(*args, **kwargs)
 
     def add_fields(self, form, index):
         form.fields['mac'].widget.choices = [(m, m) for m in self.macs]
+        form.fields['ip'].widget.choices = [(ip, ip) for ip in self.ips]
         return super(DHCPFormSetBase, self).add_fields(form, index)
 
 
