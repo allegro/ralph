@@ -40,7 +40,7 @@ class DNSRecordForm(forms.ModelForm):
                     'style': 'min-width: 16ex',
                 },
             ),
-            'content': forms.TextInput(
+            'content': AutocompleteWidget(
                 attrs={
                     'class': 'span12',
                     'placeholder': "content",
@@ -52,6 +52,7 @@ class DNSRecordForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         self.hostnames = kwargs.pop('hostnames')
+        self.ips = kwargs.pop('ips')
         limit_types = kwargs.pop('limit_types')
         super(DNSRecordForm, self).__init__(*args, **kwargs)
         self.is_extra = False
@@ -71,6 +72,7 @@ class DNSRecordForm(forms.ModelForm):
             self.instance.type = 'A'
             self.is_extra = True
         self.fields['name'].widget.choices = [(n, n) for n in self.hostnames]
+        self.fields['content'].widget.choices = [(ip, ip) for ip in self.ips]
 
 
     def clean_name(self):
@@ -122,11 +124,13 @@ class DNSFormSetBase(forms.models.BaseModelFormSet):
     def __init__(self, *args, **kwargs):
         self.hostnames = kwargs.pop('hostnames')
         self.limit_types = kwargs.pop('limit_types')
+        self.ips = kwargs.pop('ips')
         super(DNSFormSetBase, self).__init__(*args, **kwargs)
 
     def _construct_form(self, i, **kwargs):
         kwargs['hostnames'] = self.hostnames
         kwargs['limit_types'] = self.limit_types
+        kwargs['ips'] = self.ips
         return super(DNSFormSetBase, self)._construct_form(i, **kwargs)
 
 

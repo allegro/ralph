@@ -529,12 +529,14 @@ class Addresses(DeviceDetailView):
             )
         if 'dns' in self.request.POST:
             dns_records = self.get_dns(self.limit_types)
+            ips = {ip.address for ip in self.object.ipaddress_set.all()}
             self.dns_formset = DNSFormSet(
                 self.request.POST,
                 queryset=dns_records,
                 prefix='dns',
                 hostnames=self.get_hostnames(),
                 limit_types=self.limit_types,
+                ips=ips,
             )
             if self.dns_formset.is_valid():
                 for form in self.dns_formset.extra_forms:
@@ -639,11 +641,13 @@ class Addresses(DeviceDetailView):
         ret = super(Addresses, self).get_context_data(**kwargs)
         if self.dns_formset is None:
             dns_records = self.get_dns(self.limit_types)
+            ips = {ip.address for ip in self.object.ipaddress_set.all()}
             self.dns_formset = DNSFormSet(
                 hostnames=self.get_hostnames(),
                 queryset=dns_records,
                 prefix='dns',
                 limit_types=self.limit_types,
+                ips=ips,
             )
         if self.dhcp_formset is None:
             dhcp_records = self.get_dhcp()
