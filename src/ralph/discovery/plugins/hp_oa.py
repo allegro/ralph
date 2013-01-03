@@ -44,7 +44,6 @@ def hp_xmldata(hostname, timeout=10):
         if not url.info().get('Content-Type', '').startswith('text/xml'):
             return
         data = data.decode('utf-8', 'replace').encode('utf-8')
-        import pdb; pdb.set_trace()
         rimp = ET.fromstring(data)
         if rimp.tag.upper() != 'RIMP':
             return
