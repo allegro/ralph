@@ -48,7 +48,7 @@ class AssetCategoryAdminForm(forms.ModelForm):
         type = self.cleaned_data.get('type')
         if parent and parent.type != type:
             raise ValidationError(
-                _("Parent type must be  the same as selected type")
+                _("Parent type must be the same as selected type")
             )
         return data
 
