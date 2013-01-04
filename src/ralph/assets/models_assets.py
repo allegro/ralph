@@ -74,6 +74,13 @@ class AssetSource(Choices):
     salvaged = _("salvaged")
 
 
+class AssetCategoryType(Choices):
+    _ = Choices.Choice
+
+    back_office = _("back office")
+    data_center = _("data center")
+
+
 class AssetManufacturer(TimeTrackable, EditorTrackable, Named.NonUnique):
     def __unicode__(self):
         return self.name
@@ -89,6 +96,9 @@ class AssetModel(TimeTrackable, EditorTrackable, Named.NonUnique):
 
 class AssetCategory(MPTTModel, TimeTrackable, EditorTrackable):
     name = models.CharField(max_length=50, unique=True)
+    type = models.PositiveIntegerField(
+        verbose_name=_("type"), choices=AssetCategoryType(), null=False
+    )
     parent = TreeForeignKey(
         'self',
         null=True,

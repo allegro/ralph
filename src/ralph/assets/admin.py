@@ -7,11 +7,15 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from django.contrib import admin
+from django import forms
+from django.core.exceptions import ValidationError
+from django.utils.translation import ugettext_lazy as _
 from lck.django.common.admin import ModelAdmin
 
 from ralph.assets.models import (
     Asset,
     AssetCategory,
+    AssetCategoryType,
     AssetManufacturer,
     AssetModel,
     OfficeInfo,
@@ -37,13 +41,27 @@ class AssetModelAdmin(ModelAdmin):
 admin.site.register(AssetModel, AssetModelAdmin)
 
 
+class AssetCategoryAdminForm(forms.ModelForm):
+    def clean(self):
+        data = self.cleaned_data
+        parent = self.cleaned_data.get('parent')
+        type = self.cleaned_data.get('type')
+        if parent and parent.type != type:
+            raise ValidationError(
+                _("Parent type must be  the same as selected type")
+            )
+        return data
+
+
 class AssetCategoryAdmin(ModelAdmin):
     def name(self):
+        type = AssetCategoryType.desc_from_id(self.type)
         if self.parent:
-            name = '|-- {}'.format(self.name)
+            name = '|-- ({}) {}'.format(type, self.name)
         else:
-            name = self.name
+            name = '({}) {}'.format(type, self.name)
         return name
+    form = AssetCategoryAdminForm
     save_on_top = True
     list_display = (name, 'parent')
     search_fields = ('name',)

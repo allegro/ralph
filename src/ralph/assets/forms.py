@@ -28,6 +28,7 @@ from mptt.forms import TreeNodeChoiceField
 from ralph.assets.models import (
     Asset,
     AssetCategory,
+    AssetCategoryType,
     AssetStatus,
     AssetType,
     DeviceInfo,
@@ -291,12 +292,27 @@ class BaseAddAssetForm(ModelForm):
         if mode:
             del kwargs['mode']
         super(BaseAddAssetForm, self).__init__(*args, **kwargs)
+        category = self.fields['category'].queryset
         if mode == "dc":
             self.fields['type'].choices = [
                 (c.id, c.desc) for c in AssetType.DC.choices]
+            self.fields['category'].queryset = category.filter(
+                type=AssetCategoryType.data_center
+            )
         elif mode == "back_office":
             self.fields['type'].choices = [
                 (c.id, c.desc) for c in AssetType.BO.choices]
+            self.fields['category'].queryset = category.filter(
+                type=AssetCategoryType.back_office
+            )
+
+    def clean_category(self):
+        data = self.cleaned_data["category"]
+        if not data.parent:
+            raise ValidationError(
+                _("Category must be selected from the subcategory")
+            )
+        return data
 
 
 class BaseEditAssetForm(ModelForm):
@@ -359,12 +375,19 @@ class BaseEditAssetForm(ModelForm):
         if mode:
             del kwargs['mode']
         super(BaseEditAssetForm, self).__init__(*args, **kwargs)
+        category = self.fields['category'].queryset
         if mode == "dc":
             self.fields['type'].choices = [
                 (c.id, c.desc) for c in AssetType.DC.choices]
+            self.fields['category'].queryset = category.filter(
+                type=AssetCategoryType.data_center
+            )
         elif mode == "back_office":
             self.fields['type'].choices = [
                 (c.id, c.desc) for c in AssetType.BO.choices]
+            self.fields['category'].queryset = category.filter(
+                type=AssetCategoryType.back_office
+            )
 
     def clean_sn(self):
         return self.instance.sn
@@ -573,6 +596,17 @@ class SearchAssetForm(Form):
             del kwargs['mode']
         channel = 'asset_dcdevice' if mode == 'dc' else 'asset_bodevice'
         super(SearchAssetForm, self).__init__(*args, **kwargs)
+        category = self.fields['category'].queryset
+        if mode == 'dc':
+            self.fields['category'].queryset = category.filter(
+                type=AssetCategoryType.data_center
+            )
+            channel = 'asset_dcdevice'
+        elif mode == 'back_office':
+            self.fields['category'].queryset = category.filter(
+                type=AssetCategoryType.back_office
+            )
+            channel = 'asset_bodevice'
 
 
 class DeleteAssetConfirmForm(Form):

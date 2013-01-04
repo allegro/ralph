@@ -24,7 +24,12 @@ from ralph.assets.forms import (
     BasePartForm, BulkEditAssetForm, SearchAssetForm
 )
 from ralph.assets.models import (
-    DeviceInfo, AssetSource, Asset, OfficeInfo, PartInfo,
+    Asset,
+    AssetCategory,
+    AssetSource,
+    DeviceInfo,
+    OfficeInfo,
+    PartInfo,
 )
 from ralph.assets.models_assets import AssetType
 from ralph.assets.models_history import AssetHistoryChange
@@ -192,7 +197,7 @@ class AssetSearch(AssetsMixin, DataTableMixin):
                 elif field == 'model':
                     all_q &= Q(model__name__startswith=field_value)
                 elif field == 'category':
-                    all_q &= Q(category_id=field_value)
+                    all_q = self.search_category(all_q, field_value)
                 else:
                     q = Q(**{field: field_value})
                     all_q = all_q & q
@@ -210,6 +215,17 @@ class AssetSearch(AssetsMixin, DataTableMixin):
                 all_q &= Q(**{date + '__lte': end})
         self.data_table_query(self.get_all_items(all_q))
 
+    def search_category(self, all_q, field_value):
+        try:
+            category_id = int(field_value)
+        except ValueError:
+            pass
+        else:
+            category = AssetCategory.objects.get(id=category_id)
+            children = [x.id for x in category.get_children()]
+            categories = [category_id, ] + children
+            all_q &= Q(category_id__in=categories)
+        return all_q
 
     def get_csv_header(self):
         header = super(AssetSearch, self).get_csv_header()
