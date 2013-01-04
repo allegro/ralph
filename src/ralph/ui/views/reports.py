@@ -388,7 +388,10 @@ class ReportVentures(SidebarReports, Base):
                         device__model__type=DeviceType.cloud_server.id
                     ), start, end
                 )
-                venture.cloud_use = (cloud_cost or 0) / total_cloud_cost * 100
+                if total_cloud_cost:
+                    venture.cloud_use = (cloud_cost or 0) / total_cloud_cost * 100
+                else:
+                    venture.cloud_use = None
         else:
             self.ventures = Venture.objects.none()
         if self.request.GET.get('export') == 'csv':
