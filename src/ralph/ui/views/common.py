@@ -549,6 +549,24 @@ class Addresses(DeviceDetailView):
                     if form.has_changed():
                         # Save the user for modified records
                         form.instance.saving_user = self.request.user
+                        # Make sure the PTR record is updated on field change
+                        if form.instance.ptr and (
+                            'name' in form.changed_data or
+                            'content' in form.changed_data
+                        ):
+                            r = Record.objects.get(id=form.instance.id)
+                            for ptr in get_revdns_records(
+                                    r.content).filter(content=r.name):
+                                ptr.saving_user = self.request.user
+                                ptr.delete()
+                                messages.warning(
+                                    self.request,
+                                    "PTR record for %s and %s deleted." % (
+                                        r.name,
+                                        r.content,
+                                    ),
+                                )
+                            form.changed_data.append('ptr')
                 self.dns_formset.save()
                 for r, data in self.dns_formset.changed_objects:
                     # Handle PTR creation/deletion
@@ -561,7 +579,10 @@ class Addresses(DeviceDetailView):
                             else:
                                 messages.warning(
                                     self.request,
-                                    "PTR record for %s created." % r.content
+                                    "PTR record for %s and %s created." % (
+                                        r.name,
+                                        r.content,
+                                    ),
                                 )
                         else:
                             for ptr in get_revdns_records(
@@ -570,7 +591,10 @@ class Addresses(DeviceDetailView):
                                 ptr.delete()
                                 messages.warning(
                                     self.request,
-                                    "PTR record for %s deleted." % r.name
+                                    "PTR record for %s and %s deleted." % (
+                                        r.name,
+                                        r.content,
+                                    ),
                                 )
                 for r in self.dns_formset.new_objects:
                     # Handle PTR creation
