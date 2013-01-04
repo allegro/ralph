@@ -8,8 +8,8 @@ from __future__ import unicode_literals
 from django.test import TestCase
 
 from ralph.assets.models_assets import AssetType, AssetStatus, AssetSource
-from ralph.assets.tests.util import create_asset, create_model
-from ralph.ui.tests.helper import login_as_su
+from ralph.assets.tests.util import create_asset, create_model, create_category
+from ralph.ui.tests.global_utils import login_as_su
 
 
 class TestBulkEdit(TestCase):
@@ -22,11 +22,14 @@ class TestBulkEdit(TestCase):
 
     def setUp(self):
         self.client = login_as_su()
+        self.category = create_category()
         self.asset = create_asset(
-            sn='1111-1111-1111-1111'
+            sn='1111-1111-1111-1111',
+            category=self.category,
         )
         self.asset1 = create_asset(
-            sn='2222-2222-2222-2222'
+            sn='2222-2222-2222-2222',
+            category=self.category,
         )
         self.model = create_model()  # u'Model1'
         self.model1 = create_model(name='Model2')

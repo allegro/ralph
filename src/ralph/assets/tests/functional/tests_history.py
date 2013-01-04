@@ -8,19 +8,22 @@ from __future__ import unicode_literals
 from django.test import TestCase
 from mock import patch
 
+
 from ralph.assets.models_assets import (
     AssetManufacturer, AssetModel, Warehouse, Asset, AssetStatus, LicenseType,
     SAVE_PRIORITY)
 
 from ralph.assets.models_history import AssetHistoryChange
+from ralph.assets.tests.util import create_category
 from ralph.business.models import Venture
 from ralph.discovery.models_device import Device, DeviceType
-from ralph.ui.tests.helper import login_as_su
+from ralph.ui.tests.global_utils import login_as_su
 
 
 class HistoryAssetsView(TestCase):
     def setUp(self):
         self.client = login_as_su()
+        self.category = create_category(type='back_office')
         self.manufacturer = AssetManufacturer(name='test_manufacturer')
         self.manufacturer.save()
         self.model = AssetModel(
@@ -46,6 +49,7 @@ class HistoryAssetsView(TestCase):
             'warehouse': self.warehouse.id,
             'sn': '666-666-666',
             'barcode': '666666',
+            'category': self.category.id,
         }
         self.asset_change_params = {
             'barcode': '777777',
@@ -106,6 +110,7 @@ class HistoryAssetsView(TestCase):
 class ConnectAssetWithDevice(TestCase):
     def setUp(self):
         self.client = login_as_su()
+        self.category = create_category()
         self.manufacturer = AssetManufacturer(name='test_manufacturer')
         self.manufacturer.save()
         self.model = AssetModel(
@@ -130,6 +135,7 @@ class ConnectAssetWithDevice(TestCase):
             'size': 1,
             'warehouse': self.warehouse.id,
             'barcode': '7777',
+            'category': self.category.id,
         }
         self.asset = None
 

@@ -9,9 +9,9 @@ from django.test import TestCase
 
 from ralph.assets.models_assets import Asset, AssetType, AssetStatus
 from ralph.assets.tests.util import (
-    create_model, create_warehouse, SCREEN_ERROR_MESSAGES
-)
-from ralph.ui.tests.helper import login_as_su
+    create_model, create_warehouse, SCREEN_ERROR_MESSAGES,
+    create_category)
+from ralph.ui.tests.global_utils import login_as_su
 
 
 class TestMultivalueFields(TestCase):
@@ -19,6 +19,7 @@ class TestMultivalueFields(TestCase):
         self.client = login_as_su()
         self.warehouse = create_warehouse()
         self.model = create_model()
+        self.category = create_category()
         self.addform = '/assets/dc/add/device/'
 
     def test_add_form_testing_sn_and_barcode(self):
@@ -45,6 +46,7 @@ class TestMultivalueFields(TestCase):
                 remarks='asset1',
                 price='10',
                 size=1,
+                category=self.category.id,
             ),
             dict(
                 type=AssetType.data_center,
@@ -58,6 +60,7 @@ class TestMultivalueFields(TestCase):
                 remarks='asset2',
                 price='10',
                 size=1,
+                category=self.category.id,
             ),
             dict(
                 type=AssetType.data_center,
@@ -71,6 +74,7 @@ class TestMultivalueFields(TestCase):
                 remarks='asset3',
                 price='10',
                 size=1,
+                category=self.category.id,
             ),
             dict(
                 type=AssetType.data_center,
@@ -84,6 +88,7 @@ class TestMultivalueFields(TestCase):
                 remarks='asset4',
                 price='10',
                 size=1,
+                category=self.category.id,
             ),
             dict(
                 type=AssetType.data_center,
@@ -97,6 +102,7 @@ class TestMultivalueFields(TestCase):
                 remarks='asset5',
                 price='10',
                 size=1,
+                category=self.category.id,
             ),
             dict(
                 type=AssetType.data_center,
@@ -111,6 +117,7 @@ class TestMultivalueFields(TestCase):
                 remarks='asset6',
                 price='10',
                 size=1,
+                category=self.category.id,
             ),
             dict(
                 type=AssetType.data_center,
@@ -125,6 +132,7 @@ class TestMultivalueFields(TestCase):
                 remarks='asset7',
                 price='10',
                 size=1,
+                category=self.category.id,
             ),
             dict(
                 type=AssetType.data_center,
@@ -139,6 +147,7 @@ class TestMultivalueFields(TestCase):
                 remarks='asset8',
                 price='10',
                 size=1,
+                category=self.category.id,
             ),
             dict(
                 type=AssetType.data_center,
@@ -153,6 +162,7 @@ class TestMultivalueFields(TestCase):
                 remarks='asset9',
                 price='10',
                 size=1,
+                category=self.category.id,
             ),
             dict(
                 type=AssetType.data_center,
@@ -167,6 +177,7 @@ class TestMultivalueFields(TestCase):
                 remarks='asset10',
                 price='10',
                 size=1,
+                category=self.category.id,
             ),
             dict(
                 type=AssetType.data_center,
@@ -181,6 +192,7 @@ class TestMultivalueFields(TestCase):
                 remarks='asset11',
                 price='10',
                 size=1,
+                category=self.category.id,
             ),
             dict(
                 type=AssetType.data_center,
@@ -195,6 +207,7 @@ class TestMultivalueFields(TestCase):
                 remarks='asset12',
                 price='10',
                 size=1,
+                category=self.category.id,
             ),
         ]
         # Add form testing

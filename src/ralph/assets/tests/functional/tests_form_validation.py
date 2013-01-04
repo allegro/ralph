@@ -9,9 +9,12 @@ from django.test import TestCase
 
 from ralph.assets.models import AssetType, AssetSource, AssetStatus
 from ralph.assets.tests.util import (
-    create_asset, create_model, SCREEN_ERROR_MESSAGES
+    create_asset,
+    create_category,
+    create_model,
+    SCREEN_ERROR_MESSAGES,
 )
-from ralph.ui.tests.helper import login_as_su
+from ralph.ui.tests.global_utils import login_as_su
 
 
 class TestValidations(TestCase):
@@ -22,13 +25,15 @@ class TestValidations(TestCase):
 
     def setUp(self):
         self.client = login_as_su()
-
+        self.category = create_category()
         self.first_asset = create_asset(
-            sn='1234-1234-1234-1234'
+            sn='1234-1234-1234-1234',
+            category=self.category,
         )
 
         self.asset_with_duplicated_sn = create_asset(
-            sn='1111-1111-1111-1111'
+            sn='1111-1111-1111-1111',
+            category=self.category,
         )
 
         # Prepare required fields (formset_name, field_name)
@@ -38,6 +43,7 @@ class TestValidations(TestCase):
             ('asset_form', 'support_type'),
             ('asset_form', 'warehouse'),
             ('asset_form', 'sn'),
+            ('asset_form', 'category'),
         ]
 
         self.model1 = create_model()
