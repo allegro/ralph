@@ -188,7 +188,7 @@ class Asset(TimeTrackable, EditorTrackable, SavingUser, SoftDeletable):
     delivery_date = models.DateField(null=True, blank=True)
     production_use_date = models.DateField(null=True, blank=True)
     provider_order_date = models.DateField(null=True, blank=True)
-    category = models.ForeignKey('AssetCategory')
+    category = models.ForeignKey('AssetCategory', null=True, blank=True)
 
     objects = models.Manager()
     objects_bo = BOManager()
