@@ -5,12 +5,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+from collections import Counter
 
 import datetime
 import cStringIO as StringIO
 
 from django.db import models as db
-from django.http import HttpResponseForbidden, HttpResponse
+from django.http import HttpResponseForbidden, HttpResponse, Http404
 from django.conf import settings
 from django.db.models import Q
 from django.utils.safestring import mark_safe
@@ -35,9 +36,10 @@ from ralph.ui.views.common import Base, DeviceDetailView
 from ralph.ui.views.devices import DEVICE_SORT_COLUMNS
 from ralph.ui.forms.reports import (
     SupportRangeReportForm, DeprecationRangeReportForm,
-    WarrantyRangeReportForm, DevicesChoiceReportForm
-)
+    WarrantyRangeReportForm, DevicesChoiceReportForm,
+    ReportVentureCost)
 from ralph.util import csvutil
+from util.pricing import details_all
 
 
 def threshold(days):
@@ -198,6 +200,11 @@ class SidebarReports(object):
                 "Ventures",
                 fugue_icon='fugue-store',
                 view_name='reports_ventures'
+            ),
+            MenuItem(
+                "Venture costs",
+                fugue_icon='fugue-computer',
+                view_name='reports_venture_costs'
             ),
         ]
         context.update({
@@ -630,4 +637,146 @@ class ReportDevices(SidebarReports, Base):
                 'perm_to_edit': self.perm_edit,
                 }
         )
+        return context
+
+
+def uniq(list_dicts):
+    return [dict(p) for p in set(tuple(i.items())
+        for i in list_dicts)]
+
+class ReportVentureCosts(SidebarReports, Base):
+    template_name = 'ui/report_venture_costs.html'
+    subsection = 'venture_costs'
+
+    def export_csv(self, data):
+
+        def iter_rows():
+            rows = []
+
+            max = 0
+            for item in data:
+                row = [
+                    unicode(item.get('name')),
+                    unicode(item.get('sn')),
+                    unicode(item.get('barcode')),
+                    unicode(item.get('cost')),
+                ]
+                components = item.get('components')
+
+                if max < len(components):
+                    max = len(components)
+
+                for component in components:
+                    row.append(unicode(component.get('name')))
+                    row.append(unicode(component.get('count')))
+                    row.append(unicode(component.get('price')))
+
+                rows.append(row)
+
+            headers = [
+                'Device',
+                'SN',
+                'Barcode',
+                'Cost',
+                ]
+
+            for comp in range(max):
+                headers.append('Component name')
+                headers.append('Component count')
+                headers.append('Component price')
+
+            rows.insert(0, headers)
+            return rows
+
+
+        f = StringIO.StringIO()
+        csvutil.UnicodeWriter(f).writerows(iter_rows())
+        response = HttpResponse(f.getvalue(), content_type='application/csv')
+        response['Content-Disposition'] = 'attachment; filename=ventures_cost.csv'
+        return response
+
+    def get(self, *args, **kwargs):
+        profile = self.request.user.get_profile()
+        has_perm = profile.has_perm
+        if not has_perm(Perm.read_device_info_reports):
+            return HttpResponseForbidden(
+                "You don't have permission to see reports.")
+        self.perm_edit = False
+        if has_perm(Perm.edit_device_info_financial):
+            self.perm_edit = True
+        venture_id = self.request.GET.get('venture', None)
+        self.form = ReportVentureCost(initial={'venture': venture_id})
+        if venture_id:
+            try:
+                venture_devices = Device.objects.filter(venture=venture_id)
+            except ValueError:
+                raise Http404
+        else:
+            venture_devices = None
+
+
+        devices = []
+        if venture_devices:
+            for device in venture_devices:
+                models = []
+                components = []
+                prices = []
+                for component in details_all(device):
+                    model = component.get('model')
+                    if component['group'] != 'dev':
+                        if model is not None:
+                            models.append(model.name)
+                            prices.append(
+                                {
+                                    'name': model.name,
+                                    'price': component.get('price')
+                                }
+                            )
+                counts = Counter(models)
+
+                for item in prices:
+                    name = item.get('name')
+                    price = item.get('price')
+                    components.append(
+                        {
+                            'name': name,
+                            'price': price or 0,
+                            'count': counts.get(name),
+                        }
+                    )
+                components = uniq(components)
+
+                item = {
+                    'name': device.name,
+                    'sn': device.sn or '',
+                    'barcode': device.barcode or '',
+                    'cost': device.cached_cost,
+                    'components': components
+                }
+                devices.append(item)
+
+
+            self.devices = devices
+            self.venture_id = venture_id
+        else:
+            self.venture_id = None
+
+        if self.request.GET.get('export') == 'csv':
+            return self.export_csv(self.devices)
+        return super(ReportVentureCosts, self).get(*args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(ReportVentureCosts, self).get_context_data(**kwargs)
+        context.update(
+            {
+                'form': self.form,
+            }
+        )
+        if self.venture_id:
+            context.update(
+                {
+                    'rows': self.devices,
+                    'venture': self.venture_id,
+                }
+            )
         return context
