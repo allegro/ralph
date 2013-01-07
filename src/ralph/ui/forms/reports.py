@@ -5,8 +5,8 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from django import forms
-from ralph.ui.widgets import DateWidget, ReadOnlySelectWidget
-from ui.forms import all_ventures
+from ralph.ui.widgets import DateWidget
+from ralph.ui.forms import all_ventures
 
 
 class DevicesChoiceReportForm(forms.Form):
