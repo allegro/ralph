@@ -25,7 +25,7 @@ def get_current_deployment(request):
             status=DeploymentStatus.in_progress
         )
     except Deployment.DoesNotExist:
-        if request.user.is_authenticated() and request.GET.get('ip'):
+        if request.GET.get('ip'):
             ip = request.GET.get('ip')
             deployment = Deployment.objects.get(
                 ip=ip,
