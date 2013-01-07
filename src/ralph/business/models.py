@@ -7,7 +7,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import re
-import ipaddr
 
 from django.conf import settings
 from django.db import models as db
@@ -18,11 +17,9 @@ from dj.choices import Choices
 from dj.choices.fields import ChoiceField
 from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
-from exceptions import AttributeError
 
 from ralph.discovery.models import DataCenter
 from ralph.discovery.models_history import HistoryCost
-from ralph.discovery.models_network import Network
 
 from ralph.cmdb.models_ci import CI, CIOwner, CIOwnershipType, CIOwnership
 
