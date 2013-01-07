@@ -10,8 +10,8 @@ import datetime
 from django.test import TestCase
 
 from ralph.assets.models_assets import (AssetStatus, AssetType)
-from ralph.assets.tests.util import create_asset
-from ralph.ui.tests.helper import login_as_su
+from ralph.assets.tests.util import create_asset, create_category
+from ralph.ui.tests.global_utils import login_as_su
 
 
 class TestDataDisplay(TestCase):
@@ -19,12 +19,14 @@ class TestDataDisplay(TestCase):
 
     def setUp(self):
         self.client = login_as_su()
+        self.category = create_category()
         asset_fields = dict(
             barcode='123456789',
             invoice_no='Invoice #1',
             order_no='Order #1',
             invoice_date=datetime.date(2001, 1, 1),
             sn='0000-0000-0000-0000',
+            category=self.category,
         )
         self.asset = create_asset(**asset_fields)
 

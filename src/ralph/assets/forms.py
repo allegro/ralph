@@ -10,21 +10,32 @@ import re
 
 from ajax_select.fields import AutoCompleteSelectField, AutoCompleteField
 from django.forms import (
-    ModelForm, Form, CharField, DateField, ChoiceField, ValidationError,
+    CharField,
+    ChoiceField,
+    DateField,
+    Form,
     IntegerField,
+    ModelForm,
+    ValidationError,
 )
 from django import forms
-
 from django.forms.widgets import Textarea, HiddenInput
+from django.utils.html import escape
 from django.utils.translation import ugettext_lazy as _
+from django.utils.safestring import mark_safe
+from mptt.forms import TreeNodeChoiceField
 
 from ralph.assets.models import (
-    Asset, OfficeInfo, DeviceInfo, PartInfo, AssetStatus, AssetType,
+    Asset,
+    AssetCategory,
+    AssetCategoryType,
+    AssetStatus,
+    AssetType,
+    DeviceInfo,
+    OfficeInfo,
+    PartInfo,
 )
 from ralph.ui.widgets import DateWidget, HiddenSelectWidget
-
-from django.utils.html import escape
-from django.utils.safestring import mark_safe
 
 
 class CodeWidget(forms.TextInput):
@@ -34,6 +45,7 @@ class CodeWidget(forms.TextInput):
         <div class='code_field' id="id_%s" name="%s" width=200 height=500 style='width:200px;height:500px;' >
         %s</div>''' % (
             escape(name), escape(name), formatted))
+
 
 class ModeNotSetException(Exception):
     pass
@@ -229,12 +241,25 @@ class BaseAddAssetForm(ModelForm):
     class Meta:
         model = Asset
         fields = (
-            'sn', 'type', 'model', 'status', 'warehouse', 'invoice_no',
-            'order_no', 'price',
+            'sn',
+            'type',
+            'category',
+            'model',
+            'status',
+            'warehouse',
+            'invoice_no',
+            'order_no',
+            'price',
             'support_price',
-            'support_type', 'support_period', 'support_void_reporting',
-            'provider', 'remarks', 'request_date',
-            'provider_order_date', 'delivery_date', 'invoice_date',
+            'support_type',
+            'support_period',
+            'support_void_reporting',
+            'provider',
+            'remarks',
+            'request_date',
+            'provider_order_date',
+            'delivery_date',
+            'invoice_date',
             'production_use_date',
         )
         widgets = {
@@ -256,32 +281,66 @@ class BaseAddAssetForm(ModelForm):
         required=True,
         plugin_options=dict(add_link='/admin/assets/warehouse/add/?name=')
     )
+    category = TreeNodeChoiceField(
+        queryset=AssetCategory.tree.all(),
+        level_indicator='|---',
+        empty_label="---",
+    )
 
     def __init__(self, *args, **kwargs):
         mode = kwargs.get('mode')
         if mode:
             del kwargs['mode']
         super(BaseAddAssetForm, self).__init__(*args, **kwargs)
+        category = self.fields['category'].queryset
         if mode == "dc":
             self.fields['type'].choices = [
                 (c.id, c.desc) for c in AssetType.DC.choices]
+            self.fields['category'].queryset = category.filter(
+                type=AssetCategoryType.data_center
+            )
         elif mode == "back_office":
             self.fields['type'].choices = [
                 (c.id, c.desc) for c in AssetType.BO.choices]
+            self.fields['category'].queryset = category.filter(
+                type=AssetCategoryType.back_office
+            )
+
+    def clean_category(self):
+        data = self.cleaned_data["category"]
+        if not data.parent:
+            raise ValidationError(
+                _("Category must be selected from the subcategory")
+            )
+        return data
 
 
 class BaseEditAssetForm(ModelForm):
     class Meta:
         model = Asset
         fields = (
-            'sn','type', 'model', 'status', 'warehouse', 'invoice_no',
+            'sn',
+            'type',
+            'category',
+            'model',
+            'status',
+            'warehouse',
+            'invoice_no',
             'order_no',
-            'price', 'support_price', 'support_type', 'support_period',
-            'support_void_reporting', 'provider',
-            'remarks', 'sn', 'barcode', 'request_date',
-            'provider_order_date', 'delivery_date', 'invoice_date',
+            'price',
+            'support_price',
+            'support_type',
+            'support_period',
+            'support_void_reporting',
+            'provider',
+            'remarks',
+            'sn',
+            'barcode',
+            'request_date',
+            'provider_order_date',
+            'delivery_date',
+            'invoice_date',
             'production_use_date',
-
         )
         widgets = {
             'request_date': DateWidget(),
@@ -304,21 +363,41 @@ class BaseEditAssetForm(ModelForm):
         required=True,
         plugin_options=dict(add_link='/admin/assets/warehouse/add/?name=')
     )
+    category = TreeNodeChoiceField(
+        queryset=AssetCategory.tree.all(),
+        level_indicator='|---',
+        empty_label="---",
+    )
 
     def __init__(self, *args, **kwargs):
         mode = kwargs.get('mode')
         if mode:
             del kwargs['mode']
         super(BaseEditAssetForm, self).__init__(*args, **kwargs)
+        category = self.fields['category'].queryset
         if mode == "dc":
             self.fields['type'].choices = [
                 (c.id, c.desc) for c in AssetType.DC.choices]
+            self.fields['category'].queryset = category.filter(
+                type=AssetCategoryType.data_center
+            )
         elif mode == "back_office":
             self.fields['type'].choices = [
                 (c.id, c.desc) for c in AssetType.BO.choices]
+            self.fields['category'].queryset = category.filter(
+                type=AssetCategoryType.back_office
+            )
 
     def clean_sn(self):
         return self.instance.sn
+
+    def clean_category(self):
+        data = self.cleaned_data["category"]
+        if not data.parent:
+            raise ValidationError(
+                _("Category must be selected from the subcategory")
+            )
+        return data
 
 
 class AddPartForm(BaseAddAssetForm):
@@ -427,15 +506,21 @@ class SearchAssetForm(Form):
     )
     part_info = ChoiceField(
         required=False,
-        choices=[('', '----'), ('device','Device'), ('part', 'Part')],
+        choices=[('', '----'), ('device', 'Device'), ('part', 'Part')],
         label='Asset type'
+    )
+    category = TreeNodeChoiceField(
+        required=False,
+        queryset=AssetCategory.tree.all(),
+        level_indicator='|---',
+        empty_label="---",
     )
     sn = CharField(required=False, label='SN')
     request_date_from = DateField(
         required=False, widget=DateWidget(attrs={
             'placeholder': 'Start YYYY-MM-DD',
             'data-collapsed': True,
-            }),
+        }),
         label="Request date",
     )
     request_date_to = DateField(
@@ -443,13 +528,13 @@ class SearchAssetForm(Form):
             'class': 'end-date-field ',
             'placeholder': 'End YYYY-MM-DD',
             'data-collapsed': True,
-            }),
+        }),
         label='')
     provider_order_date_from = DateField(
         required=False, widget=DateWidget(attrs={
             'placeholder': 'Start YYYY-MM-DD',
             'data-collapsed': True,
-            }),
+        }),
         label="Provider order date",
     )
     provider_order_date_to = DateField(
@@ -457,13 +542,13 @@ class SearchAssetForm(Form):
             'class': 'end-date-field ',
             'placeholder': 'End YYYY-MM-DD',
             'data-collapsed': True,
-            }),
+        }),
         label='')
     delivery_date_from = DateField(
         required=False, widget=DateWidget(attrs={
             'placeholder': 'Start YYYY-MM-DD',
             'data-collapsed': True,
-            }),
+        }),
         label="Delivery date",
     )
     delivery_date_to = DateField(
@@ -471,13 +556,13 @@ class SearchAssetForm(Form):
             'class': 'end-date-field ',
             'placeholder': 'End YYYY-MM-DD',
             'data-collapsed': True,
-            }),
+        }),
         label='')
     invoice_date_from = DateField(
         required=False, widget=DateWidget(attrs={
             'placeholder': 'Start YYYY-MM-DD',
             'data-collapsed': True,
-            }),
+        }),
         label="Invoice date",
     )
     invoice_date_to = DateField(
@@ -485,14 +570,14 @@ class SearchAssetForm(Form):
             'class': 'end-date-field ',
             'placeholder': 'End YYYY-MM-DD',
             'data-collapsed': True,
-            }),
+        }),
         label='')
 
     production_use_date_from = DateField(
         required=False, widget=DateWidget(attrs={
             'placeholder': 'Start YYYY-MM-DD',
             'data-collapsed': True,
-            }),
+        }),
         label="Production use date",
     )
     production_use_date_to = DateField(
@@ -500,7 +585,7 @@ class SearchAssetForm(Form):
             'class': 'end-date-field ',
             'placeholder': 'End YYYY-MM-DD',
             'data-collapsed': True,
-            }),
+        }),
         label='')
 
     def __init__(self, *args, **kwargs):
@@ -510,6 +595,17 @@ class SearchAssetForm(Form):
             del kwargs['mode']
         channel = 'asset_dcdevice' if mode == 'dc' else 'asset_bodevice'
         super(SearchAssetForm, self).__init__(*args, **kwargs)
+        category = self.fields['category'].queryset
+        if mode == 'dc':
+            self.fields['category'].queryset = category.filter(
+                type=AssetCategoryType.data_center
+            )
+            channel = 'asset_dcdevice'
+        elif mode == 'back_office':
+            self.fields['category'].queryset = category.filter(
+                type=AssetCategoryType.back_office
+            )
+            channel = 'asset_bodevice'
 
 
 class DeleteAssetConfirmForm(Form):

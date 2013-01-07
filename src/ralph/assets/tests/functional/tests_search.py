@@ -9,9 +9,9 @@ from django.test import TestCase
 
 import datetime
 
-from ralph.assets.tests.util import create_asset, create_model
+from ralph.assets.tests.util import create_asset, create_model, create_category
 from ralph.assets.models_assets import AssetStatus
-from ralph.ui.tests.helper import login_as_su
+from ralph.ui.tests.global_utils import login_as_su
 
 
 class TestSearchForm(TestCase):
@@ -21,7 +21,7 @@ class TestSearchForm(TestCase):
     """
     def setUp(self):
         self.client = login_as_su()
-
+        self.category = create_category()
         self.first_asset = create_asset(
             invoice_no='Invoice No1',
             order_no='Order No2',
@@ -30,6 +30,7 @@ class TestSearchForm(TestCase):
             provider='Provider1',
             sn='1234-1234-1234-1234',
             barcode='bc1',
+            category=self.category,
         )
 
         self.second_asset = create_asset(
@@ -40,6 +41,7 @@ class TestSearchForm(TestCase):
             provider='Provider2',
             sn='1235-1235-1235-1235',
             barcode='bc2',
+            category=self.category,
         )
 
         asset_model = create_model(name='Model2')
@@ -53,7 +55,8 @@ class TestSearchForm(TestCase):
             provider='Provider1',
             sn='1236-1236-1236-1236',
             barcode='bc3',
-            status=asset_status
+            status=asset_status,
+            category=self.category,
         )
 
     def test_model_field(self):
@@ -174,20 +177,23 @@ class TestSearchForm(TestCase):
 class TestSearchDataRangeFields(TestCase):
     def setUp(self):
         self.client = login_as_su()
-
+        self.category = create_category()
         self.first_asset = create_asset(
             invoice_date=datetime.date(2001, 1, 1),
             sn='1234-1234-1234-1234',
+            category=self.category,
         )
 
         self.second_asset = create_asset(
             invoice_date=datetime.date(2002, 1, 1),
             sn='1235-1235-1235-1235',
+            category=self.category,
         )
 
         self.third_asset = create_asset(
             invoice_date=datetime.date(2003, 1, 1),
             sn='1236-1236-1236-1236',
+            category=self.category,
         )
 
     def test_start_date_is_equal_end_date(self):
