@@ -20,7 +20,7 @@ from bob.menu import MenuItem
 from dj.choices import Choices
 
 from ralph.account.models import Perm
-from ralph.business.models import Venture
+from ralph.business.models import Venture, VentureExtraCostType
 from ralph.cmdb.models_ci import (
     CI, CIRelation, CI_STATE_TYPES, CI_RELATION_TYPES, CI_TYPES
 )
@@ -299,6 +299,8 @@ class ReportMargins(SidebarReports, Base):
         })
         return context
 
+def _currency(value):
+    return '{:,.2f} {}'.format(value or 0, settings.CURRENCY).replace(',', ' ')
 
 class ReportVentures(SidebarReports, Base):
     template_name = 'ui/report_ventures.html'
@@ -316,7 +318,10 @@ class ReportVentures(SidebarReports, Base):
                 'Core count',
                 'Virtual core count',
                 'Cloud use',
-                'Total cost'
+                'Cloud cost',
+            ] + [extra_type.name for extra_type in self.extra_types] + [
+                'Hardware cost',
+                'Total cost',
             ]
             for venture in self.ventures:
                 total = venture.total or 0
@@ -331,7 +336,10 @@ class ReportVentures(SidebarReports, Base):
                     '%d' % (venture.core_count or 0),
                     '%d' % (venture.virtual_core_count or 0),
                     '%f' % (venture.cloud_use or 0),
-                    '{:,.2f} {}'.format(total, settings.CURRENCY).replace(',', ' '),
+                    _currency(venture.cloud_cost),
+                ] + [_currency(v) for v in venture.extras] + [
+                    _currency(venture.hardware_cost),
+                    _currency(total),
                 ]
         f = StringIO.StringIO()
         csvutil.UnicodeWriter(f).writerows(iter_rows())
@@ -368,6 +376,9 @@ class ReportVentures(SidebarReports, Base):
                     device__model__type=DeviceType.cloud_server.id
                 ), start, end
             )
+            self.extra_types = list(VentureExtraCostType.objects.annotate(
+                cost_count=db.Count('ventureextracost')
+            ).filter(cost_count__gt=0).order_by('name'))
             for venture in self.ventures:
                 query = HistoryCost.objects.filter(
                     db.Q(venture=venture) |
@@ -383,15 +394,29 @@ class ReportVentures(SidebarReports, Base):
                 venture.virtual_core_count = get_total_virtual_cores(
                     devices, start, end
                 )
+                q = query.filter(extra=None)
+                venture.hardware_cost = get_total_cost(q, start, end)
                 cloud_cost = get_total_cost(
                     query.filter(
                         device__model__type=DeviceType.cloud_server.id
                     ), start, end
                 )
                 if total_cloud_cost:
-                    venture.cloud_use = (cloud_cost or 0) / total_cloud_cost * 100
+                    venture.cloud_use = (
+                        (cloud_cost or 0) /
+                        total_cloud_cost * 100
+                    )
                 else:
                     venture.cloud_use = None
+                venture.cloud_cost = cloud_cost
+                venture.extras = []
+                for extra_type in self.extra_types:
+                    cost = None
+                    for extra_cost in extra_type.ventureextracost_set.all():
+                        q = query.filter(extra=extra_cost)
+                        c = get_total_cost(q, start, end)
+                        cost = cost + (c or 0) if cost else c
+                    venture.extras.append(cost)
         else:
             self.ventures = Venture.objects.none()
         if self.request.GET.get('export') == 'csv':
@@ -404,6 +429,7 @@ class ReportVentures(SidebarReports, Base):
             'form': self.form,
             'ventures': self.ventures,
             'profile': self.request.user.get_profile(),
+            'extra_types': self.extra_types,
         })
         return context
 
