@@ -197,7 +197,9 @@ class AssetSearch(AssetsMixin, DataTableMixin):
                 elif field == 'model':
                     all_q &= Q(model__name__startswith=field_value)
                 elif field == 'category':
-                    all_q = self.search_category(all_q, field_value)
+                    part = self.get_search_category_part(field_value)
+                    if part:
+                        all_q &= part
                 else:
                     q = Q(**{field: field_value})
                     all_q = all_q & q
@@ -215,7 +217,7 @@ class AssetSearch(AssetsMixin, DataTableMixin):
                 all_q &= Q(**{date + '__lte': end})
         self.data_table_query(self.get_all_items(all_q))
 
-    def search_category(self, all_q, field_value):
+    def get_search_category_part(self, field_value):
         try:
             category_id = int(field_value)
         except ValueError:
@@ -224,8 +226,7 @@ class AssetSearch(AssetsMixin, DataTableMixin):
             category = AssetCategory.objects.get(id=category_id)
             children = [x.id for x in category.get_children()]
             categories = [category_id, ] + children
-            all_q &= Q(category_id__in=categories)
-        return all_q
+            return Q(category_id__in=categories)
 
     def get_csv_header(self):
         header = super(AssetSearch, self).get_csv_header()

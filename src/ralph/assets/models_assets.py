@@ -97,7 +97,7 @@ class AssetModel(TimeTrackable, EditorTrackable, Named.NonUnique):
 class AssetCategory(MPTTModel, TimeTrackable, EditorTrackable):
     name = models.CharField(max_length=50, unique=True)
     type = models.PositiveIntegerField(
-        verbose_name=_("type"), choices=AssetCategoryType(), null=False
+        verbose_name=_("type"), choices=AssetCategoryType(),
     )
     parent = TreeForeignKey(
         'self',

@@ -284,7 +284,7 @@ class BaseAddAssetForm(ModelForm):
     category = TreeNodeChoiceField(
         queryset=AssetCategory.tree.all(),
         level_indicator='|---',
-        empty_label="---"
+        empty_label="---",
     )
 
     def __init__(self, *args, **kwargs):
@@ -341,7 +341,6 @@ class BaseEditAssetForm(ModelForm):
             'delivery_date',
             'invoice_date',
             'production_use_date',
-
         )
         widgets = {
             'request_date': DateWidget(),
@@ -367,7 +366,7 @@ class BaseEditAssetForm(ModelForm):
     category = TreeNodeChoiceField(
         queryset=AssetCategory.tree.all(),
         level_indicator='|---',
-        empty_label="---"
+        empty_label="---",
     )
 
     def __init__(self, *args, **kwargs):
@@ -514,7 +513,7 @@ class SearchAssetForm(Form):
         required=False,
         queryset=AssetCategory.tree.all(),
         level_indicator='|---',
-        empty_label="---"
+        empty_label="---",
     )
     sn = CharField(required=False, label='SN')
     request_date_from = DateField(
