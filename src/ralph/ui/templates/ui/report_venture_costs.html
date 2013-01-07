@@ -1,0 +1,73 @@
+{% extends "ui/report_base.html" %}
+{% load url from future %}
+{% load icons %}
+{% load formats %}
+{% load bob %}
+
+{% block contentarea %}
+    <div class="row-fluid">
+        <div class="span12">
+            <form class="form form-inline">
+                <div class="form-actions">
+                    {% for f in form %}
+                        {% if f.label %}
+                            <div style="display:inline-block; vertical-align:top" class="control-group {% if f.errors %}error{% endif %}" >
+                                {{ f }}
+                                {% if f.errors %}
+                                    <span class="help-block">
+                                        {% for e in f.errors %}{{ e }}{% endfor %}
+                                    </span>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                    {% spaceless %}<button class="btn pull-right">
+                        {% icon 'fugue-calculator' %}&nbsp;Change Venture
+                        </button>{% endspaceless %}
+
+                    {% if venture %}
+                        {% spaceless %}
+                        <a href="?venture={{ venture }}&export=csv" class="btn pull-right">
+                            {% icon 'fugue-calculator' %}&nbsp;Export CSV
+                        </a>{% endspaceless %}
+                    {% endif%}
+
+
+
+                </div>
+            </form>
+        </div>
+
+        <div class="span12">
+            <table class="table table-striped table-bordered table-condensed">
+                <thead>
+                    <td>Device</td>
+                    <td>SN</td>
+                    <td>Barcode</td>
+                    <td>Monthly Cost</td>
+                    <td>Components</td>
+                </thead>
+                <tbody>
+                    {% for row in rows %}
+                    <tr>
+                        <td>{{ row.name }}</td>
+                        <td>{{ row.sn }}</td>
+                        <td>{{ row.barcode }}</td>
+                        <td>{{ row.cost|currency }}</td>
+                        {% for comp in row.components %}
+                        <td>
+                            name: <strong>{{ comp.name }}</strong><br />
+                            count: <strong>{{ comp.count }}</strong><br />
+                            price: <strong>{{ comp.price|currency }}</strong>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+
+
+            </table>
+        </div>
+    </div>
+{% endblock %}
