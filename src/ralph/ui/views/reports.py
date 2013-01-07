@@ -450,6 +450,9 @@ class ReportVentures(SidebarReports, Base):
                 'start': datetime.date.today() - datetime.timedelta(days=30),
                 'end': datetime.date.today(),
             })
+        self.extra_types = list(VentureExtraCostType.objects.annotate(
+            cost_count=db.Count('ventureextracost')
+        ).filter(cost_count__gt=0).order_by('name'))
         if self.form.is_valid():
             self.ventures = profile.perm_ventures(
                 Perm.read_device_info_reports
@@ -460,9 +463,6 @@ class ReportVentures(SidebarReports, Base):
             ).order_by('path')
             start = self.form.cleaned_data['start']
             end = self.form.cleaned_data['end']
-            self.extra_types = list(VentureExtraCostType.objects.annotate(
-                cost_count=db.Count('ventureextracost')
-            ).filter(cost_count__gt=0).order_by('name'))
             self.venture_data = self._get_venture_data(
                 start,
                 end,
