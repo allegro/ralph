@@ -39,7 +39,7 @@ from ralph.ui.forms.reports import (
     WarrantyRangeReportForm, DevicesChoiceReportForm,
     ReportVentureCost)
 from ralph.util import csvutil
-from util.pricing import details_all
+from ralph.util.pricing import details_all
 
 
 def threshold(days):
