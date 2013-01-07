@@ -44,6 +44,7 @@ class CleanPluginTest(TestCase):
         self.deployment.save()
         self.ip = IPAddress(address='127.0.0.1', device=device)
         self.ip.save()
+        IPAddress(address='127.0.0.2', device=device).save()
         share_model = ComponentModel(type=ComponentType.share, name="share")
         share_model.save()
         share = DiskShare(wwn='x'*33, device=device, model=share_model)
@@ -62,7 +63,8 @@ class CleanPluginTest(TestCase):
             "-- Remarks below are for old role -/- from %s --\n"
             "I'm sorry, Dave." % datetime.date.today().strftime('%Y-%m-%d'),
         )
-        self.assertFalse(device.ipaddress_set.exists())
+        self.assertEquals(device.ipaddress_set.count(), 1)
+        self.assertEquals(device.ipaddress_set.all()[0].address, '127.0.0.1')
         self.assertFalse(device.diskshare_set.exists())
         self.assertFalse(device.disksharemount_set.exists())
         self.assertFalse(device.software_set.exists())
