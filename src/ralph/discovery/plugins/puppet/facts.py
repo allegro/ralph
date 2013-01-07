@@ -258,8 +258,8 @@ def handle_facts_os(dev, facts, is_virtual=False):
     OperatingSystem.create(
         dev=dev,
         os_name=os_name,
-        vfamily=family,
-        ersion=os_version,
+        family=family,
+        version=os_version,
         cores_count=cores_count,
         storage=storage_size,
         memory=memory_size,

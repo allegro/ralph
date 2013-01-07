@@ -215,8 +215,10 @@ CPU_FAMILY = {
 class Error(Exception):
     pass
 
+
 class ResponseError(Error):
     pass
+
 
 class VersionError(Error):
     pass
@@ -235,8 +237,12 @@ class IloHost(object):
 
     def update(self, raw=None):
         tree, raw = self._get_tree(raw)
-        (self.name, self.mac, self.firmware,
-                self.records) = self._parse_tree(tree)
+        (
+            self.name,
+            self.mac,
+            self.firmware,
+            self.records
+        ) = self._parse_tree(tree)
         fields = self.records[1][0]
         self.model = fields['Product Name'][0].strip()
         if not self.model.startswith('HP '):
@@ -314,7 +320,9 @@ class IloHost(object):
 
     def _get_ilo_version(self):
         try:
-            self._get_ilo2('<?xml version="1.0"?><RIBCL VERSION="2.0"></RIBCL>')
+            self._get_ilo2(
+                '<?xml version="1.0"?><RIBCL VERSION="2.0"></RIBCL>'
+            )
         except ResponseError as e:
             if hasattr(e, 'code'):
                 if e.code == 405:
@@ -364,9 +372,11 @@ class IloHost(object):
         fw_node = tree.find('RIBCL/GET_FW_VERSION')
         if fw_node is not None:
             fw = fw_node.attrib
-            firmware = '%s, %s, rev %s' % (fw.get('LICENSE_TYPE', ''),
-                                      fw['FIRMWARE_DATE'],
-                                      fw['FIRMWARE_VERSION'])
+            firmware = '%s, %s, rev %s' % (
+                fw.get('LICENSE_TYPE', ''),
+                fw['FIRMWARE_DATE'],
+                fw['FIRMWARE_VERSION']
+            )
         else:
             firmware = None
 
@@ -375,7 +385,6 @@ class IloHost(object):
             raise ResponseError('No network settings in response.')
         mac = net.find('MAC_ADDRESS').attrib['VALUE'].replace(':', '').upper()
         name = net.find('DNS_NAME').attrib['VALUE'].strip()
-
 
         host = tree.find('RIBCL/GET_HOST_DATA')
         records = collections.defaultdict(list)
@@ -419,7 +428,9 @@ class IloHost(object):
             except (ValueError, IndexError):
                 continue
             try:
-                cores = int(fields['Execution Technology'][0].split(None, 1)[0])
+                cores = int(
+                    fields['Execution Technology'][0].split(None, 1)[0]
+                )
             except (ValueError, IndexError):
                 cores = None
             extra = '\n'.join([
@@ -427,7 +438,13 @@ class IloHost(object):
                 ''.join(fields.get("Memory Technology", [])),
             ])
             family = int(''.join(fields.get("Family", [])) or 0)
-            yield fields['Label'][0], speed, cores, extra, CPU_FAMILY.get(family)
+            yield (
+                fields['Label'][0],
+                speed,
+                cores,
+                extra,
+                CPU_FAMILY.get(family)
+            )
 
     def _raw_to_tree(self, raw):
         xml = ('<?xml version="1.0"?><ROOT>%s</ROOT>' %

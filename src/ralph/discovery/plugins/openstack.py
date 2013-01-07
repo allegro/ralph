@@ -39,8 +39,13 @@ def make_tenant(tenant):
             priority=0,
         )
         res, created = GenericComponent.concurrent_get_or_create(
-                model=model, device=dev,
-                sn='%s-%s' % (symbol, tenant['tenant_id']))
+            sn='%s-%s' % (symbol, tenant['tenant_id']),
+            defaults=dict(
+                model=model,
+                device=dev,
+            ),
+        )
+
         if created:
             res.label = unit
         res.save()

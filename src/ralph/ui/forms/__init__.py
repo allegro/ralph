@@ -135,12 +135,7 @@ class DeploymentForm(forms.ModelForm):
 
     def clean_ip(self):
         ip = self.cleaned_data.get('ip')
-        venture_role = self.cleaned_data.get('venture_role')
-        if venture_role.check_ip(ip) is False:
-            raise forms.ValidationError(
-                "Given IP isn't in the appropriate subnet"
-            )
-        return ip
+        return str(ipaddr.IPAddress(ip))
 
 
 def _validate_cols_count(expected_count, cols, row_number):
