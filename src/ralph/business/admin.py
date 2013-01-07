@@ -45,7 +45,7 @@ class VentureOwnerInline(admin.TabularInline):
 
 class VentureRoleInline(ForeignKeyAutocompleteTabularInline):
     model = VentureRole
-    exclude = ('created', 'modified', 'networks', 'preboot')
+    exclude = ('created', 'modified', 'preboot')
     extra = 4
     related_search_fields = {
         'parent': ['^name'],
@@ -97,7 +97,6 @@ class VentureRoleAdmin(ModelAdmin):
         'parent': ['^name'],
     }
     form = VentureRoleAdminForm
-    filter_horizontal = ('networks',)
     list_display = ('name', venture_path, 'path', members)
     list_filter = ('venture__data_center', 'venture__show_in_ralph',)
     search_fields = ('name', 'venture__name', 'venture__path')
@@ -119,7 +118,7 @@ class RolePropertyValueInline(admin.TabularInline):
 
 class SubVentureInline(admin.TabularInline):
     model = Venture
-    exclude = ('created', 'modified', 'networks', 'preboot',)
+    exclude = ('created', 'modified', 'preboot',)
     extra = 0
 
 
@@ -190,7 +189,6 @@ class VentureAdmin(ModelAdmin):
     list_display = ('name', 'path', 'data_center',
                     members, technical_owners, business_owners)
     list_filter = ('data_center', 'show_in_ralph',)
-    filter_horizontal = ('networks',)
     search_fields = ('name', 'symbol')
     save_on_top = True
 

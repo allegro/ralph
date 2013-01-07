@@ -18,7 +18,7 @@ from ralph.discovery.models import (
 
 def _make_dc(dc_no):
     if dc_no is None:
-        return None, None
+        return None
     dev_model, created = DeviceModel.concurrent_get_or_create(
         name='Data center',
         defaults={
@@ -48,10 +48,11 @@ def _connect_dc(ip, dev):
         rack = None
         for rack in network.racks.all()[:1]:
             break
+
     dc = _make_dc(dc_no)
     if rack:
         dev.parent = rack
-    elif dev.parent == None:
+    elif dev.parent is None:
         dev.parent = rack or dc
     else:
         return 'Already has better info.'
