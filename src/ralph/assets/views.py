@@ -24,7 +24,12 @@ from ralph.assets.forms import (
     BasePartForm, BulkEditAssetForm, SearchAssetForm
 )
 from ralph.assets.models import (
-    DeviceInfo, AssetSource, Asset, OfficeInfo, PartInfo,
+    Asset,
+    AssetCategory,
+    AssetSource,
+    DeviceInfo,
+    OfficeInfo,
+    PartInfo,
 )
 from ralph.assets.models_assets import AssetType
 from ralph.assets.models_history import AssetHistoryChange
@@ -170,8 +175,14 @@ class AssetSearch(AssetsMixin, DataTableMixin):
 
     def handle_search_data(self):
         search_fields = [
-            'model', 'invoice_no', 'order_no',
-            'provider', 'status', 'sn', 'part_info'
+            'category',
+            'invoice_no',
+            'model',
+            'order_no',
+            'part_info',
+            'provider',
+            'sn',
+            'status',
         ]
         # handle simple 'equals' search fields at once.
         all_q = Q()
@@ -185,6 +196,10 @@ class AssetSearch(AssetsMixin, DataTableMixin):
                         all_q &= Q(part_info__gte=0)
                 elif field == 'model':
                     all_q &= Q(model__name__startswith=field_value)
+                elif field == 'category':
+                    part = self.get_search_category_part(field_value)
+                    if part:
+                        all_q &= part
                 else:
                     q = Q(**{field: field_value})
                     all_q = all_q & q
@@ -202,6 +217,16 @@ class AssetSearch(AssetsMixin, DataTableMixin):
                 all_q &= Q(**{date + '__lte': end})
         self.data_table_query(self.get_all_items(all_q))
 
+    def get_search_category_part(self, field_value):
+        try:
+            category_id = int(field_value)
+        except ValueError:
+            pass
+        else:
+            category = AssetCategory.objects.get(id=category_id)
+            children = [x.id for x in category.get_children()]
+            categories = [category_id, ] + children
+            return Q(category_id__in=categories)
 
     def get_csv_header(self):
         header = super(AssetSearch, self).get_csv_header()

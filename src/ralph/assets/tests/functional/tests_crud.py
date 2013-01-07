@@ -9,9 +9,12 @@ from django.test import TestCase
 
 from ralph.assets.models_assets import *
 from ralph.assets.tests.util import (
-    create_model, create_warehouse, create_asset
+    create_asset,
+    create_category,
+    create_model,
+    create_warehouse,
 )
-from ralph.ui.tests.helper import login_as_su
+from ralph.ui.tests.global_utils import login_as_su
 
 
 class TestAdding(TestCase):
@@ -23,8 +26,10 @@ class TestAdding(TestCase):
         self.model2 = create_model('Model2')
         self.warehouse = create_warehouse()
         self.warehouse2 = create_warehouse('Warehouse2')
+        self.category = create_category()
         self.asset = create_asset(
             sn='1111-1111-1111-1111',
+            category=self.category
         )
 
     def test_send_data_via_add_form(self):
@@ -49,9 +54,9 @@ class TestAdding(TestCase):
             sn='2222-2222-2222-2222',
             barcode='bc-1111-1111-1111',
             warehouse=self.warehouse.id,  # 1
+            category=self.category.id,
         )
         send_post = self.client.post(url, data_in_add_form)
-
         # If everything is ok, redirect us to /assets/dc/search
         self.assertRedirects(
             send_post,
@@ -67,6 +72,7 @@ class TestAdding(TestCase):
         data_in_add_form.update(
             model='Manufacturer1 Model1',
             warehouse='Warehouse',
+            category=self.category.name,
         )
         # Test comparison input data and output data
         for field in data_in_add_form:
@@ -113,6 +119,7 @@ class TestAdding(TestCase):
             date_of_last_inventory='2003-02-02',
             last_logged_user='James Bond',
             remarks='any remarks',
+            category=self.category.id,
         )
         post = self.client.post(url, data_in_edit_form, follow=True)
 

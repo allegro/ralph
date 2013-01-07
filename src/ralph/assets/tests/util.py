@@ -6,8 +6,16 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from ralph.assets.models_assets import (
-    Asset, AssetModel, AssetSource, AssetStatus, AssetType, AssetManufacturer,
-    DeviceInfo, Warehouse
+    Asset,
+    AssetCategory,
+    AssetCategoryType,
+    AssetModel,
+    AssetSource,
+    AssetStatus,
+    AssetType,
+    AssetManufacturer,
+    DeviceInfo,
+    Warehouse
 )
 
 DEFAULT_ASSET_DATA = dict(
@@ -17,6 +25,7 @@ DEFAULT_ASSET_DATA = dict(
     type=AssetType.data_center,
     status=AssetStatus.new,
     source=AssetSource.shipment,
+    category='Category1',
 )
 
 SCREEN_ERROR_MESSAGES = dict(
@@ -81,3 +90,20 @@ def create_asset(sn, **kwargs):
     asset = Asset(**kwargs)
     asset.save()
     return asset
+
+
+def create_category(type='data_center', name=DEFAULT_ASSET_DATA['category']):
+    if type == 'back_office':
+        type = AssetCategoryType.back_office
+    elif type == 'data_center':
+        type = AssetCategoryType.data_center
+    category = AssetCategory()
+    category.name = name
+    category.type = type
+    category.save()
+    subcategory = AssetCategory()
+    subcategory.name = 'Subcategory'
+    subcategory.type = type
+    subcategory.parent = category
+    subcategory.save()
+    return subcategory
