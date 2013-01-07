@@ -48,18 +48,18 @@
             <th>Actions</th>
             {% endif %}
         </tr>
-        {% for venture in ventures %}
-        <tr {% if not venture.parent %}class="table-highlight"{% endif %}>
+        {% for venture in venture_data %}
+        <tr {% if venture.top_level %}class="table-highlight"{% endif %}>
             <td>
-                {% if venture.parent %}&nbsp;&nbsp;&nbsp;&nbsp;{% endif %}
+                {% if not venture.top_level %}&nbsp;&nbsp;&nbsp;&nbsp;{% endif %}
                 <a href="/ui/ventures/{{ venture.symbol|slugify }}/venture/" >
-                {{ venture|venture_icon }}
+                {{ venture.venture|venture_icon }}
                 {{ venture.name }}
                 </a>
             </td>
             <td>{{ venture.department|default:'' }}</td>
             <td style="text-align:right">
-                {{ venture.get_margin }}%
+                {{ venture.margin|default:0 }}%
             </td>
             <td class="count">
                 {{ venture.count|default:0|floatformat:2 }}
