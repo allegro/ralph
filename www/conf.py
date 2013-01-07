@@ -210,6 +210,14 @@ latex_documents = [
 # latex_use_modindex = True
 all_releases = [
     dict(
+        version='1.1.14',
+        release_date='January 7, 2013',
+        description_lines=[
+            'Additional columns in the Ventures report, fixes in discovery '
+            'and deployment plugins.'
+        ],
+    ),
+    dict(
         version='1.1.13',
         release_date='December 31, 2012',
         description_lines=[
