@@ -207,12 +207,19 @@ class BaseMixin(object):
         if ('ralph.cmdb' in settings.INSTALLED_APPS and
             has_perm(Perm.read_configuration_item_info_generic)):
             ci = ''
-            try:
-                device = self.kwargs['device']
-            except KeyError:
-                device = None
-            if device:
-                ci = CI.get_by_content_object(Device.objects.get(pk=device))
+            device_id = self.kwargs.get('device')
+            if device_id:
+                deleted = False
+                if self.request.GET.get('deleted', '').lower() == 'on':
+                    deleted = True
+                try:
+                    if deleted:
+                        device = Device.admin_objects.get(pk=device_id)
+                    else:
+                        device = Device.objects.get(pk=device_id)
+                    ci = CI.get_by_content_object(device)
+                except Device.DoesNotExist:
+                    pass
             if ci:
                 tab_items.extend([
                     MenuItem('CMDB', fugue_icon='fugue-thermometer',
