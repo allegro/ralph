@@ -13,6 +13,7 @@ from django.core.paginator import Paginator
 from django.db import models as db
 from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.utils import simplejson as json
+from django.utils.http import urlencode
 from django.views.generic import UpdateView, DetailView, TemplateView
 
 from lck.django.common import nested_commit_on_success
@@ -377,10 +378,6 @@ class Info(DeviceUpdateView):
 
     def get(self, *args, **kwargs):
         self.object = self.get_object()
-        if (self.request.GET.get('deleted', '').lower() != 'on' and
-            self.object.deleted):
-            messages.warning(self.request, "Couldn't find selected device.")
-            return HttpResponseRedirect('/')
         self.property_form = self.get_property_form()
         return super(Info, self).get(*args, **kwargs)
 
