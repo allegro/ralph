@@ -45,8 +45,6 @@ CMDB available resources
 +-------------------------------------+--------------------------------------------------+
 | :ref:`cichangepuppet`               | returns a list of change from Puppet             |
 +-------------------------------------+--------------------------------------------------+
-| :ref:`cichangestatusofficeincident` | returns a list of incident from statusoffice     |
-+-------------------------------------+--------------------------------------------------+
 | :ref:`cichangezabbixtrigger`        | returns a list of change from Zabbix             |
 +-------------------------------------+--------------------------------------------------+
 | :ref:`cichangecmdbhistory`          | returns a list of changeshistory on CI           |
@@ -437,44 +435,6 @@ CICHANGEPUPPET
              "resource_uri":"/api/v0.9/cichangepuppet/2/",
              "status":"failed",
              "time":"2012-08-02T09:59:08"
-          }
-       ]
-    }
-
-.. _cichangestatusofficeincident:
-
-CICHANGESTATUSOFFICEINCIDENT
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-- **link** ::
-
-    http:/localhost:8000/api/v0.9/cichangestatusofficeincident/
-
-- HTTP Methods
-    * GET
-    * POST
-
-- **example returned data** ::
-
-    {
-       "meta":{
-          "limit":1,
-          "next":"/api/v0.9/cichangestatusofficeincident/?username=username&limit=2&format=json&api_key=api_key",
-          "offset":0,
-          "previous":null,
-          "total_count":2
-       },
-       "objects":[
-          {
-             "cache_version":0,
-             "created":"2012-11-20T00:00:00",
-             "id":"1",
-             "incident_id":0,
-             "modified":"2012-11-20T00:00:00",
-             "resource_uri":"/api/v0.9/cichangestatusofficeincident/1/",
-             "status":2,
-             "subject":"Service down",
-             "time":"2012-11-26T15:26:41"
           }
        ]
     }
