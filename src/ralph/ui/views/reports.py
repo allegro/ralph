@@ -41,7 +41,6 @@ from ralph.ui.forms.reports import (
 from ralph.util import csvutil
 from ralph.util.pricing import get_device_auto_price
 
-
 def threshold(days):
     return datetime.date.today() + datetime.timedelta(days=days)
 
@@ -702,17 +701,15 @@ class ReportDevices(SidebarReports, Base):
 
     def get_context_data(self, **kwargs):
         context = super(ReportDevices, self).get_context_data(**kwargs)
-        context.update(
-            {
-                'form_choice': self.form_choice,
-                'form_support_range': self.form_support_range,
-                'form_deprecation_range': self.form_deprecation_range,
-                'form_warranty_range': self.form_warranty_range,
-                'tabele_header': self.headers,
-                'rows': self.rows,
-                'perm_to_edit': self.perm_edit,
-                }
-        )
+        context.update({
+            'form_choice': self.form_choice,
+            'form_support_range': self.form_support_range,
+            'form_deprecation_range': self.form_deprecation_range,
+            'form_warranty_range': self.form_warranty_range,
+            'tabele_header': self.headers,
+            'rows': self.rows,
+            'perm_to_edit': self.perm_edit,
+        })
         return context
 
 
@@ -743,13 +740,11 @@ class ReportVentureCosts(SidebarReports, Base):
                     unicode(detail.get('name')),
                     unicode(detail.get('count')),
                     unicode(detail.get('price')),
-                    unicode(detail.get('total_component')),
                 ])
             row.extend(details)
             rows.append(row)
         headers = [
             'Venture', 'Device', 'Role', 'SN', 'Barcode', 'Quoted price',
-            'Component price'
         ]
         for i in range(max):
             headers.extend([
@@ -759,10 +754,10 @@ class ReportVentureCosts(SidebarReports, Base):
                 'Component total',
             ])
         rows.insert(0, headers)
-        f = StringIO.StringIO()
-        csvutil.UnicodeWriter(f).writerows(rows)
-        response = HttpResponse(f.getvalue(), content_type='application/csv')
         if self.venture_id:
+            f = StringIO.StringIO()
+            csvutil.UnicodeWriter(f).writerows(rows)
+            response = HttpResponse(f.getvalue(), content_type='application/csv')
             venture = Venture.objects.get(id=self.venture_id)
             filename = 'report_devices_prices_per_venture-%s-%s.csv' % (
                 venture.symbol, datetime.date.today()
@@ -771,7 +766,6 @@ class ReportVentureCosts(SidebarReports, Base):
             response['Content-Disposition'] = disposition
             return response
         else:
-            # Export only for venture
             raise Http404
 
     def get(self, *args, **kwargs):
@@ -789,7 +783,9 @@ class ReportVentureCosts(SidebarReports, Base):
         if self.venture_id not in ['', None] and not self.venture_id.isdigit():
             raise Http404
         if self.venture_id:
-            venture_devices = get_list_or_404(Device, venture=self.venture_id)
+            venture_devices = get_list_or_404(
+                Device, venture=self.venture_id, deleted=False
+            )
             self.form = ReportVentureCost(initial={'venture': self.venture_id})
         if venture_devices:
             devices = []
@@ -821,7 +817,8 @@ class ReportVentureCosts(SidebarReports, Base):
                 for component in components:
                     count = component.get('count')
                     price = component.get('price')
-                    component['total_component'] = price * count
+                    total_component = price * count
+                    component['total_component'] = total_component
                 devices.append({
                     'device': device,
                     'price': get_device_auto_price(device),
