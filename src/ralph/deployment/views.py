@@ -25,12 +25,15 @@ def get_current_deployment(request):
             status=DeploymentStatus.in_progress
         )
     except Deployment.DoesNotExist:
-        if request.GET.get('ip'):
-            ip = request.GET.get('ip')
-            deployment = Deployment.objects.get(
-                ip=ip,
-                status=DeploymentStatus.in_progress
-            )
+        ip = request.GET.get('ip')
+        if ip:
+            try:
+                deployment = Deployment.objects.get(
+                    ip=ip,
+                    status=DeploymentStatus.in_progress
+                )
+            except Deployment.DoesNotExist:
+                pass
     return deployment
 
 
