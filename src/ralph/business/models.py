@@ -7,7 +7,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import re
-import ipaddr
 
 from django.conf import settings
 from django.db import models as db
@@ -18,11 +17,9 @@ from dj.choices import Choices
 from dj.choices.fields import ChoiceField
 from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
-from exceptions import AttributeError
 
 from ralph.discovery.models import DataCenter
 from ralph.discovery.models_history import HistoryCost
-from ralph.discovery.models_network import Network
 
 from ralph.cmdb.models_ci import CI, CIOwner, CIOwnershipType, CIOwnership
 
@@ -78,8 +75,6 @@ class Venture(Named, PrebootMixin, HasSymbolBasedPath, TimeTrackable):
     department = db.ForeignKey('business.Department',
             verbose_name=_("department"), null=True, blank=True, default=None,
             on_delete=db.SET_NULL)
-    networks = db.ManyToManyField(Network, null=True, blank=True,
-            verbose_name=_("networks list"))
 
     class Meta:
         verbose_name = _("venture")
@@ -143,18 +138,6 @@ class Venture(Named, PrebootMixin, HasSymbolBasedPath, TimeTrackable):
         if self.parent:
             return self.parent.get_department()
 
-    def check_ip(self, ip):
-        node = self
-        while node:
-            try:
-                for network in node.networks.all():
-                    if ipaddr.IPAddress(ip) in ipaddr.IPNetwork(network.address):
-                        return True
-                node = node.parent
-            except AttributeError:
-                node = node.parent
-        return False
-
     @property
     def device(self):
         return self.device_set
@@ -192,8 +175,6 @@ class VentureRole(Named.NonUnique, PrebootMixin, HasSymbolBasedPath,
     venture = db.ForeignKey(Venture, verbose_name=_("venture"))
     parent = db.ForeignKey('self', verbose_name=_("parent role"), null=True,
         blank=True, default=None, related_name="child_set")
-    networks = db.ManyToManyField(Network, null=True, blank=True,
-                                 verbose_name=_("networks list"))
 
     class Meta:
         unique_together = ('name', 'venture')
@@ -209,18 +190,6 @@ class VentureRole(Named.NonUnique, PrebootMixin, HasSymbolBasedPath,
             obj = obj.parent
             parents.append(obj.name)
         return " / ".join(reversed(parents))
-
-    def check_ip(self, ip):
-        node = self
-        while node:
-            try:
-                for network in node.networks.all():
-                    if ipaddr.IPAddress(ip) in ipaddr.IPNetwork(network.address):
-                        return True
-                node = node.parent
-            except AttributeError:
-                node = node.parent
-        return self.venture.check_ip(ip)
 
     def __unicode__(self):
         return "{} / {}".format(self.venture.symbol if self.venture else '?',
