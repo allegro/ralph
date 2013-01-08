@@ -5,7 +5,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
-from collections import Counter
 
 import datetime
 import cStringIO as StringIO
@@ -14,6 +13,7 @@ from django.db import models as db
 from django.http import HttpResponseForbidden, HttpResponse, Http404
 from django.conf import settings
 from django.db.models import Q
+from django.shortcuts import get_list_or_404
 from django.utils.safestring import mark_safe
 from django.utils.html import escape
 
@@ -32,14 +32,14 @@ from ralph.ui.forms import DateRangeForm, MarginsReportForm
 from ralph.ui.reports import (
     get_total_cost, get_total_count, get_total_cores, get_total_virtual_cores
 )
-from ralph.ui.views.common import Base, DeviceDetailView
+from ralph.ui.views.common import Base, DeviceDetailView, _get_details
 from ralph.ui.views.devices import DEVICE_SORT_COLUMNS
 from ralph.ui.forms.reports import (
     SupportRangeReportForm, DeprecationRangeReportForm,
     WarrantyRangeReportForm, DevicesChoiceReportForm,
     ReportVentureCost)
 from ralph.util import csvutil
-from util.pricing import details_all
+from ralph.util.pricing import (get_device_auto_price)
 
 
 def threshold(days):
@@ -640,60 +640,63 @@ class ReportDevices(SidebarReports, Base):
         return context
 
 
-def uniq(list_dicts):
-    return [dict(p) for p in set(tuple(i.items())
-        for i in list_dicts)]
-
 class ReportVentureCosts(SidebarReports, Base):
     template_name = 'ui/report_venture_costs.html'
     subsection = 'venture_costs'
 
     def export_csv(self, data):
-
-        def iter_rows():
-            rows = []
-
-            max = 0
-            for item in data:
-                row = [
-                    unicode(item.get('name')),
-                    unicode(item.get('sn')),
-                    unicode(item.get('barcode')),
-                    unicode(item.get('cost')),
-                ]
-                components = item.get('components')
-
-                if max < len(components):
-                    max = len(components)
-
-                for component in components:
-                    row.append(unicode(component.get('name')))
-                    row.append(unicode(component.get('count')))
-                    row.append(unicode(component.get('price')))
-
-                rows.append(row)
-
-            headers = [
-                'Device',
-                'SN',
-                'Barcode',
-                'Cost',
-                ]
-
-            for comp in range(max):
-                headers.append('Component name')
-                headers.append('Component count')
-                headers.append('Component price')
-
-            rows.insert(0, headers)
-            return rows
-
-
+        rows = []
+        max = 0
+        for item in data:
+            details = []
+            dev = item.get('device')
+            price = item.get('price')
+            components = item.get('components')
+            max = len(components) if max < len(components) else max
+            row = [
+                unicode(dev.venture),
+                unicode(dev.name),
+                unicode(dev.role),
+                unicode(dev.sn),
+                unicode(dev.barcode or ''),
+                unicode(dev.cached_price or 'N/A'),
+                unicode(price or 'N/A'),
+            ]
+            for detail in components:
+                details.extend([
+                    unicode(detail.get('name')),
+                    unicode(detail.get('count')),
+                    unicode(detail.get('price')),
+                    unicode(detail.get('total_component')),
+                ])
+            row.extend(details)
+            rows.append(row)
+        headers = [
+            'Venture', 'Device', 'Role', 'SN', 'Barcode', 'Quoted price',
+            'Component price'
+        ]
+        for i in range(max):
+            headers.extend([
+                'Component name',
+                'Component count',
+                'Component price',
+                'Component total',
+            ])
+        rows.insert(0, headers)
         f = StringIO.StringIO()
-        csvutil.UnicodeWriter(f).writerows(iter_rows())
+        csvutil.UnicodeWriter(f).writerows(rows)
         response = HttpResponse(f.getvalue(), content_type='application/csv')
-        response['Content-Disposition'] = 'attachment; filename=ventures_cost.csv'
-        return response
+        if self.venture_id:
+            venture = Venture.objects.get(id=self.venture_id)
+            filename = 'report_devices_prices_per_venture-%s-%s.csv' % (
+                venture.symbol, datetime.date.today()
+            )
+            disposition = 'attachment; filename=%s' % filename
+            response['Content-Disposition'] = disposition
+            return response
+        else:
+            # Export only for venture
+            raise Http404
 
     def get(self, *args, **kwargs):
         profile = self.request.user.get_profile()
@@ -704,79 +707,68 @@ class ReportVentureCosts(SidebarReports, Base):
         self.perm_edit = False
         if has_perm(Perm.edit_device_info_financial):
             self.perm_edit = True
-        venture_id = self.request.GET.get('venture', None)
-        self.form = ReportVentureCost(initial={'venture': venture_id})
-        if venture_id:
-            try:
-                venture_devices = Device.objects.filter(venture=venture_id)
-            except ValueError:
-                raise Http404
-        else:
-            venture_devices = None
-
-
-        devices = []
+        self.form = ReportVentureCost()
+        self.venture_id = self.request.GET.get('venture')
+        venture_devices = None
+        if self.venture_id not in ['', None] and not self.venture_id.isdigit():
+            raise Http404
+        if self.venture_id:
+            venture_devices = get_list_or_404(Device, venture=self.venture_id)
+            self.form = ReportVentureCost(initial={'venture': self.venture_id})
         if venture_devices:
+            devices = []
             for device in venture_devices:
-                models = []
                 components = []
-                prices = []
-                for component in details_all(device):
+                for component in _get_details(device):
+                    count = 1
                     model = component.get('model')
-                    if component['group'] != 'dev':
-                        if model is not None:
-                            models.append(model.name)
-                            prices.append(
-                                {
-                                    'name': model.name,
-                                    'price': component.get('price')
-                                }
-                            )
-                counts = Counter(models)
-
-                for item in prices:
-                    name = item.get('name')
-                    price = item.get('price')
-                    components.append(
-                        {
-                            'name': name,
-                            'price': price or 0,
-                            'count': counts.get(name),
-                        }
-                    )
-                components = uniq(components)
-
-                item = {
-                    'name': device.name,
-                    'sn': device.sn or '',
-                    'barcode': device.barcode or '',
-                    'cost': device.cached_cost,
+                    try:
+                        component_type = model.type
+                    except AttributeError:
+                        pass
+                    act_components = [x.get('name') for x in components]
+                    # Os, Software
+                    component_type_blacklist = [15, 16]
+                    if (model not in act_components and
+                        component_type not in component_type_blacklist):
+                        components.append({
+                            'icon': component.get('icon'),
+                            'name': model,
+                            'price': component.get('price') or 0,
+                            'count': count,
+                        })
+                    else:
+                        for c in components:
+                            if c.get('name') == model:
+                                count = c.get('count')
+                                c.update(count=count+1)
+                for component in components:
+                    count = component.get('count')
+                    price = component.get('price')
+                    component['total_component'] = price * count
+                devices.append({
+                    'device': device,
+                    'price': get_device_auto_price(device),
                     'components': components
-                }
-                devices.append(item)
-
-
+                })
             self.devices = devices
-            self.venture_id = venture_id
         else:
             self.venture_id = None
-
         if self.request.GET.get('export') == 'csv':
-            return self.export_csv(self.devices)
+            if self.venture_id:
+                return self.export_csv(self.devices)
+            else:
+                raise Http404
         return super(ReportVentureCosts, self).get(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(ReportVentureCosts, self).get_context_data(**kwargs)
-        context.update(
-            {
-                'form': self.form,
-            }
-        )
+        context.update({
+            'form': self.form,
+        })
         if self.venture_id:
-            context.update(
-                {
-                    'rows': self.devices,
-                    'venture': self.venture_id,
-                }
-            )
+            context.update({
+                'rows': self.devices,
+                'venture': self.venture_id,
+            })
         return context
