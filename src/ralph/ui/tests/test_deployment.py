@@ -19,7 +19,7 @@ from ralph.discovery.models import (
 )
 from ralph.business.models import Venture, VentureRole
 from ralph.deployment.models import Preboot, Deployment
-from ralph.ui.forms import (
+from ralph.ui.forms.deployment import (
     _validate_cols_count,
     _validate_cols_not_empty,
     _validate_mac,
