@@ -56,11 +56,9 @@ class BulkDeploymentTest(TestCase):
             _validate_mac('sproing', ['deadbeefcafe'], 0)
 
     def test_valdate_management_ip(self):
-        _validate_management_ip('127.0.0.1', [], 0)
+        _validate_management_ip('127.0.0.1', 0)
         with self.assertRaises(forms.ValidationError):
-            _validate_management_ip('127.0.0.0.1', [], 0)
-        with self.assertRaises(forms.ValidationError):
-            _validate_management_ip('127.0.0.1', ['127.0.0.1'], 0)
+            _validate_management_ip('127.0.0.0.1', 0)
 
     def test_validate_network_name(self):
         with self.assertRaises(forms.ValidationError):

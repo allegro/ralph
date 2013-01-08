@@ -285,7 +285,6 @@ class MassDeploymentForm(forms.Form):
         parsed_hostnames = set()
         parsed_ip_addresses = set()
         parsed_macs = set()
-        parsed_management_ip_addresses = set()
         for row_number, cols in enumerate(rows, start=1):
             _validate_cols_count(9, cols, row_number)
             _validate_cols_not_empty(cols, row_number)
@@ -327,10 +326,7 @@ class MassDeploymentForm(forms.Form):
             _validate_mac(mac, parsed_macs, row_number)
             parsed_macs.add(mac)
             management_ip = cols[4].strip()
-            _validate_management_ip(
-                management_ip, parsed_management_ip_addresses, row_number,
-            )
-            parsed_management_ip_addresses.add(management_ip)
+            _validate_management_ip(management_ip, row_number)
             try:
                 venture_role = VentureRole.objects.get(
                     venture__symbol=cols[6].strip().upper(),
