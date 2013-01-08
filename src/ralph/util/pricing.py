@@ -260,8 +260,8 @@ def device_update_cached(device):
             d.name = name
         d.cached_price = get_device_price(d)
         d.cached_cost = get_device_cost(d)
-        d.rack = rack.name if rack else None
-        d.dc = dc.name if dc else None
+        d.rack = rack.sn if rack else None
+        d.dc = dc.name.upper() if dc else None
         d.save()
 
 
