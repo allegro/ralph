@@ -190,6 +190,7 @@ class PrepareMassDeploymentForm(forms.Form):
     csv = forms.CharField(
         label="CSV",
         widget=forms.widgets.Textarea(attrs={'class': 'span12 csv-input'}),
+        required=False,
         help_text="Template: mac ; management-ip ; network ; venture-symbol ; "
                   "role ; preboot"
     )
