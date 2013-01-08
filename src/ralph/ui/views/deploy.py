@@ -23,7 +23,7 @@ from ralph.deployment.util import (
 )
 from ralph.discovery.models import Device, Network, IPAddress
 from ralph.ui.views.common import BaseMixin, Base
-from ralph.ui.forms import (
+from ralph.ui.forms.deployment import (
     DeploymentForm,
     MassDeploymentForm,
     PrepareMassDeploymentForm,
