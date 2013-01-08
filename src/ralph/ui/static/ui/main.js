@@ -257,17 +257,17 @@ $(function ($) {
     $('body').off('click.tab.data-api')
     $('body').on('click.scrolling-tabs', '[data-toggle="tab"], [data-toggle="pill"]', function (e) {
         if ($('.cmdb-ci-tabs')){
-            $(this).tab('show')
+            $(this).tab('show');
         }
     });
     $(window).on('hashchange', function (){
         if ($('.cmdb-ci-tabs')){
-            CMDBActiveTab()
+            CMDBActiveTab();
         }
     });
     $(window).load(function (){
         if ($('.cmdb-ci-tabs')){
-            CMDBActiveTab()
+            CMDBActiveTab();
         }
     });
 });
