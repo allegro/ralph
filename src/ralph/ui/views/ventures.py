@@ -29,7 +29,12 @@ from ralph.ui.views.common import (Info, Prices, Addresses, Costs, Purchase,
 from ralph.cmdb.views import CMDB
 from ralph.ui.views.devices import BaseDeviceList
 from ralph.ui.views.reports import Reports, ReportDeviceList
-from ralph.ui.reports import get_total_cost, get_total_count
+from ralph.ui.reports import (
+    get_total_cost,
+    get_total_count,
+    get_total_cores,
+    get_total_virtual_cores,
+)
 from ralph.util import presentation
 
 
@@ -500,6 +505,8 @@ class VenturesVenture(SidebarVentures, Base):
             items = []
             cost_data = []
             count_data = []
+            cores_data = []
+            vcores_data = []
         else:
             if self.venture == '':
                 query = HistoryCost.objects.filter(venture=None)
@@ -518,6 +525,8 @@ class VenturesVenture(SidebarVentures, Base):
             items = _get_summaries(query.all(), start, end, True, self.venture)
             cost_data = []
             count_data = []
+            cores_data = []
+            vcores_data = []
             one_day = datetime.timedelta(days=1)
             datapoints = set(dp for dp, in
                              query.values_list('start').distinct())
@@ -531,13 +540,19 @@ class VenturesVenture(SidebarVentures, Base):
                 total_cost = get_total_cost(query, date, date + one_day)
                 total_count, now_count, devices = get_total_count(
                         query, date, date + one_day)
+                total_cores = get_total_cores(query, date, date + one_day)
+                total_vcores = get_total_virtual_cores(query, date, date + one_day)
                 cost_data.append([timestamp, total_cost])
                 count_data.append([timestamp, total_count])
+                cores_data.append([timestamp, total_cores])
+                vcores_data.append([timestamp, total_vcores])
         ret.update({
             'items': items,
             'venture': self.venture,
             'cost_data': json.dumps(cost_data),
             'count_data': json.dumps(count_data),
+            'cores_data': json.dumps(cores_data),
+            'vcores_data': json.dumps(vcores_data),
             'form': self.form,
             'start_date': start,
             'end_date': end,
