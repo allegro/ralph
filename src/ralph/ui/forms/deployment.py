@@ -112,17 +112,12 @@ def _validate_mac(mac, parsed_macs, row_number):
         )
 
 
-def _validate_management_ip(ip, parsed_management_ip_addresses, row_number):
+def _validate_management_ip(ip, row_number):
     try:
         ipaddr.IPAddress(ip)
     except ValueError:
         raise forms.ValidationError(
             "Row %s: Incorrect management IP address." % row_number
-        )
-    if ip in parsed_management_ip_addresses:
-        raise forms.ValidationError(
-            "Row %s: Duplicated management IP address. "
-            "Please check previous rows..." % row_number
         )
 
 
@@ -199,7 +194,6 @@ class PrepareMassDeploymentForm(forms.Form):
         csv_string = self.cleaned_data['csv'].strip().lower()
         rows = UnicodeReader(cStringIO.StringIO(csv_string))
         parsed_macs = set()
-        parsed_management_ip_addresses = set()
         for row_number, cols in enumerate(rows, start=1):
             _validate_cols_count(6, cols, row_number)
             mac = cols[0].strip()
@@ -207,10 +201,7 @@ class PrepareMassDeploymentForm(forms.Form):
             _validate_deploy_children(mac, row_number)
             parsed_macs.add(mac)
             management_ip = cols[1].strip()
-            _validate_management_ip(
-                management_ip, parsed_management_ip_addresses, row_number,
-            )
-            parsed_management_ip_addresses.add(management_ip)
+            _validate_management_ip(management_ip, row_number)
             network_name = cols[2].strip()
             if not (is_mac_address_known(mac) and network_name == ''):
                 # Allow empty network when the device already exists.
