@@ -201,9 +201,9 @@ class SidebarReports(object):
                 view_name='reports_ventures'
             ),
             MenuItem(
-                "Venture costs",
+                "Device prices per venture",
                 fugue_icon='fugue-computer',
-                view_name='reports_venture_costs'
+                view_name='device_prices_per_venture'
             ),
         ]
         context.update({
@@ -713,7 +713,7 @@ class ReportDevices(SidebarReports, Base):
         return context
 
 
-class ReportVentureCosts(SidebarReports, Base):
+class ReportDevicePricesPerVenture(SidebarReports, Base):
     template_name = 'ui/report_venture_costs.html'
     subsection = 'venture_costs'
 
@@ -850,10 +850,10 @@ class ReportVentureCosts(SidebarReports, Base):
             devices = Device.objects.all()
             csv = self.get_device_with_components(devices, blacklist=[15, 16])
             return self.export_csv(csv, all_devices=True)
-        return super(ReportVentureCosts, self).get(*args, **kwargs)
+        return super(ReportDevicePricesPerVenture, self).get(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        context = super(ReportVentureCosts, self).get_context_data(**kwargs)
+        context = super(ReportDevicePricesPerVenture, self).get_context_data(**kwargs)
         context.update({
             'form': self.form,
         })
