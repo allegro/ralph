@@ -789,6 +789,7 @@ class ReportVentureCosts(SidebarReports, Base):
             self.form = ReportVentureCost(initial={'venture': self.venture_id})
         if venture_devices:
             devices = []
+            all_components_price = 0
             for device in venture_devices:
                 components = []
                 for component in _get_details(device):
@@ -819,9 +820,10 @@ class ReportVentureCosts(SidebarReports, Base):
                     price = component.get('price')
                     total_component = price * count
                     component['total_component'] = total_component
+                    all_components_price = all_components_price + total_component
                 devices.append({
                     'device': device,
-                    'price': get_device_auto_price(device),
+                    'price': all_components_price,
                     'components': components
                 })
             self.devices = devices
