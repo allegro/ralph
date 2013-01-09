@@ -27,6 +27,18 @@ from ralph.dnsedit.models import DHCPEntry
 from ralph.util import Eth
 
 
+def _get_next_hostname_number(hostname, template, iteration_definition,
+                              min_number, number_len):
+    name_match = re.search(
+        template.replace(
+            iteration_definition,
+            "(%s[0-9]{%s})" % (str(min_number)[0], number_len - 1)
+        ),
+        hostname
+    )
+    return int(name_match.group(1)) + 1
+
+
 def get_next_free_hostname(dc, reserved_hostnames=[]):
     hostnames_in_deployments = Deployment.objects.filter().values_list(
         'hostname', flat=True
@@ -43,23 +55,37 @@ def get_next_free_hostname(dc, reserved_hostnames=[]):
             match.group(0),
             "%s[0-9]{%s}" % (str(min_number)[0], number_len - 1)
         )
-        next_number = min_number
+        dns_next_number = min_number
         try:
             record = Record.objects.filter(
                 name__iregex=regex, type='A'
             ).order_by('-name')[0]
-            name_match = re.search(
-                template.replace(
-                    match.group(0),
-                    "(%s[0-9]{%s})" % (str(min_number)[0], number_len - 1)
-                ),
-                record.name
+            dns_next_number = _get_next_hostname_number(
+                record.name,
+                template,
+                match.group(0),
+                min_number,
+                number_len
             )
-            next_number = int(name_match.group(1)) + 1
-            if next_number > max_number:
-                continue
         except IndexError:
             pass
+        discovery_next_number = min_number
+        try:
+            device = Device.objects.filter(
+                name__iregex=regex
+            ).order_by('-name')[0]
+            discovery_next_number = _get_next_hostname_number(
+                device.name,
+                template,
+                match.group(0),
+                min_number,
+                number_len
+            )
+        except IndexError:
+            pass
+        next_number = max(dns_next_number, discovery_next_number)
+        if next_number > max_number:
+            continue
         go_to_next_template = False
         next_hostname = template.replace(
             match.group(0), "{0:%s}" % number_len
