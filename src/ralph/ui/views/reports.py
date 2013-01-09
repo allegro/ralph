@@ -717,7 +717,7 @@ class ReportVentureCosts(SidebarReports, Base):
     template_name = 'ui/report_venture_costs.html'
     subsection = 'venture_costs'
 
-    def export_csv(self, data):
+    def generate_csv(self, data, view_components=True):
         rows = []
         max = 0
         for item in data:
@@ -725,9 +725,8 @@ class ReportVentureCosts(SidebarReports, Base):
             dev = item.get('device')
             price = item.get('price')
             components = item.get('components')
-            max = len(components) if max < len(components) else max
             row = [
-                unicode(dev.venture),
+                unicode(dev.venture.symbol),
                 unicode(dev.name),
                 unicode(dev.role),
                 unicode(dev.sn),
@@ -735,38 +734,89 @@ class ReportVentureCosts(SidebarReports, Base):
                 unicode(dev.cached_price or 'N/A'),
                 unicode(price or 'N/A'),
             ]
-            for detail in components:
-                details.extend([
-                    unicode(detail.get('name')),
-                    unicode(detail.get('count')),
-                    unicode(detail.get('price')),
-                ])
-            row.extend(details)
+            if view_components:
+                max = len(components) if max < len(components) else max
+                for detail in components:
+                    details.extend([
+                        unicode(detail.get('name')),
+                        unicode(detail.get('count')),
+                        unicode(detail.get('price') or 'N/A'),
+                        unicode(detail.get('total_component') or 'N/A'),
+                    ])
+                row.extend(details)
             rows.append(row)
         headers = [
-            'Venture', 'Device', 'Role', 'SN', 'Barcode', 'Quoted price',
+            'Venture', 'Device', 'Role', 'SN', 'Barcode', 'Quoted price (PLN)',
+            'Total component (PLN)',
         ]
-        for i in range(max):
-            headers.extend([
-                'Component name',
-                'Component count',
-                'Component price',
-                'Component total',
-            ])
+        if view_components:
+            for i in range(max):
+                headers.extend([
+                    'Component name',
+                    'Component count',
+                    'Component price (PLN)',
+                    'Component total (PLN)',
+                ])
         rows.insert(0, headers)
-        if self.venture_id:
-            f = StringIO.StringIO()
-            csvutil.UnicodeWriter(f).writerows(rows)
-            response = HttpResponse(f.getvalue(), content_type='application/csv')
+        return rows
+
+    def export_csv(self, data, all_devices=False):
+        if all_devices:
+            rows = self.generate_csv(data, view_components=False)
+            filename = 'report_all_devices_prices-%s.csv' % (
+                datetime.date.today()
+            )
+        else:
+            rows = self.generate_csv(data)
             venture = Venture.objects.get(id=self.venture_id)
             filename = 'report_devices_prices_per_venture-%s-%s.csv' % (
                 venture.symbol, datetime.date.today()
             )
-            disposition = 'attachment; filename=%s' % filename
-            response['Content-Disposition'] = disposition
-            return response
-        else:
-            raise Http404
+        f = StringIO.StringIO()
+        csvutil.UnicodeWriter(f).writerows(rows)
+        response = HttpResponse(f.getvalue(), content_type='application/csv')
+        disposition = 'attachment; filename=%s' % filename
+        response['Content-Disposition'] = disposition
+        return response
+
+    def get_device_with_components(self, venture_devices, blacklist):
+        devices = []
+        for device in venture_devices:
+            all_components_price = 0
+            components = []
+            for component in _get_details(device):
+                count = 1
+                model = component.get('model')
+                try:
+                    component_type = model.type
+                except AttributeError:
+                    pass
+                act_components = [x.get('name') for x in components]
+                if (model not in act_components and
+                    component_type not in blacklist):
+                    components.append({
+                        'icon': component.get('icon'),
+                        'name': model,
+                        'price': component.get('price') or 0,
+                        'count': count,
+                        })
+                else:
+                    for c in components:
+                        if c.get('name') == model:
+                            count = c.get('count')
+                            c.update(count=count+1)
+            for component in components:
+                count = component.get('count')
+                price = component.get('price')
+                total_component = price * count
+                component['total_component'] = total_component
+                all_components_price += total_component
+            devices.append({
+                'device': device,
+                'price': all_components_price,
+                'components': components
+            })
+        return devices
 
     def get(self, *args, **kwargs):
         profile = self.request.user.get_profile()
@@ -788,52 +838,18 @@ class ReportVentureCosts(SidebarReports, Base):
             )
             self.form = ReportVentureCost(initial={'venture': self.venture_id})
         if venture_devices:
-            devices = []
-            all_components_price = 0
-            for device in venture_devices:
-                components = []
-                for component in _get_details(device):
-                    count = 1
-                    model = component.get('model')
-                    try:
-                        component_type = model.type
-                    except AttributeError:
-                        pass
-                    act_components = [x.get('name') for x in components]
-                    # Os, Software
-                    component_type_blacklist = [15, 16]
-                    if (model not in act_components and
-                        component_type not in component_type_blacklist):
-                        components.append({
-                            'icon': component.get('icon'),
-                            'name': model,
-                            'price': component.get('price') or 0,
-                            'count': count,
-                        })
-                    else:
-                        for c in components:
-                            if c.get('name') == model:
-                                count = c.get('count')
-                                c.update(count=count+1)
-                for component in components:
-                    count = component.get('count')
-                    price = component.get('price')
-                    total_component = price * count
-                    component['total_component'] = total_component
-                    all_components_price = all_components_price + total_component
-                devices.append({
-                    'device': device,
-                    'price': all_components_price,
-                    'components': components
-                })
-            self.devices = devices
+            # Blacklist: Os, Software
+            self.devices = self.get_device_with_components(
+                venture_devices, blacklist=[15, 16]
+            )
         else:
             self.venture_id = None
         if self.request.GET.get('export') == 'csv':
-            if self.venture_id:
-                return self.export_csv(self.devices)
-            else:
-                raise Http404
+            return self.export_csv(self.devices)
+        if self.request.GET.get('export-all') == 'csv':
+            devices = Device.objects.all()
+            csv = self.get_device_with_components(devices, blacklist=[15, 16])
+            return self.export_csv(csv, all_devices=True)
         return super(ReportVentureCosts, self).get(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
