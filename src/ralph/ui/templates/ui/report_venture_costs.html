@@ -29,6 +29,10 @@
                                         {% icon 'fugue-fugue-icon fugue-blue-document-excel-csv' %}&nbsp;Export CSV
                                     </a>{% endspaceless %}
                             {% endif %}
+                            {% spaceless %}
+                                <a href="?venture={{ venture }}&export-all=csv" class="btn">
+                                    {% icon 'fugue-fugue-icon fugue-blue-document-excel-csv' %}&nbsp;Export all devices to CSV
+                                </a>{% endspaceless %}
                         </div>
                         {% endif %}
                     {% endfor %}
