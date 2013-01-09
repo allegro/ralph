@@ -97,7 +97,8 @@ def get_first_free_ip(network_name, reserved_ip_addresses=[]):
         status__in=(DeploymentStatus.open, DeploymentStatus.in_progress)
     ).values_list('ip', flat=True).order_by('ip')
     min_ip_number = network.min_ip + network.reserved
-    for ip_number in range(min_ip_number, network.max_ip + 1):
+    max_ip_number = network.max_ip - network.reserved_top_margin
+    for ip_number in range(min_ip_number, max_ip_number + 1):
         ip_string = str(ipaddr.IPAddress(ip_number))
         if (ip_number not in addresses_in_dhcp and
             ip_number not in addresses_in_discovery and
