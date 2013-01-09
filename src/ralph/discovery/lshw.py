@@ -201,7 +201,11 @@ def handle_lshw_processors(dev, processors, is_virtual=False, priority=0):
         speed = int(processor['size']['value'] or 0)   # 'size', sic!
         speed /= units.speed_divisor[processor['size']['units']]
         speed = int(speed)
-        family = processor['version'] or ('Virtual CPU' if is_virtual else '')
+        family = processor['version'] or (
+            'Virtual CPU' if is_virtual else (
+                processor['product'] or 'Unknown'
+            )
+        )
         model, c = ComponentModel.create(
             ComponentType.processor,
             speed=speed,
