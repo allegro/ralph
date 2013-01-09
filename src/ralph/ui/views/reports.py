@@ -201,9 +201,9 @@ class SidebarReports(object):
                 view_name='reports_ventures'
             ),
             MenuItem(
-                "Venture costs",
+                "Device prices per venture",
                 fugue_icon='fugue-computer',
-                view_name='reports_venture_costs'
+                view_name='device_prices_per_venture'
             ),
         ]
         context.update({
@@ -713,7 +713,7 @@ class ReportDevices(SidebarReports, Base):
         return context
 
 
-class ReportVentureCosts(SidebarReports, Base):
+class ReportDevicePricesPerVenture(SidebarReports, Base):
     template_name = 'ui/report_venture_costs.html'
     subsection = 'venture_costs'
 
@@ -740,18 +740,20 @@ class ReportVentureCosts(SidebarReports, Base):
                     unicode(detail.get('name')),
                     unicode(detail.get('count')),
                     unicode(detail.get('price')),
+                    unicode(detail.get('total_component')),
                 ])
             row.extend(details)
             rows.append(row)
         headers = [
-            'Venture', 'Device', 'Role', 'SN', 'Barcode', 'Quoted price',
+            'Venture', 'Device', 'Role', 'SN', 'Barcode', 'Quoted price (PLN)',
+            'Total components (PLN)',
         ]
         for i in range(max):
             headers.extend([
                 'Component name',
                 'Component count',
-                'Component price',
-                'Component total',
+                'Component price (PLN)',
+                'Component total (PLN)',
             ])
         rows.insert(0, headers)
         if self.venture_id:
@@ -789,9 +791,9 @@ class ReportVentureCosts(SidebarReports, Base):
             self.form = ReportVentureCost(initial={'venture': self.venture_id})
         if venture_devices:
             devices = []
-            all_components_price = 0
             for device in venture_devices:
                 components = []
+                all_components_price = 0
                 for component in _get_details(device):
                     count = 1
                     model = component.get('model')
@@ -834,10 +836,10 @@ class ReportVentureCosts(SidebarReports, Base):
                 return self.export_csv(self.devices)
             else:
                 raise Http404
-        return super(ReportVentureCosts, self).get(*args, **kwargs)
+        return super(ReportDevicePricesPerVenture, self).get(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        context = super(ReportVentureCosts, self).get_context_data(**kwargs)
+        context = super(ReportDevicePricesPerVenture, self).get_context_data(**kwargs)
         context.update({
             'form': self.form,
         })
