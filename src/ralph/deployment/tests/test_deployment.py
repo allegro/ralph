@@ -152,6 +152,16 @@ class DeploymentUtilTest(TestCase):
         name = get_next_free_hostname(self.dc_temp1)
         self.assertEqual(name, 'h300.temp1')
 
+        dev = Device.create(
+            sn='test_sn_998877',
+            model_type=DeviceType.unknown,
+            model_name='Unknown'
+        )
+        dev.name = 'h300.temp1'
+        dev.save()
+        name = get_next_free_hostname(self.dc_temp1)
+        self.assertEqual(name, 'h301.temp1')
+
         name = get_next_free_hostname(
             self.dc_temp2, ['h200.temp2', 'h201.temp2'],
         )
