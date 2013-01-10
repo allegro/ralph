@@ -20,13 +20,20 @@ def get_current_deployment(request):
     ip = remote_addr(request)
     deployment = None
     try:
-        deployment = Deployment.objects.get(ip=ip,
-            status=DeploymentStatus.in_progress)
+        deployment = Deployment.objects.get(
+            ip=ip,
+            status=DeploymentStatus.in_progress
+        )
     except Deployment.DoesNotExist:
-        if request.user.is_superuser and request.GET.get('ip'):
-            ip = request.GET.get('ip')
-            deployment = Deployment.objects.get(ip=ip,
-                status=DeploymentStatus.in_progress)
+        ip = request.GET.get('ip')
+        if ip:
+            try:
+                deployment = Deployment.objects.get(
+                    ip=ip,
+                    status=DeploymentStatus.in_progress
+                )
+            except Deployment.DoesNotExist:
+                pass
     return deployment
 
 
