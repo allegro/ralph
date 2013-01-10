@@ -23,6 +23,7 @@ from powerdns.models import Record
 from ralph.account.models import Perm
 from ralph.business.models import RolePropertyValue
 from ralph.cmdb.models import CI
+from ralph.deployment.util import get_next_free_hostname, get_first_free_ip
 from ralph.dnsedit.models import DHCPEntry
 from ralph.dnsedit.util import (
     get_domain,
@@ -33,6 +34,7 @@ from ralph.dnsedit.util import Error as DNSError
 from ralph.discovery.models import (
     Device,
     DeviceType,
+    Network,
 )
 from ralph.discovery.models_history import (
     FOREVER_DATE,
@@ -696,13 +698,25 @@ class Addresses(DeviceDetailView):
                 prefix='ip'
             )
         profile = self.request.user.get_profile()
-        can_edit =  profile.has_perm(self.edit_perm, self.object.venture)
+        can_edit = profile.has_perm(self.edit_perm, self.object.venture)
+        next_hostname = None
+        first_free_ip = None
+        rack = Device.get_rack(self.object)
+        if rack:
+            try:
+                network = rack.network_set.all().order_by('name')[0]
+                next_hostname = get_next_free_hostname(network.data_center)
+                first_free_ip = get_first_free_ip(network.name)
+            except IndexError:
+                pass
         ret.update({
             'canedit': can_edit,
             'balancers': list(_get_balancers(self.object)),
             'dnsformset': self.dns_formset,
             'dhcpformset': self.dhcp_formset,
             'ipformset': self.ip_formset,
+            'next_hostname': next_hostname,
+            'first_free_ip': first_free_ip,
         })
         return ret
 

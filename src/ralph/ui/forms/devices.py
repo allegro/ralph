@@ -8,6 +8,7 @@ from __future__ import unicode_literals
 from django import forms
 from lck.django.common.models import MACAddressField
 
+from ralph.deployment.util import get_next_free_hostname
 from ralph.discovery.models_component import is_mac_valid
 from ralph.discovery.models import Device, DeviceType
 from ralph.util import Eth
@@ -284,6 +285,20 @@ class DeviceInfoForm(DeviceForm):
             self.data['dc_name'] = self.initial['dc_name']
         self.fields['venture'].choices = all_ventures()
         self.fields['venture_role'].choices = all_roles()
+        if not self.instance:
+            return
+        rack = Device.get_rack(self.instance)
+        if rack:
+            try:
+                network = rack.network_set.all().order_by('name')[0]
+                next_hostname = get_next_free_hostname(network.data_center)
+                if next_hostname:
+                    help_text = 'Next available hostname in this DC: %s' % (
+                        next_hostname
+                    )
+                    self.fields['name'].help_text = help_text
+            except IndexError:
+                pass
 
 
 class DeviceInfoVerifiedForm(DeviceInfoForm):
