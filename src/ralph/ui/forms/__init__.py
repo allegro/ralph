@@ -34,7 +34,6 @@ from ralph.util import Eth
 from ralph.util.csvutil import UnicodeReader
 
 
-
 class DateRangeForm(forms.Form):
     start = forms.DateField(widget=DateWidget, label='Start date')
     end = forms.DateField(widget=DateWidget, label='End date')
@@ -312,6 +311,7 @@ def _validate_ip_address(ip, network, parsed_ip_addresses, row_number):
             "Please check previous rows..." % row_number
         )
 
+
 def _validate_ip_owner(ip, mac, row_number):
     """If the MAC is unique, make sure the IP address is not used anywhere.
     If the MAC address belongs to an existing device, make sure the IP address
@@ -326,9 +326,12 @@ def _validate_ip_owner(ip, mac, row_number):
                 "Row %s: IP address already exists." % row_number
             )
     else:
-        if not dev.ipaddress_set.filter(
-            number=int(ipaddr.IPAddress(ip))
-        ).exists():
+        # Does another device have this IPAddress?
+        if(Device.objects.filter(
+            ipaddress__number=int(ipaddr.IPAddress(ip)),
+        ).exclude(
+            pk=dev.id,
+        ).exists()):
             raise forms.ValidationError(
                 "Row %s: IP address used by another device." % row_number
             )
