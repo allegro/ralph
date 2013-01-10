@@ -34,7 +34,6 @@ from ralph.util import Eth
 from ralph.util.csvutil import UnicodeReader
 
 
-
 class DateRangeForm(forms.Form):
     start = forms.DateField(widget=DateWidget, label='Start date')
     end = forms.DateField(widget=DateWidget, label='End date')
@@ -329,7 +328,7 @@ def _validate_ip_owner(ip, mac, row_number):
     else:
         # Does another device have this IPAddress?
         if(Device.objects.filter(
-            ipaddress=int(ipaddr.IPAddress(ip)),
+            ipaddress__number=int(ipaddr.IPAddress(ip)),
         ).exclude(
             pk=dev.id,
         ).exists()):
