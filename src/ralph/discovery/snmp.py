@@ -44,6 +44,7 @@ def user_data(auth, snmp_version):
             privProtocol=cmdgen.usmDESPrivProtocol,
         )
     else:
+        community = auth
         data = cmdgen.CommunityData('ralph', community, 0)
     return data
 
