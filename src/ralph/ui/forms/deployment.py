@@ -262,9 +262,12 @@ def _validate_ip_owner(ip, mac, row_number):
                 "Row %s: IP address already exists." % row_number
             )
     else:
-        if not dev.ipaddress_set.filter(
-            number=int(ipaddr.IPAddress(ip))
-        ).exists():
+        # Does another device have this IPAddress?
+        if(Device.objects.filter(
+            ipaddress__number=int(ipaddr.IPAddress(ip)),
+        ).exclude(
+            pk=dev.id,
+        ).exists()):
             raise forms.ValidationError(
                 "Row %s: IP address used by another device." % row_number
             )

@@ -157,6 +157,11 @@ class BulkDeploymentTest(TestCase):
 
     def test_validate_ip_owner(self):
         _validate_ip_owner('127.0.0.1', 'deadbeefcafe', 0)
+        another_device = Device.create(
+            ethernets=[('', 'deadbeefcafd', 0)],
+            model_name='splat',
+            model_type=DeviceType.unknown,
+        )
         ip = IPAddress(address='127.0.0.1')
         ip.save()
         with self.assertRaises(forms.ValidationError):
@@ -169,8 +174,9 @@ class BulkDeploymentTest(TestCase):
         ip.device.save()
         ip.save()
         _validate_ip_owner('127.0.0.1', 'deadbeefcafe', 0)
-        ip.device = None
+        ip.device = another_device
         ip.save()
         with self.assertRaises(forms.ValidationError):
             _validate_ip_owner('127.0.0.1', 'deadbeefcafe', 0)
+
 
