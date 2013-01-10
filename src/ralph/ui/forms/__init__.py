@@ -329,7 +329,7 @@ def _validate_ip_owner(ip, mac, row_number):
     else:
         # Does another device have this IPAddress?
         if(Device.objects.filter(
-            ipaddress=int(ipaddr.IPAddress(ip))
+            ipaddress=int(ipaddr.IPAddress(ip)),
         ).exclude(
             pk=dev.id,
         ).exists()):
