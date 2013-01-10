@@ -69,7 +69,7 @@ def _save_device(ip, name, model_name, sn, mac):
     model, model_created = DeviceModel.concurrent_get_or_create(
         name='Onstor %s' % model_name,
         defaults={
-            'type':DeviceType.storage.id,
+            'type': DeviceType.storage.id,
         },
     )
     dev, dev_created = Device.concurrent_get_or_create(sn=sn, model=model)
