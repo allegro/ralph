@@ -67,7 +67,11 @@ def _save_shares(dev, luns, mounts):
 @nested_commit_on_success
 def _save_device(ip, name, model_name, sn, mac):
     model, model_created = DeviceModel.concurrent_get_or_create(
-        name = 'Onstor %s' % model_name, type=DeviceType.storage.id)
+        name='Onstor %s' % model_name,
+        defaults={
+            'type': DeviceType.storage.id,
+        },
+    )
     dev, dev_created = Device.concurrent_get_or_create(sn=sn, model=model)
     dev.save()
     ipaddr, ip_created = IPAddress.concurrent_get_or_create(address=ip)
