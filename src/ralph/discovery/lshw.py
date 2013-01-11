@@ -288,13 +288,12 @@ def handle_lshw_storage(dev, lshw, is_virtual=False, priority=0):
     mount_points, storages = get_storage_from_lshw(lshw)
     dev.storage_set.filter(mount_point__in=mount_points).delete()
     for storage in storages:
-        if storage['sn']:
-            stor, created = Storage.concurrent_get_or_create(sn=storage['sn'],
-                                                             device=dev)
-            stor.mount_point = storage['mount_point']
-        else:
-            stor, created = Storage.concurrent_get_or_create(
-                sn=None, device=dev, mount_point=storage['mount_point'])
+        sn = storage['sn'] if storage['sn'] else None
+        stor, created = Storage.concurrent_get_or_create(
+            sn=sn,
+            mount_point=storage['mount_point'],
+            device=dev,
+        )
         stor.size = storage['size']
         stor.speed = storage['speed']
         stor.label = storage['label']
