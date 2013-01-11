@@ -179,7 +179,8 @@ def preboot_exists(name):
 def hostname_exists(hostname):
     return any((
         Record.objects.filter(name=hostname, type='A').exists(),
-        Deployment.objects.filter(hostname=hostname).exists()
+        Record.objects.filter(content=hostname, type='PTR').exists(),
+        Deployment.objects.filter(hostname=hostname).exists(),
     ))
 
 
