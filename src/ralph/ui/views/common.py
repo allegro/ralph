@@ -701,14 +701,15 @@ class Addresses(DeviceDetailView):
         can_edit = profile.has_perm(self.edit_perm, self.object.venture)
         next_hostname = None
         first_free_ip = None
-        rack = Device.get_rack(self.object)
+        rack = self.object.get_rack()
         if rack:
-            try:
-                network = rack.network_set.all().order_by('name')[0]
-                next_hostname = get_next_free_hostname(network.data_center)
-                first_free_ip = get_first_free_ip(network.name)
-            except IndexError:
-                pass
+            for network in rack.network_set.order_by('name'):
+                if next_hostname and first_free_ip:
+                    break
+                if not next_hostname:
+                    next_hostname = get_next_free_hostname(network.data_center)
+                if not first_free_ip:
+                    first_free_ip = get_first_free_ip(network.name)
         ret.update({
             'canedit': can_edit,
             'balancers': list(_get_balancers(self.object)),
