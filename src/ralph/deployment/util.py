@@ -69,6 +69,20 @@ def get_next_free_hostname(dc, reserved_hostnames=[]):
             )
         except IndexError:
             pass
+        dns_ptr_next_number = min_number
+        try:
+            record = Record.objects.filter(
+                content__iregex=regex, type='PTR'
+            ).order_by('-content')[0]
+            dns_ptr_next_number = _get_next_hostname_number(
+                record.content,
+                template,
+                match.group(0),
+                min_number,
+                number_len
+            )
+        except IndexError:
+            pass
         discovery_next_number = min_number
         try:
             device = Device.objects.filter(
@@ -83,7 +97,11 @@ def get_next_free_hostname(dc, reserved_hostnames=[]):
             )
         except IndexError:
             pass
-        next_number = max(dns_next_number, discovery_next_number)
+        next_number = max(
+            dns_next_number,
+            dns_ptr_next_number,
+            discovery_next_number,
+        )
         if next_number > max_number:
             continue
         go_to_next_template = False
