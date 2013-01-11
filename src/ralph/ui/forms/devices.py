@@ -287,18 +287,16 @@ class DeviceInfoForm(DeviceForm):
         self.fields['venture_role'].choices = all_roles()
         if not self.instance:
             return
-        rack = Device.get_rack(self.instance)
+        rack = self.instance.get_rack()
         if rack:
-            try:
-                network = rack.network_set.all().order_by('name')[0]
+            for network in rack.network_set.order_by('name'):
                 next_hostname = get_next_free_hostname(network.data_center)
                 if next_hostname:
                     help_text = 'Next available hostname in this DC: %s' % (
                         next_hostname
                     )
                     self.fields['name'].help_text = help_text
-            except IndexError:
-                pass
+                    break
 
 
 class DeviceInfoVerifiedForm(DeviceInfoForm):
