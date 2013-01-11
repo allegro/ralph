@@ -96,6 +96,7 @@ class Preboot(Named, TimeTrackable):
     class Meta:
         verbose_name = _("preboot")
         verbose_name_plural = _("preboots")
+        ordering = ('name',)
 
 
 class MassDeployment(TimeTrackable, EditorTrackable):
