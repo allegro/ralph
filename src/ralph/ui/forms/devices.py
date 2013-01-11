@@ -287,7 +287,7 @@ class DeviceInfoForm(DeviceForm):
         self.fields['venture_role'].choices = all_roles()
         if not self.instance:
             return
-        rack = self.instance.get_rack()
+        rack = self.instance.find_rack()
         if rack:
             for network in rack.network_set.order_by('name'):
                 next_hostname = get_next_free_hostname(network.data_center)

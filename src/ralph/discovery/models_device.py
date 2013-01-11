@@ -458,7 +458,7 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
                 )
         return obj, created
 
-    def get_rack(self):
+    def find_rack(self):
         dev = self
         while dev.parent and dev.parent.model:
             if dev.parent.model.type == DeviceType.rack:
