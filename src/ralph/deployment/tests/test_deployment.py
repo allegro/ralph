@@ -159,8 +159,14 @@ class DeploymentUtilTest(TestCase):
         )
         dev.name = 'h300.temp1'
         dev.save()
+        Record.objects.create(
+            domain=self.domain_temp1,
+            name='123',
+            content='h301.temp1',
+            type='PTR',
+        )
         name = get_next_free_hostname(self.dc_temp1)
-        self.assertEqual(name, 'h301.temp1')
+        self.assertEqual(name, 'h302.temp1')
 
         name = get_next_free_hostname(
             self.dc_temp2, ['h200.temp2', 'h201.temp2'],
