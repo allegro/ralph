@@ -75,7 +75,10 @@ class AbstractNetwork(db.Model):
     racks = db.ManyToManyField(
         'discovery.Device', verbose_name=_("racks"),
         # We can't import DeviceType in here, so we use an integer.
-        limit_choices_to={'model__type': 1}, # DeviceType.rack.id
+        limit_choices_to={
+            'model__type': 1,
+            'deleted': False,
+        },  # DeviceType.rack.id
     )
 
     class Meta:
