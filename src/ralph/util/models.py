@@ -13,6 +13,10 @@ from django.db.utils import DatabaseError
 from django.contrib.auth.models import User
 from tastypie.models import create_api_key
 
+# monkey patches - do not remove.
+import ralph.util.monkeys
+
+
 def create_api_key_ignore_dberrors(*args, **kwargs):
     try:
         return create_api_key(*args, **kwargs)
