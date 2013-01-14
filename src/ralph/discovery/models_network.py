@@ -44,8 +44,13 @@ class AbstractNetwork(db.Model):
     )
     reserved = db.PositiveIntegerField(
         _("reserved"), default=10,
-        help_text=_("Number of addresses to be omitted in the automatic"
+        help_text=_("Number of addresses to be omitted in the automatic "
                     "determination process, counted from the first in range.")
+    )
+    reserved_top_margin = db.PositiveIntegerField(
+        _("reserved (top margin)"), default=0,
+        help_text=_("Number of addresses to be omitted in the automatic "
+                    "determination process, counted from the last in range.")
     )
     remarks = db.TextField(
         _("remarks"), help_text=_("Additional information."), blank=True,
@@ -75,7 +80,10 @@ class AbstractNetwork(db.Model):
     racks = db.ManyToManyField(
         'discovery.Device', verbose_name=_("racks"),
         # We can't import DeviceType in here, so we use an integer.
-        limit_choices_to={'model__type': 1}, # DeviceType.rack.id
+        limit_choices_to={
+            'model__type': 1,
+            'deleted': False,
+        },  # DeviceType.rack.id
     )
 
     class Meta:

@@ -23,7 +23,7 @@ from ralph.deployment.util import (
 )
 from ralph.discovery.models import Device, Network, IPAddress
 from ralph.ui.views.common import BaseMixin, Base
-from ralph.ui.forms import (
+from ralph.ui.forms.deployment import (
     DeploymentForm,
     MassDeploymentForm,
     PrepareMassDeploymentForm,
@@ -245,7 +245,9 @@ class MassDeployment(Base):
                     device,
                     ip,
                 )
-                for rack in network.racks.order_by('name')[:1]:
+                for rack in network.racks.filter(
+                    deleted=False
+                ).order_by('name')[:1]:
                     break
                 cols[2] = " %s " % network.name
             cols.insert(0, " %s " % rack.sn if rack else " ")

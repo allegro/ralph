@@ -1,6 +1,18 @@
 Change Log
 ----------
 
+1.1.14
+~~~~~~
+
+Released on January 07, 2013
+
+* Add detailed costs to the Ventures report,
+
+* Fix incorrect use of concurrent_get_or_create in discovery plugins
+
+* Fix the clean deployment plugin to re-connect the ip address
+
+
 1.1.13
 ~~~~~~
 

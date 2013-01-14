@@ -5,12 +5,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+from collections import Counter
 
 import datetime
 import cStringIO as StringIO
 
 from django.db import models as db
-from django.http import HttpResponseForbidden, HttpResponse
+from django.http import HttpResponseForbidden, HttpResponse, Http404
 from django.conf import settings
 from django.db.models import Q
 from django.utils.safestring import mark_safe
@@ -20,7 +21,7 @@ from bob.menu import MenuItem
 from dj.choices import Choices
 
 from ralph.account.models import Perm
-from ralph.business.models import Venture
+from ralph.business.models import Venture, VentureExtraCostType
 from ralph.cmdb.models_ci import (
     CI, CIRelation, CI_STATE_TYPES, CI_RELATION_TYPES, CI_TYPES
 )
@@ -35,9 +36,10 @@ from ralph.ui.views.common import Base, DeviceDetailView
 from ralph.ui.views.devices import DEVICE_SORT_COLUMNS
 from ralph.ui.forms.reports import (
     SupportRangeReportForm, DeprecationRangeReportForm,
-    WarrantyRangeReportForm, DevicesChoiceReportForm
-)
+    WarrantyRangeReportForm, DevicesChoiceReportForm,
+    ReportVentureCost)
 from ralph.util import csvutil
+from ralph.util.pricing import details_all
 
 
 def threshold(days):
@@ -199,6 +201,11 @@ class SidebarReports(object):
                 fugue_icon='fugue-store',
                 view_name='reports_ventures'
             ),
+            MenuItem(
+                "Venture costs",
+                fugue_icon='fugue-computer',
+                view_name='reports_venture_costs'
+            ),
         ]
         context.update({
             'sidebar_items': sidebar_items,
@@ -299,6 +306,8 @@ class ReportMargins(SidebarReports, Base):
         })
         return context
 
+def _currency(value):
+    return '{:,.2f} {}'.format(value or 0, settings.CURRENCY).replace(',', ' ')
 
 class ReportVentures(SidebarReports, Base):
     template_name = 'ui/report_ventures.html'
@@ -316,28 +325,116 @@ class ReportVentures(SidebarReports, Base):
                 'Core count',
                 'Virtual core count',
                 'Cloud use',
-                'Total cost'
+                'Cloud cost',
+            ] + [extra_type.name for extra_type in self.extra_types] + [
+                'Hardware cost',
+                'Total cost',
             ]
-            for venture in self.ventures:
-                total = venture.total or 0
+            for data in self.venture_data:
                 yield [
-                    '%d' % venture.id,
-                    venture.name,
-                    venture.path,
-                    unicode(venture.department) if venture.department else '',
-                    ('%d%%' % venture.margin_kind.margin
-                        ) if venture.margin_kind else '',
-                    '%d' % (venture.count or 0),
-                    '%d' % (venture.core_count or 0),
-                    '%d' % (venture.virtual_core_count or 0),
-                    '%f' % (venture.cloud_use or 0),
-                    '{:,.2f} {}'.format(total, settings.CURRENCY).replace(',', ' '),
+                    '%d' % data['id'],
+                    data['name'],
+                    data['path'],
+                    data['department'],
+                    '%d%%' % data['margin'],
+                    '%d' % (data['count'] or 0),
+                    '%d' % (data['core_count'] or 0),
+                    '%d' % (data['virtual_core_count'] or 0),
+                    '%f' % (data['cloud_use'] or 0),
+                    _currency(data['cloud_cost']),
+                ] + [_currency(v) for v in data['extras']] + [
+                    _currency(data['hardware_cost']),
+                    _currency(data['total']),
                 ]
         f = StringIO.StringIO()
         csvutil.UnicodeWriter(f).writerows(iter_rows())
         response = HttpResponse(f.getvalue(), content_type='application/csv')
         response['Content-Disposition'] = 'attachment; filename=ventures.csv'
         return response
+
+    def _get_totals(self, start, end, query, extra_types):
+        venture_total = get_total_cost(query, start, end)
+        (venture_count, venture_count_now,
+            devices) = get_total_count(query, start, end)
+        venture_core_count = get_total_cores(devices, start, end)
+        venture_virtual_core_count = get_total_virtual_cores(
+            devices, start, end
+        )
+        q = query.filter(extra=None)
+        venture_hardware_cost = get_total_cost(q, start, end)
+        cloud_cost = get_total_cost(
+            query.filter(
+                device__model__type=DeviceType.cloud_server.id
+            ), start, end
+        )
+        venture_extras = []
+        for extra_type in extra_types:
+            cost = None
+            for extra_cost in extra_type.ventureextracost_set.all():
+                q = query.filter(extra=extra_cost)
+                c = get_total_cost(q, start, end)
+                cost = cost + (c or 0) if cost else c
+            venture_extras.append(cost)
+        return {
+            'count': venture_count,
+            'count_now': venture_count_now,
+            'core_count': venture_core_count,
+            'virtual_core_count': venture_virtual_core_count,
+            'hardware_cost': venture_hardware_cost,
+            'cloud_cost': cloud_cost,
+            'extras': venture_extras,
+            'total': venture_total,
+        }
+
+    def _get_venture_data(self, start, end, ventures, extra_types):
+        total_cloud_cost = get_total_cost(
+            HistoryCost.objects.filter(
+                device__model__type=DeviceType.cloud_server.id
+            ), start, end
+        )
+        for venture in ventures:
+            query = HistoryCost.objects.filter(
+                db.Q(venture=venture) |
+                db.Q(venture__parent=venture) |
+                db.Q(venture__parent__parent=venture) |
+                db.Q(venture__parent__parent__parent=venture) |
+                db.Q(venture__parent__parent__parent__parent=venture)
+            ).exclude(device__deleted=True)
+            data = self._get_totals(start, end, query, extra_types)
+            data.update({
+                'id': venture.id,
+                'name': venture.name,
+                'symbol': venture.symbol,
+                'path': venture.path,
+                'department': unicode(venture.department or ''),
+                'margin': venture.get_margin(),
+                'top_level': venture.parent is None,
+                'venture': venture,
+                'cloud_use': (
+                    (data['cloud_cost'] or 0) / total_cloud_cost
+                ) if total_cloud_cost else 0,
+            })
+            yield data
+            if venture.parent is not None:
+                continue
+            if not venture.child_set.exists():
+                continue
+            query = HistoryCost.objects.filter(venture=venture)
+            data = self._get_totals(start, end, query, extra_types)
+            data.update({
+                'id': venture.id,
+                'name': '-',
+                'symbol': venture.symbol,
+                'path': venture.path,
+                'department': unicode(venture.department or ''),
+                'margin': venture.get_margin(),
+                'top_level': False,
+                'venture': venture,
+                'cloud_use': (
+                    (data['cloud_cost'] or 0) / total_cloud_cost
+                ) if total_cloud_cost else 0,
+            })
+            yield data
 
     def get(self, *args, **kwargs):
         profile = self.request.user.get_profile()
@@ -353,6 +450,9 @@ class ReportVentures(SidebarReports, Base):
                 'start': datetime.date.today() - datetime.timedelta(days=30),
                 'end': datetime.date.today(),
             })
+        self.extra_types = list(VentureExtraCostType.objects.annotate(
+            cost_count=db.Count('ventureextracost')
+        ).filter(cost_count__gt=0).order_by('name'))
         if self.form.is_valid():
             self.ventures = profile.perm_ventures(
                 Perm.read_device_info_reports
@@ -363,34 +463,15 @@ class ReportVentures(SidebarReports, Base):
             ).order_by('path')
             start = self.form.cleaned_data['start']
             end = self.form.cleaned_data['end']
-            total_cloud_cost = get_total_cost(
-                HistoryCost.objects.filter(
-                    device__model__type=DeviceType.cloud_server.id
-                ), start, end
+            self.venture_data = self._get_venture_data(
+                start,
+                end,
+                self.ventures,
+                self.extra_types,
             )
-            for venture in self.ventures:
-                query = HistoryCost.objects.filter(
-                    db.Q(venture=venture) |
-                    db.Q(venture__parent=venture) |
-                    db.Q(venture__parent__parent=venture) |
-                    db.Q(venture__parent__parent__parent=venture) |
-                    db.Q(venture__parent__parent__parent__parent=venture)
-                ).exclude(device__deleted=True)
-                venture.total = get_total_cost(query, start, end)
-                (venture.count, venture.count_now,
-                 devices) = get_total_count(query, start, end)
-                venture.core_count = get_total_cores(devices, start, end)
-                venture.virtual_core_count = get_total_virtual_cores(
-                    devices, start, end
-                )
-                cloud_cost = get_total_cost(
-                    query.filter(
-                        device__model__type=DeviceType.cloud_server.id
-                    ), start, end
-                )
-                venture.cloud_use = (cloud_cost or 0) / total_cloud_cost * 100
         else:
             self.ventures = Venture.objects.none()
+            self.venture_data = []
         if self.request.GET.get('export') == 'csv':
             return self.export_csv()
         return super(ReportVentures, self).get(*args, **kwargs)
@@ -400,7 +481,9 @@ class ReportVentures(SidebarReports, Base):
         context.update({
             'form': self.form,
             'ventures': self.ventures,
+            'venture_data': self.venture_data,
             'profile': self.request.user.get_profile(),
+            'extra_types': self.extra_types,
         })
         return context
 
@@ -630,4 +713,146 @@ class ReportDevices(SidebarReports, Base):
                 'perm_to_edit': self.perm_edit,
                 }
         )
+        return context
+
+
+def uniq(list_dicts):
+    return [dict(p) for p in set(tuple(i.items())
+        for i in list_dicts)]
+
+class ReportVentureCosts(SidebarReports, Base):
+    template_name = 'ui/report_venture_costs.html'
+    subsection = 'venture_costs'
+
+    def export_csv(self, data):
+
+        def iter_rows():
+            rows = []
+
+            max = 0
+            for item in data:
+                row = [
+                    unicode(item.get('name')),
+                    unicode(item.get('sn')),
+                    unicode(item.get('barcode')),
+                    unicode(item.get('cost')),
+                ]
+                components = item.get('components')
+
+                if max < len(components):
+                    max = len(components)
+
+                for component in components:
+                    row.append(unicode(component.get('name')))
+                    row.append(unicode(component.get('count')))
+                    row.append(unicode(component.get('price')))
+
+                rows.append(row)
+
+            headers = [
+                'Device',
+                'SN',
+                'Barcode',
+                'Cost',
+                ]
+
+            for comp in range(max):
+                headers.append('Component name')
+                headers.append('Component count')
+                headers.append('Component price')
+
+            rows.insert(0, headers)
+            return rows
+
+
+        f = StringIO.StringIO()
+        csvutil.UnicodeWriter(f).writerows(iter_rows())
+        response = HttpResponse(f.getvalue(), content_type='application/csv')
+        response['Content-Disposition'] = 'attachment; filename=ventures_cost.csv'
+        return response
+
+    def get(self, *args, **kwargs):
+        profile = self.request.user.get_profile()
+        has_perm = profile.has_perm
+        if not has_perm(Perm.read_device_info_reports):
+            return HttpResponseForbidden(
+                "You don't have permission to see reports.")
+        self.perm_edit = False
+        if has_perm(Perm.edit_device_info_financial):
+            self.perm_edit = True
+        venture_id = self.request.GET.get('venture', None)
+        self.form = ReportVentureCost(initial={'venture': venture_id})
+        if venture_id:
+            try:
+                venture_devices = Device.objects.filter(venture=venture_id)
+            except ValueError:
+                raise Http404
+        else:
+            venture_devices = None
+
+
+        devices = []
+        if venture_devices:
+            for device in venture_devices:
+                models = []
+                components = []
+                prices = []
+                for component in details_all(device):
+                    model = component.get('model')
+                    if component['group'] != 'dev':
+                        if model is not None:
+                            models.append(model.name)
+                            prices.append(
+                                {
+                                    'name': model.name,
+                                    'price': component.get('price')
+                                }
+                            )
+                counts = Counter(models)
+
+                for item in prices:
+                    name = item.get('name')
+                    price = item.get('price')
+                    components.append(
+                        {
+                            'name': name,
+                            'price': price or 0,
+                            'count': counts.get(name),
+                        }
+                    )
+                components = uniq(components)
+
+                item = {
+                    'name': device.name,
+                    'sn': device.sn or '',
+                    'barcode': device.barcode or '',
+                    'cost': device.cached_cost,
+                    'components': components
+                }
+                devices.append(item)
+
+
+            self.devices = devices
+            self.venture_id = venture_id
+        else:
+            self.venture_id = None
+
+        if self.request.GET.get('export') == 'csv':
+            return self.export_csv(self.devices)
+        return super(ReportVentureCosts, self).get(*args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(ReportVentureCosts, self).get_context_data(**kwargs)
+        context.update(
+            {
+                'form': self.form,
+            }
+        )
+        if self.venture_id:
+            context.update(
+                {
+                    'rows': self.devices,
+                    'venture': self.venture_id,
+                }
+            )
         return context

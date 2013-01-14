@@ -96,8 +96,8 @@ class BaseDeviceList(ListView):
             query = self.get_queryset()
         rows = [
             ['Id', 'Name', 'Venture', 'Role', 'Model', 'Data Center', 'Rack',
-             'SN','Position', 'Barcode', 'Margin', 'Deprecation', 'Price',
-             'Cost', 'Monthly Cost', 'Addresses', 'Management', 'Created',
+             'Position', 'Barcode', 'SN', 'Margin', 'Deprecation', 'Price',
+             'Monthly Cost', 'Addresses', 'Management', 'Created',
              'Last Seen', 'Purchased', 'Warranty Expiration',
              'Support Expiration', 'Support Kind', 'Remarks'],
         ]
@@ -132,7 +132,6 @@ class BaseDeviceList(ListView):
                 dev.support_expiration_date or '' if
                     'purchase' in show_tabs else '',
                 dev.support_kind or '' if 'purchase' in show_tabs else '',
-                dev.sn or '' if 'purchase' in show_tabs else '',
                 dev.remarks or '' if 'info' in show_tabs else '',
             ]
             rows.append([unicode(r) for r in row])

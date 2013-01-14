@@ -248,21 +248,25 @@ $(function ($) {
         }
     });
 
-    ActiveTab = function (){
-        var hash = location.hash;
-        var hashPieces = hash.split('?');
-        var activeTab = $('[href=' + hashPieces[0] + ']');
-        if (activeTab) { activeTab.tab('show'); }
-    };
-
-    $('body').off('click.tab.data-api');
+    CMDBActiveTab = function (){
+        var hash = location.hash
+            , hashPieces = hash.split('?')
+            , activeTab = $('[href=' + hashPieces[0] + ']');
+        activeTab && activeTab.tab('show');
+    }
+    $('body').off('click.tab.data-api')
     $('body').on('click.scrolling-tabs', '[data-toggle="tab"], [data-toggle="pill"]', function (e) {
-        $(this).tab('show');
+        if ($('.cmdb-ci-tabs')){
+            $(this).tab('show');
+        }
     });
     $(window).on('hashchange', function (){
-        ActiveTab();
+        if ($('.cmdb-ci-tabs')){
+            CMDBActiveTab();
+        }
     });
     $(window).load(function (){
-        ActiveTab();
+        if ($('.cmdb-ci-tabs')){
+            CMDBActiveTab();
+        }
     });
-});

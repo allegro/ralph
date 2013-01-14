@@ -28,6 +28,7 @@ from powerdns.models import Record
 from ralph.account.models import Perm
 from ralph.business.models import RolePropertyValue
 from ralph.cmdb.models import CI
+from ralph.deployment.util import get_next_free_hostname, get_first_free_ip
 from ralph.dnsedit.models import DHCPEntry
 from ralph.dnsedit.util import (
     get_domain,
@@ -38,6 +39,7 @@ from ralph.dnsedit.util import Error as DNSError
 from ralph.discovery.models import (
     Device,
     DeviceType,
+    Network,
 )
 from ralph.discovery.models_history import (
     FOREVER_DATE,
@@ -225,12 +227,19 @@ class BaseMixin(object):
         if ('ralph.cmdb' in settings.INSTALLED_APPS and has_perm(
                 Perm.read_configuration_item_info_generic)):
             ci = ''
-            try:
-                device = self.kwargs['device']
-            except KeyError:
-                device = None
-            if device:
-                ci = CI.get_by_content_object(Device.objects.get(pk=device))
+            device_id = self.kwargs.get('device')
+            if device_id:
+                deleted = False
+                if self.request.GET.get('deleted', '').lower() == 'on':
+                    deleted = True
+                try:
+                    if deleted:
+                        device = Device.admin_objects.get(pk=device_id)
+                    else:
+                        device = Device.objects.get(pk=device_id)
+                    ci = CI.get_by_content_object(device)
+                except Device.DoesNotExist:
+                    pass
             if ci:
                 tab_items.extend(
                     [
@@ -685,12 +694,14 @@ class Addresses(DeviceDetailView):
             )
         if 'dns' in self.request.POST:
             dns_records = self.get_dns(self.limit_types)
+            ips = {ip.address for ip in self.object.ipaddress_set.all()}
             self.dns_formset = DNSFormSet(
                 self.request.POST,
                 queryset=dns_records,
                 prefix='dns',
                 hostnames=self.get_hostnames(),
                 limit_types=self.limit_types,
+                ips=ips,
             )
             if self.dns_formset.is_valid():
                 for form in self.dns_formset.extra_forms:
@@ -703,6 +714,24 @@ class Addresses(DeviceDetailView):
                     if form.has_changed():
                         # Save the user for modified records
                         form.instance.saving_user = self.request.user
+                        # Make sure the PTR record is updated on field change
+                        if form.instance.ptr and (
+                            'name' in form.changed_data or
+                            'content' in form.changed_data
+                        ):
+                            r = Record.objects.get(id=form.instance.id)
+                            for ptr in get_revdns_records(
+                                    r.content).filter(content=r.name):
+                                ptr.saving_user = self.request.user
+                                ptr.delete()
+                                messages.warning(
+                                    self.request,
+                                    "PTR record for %s and %s deleted." % (
+                                        r.name,
+                                        r.content,
+                                    ),
+                                )
+                            form.changed_data.append('ptr')
                 self.dns_formset.save()
                 for r, data in self.dns_formset.changed_objects:
                     # Handle PTR creation/deletion
@@ -715,7 +744,10 @@ class Addresses(DeviceDetailView):
                             else:
                                 messages.warning(
                                     self.request,
-                                    "PTR record for %s created." % r.content
+                                    "PTR record for %s and %s created." % (
+                                        r.name,
+                                        r.content,
+                                    ),
                                 )
                         else:
                             for ptr in get_revdns_records(
@@ -724,7 +756,10 @@ class Addresses(DeviceDetailView):
                                 ptr.delete()
                                 messages.warning(
                                     self.request,
-                                    "PTR record for %s deleted." % r.name
+                                    "PTR record for %s and %s deleted." % (
+                                        r.name,
+                                        r.content,
+                                    ),
                                 )
                 for r in self.dns_formset.new_objects:
                     # Handle PTR creation
@@ -755,9 +790,11 @@ class Addresses(DeviceDetailView):
         elif 'dhcp' in self.request.POST:
             dhcp_records = self.get_dhcp()
             macs = {e.mac for e in self.object.ethernet_set.all()}
+            ips = {ip.address for ip in self.object.ipaddress_set.all()}
             self.dhcp_formset = DHCPFormSet(
                 dhcp_records,
                 macs,
+                ips,
                 self.request.POST,
                 prefix='dhcp',
             )
@@ -793,16 +830,24 @@ class Addresses(DeviceDetailView):
         ret = super(Addresses, self).get_context_data(**kwargs)
         if self.dns_formset is None:
             dns_records = self.get_dns(self.limit_types)
+            ips = {ip.address for ip in self.object.ipaddress_set.all()}
             self.dns_formset = DNSFormSet(
                 hostnames=self.get_hostnames(),
                 queryset=dns_records,
                 prefix='dns',
                 limit_types=self.limit_types,
+                ips=ips,
             )
         if self.dhcp_formset is None:
             dhcp_records = self.get_dhcp()
             macs = {e.mac for e in self.object.ethernet_set.all()}
-            self.dhcp_formset = DHCPFormSet(dhcp_records, macs, prefix='dhcp')
+            ips = {ip.address for ip in self.object.ipaddress_set.all()}
+            self.dhcp_formset = DHCPFormSet(
+                dhcp_records,
+                macs,
+                ips,
+                prefix='dhcp',
+            )
         if self.ip_formset is None:
             self.ip_formset = IPAddressFormSet(
                 queryset=self.object.ipaddress_set.order_by('address'),
@@ -810,12 +855,27 @@ class Addresses(DeviceDetailView):
             )
         profile = self.request.user.get_profile()
         can_edit = profile.has_perm(self.edit_perm, self.object.venture)
+        next_hostname = None
+        first_free_ip = None
+        rack = self.object.find_rack()
+        if rack:
+            networks = rack.network_set.order_by('name')
+            for network in networks:
+                next_hostname = get_next_free_hostname(network.data_center)
+                if next_hostname:
+                    break
+            for network in networks:
+                first_free_ip = get_first_free_ip(network.name)
+                if first_free_ip:
+                    break
         ret.update({
             'canedit': can_edit,
             'balancers': list(_get_balancers(self.object)),
             'dnsformset': self.dns_formset,
             'dhcpformset': self.dhcp_formset,
             'ipformset': self.ip_formset,
+            'next_hostname': next_hostname,
+            'first_free_ip': first_free_ip,
         })
         return ret
 

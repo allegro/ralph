@@ -27,6 +27,7 @@ from ralph.discovery.models_history import DiscoveryWarning
 
 
 logger = logging.getLogger(__name__)
+SAVE_PRIORITY = 10
 
 
 class Error(Exception):
@@ -123,7 +124,7 @@ def _add_virtual_machine(ssh, vmid, parent, master, storages):
             model, created = ComponentModel.create(
                 ComponentType.disk,
                 family='QEMU disk image',
-                priority=0,   # FIXME: why 0?
+                priority=SAVE_PRIORITY,
             )
             # The model's size is deliberately 0 because it's a virtual
             # volume: there would be potentially as many models as volumes.
@@ -176,7 +177,7 @@ def _add_virtual_machine(ssh, vmid, parent, master, storages):
         ComponentType.processor,
         family='QEMU Virtual',
         name='QEMU Virtual CPU version 0.12.4',   # FIXME: why so specific?
-        priority=0,   # FIXME: why 0?
+        priority=SAVE_PRIORITY,
     )
     for i in range(cpu_count):
         cpu, cpu_created = Processor.concurrent_get_or_create(device=dev,
@@ -187,7 +188,7 @@ def _add_virtual_machine(ssh, vmid, parent, master, storages):
             cpu.family = 'QEMU Virtual'
             cpu.save()
 
-    dev.save(update_last_seen=True)
+    dev.save(update_last_seen=True, priority=SAVE_PRIORITY)
     return dev
 
 def _add_virtual_machines(ssh, parent, master):
@@ -264,7 +265,13 @@ def _add_cluster_member(ssh, ip):
     dev = Device.create(ethernets=[Eth(label='eth0', mac=mac, speed=0)],
             model_name='Proxmox', model_type=DeviceType.unknown)
 
-    Software.create(dev, 'proxmox', 'Proxmox', family='Virtualization').save()
+    Software.create(
+        dev,
+        'proxmox',
+        'Proxmox',
+        family='Virtualization',
+        priority=SAVE_PRIORITY,
+    ).save()
     ipaddr, ip_created = IPAddress.concurrent_get_or_create(address=ip)
     ipaddr.is_management = False
     ipaddr.device = dev
