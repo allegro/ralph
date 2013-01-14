@@ -128,6 +128,15 @@ class DeploymentUtilTest(TestCase):
         )
         net2.terminators.add(terminator)
         net2.save()
+        net3 = Network.objects.create(
+            name='net3',
+            address='192.168.0.1/28',
+            data_center=self.dc_temp1
+        )
+        net3.terminators.add(terminator)
+        net3.reserved = 1
+        net3.reserved_top_margin = 15
+        net3.save()
 
     def test_get_nexthostname(self):
         name = get_next_free_hostname(self.dc_temp1)
@@ -151,6 +160,22 @@ class DeploymentUtilTest(TestCase):
         )
         name = get_next_free_hostname(self.dc_temp1)
         self.assertEqual(name, 'h300.temp1')
+
+        dev = Device.create(
+            sn='test_sn_998877',
+            model_type=DeviceType.unknown,
+            model_name='Unknown'
+        )
+        dev.name = 'h300.temp1'
+        dev.save()
+        Record.objects.create(
+            domain=self.domain_temp1,
+            name='123',
+            content='h301.temp1',
+            type='PTR',
+        )
+        name = get_next_free_hostname(self.dc_temp1)
+        self.assertEqual(name, 'h302.temp1')
 
         name = get_next_free_hostname(
             self.dc_temp2, ['h200.temp2', 'h201.temp2'],
@@ -179,6 +204,9 @@ class DeploymentUtilTest(TestCase):
         # 127.0.1.5 - dhcp
         # 127.0.1.6 - should be free
         self.assertEqual(ip, '127.0.1.6')
+
+        ip = get_first_free_ip('net3')
+        self.assertEqual(ip, None)  # bad margins...
 
     def test_create_device(self):
         data = {
