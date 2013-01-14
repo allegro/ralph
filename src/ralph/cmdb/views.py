@@ -822,7 +822,6 @@ class Search(BaseCMDBView):
             'pages': _get_pages(self.paginator, self.page_number),
             'sort': self.request.GET.get('sort', ''),
             'layer': self.request.GET.get('layer', ''),
-            'type': self.request.GET.get('type', ''),
             'form': self.form,
             'sidebar_selected': sidebar_selected,
             'subsection': subsection,
@@ -835,72 +834,61 @@ class Search(BaseCMDBView):
     def get_table_header(self, layer, type_):
         DEFAULT_COLS = (
             {'label': 'Type', 'name': 'type', 'sortable': 1},
-            {'label': 'Layer', 'name': 'layer', 'sortable': 0},
-            {'label': 'Venture', 'name': 'Venture', 'sortable': 0},
-            {'label': 'Service', 'name': 'Service', 'sortable': 0},
-            {'label': 'PCI Scope', 'name': 'pci', 'sortable': 0},
+            {'label': 'Layer', 'name': 'layers', 'sortable': 1},
+            {'label': 'Venture', 'name': 'Venture',},
+            {'label': 'Service', 'name': 'Service',},
+            {'label': 'PCI Scope', 'name': 'pci_scope', 'sortable': 1},
         )
         table_header = (
-            {'label': 'Name', 'name': 'uid', 'sortable': 1},
-            {'label': 'CI UID', 'name': 'type', 'sortable': 0},
+            {'label': 'Name', 'name': 'name', 'sortable': 1},
+            {'label': 'CI UID', 'name': 'uid', 'sortable': 1},
         )
-        if type_ is None:
+        if type_ == 0:
             table_header += DEFAULT_COLS
         elif type_ == CI_TYPES.APPLICATION.id:
             table_header += (
-                {'label': 'Type', 'name': 'type', 'sortable': 1},
-                {'label': 'Layer', 'name': 'layer', 'sortable': 0},
-                {'label': 'Venture', 'name': 'Venture', 'sortable': 0},
-                {'label': 'Service', 'name': 'Service', 'sortable': 0},
-                {'label': 'PCI Scope', 'name': 'pci', 'sortable': 0},
+                {'label': 'Type', 'name': 'type'},
+                {'label': 'Layer', 'name': 'layers', 'sortable': 1},
+                {'label': 'Venture', 'name': 'Venture',},
+                {'label': 'Service', 'name': 'Service',},
+                {'label': 'PCI Scope', 'name': 'pci_scope', 'sortable': 1},
             )
         elif type_ == CI_TYPES.DEVICE.id:
             table_header += (
-                {'label': 'Parent Device', 'name': 'Parent Device',
-                 'sortable': 1},
-                {'label': 'Network', 'name': 'Network', 'sortable': 0},
-                {'label': 'DC', 'name': 'DC', 'sortable': 0},
-                {'label': 'Venture', 'name': 'Venture', 'sortable': 0},
-                {'label': 'Service', 'name': 'Service', 'sortable': 0},
-                {'label': 'PPCI Scope', 'name': 'PPCI Scope', 'sortable': 0},
+                {'label': 'Parent Device', 'name': 'Parent Device'},
+                {'label': 'Network', 'name': 'Network',},
+                {'label': 'DC', 'name': 'DC',},
+                {'label': 'Venture', 'name': 'Venture',},
+                {'label': 'Service', 'name': 'Service',},
+                {'label': 'PCI Scope', 'name': 'pci_scope', 'sortable': 1},
             )
         elif type_ == CI_TYPES.PROCEDURE.id:
             table_header += DEFAULT_COLS
         elif type_ == CI_TYPES.VENTURE.id:
             table_header += (
-                {'label': 'Parent venture', 'name': 'Parent venture',
-                 'sortable': 1},
-                {'label': 'Child Ventures', 'name': 'Child Ventures',
-                 'sortable': 1},
-                {'label': 'Service', 'name': 'Service', 'sortable': 1},
-                {'label': 'Technical Owner', 'name': 'Technical Owner',
-                 'sortable': 1},
-                {'label': 'Business Owner', 'name': 'Business Owner',
-                 'sortable': 1},
+                {'label': 'Parent venture', 'name': 'Parent venture'},
+                {'label': 'Child Ventures', 'name': 'Child Ventures'},
+                {'label': 'Service', 'name': 'Service'},
+                {'label': 'Technical Owner', 'name': 'Technical Owner'},
+                {'label': 'Business Owner', 'name': 'Business Owner'},
             )
         elif type_ == CI_TYPES.VENTUREROLE.id:
             table_header += (
-                {'label': 'Parent venture', 'name': 'Parent venture',
-                 'sortable': 1},
-                {'label': 'Service', 'name': 'Service', 'sortable': 1},
-                {'label': 'Technical Owner', 'name': 'Technical Owner',
-                 'sortable': 1},
+                {'label': 'Parent venture', 'name': 'Parent venture'},
+                {'label': 'Service', 'name': 'Service',},
+                {'label': 'Technical Owner', 'name': 'Technical Owner'},
             )
         elif type_ == CI_TYPES.BUSINESSLINE.id:
             table_header += (
                 {'label': 'Services contained',
-                 'name': 'Services contained', 'sortable': 0},
+                 'name': 'Services contained',},
             )
         elif type_ == CI_TYPES.SERVICE.id:
             table_header += (
-                {'label': 'Contained Venture',
-                 'name': 'Contained Venture', 'sortable': 1},
-                {'label': 'Business Line', 'name': 'Business Line',
-                 'sortable': 0},
-                {'label': 'Technical Owner', 'name': 'Technical Owner',
-                 'sortable': 0},
-                {'label': 'Business Owner', 'name': 'Business Owner',
-                 'sortable': 0},
+                {'label': 'Contained Venture','name': 'Contained Venture'},
+                {'label': 'Business Line', 'name': 'Business Line'},
+                {'label': 'Technical Owner', 'name': 'Technical Owner'},
+                {'label': 'Business Owner', 'name': 'Business Owner'},
             )
         elif type_ == CI_TYPES.NETWORK.id:
             table_header += DEFAULT_COLS
@@ -909,7 +897,7 @@ class Search(BaseCMDBView):
         elif type_ == CI_TYPES.NETWORKTERMINATOR.id:
             table_header += DEFAULT_COLS
         table_header += (
-            {'label': 'Operations', 'name': 'Operations', 'sortable': 0},
+            {'label': 'Operations', 'name': 'Operations',},
         )
         return table_header
 
