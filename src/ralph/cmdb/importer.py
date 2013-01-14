@@ -75,8 +75,6 @@ class CIImporter(object):
         ci.uid = '%s-%s' % (uid_prefix, asset.id)
         ci.content_object = asset
         ci.type_id = type_
-        ci.barcode = getattr(asset, 'barcode', None)
-        ci.name = '%s' % asset.name or unicode(asset)
         try:
             # new CI
             ci.save()
@@ -85,6 +83,8 @@ class CIImporter(object):
             # Integrity error - existing CI Already in database.
             # Get CI by uid, and use it for saving data.
             ci = cdb.CI.get_by_content_object(asset)
+        ci.barcode = getattr(asset, 'barcode', None)
+        ci.name = '%s' % asset.name or unicode(asset)
         ci.save()
         return ci
 
