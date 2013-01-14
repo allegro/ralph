@@ -13,7 +13,7 @@ from bob.forms import AutocompleteWidget
 from django import forms
 from lck.django.common.models import MACAddressField
 
-from ralph.business.models import VentureRole
+from ralph.business.models import Venture, VentureRole
 from ralph.deployment.models import Deployment, Preboot
 from ralph.deployment.util import (
     hostname_exists,
@@ -67,6 +67,7 @@ class DeploymentForm(forms.ModelForm):
                         device.venture_role else ''),
             'hostname': device.name,
         })
+        self.fields['venture'].queryset = Venture.objects.order_by('name')
 
     def clean_hostname(self):
         hostname = self.cleaned_data['hostname'].strip().lower()
