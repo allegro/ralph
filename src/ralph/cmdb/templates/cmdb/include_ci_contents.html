@@ -34,50 +34,50 @@
 
   {% if ci_id %}
       <ul class="nav nav-tabs cmdb-ci-tabs">
-                    {% if iframe  %}
-                        <li class='dropdown'>
-                        <a href='#' class='dropdown-toggle' data-toggle='dropdown'> Show all Ci info<b class='caret'> </b> </a>
-                        <ul class='dropdown-menu'>
-                    {% endif %}
+          {% if iframe  %}
+              <li class='dropdown'>
+              <a href='#' class='dropdown-toggle' data-toggle='dropdown'> Show all Ci info<b class='caret'> </b> </a>
+              <ul class='dropdown-menu'>
+          {% endif %}
 
-                    <li class='active'><a href="#main" data-toggle="tab">Basic Info</a></li>
-                    <li><a href="#relations" data-toggle="tab">Relations</a></li>
+          <li class='active'><a href="#main" data-toggle="tab">Basic Info</a></li>
+          <li><a href="#relations" data-toggle="tab">Relations</a></li>
 
-                    {% if read_configuration_item_info_git_perm  %}
-                        <li><a href="#git" data-toggle="tab">{% if git_changes %} {% icon 'fugue-new' %} {% endif %} Repo changes</a></li>
-                    {% endif %}
+          {% if read_configuration_item_info_git_perm  %}
+              <li><a href="#git" data-toggle="tab">{% if git_changes %} {% icon 'fugue-new' %} {% endif %} Repo changes</a></li>
+          {% endif %}
 
-                    {% if read_configuration_item_info_puppet_perm %}
-                        <li><a href="#puppet" data-toggle="tab">{% if puppet_reports %} {% icon 'fugue-new' %} {% endif %} Agent events</a></li>
-                    {% endif %}
+          {% if read_configuration_item_info_puppet_perm %}
+              <li><a href="#puppet" data-toggle="tab">{% if puppet_reports %} {% icon 'fugue-new' %} {% endif %} Agent events</a></li>
+          {% endif %}
 
-                    {% if read_configuration_item_info_jira_perm %}
-                        <li><a href="#ralph" data-toggle="tab">{% if device_attributes_changes %} {% icon 'fugue-new' %} {% endif %}  Asset attr. changes</a></li>
-                    {% endif %}
+          {% if read_configuration_item_info_jira_perm %}
+              <li><a href="#ralph" data-toggle="tab">{% if device_attributes_changes %} {% icon 'fugue-new' %} {% endif %}  Asset attr. changes</a></li>
+          {% endif %}
 
-                    {% if read_configuration_item_info_jira_perm %}
-                        <li><a href="#ci_changes" data-toggle="tab">{% if ci_attributes_changes %} {% icon 'fugue-new' %} {% endif %}  CI attr. changes</a></li>
-                    {% endif %}
+          {% if read_configuration_item_info_jira_perm %}
+              <li><a href="#ci_changes" data-toggle="tab">{% if ci_attributes_changes %} {% icon 'fugue-new' %} {% endif %}  CI attr. changes</a></li>
+          {% endif %}
 
-                    {% if read_configuration_item_info_jira_perm %}
-                        <li><a href="#zabbix" data-toggle="tab">{% if zabbix_triggers %}{% icon 'fugue-new' %}{% endif %}Monitoring events</a></li>
-                    {% endif %}
+          {% if read_configuration_item_info_jira_perm %}
+              <li><a href="#zabbix" data-toggle="tab">{% if zabbix_triggers %}{% icon 'fugue-new' %}{% endif %}Monitoring events</a></li>
+          {% endif %}
 
-                    {% if read_configuration_item_info_jira_perm %}
-                     <li><a href="#problems" data-toggle="tab">{% if problems %} {% icon 'fugue-new' %} {% endif %}  Problems</a></li>
-                    {% endif %}
+          {% if read_configuration_item_info_jira_perm %}
+              <li><a href="#problems" data-toggle="tab">{% if problems %} {% icon 'fugue-new' %} {% endif %}  Problems</a></li>
+          {% endif %}
 
-                    {% if read_configuration_item_info_jira_perm %}
-                     <li><a href="#incidents" data-toggle="tab">{% if incidents %} {% icon 'fugue-new' %} {% endif %}  Incidents </a></li>
-                    {% endif %}
+          {% if read_configuration_item_info_jira_perm %}
+              <li><a href="#incidents" data-toggle="tab">{% if incidents %} {% icon 'fugue-new' %} {% endif %}  Incidents </a></li>
+          {% endif %}
 
-                    {% if read_configuration_item_info_jira_perm %}
-                        <li><a href="#planned" data-toggle="tab">{% if planned %} {% icon 'fugue-new' %} {% endif %} Planned Changes</a></li>
-                    {% endif %}
+          {% if read_configuration_item_info_jira_perm %}
+              <li><a href="#planned" data-toggle="tab">{% if planned %} {% icon 'fugue-new' %} {% endif %} Planned Changes</a></li>
+          {% endif %}
 
-                    {% if read_configuration_item_info_generic_perm %}
-                        <li><a href="#so" data-toggle="tab">{% if so_events %} {% icon 'fugue-new' %} {% endif %} SO Events</a></li>
-                    {% endif %}
+          {% if read_configuration_item_info_generic_perm %}
+              <li><a href="#so" data-toggle="tab">{% if so_events %} {% icon 'fugue-new' %} {% endif %} SO Events</a></li>
+          {% endif %}
 
           {% if not iframe %}
                 </ul>
