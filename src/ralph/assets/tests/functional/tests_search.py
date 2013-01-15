@@ -360,7 +360,7 @@ class TestSearchDeliveryDateFields(TestCase):
         )
 
     def test_start_date_is_equal_end_date(self):
-        url = '/assets/dc/search?delivery_date_form=%s&delivery_date_to=%s' % (
+        url = '/assets/dc/search?delivery_date_from=%s&delivery_date_to=%s' % (
             '2001-01-01', '2001-01-01')
         content = self.client.get(url)
         self.assertEqual(content.status_code, 200)
@@ -370,7 +370,7 @@ class TestSearchDeliveryDateFields(TestCase):
         self.assertEqual(rows_from_table[0].sn, '1234-1234-1234-1234')
 
     def test_start_date_is_less_then_end_date(self):
-        url = '/assets/dc/search?delivery_date_form=%s&delivery_date_to=%s' % (
+        url = '/assets/dc/search?delivery_date_from=%s&delivery_date_to=%s' % (
             '2011-01-01', '2002-01-01')
         content = self.client.get(url)
         self.assertEqual(content.status_code, 200)
@@ -379,7 +379,7 @@ class TestSearchDeliveryDateFields(TestCase):
         self.assertEqual(len(rows_from_table), 0)
 
     def test_find_more_assets_lte_gte(self):
-        url = '/assets/dc/search?delivery_date_form=%s&delivery_date_to=%s' % (
+        url = '/assets/dc/search?delivery_date_from=%s&delivery_date_to=%s' % (
             '2001-01-01', '2002-01-01')
         content = self.client.get(url)
         self.assertEqual(content.status_code, 200)
@@ -393,7 +393,7 @@ class TestSearchDeliveryDateFields(TestCase):
         )
 
     def test_start_date_is_empty(self):
-        url = '/assets/dc/search?delivery_date_form=%s&delivery_date_to=%s' % (
+        url = '/assets/dc/search?delivery_date_from=%s&delivery_date_to=%s' % (
             '', '2001-01-01')
         content = self.client.get(url)
         self.assertEqual(content.status_code, 200)
@@ -403,7 +403,7 @@ class TestSearchDeliveryDateFields(TestCase):
         self.assertEqual(rows_from_table[0].sn, '1234-1234-1234-1234')
 
     def test_end_date_is_empty(self):
-        url = '/assets/dc/search?delivery_date_form=%s&delivery_date_to=%s' % (
+        url = '/assets/dc/search?delivery_date_from=%s&delivery_date_to=%s' % (
             '1999-01-01', '')
         content = self.client.get(url)
         self.assertEqual(content.status_code, 200)
