@@ -34,7 +34,6 @@ from ralph.dnsedit.util import Error as DNSError
 from ralph.discovery.models import (
     Device,
     DeviceType,
-    Network,
 )
 from ralph.discovery.models_history import (
     FOREVER_DATE,
@@ -84,9 +83,13 @@ def _get_details(dev, purchase_only=False, with_price=False):
     for detail in pricing.details_all(dev, purchase_only):
         if 'icon' not in detail:
             if detail['group'] == 'dev':
-                detail['icon'] = presentation.get_device_model_icon(detail.get('model'))
+                detail['icon'] = presentation.get_device_model_icon(
+                    detail.get('model'),
+                )
             else:
-                detail['icon'] = presentation.get_component_model_icon(detail.get('model'))
+                detail['icon'] = presentation.get_component_model_icon(
+                    detail.get('model'),
+                )
         if 'price' not in detail:
             if detail.get('model'):
                 detail['price'] = detail['model'].get_price()
@@ -94,7 +97,11 @@ def _get_details(dev, purchase_only=False, with_price=False):
                 detail['price'] = None
         if with_price and not detail['price']:
             continue
-        if detail['group'] != 'dev' and 'size' not in detail and detail.get('model'):
+        if (
+                detail['group'] != 'dev' and
+                'size' not in detail and
+                detail.get('model')
+            ):
             detail['size'] = detail['model'].size
         if not detail.get('model'):
             detail['model'] = detail.get('model_name', '')
@@ -151,13 +158,25 @@ class BaseMixin(object):
             footer_items.append(
                 MenuItem('Admin', fugue_icon='fugue-toolbox', href='/admin'))
         footer_items.append(
-            MenuItem('%s (logout)' % self.request.user, fugue_icon='fugue-user',
-                     view_name='logout', view_args=[details or 'info', ''],
-                     pull_right=True, href=settings.LOGOUT_URL))
+            MenuItem(
+                '%s (logout)' % self.request.user,
+                fugue_icon='fugue-user',
+                view_name='logout',
+                view_args=[details or 'info', ''],
+                pull_right=True,
+                href=settings.LOGOUT_URL,
+            )
+        )
         mainmenu_items.append(
-            MenuItem('Advanced search', name='search',
-                     fugue_icon='fugue-magnifier', view_args=[details or 'info', ''],
-                     view_name='search', pull_right=True))
+            MenuItem(
+                'Advanced search',
+                name='search',
+                fugue_icon='fugue-magnifier',
+                view_args=[details or 'info', ''],
+                view_name='search',
+                pull_right=True,
+            )
+        )
         tab_items = []
         venture = (
                 self.venture if self.venture and self.venture != '*' else None
@@ -311,14 +330,18 @@ class DeviceUpdateView(UpdateView):
         self.object = self.get_object()
         has_perm = self.request.user.get_profile().has_perm
         if not has_perm(self.read_perm, self.object.venture):
-            return HttpResponseForbidden("You don't have permission to see this.")
+            return HttpResponseForbidden(
+                "You don't have permission to see this."
+            )
         return super(DeviceUpdateView, self).get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
         self.object = self.get_object()
         has_perm = self.request.user.get_profile().has_perm
         if not has_perm(self.edit_perm, self.object.venture):
-            return HttpResponseForbidden("You don't have permission to edit this.")
+            return HttpResponseForbidden(
+                "You don't have permission to edit this."
+            )
         return super(DeviceUpdateView, self).post(*args, **kwargs)
 
 
@@ -341,7 +364,9 @@ class DeviceDetailView(DetailView):
         self.object = self.get_object()
         has_perm = self.request.user.get_profile().has_perm
         if not has_perm(self.read_perm, self.object.venture):
-            return HttpResponseForbidden("You don't have permission to see this.")
+            return HttpResponseForbidden(
+                "You don't have permission to see this."
+            )
         return super(DeviceDetailView, self).get(*args, **kwargs)
 
 
@@ -385,7 +410,10 @@ class Info(DeviceUpdateView):
     def save_properties(self, device, properties):
         for symbol, value in properties.iteritems():
             p = device.venture_role.roleproperty_set.get(symbol=symbol)
-            pv, created = RolePropertyValue.concurrent_get_or_create(property=p, device=device)
+            pv, created = RolePropertyValue.concurrent_get_or_create(
+                property=p,
+                device=device,
+            )
             pv.value = value
             pv.save()
 
@@ -395,7 +423,9 @@ class Info(DeviceUpdateView):
             return None
         for p in self.object.venture_role.roleproperty_set.all():
             try:
-                value = p.rolepropertyvalue_set.filter(device=self.object)[0].value
+                value = p.rolepropertyvalue_set.filter(
+                    device=self.object,
+                )[0].value
             except IndexError:
                 value = ''
             props[p.symbol] = value
@@ -408,14 +438,19 @@ class Info(DeviceUpdateView):
         self.object = self.get_object()
         has_perm = self.request.user.get_profile().has_perm
         if not has_perm(Perm.edit_device_info_generic, self.object.venture):
-            return HttpResponseForbidden("You don't have permission to edit this.")
+            return HttpResponseForbidden(
+                "You don't have permission to edit this."
+            )
         self.property_form = self.get_property_form()
         if 'propertiessave' in self.request.POST:
             properties = list(self.object.venture_role.roleproperty_set.all())
             self.property_form = PropertyForm(properties, self.request.POST)
             if self.property_form.is_valid():
                 messages.success(self.request, "Properties updated.")
-                self.save_properties(self.object, self.property_form.cleaned_data)
+                self.save_properties(
+                    self.object,
+                    self.property_form.cleaned_data,
+                )
                 return HttpResponseRedirect(self.request.path)
         elif 'save-tags' in self.request.POST:
             tags = self.request.POST.get('tags', '')
@@ -758,7 +793,10 @@ class Costs(DeviceDetailView):
             ).order_by('-day')
         if splunk.count():
             size = splunk.aggregate(db.Sum('size'))['size__sum'] or 0
-            cost = splunk[0].get_price(size=size) / splunk[0].model.group.size_modifier
+            cost = (
+                splunk[0].get_price(size=size) /
+                splunk[0].model.group.size_modifier
+            )
             ret.update({
                 'splunk_size': size,
                 'splunk_monthly_cost': cost,
@@ -810,9 +848,14 @@ class Purchase(DeviceUpdateView):
 
     def get_context_data(self, **kwargs):
         ret = super(Purchase, self).get_context_data(**kwargs)
-        ret.update({
-            'components': _get_details(self.object, purchase_only=False, with_price=True),
-        })
+        ret.update(
+            {
+                'components': _get_details(
+                    self.object,
+                    purchase_only=False, with_price=True,
+                ),
+            }
+        )
         return ret
 
 
@@ -861,7 +904,10 @@ class BulkEdit(BaseMixin, TemplateView):
     def post(self, *args, **kwargs):
         profile = self.request.user.get_profile()
         if not profile.has_perm(Perm.bulk_edit):
-            messages.error(self.request, "You don't have permissions for bulk edit.")
+            messages.error(
+                self.request,
+                "You don't have permissions for bulk edit.",
+            )
             return super(BulkEdit, self).get(*args, **kwargs)
         selected = self.request.POST.getlist('select')
         self.devices = Device.objects.filter(id__in=selected)
@@ -871,7 +917,9 @@ class BulkEdit(BaseMixin, TemplateView):
         for name in self.Form().fields:
             if name == 'save_comment':
                 continue
-            query = Device.objects.filter(id__in=selected).values(name).distinct()
+            query = Device.objects.filter(
+                    id__in=selected
+                ).values(name).distinct()
             if query.count() > 1:
                 self.different_fields.append(name)
             elif query.count() > 0:
