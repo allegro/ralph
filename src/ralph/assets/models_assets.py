@@ -248,7 +248,7 @@ class DeviceInfo(TimeTrackable, SavingUser):
         verbose_name='Size in units', default=1)
 
     def __unicode__(self):
-        return "{} - {} - {}".format(
+        return "{} - {}".format(
             self.ralph_device,
             self.size,
         )
