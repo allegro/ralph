@@ -4,6 +4,13 @@
 {% load formats %}
 
 {% block content %}
+
+{% if depreciated %}
+    <div class="alert alert-block">
+        Device is depreciated, so the price is equal to 0
+    </div>
+{% endif %}
+
 <div class="row-fluid">
 <div class="span6">
 
