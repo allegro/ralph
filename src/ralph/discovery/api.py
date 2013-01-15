@@ -101,6 +101,7 @@ class DeviceResource(MResource):
             'role': ALL_WITH_RELATIONS,
             'ip_addresses': ALL_WITH_RELATIONS,
             'verified': ALL,
+            'dc': ALL,
         }
         authentication = ApiKeyAuthentication()
         authorization = DjangoAuthorization()
