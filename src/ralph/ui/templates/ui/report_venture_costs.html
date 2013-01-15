@@ -10,8 +10,8 @@
             <form class="form form-inline">
                 <div class="form-actions">
                     <h4>Devices prices per Venture</h4>
-                    <p>This report presents the price devices in the venture.</p>
-                    <p>The cost of shared equipment is taken as a percentage</p>
+                    <p>Price of devices in the venture.</p>
+                    <p>The price of shared equipment is taken as a proportion.</p>
                     {% for f in form %}
                         {% if f.label %}
                         <div style="display:inline-block; vertical-align:top; margin-top: 10px;" class="control-group {% if f.errors %}error{% endif %}" >
@@ -67,7 +67,6 @@
                                     <th>Name:</th>
                                     <th>Count:</th>
                                     <th>Unit price:</th>
-                                    <th>Total:</th>
                                 </thead>
                                 <tbody>
                                 {% for comp in row.components %}
@@ -77,7 +76,6 @@
                                         </td>
                                         <td>{{ comp.count }}</td>
                                         <td>{% if comp.price == 0 %}N/A{% else %}{{ comp.price|currency }}{% endif %}</td>
-                                        <td>{% if comp.total_component == 0 %}N/A{% else %}{{ comp.total_component|currency }}{% endif %}</td>
                                     </tr>
                                 {% endfor %}
                                 <tr>
