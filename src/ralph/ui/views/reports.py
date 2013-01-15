@@ -37,7 +37,7 @@ from ralph.ui.views.devices import DEVICE_SORT_COLUMNS
 from ralph.ui.forms.reports import (
     SupportRangeReportForm, DeprecationRangeReportForm,
     WarrantyRangeReportForm, DevicesChoiceReportForm,
-    ReportVentureCost)
+    ReportVentureCost, ReportDeviceListForm)
 from ralph.util import csvutil
 from ralph.util.pricing import details_all
 
@@ -570,6 +570,16 @@ class ReportDevices(SidebarReports, Base):
     template_name = 'ui/report_devices.html'
     subsection = 'devices'
 
+    def export_csv(self, data, fname):
+        export = []
+        for item in data:
+            export.append([unicode(x) for x in item])
+        f = StringIO.StringIO()
+        csvutil.UnicodeWriter(f).writerows(export)
+        response = HttpResponse(f.getvalue(), content_type='application/csv')
+        response['Content-Disposition'] = 'attachment; filename=%s.csv' % fname
+        return response
+
     def get_name(self, name, id):
         id = escape(id)
         name = escape(name)
@@ -586,7 +596,10 @@ class ReportDevices(SidebarReports, Base):
         if has_perm(Perm.edit_device_info_financial):
             self.perm_edit = True
         request = self.request.GET
-        # CheckboxInput
+        csv_conf = {
+            'name': 'report_devices',
+            'url': None,
+        }
         self.form_choice = DevicesChoiceReportForm(request)
         queries = {Q()}
         headers = ['Name']
@@ -695,23 +708,75 @@ class ReportDevices(SidebarReports, Base):
             self.form_warranty_range = WarrantyRangeReportForm(initial={
                 'w_start': datetime.date.today() - datetime.timedelta(days=30),
                 'w_end': datetime.date.today(),
-                })
+            })
+        ''' Show all devices (active and deleted) '''
+        self.device_list = ReportDeviceListForm(request)
+        all_devices = request.get('show_all_devices')
+        all_deleted_devices = request.get('show_all_deleted_devices')
+        if all_devices or all_deleted_devices:
+            show_devices = None
+            if all_devices and all_deleted_devices:
+                show_devices = Device.admin_objects.all()
+                csv_conf = {
+                    'title': 'Show all devices (active and deleted)',
+                    'name': 'report_all_devices',
+                    'url': '?show_all_devices=on&show_all_deleted_devices=on&export=csv',
+                    }
+            elif all_devices:
+                show_devices = Device.objects.all()
+                csv_conf = {
+                    'title': 'Show all active devices',
+                    'name': 'report_all_active_devices',
+                    'url': '?show_all_devices=on&export=csv',
+                    }
+            elif all_deleted_devices:
+                show_devices = Device.admin_objects.filter(deleted=True)
+                csv_conf = {
+                    'title': 'Show all deleted devices',
+                    'name': 'report_deleted_devices',
+                    'url': '?show_all_deleted_devices=on&export=csv',
+                    }
+            headers = [
+                'Device', 'Model', 'SN', 'Barcode', 'Venture', 'Role',
+                'Remarks', 'Verified', 'Deleted'
+            ]
+            for dev in show_devices:
+                rows.append([
+                    dev.name,
+                    dev.model,
+                    dev.sn,
+                    dev.barcode,
+                    dev.venture,
+                    dev.role,
+                    dev.remarks,
+                    dev.verified,
+                    dev.deleted,
+                ])
+
+        if request.get('export') == 'csv':
+            rows.insert(0, headers)
+            return self.export_csv(rows, csv_conf.get('name'))
         self.headers = headers
         self.rows = rows
+        self.csv_url = csv_conf.get('url')
+        self.title = csv_conf.get('title')
         return super(ReportDevices, self).get(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(ReportDevices, self).get_context_data(**kwargs)
         context.update(
             {
+                'title': self.title,
                 'form_choice': self.form_choice,
                 'form_support_range': self.form_support_range,
                 'form_deprecation_range': self.form_deprecation_range,
                 'form_warranty_range': self.form_warranty_range,
+                'form_device_list': self.device_list,
+                'csv_url': self.csv_url,
                 'tabele_header': self.headers,
                 'rows': self.rows,
                 'perm_to_edit': self.perm_edit,
-                }
+            }
         )
         return context
 
