@@ -60,6 +60,14 @@ class ReadOnlyWidget(forms.Widget):
             escape(name), escape(value), attr_class, escape(value)))
 
 
+class ReadOnlyPreWidget(forms.Widget):
+    def render(self, name, value, attrs=None, choices=()):
+        return mark_safe('''
+        <input type="hidden" name="%s" value="%s">
+        <div class="input uneditable-input"><pre>%s</pre></div></input>''' % (
+            escape(name), escape(value), escape(value)))
+
+
 class DeviceModelWidget(forms.Widget):
     def render(self, name, value, attrs=None, choices=()):
         dm = None
