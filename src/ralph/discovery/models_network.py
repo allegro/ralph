@@ -85,6 +85,14 @@ class AbstractNetwork(db.Model):
             'deleted': False,
         },  # DeviceType.rack.id
     )
+    ignore_addresses = db.BooleanField(
+        _("Ignore addresses from this network"),
+        default=False,
+        help_text=_(
+            "Addresses from this network should never be assigned "
+            "to any device, because they are not unique."
+        ),
+    )
 
     class Meta:
         abstract = True
@@ -245,6 +253,8 @@ class IPAddress(LastSeen, TimeTrackable, WithConcurrentGetOrCreate):
             self.network = Network.from_ip(self.address)
         except IndexError:
             self.network = None
+        if self.network and self.network.ignore_addresses:
+            self.device = None
         super(IPAddress, self).save(*args, **kwargs)
 
     def assert_same_device(self):
