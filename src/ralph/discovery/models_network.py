@@ -93,6 +93,9 @@ class AbstractNetwork(db.Model):
             "to any device, because they are not unique."
         ),
     )
+    dhcp_config = db.TextField(
+        _("DHCP configuration"), blank=True, default='',
+    )
 
     class Meta:
         abstract = True
