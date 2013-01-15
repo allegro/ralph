@@ -64,3 +64,14 @@ class ReportVentureCost(forms.Form):
     def __init__(self, *args, **kwargs):
         super(ReportVentureCost, self).__init__(*args, **kwargs)
         self.fields['venture'].choices = all_ventures()
+
+
+class ReportDeviceListForm(forms.Form):
+    show_all_devices = forms.ChoiceField(
+        label="Active devices",
+        widget=forms.CheckboxInput()
+    )
+    show_all_deleted_devices = forms.ChoiceField(
+        label="Deleted devices",
+        widget=forms.CheckboxInput()
+    )
