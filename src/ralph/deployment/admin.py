@@ -46,6 +46,15 @@ class DeploymentAdmin(ModelAdmin):
         'venture_role': ['^name'],
     }
 
+    def _move_deployment_to_archive(modeladmin, request, queryset):
+        for deployment in queryset:
+            deployment.archive()
+
+    _move_deployment_to_archive.short_description = _('Move to archive')
+
+    actions = [_move_deployment_to_archive, ]
+
+
 admin.site.register(Deployment, DeploymentAdmin)
 
 
