@@ -38,6 +38,7 @@ class DHCPEntry(TimeTrackable):
 class DHCPServer(db.Model):
     ip = db.IPAddressField(verbose_name=_("IP address"), unique=True)
     last_synchronized = db.DateTimeField(null=True)
+    dhcp_config = db.TextField(blank=True, default='')
 
 
 class DNSHistory(db.Model):
