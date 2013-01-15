@@ -726,23 +726,25 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
             price = item.get('price')
             components = item.get('components')
             row = [
-                unicode(dev.venture.symbol),
-                unicode(dev.name),
-                unicode(dev.role),
-                unicode(dev.sn),
-                unicode(dev.barcode or ''),
-                unicode(dev.cached_price or 'N/A'),
-                unicode(price or 'N/A'),
+                dev.venture.symbol,
+                dev.name,
+                dev.role,
+                dev.sn,
+                dev.barcode or '',
+                dev.cached_price or 'N/A',
+                price or 'N/A',
             ]
+            row = [unicode(c) for c in row]
             if view_components:
                 max = len(components) if max < len(components) else max
                 for detail in components:
                     details.extend([
-                        unicode(detail.get('name')),
-                        unicode(detail.get('count')),
-                        unicode(detail.get('price') or 'N/A'),
-                        unicode(detail.get('total_component') or 'N/A'),
+                        detail.get('name'),
+                        detail.get('count'),
+                        detail.get('price') or 'N/A',
+                        detail.get('total_component') or 'N/A',
                     ])
+                    details = [unicode(d) for d in details]
                 row.extend(details)
             rows.append(row)
         headers = [
