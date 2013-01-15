@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 
 from django.test import TestCase
 from django import forms
+from powerdns.models import Domain, Record
 
 from ralph.discovery.models import (
     Network,
@@ -118,15 +119,15 @@ class BulkDeploymentTest(TestCase):
             _validate_deploy_children('cafedeadbeef', 0)
 
     def test_validate_hostname(self):
-        _validate_hostname('whoosh', [], 0)
+        _validate_hostname('whoosh', '11:22:33:aa:bb:cc', [], 0)
         with self.assertRaises(forms.ValidationError):
-            _validate_hostname('whoosh', ['whoosh'], 0)
+            _validate_hostname('whoosh', '22:33:11:aa:bb:dd', ['whoosh'], 0)
         device = Device.create(
             ethernets=[('', 'deadbeefcafe', 0)],
             model_name='splat',
             model_type=DeviceType.unknown,
         )
-        Deployment(
+        deployment = Deployment(
             hostname='whoosh',
             ip='127.0.0.1',
             mac='deadbeefcafe',
@@ -134,9 +135,47 @@ class BulkDeploymentTest(TestCase):
             preboot=None,
             venture=None,
             venture_role=None,
-        ).save()
+        )
+        deployment.save()
         with self.assertRaises(forms.ValidationError):
-            _validate_hostname('whoosh', [], 0)
+            _validate_hostname('whoosh', 'aa:bb:cc:11:22:33', [], 0)
+        device = Device.create(
+            ethernets=[('', 'aaccbb113322', 0)],
+            model_name='unknown',
+            model_type=DeviceType.unknown
+        )
+        device.name = 'some_name_1'
+        device.save()
+        _validate_hostname('some_name_1', 'aaccbb113322', [], 0)
+        domain = Domain.objects.create(name='domain1')
+        record_A = Record.objects.create(
+            domain=domain,
+            name='some_name_1',
+            content='127.0.0.1',
+            type='A'
+        )
+        with self.assertRaises(forms.ValidationError):
+            _validate_hostname('some_name_1', 'aaccbb113322', [], 0)
+        with self.assertRaises(forms.ValidationError):
+            _validate_hostname('some_name_1', 'aaccbb113344', [], 0)
+        device.ipaddress_set.create(address='127.0.0.1')
+        _validate_hostname('some_name_1', 'aaccbb113322', [], 0)
+        device.ipaddress_set.all().delete()
+        record_A.delete()
+        Record.objects.create(
+            domain=domain,
+            name='1.0.0.127.in-addr.arpa',
+            content='some_name_1',
+            type='PTR'
+        )
+        with self.assertRaises(forms.ValidationError):
+            _validate_hostname('some_name_1', 'aaccbb113322', [], 0)
+        device.ipaddress_set.create(address='127.0.0.1')
+        _validate_hostname('some_name_1', 'aaccbb113322', [], 0)
+        deployment.hostname = 'some_name_1'
+        deployment.save()
+        with self.assertRaises(forms.ValidationError):
+            _validate_hostname('some_name_1', 'aaccbb113322', [], 0)
 
     def test_validate_ip_address(self):
         dc = DataCenter(name='dc')

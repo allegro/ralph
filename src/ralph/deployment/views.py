@@ -127,6 +127,7 @@ def preboot_complete_view(request):
         deployment = get_current_deployment(request)
         deployment.status = DeploymentStatus.done
         deployment.save()
+        deployment.archive()
         return HttpResponse()
     except Deployment.DoesNotExist:
         return HttpResponseNotFound('No deployment can be completed at this '
