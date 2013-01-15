@@ -273,14 +273,15 @@ class MassDeployment(Base):
                             ip.address for ip in device.ipaddress_set.all()
                         ),
                     ))
-                    self.actions.append(
+                    self.actions.append((
+                        'info',
                         "All DHCP entries for IP addresses [%s] "
                         "will be deleted." % (
                             ', '.join(
                                 ip.address for ip in device.ipaddress_set.all()
                             ),
                         ),
-                    )
+                    ))
                 if device.ethernet_set.exists():
                     self.actions.append((
                         'info',

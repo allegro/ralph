@@ -274,3 +274,22 @@ def update_txt_records(device):
         set_txt_record(record.domain, name, 'MODEL', get_model(device))
         set_txt_record(record.domain, name, 'LOCATION', get_location(device))
 
+
+def get_ip_addresses(hostname):
+    ip_addresses = set(
+        Record.objects.filter(
+            type='A',
+            name=hostname
+        ).values_list(
+            'content',
+            flat=True
+        )
+    )
+    for record in Record.objects.filter(type='PTR', content=hostname):
+        ip_addresses.add(
+            '.'.join(
+                reversed(record.name.replace('.in-addr.arpa', '').split('.'))
+            )
+        )
+    return list(ip_addresses)
+

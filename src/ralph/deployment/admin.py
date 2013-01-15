@@ -11,7 +11,7 @@ from django.utils.translation import ugettext_lazy as _
 from lck.django.common.admin import ModelAdmin
 
 from ralph.deployment.models import (
-    Deployment, Preboot, PrebootFile, MassDeployment,
+    ArchiveDeployment, Deployment, Preboot, PrebootFile, MassDeployment,
 )
 
 
@@ -47,6 +47,18 @@ class DeploymentAdmin(ModelAdmin):
     }
 
 admin.site.register(Deployment, DeploymentAdmin)
+
+
+class ArchiveDeploymentAdmin(DeploymentAdmin):
+    readonly_fields = tuple(ArchiveDeployment._meta.get_all_field_names())
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+admin.site.register(ArchiveDeployment, ArchiveDeploymentAdmin)
 
 
 class PrebootAdmin(ModelAdmin):
