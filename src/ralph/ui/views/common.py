@@ -437,6 +437,12 @@ class Components(DeviceDetailView):
         })
         return ret
 
+def is_depreciated(device):
+    if device.deprecation_date < datetime.datetime.now():
+        return True
+    else:
+        return False
+
 
 class Prices(DeviceUpdateView):
     form_class = DevicePricesForm
@@ -455,6 +461,7 @@ class Prices(DeviceUpdateView):
             'components': _get_details(self.object,
                                        purchase_only=False,
                                        with_price=True),
+            'depreciated': is_depreciated(self.object),
         })
         return ret
 
@@ -734,6 +741,7 @@ class Costs(DeviceDetailView):
             'query_variable_name': query_variable_name,
             'ALWAYS_DATE': ALWAYS_DATE,
             'FOREVER_DATE': FOREVER_DATE,
+            'depreciated': is_depreciated(self.object),
         })
         last_month = datetime.date.today() - datetime.timedelta(days=31)
         splunk = self.object.splunkusage_set.filter(
