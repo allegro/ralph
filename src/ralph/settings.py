@@ -69,8 +69,10 @@ INSTALLED_APPS = [
     'gunicorn',
     'fugue_icons',
     'bob',
+    'mptt',
     'tastypie',
     'ralph.account',
+    'ralph.assets',
     'ralph.business',
     'ralph.cmdb',
     'ralph.discovery',
@@ -197,6 +199,10 @@ CELERY_ROUTES = (
 AJAX_LOOKUP_CHANNELS = {
     'ci': ('ralph.cmdb.models', 'CILookup'),
     'device': ('ralph.ui.channels', 'DeviceLookup'),
+    'asset_model': ('ralph.assets.models', 'AssetModelLookup'),
+    'asset_dcdevice': ('ralph.assets.models', 'DCDeviceLookup'),
+    'asset_bodevice': ('ralph.assets.models', 'BODeviceLookup'),
+    'asset_warehouse': ('ralph.assets.models', 'WarehouseLookup'),
 }
 # magically include jqueryUI/js/css
 AJAX_SELECT_BOOTSTRAP = True
@@ -344,6 +350,7 @@ API_THROTTLING = {
     'timeframe': 3600,
     'expiration': None,
 }
+CONNECT_ASSET_WITH_DEVICE = False
 # </template>
 
 #

@@ -5,13 +5,18 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import datetime
+import cStringIO as StringIO
 
 from django.conf import settings
 from django.contrib import messages
 from django.core.urlresolvers import reverse
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import models as db
-from django.http import HttpResponseRedirect, HttpResponseForbidden
+from django.http import (
+    HttpResponse,
+    HttpResponseRedirect,
+    HttpResponseForbidden,
+)
 from django.utils import simplejson as json
 from django.views.generic import UpdateView, DetailView, TemplateView
 
@@ -41,7 +46,7 @@ from ralph.discovery.models_history import (
     ALWAYS_DATE,
     DiscoveryWarning,
 )
-from ralph.util import presentation, pricing
+from ralph.util import presentation, pricing, csvutil
 from ralph.ui.forms.devices import (
     DeviceInfoForm,
     DeviceInfoVerifiedForm,
@@ -65,11 +70,11 @@ def _get_balancers(dev):
     for ip in dev.ipaddress_set.select_related().all():
         for member in ip.loadbalancermember_set.order_by('device'):
             yield {
-                    'balancer': member.device.name,
-                    'pool': member.pool.name,
-                    'enabled': member.enabled,
-                    'server': None,
-                    'port': member.port,
+                'balancer': member.device.name,
+                'pool': member.pool.name,
+                'enabled': member.enabled,
+                'server': None,
+                'port': member.port,
             }
     for vserv in dev.loadbalancervirtualserver_set.all():
         yield {
@@ -80,13 +85,18 @@ def _get_balancers(dev):
             'port': vserv.port,
         }
 
+
 def _get_details(dev, purchase_only=False, with_price=False):
     for detail in pricing.details_all(dev, purchase_only):
         if 'icon' not in detail:
             if detail['group'] == 'dev':
-                detail['icon'] = presentation.get_device_model_icon(detail.get('model'))
+                detail['icon'] = presentation.get_device_model_icon(
+                    detail.get('model')
+                )
             else:
-                detail['icon'] = presentation.get_component_model_icon(detail.get('model'))
+                detail['icon'] = presentation.get_component_model_icon(
+                    detail.get('model')
+                )
         if 'price' not in detail:
             if detail.get('model'):
                 detail['price'] = detail['model'].get_price()
@@ -141,6 +151,11 @@ class BaseMixin(object):
                 MenuItem('CMDB', fugue_icon='fugue-thermometer',
                          href='/cmdb/changes/timeline')
             )
+        if ('ralph.assets' in settings.INSTALLED_APPS):
+            mainmenu_items.append(
+                MenuItem('Assets', fugue_icon='fugue-box-label',
+                         href='/assets')
+            )
         if settings.BUGTRACKER_URL:
             mainmenu_items.append(
                 MenuItem(
@@ -151,45 +166,48 @@ class BaseMixin(object):
             footer_items.append(
                 MenuItem('Admin', fugue_icon='fugue-toolbox', href='/admin'))
         footer_items.append(
-            MenuItem('%s (logout)' % self.request.user, fugue_icon='fugue-user',
-                     view_name='logout', view_args=[details or 'info', ''],
-                     pull_right=True, href=settings.LOGOUT_URL))
+            MenuItem('%s (logout)' % self.request.user,
+                     fugue_icon='fugue-user', view_name='logout',
+                     view_args=[details or 'info', ''], pull_right=True,
+                     href=settings.LOGOUT_URL))
         mainmenu_items.append(
             MenuItem('Advanced search', name='search',
-                     fugue_icon='fugue-magnifier', view_args=[details or 'info', ''],
+                     fugue_icon='fugue-magnifier',
+                     view_args=[details or 'info', ''],
                      view_name='search', pull_right=True))
         tab_items = []
         venture = (
-                self.venture if self.venture and self.venture != '*' else None
-            ) or (
-                self.object.venture if self.object else None
-            )
+            self.venture if self.venture and self.venture != '*' else None
+        ) or (
+            self.object.venture if self.object else None
+        )
+
         def tab_href(name):
             return '../%s/%s?%s' % (
-                    name,
-                    self.object.id if self.object else '',
-                    self.request.GET.urlencode()
-                )
+                name,
+                self.object.id if self.object else '',
+                self.request.GET.urlencode()
+            )
         if has_perm(Perm.read_device_info_generic, venture):
             tab_items.extend([
                 MenuItem('Info', fugue_icon='fugue-wooden-box',
                          href=tab_href('info')),
                 MenuItem('Components', fugue_icon='fugue-box',
-                        href=tab_href('components')),
+                         href=tab_href('components')),
                 MenuItem('Software', fugue_icon='fugue-disc',
                          href=tab_href('software')),
                 MenuItem('Addresses', fugue_icon='fugue-network-ip',
-                        href=tab_href('addresses')),
+                         href=tab_href('addresses')),
             ])
         if has_perm(Perm.edit_device_info_financial, venture):
             tab_items.extend([
                 MenuItem('Prices', fugue_icon='fugue-money-coin',
-                        href=tab_href('prices')),
+                         href=tab_href('prices')),
             ])
         if has_perm(Perm.read_device_info_financial, venture):
             tab_items.extend([
                 MenuItem('Costs', fugue_icon='fugue-wallet',
-                        href=tab_href('costs')),
+                         href=tab_href('costs')),
             ])
         if has_perm(Perm.read_device_info_history, venture):
             tab_items.extend([
@@ -206,8 +224,8 @@ class BaseMixin(object):
                 MenuItem('Discover', fugue_icon='fugue-flashlight',
                          href=tab_href('discover')),
             ])
-        if ('ralph.cmdb' in settings.INSTALLED_APPS and
-            has_perm(Perm.read_configuration_item_info_generic)):
+        if ('ralph.cmdb' in settings.INSTALLED_APPS and has_perm(
+                Perm.read_configuration_item_info_generic)):
             ci = ''
             device_id = self.kwargs.get('device')
             if device_id:
@@ -223,10 +241,15 @@ class BaseMixin(object):
                 except Device.DoesNotExist:
                     pass
             if ci:
-                tab_items.extend([
-                    MenuItem('CMDB', fugue_icon='fugue-thermometer',
-                        href='/cmdb/ci/view/%s' % ci.id),
-                    ])
+                tab_items.extend(
+                    [
+                        MenuItem(
+                            'CMDB',
+                            fugue_icon='fugue-thermometer',
+                            href='/cmdb/ci/view/%s' % ci.id
+                        ),
+                    ]
+                )
         if has_perm(Perm.read_device_info_reports, venture):
             tab_items.extend([
                 MenuItem('Reports', fugue_icon='fugue-reports-stack',
@@ -311,14 +334,18 @@ class DeviceUpdateView(UpdateView):
         self.object = self.get_object()
         has_perm = self.request.user.get_profile().has_perm
         if not has_perm(self.read_perm, self.object.venture):
-            return HttpResponseForbidden("You don't have permission to see this.")
+            return HttpResponseForbidden(
+                "You don't have permission to see this."
+            )
         return super(DeviceUpdateView, self).get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
         self.object = self.get_object()
         has_perm = self.request.user.get_profile().has_perm
         if not has_perm(self.edit_perm, self.object.venture):
-            return HttpResponseForbidden("You don't have permission to edit this.")
+            return HttpResponseForbidden(
+                "You don't have permission to edit this."
+            )
         return super(DeviceUpdateView, self).post(*args, **kwargs)
 
 
@@ -341,7 +368,9 @@ class DeviceDetailView(DetailView):
         self.object = self.get_object()
         has_perm = self.request.user.get_profile().has_perm
         if not has_perm(self.read_perm, self.object.venture):
-            return HttpResponseForbidden("You don't have permission to see this.")
+            return HttpResponseForbidden(
+                "You don't have permission to see this."
+            )
         return super(DeviceDetailView, self).get(*args, **kwargs)
 
 
@@ -365,8 +394,10 @@ class Info(DeviceUpdateView):
     def get_context_data(self, **kwargs):
         ret = super(Info, self).get_context_data(**kwargs)
         if self.object:
-            tags = self.object.get_tags(official=False,
-                                      author=self.request.user)
+            tags = self.object.get_tags(
+                official=False,
+                author=self.request.user
+            )
         else:
             tags = []
         tags = ['"%s"' % t.name if ',' in t.name else t.name for t in tags]
@@ -385,7 +416,9 @@ class Info(DeviceUpdateView):
     def save_properties(self, device, properties):
         for symbol, value in properties.iteritems():
             p = device.venture_role.roleproperty_set.get(symbol=symbol)
-            pv, created = RolePropertyValue.concurrent_get_or_create(property=p, device=device)
+            pv, created = RolePropertyValue.concurrent_get_or_create(
+                property=p, device=device
+            )
             pv.value = value
             pv.save()
 
@@ -395,7 +428,9 @@ class Info(DeviceUpdateView):
             return None
         for p in self.object.venture_role.roleproperty_set.all():
             try:
-                value = p.rolepropertyvalue_set.filter(device=self.object)[0].value
+                value = p.rolepropertyvalue_set.filter(
+                    device=self.object
+                )[0].value
             except IndexError:
                 value = ''
             props[p.symbol] = value
@@ -408,14 +443,19 @@ class Info(DeviceUpdateView):
         self.object = self.get_object()
         has_perm = self.request.user.get_profile().has_perm
         if not has_perm(Perm.edit_device_info_generic, self.object.venture):
-            return HttpResponseForbidden("You don't have permission to edit this.")
+            return HttpResponseForbidden(
+                "You don't have permission to edit this."
+            )
         self.property_form = self.get_property_form()
         if 'propertiessave' in self.request.POST:
             properties = list(self.object.venture_role.roleproperty_set.all())
             self.property_form = PropertyForm(properties, self.request.POST)
             if self.property_form.is_valid():
                 messages.success(self.request, "Properties updated.")
-                self.save_properties(self.object, self.property_form.cleaned_data)
+                self.save_properties(
+                    self.object,
+                    self.property_form.cleaned_data
+                )
                 return HttpResponseRedirect(self.request.path)
         elif 'save-tags' in self.request.POST:
             tags = self.request.POST.get('tags', '')
@@ -443,7 +483,7 @@ class Components(DeviceDetailView):
 class Prices(DeviceUpdateView):
     form_class = DevicePricesForm
     template_name = 'ui/device_prices.html'
-    read_perm = Perm.edit_device_info_financial # sic
+    read_perm = Perm.edit_device_info_financial  # sic
     edit_perm = Perm.edit_device_info_financial
 
     def get_initial(self):
@@ -461,6 +501,95 @@ class Prices(DeviceUpdateView):
         return ret
 
 
+def _dns_fill_record(form, prefix, record, request):
+    for label in ('name', 'type', 'content', 'type'):
+        setattr(record, label,
+                form.cleaned_data[prefix + label] or None)
+    record.domain = get_domain(record.name)
+    if (record.type in ('A', 'AAAA') and form.cleaned_data[prefix + 'ptr']):
+        try:
+            created = set_revdns_record(record.content, record.name)
+        except DNSError as e:
+            messages.error(request, unicode(e))
+        else:
+            if created:
+                messages.warning(
+                    request,
+                    "Created a PTR DNS record for %s." % record.content
+                )
+
+
+def _dns_create_record(form, request, device):
+    if form.cleaned_data.get('dns_new_content'):
+        record = Record()
+        _dns_fill_record(form, 'dns_new_', record, request)
+        record.saving_user = request.user
+        record.saving_device = device
+        record.save()
+        messages.success(request, "A DNS record added.")
+
+
+def _dns_delete_record(form, record, request):
+    if record.type == 'A':
+        for r in get_revdns_records(record.content).filter(content=record.name):
+            r.saving_user = request.user
+            r.delete()
+            messages.warning(request, "PTR record deleted.")
+
+
+def _dhcp_fill_record(form, prefix, record, request):
+    ip = form.cleaned_data.get(prefix + 'ip')
+    mac = form.cleaned_data.get(prefix + 'mac')
+    record.ip = ip
+    record.mac = mac
+
+
+def _dhcp_create_record(form, request, device):
+    ip = form.cleaned_data.get('dhcp_new_ip')
+    mac = form.cleaned_data.get('dhcp_new_mac')
+    if ip and mac:
+        if DHCPEntry.objects.filter(ip=ip).exists():
+            messages.warning(request,
+                             "A DHCP record for %s already exists."
+                             % ip)
+        if DHCPEntry.objects.filter(mac=mac).exists():
+            messages.warning(request,
+                             "A DHCP record for %s already exists."
+                             % mac)
+        record = DHCPEntry(mac=mac, ip=ip)
+        record.save()
+        messages.success(request,
+                         "A DHCP record for %s and %s added." %
+                         (ip, mac))
+
+
+def _ip_fill_record(form, prefix, record, request):
+    hostname = form.cleaned_data.get(prefix + 'hostname')
+    address = form.cleaned_data.get(prefix + 'address')
+    if hostname and address:
+        record.hostname = hostname
+        record.address = address
+
+
+def _ip_create_record(form, request, device):
+    hostname = form.cleaned_data.get('ip_new_hostname')
+    address = form.cleaned_data.get('ip_new_address')
+    if hostname and address:
+        if IPAddress.objects.filter(address=address).exists():
+            messages.error(
+                request,
+                "An IP address entry for %s already exists."
+                % address
+            )
+            return
+        record = IPAddress(address=address, hostname=hostname,
+                           device=device)
+        record.save()
+        messages.success(request,
+                         "An IP address entry for %s created." %
+                         address)
+
+
 class Addresses(DeviceDetailView):
     template_name = 'ui/device_addresses.html'
     read_perm = Perm.read_device_info_generic
@@ -475,9 +604,10 @@ class Addresses(DeviceDetailView):
 
     def get_dns(self, limit_types=None):
         ips = set(ip.address for ip in self.object.ipaddress_set.all())
-        names = set(ip.hostname for ip in self.object.ipaddress_set.all()
-                 if ip.hostname)
-        dotnames = set(name+'.' for name in names)
+        names = set(
+            ip.hostname for ip in self.object.ipaddress_set.all()if ip.hostname
+        )
+        dotnames = set(name + '.' for name in names)
         revnames = set('.'.join(reversed(ip.split('.'))) + '.in-addr.arpa'
                        for ip in ips)
         starrevnames = set()
@@ -487,10 +617,10 @@ class Addresses(DeviceDetailView):
                 parts.pop(0)
                 starrevnames.add('.'.join(['*'] + parts))
         for entry in Record.objects.filter(
-                db.Q(content__in=ips) |
-                db.Q(name__in=names) |
-                db.Q(content__in=names | dotnames)
-            ).distinct():
+            db.Q(content__in=ips) |
+            db.Q(name__in=names) |
+            db.Q(content__in=names | dotnames)
+        ).distinct():
             names.add(entry.name)
             if entry.type == 'A':
                 ips.add(entry.content)
@@ -503,9 +633,9 @@ class Addresses(DeviceDetailView):
                 parts.pop(0)
                 starnames.add('.'.join(['*'] + parts))
         query = Record.objects.filter(
-                db.Q(content__in=ips | names) |
-                db.Q(name__in=names | revnames | starnames | starrevnames)
-            ).distinct().order_by('type', 'name', 'content')
+            db.Q(content__in=ips | names) |
+            db.Q(name__in=names | revnames | starnames | starrevnames)
+        ).distinct().order_by('type', 'name', 'content')
         if limit_types is not None:
             query = query.filter(type__in=limit_types)
         return query
@@ -528,6 +658,32 @@ class Addresses(DeviceDetailView):
         ):
             hostnames.add(record.content.strip('.'))
         return hostnames
+
+    def handle_form(self, form, form_name, fill_record, create_record,
+                    delete_record=None):
+        if form.is_valid():
+            for record in form.records:
+                prefix = '%s_%d_' % (form_name, record.id)
+                if form.cleaned_data.get(prefix + 'del'):
+                    messages.warning(self.request,
+                                     "A %s record deleted." % form_name)
+                    if delete_record is not None:
+                        delete_record(form, record, self.request)
+                    record.saving_user = self.request.user
+                    record.saving_device = self.object
+                    record.delete()
+                else:
+                    fill_record(form, prefix, record, self.request)
+                    record.saving_user = self.request.user
+                    record.saving_device = self.object
+                    record.save()
+            create_record(form, self.request, self.object)
+            messages.success(self.request,
+                             "The %s records updated." % form_name)
+            return HttpResponseRedirect(self.request.path)
+        else:
+            messages.error(self.request,
+                           "There are errors in the %s form." % form_name)
 
     def post(self, *args, **kwargs):
         self.object = self.get_object()
@@ -757,11 +913,12 @@ class Costs(DeviceDetailView):
         })
         last_month = datetime.date.today() - datetime.timedelta(days=31)
         splunk = self.object.splunkusage_set.filter(
-                day__gte=last_month
-            ).order_by('-day')
+            day__gte=last_month
+        ).order_by('-day')
         if splunk.count():
             size = splunk.aggregate(db.Sum('size'))['size__sum'] or 0
-            cost = splunk[0].get_price(size=size) / splunk[0].model.group.size_modifier
+            cost = (splunk[0].get_price(size=size) /
+                    splunk[0].model.group.size_modifier)
             ret.update({
                 'splunk_size': size,
                 'splunk_monthly_cost': cost,
@@ -814,7 +971,11 @@ class Purchase(DeviceUpdateView):
     def get_context_data(self, **kwargs):
         ret = super(Purchase, self).get_context_data(**kwargs)
         ret.update({
-            'components': _get_details(self.object, purchase_only=False, with_price=True),
+            'components': _get_details(
+                self.object,
+                purchase_only=False,
+                with_price=True
+            ),
         })
         return ret
 
@@ -864,7 +1025,10 @@ class BulkEdit(BaseMixin, TemplateView):
     def post(self, *args, **kwargs):
         profile = self.request.user.get_profile()
         if not profile.has_perm(Perm.bulk_edit):
-            messages.error(self.request, "You don't have permissions for bulk edit.")
+            messages.error(
+                self.request,
+                "You don't have permissions for bulk edit."
+            )
             return super(BulkEdit, self).get(*args, **kwargs)
         selected = self.request.POST.getlist('select')
         self.devices = Device.objects.filter(id__in=selected)
@@ -874,7 +1038,9 @@ class BulkEdit(BaseMixin, TemplateView):
         for name in self.Form().fields:
             if name == 'save_comment':
                 continue
-            query = Device.objects.filter(id__in=selected).values(name).distinct()
+            query = Device.objects.filter(
+                id__in=selected
+            ).values(name).distinct()
             if query.count() > 1:
                 self.different_fields.append(name)
             elif query.count() > 0:
@@ -883,8 +1049,8 @@ class BulkEdit(BaseMixin, TemplateView):
             self.form = self.Form(self.request.POST, initial=initial)
             if self.form.is_valid():
                 bulk_update(self.devices, self.edit_fields,
-                        self.form.cleaned_data, self.request.user)
-                return HttpResponseRedirect(self.request.path+'../info/')
+                            self.form.cleaned_data, self.request.user)
+                return HttpResponseRedirect(self.request.path + '../info/')
             else:
                 messages.error(self.request, 'Correct the errors.')
         elif 'bulk' in self.request.POST:
@@ -916,9 +1082,9 @@ class CMDB(BaseMixin):
         ret = super(CMDB, self).get_context_data(**kwargs)
         device_id = self.kwargs.get('device')
         try:
-            ci=cdb.CI.objects.get(
-                    type=cdb.CI_TYPES.DEVICE.id,
-                    object_id=device_id
+            ci = cdb.CI.objects.get(
+                type=cdb.CI_TYPES.DEVICE.id,
+                object_id=device_id
             )
         except:
             ci = None
@@ -938,6 +1104,5 @@ class Software(DeviceDetailView):
         ret = super(Software, self).get_context_data(**kwargs)
         ret.update({
             'components': _get_details(self.object, purchase_only=False),
-            })
+        })
         return ret
-

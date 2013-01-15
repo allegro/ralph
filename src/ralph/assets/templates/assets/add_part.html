@@ -1,0 +1,29 @@
+{% extends 'assets/add_assets.html' %}
+
+{% block form_title %}Add parts{% endblock %}
+
+{% block additional_inputs %}
+  {% for field in part_info_form %}
+    <div class="control-group{% if field.errors %} error{% endif %}">
+      <label class="control-label">{{ field.label }}</label>
+      <div class="form-field controls">
+        {{ field }}
+        {% if field.errors %}
+        <span class="help-inline">{% for error in field.errors %}{{ error }} {% endfor %}</span>
+        {% endif %}
+      </div>
+    </div>
+  {% endfor %}
+{% endblock %}
+
+{% block multivalue_inputs %}
+<div class="span3">
+  <div class="control-group{% if asset_form.sn.errors %} error{% endif %}">
+    <label>{{ asset_form.sn.label }}</label>
+    {{ asset_form.sn }}
+    {% if asset_form.sn.errors %}
+      <div class="help-block">{% for error in asset_form.sn.errors %}{{ error }} {% endfor %}</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
