@@ -14,6 +14,7 @@ from lck.django.common import remote_addr, render
 
 from ralph.deployment.models import (Deployment, DeploymentStatus, FileType,
     PrebootFile)
+from ralph.discovery.tasks import discover_single
 
 
 def get_current_deployment(request):
@@ -111,6 +112,17 @@ def preboot_complete_view(request):
         deployment = get_current_deployment(request)
         deployment.status = DeploymentStatus.done
         deployment.save()
+        try:
+            ip_address = deployment.device.ipaddress_set.get(
+                is_management=True,
+            )
+            ip = ip_address.address
+        except:
+            ip = deployment.ip
+        discover_single.apply_async(
+            args=[{'ip': ip}, ],
+            countdown=600,  # 10 minutes
+        )
         return HttpResponse()
     except Deployment.DoesNotExist:
         return HttpResponseNotFound('No deployment can be completed at this '
