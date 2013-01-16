@@ -14,6 +14,7 @@ from lck.django.common import remote_addr, render
 
 from ralph.deployment.models import (Deployment, DeploymentStatus, FileType,
     PrebootFile)
+from ralph.discovery.models import IPAddress
 from ralph.discovery.tasks import discover_single
 
 
@@ -117,7 +118,7 @@ def preboot_complete_view(request):
                 is_management=True,
             )
             ip = ip_address.address
-        except:
+        except IPAddress.DoesNotExist:
             ip = deployment.ip
         discover_single.apply_async(
             args=[{'ip': ip}, ],
