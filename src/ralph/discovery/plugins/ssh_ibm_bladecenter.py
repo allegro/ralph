@@ -277,7 +277,7 @@ def _dev(model_type, pairs, parent, raw):
     return dev
 
 
-def _add_dev_mm(pairs, parent, raw, counts, dev_id):
+def _add_dev_mm(ip, pairs, parent, raw, counts, dev_id):
     _component(ComponentType.management, pairs, parent, raw)
 
     # XXX Clean up the previously added components
@@ -286,7 +286,7 @@ def _add_dev_mm(pairs, parent, raw, counts, dev_id):
         child.delete()
 
 
-def _add_dev_generic(pairs, parent, raw, counts, dev_id):
+def _add_dev_generic(ip, pairs, parent, raw, counts, dev_id):
     if parent:
         _component(ComponentType.unknown, pairs, parent, raw)
     else:
@@ -294,7 +294,7 @@ def _add_dev_generic(pairs, parent, raw, counts, dev_id):
         return dev
 
 
-def _add_dev_cpu(pairs, parent, raw, counts, dev_id):
+def _add_dev_cpu(ip, pairs, parent, raw, counts, dev_id):
     try:
         model = pairs['Mach type/model']
     except KeyError:
@@ -302,6 +302,7 @@ def _add_dev_cpu(pairs, parent, raw, counts, dev_id):
             message="Processor model unknown",
             plugin=__name__,
             device=parent,
+            ip=ip,
         ).save()
         return
     counts.cpu += 1
@@ -330,7 +331,7 @@ def _add_dev_cpu(pairs, parent, raw, counts, dev_id):
     cpu.save(priority=SAVE_PRIORITY)
 
 
-def _add_dev_memory(pairs, parent, raw, counts, dev_id):
+def _add_dev_memory(ip, pairs, parent, raw, counts, dev_id):
     try:
         model = pairs['Mach type/model']
     except KeyError:
@@ -338,6 +339,7 @@ def _add_dev_memory(pairs, parent, raw, counts, dev_id):
             message="Memory model unknown",
             plugin=__name__,
             device=parent,
+            ip=ip,
         ).save()
         return
     counts.mem += 1
@@ -358,7 +360,7 @@ def _add_dev_memory(pairs, parent, raw, counts, dev_id):
     mem.save(priority=SAVE_PRIORITY)
 
 
-def _add_dev_blade(pairs, parent, raw, counts, dev_id):
+def _add_dev_blade(ip, pairs, parent, raw, counts, dev_id):
     if '[' in dev_id:
         pos = int(dev_id[dev_id.find('[') + 1:dev_id.find(']')])
     else:
@@ -385,7 +387,7 @@ def _add_dev_blade(pairs, parent, raw, counts, dev_id):
     return dev
 
 
-def _add_dev_switch(pairs, parent, raw, counts, dev_id):
+def _add_dev_switch(ip, pairs, parent, raw, counts, dev_id):
     dev_type = DeviceType.switch
     if pairs['Mach type/model'].startswith('Fibre Channel SM'):
         dev_type = DeviceType.fibre_channel_switch
@@ -401,13 +403,13 @@ def _add_dev_switch(pairs, parent, raw, counts, dev_id):
     return dev
 
 
-def _add_dev_system(pairs, parent, raw, counts, dev_id, ip=None):
+def _add_dev_system(ip, pairs, parent, raw, counts, dev_id):
     dev = _dev(DeviceType.blade_system, pairs, parent, raw)
     ip_address, created = IPAddress.concurrent_get_or_create(address=str(ip))
     if created:
         ip_address.hostname = network.hostname(ip_address.address)
     ip_address.device = dev
-    ip_address.is_management = True
+    ip_address.is_management = True   # FIXME: how do we know for sure?
     ip_address.save(update_last_seen=True)   # no priorities for IP addresses
     return dev
 
@@ -446,10 +448,7 @@ def _recursive_add_dev(ssh, ip, dev_path, dev_id, components, parent=None,
     raw = '\n'.join(lines)
     pairs = parse.pairs(lines=lines)
     try:
-        if dev_path:
-            dev = add_func(pairs, parent, raw, counts, dev_id)
-        else:
-            dev = add_func(pairs, parent, raw, counts, dev_id, ip=ip)
+        dev = add_func(ip, pairs, parent, raw, counts, dev_id)
     except DeviceError:
         pass
     else:
