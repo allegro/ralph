@@ -91,6 +91,9 @@ $(function ($) {
     $('form.bulk-edit-form select').not('.add-on *').change(function () {
         $(this).parent('.input-prepend').find('.add-on input').prop('checked', true);
     });
+    $('form.bulk-edit-form textarea').not('.add-on *').change(function () {
+        $(this).parent('.input-prepend').find('.add-on input').prop('checked', true);
+    });
     $('form.bulk-edit-form .warning input').not('.add-on *').attr('placeholder', 'Different values...');
 
 
