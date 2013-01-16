@@ -218,13 +218,14 @@ class PuppetGitImporter(BaseImporter):
             return r
 
     def get_ci_by_path_mapping(self, path):
+        """Return first successfull ci mapped to this path"""
         for mapping in db.GitPathMapping.objects.all():
             if mapping.is_regex:
                 compiled = re.compile(mapping.path)
                 if compiled.match(path):
                     return mapping.ci
             else:
-                if path == mapping.path:
+                if path in mapping.path:
                     return mapping.ci
 
     def get_ci_by_path(self, paths):
@@ -242,8 +243,8 @@ class PuppetGitImporter(BaseImporter):
                 ci = self.find_ci_by_venturerole(groups)
                 if ci:
                     return ci
-            elif self.get_ci_by_path_mapping(self, path):
-                pass
-
-
+            else:
+                ci = self.get_ci_by_path_mapping(path)
+                if ci:
+                    return ci
 
