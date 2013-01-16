@@ -437,13 +437,13 @@ class IloHost(object):
                 ''.join(fields.get("Execution Technology", [])),
                 ''.join(fields.get("Memory Technology", [])),
             ])
-            family = int(''.join(fields.get("Family", [])) or 0)
+            family = int(''.join(fields["Family"]))
             yield (
                 fields['Label'][0],
                 speed,
                 cores,
                 extra,
-                CPU_FAMILY.get(family)
+                CPU_FAMILY[family],
             )
 
     def _raw_to_tree(self, raw):
