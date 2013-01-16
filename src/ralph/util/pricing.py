@@ -562,3 +562,7 @@ def details_all(dev, purchase_only=False):
     for detail in details_other(dev, purchase_only):
         detail['group'] = 'other'
         yield detail
+
+
+def is_depreciated(device):
+    return True if device.deprecation_date < datetime.datetime.now() else False
