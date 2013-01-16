@@ -152,7 +152,7 @@ $(function ($) {
     $('select#id_venture').each(venture_changed);
 
     $('.datepicker').datepicker({format: 'yyyy-mm-dd', autoclose: true}).click(function(){
-        $("input[name!='" + $(this).attr('name') + "']").datepicker('hide');
+        $("input.datepicker[name!='" + $(this).attr('name') + "']").datepicker('hide');
     });
 
     var parseDate = function (input, format) {
