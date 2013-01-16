@@ -32,7 +32,7 @@ from ralph.cmdb.models import (
     CI, CIRelation, CI_RELATION_TYPES, CIChange, CI_TYPES, CILayer, CIType,
     CIValueFloat, CIValueDate, CIValueString, CIChangePuppet, CIChangeGit,
     CI_CHANGE_TYPES, CI_CHANGE_REGISTRATION_TYPES, CIOwner,
-    CIOwnershipType, CIChangeCMDBHistory
+    CIOwnershipType, CIChangeCMDBHistory, GitPathMapping
 )
 from ralph.cmdb.models_ci import CIOwnership
 
@@ -70,6 +70,78 @@ class MockFisheye(object):
             djoin(CURRENT_DIR + 'cmdb/tests/samples/fisheye_details.xml')
         ).read()
         return objectify.fromstring(xml)
+
+
+class CIChangeGitTest(TestCase):
+    """Create Venture/Role and import as CI/CIRelations.
+    Import fisheye xml from samples/* files and save into the
+    CIChangeGit objects.
+
+    Git path mappings allows you to define what CI belongs to
+    what path in the git changeset. You have 2 comparison functions
+    for git mappers
+    1. Simple
+    2. Regex
+
+    """
+    fixtures = [
+        '0_types.yaml',
+        '1_attributes.yaml',
+        '2_layers.yaml',
+        '3_prefixes.yaml'
+    ]
+
+    def setUp(self):
+        v = Venture(symbol='test_venture')
+        v.save()
+        r = VentureRole(name='test_role', venture=v)
+        r.save()
+        # ci for custom path mapping
+        self.custom_ci = CI(name='test_custom', type_id=CI_TYPES.VENTURE.id)
+        self.custom_ci.save()
+        for i in (v, r):
+            CIImporter().import_single_object(i)
+            CIImporter().import_single_object_relations(i)
+
+    def load_fisheye_data(self):
+        # helper for importing xml data.
+        with mock.patch(
+            'ralph.cmdb.integration.lib.fisheye.Fisheye') as Fisheye:
+            Fisheye.side_effect = MockFisheye
+        x = pgi(fisheye_class=Fisheye)
+        x.import_git()
+
+    def test_fisheye_simple_mappings(self):
+        """Check in string mapping"""
+        GitPathMapping(
+            is_regex=False,
+            path='custom/test/file.xml',
+            ci=self.custom_ci,
+        ).save()
+        self.load_fisheye_data()
+        self.assertEqual(CIChangeGit.objects.filter(
+            ci=self.custom_ci).count(), 2)
+
+    def test_fisheye_regex_mappings(self):
+        """Check regex string mapping"""
+        GitPathMapping(
+            is_regex=True,
+            path='.*custom.*regex.*\/file.xml',
+            ci=self.custom_ci,
+        ).save()
+        self.load_fisheye_data()
+        self.assertEqual(CIChangeGit.objects.filter(
+            ci=self.custom_ci).count(), 2)
+
+    def test_fisheye_no_mappings(self):
+        self.load_fisheye_data()
+        self.assertEqual(CIChangeGit.objects.filter(
+            author__contains='johny.test@test.pl',
+        ).count(), 2)
+        self.assertEqual(CIChange.objects.filter(
+            ci__name='test_role',
+            type=CI_CHANGE_TYPES.CONF_GIT.id,
+        ).count(), 2)
 
 
 class CIImporterTest(TestCase):
@@ -155,42 +227,6 @@ class CIImporterTest(TestCase):
         # should not import puppet report which has 'unchanged' status
         self.assertEqual(
             CIChangePuppet.objects.filter(status='unchanged').count(), 0)
-
-    def test_fisheye(self):
-        """
-        Create Venture/Role and import as CI/CIRelations.
-        Now import fisheye xml from samples/* files and compare
-        if changes are properly saved into the database,
-        and reconcilated.
-        """
-        x = Venture(symbol='test_venture')
-        x.save()
-        y = VentureRole(name='test_role', venture=x)
-        y.save()
-        allegro_ci = CI(name='Allegro', type_id=CI_TYPES.VENTURE.id)
-        allegro_ci.save()
-        ct = ContentType.objects.get_for_model(x)
-        test_venture, = CIImporter().import_all_ci([ct], asset_id=x.id)
-        ct = ContentType.objects.get_for_model(y)
-        test_role, = CIImporter().import_all_ci([ct], asset_id=y.id)
-        CIImporter().import_relations(
-            ContentType.objects.get_for_model(y), asset_id=y.id)
-        with mock.patch(
-                'ralph.cmdb.integration.lib.fisheye.Fisheye') as Fisheye:
-            Fisheye.side_effect = MockFisheye
-            x = pgi(fisheye_class=Fisheye)
-            x.import_git()
-        self.assertEqual(CIChangeGit.objects.filter(
-            author__contains='johny.test@test.pl',
-            #file_paths__contains='/test_venture'
-        ).count(), 2)
-        self.assertEqual(CIChange.objects.filter(
-            ci=test_role,
-            type=CI_CHANGE_TYPES.CONF_GIT.id,
-        ).count(), 2)
-
-        #todo
-        # what if modified both core and venture?
 
     def test_import_devices(self):
         """
