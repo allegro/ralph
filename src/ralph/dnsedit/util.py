@@ -15,8 +15,8 @@ from lck.django.common import nested_commit_on_success
 from lck.django.common.models import MACAddressField
 from powerdns.models import Domain, Record
 
-from ralph.dnsedit.models import DHCPEntry
-from ralph.discovery.models import DeviceType
+from ralph.dnsedit.models import DHCPEntry, DHCPServer
+from ralph.discovery.models import DeviceType, Network
 
 
 HOSTNAME_CHUNK_PATTERN = re.compile(r'^([A-Z\d][A-Z\d-]{0,61}[A-Z\d]|[A-Z\d])$',
@@ -121,18 +121,25 @@ def _get_first_rev(ips):
     return ips[0] if ips else ''
 
 
-def generate_dhcp_config(dc=None):
+def generate_dhcp_config(dc=None, server_address=None):
     """Generate host DHCP configuration. If `dc` is provided, only yield hosts
     with addresses from networks of the specified DC.
 
     If given, `dc` must be of type DataCenter.
     """
+    server = None
+    if server_address:
+        try:
+            server = DHCPServer.objects.get(ip=server_address)
+        except DHCPServer.DoesNotExist:
+            pass
     template = loader.get_template('dnsedit/dhcp.conf')
     last_modified_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     for last in  DHCPEntry.objects.order_by('-modified'):
         last_modified_date = last.modified.strftime('%Y-%m-%d %H:%M:%S')
     if dc:
-        nets = {ipaddr.IPNetwork(net.address) for net in dc.network_set.all()}
+        networks = dc.network_set.all()
+        nets = {ipaddr.IPNetwork(network.address) for network in networks}
         def filter_ips(ips):
             for ip in ips:
                 ip_address = ipaddr.IPAddress(ip)
@@ -141,8 +148,18 @@ def generate_dhcp_config(dc=None):
                         yield ip
                         break
     else:
+        networks = Network.objects.all()
         def filter_ips(ips):
             return ips
+    def generate_networks():
+        for network in networks.exclude(dhcp_config=''):
+            net = ipaddr.IPNetwork(network.address)
+            yield (
+                network.name,
+                str(net.network),
+                str(net.netmask),
+                network.dhcp_config,
+            )
     def generate_entries():
         for macaddr, in DHCPEntry.objects.values_list('mac').distinct():
             ips = list(filter_ips(
@@ -157,6 +174,8 @@ def generate_dhcp_config(dc=None):
                                                    macaddr[1::2])).upper()
             yield name, address, mac
     c = Context({
+        'server_config': server.dhcp_config if server else '',
+        'networks': generate_networks(),
         'entries': generate_entries(),
         'last_modified_date': last_modified_date,
     })
