@@ -269,7 +269,7 @@ def _add_dev_cpu(pairs, parent, raw, counts, dev_id):
         speed=speed,
         cores=cores,
         name='CPU %s %d MHz, %s-core' % (family, speed, cores),
-        family=family or 'Unknown',
+        family=family,
         priority=SAVE_PRIORITY,
     )
     cpu.save(priority=SAVE_PRIORITY)
