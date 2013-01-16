@@ -74,7 +74,7 @@ def make_components(ilo, dev):
             ComponentType.processor,
             speed=speed,
             cores=cores,
-            family=family or 'Unknown',
+            family=family,
             name='CPU %s %dMHz, %s-core' % (family, speed, cores),
             priority=SAVE_PRIORITY,
         )
