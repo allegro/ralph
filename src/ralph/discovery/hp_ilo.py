@@ -257,11 +257,13 @@ class IloHost(object):
             f = urllib.urlopen(url, xml)
         except socket.error as e:
             raise ResponseError(str(e))
+
         def closer():
             try:
                 f.close()
             except:
                 pass
+
         threading.Timer(17, closer).start()
         try:
             return f.read()
