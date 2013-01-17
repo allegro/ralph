@@ -282,7 +282,7 @@ class ReportMargins(SidebarReports, Base):
                 mk.count, mk.count_now, devices = get_total_count(
                     q, start, end
                 )
-                mk.sim_margin = self.form.get('m_%d' % mk.id, 0) or 0
+                mk.sim_margin = self.form.get('m_%d' % mk.id) or 0
                 mk.sim_cost = (
                     (mk.total or 0) / (1 + mk.margin / 100) *
                     (1 + mk.sim_margin / 100)
