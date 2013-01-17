@@ -54,10 +54,7 @@ class DeploymentForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(DeploymentForm, self).__init__(*args, **kwargs)
         device = self.initial['device']
-        macs = sorted(
-            [e.mac for e in device.ethernet_set.all()],
-            key=lambda value: int(value, 16)
-        )
+        macs = [e.mac for e in device.ethernet_set.order_by('mac')]
         self.fields['mac'].widget.choices = [(mac, mac) for mac in macs]
         # all mac addresses have the same length - default sorting is enough
         dhcp_entries = DHCPEntry.objects.filter(mac__in=macs).order_by('mac')
