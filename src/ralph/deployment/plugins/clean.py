@@ -63,12 +63,13 @@ def do_clean(dev, user):
     # Set verified, undelete, and update remarks
     dev.verified = True
     dev.deleted = False
-    remark = "-- Remarks below are for old role %s/%s from %s --\n" % (
-        dev.venture.name if dev.venture else '-',
-        dev.venture_role.full_name if dev.venture_role else '-',
-        datetime.date.today().strftime('%Y-%m-%d'),
-    )
-    dev.remarks = remark + dev.remarks
+    if dev.remarks:
+        remark = "-- Remarks below are for old role %s/%s from %s --\n" % (
+            dev.venture.name if dev.venture else '-',
+            dev.venture_role.full_name if dev.venture_role else '-',
+            datetime.date.today().strftime('%Y-%m-%d'),
+        )
+        dev.remarks = remark + dev.remarks
     dev.save()
 
 

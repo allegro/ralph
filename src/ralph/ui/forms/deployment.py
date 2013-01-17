@@ -54,13 +54,22 @@ class DeploymentForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(DeploymentForm, self).__init__(*args, **kwargs)
         device = self.initial['device']
-        macs = [e.mac for e in device.ethernet_set.all()]
+        macs = [e.mac for e in device.ethernet_set.order_by('mac')]
         self.fields['mac'].widget.choices = [(mac, mac) for mac in macs]
-        ips = [e.ip for e in DHCPEntry.objects.filter(mac__in=macs)]
+        # all mac addresses have the same length - default sorting is enough
+        dhcp_entries = DHCPEntry.objects.filter(mac__in=macs).order_by('mac')
+        ips = [e.ip for e in dhcp_entries]
         self.fields['ip'].widget.choices = [(ip, ip) for ip in ips]
+        proposed_mac = macs[0] if macs else ''
+        proposed_ip = ips[0] if ips else ''
+        for dhcp_entry in dhcp_entries:
+            if dhcp_entry.mac in macs:
+                proposed_mac = dhcp_entry.mac
+                proposed_ip = dhcp_entry.ip
+                break
         self.initial.update({
-            'mac': macs[0] if macs else '',
-            'ip': ips[0] if ips else '',
+            'mac': proposed_mac,
+            'ip': proposed_ip,
             'venture': device.venture,
             'venture_role': device.venture_role,
             'preboot': (device.venture_role.get_preboot() if
