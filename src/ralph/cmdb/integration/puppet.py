@@ -182,21 +182,21 @@ class PuppetGitImporter(BaseImporter):
                 self.reconcilate(changeset)
 
     def find_venture(self, name):
+        """Returns first venture ci with given `name`"""
         try:
             return db.CI.get_by_content_object(
-                Venture.objects.filter(symbol=name)[0]
+                Venture.objects.get(symbol=name)
             )
-        except:
-            return None
+        except Venture.DoesNotExist:
+            pass
 
     def find_role(self, venture_ci, role):
-        try:
-            roles = [x.child for x in db.CIRelation.objects.filter(parent=venture_ci,
-                type=db.CI_RELATION_TYPES.HASROLE.id) if x.child.name == role]
-            if roles:
-                return roles[0]
-        except:
-            return None
+        """Returns first role of parent `venture_ci` with given `role` name"""
+        for relation in db.CIRelation.objects.filter(
+                parent=venture_ci,
+                type=db.CI_RELATION_TYPES.HASROLE.id,
+                child__name=role):
+            return relation.child
 
     def find_ci_by_venturerole(self, role):
         venture = role[0]
