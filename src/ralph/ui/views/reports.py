@@ -599,6 +599,7 @@ class ReportDevices(SidebarReports, Base):
             'name': 'report_devices',
             'url': None,
         }
+        ''' Filtering of the cross '''
         self.form_choice = DevicesChoiceReportForm(request)
         queries = {Q()}
         headers = ['Name']
@@ -651,7 +652,8 @@ class ReportDevices(SidebarReports, Base):
                 if no_rol:
                     row.append(dev.venture_role)
                 rows.append(row)
-            # Support Range
+        ''' Filtering of th range '''
+        # Support Range
         s_start = self.request.GET.get('s_start', None)
         s_end = self.request.GET.get('s_end', None)
         if s_start and s_end:
@@ -670,7 +672,7 @@ class ReportDevices(SidebarReports, Base):
                 's_start': datetime.date.today() - datetime.timedelta(days=30),
                 's_end': datetime.date.today(),
                 })
-            # Deprecation Range
+        # Deprecation Range
         d_start = self.request.GET.get('d_start', None)
         d_end = self.request.GET.get('d_end', None)
         if d_start and d_end:
@@ -689,7 +691,7 @@ class ReportDevices(SidebarReports, Base):
                 'd_start': datetime.date.today() - datetime.timedelta(days=30),
                 'd_end': datetime.date.today(),
                 })
-            # warranty_expiration_date Range
+        # warranty_expiration_date Range
         w_start = self.request.GET.get('w_start', None)
         w_end = self.request.GET.get('w_end', None)
         if w_start and w_end:
@@ -708,7 +710,7 @@ class ReportDevices(SidebarReports, Base):
                 'w_start': datetime.date.today() - datetime.timedelta(days=30),
                 'w_end': datetime.date.today(),
             })
-        ''' Show all devices (active and deleted) '''
+        ''' Show devices active or / and deleted '''
         self.device_list = ReportDeviceListForm(request)
         all_devices = request.get('show_all_devices')
         all_deleted_devices = request.get('show_all_deleted_devices')
