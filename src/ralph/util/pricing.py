@@ -23,8 +23,11 @@ def get_device_price(device):
     The quoted price, including all subtractions and additions from other
     devices.
     """
-    price = get_device_raw_price(device)
-    price += get_device_external_price(device)
+    if not device.deleted:
+        price = get_device_raw_price(device)
+        price += get_device_external_price(device)
+    else:
+        price = 0
     return max(0, price)
 
 
@@ -52,19 +55,27 @@ def get_device_external_price(device):
 
 
 def is_depreciated(device):
+    ''' Return True if device is depreciated '''
+
     if device.deprecation_date:
-        return True if device.deprecation_date < datetime.now() else False
+        today_midnight = datetime.combine(datetime.today(), time())
+        return True if device.deprecation_date < today_midnight else False
+    else:
+        return None
 
 
-def get_device_raw_price(device, ignore_depreciation = False):
+def get_device_raw_price(device, ignore_depreciation=False):
     """Purchase price of this device, before anything interacts with it."""
-    if not ignore_depreciation and is_depreciated(device):
+    if not device.deleted:
+        if not is_depreciated(device) or ignore_depreciation:
+            return device.price or get_device_auto_price(device)
+    else:
         return 0
-    return device.price or get_device_auto_price(device)
 
 
-def get_device_cost(device, ignore_depreciation = False):
+def get_device_cost(device, ignore_depreciation=False):
     """Return the monthly cost of this device."""
+
     price = get_device_price(device)
     if ignore_depreciation or not is_depreciated(device):
         cost = price / device.deprecation_kind.months
@@ -88,17 +99,26 @@ def get_device_additional_costs(device):
     return cost
 
 
-def get_device_chassis_price(device):
+def get_device_chassis_price(device, ignore_depreciation=False):
     """
     Part of the chassis price that should be added to the blade
     server's price.
     """
+
+    dep = ignore_depreciation
     if (device.model and device.model.group and device.model.group.slots and
         device.parent and device.parent.model and device.parent.model.group and
-        device.parent.model.group.slots):
-        chassis_price = (
-            device.model.group.slots * get_device_raw_price(device.parent) /
-            device.parent.model.group.slots)
+        device.parent.model.group.slots and not device.deleted):
+        device_price = get_device_raw_price(
+            device.parent, ignore_depreciation=dep
+        )
+        if device_price > 0:
+            chassis_price = (
+                device.model.group.slots *
+                get_device_raw_price(device.parent, ignore_depreciation=dep) /
+                device.parent.model.group.slots)
+        else:
+            chassis_price = 0
     else:
         chassis_price = 0
     return chassis_price
@@ -267,7 +287,8 @@ def device_update_cached(device):
         d.save()
 
 
-def details_dev(dev, purchase_only=False):
+def details_dev(dev, purchase_only=False, ignore_depreciation=False):
+    dep = ignore_depreciation
     yield {
         'label': 'Device',
         'model': dev.model,
@@ -285,7 +306,9 @@ def details_dev(dev, purchase_only=False):
     if dev.model.type == DeviceType.blade_system.id:
         for d in dev.child_set.all():
             if d.model.type == DeviceType.blade_server.id:
-                chassis_price = get_device_chassis_price(d)
+                chassis_price = get_device_chassis_price(
+                    d, ignore_depreciation=dep
+                )
                 if chassis_price:
                     yield {
                         'label': escape('Blade server %s' % d.name),
@@ -307,7 +330,9 @@ def details_dev(dev, purchase_only=False):
                         'device': d.id})
                 }
     elif dev.model.type == DeviceType.blade_server.id:
-        chassis_price = get_device_chassis_price(dev)
+        chassis_price = get_device_chassis_price(
+            dev, ignore_depreciation=dep
+        )
         if chassis_price:
             yield {
                 'label': '%s/%s of chassis' % (dev.model.group.slots,
@@ -548,8 +573,9 @@ def details_other(dev, purchase_only=False):
         }
 
 
-def details_all(dev, purchase_only=False):
-    for detail in details_dev(dev, purchase_only):
+def details_all(dev, purchase_only=False, ignore_depreciation=False):
+    dep = ignore_depreciation
+    for detail in details_dev(dev, purchase_only, ignore_depreciation=dep):
         detail['group'] = 'dev'
         yield detail
     for detail in details_cpu(dev, purchase_only):
