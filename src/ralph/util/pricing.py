@@ -565,4 +565,5 @@ def details_all(dev, purchase_only=False):
 
 
 def is_depreciated(device):
-    return True if device.deprecation_date < datetime.datetime.now() else False
+    if device.deprecation_date:
+        return True if device.deprecation_date < datetime.now() else False
