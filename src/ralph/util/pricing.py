@@ -51,21 +51,23 @@ def get_device_external_price(device):
     return price
 
 
-def get_device_raw_price(device):
+def is_depreciated(device):
+    if device.deprecation_date:
+        return True if device.deprecation_date < datetime.now() else False
+
+
+def get_device_raw_price(device, ignore_depreciation = False):
     """Purchase price of this device, before anything interacts with it."""
-    today_midnight = datetime.combine(datetime.today(), time())
-    if device.deprecation_date and today_midnight >= device.deprecation_date:
+    if not ignore_depreciation and is_depreciated(device):
         return 0
     return device.price or get_device_auto_price(device)
 
 
-def get_device_cost(device):
+def get_device_cost(device, ignore_depreciation = False):
     """Return the monthly cost of this device."""
-
     price = get_device_price(device)
-    deprecation_kind = device.get_deprecation_kind()
-    if deprecation_kind is not None:
-        cost = price / deprecation_kind.months
+    if ignore_depreciation or not is_depreciated(device):
+        cost = price / device.deprecation_kind.months
     else:
         cost = 0
     margin = device.get_margin() or 0
@@ -562,8 +564,3 @@ def details_all(dev, purchase_only=False):
     for detail in details_other(dev, purchase_only):
         detail['group'] = 'other'
         yield detail
-
-
-def is_depreciated(device):
-    if device.deprecation_date:
-        return True if device.deprecation_date < datetime.now() else False
