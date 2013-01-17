@@ -164,7 +164,27 @@ tr.table-highlight td {
     border-right: 1px solid silver;
     padding-right: 20px;
 }
+
 .align-right
 {
     text-align: right !important;
+}
+
+.reports-table-component
+{
+    margin-left: -6px;
+    margin-top: -4px;
+}
+
+.reports-table-component td:nth-child(2)
+{
+    width: 10%;
+    text-align: center;
+}
+
+.reports-table-component td:nth-child(3),
+.reports-table-component td:nth-child(4)
+{
+    width: 15%;
+    text-align: right;
 }

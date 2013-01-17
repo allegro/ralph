@@ -10,8 +10,6 @@ import textwrap
 
 from django.core.management.base import BaseCommand
 
-from ralph.dnsedit.util import generate_dhcp_config
-
 
 class Command(BaseCommand):
     """Generate configuration for the DHCP server."""
@@ -19,5 +17,8 @@ class Command(BaseCommand):
     help = textwrap.dedent(__doc__).strip()
     requires_model_validation = True
 
-    def handle(self, *args, **options):
-        print(generate_dhcp_config())
+    def handle(self, server_address=None, *args, **options):
+        # Avoid an import loop
+        from ralph.dnsedit.util import generate_dhcp_config
+        print(generate_dhcp_config(server_address=server_address))
+
