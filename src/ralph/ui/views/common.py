@@ -53,6 +53,7 @@ from ralph.ui.forms.addresses import (
     IPAddressFormSet,
     DNSFormSet,
 )
+from ralph.util.pricing import is_depreciated
 
 SAVE_PRIORITY = 200
 HISTORY_PAGE_SIZE = 25
@@ -78,8 +79,11 @@ def _get_balancers(dev):
             'port': vserv.port,
         }
 
-def _get_details(dev, purchase_only=False, with_price=False):
-    for detail in pricing.details_all(dev, purchase_only):
+def _get_details(dev, purchase_only=False, with_price=False, ignore_depreciation=False):
+    dep = ignore_depreciation
+    for detail in pricing.details_all(
+        dev, purchase_only, ignore_depreciation=dep
+    ):
         if 'icon' not in detail:
             if detail['group'] == 'dev':
                 detail['icon'] = presentation.get_device_model_icon(detail.get('model'))
@@ -436,13 +440,6 @@ class Components(DeviceDetailView):
             'components': _get_details(self.object, purchase_only=False),
         })
         return ret
-
-def is_depreciated(device):
-    if device.deprecation_date < datetime.datetime.now():
-        return True
-    else:
-        return False
-
 
 class Prices(DeviceUpdateView):
     form_class = DevicePricesForm
