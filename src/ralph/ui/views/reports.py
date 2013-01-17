@@ -39,7 +39,7 @@ from ralph.ui.forms.reports import (
     WarrantyRangeReportForm, DevicesChoiceReportForm,
     ReportVentureCost)
 from ralph.util import csvutil
-from ralph.util.pricing import is_depreciated, get_device_chassis_price
+from ralph.util.pricing import is_depreciated, get_device_chassis_price, get_device_auto_price
 
 def threshold(days):
     return datetime.date.today() + datetime.timedelta(days=days)
@@ -781,39 +781,66 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
         response['Content-Disposition'] = disposition
         return response
 
+
+    def is_bradesystem(self, component_type, component_group):
+        if component_type == 2 and  component_group == 7:
+            return True
+        return False
+
+    def is_diskshare(self, component_type):
+        if component_type == 7:
+            return True
+        return False
+
+
     def get_device_with_components(self, venture_devices, blacklist):
         devices = []
-        bladesystem = 202
-        diskshare = 7
         for device in venture_devices:
             all_components_price = 0
             components = []
-            for component in _get_details(device):
+            for component in _get_details(device, ignore_depreciation=True):
                 count = 1
                 model = component.get('model')
+
                 try:
                     component_type = model.type
                 except AttributeError:
                     component_type = None
+                try:
+                    component_group = model.group_id
+                except AttributeError:
+                    component_group = None
                 act_components = [x.get('name') for x in components]
                 if (model not in act_components and
                     component_type not in blacklist):
-                    if component_type == bladesystem:
-                        bs_count = device.parent.child_set.all().count()
+
+
+                    if self.is_bradesystem(component_type, component_group):
+                        bs_count = device.child_set.all().count() or 1
+                        chassis_price = get_device_chassis_price(device)
+                        auto_price = get_device_auto_price(device)
+                        bs_price = 0
+                        if device.price and device.price != 0:
+                            bs_price = device.price / bs_count
+                        elif chassis_price != 0:
+                            bs_price = chassis_price
+                        elif auto_price != 0:
+                            bs_price = auto_price / bs_count
+
+
                         components.append({
                             'icon': component.get('icon'),
                             'name': model,
-                            'price': get_device_chassis_price(device),
+                            'price': bs_price,
                             'count': count,
-                            'bs_count': bs_count or 1,
+                            'bs_count': bs_count,
                         })
 
 
 
 
-                    elif component_type == diskshare:
 
-
+                    elif self.is_diskshare(component_type):
                         components.append({
                             'icon': component.get('icon'),
                             'name': model,
