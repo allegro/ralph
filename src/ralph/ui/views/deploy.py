@@ -42,8 +42,9 @@ class Deployment(BaseMixin, CreateView):
         return [self.template_name]
 
     def get_initial(self):
+        self.device = Device.objects.get(id=int(self.kwargs['device']))
         return {
-            'device': Device.objects.get(id=int(self.kwargs['device'])),
+            'device': self.device,
         }
 
     def form_valid(self, form):
@@ -55,6 +56,17 @@ class Deployment(BaseMixin, CreateView):
             self.request.path + '/../../info/%d' % model.device.id
         )
 
+    def get_context_data(self, **kwargs):
+        if not self.device.verified:
+            messages.error(
+                self.request,
+                "{} - is not verified, you cannot "
+                "deploy this device".format(self.device),
+            )
+        return {
+            'form': kwargs['form'],
+            'device': self.device
+        }
 
 class PrepareMassDeployment(Base):
     template_name = 'ui/mass_deploy.html'
