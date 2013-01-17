@@ -74,7 +74,10 @@
                                         <td>
                                             <i class="fugue-icon {{ comp.icon }}"></i>&nbsp;{{ comp.name }}
                                         </td>
-                                        <td>{{ comp.count }}</td>
+                                        <td>
+                                            {{ comp.count }}
+                                            {% if comp.bs_count %}of {{ comp.bs_count }}{% endif %}
+                                        </td>
                                         <td>{% if comp.price == 0 %}N/A{% else %}{{ comp.price|currency }}{% endif %}</td>
                                     </tr>
                                 {% endfor %}
