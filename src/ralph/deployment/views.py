@@ -133,11 +133,14 @@ def preboot_complete_view(request):
             ip_address = deployment.device.ipaddress_set.get(
                 is_management=True,
             )
-            ip = ip_address.address
+            discover_single.apply_async(
+                args=[{'ip': ip_address.address}, ],
+                countdown=600,  # 10 minutes
+            )
         except IPAddress.DoesNotExist:
-            ip = deployment.ip
+            pass
         discover_single.apply_async(
-            args=[{'ip': ip}, ],
+            args=[{'ip': deployment.ip}, ],
             countdown=600,  # 10 minutes
         )
         deployment.archive()
