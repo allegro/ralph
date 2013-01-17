@@ -10,7 +10,6 @@ import re
 
 from django import forms
 from django.contrib import admin
-
 from lck.django.common.admin import ModelAdmin
 
 from ajax_select.fields import AutoCompleteSelectField
@@ -24,7 +23,7 @@ class GitPathMappingAdminForm(forms.ModelForm):
     class Meta:
         model = db.GitPathMapping
 
-    ci = AutoCompleteSelectField('ci', required=True)
+    ci = AutoCompleteSelectField('ci')
     occurences = forms.CharField(
         required=False,
         widget=ReadOnlyPreWidget(),
@@ -67,7 +66,7 @@ class GitPathMappingAdminForm(forms.ModelForm):
 
 class GitPathMappingAdmin(ModelAdmin):
     form = GitPathMappingAdminForm
-    list_display = ('ci','path', 'is_regex')
+    list_display = ('ci', 'path', 'is_regex')
     search_fields = ('ci', 'is_regex', 'path',)
     save_on_top = True
 

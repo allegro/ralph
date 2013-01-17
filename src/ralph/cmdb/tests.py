@@ -88,7 +88,7 @@ class CIChangeGitTest(TestCase):
         '0_types.yaml',
         '1_attributes.yaml',
         '2_layers.yaml',
-        '3_prefixes.yaml'
+        '3_prefixes.yaml',
     ]
 
     def setUp(self):
@@ -97,9 +97,9 @@ class CIChangeGitTest(TestCase):
         r = VentureRole(name='test_role', venture=v)
         r.save()
         # ci for custom path mapping
-        self.custom_ci = CI(name='test_custom', type_id=CI_TYPES.VENTURE.id)
-        self.custom_ci.save()
-        for i in (v, r):
+        c = Venture(symbol='custom_ci', name='custom_ci')
+        c.save()
+        for i in (v, r, c):
             CIImporter().import_single_object(i)
             CIImporter().import_single_object_relations(i)
 
@@ -116,22 +116,22 @@ class CIChangeGitTest(TestCase):
         GitPathMapping(
             is_regex=False,
             path='custom/test/file.xml',
-            ci=self.custom_ci,
+            ci=CI.objects.get(name='custom_ci'),
         ).save()
         self.load_fisheye_data()
         self.assertEqual(CIChangeGit.objects.filter(
-            ci=self.custom_ci).count(), 2)
+            ci__name='custom_ci').count(), 2)
 
     def test_fisheye_regex_mappings(self):
         """Check regex string mapping"""
         GitPathMapping(
             is_regex=True,
             path='.*custom.*regex.*\/file.xml',
-            ci=self.custom_ci,
+            ci=CI.objects.get(name='custom_ci'),
         ).save()
         self.load_fisheye_data()
         self.assertEqual(CIChangeGit.objects.filter(
-            ci=self.custom_ci).count(), 2)
+            ci__name='custom_ci').count(), 2)
 
     def test_fisheye_no_mappings(self):
         self.load_fisheye_data()
