@@ -304,7 +304,7 @@ def details_dev(dev, purchase_only=False, ignore_depreciation=False):
     if dev.model is None:
         return
     if dev.model.type == DeviceType.blade_system.id:
-        for d in dev.child_set.all():
+        for d in dev.child_set.filter(deleted=False):
             if d.model.type == DeviceType.blade_server.id:
                 chassis_price = get_device_chassis_price(
                     d, ignore_depreciation=dep

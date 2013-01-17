@@ -816,7 +816,7 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
 
 
                     if self.is_bradesystem(component_type, component_group):
-                        bs_count = device.child_set.all().count() or 1
+                        bs_count = device.child_set.filter(deleted=False).count() or 1
                         chassis_price = get_device_chassis_price(device)
                         auto_price = get_device_auto_price(device)
                         bs_price = 0
