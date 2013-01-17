@@ -39,7 +39,7 @@ from ralph.ui.forms.reports import (
     WarrantyRangeReportForm, DevicesChoiceReportForm,
     ReportVentureCost)
 from ralph.util import csvutil
-from ralph.util.pricing import get_device_auto_price
+from ralph.util.pricing import is_depreciated, get_device_chassis_price
 
 def threshold(days):
     return datetime.date.today() + datetime.timedelta(days=days)
@@ -783,6 +783,8 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
 
     def get_device_with_components(self, venture_devices, blacklist):
         devices = []
+        bladesystem = 202
+        diskshare = 7
         for device in venture_devices:
             all_components_price = 0
             components = []
@@ -792,16 +794,46 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
                 try:
                     component_type = model.type
                 except AttributeError:
-                    pass
+                    component_type = None
                 act_components = [x.get('name') for x in components]
                 if (model not in act_components and
                     component_type not in blacklist):
-                    components.append({
-                        'icon': component.get('icon'),
-                        'name': model,
-                        'price': component.get('price') or 0,
-                        'count': count,
+                    if component_type == bladesystem:
+                        bs_count = device.parent.child_set.all().count()
+                        components.append({
+                            'icon': component.get('icon'),
+                            'name': model,
+                            'price': get_device_chassis_price(device),
+                            'count': count,
+                            'bs_count': bs_count or 1,
                         })
+
+
+
+
+                    elif component_type == diskshare:
+
+
+                        components.append({
+                            'icon': component.get('icon'),
+                            'name': model,
+                            'price': component.get('price') or 0,
+                            'count': component.get('count') or 1,
+                        })
+
+
+
+
+                    else:
+
+                        components.append({
+                            'icon': component.get('icon'),
+                            'name': model,
+                            'price': component.get('price') or 0,
+                            'count': count,
+                        })
+
+
                 else:
                     for c in components:
                         if c.get('name') == model:
@@ -813,8 +845,12 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
                 total_component = price * count
                 component['total_component'] = total_component
                 all_components_price += total_component
+
+
+
             devices.append({
                 'device': device,
+                'depreciated': is_depreciated(device),
                 'price': all_components_price,
                 'components': components
             })
