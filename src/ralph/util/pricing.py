@@ -42,7 +42,9 @@ def get_device_external_price(device):
     if device.model and device.model.type == DeviceType.blade_system.id:
         # Subtract the prices taken by blades
         for d in device.child_set.filter(
-                model__type=DeviceType.blade_server.id):
+                model__type=DeviceType.blade_server.id,
+                deleted=False
+            ):
             price -= get_device_chassis_price(d)
     elif device.model and device.model.type == DeviceType.blade_server.id:
         # Add the price taken from the blade system
@@ -129,7 +131,10 @@ def get_device_virtuals_price(device):
 
     price = math.fsum(
         get_device_price(dev) for dev in
-        device.child_set.filter(model__type=DeviceType.virtual_server.id))
+        device.child_set.filter(
+            model__type=DeviceType.virtual_server.id,
+            deleted=False)
+        )
     return price
 
 
@@ -269,7 +274,7 @@ def device_update_cached(device):
     while stack:
         device = stack.pop()
         devices.append(device)
-        for d in device.child_set.all():
+        for d in device.child_set.filter(deleted=False):
             if d in visited:
                 # Make sure we don't do the same device twice.
                 continue
