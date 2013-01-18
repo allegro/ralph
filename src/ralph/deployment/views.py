@@ -7,13 +7,19 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from django.conf import settings
-from django.http import (HttpResponse, HttpResponseNotFound,
-    HttpResponseForbidden)
+from django.http import (
+    HttpResponse,
+    HttpResponseNotFound,
+)
 from django.template import Template, Context
 from lck.django.common import remote_addr, render
 
-from ralph.deployment.models import (Deployment, DeploymentStatus, FileType,
-    PrebootFile)
+from ralph.deployment.models import (
+    Deployment,
+    DeploymentStatus,
+    FileType,
+    PrebootFile,
+)
 from ralph.discovery.models import IPAddress
 from ralph.discovery.tasks import discover_single
 
@@ -53,8 +59,10 @@ def get_response(pbf, deployment):
         else:
             # FIXME: in Django 1.5 use StreamingHttpResponse
             with open(pbf.file.path) as file:
-                response = HttpResponse(file.read(),
-                    content_type='application/force-download')
+                response = HttpResponse(
+                    file.read(),
+                    content_type='application/force-download'
+                )
         response['Content-Length'] = pbf.file.size
     else:
         raw_config = pbf.raw_config.replace('\r\n', '\n').replace('\r', '\n')
@@ -82,11 +90,15 @@ def preboot_raw_view(request, file_name):
         pbf = deployment.preboot.files.get(name=file_name)
         return get_response(pbf, deployment)
     except (AttributeError, Deployment.DoesNotExist, PrebootFile.DoesNotExist,
-        PrebootFile.MultipleObjectsReturned):
+            PrebootFile.MultipleObjectsReturned):
         pass
     if file_name in ('boot', 'boot_ipxe', 'boot.ipxe'):
-        return render(request, 'deployment/localboot.txt', locals(),
-            mimetype='text/plain')
+        return render(
+            request,
+            'deployment/localboot.txt',
+            locals(),
+            mimetype='text/plain'
+        )
     return HttpResponseNotFound()
 
 
@@ -100,11 +112,15 @@ def preboot_type_view(request, file_type):
         pbf = deployment.preboot.files.get(ftype=ftype)
         return get_response(pbf, deployment)
     except (AttributeError, Deployment.DoesNotExist, PrebootFile.DoesNotExist,
-        PrebootFile.MultipleObjectsReturned):
+            PrebootFile.MultipleObjectsReturned):
         pass
     if ftype is FileType.boot_ipxe:
-        return render(request, 'deployment/localboot.txt', locals(),
-            mimetype='text/plain')
+        return render(
+            request,
+            'deployment/localboot.txt',
+            locals(),
+            mimetype='text/plain'
+        )
     return HttpResponseNotFound()
 
 
@@ -117,13 +133,17 @@ def preboot_complete_view(request):
             ip_address = deployment.device.ipaddress_set.get(
                 is_management=True,
             )
-            ip = ip_address.address
+            discover_single.apply_async(
+                args=[{'ip': ip_address.address}, ],
+                countdown=600,  # 10 minutes
+            )
         except IPAddress.DoesNotExist:
-            ip = deployment.ip
+            pass
         discover_single.apply_async(
-            args=[{'ip': ip}, ],
+            args=[{'ip': deployment.ip}, ],
             countdown=600,  # 10 minutes
         )
+        deployment.archive()
         return HttpResponse()
     except Deployment.DoesNotExist:
         return HttpResponseNotFound('No deployment can be completed at this '
