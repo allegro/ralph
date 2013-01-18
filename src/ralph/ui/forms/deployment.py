@@ -12,6 +12,7 @@ import ipaddr
 from bob.forms import AutocompleteWidget
 from django import forms
 from lck.django.common.models import MACAddressField
+from powerdns.models import Record
 
 from ralph.business.models import Venture, VentureRole
 from ralph.deployment.models import Deployment, Preboot
@@ -27,7 +28,7 @@ from ralph.deployment.util import (
 from ralph.discovery.models import Device, Network
 from ralph.discovery.models_component import is_mac_valid
 from ralph.dnsedit.models import DHCPEntry
-from ralph.dnsedit.util import is_valid_hostname
+from ralph.dnsedit.util import is_valid_hostname, get_ip_addresses
 from ralph.ui.widgets import DeviceWidget
 from ralph.util import Eth
 from ralph.util.csvutil import UnicodeReader
@@ -226,11 +227,32 @@ class PrepareMassDeploymentForm(forms.Form):
         return csv_string
 
 
-def _validate_hostname(hostname, parsed_hostnames, row_number):
-    if hostname_exists(hostname):
-        raise forms.ValidationError(
-            "Row %s: Hostname already exists." % row_number
+def _validate_hostname(hostname, mac, parsed_hostnames, row_number):
+    mac = MACAddressField.normalize(mac)
+    try:
+        dev = Device.admin_objects.get(ethernet__mac=mac)
+    except Device.DoesNotExist:
+        if hostname_exists(hostname):
+            raise forms.ValidationError(
+                "Row %s: Hostname already exists." % row_number
+            )
+    else:
+        ip_addresses = list(
+            dev.ipaddress_set.values_list('address', flat=True)
         )
+        ip_addresses_in_dns = get_ip_addresses(hostname)
+        for ip in ip_addresses_in_dns:
+            if ip not in ip_addresses:
+                raise forms.ValidationError(
+                    "Row %s: Using an old device %s failed. "
+                    "Exists A or PTR records in DNS which are not assigned "
+                    "to device IP addresses." % (row_number, dev)
+                )
+        if Deployment.objects.filter(hostname=hostname).exists():
+            raise forms.ValidationError(
+                "Row %s: Running deployment with hostname: %s already "
+                "exists." % (row_number, hostname)
+            )
     if hostname in parsed_hostnames:
         raise forms.ValidationError(
             "Row %s: Duplicated hostname. "
@@ -301,8 +323,11 @@ class MassDeploymentForm(forms.Form):
         for row_number, cols in enumerate(rows, start=1):
             _validate_cols_count(9, cols, row_number)
             _validate_cols_not_empty(cols, row_number)
+            mac = cols[3].strip()
+            _validate_mac(mac, parsed_macs, row_number)
+            parsed_macs.add(mac)
             hostname = cols[0].strip()
-            _validate_hostname(hostname, parsed_hostnames, row_number)
+            _validate_hostname(hostname, mac, parsed_hostnames, row_number)
             parsed_hostnames.add(hostname)
             network_name = cols[5].strip()
             try:
@@ -332,12 +357,9 @@ class MassDeploymentForm(forms.Form):
                     "network '%s'." % (row_number, rack_sn, network.name)
                 )
             ip = cols[1].strip()
-            mac = cols[3].strip()
             _validate_ip_address(ip, network, parsed_ip_addresses, row_number)
             _validate_ip_owner(ip, mac, row_number)
             parsed_ip_addresses.add(ip)
-            _validate_mac(mac, parsed_macs, row_number)
-            parsed_macs.add(mac)
             management_ip = cols[4].strip()
             _validate_management_ip(management_ip, row_number)
             try:
