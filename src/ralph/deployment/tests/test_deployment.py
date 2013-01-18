@@ -13,7 +13,7 @@ from ralph.discovery.models import (
     NetworkTerminator, IPAddress, Ethernet,
 )
 from ralph.business.models import Venture, VentureRole
-from ralph.deployment.models import Deployment, ArchiveDeployment
+from ralph.deployment.models import Deployment, ArchivedDeployment
 from ralph.deployment.util import (
     get_next_free_hostname, get_first_free_ip, _create_device
 )
@@ -87,7 +87,7 @@ class DeploymentTest(TestCase):
             if field.name == 'mac':
                 data[field.name] = MACAddressField.normalize(data[field.name])
         self.deployment.archive()
-        archive = ArchiveDeployment.objects.get(pk=id)
+        archive = ArchivedDeployment.objects.get(pk=id)
         archive_data = {}
         for field in archive._meta.fields:
             archive_data[field.name] = getattr(archive, field.name)

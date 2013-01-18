@@ -177,7 +177,7 @@ class AbstractDeployment(db.Model):
         )
 
 
-class ArchiveDeployment(AbstractDeployment, TimeTrackable):
+class ArchivedDeployment(AbstractDeployment, TimeTrackable):
     hostname = db.CharField(
         _("hostname"),
         max_length=255,
@@ -185,11 +185,12 @@ class ArchiveDeployment(AbstractDeployment, TimeTrackable):
     )
 
     class Meta:
-        verbose_name = _("archive deployment")
-        verbose_name_plural = _("archive deployments")
+        verbose_name = _("archived deployment")
+        verbose_name_plural = _("archived deployments")
+        ordering = ('-created',)
 
     def __unicode__(self):
-        return "{} as {}/{} - {} (archive)".format(
+        return "{} as {}/{} - {} (archived)".format(
             self.hostname,
             self.venture.path if self.venture else '-',
             self.venture_role.path if self.venture_role else '-',
@@ -207,6 +208,7 @@ class Deployment(AbstractDeployment, TimeTrackable):
     class Meta:
         verbose_name = _("deployment")
         verbose_name_plural = _("deployments")
+        ordering = ('-created',)
 
     def save(self, *args, **kwargs):
         if self.status_changed():
@@ -220,7 +222,7 @@ class Deployment(AbstractDeployment, TimeTrackable):
         data = {}
         for field in self._meta.fields:
             data[field.name] = getattr(self, field.name)
-        ArchiveDeployment.objects.create(**data)
+        ArchivedDeployment.objects.create(**data)
         self.delete()
 
     def __unicode__(self):
