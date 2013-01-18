@@ -257,11 +257,13 @@ class IloHost(object):
             f = urllib.urlopen(url, xml)
         except socket.error as e:
             raise ResponseError(str(e))
+
         def closer():
             try:
                 f.close()
             except:
                 pass
+
         threading.Timer(17, closer).start()
         try:
             return f.read()
@@ -437,13 +439,13 @@ class IloHost(object):
                 ''.join(fields.get("Execution Technology", [])),
                 ''.join(fields.get("Memory Technology", [])),
             ])
-            family = int(''.join(fields.get("Family", [])) or 0)
+            family = int(''.join(fields["Family"]))
             yield (
                 fields['Label'][0],
                 speed,
                 cores,
                 extra,
-                CPU_FAMILY.get(family)
+                CPU_FAMILY[family],
             )
 
     def _raw_to_tree(self, raw):
