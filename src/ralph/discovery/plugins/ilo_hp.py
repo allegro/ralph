@@ -14,8 +14,15 @@ from lck.django.common import nested_commit_on_success
 
 from ralph.util import plugin, Eth
 from ralph.discovery import hp_ilo
-from ralph.discovery.models import (Device, Processor, Memory,
-        IPAddress, ComponentModel, ComponentType, DeviceType)
+from ralph.discovery.models import (
+    ComponentModel,
+    ComponentType,
+    Device,
+    DeviceType,
+    IPAddress,
+    Memory,
+    Processor,
+)
 
 
 ILO_USER, ILO_PASSWORD = settings.ILO_USER, settings.ILO_PASSWORD
@@ -30,13 +37,13 @@ def make_device(ilo, ip):
         t = DeviceType.rack_server
     ethernets = [Eth(label, mac, speed=None) for label, mac in ilo.ethernets]
     dev = Device.create(
-            ethernets=ethernets,
-            model_name=ilo.model,
-            model_type=t,
-            sn=ilo.sn,
-            name=ilo.name,
-            mgmt_firmware=ilo.firmware,
-        )
+        ethernets=ethernets,
+        model_name=ilo.model,
+        model_type=t,
+        sn=ilo.sn,
+        name=ilo.name,
+        mgmt_firmware=ilo.firmware,
+    )
     dev.save(update_last_seen=True, priority=SAVE_PRIORITY)
 
     ipaddr, created = IPAddress.concurrent_get_or_create(address=ip)
@@ -51,6 +58,7 @@ def make_device(ilo, ip):
     dev.save(priority=SAVE_PRIORITY)
 
     return dev
+
 
 def make_components(ilo, dev):
     for i, (label, size, speed) in enumerate(ilo.memories):
@@ -74,11 +82,12 @@ def make_components(ilo, dev):
             ComponentType.processor,
             speed=speed,
             cores=cores,
-            family=family or 'Unknown',
+            family=family,
             name='CPU %s %dMHz, %s-core' % (family, speed, cores),
             priority=SAVE_PRIORITY,
         )
         cpu.save(priority=SAVE_PRIORITY)
+
 
 @nested_commit_on_success
 def _run_ilo(ip):
@@ -87,6 +96,7 @@ def _run_ilo(ip):
     dev = make_device(ilo, ip)
     make_components(ilo, dev)
     return dev.name
+
 
 @plugin.register(chain='discovery', requires=['ping', 'http'])
 def ilo_hp(**kwargs):
@@ -100,4 +110,3 @@ def ilo_hp(**kwargs):
     except (hp_ilo.Error, ssl.SSLError) as e:
         return False, str(e), kwargs
     return True, name, kwargs
-
