@@ -8,8 +8,8 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding model 'ArchiveDeployment'
-        db.create_table('deployment_archivedeployment', (
+        # Adding model 'ArchivedDeployment'
+        db.create_table('deployment_archiveddeployment', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('created', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
             ('modified', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
@@ -28,12 +28,12 @@ class Migration(SchemaMigration):
             ('mass_deployment', self.gf('django.db.models.fields.related.ForeignKey')(default=None, to=orm['deployment.MassDeployment'], null=True, on_delete=models.SET_NULL, blank=True)),
             ('hostname', self.gf('django.db.models.fields.CharField')(max_length=255)),
         ))
-        db.send_create_signal('deployment', ['ArchiveDeployment'])
+        db.send_create_signal('deployment', ['ArchivedDeployment'])
 
 
     def backwards(self, orm):
-        # Deleting model 'ArchiveDeployment'
-        db.delete_table('deployment_archivedeployment')
+        # Deleting model 'ArchivedDeployment'
+        db.delete_table('deployment_archiveddeployment')
 
 
     models = {
@@ -121,8 +121,8 @@ class Migration(SchemaMigration):
             'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
         },
-        'deployment.archivedeployment': {
-            'Meta': {'object_name': 'ArchiveDeployment'},
+        'deployment.archiveddeployment': {
+            'Meta': {'ordering': "(u'-created',)", 'object_name': 'ArchivedDeployment'},
             'cache_version': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
             'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'device': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['discovery.Device']"}),
@@ -142,7 +142,7 @@ class Migration(SchemaMigration):
             'venture_role': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['business.VentureRole']", 'null': 'True', 'on_delete': 'models.SET_NULL'})
         },
         'deployment.deployment': {
-            'Meta': {'object_name': 'Deployment'},
+            'Meta': {'ordering': "(u'-created',)", 'object_name': 'Deployment'},
             'cache_version': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
             'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'device': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['discovery.Device']"}),
@@ -319,8 +319,10 @@ class Migration(SchemaMigration):
             'cache_version': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
             'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'data_center': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['discovery.DataCenter']"}),
+            'dhcp_config': ('django.db.models.fields.TextField', [], {'default': "u''", 'blank': 'True'}),
             'gateway': ('django.db.models.fields.IPAddressField', [], {'default': 'None', 'max_length': '15', 'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'ignore_addresses': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'kind': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': "orm['discovery.NetworkKind']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
             'max_ip': ('django.db.models.fields.PositiveIntegerField', [], {'default': 'None', 'null': 'True', 'blank': 'True'}),
             'min_ip': ('django.db.models.fields.PositiveIntegerField', [], {'default': 'None', 'null': 'True', 'blank': 'True'}),
