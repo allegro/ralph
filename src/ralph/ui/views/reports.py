@@ -26,6 +26,7 @@ from ralph.cmdb.models_ci import (
     CI, CIRelation, CI_STATE_TYPES, CI_RELATION_TYPES, CI_TYPES
 )
 from ralph.deployment.models import DeploymentStatus
+from ralph.discovery.models_component import Memory, OperatingSystem, Software, FibreChannel, Storage, Processor, Component, GenericComponent
 from ralph.discovery.models_device import MarginKind, DeviceType, Device
 from ralph.discovery.models_history import HistoryCost
 from ralph.ui.forms import DateRangeForm, MarginsReportForm
@@ -39,7 +40,12 @@ from ralph.ui.forms.reports import (
     WarrantyRangeReportForm, DevicesChoiceReportForm,
     ReportVentureCost)
 from ralph.util import csvutil
-from ralph.util.pricing import is_depreciated, get_device_chassis_price, get_device_auto_price
+from ralph.util.pricing import (
+    is_depreciated, get_device_chassis_price, get_device_auto_price,
+    get_device_local_storage_price, get_device_memory_price,
+    get_device_cpu_price, get_device_components_price, get_device_fc_price,
+    get_device_software_price, get_device_operatingsystem_price
+)
 
 def threshold(days):
     return datetime.date.today() + datetime.timedelta(days=days)
@@ -783,9 +789,10 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
 
 
     def is_bradesystem(self, component_type, component_group):
-        if component_type == 2 and  component_group == 7:
+        if component_type == 2 and component_group in [7, 23]:
             return True
         return False
+
 
     def is_diskshare(self, component_type):
         if component_type == 7:
@@ -801,22 +808,20 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
             for component in _get_details(device, ignore_depreciation=True):
                 count = 1
                 model = component.get('model')
-
+                import pdb
+                pdb.set_trace()
                 try:
                     component_type = model.type
-                except AttributeError:
-                    component_type = None
-                try:
                     component_group = model.group_id
                 except AttributeError:
                     component_group = None
+                    component_type = None
                 act_components = [x.get('name') for x in components]
                 if (model not in act_components and
                     component_type not in blacklist):
-
-
                     if self.is_bradesystem(component_type, component_group):
-                        bs_count = device.child_set.filter(deleted=False).count() or 1
+                        bs_count = device.child_set.filter(
+                            deleted=False).count() or 1
                         chassis_price = get_device_chassis_price(device)
                         auto_price = get_device_auto_price(device)
                         bs_price = 0
@@ -826,8 +831,6 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
                             bs_price = chassis_price
                         elif auto_price != 0:
                             bs_price = auto_price / bs_count
-
-
                         components.append({
                             'icon': component.get('icon'),
                             'name': model,
@@ -835,11 +838,6 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
                             'count': count,
                             'bs_count': bs_count,
                         })
-
-
-
-
-
                     elif self.is_diskshare(component_type):
                         components.append({
                             'icon': component.get('icon'),
@@ -847,18 +845,33 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
                             'price': component.get('price') or 0,
                             'count': component.get('count') or 1,
                         })
-
-
-
-
                     else:
-
                         components.append({
                             'icon': component.get('icon'),
                             'name': model,
                             'price': component.get('price') or 0,
                             'count': count,
                         })
+#                        price = 0
+#
+#                        if component_type == 2:
+#                            price = get_device_memory_price(device)
+#                        elif component_type == 1:
+#                            price = get_device_cpu_price(device)
+#                        elif component_type == 3:
+#                            price = get_device_local_storage_price(device)
+#                        elif component_type == 6:
+#                            price = get_device_fc_price(device)
+#                        elif component_type == 15:
+#                            price = get_device_software_price(device)
+#                        elif component_type == 16:
+#                            price = get_device_operatingsystem_price(device)
+#                        elif model:
+#                            price = get_device_components_price(device)
+#                        else:
+#                            price = component.get('price') or 0
+#                        import pdb
+#                        pdb.set_trace()
 
 
                 else:
@@ -872,8 +885,6 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
                 total_component = price * count
                 component['total_component'] = total_component
                 all_components_price += total_component
-
-
 
             devices.append({
                 'device': device,
