@@ -129,6 +129,12 @@ class CIChangeGit(TimeTrackable):
         verbose_name=_("timestamp"), null=True, blank=True)
 
 
+class GitPathMapping(TimeTrackable):
+    ci = models.ForeignKey('CI')
+    path = models.CharField(max_length=1024)
+    is_regex = models.BooleanField()
+
+
 class CIChangePuppet(TimeTrackable):
     ci = models.ForeignKey('CI', null=True)
     configuration_version = models.CharField(max_length=30, db_index=True)
