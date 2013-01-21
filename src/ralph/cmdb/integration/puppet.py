@@ -18,13 +18,13 @@ from ralph.cmdb import models as db
 from ralph.cmdb.integration.base import BaseImporter
 from ralph.cmdb.integration.util import strip_timezone
 
-
 from lck.django.common import nested_commit_on_success
 
 logger = logging.getLogger(__name__)
 
+
 class PuppetAgentsImporter(BaseImporter):
-    """ Every Puppet host after applying configurations sends yaml textfile report to
+    """Every Puppet host after applying configurations sends yaml textfile report to
     the puppet master server. We hook into this request on the puppet master server
     and parse requests. Only changed hosts are written into the database. """
 
@@ -117,8 +117,7 @@ host=%s
 status=%s
 level=%s
 message=%s
-time=%s'''  % ( title(), host, status, level, message, time))
-
+time=%s'''  % (title(), host, status, level, message, time))
 
 
 class PuppetGitImporter(BaseImporter):
@@ -137,11 +136,7 @@ class PuppetGitImporter(BaseImporter):
         return (True, 'Done', context)
 
     def is_imported(self, changeset):
-        objects = db.CIChangeGit.objects.filter(changeset=changeset).count()
-        if objects>0:
-            return True
-        else:
-            return False
+        return db.CIChangeGit.objects.filter(changeset=changeset).exists()
 
     @nested_commit_on_success
     def import_changeset(self, changeset):
@@ -179,7 +174,6 @@ class PuppetGitImporter(BaseImporter):
             ch.save()
 
     def import_git(self):
-        self.core_ci = db.CI.objects.filter(name='Allegro')[0]
         ret = self.fisheye.get_changes()
         for changeset in ret.getchildren():
             if not self.is_imported(changeset):
@@ -188,19 +182,21 @@ class PuppetGitImporter(BaseImporter):
                 self.reconcilate(changeset)
 
     def find_venture(self, name):
+        """Returns first venture ci with given `name`"""
         try:
-            return db.CI.get_by_content_object(Venture.objects.filter(symbol=name)[0])
-        except:
-            return None
+            return db.CI.get_by_content_object(
+                Venture.objects.get(symbol=name)
+            )
+        except Venture.DoesNotExist:
+            pass
 
     def find_role(self, venture_ci, role):
-        try:
-            roles = [x.child for x in db.CIRelation.objects.filter(parent=venture_ci,
-                type=db.CI_RELATION_TYPES.HASROLE.id) if x.child.name == role]
-            if roles:
-                return roles[0]
-        except:
-            return None
+        """Returns first role of parent `venture_ci` with given `role` name"""
+        for relation in db.CIRelation.objects.filter(
+                parent=venture_ci,
+                type=db.CI_RELATION_TYPES.HASROLE.id,
+                child__name=role):
+            return relation.child
 
     def find_ci_by_venturerole(self, role):
         venture = role[0]
@@ -221,25 +217,34 @@ class PuppetGitImporter(BaseImporter):
         else:
             return r
 
+    def get_ci_by_path_mapping(self, path):
+        """Return first successfull ci mapped to this path"""
+        for mapping in db.GitPathMapping.objects.all():
+            if mapping.is_regex:
+                compiled = re.compile(mapping.path)
+                if compiled.match(path):
+                    return mapping.ci
+            else:
+                if path in mapping.path:
+                    return mapping.ci
+
     def get_ci_by_path(self, paths):
         ventures_1 = re.compile('modules/ventures/([^\/]+)/files/(.*)')
         ventures_2 = re.compile('modules/ventures/([^\/]+)/manifests/(.*)')
-        core = re.compile('modules/(core)/')
-        for f in paths:
+        for path in paths:
             groups = None
-            if ventures_1.match(f):
-                groups = ventures_1.match(f).groups()
+            if ventures_1.match(path):
+                groups = ventures_1.match(path).groups()
                 ci = self.find_ci_by_venturerole(groups)
                 if ci:
                     return ci
-            elif ventures_2.match(f):
-                groups = ventures_2.match(f).groups()
+            elif ventures_2.match(path):
+                groups = ventures_2.match(path).groups()
                 ci = self.find_ci_by_venturerole(groups)
                 if ci:
                     return ci
-            elif core.match(f):
-                groups = core.match(f).groups()
-                return self.core_ci
-        return None
-
+            else:
+                ci = self.get_ci_by_path_mapping(path)
+                if ci:
+                    return ci
 
