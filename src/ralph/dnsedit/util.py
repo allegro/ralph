@@ -197,6 +197,24 @@ def get_revdns_records(ip):
     return Record.objects.filter(name=revname, type='PTR')
 
 
+def find_addresses_for_hostname(hostname):
+    rev_ips = {
+        '.'.join(reversed(r.name.split('.', 4)[:4]))
+        for r in Record.objects.filter(
+            type='PTR',
+            content=hostname,
+        )
+    }
+    ips = {
+        r.content
+        for r in Record.objects.filter(
+            type='A',
+            name=hostname,
+        )
+    }
+    return ips | rev_ips
+
+
 @nested_commit_on_success
 def set_revdns_record(ip, name, ttl=None, prio=None, overwrite=False,
                       create=False):
