@@ -15,12 +15,13 @@ from lck.django.common.models import Named, TimeTrackable
 from lck.django.common.models import WithConcurrentGetOrCreate
 from dj.choices import Choices
 from dj.choices.fields import ChoiceField
-from django.db.models.signals import post_save, pre_delete
+from django.db.models.signals import pre_save, post_save, pre_delete
 from django.dispatch import receiver
 
+from ralph.discovery.history import field_changes as _field_changes
 from ralph.discovery.models import DataCenter
-from ralph.discovery.models_history import HistoryCost
-
+from ralph.discovery.models_history import HistoryCost, HistoryChange
+from ralph.discovery.models_util import SavingUser
 from ralph.cmdb.models_ci import CI, CIOwner, CIOwnershipType, CIOwnership
 
 SYNERGY_URL_BASE = settings.SYNERGY_URL_BASE
@@ -248,11 +249,21 @@ class RoleProperty(db.Model):
         verbose_name_plural = _("properties")
 
 
-class RolePropertyValue(db.Model, WithConcurrentGetOrCreate):
-    property = db.ForeignKey(RoleProperty, verbose_name=_("property"), null=True,
-        blank=True, default=None)
-    device = db.ForeignKey('discovery.Device', verbose_name=_("property"), null=True,
-        blank=True, default=None)
+class RolePropertyValue(TimeTrackable, WithConcurrentGetOrCreate, SavingUser):
+    property = db.ForeignKey(
+        RoleProperty,
+        verbose_name=_("property"),
+        null=True,
+        blank=True,
+        default=None,
+    )
+    device = db.ForeignKey(
+        'discovery.Device',
+        verbose_name=_("property"),
+        null=True,
+        blank=True,
+        default=None,
+    )
     value = db.TextField(verbose_name=_("value"), null=True, default=None)
 
     class Meta:
@@ -354,3 +365,26 @@ def cost_post_save(sender, instance, raw, using, **kwargs):
 @receiver(pre_delete, sender=VentureExtraCost, dispatch_uid='ralph.costhistory')
 def cost_pre_delete(sender, instance, using, **kwargs):
     HistoryCost.end_span(extra=instance)
+
+
+@receiver(pre_save, sender=RolePropertyValue, dispatch_uid='ralph.history')
+def role_property_value_pre_save(sender, instance, raw, using, **kwargs):
+    for field, orig, new in _field_changes(instance):
+        HistoryChange.objects.create(
+            device=instance.device,
+            field_name="%s (property)" % instance.property.symbol,
+            old_value=unicode(orig),
+            new_value=unicode(new),
+            user=instance.saving_user,
+        )
+
+
+@receiver(pre_delete, sender=RolePropertyValue, dispatch_uid='ralph.history')
+def role_property_value_pre_delete(sender, instance, using, **kwargs):
+    HistoryChange.objects.create(
+        device=instance.device,
+        field_name="%s (property)" % instance.property.symbol,
+        old_value=instance.value,
+        new_value='None',
+    )
+
