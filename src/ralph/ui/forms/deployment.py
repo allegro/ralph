@@ -35,6 +35,7 @@ from ralph.dnsedit.util import (
     find_addresses_for_hostname,
     get_revdns_records,
     get_domain,
+    get_ip_addresses,
 )
 from ralph.ui.widgets import DeviceWidget
 from ralph.util import Eth
@@ -63,13 +64,22 @@ class DeploymentForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(DeploymentForm, self).__init__(*args, **kwargs)
         device = self.initial['device']
-        macs = [e.mac for e in device.ethernet_set.all()]
+        macs = [e.mac for e in device.ethernet_set.order_by('mac')]
         self.fields['mac'].widget.choices = [(mac, mac) for mac in macs]
-        ips = [e.ip for e in DHCPEntry.objects.filter(mac__in=macs)]
+        # all mac addresses have the same length - default sorting is enough
+        dhcp_entries = DHCPEntry.objects.filter(mac__in=macs).order_by('mac')
+        ips = [e.ip for e in dhcp_entries]
         self.fields['ip'].widget.choices = [(ip, ip) for ip in ips]
+        proposed_mac = macs[0] if macs else ''
+        proposed_ip = ips[0] if ips else ''
+        for dhcp_entry in dhcp_entries:
+            if dhcp_entry.mac in macs:
+                proposed_mac = dhcp_entry.mac
+                proposed_ip = dhcp_entry.ip
+                break
         self.initial.update({
-            'mac': macs[0] if macs else '',
-            'ip': ips[0] if ips else '',
+            'mac': proposed_mac,
+            'ip': proposed_ip,
             'venture': device.venture,
             'venture_role': device.venture_role,
             'preboot': (device.venture_role.get_preboot() if
@@ -226,11 +236,32 @@ class PrepareMassDeploymentForm(forms.Form):
         return csv_string
 
 
-def _validate_hostname(hostname, parsed_hostnames, row_number):
-    if hostname_exists(hostname):
-        raise forms.ValidationError(
-            "Row %s: Hostname already exists." % row_number
+def _validate_hostname(hostname, mac, parsed_hostnames, row_number):
+    mac = MACAddressField.normalize(mac)
+    try:
+        dev = Device.admin_objects.get(ethernet__mac=mac)
+    except Device.DoesNotExist:
+        if hostname_exists(hostname):
+            raise forms.ValidationError(
+                "Row %s: Hostname already exists." % row_number
+            )
+    else:
+        ip_addresses = list(
+            dev.ipaddress_set.values_list('address', flat=True)
         )
+        ip_addresses_in_dns = get_ip_addresses(hostname)
+        for ip in ip_addresses_in_dns:
+            if ip not in ip_addresses:
+                raise forms.ValidationError(
+                    "Row %s: Using an old device %s failed. "
+                    "Exists A or PTR records in DNS which are not assigned "
+                    "to device IP addresses." % (row_number, dev)
+                )
+        if Deployment.objects.filter(hostname=hostname).exists():
+            raise forms.ValidationError(
+                "Row %s: Running deployment with hostname: %s already "
+                "exists." % (row_number, hostname)
+            )
     if hostname in parsed_hostnames:
         raise forms.ValidationError(
             "Row %s: Duplicated hostname. "
@@ -301,8 +332,11 @@ class MassDeploymentForm(forms.Form):
         for row_number, cols in enumerate(rows, start=1):
             _validate_cols_count(9, cols, row_number)
             _validate_cols_not_empty(cols, row_number)
+            mac = cols[3].strip()
+            _validate_mac(mac, parsed_macs, row_number)
+            parsed_macs.add(mac)
             hostname = cols[0].strip()
-            _validate_hostname(hostname, parsed_hostnames, row_number)
+            _validate_hostname(hostname, mac, parsed_hostnames, row_number)
             parsed_hostnames.add(hostname)
             network_name = cols[5].strip()
             try:
@@ -332,12 +366,9 @@ class MassDeploymentForm(forms.Form):
                     "network '%s'." % (row_number, rack_sn, network.name)
                 )
             ip = cols[1].strip()
-            mac = cols[3].strip()
             _validate_ip_address(ip, network, parsed_ip_addresses, row_number)
             _validate_ip_owner(ip, mac, row_number)
             parsed_ip_addresses.add(ip)
-            _validate_mac(mac, parsed_macs, row_number)
-            parsed_macs.add(mac)
             management_ip = cols[4].strip()
             _validate_management_ip(management_ip, row_number)
             try:

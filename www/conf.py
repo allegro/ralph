@@ -210,6 +210,14 @@ latex_documents = [
 # latex_use_modindex = True
 all_releases = [
     dict(
+        version='1.1.15',
+        release_date='January 16, 2013',
+        description_lines=[
+            'Custom DHCP configuration, showing next free hostname and IP, '
+            'bugfixes in the discovery plugins.'
+        ],
+    ),
+    dict(
         version='1.1.14',
         release_date='January 7, 2013',
         description_lines=[

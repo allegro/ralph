@@ -10,6 +10,8 @@
         <comment>
             Custom fields moved to module, uid prefixes initials
         </comment>
+        <fileRevisionKey rev="8f67138416247824ceeb3d5fa1a1470261fa71ad" path="custom/test/file.xml"/>
+        <fileRevisionKey rev="8f67138416247824ceeb3d5fa1a1470261fa71ae" path="custom/regex/file.xml"/>
         <fileRevisionKey rev="8f67138416247824ceeb3d5fa1a1470261fa71ac" path="modules/ventures/test_venture/manifests/test_role.pp"/>
         <parents>
             <parent>17b8cade4da145a9e07026522e2e2643779ec8e8</parent>

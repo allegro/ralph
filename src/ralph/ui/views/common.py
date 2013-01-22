@@ -763,7 +763,7 @@ class Addresses(DeviceDetailView):
         profile = self.request.user.get_profile()
         can_edit = profile.has_perm(self.edit_perm, self.object.venture)
         next_hostname = None
-        first_free_ip = None
+        first_free_ip_addresses = []
         rack = self.object.find_rack()
         if rack:
             networks = rack.network_set.order_by('name')
@@ -774,7 +774,10 @@ class Addresses(DeviceDetailView):
             for network in networks:
                 first_free_ip = get_first_free_ip(network.name)
                 if first_free_ip:
-                    break
+                    first_free_ip_addresses.append({
+                        'network_name': network.name,
+                        'first_free_ip': first_free_ip,
+                    })
         ret.update({
             'canedit': can_edit,
             'balancers': list(_get_balancers(self.object)),
@@ -782,7 +785,7 @@ class Addresses(DeviceDetailView):
             'dhcpformset': self.dhcp_formset,
             'ipformset': self.ip_formset,
             'next_hostname': next_hostname,
-            'first_free_ip': first_free_ip,
+            'first_free_ip_addresses': first_free_ip_addresses,
         })
         return ret
 
