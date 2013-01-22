@@ -75,13 +75,12 @@ def add_dns_address(name, ip):
     ip = str(ip).strip().strip('.')
     host_name, domain_name = name.split('.', 1)
     domain = Domain.objects.get(name=domain_name)
-    record = Record(
+    record = Record.objects.get_or_create(
         domain=domain,
         name=name,
         type='A',
         content=ip,
     )
-    record.save()
 
 
 @nested_commit_on_success
@@ -310,4 +309,23 @@ def update_txt_records(device):
                device.venture_role.full_name if device.venture_role else '')
         set_txt_record(record.domain, name, 'MODEL', get_model(device))
         set_txt_record(record.domain, name, 'LOCATION', get_location(device))
+
+
+def get_ip_addresses(hostname):
+    ip_addresses = set(
+        Record.objects.filter(
+            type='A',
+            name=hostname
+        ).values_list(
+            'content',
+            flat=True
+        )
+    )
+    for record in Record.objects.filter(type='PTR', content=hostname):
+        ip_addresses.add(
+            '.'.join(
+                reversed(record.name.replace('.in-addr.arpa', '').split('.'))
+            )
+        )
+    return list(ip_addresses)
 

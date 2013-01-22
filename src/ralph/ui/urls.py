@@ -92,7 +92,7 @@ from ralph.ui.views.reports import (
     ReportServices,
     ReportVentures,
     ReportDevices,
-    ReportVentureCosts,
+    ReportDevicePricesPerVenture,
 )
 
 
@@ -256,7 +256,7 @@ urlpatterns = patterns('',
     url(r'^reports/ventures/$', login_required(ReportVentures.as_view()), {}, 'reports_ventures'),
     url(r'^reports/margins/$', login_required(ReportMargins.as_view()), {}, 'reports_margins'),
     url(r'^reports/devices/$', login_required(ReportDevices.as_view()), {}, 'reports_devices'),
-    url(r'^reports/venture_costs/$', login_required(ReportVentureCosts.as_view()), {}, 'reports_venture_costs'),
+    url(r'^reports/device_prices_per_venture/$', login_required(ReportDevicePricesPerVenture.as_view()), {}, 'device_prices_per_venture'),
 
     url(r'^deployment/mass/start/$',
         login_required(PrepareMassDeployment.as_view())),

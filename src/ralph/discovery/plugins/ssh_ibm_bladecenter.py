@@ -18,9 +18,18 @@ import paramiko
 from lck.django.common.models import MACAddressField
 
 from ralph.util import network, parse, plugin, Eth
-from ralph.discovery.models import (DeviceType,
-        Device, Processor, Memory, Ethernet, IPAddress,
-        ComponentModel, ComponentType, SERIAL_BLACKLIST, GenericComponent)
+from ralph.discovery.models import (
+    ComponentModel,
+    ComponentType,
+    Device,
+    DeviceType,
+    Ethernet,
+    GenericComponent,
+    IPAddress,
+    Memory,
+    Processor,
+    SERIAL_BLACKLIST,
+)
 from ralph.discovery.models_history import DiscoveryWarning
 
 
@@ -30,14 +39,18 @@ SAVE_PRIORITY = 5
 class Error(Exception):
     pass
 
+
 class TreeError(Error):
     pass
+
 
 class ConsoleError(Error):
     pass
 
+
 class DeviceError(Error):
     pass
+
 
 class Counts(object):
     def __init__(self):
@@ -58,11 +71,19 @@ class IBMSSHClient(paramiko.SSHClient):
         """Do interactive auth if everything fails."""
 
         try:
-            super(IBMSSHClient, self)._auth(username, password, pkey,
-                key_filenames, allow_agent, look_for_keys)
+            super(IBMSSHClient, self)._auth(
+                username,
+                password,
+                pkey,
+                key_filenames,
+                allow_agent,
+                look_for_keys,
+            )
         except paramiko.BadAuthenticationType:
-            self._transport.auth_interactive(username,
-                lambda t, i, p: password)
+            self._transport.auth_interactive(
+                username,
+                lambda t, i, p: password,
+            )
         self._ibm_chan = self._transport.open_session()
         self._ibm_chan.invoke_shell()
         self._ibm_chan.sendall('\r\n')
@@ -93,8 +114,13 @@ class IBMSSHClient(paramiko.SSHClient):
 
 
 def _connect_ssh(ip):
-    return network.connect_ssh(ip, settings.SSH_IBM_USER,
-            settings.SSH_IBM_PASSWORD, client=IBMSSHClient)
+    return network.connect_ssh(
+        ip,
+        settings.SSH_IBM_USER,
+        settings.SSH_IBM_PASSWORD,
+        client=IBMSSHClient,
+    )
+
 
 def _component(model_type, pairs, parent, raw):
     model_type = ComponentType.unknown
@@ -119,8 +145,9 @@ def _component(model_type, pairs, parent, raw):
     if 'Management' in model_name:
         model_type = ComponentType.management
     elif 'Fibre Channel' in model_name:
+        # FIXME: merge GenericComponent(model__type=fibre) and FibreChannel
         model_type = ComponentType.fibre
-        return None # FIXME: merge GenericComponent(model__type=fibre) and FibreChannel
+        return None
     elif 'Power' in model_name:
         model_type = ComponentType.power
     elif 'Media' in model_name:
@@ -136,41 +163,50 @@ def _component(model_type, pairs, parent, raw):
         priority=SAVE_PRIORITY,
     )
     component, created = GenericComponent.concurrent_get_or_create(
-            sn=sn,
-            defaults=dict(
-                device=parent,
-            )
+        sn=sn,
+        defaults=dict(
+            device=parent,
+        ),
     )
     component.model = model
     component.label = name
     firmware = (pairs.get('AMM firmware') or pairs.get('FW/BIOS') or
-            pairs.get('Main Application 2'))
+                pairs.get('Main Application 2'))
     if firmware:
-        component.hard_firmware = '%s %s rev %s' % (firmware['Build ID'],
-                                       firmware['Rel date'],
-                                       firmware['Rev'])
+        component.hard_firmware = '%s %s rev %s' % (
+            firmware['Build ID'],
+            firmware['Rel date'],
+            firmware['Rev'],
+        )
     else:
         firmware = pairs.get('Power Module Cooling Device firmware rev.')
         if firmware:
             component.hard_firmware = 'rev %s' % firmware
     firmware = (pairs.get('Boot ROM') or pairs.get('Main Application 1') or
-            pairs.get('Blade Sys Mgmt Processor'))
+                pairs.get('Blade Sys Mgmt Processor'))
     if firmware:
-        component.boot_firmware = '%s %s rev %s' % (firmware['Build ID'],
-                                       firmware['Rel date'],
-                                       firmware['Rev'])
+        component.boot_firmware = '%s %s rev %s' % (
+            firmware['Build ID'],
+            firmware['Rel date'],
+            firmware['Rev'],
+        )
     firmware = (pairs.get('Blade Sys Mgmt Processor'))
     if firmware:
-        component.mgmt_firmware = '%s %s rev %s' % (firmware['Build ID'],
-                                       firmware['Rel date'],
-                                       firmware['Rev'])
+        component.mgmt_firmware = '%s %s rev %s' % (
+            firmware['Build ID'],
+            firmware['Rel date'],
+            firmware['Rev'],
+        )
     firmware = (pairs.get('Diagnostics'))
     if firmware:
-        component.diag_firmware = '%s %s rev %s' % (firmware['Build ID'],
-                                       firmware['Rel date'],
-                                       firmware['Rev'])
+        component.diag_firmware = '%s %s rev %s' % (
+            firmware['Build ID'],
+            firmware['Rel date'],
+            firmware['Rev'],
+        )
     component.save(update_last_seen=True, priority=SAVE_PRIORITY)
     return component
+
 
 def _dev(model_type, pairs, parent, raw):
     if 'Mach type/model' in pairs:
@@ -194,39 +230,54 @@ def _dev(model_type, pairs, parent, raw):
     else:
         ethernets = []
     name = pairs.get('Name') or pairs.get('Product Name') or model_name
-    dev = Device.create(ethernets=ethernets, model_name=model_name,
-            model_type=model_type, sn=sn, name=name, parent=parent,
-            priority=SAVE_PRIORITY)
+    dev = Device.create(
+        ethernets=ethernets,
+        model_name=model_name,
+        model_type=model_type,
+        sn=sn,
+        name=name,
+        parent=parent,
+        priority=SAVE_PRIORITY,
+    )
     firmware = (pairs.get('AMM firmware') or pairs.get('FW/BIOS') or
-            pairs.get('Main Application 2'))
+                pairs.get('Main Application 2'))
     if firmware:
-        dev.hard_firmware = '%s %s rev %s' % (firmware['Build ID'],
-                                       firmware['Rel date'],
-                                       firmware['Rev'])
+        dev.hard_firmware = '%s %s rev %s' % (
+            firmware['Build ID'],
+            firmware['Rel date'],
+            firmware['Rev'],
+        )
     else:
         firmware = pairs.get('Power Module Cooling Device firmware rev.')
         if firmware:
             dev.hard_firmware = 'rev %s' % firmware
     firmware = (pairs.get('Boot ROM') or pairs.get('Main Application 1') or
-            pairs.get('Blade Sys Mgmt Processor'))
+                pairs.get('Blade Sys Mgmt Processor'))
     if firmware:
-        dev.boot_firmware = '%s %s rev %s' % (firmware['Build ID'],
-                                       firmware['Rel date'],
-                                       firmware['Rev'])
+        dev.boot_firmware = '%s %s rev %s' % (
+            firmware['Build ID'],
+            firmware['Rel date'],
+            firmware['Rev'],
+        )
     firmware = (pairs.get('Blade Sys Mgmt Processor'))
     if firmware:
-        dev.mgmt_firmware = '%s %s rev %s' % (firmware['Build ID'],
-                                       firmware['Rel date'],
-                                       firmware['Rev'])
+        dev.mgmt_firmware = '%s %s rev %s' % (
+            firmware['Build ID'],
+            firmware['Rel date'],
+            firmware['Rev'],
+        )
     firmware = (pairs.get('Diagnostics'))
     if firmware:
-        dev.diag_firmware = '%s %s rev %s' % (firmware['Build ID'],
-                                       firmware['Rel date'],
-                                       firmware['Rev'])
+        dev.diag_firmware = '%s %s rev %s' % (
+            firmware['Build ID'],
+            firmware['Rel date'],
+            firmware['Rev'],
+        )
     dev.save(update_last_seen=True, priority=SAVE_PRIORITY)
     return dev
 
-def _add_dev_mm(pairs, parent, raw, counts, dev_id):
+
+def _add_dev_mm(ip, pairs, parent, raw, counts, dev_id):
     _component(ComponentType.management, pairs, parent, raw)
 
     # XXX Clean up the previously added components
@@ -234,14 +285,16 @@ def _add_dev_mm(pairs, parent, raw, counts, dev_id):
             DeviceType.management.id, DeviceType.unknown.id]):
         child.delete()
 
-def _add_dev_generic(pairs, parent, raw, counts, dev_id):
+
+def _add_dev_generic(ip, pairs, parent, raw, counts, dev_id):
     if parent:
         _component(ComponentType.unknown, pairs, parent, raw)
     else:
         dev = _dev(DeviceType.unknown, pairs, parent, raw)
         return dev
 
-def _add_dev_cpu(pairs, parent, raw, counts, dev_id):
+
+def _add_dev_cpu(ip, pairs, parent, raw, counts, dev_id):
     try:
         model = pairs['Mach type/model']
     except KeyError:
@@ -249,6 +302,7 @@ def _add_dev_cpu(pairs, parent, raw, counts, dev_id):
             message="Processor model unknown",
             plugin=__name__,
             device=parent,
+            ip=ip,
         ).save()
         return
     counts.cpu += 1
@@ -256,8 +310,10 @@ def _add_dev_cpu(pairs, parent, raw, counts, dev_id):
         index = int(model.split()[-1])
     except ValueError:
         index = counts.cpu
-    cpu, created = Processor.concurrent_get_or_create(device=parent,
-            index=index)
+    cpu, created = Processor.concurrent_get_or_create(
+        device=parent,
+        index=index,
+    )
     cpu.label = pairs['Mach type/model']
     family = pairs['Processor family']
     if family.startswith('Intel '):
@@ -269,12 +325,13 @@ def _add_dev_cpu(pairs, parent, raw, counts, dev_id):
         speed=speed,
         cores=cores,
         name='CPU %s %d MHz, %s-core' % (family, speed, cores),
-        family=family or 'Unknown',
+        family=family,
         priority=SAVE_PRIORITY,
     )
     cpu.save(priority=SAVE_PRIORITY)
 
-def _add_dev_memory(pairs, parent, raw, counts, dev_id):
+
+def _add_dev_memory(ip, pairs, parent, raw, counts, dev_id):
     try:
         model = pairs['Mach type/model']
     except KeyError:
@@ -282,6 +339,7 @@ def _add_dev_memory(pairs, parent, raw, counts, dev_id):
             message="Memory model unknown",
             plugin=__name__,
             device=parent,
+            ip=ip,
         ).save()
         return
     counts.mem += 1
@@ -302,9 +360,9 @@ def _add_dev_memory(pairs, parent, raw, counts, dev_id):
     mem.save(priority=SAVE_PRIORITY)
 
 
-def _add_dev_blade(pairs, parent, raw, counts, dev_id):
+def _add_dev_blade(ip, pairs, parent, raw, counts, dev_id):
     if '[' in dev_id:
-        pos = int(dev_id[dev_id.find('[')+1:dev_id.find(']')])
+        pos = int(dev_id[dev_id.find('[') + 1:dev_id.find(']')])
     else:
         pos = None
     dev = _dev(DeviceType.blade_server, pairs, parent, raw)
@@ -328,7 +386,8 @@ def _add_dev_blade(pairs, parent, raw, counts, dev_id):
         eth.save(priority=SAVE_PRIORITY)
     return dev
 
-def _add_dev_switch(pairs, parent, raw, counts, dev_id):
+
+def _add_dev_switch(ip, pairs, parent, raw, counts, dev_id):
     dev_type = DeviceType.switch
     if pairs['Mach type/model'].startswith('Fibre Channel SM'):
         dev_type = DeviceType.fibre_channel_switch
@@ -343,14 +402,15 @@ def _add_dev_switch(pairs, parent, raw, counts, dev_id):
         eth.save(priority=SAVE_PRIORITY)
     return dev
 
-def _add_dev_system(pairs, parent, raw, counts, dev_id, ip=None):
+
+def _add_dev_system(ip, pairs, parent, raw, counts, dev_id):
     dev = _dev(DeviceType.blade_system, pairs, parent, raw)
     ip_address, created = IPAddress.concurrent_get_or_create(address=str(ip))
     if created:
         ip_address.hostname = network.hostname(ip_address.address)
     ip_address.device = dev
-    ip_address.is_management = True
-    ip_address.save(update_last_seen=True) # no priorities for IP addresses
+    ip_address.is_management = True   # FIXME: how do we know for sure?
+    ip_address.save(update_last_seen=True)   # no priorities for IP addresses
     return dev
 
 
@@ -369,7 +429,9 @@ ADD_DEV = {
     'switch': _add_dev_switch,
 }
 
-def _recursive_add_dev(ssh, ip, dev_path, dev_id, components, parent=None, counts=None):
+
+def _recursive_add_dev(ssh, ip, dev_path, dev_id, components, parent=None,
+                       counts=None):
     if dev_path:
         full_path = '{}:{}'.format(dev_path, dev_id)
     else:
@@ -386,10 +448,7 @@ def _recursive_add_dev(ssh, ip, dev_path, dev_id, components, parent=None, count
     raw = '\n'.join(lines)
     pairs = parse.pairs(lines=lines)
     try:
-        if dev_path:
-            dev = add_func(pairs, parent, raw, counts, dev_id)
-        else:
-            dev = add_func(pairs, parent, raw, counts, dev_id, ip=ip)
+        dev = add_func(ip, pairs, parent, raw, counts, dev_id)
     except DeviceError:
         pass
     else:
@@ -400,6 +459,7 @@ def _recursive_add_dev(ssh, ip, dev_path, dev_id, components, parent=None, count
             _recursive_add_dev(ssh, ip, full_path, dev_id, components, dev,
                                counts)
         return dev
+
 
 @nested_commit_on_success
 def run_ssh_bladecenter(ip):
@@ -430,7 +490,7 @@ def ssh_ibm_bladecenter(**kwargs):
         return False, 'closed.', kwargs
     try:
         name = run_ssh_bladecenter(ip)
-    except (network.Error, Error, paramiko.SSHException, socket.error)  as e:
+    except (network.Error, Error, paramiko.SSHException, socket.error) as e:
         DiscoveryWarning(
             message="This is an IBM BladeServer, but: " + str(e),
             plugin=__name__,

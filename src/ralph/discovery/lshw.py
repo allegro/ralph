@@ -194,6 +194,15 @@ def handle_lshw_processors(dev, processors, is_virtual=False, priority=0):
     if isinstance(processors, dict):
         processors = [processors]
     detected_cpus = {}
+    family = None
+    for processor in processors:
+        family = processor['version'] or (
+            'Virtual CPU' if is_virtual else processor['product']
+        )
+        if family:
+            break
+    if not family:
+        return   # skip CPU changes if we cannot determine family
     for i, processor in enumerate(processors):
         if processor['disabled'] == 'true' or not processor['size']:
             continue
@@ -201,11 +210,6 @@ def handle_lshw_processors(dev, processors, is_virtual=False, priority=0):
         speed = int(processor['size']['value'] or 0)   # 'size', sic!
         speed /= units.speed_divisor[processor['size']['units']]
         speed = int(speed)
-        family = processor['version'] or (
-            'Virtual CPU' if is_virtual else (
-                processor['product'] or 'Unknown'
-            )
-        )
         model, c = ComponentModel.create(
             ComponentType.processor,
             speed=speed,
@@ -331,7 +335,7 @@ def handle_lshw_fibre_cards(dev, lshw, is_virtual=False, priority=0):
         fib, created = FibreChannel.concurrent_get_or_create(
             device=dev, physical_id=physid)
         fib.label = "{} {}".format(bus['vendor'], bus['product'])
-        fib.model, c= ComponentModel.create(
+        fib.model, c = ComponentModel.create(
             ComponentType.fibre,
             family=bus['vendor'],
             name=bus['product'],
