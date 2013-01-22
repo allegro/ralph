@@ -501,6 +501,7 @@ class VenturesVenture(SidebarVentures, Base):
         ret = super(VenturesVenture, self).get_context_data(**kwargs)
         start = None
         end = None
+        show_count_now = None
         if self.venture is None or not self.form.is_valid():
             items = []
             cost_data = []
@@ -520,6 +521,8 @@ class VenturesVenture(SidebarVentures, Base):
                 )
             start = self.form.cleaned_data['start']
             end = self.form.cleaned_data['end']
+            today = datetime.date.today()
+            show_count_now = True if start <= today <= end else False
             query = query.exclude(device__deleted=True)
             query = HistoryCost.filter_span(start, end, query)
             items = _get_summaries(query.all(), start, end, True, self.venture)
@@ -556,6 +559,7 @@ class VenturesVenture(SidebarVentures, Base):
             'form': self.form,
             'start_date': start,
             'end_date': end,
+            'default_range': show_count_now,
         })
         return ret
 
