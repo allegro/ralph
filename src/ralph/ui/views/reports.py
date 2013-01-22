@@ -353,8 +353,21 @@ class ReportVentures(SidebarReports, Base):
 
     def _get_totals(self, start, end, query, extra_types):
         venture_total = get_total_cost(query, start, end)
-        (venture_count, venture_count_now,
-            devices) = get_total_count(query, start, end)
+        venture_count, venture_count_now, devices = get_total_count(
+            # Exclude all non-physical devices.
+            query.exclude(
+                device__model__type__in=(
+                    DeviceType.cloud_server,
+                    DeviceType.virtual_server,
+                    DeviceType.unknown,
+                    DeviceType.data_center,
+                    DeviceType.rack,
+                    DeviceType.management,
+                ),
+            ),
+            start,
+            end,
+        )
         venture_core_count = get_total_cores(devices, start, end)
         venture_virtual_core_count = get_total_virtual_cores(
             devices, start, end
