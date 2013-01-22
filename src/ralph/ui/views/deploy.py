@@ -8,7 +8,6 @@ from __future__ import unicode_literals
 
 import cStringIO
 
-from bob.menu import MenuItem
 from django.views.generic import CreateView
 from django.http import HttpResponseRedirect
 from django.contrib import messages
@@ -22,7 +21,7 @@ from ralph.deployment.util import (
     get_next_free_hostname,
 )
 from ralph.discovery.models import Device, Network, IPAddress
-from ralph.ui.views.common import BaseMixin, Base
+from ralph.ui.views.common import BaseMixin, Base, TEMPLATE_MENU_ITEMS
 from ralph.ui.forms.deployment import (
     DeploymentForm,
     MassDeploymentForm,
@@ -67,20 +66,7 @@ class PrepareMassDeployment(Base):
             'form': self.form,
             'action_name': 'Next step'
         })
-        ret['template_menu_items'] = [
-            MenuItem(
-                'Manual device',
-                name='device',
-                fugue_icon='fugue-wooden-box',
-                href='/ui/racks//add_device/',
-            ),
-            MenuItem(
-                'Servers',
-                name='servers',
-                fugue_icon='fugue-computer',
-                href='/ui/deployment/mass/start/',
-            ),
-        ]
+        ret['template_menu_items'] = TEMPLATE_MENU_ITEMS
         ret['template_selected'] = 'servers'
         return ret
 
@@ -191,20 +177,7 @@ class MassDeployment(Base):
         ret.update({
             'form': self.form,
             'action_name': 'Deploy',
-            'template_menu_items': [
-                MenuItem(
-                    'Manual device',
-                    name='device',
-                    fugue_icon='fugue-wooden-box',
-                    href='/ui/racks//add_device/',
-                ),
-                MenuItem(
-                    'Servers',
-                    name='servers',
-                    fugue_icon='fugue-computer',
-                    href='/ui/deployment/mass/start/',
-                ),
-            ],
+            'template_menu_items': TEMPLATE_MENU_ITEMS,
             'template_selected': 'servers',
             'actions': self.actions,
         })
