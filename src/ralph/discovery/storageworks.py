@@ -163,7 +163,19 @@ def _save_shares(dev, volumes):
             name='MSA %s disk share' % volume_type,
             priority=0,  # FIXME: why 0?
         )
-        share, created = DiskShare.concurrent_get_or_create(wwn=wwn, device=dev)
+        share, created = DiskShare.concurrent_get_or_create(
+            wwn=wwn,
+            defaults={'device': dev},
+        )
+        if not created:
+            if dev.id != share.device.id:
+                raise ValueError(
+                    'DiskShare %r: Conflict of devices %r and %r!' % (
+                        share,
+                        dev,
+                        share.device,
+                    )
+                )
         share.model = model
         share.label = label
         share.size = size * 512 / 1024 / 1024
