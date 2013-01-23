@@ -12,7 +12,10 @@ from ralph.discovery.tests.plugins.samples.puppet import (
     data, data_second, data_not_encoded)
 
 from ralph.discovery.plugins.puppet.facts import (
-    handle_facts_os, handle_facts_packages)
+    handle_facts_os,
+    handle_facts_packages,
+    handle_facts_disks,
+)
 
 
 class PuppetPluginTest(TestCase):
@@ -35,6 +38,21 @@ class PuppetPluginTest(TestCase):
         self.assertEqual(os.memory, 1000)
         self.assertEqual(os.cores_count, 1)
         self.assertEqual(os.model.get_type_display(), 'operating system')
+
+    def test_handle_facts_disks(self):
+        handle_facts_disks(self.dev, data)
+        self.assertFalse(
+            self.dev.storage_set.filter(sn='sn_test_1231232').exists()
+        )
+        self.assertFalse(
+            self.dev.storage_set.filter(sn='sn_test_1231233').exists()
+        )
+        self.assertFalse(
+            self.dev.storage_set.filter(sn='sn_test_1231234').exists()
+        )
+        disk = self.dev.storage_set.get(sn='sn_test_1231231')
+        self.assertEqual(disk.size, 140272)
+        self.assertEqual(disk.label, 'FUJITSU MBE2147RC 0103')
 
     def test_handle_facts_packages(self):
         handle_facts_packages(self.dev, data['packages'])
