@@ -29,6 +29,7 @@ class Error(Exception):
 def _connect_ssh(ip):
     return network.connect_ssh(ip, SSH_3PAR_USER, SSH_3PAR_PASSWORD)
 
+
 @nested_commit_on_success
 def _save_shares(dev, shares):
     wwns = []
@@ -53,10 +54,13 @@ def _save_shares(dev, shares):
         share.save()
     dev.diskshare_set.exclude(wwn__in=wwns).delete()
 
+
 @nested_commit_on_success
 def _save_device(ip, name, model_name, sn):
     model, model_created = DeviceModel.concurrent_get_or_create(
-        name = '3PAR %s' % model_name, type=DeviceType.storage.id)
+        name='3PAR %s' % model_name,
+        type=DeviceType.storage.id,
+    )
     dev, dev_created = Device.concurrent_get_or_create(sn=sn, model=model)
     dev.save()
     ipaddr, ip_created = IPAddress.concurrent_get_or_create(address=ip)
@@ -66,6 +70,7 @@ def _save_device(ip, name, model_name, sn):
     dev.management = ipaddr
     dev.save()
     return dev
+
 
 def _run_ssh_3par(ip):
     ssh = _connect_ssh(ip)
@@ -78,14 +83,19 @@ def _run_ssh_3par(ip):
         name = line[5:15].strip()
         model_name = line[16:28].strip()
         sn = line[29:37].strip()
-        stdin, stdout, stderr = ssh.exec_command("showvv -showcols Id,Name,VV_WWN,Snp_RawRsvd_MB,Usr_RawRsvd_MB,Prov")
+        stdin, stdout, stderr = ssh.exec_command(
+            "showvv -showcols Id,Name,VV_WWN,Snp_RawRsvd_MB,Usr_RawRsvd_MB,Prov"
+        )
         shares = {}
         for line in list(stdout.readlines()):
             if line.strip().startswith('Id'):
                 continue
             if line.startswith('----'):
                 break
-            share_id, share_name, wwn, snapshot_size, size, prov = line.split(None, 5)
+            share_id, share_name, wwn, snapshot_size, size, prov = line.split(
+                None,
+                5,
+            )
             if '--' in size or '--' in snapshot_size:
                 continue
             share_id = int(share_id)
@@ -94,18 +104,33 @@ def _run_ssh_3par(ip):
             snapshot_size = int(snapshot_size)
             size = int(size)
 
-            stdin, stdout, stderr = ssh.exec_command("showld -p -vv %s" % share_name)
+            stdin, stdout, stderr = ssh.exec_command(
+                "showld -p -vv %s" % share_name
+            )
             lines = list(stdout.readlines())
-            logical_id, logical_name, preserve, disk_type, speed = lines[1].split(None, 5)
+            (
+                logical_id,
+                logical_name,
+                preserve,
+                disk_type,
+                speed,
+            ) = lines[1].split(None, 5)
             speed = int(speed) * 1000
-
-            shares[share_id] = (share_name, wwn, snapshot_size, size,
-                                disk_type, speed, prov.strip()=='full')
+            shares[share_id] = (
+                share_name,
+                wwn,
+                snapshot_size,
+                size,
+                disk_type,
+                speed,
+                prov.strip() == 'full',
+            )
     finally:
         ssh.close()
     dev = _save_device(ip, name, model_name, sn)
     _save_shares(dev, shares)
     return name
+
 
 @plugin.register(chain='discovery', requires=['ping', 'http', 'snmp'])
 def ssh_3par(**kwargs):
