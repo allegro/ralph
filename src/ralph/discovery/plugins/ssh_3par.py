@@ -44,7 +44,19 @@ def _save_shares(dev, shares):
             speed=speed,
             priority=0,   # FIXME: why 0?
         )
-        share, created = DiskShare.concurrent_get_or_create(wwn=wwn, device=dev)
+        share, created = DiskShare.concurrent_get_or_create(
+            wwn=wwn,
+            defaults={'device': dev},
+        )
+        if not created:
+            if dev.id != share.device.id:
+                raise ValueError(
+                    'DiskShare %r: Conflict of devices %r and %r!' % (
+                        share,
+                        dev,
+                        share.device,
+                    )
+                )
         share.model = model
         share.label = label
         share.full = full
@@ -59,10 +71,9 @@ def _save_shares(dev, shares):
 def _save_device(ip, name, model_name, sn):
     model, model_created = DeviceModel.concurrent_get_or_create(
         name='3PAR %s' % model_name,
-        type=DeviceType.storage.id,
+        defaults={'type': DeviceType.storage.id},
     )
-    dev, dev_created = Device.concurrent_get_or_create(sn=sn, model=model)
-    dev.save()
+    dev = Device.create(sn=sn, model=model)
     ipaddr, ip_created = IPAddress.concurrent_get_or_create(address=ip)
     ipaddr.device = dev
     ipaddr.is_management = True
