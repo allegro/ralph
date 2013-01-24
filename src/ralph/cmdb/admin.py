@@ -75,8 +75,8 @@ admin.site.register(db.GitPathMapping, GitPathMappingAdmin)
 
 
 class CIOwnerAdmin(ModelAdmin):
-    list_display = ('last_name', 'first_name', 'email',)
-    search_fields = ('last_name', 'first_name', 'email',)
+    list_display = ('last_name', 'first_name', 'email')
+    search_fields = ('last_name', 'first_name', 'email')
     save_on_top = True
 
 
