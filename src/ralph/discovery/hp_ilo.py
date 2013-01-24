@@ -439,7 +439,9 @@ class IloHost(object):
                 ''.join(fields.get("Execution Technology", [])),
                 ''.join(fields.get("Memory Technology", [])),
             ])
-            family = int(''.join(fields["Family"]))
+            family = int(
+                ''.join(fields["Family"]) if fields["Family"] else '2'
+            )
             yield (
                 fields['Label'][0],
                 speed,
