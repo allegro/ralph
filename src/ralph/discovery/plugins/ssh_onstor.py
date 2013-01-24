@@ -51,20 +51,30 @@ def _save_shares(dev, luns, mounts):
                 address=client,
             )
             mount, created = DiskShareMount.concurrent_get_or_create(
-                address=ipaddr,
                 device=ipaddr.device,
                 share=share,
-                server=dev,
+                defaults={
+                    'address': ipaddr,
+                    'server': dev
+                }
             )
+            if not created:
+                mount.address = ipaddr
+                mount.server = dev
             mount.volume = volume
             mount.save(update_last_seen=True)
         if not clients:
             mount, created = DiskShareMount.concurrent_get_or_create(
-                address=None,
                 device=None,
                 share=share,
-                server=dev,
+                defaults={
+                    'address': None,
+                    'server': dev
+                }
             )
+            if not created:
+                mount.address = None
+                mount.server = dev
             mount.volume = volume
             mount.save(update_last_seen=True)
     for mount in DiskShareMount.objects.filter(
@@ -83,7 +93,7 @@ def _save_device(ip, name, model_name, sn, mac):
             'type': DeviceType.storage.id,
         },
     )
-    dev, dev_created = Device.concurrent_get_or_create(sn=sn, model=model)
+    dev = Device.create(sn=sn, model=model)
     dev.save()
     ipaddr, ip_created = IPAddress.concurrent_get_or_create(address=ip)
     ipaddr.device = dev
