@@ -73,6 +73,16 @@ class GitPathMappingAdmin(ModelAdmin):
 
 admin.site.register(db.GitPathMapping, GitPathMappingAdmin)
 
+
+class CIOwnerAdmin(ModelAdmin):
+    list_display = ('last_name', 'first_name', 'email')
+    search_fields = ('last_name', 'first_name', 'email')
+    save_on_top = True
+
+
+admin.site.register(db.CIOwner, CIOwnerAdmin)
+
+
 # simple types
 admin.site.register([
     db.CI,
