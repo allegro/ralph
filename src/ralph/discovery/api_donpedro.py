@@ -40,6 +40,10 @@ class NoRequiredDataError(Exception):
     pass
 
 
+class NoRequiredIPAddressError(NoRequiredDataError):
+    pass
+
+
 def save_processors(processors, dev):
     indexes = []
     for p in processors:
@@ -240,7 +244,7 @@ def save_device_data(data, remote_ip):
         e['ipaddress'] for e in data['ethernets'] if e['ipaddress']
     ]
     if not ip_addresses:
-        raise NoRequiredDataError(
+        raise NoRequiredIPAddressError(
             "Couldn't find any IP address for this device."
         )
     try:
