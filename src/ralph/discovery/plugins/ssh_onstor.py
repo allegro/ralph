@@ -55,7 +55,7 @@ def _save_shares(dev, luns, mounts):
                 share=share,
                 defaults={
                     'address': ipaddr,
-                    'server': dev
+                    'server': dev,
                 }
             )
             if not created:
@@ -69,7 +69,7 @@ def _save_shares(dev, luns, mounts):
                 share=share,
                 defaults={
                     'address': None,
-                    'server': dev
+                    'server': dev,
                 }
             )
             if not created:

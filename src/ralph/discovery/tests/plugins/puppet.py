@@ -41,12 +41,15 @@ class PuppetPluginTest(TestCase):
 
     def test_handle_facts_disks(self):
         handle_facts_disks(self.dev, data)
+        # should not find because vendor is in black list
         self.assertFalse(
             self.dev.storage_set.filter(sn='sn_test_1231232').exists()
         )
+        # should not find because product is in black list
         self.assertFalse(
             self.dev.storage_set.filter(sn='sn_test_1231233').exists()
         )
+        # should not find because size is incorrect
         self.assertFalse(
             self.dev.storage_set.filter(sn='sn_test_1231234').exists()
         )
