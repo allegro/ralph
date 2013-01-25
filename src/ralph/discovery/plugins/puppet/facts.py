@@ -164,12 +164,11 @@ def handle_facts_disks(dev, facts, is_virtual=False):
         if disk['product'].lower() in DISK_PRODUCT_BLACKLIST:
             continue
         sn = disk.get('serial', '').strip()
-        if sn:
-            stor, created = Storage.concurrent_get_or_create(
-                device=dev, sn=sn)
-        else:
-            stor, created = Storage.concurrent_get_or_create(
-                device=dev, mount_point=label, sn=None)
+        stor, created = Storage.concurrent_get_or_create(
+            device=dev,
+            mount_point=label,
+            sn=sn if sn else None,
+        )
         stor.size = disk['size'] = int(int(disk['size']) / 1024 / 1024)
         stor.label = '{} {} {}'.format(
             disk['vendor'].strip(), disk['product'].strip(),

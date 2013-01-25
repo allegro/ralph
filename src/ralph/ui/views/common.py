@@ -415,7 +415,7 @@ class Info(DeviceUpdateView):
                 device=device,
             )
             pv.value = value
-            pv.save()
+            pv.save(user=self.request.user)
 
     def get_property_form(self):
         props = {}
