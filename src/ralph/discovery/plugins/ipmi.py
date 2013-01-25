@@ -100,13 +100,6 @@ class IPMI(object):
         return mac
 
 
-def _add_ipmi_lan(device, mac):
-    eth, created = Ethernet.concurrent_get_or_create(
-        device=device, mac=MACAddressField.normalize(mac))
-    eth.label = 'IPMI MC'
-    eth.save(priority=SAVE_PRIORITY)
-
-
 def _get_ipmi_ethernets(data):
     # Ethernet
     index = 0
@@ -230,7 +223,6 @@ def _run_ipmi(ip):
     firmware = mc.get('Firmware Revision')
     if firmware:
         dev.mgmt_firmware = 'rev %s' % firmware
-    _add_ipmi_lan(dev, mac)
     _add_ipmi_components(dev, fru)
     dev.save(update_last_seen=True, priority=SAVE_PRIORITY)
     ip_address, created = IPAddress.concurrent_get_or_create(address=str(ip))
