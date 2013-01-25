@@ -16,7 +16,10 @@ from ralph.discovery.tests.plugins.samples.donpedro import (
     data, incomplete_data, no_eth_data
 )
 from ralph.discovery.api_donpedro import (
-    save_device_data, NoRequiredDataError, save_storage
+    save_device_data,
+    NoRequiredDataError,
+    save_storage,
+    NoRequiredIPAddressError,
 )
 
 
@@ -365,20 +368,14 @@ class DonPedroPluginTest(TestCase):
         self.assertEqual(DiskShareMount.objects.all()[0].share.wwn, '25D304C1')
 
     def test_incomplete_data_handling(self):
-        with self.assertRaises(NoRequiredDataError) as cm:
+        with self.assertRaises(NoRequiredDataError):
             save_device_data(json.loads(incomplete_data).get('data'),
                              '20.20.20.20')
-        self.assertEqual(cm.exception.message,
-                         'No MAC addresses and no device SN.')
 
     def test_no_eth_device_creation(self):
-        with self.assertRaises(NoRequiredDataError) as cm:
+        with self.assertRaises(NoRequiredIPAddressError):
             save_device_data(
                 json.loads(no_eth_data).get('data'),
                 '30.30.30.30'
             )
-        self.assertEqual(
-            cm.exception.message,
-            "Couldn't find any IP address for this device."
-        )
 
