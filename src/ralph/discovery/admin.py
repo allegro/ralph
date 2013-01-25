@@ -252,6 +252,13 @@ class DeviceAdmin(ModelAdmin):
     def save_model(self, request, obj, form, change):
         obj.save(user=request.user, priority=SAVE_PRIORITY)
 
+    def save_formset(self, request, form, formset, change):
+        if formset.model.__name__ == 'RolePropertyValue':
+            for instance in formset.save(commit=False):
+                instance.save(user=request.user)
+        else:
+            formset.save(commit=True)
+
 admin.site.register(m.Device, DeviceAdmin)
 
 
