@@ -792,7 +792,7 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
                 try:
                     component_type = model.type
                 except AttributeError:
-                    pass
+                    component_type = None
                 act_components = [x.get('name') for x in components]
                 if (model not in act_components and
                     component_type not in blacklist):
