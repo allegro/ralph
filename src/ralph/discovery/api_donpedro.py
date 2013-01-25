@@ -73,6 +73,7 @@ def save_processors(processors, dev):
             name=name,
             priority=SAVE_PRIORITY,
         )
+        cpu.save(priority=SAVE_PRIORITY)
     for cpu in dev.processor_set.exclude(index__in=indexes):
         cpu.delete()
 
@@ -235,6 +236,13 @@ def save_device_data(data, remote_ip):
     sn = device.get('sn')
     if not ethernets and not sn:
         raise NoRequiredDataError('No MAC addresses and no device SN.')
+    ip_addresses = [
+        e['ipaddress'] for e in data['ethernets'] if e['ipaddress']
+    ]
+    if not ip_addresses:
+        raise NoRequiredDataError(
+            "Couldn't find any IP address for this device."
+        )
     try:
         dev = Device.create(
             sn=sn,
@@ -258,11 +266,12 @@ def save_device_data(data, remote_ip):
     o.memory = int(os['memory'])
     o.storage = int(os['storage'])
     o.cores_count = int(os['corescount'])
-    o.save()
-    ip_address, _ = IPAddress.concurrent_get_or_create(address=str(remote_ip))
-    ip_address.device = dev
-    ip_address.is_management = False
-    ip_address.save()
+    o.save(priority=SAVE_PRIORITY)
+    for ip in ip_addresses:
+        ip_address, _ = IPAddress.concurrent_get_or_create(address=str(ip))
+        ip_address.device = dev
+        ip_address.is_management = False
+        ip_address.save()
     save_processors(data['processors'], dev)
     save_memory(data['memory'], dev)
     save_storage(data['storage'], dev)
