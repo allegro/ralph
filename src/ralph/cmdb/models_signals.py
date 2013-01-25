@@ -225,9 +225,10 @@ def create_issue(change_id, retry_count=1):
         return
 
     user = ''
+    summary = ch.message.split('\n')[0]
     if ch.type == chdb.CI_CHANGE_TYPES.CONF_GIT.id:
         user = get_login_from_user(ch.content_object.author)
-        summary = 'Config Change: %s' % ch.message
+        summary = 'Config Change: %s' % summary
         description = '''
         Changeset id: %(changeset)s
         Source: GIT
@@ -244,7 +245,7 @@ def create_issue(change_id, retry_count=1):
 
     elif ch.type == chdb.CI_CHANGE_TYPES.DEVICE.id:
         user = unicode(ch.content_object.user)
-        summary = 'Asset attribute change: %s' % ch.message
+        summary = 'Asset attribute change: %s' % summary
         description = '''
         Attribute: %(attribute)s
         Old value: %(old_value)s
@@ -264,7 +265,7 @@ def create_issue(change_id, retry_count=1):
 
     elif ch.type == chdb.CI_CHANGE_TYPES.CI.id:
         user = unicode(ch.content_object.user)
-        summary = 'CMDB attribute change: %s' % ch.message
+        summary = 'CMDB attribute change: %s' % summary
         description = '''
         Attribute: %(attribute)s
         Old value: %(old_value)s
@@ -272,6 +273,7 @@ def create_issue(change_id, retry_count=1):
         Description: %(description)s
         CMDB link: %(cmdb_link)s
         Author: %(author)s
+
         ''' % (dict(
             attribute=ch.content_object.field_name,
             old_value=ch.content_object.old_value,
@@ -280,6 +282,8 @@ def create_issue(change_id, retry_count=1):
             author=unicode(ch.content_object.user),
             cmdb_link=RALPH_CHANGE_LINK % (ch.id),
         ))
+    if len(ch.message.split('\n')) > 1:
+        description = '%s\n\n%s' % (ch.message, description)
     try:
         j = IssueTracker()
         if ch.ci:
