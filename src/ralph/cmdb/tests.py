@@ -327,11 +327,9 @@ class CIImporterTest(TestCase):
         # calculate impact/spanning tree for CI structure
         root_ci = CI.objects.get(name='rack')
         calc = ImpactCalculator(root_ci)
-        import pdb; pdb.set_trace()
         self.assertEqual(
             calc.find_affected_nodes(root_ci.id),
-            ({4: 7, 7: None}, [7, 4])
-            #({1: None, 2: 1, 4: 7, 6: 2, 7: 2}, [1, 2, 6, 7, 4])
+            ({2: 6, 5: 6, 6: None, 7: 6}, [6, 7, 2, 5]),
         )
 
 

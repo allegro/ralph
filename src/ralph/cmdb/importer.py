@@ -68,7 +68,7 @@ class UnknownCTException(Exception):
 class CIImporter(object):
     @nested_commit_on_success
     def store_asset(self, asset, type_, layer_id, uid_prefix):
-        """Store given asset as  CI  """
+        """Store given asset as  CI"""
         logger.debug('Saving: %s' % asset)
         layer = cdb.CILayer.objects.get(id=layer_id)
         ci = cdb.CI()
@@ -170,7 +170,7 @@ class CIImporter(object):
         )
 
     def import_relations(self, content_type, asset_id=None):
-        """ Importing relations parent/child from Ralph  """
+        """Importing relations parent/child from Ralph  """
         content_id = content_type.id
         self.cache_content_types()
         if asset_id is not None:
@@ -219,7 +219,7 @@ class CIImporter(object):
 
     @nested_commit_on_success
     def import_venture_relations(self, obj, d):
-        """ Must be called after datacenter """
+        """Must be called after datacenter """
         if obj.data_center_id:
             datacenter_ci = cdb.CI.objects.filter(
                 content_type=self.datacenter_content_type,
@@ -279,7 +279,7 @@ class CIImporter(object):
 
     @nested_commit_on_success
     def import_device_relations(self, obj, d):
-        """ Must be called after ventures """
+        """Must be called after ventures """
         for x in cdb.CIRelation.objects.filter(
                 child=d,
                 readonly=True):
@@ -328,8 +328,8 @@ class CIImporter(object):
 
     @nested_commit_on_success
     def import_network_relations(self, network):
-        """ Must be called after device_relations! """
-        """ Make relations using network->ipaddresses->device """
+        """Must be called after device_relations!
+        Make relations using network->ipaddresses->device"""
         for ip in ndb.IPAddress.objects.filter(
                 device__isnull=False,
                 network=network.content_object).all():
@@ -349,17 +349,13 @@ class CIImporter(object):
                 pass
 
     def import_single_object_relations(self, content_object):
-        """
-        Fasade for single Asset
-        """
+        """Fascade for single Asset"""
         ct = ContentType.objects.get_for_model(content_object)
         object_id = content_object.id
         return self.import_relations(ct, asset_id=object_id)
 
     def import_single_object(self, content_object):
-        """
-        Fasade for single Asset
-        """
+        """Fascade for single Asset"""
         ct = ContentType.objects.get_for_model(content_object)
         object_id = content_object.id
         return self.import_all_ci([ct], asset_id=object_id)

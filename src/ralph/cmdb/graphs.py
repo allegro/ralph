@@ -15,7 +15,6 @@ from pygraph.algorithms.searching import breadth_first_search
 from pygraph.classes.exceptions import AdditionError
 
 from ralph.cmdb.models import CI, CIRelation, CI_TYPES, CI_RELATION_TYPES
-from ralph.discovery.models import DeviceModel, DeviceType
 
 
 class ImpactCalculator(object):
@@ -35,28 +34,35 @@ class ImpactCalculator(object):
         self.build_graph()
 
     def cache_relations(self):
+        """Pre-load cache of all contains-relations, to be more effective
+        across instances than querysets"""
         self.cached_relations = defaultdict(list)
-        for x in CIRelation.objects.values('parent_id', 'child_id', 'type', 'id').filter(
+        for relation in CIRelation.objects.values(
+                'parent_id', 'child_id', 'type', 'id').filter(
                 type=CI_RELATION_TYPES.CONTAINS.id):
-            self.cached_relations[x.get('parent_id')].append({
-                'parent': x.get('parent_id'),
-                'child': x.get('child_id'),
-                'type': x.get('type'),
-                'id': x.get('id')
+            self.cached_relations[relation.get('parent_id')].append({
+                'parent': relation.get('parent_id'),
+                'child': relation.get('child_id'),
+                'type': relation.get('type'),
+                'id': relation.get('id'),
             })
 
-    def get_contained_childs(self):
+    def get_all_childs(self):
+        """Returns all down-level childs that matches CONTAINS relation"""
         self.cache_relations()
-        return self.get_all_contains(self.root_ci.id)
+        self.visited_nodes = set()
+        return self.get_all_childs_rec(self.root_ci.id)
 
-    def get_all_contains(self, ci_id):
-        if self.cached_relations[ci_id]:
-            # already has been there
+    def get_all_childs_rec(self, ci_id):
+        """Get all contains children of node ``ci_id``"""
+        # guard
+        if ci_id in self.visited_nodes:
             return []
+        self.visited_nodes.add(ci_id)
         affected = []
         for rel in self.cached_relations[ci_id]:
             affected.append(rel)
-            affected.extend(self.get_all_contains(rel['child']))
+            affected.extend(self.get_all_childs_rec(rel['child']))
         return affected
 
     def find_affected_nodes(self, ci_id):
@@ -68,22 +74,19 @@ class ImpactCalculator(object):
 
     def build_graph(self):
         # get all down-level childs
-        ci_contained = self.get_contained_childs()
+        ci_contains = self.get_all_childs()
         # get one level up parents
-        ci_parented = CIRelation.objects.filter(child__id=self.root_ci.id)
-
+        ci_is_part_of = CIRelation.objects.filter(child__id=self.root_ci.id)
         ci_is_required = CIRelation.objects.filter(
             # get children and parent one level up/down.
             Q(type=CI_RELATION_TYPES.REQUIRES.id) &
-            Q(Q(child=self.root_ci))
+            Q(child=self.root_ci)
         )
-
         ci_requires = CIRelation.objects.filter(
             # get children and parent one level up/down.
             Q(type=CI_RELATION_TYPES.REQUIRES.id) &
-            Q(Q(parent=self.root_ci))
+            Q(parent=self.root_ci)
         )
-
         ci_is_role = CIRelation.objects.filter(
             Q(
                 # get roles
@@ -91,14 +94,12 @@ class ImpactCalculator(object):
                 Q(child=self.root_ci)
             )
         )
-
         ci_has_role = CIRelation.objects.filter(
             Q(
                 Q(type=CI_RELATION_TYPES.HASROLE.id) &
                 Q(parent=self.root_ci)
             )
         )
-
         ci_service = CIRelation.objects.filter(
             Q(
                 # get venture node belongs to, and service venture belongs to.
@@ -111,15 +112,16 @@ class ImpactCalculator(object):
             )
         )
         self.graph = pygraph.classes.graph.graph()
-        self.graph.add_nodes((c['pk'] for c in CI.objects.all().values('pk')))
+        self.graph.add_nodes((c['pk'] for c in CI.objects.values('pk')))
         for relation in chain(
-            ci_contained,
-            ci_parented,
+            ci_contains,
+            ci_is_part_of,
             ci_is_required,
             ci_requires,
             ci_is_role,
             ci_has_role,
-            ci_service):
+            ci_service,
+        ):
             if isinstance(relation, dict):
                 parent = relation['parent']
                 child = relation['child']
@@ -139,5 +141,4 @@ class ImpactCalculator(object):
             except AdditionError:
                 # ignore duplicated relations(types) in graph
                 pass
-
 

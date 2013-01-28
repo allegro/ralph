@@ -15,7 +15,7 @@ from tastypie.authentication import ApiKeyAuthentication
 from tastypie.authorization import DjangoAuthorization
 from tastypie.constants import ALL, ALL_WITH_RELATIONS
 from tastypie.fields import ForeignKey as TastyForeignKey
-from tastypie.resources import Resource, ModelResource as MResource
+from tastypie.resources import ModelResource as MResource
 from tastypie.throttle import CacheThrottle
 from tastypie import fields
 
