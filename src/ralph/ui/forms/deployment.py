@@ -35,7 +35,6 @@ from ralph.dnsedit.util import (
     find_addresses_for_hostname,
     get_revdns_records,
     get_domain,
-    get_ip_addresses,
 )
 from ralph.ui.widgets import DeviceWidget
 from ralph.util import Eth
@@ -249,7 +248,7 @@ def _validate_hostname(hostname, mac, parsed_hostnames, row_number):
         ip_addresses = list(
             dev.ipaddress_set.values_list('address', flat=True)
         )
-        ip_addresses_in_dns = get_ip_addresses(hostname)
+        ip_addresses_in_dns = find_addresses_for_hostname(hostname)
         for ip in ip_addresses_in_dns:
             if ip not in ip_addresses:
                 raise forms.ValidationError(
