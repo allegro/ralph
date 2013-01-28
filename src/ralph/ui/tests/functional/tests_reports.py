@@ -14,13 +14,26 @@ from ralph.cmdb.models_ci import (
     CI, CIType, CIRelation, CI_RELATION_TYPES, CI_TYPES
 )
 from ralph.business.models import Venture, VentureRole
-from ralph.discovery.models import Device, DeviceType, DeprecationKind
+from ralph.discovery.models import (
+    Device, DeviceType, DeprecationKind, MarginKind
+)
+from ralph.discovery.models_component import ComponentType
 from ralph.ui.tests.global_utils import login_as_su
+from ralph.ui.tests.util import create_device, sum_for_view
+from ralph.ui.views.reports import is_bradesystem
+from ralph.util.pricing import get_device_price
 
 CURRENT_DIR = settings.CURRENT_DIR
 
 
 class TestReportsServices(TestCase):
+    fixtures = [
+        '0_types.yaml',
+        '1_attributes.yaml',
+        '2_layers.yaml',
+        '3_prefixes.yaml'
+    ]
+
     def setUp(self):
         self.client = login_as_su()
         self.service = CI(
@@ -283,6 +296,318 @@ class TestReportsDevices(TestCase):
         self.assertEqual(form[0][0], name)
         self.assertEqual(form[0][1], datetime.datetime(2005, 01, 02))
 
+
+class TestReportsPriceDeviceVenture(TestCase):
+    def setUp(self):
+        self.client = login_as_su()
+
+        venture = Venture(name='Infra').save()
+        self.venture = Venture.objects.get(name='Infra')
+
+        venture = Venture(name='Blade').save()
+        self.venture_blade = Venture.objects.get(name='Blade')
+
+        DeprecationKind(name='Default',months=24).save()
+        self.deprecation_kind=DeprecationKind.objects.get(name='Default')
+
+        srv1 = {
+            'sn': 'srv-1',
+            'model_name': 'server',
+            'model_type': DeviceType.virtual_server,
+            'venture': self.venture,
+            'name': 'Srv 1',
+            'purchase_date': datetime.datetime(2020, 1, 1, 0, 0),
+            'deprecation_kind': self.deprecation_kind,
+        }
+        srv1_cpu = {
+            'model_name': 'Intel PCU1',
+            'label': 'CPU 1',
+            'priority': 0,
+            'family': 'Intsels',
+            'price': 120,
+            'count': 2,
+        }
+        srv1_memory = {
+            'priority': 0,
+            'family': 'Noname RAM',
+            'price': 100,
+            'speed': 1033,
+            'size': 512,
+            'count': 6,
+        }
+        srv1_storage = {
+            'model_name': 'Store 1TB',
+            'label': 'store 1TB',
+            'priority': 0,
+            'family': 'Noname Store',
+            'price': 180,
+            'count': 10,
+        }
+        create_device(
+            device=srv1,
+            cpu=srv1_cpu,
+            memory=srv1_memory,
+            storage=srv1_storage,
+        )
+        self.srv1 = Device.objects.get(sn='srv-1')
+
+        srv2 = {
+            'sn': 'srv-2',
+            'model_name': 'server',
+            'model_type': DeviceType.virtual_server,
+            'venture': self.venture,
+            'name': 'Srv 1',
+            'purchase_date': datetime.datetime(2020, 1, 1, 0, 0),
+            'deprecation_kind': self.deprecation_kind,
+        }
+        create_device(device=srv2)
+        self.srv2 = Device.objects.get(sn='srv-2')
+
+
+        rack = {
+            'sn': 'rack-1',
+            'model_name': 'rack1',
+            'model_type': DeviceType.rack,
+            'price': 5000,
+            'name': 'rack1',
+            'model_group': 'Rack Group',
+            'model_group_slots': 20,
+        }
+        create_device(device=rack)
+        self.rack = Device.objects.get(sn='rack-1')
+
+        blc = {
+            'sn': 'blc-1',
+            'model_name': 'blade-center',
+            'model_type': DeviceType.blade_system,
+            'venture': self.venture_blade,
+            'name': 'Blc 1',
+            'parent': self.rack,
+            'price': 10000,
+            'model_group': 'BladeCenters Group',
+            'model_group_slots': 10,
+        }
+        create_device(device=blc)
+        self.blc = Device.objects.get(sn='blc-1')
+
+        bls1 = {
+            'sn': 'bls-1',
+            'model_name': 'blade-server',
+            'model_type': DeviceType.blade_server,
+            'venture': self.venture_blade,
+            'parent': self.blc,
+            'name': 'Bls 1',
+            'purchase_date': datetime.datetime(2020, 1, 1, 0, 0),
+            'deprecation_kind': self.deprecation_kind,
+        }
+        bls1_cpu = {
+            'model_name': 'Intel PCU1',
+            'label': 'CPU 1',
+            'priority': 0,
+            'family': 'Intsels',
+            'price': 140,
+            'count': 4,
+        }
+        create_device(device=bls1, cpu=bls1_cpu)
+        self.bls1 = Device.objects.get(sn='bls-1')
+
+
+        bls2 = {
+            'sn': 'bls-2',
+            'model_name': 'blade-server',
+            'model_type': DeviceType.blade_server,
+            'venture': self.venture_blade,
+            'parent': self.blc,
+            'name': 'Bls 2',
+            'purchase_date': datetime.datetime(2020, 1, 1, 0, 0),
+            'deprecation_kind': self.deprecation_kind,
+        }
+        bls2_memory = {
+            'priority': 0,
+            'family': 'Noname RAM2',
+            'price': 80,
+            'speed': 1033,
+            'size': 512,
+            'count': 10,
+        }
+        create_device(device=bls2, memory=bls2_memory)
+        self.bls2 = Device.objects.get(sn='bls-2')
+
+        bls3 = {
+            'sn': 'bls-3',
+            'model_name': 'blade-server',
+            'model_type': DeviceType.blade_server,
+            'venture': self.venture_blade,
+            'parent': self.blc,
+            'name': 'Bls 3',
+            'purchase_date': datetime.datetime(2020, 1, 1, 0, 0),
+            'deprecation_kind': self.deprecation_kind,
+        }
+        bls3_memory = {
+            'priority': 0,
+            'family': 'Noname RAM',
+            'price': 80,
+            'speed': 1033,
+            'size': 512,
+            'count': 2,
+        }
+        create_device(device=bls3, memory=bls3_memory)
+        self.bls3 = Device.objects.get(sn='bls-3')
+
+        bls4 = {
+            'sn': 'bls-4',
+            'model_name': 'blade-server',
+            'model_type': DeviceType.blade_server,
+            'venture': self.venture_blade,
+            'parent': self.blc,
+            'name': 'Bls 4',
+            'purchase_date': datetime.datetime(2020, 1, 1, 0, 0),
+            'deprecation_kind': self.deprecation_kind,
+            'price': 3000,
+        }
+        create_device(device=bls4)
+        self.bls4 = Device.objects.get(sn='bls-4')
+
+
+    def test_create_device(self):
+        ''' Tests util create_device '''
+
+        devices = Device.objects.filter(name='Srv 1')
+        self.assertIsNotNone(devices)
+
+
+    def test_view_devices_with_components_in_venture(self):
+        ''' Tests device with local components, with praces from catalog '''
+
+        venture = Venture.objects.get(name='Infra')
+        url = '/ui/reports/device_prices_per_venture/?venture=%s' % venture.id
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        devices = response.context_data.get('rows')
+        for dev in devices:
+            count, price, total_component, sum_dev = sum_for_view(dev)
+            self.assertEqual(count*price, total_component)
+            self.assertEqual(dev.get('price'), sum_dev)
+
+    def test_deprecated_device_with_components_in_venture(self):
+        before_deprecated = get_device_price(self.srv1)
+        self.assertEqual(before_deprecated, 2640)
+
+        self.srv1.purchase_date = datetime.datetime(1999, 1, 1, 0, 0)
+        self.srv1.save()
+        dev = Device.objects.get(sn='srv-1')
+
+        self.assertEqual(
+            dev.deprecation_date, datetime.datetime(2001, 1, 1, 0, 0)
+        )
+
+        after_deprecated = get_device_price(dev)
+        self.assertEqual(after_deprecated, 0)
+
+        venture = Venture.objects.get(name='Infra')
+        url = '/ui/reports/device_prices_per_venture/?venture=%s' % venture.id
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        devices = response.context_data.get('rows')
+
+        for dev in devices:
+            count, price, total_component, sum_dev = sum_for_view(dev)
+            self.assertEqual(count*price, total_component)
+            self.assertEqual(dev.get('price'), sum_dev)
+            if dev.get('device').name == 'srv-1':
+                self.assertEqual(sum_dev, 2640)
+
+    def test_deleted_device_in_venture(self):
+        ''' Tests if deteleted device is see in venture '''
+
+        venture = Venture.objects.get(name='Infra')
+        url = '/ui/reports/device_prices_per_venture/?venture=%s' % venture.id
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        devices = response.context_data.get('rows')
+
+        self.assertEqual(len(devices), 2)
+
+        self.srv1.deleted = True
+        self.srv1.save()
+
+        venture = Venture.objects.get(name='Infra')
+        url = '/ui/reports/device_prices_per_venture/?venture=%s' % venture.id
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        devices = response.context_data.get('rows')
+
+        self.assertEqual(len(devices), 1)
+
+    def test_blade_system(self):
+        ''' Test blade system infrastuctire '''
+
+        self.assertIsNotNone(self.blc)
+        self.assertIsNotNone(self.bls1)
+        self.assertEqual(self.bls1.parent, self.blc)
+        self.assertEqual(self.bls2.parent, self.blc)
+        self.assertEqual(self.bls3.parent, self.blc)
+        self.assertEqual(self.bls4.parent, self.blc)
+        self.assertEqual(len(self.blc.child_set.all()), 4)
+
+        venture = Venture.objects.get(name='Blade')
+        url = ('/ui/reports/device_prices_per_venture/?venture=%s'
+                % self.venture_blade.id)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        devices = response.context_data.get('rows')
+
+        self.assertEqual(len(devices), 5)
+
+    def test_blade_system_with_deprecated_device(self):
+        self.bls2.purchase_date = datetime.datetime(1999, 1, 1, 0, 0)
+        self.bls1.save()
+
+        venture = Venture.objects.get(name='Blade')
+        url = ('/ui/reports/device_prices_per_venture/?venture=%s'
+                % self.venture_blade.id)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        devices = response.context_data.get('rows')
+
+        self.assertEqual(len(devices), 5)
+
+    def test_blade_system_with_deleted_device(self):
+        self.bls3.deleted = True
+        self.bls3.save()
+        dev = Device.objects.get(sn='srv-1')
+
+        venture = Venture.objects.get(name='Blade')
+        url = ('/ui/reports/device_prices_per_venture/?venture=%s'
+                % self.venture_blade.id)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        devices = response.context_data.get('rows')
+
+        self.assertEqual(len(devices), 4)
+
+        for dev in devices:
+            sum_dev = 0
+            for component in dev.get('components', []):
+                count = component.get('count')
+                price = component.get('price')
+                total_component = component.get('total_component') or 0
+                sum_dev += total_component
+                if is_bradesystem(component):
+                    # not deleted devices - bladecenter
+                    blade_servers = len(devices) - 1
+                    part_of_price = self.blc.price / blade_servers
+                    self.assertEqual(component.get('price'), part_of_price)
+
+                self.assertEqual(count * price, total_component)
+
+            self.assertEqual(dev.get('price'), sum_dev)
+
+    def test_blade_system_diskshare(self):
+        pass
+
+
+
 class TestReportsVentures(TestCase):
     """
     I need test!
@@ -295,7 +620,3 @@ class TestReportsMargins(TestCase):
     I need test!
     """
     pass
-
-class TestReportsPriceDeviceVenture(TestCase):
-    def setUp(self):
-        self.client = login_as_su()
