@@ -18,6 +18,7 @@ from lck.django.filters import slugify
 from pygraph.classes.digraph import digraph
 from pygraph.algorithms.cycles import find_cycle
 
+
 class CI_RELATION_TYPES(Choices):
     _ = Choices.Choice
 
@@ -94,8 +95,8 @@ class CIContentTypePrefix(TimeTrackable):
     def get_prefix_by_object(cls, content_object, fallback=None):
         content_type = ContentType.objects.get_for_model(content_object)
         label = '%s.%s' % (
-                content_type.app_label,
-                content_type.model,
+            content_type.app_label,
+            content_type.model,
         )
         first_run = contenttype_mappings.get(label)
         if first_run:
