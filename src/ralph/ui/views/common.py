@@ -29,11 +29,14 @@ from ralph.dnsedit.util import (
     get_domain,
     set_revdns_record,
     get_revdns_records,
+    reset_dns,
 )
 from ralph.dnsedit.util import Error as DNSError
 from ralph.discovery.models import (
     Device,
     DeviceType,
+    Network,
+    IPAddress,
 )
 from ralph.discovery.models_history import (
     FOREVER_DATE,
@@ -54,10 +57,35 @@ from ralph.ui.forms.addresses import (
     IPAddressFormSet,
     DNSFormSet,
 )
+from ralph.ui.forms.deployment import (
+    ServerMoveStep1Form,
+    ServerMoveStep2FormSet,
+    ServerMoveStep3FormSet,
+)
 
 SAVE_PRIORITY = 200
 HISTORY_PAGE_SIZE = 25
 MAX_PAGE_SIZE = 65535
+TEMPLATE_MENU_ITEMS = [
+    MenuItem(
+        'Manual device',
+        name='device',
+        fugue_icon='fugue-wooden-box',
+        href='/ui/racks//add_device/',
+    ),
+    MenuItem(
+        'Servers',
+        name='servers',
+        fugue_icon='fugue-computer',
+        href='/ui/deployment/mass/start/',
+    ),
+    MenuItem(
+        'Move Servers',
+        name='move_servers',
+        fugue_icon='fugue-computer--arrow',
+        href='/ui/racks//move/',
+    ),
+]
 
 
 def _get_balancers(dev):
@@ -877,6 +905,202 @@ class Discover(DeviceDetailView):
             'address': addresses[0] if addresses else '',
             'addresses': json.dumps(addresses),
             'warnings': warnings,
+        })
+        return ret
+
+
+class ServerMove(BaseMixin, TemplateView):
+    template_name = 'ui/bulk-move.html'
+
+    def __init__(self, *args, **kwargs):
+        super(ServerMove, self).__init__(*args, **kwargs)
+        self.form = None
+        self.formset = None
+        self.operations = None
+
+    def step2_initial(self):
+        addresses = [
+            [ip.address for ip in self.form._get_address_candidates(a)]
+            for a in self.form.cleaned_data['addresses'].split()
+        ]
+        for a in addresses:
+            yield {
+                'address': a[0],
+                'network': Network.from_ip(a[0]).id,
+                'candidates': a,
+            }
+
+    def step3_initial(self):
+        ips = set()
+        names = set()
+        for f in self.formset:
+            network = Network.objects.get(id=f.cleaned_data['network'])
+            ip = get_first_free_ip(network.name, ips)
+            ips.add(ip)
+            name = get_next_free_hostname(network.data_center, names)
+            names.add(name)
+            yield {
+                'address': f.cleaned_data['address'],
+                'new_ip': ip,
+                'new_hostname': name,
+            }
+
+    def get_operations(self, formset):
+        operations = []
+        for f in formset:
+            address = f.cleaned_data['address']
+            new_ip = f.cleaned_data['new_ip']
+            new_hostname = f.cleaned_data['new_hostname']
+            mac = None
+            old_ipaddress = IPAddress.objects.get(address=address)
+            rev = '.'.join(
+                list(reversed(new_ip.split('.')))
+            ) + '.in-addr.arpa'
+            operations.append((
+                "warning",
+                "Address %s will be deleted from device %s." % (
+                    old_ipaddress.address, old_ipaddress.device
+                ),
+            ))
+            for r in Record.objects.filter(
+                    db.Q(name=old_ipaddress.hostname) |
+                    db.Q(content=old_ipaddress.hostname) |
+                    db.Q(content=old_ipaddress.address)
+                ):
+                operations.append((
+                    "warning",
+                    "DNS record '%s %s %s' will be deleted." % (
+                        r.name, r.type, r.content
+                    ),
+                ))
+            for e in DHCPEntry.objects.filter(ip=old_ipaddress.address):
+                operations.append((
+                    "warning",
+                    "DHCP entry for '%s %s' will be deleted." % (
+                        e.ip, e.mac
+                    )
+                ))
+                mac = e.mac
+            operations.append((
+                "success",
+                "Address %s will be added to device %s." % (
+                    new_ip, old_ipaddress.device
+                ),
+            ))
+            operations.append((
+                "success",
+                "Device %s will be renamed to %s." % (
+                    old_ipaddress.device, new_hostname
+                ),
+            ))
+            operations.append((
+                "success",
+                "A new DNS entry '%s A %s' will be created." % (
+                    new_hostname, new_ip
+                ),
+            ))
+            operations.append((
+                "success",
+                "A new DNS entry '%s PTR %s' will be created." % (
+                    rev, new_hostname
+                ),
+            ))
+            if mac:
+                operations.append((
+                    "success",
+                    "A new DHCP entry '%s %s' will be created." % (
+                        new_ip, mac
+                    )
+                ))
+        return operations
+
+    @nested_commit_on_success
+    def perform_move(self, address, new_ip, new_hostname):
+        old_ipaddress = IPAddress.objects.get(address=address)
+        device = old_ipaddress.device
+        mac = None
+        for r in Record.objects.filter(
+                db.Q(name=old_ipaddress.hostname) |
+                db.Q(content=old_ipaddress.hostname) |
+                db.Q(content=old_ipaddress.address)
+            ):
+            r.delete()
+        for e in DHCPEntry.objects.filter(ip=old_ipaddress.address):
+            mac = e.mac
+            e.delete()
+        old_ipaddress.device = None
+        old_ipaddress.save()
+        reset_dns(new_hostname, new_ip)
+        new_ipaddress, c = IPAddress.concurrent_get_or_create(
+                address=new_ip,
+            )
+        new_ipaddress.device = device
+        new_ipaddress.hostname = new_hostname
+        new_ipaddress.save()
+        if mac:
+            entry = DHCPEntry(ip=new_ip, mac=mac)
+            entry.save()
+        pricing.device_update_cached(device)
+
+    def post(self, *args, **kwargs):
+        if 'move' in self.request.POST:
+            self.formset = ServerMoveStep3FormSet(
+                self.request.POST,
+                prefix='step3',
+            )
+            if self.formset.is_valid():
+                for f in self.formset:
+                    self.perform_move(
+                        f.cleaned_data['address'],
+                        f.cleaned_data['new_ip'],
+                        f.cleaned_data['new_hostname'],
+                    )
+                    messages.success(
+                        self.request,
+                        "Moved %s." % f.cleaned_data['address'],
+                    )
+                return HttpResponseRedirect(self.request.path)
+        elif 'addresses' in self.request.POST:
+            self.form = ServerMoveStep1Form(self.request.POST)
+            if self.form.is_valid():
+                self.formset = ServerMoveStep2FormSet(
+                    initial=list(self.step2_initial()),
+                    prefix='step2',
+                )
+                self.form = None
+        elif 'step2-TOTAL_FORMS' in self.request.POST:
+            self.formset = ServerMoveStep2FormSet(
+                self.request.POST,
+                prefix='step2',
+            )
+            self.form = None
+            if self.formset.is_valid():
+                self.formset = ServerMoveStep3FormSet(
+                    initial=list(self.step3_initial()),
+                    prefix='step3',
+                )
+        elif 'step3-TOTAL_FORMS' in self.request.POST:
+            self.formset = ServerMoveStep3FormSet(
+                self.request.POST,
+                prefix='step3',
+            )
+            if self.formset.is_valid():
+                self.operations = self.get_operations(self.formset)
+        return self.get(*args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        if self.form is None and self.formset is None:
+            self.form = ServerMoveStep1Form()
+        ret = super(ServerMove, self).get_context_data(**kwargs)
+        ret.update({
+            'form': self.form,
+            'formset': self.formset,
+            'operations': self.operations,
+            'details': 'deploy',
+            'section': self.kwargs.get('section'),
+            'subsection': 'bulk edit',
+            'template_selected': 'move_servers',
+            'template_menu_items': TEMPLATE_MENU_ITEMS,
         })
         return ret
 
