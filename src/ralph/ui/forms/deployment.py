@@ -408,7 +408,8 @@ class ServerMoveStep1Form(forms.Form):
     addresses = forms.CharField(
         label="Server addresses",
         widget=forms.widgets.Textarea(attrs={'class': 'span12'}),
-        help_text="Enter the IP addresses or hostnames to be moved.",
+        help_text="Enter the IP addresses or hostnames to be moved, "
+                  "separated with spaces or newlines.",
     )
 
     @staticmethod
