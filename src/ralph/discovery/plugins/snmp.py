@@ -128,7 +128,8 @@ def snmp(**kwargs):
                         timeout=0.2,
                         snmp_version=version,
                     )
-                if is_up:
+                # prevent empty response for some communities.
+                if message and is_up:
                     kwargs['community'] = community
                     kwargs['snmp_version'] = version
                     kwargs['snmp_name'] = message
