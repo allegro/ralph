@@ -326,7 +326,7 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
         return "{} ({})".format(self.name, self.id)
 
     @classmethod
-    def create(cls, ethernets=None, sn=None, model=None,  model_name=None,
+    def create(cls, ethernets=None, sn=None, model=None, model_name=None,
                model_type=None, device=None, allow_stub=False, priority=0,
                **kwargs):
         if 'parent' in kwargs and kwargs['parent'] is None:
