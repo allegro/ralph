@@ -196,6 +196,29 @@ def get_revdns_records(ip):
     return Record.objects.filter(name=revname, type='PTR')
 
 
+def find_addresses_for_hostname(hostname):
+    rev_ips = {
+        '.'.join(reversed(name.split('.', 4)[:4]))
+        for name in Record.objects.filter(
+            type='PTR',
+            content=hostname,
+        ).values_list(
+            'name',
+            flat=True,
+        )
+    }
+    ips = set(
+        Record.objects.filter(
+            type='A',
+            name=hostname,
+        ).values_list(
+            'content',
+            flat=True,
+        )
+    )
+    return ips | rev_ips
+
+
 @nested_commit_on_success
 def set_revdns_record(ip, name, ttl=None, prio=None, overwrite=False,
                       create=False):
@@ -291,23 +314,4 @@ def update_txt_records(device):
                device.venture_role.full_name if device.venture_role else '')
         set_txt_record(record.domain, name, 'MODEL', get_model(device))
         set_txt_record(record.domain, name, 'LOCATION', get_location(device))
-
-
-def get_ip_addresses(hostname):
-    ip_addresses = set(
-        Record.objects.filter(
-            type='A',
-            name=hostname
-        ).values_list(
-            'content',
-            flat=True
-        )
-    )
-    for record in Record.objects.filter(type='PTR', content=hostname):
-        ip_addresses.add(
-            '.'.join(
-                reversed(record.name.replace('.in-addr.arpa', '').split('.'))
-            )
-        )
-    return list(ip_addresses)
 

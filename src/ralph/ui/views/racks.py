@@ -16,9 +16,21 @@ from django.views.generic import CreateView
 from ralph.account.models import Perm
 from ralph.discovery.models import ReadOnlyDevice, Device, DeviceType
 from ralph.ui.forms.devices import DeviceCreateForm
-from ralph.ui.views.common import (Info, Prices, Addresses, Costs, Purchase,
-                                   Components, History, Discover, BaseMixin,
-                                   DeviceDetailView, Base, Software)
+from ralph.ui.views.common import (
+    Info,
+    Prices,
+    Addresses,
+    Costs,
+    Purchase,
+    Components,
+    History,
+    Discover,
+    BaseMixin,
+    DeviceDetailView,
+    Base,
+    Software,
+    TEMPLATE_MENU_ITEMS,
+)
 from ralph.cmdb.views import CMDB
 from ralph.ui.views.devices import BaseDeviceList
 from ralph.ui.views.reports import Reports, ReportDeviceList
@@ -422,20 +434,7 @@ class RacksAddDevice(Racks, DeviceCreateView):
     def get_context_data(self, **kwargs):
         ret = super(RacksAddDevice, self).get_context_data(**kwargs)
         tab_items = ret['tab_items']
-        ret['template_menu_items'] = [
-            MenuItem(
-                'Manual device',
-                name='device',
-                fugue_icon='fugue-wooden-box',
-                href='../add_device/',
-            ),
-            MenuItem(
-                'Servers',
-                name='servers',
-                fugue_icon='fugue-computer',
-                href='/ui/deployment/mass/start/',
-            ),
-        ]
+        ret['template_menu_items'] = TEMPLATE_MENU_ITEMS
         ret['template_selected'] = 'device'
         if ret['subsection'] is not '':
             tab_items.append(
