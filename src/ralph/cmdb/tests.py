@@ -268,7 +268,6 @@ class CIImporterTest(TestCase):
 
         # All ci should be in Hardware layer
         ci_dc = CI.objects.get(name='dc')
-        ci_role = CI.objects.get(name='dc')
         ci_rack = CI.objects.get(name='rack')
         ci_blade = CI.objects.get(name='blade')
         ci_venture = CI.objects.get(name='child_venture')
@@ -326,10 +325,13 @@ class CIImporterTest(TestCase):
         # summarize relations.
         self.assertEqual(len(CIRelation.objects.all()), 9)
         # calculate impact/spanning tree for CI structure
-        calc = ImpactCalculator()
+        root_ci = CI.objects.get(name='rack')
+        calc = ImpactCalculator(root_ci)
+        import pdb; pdb.set_trace()
         self.assertEqual(
-            calc.find_affected_nodes(1),
-            ({1: None, 2: 1, 4: 7, 6: 2, 7: 2}, [1, 2, 6, 7, 4])
+            calc.find_affected_nodes(root_ci.id),
+            ({4: 7, 7: None}, [7, 4])
+            #({1: None, 2: 1, 4: 7, 6: 2, 7: 2}, [1, 2, 6, 7, 4])
         )
 
 
