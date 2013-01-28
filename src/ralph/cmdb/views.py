@@ -44,10 +44,8 @@ from ralph.util.presentation import (
 ROWS_PER_PAGE = 20
 SAVE_PRIORITY = 200
 
-icons_lookup_table = []
 
 def get_icon_for(ci):
-    global icons_lookup_table
     ctname = ci.content_type.name
 
     if not ci or not ci.content_object:
