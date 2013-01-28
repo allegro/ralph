@@ -579,11 +579,6 @@ class ServerMoveStep3Form(forms.Form):
         return new_hostname
 
 
-class ServerMoveStep3FormSetBase(formsets.BaseFormSet):
-    def add_fields(self, form, index):
-        return super(ServerMoveStep3FormSetBase, self).add_fields(form, index)
-
-
 ServerMoveStep3FormSet = formsets.formset_factory(
     form=ServerMoveStep3Form,
     extra=0,
