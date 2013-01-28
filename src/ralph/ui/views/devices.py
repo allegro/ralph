@@ -15,6 +15,7 @@ from django.utils.translation import ugettext as _
 from django.views.generic import ListView
 
 from ralph.account.models import Perm
+from ralph.discovery.models_device import DeviceType
 from ralph.util import csvutil
 
 
@@ -75,11 +76,11 @@ class BaseDeviceList(ListView):
     details_columns = {
         'info': ['venture', 'model', 'position', 'remarks'],
         'components': ['model', 'barcode', 'sn'],
-        'prices': ['venture', 'margin', 'deprecation', 'price', 'cost', 'depreciation'],
+        'prices': ['venture', 'margin', 'deprecation', 'price', 'cost', 'deprecation'],
         'addresses': ['ips', 'management'],
-        'costs': ['venture', 'cost', 'depreciation'],
+        'costs': ['venture', 'cost', 'deprecation'],
         'history': ['created', 'lastseen'],
-        'purchase': ['purchase', 'warranty', 'support', 'depreciation'],
+        'purchase': ['purchase', 'warranty', 'support', 'deprecation'],
         'discover': ['lastseen'],
         'cmdb': [],
         'reports': ['venture', 'remarks'],
@@ -182,6 +183,7 @@ class BaseDeviceList(ListView):
             'show_tabs': _get_show_tabs(self.request, self.venture, None),
             'sort': self.sort,
             'now': datetime.datetime.now(),
+            'device_types': DeviceType,
         })
         return ret
 
