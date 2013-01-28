@@ -347,7 +347,7 @@ class TestReportsPriceDeviceVenture(TestCase):
             device=srv1,
             cpu=srv1_cpu,
             memory=srv1_memory,
-            storage=srv1_storage,
+            storage=srv1_storage
         )
         self.srv1 = Device.objects.get(sn='srv-1')
 
