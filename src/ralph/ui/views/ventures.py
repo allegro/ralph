@@ -464,8 +464,29 @@ def _get_summaries(query, start, end, overlap=True, venture=None):
             'count_now': count_now,
         }
     if overlap:
-        yield _total_dict('Total', query, start, end,
-                _get_search_url(venture, type=()))
+        yield _total_dict(
+            'Total',
+            query,
+            start,
+            end,
+            _get_search_url(venture, type=()),
+        )
+        yield _total_dict(
+            'Total physical',
+            query.exclude(
+                device__model__type__in=(
+                    DeviceType.cloud_server,
+                    DeviceType.virtual_server,
+                    DeviceType.unknown,
+                    DeviceType.data_center,
+                    DeviceType.rack,
+                    DeviceType.management,
+                ),
+            ),
+            start,
+            end,
+            _get_search_url(venture, type=()),
+        )
 
 
 def _venture_children(venture, children):
