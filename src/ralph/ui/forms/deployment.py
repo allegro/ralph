@@ -35,7 +35,6 @@ from ralph.dnsedit.util import (
     find_addresses_for_hostname,
     get_revdns_records,
     get_domain,
-    get_ip_addresses,
 )
 from ralph.ui.widgets import DeviceWidget
 from ralph.util import Eth
@@ -249,7 +248,7 @@ def _validate_hostname(hostname, mac, parsed_hostnames, row_number):
         ip_addresses = list(
             dev.ipaddress_set.values_list('address', flat=True)
         )
-        ip_addresses_in_dns = get_ip_addresses(hostname)
+        ip_addresses_in_dns = find_addresses_for_hostname(hostname)
         for ip in ip_addresses_in_dns:
             if ip not in ip_addresses:
                 raise forms.ValidationError(
@@ -405,11 +404,13 @@ class MassDeploymentForm(forms.Form):
             })
         return cleaned_csv
 
+
 class ServerMoveStep1Form(forms.Form):
     addresses = forms.CharField(
         label="Server addresses",
         widget=forms.widgets.Textarea(attrs={'class': 'span12'}),
-        help_text="Enter the IP addresses or hostnames to be moved.",
+        help_text="Enter the IP addresses or hostnames to be moved, "
+                  "separated with spaces or newlines.",
     )
 
     @staticmethod
@@ -448,24 +449,28 @@ class ServerMoveStep1Form(forms.Form):
         return addresses
 
 
+def _check_move_address(address):
+    if not IPAddress.objects.filter(
+            device__deleted=False,
+            device__model__type__in={
+                DeviceType.rack_server,
+                DeviceType.blade_server,
+                DeviceType.virtual_server,
+                DeviceType.unknown,
+            }
+        ).filter(address=address).exists():
+        raise forms.ValidationError(
+            "No server found for %s." % address,
+        )
+
+
 class ServerMoveStep2Form(forms.Form):
     address = forms.ChoiceField()
     network = forms.ChoiceField()
 
     def clean_address(self):
         address = self.cleaned_data['address']
-        if not IPAddress.objects.filter(
-                device__deleted=False,
-                device__model__type__in={
-                    DeviceType.rack_server,
-                    DeviceType.blade_server,
-                    DeviceType.virtual_server,
-                    DeviceType.unknown,
-                }
-            ).filter(address=address).exists():
-            raise forms.ValidationError(
-                "No server found for %s." % address,
-            )
+        _check_move_address(address)
         return address
 
     def clean_network(self):
@@ -511,18 +516,7 @@ class ServerMoveStep3Form(forms.Form):
 
     def clean_address(self):
         address = self.cleaned_data['address']
-        if not IPAddress.objects.filter(
-                device__deleted=False,
-                device__model__type__in={
-                    DeviceType.rack_server,
-                    DeviceType.blade_server,
-                    DeviceType.virtual_server,
-                    DeviceType.unknown,
-                }
-            ).filter(address=address).exists():
-            raise forms.ValidationError(
-                "No server found for %s." % address,
-            )
+        _check_move_address(address)
         return address
 
     def clean_new_ip(self):
@@ -583,11 +577,6 @@ class ServerMoveStep3Form(forms.Form):
             elif Record.objects.filter(name=new_hostname).exists():
                 raise forms.ValidationError("Hostname already in DNS.")
         return new_hostname
-
-
-class ServerMoveStep3FormSetBase(formsets.BaseFormSet):
-    def add_fields(self, form, index):
-        return super(ServerMoveStep3FormSetBase, self).add_fields(form, index)
 
 
 ServerMoveStep3FormSet = formsets.formset_factory(
