@@ -6,7 +6,15 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from ralph.discovery.models import Device
+from ralph.discovery.models import (
+	Device, Processor, ComponentModel, ComponentModelGroup, ComponentType
+)
+
+def dublicate_item(item):
+	duplicate = []
+	for component in range(item.get('count')):
+		duplicate.append(item)
+	return duplicate
 
 def create_device(device, cpu=None, memory=None, storage=None):
 	dev = Device.create(
@@ -16,13 +24,31 @@ def create_device(device, cpu=None, memory=None, storage=None):
 		sn=device.get('sn'),
 		venture=device.get('venture'),
 		parent=device.get('parent'),
-		price=device.get('price')
+		price=device.get('price'),
+		deprecation_kind=device.get('deprecation_kind')
 	)
 	dev.name = device.get('name')
 	dev.save()
 
 	if cpu:
-		pass
+		group = ComponentModelGroup.objects.get_or_create(
+			name='Group %s' % cpu.get('model_name'),
+			price=cpu.get('price'),
+			type=ComponentType.processor
+		)
+
+		model = ComponentModel.objects.get_or_create(
+			name=cpu.get('model_name'),
+			group=group[0]
+		)
+
+		cpus = dublicate_item(cpu)
+		for cpu in cpus:
+			Processor(
+				device=dev,
+				model=model[0],
+				label=cpu.get('label'),
+			)
 	if memory:
 		pass
 	if storage:
