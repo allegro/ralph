@@ -21,13 +21,6 @@ CURRENT_DIR = settings.CURRENT_DIR
 
 
 class TestReportsServices(TestCase):
-    fixtures = [
-        '0_types.yaml',
-        '1_attributes.yaml',
-        '2_layers.yaml',
-        '3_prefixes.yaml'
-    ]
-
     def setUp(self):
         self.client = login_as_su()
         self.service = CI(
@@ -302,3 +295,7 @@ class TestReportsMargins(TestCase):
     I need test!
     """
     pass
+
+class TestReportsPriceDeviceVenture(TestCase):
+    def setUp(self):
+        self.client = login_as_su()
