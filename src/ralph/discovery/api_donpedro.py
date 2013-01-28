@@ -44,10 +44,12 @@ class NoRequiredIPAddressError(NoRequiredDataError):
     pass
 
 
-def save_processors(processors, dev):
+def save_processors(processors, dev, is_virtual=False):
     indexes = []
     for p in processors:
         cpuname = p.get('label')
+        if is_virtual and not cpuname.lower().startswith('virtual'):
+            cpuname = "Virtual %s" % cpuname
         try:
             index = int(p.get('index')[3:]) + 1  # CPU0
             speed = int(p.get('speed'))
@@ -64,6 +66,10 @@ def save_processors(processors, dev):
                 'cores': cores,
             },
         )
+        if not created:
+            cpu.label = cpuname
+            cpu.speed = speed
+            cpu.cores = cores
         is64bit = p.get('is64bit') == 'true'
         name = 'CPU %s%s %s%s' % (
             '64bit ' if is64bit else '',
@@ -238,6 +244,7 @@ def save_device_data(data, remote_ip):
         for e in data['ethernets']
         if MACAddressField.normalize(e.get('mac')) not in MAC_PREFIX_BLACKLIST]
     sn = device.get('sn')
+    vendor = device.get('vendor', '')
     if not ethernets and not sn:
         raise NoRequiredDataError('No MAC addresses and no device SN.')
     ip_addresses = [
@@ -252,8 +259,10 @@ def save_device_data(data, remote_ip):
             sn=sn,
             ethernets=ethernets,
             model_name='%s %s %s' % (
-                device.get('caption'), device.get('vendor'),
-                device.get('version')),
+                device.get('caption'),
+                vendor,
+                device.get('version'),
+            ),
             model_type=DeviceType.unknown, priority=SAVE_PRIORITY
         )
     except ValueError as e:
@@ -276,7 +285,13 @@ def save_device_data(data, remote_ip):
         ip_address.device = dev
         ip_address.is_management = False
         ip_address.save()
-    save_processors(data['processors'], dev)
+    vendor = vendor.lower()
+    is_virtual = any((
+        'xen' in vendor,
+        'vmware' in vendor,
+        'bochs' in vendor,
+    ))
+    save_processors(data['processors'], dev, is_virtual)
     save_memory(data['memory'], dev)
     save_storage(data['storage'], dev)
     save_shares(data['shares'], dev, ip_address)

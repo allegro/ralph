@@ -63,6 +63,13 @@ CPU_CORES = {
     '6-core': 6,
     '8-core': 8,
 }
+CPU_VIRTUAL_LIST = set([
+    'xen',
+    'bochs',
+    'vmware',
+    'virtual',
+    'qemu',
+])
 
 
 def cores_from_model(model_name):
@@ -81,6 +88,13 @@ def is_mac_valid(eth):
         return True
     except ValueError:
         return False
+
+
+def is_virtual_cpu(family):
+    for name in CPU_VIRTUAL_LIST:
+        if name in family:
+            return True
+    return False
 
 
 class EthernetSpeed(Choices):
@@ -215,7 +229,7 @@ class ComponentModel(Named.NonUnique, SavePrioritized,
             kwargs['cores'] = max(
                 1,
                 kwargs['cores'],
-                cores_from_model(name),
+                cores_from_model(name) if is_virtual_cpu(family) else 0,
             )
             kwargs['size'] = kwargs['cores']
         obj, c = super(ComponentModel, cls).concurrent_get_or_create(**kwargs)
@@ -452,7 +466,9 @@ class Processor(Component):
                 self.model.cores,
                 self.cores,
                 self.model.size,
-                cores_from_model(self.model.name),
+                cores_from_model(
+                    self.model.name
+                ) if is_virtual_cpu(self.model.name) else 0,
             )
         return max(1, self.cores)
 
