@@ -710,7 +710,7 @@ class ReportDevices(SidebarReports, Base):
                 'w_start': datetime.date.today() - datetime.timedelta(days=30),
                 'w_end': datetime.date.today(),
             })
-        ''' Show devices active or / and deleted '''
+        # Show devices active or / and deleted
         self.device_list = ReportDeviceListForm(request)
         all_devices = request.get('show_all_devices')
         all_deleted_devices = request.get('show_all_deleted_devices')
