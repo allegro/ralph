@@ -62,8 +62,7 @@ def is_depreciated(device):
     if device.deprecation_date:
         today_midnight = datetime.combine(datetime.today(), time())
         return True if device.deprecation_date < today_midnight else False
-    else:
-        return None
+    return None
 
 
 def get_device_raw_price(device, ignore_depreciation=False):
@@ -71,8 +70,7 @@ def get_device_raw_price(device, ignore_depreciation=False):
     if not device.deleted:
         if not is_depreciated(device) or ignore_depreciation:
             return device.price or get_device_auto_price(device)
-    else:
-        return 0
+    return 0
 
 
 def get_device_cost(device, ignore_depreciation=False):
