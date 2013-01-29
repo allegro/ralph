@@ -865,7 +865,6 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
                             d_price = device.price
                         else:
                             d_price = component.get('price') or 0
-
                         components.append({
                             'icon': component.get('icon'),
                             'name': model,
@@ -873,28 +872,6 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
                             'model_group': model_group,
                             'count': count,
                         })
-#                        price = 0
-#
-#                        if component_type == 2:
-#                            price = get_device_memory_price(device)
-#                        elif component_type == 1:
-#                            price = get_device_cpu_price(device)
-#                        elif component_type == 3:
-#                            price = get_device_local_storage_price(device)
-#                        elif component_type == 6:
-#                            price = get_device_fc_price(device)
-#                        elif component_type == 15:
-#                            price = get_device_software_price(device)
-#                        elif component_type == 16:
-#                            price = get_device_operatingsystem_price(device)
-#                        elif model:
-#                            price = get_device_components_price(device)
-#                        else:
-#                            price = component.get('price') or 0
-#                        import pdb
-#                        pdb.set_trace()
-
-
                 else:
                     for c in components:
                         if c.get('name') == model:
@@ -906,7 +883,6 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
                 total_component = price * count
                 component['total_component'] = total_component
                 all_components_price += total_component
-
             devices.append({
                 'device': device,
                 'depreciated': is_depreciated(device),
