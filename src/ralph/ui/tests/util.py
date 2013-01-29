@@ -20,35 +20,59 @@ def dublicate_item(item):
 
 
 def create_model(device, mdl, type):
-    try:
-        group = ComponentModelGroup.objects.get(
-            name='Group %s' % mdl.get('model_name')
+    group, created = ComponentModelGroup.objects.get_or_create(
+        name='Group %s' % mdl.get('model_name'),
+        price=mdl.get('price'),
+        type=type
+    )
+    if type == ComponentType.memory:
+        model, created = ComponentModel.objects.get_or_create(
+            name='Model %s %s' % (mdl.get('family'), mdl.get('size')),
+            group=group,
+            family=mdl.get('family'),
+            speed=mdl.get('speed'),
+            size=mdl.get('size')
         )
-    except ComponentModelGroup.DoesNotExist:
-        group = ComponentModelGroup(
-            name='Group %s' % mdl.get('model_name'),
-            price=mdl.get('price'),
-            type=type
-        ).save()
-    try:
-        model = ComponentModel.objects.get(
-            family=mdl.get('family')
-        )
-    except ComponentModel.DoesNotExist:
-        if type == ComponentType.memory:
-            model = ComponentModel(
-                name='Model %s %s' % (mdl.get('family'), mdl.get('size')),
-                group=group,
-                family=mdl.get('family'),
-                speed=mdl.get('speed'),
-                size=mdl.get('size')
-            ).save()
-        else:
-            model = ComponentModel(
+    else:
+        model, create = ComponentModel.objects.get_or_create(
                 name=mdl.get('model_name'),
                 group=group,
                 family=mdl.get('family')
-            ).save()
+        )
+
+    # try:
+    #     group = ComponentModelGroup.objects.get(
+    #         name='Group %s' % mdl.get('model_name')
+    #     )
+    # except ComponentModelGroup.DoesNotExist:
+    #     group = ComponentModelGroup(
+    #         name='Group %s' % mdl.get('model_name'),
+    #         price=mdl.get('price'),
+    #         type=type
+    #     ).save()
+    # group = ComponentModelGroup.objects.get(
+    #         name='Group %s' % mdl.get('model_name')
+    # )
+    # try:
+    #     model = ComponentModel.objects.get(
+    #         family=mdl.get('family')
+    #     )
+    # except ComponentModel.DoesNotExist:
+    #     if type == ComponentType.memory:
+    #         model = ComponentModel(
+    #             name='Model %s %s' % (mdl.get('family'), mdl.get('size')),
+    #             group=group,
+    #             family=mdl.get('family'),
+    #             speed=mdl.get('speed'),
+    #             size=mdl.get('size')
+    #         ).save()
+    #     else:
+    #         model = ComponentModel(
+    #             name=mdl.get('model_name'),
+    #             group=group,
+    #             family=mdl.get('family')
+    #         ).save()
+
     return model
 
 
