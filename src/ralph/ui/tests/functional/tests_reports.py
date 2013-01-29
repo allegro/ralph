@@ -195,7 +195,7 @@ class TestReportsDevices(TestCase):
         self.assertEqual(form[0][1], None)
 
     def test_no_support_date(self):
-        url ='/ui/reports/devices/?no_support=on'
+        url = '/ui/reports/devices/?no_support=on'
         report = self.client.get(url, follow=True)
         self.assertEqual(report.status_code, 200)
         form = report.context['rows']
@@ -210,7 +210,7 @@ class TestReportsDevices(TestCase):
         self.assertNotEqual(form[0][1], '2000-01-02 00:00:00')
 
     def test_no_purchase_date(self):
-        url ='/ui/reports/devices/?no_purchase=on'
+        url = '/ui/reports/devices/?no_purchase=on'
         report = self.client.get(url, follow=True)
         self.assertEqual(report.status_code, 200)
         form = report.context['rows']
@@ -225,7 +225,7 @@ class TestReportsDevices(TestCase):
         self.assertNotEqual(form[0][1], '2000-01-03 00:00:00')
 
     def test_no_venture(self):
-        url ='/ui/reports/devices/?no_venture=on'
+        url = '/ui/reports/devices/?no_venture=on'
         report = self.client.get(url, follow=True)
         self.assertEqual(report.status_code, 200)
         form = report.context['rows']
@@ -240,7 +240,7 @@ class TestReportsDevices(TestCase):
         self.assertNotEqual(form[0][1], self.venture)
 
     def test_no_role(self):
-        url ='/ui/reports/devices/?no_role=on'
+        url = '/ui/reports/devices/?no_role=on'
         report = self.client.get(url, follow=True)
         self.assertEqual(report.status_code, 200)
         form = report.context['rows']
@@ -255,7 +255,7 @@ class TestReportsDevices(TestCase):
         self.assertNotEqual(form[0][1], self.venture_role)
 
     def test_range_support(self):
-        url ='/ui/reports/devices/?s_start=2003-01-01&s_end=2003-01-03'
+        url = '/ui/reports/devices/?s_start=2003-01-01&s_end=2003-01-03'
         report = self.client.get(url, follow=True)
         self.assertEqual(report.status_code, 200)
         form = report.context['rows']
@@ -269,7 +269,7 @@ class TestReportsDevices(TestCase):
         self.assertEqual(form[0][1], datetime.datetime(2003, 01, 02))
 
     def test_range_deprecation(self):
-        url ='/ui/reports/devices/?d_start=2001-12-30&d_end=2002-01-02'
+        url = '/ui/reports/devices/?d_start=2001-12-30&d_end=2002-01-02'
         report = self.client.get(url, follow=True)
         self.assertEqual(report.status_code, 200)
         form = report.context['rows']
@@ -283,7 +283,7 @@ class TestReportsDevices(TestCase):
         self.assertEqual(form[0][1], datetime.datetime(2002, 01, 01))
 
     def test_range_warranty(self):
-        url ='/ui/reports/devices/?w_start=2005-01-01&w_end=2005-01-03'
+        url = '/ui/reports/devices/?w_start=2005-01-01&w_end=2005-01-03'
         report = self.client.get(url, follow=True)
         self.assertEqual(report.status_code, 200)
         form = report.context['rows']
@@ -307,8 +307,8 @@ class TestReportsPriceDeviceVenture(TestCase):
         venture = Venture(name='Blade').save()
         self.venture_blade = Venture.objects.get(name='Blade')
 
-        DeprecationKind(name='Default',months=24).save()
-        self.deprecation_kind=DeprecationKind.objects.get(name='Default')
+        DeprecationKind(name='Default', months=24).save()
+        self.deprecation_kind = DeprecationKind.objects.get(name='Default')
 
         srv1 = {
             'sn': 'srv-1',
@@ -330,6 +330,7 @@ class TestReportsPriceDeviceVenture(TestCase):
         srv1_memory = {
             'priority': 0,
             'family': 'Noname RAM',
+            'label': 'Memory 1GB',
             'price': 100,
             'speed': 1033,
             'size': 512,
@@ -362,7 +363,6 @@ class TestReportsPriceDeviceVenture(TestCase):
         }
         create_device(device=srv2)
         self.srv2 = Device.objects.get(sn='srv-2')
-
 
         rack = {
             'sn': 'rack-1',
@@ -410,8 +410,6 @@ class TestReportsPriceDeviceVenture(TestCase):
         }
         create_device(device=bls1, cpu=bls1_cpu)
         self.bls1 = Device.objects.get(sn='bls-1')
-
-
         bls2 = {
             'sn': 'bls-2',
             'model_name': 'blade-server',
@@ -425,12 +423,22 @@ class TestReportsPriceDeviceVenture(TestCase):
         bls2_memory = {
             'priority': 0,
             'family': 'Noname RAM2',
+            'label': 'Ram 2048',
             'price': 80,
             'speed': 1033,
-            'size': 512,
+            'size': 2048,
             'count': 10,
         }
-        create_device(device=bls2, memory=bls2_memory)
+        bls2_cpu = {
+            'model_name': 'Intel PCU1',
+            'label': 'CPU 1',
+            'priority': 0,
+            'family': 'Intsels',
+            'price': 120,
+            'count': 2,
+        }
+
+        create_device(device=bls2,cpu=bls2_cpu, memory=bls2_memory)
         self.bls2 = Device.objects.get(sn='bls-2')
 
         bls3 = {
@@ -445,7 +453,8 @@ class TestReportsPriceDeviceVenture(TestCase):
         }
         bls3_memory = {
             'priority': 0,
-            'family': 'Noname RAM',
+            'family': 'Noname RAM3',
+            'label': 'Ram 512',
             'price': 80,
             'speed': 1033,
             'size': 512,
@@ -468,13 +477,11 @@ class TestReportsPriceDeviceVenture(TestCase):
         create_device(device=bls4)
         self.bls4 = Device.objects.get(sn='bls-4')
 
-
     def test_create_device(self):
         ''' Tests util create_device '''
 
         devices = Device.objects.filter(name='Srv 1')
         self.assertIsNotNone(devices)
-
 
     def test_view_devices_with_components_in_venture(self):
         ''' Tests device with local components, with praces from catalog '''
@@ -486,7 +493,7 @@ class TestReportsPriceDeviceVenture(TestCase):
         devices = response.context_data.get('rows')
         for dev in devices:
             count, price, total_component, sum_dev = sum_for_view(dev)
-            self.assertEqual(count*price, total_component)
+            self.assertEqual(count * price, total_component)
             self.assertEqual(dev.get('price'), sum_dev)
 
     def test_deprecated_device_with_components_in_venture(self):
@@ -512,7 +519,7 @@ class TestReportsPriceDeviceVenture(TestCase):
 
         for dev in devices:
             count, price, total_component, sum_dev = sum_for_view(dev)
-            self.assertEqual(count*price, total_component)
+            self.assertEqual(count * price, total_component)
             self.assertEqual(dev.get('price'), sum_dev)
             if dev.get('device').name == 'srv-1':
                 self.assertEqual(sum_dev, 2640)
@@ -561,7 +568,7 @@ class TestReportsPriceDeviceVenture(TestCase):
 
     def test_blade_system_with_deprecated_device(self):
         self.bls2.purchase_date = datetime.datetime(1999, 1, 1, 0, 0)
-        self.bls1.save()
+        self.bls2.save()
 
         venture = Venture.objects.get(name='Blade')
         url = ('/ui/reports/device_prices_per_venture/?venture=%s'
@@ -605,7 +612,6 @@ class TestReportsPriceDeviceVenture(TestCase):
 
     def test_blade_system_diskshare(self):
         pass
-
 
 
 class TestReportsVentures(TestCase):

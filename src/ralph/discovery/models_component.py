@@ -269,6 +269,7 @@ class ComponentModel(Named.NonUnique, SavePrioritized,
     def is_software(self):
         return True if self.type == ComponentType.software else False
 
+
 class Component(SavePrioritized, WithConcurrentGetOrCreate):
     device = db.ForeignKey('Device', verbose_name=_("device"))
     model = db.ForeignKey(ComponentModel, verbose_name=_("model"), null=True,

@@ -61,7 +61,8 @@ def create_device(device, cpu=None, memory=None, storage=None):
         venture=device.get('venture'),
         parent=device.get('parent'),
         price=device.get('price'),
-        deprecation_kind=device.get('deprecation_kind')
+        deprecation_kind=device.get('deprecation_kind'),
+        purchase_date=device.get('purchase_date')
     )
     dev.name = device.get('name')
     dev.save()
