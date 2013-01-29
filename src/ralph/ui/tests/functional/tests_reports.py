@@ -498,6 +498,8 @@ class TestReportsPriceDeviceVenture(TestCase):
 
     def test_deprecated_device_with_components_in_venture(self):
         before_deprecated = get_device_price(self.srv1)
+
+        import pdb; pdb.set_trace()
         self.assertEqual(before_deprecated, 2640)
 
         self.srv1.purchase_date = datetime.datetime(1999, 1, 1, 0, 0)
