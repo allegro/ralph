@@ -316,8 +316,10 @@ class ReportMargins(SidebarReports, Base):
         })
         return context
 
+
 def _currency(value):
     return '{:,.2f} {}'.format(value or 0, settings.CURRENCY).replace(',', ' ')
+
 
 class ReportVentures(SidebarReports, Base):
     template_name = 'ui/report_ventures.html'

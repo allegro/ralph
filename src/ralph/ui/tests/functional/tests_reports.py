@@ -441,7 +441,7 @@ class TestReportsPriceDeviceVenture(TestCase):
             'speed': 1500,
         }
 
-        create_device(device=bls2,cpu=bls2_cpu, memory=bls2_memory)
+        create_device(device=bls2, cpu=bls2_cpu, memory=bls2_memory)
         self.bls2 = Device.objects.get(sn='bls-2')
 
         bls3 = {

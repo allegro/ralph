@@ -231,7 +231,6 @@ class ComponentModel(Named.NonUnique, SavePrioritized,
             obj.save(priority=priority)
         return obj, c
 
-
     def get_price(self, size=None):
         if not self.group:
             return 0
