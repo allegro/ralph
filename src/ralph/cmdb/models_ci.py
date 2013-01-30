@@ -424,9 +424,5 @@ class CIOwner(TimeTrackable, WithConcurrentGetOrCreate):
     last_name = models.CharField(max_length=100)
     email = models.EmailField(unique=True, null=True)
 
-    class Meta:
-        verbose_name = _("configuration item owner")
-        verbose_name_plural = _("configuration item owners")
-
     def __unicode__(self):
         return ' '.join([self.first_name, self.last_name])

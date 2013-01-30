@@ -8,7 +8,6 @@ from __future__ import unicode_literals
 
 import cStringIO
 
-from bob.menu import MenuItem
 from django.views.generic import CreateView
 from django.http import HttpResponseRedirect
 from django.contrib import messages
@@ -22,8 +21,8 @@ from ralph.deployment.util import (
     get_next_free_hostname,
 )
 from ralph.discovery.models import Device, Network, IPAddress
-from ralph.ui.views.common import BaseMixin, Base
-from ralph.ui.forms import (
+from ralph.ui.views.common import BaseMixin, Base, TEMPLATE_MENU_ITEMS
+from ralph.ui.forms.deployment import (
     DeploymentForm,
     MassDeploymentForm,
     PrepareMassDeploymentForm,
@@ -42,8 +41,9 @@ class Deployment(BaseMixin, CreateView):
         return [self.template_name]
 
     def get_initial(self):
+        self.device = Device.objects.get(id=int(self.kwargs['device']))
         return {
-            'device': Device.objects.get(id=int(self.kwargs['device'])),
+            'device': self.device,
         }
 
     def form_valid(self, form):
@@ -55,6 +55,17 @@ class Deployment(BaseMixin, CreateView):
             self.request.path + '/../../info/%d' % model.device.id
         )
 
+    def get_context_data(self, **kwargs):
+        if not self.device.verified:
+            messages.error(
+                self.request,
+                "{} - is not verified, you cannot "
+                "deploy this device".format(self.device),
+            )
+        return {
+            'form': kwargs['form'],
+            'device': self.device
+        }
 
 class PrepareMassDeployment(Base):
     template_name = 'ui/mass_deploy.html'
@@ -67,20 +78,7 @@ class PrepareMassDeployment(Base):
             'form': self.form,
             'action_name': 'Next step'
         })
-        ret['template_menu_items'] = [
-            MenuItem(
-                'Manual device',
-                name='device',
-                fugue_icon='fugue-wooden-box',
-                href='/ui/racks//add_device/',
-            ),
-            MenuItem(
-                'Servers',
-                name='servers',
-                fugue_icon='fugue-computer',
-                href='/ui/deployment/mass/start/',
-            ),
-        ]
+        ret['template_menu_items'] = TEMPLATE_MENU_ITEMS
         ret['template_selected'] = 'servers'
         return ret
 
@@ -191,20 +189,7 @@ class MassDeployment(Base):
         ret.update({
             'form': self.form,
             'action_name': 'Deploy',
-            'template_menu_items': [
-                MenuItem(
-                    'Manual device',
-                    name='device',
-                    fugue_icon='fugue-wooden-box',
-                    href='/ui/racks//add_device/',
-                ),
-                MenuItem(
-                    'Servers',
-                    name='servers',
-                    fugue_icon='fugue-computer',
-                    href='/ui/deployment/mass/start/',
-                ),
-            ],
+            'template_menu_items': TEMPLATE_MENU_ITEMS,
             'template_selected': 'servers',
             'actions': self.actions,
         })
@@ -245,7 +230,9 @@ class MassDeployment(Base):
                     device,
                     ip,
                 )
-                for rack in network.racks.order_by('name')[:1]:
+                for rack in network.racks.filter(
+                    deleted=False
+                ).order_by('name')[:1]:
                     break
                 cols[2] = " %s " % network.name
             cols.insert(0, " %s " % rack.sn if rack else " ")
@@ -271,14 +258,15 @@ class MassDeployment(Base):
                             ip.address for ip in device.ipaddress_set.all()
                         ),
                     ))
-                    self.actions.append(
+                    self.actions.append((
+                        'info',
                         "All DHCP entries for IP addresses [%s] "
                         "will be deleted." % (
                             ', '.join(
                                 ip.address for ip in device.ipaddress_set.all()
                             ),
                         ),
-                    )
+                    ))
                 if device.ethernet_set.exists():
                     self.actions.append((
                         'info',

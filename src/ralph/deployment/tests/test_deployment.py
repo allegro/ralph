@@ -5,6 +5,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from django.test import TestCase
+from lck.django.common.models import MACAddressField
 from powerdns.models import Domain, Record
 
 from ralph.discovery.models import (
@@ -12,7 +13,7 @@ from ralph.discovery.models import (
     NetworkTerminator, IPAddress, Ethernet,
 )
 from ralph.business.models import Venture, VentureRole
-from ralph.deployment.models import Deployment
+from ralph.deployment.models import Deployment, ArchivedDeployment
 from ralph.deployment.util import (
     get_next_free_hostname, get_first_free_ip, _create_device
 )
@@ -78,6 +79,26 @@ class DeploymentTest(TestCase):
         dm.save()
         return dm
 
+    def test_archivization(self):
+        id = self.deployment.id
+        data = {}
+        for field in self.deployment._meta.fields:
+            data[field.name] = getattr(self.deployment, field.name)
+            if field.name == 'mac':
+                data[field.name] = MACAddressField.normalize(data[field.name])
+        self.deployment.archive()
+        archive = ArchivedDeployment.objects.get(pk=id)
+        archive_data = {}
+        for field in archive._meta.fields:
+            archive_data[field.name] = getattr(archive, field.name)
+            if field.name == 'mac':
+                archive_data[field.name] = MACAddressField.normalize(
+                    archive_data[field.name]
+                )
+        self.assertEqual(data, archive_data)
+        with self.assertRaises(Deployment.DoesNotExist):
+            Deployment.objects.get(pk=id)
+
 
 class DeploymentUtilTest(TestCase):
     def setUp(self):
@@ -128,6 +149,15 @@ class DeploymentUtilTest(TestCase):
         )
         net2.terminators.add(terminator)
         net2.save()
+        net3 = Network.objects.create(
+            name='net3',
+            address='192.168.0.1/28',
+            data_center=self.dc_temp1
+        )
+        net3.terminators.add(terminator)
+        net3.reserved = 1
+        net3.reserved_top_margin = 15
+        net3.save()
 
     def test_get_nexthostname(self):
         name = get_next_free_hostname(self.dc_temp1)
@@ -151,6 +181,22 @@ class DeploymentUtilTest(TestCase):
         )
         name = get_next_free_hostname(self.dc_temp1)
         self.assertEqual(name, 'h300.temp1')
+
+        dev = Device.create(
+            sn='test_sn_998877',
+            model_type=DeviceType.unknown,
+            model_name='Unknown'
+        )
+        dev.name = 'h300.temp1'
+        dev.save()
+        Record.objects.create(
+            domain=self.domain_temp1,
+            name='123',
+            content='h301.temp1',
+            type='PTR',
+        )
+        name = get_next_free_hostname(self.dc_temp1)
+        self.assertEqual(name, 'h302.temp1')
 
         name = get_next_free_hostname(
             self.dc_temp2, ['h200.temp2', 'h201.temp2'],
@@ -179,6 +225,9 @@ class DeploymentUtilTest(TestCase):
         # 127.0.1.5 - dhcp
         # 127.0.1.6 - should be free
         self.assertEqual(ip, '127.0.1.6')
+
+        ip = get_first_free_ip('net3')
+        self.assertEqual(ip, None)  # bad margins...
 
     def test_create_device(self):
         data = {

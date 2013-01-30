@@ -1,6 +1,21 @@
 Change Log
 ----------
 
+1.1.15
+~~~~~~
+
+Released on January 16, 2013
+
+* Added custom DHCP configuration for networks and DHCP servers.
+
+* Networks can now be marked as non-unique, which prevents their IP addresses
+  from being added to devices.
+
+* Next free hostname and IP address are now displayed in the Addresses tab.
+
+* Bugfixes in discovery plugins.
+
+
 1.1.14
 ~~~~~~
 

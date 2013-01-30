@@ -129,6 +129,12 @@ class CIChangeGit(TimeTrackable):
         verbose_name=_("timestamp"), null=True, blank=True)
 
 
+class GitPathMapping(TimeTrackable):
+    ci = models.ForeignKey('CI')
+    path = models.CharField(max_length=1024)
+    is_regex = models.BooleanField()
+
+
 class CIChangePuppet(TimeTrackable):
     ci = models.ForeignKey('CI', null=True)
     configuration_version = models.CharField(max_length=30, db_index=True)
@@ -146,20 +152,6 @@ class PuppetLog(TimeTrackable):
     tags = models.CharField(max_length=100)
     time = models.DateTimeField()
     level = models.CharField(max_length=100)
-
-
-class PuppetResourceStatus(TimeTrackable):
-    cichange = models.ForeignKey('CIChangePuppet')
-    change_count = models.IntegerField()
-    changed = models.BooleanField()
-    failed = models.BooleanField()
-    skipped = models.BooleanField()
-    file = models.CharField(max_length=1024)
-    line = models.IntegerField()
-    resource = models.CharField(max_length=300)
-    resource_type = models.CharField(max_length=300)
-    time = models.DateTimeField()
-    title = models.CharField(max_length=100)
 
 
 class CIEvent(TimeTrackable):
