@@ -578,9 +578,33 @@ class ServerMoveStep3Form(forms.Form):
                 raise forms.ValidationError("Hostname already in DNS.")
         return new_hostname
 
+class ServerMoveStep3FormSetBase(formsets.BaseFormSet):
+    def clean(self):
+        if any(self.errors):
+            return
+        hostnames = set()
+        ips = set()
+        for i in range(0, self.total_form_count()):
+            form = self.forms[i]
+            ip = form.cleaned_data['new_ip']
+            if ip in ips:
+                form._errors['new_ip'] = form.error_class([
+                    "Duplicate IP"
+                ])
+            else:
+                ips.add(ip)
+            hostname = form.cleaned_data['new_hostname']
+            if hostname in hostnames:
+                form._errors['new_hostname'] = form.error_class([
+                    "Duplicate hostname"
+                ])
+            else:
+                hostnames.add(hostname)
+
 
 ServerMoveStep3FormSet = formsets.formset_factory(
     form=ServerMoveStep3Form,
+    formset=ServerMoveStep3FormSetBase,
     extra=0,
 )
 
