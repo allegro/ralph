@@ -60,7 +60,7 @@ def get_total_count(query, start, end):
     Count the devices in the given HistoryCost query in the specified time span.
     The devices that are not in the query for the whole time are counted as a
     fraction.
-    Additionally, the function returns the count of devices at the end of the
+    Additionally, the function returns the count of devices at the current date
     time span, and a query with all the devices from the query.
     """
     days = (end - start).days or 1

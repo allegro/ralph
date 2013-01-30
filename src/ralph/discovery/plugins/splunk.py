@@ -59,7 +59,10 @@ def splunk(**options):
             priority=0,
         )
         res, created = SplunkUsage.concurrent_get_or_create(
-                model=model, device=dev, day=date.today())
+            device=dev,
+            day=date.today(),
+            defaults={'model': model},
+        )
         res.size = usage
         res.save()
     return True, 'done.', options
