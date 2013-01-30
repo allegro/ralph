@@ -595,7 +595,7 @@ class ServerMoveStep3FormSetBase(formsets.BaseFormSet):
             return
         hostnames = set()
         ips = set()
-        for i in range(0, self.total_form_count()):
+        for i in xrange(self.total_form_count()):
             form = self.forms[i]
             ip = form.cleaned_data['new_ip']
             if ip in ips:
