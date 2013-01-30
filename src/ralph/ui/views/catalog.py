@@ -215,6 +215,19 @@ class CatalogDevice(Catalog):
             self.update_cached(target)
             messages.success(self.request, "Items moved.")
             return HttpResponseRedirect(self.request.path)
+        elif 'clear' in self.request.POST:
+            items = self.request.POST.getlist('items')
+            if not items:
+                messages.error(self.request, "Nothing to clear.")
+                return HttpResponseRedirect(self.request.path)
+            for item in items:
+                model = get_object_or_404(DeviceModel, id=item)
+                priorities = model.get_save_priorities()
+                priorities = dict((key, 0) for key in priorities)
+                model.update_save_priorities(priorities)
+                model.save(user=self.request.user)
+            messages.success(self.request, "Items cleaned.")
+            return HttpResponseRedirect(self.request.path)
         elif 'delete' in self.request.POST:
             try:
                 self.group_id = int(self.kwargs.get('group', ''))
@@ -338,6 +351,19 @@ class CatalogComponent(Catalog):
                 model.save(user=self.request.user)
             self.update_cached(target)
             messages.success(self.request, "Items moved.")
+            return HttpResponseRedirect(self.request.path)
+        elif 'clear' in self.request.POST:
+            items = self.request.POST.getlist('items')
+            if not items:
+                messages.error(self.request, "Nothing to clear.")
+                return HttpResponseRedirect(self.request.path)
+            for item in items:
+                model = get_object_or_404(ComponentModel, id=item)
+                priorities = model.get_save_priorities()
+                priorities = dict((key, 0) for key in priorities)
+                model.update_save_priorities(priorities)
+                model.save(user=self.request.user)
+            messages.success(self.request, "Items cleaned.")
             return HttpResponseRedirect(self.request.path)
         elif 'delete' in self.request.POST:
             try:
