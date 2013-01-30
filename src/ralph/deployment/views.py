@@ -84,49 +84,53 @@ def get_response(pbf, deployment):
     return response
 
 
-def preboot_raw_view(request, file_name):
+def _preboot_view(request, file_name=None, file_type=None):
+    assert file_name or file_type
+    message = ''
+    ftype = None
     try:
         deployment = get_current_deployment(request)
-        pbf = deployment.preboot.files.get(name=file_name)
-        return get_response(pbf, deployment)
-    except (AttributeError, Deployment.DoesNotExist, PrebootFile.DoesNotExist,
-            PrebootFile.MultipleObjectsReturned):
-        pass
-    if file_name in ('boot', 'boot_ipxe', 'boot.ipxe'):
+    except Deployment.DoesNotExist:
+        deployment = None
+    if deployment:
+        try:
+            if file_name:
+                pbf = deployment.preboot.files.get(name=file_name)
+            else:
+                try:
+                    ftype = FileType.from_name(file_type)
+                except ValueError:
+                    return HttpResponseNotFound()
+                pbf = deployment.preboot.files.get(ftype=ftype)
+        except PrebootFile.DoesNotExist:
+            message = "No preboot file for this deployment!"
+        else:
+            return get_response(pbf, deployment)
+    if (
+        file_name in ('boot', 'boot_ipxe', 'boot.ipxe') or
+        ftype == FileType.boot_ipxe
+    ):
         return render(
             request,
             'deployment/localboot.txt',
-            locals(),
-            mimetype='text/plain'
+            {'message': message},
+            mimetype='text/plain',
         )
     return HttpResponseNotFound()
+
+
+def preboot_raw_view(request, file_name):
+    return _preboot_view(request, file_name=file_name)
 
 
 def preboot_type_view(request, file_type):
-    try:
-        ftype = FileType.from_name(file_type)
-    except ValueError:
-        return HttpResponseNotFound()
-    try:
-        deployment = get_current_deployment(request)
-        pbf = deployment.preboot.files.get(ftype=ftype)
-        return get_response(pbf, deployment)
-    except (AttributeError, Deployment.DoesNotExist, PrebootFile.DoesNotExist,
-            PrebootFile.MultipleObjectsReturned):
-        pass
-    if ftype is FileType.boot_ipxe:
-        return render(
-            request,
-            'deployment/localboot.txt',
-            locals(),
-            mimetype='text/plain'
-        )
-    return HttpResponseNotFound()
+    return _preboot_view(request, file_type=file_type)
 
 
 def preboot_complete_view(request):
     try:
         deployment = get_current_deployment(request)
+        # XXX what happens when get_current_deployment returns None?
         deployment.status = DeploymentStatus.done
         deployment.save()
         try:
