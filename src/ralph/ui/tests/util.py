@@ -21,7 +21,7 @@ def dublicate_item(item):
 
 def create_model(device, mdl, type):
     group, created = ComponentModelGroup.objects.get_or_create(
-        name='Group %s' % mdl.get('model_name'),
+        name='Group %s - %s' % (mdl.get('model_name'), mdl.get('price')),
         price=mdl.get('price'),
         type=type
     )
@@ -31,48 +31,28 @@ def create_model(device, mdl, type):
             group=group,
             family=mdl.get('family'),
             speed=mdl.get('speed'),
-            size=mdl.get('size')
+            size=mdl.get('size'),
+            type=ComponentType.memory
+        )
+    elif type == ComponentType.processor:
+        model, created = ComponentModel.objects.get_or_create(
+                name='M %s - %s' % (
+                    mdl.get('model_name'), mdl.get('price')
+                ),
+                group=group,
+                family=mdl.get('family'),
+                type=type,
+                speed=mdl.get('speed')
         )
     else:
-        model, create = ComponentModel.objects.get_or_create(
-                name=mdl.get('model_name'),
+        model, created = ComponentModel.objects.get_or_create(
+                name='M %s - %s' % (
+                    mdl.get('model_name'), mdl.get('price')
+                ),
                 group=group,
-                family=mdl.get('family')
+                family=mdl.get('family'),
+                type=type
         )
-
-    # try:
-    #     group = ComponentModelGroup.objects.get(
-    #         name='Group %s' % mdl.get('model_name')
-    #     )
-    # except ComponentModelGroup.DoesNotExist:
-    #     group = ComponentModelGroup(
-    #         name='Group %s' % mdl.get('model_name'),
-    #         price=mdl.get('price'),
-    #         type=type
-    #     ).save()
-    # group = ComponentModelGroup.objects.get(
-    #         name='Group %s' % mdl.get('model_name')
-    # )
-    # try:
-    #     model = ComponentModel.objects.get(
-    #         family=mdl.get('family')
-    #     )
-    # except ComponentModel.DoesNotExist:
-    #     if type == ComponentType.memory:
-    #         model = ComponentModel(
-    #             name='Model %s %s' % (mdl.get('family'), mdl.get('size')),
-    #             group=group,
-    #             family=mdl.get('family'),
-    #             speed=mdl.get('speed'),
-    #             size=mdl.get('size')
-    #         ).save()
-    #     else:
-    #         model = ComponentModel(
-    #             name=mdl.get('model_name'),
-    #             group=group,
-    #             family=mdl.get('family')
-    #         ).save()
-
     return model
 
 
@@ -96,7 +76,7 @@ def create_device(device, cpu=None, memory=None, storage=None):
             Processor(
                 device=dev,
                 model=model,
-                label=cpu.get('label')
+                label=cpu.get('label'),
             ).save()
     if memory:
         model = create_model(device, memory, ComponentType.memory)
@@ -124,6 +104,7 @@ def sum_for_view(device):
     count = 0
     total_component = 0
     components = device.get('component')
+    sum_dev += price
     if components:
         for component in components:
             count = component.get('count')

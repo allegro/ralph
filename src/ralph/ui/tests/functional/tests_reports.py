@@ -326,6 +326,7 @@ class TestReportsPriceDeviceVenture(TestCase):
             'family': 'Intsels',
             'price': 120,
             'count': 2,
+            'speed': 1200
         }
         srv1_memory = {
             'priority': 0,
@@ -401,12 +402,13 @@ class TestReportsPriceDeviceVenture(TestCase):
             'deprecation_kind': self.deprecation_kind,
         }
         bls1_cpu = {
-            'model_name': 'Intel PCU1',
-            'label': 'CPU 1',
+            'model_name': 'Intel PCU2',
+            'label': 'CPU 2',
             'priority': 0,
             'family': 'Intsels',
             'price': 140,
             'count': 4,
+            'speed': 2000,
         }
         create_device(device=bls1, cpu=bls1_cpu)
         self.bls1 = Device.objects.get(sn='bls-1')
@@ -430,12 +432,13 @@ class TestReportsPriceDeviceVenture(TestCase):
             'count': 10,
         }
         bls2_cpu = {
-            'model_name': 'Intel PCU1',
-            'label': 'CPU 1',
+            'model_name': 'Intel PCU3',
+            'label': 'CPU 3',
             'priority': 0,
             'family': 'Intsels',
             'price': 120,
             'count': 2,
+            'speed': 1500,
         }
 
         create_device(device=bls2,cpu=bls2_cpu, memory=bls2_memory)
@@ -498,8 +501,6 @@ class TestReportsPriceDeviceVenture(TestCase):
 
     def test_deprecated_device_with_components_in_venture(self):
         before_deprecated = get_device_price(self.srv1)
-
-        import pdb; pdb.set_trace()
         self.assertEqual(before_deprecated, 2640)
 
         self.srv1.purchase_date = datetime.datetime(1999, 1, 1, 0, 0)
