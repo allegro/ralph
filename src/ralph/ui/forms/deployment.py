@@ -11,8 +11,10 @@ import re
 import ipaddr
 from bob.forms import AutocompleteWidget
 from django import forms
+from django.forms import formsets
+from django.db.models import Q
 from lck.django.common.models import MACAddressField
-from powerdns.models import Record
+from powerdns.models import Record, Domain
 
 from ralph.business.models import Venture, VentureRole
 from ralph.deployment.models import Deployment, Preboot
@@ -25,13 +27,19 @@ from ralph.deployment.util import (
     rack_exists,
     venture_and_role_exists,
 )
-from ralph.discovery.models import Device, Network
+from ralph.discovery.models import Device, Network, IPAddress, DeviceType
 from ralph.discovery.models_component import is_mac_valid
 from ralph.dnsedit.models import DHCPEntry
-from ralph.dnsedit.util import is_valid_hostname, get_ip_addresses
+from ralph.dnsedit.util import (
+    is_valid_hostname,
+    find_addresses_for_hostname,
+    get_revdns_records,
+    get_domain,
+)
 from ralph.ui.widgets import DeviceWidget
 from ralph.util import Eth
 from ralph.util.csvutil import UnicodeReader
+from ralph.ui.widgets import ReadOnlySelectWidget, ReadOnlyWidget
 
 
 class DeploymentForm(forms.ModelForm):
@@ -240,7 +248,7 @@ def _validate_hostname(hostname, mac, parsed_hostnames, row_number):
         ip_addresses = list(
             dev.ipaddress_set.values_list('address', flat=True)
         )
-        ip_addresses_in_dns = get_ip_addresses(hostname)
+        ip_addresses_in_dns = find_addresses_for_hostname(hostname)
         for ip in ip_addresses_in_dns:
             if ip not in ip_addresses:
                 raise forms.ValidationError(
@@ -395,4 +403,219 @@ class MassDeploymentForm(forms.Form):
                 'network': network
             })
         return cleaned_csv
+
+
+class ServerMoveStep1Form(forms.Form):
+    addresses = forms.CharField(
+        label="Server addresses",
+        widget=forms.widgets.Textarea(attrs={'class': 'span12'}),
+        help_text="Enter the IP addresses or hostnames to be moved, "
+                  "separated with spaces or newlines.",
+    )
+
+    @staticmethod
+    def _get_address_candidates(address):
+        try:
+            ip_address = str(ipaddr.IPAddress(address))
+        except ValueError:
+            ip_address = None
+            try:
+                mac = MACAddressField.normalize(address)
+            except ValueError:
+                mac = None
+            if not mac:
+                hostname = address
+        if ip_address:
+            candidates = IPAddress.objects.filter(
+                address=ip_address,
+            )
+        elif mac:
+            ips = {
+                str(ip) for ip in
+                DHCPEntry.objects.filter(mac=mac).values_list('ip', flat=True)
+            }
+            candidates = IPAddress.objects.filter(address__in=ips)
+        else:
+            candidates = IPAddress.objects.filter(
+                Q(hostname=hostname) |
+                Q(address__in=find_addresses_for_hostname(hostname))
+            )
+        return candidates.filter(
+            device__deleted=False,
+            device__model__type__in={
+                DeviceType.rack_server,
+                DeviceType.blade_server,
+                DeviceType.virtual_server,
+                DeviceType.unknown,
+            }
+        )
+
+    def clean_addresses(self):
+        addresses = self.cleaned_data['addresses']
+        for address in addresses.split():
+            if not self._get_address_candidates(address).exists():
+                raise forms.ValidationError(
+                    "No server found for %s." % address,
+                )
+        return addresses
+
+
+def _check_move_address(address):
+    if not IPAddress.objects.filter(
+            device__deleted=False,
+            device__model__type__in={
+                DeviceType.rack_server,
+                DeviceType.blade_server,
+                DeviceType.virtual_server,
+                DeviceType.unknown,
+            }
+        ).filter(address=address).exists():
+        raise forms.ValidationError(
+            "No server found for %s." % address,
+        )
+
+
+class ServerMoveStep2Form(forms.Form):
+    address = forms.ChoiceField()
+    network = forms.ChoiceField()
+
+    def clean_address(self):
+        address = self.cleaned_data['address']
+        _check_move_address(address)
+        return address
+
+    def clean_network(self):
+        network_id = self.cleaned_data['network']
+        if not Network.objects.filter(id=network_id).exists():
+            raise forms.ValidationError("Invalid network.")
+        return network_id
+
+
+class ServerMoveStep2FormSetBase(formsets.BaseFormSet):
+    def add_fields(self, form, index):
+        form.fields['network'].choices = [
+            (n.id, n.name)
+            for n in Network.objects.order_by('name')
+        ]
+        form.fields['network'].widget.attrs={
+            'class': 'span12',
+        }
+        if self.initial:
+            candidates = self.initial[index]['candidates']
+        else:
+            candidates = {form.data['%s-%d-address' % (self.prefix, index)]}
+        form.fields['address'].widget.attrs={
+            'class': 'span12',
+        }
+        if len(candidates) == 1:
+            form.fields['address'].widget = ReadOnlySelectWidget()
+        form.fields['address'].choices = [(ip, ip) for ip in candidates]
+        return super(ServerMoveStep2FormSetBase, self).add_fields(form, index)
+
+
+ServerMoveStep2FormSet = formsets.formset_factory(
+    form=ServerMoveStep2Form,
+    formset=ServerMoveStep2FormSetBase,
+    extra=0,
+)
+
+
+class ServerMoveStep3Form(forms.Form):
+    address = forms.CharField(widget=ReadOnlyWidget())
+    new_ip = forms.CharField()
+    new_hostname = forms.CharField()
+
+    def clean_address(self):
+        address = self.cleaned_data['address']
+        _check_move_address(address)
+        return address
+
+    def clean_new_ip(self):
+        old_ip = self.cleaned_data.get('address')
+        new_ip = self.cleaned_data['new_ip']
+        try:
+            new_ip = str(ipaddr.IPAddress(new_ip))
+        except ValueError:
+            raise forms.ValidationError("Malformed IP address.")
+        rdomain = '.'.join(
+                list(reversed(new_ip.split('.')))[1:]
+            ) + '.in-addr.arpa'
+        if not Domain.objects.filter(name=rdomain).exists():
+            raise forms.ValidationError("No RevDNS domain for address.")
+        try:
+            ipaddress = IPAddress.objects.get(address=new_ip)
+        except IPAddress.DoesNotExist:
+            if Record.objects.filter(content=new_ip).exists():
+                raise forms.ValidationError("Address already in DNS.")
+            if get_revdns_records(new_ip).exists():
+                raise forms.ValidationError("Address already in DNS.")
+            if DHCPEntry.objects.filter(ip=new_ip).exists():
+                raise forms.ValidationError("Address already in DHCP.")
+        else:
+            if ipaddress.device and not ipaddress.device.deleted:
+                if not old_ip:
+                    raise forms.ValidationError("Address in use.")
+                device = Device.objects.get(ipaddress__address=old_ip)
+                if ipaddress.device.id != device.id:
+                    raise forms.ValidationError(
+                        "Address used by %s" % device,
+                    )
+        return new_ip
+
+    def clean_new_hostname(self):
+        old_ip = self.cleaned_data.get('address')
+        new_hostname = self.cleaned_data['new_hostname']
+        if not is_valid_hostname(new_hostname):
+            raise forms.ValidationError("Invalid hostname")
+        try:
+            get_domain(new_hostname)
+        except Domain.DoesNotExist:
+            raise forms.ValidationError("Invalid domain")
+        try:
+            ipaddress = IPAddress.objects.get(hostname=new_hostname)
+        except IPAddress.DoesNotExist:
+            if find_addresses_for_hostname(new_hostname):
+                raise forms.ValidationError("Hostname already in DNS.")
+        else:
+            if ipaddress.device and not ipaddress.device.deleted:
+                if not old_ip:
+                    raise forms.ValidationError("Hostname in use.")
+                device = Device.objects.get(ipaddress__address=old_ip)
+                if ipaddress.device.id != device.id:
+                    raise forms.ValidationError(
+                        "Hostname used by %s" % device,
+                    )
+            elif Record.objects.filter(name=new_hostname).exists():
+                raise forms.ValidationError("Hostname already in DNS.")
+        return new_hostname
+
+class ServerMoveStep3FormSetBase(formsets.BaseFormSet):
+    def clean(self):
+        if any(self.errors):
+            return
+        hostnames = set()
+        ips = set()
+        for i in xrange(self.total_form_count()):
+            form = self.forms[i]
+            ip = form.cleaned_data['new_ip']
+            if ip in ips:
+                form._errors['new_ip'] = form.error_class([
+                    "Duplicate IP"
+                ])
+            else:
+                ips.add(ip)
+            hostname = form.cleaned_data['new_hostname']
+            if hostname in hostnames:
+                form._errors['new_hostname'] = form.error_class([
+                    "Duplicate hostname"
+                ])
+            else:
+                hostnames.add(hostname)
+
+
+ServerMoveStep3FormSet = formsets.formset_factory(
+    form=ServerMoveStep3Form,
+    formset=ServerMoveStep3FormSetBase,
+    extra=0,
+)
 

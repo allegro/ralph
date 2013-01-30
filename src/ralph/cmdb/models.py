@@ -52,7 +52,6 @@ from ralph.cmdb.models_changes import (
 
     # puppet logger types
     PuppetLog,
-    PuppetResourceStatus,
 
     CIEvent,
     CIProblem,
@@ -103,7 +102,6 @@ __all__ = [
 
     # puppet logger types
     'PuppetLog',
-    'PuppetResourceStatus',
     'CIAttributeValue',
     'CIEvent',
     'CIProblem',

@@ -9,11 +9,10 @@ from __future__ import unicode_literals
 import logging
 import re
 
-from ralph import settings
 from ralph.business.models import Venture
 from ralph.util import plugin
 from ralph.cmdb.integration.lib.fisheye import Fisheye
-from ralph.cmdb.integration.lib.puppet_yaml import  load
+from ralph.cmdb.integration.lib.puppet_yaml import load
 from ralph.cmdb import models as db
 from ralph.cmdb.integration.base import BaseImporter
 from ralph.cmdb.integration.util import strip_timezone
@@ -39,19 +38,18 @@ class PuppetAgentsImporter(BaseImporter):
         if not contents:
             raise UserWarning('No content to import!')
         yaml = load(contents)
-        host = yaml.host
         try:
+            host = yaml.host
             status = yaml.status
         except AttributeError:
-            logger.warning("Got unknown report status from host %s, skipped!"  % host)
+            logger.warning("Incorrect report from %s, skipped!" % host)
             return
-
         if status == 'unchanged':
             # skip it, we import only changed/failed
             return
         logger.debug('Got puppet change/failed request:  host: %s kind: %s' % (
-                   yaml.host, yaml.kind
-                ))
+            yaml.host, yaml.kind
+        ))
         report = db.CIChangePuppet()
         report.configuration_version = yaml.configuration_version or ''
         report.host = yaml.host
@@ -60,51 +58,14 @@ class PuppetAgentsImporter(BaseImporter):
         report.ci = self.get_ci_by_name(host)
         report.status = status
         report.save()
-        if settings.PUPPET_SAVE_UNCHANGED_RESOURCES and status !='unchanged':
-                for key in yaml.resource_statuses:
-                    resource_status = yaml.resource_statuses[key]
-                    change_count = resource_status.change_count
-                    changed = resource_status.changed
-                    type = resource_status.resource_type
-                    time = resource_status.time
-                    logger.debug('Resource status  %s %s %s %s %s' % (
-                       key, change_count, changed, type, time
-                    ))
-                    obj = db.PuppetResourceStatus()
-                    obj.change_count = change_count
-                    obj.cichange = report
-                    obj.changed = changed
-                    obj.failed = getattr(resource_status, 'failed', 0)
-                    obj.skipped = getattr(resource_status, 'skipped', 0)
-                    obj.file = resource_status.file or ''
-                    obj.line = resource_status.line or 0
-                    obj.resource = resource_status.resource
-                    obj.resource_type = resource_status.resource_type
-                    obj.time = resource_status.time
-                    obj.title = resource_status.title
-                    obj.save()
-                    for event in resource_status.events:
-                        msg = event.message
-                        name = event.name
-                        pvalue = event.previous_value
-                        dvalue = event.desired_value
-                        pr = event.property
-                        stat = event.status
-                        logger.debug('EVENT %r %r %r %r %r' % (msg, name, pvalue, dvalue, stat)
-                        )
         if status == 'changed' or status == 'failed':
             for log in yaml.logs:
                 level = log.level
                 message = log.message
                 time = log.time
                 title = status.title
-                try:
-                    f = log.file
-                except:
-                    f = ''
-                    pass
                 dblog = db.PuppetLog()
-                dblog.cichange= report
+                dblog.cichange = report
                 dblog.source = log.source
                 dblog.message = message[:1024]
                 dblog.time = time
@@ -117,7 +78,7 @@ host=%s
 status=%s
 level=%s
 message=%s
-time=%s'''  % (title(), host, status, level, message, time))
+time=%s''' % (title(), host, status, level, message, time))
 
 
 class PuppetGitImporter(BaseImporter):

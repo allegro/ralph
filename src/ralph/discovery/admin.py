@@ -230,10 +230,34 @@ class EthernetInline(ForeignKeyAutocompleteTabularInline):
     }
 
 
+class StorageInline(ForeignKeyAutocompleteTabularInline):
+    model = m.Storage
+    readonly_fields = (
+        'label',
+        'size',
+        'sn',
+        'model',
+        'created',
+        'modified',
+        'mount_point',
+    )
+    extra = 0
+    related_search_fields = {
+        'model': ['^name'],
+    }
+
+
 class DeviceAdmin(ModelAdmin):
     form = DeviceForm
-    inlines = [ProcessorInline, MemoryInline, EthernetInline, IPAddressInline,
-               ChildDeviceInline, RolePropertyValueInline]
+    inlines = [
+        ProcessorInline,
+        MemoryInline,
+        EthernetInline,
+        StorageInline,
+        IPAddressInline,
+        ChildDeviceInline,
+        RolePropertyValueInline,
+    ]
     list_display = ('name', 'sn', 'created', 'modified')
     list_filter = ('model__type',)
     list_per_page = 250
@@ -251,6 +275,13 @@ class DeviceAdmin(ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         obj.save(user=request.user, priority=SAVE_PRIORITY)
+
+    def save_formset(self, request, form, formset, change):
+        if formset.model.__name__ == 'RolePropertyValue':
+            for instance in formset.save(commit=False):
+                instance.save(user=request.user)
+        else:
+            formset.save(commit=True)
 
 admin.site.register(m.Device, DeviceAdmin)
 
