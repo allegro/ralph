@@ -9,9 +9,9 @@ from __future__ import unicode_literals
 import math
 from datetime import date, timedelta, datetime, time
 
-from lck.django.common import nested_commit_on_success
 from django.core.urlresolvers import reverse_lazy
 from django.db import models as db
+from django.db.transaction import commit_on_success
 from django.utils.html import escape
 from django.conf import settings
 
@@ -264,11 +264,11 @@ def device_update_cached(device):
             stack.append(d_id)
     device_ids.reverse()   # Do the children before their parent.
     step = 10
-    for index in xrange(0, device_ids, step):
-        _update_batch(device_ids[index, index + step], rack, dc)
+    for index in xrange(0, len(device_ids), step):
+        _update_batch(device_ids[index:index + step], rack, dc)
 
 
-@nested_commit_on_success
+@commit_on_success
 def _update_batch(device_ids, rack, dc):
     for d in Device.objects.filter(id__in=device_ids):
         name = d.get_name()
