@@ -255,7 +255,7 @@ class VenturesRoles(Ventures, Base):
 def _total_dict(name, query, start, end, url=None):
     cost = get_total_cost(query, start, end)
     count, count_now, devices = get_total_count(query, start, end)
-    if not count:
+    if not count and not count_now:
         return None
     return {
         'name': name,
@@ -464,8 +464,29 @@ def _get_summaries(query, start, end, overlap=True, venture=None):
             'count_now': count_now,
         }
     if overlap:
-        yield _total_dict('Total', query, start, end,
-                _get_search_url(venture, type=()))
+        yield _total_dict(
+            'Total',
+            query,
+            start,
+            end,
+            _get_search_url(venture, type=()),
+        )
+        yield _total_dict(
+            'Total physical',
+            query.exclude(
+                device__model__type__in=(
+                    DeviceType.cloud_server,
+                    DeviceType.virtual_server,
+                    DeviceType.unknown,
+                    DeviceType.data_center,
+                    DeviceType.rack,
+                    DeviceType.management,
+                ),
+            ),
+            start,
+            end,
+            _get_search_url(venture, type=()),
+        )
 
 
 def _venture_children(venture, children):
@@ -521,7 +542,6 @@ class VenturesVenture(SidebarVentures, Base):
             start = self.form.cleaned_data['start']
             end = self.form.cleaned_data['end']
             query = query.exclude(device__deleted=True)
-            query = HistoryCost.filter_span(start, end, query)
             items = _get_summaries(query.all(), start, end, True, self.venture)
             cost_data = []
             count_data = []
