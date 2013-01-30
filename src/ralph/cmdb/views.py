@@ -1203,7 +1203,7 @@ class Graphs(BaseCMDBView):
         self.rows = []
         ci_names = {}
         if ci_id:
-            ic = ImpactCalculator(root_ci=CI.objects.get(pk=ci_id))
+            ic = ImpactCalculator(root_ci=CI.objects.get(pk=int(ci_id)))
             search_tree, pre = ic.find_affected_nodes(int(ci_id))
             affected_cis = CI.objects.select_related(
                 'content_type', 'type').filter(pk__in=pre)
