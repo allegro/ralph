@@ -599,7 +599,7 @@ class ReportDevices(SidebarReports, Base):
             'name': 'report_devices',
             'url': None,
         }
-        ''' Filtering of the cross '''
+        # Filtering of the cross
         self.form_choice = DevicesChoiceReportForm(request)
         queries = {Q()}
         headers = ['Name']
@@ -652,7 +652,7 @@ class ReportDevices(SidebarReports, Base):
                 if no_rol:
                     row.append(dev.venture_role)
                 rows.append(row)
-        ''' Filtering of th range '''
+        # Filtering of th range
         # Support Range
         s_start = self.request.GET.get('s_start', None)
         s_end = self.request.GET.get('s_end', None)
