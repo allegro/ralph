@@ -79,7 +79,7 @@ def get_device_cost(device, ignore_depreciation=False):
 
     price = get_device_price(device)
     cost = 0
-    if not device.deleted and device.deprecation_kind:
+    if not device.deleted and device.deprecation_kind is not None:
         if not is_depreciated(device) or ignore_depreciation:
             cost = price / device.deprecation_kind.months
     margin = device.get_margin() or 0
