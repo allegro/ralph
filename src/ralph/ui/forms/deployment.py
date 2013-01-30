@@ -484,7 +484,7 @@ class ServerMoveStep2FormSetBase(formsets.BaseFormSet):
     def add_fields(self, form, index):
         form.fields['network'].choices = [
             (n.id, n.name)
-            for n in Network.objects.all()
+            for n in Network.objects.order_by('name')
         ]
         form.fields['network'].widget.attrs={
             'class': 'span12',

@@ -25,6 +25,7 @@
     {% if formset.prefix == 'step2' %}
         <th>Old Address</th>
         <th>New Network</th>
+        <th width="24">Fill</th>
     {% else %}
         <th>Old Address</th>
         <th>New IP Address</th>
@@ -42,6 +43,17 @@
                 {% endfor %}
             </td>
             {% endfor %}
+            {% if formset.prefix == 'step2' %}
+            <td style="vertical-align:middle">
+                <a
+                    href="#"
+                    class="btn"
+                    data-fill-down="step2-{{ forloop.counter0 }}-network"
+                >
+                    {% icon 'fugue-arrow-curve-270' %}
+                </a>
+            </td>
+            {% endif %}
         </tr>
         {% endfor %}
     </tbody>
