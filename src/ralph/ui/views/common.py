@@ -23,16 +23,20 @@ from powerdns.models import Record
 from ralph.account.models import Perm
 from ralph.business.models import RolePropertyValue
 from ralph.cmdb.models import CI
+from ralph.deployment.util import get_next_free_hostname, get_first_free_ip
 from ralph.dnsedit.models import DHCPEntry
 from ralph.dnsedit.util import (
     get_domain,
     set_revdns_record,
     get_revdns_records,
+    reset_dns,
 )
 from ralph.dnsedit.util import Error as DNSError
 from ralph.discovery.models import (
     Device,
     DeviceType,
+    Network,
+    IPAddress,
 )
 from ralph.discovery.models_history import (
     FOREVER_DATE,
@@ -54,10 +58,35 @@ from ralph.ui.forms.addresses import (
     DNSFormSet,
 )
 from ralph.util.pricing import is_depreciated
+from ralph.ui.forms.deployment import (
+    ServerMoveStep1Form,
+    ServerMoveStep2FormSet,
+    ServerMoveStep3FormSet,
+)
 
 SAVE_PRIORITY = 200
 HISTORY_PAGE_SIZE = 25
 MAX_PAGE_SIZE = 65535
+TEMPLATE_MENU_ITEMS = [
+    MenuItem(
+        'Manual device',
+        name='device',
+        fugue_icon='fugue-wooden-box',
+        href='/ui/racks//add_device/',
+    ),
+    MenuItem(
+        'Servers',
+        name='servers',
+        fugue_icon='fugue-computer',
+        href='/ui/deployment/mass/start/',
+    ),
+    MenuItem(
+        'Move Servers',
+        name='move_servers',
+        fugue_icon='fugue-computer--arrow',
+        href='/ui/racks//move/',
+    ),
+]
 
 
 def _get_balancers(dev):
@@ -86,9 +115,13 @@ def _get_details(dev, purchase_only=False, with_price=False, ignore_depreciation
     ):
         if 'icon' not in detail:
             if detail['group'] == 'dev':
-                detail['icon'] = presentation.get_device_model_icon(detail.get('model'))
+                detail['icon'] = presentation.get_device_model_icon(
+                    detail.get('model'),
+                )
             else:
-                detail['icon'] = presentation.get_component_model_icon(detail.get('model'))
+                detail['icon'] = presentation.get_component_model_icon(
+                    detail.get('model'),
+                )
         if 'price' not in detail:
             if detail.get('model'):
                 detail['price'] = detail['model'].get_price()
@@ -96,7 +129,11 @@ def _get_details(dev, purchase_only=False, with_price=False, ignore_depreciation
                 detail['price'] = None
         if with_price and not detail['price']:
             continue
-        if detail['group'] != 'dev' and 'size' not in detail and detail.get('model'):
+        if (
+                detail['group'] != 'dev' and
+                'size' not in detail and
+                detail.get('model')
+            ):
             detail['size'] = detail['model'].size
         if not detail.get('model'):
             detail['model'] = detail.get('model_name', '')
@@ -153,19 +190,32 @@ class BaseMixin(object):
             footer_items.append(
                 MenuItem('Admin', fugue_icon='fugue-toolbox', href='/admin'))
         footer_items.append(
-            MenuItem('%s (logout)' % self.request.user, fugue_icon='fugue-user',
-                     view_name='logout', view_args=[details or 'info', ''],
-                     pull_right=True, href=settings.LOGOUT_URL))
+            MenuItem(
+                '%s (logout)' % self.request.user,
+                fugue_icon='fugue-user',
+                view_name='logout',
+                view_args=[details or 'info', ''],
+                pull_right=True,
+                href=settings.LOGOUT_URL,
+            )
+        )
         mainmenu_items.append(
-            MenuItem('Advanced search', name='search',
-                     fugue_icon='fugue-magnifier', view_args=[details or 'info', ''],
-                     view_name='search', pull_right=True))
+            MenuItem(
+                'Advanced search',
+                name='search',
+                fugue_icon='fugue-magnifier',
+                view_args=[details or 'info', ''],
+                view_name='search',
+                pull_right=True,
+            )
+        )
         tab_items = []
         venture = (
                 self.venture if self.venture and self.venture != '*' else None
             ) or (
                 self.object.venture if self.object else None
             )
+
         def tab_href(name):
             return '../%s/%s?%s' % (
                     name,
@@ -313,14 +363,18 @@ class DeviceUpdateView(UpdateView):
         self.object = self.get_object()
         has_perm = self.request.user.get_profile().has_perm
         if not has_perm(self.read_perm, self.object.venture):
-            return HttpResponseForbidden("You don't have permission to see this.")
+            return HttpResponseForbidden(
+                "You don't have permission to see this."
+            )
         return super(DeviceUpdateView, self).get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
         self.object = self.get_object()
         has_perm = self.request.user.get_profile().has_perm
         if not has_perm(self.edit_perm, self.object.venture):
-            return HttpResponseForbidden("You don't have permission to edit this.")
+            return HttpResponseForbidden(
+                "You don't have permission to edit this."
+            )
         return super(DeviceUpdateView, self).post(*args, **kwargs)
 
 
@@ -343,7 +397,9 @@ class DeviceDetailView(DetailView):
         self.object = self.get_object()
         has_perm = self.request.user.get_profile().has_perm
         if not has_perm(self.read_perm, self.object.venture):
-            return HttpResponseForbidden("You don't have permission to see this.")
+            return HttpResponseForbidden(
+                "You don't have permission to see this."
+            )
         return super(DeviceDetailView, self).get(*args, **kwargs)
 
 
@@ -387,9 +443,12 @@ class Info(DeviceUpdateView):
     def save_properties(self, device, properties):
         for symbol, value in properties.iteritems():
             p = device.venture_role.roleproperty_set.get(symbol=symbol)
-            pv, created = RolePropertyValue.concurrent_get_or_create(property=p, device=device)
+            pv, created = RolePropertyValue.concurrent_get_or_create(
+                property=p,
+                device=device,
+            )
             pv.value = value
-            pv.save()
+            pv.save(user=self.request.user)
 
     def get_property_form(self):
         props = {}
@@ -397,7 +456,9 @@ class Info(DeviceUpdateView):
             return None
         for p in self.object.venture_role.roleproperty_set.all():
             try:
-                value = p.rolepropertyvalue_set.filter(device=self.object)[0].value
+                value = p.rolepropertyvalue_set.filter(
+                    device=self.object,
+                )[0].value
             except IndexError:
                 value = ''
             props[p.symbol] = value
@@ -410,14 +471,19 @@ class Info(DeviceUpdateView):
         self.object = self.get_object()
         has_perm = self.request.user.get_profile().has_perm
         if not has_perm(Perm.edit_device_info_generic, self.object.venture):
-            return HttpResponseForbidden("You don't have permission to edit this.")
+            return HttpResponseForbidden(
+                "You don't have permission to edit this."
+            )
         self.property_form = self.get_property_form()
         if 'propertiessave' in self.request.POST:
             properties = list(self.object.venture_role.roleproperty_set.all())
             self.property_form = PropertyForm(properties, self.request.POST)
             if self.property_form.is_valid():
                 messages.success(self.request, "Properties updated.")
-                self.save_properties(self.object, self.property_form.cleaned_data)
+                self.save_properties(
+                    self.object,
+                    self.property_form.cleaned_data,
+                )
                 return HttpResponseRedirect(self.request.path)
         elif 'save-tags' in self.request.POST:
             tags = self.request.POST.get('tags', '')
@@ -441,10 +507,11 @@ class Components(DeviceDetailView):
         })
         return ret
 
+
 class Prices(DeviceUpdateView):
     form_class = DevicePricesForm
     template_name = 'ui/device_prices.html'
-    read_perm = Perm.edit_device_info_financial # sic
+    read_perm = Perm.edit_device_info_financial  # sic
     edit_perm = Perm.edit_device_info_financial
 
     def get_initial(self):
@@ -700,13 +767,31 @@ class Addresses(DeviceDetailView):
                 prefix='ip'
             )
         profile = self.request.user.get_profile()
-        can_edit =  profile.has_perm(self.edit_perm, self.object.venture)
+        can_edit = profile.has_perm(self.edit_perm, self.object.venture)
+        next_hostname = None
+        first_free_ip_addresses = []
+        rack = self.object.find_rack()
+        if rack:
+            networks = rack.network_set.order_by('name')
+            for network in networks:
+                next_hostname = get_next_free_hostname(network.data_center)
+                if next_hostname:
+                    break
+            for network in networks:
+                first_free_ip = get_first_free_ip(network.name)
+                if first_free_ip:
+                    first_free_ip_addresses.append({
+                        'network_name': network.name,
+                        'first_free_ip': first_free_ip,
+                    })
         ret.update({
             'canedit': can_edit,
             'balancers': list(_get_balancers(self.object)),
             'dnsformset': self.dns_formset,
             'dhcpformset': self.dhcp_formset,
             'ipformset': self.ip_formset,
+            'next_hostname': next_hostname,
+            'first_free_ip_addresses': first_free_ip_addresses,
         })
         return ret
 
@@ -746,7 +831,10 @@ class Costs(DeviceDetailView):
             ).order_by('-day')
         if splunk.count():
             size = splunk.aggregate(db.Sum('size'))['size__sum'] or 0
-            cost = splunk[0].get_price(size=size) / splunk[0].model.group.size_modifier
+            cost = (
+                splunk[0].get_price(size=size) /
+                splunk[0].model.group.size_modifier
+            )
             ret.update({
                 'splunk_size': size,
                 'splunk_monthly_cost': cost,
@@ -798,9 +886,14 @@ class Purchase(DeviceUpdateView):
 
     def get_context_data(self, **kwargs):
         ret = super(Purchase, self).get_context_data(**kwargs)
-        ret.update({
-            'components': _get_details(self.object, purchase_only=False, with_price=True),
-        })
+        ret.update(
+            {
+                'components': _get_details(
+                    self.object,
+                    purchase_only=False, with_price=True,
+                ),
+            }
+        )
         return ret
 
 
@@ -819,6 +912,202 @@ class Discover(DeviceDetailView):
             'address': addresses[0] if addresses else '',
             'addresses': json.dumps(addresses),
             'warnings': warnings,
+        })
+        return ret
+
+
+class ServerMove(BaseMixin, TemplateView):
+    template_name = 'ui/bulk-move.html'
+
+    def __init__(self, *args, **kwargs):
+        super(ServerMove, self).__init__(*args, **kwargs)
+        self.form = None
+        self.formset = None
+        self.operations = None
+
+    def step2_initial(self):
+        addresses = [
+            [ip.address for ip in self.form._get_address_candidates(a)]
+            for a in self.form.cleaned_data['addresses'].split()
+        ]
+        for a in addresses:
+            yield {
+                'address': a[0],
+                'network': Network.from_ip(a[0]).id,
+                'candidates': a,
+            }
+
+    def step3_initial(self):
+        ips = set()
+        names = set()
+        for f in self.formset:
+            network = Network.objects.get(id=f.cleaned_data['network'])
+            ip = get_first_free_ip(network.name, ips)
+            ips.add(ip)
+            name = get_next_free_hostname(network.data_center, names)
+            names.add(name)
+            yield {
+                'address': f.cleaned_data['address'],
+                'new_ip': ip,
+                'new_hostname': name,
+            }
+
+    def get_operations(self, formset):
+        operations = []
+        for f in formset:
+            address = f.cleaned_data['address']
+            new_ip = f.cleaned_data['new_ip']
+            new_hostname = f.cleaned_data['new_hostname']
+            mac = None
+            old_ipaddress = IPAddress.objects.get(address=address)
+            rev = '.'.join(
+                list(reversed(new_ip.split('.')))
+            ) + '.in-addr.arpa'
+            operations.append((
+                "warning",
+                "Address %s will be deleted from device %s." % (
+                    old_ipaddress.address, old_ipaddress.device
+                ),
+            ))
+            for r in Record.objects.filter(
+                    db.Q(name=old_ipaddress.hostname) |
+                    db.Q(content=old_ipaddress.hostname) |
+                    db.Q(content=old_ipaddress.address)
+                ):
+                operations.append((
+                    "warning",
+                    "DNS record '%s %s %s' will be deleted." % (
+                        r.name, r.type, r.content
+                    ),
+                ))
+            for e in DHCPEntry.objects.filter(ip=old_ipaddress.address):
+                operations.append((
+                    "warning",
+                    "DHCP entry for '%s %s' will be deleted." % (
+                        e.ip, e.mac
+                    )
+                ))
+                mac = e.mac
+            operations.append((
+                "success",
+                "Address %s will be added to device %s." % (
+                    new_ip, old_ipaddress.device
+                ),
+            ))
+            operations.append((
+                "success",
+                "Device %s will be renamed to %s." % (
+                    old_ipaddress.device, new_hostname
+                ),
+            ))
+            operations.append((
+                "success",
+                "A new DNS entry '%s A %s' will be created." % (
+                    new_hostname, new_ip
+                ),
+            ))
+            operations.append((
+                "success",
+                "A new DNS entry '%s PTR %s' will be created." % (
+                    rev, new_hostname
+                ),
+            ))
+            if mac:
+                operations.append((
+                    "success",
+                    "A new DHCP entry '%s %s' will be created." % (
+                        new_ip, mac
+                    )
+                ))
+        return operations
+
+    @nested_commit_on_success
+    def perform_move(self, address, new_ip, new_hostname):
+        old_ipaddress = IPAddress.objects.get(address=address)
+        device = old_ipaddress.device
+        mac = None
+        for r in Record.objects.filter(
+                db.Q(name=old_ipaddress.hostname) |
+                db.Q(content=old_ipaddress.hostname) |
+                db.Q(content=old_ipaddress.address)
+            ):
+            r.delete()
+        for e in DHCPEntry.objects.filter(ip=old_ipaddress.address):
+            mac = e.mac
+            e.delete()
+        old_ipaddress.device = None
+        old_ipaddress.save()
+        reset_dns(new_hostname, new_ip)
+        new_ipaddress, c = IPAddress.concurrent_get_or_create(
+                address=new_ip,
+            )
+        new_ipaddress.device = device
+        new_ipaddress.hostname = new_hostname
+        new_ipaddress.save()
+        if mac:
+            entry = DHCPEntry(ip=new_ip, mac=mac)
+            entry.save()
+        pricing.device_update_cached(device)
+
+    def post(self, *args, **kwargs):
+        if 'move' in self.request.POST:
+            self.formset = ServerMoveStep3FormSet(
+                self.request.POST,
+                prefix='step3',
+            )
+            if self.formset.is_valid():
+                for f in self.formset:
+                    self.perform_move(
+                        f.cleaned_data['address'],
+                        f.cleaned_data['new_ip'],
+                        f.cleaned_data['new_hostname'],
+                    )
+                    messages.success(
+                        self.request,
+                        "Moved %s." % f.cleaned_data['address'],
+                    )
+                return HttpResponseRedirect(self.request.path)
+        elif 'addresses' in self.request.POST:
+            self.form = ServerMoveStep1Form(self.request.POST)
+            if self.form.is_valid():
+                self.formset = ServerMoveStep2FormSet(
+                    initial=list(self.step2_initial()),
+                    prefix='step2',
+                )
+                self.form = None
+        elif 'step2-TOTAL_FORMS' in self.request.POST:
+            self.formset = ServerMoveStep2FormSet(
+                self.request.POST,
+                prefix='step2',
+            )
+            self.form = None
+            if self.formset.is_valid():
+                self.formset = ServerMoveStep3FormSet(
+                    initial=list(self.step3_initial()),
+                    prefix='step3',
+                )
+        elif 'step3-TOTAL_FORMS' in self.request.POST:
+            self.formset = ServerMoveStep3FormSet(
+                self.request.POST,
+                prefix='step3',
+            )
+            if self.formset.is_valid():
+                self.operations = self.get_operations(self.formset)
+        return self.get(*args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        if self.form is None and self.formset is None:
+            self.form = ServerMoveStep1Form()
+        ret = super(ServerMove, self).get_context_data(**kwargs)
+        ret.update({
+            'form': self.form,
+            'formset': self.formset,
+            'operations': self.operations,
+            'details': 'deploy',
+            'section': self.kwargs.get('section'),
+            'subsection': 'bulk edit',
+            'template_selected': 'move_servers',
+            'template_menu_items': TEMPLATE_MENU_ITEMS,
         })
         return ret
 
@@ -849,7 +1138,10 @@ class BulkEdit(BaseMixin, TemplateView):
     def post(self, *args, **kwargs):
         profile = self.request.user.get_profile()
         if not profile.has_perm(Perm.bulk_edit):
-            messages.error(self.request, "You don't have permissions for bulk edit.")
+            messages.error(
+                self.request,
+                "You don't have permissions for bulk edit.",
+            )
             return super(BulkEdit, self).get(*args, **kwargs)
         selected = self.request.POST.getlist('select')
         self.devices = Device.objects.filter(id__in=selected)
@@ -859,7 +1151,9 @@ class BulkEdit(BaseMixin, TemplateView):
         for name in self.Form().fields:
             if name == 'save_comment':
                 continue
-            query = Device.objects.filter(id__in=selected).values(name).distinct()
+            query = Device.objects.filter(
+                    id__in=selected
+                ).values(name).distinct()
             if query.count() > 1:
                 self.different_fields.append(name)
             elif query.count() > 0:
@@ -869,7 +1163,7 @@ class BulkEdit(BaseMixin, TemplateView):
             if self.form.is_valid():
                 bulk_update(self.devices, self.edit_fields,
                         self.form.cleaned_data, self.request.user)
-                return HttpResponseRedirect(self.request.path+'../info/')
+                return HttpResponseRedirect(self.request.path + '../info/')
             else:
                 messages.error(self.request, 'Correct the errors.')
         elif 'bulk' in self.request.POST:
@@ -901,7 +1195,7 @@ class CMDB(BaseMixin):
         ret = super(CMDB, self).get_context_data(**kwargs)
         device_id = self.kwargs.get('device')
         try:
-            ci=cdb.CI.objects.get(
+            ci = cdb.CI.objects.get(
                     type=cdb.CI_TYPES.DEVICE.id,
                     object_id=device_id
             )
@@ -925,4 +1219,3 @@ class Software(DeviceDetailView):
             'components': _get_details(self.object, purchase_only=False),
             })
         return ret
-

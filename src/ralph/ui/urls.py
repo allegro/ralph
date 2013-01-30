@@ -11,7 +11,7 @@ from django.views.generic.simple import redirect_to
 from ralph.cmdb.views import Search as SearchCmdb
 
 from ralph.ui.views import typeahead_roles, unlock_field, logout, discover
-from ralph.ui.views.common import Home, BulkEdit
+from ralph.ui.views.common import Home, BulkEdit, ServerMove
 from ralph.ui.views.ventures import (
     ReportVenturesDeviceList,
     VenturesAddresses,
@@ -107,6 +107,8 @@ urlpatterns = patterns('',
             login_required(BulkEdit.as_view()), {}, 'bulkedit'),
     url(r'^(?P<section>\w+)/([^/]*/)?(?P<details>deploy)/(?P<device>\d+)$',
             login_required(Deployment.as_view()), {}, 'deploy'),
+    url(r'^(?P<section>\w+)/([^/]*/)?(?P<details>move)/$',
+            login_required(ServerMove.as_view()), {}, 'servermove'),
 
     url(r'^search/$',
             login_required(SearchDeviceList.as_view()), {}, 'search'),

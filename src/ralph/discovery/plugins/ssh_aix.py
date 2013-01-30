@@ -138,7 +138,11 @@ def run_ssh_aix(ip):
             family=model_name,
             priority=SAVE_PRIORITY,
         )
-        stor, created = Storage.concurrent_get_or_create(device=dev, sn=sn)
+        stor, created = Storage.concurrent_get_or_create(
+            device=dev,
+            sn=sn,
+            mount_point=None,
+        )
         stor.model = model
         stor.label = disk
         stor.save(priority=SAVE_PRIORITY)

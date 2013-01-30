@@ -16,7 +16,10 @@ from ralph.discovery.tests.plugins.samples.donpedro import (
     data, incomplete_data, no_eth_data
 )
 from ralph.discovery.api_donpedro import (
-    save_device_data, NoRequiredDataError, save_storage
+    save_device_data,
+    NoRequiredDataError,
+    save_storage,
+    NoRequiredIPAddressError,
 )
 
 
@@ -32,7 +35,7 @@ class DonPedroPluginTest(TestCase):
         save_device_data(json.loads(data).get('data'), ip)
         self.total_memory_size = 3068
         self.total_storage_size = 40957
-        self.total_cores_count = 2
+        self.total_cores_count = 8
         # prepare storage special cases
         self._prepare_storage_special_cases()
 
@@ -49,7 +52,8 @@ class DonPedroPluginTest(TestCase):
         )
         model_name = 'TestStorage 40960MiB'
         model, _ = ComponentModel.create(
-            ComponentType.disk,
+            type=ComponentType.disk,
+            priority=0,
             size=40960,
             family=model_name,
         )
@@ -194,9 +198,17 @@ class DonPedroPluginTest(TestCase):
 
     def test_dev(self):
         self.assertEquals(
-            self.dev.model.name, u'Computer System Product Xen 4.1.2')
+            self.dev.model.name,
+            u'Computer System Product Xen 4.1.2'
+        )
         self.assertEquals(
-            self.dev.model.get_type_display(), 'unknown')
+            self.dev.model.get_type_display(),
+            'unknown'
+        )
+        self.assertEquals(
+            self.dev.ipaddress_set.all()[0].address,
+            '10.100.0.10'
+        )
 
     def test_processors(self):
         processors = self.dev.processor_set.all()
@@ -206,20 +218,22 @@ class DonPedroPluginTest(TestCase):
         self.assertEquals(processors[0].cores, 4)
         self.assertTrue(
             processors[0].model.name == processors[1].model.name ==
-            u'CPU Intel(R) Xeon(R) CPU           E5640  @ 2.67GHz 2667Mhz'
+            u'CPU Intel(R) Xeon(R) CPU           E5640  @ 2.67GH'
         )
         self.assertTrue(
             processors[0].model.speed == processors[1].model.speed == 2667
         )
         self.assertTrue(
-            processors[0].model.cores == processors[1].model.cores == 1)
+            processors[0].model.cores == processors[1].model.cores == 4)
 
     def test_storage(self):
         storage = self.dev.storage_set.all()
         self.assertEqual(len(storage), 1)
         storage = storage[0]
         self.assertEqual(
-            storage.model.name, 'XENSRC PVDISK SCSI Disk Device 40957MiB')
+            storage.model.name,
+            'XENSRC PVDISK SCSI Disk Device 40957MiB 40957MiB'
+        )
         self.assertEqual(storage.model.get_type_display(), 'disk drive')
         self.assertEqual(storage.mount_point, 'C:')
         self.assertEqual(storage.label, 'XENSRC PVDISK SCSI Disk Device')
@@ -331,7 +345,7 @@ class DonPedroPluginTest(TestCase):
         self.assertEqual(memory.model.speed, 0)
         self.assertEqual(memory.model.name, 'RAM Windows 3068MiB')
         self.assertEqual(memory.model.size, self.total_memory_size)
-        self.assertEqual(memory.model.family, '')
+        self.assertEqual(memory.model.family, 'Windows')
 
     def test_os(self):
         os = self.dev.operatingsystem_set.all()
@@ -354,16 +368,14 @@ class DonPedroPluginTest(TestCase):
         self.assertEqual(DiskShareMount.objects.all()[0].share.wwn, '25D304C1')
 
     def test_incomplete_data_handling(self):
-        with self.assertRaises(NoRequiredDataError) as cm:
+        with self.assertRaises(NoRequiredDataError):
             save_device_data(json.loads(incomplete_data).get('data'),
                              '20.20.20.20')
-        self.assertEqual(cm.exception.message,
-                         'No MAC addresses and no device SN.')
 
     def test_no_eth_device_creation(self):
-        save_device_data(json.loads(no_eth_data).get('data'),
-                         '30.30.30.30')
-        self.assertEqual(
-            Device.objects.filter(
-                sn='7ddaaa4a-dc00-de38-e683-da037fd729ac').count(), 1)
+        with self.assertRaises(NoRequiredIPAddressError):
+            save_device_data(
+                json.loads(no_eth_data).get('data'),
+                '30.30.30.30'
+            )
 

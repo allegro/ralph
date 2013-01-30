@@ -96,6 +96,7 @@ class Preboot(Named, TimeTrackable):
     class Meta:
         verbose_name = _("preboot")
         verbose_name_plural = _("preboots")
+        ordering = ('name',)
 
 
 class MassDeployment(TimeTrackable, EditorTrackable):
@@ -115,7 +116,7 @@ class MassDeployment(TimeTrackable, EditorTrackable):
         )
 
 
-class Deployment(TimeTrackable):
+class AbstractDeployment(db.Model):
     user = models.ForeignKey(
         'auth.User', verbose_name=_("user"), null=True,
         blank=True, default=None, on_delete=models.SET_NULL
@@ -132,11 +133,6 @@ class Deployment(TimeTrackable):
         default=DeploymentStatus.open.id,
     )
     ip = db.IPAddressField(_("IP address"))
-    hostname = db.CharField(
-        _("hostname"),
-        max_length=255,
-        unique=True,
-    )
     preboot = db.ForeignKey(
         Preboot,
         verbose_name=_("preboot"),
@@ -170,8 +166,7 @@ class Deployment(TimeTrackable):
     )
 
     class Meta:
-        verbose_name = _("deployment")
-        verbose_name_plural = _("deployments")
+        abstract = True
 
     def __unicode__(self):
         return "{} as {}/{} - {}".format(
@@ -181,6 +176,40 @@ class Deployment(TimeTrackable):
             self.get_status_display(),
         )
 
+
+class ArchivedDeployment(AbstractDeployment, TimeTrackable):
+    hostname = db.CharField(
+        _("hostname"),
+        max_length=255,
+        unique=False,
+    )
+
+    class Meta:
+        verbose_name = _("archived deployment")
+        verbose_name_plural = _("archived deployments")
+        ordering = ('-created',)
+
+    def __unicode__(self):
+        return "{} as {}/{} - {} (archived)".format(
+            self.hostname,
+            self.venture.path if self.venture else '-',
+            self.venture_role.path if self.venture_role else '-',
+            self.get_status_display(),
+        )
+
+
+class Deployment(AbstractDeployment, TimeTrackable):
+    hostname = db.CharField(
+        _("hostname"),
+        max_length=255,
+        unique=True,
+    )
+
+    class Meta:
+        verbose_name = _("deployment")
+        verbose_name_plural = _("deployments")
+        ordering = ('-created',)
+
     def save(self, *args, **kwargs):
         if self.status_changed():
             self.status_lastchanged = datetime.datetime.now()
@@ -188,6 +217,21 @@ class Deployment(TimeTrackable):
 
     def status_changed(self):
         return not self.id or 'status' in self.dirty_fields
+
+    def archive(self):
+        data = {}
+        for field in self._meta.fields:
+            data[field.name] = getattr(self, field.name)
+        ArchivedDeployment.objects.create(**data)
+        self.delete()
+
+    def __unicode__(self):
+        return "{} as {}/{} - {}".format(
+            self.hostname,
+            self.venture.path if self.venture else '-',
+            self.venture_role.path if self.venture_role else '-',
+            self.get_status_display(),
+        )
 
 
 class DeploymentPoll(db.Model, WithConcurrentGetOrCreate):

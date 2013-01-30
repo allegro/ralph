@@ -44,8 +44,13 @@ class AbstractNetwork(db.Model):
     )
     reserved = db.PositiveIntegerField(
         _("reserved"), default=10,
-        help_text=_("Number of addresses to be omitted in the automatic"
+        help_text=_("Number of addresses to be omitted in the automatic "
                     "determination process, counted from the first in range.")
+    )
+    reserved_top_margin = db.PositiveIntegerField(
+        _("reserved (top margin)"), default=0,
+        help_text=_("Number of addresses to be omitted in the automatic "
+                    "determination process, counted from the last in range.")
     )
     remarks = db.TextField(
         _("remarks"), help_text=_("Additional information."), blank=True,
@@ -75,7 +80,21 @@ class AbstractNetwork(db.Model):
     racks = db.ManyToManyField(
         'discovery.Device', verbose_name=_("racks"),
         # We can't import DeviceType in here, so we use an integer.
-        limit_choices_to={'model__type': 1}, # DeviceType.rack.id
+        limit_choices_to={
+            'model__type': 1,
+            'deleted': False,
+        },  # DeviceType.rack.id
+    )
+    ignore_addresses = db.BooleanField(
+        _("Ignore addresses from this network"),
+        default=False,
+        help_text=_(
+            "Addresses from this network should never be assigned "
+            "to any device, because they are not unique."
+        ),
+    )
+    dhcp_config = db.TextField(
+        _("DHCP configuration"), blank=True, default='',
     )
 
     class Meta:
@@ -237,6 +256,8 @@ class IPAddress(LastSeen, TimeTrackable, WithConcurrentGetOrCreate):
             self.network = Network.from_ip(self.address)
         except IndexError:
             self.network = None
+        if self.network and self.network.ignore_addresses:
+            self.device = None
         super(IPAddress, self).save(*args, **kwargs)
 
     def assert_same_device(self):

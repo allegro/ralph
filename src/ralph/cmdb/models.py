@@ -48,12 +48,14 @@ from ralph.cmdb.models_changes import (
     CIChangeCMDBHistory,
     CIChangeGit,
     CIChangePuppet,
+    GitPathMapping,
+
     # puppet logger types
     PuppetLog,
-    PuppetResourceStatus,
+
     CIEvent,
     CIProblem,
-    CIIncident
+    CIIncident,
 )
 
 from ralph.cmdb.models_audits import (
@@ -96,10 +98,10 @@ __all__ = [
     'CIChangeCMDBHistory',
     'CIChangeGit',
     'CIChangePuppet',
+    'GitPathMapping',
 
     # puppet logger types
     'PuppetLog',
-    'PuppetResourceStatus',
     'CIAttributeValue',
     'CIEvent',
     'CIProblem',

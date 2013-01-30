@@ -104,4 +104,19 @@
     {% if 'support' in columns %}
     <td>{{ d.support_expiration_date|date:'Y-m-d H:i'|default:'' }}</td>
     {% endif %}
+    {% if 'deprecation' in columns %}
+    <td>
+        {% if d.purchase_date %}
+            {% if now > d.deprecation_date %}
+                <i class="fugue-icon fugue-baggage-cart"></i> after deprecation
+            {% else %}
+                <i class="fugue-icon fugue-baggage-cart-box"></i> during deprecation
+            {% endif %}
+        {% elif d.model.type == device_types.cloud_server.id or d.model.type == device_types.virtual_server.id %}
+        —
+        {% else %}
+            <i class="fugue-icon fugue-exclamation"></i> no purchase date
+        {% endif %}
+    </td>
+    {% endif %}
 </tr>
