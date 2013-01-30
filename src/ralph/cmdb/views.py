@@ -1203,38 +1203,40 @@ class Graphs(BaseCMDBView):
         self.rows = []
         ci_names = {}
         if ci_id:
-            i = ImpactCalculator(root_ci=CI.objects.get(pk=ci_id))
-            st, pre = i.find_affected_nodes(int(ci_id))
-            cis = CI.objects.select_related(
+            ic = ImpactCalculator(root_ci=CI.objects.get(pk=ci_id))
+            search_tree, pre = ic.find_affected_nodes(int(ci_id))
+            affected_cis = CI.objects.select_related(
                 'content_type', 'type').filter(pk__in=pre)
             nodes = [(
                 ci.id, ci.name,
-                get_icon_for(ci)) for ci in cis
+                get_icon_for(ci)) for ci in affected_cis
             ]
-            if len(st) > MAX_RELATIONS_COUNT:
+            if len(search_tree) > MAX_RELATIONS_COUNT:
                 # in case of large relations count, skip generating json data
                 # for chart purposes
                 self.graph_data = simplejson.dumps({'overflow': len(st)})
             else:
                 ci_names = dict(CI.objects.values_list('id', 'name'))
                 relations = [dict(
-                    child=x,
-                    parent=st.get(x),
-                    parent_name=ci_names[x],
-                    type=i.graph.edge_attributes((st.get(x), x))[0],
-                    child_name=ci_names[st.get(x)])
-                    for x in st.keys() if x and st.get(x)
+                    child=item,
+                    parent=search_tree.get(item),
+                    parent_name=ci_names[item],
+                    type=ic.graph.edge_attributes(
+                        (search_tree.get(item), item)
+                    )[0],
+                    child_name=ci_names[search_tree.get(item)]) for item
+                    in search_tree.keys() if item and search_tree.get(item)
                 ]
                 self.graph_data = simplejson.dumps(dict(
                     nodes=nodes,
                     relations=relations,
                 ))
 
-            for x in cis:
-                co = x.content_object
+            for ci in affected_cis:
+                co = ci.content_object
                 self.rows.append(dict(
-                    icon=get_icon_for(x),
-                    ci=x,
+                    icon=get_icon_for(ci),
+                    ci=ci,
                     venture=getattr(co, 'venture', ''),
                     role=getattr(co, 'role', ''),
                 ))

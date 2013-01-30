@@ -187,8 +187,7 @@
                 $("#graphDiv").html("Affected CIs count: " + graph_data.overflow + ". Graphing skipped.");
             }
             return;
-        }
-        else {
+        } else {
             $("#save_svg_button").click(saveSVG);
             fugueData = "";
             jQuery.ajax({
@@ -212,5 +211,5 @@
             img.src = spriteURL;
         }
     });
-})();
+}());
 

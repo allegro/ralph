@@ -349,13 +349,13 @@ class CIImporter(object):
                 pass
 
     def import_single_object_relations(self, content_object):
-        """Fascade for single Asset"""
+        """Facade for single Asset"""
         ct = ContentType.objects.get_for_model(content_object)
         object_id = content_object.id
         return self.import_relations(ct, asset_id=object_id)
 
     def import_single_object(self, content_object):
-        """Fascade for single Asset"""
+        """Facade for single Asset"""
         ct = ContentType.objects.get_for_model(content_object)
         object_id = content_object.id
         return self.import_all_ci([ct], asset_id=object_id)
