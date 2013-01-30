@@ -419,11 +419,22 @@ class ServerMoveStep1Form(forms.Form):
             ip_address = str(ipaddr.IPAddress(address))
         except ValueError:
             ip_address = None
-            hostname = address
+            try:
+                mac = MACAddressField.normalize(address)
+            except ValueError:
+                mac = None
+            if not mac:
+                hostname = address
         if ip_address:
             candidates = IPAddress.objects.filter(
                 address=ip_address,
             )
+        elif mac:
+            ips = {
+                str(ip) for ip in
+                DHCPEntry.objects.filter(mac=mac).values_list('ip', flat=True)
+            }
+            candidates = IPAddress.objects.filter(address__in=ips)
         else:
             candidates = IPAddress.objects.filter(
                 Q(hostname=hostname) |
