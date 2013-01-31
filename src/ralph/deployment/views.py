@@ -88,10 +88,7 @@ def _preboot_view(request, file_name=None, file_type=None):
     assert file_name or file_type
     message = ''
     ftype = None
-    try:
-        deployment = get_current_deployment(request)
-    except Deployment.DoesNotExist:
-        deployment = None
+    deployment = get_current_deployment(request)
     if deployment:
         try:
             if file_name:
@@ -128,27 +125,26 @@ def preboot_type_view(request, file_type):
 
 
 def preboot_complete_view(request):
+    deployment = get_current_deployment(request)
+    if not deployment:
+        return HttpResponseNotFound(
+            "No deployment can be completed at this moment."
+        )
+    deployment.status = DeploymentStatus.done
+    deployment.save()
     try:
-        deployment = get_current_deployment(request)
-        # XXX what happens when get_current_deployment returns None?
-        deployment.status = DeploymentStatus.done
-        deployment.save()
-        try:
-            ip_address = deployment.device.ipaddress_set.get(
-                is_management=True,
-            )
-            discover_single.apply_async(
-                args=[{'ip': ip_address.address}, ],
-                countdown=600,  # 10 minutes
-            )
-        except IPAddress.DoesNotExist:
-            pass
+        ip_address = deployment.device.ipaddress_set.get(
+            is_management=True,
+        )
         discover_single.apply_async(
-            args=[{'ip': deployment.ip}, ],
+            args=[{'ip': ip_address.address}, ],
             countdown=600,  # 10 minutes
         )
-        deployment.archive()
-        return HttpResponse()
-    except Deployment.DoesNotExist:
-        return HttpResponseNotFound('No deployment can be completed at this '
-                                    'point.')
+    except IPAddress.DoesNotExist:
+        pass
+    discover_single.apply_async(
+        args=[{'ip': deployment.ip}, ],
+        countdown=600,  # 10 minutes
+    )
+    deployment.archive()
+    return HttpResponse()
