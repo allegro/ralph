@@ -11,6 +11,7 @@ import re
 from urlparse import urljoin
 
 from django.db.models import Q
+from django.contrib.auth.models import User
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
@@ -22,6 +23,7 @@ from django.utils.safestring import mark_safe
 from django.utils import simplejson
 from django.utils.html import escape
 from django.conf import settings
+from lck.cache.memoization import memoize
 from lck.django.common import nested_commit_on_success
 from lck.django.filters import slugify
 from bob.menu import MenuItem, MenuHeader
@@ -83,8 +85,9 @@ class BaseCMDBView(Base):
             counter += 1
         return list
 
-    def get_permissions_dict(self):
-        has_perm = self.request.user.get_profile().has_perm
+    @memoize(skip_first=True, update_interval=60)
+    def get_permissions_dict(self, user_id):
+        has_perm = User.objects.get(pk=user_id).get_profile().has_perm
         ci_perms = [
             'create_configuration_item',
             'edit_configuration_item_info_generic',
@@ -185,7 +188,7 @@ class BaseCMDBView(Base):
 
     def get_context_data(self, *args, **kwargs):
         ret = super(BaseCMDBView, self).get_context_data(**kwargs)
-        ret.update(self.get_permissions_dict())
+        ret.update(self.get_permissions_dict(self.request.user.id))
         ret.update({
             'sidebar_items': self.get_sidebar_items(),
             'breadcrumbs': self.generate_breadcrumb(),
@@ -237,7 +240,7 @@ class EditRelation(BaseCMDBView):
         return ret
 
     def get(self, *args, **kwargs):
-        if not self.get_permissions_dict().get(
+        if not self.get_permissions_dict(self.request.user.id).get(
                 'edit_configuration_item_relations_perm', False):
             return HttpResponseForbidden()
         rel_id = kwargs.get('relation_id')
@@ -303,7 +306,7 @@ class AddRelation(BaseCMDBView):
         return data
 
     def get(self, *args, **kwargs):
-        if not self.get_permissions_dict().get(
+        if not self.get_permissions_dict(self.request.user.id).get(
                 'edit_configuration_item_relations_perm',
                 False):
             return HttpResponseForbidden()
@@ -440,7 +443,7 @@ class BaseCIDetails(BaseCMDBView):
     template_name = 'cmdb/ci_details.html'
 
     def check_perm(self):
-        if not self.get_permissions_dict().get(
+        if not self.get_permissions_dict(self.request.user.id).get(
             'read_configuration_item_info_generic_perm',
             False,
         ):
@@ -451,42 +454,42 @@ class BaseCIDetails(BaseCMDBView):
             ('Basic Info', 'main'),
             ('Relations', 'relations'),
         ]
-        if self.get_permissions_dict().get(
+        if self.get_permissions_dict(self.request.user.id).get(
             'read_configuration_item_info_git_perm',
             False
         ):
             tabs.append(('Repo changes', 'git'))
-        if self.get_permissions_dict().get(
+        if self.get_permissions_dict(self.request.user.id).get(
             'read_configuration_item_info_puppet_perm',
             False
         ):
             tabs.append(('Agent events', 'puppet'))
-        if self.get_permissions_dict().get(
+        if self.get_permissions_dict(self.request.user.id).get(
             'read_configuration_item_info_jira_perm',
             False
         ):
             tabs.append(('Asset attr. changes', 'ralph'))
-        if self.get_permissions_dict().get(
+        if self.get_permissions_dict(self.request.user.id).get(
             'read_configuration_item_info_jira_perm',
             False
         ):
             tabs.append(('CI attr. changes', 'ci_changes'))
-        if self.get_permissions_dict().get(
+        if self.get_permissions_dict(self.request.user.id).get(
             'read_configuration_item_info_jira_perm',
             False
         ):
             tabs.append(('Monitoring events', 'zabbix'))
-        if self.get_permissions_dict().get(
+        if self.get_permissions_dict(self.request.user.id).get(
             'read_configuration_item_info_jira_perm',
             False
         ):
             tabs.append(('Problems', 'problems'))
-        if self.get_permissions_dict().get(
+        if self.get_permissions_dict(self.request.user.id).get(
             'read_configuration_item_info_jira_perm',
             False
         ):
             tabs.append(('Incidents', 'incidents'))
-        if self.get_permissions_dict().get(
+        if self.get_permissions_dict(self.request.user.id).get(
             'read_configuration_item_info_generic_perm',
             False
         ):
@@ -844,7 +847,7 @@ class CIGitEdit(BaseCIDetails):
     active_tab = 'git'
 
     def check_perm(self):
-        if not self.get_permissions_dict().get(
+        if not self.get_permissions_dict(self.request.user.id).get(
             'read_configuration_item_info_git_perm',
             False,
         ):
@@ -903,7 +906,7 @@ class CIPuppetEdit(BaseCIDetails):
     active_tab = 'puppet'
 
     def check_perm(self):
-        if not self.get_permissions_dict().get(
+        if not self.get_permissions_dict(self.request.user.id).get(
             'read_configuration_item_info_puppet_perm',
             False,
         ):
@@ -962,7 +965,7 @@ class CIRalphEdit(BaseCIDetails):
     active_tab = 'ralph'
 
     def check_perm(self):
-        if not self.get_permissions_dict().get(
+        if not self.get_permissions_dict(self.request.user.id).get(
             'read_configuration_item_info_jira_perm',
             False,
         ):
@@ -1019,7 +1022,7 @@ class CIChangesEdit(BaseCIDetails):
     active_tab = 'ci_changes'
 
     def check_perm(self):
-        if not self.get_permissions_dict().get(
+        if not self.get_permissions_dict(self.request.user.id).get(
             'read_configuration_item_info_jira_perm',
             False,
         ):
@@ -1076,7 +1079,7 @@ class CIZabbixEdit(BaseCIDetails):
     active_tab = 'zabbix'
 
     def check_perm(self):
-        if not self.get_permissions_dict().get(
+        if not self.get_permissions_dict(self.request.user.id).get(
             'read_configuration_item_info_jira_perm',
             False,
         ):
@@ -1128,7 +1131,7 @@ class CIProblemsEdit(BaseCIDetails):
     active_tab = 'problems'
 
     def check_perm(self):
-        if not self.get_permissions_dict().get(
+        if not self.get_permissions_dict(self.request.user.id).get(
             'read_configuration_item_info_jira_perm',
             False,
         ):
@@ -1180,7 +1183,7 @@ class CIIncidentsEdit(BaseCIDetails):
     active_tab = 'incidents'
 
     def check_perm(self):
-        if not self.get_permissions_dict().get(
+        if not self.get_permissions_dict(self.request.user.id).get(
             'read_configuration_item_info_jira_perm',
             False,
         ):
@@ -1232,7 +1235,7 @@ class CISOEventsEdit(BaseCIDetails):
     active_tab = 'so'
 
     def check_perm(self):
-        if not self.get_permissions_dict().get(
+        if not self.get_permissions_dict(self.request.user.id).get(
             'read_configuration_item_info_generic_perm',
             False,
         ):
