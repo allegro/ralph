@@ -1,0 +1,73 @@
+{% extends 'cmdb/ci_details.html' %}
+{% load icons %}
+{% load query %}
+
+{% block ci_content %}
+<form id='edit_form' class="form form-inline" method="POST">
+    <div class="span6">
+        {% if editable %}
+            {% csrf_token %}
+        {% endif %}
+        {% for f in form.hidden_fields %}{{ f }}{% endfor %}
+
+        <table class="table table-bordered table-striped table-properties">
+            <tbody>
+                {% if service_name %}
+                <tr>
+                    <td colspan=4>
+                        <p><span style='font-size: 15px' class="label label-success">Service: {{ service_name }}</span></p>
+                    </td>
+                </tr>
+                {% endif %}
+
+                {% for f in form.visible_fields %}
+                <tr class="control-group {{ f.css_classes }}{% if f.errors %} error{% endif %}">
+                    <td width="16">{{ f|field_icon:form }}</td>
+                <td class="form-label">
+                    {{ f.label_tag }}
+                </td>
+                <td class="form-field controls">
+                    {{ f }}
+                    {% for e in f.errors %}
+                        <div class="help-block">{{ e }}</div>
+                    {% empty %}
+                    {%  if f.help_text %}
+                        <div class="help-block">{{ f.help_text }}</div>
+                    {%  endif %}
+                    {% endfor %}
+                </td>
+            </tr>
+            {% endfor %}
+           </tbody>
+        </table>
+
+        {% if ci_id %}
+            {% if not editable %}
+                <span><h3>Impact report</h3></span>
+                <a target="_blank" href='/cmdb/graphs?ci={{ ci_id }}'>Run impact report</a>
+            {% endif %}
+            <span><h3>Custom Attributes</h3></span>
+            {% include 'cmdb/include_attributes.html' %}
+            <hr>
+        {% endif %}
+
+        <div class="row-fluid">
+            <div class='span12'>
+                {% if show_in_ralph %}
+                <div class='span3'>
+                    <a class='btn btn-info btn-large' href='{{ ralph_ci_link }}'> Asset details </a>
+                </div>
+                {% endif %}
+                <div class='span4'>
+                {% if editable %}
+                    <button class="btn btn-primary btn-large" type="submit">{% icon 'fugue-tick' %}&nbsp;Save</button>
+                    <button class="btn btn-large" type="reset">{% icon 'fugue-broom' %}&nbsp;Clean</button>
+                {% else %}
+                    <a class='btn btn-info btn-large' href='/cmdb/ci/edit/{{ ci_id}}'> Edit this CI </a>
+                {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
