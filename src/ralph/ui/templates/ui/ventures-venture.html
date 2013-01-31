@@ -47,7 +47,7 @@
               {% endif %}
               {% if i.count %}
                 {% if i.url or i.count_now %} / {% endif %}
-                <span class="badge nolink">{{i.count}}</span>
+                <span class="badge nolink">{{i.count|floatformat:2}}</span>
               {% endif %}
             </td>
             <td class="column-cost currency">{{ i.cost|currency }}</td>
@@ -108,6 +108,22 @@ $(function () {
             lines: { show: true, steps: true },
             points: { show: true, steps: true },
             data: {{ count_data|safe }},
+            yaxis: 2
+        },
+        {
+            label: 'Cores count',
+            color: '#6f2',
+            lines: { show: true, steps: true },
+            points: { show: true, steps: true },
+            data: {{ cores_data|safe }},
+            yaxis: 2
+        },
+        {
+            label: 'Virtual cores count',
+            color: '#62f',
+            lines: { show: true, steps: true },
+            points: { show: true, steps: true },
+            data: {{ vcores_data|safe }},
             yaxis: 2
         }
     ], {

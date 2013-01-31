@@ -11,7 +11,7 @@ from django.views.generic.simple import redirect_to
 from ralph.cmdb.views import Search as SearchCmdb
 
 from ralph.ui.views import typeahead_roles, unlock_field, logout, discover
-from ralph.ui.views.common import Home, BulkEdit
+from ralph.ui.views.common import Home, BulkEdit, ServerMove
 from ralph.ui.views.ventures import (
     ReportVenturesDeviceList,
     VenturesAddresses,
@@ -92,6 +92,7 @@ from ralph.ui.views.reports import (
     ReportServices,
     ReportVentures,
     ReportDevices,
+    ReportDevicePricesPerVenture,
 )
 
 
@@ -106,6 +107,8 @@ urlpatterns = patterns('',
             login_required(BulkEdit.as_view()), {}, 'bulkedit'),
     url(r'^(?P<section>\w+)/([^/]*/)?(?P<details>deploy)/(?P<device>\d+)$',
             login_required(Deployment.as_view()), {}, 'deploy'),
+    url(r'^(?P<section>\w+)/([^/]*/)?(?P<details>move)/$',
+            login_required(ServerMove.as_view()), {}, 'servermove'),
 
     url(r'^search/$',
             login_required(SearchDeviceList.as_view()), {}, 'search'),
@@ -253,6 +256,7 @@ urlpatterns = patterns('',
     url(r'^reports/ventures/$', login_required(ReportVentures.as_view()), {}, 'reports_ventures'),
     url(r'^reports/margins/$', login_required(ReportMargins.as_view()), {}, 'reports_margins'),
     url(r'^reports/devices/$', login_required(ReportDevices.as_view()), {}, 'reports_devices'),
+    url(r'^reports/device_prices_per_venture/$', login_required(ReportDevicePricesPerVenture.as_view()), {}, 'device_prices_per_venture'),
 
     url(r'^deployment/mass/start/$',
         login_required(PrepareMassDeployment.as_view())),

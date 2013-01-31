@@ -23,9 +23,18 @@ class ReadOnlySelectWidget(forms.Select):
     def render(self, name, value, attrs=None, choices=()):
         labels = dict(self.choices)
         display = unicode(labels.get(value, ''))
-        return mark_safe('<div class="input uneditable-input">'
-                         '<input type="hidden" name="%s" value="%s">%s</div>' %
-                         (escape(name), escape(value), escape(display)))
+        attr_class =  self.attrs.get('class', '')
+        return mark_safe(
+            '<div class="input uneditable-input %s">'
+            '<input type="hidden" name="%s" value="%s">'
+            '%s'
+            '</div>' % (
+                escape(attr_class),
+                escape(name),
+                escape(value),
+                escape(display),
+            ),
+        )
 
 
 class ReadOnlyPriceWidget(forms.Widget):
@@ -58,6 +67,14 @@ class ReadOnlyWidget(forms.Widget):
         <input type="hidden" name="%s" value="%s">
         <div class="input uneditable-input %s">%s</div></input>''' % (
             escape(name), escape(value), attr_class, escape(value)))
+
+
+class ReadOnlyPreWidget(forms.Widget):
+    def render(self, name, value, attrs=None, choices=()):
+        return mark_safe('''
+        <input type="hidden" name="%s" value="%s">
+        <div class="input uneditable-input"><pre>%s</pre></div></input>''' % (
+            escape(name), escape(value), escape(value)))
 
 
 class DeviceModelWidget(forms.Widget):

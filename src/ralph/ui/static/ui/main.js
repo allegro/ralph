@@ -91,8 +91,29 @@ $(function ($) {
     $('form.bulk-edit-form select').not('.add-on *').change(function () {
         $(this).parent('.input-prepend').find('.add-on input').prop('checked', true);
     });
+    $('form.bulk-edit-form textarea').not('.add-on *').change(function () {
+        $(this).parent('.input-prepend').find('.add-on input').prop('checked', true);
+    });
     $('form.bulk-edit-form .warning input').not('.add-on *').attr('placeholder', 'Different values...');
 
+    /* Fill-down buttons. */
+    $('a[data-fill-down]').click(function () {
+        var $this = $(this);
+        var name = $this.attr('data-fill-down');
+        var counter = +/-(\d+)-/.exec(name)[1];
+        console.log(name);
+        var value = $('[name="'+name+'"]').val();
+        console.log(value);
+        var $field;
+        do {
+            counter += 1
+            $field = $(
+                '[name="' + name.replace(/-(\d+)-/, '-' + counter + '-') + '"]'
+            );
+            $field.val(value);
+            console.log($field);
+        } while ($field.length > 0 && counter < 1000);
+    });
 
     $('form#disco-form').submit(function () {
         var $form = $(this);
@@ -149,7 +170,7 @@ $(function ($) {
     $('select#id_venture').each(venture_changed);
 
     $('.datepicker').datepicker({format: 'yyyy-mm-dd', autoclose: true}).click(function(){
-        $("input[name!='" + $(this).attr('name') + "']").datepicker('hide');
+        $("input.datepicker[name!='" + $(this).attr('name') + "']").datepicker('hide');
     });
 
     var parseDate = function (input, format) {
@@ -248,7 +269,7 @@ $(function ($) {
         };
     })
 
-    ActiveTab = function (){
+    CMDBActiveTab = function (){
         var hash = location.hash
             , hashPieces = hash.split('?')
             , activeTab = $('[href=' + hashPieces[0] + ']');
@@ -256,12 +277,18 @@ $(function ($) {
     }
     $('body').off('click.tab.data-api')
     $('body').on('click.scrolling-tabs', '[data-toggle="tab"], [data-toggle="pill"]', function (e) {
-        $(this).tab('show')
+        if ($('.cmdb-ci-tabs')){
+            $(this).tab('show');
+        }
     });
     $(window).on('hashchange', function (){
-        ActiveTab()
+        if ($('.cmdb-ci-tabs')){
+            CMDBActiveTab();
+        }
     });
     $(window).load(function (){
-        ActiveTab()
+        if ($('.cmdb-ci-tabs')){
+            CMDBActiveTab();
+        }
     });
 });

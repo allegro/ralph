@@ -1,6 +1,33 @@
 Change Log
 ----------
 
+1.1.15
+~~~~~~
+
+Released on January 16, 2013
+
+* Added custom DHCP configuration for networks and DHCP servers.
+
+* Networks can now be marked as non-unique, which prevents their IP addresses
+  from being added to devices.
+
+* Next free hostname and IP address are now displayed in the Addresses tab.
+
+* Bugfixes in discovery plugins.
+
+
+1.1.14
+~~~~~~
+
+Released on January 07, 2013
+
+* Add detailed costs to the Ventures report,
+
+* Fix incorrect use of concurrent_get_or_create in discovery plugins
+
+* Fix the clean deployment plugin to re-connect the ip address
+
+
 1.1.13
 ~~~~~~
 

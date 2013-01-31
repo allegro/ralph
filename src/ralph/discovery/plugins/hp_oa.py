@@ -116,7 +116,9 @@ def _add_hp_oa_devices(devices, device_type, parent=None):
                 priority=SAVE_PRIORITY,
             )
             component, created = GenericComponent.concurrent_get_or_create(
-                    device=parent, sn=sn)
+                sn=sn,
+                defaults=dict(device=parent),
+            )
             component.model = model
             component.label = name
             component.save(priority=SAVE_PRIORITY)
