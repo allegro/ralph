@@ -18,7 +18,7 @@ from ralph.discovery.history import field_changes
 
 
 class DHCPEntry(TimeTrackable):
-    mac = MACAddressField(verbose_name=_("MAC address"), unique=False)
+    mac = MACAddressField(verbose_name=_("MAC address"), unique=True)
     ip = db.CharField(verbose_name=_("IP address"), blank=True, unique=False,
                       default="", max_length=len('xxx.xxx.xxx.xxx'))
     number = db.BigIntegerField(

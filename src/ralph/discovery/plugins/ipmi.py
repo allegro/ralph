@@ -12,14 +12,20 @@ import subprocess
 from lck.lang import nullify
 from django.conf import settings
 from lck.django.common import nested_commit_on_success
-from lck.django.common.models import MACAddressField
 
 from ralph.util import network, parse
 from ralph.util import plugin, Eth
-from ralph.discovery.models import (DeviceType, EthernetSpeed, Device,
-                                    Processor, Memory, Ethernet, IPAddress,
-                                    ComponentModel, ComponentType,
-                                    SERIAL_BLACKLIST)
+from ralph.discovery.models import (
+    ComponentModel,
+    ComponentType,
+    Device,
+    DeviceType,
+    EthernetSpeed,
+    IPAddress,
+    Memory,
+    Processor,
+    SERIAL_BLACKLIST,
+)
 
 
 IPMI_SECTION_REGEX = re.compile(r'FRU Device Description : (?P<value>[^(]+) '

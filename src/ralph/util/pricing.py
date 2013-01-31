@@ -7,15 +7,17 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import math
-
 from datetime import date, timedelta, datetime, time
+
 from django.core.urlresolvers import reverse_lazy
 from django.db import models as db
+from django.db.transaction import commit_on_success
 from django.utils.html import escape
 from django.conf import settings
 
 from ralph.discovery.models import (
     ComponentModelGroup,
+    Device,
     DeviceType,
     DiskShare,
     EthernetSpeed,
@@ -143,7 +145,9 @@ def get_device_virtuals_price(device):
 def get_device_cpu_price(device):
     price = math.fsum(cpu.get_price() for cpu in device.processor_set.all())
     if not price and device.model and device.model.type in {
-            DeviceType.rack_server.id, DeviceType.blade_server.id}:
+            DeviceType.rack_server.id,
+            DeviceType.blade_server.id
+        }:
         # Fall back to OperatingSystem-visible cores, and then to default
         try:
             os = OperatingSystem.objects.get(device=device)
@@ -270,20 +274,30 @@ def device_update_cached(device):
     rack = device
     while rack and not (rack.model and rack.model.type == DeviceType.rack):
         rack = rack.parent
-    stack = [device]
-    devices = [device]
-    visited = {device}
+    stack = [device.id]
+    device_ids = [device.id]
+    visited = {device.id}
     while stack:
-        device = stack.pop()
-        devices.append(device)
-        for d in device.child_set.filter(deleted=False):
-            if d in visited:
+        device_id = stack.pop()
+        device_ids.append(device_id)
+        for d_id, in Device.objects.get(
+                id=device_id,
+                deleted=false,
+            ).child_set.values_list('id'):
+            if d_id in visited:
                 # Make sure we don't do the same device twice.
                 continue
-            visited.add(d)
-            stack.append(d)
-    devices.reverse()   # Do the children before their parent.
-    for d in devices:
+            visited.add(d_id)
+            stack.append(d_id)
+    device_ids.reverse()   # Do the children before their parent.
+    step = 10
+    for index in xrange(0, len(device_ids), step):
+        _update_batch(device_ids[index:index + step], rack, dc)
+
+
+@commit_on_success
+def _update_batch(device_ids, rack, dc):
+    for d in Device.objects.filter(id__in=device_ids):
         name = d.get_name()
         if name != 'unknown':
             d.name = name
