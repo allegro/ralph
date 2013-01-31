@@ -16,7 +16,6 @@ from ralph.ui.forms import NetworksFilterForm
 from ralph.ui.views.common import (BaseMixin, DeviceDetailView, Info,
                                    Prices, Addresses, Costs, Purchase,
                                    Components, History, Discover, Software)
-from ralph.cmdb.views import CMDB
 from ralph.ui.views.devices import BaseDeviceList
 from ralph.ui.views.reports import Reports, ReportDeviceList
 from ralph.util import presentation
@@ -180,10 +179,6 @@ class NetworksPurchase(Networks, Purchase):
 
 
 class NetworksDiscover(Networks, Discover):
-    pass
-
-
-class NetworksCMDB(Networks, CMDB, DeviceDetailView):
     pass
 
 
