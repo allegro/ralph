@@ -872,10 +872,7 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
             for component in _get_details(device):
                 count = 1
                 model = component.get('model')
-                try:
-                    component_type = model.type
-                except AttributeError:
-                    pass
+                component_type = getattr(model, 'type', None)
                 act_components = [x.get('name') for x in components]
                 if (model not in act_components and
                     component_type not in blacklist):
