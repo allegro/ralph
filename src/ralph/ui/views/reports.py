@@ -702,8 +702,8 @@ class ReportDevices(SidebarReports, Base):
             )
             headers = ('Name', 'Support expiration date')
             for dev in devs:
-                name=self.get_name(dev.name, dev.id)
-                rows.append([name,dev.support_expiration_date])
+                name = self.get_name(dev.name, dev.id)
+                rows.append([name, dev.support_expiration_date])
         else:
             self.form_support_range = SupportRangeReportForm(initial={
                 's_start': datetime.date.today() - datetime.timedelta(days=30),
@@ -721,7 +721,7 @@ class ReportDevices(SidebarReports, Base):
             )
             headers = ('Name', 'Depreciation date')
             for dev in devs:
-                name=self.get_name(dev.name, dev.id)
+                name = self.get_name(dev.name, dev.id)
                 rows.append([name, dev.deprecation_date])
         else:
             self.form_deprecation_range = DeprecationRangeReportForm(initial={
@@ -740,7 +740,7 @@ class ReportDevices(SidebarReports, Base):
             )
             headers = ('Name', 'Warranty expiration date')
             for dev in devs:
-                name=self.get_name(dev.name, dev.id)
+                name = self.get_name(dev.name, dev.id)
                 rows.append([name, dev.warranty_expiration_date])
         else:
             self.form_warranty_range = WarrantyRangeReportForm(initial={
@@ -765,7 +765,6 @@ class ReportDevices(SidebarReports, Base):
         return context
 
 
-
 def is_bladesystem(component):
     ''' Check if component is bladesystem - be careful BladeSystem and
     RAM have the same type_id. If component type is RAM runs except '''
@@ -780,10 +779,6 @@ def is_bladesystem(component):
             return True
     except AttributeError:
         return False
-
-
-def is_diskshare(component_type):
-    return True if component_type == ComponentType.share else False
 
 
 class ReportDevicePricesPerVenture(SidebarReports, Base):
@@ -879,7 +874,7 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
                         chassis_price = get_device_chassis_price(device)
                         auto_price = get_device_auto_price(device)
                         bs_price = 0
-                        if device.price and device.price != 0:
+                        if device.price != 0:
                             bs_price = device.price / bs_count
                         elif chassis_price != 0:
                             bs_price = chassis_price
@@ -892,12 +887,11 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
                             'count': count,
                             'bs_count': bs_count,
                         })
-                    elif is_diskshare(component_type):
+                    elif component_type == ComponentType.share:
                         components.append({
                             'icon': component.get('icon'),
                             'name': model,
-                            'price': 999999,
-                            # 'price': component.get('price') or 0,
+                            'price': component.get('price') or 0,
                             'count': component.get('count') or 1,
                         })
                     else:
@@ -926,7 +920,7 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
                 all_components_price += total_component
             devices.append({
                 'device': device,
-                'depreciated': is_depreciated(device),
+                'deprecated': is_deprecated(device),
                 'price': all_components_price,
                 'components': components
             })
@@ -955,7 +949,8 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
             # Blacklist: Os, Software
             self.devices = self.get_device_with_components(
                 venture_devices, blacklist=[
-                    ComponentType.software, ComponentType.os
+                    ComponentType.software,
+                    ComponentType.os,
                 ]
             )
         else:
@@ -965,7 +960,8 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
         if self.request.GET.get('export-all') == 'csv':
             devices = Device.objects.all()
             csv = self.get_device_with_components(devices, blacklist=[
-                    ComponentType.software, ComponentType.os
+                    ComponentType.software,
+                    ComponentType.os,
                 ])
             return self.export_csv(csv, all_devices=True)
         return super(ReportDevicePricesPerVenture, self).get(*args, **kwargs)

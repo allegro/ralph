@@ -15,7 +15,11 @@ from django.utils.html import escape
 from django.conf import settings
 
 from ralph.discovery.models import (
-    DeviceType, ComponentModelGroup, DiskShare, EthernetSpeed, OperatingSystem
+    ComponentModelGroup,
+    DeviceType,
+    DiskShare,
+    EthernetSpeed,
+    OperatingSystem,
 )
 
 
@@ -24,11 +28,10 @@ def get_device_price(device):
     The quoted price, including all subtractions and additions from other
     devices.
     """
-    if not device.deleted:
-        price = get_device_raw_price(device)
-        price += get_device_external_price(device)
-    else:
-        price = 0
+    if device.deleted:
+        return 0
+    price = get_device_raw_price(device)
+    price += get_device_external_price(device)
     return max(0, price)
 
 
@@ -44,7 +47,7 @@ def get_device_external_price(device):
         # Subtract the prices taken by blades
         for d in device.child_set.filter(
                 model__type=DeviceType.blade_server.id,
-                deleted=False
+                deleted=False,
             ):
             price -= get_device_chassis_price(d)
     elif device.model and device.model.type == DeviceType.blade_server.id:
@@ -57,30 +60,35 @@ def get_device_external_price(device):
     return price
 
 
-def is_depreciated(device):
+def is_deprecated(device):
     ''' Return True if device is depreciated '''
-
     if device.deprecation_date:
         today_midnight = datetime.combine(datetime.today(), time())
-        return True if device.deprecation_date < today_midnight else False
-    return None
+        return device.deprecation_date < today_midnight
 
 
-def get_device_raw_price(device, ignore_depreciation=False):
+def get_device_raw_price(device, ignore_deprecation=False):
     """Purchase price of this device, before anything interacts with it."""
+    if (device.deleted or device.deprecation_kind is None or
+            (not ignore_deprecation and is_deprecated(device)
+    ):
+        return 0
+    cost = price / (device.deprecation_kind.months or 1)
+
+
     if not device.deleted:
-        if not is_depreciated(device) or ignore_depreciation:
+        if not is_depreciated(device) or ignore_deprecation:
             return device.price or get_device_auto_price(device)
     return 0
 
 
-def get_device_cost(device, ignore_depreciation=False):
+def get_device_cost(device, ignore_deprecation=False):
     """Return the monthly cost of this device."""
 
     price = get_device_price(device)
     cost = 0
     if not device.deleted and device.deprecation_kind is not None:
-        if not is_depreciated(device) or ignore_depreciation:
+        if not is_depreciated(device) or ignore_deprecation:
             cost = price / device.deprecation_kind.months
     margin = device.get_margin() or 0
     cost = cost * (1 + margin / 100) + get_device_additional_costs(device)
@@ -100,23 +108,23 @@ def get_device_additional_costs(device):
     return cost
 
 
-def get_device_chassis_price(device, ignore_depreciation=False):
+def get_device_chassis_price(device, ignore_deprecation=False):
     """
     Part of the chassis price that should be added to the blade
     server's price.
     """
 
-    dep = ignore_depreciation
+    deprecation = ignore_deprecation
     if (device.model and device.model.group and device.model.group.slots and
         device.parent and device.parent.model and device.parent.model.group and
         device.parent.model.group.slots and not device.deleted):
         device_price = get_device_raw_price(
-            device.parent, ignore_depreciation=dep
+            device.parent, ignore_deprecation=deprecation
         )
         if device_price > 0:
             chassis_price = (
                 device.model.group.slots *
-                get_device_raw_price(device.parent, ignore_depreciation=dep) /
+                get_device_raw_price(device.parent, ignore_deprecation=deprecation) /
                 device.parent.model.group.slots)
         else:
             chassis_price = 0
@@ -291,8 +299,8 @@ def device_update_cached(device):
         d.save()
 
 
-def details_dev(dev, purchase_only=False, ignore_depreciation=False):
-    dep = ignore_depreciation
+def details_dev(dev, purchase_only=False, ignore_deprecation=False):
+    deprecation = ignore_deprecation
     yield {
         'label': 'Device',
         'model': dev.model,
@@ -311,7 +319,7 @@ def details_dev(dev, purchase_only=False, ignore_depreciation=False):
         for d in dev.child_set.filter(deleted=False):
             if d.model.type == DeviceType.blade_server.id:
                 chassis_price = get_device_chassis_price(
-                    d, ignore_depreciation=dep
+                    d, ignore_deprecation=deprecation
                 )
                 if chassis_price:
                     yield {
@@ -335,7 +343,7 @@ def details_dev(dev, purchase_only=False, ignore_depreciation=False):
                 }
     elif dev.model.type == DeviceType.blade_server.id:
         chassis_price = get_device_chassis_price(
-            dev, ignore_depreciation=dep
+            dev, ignore_deprecation=deprecation
         )
         if chassis_price:
             yield {
@@ -577,9 +585,9 @@ def details_other(dev, purchase_only=False):
         }
 
 
-def details_all(dev, purchase_only=False, ignore_depreciation=False):
-    dep = ignore_depreciation
-    for detail in details_dev(dev, purchase_only, ignore_depreciation=dep):
+def details_all(dev, purchase_only=False, ignore_deprecation=False):
+    deprecation = ignore_deprecation
+    for detail in details_dev(dev, purchase_only, ignore_deprecation=deprecation):
         detail['group'] = 'dev'
         yield detail
     for detail in details_cpu(dev, purchase_only):
