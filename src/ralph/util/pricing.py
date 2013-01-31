@@ -282,7 +282,7 @@ def device_update_cached(device):
         device_ids.append(device_id)
         for d_id, in Device.objects.get(
                 id=device_id,
-                deleted=false,
+                deleted=False,
             ).child_set.values_list('id'):
             if d_id in visited:
                 # Make sure we don't do the same device twice.
