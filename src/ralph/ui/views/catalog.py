@@ -67,7 +67,6 @@ PAGE_SIZE = 25
 MAX_PAGE_SIZE = 65535
 
 
-
 def _prepare_query(request, query, tree=False, columns={}, default_sort=''):
     if query:
         query = query.select_related(depth=3)
@@ -497,7 +496,11 @@ class CatalogPricing(Catalog):
                 name='',
                 fugue_icon='fugue-shopping-basket--plus',
                 view_name='catalog_pricing',
-                view_args=('pricing', self.year, self.month),
+                view_args=(
+                    'pricing',
+                    '%04d' % self.year,
+                    '%02d' % self.month
+                ),
             ),
         ] + [
             MenuItem(
@@ -505,7 +508,12 @@ class CatalogPricing(Catalog):
                 name=g.name,
                 fugue_icon = 'fugue-shopping-basket',
                 view_name='catalog_pricing',
-                view_args=('pricing', self.year, self.month, g.name),
+                view_args=(
+                    'pricing',
+                    '%04d' % self.year,
+                    '%02d' % self.month,
+                    g.name,
+                ),
             ) for g in PricingGroup.objects.filter(date=date)
         ]
         aggr = PricingGroup.objects.aggregate(db.Min('date'))
