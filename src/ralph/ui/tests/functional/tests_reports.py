@@ -20,7 +20,7 @@ from ralph.discovery.models import (
 from ralph.discovery.models_component import ComponentType
 from ralph.ui.tests.global_utils import login_as_su
 from ralph.ui.tests.util import create_device, sum_for_view
-from ralph.ui.views.reports import is_bradesystem
+from ralph.ui.views.reports import is_bladesystem
 from ralph.util.pricing import get_device_price
 
 CURRENT_DIR = settings.CURRENT_DIR
@@ -603,7 +603,7 @@ class TestReportsPriceDeviceVenture(TestCase):
                 price = component.get('price')
                 total_component = component.get('total_component') or 0
                 sum_dev += total_component
-                if is_bradesystem(component):
+                if is_bladesystem(component):
                     # not deleted devices - bladecenter
                     blade_servers = len(devices) - 1
                     part_of_price = self.blc.price / blade_servers

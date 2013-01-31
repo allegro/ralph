@@ -73,7 +73,7 @@ from ralph.util.pricing import (
     get_device_fc_price,
     get_device_local_storage_price,
     get_device_memory_price,
-    get_device_operatingsystem_price
+    get_device_operatingsystem_price,
     get_device_software_price,
     is_deprecated,
 )
@@ -854,7 +854,7 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
         for device in venture_devices:
             all_components_price = 0
             components = []
-            for component in _get_details(device, ignore_depreciation=True):
+            for component in _get_details(device, ignore_deprecation=True):
                 count = 1
                 model = component.get('model')
                 try:

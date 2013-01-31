@@ -70,16 +70,10 @@ def is_deprecated(device):
 def get_device_raw_price(device, ignore_deprecation=False):
     """Purchase price of this device, before anything interacts with it."""
     if (device.deleted or device.deprecation_kind is None or
-            (not ignore_deprecation and is_deprecated(device)
+            (not ignore_deprecation and is_deprecated(device))
     ):
         return 0
-    cost = price / (device.deprecation_kind.months or 1)
-
-
-    if not device.deleted:
-        if not is_depreciated(device) or ignore_deprecation:
-            return device.price or get_device_auto_price(device)
-    return 0
+    return device.price or get_device_auto_price(device)
 
 
 def get_device_cost(device, ignore_deprecation=False):
@@ -140,8 +134,9 @@ def get_device_virtuals_price(device):
         get_device_price(dev) for dev in
         device.child_set.filter(
             model__type=DeviceType.virtual_server.id,
-            deleted=False)
+            deleted=False,
         )
+    )
     return price
 
 
