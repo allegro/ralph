@@ -109,11 +109,11 @@ def _get_balancers(dev):
         }
 
 
-def _get_details(dev, purchase_only=False, with_price=False, ignore_depreciation=False):
-    dep = ignore_depreciation
+def _get_details(dev, purchase_only=False, with_price=False, ignore_deprecation=False):
+    deprecation = ignore_deprecation
     for detail in pricing.details_all(
         dev, purchase_only,
-        ignore_depreciation=dep
+        ignore_deprecation=deprecation
     ):
         if 'icon' not in detail:
             if detail['group'] == 'dev':
