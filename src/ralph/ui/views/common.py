@@ -110,10 +110,9 @@ def _get_balancers(dev):
 
 
 def _get_details(dev, purchase_only=False, with_price=False, ignore_deprecation=False):
-    deprecation = ignore_deprecation
     for detail in pricing.details_all(
         dev, purchase_only,
-        ignore_deprecation=deprecation
+        ignore_deprecation=ignore_deprecation
     ):
         if 'icon' not in detail:
             if detail['group'] == 'dev':
@@ -825,7 +824,7 @@ class Costs(DeviceDetailView):
             'query_variable_name': query_variable_name,
             'ALWAYS_DATE': ALWAYS_DATE,
             'FOREVER_DATE': FOREVER_DATE,
-            'depreciated': is_deprecated(self.object),
+            'deprecated': is_deprecated(self.object),
         })
         last_month = datetime.date.today() - datetime.timedelta(days=31)
         splunk = self.object.splunkusage_set.filter(
