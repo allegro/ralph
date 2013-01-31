@@ -17,6 +17,7 @@ from tastypie.constants import ALL, ALL_WITH_RELATIONS
 from tastypie.fields import ForeignKey as TastyForeignKey
 from tastypie.resources import ModelResource as MResource
 from tastypie.throttle import CacheThrottle
+from tastypie import fields
 
 from ralph.cmdb.models import (
     CI,
@@ -220,3 +221,4 @@ class CITypesResource(MResource):
         excludes = ['cache_version', 'created', 'modified']
         throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
                                  expiration=EXPIRATION)
+
