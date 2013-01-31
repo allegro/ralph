@@ -1,4 +1,0 @@
-#!ipxe
-{% if message %}echo {{ message }}
-sleep 10
-{% endif %}exit
