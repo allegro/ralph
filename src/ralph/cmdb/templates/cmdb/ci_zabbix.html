@@ -1,0 +1,36 @@
+{% extends 'cmdb/ci_details.html' %}
+{% load icons %}
+{% load query %}
+{% load bob %}
+
+{% block ci_content %}
+<span><h3>Monitoring events</h3></span>
+
+<table class="table table-striped table-bordered table-condensed ">
+    <thead><tr>
+        {% spaceless %}
+            {% include 'cmdb/column-header.html' with label='Description' name='time'  always=1%}
+            {% include 'cmdb/column-header.html' with label='Priority' name='time'  always=1%}
+            {% include 'cmdb/column-header.html' with label='Last changed' name='time'  always=1%}
+            {% include 'cmdb/column-header.html' with label='Trigger ID' name='time' always=1%}
+        {% endspaceless %}
+    </tr></thead>
+    <tbody>
+        {% for trigger in zabbix_triggers %}
+        <tr>
+            <td> {{ trigger.description }} </td>
+            <td> {{ trigger.priority }} </td>
+            <td> {{ trigger.lastchange }} </td>
+            <td>  
+                <a href='{{ZABBIX_URL}}/events.php?triggerid={{ trigger.trigger_id}}'  target='_noblank'> View in Zabbix </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if zabbix_triggers %}
+{% pagination zabbix_triggers url_query=url_query show_all=0 show_csv=0 fugue_icons=1 %}
+{% endif %}
+
+{% endblock %}

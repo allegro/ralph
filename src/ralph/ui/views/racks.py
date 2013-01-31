@@ -31,7 +31,6 @@ from ralph.ui.views.common import (
     Software,
     TEMPLATE_MENU_ITEMS,
 )
-from ralph.cmdb.views import CMDB
 from ralph.ui.views.devices import BaseDeviceList
 from ralph.ui.views.reports import Reports, ReportDeviceList
 from ralph.util import presentation
@@ -126,10 +125,6 @@ class RacksComponents(Racks, Components):
 
 
 class RacksSoftware(Racks, Software):
-    pass
-
-
-class RacksCMDB(Racks, CMDB, DeviceDetailView):
     pass
 
 
