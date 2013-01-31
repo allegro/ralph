@@ -86,9 +86,8 @@ def get_response(pbf, deployment):
 
 def _preboot_view(request, file_name=None, file_type=None):
     assert file_name or file_type
-    message = ''
-    ftype = None
     deployment = get_current_deployment(request)
+    message = "Not found"
     if deployment:
         try:
             if file_name:
@@ -100,20 +99,15 @@ def _preboot_view(request, file_name=None, file_type=None):
                     return HttpResponseNotFound()
                 pbf = deployment.preboot.files.get(ftype=ftype)
         except PrebootFile.DoesNotExist:
-            message = "No preboot file for this deployment!"
+            if file_name:
+                message = "File %s not found for this server." % file_name
+            else:
+                message = "No file of type %s for this server." % file_type
         else:
             return get_response(pbf, deployment)
-    if (
-        file_name in ('boot', 'boot_ipxe', 'boot.ipxe') or
-        ftype == FileType.boot_ipxe
-    ):
-        return render(
-            request,
-            'deployment/localboot.txt',
-            {'message': message},
-            mimetype='text/plain',
-        )
-    return HttpResponseNotFound()
+    else:
+        message = "No deployment for this server."
+    return HttpResponseNotFound(message)
 
 
 def preboot_raw_view(request, file_name):
