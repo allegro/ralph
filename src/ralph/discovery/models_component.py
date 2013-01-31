@@ -63,13 +63,13 @@ CPU_CORES = {
     '6-core': 6,
     '8-core': 8,
 }
-CPU_VIRTUAL_LIST = set([
-    'xen',
+CPU_VIRTUAL_LIST = {
     'bochs',
-    'vmware',
-    'virtual',
     'qemu',
-])
+    'virtual',
+    'vmware',
+    'xen',
+}
 
 
 def cores_from_model(model_name):
@@ -91,10 +91,7 @@ def is_mac_valid(eth):
 
 
 def is_virtual_cpu(family):
-    for name in CPU_VIRTUAL_LIST:
-        if name in family:
-            return True
-    return False
+    return any(virtual in family for virtual in CPU_VIRTUAL_LIST)
 
 
 class EthernetSpeed(Choices):
