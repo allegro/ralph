@@ -230,10 +230,34 @@ class EthernetInline(ForeignKeyAutocompleteTabularInline):
     }
 
 
+class StorageInline(ForeignKeyAutocompleteTabularInline):
+    model = m.Storage
+    readonly_fields = (
+        'label',
+        'size',
+        'sn',
+        'model',
+        'created',
+        'modified',
+        'mount_point',
+    )
+    extra = 0
+    related_search_fields = {
+        'model': ['^name'],
+    }
+
+
 class DeviceAdmin(ModelAdmin):
     form = DeviceForm
-    inlines = [ProcessorInline, MemoryInline, EthernetInline, IPAddressInline,
-               ChildDeviceInline, RolePropertyValueInline]
+    inlines = [
+        ProcessorInline,
+        MemoryInline,
+        EthernetInline,
+        StorageInline,
+        IPAddressInline,
+        ChildDeviceInline,
+        RolePropertyValueInline,
+    ]
     list_display = ('name', 'sn', 'created', 'modified')
     list_filter = ('model__type',)
     list_per_page = 250

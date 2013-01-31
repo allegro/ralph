@@ -34,7 +34,7 @@ from ralph.cmdb.models_ci import (
     CIOwner, CIOwnership, CILayer, CI_TYPES, CI, CIRelation, CI_LAYER
 )
 import ralph.cmdb.models as db
-from ralph.cmdb.graphs import search_tree, ImpactCalculator
+from ralph.cmdb.graphs import ImpactCalculator
 from ralph.account.models import Perm
 from ralph.ui.views.common import Base, _get_details
 from ralph.util.presentation import (
@@ -47,13 +47,15 @@ SAVE_PRIORITY = 200
 
 
 def get_icon_for(ci):
+    ctname = ci.content_type.name
+
     if not ci or not ci.content_object:
         return
-    if ci.content_type.name == 'venture':
+    if ctname == 'venture':
         return get_venture_icon(ci.content_object)
-    elif ci.content_type.name == 'device':
+    elif ctname == 'device':
         return get_device_icon(ci.content_object)
-    elif ci.content_type.name == 'network':
+    elif ctname == 'network':
         return get_network_icon(ci.content_object)
     else:
         return 'wall'
@@ -102,13 +104,12 @@ class BaseCMDBView(Base):
             ('/cmdb/add', 'Add CI', 'fugue-block--plus'),
             ('/cmdb/changes/dashboard', 'Dashboard', 'fugue-dashboard'),
             ('/cmdb/graphs', 'Impact report', 'fugue-dashboard'),
-            ('/cmdb/graphs_tree', 'Tree deps.', 'fugue-dashboard'),
-            ('/cmdb/changes/dashboard', 'Dashboard', 'fugue-dashboard'),
             ('/cmdb/changes/timeline', 'Timeline View', 'fugue-dashboard'),
             ('/admin/cmdb', 'Admin', 'fugue-toolbox'),
         )
 
         layers = (
+            ('/cmdb/search', 'All Cis (all layers)', 'fugue-magnifier'),
             ('/cmdb/search?layer=1&type=1', 'Applications',
              'fugue-applications-blue'),
             ('/cmdb/search?layer=2&top_level=1', 'Databases',
@@ -126,7 +127,6 @@ class BaseCMDBView(Base):
              'fugue-disc-share'),
             ('/cmdb/search?layer=8&type=5', 'Roles',
              'fugue-computer-network'),
-            ('/cmdb/search', 'All Cis (all layers)', 'fugue-magnifier'),
         )
         reports = (
             ('/cmdb/changes/reports?kind=top_changes',
@@ -1636,32 +1636,6 @@ class ViewUnknown(BaseCMDBView):
         return ret
 
 
-class GraphsTree(BaseCMDBView):
-    template_name = 'cmdb/graphs_tree.html'
-
-    @staticmethod
-    def get_ajax(request):
-        root = CI.objects.get(pk=request.GET.get('ci_id'))
-        response_dict = search_tree({}, root)
-        return HttpResponse(
-            simplejson.dumps(response_dict),
-            mimetype='application/json',
-        )
-
-    def get_initial(self):
-        return dict(
-            ci=self.request.GET.get('ci'),
-        )
-
-    def get_context_data(self, *args, **kwargs):
-        ret = super(GraphsTree, self).get_context_data(**kwargs)
-        form = SearchImpactForm(initial=self.get_initial())
-        ret.update(dict(
-            form=form,
-        ))
-        return ret
-
-
 class Graphs(BaseCMDBView):
     template_name = 'cmdb/graphs.html'
     rows = []
@@ -1673,7 +1647,7 @@ class Graphs(BaseCMDBView):
         ret.update(dict(
             form=form,
             rows=self.rows,
-            graph_data=simplejson.dumps(self.graph_data),
+            graph_data=self.graph_data,
         ))
         return ret
 
@@ -1683,27 +1657,49 @@ class Graphs(BaseCMDBView):
         )
 
     def get(self, *args, **kwargs):
+        MAX_RELATIONS_COUNT = 1000
         ci_id = self.request.GET.get('ci')
         self.rows = []
+        ci_names = {}
         if ci_id:
-            ci_names = dict([(x.id, x.name) for x in CI.objects.all()])
-            i = ImpactCalculator()
-            st, pre = i.find_affected_nodes(int(ci_id))
+            ic = ImpactCalculator(root_ci=CI.objects.get(pk=int(ci_id)))
+            search_tree, pre = ic.find_affected_nodes(int(ci_id))
+            affected_cis = CI.objects.select_related(
+                'content_type', 'type').filter(pk__in=pre)
             nodes = [(
-                key, ci_names[key],
-                get_icon_for(CI.objects.get(pk=key))) for key in st.keys()]
-            relations = [dict(
-                child=x,
-                parent=st.get(x),
-                parent_name=ci_names[x],
-                type=i.graph.edge_attributes((st.get(x), x))[0],
-                child_name=ci_names[st.get(x)])
-                for x in st.keys() if x and st.get(x)]
-            self.graph_data = dict(
-                nodes=nodes, relations=relations)
-            self.rows = [dict(
-                icon=get_icon_for(CI.objects.get(pk=x)),
-                ci=CI.objects.get(pk=x)) for x in pre]
+                ci.id, ci.name,
+                get_icon_for(ci)) for ci in affected_cis
+            ]
+            if len(search_tree) > MAX_RELATIONS_COUNT:
+                # in case of large relations count, skip generating json data
+                # for chart purposes
+                self.graph_data = simplejson.dumps({'overflow': len(st)})
+            else:
+                ci_names = dict(CI.objects.values_list('id', 'name'))
+                relations = [dict(
+                    child=item,
+                    parent=search_tree.get(item),
+                    parent_name=ci_names[item],
+                    type=ic.graph.edge_attributes(
+                        (search_tree.get(item), item)
+                    )[0],
+                    child_name=ci_names[search_tree.get(item)]) for item
+                    in search_tree.keys() if item and search_tree.get(item)
+                ]
+                self.graph_data = simplejson.dumps(dict(
+                    nodes=nodes,
+                    relations=relations,
+                ))
+
+            for ci in affected_cis:
+                co = ci.content_object
+                self.rows.append(dict(
+                    icon=get_icon_for(ci),
+                    ci=ci,
+                    venture=getattr(co, 'venture', ''),
+                    role=getattr(co, 'role', ''),
+                ))
+
         return super(BaseCMDBView, self).get(*args, **kwargs)
 
 
