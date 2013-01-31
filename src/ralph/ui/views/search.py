@@ -164,7 +164,6 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                         'storage__model__id',
                         'ethernet__id',
                         'genericcomponent__model__id',
-                        'software__model__id',
                         'fibrechannel__model__id',
                         'disksharemount__share__model__id',
                         'operatingsystem__model__id'
@@ -315,7 +314,6 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                 else:
                     q = _search_fields_or([
                         'genericcomponent__model__group_id',
-                        'software__model__group_id',
                         'fibrechannel__model__group_id',
                         'storage__model__group_id',
                         'memory__model__group_id',
