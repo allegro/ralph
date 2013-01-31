@@ -768,17 +768,17 @@ class ReportDevices(SidebarReports, Base):
 def is_bladesystem(component):
     ''' Check if component is bladesystem - be careful BladeSystem and
     RAM have the same type_id. If component type is RAM runs except '''
-    try:
-        type = component.get('model').type
+    model = component.get('model')
+    if model in component:
+        type = model.type
         bladeservers_models = DeviceModelGroup.objects.filter(
             type=type
         )
-        group = component.get('model').group
+        group = model.group
         if (bladeservers_models and group in bladeservers_models
             and type == DeviceType.blade_system):
             return True
-    except AttributeError:
-        return False
+    return False
 
 
 class ReportDevicePricesPerVenture(SidebarReports, Base):
@@ -857,11 +857,12 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
             for component in _get_details(device, ignore_deprecation=True):
                 count = 1
                 model = component.get('model')
-                try:
+                if (model.type is not None, model.group_id is not None,
+                    model.group is not None):
                     component_type = model.type
                     component_group = model.group_id
                     model_group = model.group
-                except AttributeError:
+                else:
                     component_group = None
                     component_type = None
                     model_group = None
