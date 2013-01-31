@@ -57,7 +57,7 @@ from ralph.ui.forms.addresses import (
     IPAddressFormSet,
     DNSFormSet,
 )
-from ralph.util.pricing import is_depreciated
+from ralph.util.pricing import is_deprecated
 from ralph.ui.forms.deployment import (
     ServerMoveStep1Form,
     ServerMoveStep2FormSet,
@@ -108,10 +108,12 @@ def _get_balancers(dev):
             'port': vserv.port,
         }
 
+
 def _get_details(dev, purchase_only=False, with_price=False, ignore_depreciation=False):
     dep = ignore_depreciation
     for detail in pricing.details_all(
-        dev, purchase_only, ignore_depreciation=dep
+        dev, purchase_only,
+        ignore_depreciation=dep
     ):
         if 'icon' not in detail:
             if detail['group'] == 'dev':
@@ -525,7 +527,7 @@ class Prices(DeviceUpdateView):
             'components': _get_details(self.object,
                                        purchase_only=False,
                                        with_price=True),
-            'depreciated': is_depreciated(self.object),
+            'deprecated': is_deprecated(self.object),
         })
         return ret
 
@@ -823,7 +825,7 @@ class Costs(DeviceDetailView):
             'query_variable_name': query_variable_name,
             'ALWAYS_DATE': ALWAYS_DATE,
             'FOREVER_DATE': FOREVER_DATE,
-            'depreciated': is_depreciated(self.object),
+            'depreciated': is_deprecated(self.object),
         })
         last_month = datetime.date.today() - datetime.timedelta(days=31)
         splunk = self.object.splunkusage_set.filter(
@@ -1197,7 +1199,7 @@ class CMDB(BaseMixin):
         try:
             ci = cdb.CI.objects.get(
                     type=cdb.CI_TYPES.DEVICE.id,
-                    object_id=device_id
+                    object_id=device_id,
             )
         except:
             ci = None
