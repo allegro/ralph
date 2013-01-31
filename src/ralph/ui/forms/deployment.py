@@ -419,11 +419,22 @@ class ServerMoveStep1Form(forms.Form):
             ip_address = str(ipaddr.IPAddress(address))
         except ValueError:
             ip_address = None
-            hostname = address
+            try:
+                mac = MACAddressField.normalize(address)
+            except ValueError:
+                mac = None
+            if not mac:
+                hostname = address
         if ip_address:
             candidates = IPAddress.objects.filter(
                 address=ip_address,
             )
+        elif mac:
+            ips = {
+                str(ip) for ip in
+                DHCPEntry.objects.filter(mac=mac).values_list('ip', flat=True)
+            }
+            candidates = IPAddress.objects.filter(address__in=ips)
         else:
             candidates = IPAddress.objects.filter(
                 Q(hostname=hostname) |
@@ -484,7 +495,7 @@ class ServerMoveStep2FormSetBase(formsets.BaseFormSet):
     def add_fields(self, form, index):
         form.fields['network'].choices = [
             (n.id, n.name)
-            for n in Network.objects.all()
+            for n in Network.objects.order_by('name')
         ]
         form.fields['network'].widget.attrs={
             'class': 'span12',
@@ -578,9 +589,33 @@ class ServerMoveStep3Form(forms.Form):
                 raise forms.ValidationError("Hostname already in DNS.")
         return new_hostname
 
+class ServerMoveStep3FormSetBase(formsets.BaseFormSet):
+    def clean(self):
+        if any(self.errors):
+            return
+        hostnames = set()
+        ips = set()
+        for i in xrange(self.total_form_count()):
+            form = self.forms[i]
+            ip = form.cleaned_data['new_ip']
+            if ip in ips:
+                form._errors['new_ip'] = form.error_class([
+                    "Duplicate IP"
+                ])
+            else:
+                ips.add(ip)
+            hostname = form.cleaned_data['new_hostname']
+            if hostname in hostnames:
+                form._errors['new_hostname'] = form.error_class([
+                    "Duplicate hostname"
+                ])
+            else:
+                hostnames.add(hostname)
+
 
 ServerMoveStep3FormSet = formsets.formset_factory(
     form=ServerMoveStep3Form,
+    formset=ServerMoveStep3FormSetBase,
     extra=0,
 )
 
