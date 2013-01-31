@@ -27,6 +27,18 @@ from ralph.dnsedit.models import DHCPEntry
 from ralph.util import Eth
 
 
+def _get_next_hostname_number(hostname, template, iteration_definition,
+                              min_number, number_len):
+    name_match = re.search(
+        template.replace(
+            iteration_definition,
+            "(%s[0-9]{%s})" % (str(min_number)[0], number_len - 1)
+        ),
+        hostname
+    )
+    return int(name_match.group(1)) + 1
+
+
 def get_next_free_hostname(dc, reserved_hostnames=[]):
     hostnames_in_deployments = Deployment.objects.filter().values_list(
         'hostname', flat=True
@@ -43,23 +55,55 @@ def get_next_free_hostname(dc, reserved_hostnames=[]):
             match.group(0),
             "%s[0-9]{%s}" % (str(min_number)[0], number_len - 1)
         )
-        next_number = min_number
+        dns_next_number = min_number
         try:
             record = Record.objects.filter(
                 name__iregex=regex, type='A'
             ).order_by('-name')[0]
-            name_match = re.search(
-                template.replace(
-                    match.group(0),
-                    "(%s[0-9]{%s})" % (str(min_number)[0], number_len - 1)
-                ),
-                record.name
+            dns_next_number = _get_next_hostname_number(
+                record.name,
+                template,
+                match.group(0),
+                min_number,
+                number_len
             )
-            next_number = int(name_match.group(1)) + 1
-            if next_number > max_number:
-                continue
         except IndexError:
             pass
+        dns_ptr_next_number = min_number
+        try:
+            record = Record.objects.filter(
+                content__iregex=regex, type='PTR'
+            ).order_by('-content')[0]
+            dns_ptr_next_number = _get_next_hostname_number(
+                record.content,
+                template,
+                match.group(0),
+                min_number,
+                number_len
+            )
+        except IndexError:
+            pass
+        discovery_next_number = min_number
+        try:
+            device = Device.objects.filter(
+                name__iregex=regex
+            ).order_by('-name')[0]
+            discovery_next_number = _get_next_hostname_number(
+                device.name,
+                template,
+                match.group(0),
+                min_number,
+                number_len
+            )
+        except IndexError:
+            pass
+        next_number = max(
+            dns_next_number,
+            dns_ptr_next_number,
+            discovery_next_number,
+        )
+        if next_number > max_number:
+            continue
         go_to_next_template = False
         next_hostname = template.replace(
             match.group(0), "{0:%s}" % number_len
@@ -97,7 +141,8 @@ def get_first_free_ip(network_name, reserved_ip_addresses=[]):
         status__in=(DeploymentStatus.open, DeploymentStatus.in_progress)
     ).values_list('ip', flat=True).order_by('ip')
     min_ip_number = network.min_ip + network.reserved
-    for ip_number in range(min_ip_number, network.max_ip + 1):
+    max_ip_number = network.max_ip - network.reserved_top_margin
+    for ip_number in range(min_ip_number, max_ip_number + 1):
         ip_string = str(ipaddr.IPAddress(ip_number))
         if (ip_number not in addresses_in_dhcp and
             ip_number not in addresses_in_discovery and
@@ -135,7 +180,8 @@ def preboot_exists(name):
 def hostname_exists(hostname):
     return any((
         Record.objects.filter(name=hostname, type='A').exists(),
-        Deployment.objects.filter(hostname=hostname).exists()
+        Record.objects.filter(content=hostname, type='PTR').exists(),
+        Deployment.objects.filter(hostname=hostname).exists(),
     ))
 
 

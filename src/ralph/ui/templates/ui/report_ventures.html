@@ -34,39 +34,55 @@
             <th>Venture</th>
             <th>Department</th>
             <th>Default margin</th>
-            <th>Device count</th>
+            <th>Physical device count</th>
             <th>Core count</th>
             <th>Virtual core count</th>
             <th>Cloud use</th>
+            <th>Cloud cost</th>
+            {% for extra_type in extra_types %}
+            <th>{{ extra_type.name }}</th>
+            {% endfor %}
+            <th>Hardware cost</th>
             <th>Total cost</th>
             {% if profile.is_staff %}
             <th>Actions</th>
             {% endif %}
         </tr>
-        {% for venture in ventures %}
-        <tr {% if not venture.parent %}class="table-highlight"{% endif %}>
+        {% for venture in venture_data %}
+        <tr {% if venture.top_level %}class="table-highlight"{% endif %}>
             <td>
-                {% if venture.parent %}&nbsp;&nbsp;&nbsp;&nbsp;{% endif %}
+                {% if not venture.top_level %}&nbsp;&nbsp;&nbsp;&nbsp;{% endif %}
                 <a href="/ui/ventures/{{ venture.symbol|slugify }}/venture/" >
-                {{ venture|venture_icon }}
+                {{ venture.venture|venture_icon }}
                 {{ venture.name }}
                 </a>
             </td>
             <td>{{ venture.department|default:'' }}</td>
             <td style="text-align:right">
-                {{ venture.get_margin }}%
+                {{ venture.margin|default:0 }}%
             </td>
             <td class="count">
-                {{ venture.count|default:0 }}
+                {{ venture.count|default:0|floatformat:2 }}
             </td>
             <td class="count">
-                {{ venture.core_count|default:0 }}
+                {{ venture.core_count|default:0|floatformat:2 }}
             </td>
             <td class="count">
-                {{ venture.virtual_core_count|default:0 }}
+                {{ venture.virtual_core_count|default:0|floatformat:2 }}
             </td>
             <td style="text-align:right">
-                {{ venture.cloud_use|default:0 }}%
+                {{ venture.cloud_use|default:0|floatformat:2 }}%
+            </td>
+            <td style="currency">
+                {{ venture.cloud_cost|currency }}
+            </td>
+            {% for extra in venture.extras %}
+            <td style="currency">
+                {{ extra|currency }}
+            </td>
+            {% endfor %}
+            <td class="currency">
+                {{ venture.hardware_cost|currency }}
             </td>
             <td class="currency">
                 {{ venture.total|default:0|currency }}

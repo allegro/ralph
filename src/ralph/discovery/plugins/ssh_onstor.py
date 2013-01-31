@@ -27,6 +27,7 @@ SSH_ONSTOR_PASSWORD = settings.SSH_ONSTOR_PASSWORD
 class Error(Exception):
     pass
 
+
 class SkipError(Error):
     pass
 
@@ -46,29 +47,53 @@ def _save_shares(dev, luns, mounts):
         wwns.append(share.wwn)
         clients = mounts.get(volume, [])
         for client in clients:
-            ipaddr, ip_created = IPAddress.concurrent_get_or_create(address=client)
+            ipaddr, ip_created = IPAddress.concurrent_get_or_create(
+                address=client,
+            )
             mount, created = DiskShareMount.concurrent_get_or_create(
-                    address=ipaddr, device=ipaddr.device, share=share, server=dev)
+                device=ipaddr.device,
+                share=share,
+                defaults={
+                    'address': ipaddr,
+                    'server': dev,
+                }
+            )
+            if not created:
+                mount.address = ipaddr
+                mount.server = dev
             mount.volume = volume
             mount.save(update_last_seen=True)
         if not clients:
             mount, created = DiskShareMount.concurrent_get_or_create(
-                    address=None, device=None, share=share, server=dev)
+                device=None,
+                share=share,
+                defaults={
+                    'address': None,
+                    'server': dev,
+                }
+            )
+            if not created:
+                mount.address = None
+                mount.server = dev
             mount.volume = volume
             mount.save(update_last_seen=True)
     for mount in DiskShareMount.objects.filter(
-                server=dev
-            ).exclude(
-                share__wwn__in=wwns
-            ):
+        server=dev
+    ).exclude(
+        share__wwn__in=wwns
+    ):
         mount.delete()
 
 
 @nested_commit_on_success
 def _save_device(ip, name, model_name, sn, mac):
     model, model_created = DeviceModel.concurrent_get_or_create(
-        name = 'Onstor %s' % model_name, type=DeviceType.storage.id)
-    dev, dev_created = Device.concurrent_get_or_create(sn=sn, model=model)
+        name='Onstor %s' % model_name,
+        defaults={
+            'type': DeviceType.storage.id,
+        },
+    )
+    dev = Device.create(sn=sn, model=model)
     dev.save()
     ipaddr, ip_created = IPAddress.concurrent_get_or_create(address=ip)
     ipaddr.device = dev
@@ -102,6 +127,7 @@ def _command(channel, command):
         #print('command done')
         return buffer[1:-1]
 
+
 def _run_ssh_onstor(ip):
     ssh = _connect_ssh(ip)
     try:
@@ -126,7 +152,15 @@ def _run_ssh_onstor(ip):
                     in_table = True
                 continue
             else:
-                lun_name, lun_type, raid, size, state, cluster, volume = line.split()
+                (
+                    lun_name,
+                    lun_type,
+                    raid,
+                    size,
+                    state,
+                    cluster,
+                    volume,
+                ) = line.split()
                 luns[lun_name] = volume
 
         stdin, stdout, stderr = ssh.exec_command("vsvr show")
@@ -169,6 +203,7 @@ def _run_ssh_onstor(ip):
         ssh.close()
     _save_shares(dev, luns, mounts)
     return name
+
 
 @plugin.register(chain='discovery', requires=['ping', 'http'])
 def ssh_onstor(**kwargs):

@@ -11,6 +11,7 @@ from lck.django.common import nested_commit_on_success
 
 from ralph.util import plugin
 from ralph.deployment.models import Deployment, DeploymentStatus
+from ralph.discovery.models import IPAddress
 from ralph.dnsedit.util import (
     clean_dns_entries,
     clean_dhcp_mac,
@@ -62,12 +63,13 @@ def do_clean(dev, user):
     # Set verified, undelete, and update remarks
     dev.verified = True
     dev.deleted = False
-    remark = "-- Remarks below are for old role %s/%s from %s --\n" % (
-        dev.venture.name if dev.venture else '-',
-        dev.venture_role.full_name if dev.venture_role else '-',
-        datetime.date.today().strftime('%Y-%m-%d'),
-    )
-    dev.remarks = remark + dev.remarks
+    if dev.remarks:
+        remark = "-- Remarks below are for old role %s/%s from %s --\n" % (
+            dev.venture.name if dev.venture else '-',
+            dev.venture_role.full_name if dev.venture_role else '-',
+            datetime.date.today().strftime('%Y-%m-%d'),
+        )
+        dev.remarks = remark + dev.remarks
     dev.save()
 
 
@@ -76,6 +78,10 @@ def clean(deployment_id):
     """Prepare an existing device for deployment by cleaning old information."""
     deployment = Deployment.objects.get(id=deployment_id)
     if deployment.status != DeploymentStatus.open:
-        return False
+        return True
     do_clean(deployment.device, deployment.user)
+    ip, created = IPAddress.concurrent_get_or_create(address=deployment.ip)
+    ip.device=deployment.device
+    ip.hostname=deployment.hostname
+    ip.save()
     return True

@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 
 from django import forms
 from ralph.ui.widgets import DateWidget
+from ralph.ui.forms import all_ventures
 
 
 class DevicesChoiceReportForm(forms.Form):
@@ -55,3 +56,22 @@ class DeprecationRangeReportForm(forms.Form):
 class WarrantyRangeReportForm(forms.Form):
     w_start = forms.DateField(widget=DateWidget, label='Start date')
     w_end = forms.DateField(widget=DateWidget, label='End date')
+
+
+class ReportVentureCost(forms.Form):
+    venture = forms.ChoiceField(label="Venture")
+
+    def __init__(self, *args, **kwargs):
+        super(ReportVentureCost, self).__init__(*args, **kwargs)
+        self.fields['venture'].choices = all_ventures()
+
+
+class ReportDeviceListForm(forms.Form):
+    show_all_devices = forms.ChoiceField(
+        label="Active devices",
+        widget=forms.CheckboxInput()
+    )
+    show_all_deleted_devices = forms.ChoiceField(
+        label="Deleted devices",
+        widget=forms.CheckboxInput()
+    )

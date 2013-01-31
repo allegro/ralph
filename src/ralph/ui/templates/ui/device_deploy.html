@@ -4,7 +4,10 @@
 {% load icons %}
 
 {% block contentarea %}
+<div class="span6">
+    <h4>Deploy device - {{ device }}</h4>
 <form class="form form-horizontal device-deploy-form" method="POST">
+    <div class="well">
     {% csrf_token %}
     {% for f in form.visible_fields %}
     <div class="control-group {{ f.css_classes }}
@@ -24,12 +27,16 @@
         </div>
     </div>
     {% endfor %}
-<div class="form-actions">
-    <div class="control-group" style="white-space:nowrap">
-        <button class="btn btn-primary" type="submit" name="deploy">
-                {% icon 'fugue-wand-hat' %}&nbsp;Deploy
-        </button>
     </div>
-</div>
+    {% if device.verified %}
+        <div class="form-actions">
+            <div class="control-group" style="white-space:nowrap">
+                <button class="btn btn-primary" type="submit" name="deploy">
+                        {% icon 'fugue-wand-hat' %}&nbsp;Deploy
+                </button>
+            </div>
+        </div>
+    {% endif %}
 </form>
+</div>
 {% endblock %}

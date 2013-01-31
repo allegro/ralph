@@ -157,6 +157,14 @@
         {% endfor %}
     </tbody>
 </table>
+<div class="action-list">
+    {% if next_hostname %}
+    <div class="alert alert-info">Next available hostname in this DC: {{ next_hostname }}</div>
+    {% endif %}
+    {% for item in first_free_ip_addresses %}
+    <div class="alert alert-info">First free IP for network {{ item.network_name }}: {{ item.first_free_ip }}</div>
+    {% endfor %}
+</div>
 {% if canedit %}
 <div class="buttons pull-right">
     {% spaceless %}
@@ -206,4 +214,5 @@
 {% endif %}
 
 </div>
+
 {% endblock content %}

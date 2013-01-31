@@ -4,8 +4,9 @@
 {% load icons %}
 
 {% block formbuttons %}
+
 <div class="control-group pull-right">
-    {% if device.verified %}
+    {% if not device.dirty_fields and device.verified %}
     &nbsp;<a class="btn btn-inverse" href="../deploy/{{ device.id }}">
             {% icon 'fugue-wand-hat' %}&nbsp;Deploy
         </a>

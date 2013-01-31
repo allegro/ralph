@@ -5,6 +5,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import cStringIO as StringIO
+import datetime
 
 from django.contrib import messages
 from django.core.paginator import InvalidPage
@@ -14,6 +15,7 @@ from django.utils.translation import ugettext as _
 from django.views.generic import ListView
 
 from ralph.account.models import Perm
+from ralph.discovery.models_device import DeviceType
 from ralph.util import csvutil
 
 
@@ -74,11 +76,11 @@ class BaseDeviceList(ListView):
     details_columns = {
         'info': ['venture', 'model', 'position', 'remarks'],
         'components': ['model', 'barcode', 'sn'],
-        'prices': ['venture', 'margin', 'deprecation', 'price', 'cost'],
+        'prices': ['venture', 'margin', 'deprecation', 'price', 'cost', 'deprecation'],
         'addresses': ['ips', 'management'],
-        'costs': ['venture', 'cost'],
+        'costs': ['venture', 'cost', 'deprecation'],
         'history': ['created', 'lastseen'],
-        'purchase': ['purchase', 'warranty', 'support'],
+        'purchase': ['purchase', 'warranty', 'support', 'deprecation'],
         'discover': ['lastseen'],
         'cmdb': [],
         'reports': ['venture', 'remarks'],
@@ -96,8 +98,8 @@ class BaseDeviceList(ListView):
             query = self.get_queryset()
         rows = [
             ['Id', 'Name', 'Venture', 'Role', 'Model', 'Data Center', 'Rack',
-             'SN','Position', 'Barcode', 'Margin', 'Deprecation', 'Price',
-             'Cost', 'Monthly Cost', 'Addresses', 'Management', 'Created',
+             'Position', 'Barcode', 'SN', 'Margin', 'Deprecation', 'Price',
+             'Monthly Cost', 'Addresses', 'Management', 'Created',
              'Last Seen', 'Purchased', 'Warranty Expiration',
              'Support Expiration', 'Support Kind', 'Remarks'],
         ]
@@ -132,7 +134,6 @@ class BaseDeviceList(ListView):
                 dev.support_expiration_date or '' if
                     'purchase' in show_tabs else '',
                 dev.support_kind or '' if 'purchase' in show_tabs else '',
-                dev.sn or '' if 'purchase' in show_tabs else '',
                 dev.remarks or '' if 'info' in show_tabs else '',
             ]
             rows.append([unicode(r) for r in row])
@@ -181,6 +182,8 @@ class BaseDeviceList(ListView):
                                                 self.details_columns[None]),
             'show_tabs': _get_show_tabs(self.request, self.venture, None),
             'sort': self.sort,
+            'now': datetime.datetime.now(),
+            'device_types': DeviceType,
         })
         return ret
 

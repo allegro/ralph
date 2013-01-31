@@ -12,14 +12,20 @@ import subprocess
 from lck.lang import nullify
 from django.conf import settings
 from lck.django.common import nested_commit_on_success
-from lck.django.common.models import MACAddressField
 
 from ralph.util import network, parse
 from ralph.util import plugin, Eth
-from ralph.discovery.models import (DeviceType, EthernetSpeed, Device,
-                                    Processor, Memory, Ethernet, IPAddress,
-                                    ComponentModel, ComponentType,
-                                    SERIAL_BLACKLIST)
+from ralph.discovery.models import (
+    ComponentModel,
+    ComponentType,
+    Device,
+    DeviceType,
+    EthernetSpeed,
+    IPAddress,
+    Memory,
+    Processor,
+    SERIAL_BLACKLIST,
+)
 
 
 IPMI_SECTION_REGEX = re.compile(r'FRU Device Description : (?P<value>[^(]+) '
@@ -98,13 +104,6 @@ class IPMI(object):
         data = self.get_lan()
         mac = data.get('MAC Address')
         return mac
-
-
-def _add_ipmi_lan(device, mac):
-    eth, created = Ethernet.concurrent_get_or_create(
-        device=device, mac=MACAddressField.normalize(mac))
-    eth.label = 'IPMI MC'
-    eth.save(priority=SAVE_PRIORITY)
 
 
 def _get_ipmi_ethernets(data):
@@ -230,7 +229,6 @@ def _run_ipmi(ip):
     firmware = mc.get('Firmware Revision')
     if firmware:
         dev.mgmt_firmware = 'rev %s' % firmware
-    _add_ipmi_lan(dev, mac)
     _add_ipmi_components(dev, fru)
     dev.save(update_last_seen=True, priority=SAVE_PRIORITY)
     ip_address, created = IPAddress.concurrent_get_or_create(address=str(ip))
