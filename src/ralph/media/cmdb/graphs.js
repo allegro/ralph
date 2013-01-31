@@ -1,8 +1,8 @@
 (function () {
 
     /* Performance hack for icons.
-       Render big sprites image into the canvas. Then, extract small portions of 
-       canvas into another canvas to be able to export image data. 
+       Render big sprites image into the canvas. Then, extract small portions of
+       canvas into another canvas to be able to export image data.
        Now, image data embed into svg 'image' node using base64 encoding.
 
        Yes, it IS event >10 x faster than using viewport on big native svg image data.
@@ -28,12 +28,14 @@
 
     function typeToColor(type) {
         if (type == 1) {
-            return '#ddd';
+            return 'blue';
         } else if (type == 2) {
             return 'red';
-        } else {
+        } else if (type == 3) {
             return 'black';
-        };
+        } else {
+            return 'yellow';
+        }
     }
 
     function handleMouseClick(node) {
@@ -45,7 +47,7 @@
         });
 
         $(node.ui).children().first().attr('class', 'focused');
-        
+
         $("#cmdb_name").html(node.data.name);
         $("#cmdb_link").html("<a target='_blank' href='/cmdb/ci/view/" + node.data.id + "'>View</a>");
         $("#check_impact_link").html("<a target='_blank' href='/cmdb/graphs?ci=" + node.data.id + "'>View impact</a>");
@@ -56,10 +58,10 @@
     }
 
     function saveSVG() {
-    /* 
-        SVG element has no method to get content of it. 
-        To do it we must wrap it around html element to get inner content. 
-        To be able to download svg to browser the only way is to open datauri, 
+    /*
+        SVG element has no method to get content of it.
+        To do it we must wrap it around html element to get inner content.
+        To be able to download svg to browser the only way is to open datauri,
         and let user manually save svg.
      */
         var svg = $("svg:first");
@@ -73,6 +75,7 @@
     }
 
     function drawGraph(data, spriteCanvas) {
+        var i;
         var graph = Viva.Graph.graph();
         var graphics = Viva.Graph.View.svgGraphics(), nodeSize = 32;
         var renderer = Viva.Graph.View.renderer(graph, {
@@ -115,20 +118,20 @@
                        .attr('markerHeight', "2")
                        .attr('orient', "auto");
         },
-        
+
         marker = createMarker('Triangle');
         marker.append('path').attr('d', 'M 0 0 L 10 5 L 0 10 z');
         // Marker should be defined only once in <defs> child element of root <svg> element:
         var defs = graphics.getSvgRoot().append('defs');
         defs.append(marker);
-        var geom = Viva.Graph.geom(); 
+        var geom = Viva.Graph.geom();
         graphics.link(function (link) {
             // Notice the Triangle marker-end attribe:
             return Viva.Graph.svg('path')
                        .attr('stroke', link.data.color)
                        .attr('marker-end', 'url(#Triangle)');
         }).placeLink(function (linkUI, fromPos, toPos) {
-            // Here we should take care about 
+            // Here we should take care about
             //  "Links should start/stop at node's bounding box, not at the node center."
             // For rectangular nodes Viva.Graph.geom() provides efficient way to find
             // an intersection point between segment and rectangle
@@ -141,8 +144,8 @@
                             fromPos.x + fromNodeSize / 2, // right
                             fromPos.y + fromNodeSize / 2, // bottom
                     // segment:
-                            fromPos.x, fromPos.y, toPos.x, toPos.y) 
-                       || fromPos; // if no intersection found - return center of the node
+                            fromPos.x, fromPos.y, toPos.x, toPos.y) || fromPos;
+                    // if no intersection found - return center of the node
             var to = geom.intersectRect(
                     // rectangle:
                             toPos.x - toNodeSize / 2, // left
@@ -150,39 +153,40 @@
                             toPos.x + toNodeSize / 2, // right
                             toPos.y + toNodeSize / 2, // bottom
                     // segment:
-                            toPos.x, toPos.y, fromPos.x, fromPos.y) 
-                        || toPos; // if no intersection found - return center of the node
+                            toPos.x, toPos.y, fromPos.x, fromPos.y) || toPos;
+                            // if no intersection found - return center of the node
             var data = 'M' + from.x + ',' + from.y +
                        'L' + to.x + ',' + to.y;
             linkUI.attr("d", data);
         });
-        for (var i=0; i<data.nodes.length; i++) {
-                graph.addNode(data.nodes[i][0], {'id': data.nodes[i][0], 'name':data.nodes[i][1],'icon': data.nodes[i][2]});
-        };
-        for (var i=0; i<data.relations.length; i++) {
+
+        for (i=0; i < data.nodes.length; i++) {
+                graph.addNode(data.nodes[i][0], {'id': data.nodes[i][0],
+                    'name':data.nodes[i][1],'icon': data.nodes[i][2]});
+        }
+        for (i=0; i < data.relations.length; i++) {
             graph.addLink(
-                data.relations[i].parent, 
-                data.relations[i].child, {'color': typeToColor(data.relations[i].type), 
+                data.relations[i].parent,
+                data.relations[i].child, {'color': typeToColor(data.relations[i].type),
                 'type': data.relations[i].type});
-        };
+        }
     }
 
 
     var fugueData = "";
     $(document).ready(function () {
-        var MAX_RELATIONS_COUNT = 100;
+        var MAX_RELATIONS_COUNT = 1000;
         var can, ctx, img, spriteURL;
 
-        /* 
-          Don't make additional ajax call, just use graph_data directly. 
+        /*
+          Don't make additional ajax call, just use graph_data directly.
          */
         var graph_data = CMDB.graph_data;
         if (typeof graph_data.nodes == 'undefined') {
-            // Displaying form, no data yet
+            if (graph_data.overflow) {
+                $("#graphDiv").html("Affected CIs count: " + graph_data.overflow + ". Graphing skipped.");
+            }
             return;
-        };
-        if (graph_data.nodes.length > MAX_RELATIONS_COUNT) {
-            alert('To many relations to draw a graph.');
         } else {
             $("#save_svg_button").click(saveSVG);
             fugueData = "";
@@ -193,7 +197,7 @@
             },
             async:false
             });
-            can = document.createElement('canvas')
+            can = document.createElement('canvas');
             can.style.display = 'none';
             ctx = can.getContext('2d');
             img = new Image();
@@ -204,8 +208,8 @@
                 drawGraph(graph_data, can);
             });
             spriteURL = '/static/fugue-icons.png';
-            img.src = spriteURL; 
-        };
+            img.src = spriteURL;
+        }
     });
-})();
+}());
 
