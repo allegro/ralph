@@ -63,6 +63,7 @@ from ralph.ui.forms.reports import (
     DevicesChoiceReportForm,
     SupportRangeReportForm,
     ReportVentureCost,
+    ReportDeviceListForm,
     WarrantyRangeReportForm,
 )
 from ralph.util import csvutil
