@@ -23,6 +23,7 @@ from ralph.discovery.models import (Device, DeviceType, IPAddress, Memory,
                                     OperatingSystem, Storage, DiskShare,
                                     DiskShareMount, FibreChannel,
                                     MAC_PREFIX_BLACKLIST, EthernetSpeed)
+from ralph.discovery.models_component import CPU_VIRTUAL_LIST
 from ralph.util import Eth
 from ralph.discovery.models_history import DiscoveryWarning
 
@@ -286,11 +287,7 @@ def save_device_data(data, remote_ip):
         ip_address.is_management = False
         ip_address.save()
     vendor = vendor.lower()
-    is_virtual = any((
-        'xen' in vendor,
-        'vmware' in vendor,
-        'bochs' in vendor,
-    ))
+    is_virtual = any(virtual in vendor for virtual in CPU_VIRTUAL_LIST)
     save_processors(data['processors'], dev, is_virtual)
     save_memory(data['memory'], dev)
     save_storage(data['storage'], dev)
