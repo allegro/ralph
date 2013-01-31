@@ -23,33 +23,59 @@ from dj.choices import Choices
 from ralph.account.models import Perm
 from ralph.business.models import Venture, VentureExtraCostType
 from ralph.cmdb.models_ci import (
-    CI, CIRelation, CI_STATE_TYPES, CI_RELATION_TYPES, CI_TYPES
+    CI,
+    CIRelation,
+    CI_STATE_TYPES,
+    CI_RELATION_TYPES,
+    CI_TYPES
 )
 from ralph.deployment.models import DeploymentStatus
 from ralph.discovery.models_component import (
-    Memory, OperatingSystem, Software, FibreChannel, Storage, Processor,
-    Component, GenericComponent, ComponentType,
+    Component,
+    ComponentType,
+    FibreChannel,
+    GenericComponent,
+    Memory,
+    OperatingSystem,
+    Processor,
+    Software,
+    Storage,
 )
 from ralph.discovery.models_device import (
-    MarginKind, DeviceType, Device, DeviceModelGroup,
+    Device,
+    DeviceModelGroup,
+    DeviceType,
+    MarginKind,
 )
 from ralph.discovery.models_history import HistoryCost
 from ralph.ui.forms import DateRangeForm, MarginsReportForm
 from ralph.ui.reports import (
-    get_total_cost, get_total_count, get_total_cores, get_total_virtual_cores
+    get_total_cores,
+    get_total_cost,
+    get_total_count,
+    get_total_virtual_cores,
 )
 from ralph.ui.views.common import Base, DeviceDetailView, _get_details
 from ralph.ui.views.devices import DEVICE_SORT_COLUMNS
 from ralph.ui.forms.reports import (
-    SupportRangeReportForm, DeprecationRangeReportForm,
-    WarrantyRangeReportForm, DevicesChoiceReportForm,
-    ReportVentureCost)
+    DeprecationRangeReportForm,
+    DevicesChoiceReportForm,
+    SupportRangeReportForm,
+    ReportVentureCost,
+    WarrantyRangeReportForm,
+)
 from ralph.util import csvutil
 from ralph.util.pricing import (
-    is_depreciated, get_device_chassis_price, get_device_auto_price,
-    get_device_local_storage_price, get_device_memory_price,
-    get_device_cpu_price, get_device_components_price, get_device_fc_price,
-    get_device_software_price, get_device_operatingsystem_price
+    get_device_auto_price,
+    get_device_chassis_price,
+    get_device_components_price,
+    get_device_cpu_price,
+    get_device_fc_price,
+    get_device_local_storage_price,
+    get_device_memory_price,
+    get_device_operatingsystem_price
+    get_device_software_price,
+    is_deprecated,
 )
 
 def threshold(days):
@@ -740,7 +766,7 @@ class ReportDevices(SidebarReports, Base):
 
 
 
-def is_bradesystem(component):
+def is_bladesystem(component):
     ''' Check if component is bladesystem - be careful BladeSystem and
     RAM have the same type_id. If component type is RAM runs except '''
     try:
@@ -847,7 +873,7 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
                 act_components = [x.get('name') for x in components]
                 if (model not in act_components and
                     component_type not in blacklist):
-                    if is_bradesystem(component):
+                    if is_bladesystem(component):
                         bs_count = device.child_set.filter(
                             deleted=False).count() or 1
                         chassis_price = get_device_chassis_price(device)
@@ -891,7 +917,7 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
                     for c in components:
                         if c.get('name') == model:
                             count = c.get('count')
-                            c.update(count=count+1)
+                            c.update(count=count + 1)
             for component in components:
                 count = component.get('count')
                 price = component.get('price')
