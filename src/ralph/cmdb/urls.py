@@ -48,7 +48,7 @@ from ralph.cmdb.views_changes import (
     Reports,
 )
 from ralph.cmdb.views_changes import TimeLine
-from ralph.cmdb.views import Graphs, GraphsTree
+from ralph.cmdb.views import Graphs
 
 
 urlpatterns = patterns(
@@ -113,6 +113,4 @@ urlpatterns = patterns(
         login_required(DashboardDetails.as_view())),
     (r'^changes/reports$', login_required(Reports.as_view())),
     (r'^graphs$', login_required(Graphs.as_view())),
-    (r'^graphs_tree$', login_required(GraphsTree.as_view())),
-    (r'^graphs_ajax_tree$', login_required(GraphsTree.get_ajax))
 )

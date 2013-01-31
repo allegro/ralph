@@ -254,7 +254,7 @@ class VenturesRoles(Ventures, Base):
 def _total_dict(name, query, start, end, url=None):
     cost = get_total_cost(query, start, end)
     count, count_now, devices = get_total_count(query, start, end)
-    if not count:
+    if not count and not count_now:
         return None
     return {
         'name': name,
@@ -541,7 +541,6 @@ class VenturesVenture(SidebarVentures, Base):
             start = self.form.cleaned_data['start']
             end = self.form.cleaned_data['end']
             query = query.exclude(device__deleted=True)
-            query = HistoryCost.filter_span(start, end, query)
             items = _get_summaries(query.all(), start, end, True, self.venture)
             cost_data = []
             count_data = []
