@@ -938,8 +938,6 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
                     component_group = None
                     component_type = None
                     model_group = None
-                # component_type = getattr(model, 'type', None)
-
                 act_components = [x.get('name') for x in components]
                 if (model not in act_components and
                     component_type not in blacklist):
