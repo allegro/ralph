@@ -7,23 +7,25 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from ralph.discovery.models import (
-    Device, Processor, ComponentModel, ComponentModelGroup, ComponentType,
-    Memory, Storage
+    ComponentModel,
+    ComponentModelGroup,
+    ComponentType,
+    Device,
+    Memory,
+    Processor,
+    Storage
 )
 
 
-def dublicate_item(item):
-    duplicate = []
-    for component in range(item.get('count')):
-        duplicate.append(item)
-    return duplicate
+def duplicate_item(item):
+    return [item] * item.get('count')
 
 
 def create_model(device, mdl, type):
     group, created = ComponentModelGroup.objects.get_or_create(
         name='Group %s - %s' % (mdl.get('model_name'), mdl.get('price')),
         price=mdl.get('price'),
-        type=type
+        type=type,
     )
     if type == ComponentType.memory:
         model, created = ComponentModel.objects.get_or_create(
@@ -32,7 +34,7 @@ def create_model(device, mdl, type):
             family=mdl.get('family'),
             speed=mdl.get('speed'),
             size=mdl.get('size'),
-            type=ComponentType.memory
+            type=ComponentType.memory,
         )
     elif type == ComponentType.processor:
         model, created = ComponentModel.objects.get_or_create(
@@ -42,16 +44,17 @@ def create_model(device, mdl, type):
                 group=group,
                 family=mdl.get('family'),
                 type=type,
-                speed=mdl.get('speed')
+                speed=mdl.get('speed'),
         )
     else:
         model, created = ComponentModel.objects.get_or_create(
                 name='M %s - %s' % (
-                    mdl.get('model_name'), mdl.get('price')
+                    mdl.get('model_name'),
+                    mdl.get('price')
                 ),
                 group=group,
                 family=mdl.get('family'),
-                type=type
+                type=type,
         )
     return model
 
@@ -66,13 +69,13 @@ def create_device(device, cpu=None, memory=None, storage=None):
         parent=device.get('parent'),
         price=device.get('price'),
         deprecation_kind=device.get('deprecation_kind'),
-        purchase_date=device.get('purchase_date')
+        purchase_date=device.get('purchase_date'),
     )
     dev.name = device.get('name')
     dev.save()
     if cpu:
         model = create_model(device, cpu, ComponentType.processor)
-        for cpu in dublicate_item(cpu):
+        for cpu in duplicate_item(cpu):
             Processor(
                 device=dev,
                 model=model,
@@ -80,21 +83,21 @@ def create_device(device, cpu=None, memory=None, storage=None):
             ).save()
     if memory:
         model = create_model(device, memory, ComponentType.memory)
-        for memory in dublicate_item(memory):
+        for memory in duplicate_item(memory):
             Memory(
                 device=dev,
                 model=model,
                 speed=memory.get('speed'),
                 size=memory.get('size'),
-                label=memory.get('label')
+                label=memory.get('label'),
             ).save()
     if storage:
         model = create_model(device, storage, ComponentType.disk)
-        for storage in dublicate_item(storage):
+        for storage in duplicate_item(storage):
             Storage(
                 device=dev,
                 model=model,
-                label=storage.get('label')
+                label=storage.get('label'),
             ).save()
 
 
