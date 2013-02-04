@@ -100,9 +100,8 @@ class PricingTest(TestCase):
         dmg.save()
         dev.model.group = dmg
         dev.model.save()
-
         pricing.device_update_cached(dev)
-
+        dev = Device.objects.get(id=dev.id)
         self.assertEquals(dev.cached_price, 1337)
 
     def test_manual_price(self):
@@ -113,11 +112,10 @@ class PricingTest(TestCase):
         dmg.save()
         dev.model.group = dmg
         dev.model.save()
-
         dev.price = 238
         dev.save()
         pricing.device_update_cached(dev)
-
+        dev = Device.objects.get(id=dev.id)
         self.assertEquals(dev.cached_price, 238)
 
     def test_blade_server(self):
@@ -142,6 +140,8 @@ class PricingTest(TestCase):
 
         pricing.device_update_cached(encl)
         pricing.device_update_cached(dev)
+        dev = Device.objects.get(id=dev.id)
+        encl = Device.objects.get(id=encl.id)
 
         self.assertEquals(dev.cached_price, 17720.75)
         self.assertEquals(encl.cached_price, 49151.25)
@@ -156,12 +156,17 @@ class PricingTest(TestCase):
         dev.model.group = dmg
         dev.model.save()
 
-        dev.margin_kind = MarginKind(name='50%', margin=50)
-        dev.margin_kind.save()
-        dev.deprecation_kind = DeprecationKind(name='10 months', months=10)
-        dev.deprecation_kind.save()
+        mk = MarginKind(name='50%', margin=50)
+        mk.save()
+        dev.margin_kind = mk
+        dk = DeprecationKind(name='10 months', months=10)
+        dk.save()
+        dev.deprecation_kind = dk
         dev.save()
+        self.assertEqual(pricing.get_device_cost(dev), 15)
         pricing.device_update_cached(dev)
+        dev = Device.objects.get(id=dev.id)
+        self.assertEqual(pricing.get_device_cost(dev), 15)
         self.assertEqual(dev.cached_cost, 15)
 
     def test_price_deprecation(self):
@@ -174,12 +179,15 @@ class PricingTest(TestCase):
         dev.model.group = dmg
         dev.purchase_date = datetime.today() - timedelta(11 * (365 / 12))
         dev.model.save()
-        dev.margin_kind = MarginKind(name='50%', margin=50)
-        dev.margin_kind.save()
-        dev.deprecation_kind = DeprecationKind(name='10 months', months=10)
-        dev.deprecation_kind.save()
+        mk = MarginKind(name='50%', margin=50)
+        mk.save()
+        dev.margin_kind = mk
+        dk = DeprecationKind(name='10 months', months=10)
+        dk.save()
+        dev.deprecation_kind = dk
         dev.save()
         pricing.device_update_cached(dev)
+        dev = Device.objects.get(id=dev.id)
         self.assertEqual(get_device_raw_price(dev), 0)
         self.assertEqual(dev.cached_price, 0)
         self.assertEqual(dev.cached_cost, 0)
@@ -195,12 +203,15 @@ class PricingTest(TestCase):
         # currently first month in deprecation period
         dev.purchase_date = datetime.today() - timedelta(1 * (365 / 12))
         dev.model.save()
-        dev.margin_kind = MarginKind(name='50%', margin=50)
-        dev.margin_kind.save()
-        dev.deprecation_kind = DeprecationKind(name='10 months', months=10)
-        dev.deprecation_kind.save()
+        mk = MarginKind(name='50%', margin=50)
+        mk.save()
+        dev.margin_kind = mk
+        dk = DeprecationKind(name='10 months', months=10)
+        dk.save()
+        dev.deprecation_kind = dk
         dev.save()
         pricing.device_update_cached(dev)
+        dev = Device.objects.get(id=dev.id)
         self.assertEqual(get_device_raw_price(dev), 100)
         self.assertEqual(dev.cached_cost, 15)
         self.assertEqual(dev.cached_price, 100)

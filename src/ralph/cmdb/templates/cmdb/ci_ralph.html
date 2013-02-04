@@ -1,0 +1,32 @@
+{% extends 'cmdb/ci_details.html' %}
+{% load icons %}
+{% load query %}
+{% load bob %}
+
+{% block ci_content %}
+<span><h3> Asset attr. changes</h3> </span>
+
+<table class="table table-bordered table-striped table-properties">
+    <tr>
+        <th> Date </th>
+        <th> User </th>
+        <th> Field name</th>
+        <th> Old value</th>
+        <th> New value</th>
+    </tr>
+    {% for f in device_attributes_changes %}
+    <tr> 
+        <td>  {{ f.date|timesince_limited }}  </td>
+        <td>  {{ f.user }} </td>
+        <td>  {{ f.field_name }} </td>
+        <td>  {{ f.old_value}}  </td>
+        <td>  {{ f.new_value }}  </td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% if device_attributes_changes %}
+{% pagination device_attributes_changes url_query=url_query show_all=0 show_csv=0 fugue_icons=1 %}
+{% endif %}
+
+{% endblock %}

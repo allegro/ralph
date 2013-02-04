@@ -306,7 +306,6 @@ class DeviceInfoVerifiedForm(DeviceInfoForm):
         widgets = {
             'venture': ReadOnlySelectWidget,
             'venture_role': ReadOnlySelectWidget,
-            'parent': DeviceWidget,
             'model': DeviceModelWidget,
             'rack': RackWidget,
             'dc': RackWidget,
