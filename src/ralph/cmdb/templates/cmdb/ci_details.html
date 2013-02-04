@@ -1,0 +1,13 @@
+{% extends 'cmdb/base.html' %}
+{% load icons %}
+{% load query %}
+
+{% block content %}
+<div class="span12">
+    {% block ci_header %}
+        {% include 'cmdb/ci_details_header.html' %}
+    {% endblock %}
+    <div class="row-fluid">{% block ci_content %}{% endblock %}</div>
+</div>
+{% endblock %}
+

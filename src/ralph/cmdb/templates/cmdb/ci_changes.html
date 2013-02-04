@@ -1,0 +1,34 @@
+{% extends 'cmdb/ci_details.html' %}
+{% load icons %}
+{% load query %}
+{% load bob %}
+
+{% block ci_content %}
+<span><h3> CI attr. changes</h3> </span>
+
+<table class="table table-bordered table-striped table-properties">
+    <tr>
+        <th> Date </th>
+        <th> User </th>
+        <th> Field name</th>
+        <th> Old value</th>
+        <th> New value</th>
+        <th> Comment</th>
+    </tr>
+    {% for f in ci_attributes_changes %}
+        <tr>
+            <td>  {{ f.time|timesince_limited|default:'–' }}  </td>
+            <td>  {{ f.user|default:'–' }} </td>
+            <td>  {{ f.field_name|default:'–' }} </td>
+            <td>  {{ f.old_value|default:'–' }}  </td>
+            <td>  {{ f.new_value|default:'–' }}  </td>
+            <td>  {{ f.comment|default:'–' }}  </td>
+        </tr>
+    {% endfor %}
+</table>
+
+{% if ci_attributes_changes %}
+{% pagination ci_attributes_changes url_query=url_query show_all=0 show_csv=0 fugue_icons=1 %}
+{% endif %}
+
+{% endblock %}

@@ -7,9 +7,11 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import datetime
+import re
 from urlparse import urljoin
 
 from django.db.models import Q
+from django.contrib.auth.models import User
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
@@ -21,6 +23,7 @@ from django.utils.safestring import mark_safe
 from django.utils import simplejson
 from django.utils.html import escape
 from django.conf import settings
+from lck.cache.memoization import memoize
 from lck.django.common import nested_commit_on_success
 from lck.django.filters import slugify
 from bob.menu import MenuItem, MenuHeader
@@ -33,7 +36,7 @@ from ralph.cmdb.models_ci import (
     CIOwner, CIOwnership, CILayer, CI_TYPES, CI, CIRelation, CI_LAYER
 )
 import ralph.cmdb.models as db
-from ralph.cmdb.graphs import search_tree, ImpactCalculator
+from ralph.cmdb.graphs import ImpactCalculator
 from ralph.account.models import Perm
 from ralph.ui.views.common import Base, _get_details
 from ralph.util.presentation import (
@@ -46,13 +49,15 @@ SAVE_PRIORITY = 200
 
 
 def get_icon_for(ci):
+    ctname = ci.content_type.name
+
     if not ci or not ci.content_object:
         return
-    if ci.content_type.name == 'venture':
+    if ctname == 'venture':
         return get_venture_icon(ci.content_object)
-    elif ci.content_type.name == 'device':
+    elif ctname == 'device':
         return get_device_icon(ci.content_object)
-    elif ci.content_type.name == 'network':
+    elif ctname == 'network':
         return get_network_icon(ci.content_object)
     else:
         return 'wall'
@@ -80,8 +85,9 @@ class BaseCMDBView(Base):
             counter += 1
         return list
 
-    def get_permissions_dict(self):
-        has_perm = self.request.user.get_profile().has_perm
+    @memoize(skip_first=True, update_interval=60)
+    def get_permissions_dict(self, user_id):
+        has_perm = User.objects.get(pk=user_id).get_profile().has_perm
         ci_perms = [
             'create_configuration_item',
             'edit_configuration_item_info_generic',
@@ -101,13 +107,12 @@ class BaseCMDBView(Base):
             ('/cmdb/add', 'Add CI', 'fugue-block--plus'),
             ('/cmdb/changes/dashboard', 'Dashboard', 'fugue-dashboard'),
             ('/cmdb/graphs', 'Impact report', 'fugue-dashboard'),
-            ('/cmdb/graphs_tree', 'Tree deps.', 'fugue-dashboard'),
-            ('/cmdb/changes/dashboard', 'Dashboard', 'fugue-dashboard'),
             ('/cmdb/changes/timeline', 'Timeline View', 'fugue-dashboard'),
             ('/admin/cmdb', 'Admin', 'fugue-toolbox'),
         )
 
         layers = (
+            ('/cmdb/search', 'All Cis (all layers)', 'fugue-magnifier'),
             ('/cmdb/search?layer=1&type=1', 'Applications',
              'fugue-applications-blue'),
             ('/cmdb/search?layer=2&top_level=1', 'Databases',
@@ -125,7 +130,6 @@ class BaseCMDBView(Base):
              'fugue-disc-share'),
             ('/cmdb/search?layer=8&type=5', 'Roles',
              'fugue-computer-network'),
-            ('/cmdb/search', 'All Cis (all layers)', 'fugue-magnifier'),
         )
         reports = (
             ('/cmdb/changes/reports?kind=top_changes',
@@ -184,7 +188,7 @@ class BaseCMDBView(Base):
 
     def get_context_data(self, *args, **kwargs):
         ret = super(BaseCMDBView, self).get_context_data(**kwargs)
-        ret.update(self.get_permissions_dict())
+        ret.update(self.get_permissions_dict(self.request.user.id))
         ret.update({
             'sidebar_items': self.get_sidebar_items(),
             'breadcrumbs': self.generate_breadcrumb(),
@@ -214,7 +218,9 @@ def _get_pages(paginator, page):
 
 
 def get_error_title(form):
-    return ', '.join(form.errors['__all__']) or 'Correct the errors.' if form.errors else ''
+    return ', '.join(
+        form.errors['__all__'],
+    ) or 'Correct the errors.' if form.errors else ''
 
 
 class EditRelation(BaseCMDBView):
@@ -234,7 +240,7 @@ class EditRelation(BaseCMDBView):
         return ret
 
     def get(self, *args, **kwargs):
-        if not self.get_permissions_dict().get(
+        if not self.get_permissions_dict(self.request.user.id).get(
                 'edit_configuration_item_relations_perm', False):
             return HttpResponseForbidden()
         rel_id = kwargs.get('relation_id')
@@ -300,7 +306,7 @@ class AddRelation(BaseCMDBView):
         return data
 
     def get(self, *args, **kwargs):
-        if not self.get_permissions_dict().get(
+        if not self.get_permissions_dict(self.request.user.id).get(
                 'edit_configuration_item_relations_perm',
                 False):
             return HttpResponseForbidden()
@@ -433,37 +439,86 @@ class LastChanges(BaseCMDBView):
         return super(LastChanges, self).get(*args, **kwargs)
 
 
-class Edit(BaseCMDBView):
-    template_name = 'cmdb/edit_ci.html'
-    Form = CIEditForm
-    form_attributes_options = dict(label_suffix='', prefix='attr')
-    form_options = dict(label_suffix='', prefix='base')
+class BaseCIDetails(BaseCMDBView):
+    template_name = 'cmdb/ci_details.html'
 
-    def get_first_parent_venture_name(self, ci_id):
-        cis = db.CI.objects.filter(
-            relations__parent__child=ci_id,
-            relations__parent__parent__type=db.CI_TYPES.VENTUREROLE.id).all()
-        if cis:
-            return cis[0].name
+    def check_perm(self):
+        if not self.get_permissions_dict(self.request.user.id).get(
+            'read_configuration_item_info_generic_perm',
+            False,
+        ):
+            return HttpResponseForbidden()
+
+    def get_tabs(self):
+        tabs = [
+            ('Basic Info', 'main'),
+            ('Relations', 'relations'),
+        ]
+        if self.get_permissions_dict(self.request.user.id).get(
+            'read_configuration_item_info_git_perm',
+            False
+        ):
+            tabs.append(('Repo changes', 'git'))
+        if self.get_permissions_dict(self.request.user.id).get(
+            'read_configuration_item_info_puppet_perm',
+            False
+        ):
+            tabs.append(('Agent events', 'puppet'))
+        if self.get_permissions_dict(self.request.user.id).get(
+            'read_configuration_item_info_jira_perm',
+            False
+        ):
+            tabs.append(('Asset attr. changes', 'ralph'))
+        if self.get_permissions_dict(self.request.user.id).get(
+            'read_configuration_item_info_jira_perm',
+            False
+        ):
+            tabs.append(('CI attr. changes', 'ci_changes'))
+        if self.get_permissions_dict(self.request.user.id).get(
+            'read_configuration_item_info_jira_perm',
+            False
+        ):
+            tabs.append(('Monitoring events', 'zabbix'))
+        if self.get_permissions_dict(self.request.user.id).get(
+            'read_configuration_item_info_jira_perm',
+            False
+        ):
+            tabs.append(('Problems', 'problems'))
+        if self.get_permissions_dict(self.request.user.id).get(
+            'read_configuration_item_info_jira_perm',
+            False
+        ):
+            tabs.append(('Incidents', 'incidents'))
+        if self.get_permissions_dict(self.request.user.id).get(
+            'read_configuration_item_info_generic_perm',
+            False
+        ):
+            tabs.append(('SO Events', 'so'))
+        return tabs
 
     def generate_breadcrumb(self):
         if getattr(self, 'ci'):
-            parent = self.ci.id
+            parent_id = self.ci.id
         else:
             return []
-        list = []
+        breadcrumbs = []
         counter = 0
-        while parent and counter < 100:
-            ci = db.CI.objects.filter(id=parent).all()[0]
-            list.insert(0, ci)
+        while parent_id and counter < 100:
             try:
-                parent = db.CI.objects.filter(parent__child=parent).all()[0].id
-            except:
-                parent = None
-            if parent == ci.id:
-                parent = None
+                ci = db.CI.objects.filter(id=parent_id).all()[0]
+            except IndexError:
+                break
+            breadcrumbs.insert(0, ci)
+            try:
+                parent_id = db.CI.objects.filter(
+                    parent__child=parent_id
+                ).all()[0].id
+            except IndexError:
+                parent_id = None
+            if parent_id == ci.id:
+                parent_id = None
             counter += 1
-        return list
+        return breadcrumbs
 
     def get_messages(self):
         days = datetime.timedelta(days=7)
@@ -472,11 +527,9 @@ class Edit(BaseCMDBView):
             time__range=(
                 datetime.datetime.now(), datetime.datetime.now() - days)
         ).count()
-
         incidents = db.CIIncident.objects.filter(
             ci=self.ci,
         ).count()
-
         problems = db.CIProblem.objects.filter(
             ci=self.ci,
         ).count()
@@ -500,39 +553,162 @@ class Edit(BaseCMDBView):
                 title='Be carefull.',
                 type='error',
             ))
-
         return messages
 
+    def get_ci_id(self):
+        # 2 types of id can land here
+        ci_id = self.kwargs.get('ci_id')
+        if ci_id.find('-') >= 0:
+            ci = db.CI.objects.get(uid=ci_id)
+            return ci.id
+        else:
+            return self.kwargs.get('ci_id', None)
+
+    def initialize_vars(self):
+        self.tabs = self.get_tabs()
+        path = self.request.path
+        if self.request.path.endswith('/'):
+            path = self.request.path
+        else:
+            path = '%s/' % self.request.path
+        if not re.search(r'[0-9]+/$', path):
+            path = '%s../' % path
+        self.base_ci_link = path
+
     def get_context_data(self, **kwargs):
-        ret = super(Edit, self).get_context_data(**kwargs)
+        ret = super(BaseCIDetails, self).get_context_data(**kwargs)
         ret.update({
-            'form': self.form,
-            'form_attributes': self.form_attributes,
+            'tabs': self.tabs,
+            'active_tab': self.active_tab,
+            'base_ci_link': self.base_ci_link,
+            'label': 'Edit CI: {} (uid: {})'.format(self.ci.name, self.ci.uid),
+            'subsection': 'Edit - %s' % self.ci.name,
             'ci': self.ci,
             'ci_id': self.ci.id,
             'uid': self.ci.uid,
-            'label': 'Edit CI: {} (uid: {})'.format(self.ci.name, self.ci.uid),
-            'relations_contains': self.relations_contains,
-            'relations_requires': self.relations_requires,
-            'relations_isrequired': self.relations_isrequired,
-            'relations_parts': self.relations_parts,
-            'relations_hasrole': self.relations_hasrole,
-            'relations_isrole': self.relations_isrole,
-            'puppet_reports': self.puppet_reports,
-            'git_changes': self.git_changes,
-            'device_attributes_changes': self.device_attributes_changes,
-            'ci_attributes_changes': self.ci_attributes_changes,
-            'problems': self.problems,
-            'incidents': self.incidents,
-            'zabbix_triggers': self.zabbix_triggers,
-            'service_name': self.service_name,
-            'so_events': self.so_events,
             'cmdb_messages': self.get_messages(),
-            'show_in_ralph': self.show_in_ralph,
-            'ralph_ci_link': self.ralph_ci_link,
-            'subsection': 'Edit - %s' % self.ci.name,
         })
         return ret
+
+
+def _update_labels(items, ci):
+    items.update({
+        'label': 'View CI: {} (uid: {})'.format(ci.name, ci.uid),
+        'subsection': 'Info - %s' % ci.name,
+    })
+    return items
+
+
+class MainCIEdit(BaseCIDetails):
+    template_name = 'cmdb/ci_edit.html'
+    active_tab = 'main'
+    Form = CIEditForm
+    form_attributes_options = dict(label_suffix='', prefix='attr')
+    form_options = dict(label_suffix='', prefix='base')
+
+    def initialize_vars(self):
+        super(MainCIEdit, self).initialize_vars()
+        self.show_in_ralph = False
+        self.ralph_ci_link = ''
+
+    def get_context_data(self, **kwargs):
+        ret = super(MainCIEdit, self).get_context_data(**kwargs)
+        ret.update({
+            'show_in_ralph': self.show_in_ralph,
+            'ralph_ci_link': self.ralph_ci_link,
+            'service_name': self.service_name,
+            'editable': True,
+            'form': self.form,
+            'form_attributes': self.form_attributes,
+        })
+        return ret
+
+    def get(self, *args, **kwargs):
+        perm = self.check_perm()
+        if perm:
+            return perm
+        self.initialize_vars()
+        try:
+            ci_id = self.get_ci_id()
+        except db.CI.DoesNotExist:
+            # CI doesn's exists.
+            return HttpResponseRedirect('/cmdb/ci/jira_ci_unknown')
+        if ci_id:
+            self.ci = get_object_or_404(db.CI, id=ci_id)
+            if (self.ci.content_object and
+                self.ci.content_type.name == 'device'):
+                self.show_in_ralph = True
+                self.ralph_ci_link = "/ui/search/info/%d" % (
+                    self.ci.content_object.id
+                )
+            self.service_name = self.get_first_parent_venture_name(ci_id)
+            self.form_options['instance'] = self.ci
+            self.form_options['initial'] = self.form_initial(self.ci)
+            self.form_attributes_options['initial'] = self.custom_form_initial(
+                self.ci,
+            )
+            self.form_attributes = EditAttributeFormFactory(
+                ci=self.ci,
+            ).factory(**self.form_attributes_options)
+        self.form = self.Form(**self.form_options)
+        return super(MainCIEdit, self).get(*args, **kwargs)
+
+    @nested_commit_on_success
+    def post(self, *args, **kwargs):
+        self.initialize_vars()
+        ci_id = self.kwargs.get('ci_id')
+        if ci_id:
+            self.ci = get_object_or_404(db.CI, id=ci_id)
+            self.form_options['instance'] = self.ci
+            self.form = self.Form(
+                self.request.POST, **self.form_options
+            )
+            self.form_attributes = EditAttributeFormFactory(
+                ci=self.ci).factory(
+                    self.request.POST,
+                    **self.form_attributes_options
+                )
+            if self.form.is_valid() and self.form_attributes.is_valid():
+                model = self.form.save(commit=False)
+                model.id = self.ci.id
+                model.owners.clear()
+                model.layers.clear()
+                layers = self.form_attributes.data.getlist('base-layers')
+                for layer in layers:
+                    model.layers.add(CILayer.objects.get(pk=int(layer)))
+                owners_t = self.form_attributes.data.getlist(
+                    'base-technical_owners'
+                )
+                for owner in owners_t:
+                    own = CIOwnership(
+                        ci=model,
+                        owner=CIOwner.objects.get(pk=owner),
+                        type=1,
+                    )
+                    own.save()
+                owners_b = self.form_attributes.data.getlist(
+                    'base-business_owners'
+                )
+                for owner in owners_b:
+                    own = CIOwnership(
+                        ci=model, owner=CIOwner.objects.get(pk=owner),
+                        type=2,)
+                    own.save()
+                model.save(user=self.request.user)
+                self.form_attributes.ci = model
+                self.form_attributes.save()
+                messages.success(self.request, "Changes saved.")
+                return HttpResponseRedirect(self.request.path)
+            else:
+                messages.error(self.request, "Correct the errors.")
+        return super(MainCIEdit, self).get(*args, **kwargs)
+
+    def form_initial(self, ci):
+        data = dict(
+            technical_owner=', '.join(ci.get_technical_owners()),
+            ci=self.ci,
+        )
+        return data
 
     def custom_form_initial(self, ci):
         data = dict()
@@ -557,17 +733,70 @@ class Edit(BaseCMDBView):
             data['attribute_%s_%s' % (field_type, obj.attribute_id)] = value
         return data
 
-    def form_initial(self, ci):
-        data = dict(
-            technical_owner=', '.join(ci.get_technical_owners()),
-            ci=self.ci,
-        )
-        return data
+    def get_first_parent_venture_name(self, ci_id):
+        cis = db.CI.objects.filter(
+            relations__parent__child=ci_id,
+            relations__parent__parent__type=db.CI_TYPES.VENTUREROLE.id,
+        ).all()
+        if cis:
+            return cis[0].name
 
-    def check_perm(self):
-        if not self.get_permissions_dict().get(
-                'edit_configuration_item_info_generic_perm', False):
-            return HttpResponseForbidden()
+
+class MainCIView(MainCIEdit):
+    Form = CIViewForm
+
+    def get_context_data(self, **kwargs):
+        ret = super(MainCIView, self).get_context_data(**kwargs)
+        ret = _update_labels(ret, self.ci)
+        ret.update({
+            'editable': False,
+        })
+        return ret
+
+    def post(self, *args, **kwargs):
+        return HttpResponseForbidden()
+
+
+class CIRelationsEdit(BaseCIDetails):
+    template_name = 'cmdb/ci_relations.html'
+    active_tab = 'relations'
+
+    def get_context_data(self, **kwargs):
+        ret = super(CIRelationsEdit, self).get_context_data(**kwargs)
+        ret.update({
+            'relations_contains': self.relations_contains,
+            'relations_requires': self.relations_requires,
+            'relations_isrequired': self.relations_isrequired,
+            'relations_parts': self.relations_parts,
+            'relations_hasrole': self.relations_hasrole,
+            'relations_isrole': self.relations_isrole,
+            'editable': True,
+        })
+        return ret
+
+    def initialize_vars(self):
+        super(CIRelationsEdit, self).initialize_vars()
+        self.relations_contains = []
+        self.relations_parts = []
+        self.relations_requires = []
+        self.relations_isrequired = []
+        self.relations_hasrole = []
+        self.relations_isrole = []
+
+    def get(self, *args, **kwargs):
+        perm = self.check_perm()
+        if perm:
+            return perm
+        self.initialize_vars()
+        try:
+            ci_id = self.get_ci_id()
+        except db.CI.DoesNotExist:
+            # CI doesn's exists.
+            return HttpResponseRedirect('/cmdb/ci/jira_ci_unknown')
+        if ci_id:
+            self.ci = get_object_or_404(db.CI, id=ci_id)
+            self.calculate_relations(ci_id)
+        return super(CIRelationsEdit, self).get(*args, **kwargs)
 
     def calculate_relations(self, ci_id):
         self.relations_contains = [
@@ -602,196 +831,456 @@ class Edit(BaseCMDBView):
                 child=ci_id, type=db.CI_RELATION_TYPES.HASROLE.id)
         ]
 
-    def get_ci_id(self):
-        """ 2 types of id can land here. """
-        ci_id = self.kwargs.get('ci_id')
-        if ci_id.find('-') >= 0:
-            ci = db.CI.objects.get(uid=ci_id)
-            return ci.id
-        else:
-            return self.kwargs.get('ci_id', None)
 
-    def get(self, *args, **kwargs):
-        if self.check_perm():
-            return self.check_perm()
-        self.initialize_vars()
-        try:
-            ci_id = self.get_ci_id()
-        except:
-            # editing/viewing Ci which doesn's exists.
-            return HttpResponseRedirect('/cmdb/ci/jira_ci_unknown')
-        if ci_id:
-            self.ci = get_object_or_404(db.CI, id=ci_id)
-            # preview only for devices
-            if (self.ci.content_object and
-                    self.ci.content_type.name == 'device'):
-                self.show_in_ralph = True
-                self.ralph_ci_link = ("/ui/search/info/%d" %
-                                      self.ci.content_object.id)
-            self.service_name = self.get_first_parent_venture_name(ci_id)
-            self.problems = db.CIProblem.objects.filter(
-                ci=self.ci).order_by('-time').all()
-            self.incidents = db.CIIncident.objects.filter(
-                ci=self.ci).order_by('-time').all()
-            self.git_changes = [
-                x.content_object for x in db.CIChange.objects.filter(
-                    ci=self.ci, type=db.CI_CHANGE_TYPES.CONF_GIT.id)]
-            self.device_attributes_changes = [
-                x.content_object for x in db.CIChange.objects.filter(
-                    ci=self.ci, type=db.CI_CHANGE_TYPES.DEVICE.id)]
-            self.ci_attributes_changes = [
-                x.content_object for x in db.CIChange.objects.filter(
-                    ci=self.ci, type=db.CI_CHANGE_TYPES.CI.id).order_by('time')
-            ]
-            reps = db.CIChangePuppet.objects.filter(ci=self.ci).all()
-            for report in reps:
-                puppet_logs = db.PuppetLog.objects.filter(
-                    cichange=report).all()
-                self.puppet_reports.append(
-                    dict(report=report, logs=puppet_logs)
-                )
-            self.zabbix_triggers = db.CIChangeZabbixTrigger.objects.filter(
-                ci=self.ci).order_by('-lastchange')
-            self.so_events = db.CIChange.objects.filter(
-                type=db.CI_CHANGE_TYPES.STATUSOFFICE.id,
-                ci=self.ci).all()
-            self.calculate_relations(ci_id)
-            self.form_options['instance'] = self.ci
-            self.form_options['initial'] = self.form_initial(self.ci)
-            self.form_attributes_options['initial'] = self.custom_form_initial(
-                self.ci)
-            self.form_attributes = EditAttributeFormFactory(
-                ci=self.ci).factory(
-                    **self.form_attributes_options)
-        self.form = self.Form(**self.form_options)
-        return super(Edit, self).get(*args, **kwargs)
-
-    def initialize_vars(self):
-        self.form_attributes = {}
-        self.service_name = ''
-        self.relations_contains = []
-        self.relations_requires = []
-        self.relations_parts = []
-        self.relations_hasrole = []
-        self.relations_isrole = []
-        self.relations_isrequired = []
-
-        self.puppet_reports = []
-        self.git_changes = []
-        self.zabbix_triggers = []
-        self.ci_attributes_changes = []
-        self.device_attributes_changes = []
-        self.form = None
-        self.ci = None
-
-        self.relations_contains = []
-        self.relations_requires = []
-        self.relations_parts = []
-        self.relations_hasrole = []
-        self.relations_isrole = []
-        self.relations_isrequired = []
-        self.puppet_reports = []
-        self.git_changes = []
-        self.device_attributes_changes = []
-        self.zabbix_triggers = []
-        self.so_events = []
-        self.problems = []
-        self.incidents = []
-        self.show_in_ralph = False
-        self.ralph_ci_link = ""
-
-    @nested_commit_on_success
-    def post(self, *args, **kwargs):
-        self.initialize_vars()
-        ci_id = self.kwargs.get('ci_id')
-        if ci_id:
-            self.ci = get_object_or_404(db.CI, id=ci_id)
-            self.form_options['instance'] = self.ci
-            self.form = self.Form(
-                self.request.POST, **self.form_options
-            )
-            self.form_attributes = EditAttributeFormFactory(
-                ci=self.ci).factory(
-                    self.request.POST,
-                    **self.form_attributes_options
-                )
-            if self.form.is_valid() and self.form_attributes.is_valid():
-                model = self.form.save(commit=False)
-                model.id = self.ci.id
-                model.owners.clear()
-                model.layers.clear()
-                layers = self.form_attributes.data.getlist('base-layers')
-                for layer in layers:
-                    model.layers.add(CILayer.objects.get(pk=int(layer)))
-                owners_t = self.form_attributes.data.getlist(
-                    'base-technical_owners')
-                for owner in owners_t:
-                    own = CIOwnership(
-                        ci=model,
-                        owner=CIOwner.objects.get(pk=owner),
-                        type=1,)
-                    own.save()
-                owners_b = self.form_attributes.data.getlist(
-                    'base-business_owners')
-                for owner in owners_b:
-                    own = CIOwnership(
-                        ci=model, owner=CIOwner.objects.get(pk=owner),
-                        type=2,)
-                    own.save()
-                model.save(user=self.request.user)
-                self.form_attributes.ci = model
-                self.form_attributes.save()
-                messages.success(self.request, "Changes saved.")
-                return HttpResponseRedirect(self.request.path)
-            else:
-                messages.error(self.request, "Correct the errors.")
-        return super(Edit, self).get(*args, **kwargs)
-
-
-class View(Edit):
-    template_name = 'cmdb/view_ci.html'
-    Form = CIViewForm
-
+class CIRelationsView(CIRelationsEdit):
     def get_context_data(self, **kwargs):
-        ret = super(View, self).get_context_data(**kwargs)
+        ret = super(CIRelationsView, self).get_context_data(**kwargs)
+        ret = _update_labels(ret, self.ci)
         ret.update({
-            'label': 'View CI: {} (uid: {})'.format(self.ci.name, self.ci.uid),
-            'subsection': 'Info - %s' % self.ci.name
+            'editable': False,
         })
         return ret
 
+
+class CIGitEdit(BaseCIDetails):
+    template_name = 'cmdb/ci_git.html'
+    active_tab = 'git'
+
     def check_perm(self):
-        if not self.get_permissions_dict().get(
-                'read_configuration_item_info_generic_perm', False):
+        if not self.get_permissions_dict(self.request.user.id).get(
+            'read_configuration_item_info_git_perm',
+            False,
+        ):
             return HttpResponseForbidden()
 
-    def post(self, *args, **kwargs):
-        """ Overwrite parent class post """
-        return HttpResponseForbidden()
-
-
-class ViewIframe(View):
-    template_name = 'cmdb/view_ci_iframe.html'
+    def initialize_vars(self):
+        super(CIGitEdit, self).initialize_vars()
+        self.git_changes = []
 
     def get_context_data(self, **kwargs):
-        ret = super(ViewIframe, self).get_context_data(**kwargs)
-        ret.update({'target': '_blank'})
+        ret = super(CIGitEdit, self).get_context_data(**kwargs)
+        ret.update({
+            'label': 'Edit CI: {} (uid: {})'.format(self.ci.name, self.ci.uid),
+            'subsection': 'Edit - %s' % self.ci.name,
+            'git_changes': self.git_changes,
+        })
         return ret
 
+    def get(self, *args, **kwargs):
+        perm = self.check_perm()
+        if perm:
+            return perm
+        self.initialize_vars()
+        try:
+            ci_id = self.get_ci_id()
+        except db.CI.DoesNotExist:
+            # CI doesn's exists.
+            return HttpResponseRedirect('/cmdb/ci/jira_ci_unknown')
+        if ci_id:
+            self.ci = get_object_or_404(db.CI, id=ci_id)
+            try:
+                page = int(self.request.GET.get('page', 1))
+            except ValueError:
+                page = 1
+            query = db.CIChange.objects.filter(
+                ci=self.ci,
+                type=db.CI_CHANGE_TYPES.CONF_GIT.id,
+            )
+            paginator = Paginator(query, 20)
+            self.git_changes = paginator.page(page)
+            object_list = []
+            for item in self.git_changes.object_list:
+                object_list.append(item.content_object)
+            self.git_changes.object_list = object_list
+        return super(CIGitEdit, self).get(*args, **kwargs)
 
-class ViewJira(ViewIframe):
-    template_name = 'cmdb/view_ci_iframe.html'
 
-    def get_ci_id(self):
-        ci_uid = self.kwargs.get('ci_uid', None)
-        ci = db.CI.objects.get(uid=ci_uid)
-        #raise 404 in case of missing CI
-        return ci.id
+class CIGitView(CIGitEdit):
+    def get_context_data(self, **kwargs):
+        ret = super(CIGitView, self).get_context_data(**kwargs)
+        return _update_labels(ret, self.ci)
+
+
+class CIPuppetEdit(BaseCIDetails):
+    template_name = 'cmdb/ci_puppet.html'
+    active_tab = 'puppet'
+
+    def check_perm(self):
+        if not self.get_permissions_dict(self.request.user.id).get(
+            'read_configuration_item_info_puppet_perm',
+            False,
+        ):
+            return HttpResponseForbidden()
+
+    def initialize_vars(self):
+        super(CIPuppetEdit, self).initialize_vars()
+        self.puppet_reports = []
 
     def get_context_data(self, **kwargs):
-        ret = super(ViewJira, self).get_context_data(**kwargs)
-        ret.update({'span_number': '4'})  # height of screen
+        ret = super(CIPuppetEdit, self).get_context_data(**kwargs)
+        ret.update({
+            'puppet_reports': self.puppet_reports,
+        })
         return ret
+
+    def get(self, *args, **kwargs):
+        perm = self.check_perm()
+        if perm:
+            return perm
+        self.initialize_vars()
+        try:
+            ci_id = self.get_ci_id()
+        except db.CI.DoesNotExist:
+            # CI doesn's exists.
+            return HttpResponseRedirect('/cmdb/ci/jira_ci_unknown')
+        if ci_id:
+            self.ci = get_object_or_404(db.CI, id=ci_id)
+            try:
+                page = int(self.request.GET.get('page', 1))
+            except ValueError:
+                page = 1
+            query = db.CIChangePuppet.objects.filter(ci=self.ci).all()
+            paginator = Paginator(query, 10)
+            self.puppet_reports = paginator.page(page)
+            object_list = []
+            for report in self.puppet_reports.object_list:
+                puppet_logs = db.PuppetLog.objects.filter(
+                    cichange=report
+                ).all()
+                object_list.append(
+                    dict(report=report, logs=puppet_logs)
+                )
+            self.puppet_reports.object_list = object_list
+        return super(CIPuppetEdit, self).get(*args, **kwargs)
+
+
+class CIPuppetView(CIPuppetEdit):
+    def get_context_data(self, **kwargs):
+        ret = super(CIPuppetView, self).get_context_data(**kwargs)
+        return _update_labels(ret, self.ci)
+
+
+class CIRalphEdit(BaseCIDetails):
+    template_name = 'cmdb/ci_ralph.html'
+    active_tab = 'ralph'
+
+    def check_perm(self):
+        if not self.get_permissions_dict(self.request.user.id).get(
+            'read_configuration_item_info_jira_perm',
+            False,
+        ):
+            return HttpResponseForbidden()
+
+    def initialize_vars(self):
+        super(CIRalphEdit, self).initialize_vars()
+        self.device_attributes_changes = []
+
+    def get_context_data(self, **kwargs):
+        ret = super(CIRalphEdit, self).get_context_data(**kwargs)
+        ret.update({
+            'device_attributes_changes': self.device_attributes_changes,
+        })
+        return ret
+
+    def get(self, *args, **kwargs):
+        perm = self.check_perm()
+        if perm:
+            return perm
+        self.initialize_vars()
+        try:
+            ci_id = self.get_ci_id()
+        except db.CI.DoesNotExist:
+            # CI doesn's exists.
+            return HttpResponseRedirect('/cmdb/ci/jira_ci_unknown')
+        if ci_id:
+            self.ci = get_object_or_404(db.CI, id=ci_id)
+            try:
+                page = int(self.request.GET.get('page', 1))
+            except ValueError:
+                page = 1
+            query = db.CIChange.objects.filter(
+                ci=self.ci,
+                type=db.CI_CHANGE_TYPES.DEVICE.id,
+            )
+            paginator = Paginator(query, 20)
+            self.device_attributes_changes = paginator.page(page)
+            object_list = []
+            for item in self.device_attributes_changes.object_list:
+                object_list.append(item.content_object)
+            self.device_attributes_changes.object_list = object_list
+        return super(CIRalphEdit, self).get(*args, **kwargs)
+
+
+class CIRalphView(CIRalphEdit):
+    def get_context_data(self, **kwargs):
+        ret = super(CIRalphView, self).get_context_data(**kwargs)
+        return _update_labels(ret, self.ci)
+
+
+class CIChangesEdit(BaseCIDetails):
+    template_name = 'cmdb/ci_changes.html'
+    active_tab = 'ci_changes'
+
+    def check_perm(self):
+        if not self.get_permissions_dict(self.request.user.id).get(
+            'read_configuration_item_info_jira_perm',
+            False,
+        ):
+            return HttpResponseForbidden()
+
+    def initialize_vars(self):
+        super(CIChangesEdit, self).initialize_vars()
+        self.ci_attributes_changes = []
+
+    def get_context_data(self, **kwargs):
+        ret = super(CIChangesEdit, self).get_context_data(**kwargs)
+        ret.update({
+            'ci_attributes_changes': self.ci_attributes_changes,
+        })
+        return ret
+
+    def get(self, *args, **kwargs):
+        perm = self.check_perm()
+        if perm:
+            return perm
+        self.initialize_vars()
+        try:
+            ci_id = self.get_ci_id()
+        except db.CI.DoesNotExist:
+            # CI doesn's exists.
+            return HttpResponseRedirect('/cmdb/ci/jira_ci_unknown')
+        if ci_id:
+            self.ci = get_object_or_404(db.CI, id=ci_id)
+            try:
+                page = int(self.request.GET.get('page', 1))
+            except ValueError:
+                page = 1
+            query = db.CIChange.objects.filter(
+                ci=self.ci,
+                type=db.CI_CHANGE_TYPES.CI.id,
+            ).order_by('time')
+            paginator = Paginator(query, 20)
+            self.ci_attributes_changes = paginator.page(page)
+            object_list = []
+            for item in self.ci_attributes_changes.object_list:
+                object_list.append(item.content_object)
+            self.ci_attributes_changes.object_list = object_list
+        return super(CIChangesEdit, self).get(*args, **kwargs)
+
+
+class CIChangesView(CIChangesEdit):
+    def get_context_data(self, **kwargs):
+        ret = super(CIChangesView, self).get_context_data(**kwargs)
+        return _update_labels(ret, self.ci)
+
+
+class CIZabbixEdit(BaseCIDetails):
+    template_name = 'cmdb/ci_zabbix.html'
+    active_tab = 'zabbix'
+
+    def check_perm(self):
+        if not self.get_permissions_dict(self.request.user.id).get(
+            'read_configuration_item_info_jira_perm',
+            False,
+        ):
+            return HttpResponseForbidden()
+
+    def initialize_vars(self):
+        super(CIZabbixEdit, self).initialize_vars()
+        self.zabbix_triggers = []
+
+    def get_context_data(self, **kwargs):
+        ret = super(CIZabbixEdit, self).get_context_data(**kwargs)
+        ret.update({
+            'zabbix_triggers': self.zabbix_triggers,
+        })
+        return ret
+
+    def get(self, *args, **kwargs):
+        perm = self.check_perm()
+        if perm:
+            return perm
+        self.initialize_vars()
+        try:
+            ci_id = self.get_ci_id()
+        except db.CI.DoesNotExist:
+            # CI doesn's exists.
+            return HttpResponseRedirect('/cmdb/ci/jira_ci_unknown')
+        if ci_id:
+            self.ci = get_object_or_404(db.CI, id=ci_id)
+            try:
+                page = int(self.request.GET.get('page', 1))
+            except ValueError:
+                page = 1
+            query = db.CIChangeZabbixTrigger.objects.filter(
+                ci=self.ci,
+            ).order_by('-lastchange')
+            paginator = Paginator(query, 20)
+            self.zabbix_triggers = paginator.page(page)
+        return super(CIZabbixEdit, self).get(*args, **kwargs)
+
+
+class CIZabbixView(CIZabbixEdit):
+    def get_context_data(self, **kwargs):
+        ret = super(CIZabbixView, self).get_context_data(**kwargs)
+        return _update_labels(ret, self.ci)
+
+
+class CIProblemsEdit(BaseCIDetails):
+    template_name = 'cmdb/ci_problems.html'
+    active_tab = 'problems'
+
+    def check_perm(self):
+        if not self.get_permissions_dict(self.request.user.id).get(
+            'read_configuration_item_info_jira_perm',
+            False,
+        ):
+            return HttpResponseForbidden()
+
+    def initialize_vars(self):
+        super(CIProblemsEdit, self).initialize_vars()
+        self.problems = []
+
+    def get_context_data(self, **kwargs):
+        ret = super(CIProblemsEdit, self).get_context_data(**kwargs)
+        ret.update({
+            'problems': self.problems,
+        })
+        return ret
+
+    def get(self, *args, **kwargs):
+        perm = self.check_perm()
+        if perm:
+            return perm
+        self.initialize_vars()
+        try:
+            ci_id = self.get_ci_id()
+        except db.CI.DoesNotExist:
+            # CI doesn's exists.
+            return HttpResponseRedirect('/cmdb/ci/jira_ci_unknown')
+        if ci_id:
+            self.ci = get_object_or_404(db.CI, id=ci_id)
+            try:
+                page = int(self.request.GET.get('page', 1))
+            except ValueError:
+                page = 1
+            query = db.CIProblem.objects.filter(
+                ci=self.ci,
+            ).order_by('-time').all()
+            paginator = Paginator(query, 20)
+            self.problems = paginator.page(page)
+        return super(CIProblemsEdit, self).get(*args, **kwargs)
+
+
+class CIProblemsView(CIProblemsEdit):
+    def get_context_data(self, **kwargs):
+        ret = super(CIProblemsView, self).get_context_data(**kwargs)
+        return _update_labels(ret, self.ci)
+
+
+class CIIncidentsEdit(BaseCIDetails):
+    template_name = 'cmdb/ci_incidents.html'
+    active_tab = 'incidents'
+
+    def check_perm(self):
+        if not self.get_permissions_dict(self.request.user.id).get(
+            'read_configuration_item_info_jira_perm',
+            False,
+        ):
+            return HttpResponseForbidden()
+
+    def initialize_vars(self):
+        super(CIIncidentsEdit, self).initialize_vars()
+        self.incidents = []
+
+    def get_context_data(self, **kwargs):
+        ret = super(CIIncidentsEdit, self).get_context_data(**kwargs)
+        ret.update({
+            'incidents': self.incidents,
+        })
+        return ret
+
+    def get(self, *args, **kwargs):
+        perm = self.check_perm()
+        if perm:
+            return perm
+        self.initialize_vars()
+        try:
+            ci_id = self.get_ci_id()
+        except db.CI.DoesNotExist:
+            # CI doesn's exists.
+            return HttpResponseRedirect('/cmdb/ci/jira_ci_unknown')
+        if ci_id:
+            self.ci = get_object_or_404(db.CI, id=ci_id)
+            try:
+                page = int(self.request.GET.get('page', 1))
+            except ValueError:
+                page = 1
+            query = db.CIIncident.objects.filter(
+                ci=self.ci,
+            ).order_by('-time').all()
+            paginator = Paginator(query, 20)
+            self.incidents = paginator.page(page)
+        return super(CIIncidentsEdit, self).get(*args, **kwargs)
+
+
+class CIIncidentsView(CIIncidentsEdit):
+    def get_context_data(self, **kwargs):
+        ret = super(CIIncidentsView, self).get_context_data(**kwargs)
+        return _update_labels(ret, self.ci)
+
+
+class CISOEventsEdit(BaseCIDetails):
+    template_name = 'cmdb/ci_so_events.html'
+    active_tab = 'so'
+
+    def check_perm(self):
+        if not self.get_permissions_dict(self.request.user.id).get(
+            'read_configuration_item_info_generic_perm',
+            False,
+        ):
+            return HttpResponseForbidden()
+
+    def initialize_vars(self):
+        super(CISOEventsEdit, self).initialize_vars()
+        self.so_events = []
+
+    def get_context_data(self, **kwargs):
+        ret = super(CISOEventsEdit, self).get_context_data(**kwargs)
+        ret.update({
+            'so_events': self.so_events,
+        })
+        return ret
+
+    def get(self, *args, **kwargs):
+        perm = self.check_perm()
+        if perm:
+            return perm
+        self.initialize_vars()
+        try:
+            ci_id = self.get_ci_id()
+        except db.CI.DoesNotExist:
+            # CI doesn's exists.
+            return HttpResponseRedirect('/cmdb/ci/jira_ci_unknown')
+        if ci_id:
+            self.ci = get_object_or_404(db.CI, id=ci_id)
+            try:
+                page = int(self.request.GET.get('page', 1))
+            except ValueError:
+                page = 1
+            query = db.CIChange.objects.filter(
+                type=db.CI_CHANGE_TYPES.STATUSOFFICE.id,
+                ci=self.ci,
+            ).all()
+            paginator = Paginator(query, 20)
+            self.so_events = paginator.page(page)
+        return super(CISOEventsEdit, self).get(*args, **kwargs)
+
+
+class CISOEventsView(CISOEventsEdit):
+    def get_context_data(self, **kwargs):
+        ret = super(CISOEventsView, self).get_context_data(**kwargs)
+        return _update_labels(ret, self.ci)
 
 
 class Search(BaseCMDBView):
@@ -1150,59 +1639,6 @@ class ViewUnknown(BaseCMDBView):
         return ret
 
 
-class CMDB(View):
-    template_name = 'cmdb/view_ci_ralph.html'
-    read_perm = Perm.read_configuration_item_info_generic
-
-    def get_ci_id(self, *args, **kwargs):
-        device_id = self.kwargs.get('device')
-        try:
-            return CI.objects.get(
-                type=CI_TYPES.DEVICE.id,
-                object_id=device_id
-            ).id
-        except CI.objects.DoesNotExist:
-            return None
-
-    def get_context_data(self, **kwargs):
-        ret = super(View, self).get_context_data(**kwargs)
-        ret.update({
-            'ci': self.ci,
-            'label': 'View CI: {} (uid: {})'.format(self.ci.name, self.ci.uid),
-            'url_query': self.request.GET,
-            'components': _get_details(
-                self.ci.content_object, purchase_only=False
-            )
-        })
-        return ret
-
-
-class GraphsTree(BaseCMDBView):
-    template_name = 'cmdb/graphs_tree.html'
-
-    @staticmethod
-    def get_ajax(request):
-        root = CI.objects.get(pk=request.GET.get('ci_id'))
-        response_dict = search_tree({}, root)
-        return HttpResponse(
-            simplejson.dumps(response_dict),
-            mimetype='application/json',
-        )
-
-    def get_initial(self):
-        return dict(
-            ci=self.request.GET.get('ci'),
-        )
-
-    def get_context_data(self, *args, **kwargs):
-        ret = super(GraphsTree, self).get_context_data(**kwargs)
-        form = SearchImpactForm(initial=self.get_initial())
-        ret.update(dict(
-            form=form,
-        ))
-        return ret
-
-
 class Graphs(BaseCMDBView):
     template_name = 'cmdb/graphs.html'
     rows = []
@@ -1214,7 +1650,7 @@ class Graphs(BaseCMDBView):
         ret.update(dict(
             form=form,
             rows=self.rows,
-            graph_data=simplejson.dumps(self.graph_data),
+            graph_data=self.graph_data,
         ))
         return ret
 
@@ -1224,27 +1660,49 @@ class Graphs(BaseCMDBView):
         )
 
     def get(self, *args, **kwargs):
+        MAX_RELATIONS_COUNT = 1000
         ci_id = self.request.GET.get('ci')
         self.rows = []
+        ci_names = {}
         if ci_id:
-            ci_names = dict([(x.id, x.name) for x in CI.objects.all()])
-            i = ImpactCalculator()
-            st, pre = i.find_affected_nodes(int(ci_id))
+            ic = ImpactCalculator(root_ci=CI.objects.get(pk=int(ci_id)))
+            search_tree, pre = ic.find_affected_nodes(int(ci_id))
+            affected_cis = CI.objects.select_related(
+                'content_type', 'type').filter(pk__in=pre)
             nodes = [(
-                key, ci_names[key],
-                get_icon_for(CI.objects.get(pk=key))) for key in st.keys()]
-            relations = [dict(
-                child=x,
-                parent=st.get(x),
-                parent_name=ci_names[x],
-                type=i.graph.edge_attributes((st.get(x), x))[0],
-                child_name=ci_names[st.get(x)])
-                for x in st.keys() if x and st.get(x)]
-            self.graph_data = dict(
-                nodes=nodes, relations=relations)
-            self.rows = [dict(
-                icon=get_icon_for(CI.objects.get(pk=x)),
-                ci=CI.objects.get(pk=x)) for x in pre]
+                ci.id, ci.name,
+                get_icon_for(ci)) for ci in affected_cis
+            ]
+            if len(search_tree) > MAX_RELATIONS_COUNT:
+                # in case of large relations count, skip generating json data
+                # for chart purposes
+                self.graph_data = simplejson.dumps({'overflow': len(st)})
+            else:
+                ci_names = dict(CI.objects.values_list('id', 'name'))
+                relations = [dict(
+                    child=item,
+                    parent=search_tree.get(item),
+                    parent_name=ci_names[item],
+                    type=ic.graph.edge_attributes(
+                        (search_tree.get(item), item)
+                    )[0],
+                    child_name=ci_names[search_tree.get(item)]) for item
+                    in search_tree.keys() if item and search_tree.get(item)
+                ]
+                self.graph_data = simplejson.dumps(dict(
+                    nodes=nodes,
+                    relations=relations,
+                ))
+
+            for ci in affected_cis:
+                co = ci.content_object
+                self.rows.append(dict(
+                    icon=get_icon_for(ci),
+                    ci=ci,
+                    venture=getattr(co, 'venture', ''),
+                    role=getattr(co, 'role', ''),
+                ))
+
         return super(BaseCMDBView, self).get(*args, **kwargs)
 
 

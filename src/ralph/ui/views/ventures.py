@@ -26,7 +26,6 @@ from ralph.ui.forms import (RolePropertyForm, DateRangeForm,
 from ralph.ui.views.common import (Info, Prices, Addresses, Costs, Purchase,
                                    Components, History, Discover, BaseMixin,
                                    Base, DeviceDetailView, Software)
-from ralph.cmdb.views import CMDB
 from ralph.ui.views.devices import BaseDeviceList
 from ralph.ui.views.reports import Reports, ReportDeviceList
 from ralph.ui.reports import (
@@ -619,10 +618,6 @@ class VenturesDeviceList(SidebarVentures, BaseMixin, BaseDeviceList):
                 self.venture and self.venture != '*' else self.venture),
         })
         return ret
-
-
-class VenturesCMDB(Ventures, CMDB, DeviceDetailView):
-    pass
 
 
 class ReportVenturesDeviceList(ReportDeviceList, VenturesDeviceList):

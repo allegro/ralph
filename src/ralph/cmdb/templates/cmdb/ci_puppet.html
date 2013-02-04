@@ -1,0 +1,57 @@
+{% extends 'cmdb/ci_details.html' %}
+{% load icons %}
+{% load query %}
+{% load bob %}
+
+{% block ci_content %}
+<span><h3> Agent configuration log</h3> </span>
+
+{% for r in puppet_reports %}
+    <div style=''> 
+        <ul>
+            <li/>Kind: <b>{{ r.report.kind }}</b>
+            <li/>Report number: <b>{{ r.report.configuration_version }} </b>
+            <li/>Host : <b>{{ r.report.host }}</b>
+            <li/>Time: <b>{{ r.time }}</b>
+            <li/>Status: <b>{{ r.status}}</b>
+        </ul>
+    </div>
+
+    <table class="table table-bordered table-striped table-properties">
+    <tr>
+        <th></th>
+        <th> Level </th>
+        <th style='width: 30%;'> Source </th>
+        <th> Message </th>
+        <th> Tags </th>
+        <th> Time </th>
+        <th> Status </th>
+    </tr>
+    {% for f in r.logs  %}
+        <tr class='puppet_{{f.level}}'> 
+            {% if f.level == 'err' %}
+            <td>  {% icon 'fugue-exclamation-red' %} </td> 
+            {% elif f.level == 'notice' %}
+            <td>  {% icon 'fugue-exclamation-white' %} </td>
+            {% elif f.level == 'warning' %}
+            <td>  {% icon 'fugue-exclamation' %} </td>
+            {% else %}
+            {% endif %}
+            <td> 
+            {{ f.level }}
+            </td>
+            <td>  {{ f.source }}  </td>
+            <td>  <pre>{{ f.message }}</pre>  </td>
+            <td>  {{ f.tags }}  </td>
+            <td>  {{ f.time }}  </td>
+            <td>  {{ f.status }}  </td>
+        </tr>
+    {% endfor %}
+    </table>
+{% endfor %}
+
+{% if puppet_reports %}
+{% pagination puppet_reports url_query=url_query show_all=0 show_csv=0 fugue_icons=1 %}
+{% endif %}
+
+{% endblock %}
