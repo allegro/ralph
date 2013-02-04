@@ -595,8 +595,8 @@ def details_other(dev, purchase_only=False):
 
 
 def details_all(dev, purchase_only=False, ignore_deprecation=False):
-    deprecation = ignore_deprecation
-    for detail in details_dev(dev, purchase_only, ignore_deprecation=deprecation):
+    for detail in details_dev(
+        dev, purchase_only, ignore_deprecation=ignore_deprecation):
         detail['group'] = 'dev'
         yield detail
     for detail in details_cpu(dev, purchase_only):
