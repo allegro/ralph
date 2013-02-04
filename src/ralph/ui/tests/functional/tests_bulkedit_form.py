@@ -4,16 +4,21 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+
 import datetime
 
 from django.test import TestCase
-from business.models import Venture, VentureRole
-from discovery.models_device import Device, DeviceType, DeprecationKind, MarginKind
-from discovery.models_history import HistoryChange
-
+from ralph.business.models import Venture, VentureRole
+from ralph.discovery.models_device import (
+    Device,
+    DeviceType,
+    DeprecationKind,
+    MarginKind,
+)
+from ralph.discovery.models_history import HistoryChange
 from ralph.ui.tests.global_utils import login_as_su
 
-
+DATACENTER = 'dc1'
 DEVICE = {
     'name': 'SimpleDevice',
     'ip': '10.0.0.1',
@@ -27,15 +32,13 @@ DEVICE = {
     'barcode': 'bc_dev',
     'sn': '0000000001',
     'mac': '00:00:00:00:00:00',
-    }
-
-DATACENTER = 'dc1'
-
+}
 ERROR_MSG = {
     'no_mark_fields': 'You have to mark which fields you changed',
     'empty_save_comment': 'Correct the errors.',
     'empty_save_comment_field': 'You must describe your change',
 }
+
 
 class TestBulkedit(TestCase):
     """ Tests edit form
@@ -51,7 +54,7 @@ class TestBulkedit(TestCase):
     def setUp(self):
         self.client = login_as_su()
 
-        self.deprecation_kind=DeprecationKind(months=24, remarks='Default')
+        self.deprecation_kind = DeprecationKind(months=24, remarks='Default')
         self.deprecation_kind.save()
 
         self.margin = MarginKind(margin=100, remarks='100%')
@@ -113,12 +116,11 @@ class TestBulkedit(TestCase):
              'support_kind': '2001-01-04',
              'save_comment': 'Everything has changed',
              'save': '',  # save form
-         }
+        }
         response = self.client.post(url, post_data)
 
         # Check if data from form is the same that data in database
         device = Device.objects.get(id=self.device.id)
-
         for field in device_fields:
             db_data = getattr(device, field)
             form_data = post_data[field]
@@ -132,7 +134,22 @@ class TestBulkedit(TestCase):
                 self.assertEqual(db_data, form_data, msg)
 
         # Check if change can see in History change
-       #TODO
+        post_date = {
+            'select': [self.device.id],
+            'remarks': 'Hello Wojtek',
+            'save': 'change remarks',
+        }
+        response = self.client.post(url, post_data)
+        history_device = HistoryChange.objects.filter(
+            device=self.device,
+            old_value='Very important device',
+            new_value='Hello Ralph',
+        )
+        self.assertEqual(history_device.count(), 1)
+        self.assertEqual(
+            history_device[0].comment,
+            'Everything has changed'
+
 
 
     def test_many_devices_edit(self):
@@ -205,7 +222,6 @@ class TestBulkedit(TestCase):
             'save': '',  # save form
         }
         response = self.client.post(url, post_data, follow=True)
-
         updated_device2 = Device.objects.get(id=self.device.id)
         self.assertEqual(
             unicode(updated_device2.deprecation_date),
