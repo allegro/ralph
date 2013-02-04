@@ -67,7 +67,6 @@ PAGE_SIZE = 25
 MAX_PAGE_SIZE = 65535
 
 
-
 def _prepare_query(request, query, tree=False, columns={}, default_sort=''):
     if query:
         query = query.select_related(depth=3)
@@ -215,6 +214,19 @@ class CatalogDevice(Catalog):
             self.update_cached(target)
             messages.success(self.request, "Items moved.")
             return HttpResponseRedirect(self.request.path)
+        elif 'clear' in self.request.POST:
+            items = self.request.POST.getlist('items')
+            if not items:
+                messages.error(self.request, "Nothing to clear.")
+                return HttpResponseRedirect(self.request.path)
+            for item in items:
+                model = get_object_or_404(DeviceModel, id=item)
+                priorities = model.get_save_priorities()
+                priorities = dict((key, 0) for key in priorities)
+                model.update_save_priorities(priorities)
+                model.save(user=self.request.user)
+            messages.success(self.request, "Items cleaned.")
+            return HttpResponseRedirect(self.request.path)
         elif 'delete' in self.request.POST:
             try:
                 self.group_id = int(self.kwargs.get('group', ''))
@@ -338,6 +350,19 @@ class CatalogComponent(Catalog):
                 model.save(user=self.request.user)
             self.update_cached(target)
             messages.success(self.request, "Items moved.")
+            return HttpResponseRedirect(self.request.path)
+        elif 'clear' in self.request.POST:
+            items = self.request.POST.getlist('items')
+            if not items:
+                messages.error(self.request, "Nothing to clear.")
+                return HttpResponseRedirect(self.request.path)
+            for item in items:
+                model = get_object_or_404(ComponentModel, id=item)
+                priorities = model.get_save_priorities()
+                priorities = dict((key, 0) for key in priorities)
+                model.update_save_priorities(priorities)
+                model.save(user=self.request.user)
+            messages.success(self.request, "Items cleaned.")
             return HttpResponseRedirect(self.request.path)
         elif 'delete' in self.request.POST:
             try:
@@ -471,7 +496,11 @@ class CatalogPricing(Catalog):
                 name='',
                 fugue_icon='fugue-shopping-basket--plus',
                 view_name='catalog_pricing',
-                view_args=('pricing', self.year, self.month),
+                view_args=(
+                    'pricing',
+                    '%04d' % self.year,
+                    '%02d' % self.month
+                ),
             ),
         ] + [
             MenuItem(
@@ -479,7 +508,12 @@ class CatalogPricing(Catalog):
                 name=g.name,
                 fugue_icon = 'fugue-shopping-basket',
                 view_name='catalog_pricing',
-                view_args=('pricing', self.year, self.month, g.name),
+                view_args=(
+                    'pricing',
+                    '%04d' % self.year,
+                    '%02d' % self.month,
+                    g.name,
+                ),
             ) for g in PricingGroup.objects.filter(date=date)
         ]
         aggr = PricingGroup.objects.aggregate(db.Min('date'))

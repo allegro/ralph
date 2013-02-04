@@ -1,0 +1,44 @@
+{% extends 'cmdb/ci_details.html' %}
+{% load icons %}
+{% load query %}
+{% load bob %}
+
+{% block ci_content %}
+<span><h3> Planned changes </h3> </span>
+
+<table class="table table-striped table-bordered table-condensed ">
+    <thead><tr>
+
+        {% spaceless %}
+
+            {% include 'cmdb/column-header.html' with label='CI' name='ci' always=1%}
+            {% include 'cmdb/column-header.html' with label='Summary' name='summary' always=1%}
+            {% include 'cmdb/column-header.html' with label='Description' name='description' always=1%}
+            {% include 'cmdb/column-header.html' with label='Jira key' name='jira_key' always=1%}
+            {% include 'cmdb/column-header.html' with label='Status' name='status' always=1%}
+            {% include 'cmdb/column-header.html' with label='Assignee' name='assignee' always=1%}
+            {% include 'cmdb/column-header.html' with label='Time' name='time' always=1%}
+
+        {% endspaceless %}
+
+    </tr></thead>
+    <tbody>
+        {% for d in planned%}
+        <tr>
+            <td>
+                <a href='/cmdb/ci/view/{{ d.ci.id }}' target='_noblank'> {{ d.ci.name}} </a>
+            </td>
+            <td> {{ d.summary}} </td>
+            <td> {{ d.description}} </td>
+            <td> <a href="{{jira_url}}/{{ d.jira_id}}"> {{d.jira_id}} </a></td>
+            <td> {{ d.status}} </td>
+            <td> {{ d.assignee}} </td>
+            <td> {{ d.time }} </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% pagination page url_query=url_query show_all=0 show_csv=0 fugue_icons=1 %}
+
+{% endblock %}

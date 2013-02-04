@@ -1,0 +1,14 @@
+<h3>{{ label }}</h3>
+
+{% if cmdb_messages %}{% for message in cmdb_messages %}
+<div class="alert {{ message.type }}">
+    <button class="close" data-dismiss="alert">×</button>
+    <strong>{{message.title}}</strong> {{ message.message }}
+</div>
+{% endfor %}{% endif %}
+
+<ul class="nav nav-tabs cmdb-ci-tab">
+    {% for menu_item in tabs %}
+    <li class="{% if menu_item.1 == active_tab %}active{% endif %}"><a href="{{ base_ci_link }}{{ menu_item.1 }}/">{{ menu_item.0 }}</a></li>
+    {% endfor %}
+</ul>

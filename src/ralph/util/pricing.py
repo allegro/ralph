@@ -275,7 +275,7 @@ def device_update_cached(device):
     while rack and not (rack.model and rack.model.type == DeviceType.rack):
         rack = rack.parent
     stack = [device.id]
-    device_ids = [device.id]
+    device_ids = []
     visited = {device.id}
     while stack:
         device_id = stack.pop()
