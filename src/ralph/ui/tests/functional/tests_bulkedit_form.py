@@ -151,7 +151,6 @@ class TestBulkedit(TestCase):
             'Everything has changed'
 
 
-
     def test_many_devices_edit(self):
         pass
 

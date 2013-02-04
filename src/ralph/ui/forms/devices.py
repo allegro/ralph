@@ -236,15 +236,12 @@ class DeviceBulkForm(DeviceForm):
             'venture',
             'venture_role',
             'verified',
-            'barcode',
             'position',
             'chassis_position',
             'remarks',
             'margin_kind',
             'deprecation_kind',
             'price',
-            'sn',
-            'barcode',
             'purchase_date',
             'warranty_expiration_date',
             'support_expiration_date',
@@ -386,5 +383,3 @@ class PropertyForm(forms.Form):
                 field = forms.ChoiceField(label=p.symbol, required=False,
                                           choices=choices)
             self.fields[p.symbol] = field
-
-
