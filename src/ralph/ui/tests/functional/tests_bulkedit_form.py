@@ -33,6 +33,20 @@ DEVICE = {
     'sn': '0000000001',
     'mac': '00:00:00:00:00:00',
 }
+DEVICE2 = {
+    'name': 'SimpleDevice 2',
+    'ip': '10.0.0.2',
+    'remarks': 'Very important device 2',
+    'venture': 'SimpleVenture',
+    'ventureSymbol': 'simple_venture',
+    'venture_role': 'VentureRole',
+    'model_name': 'xxxx',
+    'position': '13',
+    'rack': '14',
+    'barcode': 'bc_dev2',
+    'sn': '0000000002',
+    'mac': '00:00:00:00:00:01',
+}
 ERROR_MSG = {
     'no_mark_fields': 'You have to mark which fields you changed',
     'empty_save_comment': 'Correct the errors.',
@@ -76,6 +90,21 @@ class TestBulkedit(TestCase):
             position=DEVICE['position'],
             dc=DATACENTER,
         )
+        self.device.name = DEVICE['name']
+        self.device.save()
+
+        self.device2 = Device.create(
+            sn=DEVICE2['sn'],
+            barcode=DEVICE2['barcode'],
+            remarks=DEVICE2['remarks'],
+            model_name=DEVICE2['model_name'],
+            model_type=DeviceType.unknown,
+            rack=DEVICE2['rack'],
+            position=DEVICE2['position'],
+            dc=DATACENTER,
+        )
+        self.device2.name = DEVICE2['name']
+        self.device2.save()
 
     def test_single_device_edit(self):
         url = '/ui/search/bulkedit/'
@@ -134,12 +163,6 @@ class TestBulkedit(TestCase):
                 self.assertEqual(db_data, form_data, msg)
 
         # Check if change can see in History change
-        post_date = {
-            'select': [self.device.id],
-            'remarks': 'Hello Wojtek',
-            'save': 'change remarks',
-        }
-        response = self.client.post(url, post_data)
         history_device = HistoryChange.objects.filter(
             device=self.device,
             old_value='Very important device',
@@ -149,10 +172,24 @@ class TestBulkedit(TestCase):
         self.assertEqual(
             history_device[0].comment,
             'Everything has changed'
-
+        )
 
     def test_many_devices_edit(self):
-        pass
+        url = '/ui/search/bulkedit/'
+        remarks = 'change remakrs in 2 devices'
+
+        post_data = {
+            'select': [self.device.id, self.device2.id],
+            'edit': ['remarks'],
+            'remarks': remarks,
+            'save_comment': 'change remakrs',
+            'save': '',  # save form
+        }
+        response = self.client.post(url, post_data)
+
+        device, device2 = Device.objects.filter(remarks=remarks)
+        self.assertEqual = (device.remarks, remarks)
+        self.assertEqual = (device.remarks, device2.remarks)
 
     def test_send_form_without_selected_edit_fields(self):
         url = '/ui/search/bulkedit/'
