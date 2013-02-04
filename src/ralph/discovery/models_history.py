@@ -22,8 +22,7 @@ from ralph.discovery.models_device import LoadBalancerMember
 from ralph.discovery.models_device import LoadBalancerVirtualServer
 from ralph.discovery.models_component import (
     Memory, Processor, Storage, DiskShareMount, DiskShare, Software,
-    GenericComponent, Ethernet, FibreChannel, OperatingSystem, ComponentModel,
-    ComponentModelGroup)
+    GenericComponent, Ethernet, FibreChannel, OperatingSystem, ComponentModel, ComponentModelGroup)
 from ralph.discovery.models_network import IPAddress
 from ralph.dnsedit.util import update_txt_records
 from ralph.discovery.history import field_changes as _field_changes
