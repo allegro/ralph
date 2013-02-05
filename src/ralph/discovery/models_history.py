@@ -14,7 +14,6 @@ from django.db import models as db
 from django.utils.translation import ugettext_lazy as _
 from django.db.models.signals import (post_save, pre_save, pre_delete,
                                       post_delete)
-from django.contrib import messages
 from django.dispatch import receiver
 
 from ralph.discovery.models_device import (Device, DeprecationKind,

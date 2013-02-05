@@ -140,7 +140,6 @@ class DeviceModel(SavePrioritized, WithConcurrentGetOrCreate, SavingUser):
     chassis_size = db.PositiveIntegerField(
             verbose_name=_("chassis size"), null=True, blank=True)
 
-
     class Meta:
         verbose_name = _("device model")
         verbose_name_plural = _("device models")
