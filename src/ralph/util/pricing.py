@@ -254,14 +254,17 @@ def device_update_cached(device):
     while stack:
         device_id = stack.pop()
         device_ids.append(device_id)
-        for d_id, in Device.objects.get(
-                id=device_id,
-            ).child_set.values_list('id'):
-            if d_id in visited:
-                # Make sure we don't do the same device twice.
-                continue
-            visited.add(d_id)
-            stack.append(d_id)
+        try:
+            childs = Device.objects.get(id=device_id).child_set.values_list('id')
+        except Device.DoesNotExist:
+            childs = None
+        if childs:
+            for d_id, in childs:
+                if d_id in visited:
+                    # Make sure we don't do the same device twice.
+                    continue
+                visited.add(d_id)
+                stack.append(d_id)
     device_ids.reverse()   # Do the children before their parent.
     step = 10
     for index in xrange(0, len(device_ids), step):
