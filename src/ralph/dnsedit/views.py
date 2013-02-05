@@ -12,7 +12,7 @@ from django.shortcuts import get_object_or_404
 
 from ralph.discovery.models import DataCenter
 from ralph.dnsedit.models import DHCPServer
-from ralph.dnsedit.util import generate_dhcp_config
+from ralph.dnsedit.dhcp_conf import generate_dhcp_config
 from ralph.ui.views.common import Base
 from ralph.util import api
 
