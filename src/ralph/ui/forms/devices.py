@@ -169,6 +169,16 @@ class DeviceForm(forms.ModelForm):
             raise forms.ValidationError("Role from a different venture.")
         return None
 
+    def clean_deleted(self):
+        deleted = self.cleaned_data.get('deleted')
+        if deleted:
+            childs = Device.objects.filter(parent=self.instance.id)
+            if childs:
+                raise forms.ValidationError(
+                    "You can not remove devices that have children."
+                )
+        return deleted
+
 
 class DeviceCreateForm(DeviceForm):
     class Meta(DeviceForm.Meta):

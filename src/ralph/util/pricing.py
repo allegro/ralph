@@ -255,7 +255,9 @@ def device_update_cached(device):
         device_id = stack.pop()
         device_ids.append(device_id)
         try:
-            childs = Device.objects.get(id=device_id).child_set.values_list('id')
+            childs = Device.objects.get(
+                    id=device_id,
+                ).child_set.values_list('id')
         except Device.DoesNotExist:
             childs = None
         if childs:
