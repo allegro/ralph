@@ -1212,4 +1212,3 @@ class Software(DeviceDetailView):
             'components': _get_details(self.object, purchase_only=False),
             })
         return ret
-

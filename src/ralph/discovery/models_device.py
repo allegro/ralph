@@ -285,28 +285,22 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
         verbose_name_plural = _("devices")
 
     def clean(self):
-        if self.support_kind == '':
-            self.support_kind = None
-        if self.name2 == '':
-            self.name2 = None
-        if self.dc == '':
-            self.dc = None
-        if self.rack == '':
-            self.rack = None
-        if self.role == '':
-            self.role = None
-        if self.position == '':
-            self.position = None
-        if self.mgmt_firmware == '':
-            self.mgmt_firmware = None
-        if self.hard_firmware == '':
-            self.hard_firmware = None
-        if self.diag_firmware == '':
-            self.diag_firmware = None
-        if self.boot_firmware == '':
-            self.boot_firmware = None
-        if self.barcode == '':
-            self.barcode = None
+        fields_list = [
+            self.support_kind,
+            self.name2,
+            self.dc,
+            self.rack,
+            self.role,
+            self.position,
+            self.mgmt_firmware,
+            self.hard_firmware,
+            self.diag_firmware,
+            self.boot_firmware,
+            self.barcode,
+        ]
+        for field in fields_list:
+            if field == '':
+                field = None
 
     def __init__(self, *args, **kwargs):
         self.save_comment = None
@@ -609,4 +603,3 @@ class LoadBalancerMember(SavePrioritized, WithConcurrentGetOrCreate):
     def __unicode__(self):
         return "{}:{}@{}({})".format(
             self.address.address, self.port, self.pool.name, self.id)
-
