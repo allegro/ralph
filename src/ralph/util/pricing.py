@@ -72,8 +72,7 @@ def is_deprecated(device):
 
 def get_device_raw_price(device, ignore_deprecation=False):
     """Purchase price of this device, before anything interacts with it."""
-    if (device.deleted or device.deprecation_kind is None or
-            (not ignore_deprecation and is_deprecated(device))
+    if (device.deleted or (not ignore_deprecation and is_deprecated(device))
     ):
         return 0
     return device.price or get_device_auto_price(device)
