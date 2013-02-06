@@ -249,14 +249,14 @@ def find_descendant(device):
     while stack:
         device_id = stack.pop()
         device_ids.append(device_id)
-        for d_id in Device.objects.filter(
+        for d_id, in Device.objects.filter(
                 parent_id=device_id
             ).values_list('id'):
             if d_id in visited:
                 # Make sure we don't do the same device twice.
                 continue
             visited.add(d_id)
-            stack.extend(d_id)
+            stack.append(d_id)
     return device_ids
 
 
