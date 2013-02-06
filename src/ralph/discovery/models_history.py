@@ -28,7 +28,6 @@ from ralph.discovery.models_network import IPAddress
 from ralph.dnsedit.util import update_txt_records
 from ralph.discovery.history import field_changes as _field_changes
 
-
 FOREVER = '2199-1-1'  # not all DB backends will accept '9999-1-1'
 ALWAYS = '0001-1-1'  # not all DB backends will accept '0000-0-0'
 ALWAYS_DATE = date(1, 1, 1)
@@ -517,4 +516,3 @@ class DiscoveryValue(db.Model):
     plugin = db.CharField(max_length=64, default='')
     key = db.TextField(default='')
     value = db.TextField(default='')
-

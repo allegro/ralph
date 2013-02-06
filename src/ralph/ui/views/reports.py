@@ -623,6 +623,8 @@ class ReportDevices(SidebarReports, Base):
         no_pur = self.request.GET.get('no_purchase')
         no_ven = self.request.GET.get('no_venture')
         no_rol = self.request.GET.get('no_role')
+        no_par = self.request.GET.get('no_parent')
+        rows = []
         if dep:
             headers.append('Depreciation date')
             queries.update({Q(deprecation_date__lte=datetime.date.today())})
@@ -644,7 +646,10 @@ class ReportDevices(SidebarReports, Base):
         if no_rol:
             headers.append('No venture role')
             queries.update({Q(venture_role=None)})
-        rows = []
+        if no_par:
+            headers.append('No parent')
+            p_deleted = parent.deleted
+            queries.update({Q(parent=None) | Q(p_deleted=True)})
         if len(queries) > 1:
             devices = Device.objects.filter(*queries)
             for dev in devices:
@@ -678,8 +683,8 @@ class ReportDevices(SidebarReports, Base):
             )
             headers = ('Name', 'Support expiration date')
             for dev in devs:
-                name=self.get_name(dev.name, dev.id)
-                rows.append([name,dev.support_expiration_date])
+                name = self.get_name(dev.name, dev.id)
+                rows.append([name, dev.support_expiration_date])
         else:
             self.form_support_range = SupportRangeReportForm(initial={
                 's_start': datetime.date.today() - datetime.timedelta(days=30),
@@ -697,7 +702,7 @@ class ReportDevices(SidebarReports, Base):
             )
             headers = ('Name', 'Depreciation date')
             for dev in devs:
-                name=self.get_name(dev.name, dev.id)
+                name = self.get_name(dev.name, dev.id)
                 rows.append([name, dev.deprecation_date])
         else:
             self.form_deprecation_range = DeprecationRangeReportForm(initial={
@@ -716,7 +721,7 @@ class ReportDevices(SidebarReports, Base):
             )
             headers = ('Name', 'Warranty expiration date')
             for dev in devs:
-                name=self.get_name(dev.name, dev.id)
+                name = self.get_name(dev.name, dev.id)
                 rows.append([name, dev.warranty_expiration_date])
         else:
             self.form_warranty_range = WarrantyRangeReportForm(initial={
