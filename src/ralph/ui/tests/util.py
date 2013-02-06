@@ -106,11 +106,9 @@ def sum_for_view(device):
     price = device.get('price')
     count = 0
     total_component = 0
-    components = device.get('component')
     sum_dev += price
-    if components:
-        for component in components:
-            count = component.get('count')
-            total_component = component.get('total_component')
-            sum_dev += total_component
+    for component in device.get('component', []):
+        count = component.get('count')
+        total_component = component.get('total_component')
+        sum_dev += total_component
     return count, price, total_component, sum_dev
