@@ -144,8 +144,6 @@ class DeviceForm(forms.ModelForm):
 
     def clean_rack(self):
         return self.instance.rack
-
-    def clean_verified(self):
         verified = self.cleaned_data['verified']
         if verified and not (self.cleaned_data['venture'] and
                              self.cleaned_data['venture_role']):
@@ -168,6 +166,15 @@ class DeviceForm(forms.ModelForm):
         if role is not None:
             raise forms.ValidationError("Role from a different venture.")
         return None
+
+    def clean_deleted(self):
+        deleted = self.cleaned_data.get('deleted')
+        if deleted:
+            if self.instance.child_set.filter(deleted=False).exists():
+                raise forms.ValidationError(
+                    "You can not remove devices that have children."
+                )
+        return deleted
 
 
 class DeviceCreateForm(DeviceForm):

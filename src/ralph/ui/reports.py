@@ -26,6 +26,7 @@ class SpanSum(Aggregate):
         super(SpanSum, self).__init__(col, source, is_summary, **self.extra)
         query.aggregate_select[alias] = self
 
+
 class SpanCount(Aggregate):
     sql_function = "SUM"
     sql_template = ("%(function)s(GREATEST(0, "
@@ -112,4 +113,3 @@ def get_total_virtual_cores(query, start, end):
             end=end.strftime('%Y-%m-%d'),
         ),
     )['spansum'] or 0)/ days
-

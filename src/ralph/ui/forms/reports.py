@@ -38,6 +38,10 @@ class DevicesChoiceReportForm(forms.Form):
         label="Devices without role",
         widget=forms.CheckboxInput()
     )
+    no_parent = forms.ChoiceField(
+        label="Devices without parent",
+        widget=forms.CheckboxInput()
+    )
 
     def get_initial(self):
         return super(DevicesChoiceReportForm, self).get_initial()
