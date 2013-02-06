@@ -63,10 +63,11 @@ def get_device_external_price(device):
 
 
 def is_deprecated(device):
-    ''' Return True if device is depreciated '''
+    """ Return True if device is depreciated """
     if device.deprecation_date:
         today_midnight = datetime.combine(datetime.today(), time())
         return device.deprecation_date < today_midnight
+    return False
 
 
 def get_device_raw_price(device, ignore_deprecation=False):
@@ -110,17 +111,16 @@ def get_device_chassis_price(device, ignore_deprecation=False):
     server's price.
     """
 
-    deprecation = ignore_deprecation
     if (device.model and device.model.group and device.model.group.slots and
         device.parent and device.parent.model and device.parent.model.group and
         device.parent.model.group.slots and not device.deleted):
         device_price = get_device_raw_price(
-            device.parent, ignore_deprecation=deprecation
+            device.parent, ignore_deprecation=ignore_deprecation
         )
         if device_price > 0:
             chassis_price = (
                 device.model.group.slots *
-                get_device_raw_price(device.parent, ignore_deprecation=deprecation) /
+                get_device_raw_price(device.parent, ignore_deprecation=ignore_deprecation) /
                 device.parent.model.group.slots)
         else:
             chassis_price = 0
@@ -314,7 +314,6 @@ def _update_batch(device_ids, rack, dc):
 
 
 def details_dev(dev, purchase_only=False, ignore_deprecation=False):
-    deprecation = ignore_deprecation
     yield {
         'label': 'Device',
         'model': dev.model,
@@ -333,7 +332,7 @@ def details_dev(dev, purchase_only=False, ignore_deprecation=False):
         for d in dev.child_set.filter(deleted=False):
             if d.model.type == DeviceType.blade_server.id:
                 chassis_price = get_device_chassis_price(
-                    d, ignore_deprecation=deprecation
+                    d, ignore_deprecation=ignore_deprecation
                 )
                 if chassis_price:
                     yield {
@@ -357,7 +356,7 @@ def details_dev(dev, purchase_only=False, ignore_deprecation=False):
                 }
     elif dev.model.type == DeviceType.blade_server.id:
         chassis_price = get_device_chassis_price(
-            dev, ignore_deprecation=deprecation
+            dev, ignore_deprecation=ignore_deprecation
         )
         if chassis_price:
             yield {
