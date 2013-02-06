@@ -19,6 +19,6 @@ class Command(BaseCommand):
 
     def handle(self, server_address=None, *args, **options):
         # Avoid an import loop
-        from ralph.dnsedit.util import generate_dhcp_config
+        from ralph.dnsedit.dhcp_conf import generate_dhcp_config
         print(generate_dhcp_config(server_address=server_address))
 
