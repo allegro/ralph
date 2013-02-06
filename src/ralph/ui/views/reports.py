@@ -624,6 +624,7 @@ class ReportDevices(SidebarReports, Base):
         no_ven = self.request.GET.get('no_venture')
         no_rol = self.request.GET.get('no_role')
         no_par = self.request.GET.get('no_parent')
+        rows = []
         if dep:
             headers.append('Depreciation date')
             queries.update({Q(deprecation_date__lte=datetime.date.today())})
@@ -647,7 +648,8 @@ class ReportDevices(SidebarReports, Base):
             queries.update({Q(venture_role=None)})
         if no_par:
             headers.append('No parent')
-            queries.update({Q(parent=None)})
+            p_deleted = parent.deleted
+            queries.update({Q(parent=None) | Q(p_deleted=True)})
         if len(queries) > 1:
             devices = Device.objects.filter(*queries)
             for dev in devices:
