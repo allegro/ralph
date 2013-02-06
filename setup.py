@@ -40,7 +40,7 @@ setup (
         'django==1.4.2',
         'dnspython==1.10.0',
         'feedparser==5.1.2',
-        'fugue-icons==3.5.0',
+        'fugue-icons==3.5.3',
         'gunicorn==0.14.6',
         'ipaddr==2.1.7',
         'iscconf==1.0.0dev9',
