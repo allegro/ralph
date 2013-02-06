@@ -843,8 +843,8 @@ class ReportDevices(SidebarReports, Base):
 
 
 def is_bladesystem(component):
-    ''' Check if component is bladesystem - be careful BladeSystem and
-    RAM have the same type_id. If component type is RAM runs except '''
+    """ Check if component is bladesystem - be careful BladeSystem and
+    RAM have the same type_id. If component type is RAM runs except """
     model = component.get('model')
     if model in component:
         type = model.type
