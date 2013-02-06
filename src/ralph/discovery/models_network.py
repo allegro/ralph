@@ -127,12 +127,18 @@ class AbstractNetwork(db.Model):
     def from_ip(cls, ip):
         """Find the smallest network containing that IP."""
 
+        return cls.all_from_ip(ip)[0]
+
+    @classmethod
+    def all_from_ip(cls, ip):
+        """Find all networks for this IP."""
+
         ip_int = int(ipaddr.IPAddress(ip))
-        net = cls.objects.filter(
+        nets = cls.objects.filter(
             min_ip__lte=ip_int,
             max_ip__gte=ip_int
-        ).order_by('min_ip', '-max_ip')[0]
-        return net
+        ).order_by('min_ip', '-max_ip')
+        return nets
 
     @property
     def network(self):
@@ -145,7 +151,6 @@ class AbstractNetwork(db.Model):
         except ValueError:
             raise ValidationError(_("The address value specified is not a "
                                     "valid network."))
-
 
 class Network(Named, AbstractNetwork, TimeTrackable,
               WithConcurrentGetOrCreate):
@@ -172,6 +177,12 @@ class DataCenter(Named):
             "E.g. h<200,299>.dc|h<400,499>.dc will produce: h200.dc "
             "h201.dc ... h299.dc h400.dc h401.dc"
         )
+    )
+    next_server = db.CharField(
+        max_length=32,
+        blank=True,
+        default='',
+        help_text=_("The address for a TFTP server for DHCP."),
     )
 
     class Meta:
