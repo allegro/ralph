@@ -242,30 +242,32 @@ def get_device_auto_price(device):
 
 
 @commit_on_success
-def find_children(device):
-    dc = device
-    while dc and not (dc.model and dc.model.type == DeviceType.data_center):
-        dc = dc.parent
-    rack = device
-    while rack and not (rack.model and rack.model.type == DeviceType.rack):
-        rack = rack.parent
+def find_descendant(device):
     stack = [device.id]
     device_ids = []
     visited = {device.id}
     while stack:
         device_id = stack.pop()
         device_ids.append(device_id)
-        for d_id, in Device.objects.filter(parent_id=device_id).values_list('id'):
+        for d_id in Device.objects.filter(
+                parent_id=device_id
+            ).values_list('id'):
             if d_id in visited:
                 # Make sure we don't do the same device twice.
                 continue
             visited.add(d_id)
             stack.append(d_id)
-    return [device_id], rack, dc
+    return device_ids
 
 
 def device_update_cached(device):
-    device_ids, rack, dc = find_children(device)
+    dc = device
+    while dc and not (dc.model and dc.model.type == DeviceType.data_center):
+        dc = dc.parent
+    rack = device
+    while rack and not (rack.model and rack.model.type == DeviceType.rack):
+        rack = rack.parent
+    device_ids = find_descendant(device)
     device_ids.reverse()   # Do the children before their parent.
     step = 10
     for index in xrange(0, len(device_ids), step):
