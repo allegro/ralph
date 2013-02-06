@@ -144,8 +144,6 @@ class DeviceForm(forms.ModelForm):
 
     def clean_rack(self):
         return self.instance.rack
-
-    def clean_verified(self):
         verified = self.cleaned_data['verified']
         if verified and not (self.cleaned_data['venture'] and
                              self.cleaned_data['venture_role']):
@@ -172,8 +170,7 @@ class DeviceForm(forms.ModelForm):
     def clean_deleted(self):
         deleted = self.cleaned_data.get('deleted')
         if deleted:
-            childs = Device.objects.filter(parent=self.instance.id)
-            if childs:
+            if self.instance.child_set.filter(deleted=False).exists():
                 raise forms.ValidationError(
                     "You can not remove devices that have children."
                 )

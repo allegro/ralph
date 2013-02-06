@@ -43,7 +43,6 @@ class DevicesChoiceReportForm(forms.Form):
         widget=forms.CheckboxInput()
     )
 
-
     def get_initial(self):
         return super(DevicesChoiceReportForm, self).get_initial()
 
