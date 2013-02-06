@@ -23,23 +23,62 @@ from dj.choices import Choices
 from ralph.account.models import Perm
 from ralph.business.models import Venture, VentureExtraCostType
 from ralph.cmdb.models_ci import (
-    CI, CIRelation, CI_STATE_TYPES, CI_RELATION_TYPES, CI_TYPES
+    CI,
+    CIRelation,
+    CI_STATE_TYPES,
+    CI_RELATION_TYPES,
+    CI_TYPES
 )
 from ralph.deployment.models import DeploymentStatus
-from ralph.discovery.models_device import MarginKind, DeviceType, Device
+from ralph.discovery.models_component import (
+    Component,
+    ComponentType,
+    FibreChannel,
+    GenericComponent,
+    Memory,
+    OperatingSystem,
+    Processor,
+    Software,
+    Storage,
+)
+from ralph.discovery.models_device import (
+    Device,
+    DeviceModelGroup,
+    DeviceType,
+    MarginKind,
+)
 from ralph.discovery.models_history import HistoryCost
 from ralph.ui.forms import DateRangeForm, MarginsReportForm
 from ralph.ui.reports import (
-    get_total_cost, get_total_count, get_total_cores, get_total_virtual_cores
+    get_total_cores,
+    get_total_cost,
+    get_total_count,
+    get_total_virtual_cores,
 )
 from ralph.ui.views.common import Base, DeviceDetailView, _get_details
 from ralph.ui.views.devices import DEVICE_SORT_COLUMNS
 from ralph.ui.forms.reports import (
-    SupportRangeReportForm, DeprecationRangeReportForm,
-    WarrantyRangeReportForm, DevicesChoiceReportForm,
-    ReportVentureCost, ReportDeviceListForm)
+
+    DeprecationRangeReportForm,
+    DevicesChoiceReportForm,
+    SupportRangeReportForm,
+    ReportVentureCost,
+    ReportDeviceListForm,
+    WarrantyRangeReportForm,
+)
 from ralph.util import csvutil
-from ralph.util.pricing import get_device_auto_price
+from ralph.util.pricing import (
+    get_device_auto_price,
+    get_device_chassis_price,
+    get_device_components_price,
+    get_device_cpu_price,
+    get_device_fc_price,
+    get_device_local_storage_price,
+    get_device_memory_price,
+    get_device_operatingsystem_price,
+    get_device_software_price,
+    is_deprecated,
+)
 
 def threshold(days):
     return datetime.date.today() + datetime.timedelta(days=days)
@@ -305,8 +344,10 @@ class ReportMargins(SidebarReports, Base):
         })
         return context
 
+
 def _currency(value):
     return '{:,.2f} {}'.format(value or 0, settings.CURRENCY).replace(',', ' ')
+
 
 class ReportVentures(SidebarReports, Base):
     template_name = 'ui/report_ventures.html'
@@ -802,6 +843,22 @@ class ReportDevices(SidebarReports, Base):
         return context
 
 
+def is_bladesystem(component):
+    """ Check if component is bladesystem - be careful BladeSystem and
+    RAM have the same type_id. If component type is RAM runs except """
+    model = component.get('model')
+    if model in component:
+        type = model.type
+        bladeservers_models = DeviceModelGroup.objects.filter(
+            type=type
+        )
+        group = model.group
+        if (bladeservers_models and group in bladeservers_models
+            and type == DeviceType.blade_system):
+            return True
+    return False
+
+
 class ReportDevicePricesPerVenture(SidebarReports, Base):
     template_name = 'ui/report_venture_costs.html'
     subsection = 'venture_costs'
@@ -875,24 +932,65 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
         for device in venture_devices:
             all_components_price = 0
             components = []
-            for component in _get_details(device):
+            for component in _get_details(device, ignore_deprecation=True):
                 count = 1
                 model = component.get('model')
-                component_type = getattr(model, 'type', None)
+                if (model.type is not None, model.group_id is not None,
+                    model.group is not None):
+                    component_type = model.type
+                    component_group = model.group_id
+                    model_group = model.group
+                else:
+                    component_group = None
+                    component_type = None
+                    model_group = None
                 act_components = [x.get('name') for x in components]
                 if (model not in act_components and
                     component_type not in blacklist):
-                    components.append({
-                        'icon': component.get('icon'),
-                        'name': model,
-                        'price': component.get('price') or 0,
-                        'count': count,
+                    if is_bladesystem(component):
+                        bs_count = device.child_set.filter(
+                            deleted=False).count() or 1
+                        chassis_price = get_device_chassis_price(device)
+                        auto_price = get_device_auto_price(device)
+                        bs_price = 0
+                        if device.price != 0:
+                            bs_price = device.price / bs_count
+                        elif chassis_price != 0:
+                            bs_price = chassis_price
+                        elif auto_price != 0:
+                            bs_price = auto_price / bs_count
+                        components.append({
+                            'icon': component.get('icon'),
+                            'name': model,
+                            'price': bs_price,
+                            'count': count,
+                            'bs_count': bs_count,
+                        })
+                    elif component_type == ComponentType.share:
+                        components.append({
+                            'icon': component.get('icon'),
+                            'name': model,
+                            'price': component.get('price') or 0,
+                            'count': component.get('count') or 1,
+                        })
+                    else:
+                        d_price = 0
+                        if device.price and device.price != 0:
+                            d_price = device.price
+                        else:
+                            d_price = component.get('price') or 0
+                        components.append({
+                            'icon': component.get('icon'),
+                            'name': model,
+                            'price': d_price,
+                            'model_group': model_group,
+                            'count': count,
                         })
                 else:
                     for c in components:
                         if c.get('name') == model:
                             count = c.get('count')
-                            c.update(count=count+1)
+                            c.update(count=count + 1)
             for component in components:
                 count = component.get('count')
                 price = component.get('price')
@@ -901,6 +999,7 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
                 all_components_price += total_component
             devices.append({
                 'device': device,
+                'deprecated': is_deprecated(device),
                 'price': all_components_price,
                 'components': components
             })
@@ -928,7 +1027,10 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
         if venture_devices:
             # Blacklist: Os, Software
             self.devices = self.get_device_with_components(
-                venture_devices, blacklist=[15, 16]
+                venture_devices, blacklist=[
+                    ComponentType.software,
+                    ComponentType.os,
+                ]
             )
         else:
             self.venture_id = None
@@ -936,12 +1038,17 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
             return self.export_csv(self.devices)
         if self.request.GET.get('export-all') == 'csv':
             devices = Device.objects.all()
-            csv = self.get_device_with_components(devices, blacklist=[15, 16])
+            csv = self.get_device_with_components(devices, blacklist=[
+                    ComponentType.software,
+                    ComponentType.os,
+                ])
             return self.export_csv(csv, all_devices=True)
         return super(ReportDevicePricesPerVenture, self).get(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        context = super(ReportDevicePricesPerVenture, self).get_context_data(**kwargs)
+        context = super(ReportDevicePricesPerVenture, self).get_context_data(
+            **kwargs)
+
         context.update({
             'form': self.form,
         })

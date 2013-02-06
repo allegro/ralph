@@ -98,12 +98,14 @@
         {% endif %}
 
         {% for child in device.child_set.all %}
-        <tr>
-            <th>Child device</th>
-            <td><a href="{{ child.id }}"
-                 >{{ child|device_icon }}
-                  {{ child.name }}</a></td>
-        </tr>
+            {% if not child.deleted %}
+                <tr>
+                    <th>Child device</th>
+                    <td><a href="{{ child.id }}">
+                        {{ child|device_icon }}{{ child.name }}</a>
+                    </td>
+                </tr>
+            {% endif %}
         {% endfor %}
     </tbody>
 </table>
