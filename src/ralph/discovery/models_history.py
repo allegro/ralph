@@ -156,9 +156,16 @@ def device_related_pre_save(sender, instance, raw, using, **kwargs):
         device = instance.device
     except Device.DoesNotExist:
         device = None
-    for field, orig, new in _field_changes(instance, ignore={
-            'last_seen', 'network_id', 'number', 'hostname', 'last_puppet',
-            'dns_info'}):
+    ignore={
+        'dns_info',
+        'hostname',
+        'last_puppet',
+        'last_seen',
+        'network_id',
+        'number',
+        'snmp_community',
+    }
+    for field, orig, new in _field_changes(instance, ignore=ignore):
         HistoryChange(
             device=device,
             field_name=field,
