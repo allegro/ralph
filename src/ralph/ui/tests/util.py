@@ -50,7 +50,7 @@ def create_model(device, mdl, type):
         model, created = ComponentModel.objects.get_or_create(
                 name='M %s - %s' % (
                     mdl.get('model_name'),
-                    mdl.get('price')
+                    mdl.get('price'),
                 ),
                 group=group,
                 family=mdl.get('family'),
