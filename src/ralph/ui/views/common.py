@@ -843,7 +843,7 @@ class History(DeviceDetailView):
     def get_context_data(self, **kwargs):
         query_variable_name = 'history_page'
         ret = super(History, self).get_context_data(**kwargs)
-        history = self.object.historychange_set.order_by('-date')
+        history = self.object.historychange_set.exclude(field_name='snmp_community').order_by('-date')
         show_all = bool(self.request.GET.get('all', ''))
         if not show_all:
             history = history.exclude(user=None)
