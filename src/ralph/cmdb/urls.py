@@ -10,11 +10,43 @@ from django.conf.urls.defaults import patterns, include, url
 from django.contrib.auth.decorators import login_required
 
 from ralph.cmdb.views import (
-    Index, Search, Edit, Add, View,
-    ViewIframe, EditRelation, LastChanges, AddRelation,
-    ViewJira, ViewUnknown)
+    Add,
+    AddRelation,
+    CIChangesEdit,
+    CIChangesView,
+    CIGitEdit,
+    CIGitView,
+    CIIncidentsEdit,
+    CIIncidentsView,
+    CIProblemsEdit,
+    CIProblemsView,
+    CIPuppetEdit,
+    CIPuppetView,
+    CIRalphEdit,
+    CIRalphView,
+    CIRelationsEdit,
+    CIRelationsView,
+    CISOEventsEdit,
+    CISOEventsView,
+    CIZabbixEdit,
+    CIZabbixView,
+    EditRelation,
+    Index,
+    LastChanges,
+    MainCIEdit,
+    MainCIView,
+    Search,
+    ViewUnknown,
+)
 from ralph.cmdb.views_changes import (
-    Changes, Problems, Incidents, Change, Dashboard, Reports, DashboardDetails)
+    Change,
+    Changes,
+    Dashboard,
+    DashboardDetails,
+    Incidents,
+    Problems,
+    Reports,
+)
 from ralph.cmdb.views_changes import TimeLine
 from ralph.cmdb.views import Graphs
 
@@ -22,12 +54,34 @@ from ralph.cmdb.views import Graphs
 urlpatterns = patterns(
     '', (r'^$', login_required(Index.as_view())),
     (r'^search$', login_required(Search.as_view())),
-    url(r'^ci/view/(?P<ci_id>\w+)$', login_required(View.as_view()), name='ci_view'),
-    (r'^ci/view/(?P<ci_id>[a-z]{2}-[0-9]+)$', login_required(View.as_view())),
-    (r'^ci/view_iframe/(?P<ci_id>\w+)$', login_required(ViewIframe.as_view())),
-    (r'^ci/view_jira/(?P<ci_uid>.*)$', login_required(ViewJira.as_view())),
+
+    url(r'^ci/view/(?P<ci_id>[a-z]{0,2}-?[0-9]+)$', login_required(MainCIView.as_view()), name='ci_view'),
+
+    url(r'^ci/view/(?P<ci_id>[a-z]{0,2}-?[0-9]+)/main/$', login_required(MainCIView.as_view()), name='ci_view'),
+    url(r'^ci/view/(?P<ci_id>[a-z]{0,2}-?[0-9]+)/relations/$', login_required(CIRelationsView.as_view()), name='ci_view'),
+    url(r'^ci/view/(?P<ci_id>[a-z]{0,2}-?[0-9]+)/git/$', login_required(CIGitView.as_view()), name='ci_view'),
+    url(r'^ci/view/(?P<ci_id>[a-z]{0,2}-?[0-9]+)/puppet/$', login_required(CIPuppetView.as_view()), name='ci_view'),
+    url(r'^ci/view/(?P<ci_id>[a-z]{0,2}-?[0-9]+)/ralph/$', login_required(CIRalphView.as_view()), name='ci_view'),
+    url(r'^ci/view/(?P<ci_id>[a-z]{0,2}-?[0-9]+)/ci_changes/$', login_required(CIChangesView.as_view()), name='ci_view'),
+    url(r'^ci/view/(?P<ci_id>[a-z]{0,2}-?[0-9]+)/zabbix/$', login_required(CIZabbixView.as_view()), name='ci_view'),
+    url(r'^ci/view/(?P<ci_id>[a-z]{0,2}-?[0-9]+)/problems/$', login_required(CIProblemsView.as_view()), name='ci_view'),
+    url(r'^ci/view/(?P<ci_id>[a-z]{0,2}-?[0-9]+)/incidents/$', login_required(CIIncidentsView.as_view()), name='ci_view'),
+    url(r'^ci/view/(?P<ci_id>[a-z]{0,2}-?[0-9]+)/so/$', login_required(CISOEventsView.as_view()), name='ci_view'),
+
     (r'^ci/jira_ci_unknown/$', login_required(ViewUnknown.as_view())),
-    url(r'^ci/edit/(?P<ci_id>\w+)$', login_required(Edit.as_view()), name='ci_edit'),
+
+    url(r'^ci/edit/(?P<ci_id>\w+)$', login_required(MainCIEdit.as_view()), name='ci_edit'),
+    url(r'^ci/edit/(?P<ci_id>\w+)/main/$', login_required(MainCIEdit.as_view()), name='ci_edit'),
+    url(r'^ci/edit/(?P<ci_id>\w+)/relations/$', login_required(CIRelationsEdit.as_view()), name='ci_edit'),
+    url(r'^ci/edit/(?P<ci_id>\w+)/git/$', login_required(CIGitEdit.as_view()), name='ci_edit'),
+    url(r'^ci/edit/(?P<ci_id>\w+)/puppet/$', login_required(CIPuppetEdit.as_view()), name='ci_edit'),
+    url(r'^ci/edit/(?P<ci_id>\w+)/ralph/$', login_required(CIRalphEdit.as_view()), name='ci_edit'),
+    url(r'^ci/edit/(?P<ci_id>\w+)/ci_changes/$', login_required(CIChangesEdit.as_view()), name='ci_edit'),
+    url(r'^ci/edit/(?P<ci_id>\w+)/zabbix/$', login_required(CIZabbixEdit.as_view()), name='ci_edit'),
+    url(r'^ci/edit/(?P<ci_id>\w+)/problems/$', login_required(CIProblemsEdit.as_view()), name='ci_edit'),
+    url(r'^ci/edit/(?P<ci_id>\w+)/incidents/$', login_required(CIIncidentsEdit.as_view()), name='ci_edit'),
+    url(r'^ci/edit/(?P<ci_id>\w+)/so/$', login_required(CISOEventsEdit.as_view()), name='ci_edit'),
+
     (r'^ci/get_last_changes/(?P<ci_id>.*)$', login_required(LastChanges.as_view())),
     (r'^relation/add/(?P<ci_id>\w+)$', login_required(AddRelation.as_view())),
     (r'^relation/delete/(?P<relation_id>\w+)/(?P<ci_id>\w+)$', login_required(EditRelation.as_view())),
