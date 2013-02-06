@@ -256,7 +256,7 @@ def find_descendant(device):
                 # Make sure we don't do the same device twice.
                 continue
             visited.add(d_id)
-            stack.append(d_id)
+            stack.extend(d_id)
     return device_ids
 
 
