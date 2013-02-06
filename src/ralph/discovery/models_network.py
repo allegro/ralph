@@ -182,9 +182,8 @@ class DataCenter(Named):
         max_length=32,
         blank=True,
         default='',
-        help_text = _("The address for a TFTP server for DHCP."),
+        help_text=_("The address for a TFTP server for DHCP."),
     )
-
 
     class Meta:
         verbose_name = _("data center")
