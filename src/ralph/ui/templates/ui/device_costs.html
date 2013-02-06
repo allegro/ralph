@@ -5,6 +5,14 @@
 {% load bob %}
 
 {% block content %}
+
+{% if deprecated %}
+    <div class="alert alert-block">
+        Device is deprecated, so the cost is equal to 0
+    </div>
+{% endif %}
+
+
 <div class="row-fluid">
 <div class="span6">
 

@@ -243,7 +243,6 @@ class ComponentModel(Named.NonUnique, SavePrioritized,
             obj.save(priority=priority)
         return obj, c
 
-
     def get_price(self, size=None):
         if not self.group:
             return 0
@@ -280,6 +279,7 @@ class ComponentModel(Named.NonUnique, SavePrioritized,
 
     def is_software(self):
         return True if self.type == ComponentType.software else False
+
 
 class Component(SavePrioritized, WithConcurrentGetOrCreate):
     device = db.ForeignKey('Device', verbose_name=_("device"))
