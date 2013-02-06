@@ -30,6 +30,8 @@ def get_device_price(device):
     The quoted price, including all subtractions and additions from other
     devices.
     """
+    if device.deleted:
+        return 0
     price = get_device_raw_price(device)
     price += get_device_external_price(device)
     return max(0, price)
@@ -46,7 +48,9 @@ def get_device_external_price(device):
     if device.model and device.model.type == DeviceType.blade_system.id:
         # Subtract the prices taken by blades
         for d in device.child_set.filter(
-                model__type=DeviceType.blade_server.id):
+                model__type=DeviceType.blade_server.id,
+                deleted=False,
+            ):
             price -= get_device_chassis_price(d)
     elif device.model and device.model.type == DeviceType.blade_server.id:
         # Add the price taken from the blade system
@@ -58,23 +62,31 @@ def get_device_external_price(device):
     return price
 
 
-def get_device_raw_price(device):
+def is_deprecated(device):
+    """ Return True if device is depreciated """
+    if device.deprecation_date:
+        today_midnight = datetime.combine(datetime.today(), time())
+        return device.deprecation_date < today_midnight
+    return False
+
+
+def get_device_raw_price(device, ignore_deprecation=False):
     """Purchase price of this device, before anything interacts with it."""
-    today_midnight = datetime.combine(datetime.today(), time())
-    if device.deprecation_date and today_midnight >= device.deprecation_date:
+    if (device.deleted or device.deprecation_kind is None or
+            (not ignore_deprecation and is_deprecated(device))
+    ):
         return 0
     return device.price or get_device_auto_price(device)
 
 
-def get_device_cost(device):
+def get_device_cost(device, ignore_deprecation=False):
     """Return the monthly cost of this device."""
 
     price = get_device_price(device)
-    deprecation_kind = device.get_deprecation_kind()
-    if deprecation_kind is not None:
-        cost = price / deprecation_kind.months
-    else:
-        cost = 0
+    cost = 0
+    if not device.deleted and device.deprecation_kind is not None:
+        if not is_deprecated(device) or ignore_deprecation:
+            cost = price / device.deprecation_kind.months
     margin = device.get_margin() or 0
     cost = cost * (1 + margin / 100) + get_device_additional_costs(device)
     return cost
@@ -93,17 +105,25 @@ def get_device_additional_costs(device):
     return cost
 
 
-def get_device_chassis_price(device):
+def get_device_chassis_price(device, ignore_deprecation=False):
     """
     Part of the chassis price that should be added to the blade
     server's price.
     """
+
     if (device.model and device.model.group and device.model.group.slots and
         device.parent and device.parent.model and device.parent.model.group and
-        device.parent.model.group.slots):
-        chassis_price = (
-            device.model.group.slots * get_device_raw_price(device.parent) /
-            device.parent.model.group.slots)
+        device.parent.model.group.slots and not device.deleted):
+        device_price = get_device_raw_price(
+            device.parent, ignore_deprecation=ignore_deprecation
+        )
+        if device_price > 0:
+            chassis_price = (
+                device.model.group.slots *
+                get_device_raw_price(device.parent, ignore_deprecation=ignore_deprecation) /
+                device.parent.model.group.slots)
+        else:
+            chassis_price = 0
     else:
         chassis_price = 0
     return chassis_price
@@ -114,14 +134,20 @@ def get_device_virtuals_price(device):
 
     price = math.fsum(
         get_device_price(dev) for dev in
-        device.child_set.filter(model__type=DeviceType.virtual_server.id))
+        device.child_set.filter(
+            model__type=DeviceType.virtual_server.id,
+            deleted=False,
+        )
+    )
     return price
 
 
 def get_device_cpu_price(device):
     price = math.fsum(cpu.get_price() for cpu in device.processor_set.all())
     if not price and device.model and device.model.type in {
-            DeviceType.rack_server.id, DeviceType.blade_server.id}:
+            DeviceType.rack_server.id,
+            DeviceType.blade_server.id
+        }:
         # Fall back to OperatingSystem-visible cores, and then to default
         try:
             os = OperatingSystem.objects.get(device=device)
@@ -287,7 +313,7 @@ def _update_batch(device_ids, rack, dc):
         d.save()
 
 
-def details_dev(dev, purchase_only=False):
+def details_dev(dev, purchase_only=False, ignore_deprecation=False):
     yield {
         'label': 'Device',
         'model': dev.model,
@@ -303,9 +329,11 @@ def details_dev(dev, purchase_only=False):
     if dev.model is None:
         return
     if dev.model.type == DeviceType.blade_system.id:
-        for d in dev.child_set.all():
+        for d in dev.child_set.filter(deleted=False):
             if d.model.type == DeviceType.blade_server.id:
-                chassis_price = get_device_chassis_price(d)
+                chassis_price = get_device_chassis_price(
+                    d, ignore_deprecation=ignore_deprecation
+                )
                 if chassis_price:
                     yield {
                         'label': escape('Blade server %s' % d.name),
@@ -327,7 +355,9 @@ def details_dev(dev, purchase_only=False):
                         'device': d.id})
                 }
     elif dev.model.type == DeviceType.blade_server.id:
-        chassis_price = get_device_chassis_price(dev)
+        chassis_price = get_device_chassis_price(
+            dev, ignore_deprecation=ignore_deprecation
+        )
         if chassis_price:
             yield {
                 'label': '%s/%s of chassis' % (dev.model.group.slots,
@@ -568,8 +598,9 @@ def details_other(dev, purchase_only=False):
         }
 
 
-def details_all(dev, purchase_only=False):
-    for detail in details_dev(dev, purchase_only):
+def details_all(dev, purchase_only=False, ignore_deprecation=False):
+    for detail in details_dev(
+        dev, purchase_only, ignore_deprecation=ignore_deprecation):
         detail['group'] = 'dev'
         yield detail
     for detail in details_cpu(dev, purchase_only):

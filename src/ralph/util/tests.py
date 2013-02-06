@@ -374,4 +374,3 @@ class UncompressBase64DataTest(TestCase):
         encoded = base64.b64encode(raw)
         compressed = zlib.compress(encoded)
         self.assertEqual(uncompress_base64_data(compressed), encoded)
-
