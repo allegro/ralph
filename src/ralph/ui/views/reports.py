@@ -550,10 +550,9 @@ class ReportServices(SidebarReports, Base):
         has_perm = profile.has_perm
         if not has_perm(Perm.read_device_info_reports):
             return HttpResponseForbidden(
-                "You don't have permission to see reports.")
-        self.perm_edit = False
-        if has_perm(Perm.edit_configuration_item_relations):
-            self.perm_edit = True
+                "You don't have permission to see reports.",
+            )
+        self.perm_to_edit = has_perm(Perm.edit_configuration_item_relations)
         services = CI.objects.filter(type=CI_TYPES.SERVICE.id)
         relations = CIRelation.objects.filter(
             child__type=CI_TYPES.SERVICE.id,
@@ -568,24 +567,26 @@ class ReportServices(SidebarReports, Base):
             child.venture = relation.parent.name
             child.relation_type = CI_RELATION_TYPES.NameFromID(relation.type)
             child.relation_type_id = relation.type
-            self.invalid_relation.append(relation.child)
+            self.invalid_relation.append(child)
 
-        self.serv_without_ven = []
+        self.services_without_venture = []
         for service in services:
-            if service not in self.invalid_relation:
+            if not CIRelation.objects.filter(
+                parent=service,
+                type=CI_RELATION_TYPES.CONTAINS,
+                child__type=CI_TYPES.VENTURE
+            ).exists():
                 service.state = CI_STATE_TYPES.NameFromID(service.state)
-                self.serv_without_ven.append(service)
+                self.services_without_venture.append(service)
         return super(ReportServices, self).get(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(ReportServices, self).get_context_data(**kwargs)
-        context.update(
-            {
-                'invalid_relation': self.invalid_relation,
-                'serv_without_ven': self.serv_without_ven,
-                'perm_to_edit': self.perm_edit,
-            }
-        )
+        context.update({
+            'invalid_relation': self.invalid_relation,
+            'services_without_venture': self.services_without_venture,
+            'perm_to_edit': self.perm_to_edit,
+        })
         return context
 
 
