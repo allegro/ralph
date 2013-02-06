@@ -70,8 +70,8 @@
                         <td>{{ row.device|device_icon }}&nbsp;<a href="/ui/search/info/{{ row.device.id }}">{{ row.device.name }}</a></td>
                         <td>{{ row.device.sn }}</td>
                         <td>{{ row.device.barcode }}</td>
-                        <td>{% if row.depreciated == None %}N/A{% else %}{{ row.device.deprecation_date|date:"Y-m-d" }}{% endif %}</td>
-                        <td>{% if row.depreciated %}
+                        <td>{% if row.deprecated == None %}N/A{% else %}{{ row.device.deprecaton_date|date:"Y-m-d" }}{% endif %}</td>
+                        <td>{% if row.deprecated %}
                                 Depreciated ({{ row.price|currency }})
                             {% elif row.device.cached_price == None %}
                                 N/A
