@@ -70,10 +70,10 @@ class TestReportsServices(TestCase):
         report = self.client.get(url, follow=True)
         self.assertEqual(report.status_code, 200)
         invalid_relation = report.context['invalid_relation']
-        serv_without_ven = report.context['serv_without_ven']
+        serv_without_ven = report.context['services_without_venture']
         self.assertEqual(invalid_relation[0].name, 'allegro.pl')
         self.assertEqual(len(invalid_relation), 1)
-        self.assertEqual(len(serv_without_ven), 0)
+        self.assertEqual(len(serv_without_ven), 1)
         # local service for tests
         service = CI(name='ceneo.pl', type=CIType.objects.get(
             id=CI_TYPES.SERVICE)
@@ -84,9 +84,14 @@ class TestReportsServices(TestCase):
             id=CI_TYPES.VENTURE)
         )
         venture.save()
+        CIRelation(
+            parent=service,
+            child=venture,
+            type=CI_RELATION_TYPES.CONTAINS,
+        ).save()
         reload_report = self.client.get(url, follow=True)
         re_invalid_relation = reload_report.context['invalid_relation']
-        re_serv_without_ven = reload_report.context['serv_without_ven']
+        re_serv_without_ven = reload_report.context['services_without_venture']
         self.assertEqual(len(re_invalid_relation), 1)
         self.assertEqual(len(re_serv_without_ven), 1)
 

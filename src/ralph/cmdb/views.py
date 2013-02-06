@@ -1596,12 +1596,13 @@ class Search(BaseCMDBView):
                 ]
                 table_body.append(row)
             elif type_ == CI_TYPES.SERVICE.id:
+                venture_c = self.get_venture(relations, i, child=True)
                 b_own = self.get_owners(i, b_owners)
                 t_own = self.get_owners(i, t_owners)
                 row = [
                     {'name': 'name', 'value': self.get_name(i, icon)},
                     {'name': 'uid', 'value': self.get_uid(i)},
-                    {'name': 'venture-child', 'value': venture},
+                    {'name': 'venture-child', 'value': venture_c},
                     {'name': 'bl', 'value': self.get_bl(i, relations)},
                     {'name': 't_owners', 'value': t_own},
                     {'name': 'b_owners', 'value': b_own},
