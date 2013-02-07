@@ -1119,15 +1119,17 @@ def bulk_update(devices, fields, data, user):
     for d in devices:
         if 'venture' in fields:
             d.venture_role = None
+
+        field_classes = {
+            'deprecation_kind': DeprecationKind,
+            'venture': Venture,
+            'venture_role': VentureRole,
+            'margin_kind': MarginKind,
+        }
+
         for name in fields:
-            if name == 'deprecation_kind':
-                setattr(d, name, DeprecationKind.objects.get(id=data[name]))
-            elif name == 'venture':
-                setattr(d, name, Venture.objects.get(id=data[name]))
-            elif name == 'venture_role':
-                setattr(d, name, VentureRole.objects.get(id=data[name]))
-            elif name == 'margin_kind':
-                setattr(d, name, MarginKind.objects.get(id=data[name]))
+            if name in field_classes:
+                setattr(d, name, field_classes[name].objects.get(id=data[name]))
             else:
                 setattr(d, name, data[name])
         d.save_comment = data.get('save_comment')
