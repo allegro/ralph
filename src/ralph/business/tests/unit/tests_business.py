@@ -6,6 +6,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from django.test import TestCase
+
 from ralph.business.models import Venture, VentureRole
 from ralph.discovery.models_network import Network, NetworkTerminator, DataCenter
 from ralph.deployment.models import Preboot
