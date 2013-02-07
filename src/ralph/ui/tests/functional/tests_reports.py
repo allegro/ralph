@@ -77,7 +77,7 @@ class TestReportsServices(TestCase):
         self.assertEqual(self.relation.parent.type_id, CI_TYPES.VENTURE)
         self.assertNotEqual(self.relation.child.type_id, CI_TYPES.VENTURE)
 
-    def test_reports_client(self):
+    def test_reports_views(self):
         url = '/ui/reports/services/'
         report = self.client.get(url, follow=True)
         self.assertEqual(report.status_code, 200)

@@ -571,7 +571,7 @@ class ReportServices(SidebarReports, Base):
 
         self.services_without_venture = []
         for service in services:
-            if not CIRelation.objects.filter(
+            if CIRelation.objects.filter(
                 parent=service,
                 type=CI_RELATION_TYPES.CONTAINS,
                 child__type=CI_TYPES.VENTURE
