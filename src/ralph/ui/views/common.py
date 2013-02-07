@@ -1178,7 +1178,7 @@ class BulkEdit(BaseMixin, TemplateView):
                 self.different_fields.append(name)
             elif query.count() > 0:
                 initial[name] = query[0][name]
-        if 'save' in self.request.POST and self.edit_fields != []:
+        if 'save' in self.request.POST and self.edit_fields:
             self.form = edit_fields_form(
                 self.edit_fields,
                 self.Form(self.request.POST, initial=initial)
@@ -1190,7 +1190,7 @@ class BulkEdit(BaseMixin, TemplateView):
                     self.form.data,
                     self.request.user
                 )
-                return HttpResponseRedirect(self.request.path+'../info/')
+                return HttpResponseRedirect(self.request.path + '../info/')
             else:
                 messages.error(self.request, 'Correct the errors.')
         elif 'bulk' in self.request.POST:
