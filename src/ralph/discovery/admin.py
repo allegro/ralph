@@ -36,16 +36,12 @@ class NetworkAdminForm(forms.ModelForm):
             net = ipaddr.IPNetwork(address)
         except ValueError:
             raise forms.ValidationError(_("It's not a valid network address."))
-        min_ip = int(net.network)
-        max_ip = int(net.broadcast)
-        collisions = m.Network.objects.filter(
-            max_ip__gte=min_ip, min_ip__lte=max_ip
-        )
-        if self.instance.id:
-            collisions = collisions.exclude(pk=self.instance.id)
-        if collisions:
-            msg = "Colliding networks: %s" % (
-                ", ".join([network.name for network in collisions])
+        given_network_addr = net.compressed.split('/',1)[0]
+        real_network_addr = net.network.compressed
+        if given_network_addr != real_network_addr:
+            msg = "{} is invalid network address, valid network is {}".format(
+                given_network_addr,
+                real_network_addr,
             )
             raise forms.ValidationError(msg)
         return address
