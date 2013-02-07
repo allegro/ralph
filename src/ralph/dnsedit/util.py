@@ -5,22 +5,21 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import datetime
 import re
 
-from django.template import loader, Context
 from django.db import models as db
-import ipaddr
 from lck.django.common import nested_commit_on_success
 from lck.django.common.models import MACAddressField
 from powerdns.models import Domain, Record
 
-from ralph.dnsedit.models import DHCPEntry, DHCPServer
-from ralph.discovery.models import DeviceType, Network
+from ralph.dnsedit.models import DHCPEntry
+from ralph.discovery.models import DeviceType
 
 
-HOSTNAME_CHUNK_PATTERN = re.compile(r'^([A-Z\d][A-Z\d-]{0,61}[A-Z\d]|[A-Z\d])$',
-                                    re.IGNORECASE)
+HOSTNAME_CHUNK_PATTERN = re.compile(
+    r'^([A-Z\d][A-Z\d-]{0,61}[A-Z\d]|[A-Z\d])$',
+    re.IGNORECASE,
+)
 
 
 class Error(Exception):
@@ -111,74 +110,6 @@ def reset_dhcp(ip, mac):
     ip = str(ip).strip().strip('.')
     entry = DHCPEntry(ip=ip, mac=mac)
     entry.save()
-
-
-def _get_first_rev(ips):
-    for ip in ips:
-        for rev in get_revdns_records(ip):
-            return rev.content
-    return ips[0] if ips else ''
-
-
-def generate_dhcp_config(dc=None, server_address=None):
-    """Generate host DHCP configuration. If `dc` is provided, only yield hosts
-    with addresses from networks of the specified DC.
-
-    If given, `dc` must be of type DataCenter.
-    """
-    server = None
-    if server_address:
-        try:
-            server = DHCPServer.objects.get(ip=server_address)
-        except DHCPServer.DoesNotExist:
-            pass
-    template = loader.get_template('dnsedit/dhcp.conf')
-    last_modified_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    for last in  DHCPEntry.objects.order_by('-modified'):
-        last_modified_date = last.modified.strftime('%Y-%m-%d %H:%M:%S')
-    if dc:
-        networks = dc.network_set.all()
-        nets = {ipaddr.IPNetwork(network.address) for network in networks}
-        def filter_ips(ips):
-            for ip in ips:
-                ip_address = ipaddr.IPAddress(ip)
-                for net in nets:
-                    if ip_address in net:
-                        yield ip
-                        break
-    else:
-        networks = Network.objects.all()
-        def filter_ips(ips):
-            return ips
-    def generate_networks():
-        for network in networks.exclude(dhcp_config=''):
-            net = ipaddr.IPNetwork(network.address)
-            yield (
-                network.name,
-                str(net.network),
-                str(net.netmask),
-                network.dhcp_config,
-            )
-    def generate_entries():
-        for macaddr, in DHCPEntry.objects.values_list('mac').distinct():
-            ips = list(filter_ips(
-                ip for (ip,) in
-                DHCPEntry.objects.filter(mac=macaddr).values_list('ip')
-            ))
-            if not ips:
-                continue
-            name = _get_first_rev(ips)
-            address = ', '.join(ips)
-            mac = ':'.join('%s%s' % c for c in zip(macaddr[::2],
-                                                   macaddr[1::2])).upper()
-            yield name, address, mac
-    c = Context({
-        'server_config': server.dhcp_config if server else '',
-        'networks': generate_networks(),
-        'entries': generate_entries(),
-        'last_modified_date': last_modified_date,
-    })
-    return template.render(c)
 
 
 def get_domain(name):
