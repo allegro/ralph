@@ -63,6 +63,13 @@ CPU_CORES = {
     '6-core': 6,
     '8-core': 8,
 }
+CPU_VIRTUAL_LIST = {
+    'bochs',
+    'qemu',
+    'virtual',
+    'vmware',
+    'xen',
+}
 
 
 def cores_from_model(model_name):
@@ -81,6 +88,10 @@ def is_mac_valid(eth):
         return True
     except ValueError:
         return False
+
+
+def is_virtual_cpu(family):
+    return any(virtual in family for virtual in CPU_VIRTUAL_LIST)
 
 
 class EthernetSpeed(Choices):
@@ -215,7 +226,7 @@ class ComponentModel(Named.NonUnique, SavePrioritized,
             kwargs['cores'] = max(
                 1,
                 kwargs['cores'],
-                cores_from_model(name),
+                cores_from_model(name) if is_virtual_cpu(family) else 0,
             )
             kwargs['size'] = kwargs['cores']
         obj, c = super(ComponentModel, cls).concurrent_get_or_create(**kwargs)
@@ -231,7 +242,6 @@ class ComponentModel(Named.NonUnique, SavePrioritized,
             )
             obj.save(priority=priority)
         return obj, c
-
 
     def get_price(self, size=None):
         if not self.group:
@@ -269,6 +279,7 @@ class ComponentModel(Named.NonUnique, SavePrioritized,
 
     def is_software(self):
         return True if self.type == ComponentType.software else False
+
 
 class Component(SavePrioritized, WithConcurrentGetOrCreate):
     device = db.ForeignKey('Device', verbose_name=_("device"))
@@ -452,7 +463,9 @@ class Processor(Component):
                 self.model.cores,
                 self.cores,
                 self.model.size,
-                cores_from_model(self.model.name),
+                cores_from_model(
+                    self.model.name
+                ) if is_virtual_cpu(self.model.name) else 0,
             )
         return max(1, self.cores)
 

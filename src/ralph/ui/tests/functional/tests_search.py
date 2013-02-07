@@ -300,5 +300,3 @@ class TestSearch(TestCase):
         context = device_search.context['object']
         self.assertEqual(self.device.model.type, DeviceType.unknown.id)
         self.assertEqual(context.model.type, DeviceType.unknown)
-
-

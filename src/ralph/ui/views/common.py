@@ -58,6 +58,7 @@ from ralph.ui.forms.addresses import (
     IPAddressFormSet,
     DNSFormSet,
 )
+from ralph.util.pricing import is_deprecated
 from ralph.ui.forms.deployment import (
     ServerMoveStep1Form,
     ServerMoveStep2FormSet,
@@ -108,8 +109,12 @@ def _get_balancers(dev):
             'port': vserv.port,
         }
 
-def _get_details(dev, purchase_only=False, with_price=False):
-    for detail in pricing.details_all(dev, purchase_only):
+
+def _get_details(dev, purchase_only=False, with_price=False, ignore_deprecation=False):
+    for detail in pricing.details_all(
+        dev, purchase_only,
+        ignore_deprecation=ignore_deprecation
+    ):
         if 'icon' not in detail:
             if detail['group'] == 'dev':
                 detail['icon'] = presentation.get_device_model_icon(
@@ -212,6 +217,7 @@ class BaseMixin(object):
             ) or (
                 self.object.venture if self.object else None
             )
+
         def tab_href(name):
             return '../%s/%s?%s' % (
                     name,
@@ -507,7 +513,7 @@ class Components(DeviceDetailView):
 class Prices(DeviceUpdateView):
     form_class = DevicePricesForm
     template_name = 'ui/device_prices.html'
-    read_perm = Perm.edit_device_info_financial # sic
+    read_perm = Perm.edit_device_info_financial  # sic
     edit_perm = Perm.edit_device_info_financial
 
     def get_initial(self):
@@ -521,6 +527,7 @@ class Prices(DeviceUpdateView):
             'components': _get_details(self.object,
                                        purchase_only=False,
                                        with_price=True),
+            'deprecated': is_deprecated(self.object),
         })
         return ret
 
@@ -818,6 +825,7 @@ class Costs(DeviceDetailView):
             'query_variable_name': query_variable_name,
             'ALWAYS_DATE': ALWAYS_DATE,
             'FOREVER_DATE': FOREVER_DATE,
+            'deprecated': is_deprecated(self.object),
         })
         last_month = datetime.date.today() - datetime.timedelta(days=31)
         splunk = self.object.splunkusage_set.filter(
@@ -844,7 +852,7 @@ class History(DeviceDetailView):
     def get_context_data(self, **kwargs):
         query_variable_name = 'history_page'
         ret = super(History, self).get_context_data(**kwargs)
-        history = self.object.historychange_set.order_by('-date')
+        history = self.object.historychange_set.exclude(field_name='snmp_community').order_by('-date')
         show_all = bool(self.request.GET.get('all', ''))
         if not show_all:
             history = history.exclude(user=None)
@@ -1225,9 +1233,9 @@ class CMDB(BaseMixin):
         ret = super(CMDB, self).get_context_data(**kwargs)
         device_id = self.kwargs.get('device')
         try:
-            ci=cdb.CI.objects.get(
+            ci = cdb.CI.objects.get(
                     type=cdb.CI_TYPES.DEVICE.id,
-                    object_id=device_id
+                    object_id=device_id,
             )
         except:
             ci = None
@@ -1249,4 +1257,3 @@ class Software(DeviceDetailView):
             'components': _get_details(self.object, purchase_only=False),
             })
         return ret
-

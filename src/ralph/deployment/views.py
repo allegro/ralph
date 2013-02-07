@@ -12,7 +12,7 @@ from django.http import (
     HttpResponseNotFound,
 )
 from django.template import Template, Context
-from lck.django.common import remote_addr, render
+from lck.django.common import remote_addr
 
 from ralph.deployment.models import (
     Deployment,
@@ -96,7 +96,7 @@ def _preboot_view(request, file_name=None, file_type=None):
                 try:
                     ftype = FileType.from_name(file_type)
                 except ValueError:
-                    return HttpResponseNotFound()
+                    return HttpResponseNotFound("Unknown file type given.")
                 pbf = deployment.preboot.files.get(ftype=ftype)
         except PrebootFile.DoesNotExist:
             if file_name:

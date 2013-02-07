@@ -35,7 +35,7 @@ class DonPedroPluginTest(TestCase):
         save_device_data(json.loads(data).get('data'), ip)
         self.total_memory_size = 3068
         self.total_storage_size = 40957
-        self.total_cores_count = 8
+        self.total_cores_count = 2
         # prepare storage special cases
         self._prepare_storage_special_cases()
 
@@ -215,16 +215,16 @@ class DonPedroPluginTest(TestCase):
         self.assertEquals(processors[0].speed, processors[1].speed)
         self.assertEquals(processors[0].speed, 2667)
         self.assertEquals(processors[0].cores, processors[1].cores)
-        self.assertEquals(processors[0].cores, 4)
+        self.assertEquals(processors[0].cores, 1)
         self.assertTrue(
             processors[0].model.name == processors[1].model.name ==
-            u'CPU Intel(R) Xeon(R) CPU           E5640  @ 2.67GH'
+            u'CPU Virtual Intel(R) Xeon(R) CPU           E5640  '
         )
         self.assertTrue(
             processors[0].model.speed == processors[1].model.speed == 2667
         )
         self.assertTrue(
-            processors[0].model.cores == processors[1].model.cores == 4)
+            processors[0].model.cores == processors[1].model.cores == 1)
 
     def test_storage(self):
         storage = self.dev.storage_set.all()

@@ -140,7 +140,6 @@ class DeviceModel(SavePrioritized, WithConcurrentGetOrCreate, SavingUser):
     chassis_size = db.PositiveIntegerField(
             verbose_name=_("chassis size"), null=True, blank=True)
 
-
     class Meta:
         verbose_name = _("device model")
         verbose_name_plural = _("device models")
@@ -285,28 +284,22 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
         verbose_name_plural = _("devices")
 
     def clean(self):
-        if self.support_kind == '':
-            self.support_kind = None
-        if self.name2 == '':
-            self.name2 = None
-        if self.dc == '':
-            self.dc = None
-        if self.rack == '':
-            self.rack = None
-        if self.role == '':
-            self.role = None
-        if self.position == '':
-            self.position = None
-        if self.mgmt_firmware == '':
-            self.mgmt_firmware = None
-        if self.hard_firmware == '':
-            self.hard_firmware = None
-        if self.diag_firmware == '':
-            self.diag_firmware = None
-        if self.boot_firmware == '':
-            self.boot_firmware = None
-        if self.barcode == '':
-            self.barcode = None
+        fields_list = [
+            self.support_kind,
+            self.name2,
+            self.dc,
+            self.rack,
+            self.role,
+            self.position,
+            self.mgmt_firmware,
+            self.hard_firmware,
+            self.diag_firmware,
+            self.boot_firmware,
+            self.barcode,
+        ]
+        for field in fields_list:
+            if field == '':
+                field = None
 
     def __init__(self, *args, **kwargs):
         self.save_comment = None
@@ -326,7 +319,7 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
         return "{} ({})".format(self.name, self.id)
 
     @classmethod
-    def create(cls, ethernets=None, sn=None, model=None,  model_name=None,
+    def create(cls, ethernets=None, sn=None, model=None, model_name=None,
                model_type=None, device=None, allow_stub=False, priority=0,
                **kwargs):
         if 'parent' in kwargs and kwargs['parent'] is None:
@@ -618,4 +611,3 @@ class LoadBalancerMember(SavePrioritized, WithConcurrentGetOrCreate):
     def __unicode__(self):
         return "{}:{}@{}({})".format(
             self.address.address, self.port, self.pool.name, self.id)
-
