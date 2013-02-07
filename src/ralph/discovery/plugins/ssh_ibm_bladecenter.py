@@ -33,7 +33,7 @@ from ralph.discovery.models import (
 from ralph.discovery.models_history import DiscoveryWarning
 
 
-SAVE_PRIORITY = 5
+SAVE_PRIORITY = 50
 
 
 class Error(Exception):
