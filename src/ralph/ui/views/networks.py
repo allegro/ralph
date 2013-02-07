@@ -64,7 +64,7 @@ class SidebarNetworks(object):
                     Q(name__contains=contains) |
                     Q(address__contains=contains)
                 )
-        self.networks = list(networks.order_by('min_ip', 'max_ip'))
+        self.networks = list(networks.order_by('min_ip', '-max_ip'))
         stack = []
         children = collections.defaultdict(list)
         for network in self.networks:
