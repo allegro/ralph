@@ -381,7 +381,7 @@ Python and setcap
 
 From the project directory run::
 
-  $ ralph test util
+  $ ralph test ralph.util
   Creating test database for alias 'default'...
   ..
   ----------------------------------------------------------------------
