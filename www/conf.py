@@ -210,6 +210,19 @@ latex_documents = [
 # latex_use_modindex = True
 all_releases = [
     dict(
+        version='1.1.16',
+        release_date='February 7, 2013',
+        description_lines=[
+            "Adding next-server to DHCP configuration for devices in "
+            "deployment.",
+            "A new report for device costs.",
+            "Improved CMDB impact report.",
+            "The ability to import DNS records from a CSV file.",
+            "Show separate count for physical devices in ventures report.",
+            "More bugfixes in the discovery plugins.",
+        ],
+    ),
+    dict(
         version='1.1.15',
         release_date='January 16, 2013',
         description_lines=[
