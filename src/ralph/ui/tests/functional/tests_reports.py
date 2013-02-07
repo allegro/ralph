@@ -11,13 +11,19 @@ from django.conf import settings
 from django.test import TestCase
 
 from ralph.cmdb.models_ci import (
-    CI, CIType, CIRelation, CI_RELATION_TYPES, CI_TYPES
+    CI,
+    CIType,
+    CIRelation,
+    CI_RELATION_TYPES,
+    CI_TYPES,
 )
 from ralph.business.models import Venture, VentureRole
 from ralph.discovery.models import (
-    Device, DeviceType, DeprecationKind, MarginKind
+    Device,
+    DeviceType,
+    DeprecationKind,
+    MarginKind,
 )
-from ralph.discovery.models_component import ComponentType
 from ralph.ui.tests.global_utils import login_as_su
 from ralph.ui.tests.util import create_device, sum_for_view
 from ralph.ui.views.reports import is_bladesystem
@@ -71,15 +77,15 @@ class TestReportsServices(TestCase):
         self.assertEqual(self.relation.parent.type_id, CI_TYPES.VENTURE)
         self.assertNotEqual(self.relation.child.type_id, CI_TYPES.VENTURE)
 
-    def test_reports_client(self):
+    def test_reports_views(self):
         url = '/ui/reports/services/'
         report = self.client.get(url, follow=True)
         self.assertEqual(report.status_code, 200)
         invalid_relation = report.context['invalid_relation']
-        serv_without_ven = report.context['serv_without_ven']
+        services_without_venture = report.context['services_without_venture']
         self.assertEqual(invalid_relation[0].name, 'allegro.pl')
         self.assertEqual(len(invalid_relation), 1)
-        self.assertEqual(len(serv_without_ven), 0)
+        self.assertEqual(len(services_without_venture), 0)
         # local service for tests
         service = CI(name='ceneo.pl', type=CIType.objects.get(
             id=CI_TYPES.SERVICE)
@@ -92,9 +98,9 @@ class TestReportsServices(TestCase):
         venture.save()
         reload_report = self.client.get(url, follow=True)
         re_invalid_relation = reload_report.context['invalid_relation']
-        re_serv_without_ven = reload_report.context['serv_without_ven']
+        re_services_without_venture = reload_report.context['services_without_venture']
         self.assertEqual(len(re_invalid_relation), 1)
-        self.assertEqual(len(re_serv_without_ven), 1)
+        self.assertEqual(len(re_services_without_venture), 0)
 
 
 class TestReportsDevices(TestCase):
