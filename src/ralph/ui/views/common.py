@@ -1139,13 +1139,8 @@ def bulk_update(devices, fields, data, user):
 
 def edit_fields_form(edit_fields, form):
     """ Validate only edit fields """
-    old_form_fields = form.fields
-    fields_to_remove = []
-    for field in old_form_fields:
-        if field not in edit_fields and field != 'save_comment':
-            fields_to_remove.append(field)
-    for field in fields_to_remove:
-        del(form.fields[field])
+    form.fields = [f for f in form.fields
+                                if f not in edit_fields or f != 'save_comment']
     return form
 
 
