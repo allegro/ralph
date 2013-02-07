@@ -122,8 +122,8 @@ class TestBulkedit(TestCase):
         )
         device_fields = []
 
-        for list in [select_fields, date_fields, text_fields]:
-            device_fields.extend(list)
+        for field_list in [select_fields, date_fields, text_fields]:
+            device_fields.extend(field_list)
 
         post_data = {
              'select': [self.device.id],  # 1
@@ -218,7 +218,9 @@ class TestBulkedit(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(ERROR_MSG['empty_save_comment'] in response.content)
         self.assertFormError(
-            response, 'form', 'save_comment',
+            response,
+            'form',
+            'save_comment',
             ERROR_MSG['empty_save_comment_field']
         )
 
