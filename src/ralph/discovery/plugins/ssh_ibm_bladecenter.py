@@ -282,7 +282,7 @@ def _add_dev_mm(ip, pairs, parent, raw, counts, dev_id):
 
     # XXX Clean up the previously added components
     for child in parent.child_set.filter(
-        model__type__in=[DeviceType.management.id, DeviceType.unknown.id],
+        model__type__in=[DeviceType.management, DeviceType.unknown],
     ):
         child.delete()
 
