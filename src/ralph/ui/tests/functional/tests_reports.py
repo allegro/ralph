@@ -100,7 +100,7 @@ class TestReportsServices(TestCase):
         re_invalid_relation = reload_report.context['invalid_relation']
         re_services_without_venture = reload_report.context['services_without_venture']
         self.assertEqual(len(re_invalid_relation), 1)
-        self.assertEqual(len(re_services_without_venture), 1)
+        self.assertEqual(len(re_services_without_venture), 0)
 
 
 class TestReportsDevices(TestCase):
