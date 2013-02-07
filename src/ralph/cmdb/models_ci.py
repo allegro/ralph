@@ -154,7 +154,6 @@ class CIRelation(TimeTrackable):
         if self.parent == self.child:
             raise ValidationError(validation_msg)
 
-
     def save(self, user=None, *args, **kwargs):
         self.saving_user = user
         return super(CIRelation, self).save(*args, **kwargs)
@@ -247,7 +246,7 @@ class CIValueChoice(TimeTrackable):
     )
 
     def __unicode__(self):
-        return "%s" %  self.value
+        return "%s" % self.value
 
 
 class CI(TimeTrackable):
@@ -268,7 +267,7 @@ class CI(TimeTrackable):
         default=False,
     )
     layers = models.ManyToManyField(CILayer,
-        verbose_name=_("layers containing given CI") )
+        verbose_name=_("layers containing given CI"))
     barcode = models.CharField(
         verbose_name=_("barcode"), max_length=255, unique=True, null=True,
         default=None)
