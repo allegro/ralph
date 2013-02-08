@@ -40,12 +40,13 @@ class DeviceForm(forms.ModelForm):
             'support_expiration_date': DateWidget,
         }
 
-    save_comment = forms.CharField(required=True,
-            help_text="Describe your change",
-            error_messages={
-                'required': "You must describe your change",
-            },
-        )
+    save_comment = forms.CharField(
+        required=True,
+        help_text="Describe your change",
+        error_messages={
+            'required': "You must describe your change",
+        },
+    )
 
     icons = {
         'name': 'fugue-network-ip',
@@ -260,6 +261,7 @@ class DeviceBulkForm(DeviceForm):
         super(DeviceBulkForm, self).__init__(*args, **kwargs)
         self.fields['venture'].choices = all_ventures()
         self.fields['venture_role'].choices = all_roles()
+
 
 
 class DeviceInfoForm(DeviceForm):

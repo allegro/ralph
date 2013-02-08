@@ -5,7 +5,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import datetime
-
 from django.conf import settings
 from django.contrib import messages
 from django.core.urlresolvers import reverse
@@ -13,6 +12,7 @@ from django.core.paginator import Paginator
 from django.db import models as db
 from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.utils import simplejson as json
+from django.utils.translation import ugettext_lazy as _
 from django.views.generic import UpdateView, DetailView, TemplateView
 
 from lck.django.common import nested_commit_on_success
