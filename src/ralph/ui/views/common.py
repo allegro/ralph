@@ -1173,6 +1173,9 @@ class BulkEdit(BaseMixin, TemplateView):
         self.edit_fields = self.request.POST.getlist('edit')
         initial = {}
         self.different_fields = []
+
+        import pdb; pdb.set_trace()
+
         for name in self.Form().fields:
             if name == 'save_comment':
                 continue
