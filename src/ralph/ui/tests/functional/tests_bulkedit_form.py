@@ -5,7 +5,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import datetime
+from datetime import datetime
 
 from django.test import TestCase
 from ralph.business.models import Venture, VentureRole
@@ -139,10 +139,10 @@ class TestBulkedit(TestCase):
              'deprecation_kind': self.deprecation_kind.id,  # 1
              'price': 100,
              'sn': '2222-2222-2222-2222',
-             'purchase_date': '2001-01-01',
-             'warranty_expiration_date': '2001-01-02',
-             'support_expiration_date': '2001-01-03',
-             'support_kind': '2001-01-04',
+             'purchase_date': datetime(2001, 1, 1, 0, 0),
+             'warranty_expiration_date': datetime(2001, 1, 2, 0, 0),
+             'support_expiration_date': datetime(2001, 1, 3, 0, 0),
+             'support_kind': datetime(2001, 1, 4, 0, 0),
              'save_comment': 'Everything has changed',
              'save': '',  # save form
         }
@@ -154,13 +154,10 @@ class TestBulkedit(TestCase):
             db_data = getattr(device, field)
             form_data = post_data[field]
             msg = 'FIELD: %s, DB: %s FORM: %s' % (field, db_data, form_data)
-
             if field in select_fields:
                 self.assertEqual(db_data.id, form_data, msg)
-            elif field in date_fields:
-                self.assertEqual(unicode(db_data)[0:10], form_data, msg)
             else:
-                self.assertEqual(db_data, form_data, msg)
+                self.assertEqual(unicode(db_data), unicode(form_data), msg)
 
         # Check if change can see in History change
         history_device = HistoryChange.objects.filter(
@@ -199,7 +196,7 @@ class TestBulkedit(TestCase):
         }
         response = self.client.post(url, data_post)
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)  # form false
 
         response = self.client.post(url, {'select': self.device.id})
         self.assertTrue(ERROR_MSG['no_mark_fields'] in response.content)
@@ -213,9 +210,9 @@ class TestBulkedit(TestCase):
             'save_comment': '',
             'save': '',  # save form
         }
-        response = self.client.post(url, post_data, follow=True)
+        response = self.client.post(url, post_data)
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)  # form false
         self.assertTrue(ERROR_MSG['empty_save_comment'] in response.content)
         self.assertFormError(
             response,
@@ -238,7 +235,7 @@ class TestBulkedit(TestCase):
             'save_comment': 'Updated: purchase date and  deprecation kind',
             'save': '',  # save form
         }
-        response = self.client.post(url, post_data, follow=True)
+        response = self.client.post(url, post_data)
 
         updated_device = Device.objects.get(id=self.device.id)
         self.assertEqual(
