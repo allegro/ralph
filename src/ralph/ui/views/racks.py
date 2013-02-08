@@ -37,27 +37,28 @@ from ralph.util import presentation
 
 class BaseRacksMixin(object):
     def set_rack(self):
-        rack_name = self.kwargs.get('rack')
-        if rack_name is None:
+        rack_identifier = self.kwargs.get('rack')
+        if rack_identifier is None:
             self.rack = None
             return
-        rack_name = rack_name.replace('-', ' ')
-        if rack_name and rack_name != 'rack none' and rack_name != ' ':
-            try:
-                self.rack = Device.objects.get(
-                    sn=rack_name,
+        if (rack_identifier and rack_identifier != 'rack none' and
+            rack_identifier != '-'):
+            if rack_identifier.startswith('sn-'):
+                rack_identifier = rack_identifier[3:].replace('-', ' ')
+                self.rack = get_object_or_404(
+                    Device,
+                    sn=rack_identifier,
                     model__type__in=(
                         DeviceType.rack,
                         DeviceType.data_center,
                     )
                 )
-            except Device.DoesNotExist:
-                if not rack_name.isdigit():
+            else:
+                if not rack_identifier.isdigit():
                     raise Http404()
                 self.rack = get_object_or_404(
                     Device,
-                    id=rack_name,
-                    sn__isnull=True,
+                    id=rack_identifier,
                     model__type__in=(
                         DeviceType.rack,
                         DeviceType.data_center,
@@ -65,6 +66,16 @@ class BaseRacksMixin(object):
                 )
         else:
             self.rack = ''
+
+
+def _slug(sn):
+    return sn.replace(' ', '-').lower()
+
+
+def _get_identifier(asset):
+    if not asset:
+        return asset
+    return 'sn-%s' % _slug(asset.sn) if asset.sn else asset.id
 
 
 class SidebarRacks(BaseRacksMixin):
@@ -76,9 +87,6 @@ class SidebarRacks(BaseRacksMixin):
         self.set_rack()
         ret = super(SidebarRacks, self).get_context_data(**kwargs)
         icon = presentation.get_device_icon
-
-        def slug(sn):
-            return sn.replace(' ', '-').lower()
         sidebar_items = [
             MenuItem(
                 "Unknown",
@@ -92,12 +100,23 @@ class SidebarRacks(BaseRacksMixin):
                 model__type=DeviceType.data_center.id).order_by('name'):
             subitems = []
             sidebar_items.append(
-                MenuItem(dc.name, name=slug(dc.sn), fugue_icon=icon(dc),
-                         view_name='racks', subitems=subitems, indent=' ',
-                         view_args=[slug(dc.sn), ret['details'], ''],
-                         collapsible=True, collapsed=not (
-                             self.rack and (self.rack == dc or
-                                            self.rack.parent == dc)))
+                MenuItem(
+                    dc.name,
+                    name=_get_identifier(dc),
+                    fugue_icon=icon(dc),
+                    view_name='racks',
+                    subitems=subitems,
+                    indent=' ',
+                    view_args=[
+                        _get_identifier(dc), ret['details'], ''
+                    ],
+                    collapsible=True,
+                    collapsed=not (
+                        self.rack and (
+                            self.rack == dc or self.rack.parent == dc
+                        )
+                    )
+                )
             )
             for r in Device.objects.filter(
                 model__type=DeviceType.rack.id
@@ -107,30 +126,20 @@ class SidebarRacks(BaseRacksMixin):
                 subitems.append(
                     MenuItem(
                         r.name,
-                        name=slug(r.sn) if r.sn else r.id,
+                        name=_get_identifier(r),
                         indent=' ',
                         fugue_icon=icon(r),
                         view_name='racks',
                         view_args=[
-                            slug(r.sn) if r.sn else r.id,
-                            ret['details'],
-                            '',
+                            _get_identifier(r), ret['details'], ''
                         ]
                     )
                 )
-        sidebar_selected = None
-        if self.rack:
-            if self.rack.sn:
-                sidebar_selected = slug(self.rack.sn)
-            else:
-                sidebar_selected = self.rack.id
         ret.update({
             'sidebar_items': sidebar_items,
-            'sidebar_selected': sidebar_selected,
+            'sidebar_selected': _get_identifier(self.rack),
             'section': 'racks',
-            'subsection': slug(
-                self.rack.sn
-            ) if self.rack and self.rack.sn else self.rack,
+            'subsection': _get_identifier(self.rack),
         })
         return ret
 
@@ -262,7 +271,7 @@ class RacksDeviceList(SidebarRacks, BaseMixin, BaseDeviceList):
             )
         ret.update({
             'subsection': self.rack.name if self.rack else self.rack,
-            'subsection_slug': self.rack.sn if self.rack else self.rack,
+            'subsection_slug': _get_identifier(self.rack),
         })
         return ret
 
