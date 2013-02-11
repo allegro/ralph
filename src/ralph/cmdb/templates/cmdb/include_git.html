@@ -19,10 +19,11 @@
     <td>{{ f.comment}}</td>
     <td>{{ f.author}}</td>
     <td style='width: 300px'>  <a href='{{fisheye_url}}/changelog/{{fisheye_project}}?cs={{ f.changeset}}'>{{ f.changeset }}</a></td>
-    <td> <span class="nolink badge badge-important">{{ puppet_feedback_errors|default:"0" }} errors</span><br>
-        <span class="nolink badge badge-success">{{ puppet_feedback_changes|default:"0" }} changes</span></td>
+    <td>
+        <span class="nolink badge badge-important">{{ puppet_feedback_errors|default:"0" }} errors</span><br>
+        <span class="nolink badge badge-success">{{ puppet_feedback_changes|default:"0" }} changes</span>
+    </td>
 </tr>
-
 {% endfor %}
 </table>
 
