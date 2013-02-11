@@ -197,6 +197,8 @@ def get_disk_shares(ssh):
     pvs = {}
     for line in stdout.readlines():
         line = line.strip()
+        if 'dm multipath kernel driver version too old' in line.lower():
+            break
         if line.startswith((r'\_', r'[', r'`-', r'|')):
             continue
         if '=' in line:
