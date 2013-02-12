@@ -191,7 +191,7 @@
             $("#save_svg_button").click(saveSVG);
             fugueData = "";
             jQuery.ajax({
-                url: '/static/cmdb/fugue-icons.json',
+                url: '/static/fugue-icons.json',
                 success: function (html) {
                         fugueData = html;
             },
