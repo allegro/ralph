@@ -14,7 +14,6 @@ from django.utils.translation import ugettext_lazy as _
 
 from lck.django.common.models import TimeTrackable, WithConcurrentGetOrCreate
 from lck.django.choices import Choices
-from lck.django.filters import slugify
 from pygraph.classes.digraph import digraph
 from pygraph.algorithms.cycles import find_cycle
 
@@ -52,6 +51,7 @@ class CI_ATTRIBUTE_TYPES(Choices):
     CHOICE = _('Choice List')
 
 
+"""
 class CI_LAYER(Choices):
     _ = Choices.Choice
 
@@ -63,6 +63,7 @@ class CI_LAYER(Choices):
     NETWORK = _('Network')
     SERVICES = _('Services')
     ROLES = _('Roles')
+"""
 
 
 # Constants from  db
@@ -81,8 +82,9 @@ class CI_TYPES(Choices):
     DATACENTER = _('Data Center')
     NETWORKTERMINATOR = _('Network Terminator')
 
+
 contenttype_mappings = {
-    'discovery.device' : 'dd',
+    'discovery.device': 'dd',
 }
 
 
@@ -123,6 +125,16 @@ class CIContentTypePrefix(TimeTrackable):
 
 class CILayer(TimeTrackable):
     name = models.SlugField()
+    content_types = models.ManyToManyField(
+        ContentType,
+        verbose_name=_('connected content types'),
+        blank=True,
+    )
+
+    class Meta:
+        verbose_name = _('CI layer')
+        verbose_name_plural = _('CI layers')
+        ordering = ('name',)
 
     def __unicode__(self):
         return " %s " % self.name
@@ -216,6 +228,7 @@ class CIValueInteger(TimeTrackable):
     def __unicode__(self):
         return "%s" % self.value
 
+
 class CIValueFloat(TimeTrackable):
     value = models.FloatField(
         verbose_name=_("value"),
@@ -225,6 +238,7 @@ class CIValueFloat(TimeTrackable):
 
     def __unicode__(self):
         return "%s" %  self.value
+
 
 class CIValueString(TimeTrackable):
     value = models.CharField(

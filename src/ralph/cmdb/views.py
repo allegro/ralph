@@ -33,12 +33,12 @@ from ralph.cmdb.forms import (
 )
 from ralph.cmdb.customfields import EditAttributeFormFactory
 from ralph.cmdb.models_ci import (
-    CIOwner, CIOwnership, CILayer, CI_TYPES, CI, CIRelation, CI_LAYER
+    CIOwner, CIOwnership, CILayer, CI_TYPES, CI, CIRelation,
 )
 import ralph.cmdb.models as db
 from ralph.cmdb.graphs import ImpactCalculator
 from ralph.account.models import Perm
-from ralph.ui.views.common import Base, _get_details
+from ralph.ui.views.common import Base
 from ralph.util.presentation import (
     get_device_icon, get_venture_icon, get_network_icon
 )
