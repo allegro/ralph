@@ -101,9 +101,7 @@ $(function ($) {
         var $this = $(this);
         var name = $this.attr('data-fill-down');
         var counter = +/-(\d+)-/.exec(name)[1];
-        console.log(name);
         var value = $('[name="'+name+'"]').val();
-        console.log(value);
         var $field;
         do {
             counter += 1
@@ -111,7 +109,6 @@ $(function ($) {
                 '[name="' + name.replace(/-(\d+)-/, '-' + counter + '-') + '"]'
             );
             $field.val(value);
-            console.log($field);
         } while ($field.length > 0 && counter < 1000);
     });
 
