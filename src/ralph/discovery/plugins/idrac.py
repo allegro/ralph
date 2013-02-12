@@ -349,8 +349,8 @@ def _save_memory(dev, data):
     for mem, index in zip(data, range(1, len(data) + 1)):
         model, _ = ComponentModel.create(
             ComponentType.memory,
-            size=mem['size'],
-            speed=mem['speed'],
+            size=int(mem['size']),
+            speed=int(mem['speed']),
             priority=SAVE_PRIORITY,
         )
         memory, _ = Memory.concurrent_get_or_create(index=index, device=dev)
