@@ -85,17 +85,42 @@ processor	: 3
     def test_os_uname(self):
         ssh = MockSSH([
             ("/usr/bin/sudo /usr/sbin/dmidecode", DATA),
-            ("/bin/uname -a", """\
+            (
+                "/bin/uname -a",
+                """\
 Linux wintermute 3.2.0-29-generic #46-Ubuntu SMP Fri Jul
 27 17:03:23 UTC 2012 x86_64 x86_64 x86_64 GNU/Linux
-"""),
+""",
+            ),
+            (
+                "/bin/grep 'MemTotal:' '/proc/meminfo'",
+                "MemTotal:        8086784 kB",
+            ),
+            (
+                "/bin/df -P -x tmpfs -x devtmpfs -x ecryptfs -x iso9660 -BM | /bin/grep '^/'",
+                """\
+/dev/sda1              22529M 18841M     2545M      89% /
+/dev/sda3             270416M 37184M   219496M      15% /home
+""",
+            ),
+            (
+                "/bin/grep '^processor' '/proc/cpuinfo'",
+                """\
+processor	: 0
+processor	: 1
+processor	: 2
+processor	: 3
+""",
+            )
         ])
         dev = ssh_linux.run_dmidecode(ssh, [])
-        os = ssh_linux.make_system(ssh, dev)
-        self.assertEquals(dev.name, 'wintermute')
+        os = ssh_linux.update_os(ssh, dev)
         self.assertEquals(os.label, '#46-Ubuntu 3.2.0-29-generic')
         self.assertEquals(os.model.name, '#46-Ubuntu')
         self.assertEquals(os.model.family, 'Linux')
+        self.assertEquals(os.cores_count, 4)
+        self.assertEquals(os.storage, 292945)
+        self.assertEquals(os.memory, 7897)
 
     def test_os_disk_share(self):
         ssh = MockSSH([("multipath -l",
