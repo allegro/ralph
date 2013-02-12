@@ -12,13 +12,16 @@ def field_changes(instance, ignore=('last_seen',)):
     Yield the name, original value and new value for each changed field. Skip
     all insignificant fields and those passed in ``ignore``.
     """
-
     for field, orig in instance.dirty_fields.iteritems():
         if field in ignore:
             continue
         if field in instance.insignificant_fields:
             continue
-        if field.endswith('_id') and field != 'share_id':
+        related_fields = [
+            related_field.name.split(':', 1)[1] for related_field in
+            instance._meta.get_all_related_objects()
+        ]
+        if field in related_fields:
             field = field[:-3]
             parent_model = instance._meta.get_field_by_name(
                 field
@@ -38,4 +41,3 @@ def field_changes(instance, ignore=('last_seen',)):
         except AttributeError:
             continue
         yield field, orig, new
-
