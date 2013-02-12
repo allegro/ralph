@@ -264,22 +264,12 @@ class IDRACPluginTest(TestCase):
             [(mem.model.name, mem.label, mem.size, mem.speed)
                 for mem in Memory.objects.filter(
                     device=dev)],
-            [('Hynix Semiconductor DDR3 DIMM', 'Hynix Semiconductor DDR3 DIMM',
-              8192, 1333),
-             ('Hynix Semiconductor DDR3 DIMM', 'Hynix Semiconductor DDR3 DIMM',
-              8192, 1333),
-             ('Hynix Semiconductor DDR3 DIMM', 'Hynix Semiconductor DDR3 DIMM',
-              8192, 1333),
-             ('Hynix Semiconductor DDR3 DIMM', 'Hynix Semiconductor DDR3 DIMM',
-              8192, 1333),
-             ('Hynix Semiconductor DDR3 DIMM', 'Hynix Semiconductor DDR3 DIMM',
-              8192, 1333),
-             ('Hynix Semiconductor DDR3 DIMM', 'Hynix Semiconductor DDR3 DIMM',
-              8192, 1333),
-             ('Hynix Semiconductor DDR3 DIMM', 'Hynix Semiconductor DDR3 DIMM',
-              8192, 1333),
-             ('Hynix Semiconductor DDR3 DIMM', 'Hynix Semiconductor DDR3 DIMM',
-              8192, 1333)]
+            [(
+                'RAM  8192MiB, 1333MHz',
+                'Hynix Semiconductor DDR3 DIMM',
+                8192,
+                1333,
+            )] * 8,
         )
         # check ethernet objects.
         self.assertItemsEqual(
