@@ -15,9 +15,7 @@ $.ajax({
     'data': [],
 success: function(data) {
 
-        console.log('loading json...'); 
         var data = eval(data);
-        console.log(data.edges.count);
 
         fd.loadJSON(data.edges);  
 
@@ -26,23 +24,14 @@ success: function(data) {
         fd.computeIncremental({  
           iter: 40,  
           property: 'end',  
-          onStep: function(perc){  
-
-          console.log(perc + '% loaded');
-
-            //Log.write(perc + '% loaded...');  
-          },  
-        onComplete: function(){  
-
-                console.log('Done');
-
-            fd.animate({  
-              modes: ['linear'],  
-              transition: $jit.Trans.Elastic.easeOut,  
-              duration: 2500  
-            });  
-          }  
-          });  
+          onComplete: function(){
+            fd.animate({
+              modes: ['linear'],
+              transition: $jit.Trans.Elastic.easeOut,
+              duration: 2500
+            });
+          }
+        });
 },
     'dataType': 'json'});
 
