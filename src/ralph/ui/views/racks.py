@@ -9,7 +9,7 @@ import collections
 from bob.menu import MenuItem
 from django.contrib import messages
 from django.db.models import Q
-from django.http import HttpResponseForbidden, HttpResponseRedirect
+from django.http import HttpResponseForbidden, HttpResponseRedirect, Http404
 from django.shortcuts import get_object_or_404
 from django.views.generic import CreateView
 
@@ -26,7 +26,6 @@ from ralph.ui.views.common import (
     History,
     Discover,
     BaseMixin,
-    DeviceDetailView,
     Base,
     Software,
     TEMPLATE_MENU_ITEMS,
@@ -36,34 +35,58 @@ from ralph.ui.views.reports import Reports, ReportDeviceList
 from ralph.util import presentation
 
 
-class SidebarRacks(object):
+class BaseRacksMixin(object):
+    def set_rack(self):
+        rack_identifier = self.kwargs.get('rack')
+        if rack_identifier is None:
+            self.rack = None
+            return
+        if (rack_identifier and rack_identifier != 'rack none' and
+            rack_identifier != '-'):
+            if rack_identifier.startswith('sn-'):
+                rack_identifier = rack_identifier[3:].replace('-', ' ')
+                self.rack = get_object_or_404(
+                    Device,
+                    sn=rack_identifier,
+                    model__type__in=(
+                        DeviceType.rack,
+                        DeviceType.data_center,
+                    )
+                )
+            else:
+                if not rack_identifier.isdigit():
+                    raise Http404()
+                self.rack = get_object_or_404(
+                    Device,
+                    id=rack_identifier,
+                    model__type__in=(
+                        DeviceType.rack,
+                        DeviceType.data_center,
+                    )
+                )
+        else:
+            self.rack = ''
+
+
+def _slug(sn):
+    return sn.replace(' ', '-').lower()
+
+
+def _get_identifier(asset):
+    if not asset:
+        return asset
+    return 'sn-%s' % _slug(asset.sn) if asset.sn else asset.id
+
+
+class SidebarRacks(BaseRacksMixin):
     def __init__(self, *args, **kwargs):
         super(SidebarRacks, self).__init__(*args, **kwargs)
         self.rack = None
-
-    def set_rack(self):
-        rack_name = self.kwargs.get('rack')
-        if rack_name is None:
-            self.rack = None
-            return
-        rack_name = rack_name.replace('-', ' ')
-        if rack_name and rack_name != 'rack none' and rack_name != ' ':
-            self.rack = get_object_or_404(
-                Device,
-                sn=rack_name,
-                model__type__in=(DeviceType.rack.id,
-                                 DeviceType.data_center.id)
-            )
-        else:
-            self.rack = ''
 
     def get_context_data(self, **kwargs):
         self.set_rack()
         ret = super(SidebarRacks, self).get_context_data(**kwargs)
         icon = presentation.get_device_icon
-
-        def slug(sn):
-            return sn.replace(' ', '-').lower()
         sidebar_items = [
             MenuItem(
                 "Unknown",
@@ -77,12 +100,23 @@ class SidebarRacks(object):
                 model__type=DeviceType.data_center.id).order_by('name'):
             subitems = []
             sidebar_items.append(
-                MenuItem(dc.name, name=slug(dc.sn), fugue_icon=icon(dc),
-                         view_name='racks', subitems=subitems, indent=' ',
-                         view_args=[slug(dc.sn), ret['details'], ''],
-                         collapsible=True, collapsed=not (
-                             self.rack and (self.rack == dc or
-                                            self.rack.parent == dc)))
+                MenuItem(
+                    dc.name,
+                    name=_get_identifier(dc),
+                    fugue_icon=icon(dc),
+                    view_name='racks',
+                    subitems=subitems,
+                    indent=' ',
+                    view_args=[
+                        _get_identifier(dc), ret['details'], ''
+                    ],
+                    collapsible=True,
+                    collapsed=not (
+                        self.rack and (
+                            self.rack == dc or self.rack.parent == dc
+                        )
+                    )
+                )
             )
             for r in Device.objects.filter(
                 model__type=DeviceType.rack.id
@@ -92,18 +126,20 @@ class SidebarRacks(object):
                 subitems.append(
                     MenuItem(
                         r.name,
-                        name=slug(r.sn),
+                        name=_get_identifier(r),
                         indent=' ',
                         fugue_icon=icon(r),
                         view_name='racks',
-                        view_args=[slug(r.sn), ret['details'], '']
+                        view_args=[
+                            _get_identifier(r), ret['details'], ''
+                        ]
                     )
                 )
         ret.update({
             'sidebar_items': sidebar_items,
-            'sidebar_selected': slug(self.rack.sn) if self.rack else self.rack,
+            'sidebar_selected': _get_identifier(self.rack),
             'section': 'racks',
-            'subsection': slug(self.rack.sn) if self.rack else self.rack,
+            'subsection': _get_identifier(self.rack),
         })
         return ret
 
@@ -235,7 +271,7 @@ class RacksDeviceList(SidebarRacks, BaseMixin, BaseDeviceList):
             )
         ret.update({
             'subsection': self.rack.name if self.rack else self.rack,
-            'subsection_slug': self.rack.sn if self.rack else self.rack,
+            'subsection_slug': _get_identifier(self.rack),
         })
         return ret
 
@@ -322,7 +358,7 @@ class RacksRack(Racks, Base):
         return ret
 
 
-class DeviceCreateView(CreateView):
+class DeviceCreateView(BaseRacksMixin, CreateView):
     model = Device
     slug_field = 'id'
     slig_url_kwarg = 'device'
@@ -332,22 +368,6 @@ class DeviceCreateView(CreateView):
 
     def get_template_names(self):
         return [self.template_name]
-
-    def set_rack(self):
-        rack_name = self.kwargs.get('rack')
-        if rack_name is None:
-            self.rack = None
-            return
-        rack_name = rack_name.replace('-', ' ')
-        if rack_name and rack_name != 'rack none' and rack_name != ' ':
-            self.rack = get_object_or_404(
-                Device,
-                sn=rack_name,
-                model__type__in=(DeviceType.rack.id,
-                                 DeviceType.data_center.id)
-            )
-        else:
-            self.rack = ''
 
     def form_valid(self, form):
         self.set_rack()

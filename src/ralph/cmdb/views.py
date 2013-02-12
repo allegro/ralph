@@ -49,10 +49,9 @@ SAVE_PRIORITY = 200
 
 
 def get_icon_for(ci):
-    ctname = ci.content_type.name
-
     if not ci or not ci.content_object:
         return
+    ctname = ci.content_type.name
     if ctname == 'venture':
         return get_venture_icon(ci.content_object)
     elif ctname == 'device':
