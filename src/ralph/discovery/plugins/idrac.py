@@ -378,7 +378,9 @@ def _save_storage(dev, data):
             priority=SAVE_PRIORITY,
         )
         storage, _ = Storage.concurrent_get_or_create(
-            device=dev, sn=disk['sn']
+            device=dev,
+            sn=disk['sn'],
+            mount_point=None,
         )
         storage.model = model
         storage.label = model.name
