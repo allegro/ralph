@@ -43,10 +43,10 @@ class SshLinuxPluginTest(TestCase):
         mem = [(mem.label, mem.model.name, mem.model.size, mem.model.speed)
                for mem in dev.memory_set.all()]
         self.assertEquals(mem, [
-            (u'PROC 1 DIMM 2A', u'RAM DDR3 4096MiB', 4096, 1333),
-            (u'PROC 1 DIMM 4B', u'RAM DDR3 4096MiB', 4096, 1333),
-            (u'PROC 2 DIMM 2A', u'RAM DDR3 4096MiB', 4096, 1333),
-            (u'PROC 2 DIMM 4B', u'RAM DDR3 4096MiB', 4096, 1333),
+            (u'PROC 1 DIMM 2A', u'RAM DDR3 4096MiB, 1333MHz', 4096, 1333),
+            (u'PROC 1 DIMM 4B', u'RAM DDR3 4096MiB, 1333MHz', 4096, 1333),
+            (u'PROC 2 DIMM 2A', u'RAM DDR3 4096MiB, 1333MHz', 4096, 1333),
+            (u'PROC 2 DIMM 4B', u'RAM DDR3 4096MiB, 1333MHz', 4096, 1333),
         ])
         self.assertEquals(dev.model.name, 'DMI ProLiant BL460c G6')
 
