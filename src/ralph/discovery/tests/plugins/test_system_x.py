@@ -57,14 +57,14 @@ class SystemXPluginTest(TestCase):
         self.assertEqual(
             [(x.model.name, x.label, x.size) for x in Memory.objects.filter(
                 device=dev).order_by('-id')],
-            [(u'RAM DIMM 18 4096MiB', u'DIMM 18', 4096),
-                (u'RAM DIMM 15 8192MiB', u'DIMM 15', 8192),
-                (u'RAM DIMM 12 8192MiB', u'DIMM 12', 8192),
-                (u'RAM DIMM 11 4096MiB', u'DIMM 11', 4096),
-                (u'RAM DIMM 9 4096MiB', u'DIMM 9', 4096),
-                (u'RAM DIMM 6 8192MiB', u'DIMM 6', 8192),
-                (u'RAM DIMM 3 8192MiB', u'DIMM 3', 8192),
-                (u'RAM DIMM 2 4096MiB', u'DIMM 2', 4096)])
+            [(u'RAM  4096MiB', u'DIMM 18', 4096),
+                (u'RAM  8192MiB', u'DIMM 15', 8192),
+                (u'RAM  8192MiB', u'DIMM 12', 8192),
+                (u'RAM  4096MiB', u'DIMM 11', 4096),
+                (u'RAM  4096MiB', u'DIMM 9', 4096),
+                (u'RAM  8192MiB', u'DIMM 6', 8192),
+                (u'RAM  8192MiB', u'DIMM 3', 8192),
+                (u'RAM  4096MiB', u'DIMM 2', 4096)])
         self.assertEqual(
             [(x.label, x.mac) for x in Ethernet.objects.filter(
                 device=dev).order_by('-id')],
