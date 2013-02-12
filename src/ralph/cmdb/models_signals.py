@@ -189,7 +189,7 @@ def ci_post_save(sender, instance, raw, using, **kwargs):
     for field, orig in instance.dirty_fields.iteritems():
         if field in instance.insignificant_fields:
             continue
-        if field.endswith('_id'):
+        if field.endswith('_id') and field != 'zabbix_id':
             field = field[:-3]
             orig = instance._meta.get_field_by_name(
                 field
