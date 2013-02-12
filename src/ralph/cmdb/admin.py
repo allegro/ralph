@@ -10,6 +10,7 @@ import re
 
 from django import forms
 from django.contrib import admin
+from django.contrib.contenttypes.models import ContentType
 from lck.django.common.admin import ModelAdmin
 
 from ajax_select.fields import AutoCompleteSelectField
@@ -17,6 +18,9 @@ from ajax_select.fields import AutoCompleteSelectField
 import ralph.cmdb.models as db
 from ralph.cmdb.models_changes import CIChangeGit
 from ralph.ui.widgets import ReadOnlyPreWidget
+
+
+TRACKED_APPS = ('discovery', 'business',)
 
 
 class GitPathMappingAdminForm(forms.ModelForm):
@@ -83,11 +87,27 @@ class CIOwnerAdmin(ModelAdmin):
 admin.site.register(db.CIOwner, CIOwnerAdmin)
 
 
+class CILayerAdmin(ModelAdmin):
+    filter_horizontal = ('content_types',)
+
+    def formfield_for_manytomany(self, db_field, request, **kwargs):
+        if db_field.name == "content_types":
+            kwargs["queryset"] = ContentType.objects.filter(
+                app_label__in=TRACKED_APPS,
+            ).order_by('name')
+        return super(CILayerAdmin, self).formfield_for_manytomany(
+            db_field,
+            request,
+            **kwargs
+        )
+
+admin.site.register(db.CILayer, CILayerAdmin)
+
+
 # simple types
 admin.site.register([
     db.CI,
     db.CIType,
-    db.CILayer,
     db.CIRelation,
     db.CIAttribute,
     db.CIAttributeValue,
