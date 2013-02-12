@@ -73,7 +73,7 @@ def _add_virtual_machine(ssh, vmid, parent, master, storages, hypervisor_ip):
     name = 'unknown'
     for line in lines:
         line = line.strip()
-        if line.startswith('#') or line.find(':') == -1:
+        if line.startswith('#') or ':' not in line:
             continue
         key, value = line.split(':', 1)
         if key.startswith('vlan'):
@@ -209,7 +209,12 @@ def _add_virtual_machines(ssh, parent, master, hypervisor_ip):
             continue
         vmid = int(vmid)
         dev = _add_virtual_machine(
-            ssh, vmid, parent, master, storages, hypervisor_ip,
+            ssh,
+            vmid,
+            parent,
+            master,
+            storages,
+            hypervisor_ip,
         )
         if dev is None:
             continue
