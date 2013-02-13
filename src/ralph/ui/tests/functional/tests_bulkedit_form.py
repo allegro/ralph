@@ -230,7 +230,7 @@ class TestBulkedit(TestCase):
         post_data = {
             'select': [self.device.id],  # 1
             'edit': ['purchase_date', 'deprecation_kind'],
-            'purchase_date': '2001-01-01',
+            'purchase_date': datetime(2001, 1, 1, 0, 0),
             'deprecation_kind': self.deprecation_kind.id,  # 1
             'save_comment': 'Updated: purchase date and  deprecation kind',
             'save': '',  # save form
@@ -239,26 +239,23 @@ class TestBulkedit(TestCase):
 
         updated_device = Device.objects.get(id=self.device.id)
         self.assertEqual(
-            unicode(updated_device.purchase_date),
-            '2001-01-01 00:00:00'
+            updated_device.purchase_date, datetime(2001, 1, 4, 0, 0)
         )
         self.assertEqual(updated_device.deprecation_kind.months, 24)
         self.assertEqual(
-            unicode(updated_device.deprecation_date),
-            '2003-01-01 00:00:00'
+            updated_device.deprecation_date, datetime(2003, 1, 4, 0, 0)
         )
 
         # Check if purchase date,change deprecation date
         post_data = {
             'select': [self.device.id],  # 1
             'edit': ['purchase_date'],
-            'purchase_date': '2002-01-01',
+            'purchase_date': datetime(2002, 1, 1, 0, 0),
             'save_comment': 'Updated: purchase date',
             'save': '',  # save form
         }
         response = self.client.post(url, post_data, follow=True)
         updated_device2 = Device.objects.get(id=self.device.id)
         self.assertEqual(
-            unicode(updated_device2.deprecation_date),
-            '2004-01-01 00:00:00'
+            updated_device2.deprecation_date, datetime(2004, 1, 1, 0, 0)
         )
