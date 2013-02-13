@@ -234,9 +234,6 @@ class DeviceCreateForm(DeviceForm):
                     "Either MACs or serial number required.")
         return ' '.join(macs)
 
-    def clean_model(self):
-        return self.cleaned_data['model']
-
 
 class DeviceBulkForm(DeviceForm):
     class Meta(DeviceForm.Meta):
@@ -262,6 +259,27 @@ class DeviceBulkForm(DeviceForm):
         self.fields['venture'].choices = all_ventures()
         self.fields['venture_role'].choices = all_roles()
 
+
+########################################################################
+## Validacja
+########################################################################
+
+
+    def clean_purchase_date(self):
+        import pdb; pdb.set_trace()
+    def clean_remakrs(self):
+        import pdb; pdb.set_trace()
+
+    def clean_edit_fields(self):
+        import pdb; pdb.set_trace()
+
+    def clean_save_comment(self):
+        import pdb; pdb.set_trace()
+
+        comment = self.cleaned_data['save_comment']
+        if not comment:
+            raise forms.ValidationError("You must describe your change")
+        return comment
 
 
 class DeviceInfoForm(DeviceForm):

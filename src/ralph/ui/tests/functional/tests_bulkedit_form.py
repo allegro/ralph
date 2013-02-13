@@ -230,7 +230,7 @@ class TestBulkedit(TestCase):
         post_data = {
             'select': [self.device.id],  # 1
             'edit': ['purchase_date', 'deprecation_kind'],
-            'purchase_date': datetime(2001, 1, 1, 0, 0),
+            'purchase_date': datetime(2001, 1, 4, 0, 0),
             'deprecation_kind': self.deprecation_kind.id,  # 1
             'save_comment': 'Updated: purchase date and  deprecation kind',
             'save': '',  # save form

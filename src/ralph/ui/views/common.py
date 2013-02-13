@@ -1174,8 +1174,6 @@ class BulkEdit(BaseMixin, TemplateView):
         initial = {}
         self.different_fields = []
 
-        import pdb; pdb.set_trace()
-
         for name in self.Form().fields:
             if name == 'save_comment':
                 continue
@@ -1186,13 +1184,23 @@ class BulkEdit(BaseMixin, TemplateView):
                 self.different_fields.append(name)
             elif query.count() > 0:
                 initial[name] = query[0][name]
-        if 'save' in self.request.POST and self.edit_fields != []:
+        if 'save' in self.request.POST and self.edit_fields:
             self.form = edit_fields_form(
                 self.edit_fields,
                 self.Form(self.request.POST, initial=initial)
             )
-            if self.form.is_valid:
-            # if self.form.is_valid and self.form.data['save_comment']:
+
+
+
+
+########################################################################
+########################################################################
+########################################################################
+
+
+
+            # if self.form.is_valid:
+            if self.form.is_valid and self.form.data['save_comment']:
                 bulk_update(
                     self.devices,
                     self.edit_fields,
