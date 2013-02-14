@@ -935,8 +935,7 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
             for component in _get_details(device, ignore_deprecation=True):
                 count = 1
                 model = component.get('model')
-                if (model.type is not None, model.group_id is not None,
-                    model.group is not None):
+                if not isinstance(model, basestring):
                     component_type = model.type
                     component_group = model.group_id
                     model_group = model.group
@@ -987,10 +986,10 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
                             'count': count,
                         })
                 else:
-                    for c in components:
-                        if c.get('name') == model:
-                            count = c.get('count')
-                            c.update(count=count + 1)
+                    for component in components:
+                        if component.get('name') == model:
+                            count = component.get('count')
+                            component.update(count=count + 1)
             for component in components:
                 count = component.get('count')
                 price = component.get('price')
