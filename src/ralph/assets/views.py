@@ -121,16 +121,11 @@ class DataTableColumnAssets(DataTableColumn):
     A container object for all the information about a columns header
 
     :param foreign_field_name - set if field comes from foreign key
-    :param sort_expression - example `device_info__size`
-    :param export - set when the column is to be exported
     """
 
-    def __init__(self, header_name, foreign_field_name=None,
-                 sort_expression=None, export=None, **kwargs):
+    def __init__(self, header_name, foreign_field_name=None, **kwargs):
         super(DataTableColumnAssets, self).__init__(header_name, **kwargs)
         self.foreign_field_name = foreign_field_name
-        self.sort_expression = sort_expression
-        self.export = export
 
 
 class AssetSearch(AssetsMixin, DataTableMixin):
