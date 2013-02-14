@@ -13,7 +13,11 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-from lck.django.common.models import TimeTrackable, WithConcurrentGetOrCreate
+from lck.django.common.models import (
+    Named,
+    TimeTrackable,
+    WithConcurrentGetOrCreate,
+)
 from lck.django.choices import Choices
 from pygraph.classes.digraph import digraph
 from pygraph.algorithms.cycles import find_cycle
@@ -122,8 +126,7 @@ class CILayerIcon(Choices):
     fugue_computer_network = _('fugue-computer-network')
 
 
-class CILayer(TimeTrackable):
-    name = models.SlugField()
+class CILayer(Named.NonUnique, TimeTrackable):
     content_types = models.ManyToManyField(
         ContentType,
         verbose_name=_('connected content types'),
