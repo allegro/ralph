@@ -128,7 +128,7 @@ def run_ssh_aix(ip):
             continue
         wwn = normalize_wwn(sn[-4:] + sn[:-4])
         mount, created = DiskShareMount.concurrent_get_or_create(
-            share=share, device=dev, is_virtual=False)
+            share=share, device=dev, defaults={'is_virtual':False})
         mount.volume = disk
         mount.save(priority=SAVE_PRIORITY)
     for disk, model_name, sn in stors:

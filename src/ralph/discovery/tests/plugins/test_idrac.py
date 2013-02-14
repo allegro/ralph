@@ -264,22 +264,12 @@ class IDRACPluginTest(TestCase):
             [(mem.model.name, mem.label, mem.size, mem.speed)
                 for mem in Memory.objects.filter(
                     device=dev)],
-            [('Hynix Semiconductor DDR3 DIMM', 'Hynix Semiconductor DDR3 DIMM',
-              8192, 1333),
-             ('Hynix Semiconductor DDR3 DIMM', 'Hynix Semiconductor DDR3 DIMM',
-              8192, 1333),
-             ('Hynix Semiconductor DDR3 DIMM', 'Hynix Semiconductor DDR3 DIMM',
-              8192, 1333),
-             ('Hynix Semiconductor DDR3 DIMM', 'Hynix Semiconductor DDR3 DIMM',
-              8192, 1333),
-             ('Hynix Semiconductor DDR3 DIMM', 'Hynix Semiconductor DDR3 DIMM',
-              8192, 1333),
-             ('Hynix Semiconductor DDR3 DIMM', 'Hynix Semiconductor DDR3 DIMM',
-              8192, 1333),
-             ('Hynix Semiconductor DDR3 DIMM', 'Hynix Semiconductor DDR3 DIMM',
-              8192, 1333),
-             ('Hynix Semiconductor DDR3 DIMM', 'Hynix Semiconductor DDR3 DIMM',
-              8192, 1333)]
+            [(
+                'RAM  8192MiB, 1333MHz',
+                'Hynix Semiconductor DDR3 DIMM',
+                8192,
+                1333,
+            )] * 8,
         )
         # check ethernet objects.
         self.assertItemsEqual(
@@ -297,33 +287,44 @@ class IDRACPluginTest(TestCase):
         # check processor objects.
         self.assertItemsEqual(
             [(pr.index, pr.speed, pr.cores,
-              pr.model.name, pr.model.family, pr.model.extra, pr.model.cores,
+              pr.model.name, pr.model.family, pr.model.cores,
               pr.model.type, pr.cores)
                 for pr in Processor.objects.filter(device=dev)],
             [
-                (1, 3600, 6, 'Intel(R) Xeon(R) CPU E5-2640 0 @ 2.50GHz',
-                    'B3', 'Intel(R) Xeon(R) CPU E5-2640 0 @ 2.50GHz family:'
-                    ' B3 speed: 3600 cores: 6', 6, 1, 6),
-                (2, 3600, 6, 'Intel(R) Xeon(R) CPU E5-2640 0 @ 2.50GHz',
-                    'B3', 'Intel(R) Xeon(R) CPU E5-2640 0 @ 2.50GHz family:'
-                    ' B3 speed: 3600 cores: 6', 6, 1, 6)
+                (
+                    1,
+                    3600,
+                    6,
+                    'Intel(R) Xeon(R) CPU E5-2640 0 @ 2.50GHz',
+                    'B3',
+                    6,
+                    1,
+                    6
+                ), (
+                    2,
+                    3600,
+                    6,
+                    'Intel(R) Xeon(R) CPU E5-2640 0 @ 2.50GHz',
+                    'B3',
+                    6,
+                    1,
+                    6
+                )
             ]
         )
         # should have Fibre Channel objects as well.
         self.assertItemsEqual(
             [(fc.label, fc.model.name,
-              fc.model.extra, fc.model.size, fc.model.type,
+              fc.model.size, fc.model.type,
               fc.model.speed, fc.model.cores)
                 for fc in FibreChannel.objects.filter(device=dev)],
             [(' Saturn-X: LightPulse Fibre Channel Host Adapter',
-              ' Saturn-X: LightPulse Fibre Channel Host Adapter',
               ' Saturn-X: LightPulse Fibre Channel Host Adapter',
               0,
               6,
               0,
               0),
              (' Saturn-X: LightPulse Fibre Channel Host Adapter',
-              ' Saturn-X: LightPulse Fibre Channel Host Adapter',
               ' Saturn-X: LightPulse Fibre Channel Host Adapter',
               0,
               6,
@@ -334,13 +335,18 @@ class IDRACPluginTest(TestCase):
         # should have Storage created for the device.
         storage_result = [
             (st.label, fc.model.name,
-             fc.model.extra, fc.model.size, fc.model.type,
+             fc.model.size, fc.model.type,
              fc.model.speed, fc.model.cores)
                 for st in Storage.objects.filter(device=dev)
         ]
         storage_data = [
         ('WD WD3001BKHG 278MiB',
           ' Saturn-X: LightPulse Fibre Channel Host Adapter',
+          0,
+          6,
+          0,
+          0),
+         ('WD WD3001BKHG 278MiB',
           ' Saturn-X: LightPulse Fibre Channel Host Adapter',
           0,
           6,
@@ -348,6 +354,11 @@ class IDRACPluginTest(TestCase):
           0),
          ('WD WD3001BKHG 278MiB',
           ' Saturn-X: LightPulse Fibre Channel Host Adapter',
+          0,
+          6,
+          0,
+          0),
+         ('WD WD3001BKHG 278MiB',
           ' Saturn-X: LightPulse Fibre Channel Host Adapter',
           0,
           6,
@@ -355,6 +366,11 @@ class IDRACPluginTest(TestCase):
           0),
          ('WD WD3001BKHG 278MiB',
           ' Saturn-X: LightPulse Fibre Channel Host Adapter',
+          0,
+          6,
+          0,
+          0),
+         ('WD WD3001BKHG 278MiB',
           ' Saturn-X: LightPulse Fibre Channel Host Adapter',
           0,
           6,
@@ -362,34 +378,11 @@ class IDRACPluginTest(TestCase):
           0),
          ('WD WD3001BKHG 278MiB',
           ' Saturn-X: LightPulse Fibre Channel Host Adapter',
-          ' Saturn-X: LightPulse Fibre Channel Host Adapter',
           0,
           6,
           0,
           0),
          ('WD WD3001BKHG 278MiB',
-          ' Saturn-X: LightPulse Fibre Channel Host Adapter',
-          ' Saturn-X: LightPulse Fibre Channel Host Adapter',
-          0,
-          6,
-          0,
-          0),
-         ('WD WD3001BKHG 278MiB',
-          ' Saturn-X: LightPulse Fibre Channel Host Adapter',
-          ' Saturn-X: LightPulse Fibre Channel Host Adapter',
-          0,
-          6,
-          0,
-          0),
-         ('WD WD3001BKHG 278MiB',
-          ' Saturn-X: LightPulse Fibre Channel Host Adapter',
-          ' Saturn-X: LightPulse Fibre Channel Host Adapter',
-          0,
-          6,
-          0,
-          0),
-         ('WD WD3001BKHG 278MiB',
-          ' Saturn-X: LightPulse Fibre Channel Host Adapter',
           ' Saturn-X: LightPulse Fibre Channel Host Adapter',
           0,
           6,

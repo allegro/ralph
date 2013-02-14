@@ -175,7 +175,7 @@ class CIRelationEditForm(forms.ModelForm):
 class SearchImpactForm(forms.Form):
     ci = AutoCompleteSelectField(
         'ci', required=True,
-        plugin_options={'minLength': 3}
+        plugin_options={'minLength': 2}
     )
 
 

@@ -1,5 +1,22 @@
 Change Log
 ----------
+1.1.16
+~~~~~~
+
+Released on February 07, 2013
+
+* Adding next-server to DHCP configuration for devices in deployment.
+
+* A new report for device costs.
+
+* Improved CMDB impact report.
+
+* The ability to import DNS records from a CSV file.
+
+* Show separate count for physical devices in ventures report.
+
+* More bugfixes in the discovery plugins.
+
 
 1.1.15
 ~~~~~~
