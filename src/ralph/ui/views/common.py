@@ -1184,22 +1184,15 @@ class BulkEdit(BaseMixin, TemplateView):
                 self.different_fields.append(name)
             elif query.count() > 0:
                 initial[name] = query[0][name]
-        if 'save' in self.request.POST and self.edit_fields:
+        self.form = edit_fields_form(
+            self.edit_fields,
+            self.Form(self.request.POST, initial=initial)
+        )
+        if 'save' in self.request.POST:
             self.form = edit_fields_form(
                 self.edit_fields,
                 self.Form(self.request.POST, initial=initial)
             )
-
-
-
-
-########################################################################
-########################################################################
-########################################################################
-
-
-
-            # if self.form.is_valid:
             if self.form.is_valid and self.form.data['save_comment']:
                 bulk_update(
                     self.devices,
@@ -1212,14 +1205,12 @@ class BulkEdit(BaseMixin, TemplateView):
                 messages.error(self.request, 'Correct the errors.')
         elif 'bulk' in self.request.POST:
             self.form = self.Form(initial=initial)
-        elif self.edit_fields == []:
+        elif not self.edit_fields:
             self.form = self.Form(initial=initial)
             messages.error(
                 self.request,
                 _('You have to mark which fields you changed')
             )
-        elif not self.devices:
-            messages.error(self.request, 'Did not select any device')
         return super(BulkEdit, self).get(*args, **kwargs)
 
     def get(self, *args, **kwargs):

@@ -253,33 +253,19 @@ class DeviceBulkForm(DeviceForm):
             'support_kind',
             'deleted',
         )
-
     def __init__(self, *args, **kwargs):
         super(DeviceBulkForm, self).__init__(*args, **kwargs)
         self.fields['venture'].choices = all_ventures()
         self.fields['venture_role'].choices = all_roles()
 
-
-########################################################################
-## Validacja
-########################################################################
-
-
-    def clean_purchase_date(self):
-        import pdb; pdb.set_trace()
-    def clean_remakrs(self):
-        import pdb; pdb.set_trace()
-
-    def clean_edit_fields(self):
-        import pdb; pdb.set_trace()
-
-    def clean_save_comment(self):
-        import pdb; pdb.set_trace()
-
-        comment = self.cleaned_data['save_comment']
-        if not comment:
+    def clean(self):
+        if not self.data.get('select'):
+            messages.error(
+                self.request,
+                _('Did not select any device')
+            )
+        elif not self.data.get('save_comment'):
             raise forms.ValidationError("You must describe your change")
-        return comment
 
 
 class DeviceInfoForm(DeviceForm):
