@@ -33,7 +33,7 @@ from ralph.discovery.models import (
 from ralph.discovery.models_history import DiscoveryWarning
 
 
-SAVE_PRIORITY = 5
+SAVE_PRIORITY = 50
 
 
 class Error(Exception):
@@ -281,8 +281,9 @@ def _add_dev_mm(ip, pairs, parent, raw, counts, dev_id):
     _component(ComponentType.management, pairs, parent, raw)
 
     # XXX Clean up the previously added components
-    for child in parent.child_set.filter(model__type__in=[
-            DeviceType.management.id, DeviceType.unknown.id]):
+    for child in parent.child_set.filter(
+        model__type__in=[DeviceType.management, DeviceType.unknown],
+    ):
         child.delete()
 
 
@@ -456,8 +457,15 @@ def _recursive_add_dev(ssh, ip, dev_path, dev_id, components, parent=None,
             if counts is None:
                 counts = Counts()
             dev_id = dev_info.split(None, 1)[0]
-            _recursive_add_dev(ssh, ip, full_path, dev_id, components, dev,
-                               counts)
+            _recursive_add_dev(
+                ssh,
+                ip,
+                full_path,
+                dev_id,
+                components,
+                dev,
+                counts,
+            )
         return dev
 
 
