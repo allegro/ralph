@@ -17,6 +17,7 @@ from ajax_select.fields import AutoCompleteSelectField
 
 import ralph.cmdb.models as db
 from ralph.cmdb.models_changes import CIChangeGit
+from ralph.cmdb.updater import update_cis_layers
 from ralph.ui.widgets import ReadOnlyPreWidget
 
 
@@ -87,7 +88,43 @@ class CIOwnerAdmin(ModelAdmin):
 admin.site.register(db.CIOwner, CIOwnerAdmin)
 
 
+class CILayerForm(forms.ModelForm):
+    class Meta:
+        model = db.CILayer
+
+    def save(self, commit=True):
+        model = super(CILayerForm, self).save(commit)
+        if self.has_changed():
+            current_content_types = self.initial.get('content_types', [])
+            new_content_types = [
+                content_type.id
+                for content_type in self.cleaned_data.get('content_types', [])
+            ]
+            if not (len(current_content_types) == len(new_content_types) and
+                    all(
+                        current == new for current, new in zip(
+                            sorted(current_content_types),
+                            sorted(new_content_types),
+                        )
+                    )):
+                touched_content_types = set(current_content_types)
+                for content_type_id in new_content_types:
+                    touched_content_types.add(content_type_id)
+                update_cis_layers(
+                    touched_content_types,
+                    [
+                        item.id for item in self.cleaned_data.get(
+                            'content_types',
+                            [],
+                        )
+                    ],
+                    model,
+                )
+        return model
+
+
 class CILayerAdmin(ModelAdmin):
+    form = CILayerForm
     filter_horizontal = ('content_types',)
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):

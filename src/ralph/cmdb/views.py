@@ -101,6 +101,15 @@ class BaseCMDBView(Base):
             ret.update({perm + '_perm': has_perm(getattr(Perm, perm))})
         return ret
 
+    def _get_sidebar_layers_items(self):
+        return [
+            (
+                '/cmdb/search?layer=%d' % layer.id,
+                layer.name,
+                layer.icon.raw if layer.icon else 'fugue-layers-stack-arrange',
+            ) for layer in CILayer.objects.order_by('name')
+        ]
+
     def get_sidebar_items(self):
         ci = (
             ('/cmdb/add', 'Add CI', 'fugue-block--plus'),
@@ -109,27 +118,10 @@ class BaseCMDBView(Base):
             ('/cmdb/changes/timeline', 'Timeline View', 'fugue-dashboard'),
             ('/admin/cmdb', 'Admin', 'fugue-toolbox'),
         )
-
         layers = (
             ('/cmdb/search', 'All Cis (all layers)', 'fugue-magnifier'),
-            ('/cmdb/search?layer=1&type=1', 'Applications',
-             'fugue-applications-blue'),
-            ('/cmdb/search?layer=2&top_level=1', 'Databases',
-             'fugue-database'),
-            ('/cmdb/search?layer=3&top_level=1', 'Documentation/Procedures',
-             'fugue-blue-documents'),
-            ('/cmdb/search?layer=4&top_level=1',
-             'Organization Unit/Support Group',
-             'fugue-books-brown'),
-            ('/cmdb/search?layer=5&type=2', 'Hardware',
-             'fugue-processor'),
-            ('/cmdb/search?layer=6&type=8', 'Network',
-             'fugue-network-ip'),
-            ('/cmdb/search?layer=7&type=7', 'Services',
-             'fugue-disc-share'),
-            ('/cmdb/search?layer=8&type=5', 'Roles',
-             'fugue-computer-network'),
         )
+        layers += tuple(self._get_sidebar_layers_items())
         reports = (
             ('/cmdb/changes/reports?kind=top_changes',
                 'Top CI changes', 'fugue-reports'),

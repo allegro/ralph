@@ -6,6 +6,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from dj.choices.fields import ChoiceField
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from django.core.exceptions import ValidationError
@@ -49,21 +50,6 @@ class CI_ATTRIBUTE_TYPES(Choices):
     DATE = _('Date')
     FLOAT = _('Real')
     CHOICE = _('Choice List')
-
-
-"""
-class CI_LAYER(Choices):
-    _ = Choices.Choice
-
-    APPLICATIONS = _('Applications')
-    DATABASES = _('Databases')
-    DOC = _('Documentation/Procedures')
-    OU = _('Organization Unit/Support Group')
-    HARDWARE = _('Hardware')
-    NETWORK = _('Network')
-    SERVICES = _('Services')
-    ROLES = _('Roles')
-"""
 
 
 # Constants from  db
@@ -123,11 +109,31 @@ class CIContentTypePrefix(TimeTrackable):
         return ContentType.objects.get_by_natural_key(app, model)
 
 
+class CILayerIcon(Choices):
+    _ = Choices.Choice
+
+    fugue_applications_blue = _('fugue-applications-blue')
+    fugue_database = _('fugue-database')
+    fugue_blue_documents = _('fugue-blue-documents')
+    fugue_books_brown = _('fugue-books-brown')
+    fugue_processor = _('fugue-processor')
+    fugue_network_ip = _('fugue-network-ip')
+    fugue_disc_share = _('fugue-disc-share')
+    fugue_computer_network = _('fugue-computer-network')
+
+
 class CILayer(TimeTrackable):
     name = models.SlugField()
     content_types = models.ManyToManyField(
         ContentType,
         verbose_name=_('connected content types'),
+        blank=True,
+    )
+    icon = ChoiceField(
+        verbose_name=_('icon'),
+        choices=CILayerIcon,
+        default=None,
+        null=True,
         blank=True,
     )
 
