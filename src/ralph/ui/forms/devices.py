@@ -264,8 +264,6 @@ class DeviceBulkForm(DeviceForm):
                 self.request,
                 _('Did not select any device')
             )
-        elif not self.data.get('save_comment'):
-            raise forms.ValidationError("You must describe your change")
 
 
 class DeviceInfoForm(DeviceForm):
