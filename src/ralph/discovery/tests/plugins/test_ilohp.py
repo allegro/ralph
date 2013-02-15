@@ -270,6 +270,9 @@ class IloHpPluginTest(TestCase):
         cpus = [p.label for p in dev.processor_set.all()]
         self.assertEqual(cpus, ['Proc 1', 'Proc 2'])
         models = [p.model.name for p in dev.processor_set.all()]
-        self.assertEqual(models, ['CPU  2500MHz, 4-core', 'CPU  2500MHz, 4-core'])
+        self.assertEqual(models, [
+            'CPU Unknown 2500MHz, 4-core',
+            'CPU Unknown 2500MHz, 4-core'
+        ])
 
 
