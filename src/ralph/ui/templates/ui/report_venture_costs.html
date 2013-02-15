@@ -51,6 +51,7 @@
         </div>
     </div>
 
+    {% if venture_devices %}
     <div class="row-fluid">
         <div class="span12">
             <table class="table table-striped table-bordered table-condensed device-list">
@@ -122,4 +123,7 @@
             </table>
         </div>
     </div>
+    {% else %}
+        No result
+    {% endif %}
 {% endblock %}
