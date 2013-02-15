@@ -814,7 +814,6 @@ class ReportDevices(SidebarReports, Base):
                     dev.verified,
                     dev.deleted,
                 ])
-
         if request.get('export') == 'csv':
             rows.insert(0, headers)
             return self.export_csv(rows, csv_conf.get('name'))
@@ -826,7 +825,6 @@ class ReportDevices(SidebarReports, Base):
 
     def get_context_data(self, **kwargs):
         context = super(ReportDevices, self).get_context_data(**kwargs)
-
         context.update(
             {
                 'title': self.title,
@@ -1021,7 +1019,7 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
             raise Http404
         if self.venture_id:
             try:
-                venture_devices = Device.objects.get(venture=self.venture_id)
+                venture_devices = Device.objects.filter(venture=self.venture_id)
             except Device.DoesNotExist:
                 venture_devices = None
             self.form = ReportVentureCost(initial={'venture': self.venture_id})
@@ -1034,7 +1032,7 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
                 ]
             )
         else:
-            self.venture_id = None
+            self.devices = None
         if self.request.GET.get('export') == 'csv':
             return self.export_csv(self.devices)
         if self.request.GET.get('export-all') == 'csv':
