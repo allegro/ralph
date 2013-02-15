@@ -41,7 +41,7 @@ def _connect_ssh(ip, username='root', password=''):
     return network.connect_ssh(ip, 'root', settings.SSH_PASSWORD)
 
 
-def _get_local_disk_size(ssh, disk, prent):
+def _get_local_disk_size(ssh, disk, parent):
     """Return the size of a disk image file, in bytes"""
 
     path = os.path.join('/var/lib/vz/images', disk)
