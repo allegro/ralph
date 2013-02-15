@@ -41,7 +41,7 @@ def _connect_ssh(ip, username='root', password=''):
     return network.connect_ssh(ip, 'root', settings.SSH_PASSWORD)
 
 
-def _get_local_disk_size(ssh, disk, parent):
+def _get_local_disk_size(ssh, disk, parent, hypervisor_ip):
     """Return the size of a disk image file, in bytes"""
 
     path = os.path.join('/var/lib/vz/images', disk)
@@ -52,13 +52,14 @@ def _get_local_disk_size(ssh, disk, parent):
             message="Local disk fiel %r does not exist." % path,
             plugin=__name__,
             device=parent,
+            ip=hypervisor_ip,
         ).save()
         return 0
     size = int(line.split(None, 1)[0])
     return size
 
 
-def _add_virtual_machine(ssh, vmid, parent, master, storages):
+def _add_virtual_machine(ssh, vmid, parent, master, storages, hypervisor_ip):
     stdin, stdout, stderr = ssh.exec_command(
             "cat /etc/qemu-server/%d.conf" % vmid)
     lines = stdout.readlines()
@@ -72,7 +73,7 @@ def _add_virtual_machine(ssh, vmid, parent, master, storages):
     name = 'unknown'
     for line in lines:
         line = line.strip()
-        if line.startswith('#'):
+        if line.startswith('#') or ':' not in line:
             continue
         key, value = line.split(':', 1)
         if key.startswith('vlan'):
@@ -92,6 +93,7 @@ def _add_virtual_machine(ssh, vmid, parent, master, storages):
             message="No LAN for virtual server %r." % vmid,
             plugin=__name__,
             device=parent,
+            ip=hypervisor_ip
         ).save()
         return None
     dev = Device.create(
@@ -118,7 +120,7 @@ def _add_virtual_machine(ssh, vmid, parent, master, storages):
             vg = ''
             lv = disk
         if vg == 'local':
-            size = _get_local_disk_size(ssh, lv, parent)
+            size = _get_local_disk_size(ssh, lv, parent, hypervisor_ip)
             if not size > 0:
                 continue
             model, created = ComponentModel.create(
@@ -146,6 +148,7 @@ def _add_virtual_machine(ssh, vmid, parent, master, storages):
                 message="Volume %r does not exist." % lv,
                 plugin=__name__,
                 device=dev,
+                ip=hypervisor_ip,
             ).save()
             continue
         try:
@@ -157,6 +160,7 @@ def _add_virtual_machine(ssh, vmid, parent, master, storages):
                 message="A share with serial %r does not exist." % wwn,
                 plugin=__name__,
                 device=dev,
+                ip=hypervisor_ip,
             ).save()
             continue
         mount, created = DiskShareMount.concurrent_get_or_create(
@@ -191,7 +195,7 @@ def _add_virtual_machine(ssh, vmid, parent, master, storages):
     dev.save(update_last_seen=True, priority=SAVE_PRIORITY)
     return dev
 
-def _add_virtual_machines(ssh, parent, master):
+def _add_virtual_machines(ssh, parent, master, hypervisor_ip):
     storages = get_disk_shares(ssh)
     stdin, stdout, stderr = ssh.exec_command("qm list")
     dev_ids = []
@@ -204,7 +208,14 @@ def _add_virtual_machines(ssh, parent, master):
         if status != 'running':
             continue
         vmid = int(vmid)
-        dev = _add_virtual_machine(ssh, vmid, parent, master, storages)
+        dev = _add_virtual_machine(
+            ssh,
+            vmid,
+            parent,
+            master,
+            storages,
+            hypervisor_ip,
+        )
         if dev is None:
             continue
         dev_ids.append(dev.id)
@@ -293,7 +304,7 @@ def run_ssh_proxmox(ip):
             raise NotProxmoxError('this is not a PROXMOX server.')
         master = _get_master(ssh, ip)
         member = _add_cluster_member(ssh, ip)
-        _add_virtual_machines(ssh, member, master)
+        _add_virtual_machines(ssh, member, master, ip)
     finally:
         ssh.close()
     return member.sn or member.name
