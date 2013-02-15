@@ -9,7 +9,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from dateutil.relativedelta import relativedelta
-from datetime import datetime, timedelta
+import datetime
 import re
 import sys
 import os
@@ -531,6 +531,10 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
             if not self.position:
                 self.position = self.get_position()
         if self.purchase_date and self.deprecation_kind:
+            if isinstance(self.purchase_date, basestring):
+                self.purchase_date = datetime.datetime.strptime(
+                        self.purchase_date, '%Y-%m-%d %H:%M:%S'
+                    )
             self.deprecation_date = (
                 self.purchase_date + relativedelta(
                     months=self.deprecation_kind.months

@@ -5,7 +5,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import datetime
-
 from django.conf import settings
 from django.contrib import messages
 from django.core.urlresolvers import reverse
@@ -13,15 +12,17 @@ from django.core.paginator import Paginator
 from django.db import models as db
 from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.utils import simplejson as json
+from django.utils.translation import ugettext_lazy as _
 from django.views.generic import UpdateView, DetailView, TemplateView
 
 from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Language, TagStem
 from bob.menu import MenuItem
 from powerdns.models import Record
+from discovery.models_device import DeprecationKind, MarginKind
 
 from ralph.account.models import Perm
-from ralph.business.models import RolePropertyValue
+from ralph.business.models import RolePropertyValue, Venture, VentureRole
 from ralph.cmdb.models import CI
 from ralph.deployment.util import get_next_free_hostname, get_first_free_ip
 from ralph.dnsedit.models import DHCPEntry
@@ -1118,8 +1119,19 @@ def bulk_update(devices, fields, data, user):
     for d in devices:
         if 'venture' in fields:
             d.venture_role = None
+
+        field_classes = {
+            'deprecation_kind': DeprecationKind,
+            'venture': Venture,
+            'venture_role': VentureRole,
+            'margin_kind': MarginKind,
+        }
+
         for name in fields:
-            setattr(d, name, data[name])
+            if name in field_classes:
+                setattr(d, name, field_classes[name].objects.get(id=data[name]))
+            else:
+                setattr(d, name, data[name])
         d.save_comment = data.get('save_comment')
         d.save(priority=SAVE_PRIORITY, user=user)
         pricing.device_update_cached(d)
@@ -1141,7 +1153,7 @@ class BulkEdit(BaseMixin, TemplateView):
         if not profile.has_perm(Perm.bulk_edit):
             messages.error(
                 self.request,
-                "You don't have permissions for bulk edit.",
+                _("You don't have permissions for bulk edit."),
             )
             return super(BulkEdit, self).get(*args, **kwargs)
         selected = self.request.POST.getlist('select')
@@ -1161,17 +1173,32 @@ class BulkEdit(BaseMixin, TemplateView):
                 initial[name] = query[0][name]
         if 'save' in self.request.POST:
             self.form = self.Form(self.request.POST, initial=initial)
-            if self.form.is_valid():
-                bulk_update(self.devices, self.edit_fields,
-                        self.form.cleaned_data, self.request.user)
-                return HttpResponseRedirect(self.request.path + '../info/')
+            if not self.edit_fields:
+                messages.error(self.request, 'Mark changed fields')
+            elif self.form.is_valid and self.form.data['save_comment']:
+                self.form.fields = [f for f in self.form.fields
+                        if not f in self.edit_fields or f != 'save_comment']
+                bulk_update(
+                    self.devices,
+                    self.edit_fields,
+                    self.form.data,
+                    self.request.user
+                )
+                return HttpResponseRedirect(self.request.path+'../info/')
             else:
                 messages.error(self.request, 'Correct the errors.')
         elif 'bulk' in self.request.POST:
             self.form = self.Form(initial=initial)
+        elif not self.edit_fields:
+            self.form = self.Form(initial=initial)
+            messages.error(
+                self.request,
+                _('You have to mark which fields you changed')
+            )
         return super(BulkEdit, self).get(*args, **kwargs)
 
     def get(self, *args, **kwargs):
+        messages.error(self.request, _('Did not select any device'))
         return super(BulkEdit, self).get(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
