@@ -126,7 +126,10 @@ class CILayerIcon(Choices):
     fugue_computer_network = _('fugue-computer-network')
 
 
-class CILayer(Named.NonUnique, TimeTrackable):
+class CILayer(TimeTrackable):
+    # to save compatibility with SlugField from Django 1.3 and don't broke
+    # migration in SQLite...
+    name = models.CharField(max_length=50, db_index=True)
     content_types = models.ManyToManyField(
         ContentType,
         verbose_name=_('connected content types'),
