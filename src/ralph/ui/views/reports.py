@@ -1018,10 +1018,7 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
         if self.venture_id not in ['', None] and not self.venture_id.isdigit():
             raise Http404
         if self.venture_id:
-            try:
-                venture_devices = Device.objects.filter(venture=self.venture_id)
-            except Device.DoesNotExist:
-                venture_devices = None
+            venture_devices = Device.objects.filter(venture_id=self.venture_id)
             self.form = ReportVentureCost(initial={'venture': self.venture_id})
         if venture_devices:
             self.devices = self.get_device_with_components(
