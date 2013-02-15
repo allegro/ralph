@@ -9,6 +9,7 @@ from __future__ import unicode_literals
 import datetime
 import cStringIO as StringIO
 
+from django.contrib import messages
 from django.db import models as db
 from django.http import HttpResponseForbidden, HttpResponse, Http404
 from django.conf import settings
@@ -1019,14 +1020,15 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
         if self.venture_id not in ['', None] and not self.venture_id.isdigit():
             raise Http404
         if self.venture_id:
-            venture_devices = get_list_or_404(
-                Device, venture=self.venture_id, deleted=False
-            )
+            try:
+                venture_devices = Device.objects.get(venture=self.venture_id)
+            except Device.DoesNotExist:
+                venture_devices = None
             self.form = ReportVentureCost(initial={'venture': self.venture_id})
         if venture_devices:
-            # Blacklist: Os, Software
             self.devices = self.get_device_with_components(
-                venture_devices, blacklist=[
+                venture_devices,
+                blacklist=[
                     ComponentType.software,
                     ComponentType.os,
                 ]
