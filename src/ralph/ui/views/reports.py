@@ -798,8 +798,8 @@ class ReportDevices(SidebarReports, Base):
                     'url': '?show_all_deleted_devices=on&export=csv',
                     }
             headers = [
-                'Device', 'Model', 'SN', 'Barcode', 'Venture', 'Venture ID',
-                'Role', 'Remarks', 'Verified', 'Deleted'
+                'Device', 'Model', 'SN', 'Barcode', 'Auto price', 'Venture',
+                'Venture ID', 'Role', 'Remarks', 'Verified', 'Deleted'
             ]
             for dev in show_devices:
                 rows.append([
@@ -807,13 +807,13 @@ class ReportDevices(SidebarReports, Base):
                     dev.model,
                     dev.sn,
                     dev.barcode,
+                    dev.cached_price,
                     dev.venture,
                     dev.role,
                     dev.remarks,
                     dev.verified,
                     dev.deleted,
                 ])
-
         if request.get('export') == 'csv':
             rows.insert(0, headers)
             return self.export_csv(rows, csv_conf.get('name'))
@@ -825,7 +825,6 @@ class ReportDevices(SidebarReports, Base):
 
     def get_context_data(self, **kwargs):
         context = super(ReportDevices, self).get_context_data(**kwargs)
-
         context.update(
             {
                 'title': self.title,
@@ -1019,20 +1018,18 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
         if self.venture_id not in ['', None] and not self.venture_id.isdigit():
             raise Http404
         if self.venture_id:
-            venture_devices = get_list_or_404(
-                Device, venture=self.venture_id, deleted=False
-            )
+            venture_devices = Device.objects.filter(venture_id=self.venture_id)
             self.form = ReportVentureCost(initial={'venture': self.venture_id})
         if venture_devices:
-            # Blacklist: Os, Software
             self.devices = self.get_device_with_components(
-                venture_devices, blacklist=[
+                venture_devices,
+                blacklist=[
                     ComponentType.software,
                     ComponentType.os,
                 ]
             )
         else:
-            self.venture_id = None
+            self.devices = None
         if self.request.GET.get('export') == 'csv':
             return self.export_csv(self.devices)
         if self.request.GET.get('export-all') == 'csv':
