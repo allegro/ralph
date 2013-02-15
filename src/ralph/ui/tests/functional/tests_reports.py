@@ -494,7 +494,6 @@ class TestReportsPriceDeviceVenture(TestCase):
 
     def test_view_devices_with_components_in_venture(self):
         ''' Tests device with local components, with praces from catalog '''
-
         venture = Venture.objects.get(name='Infra')
         url = '/ui/reports/device_prices_per_venture/?venture=%s' % venture.id
         response = self.client.get(url)
