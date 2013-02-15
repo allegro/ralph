@@ -20,6 +20,10 @@ from ralph.util import plugin, Eth
 from ralph.discovery.models import DeviceType, Device, IPAddress
 
 
+SSH_SSG_USER = settings.SSH_SSG_USER
+SSH_SSG_PASSWORD = settings.SSH_SSG_PASSWORD
+
+
 class Error(Exception):
     pass
 
@@ -103,6 +107,8 @@ def run_ssh_ssg(ip):
 
 @plugin.register(chain='discovery', requires=['ping', 'http'])
 def ssh_ssg(**kwargs):
+    if SSH_SSG_USER is None or SSH_SSG_PASSWORD is None:
+        return False, 'no credentials.', kwargs
     ip = str(kwargs['ip'])
     if kwargs.get('http_family') not in ('SSG', 'Unspecified'):
         return False, 'no match.', kwargs
