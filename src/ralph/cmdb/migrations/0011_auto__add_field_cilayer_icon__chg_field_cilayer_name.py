@@ -2,8 +2,8 @@
 import datetime
 from south.db import db
 from south.v2 import SchemaMigration
-from django.conf import settings
-from django.db import models, connection
+from django.db import models
+
 
 class Migration(SchemaMigration):
 
@@ -23,21 +23,9 @@ class Migration(SchemaMigration):
 
 
         # Changing field 'CILayer.name'
-        db.alter_column('cmdb_cilayer', 'name', self.gf('django.db.models.fields.CharField')(max_length=75))
-        # Removing index on 'CILayer', fields ['name']
-        if 'sqlite' in settings.DATABASES['default']['ENGINE']:
-            cursor = connection.cursor()
-            indexes = cursor.execute("PRAGMA INDEX_LIST('cmdb_cilayer')")
-            for row in indexes.fetchall():
-                cursor.execute('DROP INDEX %s', [row[1]])
-        else:
-            db.delete_index('cmdb_cilayer', ['name'])
-
+        db.alter_column('cmdb_cilayer', 'name', self.gf('django.db.models.fields.CharField')(max_length=50))
 
     def backwards(self, orm):
-        # Adding index on 'CILayer', fields ['name']
-        db.create_index('cmdb_cilayer', ['name'])
-
         # Deleting field 'CILayer.icon'
         db.delete_column('cmdb_cilayer', 'icon')
 
@@ -240,7 +228,7 @@ class Migration(SchemaMigration):
             'icon': (u'dj.choices.fields.ChoiceField', [], {'unique': 'False', 'primary_key': 'False', 'db_column': 'None', 'blank': 'True', u'default': 'None', 'null': 'True', '_in_south': 'True', 'db_index': 'False'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '75'})
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '50', 'db_index': 'True'})
         },
         'cmdb.ciowner': {
             'Meta': {'object_name': 'CIOwner'},
