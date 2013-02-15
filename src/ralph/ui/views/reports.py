@@ -798,8 +798,8 @@ class ReportDevices(SidebarReports, Base):
                     'url': '?show_all_deleted_devices=on&export=csv',
                     }
             headers = [
-                'Device', 'Model', 'SN', 'Barcode', 'Venture', 'Venture ID',
-                'Role', 'Remarks', 'Verified', 'Deleted'
+                'Device', 'Model', 'SN', 'Barcode', 'Auto price', 'Venture',
+                'Venture ID', 'Role', 'Remarks', 'Verified', 'Deleted'
             ]
             for dev in show_devices:
                 rows.append([
@@ -807,6 +807,7 @@ class ReportDevices(SidebarReports, Base):
                     dev.model,
                     dev.sn,
                     dev.barcode,
+                    dev.cached_price,
                     dev.venture,
                     dev.role,
                     dev.remarks,
