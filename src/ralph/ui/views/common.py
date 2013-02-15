@@ -1137,18 +1137,6 @@ def bulk_update(devices, fields, data, user):
         pricing.device_update_cached(d)
 
 
-def edit_fields_form(edit_fields, form):
-    """ Validate only edit fields """
-    old_form_fields = form.fields
-    fields_to_remove = []
-    for field in old_form_fields:
-        if field not in edit_fields and field != 'save_comment':
-            fields_to_remove.append(field)
-    for field in fields_to_remove:
-        del(form.fields[field])
-    return form
-
-
 class BulkEdit(BaseMixin, TemplateView):
     template_name = 'ui/bulk-edit.html'
     Form = DeviceBulkForm
@@ -1173,7 +1161,6 @@ class BulkEdit(BaseMixin, TemplateView):
         self.edit_fields = self.request.POST.getlist('edit')
         initial = {}
         self.different_fields = []
-
         for name in self.Form().fields:
             if name == 'save_comment':
                 continue
@@ -1184,16 +1171,13 @@ class BulkEdit(BaseMixin, TemplateView):
                 self.different_fields.append(name)
             elif query.count() > 0:
                 initial[name] = query[0][name]
-        self.form = edit_fields_form(
-            self.edit_fields,
-            self.Form(self.request.POST, initial=initial)
-        )
         if 'save' in self.request.POST:
-            self.form = edit_fields_form(
-                self.edit_fields,
-                self.Form(self.request.POST, initial=initial)
-            )
-            if self.form.is_valid and self.form.data['save_comment']:
+            self.form = self.Form(self.request.POST, initial=initial)
+            if not self.edit_fields:
+                messages.error(self.request, 'Mark changed fields')
+            elif self.form.is_valid and self.form.data['save_comment']:
+                self.form.fields = [f for f in self.form.fields
+                        if not f in self.edit_fields or f != 'save_comment']
                 bulk_update(
                     self.devices,
                     self.edit_fields,
