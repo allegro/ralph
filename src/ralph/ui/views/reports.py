@@ -9,7 +9,6 @@ from __future__ import unicode_literals
 import datetime
 import cStringIO as StringIO
 
-from django.contrib import messages
 from django.db import models as db
 from django.http import HttpResponseForbidden, HttpResponse, Http404
 from django.conf import settings
