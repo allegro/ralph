@@ -274,5 +274,3 @@ class IloHpPluginTest(TestCase):
             'CPU Unknown 2500MHz, 4-core',
             'CPU Unknown 2500MHz, 4-core'
         ])
-
-
