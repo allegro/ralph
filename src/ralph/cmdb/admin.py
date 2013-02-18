@@ -100,13 +100,7 @@ class CILayerForm(forms.ModelForm):
                 content_type.id
                 for content_type in self.cleaned_data.get('content_types', [])
             ])
-            if not (len(current_content_types) == len(new_content_types) and
-                    all(
-                        current == new for current, new in zip(
-                            sorted(current_content_types),
-                            sorted(new_content_types),
-                        )
-                    )):
+            if not (current_content_types == new_content_types):
                 touched_content_types = current_content_types.union(
                     new_content_types,
                 )
