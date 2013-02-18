@@ -2,39 +2,47 @@
   pk: 1
   fields:
     name: Applications
+    icon: 1
 
 - model: cmdb.CILayer
   pk: 2
   fields:
     name: Databases
+    icon: 2
 
 - model: cmdb.CILayer
   pk: 3
   fields:
     name: Documentation/Procedures
+    icon: 3
 
 - model: cmdb.CILayer
   pk: 4 
   fields:
     name: Organization Unit/Support Group
+    icon: 4
 
 - model: cmdb.CILayer
   pk: 5
   fields:
     name: Hardware
+    icon: 5
 
 - model: cmdb.CILayer
   pk: 6
   fields:
     name: Network
+    icon: 6
 
 - model: cmdb.CILayer
   pk: 7
   fields:
     name: Services
+    icon: 7
 
 - model: cmdb.CILayer
   pk: 8
   fields:
     name: Roles
+    icon: 8
 
