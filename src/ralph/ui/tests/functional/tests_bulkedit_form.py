@@ -54,7 +54,7 @@ ERROR_MSG = {
 }
 
 
-class TestBulkedit(TestCase):
+class BulkeditTest(TestCase):
     """ Tests edit form
 
     Scenario:
