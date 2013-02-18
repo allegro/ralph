@@ -12,7 +12,7 @@ from ralph.discovery.models_network import Network, NetworkTerminator, DataCente
 from ralph.deployment.models import Preboot
 
 
-class TestModels(TestCase):
+class ModelsTest(TestCase):
     def test_venture_path(self):
         a = Venture(name='A', symbol='a')
         a.save()
