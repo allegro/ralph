@@ -349,3 +349,4 @@ def remove_moved_cis_pre_delete(sender, instance, using, **kwargs):
     ci = cdb.CI.get_by_content_object(instance)
     if ci:
         ci.delete()
+

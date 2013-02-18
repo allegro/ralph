@@ -32,7 +32,7 @@ from ralph.util.pricing import get_device_price
 CURRENT_DIR = settings.CURRENT_DIR
 
 
-class TestReportsServices(TestCase):
+class ReportsServicesTest(TestCase):
     fixtures = [
         '0_types.yaml',
         '1_attributes.yaml',
@@ -103,7 +103,7 @@ class TestReportsServices(TestCase):
         self.assertEqual(len(re_services_without_venture), 0)
 
 
-class TestReportsDevices(TestCase):
+class ReportsDevicesTest(TestCase):
     def setUp(self):
         self.client = login_as_su()
         venture = Venture(name='venture', symbol='ventureSymbol')
@@ -303,7 +303,7 @@ class TestReportsDevices(TestCase):
         self.assertEqual(form[0][1], datetime.datetime(2005, 01, 02))
 
 
-class TestReportsPriceDeviceVenture(TestCase):
+class ReportsPriceDeviceVentureTest(TestCase):
     def setUp(self):
         self.client = login_as_su()
 
@@ -622,14 +622,14 @@ class TestReportsPriceDeviceVenture(TestCase):
         pass
 
 
-class TestReportsVentures(TestCase):
+class ReportsVenturesTest(TestCase):
     """
     I need test!
     """
     pass
 
 
-class TestReportsMargins(TestCase):
+class ReportsMarginsTest(TestCase):
     """
     I need test!
     """

@@ -44,9 +44,10 @@ from __future__ import unicode_literals
 import os
 os.environ['DJANGO_SETTINGS_MODULE'] = "ralph.settings"
 
-from django.contrib.contenttypes.models import ContentType
 import logging
 logger = logging.getLogger(__name__)
+
+from django.contrib.contenttypes.models import ContentType
 
 import ralph.discovery.models as db
 import ralph.discovery.models_network as ndb
@@ -54,6 +55,14 @@ import ralph.business.models as bdb
 import ralph.cmdb.models as cdb
 from django.db import IntegrityError
 from lck.django.common import nested_commit_on_success
+
+
+def get_layers_for_model(model):
+    try:
+        content_type = ContentType.objects.get_for_model(model)
+    except ContentType.DoesNotExist:
+        return
+    return content_type.cilayer_set.all()
 
 
 class UnknownCTException(Exception):
@@ -67,10 +76,9 @@ class UnknownCTException(Exception):
 
 class CIImporter(object):
     @nested_commit_on_success
-    def store_asset(self, asset, type_, layer_id, uid_prefix):
+    def store_asset(self, asset, type_, layers, uid_prefix):
         """Store given asset as  CI"""
         logger.debug('Saving: %s' % asset)
-        layer = cdb.CILayer.objects.get(id=layer_id)
         ci = cdb.CI()
         ci.uid = '%s-%s' % (uid_prefix, asset.id)
         ci.content_object = asset
@@ -78,7 +86,7 @@ class CIImporter(object):
         try:
             # new CI
             ci.save()
-            ci.layers = [layer]
+            ci.layers = layers
         except IntegrityError:
             # Integrity error - existing CI Already in database.
             # Get CI by uid, and use it for saving data.
@@ -88,7 +96,7 @@ class CIImporter(object):
         ci.save()
         return ci
 
-    def import_assets_by_contenttype(self, asset_class, _type, layer_id,
+    def import_assets_by_contenttype(self, asset_class, _type, layers,
                                      asset_id=None):
         ret = []
         logger.info('Importing devices.')
@@ -109,7 +117,7 @@ class CIImporter(object):
         else:
             all_devices = asset_class.objects.order_by('id').all()
         for d in all_devices:
-            ret.append(self.store_asset(d, _type, layer_id, uid_prefix))
+            ret.append(self.store_asset(d, _type, layers, uid_prefix))
         logger.info('Finished.')
         return ret
 
@@ -372,24 +380,14 @@ class CIImporter(object):
             bdb.Service: cdb.CI_TYPES.SERVICE.id,
             bdb.BusinessLine: cdb.CI_TYPES.BUSINESSLINE.id,
         }
-        layers = {
-            db.Device: 5,
-            bdb.Venture: 4,
-            bdb.VentureRole: 8,
-            ndb.Network:  6,
-            ndb.NetworkTerminator: 6,
-            db.DataCenter: 5,
-            bdb.BusinessLine: 7,
-            bdb.Service: 7,
-        }
         for i in content_types:
             assetClass = i.model_class()
             assetContentType = i
             logger.info('Importing content type : %s' % assetContentType)
             type_ = content_to_import[assetClass]
-            layer = layers[assetClass]
+            layers = get_layers_for_model(assetClass)
             ret.extend(self.import_assets_by_contenttype(
-                assetClass, type_, layer, asset_id)
+                assetClass, type_, layers, asset_id)
             )
         return ret
 
