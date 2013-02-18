@@ -10,13 +10,18 @@ import re
 
 from django import forms
 from django.contrib import admin
+from django.contrib.contenttypes.models import ContentType
 from lck.django.common.admin import ModelAdmin
 
 from ajax_select.fields import AutoCompleteSelectField
 
 import ralph.cmdb.models as db
 from ralph.cmdb.models_changes import CIChangeGit
+from ralph.cmdb.updater import update_cis_layers
 from ralph.ui.widgets import ReadOnlyPreWidget
+
+
+TRACKED_APPS = ('discovery', 'business',)
 
 
 class GitPathMappingAdminForm(forms.ModelForm):
@@ -83,11 +88,57 @@ class CIOwnerAdmin(ModelAdmin):
 admin.site.register(db.CIOwner, CIOwnerAdmin)
 
 
+class CILayerForm(forms.ModelForm):
+    class Meta:
+        model = db.CILayer
+
+    def save(self, commit=True):
+        model = super(CILayerForm, self).save(commit)
+        if self.has_changed():
+            current_content_types = set(self.initial.get('content_types', []))
+            new_content_types = set([
+                content_type.id
+                for content_type in self.cleaned_data.get('content_types', [])
+            ])
+            if not (current_content_types == new_content_types):
+                touched_content_types = current_content_types.union(
+                    new_content_types,
+                )
+                update_cis_layers(
+                    touched_content_types,
+                    [
+                        item.id for item in self.cleaned_data.get(
+                            'content_types',
+                            [],
+                        )
+                    ],
+                    model,
+                )
+        return model
+
+
+class CILayerAdmin(ModelAdmin):
+    form = CILayerForm
+    filter_horizontal = ('content_types',)
+
+    def formfield_for_manytomany(self, db_field, request, **kwargs):
+        if db_field.name == "content_types":
+            kwargs["queryset"] = ContentType.objects.filter(
+                app_label__in=TRACKED_APPS,
+            ).order_by('name')
+        return super(CILayerAdmin, self).formfield_for_manytomany(
+            db_field,
+            request,
+            **kwargs
+        )
+
+admin.site.register(db.CILayer, CILayerAdmin)
+
+
 # simple types
 admin.site.register([
     db.CI,
     db.CIType,
-    db.CILayer,
     db.CIRelation,
     db.CIAttribute,
     db.CIAttributeValue,

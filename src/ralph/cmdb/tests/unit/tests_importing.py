@@ -11,7 +11,11 @@ from django.contrib.contenttypes.models import ContentType
 from ralph.business.models import Venture, VentureRole
 from ralph.cmdb.importer import CIImporter
 from ralph.cmdb.models import(
-    CI, CIRelation, CI_RELATION_TYPES)
+    CI,
+    CIRelation,
+    CI_RELATION_TYPES,
+    CILayer,
+)
 from ralph.discovery.models import (Device, DeviceType, DeviceModel)
 
 
@@ -27,6 +31,11 @@ class CIImporterTest(TestCase):
     ]
 
     def setUp(self):
+        hardware_layer = CILayer.objects.get(pk=5)
+        hardware_layer.content_types.add(
+            ContentType.objects.get_for_model(Device)
+        )
+
         self.top_venture = Venture(name='top_venture')
         self.top_venture.save()
 
@@ -74,7 +83,6 @@ class CIImporterTest(TestCase):
         dm.name = name
         dm.save()
         return dm
-
 
     def test_import_devices(self):
         """

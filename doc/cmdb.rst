@@ -118,6 +118,29 @@ checking if ``cmdb`` is listed in ``INSTALLED_APPS``::
     Currently the CMDB module requires MySQL database as backend. We accept
     patches.
 
+Layers customization 
+~~~~~~~~~~~~~~~~~~~~
+
+All CIs can be grouped in layers. By default ``cmdb`` have predefined 
+set of layers:
+
+1) Applications
+2) Databases
+3) Documentation/Procedures
+4) Organization Unit/Support Group
+5) Hardware
+6) Network
+7) Services
+8) Roles
+
+All layers can be customized in admin panel. Administrator can modify:
+* name - name of the layer
+* connected content types - set of connected ContentType objects. 
+  By these relationships ``cmdb`` can assign CI to the appropriate 
+  layer.
+* icon
+
+Adding new layers is also possible.
 
 Federating the data
 -------------------
