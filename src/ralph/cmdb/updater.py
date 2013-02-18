@@ -10,10 +10,11 @@ from ralph.cmdb.models import CI
 
 
 def update_cis_layers(touched_content_types, layer_content_types, layer):
+    """
+    Update all CIs whose "content type" is connected with changed layers.
+    """
     ci_objects = CI.objects.filter(content_type__in=touched_content_types)
     for ci in ci_objects:
-        if not ci.content_type:
-            continue
         ci_layers = set()
         for ci_layer in ci.layers.all():
             if ci_layer.id != layer.pk:
