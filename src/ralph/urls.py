@@ -108,6 +108,7 @@ urlpatterns = patterns(
         name='preboot-default-view', kwargs={'file_type': 'boot_ipxe'}),
     url(r'^pxe/DONE/$', 'ralph.deployment.views.preboot_complete_view',
         name='preboot-complete-view'),
+    (r'^rq/', include('django_rq.urls')),
 
     # include the lookup urls
     (r'^admin/lookups/', include(ajax_select_urls)),
