@@ -29,18 +29,29 @@ from lck.django.filters import slugify
 from bob.menu import MenuItem, MenuHeader
 
 from ralph.cmdb.forms import (
-    CISearchForm, CIEditForm, CIViewForm, CIRelationEditForm, SearchImpactForm
+    CISearchForm,
+    CIEditForm,
+    CIViewForm,
+    CIRelationEditForm,
+    SearchImpactForm,
 )
 from ralph.cmdb.customfields import EditAttributeFormFactory
 from ralph.cmdb.models_ci import (
-    CIOwner, CIOwnership, CILayer, CI_TYPES, CI, CIRelation,
+    CIOwner,
+    CIOwnership,
+    CILayer,
+    CI_TYPES,
+    CI,
+    CIRelation,
 )
 import ralph.cmdb.models as db
 from ralph.cmdb.graphs import ImpactCalculator
 from ralph.account.models import Perm
 from ralph.ui.views.common import Base
 from ralph.util.presentation import (
-    get_device_icon, get_venture_icon, get_network_icon
+    get_device_icon,
+    get_venture_icon,
+    get_network_icon,
 )
 
 

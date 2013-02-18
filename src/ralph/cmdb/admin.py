@@ -95,11 +95,11 @@ class CILayerForm(forms.ModelForm):
     def save(self, commit=True):
         model = super(CILayerForm, self).save(commit)
         if self.has_changed():
-            current_content_types = self.initial.get('content_types', [])
-            new_content_types = [
+            current_content_types = set(self.initial.get('content_types', []))
+            new_content_types = set([
                 content_type.id
                 for content_type in self.cleaned_data.get('content_types', [])
-            ]
+            ])
             if not (len(current_content_types) == len(new_content_types) and
                     all(
                         current == new for current, new in zip(
@@ -107,9 +107,9 @@ class CILayerForm(forms.ModelForm):
                             sorted(new_content_types),
                         )
                     )):
-                touched_content_types = set(current_content_types)
-                for content_type_id in new_content_types:
-                    touched_content_types.add(content_type_id)
+                touched_content_types = current_content_types.union(
+                    new_content_types,
+                )
                 update_cis_layers(
                     touched_content_types,
                     [
