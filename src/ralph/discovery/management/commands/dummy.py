@@ -12,6 +12,7 @@ from optparse import make_option
 import textwrap
 
 from django.core.management.base import BaseCommand
+import django_rq
 
 from ralph.discovery.tasks import dummy_horde
 
@@ -41,6 +42,7 @@ class Command(BaseCommand):
         except (ValueError, TypeError, IndexError):
             how_many = 1000
         if options['remote']:
-            dummy_horde.delay(how_many=how_many, interactive=False)
+            queue = django_rq.get_queue()
+            queue.enqueue(dummy_horde, how_many=how_many, interactive=False)
         else:
             dummy_horde(how_many=how_many, interactive=True)
