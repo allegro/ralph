@@ -29,7 +29,7 @@ DEVICE = {
 DATACENTER = 'dc1'
 
 
-class TestDeviceView(TestCase):
+class DeviceViewTest(TestCase):
     def setUp(self):
         self.client = login_as_su()
         self.device = Device.create(

@@ -57,7 +57,7 @@ IP2HOST_HOSTNAME_REGEX = settings.SANITY_CHECK_IP2HOST_HOSTNAME_REGEX
 THROTTLE_AT = settings.API_THROTTLING['throttle_at']
 
 
-class TestNetwork(TestCase):
+class NetworkTest(TestCase):
     @skip('uses external resources')
     # @skipIf(sys.platform in ('darwin',), "Ping on MacOS X requires root.")
     def test_ping(self):
@@ -91,7 +91,7 @@ class TestNetwork(TestCase):
         self.assertIsNone(hostname(NON_EXISTENT_HOST_IP))
 
 
-class TestPricing(TestCase):
+class PricingTest(TestCase):
     def test_rack_server(self):
         dev = Device.create(sn='device', model_type=DeviceType.rack_server,
                             model_name='device')
@@ -217,7 +217,7 @@ class TestPricing(TestCase):
         self.assertEqual(dev.cached_price, 100)
 
 
-class TestPricingGroups(TestCase):
+class PricingGroupsTest(TestCase):
     def test_disk_share(self):
         storage_dev = Device.create(
             sn='device',
@@ -296,7 +296,7 @@ class TestPricingGroups(TestCase):
         self.assertEqual(mount_price, 3 + 17.0 / 1024 + 11 * 13)
 
 
-class TestApi(TestCase):
+class ApiTest(TestCase):
     def setUp(self):
         cache.delete("api_user_accesses")
 
@@ -335,7 +335,7 @@ class TestApi(TestCase):
         self.assertListEqual(gen_list, status_list)
 
 
-class TestUncompressBase64Data(TestCase):
+class UncompressBase64DataTest(TestCase):
     def test_base64_encoded_data(self):
         import base64
         from ralph.util import uncompress_base64_data

@@ -29,7 +29,7 @@ DEVICE_MAC = '00:00:00:00:00:00'
 DATACENTER = 'dc1'
 
 
-class TestsCIForms(TestCase):
+class CIFormsTest(TestCase):
     fixtures = [
         '0_types.yaml',
         '1_attributes.yaml',
