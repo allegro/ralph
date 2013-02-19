@@ -228,7 +228,7 @@ class ComponentModel(Named.NonUnique, SavePrioritized,
             kwargs['cores'] = max(
                 1,
                 kwargs['cores'],
-                cores_from_model(name) if is_virtual_cpu(family) else 0,
+                cores_from_model(name) if not is_virtual_cpu(family) else 1,
             )
             kwargs['size'] = kwargs['cores']
         obj, c = super(ComponentModel, cls).concurrent_get_or_create(**kwargs)
@@ -467,7 +467,7 @@ class Processor(Component):
                 self.model.size,
                 cores_from_model(
                     self.model.name
-                ) if is_virtual_cpu(self.model.name) else 0,
+                ) if not is_virtual_cpu(self.model.name) else 1,
             )
         return max(1, self.cores)
 
