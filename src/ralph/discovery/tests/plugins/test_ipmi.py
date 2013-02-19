@@ -662,4 +662,3 @@ FRU Device Description : Builtin FRU Device (ID 0)
         self.assertNotEqual(dev, None)
         self.assertEqual(
             dev.ipaddress_set.filter(is_management=True).count(), 1)
-

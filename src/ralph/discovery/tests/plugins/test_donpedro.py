@@ -378,4 +378,3 @@ class DonPedroPluginTest(TestCase):
                 json.loads(no_eth_data).get('data'),
                 '30.30.30.30'
             )
-

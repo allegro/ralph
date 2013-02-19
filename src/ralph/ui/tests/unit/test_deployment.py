@@ -217,5 +217,3 @@ class BulkDeploymentTest(TestCase):
         ip.save()
         with self.assertRaises(forms.ValidationError):
             _validate_ip_owner('127.0.0.1', 'deadbeefcafe', 0)
-
-

@@ -6,15 +6,19 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from dj.choices.fields import ChoiceField
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-from lck.django.common.models import TimeTrackable, WithConcurrentGetOrCreate
+from lck.django.common.models import (
+    Named,
+    TimeTrackable,
+    WithConcurrentGetOrCreate,
+)
 from lck.django.choices import Choices
-from lck.django.filters import slugify
 from pygraph.classes.digraph import digraph
 from pygraph.algorithms.cycles import find_cycle
 
@@ -52,19 +56,6 @@ class CI_ATTRIBUTE_TYPES(Choices):
     CHOICE = _('Choice List')
 
 
-class CI_LAYER(Choices):
-    _ = Choices.Choice
-
-    APPLICATIONS = _('Applications')
-    DATABASES = _('Databases')
-    DOC = _('Documentation/Procedures')
-    OU = _('Organization Unit/Support Group')
-    HARDWARE = _('Hardware')
-    NETWORK = _('Network')
-    SERVICES = _('Services')
-    ROLES = _('Roles')
-
-
 # Constants from  db
 # see fixtures/0_types.yaml
 class CI_TYPES(Choices):
@@ -81,8 +72,9 @@ class CI_TYPES(Choices):
     DATACENTER = _('Data Center')
     NETWORKTERMINATOR = _('Network Terminator')
 
+
 contenttype_mappings = {
-    'discovery.device' : 'dd',
+    'discovery.device': 'dd',
 }
 
 
@@ -121,8 +113,40 @@ class CIContentTypePrefix(TimeTrackable):
         return ContentType.objects.get_by_natural_key(app, model)
 
 
+class CILayerIcon(Choices):
+    _ = Choices.Choice
+
+    fugue_applications_blue = _('fugue-applications-blue')
+    fugue_database = _('fugue-database')
+    fugue_blue_documents = _('fugue-blue-documents')
+    fugue_books_brown = _('fugue-books-brown')
+    fugue_processor = _('fugue-processor')
+    fugue_network_ip = _('fugue-network-ip')
+    fugue_disc_share = _('fugue-disc-share')
+    fugue_computer_network = _('fugue-computer-network')
+
+
 class CILayer(TimeTrackable):
-    name = models.SlugField()
+    # to save compatibility with SlugField from Django 1.3 and don't broke
+    # migration in SQLite...
+    name = models.CharField(max_length=50, db_index=True)
+    content_types = models.ManyToManyField(
+        ContentType,
+        verbose_name=_('connected content types'),
+        blank=True,
+    )
+    icon = ChoiceField(
+        verbose_name=_('icon'),
+        choices=CILayerIcon,
+        default=None,
+        null=True,
+        blank=True,
+    )
+
+    class Meta:
+        verbose_name = _('CI layer')
+        verbose_name_plural = _('CI layers')
+        ordering = ('name',)
 
     def __unicode__(self):
         return " %s " % self.name
@@ -216,6 +240,7 @@ class CIValueInteger(TimeTrackable):
     def __unicode__(self):
         return "%s" % self.value
 
+
 class CIValueFloat(TimeTrackable):
     value = models.FloatField(
         verbose_name=_("value"),
@@ -225,6 +250,7 @@ class CIValueFloat(TimeTrackable):
 
     def __unicode__(self):
         return "%s" %  self.value
+
 
 class CIValueString(TimeTrackable):
     value = models.CharField(
