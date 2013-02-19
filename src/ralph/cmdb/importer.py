@@ -91,8 +91,9 @@ class CIImporter(object):
             # Integrity error - existing CI Already in database.
             # Get CI by uid, and use it for saving data.
             ci = cdb.CI.get_by_content_object(asset)
-        ci.barcode = getattr(asset, 'barcode', None)
         ci.name = '%s' % asset.name or unicode(asset)
+        if 'barcode' in asset.__dict__.keys():
+            ci.barcode = asset.barcode
         ci.save()
         return ci
 
@@ -201,6 +202,9 @@ class CIImporter(object):
                     self.import_venture_relations(obj=obj, d=d)
                 elif content_type == self.venture_role_content_type:
                     self.import_role_relations(obj=obj, d=d)
+                elif content_type == self.business_line_content_type:
+                    # top level Ci without parent relations.
+                    pass
                 elif content_type == self.datacenter_content_type:
                     # top level Ci without parent relations.
                     pass
@@ -391,3 +395,11 @@ class CIImporter(object):
             )
         return ret
 
+    def update_single_objects(self, ci, instance):
+        if ci.name != instance.name:
+            ci.name = instance.name
+            ci.save()
+        elif hasattr(instance, 'barcode'):
+            if ci.barcode != instance.barcode:
+                ci.barcode = instance.barcode
+                ci.save()
