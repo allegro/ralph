@@ -221,9 +221,17 @@ class Service(db.Model):
     )
     business_line = db.CharField(max_length=255, blank=False)
 
+    def __unicode__(self):
+        return self.name
+
+
+
 
 class BusinessLine(db.Model):
     name = db.CharField(max_length=255, db_index=True, unique=True)
+
+    def __unicode__(self):
+        return self.name
 
 
 class VentureRole(Named.NonUnique, PrebootMixin, HasSymbolBasedPath,

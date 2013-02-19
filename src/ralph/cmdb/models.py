@@ -129,4 +129,8 @@ class CILookup(LookupChannel):
         return self.format_item_display(obj)
 
     def format_item_display(self, obj):
-        return "%s<div><i>%s</i></div>" % (escape(obj.name), escape(obj.type))
+        return '<b>{}</b> ({})<div><i>{}</i></div>'.format(
+            escape(obj.name),
+            escape(str(obj.content_object)),
+            escape(obj.type),
+        )
