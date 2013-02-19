@@ -34,8 +34,8 @@ CURRENT_DIR = settings.CURRENT_DIR
 class CMDBApiTest(TestCase):
     def setUp(self):
         self.create_user()
-        self.create_cilayers()
-        self.create_citypes()
+        self.layers = CILayer.objects.all()
+        self.types = CIType.objects.all()
         self.create_owners()
         self.create_cis()
         self.create_ownerships()
@@ -56,18 +56,6 @@ class CMDBApiTest(TestCase):
         }
         cache.delete("api_user_accesses")
 
-    def create_cilayers(self):
-        self.cilayer1 = CILayer(name='layer1')
-        self.cilayer1.save()
-        self.cilayer2 = CILayer(name='layer2')
-        self.cilayer2.save()
-
-    def create_citypes(self):
-        self.citype1 = CIType(name='type1')
-        self.citype1.save()
-        self.citype2 = CIType(name='type2')
-        self.citype2.save()
-
     def create_owners(self):
         self.owner1 = CIOwner(
             first_name='first_name_owner1',
@@ -85,30 +73,30 @@ class CMDBApiTest(TestCase):
     def create_cis(self):
         self.ci1 = CI(
             uid='uid-ci1',
-            type=self.citype1,
+            type=self.types[0],
             barcode='barcodeci1',
             name='ciname1',
         )
         self.ci1.save()
-        self.ci1.layers = [self.cilayer1, self.cilayer2]
+        self.ci1.layers = [self.layers[0].id, self.layers[1].id]
         self.ci1.save()
         self.ci2 = CI(
             uid='uid-ci2',
-            type=self.citype2,
+            type=self.types[1],
             barcode='barcodeci2',
             name='ciname2',
         )
         self.ci2.save()
-        self.ci2.layers = [self.cilayer1]
+        self.ci2.layers = [self.layers[0].id]
         self.ci2.save()
         self.ci3 = CI(
             uid='other-ci3',
-            type=self.citype2,
+            type=self.types[1],
             barcode='otherbarcodeci3',
             name='otherci',
         )
         self.ci3.save()
-        self.ci3.layers = [self.cilayer2]
+        self.ci3.layers = [self.layers[1].id]
         self.ci3.save()
 
     def create_ownerships(self):
@@ -157,14 +145,14 @@ class CMDBApiTest(TestCase):
         )
         json_string = response.content
         json_data = json.loads(json_string)
-        self.assertEqual(json_data['name'], self.cilayer1.name)
+        self.assertEqual(json_data['name'], self.layers[0].name)
 
         response = self.client.get(
             path=resource_uris[1], data=self.data, format='json'
         )
         json_string = response.content
         json_data = json.loads(json_string)
-        self.assertEqual(json_data['name'], self.cilayer2.name)
+        self.assertEqual(json_data['name'], self.layers[1].name)
 
     def test_types(self):
         path = "/api/v0.9/citypes/"
@@ -178,14 +166,15 @@ class CMDBApiTest(TestCase):
         )
         json_string = response.content
         json_data = json.loads(json_string)
-        self.assertEqual(json_data['name'], self.citype1.name)
+
+        self.assertEqual(json_data['name'], self.types[0].name)
 
         response = self.client.get(
             path=resource_uris[1], data=self.data, format='json'
         )
         json_string = response.content
         json_data = json.loads(json_string)
-        self.assertEqual(json_data['name'], self.citype2.name)
+        self.assertEqual(json_data['name'], self.types[1].name)
 
     def test_ci(self):
         path = "/api/v0.9/ci/"
@@ -199,8 +188,8 @@ class CMDBApiTest(TestCase):
         )
         json_string = response.content
         json_data = json.loads(json_string)
-        self.assertEqual(json_data['layers'][0]['name'], self.cilayer1.name)
-        self.assertEqual(json_data['layers'][1]['name'], self.cilayer2.name)
+        self.assertEqual(json_data['layers'][0]['name'], self.layers[0].name)
+        self.assertEqual(json_data['layers'][1]['name'], self.layers[1].name)
         self.assertEqual(json_data['barcode'], self.ci1.barcode)
         self.assertEqual(json_data['name'], self.ci1.name)
         self.assertEqual(json_data['type']['name'], self.ci1.type.name)
@@ -219,7 +208,7 @@ class CMDBApiTest(TestCase):
         )
         json_string = response.content
         json_data = json.loads(json_string)
-        self.assertEqual(json_data['layers'][0]['name'], self.cilayer1.name)
+        self.assertEqual(json_data['layers'][0]['name'], self.layers[0].name)
         self.assertEqual(json_data['barcode'], self.ci2.barcode)
         self.assertEqual(json_data['name'], self.ci2.name)
         self.assertEqual(json_data['type']['name'], self.ci2.type.name)
@@ -268,7 +257,7 @@ class CMDBApiTest(TestCase):
         )
         json_string = response.content
         json_data = json.loads(json_string)
-        self.assertEqual(json_data['layers'][0]['name'], self.cilayer2.name)
+        self.assertEqual(json_data['layers'][0]['name'], self.layers[1].name)
         self.assertEqual(json_data['barcode'], self.ci3.barcode)
         self.assertEqual(json_data['name'], self.ci3.name)
         self.assertEqual(json_data['type']['name'], self.ci3.type.name)
@@ -288,7 +277,7 @@ class CMDBApiTest(TestCase):
         )
         json_string = response.content
         json_data = json.loads(json_string)
-        self.assertEqual(json_data['layers'][0]['name'], self.cilayer1.name)
+        self.assertEqual(json_data['layers'][0]['name'], self.layers[0].name)
         self.assertEqual(json_data['barcode'], self.ci1.barcode)
         self.assertEqual(json_data['name'], self.ci1.name)
         self.assertEqual(json_data['type']['name'], self.ci1.type.name)
@@ -299,7 +288,7 @@ class CMDBApiTest(TestCase):
         )
         json_string = response.content
         json_data = json.loads(json_string)
-        self.assertEqual(json_data['layers'][0]['name'], self.cilayer1.name)
+        self.assertEqual(json_data['layers'][0]['name'], self.layers[0].name)
         self.assertEqual(json_data['barcode'], self.ci2.barcode)
         self.assertEqual(json_data['name'], self.ci2.name)
         self.assertEqual(json_data['type']['name'], self.ci2.type.name)
@@ -309,13 +298,6 @@ class CMDBApiTest(TestCase):
 
 
 class CIApiTest(TestCase):
-    fixtures = [
-        '0_types.yaml',
-        '1_attributes.yaml',
-        '2_layers.yaml',
-        '3_prefixes.yaml'
-    ]
-
     def setUp(self):
         self.puppet_cv = "v%s" % random.randrange(0, 1000)
         puppet_bundle = Bundle(
@@ -342,10 +324,8 @@ class CIApiTest(TestCase):
         git_resource.obj_create(bundle=git_bundle)
 
         temp_venture = Venture.objects.create(name='TempTestVenture')
-        self.ci = CI.objects.create(
-            name='TempTestVentureCI',
-            uid=CI.get_uid_by_content_object(temp_venture),
-            type_id=4)
+        self.ci = CI.objects.all()[0]
+
         self.cmdb_new_value = 'nv_%s' % random.randrange(0, 1000)
         self.cmdb_old_value = 'ov_%s' % random.randrange(0, 1000)
         cmdb_bundle = Bundle(

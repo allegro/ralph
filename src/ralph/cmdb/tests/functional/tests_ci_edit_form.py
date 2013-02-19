@@ -30,13 +30,6 @@ DATACENTER = 'dc1'
 
 
 class CIFormsTest(TestCase):
-    fixtures = [
-        '0_types.yaml',
-        '1_attributes.yaml',
-        '2_layers.yaml',
-        '3_prefixes.yaml'
-    ]
-
     def setUp(self):
         login = 'ralph'
         password = 'ralph'
@@ -110,18 +103,12 @@ class CIFormsTest(TestCase):
         return self.client.post(ci_relation_add_url, attrs)
 
     def test_add_two_ci_with_the_same_content_object(self):
-        response = self.add_ci(name='CI1')
-        self.assertEqual(response.status_code, 302)
-        ci1 = db.CI.objects.get(name='CI1')
-        ci1.content_object = self.device
-        ci1.save()
-
-        response = self.add_ci(name='CI2')
+        response = self.add_ci(name='CI')
         self.assertEqual(response.status_code, 302)
         with self.assertRaises(IntegrityError) as e:
-            ci2 = db.CI.objects.get(name='CI2')
-            ci2.content_object = self.device
-            ci2.save()
+            ci = db.CI.objects.get(name='CI')
+            ci.content_object = self.device
+            ci.save()
         self.assertEqual(
             'columns content_type_id, object_id are not unique',
             unicode(e.exception),
@@ -278,6 +265,7 @@ class CIFormsTest(TestCase):
         ci2 = db.CI.objects.get(name='CI2')
         ci3 = db.CI.objects.get(name='CI3')
 
+
         response_r = self.add_ci_relation(
             parent_ci=ci1,
             child_ci=ci2,
@@ -315,7 +303,7 @@ class CIFormsTest(TestCase):
         self.assertEqual(rel.type, db.CI_RELATION_TYPES.HASROLE)
 
         cycle = db.CI.get_cycle()
-        self.assertEqual(cycle, [1, 2, 3])
+        self.assertEqual(cycle, [ci1.id, ci2.id, ci3.id])
 
     def test_ci_custom_fields(self):
         # Create CI by the form, and edit CI  with completion of custom fields
