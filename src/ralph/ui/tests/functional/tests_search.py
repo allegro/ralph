@@ -58,7 +58,7 @@ COMPONENT = {
 }
 
 
-class TestSearch(TestCase):
+class SearchTest(TestCase):
     """
     TODO:
     1. when search return more than 1 result
