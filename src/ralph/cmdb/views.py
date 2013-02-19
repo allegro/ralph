@@ -49,6 +49,8 @@ SAVE_PRIORITY = 200
 
 
 def get_icon_for(ci):
+    if not ci or not ci.content_type:
+        return ''
     ctname = ci.content_type.name
 
     if not ci or not ci.content_object:
