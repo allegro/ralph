@@ -468,9 +468,16 @@ def details_disk(dev, purchase_only=False):
             if disk.model and disk.model.group:
                 g = disk.model.group
                 if g.per_size:
-                    size = '%.1f %s' % (float(
-                        disk.get_size()) / (g.size_modifier or 1),
-                        g.size_unit or '')
+                    size_unit = g.size_unit or ''
+                    if g.size_modifier % 1024 == 0:
+                        size_unit = 'GiB'
+                    size_converter = 1
+                    if g.size_unit == 'GiB' or g.size_modifier % 1024 == 0:
+                        size_converter = 1024
+                    size = '%.1f %s' % (
+                        float(disk.get_size()) / size_converter,
+                        size_unit,
+                    )
             yield {
                 'label': disk.label,
                 'model': disk.model,

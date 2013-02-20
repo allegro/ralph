@@ -57,12 +57,12 @@ from django.db import IntegrityError
 from lck.django.common import nested_commit_on_success
 
 
-def get_layers_for_model(model):
+def get_layers_for_ci_type(ci_type_id):
     try:
-        content_type = ContentType.objects.get_for_model(model)
-    except ContentType.DoesNotExist:
+        ci_type = cdb.CIType.objects.get(pk=ci_type_id)
+    except cdb.CIType.DoesNotExist:
         return
-    return content_type.cilayer_set.all()
+    return ci_type.cilayer_set.all()
 
 
 class UnknownCTException(Exception):
@@ -389,7 +389,7 @@ class CIImporter(object):
             assetContentType = i
             logger.info('Importing content type : %s' % assetContentType)
             type_ = content_to_import[assetClass]
-            layers = get_layers_for_model(assetClass)
+            layers = get_layers_for_ci_type(type_)
             ret.extend(self.import_assets_by_contenttype(
                 assetClass, type_, layers, asset_id)
             )
