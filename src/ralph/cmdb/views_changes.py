@@ -151,8 +151,7 @@ class Changes(ChangesBase, PaginatedView):
                 priority__icontains=values.get('priority')
             )
         if values.get('uid'):
-            changes = changes.filter(Q(ci__name__icontains=values.get('uid'))
-                                     | Q(ci__id=values.get('uid')))
+            changes = changes.filter(Q(ci__name__icontains=values.get('uid')))
         changes = changes.order_by('-time')
         self.paginate(changes)
         self.changes = self.page_contents
