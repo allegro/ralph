@@ -324,7 +324,14 @@ class CIApiTest(TestCase):
         git_resource.obj_create(bundle=git_bundle)
 
         temp_venture = Venture.objects.create(name='TempTestVenture')
-        self.ci = CI.objects.all()[0]
+        if settings.AUTOCI:
+            self.ci = CI.objects.all()[0]
+        else:
+            self.ci = CI.objects.create(
+            name='TempTestVentureCI',
+            uid=CI.get_uid_by_content_object(temp_venture),
+            type_id=4
+        )
 
         self.cmdb_new_value = 'nv_%s' % random.randrange(0, 1000)
         self.cmdb_old_value = 'ov_%s' % random.randrange(0, 1000)

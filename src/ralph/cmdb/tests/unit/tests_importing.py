@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 from django.test import TestCase
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from unittest import skipIf
 
 from ralph.business.models import (
     Venture,
@@ -234,6 +235,7 @@ class AddOrUpdateCITest(TestCase):
             name='TestBusinessLine'
         )
 
+    @skipIf(not settings.AUTOCI, settings.AUTOCI_SKIP_MSG)
     def test_add_ci(self):
         assets = [
             self.venture, self.venture_role, self.data_center, self.network,
@@ -241,8 +243,9 @@ class AddOrUpdateCITest(TestCase):
         ]
         for asset in assets:
             ci = CI.get_by_content_object(asset)
-            self.assertIsNotNone(ci)
+        self.assertIsNotNone(ci)
 
+    @skipIf(not settings.AUTOCI, settings.AUTOCI_SKIP_MSG)
     def test_update_ci(self):
         self.venture.name = 'New Venture name'
         self.venture.save()
@@ -299,6 +302,7 @@ class AutoCIRemoveTest(TestCase):
             name='TestBusinessLine'
         )
 
+    @skipIf(not settings.AUTOCI, settings.AUTOCI_SKIP_MSG)
     def test_remove_venture(self):
         ci = CI.get_by_content_object(self.venture)
         self.assertIsNotNone(ci)
@@ -307,6 +311,7 @@ class AutoCIRemoveTest(TestCase):
         ci = CI.get_by_content_object(self.venture)
         self.assertFalse(ci)
 
+    @skipIf(not settings.AUTOCI, settings.AUTOCI_SKIP_MSG)
     def test_remove_venture_role(self):
         ci = CI.get_by_content_object(self.venture_role)
         self.assertIsNotNone(ci)
@@ -316,6 +321,7 @@ class AutoCIRemoveTest(TestCase):
         ci = CI.get_by_content_object(self.venture_role)
         self.assertFalse(ci)
 
+    @skipIf(not settings.AUTOCI, settings.AUTOCI_SKIP_MSG)
     def test_remove_datacenter(self):
         ci = CI.get_by_content_object(self.data_center)
         self.assertIsNotNone(ci)
@@ -325,6 +331,7 @@ class AutoCIRemoveTest(TestCase):
         ci = CI.get_by_content_object(self.data_center)
         self.assertFalse(ci)
 
+    @skipIf(not settings.AUTOCI, settings.AUTOCI_SKIP_MSG)
     def test_remove_network(self):
         ci = CI.get_by_content_object(self.network)
         self.assertIsNotNone(ci)
@@ -334,6 +341,7 @@ class AutoCIRemoveTest(TestCase):
         ci = CI.get_by_content_object(self.network)
         self.assertFalse(ci)
 
+    @skipIf(not settings.AUTOCI, settings.AUTOCI_SKIP_MSG)
     def test_remove_device(self):
         ci = CI.get_by_content_object(self.device)
         self.assertIsNotNone(ci)
@@ -342,6 +350,7 @@ class AutoCIRemoveTest(TestCase):
         ci = CI.get_by_content_object(self.device)
         self.assertFalse(ci)
 
+    @skipIf(not settings.AUTOCI, settings.AUTOCI_SKIP_MSG)
     def test_remove_service(self):
         ci = CI.get_by_content_object(self.service)
         self.assertIsNotNone(ci)
@@ -351,6 +360,7 @@ class AutoCIRemoveTest(TestCase):
         ci = CI.get_by_content_object(self.service)
         self.assertFalse(ci)
 
+    @skipIf(not settings.AUTOCI, settings.AUTOCI_SKIP_MSG)
     def test_remove_businessline(self):
         ci = CI.get_by_content_object(self.business_line)
         self.assertIsNotNone(ci)

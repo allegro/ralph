@@ -9,6 +9,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.db.utils import IntegrityError
 from django.test import TestCase, Client
+from unittest import skipIf
 
 from ralph.business.models import Venture, VentureRole
 import ralph.cmdb.models as db
@@ -102,6 +103,7 @@ class CIFormsTest(TestCase):
         }
         return self.client.post(ci_relation_add_url, attrs)
 
+    @skipIf(not settings.AUTOCI, settings.AUTOCI_SKIP_MSG)
     def test_add_two_ci_with_the_same_content_object(self):
         response = self.add_ci(name='CI')
         self.assertEqual(response.status_code, 302)
