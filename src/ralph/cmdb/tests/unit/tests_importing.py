@@ -31,11 +31,6 @@ class CIImporterTest(TestCase):
     ]
 
     def setUp(self):
-        hardware_layer = CILayer.objects.get(pk=5)
-        hardware_layer.content_types.add(
-            ContentType.objects.get_for_model(Device)
-        )
-
         self.top_venture = Venture(name='top_venture')
         self.top_venture.save()
 
