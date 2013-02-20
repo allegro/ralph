@@ -113,6 +113,13 @@ class CIContentTypePrefix(TimeTrackable):
         return ContentType.objects.get_by_natural_key(app, model)
 
 
+class CIType(TimeTrackable):
+    name = models.SlugField()
+
+    def __unicode__(self):
+        return "%s" % self.name
+
+
 class CILayerIcon(Choices):
     _ = Choices.Choice
 
@@ -130,9 +137,9 @@ class CILayer(TimeTrackable):
     # to save compatibility with SlugField from Django 1.3 and don't broke
     # migration in SQLite...
     name = models.CharField(max_length=50, db_index=True)
-    content_types = models.ManyToManyField(
-        ContentType,
-        verbose_name=_('connected content types'),
+    connected_types = models.ManyToManyField(
+        CIType,
+        verbose_name=_('CI type'),
         blank=True,
     )
     icon = ChoiceField(
@@ -181,13 +188,6 @@ class CIRelation(TimeTrackable):
     def save(self, user=None, *args, **kwargs):
         self.saving_user = user
         return super(CIRelation, self).save(*args, **kwargs)
-
-
-class CIType(TimeTrackable):
-    name = models.SlugField()
-
-    def __unicode__(self):
-        return "%s" % self.name
 
 
 class CIAttribute(TimeTrackable):
