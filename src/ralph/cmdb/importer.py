@@ -395,7 +395,7 @@ class CIImporter(object):
             )
         return ret
 
-    def update_single_objects(self, ci, instance):
+    def update_single_object(self, ci, instance):
         if ci.name != instance.name:
             ci.name = instance.name
             ci.save()
