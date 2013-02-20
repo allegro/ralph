@@ -1,5 +1,18 @@
 Change Log
 ----------
+
+1.1.17
+~~~~~~
+
+Released on February 19, 2013
+
+* Editable layers in CMDB.
+
+* Bugfixes in discovery plugins and CMDB.
+
+* Performance improvements in CMDB report.
+
+
 1.1.16
 ~~~~~~
 
