@@ -345,7 +345,7 @@ if settings.AUTOCI:
             CIImporter().import_single_object(instance)
             CIImporter().import_single_object_relations(instance)
         else:
-            CIImporter().update_single_objects(ci, instance)
+            CIImporter().update_single_object(ci, instance)
 
 
 @receiver(pre_delete, sender=Device,
