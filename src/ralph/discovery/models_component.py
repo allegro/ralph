@@ -93,6 +93,7 @@ def is_mac_valid(eth):
 
 
 def is_virtual_cpu(family):
+    family = family.lower()
     return any(virtual in family for virtual in CPU_VIRTUAL_LIST)
 
 
