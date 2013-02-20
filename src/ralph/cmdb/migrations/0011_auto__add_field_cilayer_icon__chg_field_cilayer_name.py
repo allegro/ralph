@@ -13,13 +13,13 @@ class Migration(SchemaMigration):
                       self.gf(u'dj.choices.fields.ChoiceField')(unique=False, primary_key=False, db_column=None, blank=True, default=None, null=True, _in_south=True, db_index=False),
                       keep_default=False)
 
-        # Adding M2M table for field content_types on 'CILayer'
-        db.create_table('cmdb_cilayer_content_types', (
+        # Adding M2M table for field connected_types on 'CILayer'
+        db.create_table('cmdb_cilayer_connected_types', (
             ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
             ('cilayer', models.ForeignKey(orm['cmdb.cilayer'], null=False)),
-            ('contenttype', models.ForeignKey(orm['contenttypes.contenttype'], null=False))
+            ('citype', models.ForeignKey(orm['cmdb.citype'], null=False))
         ))
-        db.create_unique('cmdb_cilayer_content_types', ['cilayer_id', 'contenttype_id'])
+        db.create_unique('cmdb_cilayer_connected_types', ['cilayer_id', 'citype_id'])
 
 
         # Changing field 'CILayer.name'
@@ -29,8 +29,8 @@ class Migration(SchemaMigration):
         # Deleting field 'CILayer.icon'
         db.delete_column('cmdb_cilayer', 'icon')
 
-        # Removing M2M table for field content_types on 'CILayer'
-        db.delete_table('cmdb_cilayer_content_types')
+        # Removing M2M table for field connected_types on 'CILayer'
+        db.delete_table('cmdb_cilayer_connected_types')
 
 
         # Changing field 'CILayer.name'
@@ -223,7 +223,7 @@ class Migration(SchemaMigration):
         'cmdb.cilayer': {
             'Meta': {'ordering': "(u'name',)", 'object_name': 'CILayer'},
             'cache_version': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
-            'content_types': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['contenttypes.ContentType']", 'symmetrical': 'False', 'blank': 'True'}),
+            'connected_types': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['cmdb.CIType']", 'symmetrical': 'False', 'blank': 'True'}),
             'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'icon': (u'dj.choices.fields.ChoiceField', [], {'unique': 'False', 'primary_key': 'False', 'db_column': 'None', 'blank': 'True', u'default': 'None', 'null': 'True', '_in_south': 'True', 'db_index': 'False'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
