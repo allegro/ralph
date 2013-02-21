@@ -28,13 +28,15 @@ class GitPathMappingAdminForm(forms.ModelForm):
     class Meta:
         model = db.GitPathMapping
 
-    ci = AutoCompleteSelectField('ci')
-    occurences = forms.CharField(
-        required=False,
-        widget=ReadOnlyPreWidget(),
+    ci = AutoCompleteSelectField(
+        'ci',
         plugin_options={
             'lookup_channel': ('ralph.cmdb.models', 'CILookup'),
         }
+    )
+    occurences = forms.CharField(
+        required=False,
+        widget=ReadOnlyPreWidget(),
     )
 
     def clean_path(self):
