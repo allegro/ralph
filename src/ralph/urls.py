@@ -28,7 +28,7 @@ from ajax_select import urls as ajax_select_urls
 admin.autodiscover()
 
 v09_api = Api(api_name='v0.9')
-
+OPTIONAL_APPS = ['ralph_assets',]
 # business API
 for r in (VentureResource, VentureLightResource, RoleResource,
           RoleLightResource, DepartmentResource, RolePropertyTypeResource,
@@ -114,3 +114,8 @@ urlpatterns = patterns(
     (r'^admin/', include(admin.site.urls)),
 
 )
+
+for app in settings.INSTALLED_APPS:
+    if app in OPTIONAL_APPS:
+        ur = url(r'^{}/'.format(app[6:]), include('{}.urls'.format(app)))
+        urlpatterns.append(ur)

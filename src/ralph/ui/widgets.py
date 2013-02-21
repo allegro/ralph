@@ -232,3 +232,10 @@ class CurrencyWidget(forms.TextInput):
         return super(CurrencyWidget, self).render(name, value, attrs,
                                                   *args, **kwargs)
 
+class HiddenSelectWidget(ReadOnlySelectWidget):
+    def render(self, name, value, attrs=None, choices=()):
+        return mark_safe(
+            '<input type="hidden" name="%s" value="%s">' %
+            (escape(name), escape(value if value is not None else ""))
+        )
+    
