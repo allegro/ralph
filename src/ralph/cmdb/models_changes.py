@@ -71,6 +71,10 @@ class CIChangeZabbixTrigger(AbstractCIChangeZabbixTrigger):
     pass
 
 
+class ArchivedCIChangeZabbixTrigger(AbstractCIChangeZabbixTrigger):
+    pass
+
+
 class AbstractCIChangeStatusOfficeIncident(AbstractBaseCIChange):
     time = models.DateTimeField(
         verbose_name=_("timestamp"),
@@ -85,6 +89,10 @@ class AbstractCIChangeStatusOfficeIncident(AbstractBaseCIChange):
 
 
 class CIChangeStatusOfficeIncident(AbstractCIChangeStatusOfficeIncident):
+    pass
+
+
+class ArchivedCIChangeSOIncident(AbstractCIChangeStatusOfficeIncident):
     pass
 
 
@@ -114,6 +122,10 @@ class AbstractCIChangeCMDBHistory(TimeTrackable):
 
 
 class CIChangeCMDBHistory(AbstractCIChangeCMDBHistory):
+    pass
+
+
+class ArchivedCIChangeCMDBHistory(AbstractCIChangeCMDBHistory):
     pass
 
 
@@ -162,6 +174,10 @@ class CIChange(AbstractCIChange):
             object_id=content_object.id, content_type=ct)
 
 
+class ArchivedCIChange(AbstractCIChange):
+    pass
+
+
 class AbstractCIChangeGit(AbstractBaseCIChange):
     file_paths = models.CharField(max_length=3000)
     comment = models.CharField(max_length=1000)
@@ -178,6 +194,10 @@ class AbstractCIChangeGit(AbstractBaseCIChange):
 
 
 class CIChangeGit(AbstractCIChangeGit):
+    pass
+
+
+class ArchivedCIChangeGit(AbstractCIChangeGit):
     pass
 
 
@@ -205,6 +225,10 @@ class CIChangePuppet(AbstractCIChangePuppet):
     pass
 
 
+class ArchivedCIChangePuppet(AbstractCIChangePuppet):
+    pass
+
+
 class AbstractPuppetLog(TimeTrackable):
     source = models.CharField(max_length=100)
     message = models.CharField(max_length=1024)
@@ -218,6 +242,10 @@ class AbstractPuppetLog(TimeTrackable):
 
 class PuppetLog(AbstractPuppetLog):
     cichange = models.ForeignKey('CIChangePuppet')
+
+
+class ArchivedPuppetLog(AbstractPuppetLog):
+    cichange = models.ForeignKey('ArchivedCIChangePuppet')
 
 
 class CIEvent(TimeTrackable):

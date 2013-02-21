@@ -56,6 +56,14 @@ from ralph.cmdb.models_changes import (
     CIEvent,
     CIProblem,
     CIIncident,
+
+    ArchivedCIChangeZabbixTrigger,
+    ArchivedCIChangeSOIncident,
+    ArchivedCIChangeCMDBHistory,
+    ArchivedCIChange,
+    ArchivedCIChangeGit,
+    ArchivedCIChangePuppet,
+    ArchivedPuppetLog,
 )
 
 from ralph.cmdb.models_audits import (
@@ -110,6 +118,14 @@ __all__ = [
     # audits
     'Auditable',
     'AuditStatus',
+
+    'ArchivedCIChangeZabbixTrigger',
+    'ArchivedCIChangeSOIncident',
+    'ArchivedCIChangeCMDBHistory',
+    'ArchivedCIChange',
+    'ArchivedCIChangeGit',
+    'ArchivedCIChangePuppet',
+    'ArchivedPuppetLog',
 ]
 
 # hook signals, don't remove this.
