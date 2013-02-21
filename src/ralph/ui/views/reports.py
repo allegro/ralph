@@ -13,7 +13,7 @@ from django.db import models as db
 from django.http import HttpResponseForbidden, HttpResponse, Http404
 from django.conf import settings
 from django.db.models import Q
-from django.shortcuts import get_list_or_404
+from django.shortcuts import get_list_or_404, redirect
 from django.utils.safestring import mark_safe
 from django.utils.html import escape
 
@@ -859,8 +859,8 @@ def is_bladesystem(component):
 
 
 class ReportDevicePricesPerVenture(SidebarReports, Base):
-    template_name = 'ui/report_venture_costs.html'
-    subsection = 'venture_costs'
+    template_name = 'ui/report_device_prices_per_venture.html'
+    subsection = 'device_prices_per_venture'
 
     def generate_csv(self, data, view_components=True):
         rows = []
@@ -926,112 +926,112 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
         response['Content-Disposition'] = disposition
         return response
 
-    def get_device_with_components(self, venture_devices, blacklist):
-        devices = []
-        for device in venture_devices:
-            all_components_price = 0
-            components = []
-            for component in _get_details(device, ignore_deprecation=True):
-                count = 1
-                model = component.get('model')
-                if not isinstance(model, basestring):
-                    component_type = model.type
-                    component_group = model.group_id
-                    model_group = model.group
+    def device_with_components(self, device, blacklist):
+        all_components_price = 0
+        components = []
+        for component in _get_details(device, ignore_deprecation=True):
+            count = 1
+            model = component.get('model')
+            if not isinstance(model, basestring):
+                component_type = model.type
+                component_group = model.group_id
+                model_group = model.group
+            else:
+                component_group = None
+                component_type = None
+                model_group = None
+            act_components = [x.get('name') for x in components]
+            if (model not in act_components and
+                component_type not in blacklist):
+                if is_bladesystem(component):
+                    bs_count = device.child_set.filter(
+                        deleted=False).count() or 1
+                    chassis_price = get_device_chassis_price(device)
+                    auto_price = get_device_auto_price(device)
+                    bs_price = 0
+                    if device.price != 0:
+                        bs_price = device.price / bs_count
+                    elif chassis_price != 0:
+                        bs_price = chassis_price
+                    elif auto_price != 0:
+                        bs_price = auto_price / bs_count
+                    components.append({
+                        'icon': component.get('icon'),
+                        'name': model,
+                        'price': bs_price,
+                        'count': count,
+                        'bs_count': bs_count,
+                    })
+                elif component_type == ComponentType.share:
+                    components.append({
+                        'icon': component.get('icon'),
+                        'name': model,
+                        'price': component.get('price') or 0,
+                        'count': component.get('count') or 1,
+                    })
                 else:
-                    component_group = None
-                    component_type = None
-                    model_group = None
-                act_components = [x.get('name') for x in components]
-                if (model not in act_components and
-                    component_type not in blacklist):
-                    if is_bladesystem(component):
-                        bs_count = device.child_set.filter(
-                            deleted=False).count() or 1
-                        chassis_price = get_device_chassis_price(device)
-                        auto_price = get_device_auto_price(device)
-                        bs_price = 0
-                        if device.price != 0:
-                            bs_price = device.price / bs_count
-                        elif chassis_price != 0:
-                            bs_price = chassis_price
-                        elif auto_price != 0:
-                            bs_price = auto_price / bs_count
-                        components.append({
-                            'icon': component.get('icon'),
-                            'name': model,
-                            'price': bs_price,
-                            'count': count,
-                            'bs_count': bs_count,
-                        })
-                    elif component_type == ComponentType.share:
-                        components.append({
-                            'icon': component.get('icon'),
-                            'name': model,
-                            'price': component.get('price') or 0,
-                            'count': component.get('count') or 1,
-                        })
+                    d_price = 0
+                    if device.price and device.price != 0:
+                        d_price = device.price
                     else:
-                        d_price = 0
-                        if device.price and device.price != 0:
-                            d_price = device.price
-                        else:
-                            d_price = component.get('price') or 0
-                        components.append({
-                            'icon': component.get('icon'),
-                            'name': model,
-                            'price': d_price,
-                            'model_group': model_group,
-                            'count': count,
-                        })
-                else:
-                    for component in components:
-                        if component.get('name') == model:
-                            count = component.get('count')
-                            component.update(count=count + 1)
-            for component in components:
-                count = component.get('count')
-                price = component.get('price')
-                total_component = price * count
-                component['total_component'] = total_component
-                all_components_price += total_component
-            devices.append({
-                'device': device,
-                'deprecated': is_deprecated(device),
-                'price': all_components_price,
-                'components': components
-            })
-        return devices
+                        d_price = component.get('price') or 0
+                    components.append({
+                        'icon': component.get('icon'),
+                        'name': model,
+                        'price': d_price,
+                        'model_group': model_group,
+                        'count': count,
+                    })
+            else:
+                for component in components:
+                    if component.get('name') == model:
+                        count = component.get('count')
+                        component.update(count=count + 1)
+        for component in components:
+            count = component.get('count')
+            price = component.get('price')
+            total_component = price * count
+            component['total_component'] = total_component
+            all_components_price += total_component
+        devices.append({
+            'device': device,
+            'deprecated': is_deprecated(device),
+            'price': all_components_price,
+            'components': components
+        })
+        return device
 
     def get(self, *args, **kwargs):
         profile = self.request.user.get_profile()
         has_perm = profile.has_perm
         if not has_perm(Perm.read_device_info_reports):
             return HttpResponseForbidden(
-                "You don't have permission to see reports.")
+                _("You don't have permission to see reports.")
+            )
         self.perm_edit = False
         if has_perm(Perm.edit_device_info_financial):
             self.perm_edit = True
         self.form = ReportVentureCost()
         self.venture_id = self.request.GET.get('venture')
-        venture_devices = None
-        if self.venture_id not in ['', None] and not self.venture_id.isdigit():
-            raise Http404
         if self.venture_id:
-            venture_devices = Device.objects.filter(venture_id=self.venture_id)
-            self.form = ReportVentureCost(initial={'venture': self.venture_id})
-        if venture_devices:
-            self.devices = self.get_device_with_components(
-                venture_devices,
-                blacklist=[
-                    ComponentType.software,
-                    ComponentType.os,
-                ]
-            )
-        else:
+            venture = Venture.objects.filter(id=self.venture_id)
+            venture_devices = []
             self.devices = None
-        if self.request.GET.get('export') == 'csv':
-            return self.export_csv(self.devices)
+            if venture:
+                self.form = ReportVentureCost(initial={'venture': self.venture_id})
+                descendant = venture[0].find_descendant_ids()
+                for d in descendant:
+                    venture_devices.extend(Device.objects.filter(venture_id=d))
+                for device in venture_devices:
+                    self.devices.append(
+                        self.device_with_components(
+                            device,
+                            blacklist=[
+                                ComponentType.software,
+                                ComponentType.os,
+                            ]
+                        )
+                    )
         if self.request.GET.get('export-all') == 'csv':
             devices = Device.objects.all()
             csv = self.get_device_with_components(devices, blacklist=[
@@ -1039,6 +1039,8 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
                     ComponentType.os,
                 ])
             return self.export_csv(csv, all_devices=True)
+        elif self.request.GET.get('export') == 'csv':
+            return self.export_csv(self.devices)
         return super(ReportDevicePricesPerVenture, self).get(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -1049,8 +1051,10 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
             'form': self.form,
         })
         if self.venture_id:
-            context.update({
-                'rows': self.devices,
-                'venture': self.venture_id,
-            })
+            context.update(
+                {
+                    'rows': self.devices,
+                    'venture': self.venture_id,
+                }
+            )
         return context
