@@ -142,6 +142,9 @@ class PricingDeviceForm(forms.Form):
         'device',
         help_text=None,
         required=False,
+        plugin_options={
+            'lookup_channel': ('ralph.ui.channels', 'DeviceLookup'),
+        }
     )
 
     def __init__(self, *args, **kwargs):
