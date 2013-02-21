@@ -32,6 +32,9 @@ class GitPathMappingAdminForm(forms.ModelForm):
     occurences = forms.CharField(
         required=False,
         widget=ReadOnlyPreWidget(),
+        plugin_options={
+            'lookup_channel': ('ralph.cmdb.models', 'CILookup'),
+        }
     )
 
     def clean_path(self):
