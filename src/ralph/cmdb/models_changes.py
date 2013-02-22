@@ -134,6 +134,7 @@ class AbstractCIChange(AbstractBaseCIChange):
         max_length=11,
         choices=CI_CHANGE_TYPES(),
         null=False,
+        db_index=True,
     )
     priority = models.IntegerField(
         max_length=11,
