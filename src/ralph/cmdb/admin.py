@@ -25,10 +25,7 @@ class GitPathMappingAdminForm(forms.ModelForm):
         model = db.GitPathMapping
 
     ci = AutoCompleteSelectField(
-        'ci',
-        plugin_options={
-            'lookup_channel': ('ralph.cmdb.models', 'CILookup'),
-        }
+        ('ralph.cmdb.models', 'CILookup')
     )
     occurences = forms.CharField(
         required=False,
