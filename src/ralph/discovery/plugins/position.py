@@ -63,7 +63,7 @@ def _connect_dc(ip, dev):
         for child in dev.child_set.all():
             stack.append(child)
         if rack:
-            dev.rack = rack.name
+            dev.rack = rack.sn if rack.sn else None
         if dc_no:
             dev.dc = dc_no
         dev.save()

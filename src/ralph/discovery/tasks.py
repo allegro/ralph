@@ -94,10 +94,10 @@ def _run_plugin(context, chain, plugin_name, requirements, interactive,
         raise
     except Exception:
         stdout('', end='\r')
-        stderr("Exception in plugin '{}' for '{}': {}".format(
+        stderr("{}\nException in plugin '{}' for '{}'.".format(
+            traceback.format_exc()),
             plugin_name,
             context.get('ip', 'none'),
-            traceback.format_exc()),
             end='\n')
     else:
         message = message or ''
