@@ -231,6 +231,7 @@ class BusinessLine(db.Model):
     def __unicode__(self):
         return self.name
 
+
 class VentureRole(Named.NonUnique, PrebootMixin, HasSymbolBasedPath,
                   TimeTrackable):
     venture = db.ForeignKey(Venture, verbose_name=_("venture"))
