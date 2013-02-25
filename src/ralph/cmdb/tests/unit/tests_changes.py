@@ -67,6 +67,20 @@ class OPRegisterTest(TestCase):
         # should not import puppet report which has 'unchanged' status
         self.assertEqual(
             CIChangePuppet.objects.filter(status='unchanged').count(), 0)
+        # should drop request, when the same configuration ver. + hostname
+        # is already present in the database.
+
+        # Now, feed importer with the same yaml the second time...
+        p.import_contents(open(
+            djoin(CURRENT_DIR, 'cmdb/tests/samples/canonical.yaml')
+        ).read())
+        # No change should be registered at this time.
+        self.assertEquals(
+            chg, CIChange.objects.get(type=CI_CHANGE_TYPES.CONF_AGENT.id)
+        )
+        self.assertEquals(
+            CIChangePuppet.objects.count(), 1
+        )
 
     @patch('ralph.cmdb.models_signals.OP_TEMPLATE', _PATCHED_OP_TEMPLATE)
     @patch('ralph.cmdb.models_signals.OP_START_DATE', _PATCHED_OP_START_DATE)
