@@ -40,12 +40,13 @@ class DeviceForm(forms.ModelForm):
             'support_expiration_date': DateWidget,
         }
 
-    save_comment = forms.CharField(required=True,
-            help_text="Describe your change",
-            error_messages={
-                'required': "You must describe your change",
-            },
-        )
+    save_comment = forms.CharField(
+        required=True,
+        help_text="Describe your change",
+        error_messages={
+            'required': "You must describe your change",
+        },
+    )
 
     icons = {
         'name': 'fugue-network-ip',
@@ -233,9 +234,6 @@ class DeviceCreateForm(DeviceForm):
                     "Either MACs or serial number required.")
         return ' '.join(macs)
 
-    def clean_model(self):
-        return self.cleaned_data['model']
-
 
 class DeviceBulkForm(DeviceForm):
     class Meta(DeviceForm.Meta):
@@ -243,26 +241,29 @@ class DeviceBulkForm(DeviceForm):
             'venture',
             'venture_role',
             'verified',
-            'barcode',
             'position',
             'chassis_position',
             'remarks',
             'margin_kind',
             'deprecation_kind',
             'price',
-            'sn',
-            'barcode',
             'purchase_date',
             'warranty_expiration_date',
             'support_expiration_date',
             'support_kind',
             'deleted',
         )
-
     def __init__(self, *args, **kwargs):
         super(DeviceBulkForm, self).__init__(*args, **kwargs)
         self.fields['venture'].choices = all_ventures()
         self.fields['venture_role'].choices = all_roles()
+
+    def clean(self):
+        if not self.data.get('select'):
+            messages.error(
+                self.request,
+                _('Did not select any device')
+            )
 
 
 class DeviceInfoForm(DeviceForm):
@@ -393,5 +394,3 @@ class PropertyForm(forms.Form):
                 field = forms.ChoiceField(label=p.symbol, required=False,
                                           choices=choices)
             self.fields[p.symbol] = field
-
-

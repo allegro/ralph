@@ -1,0 +1,190 @@
+# Types
+
+- model: cmdb.CIType
+  pk: 1
+  fields:
+    name: Application
+
+- model: cmdb.CIType
+  pk: 2
+  fields:
+    name: Device
+
+- model: cmdb.CIType
+  pk: 3
+  fields:
+    name: Procedure
+
+- model: cmdb.CIType
+  pk: 4
+  fields:
+    name: Venture
+
+- model: cmdb.CIType
+  pk: 5
+  fields:
+    name: VentureRole
+
+- model: cmdb.CIType
+  pk: 6
+  fields:
+    name: BusinessLine
+
+- model: cmdb.CIType
+  pk: 7
+  fields:
+    name: Service
+
+- model: cmdb.CIType
+  pk: 8
+  fields:
+    name: Network
+
+- model: cmdb.CIType
+  pk: 9
+  fields:
+    name: Data Center
+
+- model: cmdb.CIType
+  pk: 10
+  fields:
+    name: NetworkTerminator
+
+# Attribute
+
+- model: cmdb.CIAttribute
+  pk: 1
+  fields:
+    name: Documentation Link
+    attribute_type: 2
+    ci_types: [3]
+
+- model: cmdb.CIAttribute
+  pk: 2
+  fields:
+    name: Responsible Person Name
+    attribute_type: 2
+    ci_types: [3]
+
+- model: cmdb.CIAttribute
+  pk: 3
+  fields:
+    name: Expiration day
+    attribute_type: 3
+    ci_types: [2]
+
+
+- model: cmdb.CIAttribute
+  pk: 4
+  fields:
+    name: SLA value
+    attribute_type: 4
+    ci_types: [2,1]
+
+# Layers
+
+- model: cmdb.CILayer
+  pk: 1
+  fields:
+    name: Applications
+    connected_types: [1]
+    icon: 1
+
+- model: cmdb.CILayer
+  pk: 2
+  fields:
+    name: Databases
+    connected_types: []
+    icon: 2
+
+- model: cmdb.CILayer
+  pk: 3
+  fields:
+    name: Documentation/Procedures
+    connected_types: [3]
+    icon: 3
+
+- model: cmdb.CILayer
+  pk: 4
+  fields:
+    name: Organization Unit/Support Group
+    connected_types: []
+    icon: 4
+
+- model: cmdb.CILayer
+  pk: 5
+  fields:
+    name: Hardware
+    connected_types: [2,9]
+    icon: 5
+
+- model: cmdb.CILayer
+  pk: 6
+  fields:
+    name: Network
+    connected_types: [8,10]
+    icon: 6
+
+- model: cmdb.CILayer
+  pk: 7
+  fields:
+    name: Services
+    connected_types: [4,5,6,7]
+    icon: 7
+
+- model: cmdb.CILayer
+  pk: 8
+  fields:
+    name: Roles
+    connected_types: []
+    icon: 8
+
+# Prefix
+
+- model: cmdb.CIContentTypePrefix
+  pk: 1
+  fields:
+    content_type_name: discovery.device
+    prefix: dd
+
+- model: cmdb.CIContentTypePrefix
+  pk: 2
+  fields:
+    prefix: dc
+    content_type_name: discovery.datacenter
+
+- model: cmdb.CIContentTypePrefix
+  pk: 3
+  fields:
+    prefix: bv
+    content_type_name: business.venture
+
+- model: cmdb.CIContentTypePrefix
+  pk: 4
+  fields:
+    prefix: br
+    content_type_name: business.venturerole
+
+- model: cmdb.CIContentTypePrefix
+  pk: 5
+  fields:
+    prefix: dn
+    content_type_name: discovery.network
+
+- model: cmdb.CIContentTypePrefix
+  pk: 6
+  fields:
+    prefix: dt
+    content_type_name: discovery.networkterminator
+
+- model: cmdb.CIContentTypePrefix
+  pk: 7
+  fields:
+    prefix: bs
+    content_type_name: business.service
+
+- model: cmdb.CIContentTypePrefix
+  pk: 8
+  fields:
+    prefix: bl
+    content_type_name: business.businessline

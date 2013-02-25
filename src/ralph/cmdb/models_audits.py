@@ -149,5 +149,3 @@ class Auditable(TimeTrackable):
         )
         self.issue_key = issue.get('key')
         self.save()
-
-

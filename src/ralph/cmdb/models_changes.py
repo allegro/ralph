@@ -175,5 +175,3 @@ class CIProblem(CIEvent):
 
 class CIIncident(CIEvent):
     pass
-
-

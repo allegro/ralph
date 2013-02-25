@@ -44,17 +44,17 @@ class HttpSupermicroPluginTest(TestCase):
         request_session.raw = """\
 //Dynamic Data Begin
 
- WEBVAR_JSONVAR_WEB_SESSION = 
+ WEBVAR_JSONVAR_WEB_SESSION =
 
- { 
+ {
 
- WEBVAR_STRUCTNAME_WEB_SESSION : 
+ WEBVAR_STRUCTNAME_WEB_SESSION :
 
- [ 
+ [
 
- { 'SESSION_COOKIE' : 'xmBo2KB9rZCknX73xSfoy0DiMxXua3Fk001' },  {} ],  
+ { 'SESSION_COOKIE' : 'xmBo2KB9rZCknX73xSfoy0DiMxXua3Fk001' },  {} ],
 
- HAPI_STATUS:0 }; 
+ HAPI_STATUS:0 };
 
 //Dynamic data end
 
@@ -64,17 +64,17 @@ class HttpSupermicroPluginTest(TestCase):
         request_macs.raw = """\
 //Dynamic Data Begin
 
- WEBVAR_JSONVAR_GETMBMAC = 
+ WEBVAR_JSONVAR_GETMBMAC =
 
- { 
+ {
 
- WEBVAR_STRUCTNAME_GETMBMAC : 
+ WEBVAR_STRUCTNAME_GETMBMAC :
 
- [ 
+ [
 
- { 'MAC1' : '00:25:90:1E:BF:22','MAC2' : '00:25:90:1E:BF:23' },  {} ],  
+ { 'MAC1' : '00:25:90:1E:BF:22','MAC2' : '00:25:90:1E:BF:23' },  {} ],
 
- HAPI_STATUS:0 }; 
+ HAPI_STATUS:0 };
 
 //Dynamic data end
 
@@ -85,17 +85,17 @@ class HttpSupermicroPluginTest(TestCase):
         request_mgmt.raw = """\
 //Dynamic Data Begin
 
- WEBVAR_JSONVAR_HL_GETLANCONFIG = 
+ WEBVAR_JSONVAR_HL_GETLANCONFIG =
 
- { 
+ {
 
- WEBVAR_STRUCTNAME_HL_GETLANCONFIG : 
+ WEBVAR_STRUCTNAME_HL_GETLANCONFIG :
 
- [ 
+ [
 
- { 'IPAddrSource' : 1,'MAC' : '00:25:90:2C:E5:CC','IP' : '10.235.29.201','Mask' : '255.255.0.0','Gateway' : '10.235.0.1','PrimaryDNS' : '10.10.10.1','SecondaryDNS' : '','VLanEnable' : 0,'VLANID' : 0 },  {} ],  
+ { 'IPAddrSource' : 1,'MAC' : '00:25:90:2C:E5:CC','IP' : '10.235.29.201','Mask' : '255.255.0.0','Gateway' : '10.235.0.1','PrimaryDNS' : '10.10.10.1','SecondaryDNS' : '','VLanEnable' : 0,'VLANID' : 0 },  {} ],
 
- HAPI_STATUS:0 }; 
+ HAPI_STATUS:0 };
 
 //Dynamic data end
 
@@ -122,4 +122,3 @@ class HttpSupermicroPluginTest(TestCase):
             'MAC2': '00:25:90:1E:BF:23',
             'MAC1': '00:25:90:1E:BF:22'
         })
-
