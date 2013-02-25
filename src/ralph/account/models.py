@@ -6,10 +6,13 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import functools
+
 from django.contrib.auth.models import User, Group
 from django.db import models as db
 from django.db.utils import DatabaseError
 from django.dispatch import receiver
+from django.http import HttpResponseForbidden
 from django.utils.translation import ugettext_lazy as _
 from dj.choices import Choices
 from dj.choices.fields import ChoiceField
@@ -187,3 +190,26 @@ class BoundPerm(TimeTrackable, EditorTrackable):
     class Meta:
         verbose_name = _("bound permission")
         verbose_name_plural = _("bound permissions")
+
+
+def ralph_permission(perms):
+    """ Decorator checking permission to view
+        use example:
+        perms = [
+            {
+                'perm': Perm.read_device_info_reports,
+                'msg': _("You don't have permission to see reports.")
+            }
+        ]
+    """
+
+    def decorator(func):
+        def inner_decorator(self, *args, **kwargs):
+            profile = self.request.user.get_profile()
+            has_perm = profile.has_perm
+            for perm in perms:
+                if not has_perm(perm['perm']):
+                    return HttpResponseForbidden(perm['msg'])
+            return func(self, *args, **kwargs)
+        return functools.wraps(func)(inner_decorator)
+    return decorator
