@@ -44,14 +44,14 @@ class OPRegisterTest(TestCase):
         hostci.type_id = CI_TYPES.DEVICE.id
         hostci.save()
         p = PuppetAgentsImporter()
-        yaml = open(
+        changed_yaml = open(
             djoin(CURRENT_DIR, 'cmdb/tests/samples/canonical.yaml')
         ).read()
-        p.import_contents(yaml)
-        yaml = open(
+        p.import_contents(changed_yaml)
+        unchanged_yaml = open(
             djoin(CURRENT_DIR, 'cmdb/tests/samples/canonical_unchanged.yaml')
         ).read()
-        p.import_contents(yaml)
+        p.import_contents(unchanged_yaml)
         chg = CIChange.objects.get(type=CI_CHANGE_TYPES.CONF_AGENT.id)
         logs = PuppetLog.objects.filter(
             cichange__host='s11401.dc2').order_by('id')
@@ -71,9 +71,7 @@ class OPRegisterTest(TestCase):
         # is already present in the database.
 
         # Now, feed importer with the same yaml the second time...
-        p.import_contents(open(
-            djoin(CURRENT_DIR, 'cmdb/tests/samples/canonical.yaml')
-        ).read())
+        p.import_contents(changed_yaml)
         # No change should be registered at this time.
         self.assertEquals(
             chg, CIChange.objects.get(type=CI_CHANGE_TYPES.CONF_AGENT.id)
