@@ -553,6 +553,14 @@ def details_disk(dev, purchase_only=False):
             'href': '/admin/discovery/diskshare/%d/' % share.id,
         }
 
+def details_software(dev, purchase_only=False):
+   for soft in dev.software_set.order_by('path'):
+        yield {
+            'label': soft.label,
+            'model': soft.model,
+            'serial': soft.sn,
+            'version': soft.version,
+        }
 
 def details_other(dev, purchase_only=False):
     for fc in dev.fibrechannel_set.all():
@@ -579,13 +587,6 @@ def details_other(dev, purchase_only=False):
             'serial': eth.mac,
             'icon': 'fugue-network-ethernet',
         }
-    for soft in dev.software_set.order_by('path'):
-        yield {
-            'label': soft.label,
-            'model': soft.model,
-            'serial': soft.sn,
-            'version': soft.version,
-        }
     for os in dev.operatingsystem_set.order_by('label'):
         details = []
         if os.cores_count:
@@ -604,20 +605,25 @@ def details_other(dev, purchase_only=False):
         }
 
 
-def details_all(dev, purchase_only=False, ignore_deprecation=False):
-    for detail in details_dev(
-        dev, purchase_only, ignore_deprecation=ignore_deprecation):
-        detail['group'] = 'dev'
-        yield detail
-    for detail in details_cpu(dev, purchase_only):
-        detail['group'] = 'cpu'
-        yield detail
-    for detail in details_mem(dev, purchase_only):
-        detail['group'] = 'mem'
-        yield detail
-    for detail in details_disk(dev, purchase_only):
-        detail['group'] = 'disk'
-        yield detail
-    for detail in details_other(dev, purchase_only):
-        detail['group'] = 'other'
-        yield detail
+def details_all(dev, purchase_only=False, ignore_deprecation=False, exclude=[]):
+    components = [
+        {'d_name': 'dev', 'd_type': details_dev},
+        {'d_name': 'cpu', 'd_type': details_cpu},
+        {'d_name': 'mem', 'd_type': details_mem},
+        {'d_name': 'disk', 'd_type': details_disk},
+        {'d_name': 'software', 'd_type': details_software},
+        {'d_name': 'other', 'd_type': details_other},
+    ]
+    for component in components:
+        if component['d_name'] not in exclude:
+            if not component['d_name'] == 'dev':
+                items = component['d_type'](dev, purchase_only)
+            else:
+                items = component['d_type'](
+                    dev,
+                    purchase_only,
+                    ignore_deprecation=ignore_deprecation
+                )
+            for detail in items:
+                detail['group'] = component['d_name']
+                yield detail
