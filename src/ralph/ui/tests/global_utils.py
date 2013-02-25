@@ -9,10 +9,13 @@ from django.contrib.auth.models import User
 from django.test.client import Client
 
 
-def login_as_su(login='ralph', password='ralph', email='ralph@ralph.local'):
+def login_as_su(login='ralph', password='ralph',
+    email='ralph@ralph.local', is_staff=True, is_superuser=True):
     user = User.objects.create_user(login, email, password)
-    user.is_staff = True
-    user.is_superuser = True
+    if is_staff:
+        user.is_staff = True
+    if is_superuser:
+        user.is_superuser = True
     user.save()
     client = Client()
     client.login(username=login, password=password)
