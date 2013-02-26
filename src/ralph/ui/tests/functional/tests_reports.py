@@ -26,20 +26,42 @@ from ralph.discovery.models import (
 )
 from ralph.ui.tests.global_utils import login_as_su
 from ralph.ui.tests.util import create_device, sum_for_view
-from ralph.ui.views.reports import is_bladesystem
 from ralph.util.pricing import get_device_price
 
 CURRENT_DIR = settings.CURRENT_DIR
 
 
-class ReportsServicesTest(TestCase):
-    fixtures = [
-        '0_types.yaml',
-        '1_attributes.yaml',
-        '2_layers.yaml',
-        '3_prefixes.yaml'
-    ]
+class AccessToReportsTest(TestCase):
+    def setUp(self):
+        self.client = login_as_su(
+            login='ralph1',
+            password='top_securet',
+            email='ralph1@ralph.local',
+            is_staff=False,
+            is_superuser=False,
+        )
+        self.client_su = login_as_su()
 
+        self.report_urls = [
+            '/ui/reports/margins/',
+            '/ui/reports/devices/',
+            '/ui/reports/services/',
+            '/ui/reports/ventures/',
+            '/ui/reports/device_prices_per_venture/',
+        ]
+
+    def test_no_perms_to_reports(self):
+        for url in self.report_urls:
+            get_request = self.client.get(url)
+            self.assertEqual(get_request.status_code, 403)
+
+    def test_perms_to_reports(self):
+        for url in self.report_urls:
+            get_request = self.client_su.get(url)
+            self.assertEqual(get_request.status_code, 200)
+
+
+class ReportsServicesTest(TestCase):
     def setUp(self):
         self.client = login_as_su()
         self.service = CI(
@@ -608,12 +630,6 @@ class ReportsPriceDeviceVentureTest(TestCase):
                 price = component.get('price')
                 total_component = component.get('total_component') or 0
                 sum_dev += total_component
-                if is_bladesystem(component):
-                    # not deleted devices - bladecenter
-                    blade_servers = len(devices) - 1
-                    part_of_price = self.blc.price / blade_servers
-                    self.assertEqual(component.get('price'), part_of_price)
-
                 self.assertEqual(count * price, total_component)
 
             self.assertEqual(dev.get('price'), sum_dev)
