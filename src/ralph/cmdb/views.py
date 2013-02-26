@@ -184,7 +184,13 @@ class BaseCMDBView(Base):
                 label=t[1],
                 fugue_icon=t[2],
                 href=t[0]
-            ) for t in events]
+            ) for t in events] +
+            [MenuHeader('Other')] +
+            [MenuItem(
+                label='Archive',
+                fugue_icon='fugue-vise-drawer',
+                href='/cmdb/archive/assets/',
+            )]
         )
         return sidebar_items
 

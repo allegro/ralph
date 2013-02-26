@@ -28,6 +28,17 @@ from cmdb.models import (
 )
 
 
+def _get_used_db_backend_name():
+    cursor = connection.cursor()
+    backend_str = str(cursor.db).lower()
+    if 'mysql' in backend_str:
+        return 'mysql'
+    elif 'postgresql' in backend_str:
+        return 'postgresql'
+    elif 'sqlite' in backend_str:
+        return 'sqlite'
+
+
 def _get_db_columns_for_model(model):
     db_columns = []
     for field in model._meta._fields():
@@ -42,9 +53,9 @@ def _get_db_table_for_model(model):
 def _make_base_insert_query(model, archived_model):
     db_columns = _get_db_columns_for_model(model)
     sql = """
-        INSERT INTO `{archived_table_name}` ({columns})
+        INSERT INTO {archived_table_name} ({columns})
         SELECT {columns} FROM {table_name}
-        WHERE `created`<=%s AND `type`=%s
+        WHERE created<=%s AND type=%s
     """.format(
         archived_table_name=_get_db_table_for_model(archived_model),
         columns=','.join(db_columns),
@@ -62,13 +73,13 @@ def _make_advanced_insert_query(
     db_columns = _get_db_columns_for_model(model)
     first_table_name = _get_db_table_for_model(model)
     sql = """
-        INSERT INTO `{archived_table_name}` ({columns})
+        INSERT INTO {archived_table_name} ({columns})
         SELECT {source_columns}
-        FROM `{first_table_name}` JOIN `{second_table_name}`
-            ON `{second_table_name}`.`{r_id}`=`{first_table_name}`.`{l_id}`
+        FROM {first_table_name} JOIN {second_table_name}
+            ON {second_table_name}.{r_id}={first_table_name}.{l_id}
         WHERE
-            `{second_table_name}`.`created`<=%s AND
-            `{second_table_name}`.`type`=%s
+            {second_table_name}.created<=%s AND
+            {second_table_name}.type=%s
     """.format(
         archived_table_name=_get_db_table_for_model(archived_model),
         columns=','.join(db_columns),
@@ -84,7 +95,7 @@ def _make_advanced_insert_query(
 
 
 def _make_base_delete_query(model):
-    return 'DELETE FROM `{}` WHERE `created`<=%s AND `type`=%s'.format(
+    return 'DELETE FROM {} WHERE created<=%s AND type=%s'.format(
         _get_db_table_for_model(model),
     )
 
@@ -94,20 +105,42 @@ def _make_advanced_delete_query(
     joined_model,
     join_by=('id', 'object_id'),
 ):
-    sql = """
-        DELETE `{first_table_name}`.* FROM `{first_table_name}`
-        JOIN `{second_table_name}`
-            ON `{second_table_name}`.`{r_id}`=`{first_table_name}`.`{l_id}`
-        WHERE
-            `{second_table_name}`.`created`<=%s AND
-            `{second_table_name}`.`type`=%s
-    """.format(
+    backend_name = _get_used_db_backend_name()
+    if backend_name == 'mysql':
+        sql = """
+            DELETE {first_table_name}.* FROM {first_table_name}
+            JOIN {second_table_name}
+                ON {second_table_name}.{r_id}={first_table_name}.{l_id}
+            WHERE
+                {second_table_name}.created<=%s AND
+                {second_table_name}.type=%s
+        """
+    elif backend_name == 'postgresql':
+        sql = """
+            DELETE FROM {first_table_name}
+            USING {second_table_name}
+            WHERE
+                {second_table_name}.{r_id}={first_table_name}.{l_id}
+                AND {second_table_name}.created<=%s
+                AND {second_table_name}.type=%s
+        """
+    else:
+        sql = """
+            DELETE FROM {first_table_name}
+            WHERE {first_table_name}.{l_id} IN (
+                SELECT {second_table_name}.{r_id}
+                FROM {second_table_name}
+                WHERE
+                    {second_table_name}.created<=%s AND
+                    {second_table_name}.type=%s
+            )
+        """
+    return sql.format(
         first_table_name=_get_db_table_for_model(model),
         second_table_name=_get_db_table_for_model(joined_model),
         l_id=join_by[0],
         r_id=join_by[1],
-    )
-    return sql.strip()
+    ).strip()
 
 
 def _get_query_params_list(older_than, change_type):
