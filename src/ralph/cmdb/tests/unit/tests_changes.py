@@ -38,12 +38,6 @@ _PATCHED_TICKETS_ENABLE_NO = False
 
 
 class OPRegisterTest(TestCase):
-    fixtures = [
-        '0_types.yaml',
-        '1_attributes.yaml',
-        '2_layers.yaml',
-        '3_prefixes.yaml'
-    ]
 
     def test_create_puppet_change(self):
         hostci = CI(name='s11401.dc2', uid='mm-1')
@@ -151,48 +145,6 @@ class OPRegisterTest(TestCase):
                     CI_CHANGE_REGISTRATION_TYPES.WAITING.id),
                 (u'None', u'1', u'id', 1,
                     CI_CHANGE_REGISTRATION_TYPES.WAITING.id),
-                ])
-        )
-
-    @patch('ralph.cmdb.models_signals.OP_TEMPLATE', _PATCHED_OP_TEMPLATE)
-    @patch('ralph.cmdb.models_signals.OP_START_DATE', _PATCHED_OP_START_DATE)
-    @patch('ralph.cmdb.models_signals.OP_TICKETS_ENABLE',
-           _PATCHED_TICKETS_ENABLE)
-    @patch('ralph.cmdb.models_common.USE_CELERY', _PATCHED_USE_CELERY)
-    def test_create_ci_register_change(self):
-        # TICKETS REGISTRATION IN THIS TEST IS ENABLED
-        # first case - automatic change, should not be registered
-        hostci = CI(name='s11401.dc2', uid='mm-1')
-        hostci.type_id = CI_TYPES.DEVICE.id
-        hostci.save()
-        # not registered, because not user - driven change
-        self.assertEqual(
-            set([(x.content_object.old_value,
-                x.content_object.new_value, x.content_object.field_name,
-                x.content_object.user_id, x.registration_type)
-                for x in CIChange.objects.all()]),
-            set([(u'None', u'Device', u'type', None,
-                CI_CHANGE_REGISTRATION_TYPES.NOT_REGISTERED.id),
-                (u'None', u'1', u'id', None,
-                CI_CHANGE_REGISTRATION_TYPES.NOT_REGISTERED.id)])
-        )
-        hostci.delete()
-        # second case - manual change should be registered as ticket
-        user = User.objects.create_user(
-            'john', 'lennon@thebeatles.com', 'johnpassword')
-        hostci = CI(name='s11401.dc2', uid='mm-1')
-        hostci.type_id = CI_TYPES.DEVICE.id
-        hostci.save(user=user)
-        self.assertEqual(
-            set([(x.content_object.old_value,
-                x.content_object.new_value, x.content_object.field_name,
-                x.content_object.user_id, x.registration_type)
-                for x in CIChange.objects.all()]),
-            set([
-                (u'None', u'Device', u'type', 1,
-                    CI_CHANGE_REGISTRATION_TYPES.OP.id),
-                (u'None', u'1', u'id', 1,
-                    CI_CHANGE_REGISTRATION_TYPES.OP.id),
                 ])
         )
 
@@ -308,12 +260,6 @@ class CIChangeGitTest(TestCase):
     2. Regex
 
     """
-    fixtures = [
-        '0_types.yaml',
-        '1_attributes.yaml',
-        '2_layers.yaml',
-        '3_prefixes.yaml',
-    ]
 
     def setUp(self):
         v = Venture(symbol='test_venture')

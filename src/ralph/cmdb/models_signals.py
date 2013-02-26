@@ -330,6 +330,23 @@ def basechange_delete_post_save(sender, instance, **kwargs):
     if content_object:
         content_object.delete()
 
+if settings.AUTOCI:
+    @receiver(post_save, sender=Venture, dispatch_uid='ralph.cmdb.autoci')
+    @receiver(post_save, sender=VentureRole, dispatch_uid='ralph.cmdb.autoci')
+    @receiver(post_save, sender=DataCenter, dispatch_uid='ralph.cmdb.autoci')
+    @receiver(post_save, sender=Network, dispatch_uid='ralph.cmdb.autoci')
+    @receiver(post_save, sender=Service, dispatch_uid='ralph.cmdb.autoci')
+    @receiver(post_save, sender=BusinessLine, dispatch_uid='ralph.cmdb.autoci')
+    @receiver(post_save, sender=Device, dispatch_uid='ralph.cmdb.autoci')
+    def add_or_update_ci_post_save(sender, instance, raw, using, **kwargs):
+        from ralph.cmdb.importer import CIImporter
+        ci = cdb.CI.get_by_content_object(instance)
+        if not ci:
+            CIImporter().import_single_object(instance)
+            CIImporter().import_single_object_relations(instance)
+        else:
+            CIImporter().update_single_object(ci, instance)
+
 
 @receiver(pre_delete, sender=Device,
           dispatch_uid='ralph.cmdb.deletedevice')
