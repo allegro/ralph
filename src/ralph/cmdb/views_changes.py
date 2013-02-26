@@ -133,7 +133,6 @@ class Changes(ChangesBase, PaginatedView):
         sidebar_selected = select.get(get_type, 'all events')
         ret.update({
             'changes': [(x, get_icon_for(x.ci)) for x in self.changes],
-            'statistics': self.data,
             'form': self.form,
             'subsection': subsection,
             'sidebar_selected': sidebar_selected,
@@ -152,33 +151,10 @@ class Changes(ChangesBase, PaginatedView):
                 priority__icontains=values.get('priority')
             )
         if values.get('uid'):
-            changes = changes.filter(Q(ci__name__icontains=values.get('uid'))
-                                     | Q(ci__id=values.get('uid')))
+            changes = changes.filter(Q(ci__name__icontains=values.get('uid')))
         changes = changes.order_by('-time')
         self.paginate(changes)
         self.changes = self.page_contents
-        cursor = connection.cursor()
-        cursor.execute('''
-            SELECT
-            COUNT(*) as cnt, type, priority, MONTH(ch.time) as date
-            FROM cmdb_ci cc
-            INNER JOIN cmdb_cichange ch ON (cc.id = ch.ci_id)
-            WHERE YEAR(ch.time)=YEAR(NOW())
-            GROUP BY type, priority, MONTH(ch.time)
-            ORDER BY DATE(ch.time) DESC
-        ''')
-        self.data = dict()
-        rows = cursor.fetchall()
-        for r in rows:
-            month = calendar.month_name[r[3]]
-            count = r[0]
-            type = dict(db.CI_CHANGE_TYPES())[r[1]]
-            priority = dict(db.CI_CHANGE_PRIORITY_TYPES())[r[2]]
-            if not self.data.get(type):
-                self.data[type] = {}
-            if not self.data.get(type).get(priority):
-                self.data[type][priority] = {}
-            self.data[type][priority][month] = count
         return super(Changes, self).get(*args)
 
 
