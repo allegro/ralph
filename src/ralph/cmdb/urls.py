@@ -46,8 +46,16 @@ from ralph.cmdb.views_changes import (
     Incidents,
     Problems,
     Reports,
+    TimeLine,
 )
-from ralph.cmdb.views_changes import TimeLine
+from ralph.cmdb.views_archive import (
+    ArchivedAssetsChanges,
+    ArchivedZabbixTriggers,
+    ArchivedGitChanges,
+    ArchivedPuppetChanges,
+    ArchivedStatusOfficeIncidents,
+    ArchivedCIAttributesChanges,
+)
 from ralph.cmdb.views import Graphs
 
 
@@ -103,4 +111,11 @@ urlpatterns = patterns(
         login_required(DashboardDetails.as_view())),
     (r'^changes/reports$', login_required(Reports.as_view())),
     (r'^graphs$', login_required(Graphs.as_view())),
+
+    url(r'^archive/assets/$', login_required(ArchivedAssetsChanges.as_view()), name='archive'),
+    url(r'^archive/zabbix/$', login_required(ArchivedZabbixTriggers.as_view()), name='archive'),
+    url(r'^archive/git/$', login_required(ArchivedGitChanges.as_view()), name='archive'),
+    url(r'^archive/puppet/$', login_required(ArchivedPuppetChanges.as_view()), name='archive'),
+    url(r'^archive/so/$', login_required(ArchivedStatusOfficeIncidents.as_view()), name='archive'),
+    url(r'^archive/cmdb/$', login_required(ArchivedCIAttributesChanges.as_view()), name='archive'),
 )
