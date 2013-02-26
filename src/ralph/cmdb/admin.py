@@ -16,6 +16,7 @@ from ajax_select.fields import AutoCompleteSelectField
 
 import ralph.cmdb.models as db
 from ralph.cmdb.models_changes import CIChangeGit
+from ralph.cmdb.updater import update_cis_layers
 from ralph.ui.widgets import ReadOnlyPreWidget
 
 
@@ -83,11 +84,38 @@ class CIOwnerAdmin(ModelAdmin):
 admin.site.register(db.CIOwner, CIOwnerAdmin)
 
 
+class CILayerForm(forms.ModelForm):
+    class Meta:
+        model = db.CILayer
+
+    def save(self, commit=True):
+        model = super(CILayerForm, self).save(commit)
+        if self.has_changed():
+            current_types = set(self.initial.get('connected_types', []))
+            new_types = set([
+                connected_type.id
+                for connected_type in self.cleaned_data.get(
+                    'connected_types',
+                    [],
+                )
+            ])
+            if not (current_types == new_types):
+                touched_types = current_types.union(new_types)
+                update_cis_layers(touched_types, new_types, model)
+        return model
+
+
+class CILayerAdmin(ModelAdmin):
+    form = CILayerForm
+    filter_horizontal = ('connected_types',)
+
+admin.site.register(db.CILayer, CILayerAdmin)
+
+
 # simple types
 admin.site.register([
     db.CI,
     db.CIType,
-    db.CILayer,
     db.CIRelation,
     db.CIAttribute,
     db.CIAttributeValue,

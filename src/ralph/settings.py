@@ -329,6 +329,10 @@ API_THROTTLING = {
     'timeframe': 3600,
     'expiration': None,
 }
+
+AUTOCI = True
+AUTOCI_SKIP_MSG = 'AUTOCI is disabled'
+
 # </template>
 
 #

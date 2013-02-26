@@ -161,4 +161,3 @@ class SshAixPluginTest(TestCase):
         self.assertEquals(os.memory, 4096)
         self.assertEquals(os.cores_count, 8)
         self.assertEquals(os.storage, 587200)
-

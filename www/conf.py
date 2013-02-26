@@ -210,6 +210,15 @@ latex_documents = [
 # latex_use_modindex = True
 all_releases = [
     dict(
+        version='1.1.17',
+        release_date='February 19, 2013',
+        description_lines=[
+            "Editable layers in CMDB.",
+            "Bugfixes in discovery plugins and CMDB.",
+            "Performance improvements in CMDB report.",
+        ],
+    ),
+    dict(
         version='1.1.16',
         release_date='February 7, 2013',
         description_lines=[
