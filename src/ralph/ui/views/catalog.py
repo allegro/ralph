@@ -9,6 +9,7 @@ import calendar
 import cStringIO
 import datetime
 
+from bob.csvutil import UnicodeReader
 from bob.menu import MenuItem, MenuHeader
 from django.contrib import messages
 from django.core.paginator import Paginator
@@ -51,7 +52,6 @@ from ralph.ui.forms.catalog import (
 )
 from ralph.ui.views.common import Base
 from ralph.util import pricing,
-from bob import csvutil
 
 from ralph.util.presentation import COMPONENT_ICONS, DEVICE_ICONS
 
@@ -579,7 +579,7 @@ class CatalogPricingNew(CatalogPricing):
             messages.error(self.request, "File too big to import.")
             return
         f = cStringIO.StringIO(uploaded_file.read())
-        rows = iter(csvutil.UnicodeReader(f))
+        rows = iter(UnicodeReader(f))
         header = list(rows.next())
         if header[0].strip() != 'sn':
             messages.error(
