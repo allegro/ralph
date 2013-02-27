@@ -84,8 +84,26 @@ def scan_address(address, plugins=None):
     """Run a scan on a single IP address and save the results in the database.
     If a list of plugin names is provided, only those plugins are tried.
     """
-    results = run_chain('scan', plugins=plugins, ip=address)
-    save_results(address, results)
+    ip_addresses = IPAddress.objects.filter(address=address)
+    results = run_chain(
+        'scan',
+        plugins=plugins,
+        system_ips=ip_addresses,
+        management_ips=ip_addresses,
+    )
+    save_results(results)
+
+
+def scan_device(device_id, plugins=None):
+    """Run a scan on a single device."""
+    device = Device.objects.get(id=device_id)
+    results = run_chain(
+        'scan',
+        plugins=plugins,
+        system_ips=device.ipaddress_set.filter(management=False),
+        management_ips=device.ipaddress_set.filter(management=True),
+    )
+    save_results(results)
 
 
 class PluginResultBag(object):
@@ -117,7 +135,7 @@ class PluginResultBag(object):
 
 
 @commit_on_success
-def save_results(self, address, results):
+def save_results(self, results):
     """Analyze the results of a scan and save them to the database."""
     data = PluginResultBag(results)
     logging.debug(pprint.pformat(data))
