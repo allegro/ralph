@@ -110,9 +110,6 @@ def _get_balancers(dev):
         }
 
 
-
-
-
 def is_val_positive_deco(orig_func):
         def temp_func(val):
                 if val < 0:
