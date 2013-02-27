@@ -53,7 +53,6 @@ from ralph.ui.views.common import Base
 from ralph.util import pricing,
 from bob import csvutil
 
-csvutil
 from ralph.util.presentation import COMPONENT_ICONS, DEVICE_ICONS
 
 
