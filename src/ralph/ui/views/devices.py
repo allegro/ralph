@@ -16,7 +16,8 @@ from django.views.generic import ListView
 
 from ralph.account.models import Perm
 from ralph.discovery.models_device import DeviceType
-from ralph.util import csvutil
+from bob import csvutil
+
 
 
 PAGE_SIZE = 25
