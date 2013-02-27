@@ -27,9 +27,6 @@ class PuppetAgentsImporter(BaseImporter):
     the puppet master server. We hook into this request on the puppet master server
     and parse requests. Only changed hosts are written into the database. """
 
-    def __init__(self):
-        pass
-
     def import_file(self, path):
         contents = open(path, 'r').read()
         self.import_contents(contents)
@@ -50,6 +47,12 @@ class PuppetAgentsImporter(BaseImporter):
         logger.debug('Got puppet change/failed request:  host: %s kind: %s' % (
             yaml.host, yaml.kind
         ))
+        if db.CIChangePuppet.objects.filter(
+            configuration_version=yaml.configuration_version,
+            host=yaml.host,
+        ).exists():
+            # skip importing another copy report of the same host/config version
+            return
         report = db.CIChangePuppet()
         report.configuration_version = yaml.configuration_version or ''
         report.host = yaml.host
