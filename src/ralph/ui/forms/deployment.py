@@ -38,7 +38,7 @@ from ralph.dnsedit.util import (
 )
 from ralph.ui.widgets import DeviceWidget
 from ralph.util import Eth
-from ralph.util.csvutil import UnicodeReader
+from bob.csvutil import UnicodeReader
 from ralph.ui.widgets import ReadOnlySelectWidget, ReadOnlyWidget
 
 
