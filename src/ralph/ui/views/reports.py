@@ -277,6 +277,7 @@ class ReportMargins(SidebarReports, Base):
             })
         return super(ReportMargins, self).get(*args, **kwargs)
 
+    @ralph_permission(perms)
     def post(self, *args, **kwargs):
         return self.get(*args, **kwargs)
 
@@ -394,11 +395,10 @@ class ReportVentures(SidebarReports, Base):
                     _currency(data['hardware_cost']),
                     _currency(data['total']),
                 ]
-        f = StringIO.StringIO()
-        csvutil.UnicodeWriter(f).writerows(iter_rows())
-        response = HttpResponse(f.getvalue(), content_type='application/csv')
-        response['Content-Disposition'] = 'attachment; filename=ventures.csv'
-        return response
+        return make_csv_response(
+            data=iter_rows(),
+            filename='ReportVentures.csv'
+        )
 
     def _get_totals(self, start, end, query, extra_types):
         venture_total = get_total_cost(query, start, end)
@@ -499,6 +499,7 @@ class ReportVentures(SidebarReports, Base):
 
     @ralph_permission(perms)
     def get(self, *args, **kwargs):
+        profile = self.request.user.get_profile()
         if 'start' in self.request.GET:
             self.form = DateRangeForm(self.request.GET)
         else:
@@ -556,7 +557,6 @@ class ReportServices(SidebarReports, Base):
 
     @ralph_permission(perms)
     def get(self, *args, **kwargs):
-        self.perm_to_edit = has_perm(Perm.edit_configuration_item_relations)
         services = CI.objects.filter(type=CI_TYPES.SERVICE.id)
         relations = CIRelation.objects.filter(
             child__type=CI_TYPES.SERVICE.id,
@@ -589,7 +589,6 @@ class ReportServices(SidebarReports, Base):
         context.update({
             'invalid_relation': self.invalid_relation,
             'services_without_venture': self.services_without_venture,
-            'perm_to_edit': self.perm_to_edit,
         })
         return context
 
@@ -633,16 +632,6 @@ class ReportDevices(SidebarReports, Base):
             'msg': _("You don't have permission to see reports.")
         }
     ]
-
-    def export_csv(self, data, fname):
-        export = []
-        for item in data:
-            export.append([unicode(x) for x in item])
-        f = StringIO.StringIO()
-        csvutil.UnicodeWriter(f).writerows(export)
-        response = HttpResponse(f.getvalue(), content_type='application/csv')
-        response['Content-Disposition'] = 'attachment; filename=%s.csv' % fname
-        return response
 
     def get_name(self, name, id):
         id = escape(id)
@@ -821,7 +810,10 @@ class ReportDevices(SidebarReports, Base):
                 ])
         if request.get('export') == 'csv':
             rows.insert(0, headers)
-            return self.export_csv(rows, csv_conf.get('name'))
+            return make_csv_response(
+                data=rows,
+                filename=csv_conf.get('name')
+            )
         self.headers = headers
         self.rows = rows
         self.csv_url = csv_conf.get('url')
