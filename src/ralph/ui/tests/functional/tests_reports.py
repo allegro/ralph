@@ -25,7 +25,7 @@ from ralph.discovery.models import (
     MarginKind,
 )
 from ralph.ui.tests.global_utils import login_as_su
-from ralph.ui.tests.util import create_device, sum_for_view
+from ralph.ui.tests.util import create_device
 from ralph.util.pricing import get_device_price
 
 CURRENT_DIR = settings.CURRENT_DIR
@@ -520,11 +520,13 @@ class ReportsPriceDeviceVentureTest(TestCase):
         url = '/ui/reports/device_prices_per_venture/?venture=%s' % venture.id
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        devices = response.context_data.get('rows')
-        for dev in devices:
-            count, price, total_component, sum_dev = sum_for_view(dev)
-            self.assertEqual(count * price, total_component)
-            self.assertEqual(dev.get('price'), sum_dev)
+        devices_list = response.context_data.get('rows')
+        devices = devices_list.pop()
+        for dev in devices.get('components', []):
+            total = 0
+            for component in dev.get('components', []):
+                total += component.get('price')
+            self.assertEqual(dev.get('price'), total)
 
     def test_deprecated_device_with_components_in_venture(self):
         before_deprecated = get_device_price(self.srv1)
@@ -547,12 +549,13 @@ class ReportsPriceDeviceVentureTest(TestCase):
         self.assertEqual(response.status_code, 200)
         devices = response.context_data.get('rows')
 
-        for dev in devices:
-            count, price, total_component, sum_dev = sum_for_view(dev)
-            self.assertEqual(count * price, total_component)
-            self.assertEqual(dev.get('price'), sum_dev)
-            if dev.get('device').name == 'srv-1':
-                self.assertEqual(sum_dev, 2640)
+        devices_list = response.context_data.get('rows')
+        devices = devices_list.pop()
+        for dev in devices.get('components', []):
+            total = 0
+            for component in dev.get('components', []):
+                total += component.get('price')
+            self.assertEqual(dev.get('price'), total)
 
     def test_deleted_device_in_venture(self):
         ''' Tests if deteleted device is see in venture '''
@@ -620,22 +623,7 @@ class ReportsPriceDeviceVentureTest(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         devices = response.context_data.get('rows')
-
         self.assertEqual(len(devices), 4)
-
-        for dev in devices:
-            sum_dev = 0
-            for component in dev.get('components', []):
-                count = component.get('count')
-                price = component.get('price')
-                total_component = component.get('total_component') or 0
-                sum_dev += total_component
-                self.assertEqual(count * price, total_component)
-
-            self.assertEqual(dev.get('price'), sum_dev)
-
-    def test_blade_system_diskshare(self):
-        pass
 
 
 class ReportsVenturesTest(TestCase):
