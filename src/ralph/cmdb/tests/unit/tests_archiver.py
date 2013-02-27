@@ -5,7 +5,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import datetime
-import re
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
