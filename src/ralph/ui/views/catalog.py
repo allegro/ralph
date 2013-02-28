@@ -51,7 +51,7 @@ from ralph.ui.forms.catalog import (
     PricingFormulaFormSet,
 )
 from ralph.ui.views.common import Base
-from ralph.util import pricing,
+from ralph.util import pricing
 
 from ralph.util.presentation import COMPONENT_ICONS, DEVICE_ICONS
 
