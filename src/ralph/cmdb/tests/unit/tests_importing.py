@@ -16,11 +16,10 @@ from ralph.business.models import (
     Service,
 )
 from ralph.cmdb.importer import CIImporter
-from ralph.cmdb.models import(
+from ralph.cmdb.models import (
     CI,
     CIRelation,
     CI_RELATION_TYPES,
-    CILayer,
 )
 from ralph.discovery.models import (
     Device,
@@ -98,7 +97,7 @@ class CIImporterTest(TestCase):
             <--child_venture
                 <---role
                     <---child_role
-                        <---- dc
+                        <----dc
                             <----rack
                                 <----blade
         """
