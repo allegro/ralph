@@ -120,7 +120,9 @@ class CILookup(LookupChannel):
     model = CI
 
     def get_query(self, q, request):
-        return CI.objects.filter(Q(name__istartswith=q)).order_by('name')[:10]
+        return CI.objects.filter(
+            Q(name__istartswith=q.strip())
+        ).order_by('name')[:10]
 
     def get_result(self, obj):
         return obj.name
