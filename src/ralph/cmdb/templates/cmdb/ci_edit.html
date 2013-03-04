@@ -44,7 +44,7 @@
         {% if ci_id %}
             {% if not editable %}
                 <span><h3>Impact report</h3></span>
-                <a target="_blank" href='/cmdb/graphs?ci={{ ci_id }}'>Run impact report</a>
+                <a target="_blank" href='/cmdb/graphs?ci={{ ci_id }}' class="btn btn-info btn-large">Run impact report</a>
             {% endif %}
             <span><h3>Custom Attributes</h3></span>
             {% include 'cmdb/include_attributes.html' %}
