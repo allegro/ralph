@@ -159,7 +159,7 @@ class CILayer(TimeTrackable):
         return " %s " % self.name
 
 
-class CIRelation(TimeTrackable):
+class CIRelation(TimeTrackable, WithConcurrentGetOrCreate):
     class Meta:
         unique_together = ('parent', 'child', 'type')
     readonly = models.BooleanField(default=False, null=False)
