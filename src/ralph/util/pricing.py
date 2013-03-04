@@ -374,7 +374,12 @@ def details_dev(dev, purchase_only=False, ignore_deprecation=False):
 
 def details_cpu(dev, purchase_only=False):
     has_cpu = False
-    for cpu in dev.processor_set.all():
+
+    try:
+        all_processors = processor_set.all()
+    except:
+        all_processors = []
+    for cpu in all_processors:
         has_cpu = True
         speed = cpu.model.speed if (cpu.model and
                                     cpu.model.speed) else cpu.speed
@@ -599,9 +604,15 @@ def details_other(dev, purchase_only=False):
             label = "%s (%s)" % (os.label, ', '.join(details))
         else:
             label = os.label
+
+        try:
+            model = os.model
+        except:
+            model = None
+
         yield {
             'label': label,
-            'model': os.model,
+            'model': model,
         }
 
 
