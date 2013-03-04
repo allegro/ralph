@@ -48,6 +48,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 from django.contrib.contenttypes.models import ContentType
+from django.db.models import Q
 
 import ralph.discovery.models as db
 import ralph.discovery.models_network as ndb
@@ -72,6 +73,21 @@ class UnknownCTException(Exception):
 
     def __str__(self):
         return repr("Unknown content type : %s" % self.parameter)
+
+
+def _create_or_update_relation(parent, child, relation_type):
+    ci_relation, created = cdb.CIRelation.concurrent_get_or_create(
+        parent=parent,
+        child=child,
+        type=relation_type,
+        defaults={
+            'readonly': True,
+        },
+    )
+    if not created and not ci_relation.readonly:
+        ci_relation.readonly = True
+        ci_relation.save()
+    return ci_relation
 
 
 class CIImporter(object):
@@ -179,185 +195,199 @@ class CIImporter(object):
         )
 
     def import_relations(self, content_type, asset_id=None):
-        """Importing relations parent/child from Ralph  """
-        content_id = content_type.id
+        """ Importing relations parent/child from Ralph """
         self.cache_content_types()
+        additional_params = {}
         if asset_id is not None:
-            all_ciis = cdb.CI.objects.filter(
-                object_id=asset_id,
-                content_type_id=content_id,
-            ).order_by('id').all()
-        else:
-            all_ciis = cdb.CI.objects.filter(
-                content_type_id=content_id,
-            ).order_by('id').all()
-        for d in all_ciis:
-            obj = d.content_object
-            try:
-                if content_type == self.network_content_type:
-                    self.import_network_relations(network=d)
-                elif content_type == self.device_content_type:
-                    self.import_device_relations(obj=obj, d=d)
-                elif content_type == self.venture_content_type:
-                    self.import_venture_relations(obj=obj, d=d)
-                elif content_type == self.venture_role_content_type:
-                    self.import_role_relations(obj=obj, d=d)
-                elif content_type == self.business_line_content_type:
-                    # top level Ci without parent relations.
-                    pass
-                elif content_type == self.datacenter_content_type:
-                    # top level Ci without parent relations.
-                    pass
-                elif content_type == self.service_content_type:
-                    self.import_service_relations(obj=obj, d=d)
-                else:
-                    raise UnknownCTException(content_type)
-            except IntegrityError:
+            additional_params['object_id'] = asset_id
+        for ci in cdb.CI.objects.filter(
+            content_type=content_type,
+            **additional_params
+        ).order_by('id'):
+            used_relations = []
+            obj = ci.content_object
+            if content_type == self.network_content_type:
+                self.import_network_relations(
+                    network=ci,
+                    used_relations=used_relations,
+                )
+            elif content_type == self.device_content_type:
+                self.import_device_relations(
+                    obj=obj,
+                    ci=ci,
+                    used_relations=used_relations,
+                )
+            elif content_type == self.venture_content_type:
+                self.import_venture_relations(
+                    obj=obj,
+                    ci=ci,
+                    used_relations=used_relations,
+                )
+            elif content_type == self.venture_role_content_type:
+                self.import_role_relations(
+                    obj=obj,
+                    ci=ci,
+                    used_relations=used_relations,
+                )
+            elif content_type == self.business_line_content_type:
+                # top level Ci without parent relations.
                 pass
+            elif content_type == self.datacenter_content_type:
+                # top level Ci without parent relations.
+                pass
+            elif content_type == self.service_content_type:
+                self.import_service_relations(
+                    obj=obj,
+                    ci=ci,
+                    used_relations=used_relations,
+                )
+            else:
+                raise UnknownCTException(content_type)
+            for relation in cdb.CIRelation.objects.exclude(
+                id__in=used_relations,
+            ).filter(Q(parent=ci) | Q(child=ci)):
+                relation.delete()
 
     @nested_commit_on_success
-    def import_service_relations(self, obj, d):
+    def import_service_relations(self, obj, ci, used_relations):
         if obj.business_line:
-            bline = cdb.CI.objects.get(
-                content_type=self.business_line_content_type,
-                name=obj.business_line,
-            )
-            cir = cdb.CIRelation()
-            cir.parent = bline
-            cir.child = d
-            cir.readonly = True
-            cir.type = cdb.CI_RELATION_TYPES.CONTAINS.id
-            cir.save()
-
-    @nested_commit_on_success
-    def import_venture_relations(self, obj, d):
-        """Must be called after datacenter """
-        if obj.data_center_id:
-            datacenter_ci = cdb.CI.objects.filter(
-                content_type=self.datacenter_content_type,
-                object_id=obj.data_center_id).all()[0]
-            cir = cdb.CIRelation()
-            cir.readonly = True
-            cir.parent = datacenter_ci
-            cir.child = d
-            cir.type = cdb.CI_RELATION_TYPES.REQUIRES.id
             try:
-                cir.save()
-            except IntegrityError:
+                bline = cdb.CI.objects.get(
+                    content_type=self.business_line_content_type,
+                    name=obj.business_line,
+                )
+                used_relations.append(_create_or_update_relation(
+                    parent=bline,
+                    child=ci,
+                    relation_type=cdb.CI_RELATION_TYPES.CONTAINS,
+                ).id)
+            except cdb.CI.DoesNotExist:
                 pass
 
+    @nested_commit_on_success
+    def import_venture_relations(self, obj, ci, used_relations):
+        """ Must be called after datacenter """
+        if obj.data_center_id:
+            try:
+                datacenter_ci = cdb.CI.objects.filter(
+                    content_type=self.datacenter_content_type,
+                    object_id=obj.data_center_id,
+                )[0]
+                used_relations.append(_create_or_update_relation(
+                    parent=datacenter_ci,
+                    child=ci,
+                    relation_type=cdb.CI_RELATION_TYPES.REQUIRES,
+                ).id)
+            except IndexError:
+                pass
         if obj.parent:
             logger.info('Saving relation: %s' % obj)
-            cir = cdb.CIRelation()
-            cir.readonly = True
-            cir.child = d
-            cir.parent = cdb.CI.objects.filter(
-                content_type_id=self.venture_content_type,
-                object_id=obj.parent.id)[0]
-            cir.type = cdb.CI_RELATION_TYPES.CONTAINS.id
             try:
-                cir.save()
-            except IntegrityError:
+                used_relations.append(_create_or_update_relation(
+                    parent=cdb.CI.objects.filter(
+                        content_type_id=self.venture_content_type,
+                        object_id=obj.parent.id,
+                    )[0],
+                    child=ci,
+                    relation_type=cdb.CI_RELATION_TYPES.CONTAINS,
+                ).id)
+            except IndexError:
                 pass
 
     @nested_commit_on_success
-    def import_role_relations(self, obj, d):
+    def import_role_relations(self, obj, ci, used_relations):
         if obj.venture_id:
             # first venturerole in hierarchy, connect it to venture
-            venture_ci = cdb.CI.objects.get(
-                content_type=self.venture_content_type,
-                object_id=obj.venture_id)
-            cir = cdb.CIRelation()
-            cir.readonly = True
-            cir.parent = venture_ci
-            cir.child = d
-            cir.type = cdb.CI_RELATION_TYPES.HASROLE.id
             try:
-                cir.save()
-            except IntegrityError:
+                venture_ci = cdb.CI.objects.get(
+                    content_type=self.venture_content_type,
+                    object_id=obj.venture_id,
+                )
+                used_relations.append(_create_or_update_relation(
+                    parent=venture_ci,
+                    child=ci,
+                    relation_type=cdb.CI_RELATION_TYPES.HASROLE,
+                ).id)
+            except cdb.CI.DoesNotExist:
                 pass
         if obj.parent:
-            cir = cdb.CIRelation()
-            cir.readonly = True
-            cir.child = d
-            cir.parent = cdb.CI.objects.filter(
-                content_type_id=self.venture_role_content_type,
-                object_id=obj.parent.id)[0]
-            cir.type = cdb.CI_RELATION_TYPES.CONTAINS.id
             try:
-                cir.save()
-            except IntegrityError:
+                used_relations.append(_create_or_update_relation(
+                    parent=cdb.CI.objects.filter(
+                        content_type_id=self.venture_role_content_type,
+                        object_id=obj.parent.id,
+                    )[0],
+                    child=ci,
+                    relation_type=cdb.CI_RELATION_TYPES.CONTAINS,
+                ).id)
+            except IndexError:
                 pass
 
     @nested_commit_on_success
-    def import_device_relations(self, obj, d):
-        """Must be called after ventures """
-        for x in cdb.CIRelation.objects.filter(
-                child=d,
-                readonly=True):
-            x.delete()
+    def import_device_relations(self, obj, ci, used_relations):
+        """ Must be called after ventures """
         if obj.venture_id:
-            venture_ci = cdb.CI.objects.get(
-                content_type=self.venture_content_type,
-                object_id=obj.venture_id)
-            cir = cdb.CIRelation()
-            cir.readonly = True
-            cir.parent = venture_ci
-            cir.child = d
-            cir.type = cdb.CI_RELATION_TYPES.CONTAINS.id
             try:
-                cir.save()
-            except IntegrityError:
+                venture_ci = cdb.CI.objects.get(
+                    content_type=self.venture_content_type,
+                    object_id=obj.venture_id,
+                )
+                used_relations.append(_create_or_update_relation(
+                    parent=venture_ci,
+                    child=ci,
+                    relation_type=cdb.CI_RELATION_TYPES.CONTAINS,
+                ).id)
+            except cdb.CI.DoesNotExist:
                 pass
-
         if obj.venture_role_id:
-            venture_role_ci = cdb.CI.objects.get(
-                content_type=self.venture_role_content_type,
-                object_id=obj.venture_role_id)
-            cir = cdb.CIRelation()
-            cir.readonly = True
-            cir.parent = venture_role_ci
-            cir.child = d
-            cir.type = cdb.CI_RELATION_TYPES.HASROLE.id
             try:
-                cir.save()
-            except IntegrityError:
+                venture_role_ci = cdb.CI.objects.get(
+                    content_type=self.venture_role_content_type,
+                    object_id=obj.venture_role_id,
+                )
+                used_relations.append(_create_or_update_relation(
+                    parent=venture_role_ci,
+                    child=ci,
+                    relation_type=cdb.CI_RELATION_TYPES.HASROLE,
+                ).id)
+            except cdb.CI.DoesNotExist:
                 pass
-
         if obj.parent:
             logger.info('Saving relation: %s' % obj)
-            cir = cdb.CIRelation()
-            cir.readonly = True
-            cir.child = d
-            cir.parent = cdb.CI.objects.get(
-                content_type=self.device_content_type,
-                object_id=obj.parent.id)
-            cir.type = cdb.CI_RELATION_TYPES.CONTAINS.id
             try:
-                cir.save()
-            except IntegrityError:
+                used_relations.append(_create_or_update_relation(
+                    parent=cdb.CI.objects.get(
+                        content_type=self.device_content_type,
+                        object_id=obj.parent.id,
+                    ),
+                    child=ci,
+                    relation_type=cdb.CI_RELATION_TYPES.CONTAINS,
+                ).id)
+            except cdb.CI.DoesNotExist:
                 pass
 
     @nested_commit_on_success
-    def import_network_relations(self, network):
-        """Must be called after device_relations!
-        Make relations using network->ipaddresses->device"""
+    def import_network_relations(self, network, used_relations):
+        """
+        Must be called after device_relations!
+        Make relations using network->ipaddresses->device
+        """
         for ip in ndb.IPAddress.objects.filter(
-                device__isnull=False,
-                network=network.content_object).all():
+            device__isnull=False,
+            network=network.content_object,
+        ).all():
             # make relations network->device
-            ci_device = cdb.CI.objects.get(
-                content_type=self.device_content_type,
-                object_id=ip.device.id,
-            )
-            cir = cdb.CIRelation()
-            cir.readonly = True
-            cir.parent = network
-            cir.child = ci_device
-            cir.type = cdb.CI_RELATION_TYPES.CONTAINS.id
             try:
-                cir.save()
-            except IntegrityError:
+                ci_device = cdb.CI.objects.get(
+                    content_type=self.device_content_type,
+                    object_id=ip.device.id,
+                )
+                used_relations.append(_create_or_update_relation(
+                    parent=network,
+                    child=ci_device,
+                    relation_type=cdb.CI_RELATION_TYPES.CONTAINS,
+                ).id)
+            except cdb.CI.DoesNotExist:
                 pass
 
     def import_single_object_relations(self, content_object):
