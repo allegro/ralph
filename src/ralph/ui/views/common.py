@@ -19,7 +19,7 @@ from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Language, TagStem
 from bob.menu import MenuItem
 from powerdns.models import Record
-from discovery.models_device import DeprecationKind, MarginKind
+from ralph.discovery.models_device import DeprecationKind, MarginKind
 
 from ralph.account.models import Perm
 from ralph.business.models import RolePropertyValue, Venture, VentureRole
