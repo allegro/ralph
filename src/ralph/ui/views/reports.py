@@ -860,6 +860,17 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
         ):
             model = detail.get('model')
             price = detail.get('price') or 0
+            if not model:
+                components.append(
+                    {
+                        'model': 'n/a',
+                        'icon': 'n/a',
+                        'count': 'n/a',
+                        'price': 'n/a',
+                        'serial': 'n/a',
+                    }
+                )
+
             if model not in stock:
                 components.append(
                     {
@@ -909,9 +920,13 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
             device = dev.get('device')
             components = dev.get('components')
             deprecated = dev.get('deprecated')
+            try:
+                ven = device.venture.symbol
+            except:
+                ven = 'N/a'
             row = [
-                device.venture.symbol,
-                device.venture.id,
+                ven,
+                ven,
                 device.name or 'N/a',
                 device.role or 'N/a',
                 device.sn or 'N/a',
