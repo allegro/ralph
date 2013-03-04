@@ -24,7 +24,7 @@ ACTIONS_TYPES_MAPPER = {
     'git': run_cichange_git_archivization,
     'zabbix': run_cichange_zabbix_archivization,
     'so': run_cichange_so_archivization,
-    'cmdb': run_cichange_cmdb_history_archivization,
+    'cmdb_history': run_cichange_cmdb_history_archivization,
     'ralph': run_cichange_device_archivization,
     'puppet': run_cichange_puppet_archivization,
 }
