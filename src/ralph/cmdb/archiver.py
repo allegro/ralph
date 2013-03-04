@@ -9,7 +9,7 @@ from __future__ import unicode_literals
 from django.db import connection
 from lck.django.common import nested_commit_on_success
 
-from cmdb.models import (
+from ralph.cmdb.models import (
     CI_CHANGE_TYPES,
     CIChange,
     ArchivedCIChange,
