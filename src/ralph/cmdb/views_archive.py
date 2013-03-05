@@ -25,7 +25,7 @@ class BaseCMDBArchiveView(BaseCMDBView, DataTableMixin):
     template_name = 'cmdb/archive.html'
     sort_variable_name = 'sort'
     export_variable_name = None
-    rows_per_page = 10
+    rows_per_page = 20
     model = None
 
     def get_sidebar_items(self):
@@ -109,46 +109,38 @@ class ArchivedAssetsChanges(BaseCMDBArchiveView):
             field='ci',
             sort_expression='ci',
             bob_tag=True,
-            export=True,
         ),
         DataTableColumn(
             'Created',
             field='created',
             sort_expression='created',
             bob_tag=True,
-            export=True,
         ),
         DataTableColumn(
             'Time',
             field='time',
             sort_expression='time',
             bob_tag=True,
-            export=True,
         ),
         DataTableColumn(
             'User',
             bob_tag=True,
-            export=True,
         ),
         DataTableColumn(
             'Field name',
             bob_tag=True,
-            export=True,
         ),
         DataTableColumn(
             'Old value',
             bob_tag=True,
-            export=True,
         ),
         DataTableColumn(
             'New value',
             bob_tag=True,
-            export=True,
         ),
         DataTableColumn(
             'Message',
             bob_tag=True,
-            export=True,
         ),
     ]
 
@@ -176,54 +168,46 @@ class ArchivedZabbixTriggers(BaseCMDBArchiveView):
             field='ci',
             sort_expression='ci',
             bob_tag=True,
-            export=True,
         ),
         DataTableColumn(
             'Created',
             field='created',
             sort_expression='created',
             bob_tag=True,
-            export=True,
         ),
         DataTableColumn(
             'Host',
             field='host',
             sort_expression='host',
             bob_tag=True,
-            export=True,
         ),
         DataTableColumn(
             'Status',
             field='status',
             sort_expression='status',
             bob_tag=True,
-            export=True,
         ),
         DataTableColumn(
             'Priority',
             field='priority',
             sort_expression='priority',
             bob_tag=True,
-            export=True,
         ),
         DataTableColumn(
             'Description',
             field='description',
             bob_tag=True,
-            export=True,
         ),
         DataTableColumn(
             'Last Change',
             field='lastchange',
             sort_expression='lastchange',
             bob_tag=True,
-            export=True,
         ),
         DataTableColumn(
             'Comments',
             field='comments',
             bob_tag=True,
-            export=True,
         ),
     ]
 
@@ -247,45 +231,38 @@ class ArchivedGitChanges(BaseCMDBArchiveView):
             field='ci',
             sort_expression='ci',
             bob_tag=True,
-            export=True,
         ),
         DataTableColumn(
             'Created',
             field='created',
             sort_expression='created',
             bob_tag=True,
-            export=True,
         ),
         DataTableColumn(
             'Time',
             field='time',
             sort_expression='time',
             bob_tag=True,
-            export=True,
         ),
         DataTableColumn(
             'Fila path',
             field='file_paths',
             bob_tag=True,
-            export=True,
         ),
         DataTableColumn(
             'Comment',
             field='comment',
             bob_tag=True,
-            export=True,
         ),
         DataTableColumn(
             'Author',
             field='author',
             bob_tag=True,
-            export=True,
         ),
         DataTableColumn(
             'Changeset',
             field='changeset',
             bob_tag=True,
-            export=True,
         ),
     ]
 
@@ -309,45 +286,38 @@ class ArchivedPuppetChanges(BaseCMDBArchiveView):
             field='ci',
             sort_expression='ci',
             bob_tag=True,
-            export=True,
         ),
         DataTableColumn(
             'Created',
             field='created',
             sort_expression='created',
             bob_tag=True,
-            export=True,
         ),
         DataTableColumn(
             'Time',
             field='time',
             sort_expression='time',
             bob_tag=True,
-            export=True,
         ),
         DataTableColumn(
             'Configuration Version',
             field='configuration_version',
             bob_tag=True,
-            export=True,
         ),
         DataTableColumn(
             'Host',
             field='host',
             bob_tag=True,
-            export=True,
         ),
         DataTableColumn(
             'Kind',
             field='kind',
             bob_tag=True,
-            export=True,
         ),
         DataTableColumn(
             'Status',
             field='status',
             bob_tag=True,
-            export=True,
         ),
     ]
 
@@ -371,39 +341,33 @@ class ArchivedStatusOfficeIncidents(BaseCMDBArchiveView):
             field='ci',
             sort_expression='ci',
             bob_tag=True,
-            export=True,
         ),
         DataTableColumn(
             'Created',
             field='created',
             sort_expression='created',
             bob_tag=True,
-            export=True,
         ),
         DataTableColumn(
             'Time',
             field='time',
             sort_expression='time',
             bob_tag=True,
-            export=True,
         ),
         DataTableColumn(
             'Status',
             field='status',
             bob_tag=True,
-            export=True,
         ),
         DataTableColumn(
             'Subject',
             field='subject',
             bob_tag=True,
-            export=True,
         ),
         DataTableColumn(
             'incident_id',
             field='incident_id',
             bob_tag=True,
-            export=True,
         ),
     ]
 
@@ -427,46 +391,38 @@ class ArchivedCIAttributesChanges(BaseCMDBArchiveView):
             field='ci',
             sort_expression='ci',
             bob_tag=True,
-            export=True,
         ),
         DataTableColumn(
             'Created',
             field='created',
             sort_expression='created',
             bob_tag=True,
-            export=True,
         ),
         DataTableColumn(
             'Time',
             field='time',
             sort_expression='time',
             bob_tag=True,
-            export=True,
         ),
         DataTableColumn(
             'User',
             bob_tag=True,
-            export=True,
         ),
         DataTableColumn(
             'Field name',
             bob_tag=True,
-            export=True,
         ),
         DataTableColumn(
             'Old value',
             bob_tag=True,
-            export=True,
         ),
         DataTableColumn(
             'New value',
             bob_tag=True,
-            export=True,
         ),
         DataTableColumn(
             'Comment',
             bob_tag=True,
-            export=True,
         ),
     ]
 
