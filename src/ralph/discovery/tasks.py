@@ -95,10 +95,12 @@ def _run_plugin(context, chain, plugin_name, requirements, interactive,
     except Exception:
         stdout('', end='\r')
         stderr("{}\nException in plugin '{}' for '{}'.".format(
-            traceback.format_exc()),
-            plugin_name,
-            context.get('ip', 'none'),
-            end='\n')
+                traceback.format_exc(),
+                plugin_name,
+                context.get('ip', 'none')
+            ),
+            end='\n'
+        )
     else:
         message = message or ''
         if clear_down and not is_up:
@@ -324,4 +326,3 @@ def discover_all(interactive=False, update_existing=False, outputs=None):
             discover_network.delay(net.network,
                 update_existing=update_existing)
     stdout()
-
