@@ -1,19 +1,17 @@
 {% block contentarea %}
 <style type="text/css" media="screen">
     /* Set min height for tabs, for not looking stupid with bottom buttons*/
-
     .tab-content > .tab-pane, .pill-content > .pill-pane {
         min-height: 300px;
     }
-
 </style>
 {% load icons %}
 {% load query %}
 
-  {% if ci_id %} {{ breadcrumb }} {% endif %}
+  {% if ci_id %}{{ breadcrumb }}{% endif %}
 
   {% if not iframe %}
-        <h3> {{ label }}  </h3>
+        <h3>{{ label }}</h3>
         <br>
   {% endif %}
 
@@ -27,16 +25,16 @@
       {% for message in cmdb_messages %}
       <div class="alert {{ message.type }}">
                 <button class="close" data-dismiss="alert">×</button>
-                <strong>{{message.title}}</strong> {{ message.message }}
+                <strong>{{ message.title }}</strong>{{ message.message }}
       </div>
       {% endfor %}
   {% endif %}
 
   {% if ci_id %}
       <ul class="nav nav-tabs cmdb-ci-tabs">
-          {% if iframe  %}
+          {% if iframe %}
               <li class='dropdown'>
-              <a href='#' class='dropdown-toggle' data-toggle='dropdown'> Show all Ci info<b class='caret'> </b> </a>
+              <a href='#' class='dropdown-toggle' data-toggle='dropdown'>Show all Ci info<b class='caret'></b></a>
               <ul class='dropdown-menu'>
           {% endif %}
 
@@ -44,19 +42,19 @@
           <li><a href="#relations" data-toggle="tab">Relations</a></li>
 
           {% if read_configuration_item_info_git_perm  %}
-              <li><a href="#git" data-toggle="tab">{% if git_changes %} {% icon 'fugue-new' %} {% endif %} Repo changes</a></li>
+              <li><a href="#git" data-toggle="tab">{% if git_changes %}{% icon 'fugue-new' %}{% endif %}Repo changes</a></li>
           {% endif %}
 
           {% if read_configuration_item_info_puppet_perm %}
-              <li><a href="#puppet" data-toggle="tab">{% if puppet_reports %} {% icon 'fugue-new' %} {% endif %} Agent events</a></li>
+              <li><a href="#puppet" data-toggle="tab">{% if puppet_reports %}{% icon 'fugue-new' %}{% endif %}Agent events</a></li>
           {% endif %}
 
           {% if read_configuration_item_info_jira_perm %}
-              <li><a href="#ralph" data-toggle="tab">{% if device_attributes_changes %} {% icon 'fugue-new' %} {% endif %}  Asset attr. changes</a></li>
+              <li><a href="#ralph" data-toggle="tab">{% if device_attributes_changes %}{% icon 'fugue-new' %}{% endif %}Asset attr. changes</a></li>
           {% endif %}
 
           {% if read_configuration_item_info_jira_perm %}
-              <li><a href="#ci_changes" data-toggle="tab">{% if ci_attributes_changes %} {% icon 'fugue-new' %} {% endif %}  CI attr. changes</a></li>
+              <li><a href="#ci_changes" data-toggle="tab">{% if ci_attributes_changes %}{% icon 'fugue-new' %}{% endif %}CI attr. changes</a></li>
           {% endif %}
 
           {% if read_configuration_item_info_jira_perm %}
@@ -64,19 +62,19 @@
           {% endif %}
 
           {% if read_configuration_item_info_jira_perm %}
-              <li><a href="#problems" data-toggle="tab">{% if problems %} {% icon 'fugue-new' %} {% endif %}  Problems</a></li>
+              <li><a href="#problems" data-toggle="tab">{% if problems %}{% icon 'fugue-new' %}{% endif %}Problems</a></li>
           {% endif %}
 
           {% if read_configuration_item_info_jira_perm %}
-              <li><a href="#incidents" data-toggle="tab">{% if incidents %} {% icon 'fugue-new' %} {% endif %}  Incidents </a></li>
+              <li><a href="#incidents" data-toggle="tab">{% if incidents %} {% icon 'fugue-new' %}{% endif %}Incidents</a></li>
           {% endif %}
 
           {% if read_configuration_item_info_jira_perm %}
-              <li><a href="#planned" data-toggle="tab">{% if planned %} {% icon 'fugue-new' %} {% endif %} Planned Changes</a></li>
+              <li><a href="#planned" data-toggle="tab">{% if planned %}{% icon 'fugue-new' %}{% endif %}Planned Changes</a></li>
           {% endif %}
 
           {% if read_configuration_item_info_generic_perm %}
-              <li><a href="#so" data-toggle="tab">{% if so_events %} {% icon 'fugue-new' %} {% endif %} SO Events</a></li>
+              <li><a href="#so" data-toggle="tab">{% if so_events %}{% icon 'fugue-new' %}{% endif %}SO Events</a></li>
           {% endif %}
 
           {% if not iframe %}
@@ -88,7 +86,6 @@
       {% endif %}
         <div class="tab-content">
                 <div class="tab-pane active" id="main">
-
                     <div class='span6'>
     <p style='height: 10px;'></p>
 
@@ -101,7 +98,7 @@
             {% if service_name %}
         <tr>
                 <td colspan=4>
-                    <p> <span style='font-size: 15px' class="label label-success">Service : {{ service_name }}</span> </p>
+                    <p><span style='font-size: 15px' class="label label-success">Service : {{ service_name }}</span></p>
                 </td>
             </tr>
             {% endif %}
@@ -135,7 +132,7 @@
         <span><h3>Impact report</h3></span>
         <a target="_blank" href='/cmdb/graphs?ci={{ ci_id }}' class="btn btn-info btn-large">Run impact report</a>
     {% endif %}
-    <span><h3>Custom Attributes</h3> </span>
+    <span><h3>Custom Attributes</h3></span>
         {% include 'cmdb/include_attributes.html' %}
     <hr>
     {% endif %}
@@ -143,7 +140,7 @@
         <div class='span12'>
             {% if show_in_ralph %}
                 <div class='span3'>
-                    <a class='btn btn-info btn-large' href='{{ ralph_ci_link }}'> Asset details </a>
+                    <a class='btn btn-info btn-large' href='{{ ralph_ci_link }}'>Asset details</a>
                 </div>
             {% endif %}
             <div class='span4'>
@@ -152,7 +149,7 @@
                     <button class="btn btn-large" type="reset">{% icon 'fugue-broom' %}&nbsp;Clean</button>
                 {% else %}
                     {% if not iframe %}
-                        <a class='btn btn-info btn-large' href='/cmdb/ci/edit/{{ ci_id}}'> Edit this CI </a>
+                        <a class='btn btn-info btn-large' href='/cmdb/ci/edit/{{ ci_id}}'>Edit this CI</a>
                     {% endif %}
                 {% endif %}
             </div>
@@ -161,45 +158,45 @@
 </div> <!-- span6 !-->
 </div> <!-- main !-->
 <div class="tab-pane" id="ralph">
-    <span><h3> Asset attr. changes</h3> </span>
+    <span><h3>Asset attr. changes</h3></span>
     <br>
 {% include 'cmdb/include_attributechange.html' %}
 </div>
 
 <div class="tab-pane" id="ci_changes">
-    <span><h3> CI attr. changes</h3> </span>
+    <span><h3>CI attr. changes</h3></span>
     <br>
     {% include 'cmdb/include_ciattributechange.html' %}
 </div>
 
 <div class="tab-pane" id="problems">
-<span><h3> Problems </h3> </span>
+<span><h3>Problems</h3></span>
     <br>
-{% include 'cmdb/include_events.html' with rows=problems%}
+{% include 'cmdb/include_events.html' with rows=problems %}
 </div>
 
 <div class="tab-pane" id="incidents">
-<span><h3>{% if incidents %} {% icon 'fugue-new' %} {% endif %} Incidents</h3> </span>
+<span><h3>{% if incidents %}{% icon 'fugue-new' %}{% endif %}Incidents</h3></span>
     <br>
-{% include 'cmdb/include_events.html' with rows=incidents%}
+{% include 'cmdb/include_events.html' with rows=incidents %}
 </div>
 
 <div class="tab-pane" id="planned">
-    <span><h3>{% if planned %} {% icon 'fugue-new' %} {% endif %} Planned changes</h3> </span>
+    <span><h3>{% if planned %}{% icon 'fugue-new' %}{% endif %}Planned changes</h3></span>
     <br>
-{% include 'cmdb/include_events.html' with rows=planned%}
+{% include 'cmdb/include_events.html' with rows=planned %}
 </div>
 
 <div class="tab-pane" id="so">
-    <span><h3>{% if so_events %} {% icon 'fugue-new' %} {% endif %} SO Events</h3> </span>
+    <span><h3>{% if so_events %}{% icon 'fugue-new' %}{% endif %}SO Events</h3></span>
     <br>
-    {% include 'cmdb/include_so_events.html' with rows=so_events%}
+    {% include 'cmdb/include_so_events.html' with rows=so_events %}
 </div>
 
 <div class="tab-pane" id="zabbix">
-    <span><h3> Monitoring events</h3> </span>
+    <span><h3>Monitoring events</h3></span>
         <br>
-    {% include 'cmdb/include_zabbix.html' with rows=zabbix_triggers%}
+    {% include 'cmdb/include_zabbix.html' with rows=zabbix_triggers %}
 </div>
 <div class="tab-pane" id="relations">
     <div class='span12' style='padding-top: 4px;margin-top: 10px; '>
@@ -210,10 +207,9 @@
                             {% include 'cmdb/include_relations.html' with span_number=span_number label='Contains' relations=relations_contains editable=editable %}
                             {% include 'cmdb/include_relations.html' with span_number=span_number label='Has roles' relations=relations_hasrole editable=editable %}
                             {% include 'cmdb/include_relations.html' with span_number=span_number label='Requires' relations=relations_requires editable=editable %}
-
                        {% if editable and edit_configuration_item_relations_perm and ci_id %}
                        <p>
-                                <a class='btn btn-primary'
+                               <a class='btn btn-primary'
                                     href="/cmdb/relation/add/{{ ci_id }}?rel_parent={{ ci_id }}">
                                    <i class='icon-edit icon-white'></i>
                                    Add new child relation
@@ -249,7 +245,7 @@
             <div class='span2'>
                 {% if not editable %}
                     {% if not iframe %}
-                        <a class='btn btn-info btn-large' href='/cmdb/ci/edit/{{ ci_id}}#relations'> Edit this CI </a>
+                        <a class='btn btn-info btn-large' href='/cmdb/ci/edit/{{ ci_id}}#relations'>Edit this CI</a>
                     {% endif %}
                 {% endif %}
             </div>
@@ -260,7 +256,7 @@
         {% if read_configuration_item_info_puppet_perm %}
             <div class="tab-pane" id="puppet">
                 <div class='span12'>
-                    <span><h3> Agent configuration log</h3> </span>
+                    <span><h3>Agent configuration log</h3></span>
                     <p>
                         {% include 'cmdb/include_puppet.html' %}
                     </p>
@@ -271,9 +267,9 @@
         {% if read_configuration_item_info_jira_perm %}
         <div class="tab-pane" id="jira">
             <div class='span12'>
-               <span><h3> Last Jira Issues</h3> </span>
+               <span><h3>Last Jira Issues</h3></span>
                <p>
-                   <div id='jira_placeholder'> </div>
+                   <div id='jira_placeholder'></div>
                 </p>
             </div>
         </div>
@@ -282,7 +278,7 @@
 {% if read_configuration_item_info_git_perm  %}
     <div class="tab-pane" id="git">
         <div class='span12'>
-            <span><h3> Last Repo changes </h3> </span>
+            <span><h3>Last Repo changes</h3></span>
             <p>
                 {% include 'cmdb/include_git.html' %}
             </p>

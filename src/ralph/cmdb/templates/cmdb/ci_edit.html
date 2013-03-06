@@ -21,7 +21,7 @@
                 {% endif %}
 
                 {% for f in form.visible_fields %}
-                <tr class="control-group {{ f.css_classes }}{% if f.errors %} error{% endif %}">
+                <tr class="control-group {{ f.css_classes }}{% if f.errors %}error{% endif %}">
                     <td width="16">{{ f|field_icon:form }}</td>
                 <td class="form-label">
                     {{ f.label_tag }}
@@ -55,7 +55,7 @@
             <div class='span12'>
                 {% if show_in_ralph %}
                 <div class='span3'>
-                    <a class='btn btn-info btn-large' href='{{ ralph_ci_link }}'> Asset details </a>
+                    <a class='btn btn-info btn-large' href='{{ ralph_ci_link }}'>Asset details</a>
                 </div>
                 {% endif %}
                 <div class='span4'>
@@ -63,7 +63,7 @@
                     <button class="btn btn-primary btn-large" type="submit">{% icon 'fugue-tick' %}&nbsp;Save</button>
                     <button class="btn btn-large" type="reset">{% icon 'fugue-broom' %}&nbsp;Clean</button>
                 {% else %}
-                    <a class='btn btn-info btn-large' href='/cmdb/ci/edit/{{ ci_id}}'> Edit this CI </a>
+                    <a class='btn btn-info btn-large' href='/cmdb/ci/edit/{{ ci_id}}'>Edit this CI</a>
                 {% endif %}
                 </div>
             </div>
