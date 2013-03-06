@@ -307,7 +307,7 @@ ISSUETRACKERS = {
         'ENGINE': '',
         'USER': '',
         'PASSWORD': '',
-        'URL': '',
+        'URbL': '',
         'CI_FIELD_NAME': '',
         'CI_NAME_FIELD_NAME': '',
         'TEMPLATE_FIELD_NAME': '',
