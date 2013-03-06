@@ -222,5 +222,3 @@ class Jira(object):
             deployment.issue_key).get('transitions')
         issue_transitions_ids = [int(x.get('id')) for x in issue_transitions]
         return self.accepted_transition in issue_transitions_ids
-
-
