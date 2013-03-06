@@ -117,5 +117,5 @@ urlpatterns = patterns(
 
 for app in settings.INSTALLED_APPS:
     if app in OPTIONAL_APPS:
-        ur = url(r'^{}/'.format(app[6:]), include('{}.urls'.format(app)))
-        urlpatterns.append(ur)
+        app_urls = url(r'^{}/'.format(app[6:]), include('{}.urls'.format(app)))
+        urlpatterns.append(app_urls)
