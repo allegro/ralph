@@ -71,13 +71,22 @@ namespace DonPedroOutput
 				Console.WriteLine();
 			}
 			
+			Console.WriteLine("\nDetected software:");
+			foreach(SoftwareDTOResponse item in d.GetSoftwareInfo())
+			{
+				foreach(var prop in item.GetType().GetProperties()) {
+					Console.WriteLine("\t{0}: {1}", prop.Name, prop.GetValue(item, null));
+				}
+				Console.WriteLine();
+			}
+			
 			Console.WriteLine("\nDetected device:");
 			DeviceDTOResponse dev = d.GetDeviceInfo();
 			foreach(var prop in dev.GetType().GetProperties()) {
 				Console.WriteLine("\t{0}: {1}", prop.Name, prop.GetValue(dev, null));
 			}
 			Console.WriteLine();
-
+			
 			Console.Write("Press any key to continue . . . ");
 			Console.ReadKey(true);
 		}
