@@ -26,9 +26,9 @@ class JiraRSS(object):
         self.project = settings.ISSUETRACKERS[tracker_name]['CMDB_PROJECT']
         self.user = settings.ISSUETRACKERS[tracker_name]['USER']
         self.password = settings.ISSUETRACKERS[tracker_name]['PASSWORD']
-        self.rss_url = 'http://%s:%s@%s/activity?streams=key+IS+%s&os_authType=basic' %\
-                       (self.user, self.password, self.issuetracker_url[7:],
-                        self.project)
+        self.rss_url = ('https://%s/activity?streams=key+IS+%s&os_username=%s&os_password=%s' %
+                (self.issuetracker_url[7:], self.project, self.user, self.password)
+        )
 
     @nested_commit_on_success
     def update_issues(self, issues):
