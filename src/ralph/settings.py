@@ -307,7 +307,7 @@ ISSUETRACKERS = {
         'ENGINE': '',
         'USER': '',
         'PASSWORD': '',
-        'URbL': '',
+        'URL': '',
         'CI_FIELD_NAME': '',
         'CI_NAME_FIELD_NAME': '',
         'TEMPLATE_FIELD_NAME': '',
@@ -316,7 +316,6 @@ ISSUETRACKERS = {
         'CMDB_VIEWCHANGE_LINK': 'http://url/%s',
         'USE_CELERY': True,
         'OPA': {
-            'RSS_URL': '',
             'BOWNER_FIELD_NAME': '',
             'TOWNER_FIELD_NAME': '',
             'TEMPLATE': '',
