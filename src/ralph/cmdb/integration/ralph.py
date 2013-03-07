@@ -55,5 +55,3 @@ class AssetChangeImporter(BaseImporter):
                 register_issue_signal.send(sender=self, change_id=ch.id)
             except IntegrityError, e:
                 logger.debug('Skipping already imported: %s' % x)
-
-
