@@ -198,7 +198,7 @@ class Jira(object):
                 'description': description,
                 'project': {
                     'key': project
-                }
+                },
             },
         }
         if technical_assignee:
