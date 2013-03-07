@@ -164,7 +164,8 @@ class CIEvent(TimeTrackable):
     jira_id = models.CharField(max_length=100)
     status = models.CharField(max_length=300)
     assignee = models.CharField(max_length=300)
-
+    analysis = models.CharField(max_length=1024, null=True, blank=True)
+    problems = models.CharField(max_length=1024, null=True, blank=True)
     class Meta:
         abstract = True
 
