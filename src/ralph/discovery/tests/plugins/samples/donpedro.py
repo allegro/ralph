@@ -6,7 +6,8 @@ data = """{"data":{"storage": [{"sn":"03da1030-f25b-47","mountpoint":"C:","size"
  "device": {"sn":"6ddaaa4a-dc00-de38-e683-da037fd729ca","caption":"Computer System Product","version":"4.1.2","vendor":"Xen","label":"HVM domU"},
  "fcs": [{"physicalid":"0","model":"QMH2462","sn":"MY572520SK","manufacturer":"QLogic Corporation","label":"QLogic QMH2462 Fibre Channel Adapter"},{"physicalid":"1","model":"QMH2462","sn":"MY572520SK","manufacturer":"QLogic Corporation","label":"QLogic QMH2462 Fibre Channel Adapter"}],
  "shares": [{"volume":"3PARdata VV  Multi-Path Disk Device","sn":"25D304C1","label":"3PARdata VV  Multi-Path Disk Device"},
-  {"volume":"3PARdata VV  Multi-Path Disk Device","sn":"80C804C1","label":"3PARdata VV  Multi-Path Disk Device"}]
+  {"volume":"3PARdata VV  Multi-Path Disk Device","sn":"80C804C1","label":"3PARdata VV  Multi-Path Disk Device"}],
+  "software":[{"vendor":"Vendor 1","label":"Soft 1","version":"1.2.33"}, {"vendor":"Vendor 2","label":"Soft 2","version":"0.8.99"}]
 }}
 """
 

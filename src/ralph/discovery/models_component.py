@@ -152,8 +152,8 @@ class ComponentModelGroup(Named, TimeTrackable, SavingUser):
                 GenericComponent, Software))
 
 
-class ComponentModel(Named.NonUnique, SavePrioritized,
-                     WithConcurrentGetOrCreate, SavingUser):
+class ComponentModel(SavePrioritized, WithConcurrentGetOrCreate, SavingUser):
+    name = db.CharField(verbose_name=_("name"), max_length=255)
     speed = db.PositiveIntegerField(verbose_name=_("speed (MHz)"),
         default=0, blank=True)
     cores = db.PositiveIntegerField(verbose_name=_("number of cores"),
@@ -170,6 +170,9 @@ class ComponentModel(Named.NonUnique, SavePrioritized,
         unique_together = ('speed', 'cores', 'size', 'type', 'family')
         verbose_name = _("component model")
         verbose_name_plural = _("component models")
+
+    def __unicode__(self):
+        return self.name
 
     @classmethod
     def concurrent_get_or_create(cls, *args, **kwargs):
@@ -573,7 +576,7 @@ class Software(Component):
         unique_together = ('device', 'path')
 
     def __unicode__(self):
-        return '%r at %r (%r)' % (self.label, self.path, self.model)
+        return '%r' % self.label
 
     @classmethod
     def create(cls, dev, path, model_name, priority, label=None, sn=None,
