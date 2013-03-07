@@ -12,9 +12,8 @@ namespace DonPedro.Detectors
 		public List<SoftwareDTOResponse> GetSoftwareInfo()
 		{
 			List<SoftwareDTOResponse> software = new List<SoftwareDTOResponse>();
-			
-			software.AddRange(GetSoftwareFromCurrentUser());
-			software = MergeSoftwareLists(software, GetSoftwareFromLocalMachine32());
+
+			software.AddRange(GetSoftwareFromLocalMachine32());
 			software = MergeSoftwareLists(software, GetSoftwareFromLocalMachine64());
 			
 			return software;
@@ -79,9 +78,8 @@ namespace DonPedro.Detectors
 							
 							software.Add(application);
 						}
-						catch (Exception e)
+						catch (Exception)
 						{
-							Logger.Instance.LogError(e.ToString());
 						}
 					}
 				}

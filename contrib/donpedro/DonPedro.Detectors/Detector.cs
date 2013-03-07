@@ -88,7 +88,7 @@ namespace DonPedro.Detectors
 			json += GetOperatingSystemInfo().ToJSON();
 			json += ",\n \"processors\": [";
 			json += string.Join(",", GetProcessorsInfo().ConvertAll(s => s.ToJSON()).ToArray());
-			json += ",\n \"software\": [";
+			json += "],\n \"software\": [";
 			json += string.Join(",", GetSoftwareInfo().ConvertAll(s => s.ToJSON()).ToArray());
 			json += "],\n \"device\": ";
 			json += GetDeviceInfo().ToJSON();
