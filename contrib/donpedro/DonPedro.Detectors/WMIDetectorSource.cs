@@ -552,7 +552,7 @@ namespace DonPedro.Detectors
 					  from Win32_Processor"
 				);
 				ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
-				
+
 				foreach (ManagementObject obj in searcher.Get())
 				{
 					ProcessorDTOResponse processor = new ProcessorDTOResponse();
