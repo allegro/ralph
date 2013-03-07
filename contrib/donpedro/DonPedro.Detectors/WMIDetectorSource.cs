@@ -406,7 +406,7 @@ namespace DonPedro.Detectors
 			try
 			{
 				SelectQuery query = new SelectQuery(
-					@"select Name, Caption, Vendor, Version 
+					@"select Name, Vendor, Version 
 					  from Win32_Product"
 				);
 				ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
@@ -415,7 +415,6 @@ namespace DonPedro.Detectors
 				{
 				    SoftwareDTOResponse soft = new SoftwareDTOResponse();
 				    soft.Label = GetValueAsString(obj, "Name");
-				    soft.Caption = GetValueAsString(obj, "Caption");
 				    soft.Vendor = GetValueAsString(obj, "Vendor");
 				    soft.Version = GetValueAsString(obj, "Version");
 				    

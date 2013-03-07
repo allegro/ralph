@@ -37,7 +37,13 @@ namespace DonPedro.Detectors
 		
 		public List<SoftwareDTOResponse> GetSoftwareInfo()
 		{
-		    return wmiDetector.GetSoftwareInfo();
+			WindowsRegistryDetectorSource regInfo = new WindowsRegistryDetectorSource();
+			List<SoftwareDTOResponse> software = regInfo.GetSoftwareInfo();
+			if (software.Count == 0) {
+
+				software = wmiDetector.GetSoftwareInfo();
+			}
+			return software;
 		}
 		
 		public List<EthernetDTOResponse> GetEthernetInfo()
