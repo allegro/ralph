@@ -512,6 +512,17 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
         else:
             return default_deprecation_kind
 
+    def is_deprecated(self):
+        """ Return True if device is depreciated """
+        if not self.deprecation_date:
+            return False
+        today_midnight = datetime.datetime.combine(
+            datetime.datetime.today(),
+            datetime.time(),
+        )
+        return self.deprecation_date < today_midnight
+
+
     def get_core_count(self):
         return sum(cpu.get_cores() for cpu in self.processor_set.all())
 
