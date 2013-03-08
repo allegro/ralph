@@ -879,7 +879,7 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
                     'device': device,
                     'components': components,
                     'total': total,
-                    'deprecated': is_deprecated(device),
+                    'deprecated': device.is_deprecated,
                 }
 
     def devices_list(self, venture):
