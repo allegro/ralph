@@ -376,6 +376,8 @@ class DiskShare(Component):
         for the specified values (for example, it has division by zero),
         NaN is returned instead of a price.
         """
+        if self.device and self.device.is_deprecated():
+            return 0
         if not (self.model and self.model.group):
             return 0
         size = self.get_total_size() / 1024
@@ -422,6 +424,8 @@ class DiskShareMount(TimeTrackable, WithConcurrentGetOrCreate):
         return self.size or self.share.get_total_size()
 
     def get_price(self):
+        if self.share.device and self.share.device.is_deprecated():
+            return 0
         if self.size and self.share.model and self.share.model.group:
             size = self.get_size() / 1024
             formula = self.share.get_price_formula()

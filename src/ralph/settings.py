@@ -316,7 +316,6 @@ ISSUETRACKERS = {
         'CMDB_VIEWCHANGE_LINK': 'http://url/%s',
         'USE_CELERY': True,
         'OPA': {
-            'RSS_URL': '',
             'BOWNER_FIELD_NAME': '',
             'TOWNER_FIELD_NAME': '',
             'TEMPLATE': '',

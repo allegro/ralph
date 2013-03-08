@@ -17,11 +17,9 @@ from tastypie.constants import ALL, ALL_WITH_RELATIONS
 from tastypie.fields import ForeignKey as TastyForeignKey
 from tastypie.resources import ModelResource as MResource
 from tastypie.throttle import CacheThrottle
-from tastypie import fields
 
 from ralph.cmdb.models import (
     CI,
-    CIChangeStatusOfficeIncident,
     CIType,
     CIChange,
     CIChangeCMDBHistory,
@@ -161,17 +159,6 @@ class CIChangeZabbixTriggerResource(MResource):
         authorization = DjangoAuthorization()
         list_allowed_methods = ['get', 'post']
         resource_name = 'cichangezabbixtrigger'
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
-                                 expiration=EXPIRATION)
-
-
-class CIChangeStatusOfficeIncidentResource(MResource):
-    class Meta:
-        queryset = CIChangeStatusOfficeIncident.objects.all()
-        authentication = ApiKeyAuthentication()
-        authorization = DjangoAuthorization()
-        list_allowed_methods = ['get', 'post']
-        resource_name = 'cichangestatusofficeincident'
         throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
                                  expiration=EXPIRATION)
 
