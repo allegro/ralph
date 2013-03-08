@@ -12,16 +12,11 @@
                     <h4>Devices prices per Venture</h4>
                     <p>Price of devices in the venture.</p>
                     <p>The price of shared equipment is taken as a proportion.</p>
-
-
-
                     <ul class="unstyled">
                         <li>N/A - Unknown price</li>
-                        <li>{% icon "notebook__minus" %}</i> - The component group is not defined, so you can not download prices</li>
+                        <li>{% icon "notebook--minus" %}</i> - The component group is not defined, so you can not download prices</li>
                         <li>{% icon "fugue-prohibition-button" %} - Device does not have a model</lI>
                     </ul>
-
-
                     {% for f in form %}
                         {% if f.label %}
                         <div style="display:inline-block; vertical-align:top; margin-top: 10px;" class="control-group {% if f.errors %}error{% endif %}" >
@@ -69,10 +64,7 @@
                     <tr>
                         <td>{{ forloop.counter }}.</td>
                         <td>
-                            {{ row.device|device_icon }}
-                            <a href="/ui/search/info/{{ row.device.id }}">
-                                {{ row.device.name }}
-                            </a>
+                            {{ row.device|device_icon }}&nbsp;<a href="/ui/search/info/{{ row.device.id }}">{{ row.device.name }}</a>
                         </td>
                         <td>{{ row.device.sn }}</td>
                         <td>{{ row.device.barcode }}</td>
@@ -102,12 +94,7 @@
                                 {% for comp in row.components %}
                                     <tr>
                                         <td>
-                                            <i class="fugue-icon {{ comp.icon }}"></i>
-                                            {% if comp.model.name %}
-                                                {{ comp.model.name }}
-                                            {% else %}
-                                                {{ comp.model }}
-                                            {% endif %}
+                                            {% icon comp.icon %}&nbsp;{% if comp.model.name %}{{ comp.model.name }}{% else %}{{ comp.model }}{% endif %}
                                             {% if comp.serial %}
                                                 (Serial: {{ comp.serial }})
                                             {% endif %}
@@ -118,10 +105,9 @@
                                                 {{ comp.disk_count }}
                                             {% endif %}
                                         </td>
-                                        <td>{% if not comp.price %}N/A
-                                                {% if not comp.group %}
-                                                    {% icon "notebook__minus" %}
-                                                {% endif %}
+                                        <td>{% if not comp.price %}
+                                                N/A{% if not comp.group %}&nbsp;{% icon "notebook--minus" %}
+                                            {% endif %}
                                             {% else %}
                                                 {{ comp.price|currency }}
                                             {% endif %}
