@@ -14,7 +14,6 @@ from django.core.management.base import BaseCommand
 from ralph.cmdb.archiver import (
     run_cichange_git_archivization,
     run_cichange_zabbix_archivization,
-    run_cichange_so_archivization,
     run_cichange_cmdb_history_archivization,
     run_cichange_device_archivization,
     run_cichange_puppet_archivization,
@@ -23,7 +22,6 @@ from ralph.cmdb.archiver import (
 ACTIONS_TYPES_MAPPER = {
     'git': run_cichange_git_archivization,
     'zabbix': run_cichange_zabbix_archivization,
-    'so': run_cichange_so_archivization,
     'cmdb_history': run_cichange_cmdb_history_archivization,
     'ralph': run_cichange_device_archivization,
     'puppet': run_cichange_puppet_archivization,

@@ -190,12 +190,6 @@
 {% include 'cmdb/include_events.html' with rows=planned%}
 </div>
 
-<div class="tab-pane" id="so">
-    <span><h3>{% if so_events %} {% icon 'fugue-new' %} {% endif %} SO Events</h3> </span>
-    <br>
-    {% include 'cmdb/include_so_events.html' with rows=so_events%}
-</div>
-
 <div class="tab-pane" id="zabbix">
     <span><h3> Monitoring events</h3> </span>
         <br>

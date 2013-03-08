@@ -14,7 +14,6 @@ from ralph.cmdb.models import (
     ArchivedCIChangeCMDBHistory,
     ArchivedCIChangeGit,
     ArchivedCIChangePuppet,
-    ArchivedCIChangeSOIncident,
     ArchivedCIChangeZabbixTrigger,
     ArchivedPuppetLog,
     CI_CHANGE_TYPES,
@@ -22,7 +21,6 @@ from ralph.cmdb.models import (
     CIChangeCMDBHistory,
     CIChangeGit,
     CIChangePuppet,
-    CIChangeStatusOfficeIncident,
     CIChangeZabbixTrigger,
     PuppetLog,
 )
@@ -272,34 +270,6 @@ def run_cichange_zabbix_archivization(older_than):
         CIChange,
         older_than,
         CI_CHANGE_TYPES.ZABBIX_TRIGGER,
-    )
-
-
-@nested_commit_on_success
-def run_cichange_so_archivization(older_than):
-    _run_archivization(
-        CIChange,
-        ArchivedCIChange,
-        older_than,
-        CI_CHANGE_TYPES.STATUSOFFICE,
-    )
-    _run_archivization(
-        CIChangeStatusOfficeIncident,
-        ArchivedCIChangeSOIncident,
-        older_than,
-        CI_CHANGE_TYPES.STATUSOFFICE,
-        parent_model=CIChange,
-    )
-    _remove_old_data(
-        CIChangeStatusOfficeIncident,
-        older_than,
-        CI_CHANGE_TYPES.STATUSOFFICE,
-        parent_model=CIChange,
-    )
-    _remove_old_data(
-        CIChange,
-        older_than,
-        CI_CHANGE_TYPES.STATUSOFFICE,
     )
 
 
