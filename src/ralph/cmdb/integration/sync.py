@@ -160,7 +160,7 @@ class JiraEventsImporter(BaseImporter):
             f = i.get('fields')
             assignee = f.get('assignee')
             problems = f.get(problems_field) or []
-            ret_problems = [x.get('value') for x in problems]
+            ret_problems = [problem.get('value') for problem in problems]
             selected_problems = ', '.join(ret_problems) if ret_problems else None
             items_list.append(
                 dict(
