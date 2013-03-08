@@ -58,7 +58,6 @@ from ralph.ui.forms.addresses import (
     IPAddressFormSet,
     DNSFormSet,
 )
-from ralph.util.pricing import is_deprecated
 from ralph.ui.forms.deployment import (
     ServerMoveStep1Form,
     ServerMoveStep2FormSet,
@@ -538,7 +537,7 @@ class Prices(DeviceUpdateView):
             'components': _get_details(self.object,
                                        purchase_only=False,
                                        with_price=True),
-            'deprecated': is_deprecated(self.object),
+            'deprecated': self.object.is_deprecated(),
         })
         return ret
 
@@ -836,7 +835,7 @@ class Costs(DeviceDetailView):
             'query_variable_name': query_variable_name,
             'ALWAYS_DATE': ALWAYS_DATE,
             'FOREVER_DATE': FOREVER_DATE,
-            'deprecated': is_deprecated(self.object),
+            'deprecated': self.object.is_deprecated(),
         })
         last_month = datetime.date.today() - datetime.timedelta(days=31)
         splunk = self.object.splunkusage_set.filter(

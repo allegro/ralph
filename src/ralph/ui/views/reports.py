@@ -13,7 +13,6 @@ from django.db import models as db
 from django.http import HttpResponseForbidden, HttpResponse, Http404
 from django.conf import settings
 from django.db.models import Q
-from django.shortcuts import get_list_or_404, redirect
 from django.utils.safestring import mark_safe
 from django.utils.html import escape
 from django.utils.translation import ugettext_lazy as _
@@ -32,17 +31,7 @@ from ralph.cmdb.models_ci import (
     CI_TYPES,
 )
 from ralph.deployment.models import DeploymentStatus
-from ralph.discovery.models_component import (
-    Component,
-    ComponentType,
-    FibreChannel,
-    GenericComponent,
-    Memory,
-    OperatingSystem,
-    Processor,
-    Software,
-    Storage,
-)
+from ralph.discovery.models_component import ComponentType
 from ralph.discovery.models_device import (
     Device,
     DeviceModelGroup,
@@ -69,7 +58,6 @@ from ralph.ui.forms.reports import (
 )
 from ralph.util.pricing import (
     details_all,
-    is_deprecated,
     get_device_auto_price,
     get_device_chassis_price,
     get_device_components_price,
