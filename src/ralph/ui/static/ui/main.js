@@ -197,7 +197,7 @@ $(function ($) {
         }
         calendar.years.push({ label: year, value: year });
         year += 1;
-    }
+    };
     ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct',
      'Nov', 'Dec'].forEach(function (label, i) {
          if (i === now.getUTCMonth()) {
