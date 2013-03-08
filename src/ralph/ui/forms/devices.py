@@ -15,7 +15,6 @@ from ralph.util import Eth
 from ralph.ui.widgets import (
     DateWidget,
     ReadOnlySelectWidget,
-    DeviceWidget,
     DeviceModelWidget,
     ReadOnlyWidget,
     RackWidget,
@@ -233,6 +232,10 @@ class DeviceCreateForm(DeviceForm):
             raise forms.ValidationError(
                     "Either MACs or serial number required.")
         return ' '.join(macs)
+
+    def clean_model(self):
+        model = self.cleaned_data['model']
+        return model or None
 
 
 class DeviceBulkForm(DeviceForm):
