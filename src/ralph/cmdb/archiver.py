@@ -200,7 +200,10 @@ def _run_archivization(
 
 def _remove_old_data(model, older_than, change_type, parent_model=None):
     """
-    Remove not necessary data.
+    Remove data older than `older_than`, which type is specified
+    in `change_type` variable. If parent_model is passed it will be used to
+    make `WHERE` conditions. Otherwise conditions are build on `model`
+    variable.
 
     :param model: The archived model
     :param older_than: Query condition
