@@ -82,6 +82,8 @@ def _make_advanced_insert_query(
 ):
     """
     Create not trivial moved data SQL query with advanced conditions.
+    Not trivial mean that we have two linked tables and we should move data
+    using `JOIN` syntax.
     """
     db_columns = _get_db_columns_for_model(model)
     first_table_name = _get_db_table_for_model(model)
@@ -123,6 +125,8 @@ def _make_advanced_delete_query(
 ):
     """
     Create advanced delete query with not trivial conditions.
+    Not trivial mean that we have two linked tables and we should
+    delete (if db backend have this possibility) data using `JOIN` syntax.
     """
     backend_name = _get_used_db_backend_name()
     if backend_name == 'mysql':
@@ -180,7 +184,10 @@ def _run_archivization(
     parent_model=None
 ):
     """
-    Execute archivization process for passed params.
+    Execute archivization process for data older than `older_than`, which type
+    is specified in `change_type` variable. If `parent_model` is passed it
+    will be used to make `WHERE` conditions. Otherwise conditions are
+    build on `model` variable.
 
     :param model: The archived model
     :param archived_model: Model to store archived data
