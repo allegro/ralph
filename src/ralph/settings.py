@@ -313,7 +313,7 @@ ISSUETRACKERS = {
         'TEMPLATE_FIELD_NAME': '',
         'PROFILE_FIELD_NAME': '',
         'IMPACT_ANALYSIS_FIELD_NAME': '',
-        'PROBLMENS_FIELD_NAME': '',
+        'PROBLEMS_FIELD_NAME': '',
         'CMDB_PROJECT': '',
         'CMDB_VIEWCHANGE_LINK': 'http://url/%s',
         'USE_CELERY': True,
