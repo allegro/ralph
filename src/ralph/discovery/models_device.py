@@ -514,7 +514,7 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
             return default_deprecation_kind
 
     def is_deprecated(self):
-        """ Return True if device is depreciated """
+        """ Return True if device is Deprecated """
         if not self.deprecation_date:
             return False
         today_midnight = datetime.datetime.combine(

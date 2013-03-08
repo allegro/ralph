@@ -838,7 +838,7 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
     ]
 
     def device_details(self, device, exclude):
-        """ Returns device and his components """
+        """Returns device and its components"""
         components, stock = [], []
         total = 0
         for detail in _get_details(
@@ -883,7 +883,7 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
                 }
 
     def devices_list(self, venture):
-        """ Returns devices list from venture and descendant vsntures """
+        """Returns devices list from venture and descendant venture"""
         venture_devices = []
         for descendant in venture[0].find_descendant_ids():
             venture_devices.extend(
@@ -895,7 +895,7 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
             )
 
     def get_csv_data(self, devices, give_all=False):
-        """ Prepare data to export to CSV """
+        """Prepare data to export to CSV"""
         max = 0
         rows = []
         if not give_all:

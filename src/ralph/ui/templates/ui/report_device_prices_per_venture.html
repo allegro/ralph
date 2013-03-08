@@ -17,8 +17,8 @@
 
                     <ul class="unstyled">
                         <li>N/A - Unknown price</li>
-                        <li><i class="fugue-icon notebook--minus"></i> - The component group is not defined, so you can not download prices</li>
-                        <li><i class="fugue-icon fugue-prohibition-button"></i> - Device does not have a model</lI>
+                        <li>{% icon "notebook__minus" %}</i> - The component group is not defined, so you can not download prices</li>
+                        <li>{% icon "fugue-prohibition-button" %} - Device does not have a model</lI>
                     </ul>
 
 
@@ -69,6 +69,7 @@
                     <tr>
                         <td>{{ forloop.counter }}.</td>
                         <td>
+                            {{ row.device|device_icon }}
                             <a href="/ui/search/info/{{ row.device.id }}">
                                 {{ row.device.name }}
                             </a>
@@ -82,7 +83,7 @@
                             {{ row.device.deprecation_date|date:"Y-m-d" }}
                         </td>
                         <td>{% if row.deprecated %}
-                                Depreciated ({{ row.total|currency }})
+                                Deprecated ({{ row.total|currency }})
                             {% elif row.device.cached_price == None %}
                                 N/A
                             {% else %}
@@ -101,7 +102,7 @@
                                 {% for comp in row.components %}
                                     <tr>
                                         <td>
-                                            <i class="fugue-icon {{ comp.icon }}"></i>&nbsp;
+                                            <i class="fugue-icon {{ comp.icon }}"></i>
                                             {% if comp.model.name %}
                                                 {{ comp.model.name }}
                                             {% else %}
@@ -119,7 +120,7 @@
                                         </td>
                                         <td>{% if not comp.price %}N/A
                                                 {% if not comp.group %}
-                                                    <i class="fugue-icon notebook--minus"></i>
+                                                    {% icon "notebook__minus" %}
                                                 {% endif %}
                                             {% else %}
                                                 {{ comp.price|currency }}
