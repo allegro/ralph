@@ -250,7 +250,7 @@ class ReportMargins(SidebarReports, Base):
         {
             'perm': Perm.read_device_info_reports,
             'msg': _("You don't have permission to see reports."),
-        }
+        },
     ]
 
     @ralph_permission(perms)
@@ -347,7 +347,7 @@ class ReportVentures(SidebarReports, Base):
         {
             'perm': Perm.read_device_info_reports,
             'msg': _("You don't have permission to see reports."),
-        }
+        },
     ]
 
     def export_csv(self):
@@ -540,7 +540,7 @@ class ReportServices(SidebarReports, Base):
         {
             'perm': Perm.read_device_info_reports,
             'msg': _("You don't have permission to see reports."),
-        }
+        },
     ]
 
     @ralph_permission(perms)
@@ -618,7 +618,7 @@ class ReportDevices(SidebarReports, Base):
         {
             'perm': Perm.read_device_info_reports,
             'msg': _("You don't have permission to see reports."),
-        }
+        },
     ]
 
     def get_name(self, name, id):
@@ -834,7 +834,7 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
         {
             'perm': Perm.read_device_info_reports,
             'msg': _("You don't have permission to see reports."),
-        }
+        },
     ]
 
     def device_details(self, device, exclude):
