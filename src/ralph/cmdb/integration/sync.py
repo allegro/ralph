@@ -133,6 +133,8 @@ class JiraEventsImporter(BaseImporter):
         prob.ci = ci_obj
         prob.time = strip_timezone(issue.get('time'))  # created or updated
         prob.jira_id = issue.get('key')
+        prob.analysis = issue.get('analysis')
+        prob.problems = issue.get('problems')
         prob.save()
 
     def import_problem(self):
@@ -149,23 +151,28 @@ class JiraEventsImporter(BaseImporter):
 
     def fetch_all(self, type):
         ci_fieldname = settings.ISSUETRACKERS['default']['CI_FIELD_NAME']
+        analysis = settings.ISSUETRACKERS['default']['IMPACT_ANALYSIS_FIELD_NAME']
+        problems_field = settings.ISSUETRACKERS['default']['PROBLEMS_FIELD_NAME']
         params = dict(jql='type=%s' % type, maxResults=1024)
         issues = Jira().find_issues(params)
         items_list = []
         for i in issues.get('issues'):
             f = i.get('fields')
-            ci_id = f.get(ci_fieldname)
             assignee = f.get('assignee')
+            problems = f.get(problems_field) or []
+            ret_problems = [problem.get('value') for problem in problems]
+            selected_problems = ', '.join(ret_problems) if ret_problems else None
             items_list.append(
                 dict(
-                    ci=ci_id,
+                    ci=f.get(ci_fieldname),
                     key=i.get('key'),
                     description=f.get('description', ''),
                     summary=f.get('summary'),
                     status=f.get('status').get('name'),
                     time=f.get('updated') or f.get('created'),
                     assignee=assignee.get('displayName') if assignee else '',
-                    analysis=f.get('analysis'),
+                    analysis=f.get(analysis),
+                    problems=selected_problems,
                 )
             )
         return items_list
