@@ -13,7 +13,6 @@ from django.db import models as db
 from django.http import HttpResponseForbidden, HttpResponse, Http404
 from django.conf import settings
 from django.db.models import Q
-from django.shortcuts import get_list_or_404
 from django.utils.safestring import mark_safe
 from django.utils.html import escape
 
@@ -30,17 +29,7 @@ from ralph.cmdb.models_ci import (
     CI_TYPES
 )
 from ralph.deployment.models import DeploymentStatus
-from ralph.discovery.models_component import (
-    Component,
-    ComponentType,
-    FibreChannel,
-    GenericComponent,
-    Memory,
-    OperatingSystem,
-    Processor,
-    Software,
-    Storage,
-)
+from ralph.discovery.models_component import ComponentType
 from ralph.discovery.models_device import (
     Device,
     DeviceModelGroup,
@@ -70,14 +59,6 @@ from ralph.util import csvutil
 from ralph.util.pricing import (
     get_device_auto_price,
     get_device_chassis_price,
-    get_device_components_price,
-    get_device_cpu_price,
-    get_device_fc_price,
-    get_device_local_storage_price,
-    get_device_memory_price,
-    get_device_operatingsystem_price,
-    get_device_software_price,
-    is_deprecated,
 )
 
 def threshold(days):
@@ -997,7 +978,7 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
                 all_components_price += total_component
             devices.append({
                 'device': device,
-                'deprecated': is_deprecated(device),
+                'deprecated': device.is_deprecated(),
                 'price': all_components_price,
                 'components': components
             })
