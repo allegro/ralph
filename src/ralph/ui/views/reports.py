@@ -249,7 +249,7 @@ class ReportMargins(SidebarReports, Base):
     perms = [
         {
             'perm': Perm.read_device_info_reports,
-            'msg': _("You don't have permission to see reports.")
+            'msg': _("You don't have permission to see reports."),
         }
     ]
 
@@ -346,7 +346,7 @@ class ReportVentures(SidebarReports, Base):
     perms = [
         {
             'perm': Perm.read_device_info_reports,
-            'msg': _("You don't have permission to see reports.")
+            'msg': _("You don't have permission to see reports."),
         }
     ]
 
@@ -385,7 +385,7 @@ class ReportVentures(SidebarReports, Base):
                 ]
         return make_csv_response(
             data=iter_rows(),
-            filename='ReportVentures.csv'
+            filename='ReportVentures.csv',
         )
 
     def _get_totals(self, start, end, query, extra_types):
@@ -539,7 +539,7 @@ class ReportServices(SidebarReports, Base):
     perms = [
         {
             'perm': Perm.read_device_info_reports,
-            'msg': _("You don't have permission to see reports.")
+            'msg': _("You don't have permission to see reports."),
         }
     ]
 
@@ -617,7 +617,7 @@ class ReportDevices(SidebarReports, Base):
     perms = [
         {
             'perm': Perm.read_device_info_reports,
-            'msg': _("You don't have permission to see reports.")
+            'msg': _("You don't have permission to see reports."),
         }
     ]
 
@@ -800,7 +800,7 @@ class ReportDevices(SidebarReports, Base):
             rows.insert(0, headers)
             return make_csv_response(
                 data=rows,
-                filename=csv_conf.get('name')
+                filename=csv_conf.get('name'),
             )
         self.headers = headers
         self.rows = rows
@@ -833,7 +833,7 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
     perms = [
         {
             'perm': Perm.read_device_info_reports,
-            'msg': _("You don't have permission to see reports.")
+            'msg': _("You don't have permission to see reports."),
         }
     ]
 
@@ -960,7 +960,7 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
                     )
                     return make_csv_response(
                         data=self.get_csv_data(self.devices),
-                        filename=filename
+                        filename=filename,
                     )
         if self.request.GET.get('exportall') == 'csv':
             filename = 'report_devices_prices_per_venture-all-%s.csv' % (
@@ -968,7 +968,7 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
             )
             return make_csv_response(
                 data=self.get_csv_data(self.devices, give_all=True),
-                filename=filename
+                filename=filename,
             )
         return super(ReportDevicePricesPerVenture, self).get(*args, **kwargs)
 

@@ -115,7 +115,7 @@ def _get_details(dev, purchase_only=False, with_price=False, ignore_deprecation=
         dev,
         purchase_only,
         ignore_deprecation=ignore_deprecation,
-        exclude=exclude
+        exclude=exclude,
     ):
         if 'icon' not in detail:
             if detail['group'] == 'dev':
