@@ -44,7 +44,6 @@ from ralph.cmdb.models_changes import (
     # change management types
     CIChange,
     CIChangeZabbixTrigger,
-    CIChangeStatusOfficeIncident,
     CIChangeCMDBHistory,
     CIChangeGit,
     CIChangePuppet,
@@ -56,6 +55,13 @@ from ralph.cmdb.models_changes import (
     CIEvent,
     CIProblem,
     CIIncident,
+
+    ArchivedCIChangeZabbixTrigger,
+    ArchivedCIChangeCMDBHistory,
+    ArchivedCIChange,
+    ArchivedCIChangeGit,
+    ArchivedCIChangePuppet,
+    ArchivedPuppetLog,
 )
 
 from ralph.cmdb.models_audits import (
@@ -94,7 +100,6 @@ __all__ = [
     # change management types
     'CIChange',
     'CIChangeZabbixTrigger',
-    'CIChangeStatusOfficeIncident',
     'CIChangeCMDBHistory',
     'CIChangeGit',
     'CIChangePuppet',
@@ -110,6 +115,13 @@ __all__ = [
     # audits
     'Auditable',
     'AuditStatus',
+
+    'ArchivedCIChangeZabbixTrigger',
+    'ArchivedCIChangeCMDBHistory',
+    'ArchivedCIChange',
+    'ArchivedCIChangeGit',
+    'ArchivedCIChangePuppet',
+    'ArchivedPuppetLog',
 ]
 
 # hook signals, don't remove this.
