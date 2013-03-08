@@ -908,10 +908,7 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
             device = dev.get('device')
             components = dev.get('components')
             deprecated = dev.get('deprecated')
-            try:
-                ven = device.venture.symbol
-            except:
-                ven = 'N/a'
+            ven = device.venture.symbol if device.venture.symbol else 'N/a'
             row = [
                 ven,
                 ven,
