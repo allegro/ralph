@@ -82,7 +82,7 @@ def _make_advanced_insert_query(
 ):
     """
     Create not trivial moved data SQL query with advanced conditions.
-    Not trivial mean that we have two linked tables and we should move data
+    Not trivial means that we have two linked tables and we should move data
     using `JOIN` syntax.
     """
     db_columns = _get_db_columns_for_model(model)
@@ -125,7 +125,7 @@ def _make_advanced_delete_query(
 ):
     """
     Create advanced delete query with not trivial conditions.
-    Not trivial mean that we have two linked tables and we should
+    Not trivial means that we have two linked tables and we should
     delete (if db backend have this possibility) data using `JOIN` syntax.
     """
     backend_name = _get_used_db_backend_name()
