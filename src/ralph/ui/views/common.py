@@ -109,15 +109,6 @@ def _get_balancers(dev):
         }
 
 
-def is_val_positive_deco(orig_func):
-        def temp_func(val):
-                if val < 0:
-                        return 0
-                else:
-                        return orig_func(val)
-        return temp_func
-
-
 def _get_details(dev, purchase_only=False, with_price=False, ignore_deprecation=False, exclude=[]):
     for detail in pricing.details_all(
         dev,
