@@ -106,7 +106,8 @@ def get_device_chassis_price(device, ignore_deprecation=False):
         device.parent and device.parent.model and device.parent.model.group and
         device.parent.model.group.slots and not device.deleted):
         device_price = get_device_raw_price(
-            device.parent, ignore_deprecation=ignore_deprecation
+            device.parent,
+            ignore_deprecation=ignore_deprecation,
         )
         if device_price > 0:
             chassis_price = (
