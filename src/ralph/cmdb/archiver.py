@@ -10,27 +10,33 @@ from django.db import connection
 from lck.django.common import nested_commit_on_success
 
 from ralph.cmdb.models import (
+    ArchivedCIChange,
+    ArchivedCIChangeCMDBHistory,
+    ArchivedCIChangeGit,
+    ArchivedCIChangePuppet,
+    ArchivedCIChangeSOIncident,
+    ArchivedCIChangeZabbixTrigger,
+    ArchivedPuppetLog,
     CI_CHANGE_TYPES,
     CIChange,
-    ArchivedCIChange,
-    CIChangeGit,
-    ArchivedCIChangeGit,
-    CIChangeZabbixTrigger,
-    ArchivedCIChangeZabbixTrigger,
-    CIChangeStatusOfficeIncident,
-    ArchivedCIChangeSOIncident,
     CIChangeCMDBHistory,
-    ArchivedCIChangeCMDBHistory,
+    CIChangeGit,
     CIChangePuppet,
-    ArchivedCIChangePuppet,
+    CIChangeStatusOfficeIncident,
+    CIChangeZabbixTrigger,
     PuppetLog,
-    ArchivedPuppetLog,
 )
 
 
 def _get_used_db_backend_name():
+    """
+    Return used database backend name or None.
+    """
     cursor = connection.cursor()
-    backend_str = str(cursor.db).lower()
+    backend_str = str(cursor.db).lower()  # `ENGINE` part of database
+                                          # configuration is substring
+                                          # of string representation
+                                          # for `cursor.db` object
     if 'mysql' in backend_str:
         return 'mysql'
     elif 'postgresql' in backend_str:
@@ -40,17 +46,23 @@ def _get_used_db_backend_name():
 
 
 def _get_db_columns_for_model(model):
-    db_columns = []
-    for field in model._meta._fields():
-        db_columns.append(field.column)
-    return db_columns
+    """
+    Return list of columns names for passed model.
+    """
+    return [field.column for field in model._meta._fields()]
 
 
 def _get_db_table_for_model(model):
+    """
+    Return table name in database server for passed model.
+    """
     return model._meta.db_table
 
 
 def _make_base_insert_query(model, archived_model):
+    """
+    Create moved data SQL query with simple conditions.
+    """
     db_columns = _get_db_columns_for_model(model)
     sql = """
         INSERT INTO {archived_table_name} ({columns})
@@ -70,6 +82,9 @@ def _make_advanced_insert_query(
     joined_model,
     join_by=('id', 'object_id'),
 ):
+    """
+    Create not trivial moved data SQL query with advanced conditions.
+    """
     db_columns = _get_db_columns_for_model(model)
     first_table_name = _get_db_table_for_model(model)
     sql = """
@@ -95,6 +110,9 @@ def _make_advanced_insert_query(
 
 
 def _make_base_delete_query(model):
+    """
+    Create simple delete query.
+    """
     return 'DELETE FROM {} WHERE created<=%s AND type=%s'.format(
         _get_db_table_for_model(model),
     )
@@ -105,6 +123,9 @@ def _make_advanced_delete_query(
     joined_model,
     join_by=('id', 'object_id'),
 ):
+    """
+    Create advanced delete query with not trivial conditions.
+    """
     backend_name = _get_used_db_backend_name()
     if backend_name == 'mysql':
         sql = """
@@ -144,6 +165,9 @@ def _make_advanced_delete_query(
 
 
 def _get_query_params_list(older_than, change_type):
+    """
+    Create a formatted params list.
+    """
     return [
         older_than.strftime('%Y-%m-%d %H:%M:%S'),
         int(change_type),
@@ -157,6 +181,16 @@ def _run_archivization(
     change_type,
     parent_model=None
 ):
+    """
+    Execute archivization process for passed params.
+
+    :param model: The archived model
+    :param archived_model: Model to store archived data
+    :param older_than: Query condition
+    :param change_type: Query condition
+    :param parent_model: Empty or model to construct `WHERE` conditions.
+        This model is connected with archived model with a foreign key.
+    """
     cursor = connection.cursor()
     if not parent_model:
         sql = _make_base_insert_query(model, archived_model)
@@ -167,6 +201,15 @@ def _run_archivization(
 
 
 def _remove_old_data(model, older_than, change_type, parent_model=None):
+    """
+    Remove not necessary data.
+
+    :param model: The archived model
+    :param older_than: Query condition
+    :param change_type: Query condition
+    :param parent_model: Empty or model to construct `WHERE` conditions.
+        This model is connected with archived model with a foreign key.
+    """
     cursor = connection.cursor()
     if not parent_model:
         sql = _make_base_delete_query(model)
