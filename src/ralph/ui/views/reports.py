@@ -844,7 +844,7 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
         for detail in _get_details(
             device,
             ignore_deprecation=True,
-            exclude=exclude
+            exclude=exclude,
         ):
             model = detail.get('model')
             price = detail.get('price') or 0
@@ -887,11 +887,11 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
         venture_devices = []
         for descendant in venture[0].find_descendant_ids():
             venture_devices.extend(
-                Device.objects.filter(venture_id=descendant)
+                Device.objects.filter(venture_id=descendant),
             )
         for device in venture_devices:
             self.devices.append(
-                self.device_details(device, exclude=['software'])
+                self.device_details(device, exclude=['software']),
             )
 
     def get_csv_data(self, devices, give_all=False):
@@ -937,7 +937,7 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
         ]
         for i in range(max):
             headers.extend(
-                ['Component name', 'Component count', 'Component total']
+                ['Component name', 'Component count', 'Component total'],
             )
         rows.insert(0, headers)
         return rows
@@ -951,12 +951,12 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
             venture = Venture.objects.filter(id=self.venture_id)
             if venture:
                 self.form = ReportVentureCost(
-                    initial={'venture': self.venture_id}
+                    initial={'venture': self.venture_id},
                 )
                 self.devices_list(venture)
                 if self.request.GET.get('export') == 'csv':
                     filename = 'report_devices_prices_per_venture-%s-%s.csv' % (
-                        venture[0].symbol, datetime.date.today()
+                        venture[0].symbol, datetime.date.today(),
                     )
                     return make_csv_response(
                         data=self.get_csv_data(self.devices),
@@ -980,6 +980,6 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
                 'form': self.form,
                 'rows': self.devices,
                 'venture': self.venture_id,
-            }
+            },
         )
         return context
