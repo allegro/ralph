@@ -74,5 +74,3 @@ class BaseImporter(object):
             return None
         else:
             return None
-
-
