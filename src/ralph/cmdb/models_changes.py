@@ -23,7 +23,8 @@ class CI_CHANGE_TYPES(Choices):
     CONF_AGENT = _('Services reconfiguration')
     DEVICE = _('Device attribute change')
     ZABBIX_TRIGGER = _('Zabbix trigger')
-    STATUSOFFICE = _('Status office service change')
+
+    CI_GROUP = Choices.Group(5)  # because STATUSOFFICE was removed...
     CI = _('CI attribute change')
 
 
@@ -72,27 +73,6 @@ class CIChangeZabbixTrigger(AbstractCIChangeZabbixTrigger):
 
 
 class ArchivedCIChangeZabbixTrigger(AbstractCIChangeZabbixTrigger):
-    pass
-
-
-class AbstractCIChangeStatusOfficeIncident(AbstractBaseCIChange):
-    time = models.DateTimeField(
-        verbose_name=_("timestamp"),
-        default=datetime.now,
-    )
-    status = models.IntegerField(max_length=11)
-    subject = models.CharField(max_length=1024)
-    incident_id = models.IntegerField(max_length=11)
-
-    class Meta:
-        abstract = True
-
-
-class CIChangeStatusOfficeIncident(AbstractCIChangeStatusOfficeIncident):
-    pass
-
-
-class ArchivedCIChangeSOIncident(AbstractCIChangeStatusOfficeIncident):
     pass
 
 

@@ -24,8 +24,6 @@ from ralph.cmdb.models import (
     ArchivedCIChangeGit,
     CIChangeZabbixTrigger,
     ArchivedCIChangeZabbixTrigger,
-    CIChangeStatusOfficeIncident,
-    ArchivedCIChangeSOIncident,
     CIChangeCMDBHistory,
     ArchivedCIChangeCMDBHistory,
     CIChangePuppet,
@@ -103,7 +101,6 @@ class CMDBArchiverTest(TestCase):
         self._prepare_data_for_device_tests()
         self._prepare_data_for_git_tests()
         self._prepare_data_for_zabbix_tests()
-        self._prepare_data_for_so_tests()
         self._prepare_data_for_cmdb_tests()
         self._prepare_data_for_puppet_tests()
 
@@ -216,41 +213,6 @@ class CMDBArchiverTest(TestCase):
         )
         change.save()
         self.not_touched_cichange_zabbix_id = change.id
-
-    def _prepare_data_for_so_tests(self):
-        created = datetime.datetime.now() - datetime.timedelta(days=31)
-        so_change_1 = CIChangeStatusOfficeIncident(
-            status=1,
-            subject='...',
-            incident_id=123,
-        )
-        so_change_1.save()
-        self.so_change_1_id = so_change_1.id
-        change = CIChange(
-            type=CI_CHANGE_TYPES.STATUSOFFICE,
-            content_type=ContentType.objects.get_for_model(so_change_1),
-            object_id=self.so_change_1_id,
-            created=created,
-            priority=CI_CHANGE_PRIORITY_TYPES.ERROR,
-        )
-        change.save()
-        self.cichange_so_id = change.id
-        so_change_2 = CIChangeStatusOfficeIncident(
-            status=2,
-            subject='...',
-            incident_id=321,
-        )
-        so_change_2.save()
-        self.so_change_2_id = so_change_2.id
-        change = CIChange(
-            type=CI_CHANGE_TYPES.STATUSOFFICE,
-            content_type=ContentType.objects.get_for_model(so_change_2),
-            object_id=self.so_change_2_id,
-            priority=CI_CHANGE_PRIORITY_TYPES.ERROR,
-            created=created + datetime.timedelta(days=2),
-        )
-        change.save()
-        self.not_touched_cichange_so_id = change.id
 
     def _prepare_data_for_cmdb_tests(self):
         self.sample_ci = CI.objects.create(
@@ -446,49 +408,6 @@ class CMDBArchiverTest(TestCase):
         self.assertFalse(
             ArchivedCIChangeZabbixTrigger.objects.filter(
                 pk=self.zabbix_change_2_id,
-            ).exists(),
-        )
-
-    def test_run_cichange_so_archivization(self):
-        archiver.run_cichange_so_archivization(
-            datetime.datetime.now() - datetime.timedelta(days=30)
-        )
-        self.assertFalse(
-            CIChange.objects.filter(pk=self.cichange_so_id).exists(),
-        )
-        self.assertTrue(
-            ArchivedCIChange.objects.filter(
-                pk=self.cichange_so_id,
-            ).exists(),
-        )
-        self.assertFalse(
-            CIChangeStatusOfficeIncident.objects.filter(
-                pk=self.so_change_1_id,
-            ).exists(),
-        )
-        self.assertTrue(
-            ArchivedCIChangeSOIncident.objects.filter(
-                pk=self.so_change_1_id,
-            ).exists(),
-        )
-        self.assertTrue(
-            CIChange.objects.filter(
-                pk=self.not_touched_cichange_so_id,
-            ).exists(),
-        )
-        self.assertFalse(
-            ArchivedCIChange.objects.filter(
-                pk=self.not_touched_cichange_so_id,
-            ).exists(),
-        )
-        self.assertTrue(
-            CIChangeStatusOfficeIncident.objects.filter(
-                pk=self.so_change_2_id,
-            ).exists(),
-        )
-        self.assertFalse(
-            ArchivedCIChangeSOIncident.objects.filter(
-                pk=self.so_change_2_id,
             ).exists(),
         )
 
