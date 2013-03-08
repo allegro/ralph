@@ -131,8 +131,10 @@ import ralph.cmdb.models_signals
 class CILookup(LookupChannel):
     model = CI
 
-    def get_query(self, q, request):
-        return CI.objects.filter(Q(name__istartswith=q)).order_by('name')[:10]
+    def get_query(self, query, request):
+        return CI.objects.filter(
+            Q(name__istartswith=query.strip())
+        ).order_by('name')[:10]
 
     def get_result(self, obj):
         return obj.name
