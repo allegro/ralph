@@ -7,6 +7,8 @@ from __future__ import unicode_literals
 import cStringIO as StringIO
 import datetime
 
+from bob import csvutil
+
 from django.contrib import messages
 from django.core.paginator import InvalidPage
 from django.http import Http404
@@ -16,8 +18,6 @@ from django.views.generic import ListView
 
 from ralph.account.models import Perm
 from ralph.discovery.models_device import DeviceType
-from bob import csvutil
-
 
 
 PAGE_SIZE = 25

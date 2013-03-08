@@ -18,8 +18,11 @@ from dj.choices import Choices
 from dj.choices.fields import ChoiceField
 from lck.django.activitylog.models import MonitoredActivity
 from lck.django.common.models import TimeTrackable, EditorTrackable
-from lck.django.profile.models import BasicInfo, ActivationSupport,\
-        GravatarSupport
+from lck.django.profile.models import (
+    BasicInfo,
+    ActivationSupport,
+    GravatarSupport,
+)
 
 from ralph.business.models import Venture, VentureRole
 
