@@ -128,7 +128,6 @@ class Changes(ChangesBase, PaginatedView):
             2: 'agent events',
             3: 'asset attr. changes',
             4: 'monitoring events',
-            5: 'status office events',
         }
         sidebar_selected = select.get(get_type, 'all events')
         ret.update({
