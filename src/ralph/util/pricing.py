@@ -7,7 +7,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import math
-from datetime import date, timedelta, datetime, time
+from datetime import date, timedelta
 
 from django.core.urlresolvers import reverse_lazy
 from django.db import models as db
@@ -62,17 +62,9 @@ def get_device_external_price(device):
     return price
 
 
-def is_deprecated(device):
-    """ Return True if device is depreciated """
-    if device.deprecation_date:
-        today_midnight = datetime.combine(datetime.today(), time())
-        return device.deprecation_date < today_midnight
-    return False
-
-
 def get_device_raw_price(device, ignore_deprecation=False):
     """Purchase price of this device, before anything interacts with it."""
-    if (device.deleted or (not ignore_deprecation and is_deprecated(device))
+    if (device.deleted or (not ignore_deprecation and device.is_deprecated())
     ):
         return 0
     return device.price or get_device_auto_price(device)
@@ -84,7 +76,7 @@ def get_device_cost(device, ignore_deprecation=False):
     price = get_device_price(device)
     cost = 0
     if not device.deleted and device.deprecation_kind is not None:
-        if not is_deprecated(device) or ignore_deprecation:
+        if not device.is_deprecated() or ignore_deprecation:
             cost = price / device.deprecation_kind.months
     margin = device.get_margin() or 0
     cost = cost * (1 + margin / 100) + get_device_additional_costs(device)
