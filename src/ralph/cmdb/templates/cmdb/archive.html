@@ -80,17 +80,6 @@
                 </td>
             </tr>
         {% endfor %}
-    {% elif mode == "so" %}
-        {% for f in bob_page %}
-            <tr>
-                <td>{% if f.ci %}<a href="/cmdb/ci/view/{{ f.ci.id }}">{{ f.ci }}</a>{% endif %}</td>
-                <td>{{ f.created }}</td>
-                <td>{{ f.time }}</td>
-                <td>{{ f.status }}</td>
-                <td>{{ f.subject }}</td>
-                <td>{{ f.incident_id }}</td>
-            </tr>
-        {% endfor %}
     {% elif mode == "cmdb" %}
         {% for f in bob_page %}
             <tr>

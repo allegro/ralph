@@ -44,7 +44,6 @@ from ralph.cmdb.models_changes import (
     # change management types
     CIChange,
     CIChangeZabbixTrigger,
-    CIChangeStatusOfficeIncident,
     CIChangeCMDBHistory,
     CIChangeGit,
     CIChangePuppet,
@@ -58,7 +57,6 @@ from ralph.cmdb.models_changes import (
     CIIncident,
 
     ArchivedCIChangeZabbixTrigger,
-    ArchivedCIChangeSOIncident,
     ArchivedCIChangeCMDBHistory,
     ArchivedCIChange,
     ArchivedCIChangeGit,
@@ -102,7 +100,6 @@ __all__ = [
     # change management types
     'CIChange',
     'CIChangeZabbixTrigger',
-    'CIChangeStatusOfficeIncident',
     'CIChangeCMDBHistory',
     'CIChangeGit',
     'CIChangePuppet',
@@ -120,7 +117,6 @@ __all__ = [
     'AuditStatus',
 
     'ArchivedCIChangeZabbixTrigger',
-    'ArchivedCIChangeSOIncident',
     'ArchivedCIChangeCMDBHistory',
     'ArchivedCIChange',
     'ArchivedCIChangeGit',

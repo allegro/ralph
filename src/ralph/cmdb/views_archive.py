@@ -15,7 +15,6 @@ from ralph.cmdb.models import (
     ArchivedCIChangeZabbixTrigger,
     ArchivedCIChangeGit,
     ArchivedCIChangePuppet,
-    ArchivedCIChangeSOIncident,
     ArchivedCIChangeCMDBHistory,
 )
 from ralph.cmdb.views import BaseCMDBView
@@ -56,11 +55,6 @@ class BaseCMDBArchiveView(BaseCMDBView, DataTableMixin):
                     label='Agent events',
                     fugue_icon='fugue-flask',
                     href='/cmdb/archive/puppet/',
-                ),
-                MenuItem(
-                    label='Status Office events',
-                    fugue_icon='fugue-plug',
-                    href='/cmdb/archive/so/',
                 ),
                 MenuItem(
                     label='Back to CMDB',
@@ -329,56 +323,6 @@ class ArchivedPuppetChanges(BaseCMDBArchiveView):
         ret.update({
             'mode': 'puppet',
             'section_name': 'Agent events',
-        })
-        return ret
-
-
-class ArchivedStatusOfficeIncidents(BaseCMDBArchiveView):
-    model = ArchivedCIChangeSOIncident
-    columns = [
-        DataTableColumn(
-            'CI',
-            field='ci',
-            sort_expression='ci',
-            bob_tag=True,
-        ),
-        DataTableColumn(
-            'Created',
-            field='created',
-            sort_expression='created',
-            bob_tag=True,
-        ),
-        DataTableColumn(
-            'Time',
-            field='time',
-            sort_expression='time',
-            bob_tag=True,
-        ),
-        DataTableColumn(
-            'Status',
-            field='status',
-            bob_tag=True,
-        ),
-        DataTableColumn(
-            'Subject',
-            field='subject',
-            bob_tag=True,
-        ),
-        DataTableColumn(
-            'incident_id',
-            field='incident_id',
-            bob_tag=True,
-        ),
-    ]
-
-    def get_context_data(self, *args, **kwargs):
-        ret = super(ArchivedStatusOfficeIncidents, self).get_context_data(
-            *args,
-            **kwargs
-        )
-        ret.update({
-            'mode': 'so',
-            'section_name': 'Incidents',
         })
         return ret
 
