@@ -34,6 +34,13 @@ class Command(BaseCommand):
     help = 'CMDB archivization.'
     option_list = BaseCommand.option_list + (
         make_option(
+            '--number-of-days-to-keep',
+            dest='number-of-days-to-keep',
+            default=False,
+            help='Specify number of days to keep.',
+            type='int',
+        ),
+        make_option(
             '--type',
             dest='type',
             default=False,
@@ -44,13 +51,14 @@ class Command(BaseCommand):
     )
 
     def handle(self, *args, **options):
+        days = options.get('number-of-days-to-keep')
         action_type = options.get('type')
-        if not action_type:
+        if not days or int(days) <= 0 or not action_type:
             print(
-                'Usage: %prog --type=[{}]'.format(
+                'Usage: %prog --number-of-days-to-keep=NUM --type=[{}]'.format(
                     '|'.join(ACTIONS_TYPES_MAPPER.keys()),
                 ),
             )
             return
-        older_than = datetime.datetime.now() - datetime.timedelta(days=90)
+        older_than = datetime.datetime.now() - datetime.timedelta(days=days)
         ACTIONS_TYPES_MAPPER[action_type](older_than)
