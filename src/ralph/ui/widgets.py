@@ -156,9 +156,12 @@ class RackWidget(forms.Widget):
                 '<input type="hidden" name="%s" value="%s">' % (escape(name),
                                                                 escape(value)),
                 '<div class="input uneditable-input">',
-                '<a href="/ui/racks/%s/info/">'
-                '<i class="fugue-icon %s"></i>&nbsp;%s</a>' % (slugify(dev.sn),
-                    presentation.get_device_icon(dev), escape(dev.name)),
+                '<a href="/ui/racks/sn-%s/info/">'
+                '<i class="fugue-icon %s"></i>&nbsp;%s</a>' % (
+                    slugify(dev.sn),
+                    presentation.get_device_icon(dev),
+                    escape(dev.name),
+                ),
                 '</div>',
             ]
         return mark_safe('\n'.join(output))
