@@ -74,8 +74,6 @@ def get_login_from_user(long_user_text):
           dispatch_uid='ralph.cmdb.cichangedelete')
 @receiver(post_delete, sender=chdb.CIChangeZabbixTrigger,
           dispatch_uid='ralph.cmdb.cichangedelete')
-@receiver(post_delete, sender=chdb.CIChangeStatusOfficeIncident,
-          dispatch_uid='ralph.cmdb.cichangedelete')
 @receiver(post_delete, sender=chdb.CIChangeCMDBHistory,
           dispatch_uid='ralph.cmdb.cichangedelete')
 @receiver(post_delete, sender=chdb.CIChangePuppet,

@@ -1,0 +1,99 @@
+{% extends 'cmdb/base.html' %}
+{% load bob %}
+
+{% block content %}
+<h3>{{ section_name }} - archive</h3>
+<table class="table table-bordered table-properties table-condensed">
+    <tr>
+        {% table_header columns url_query sort fugue_icons=1 %}
+    </tr>
+    {% if mode == "assets" %}
+        {% for f in bob_page %}
+            <tr>
+                <td>{% if f.ci %}<a href="/cmdb/ci/view/{{ f.ci.id }}">{{ f.ci }}</a>{% endif %}</td>
+                <td>{{ f.created }}</td>
+                <td>{{ f.time }}</td>
+                <td>{{ f.content_object.user.get_full_name }}</td>
+                <td>{{ f.content_object.field_name }}</td>
+                <td>{{ f.content_object.old_value }}</td>
+                <td>{{ f.content_object.new_value }}</td>
+                <td>{{ f.message }}</td>
+            </tr>
+        {% endfor %}
+    {% elif mode == "zabbix" %}
+        {% for f in bob_page %}
+            <tr>
+                <td>{% if f.ci %}<a href="/cmdb/ci/view/{{ f.ci.id }}">{{ f.ci }}</a>{% endif %}</td>
+                <td>{{ f.created }}</td>
+                <td>{{ f.host }}</td>
+                <td>{{ f.status }}</td>
+                <td>{{ f.priority }}</td>
+                <td>{{ f.description }}</td>
+                <td>{{ f.lastchange }}</td>
+                <td>{{ f.comments }}</td>
+            </tr>
+        {% endfor %}
+    {% elif mode == "git" %}
+        {% for f in bob_page %}
+            <tr>
+                <td>{% if f.ci %}<a href="/cmdb/ci/view/{{ f.ci.id }}">{{ f.ci }}</a>{% endif %}</td>
+                <td>{{ f.created }}</td>
+                <td>{{ f.time|default:"" }}</td>
+                <td>{{ f.file_paths }}</td>
+                <td>{{ f.comment }}</td>
+                <td>{{ f.author }}</td>
+                <td>{{ f.changeset }}</td>
+            </tr>
+        {% endfor %}
+    {% elif mode == "puppet" %}
+        {% for f in bob_page %}
+            <tr>
+                <td>{% if f.ci %}<a href="/cmdb/ci/view/{{ f.ci.id }}">{{ f.ci }}</a>{% endif %}</td>
+                <td>{{ f.created }}</td>
+                <td>{{ f.time }}</td>
+                <td>{{ f.configuration_version }}</td>
+                <td>{{ f.host }}</td>
+                <td>{{ f.kind }}</td>
+                <td>{{ f.status }}</td>
+            </tr>
+            <tr>
+                <td><em>Puppet logs:</em></td>
+                <td colspan="6">
+                    <table class="table table-bordered table-properties table-condensed">
+                        <tr>
+                            <th><em>Time</em></th>
+                            <th><em>Source</em></th>
+                            <th><em>Message</em></th>
+                            <th><em>Tags</em></th>
+                            <th><em>Level</em></th>
+                        </tr>
+                        {% for col in f.archivedpuppetlog_set.all %}
+                            <tr>
+                                <td>{{ col.time }}</td>
+                                <td>{{ col.source }}</td>
+                                <td>{{ col.message }}</td>
+                                <td>{{ col.tags }}</td>
+                                <td>{{ col.level }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </td>
+            </tr>
+        {% endfor %}
+    {% elif mode == "cmdb" %}
+        {% for f in bob_page %}
+            <tr>
+                <td>{% if f.ci %}<a href="/cmdb/ci/view/{{ f.ci.id }}">{{ f.ci }}</a>{% endif %}</td>
+                <td>{{ f.created }}</td>
+                <td>{{ f.time }}</td>
+                <td>{{ f.user.get_full_name }}</td>
+                <td>{{ f.field_name }}</td>
+                <td>{{ f.old_value }}</td>
+                <td>{{ f.new_value }}</td>
+                <td>{{ f.comment }}</td>
+            </tr>
+        {% endfor %}
+    {% endif %}
+</table>
+{% pagination bob_page url_query=url_query show_all=0 show_csv=0 fugue_icons=1 %}
+{% endblock %}

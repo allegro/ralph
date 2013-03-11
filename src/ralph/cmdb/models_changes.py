@@ -23,7 +23,8 @@ class CI_CHANGE_TYPES(Choices):
     CONF_AGENT = _('Services reconfiguration')
     DEVICE = _('Device attribute change')
     ZABBIX_TRIGGER = _('Zabbix trigger')
-    STATUSOFFICE = _('Status office service change')
+
+    CI_GROUP = Choices.Group(5)  # because STATUSOFFICE was removed...
     CI = _('CI attribute change')
 
 
@@ -46,8 +47,14 @@ class CI_CHANGE_REGISTRATION_TYPES(Choices):
     WAITING = _('Waiting for register')
 
 
-class CIChangeZabbixTrigger(TimeTrackable):
-    ci = models.ForeignKey('CI', null=True)
+class AbstractBaseCIChange(TimeTrackable):
+    ci = models.ForeignKey('CI', null=True, blank=True)
+
+    class Meta:
+        abstract = True
+
+
+class AbstractCIChangeZabbixTrigger(AbstractBaseCIChange):
     trigger_id = models.IntegerField(max_length=11)
     host = models.CharField(max_length=255)
     host_id = models.IntegerField(max_length=11)
@@ -57,41 +64,65 @@ class CIChangeZabbixTrigger(TimeTrackable):
     lastchange = models.CharField(max_length=1024)
     comments = models.CharField(max_length=1024)
 
-
-class CIChangeStatusOfficeIncident(TimeTrackable):
-    ci = models.ForeignKey('CI', null=True)
-    time = models.DateTimeField(
-        verbose_name=_("timestamp"), default=datetime.now)
-    status = models.IntegerField(max_length=11)
-    subject = models.CharField(max_length=1024)
-    incident_id = models.IntegerField(
-        max_length=11)
+    class Meta:
+        abstract = True
 
 
-class CIChangeCMDBHistory(TimeTrackable):
+class CIChangeZabbixTrigger(AbstractCIChangeZabbixTrigger):
+    pass
+
+
+class ArchivedCIChangeZabbixTrigger(AbstractCIChangeZabbixTrigger):
+    pass
+
+
+class AbstractCIChangeCMDBHistory(TimeTrackable):
     ci = models.ForeignKey('CI')
     time = models.DateTimeField(
-        verbose_name=_("timestamp"), default=datetime.now)
+        verbose_name=_("timestamp"),
+        default=datetime.now,
+    )
     user = models.ForeignKey(
-        'auth.User', verbose_name=_("user"), null=True,
-        blank=True, default=None, on_delete=models.SET_NULL)
+        'auth.User',
+        verbose_name=_("user"),
+        null=True,
+        blank=True,
+        default=None,
+        on_delete=models.SET_NULL,
+    )
     field_name = models.CharField(max_length=64, default='')
     old_value = models.CharField(max_length=255, default='')
     new_value = models.CharField(max_length=255, default='')
     comment = models.CharField(max_length=255)
 
     class Meta:
+        abstract = True
         verbose_name = _("CI history change")
         verbose_name_plural = _("CI history changes")
 
 
-class CIChange(TimeTrackable):
-    ci = models.ForeignKey('CI', null=True, blank=True)
+class CIChangeCMDBHistory(AbstractCIChangeCMDBHistory):
+    pass
+
+
+class ArchivedCIChangeCMDBHistory(AbstractCIChangeCMDBHistory):
+    pass
+
+
+class AbstractCIChange(AbstractBaseCIChange):
     type = models.IntegerField(
-        max_length=11, choices=CI_CHANGE_TYPES(), null=False)
+        max_length=11,
+        choices=CI_CHANGE_TYPES(),
+        null=False,
+        db_index=True,
+    )
     priority = models.IntegerField(
-        max_length=11, choices=CI_CHANGE_PRIORITY_TYPES(), null=False)
-    content_type = models.ForeignKey(ContentType, verbose_name=_(
+        max_length=11,
+        choices=CI_CHANGE_PRIORITY_TYPES(),
+        null=False,
+    )
+    content_type = models.ForeignKey(
+        ContentType, verbose_name=_(
         "content type"), null=True)
     object_id = models.PositiveIntegerField(
         verbose_name=_("object id"),
@@ -100,7 +131,9 @@ class CIChange(TimeTrackable):
     )
     content_object = generic.GenericForeignKey('content_type', 'object_id')
     time = models.DateTimeField(
-        verbose_name=_("timestamp"), default=datetime.now)
+        verbose_name=_("timestamp"),
+        default=datetime.now,
+    )
     message = models.CharField(max_length=1024)
     external_key = models.CharField(max_length=60, blank=True)
     registration_type = models.IntegerField(
@@ -109,24 +142,44 @@ class CIChange(TimeTrackable):
         default=CI_CHANGE_REGISTRATION_TYPES.NOT_REGISTERED.id,
     )
 
+    class Meta:
+        abstract = True
+        unique_together = ('content_type', 'object_id')
+
+
+class CIChange(AbstractCIChange):
     @classmethod
     def get_by_content_object(cls, content_object):
         ct = ContentType.objects.get_for_model(content_object)
         return CIChange.objects.get(
             object_id=content_object.id, content_type=ct)
 
-    class Meta:
-        unique_together = ('content_type', 'object_id')
+
+class ArchivedCIChange(AbstractCIChange):
+    pass
 
 
-class CIChangeGit(TimeTrackable):
-    ci = models.ForeignKey('CI', null=True)
+class AbstractCIChangeGit(AbstractBaseCIChange):
     file_paths = models.CharField(max_length=3000)
     comment = models.CharField(max_length=1000)
     author = models.CharField(max_length=200)
     changeset = models.CharField(max_length=80, unique=True, db_index=True)
     time = models.DateTimeField(
-        verbose_name=_("timestamp"), null=True, blank=True)
+        verbose_name=_("timestamp"),
+        null=True,
+        blank=True,
+    )
+
+    class Meta:
+        abstract = True
+
+
+class CIChangeGit(AbstractCIChangeGit):
+    pass
+
+
+class ArchivedCIChangeGit(AbstractCIChangeGit):
+    pass
 
 
 class GitPathMapping(TimeTrackable):
@@ -135,23 +188,45 @@ class GitPathMapping(TimeTrackable):
     is_regex = models.BooleanField()
 
 
-class CIChangePuppet(TimeTrackable):
-    ci = models.ForeignKey('CI', null=True)
+class AbstractCIChangePuppet(AbstractBaseCIChange):
     configuration_version = models.CharField(max_length=30, db_index=True)
     host = models.CharField(max_length=100)
     kind = models.CharField(max_length=30)
     time = models.DateTimeField(
-        verbose_name=_("timestamp"), default=datetime.now)
+        verbose_name=_("timestamp"),
+        default=datetime.now,
+    )
     status = models.CharField(max_length=30)
 
+    class Meta:
+        abstract = True
 
-class PuppetLog(TimeTrackable):
-    cichange = models.ForeignKey('CIChangePuppet')
+
+class CIChangePuppet(AbstractCIChangePuppet):
+    pass
+
+
+class ArchivedCIChangePuppet(AbstractCIChangePuppet):
+    pass
+
+
+class AbstractPuppetLog(TimeTrackable):
     source = models.CharField(max_length=100)
     message = models.CharField(max_length=1024)
     tags = models.CharField(max_length=100)
     time = models.DateTimeField()
     level = models.CharField(max_length=100)
+
+    class Meta:
+        abstract = True
+
+
+class PuppetLog(AbstractPuppetLog):
+    cichange = models.ForeignKey('CIChangePuppet')
+
+
+class ArchivedPuppetLog(AbstractPuppetLog):
+    cichange = models.ForeignKey('ArchivedCIChangePuppet')
 
 
 class CIEvent(TimeTrackable):
@@ -164,7 +239,8 @@ class CIEvent(TimeTrackable):
     jira_id = models.CharField(max_length=100)
     status = models.CharField(max_length=300)
     assignee = models.CharField(max_length=300)
-
+    analysis = models.CharField(max_length=1024, null=True, blank=True)
+    problems = models.CharField(max_length=1024, null=True, blank=True)
     class Meta:
         abstract = True
 
