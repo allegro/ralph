@@ -12,7 +12,7 @@ import cStringIO as StringIO
 from django.http import HttpResponse, HttpResponseRedirect
 from django.utils import simplejson as json
 
-from ralph.util import csvutil
+from bob import csvutil
 
 
 def jsonify(func):

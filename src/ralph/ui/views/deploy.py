@@ -27,7 +27,7 @@ from ralph.ui.forms.deployment import (
     MassDeploymentForm,
     PrepareMassDeploymentForm,
 )
-from ralph.util.csvutil import UnicodeReader, UnicodeWriter
+from bob.csvutil import UnicodeReader, UnicodeWriter
 
 
 class Deployment(BaseMixin, CreateView):

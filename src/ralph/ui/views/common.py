@@ -5,6 +5,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import datetime
+
 from django.conf import settings
 from django.contrib import messages
 from django.core.urlresolvers import reverse
@@ -109,10 +110,12 @@ def _get_balancers(dev):
         }
 
 
-def _get_details(dev, purchase_only=False, with_price=False, ignore_deprecation=False):
+def _get_details(dev, purchase_only=False, with_price=False, ignore_deprecation=False, exclude=[]):
     for detail in pricing.details_all(
-        dev, purchase_only,
-        ignore_deprecation=ignore_deprecation
+        dev,
+        purchase_only,
+        ignore_deprecation=ignore_deprecation,
+        exclude=exclude,
     ):
         if 'icon' not in detail:
             if detail['group'] == 'dev':
