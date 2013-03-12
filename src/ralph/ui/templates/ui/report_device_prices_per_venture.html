@@ -12,16 +12,11 @@
                     <h4>Devices prices per Venture</h4>
                     <p>Price of devices in the venture.</p>
                     <p>The price of shared equipment is taken as a proportion.</p>
-
-
-
                     <ul class="unstyled">
                         <li>N/A - Unknown price</li>
-                        <li><i class="fugue-icon notebook--minus"></i> - The component group is not defined, so you can not download prices</li>
-                        <li><i class="fugue-icon fugue-prohibition-button"></i> - Device does not have a model</lI>
+                        <li>{% icon "notebook--minus" %}</i> - The component group is not defined, so you can not download prices</li>
+                        <li>{% icon "fugue-prohibition-button" %} - Device does not have a model</lI>
                     </ul>
-
-
                     {% for f in form %}
                         {% if f.label %}
                         <div style="display:inline-block; vertical-align:top; margin-top: 10px;" class="control-group {% if f.errors %}error{% endif %}" >
@@ -68,12 +63,19 @@
                     {% for row in rows %}
                     <tr>
                         <td>{{ forloop.counter }}.</td>
-                        <td>{{ row.device|device_icon }}&nbsp;<a href="/ui/search/info/{{ row.device.id }}">{{ row.device.name }}</a></td>
+                        <td>
+                            {{ row.device|device_icon }}&nbsp;<a href="/ui/search/info/{{ row.device.id }}">{{ row.device.name }}</a>
+                        </td>
                         <td>{{ row.device.sn }}</td>
                         <td>{{ row.device.barcode }}</td>
-                        <td>{% if row.deprecated == None %}N/A{% else %}{{ row.device.deprecaton_date|date:"Y-m-d" }}{% endif %}</td>
+                        <td>
+                            {% if not row.device.deprecation_date %}
+                                N/A
+                            {% endif %}
+                            {{ row.device.deprecation_date|date:"Y-m-d" }}
+                        </td>
                         <td>{% if row.deprecated %}
-                                Depreciated ({{ row.price|currency }})
+                                Deprecated ({{ row.total|currency }})
                             {% elif row.device.cached_price == None %}
                                 N/A
                             {% else %}
@@ -92,25 +94,26 @@
                                 {% for comp in row.components %}
                                     <tr>
                                         <td>
-                                            <i class="fugue-icon {{ comp.icon }}"></i>&nbsp;{{ comp.name }}
+                                            {% icon comp.icon %}&nbsp;{% if comp.model.name %}{{ comp.model.name }}{% else %}{{ comp.model }}{% endif %}
+                                            {% if comp.serial %}
+                                                (Serial: {{ comp.serial }})
+                                            {% endif %}
                                         </td>
                                         <td>
                                             {{ comp.count }}
-                                            {% if comp.bs_count %}of {{ comp.bs_count }}{% endif %}
-                                        </td>
-                                        <td>{% if comp.price == 0 %}N/A
-                                            {% if not comp.group %}
-                                                <i class="fugue-icon notebook--minus"></i>
+                                            {% if comp.disk_count %}
+                                                {{ comp.disk_count }}
                                             {% endif %}
-
-
-
-                                            {% else %}{{ comp.price|currency }}{% endif %}</td>
+                                        </td>
+                                        <td>{% if not comp.price %}
+                                                N/A{% if not comp.group %}&nbsp;{% icon "notebook--minus" %}
+                                            {% endif %}
+                                            {% else %}
+                                                {{ comp.price|currency }}
+                                            {% endif %}
+                                        </td>
                                     </tr>
                                 {% endfor %}
-                                <tr>
-                                    <td colspan="4" style="text-align: right">Total: <strong>{{ row.price|currency }}</strong></td>
-                                </tr>
                                 </tbody>
                             </table>
                         {% else %}

@@ -16,7 +16,6 @@ from ralph.cmdb.api import (BusinessLineResource, ServiceResource,
                             CIRelationResource, CIResource, CIChangeResource,
                             CIChangeGitResource, CIChangePuppetResource,
                             CIChangeZabbixTriggerResource,
-                            CIChangeStatusOfficeIncidentResource,
                             CIChangeCMDBHistoryResource, CILayersResource,
                             CITypesResource)
 from ralph.discovery.api_donpedro import WindowsDeviceResource
@@ -46,8 +45,7 @@ for r in (IPAddressResource, ModelGroupResource, ModelResource,
 for r in (BusinessLineResource, ServiceResource, CIResource,
           CIRelationResource, CIChangeResource, CIChangeGitResource,
           CIChangePuppetResource, CIChangeZabbixTriggerResource,
-          CIChangeStatusOfficeIncidentResource, CIChangeCMDBHistoryResource,
-          CITypesResource, CILayersResource):
+          CIChangeCMDBHistoryResource, CITypesResource, CILayersResource):
     v09_api.register(r())
 
 # deployment API

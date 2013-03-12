@@ -307,11 +307,12 @@ ISSUETRACKERS = {
         'CI_NAME_FIELD_NAME': '',
         'TEMPLATE_FIELD_NAME': '',
         'PROFILE_FIELD_NAME': '',
+        'IMPACT_ANALYSIS_FIELD_NAME': '',
+        'PROBLEMS_FIELD_NAME': '',
         'CMDB_PROJECT': '',
         'CMDB_VIEWCHANGE_LINK': 'http://url/%s',
         'USE_CELERY': True,
         'OPA': {
-            'RSS_URL': '',
             'BOWNER_FIELD_NAME': '',
             'TOWNER_FIELD_NAME': '',
             'TEMPLATE': '',

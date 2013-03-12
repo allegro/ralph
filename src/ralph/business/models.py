@@ -181,6 +181,24 @@ class Venture(Named, PrebootMixin, HasSymbolBasedPath, TimeTrackable):
         if self.parent:
             return self.parent.get_department()
 
+    def find_descendant_ids(self):
+        """ Return Venture id and all descendants id """
+        stack = [self.id]
+        venture_ids = []
+        visited = {self.id}
+        while stack:
+            venture_id = stack.pop()
+            venture_ids.append(venture_id)
+            for v_id, in Venture.objects.filter(
+                    parent_id=venture_id
+                ).values_list('id'):
+                if v_id in visited:
+                    # Make sure we don't do the same device twice.
+                    continue
+                visited.add(v_id)
+                stack.append(v_id)
+        return venture_ids
+
     @property
     def device(self):
         return self.device_set
@@ -230,6 +248,7 @@ class BusinessLine(db.Model):
 
     def __unicode__(self):
         return self.name
+
 
 class VentureRole(Named.NonUnique, PrebootMixin, HasSymbolBasedPath,
                   TimeTrackable):

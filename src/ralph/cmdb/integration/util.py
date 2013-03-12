@@ -13,5 +13,3 @@ from pytz import timezone
 def strip_timezone(datestr):
     parsed = parse(datestr)
     return parsed.astimezone(timezone('Europe/Warsaw')).strftime('%Y-%m-%d %H:%M:%S')
-
-

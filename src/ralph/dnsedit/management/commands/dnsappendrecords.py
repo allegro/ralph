@@ -11,7 +11,7 @@ import textwrap
 from django.core.management.base import BaseCommand
 from powerdns.models import Domain, Record, RECORD_TYPES
 
-from ralph.util.csvutil import UnicodeReader
+from bob.csvutil import UnicodeReader
 
 
 class Error(Exception):
