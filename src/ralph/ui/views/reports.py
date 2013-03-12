@@ -350,43 +350,39 @@ class ReportVentures(SidebarReports, Base):
         },
     ]
 
-    def export_csv(self):
-        def iter_rows():
+    def export_csv(self, venture_data, extra_types):
+        yield [
+            'Venture ID',
+            'Venture',
+            'Path',
+            'Department',
+            'Default margin',
+            'Device count',
+            'Core count',
+            'Virtual core count',
+            'Cloud use',
+            'Cloud cost',
+        ] + [extra_type.name for extra_type in extra_types] + [
+            'Hardware cost',
+            'Total cost',
+        ]
+        for data in venture_data:
             yield [
-                'Venture ID',
-                'Venture',
-                'Path',
-                'Department',
-                'Default margin',
-                'Device count',
-                'Core count',
-                'Virtual core count',
-                'Cloud use',
-                'Cloud cost',
-            ] + [extra_type.name for extra_type in self.extra_types] + [
-                'Hardware cost',
-                'Total cost',
+                '%d' % data['id'],
+                data['name'],
+                data['path'],
+                data['department'],
+                '%d%%' % data['margin'],
+                '%d' % (data['count'] or 0),
+                '%d' % (data['core_count'] or 0),
+                '%d' % (data['virtual_core_count'] or 0),
+                '%f' % (data['cloud_use'] or 0),
+                _currency(data['cloud_cost']),
+            ] + [_currency(v) for v in data['extras']] + [
+                _currency(data['hardware_cost']),
+                _currency(data['total']),
             ]
-            for data in self.venture_data:
-                yield [
-                    '%d' % data['id'],
-                    data['name'],
-                    data['path'],
-                    data['department'],
-                    '%d%%' % data['margin'],
-                    '%d' % (data['count'] or 0),
-                    '%d' % (data['core_count'] or 0),
-                    '%d' % (data['virtual_core_count'] or 0),
-                    '%f' % (data['cloud_use'] or 0),
-                    _currency(data['cloud_cost']),
-                ] + [_currency(v) for v in data['extras']] + [
-                    _currency(data['hardware_cost']),
-                    _currency(data['total']),
-                ]
-        return make_csv_response(
-            data=iter_rows(),
-            filename='ReportVentures.csv',
-        )
+
 
     def _get_totals(self, start, end, query, extra_types):
         venture_total = get_total_cost(query, start, end)
@@ -518,7 +514,10 @@ class ReportVentures(SidebarReports, Base):
             self.ventures = Venture.objects.none()
             self.venture_data = []
         if self.request.GET.get('export') == 'csv':
-            return self.export_csv()
+            return make_csv_response(
+                data=self.export_csv(self.venture_data, self.extra_types),
+                filename='ReportVentures.csv',
+            )
         return super(ReportVentures, self).get(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
