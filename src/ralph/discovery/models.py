@@ -22,6 +22,7 @@ from ralph.discovery.models_device import (
     MarginKind,
     ReadOnlyDevice,
     SERIAL_BLACKLIST,
+    UptimeSupport,
 )
 from ralph.discovery.models_network import (
     DataCenter,
@@ -103,6 +104,7 @@ __all__ = [
     'MarginKind',
     'ReadOnlyDevice',
     'SERIAL_BLACKLIST',
+    'UptimeSupport',
 
     'HistoryChange',
     'HistoryCost',

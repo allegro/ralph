@@ -44,7 +44,6 @@ from ralph.cmdb.models_changes import (
     # change management types
     CIChange,
     CIChangeZabbixTrigger,
-    CIChangeStatusOfficeIncident,
     CIChangeCMDBHistory,
     CIChangeGit,
     CIChangePuppet,
@@ -56,6 +55,13 @@ from ralph.cmdb.models_changes import (
     CIEvent,
     CIProblem,
     CIIncident,
+
+    ArchivedCIChangeZabbixTrigger,
+    ArchivedCIChangeCMDBHistory,
+    ArchivedCIChange,
+    ArchivedCIChangeGit,
+    ArchivedCIChangePuppet,
+    ArchivedPuppetLog,
 )
 
 from ralph.cmdb.models_audits import (
@@ -94,7 +100,6 @@ __all__ = [
     # change management types
     'CIChange',
     'CIChangeZabbixTrigger',
-    'CIChangeStatusOfficeIncident',
     'CIChangeCMDBHistory',
     'CIChangeGit',
     'CIChangePuppet',
@@ -110,6 +115,13 @@ __all__ = [
     # audits
     'Auditable',
     'AuditStatus',
+
+    'ArchivedCIChangeZabbixTrigger',
+    'ArchivedCIChangeCMDBHistory',
+    'ArchivedCIChange',
+    'ArchivedCIChangeGit',
+    'ArchivedCIChangePuppet',
+    'ArchivedPuppetLog',
 ]
 
 # hook signals, don't remove this.
@@ -119,8 +131,10 @@ import ralph.cmdb.models_signals
 class CILookup(LookupChannel):
     model = CI
 
-    def get_query(self, q, request):
-        return CI.objects.filter(Q(name__istartswith=q)).order_by('name')[:10]
+    def get_query(self, query, request):
+        return CI.objects.filter(
+            Q(name__istartswith=query.strip())
+        ).order_by('name')[:10]
 
     def get_result(self, obj):
         return obj.name

@@ -16,7 +16,6 @@ import mock
 
 from ralph.business.models import Venture, VentureRole
 from ralph.cmdb.importer import CIImporter
-from ralph.cmdb.integration.issuetracker_plugins.jira import JiraRSS
 from ralph.cmdb.integration.puppet import PuppetAgentsImporter
 from ralph.cmdb.integration.puppet import PuppetGitImporter as pgi
 from ralph.cmdb.models import (
@@ -44,14 +43,14 @@ class OPRegisterTest(TestCase):
         hostci.type_id = CI_TYPES.DEVICE.id
         hostci.save()
         p = PuppetAgentsImporter()
-        yaml = open(
+        changed_yaml = open(
             djoin(CURRENT_DIR, 'cmdb/tests/samples/canonical.yaml')
         ).read()
-        p.import_contents(yaml)
-        yaml = open(
+        p.import_contents(changed_yaml)
+        unchanged_yaml = open(
             djoin(CURRENT_DIR, 'cmdb/tests/samples/canonical_unchanged.yaml')
         ).read()
-        p.import_contents(yaml)
+        p.import_contents(unchanged_yaml)
         chg = CIChange.objects.get(type=CI_CHANGE_TYPES.CONF_AGENT.id)
         logs = PuppetLog.objects.filter(
             cichange__host='s11401.dc2').order_by('id')
@@ -67,6 +66,18 @@ class OPRegisterTest(TestCase):
         # should not import puppet report which has 'unchanged' status
         self.assertEqual(
             CIChangePuppet.objects.filter(status='unchanged').count(), 0)
+        # should drop request, when the same configuration ver. + hostname
+        # is already present in the database.
+
+        # Now, feed importer with the same yaml the second time...
+        p.import_contents(changed_yaml)
+        # No change should be registered at this time.
+        self.assertEquals(
+            chg, CIChange.objects.get(type=CI_CHANGE_TYPES.CONF_AGENT.id)
+        )
+        self.assertEquals(
+            CIChangePuppet.objects.count(), 1
+        )
 
     @patch('ralph.cmdb.models_signals.OP_TEMPLATE', _PATCHED_OP_TEMPLATE)
     @patch('ralph.cmdb.models_signals.OP_START_DATE', _PATCHED_OP_START_DATE)
@@ -167,62 +178,6 @@ class OPRegisterTest(TestCase):
         self.assertEqual(chg.external_key, '')
         self.assertEqual(
             chg.registration_type, CI_CHANGE_REGISTRATION_TYPES.WAITING.id)
-
-
-class JiraRssTest(TestCase):
-    def setUp(self):
-        settings.ISSUETRACKERS['JIRA'] = {'ENGINE': 'JIRA', 'USER': '',
-                                          'PASSWORD': '', 'URL': '',
-                                          'CMDB_PROJECT': ''}
-
-    def tearDown(self):
-        del settings.ISSUETRACKERS['JIRA']
-
-    def get_datetime(self, data, format='%d-%m-%Y %H:%M'):
-        return datetime.datetime.strptime(data, format)
-
-    def test_get_new_issues(self):
-        dp1_1 = DeploymentPoll(
-            key='RALPH-341',
-            date=datetime.datetime.strptime('1-1-2012 1:10', '%d-%m-%Y %H:%M')
-        )
-        dp1_1.save()
-        dp1_2 = DeploymentPoll(
-            key='RALPH-341',
-            date=datetime.datetime.strptime('1-1-2012 1:20', '%d-%m-%Y %H:%M'))
-        dp1_2.save()
-        dp2_1 = DeploymentPoll(
-            key='RALPH-342',
-            date=datetime.datetime.strptime('2-2-2012 2:10', '%d-%m-%Y %H:%M'),
-            checked=False)
-        dp2_1.save()
-        dp2_2 = DeploymentPoll(
-            key='RALPH-342',
-            date=datetime.datetime.strptime('2-2-2012 2:20', '%d-%m-%Y %H:%M'),
-            checked=False)
-        dp2_2.save()
-        dp3_1 = DeploymentPoll(
-            key='RALPH-343',
-            date=datetime.datetime.strptime('3-3-2012 3:10', '%d-%m-%Y %H:%M')
-        )
-        dp3_1.save()
-        dp3_2 = DeploymentPoll(
-            key='RALPH-343',
-            date=datetime.datetime.strptime('3-3-2012 3:20', '%d-%m-%Y %H:%M'))
-        dp3_2.save()
-        dp4_1 = DeploymentPoll(
-            key='RALPH-344',
-            date=datetime.datetime.strptime('4-4-2012 5:10', '%d-%m-%Y %H:%M'))
-        dp4_1.save()
-        x = JiraRSS(tracker_name='JIRA')
-        rss = open(
-            djoin(CURRENT_DIR, 'cmdb/tests/samples/jira_rss.xml')
-        ).read()
-        x.rss_url = rss
-        self.assertEquals(
-            sorted(x.get_new_issues()), [
-                'RALPH-341', 'RALPH-342', 'RALPH-343', 'RALPH-344']
-        )
 
 
 class MockFisheye(object):

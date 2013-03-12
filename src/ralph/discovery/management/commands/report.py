@@ -15,7 +15,7 @@ from django.core.management.base import BaseCommand
 from django.db.models import Q
 import xlwt
 
-from ralph.util.csvutil import UnicodeWriter
+from bob.csvutil import UnicodeWriter
 from ralph.util import pricing
 from ralph.business.models import Venture
 from ralph.discovery.models import DeviceType, ReadOnlyDevice

@@ -7,7 +7,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import math
-from datetime import date, timedelta, datetime, time
+from datetime import date, timedelta
 
 from django.core.urlresolvers import reverse_lazy
 from django.db import models as db
@@ -62,17 +62,9 @@ def get_device_external_price(device):
     return price
 
 
-def is_deprecated(device):
-    """ Return True if device is depreciated """
-    if device.deprecation_date:
-        today_midnight = datetime.combine(datetime.today(), time())
-        return device.deprecation_date < today_midnight
-    return False
-
-
 def get_device_raw_price(device, ignore_deprecation=False):
     """Purchase price of this device, before anything interacts with it."""
-    if (device.deleted or (not ignore_deprecation and is_deprecated(device))
+    if (device.deleted or (not ignore_deprecation and device.is_deprecated())
     ):
         return 0
     return device.price or get_device_auto_price(device)
@@ -84,7 +76,7 @@ def get_device_cost(device, ignore_deprecation=False):
     price = get_device_price(device)
     cost = 0
     if not device.deleted and device.deprecation_kind is not None:
-        if not is_deprecated(device) or ignore_deprecation:
+        if not device.is_deprecated() or ignore_deprecation:
             cost = price / device.deprecation_kind.months
     margin = device.get_margin() or 0
     cost = cost * (1 + margin / 100) + get_device_additional_costs(device)
@@ -114,7 +106,8 @@ def get_device_chassis_price(device, ignore_deprecation=False):
         device.parent and device.parent.model and device.parent.model.group and
         device.parent.model.group.slots and not device.deleted):
         device_price = get_device_raw_price(
-            device.parent, ignore_deprecation=ignore_deprecation
+            device.parent,
+            ignore_deprecation=ignore_deprecation,
         )
         if device_price > 0:
             chassis_price = (
@@ -374,6 +367,7 @@ def details_dev(dev, purchase_only=False, ignore_deprecation=False):
 
 def details_cpu(dev, purchase_only=False):
     has_cpu = False
+
     for cpu in dev.processor_set.all():
         has_cpu = True
         speed = cpu.model.speed if (cpu.model and
@@ -553,6 +547,14 @@ def details_disk(dev, purchase_only=False):
             'href': '/admin/discovery/diskshare/%d/' % share.id,
         }
 
+def details_software(dev, purchase_only=False):
+   for soft in dev.software_set.order_by('path'):
+        yield {
+            'label': soft.label,
+            'model': soft.model,
+            'serial': soft.sn,
+            'version': soft.version,
+        }
 
 def details_other(dev, purchase_only=False):
     for fc in dev.fibrechannel_set.all():
@@ -579,13 +581,6 @@ def details_other(dev, purchase_only=False):
             'serial': eth.mac,
             'icon': 'fugue-network-ethernet',
         }
-    for soft in dev.software_set.order_by('path'):
-        yield {
-            'label': soft.label,
-            'model': soft.model,
-            'serial': soft.sn,
-            'version': soft.version,
-        }
     for os in dev.operatingsystem_set.order_by('label'):
         details = []
         if os.cores_count:
@@ -598,26 +593,32 @@ def details_other(dev, purchase_only=False):
             label = "%s (%s)" % (os.label, ', '.join(details))
         else:
             label = os.label
+        model = os.model if os else None
         yield {
             'label': label,
-            'model': os.model,
+            'model': model,
         }
 
 
-def details_all(dev, purchase_only=False, ignore_deprecation=False):
-    for detail in details_dev(
-        dev, purchase_only, ignore_deprecation=ignore_deprecation):
-        detail['group'] = 'dev'
-        yield detail
-    for detail in details_cpu(dev, purchase_only):
-        detail['group'] = 'cpu'
-        yield detail
-    for detail in details_mem(dev, purchase_only):
-        detail['group'] = 'mem'
-        yield detail
-    for detail in details_disk(dev, purchase_only):
-        detail['group'] = 'disk'
-        yield detail
-    for detail in details_other(dev, purchase_only):
-        detail['group'] = 'other'
-        yield detail
+def details_all(dev, purchase_only=False, ignore_deprecation=False, exclude=[]):
+    components = [
+        {'d_name': 'dev', 'd_type': details_dev},
+        {'d_name': 'cpu', 'd_type': details_cpu},
+        {'d_name': 'mem', 'd_type': details_mem},
+        {'d_name': 'disk', 'd_type': details_disk},
+        {'d_name': 'software', 'd_type': details_software},
+        {'d_name': 'other', 'd_type': details_other},
+    ]
+    for component in components:
+        if component['d_name'] not in exclude:
+            if not component['d_name'] == 'dev':
+                items = component['d_type'](dev, purchase_only)
+            else:
+                items = component['d_type'](
+                    dev,
+                    purchase_only,
+                    ignore_deprecation=ignore_deprecation
+                )
+            for detail in items:
+                detail['group'] = component['d_name']
+                yield detail

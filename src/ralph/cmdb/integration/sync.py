@@ -97,22 +97,22 @@ class JiraEventsImporter(BaseImporter):
     """
     @staticmethod
     @plugin.register(chain='cmdb_jira')
-    def jira_problems(context):
+    def jira_problems(context, successful_plugins=None):
         x = JiraEventsImporter()
         x.import_problem()
-        return (True, 'Done' ,context)
+        return (True, 'Done', context)
 
     @staticmethod
     @plugin.register(chain='cmdb_jira')
-    def jira_incidents(context):
+    def jira_incidents(context, successful_plugins=None):
         x = JiraEventsImporter()
         x.import_incident()
-        return (True, 'Done' ,context)
+        return (True, 'Done', context)
 
     def import_obj(self, issue, classtype):
         logger.debug(issue)
         try:
-            ci_obj=db.CI.objects.get(uid=issue.get('ci'))
+            ci_obj = db.CI.objects.get(uid=issue.get('ci'))
         except:
             logger.error('Issue : %s Can''t find ci: %s' % (issue.get('key'),issue.get('ci')))
             ci_obj = None
@@ -121,7 +121,7 @@ class JiraEventsImporter(BaseImporter):
             prob = obj[0]
         else:
             prob = classtype()
-        prob.description = issue.get('description', '')
+        prob.description = issue.get('description')
         if prob.description is not None:
             if prob.description and len(prob.description) > 1024:
                 prob.description = prob.description[0:1024]
@@ -131,8 +131,10 @@ class JiraEventsImporter(BaseImporter):
         prob.status = issue.get('status')
         prob.assignee = issue.get('assignee')
         prob.ci = ci_obj
-        prob.time = strip_timezone(issue.get('time')) #created or updated
+        prob.time = strip_timezone(issue.get('time'))  # created or updated
         prob.jira_id = issue.get('key')
+        prob.analysis = issue.get('analysis')
+        prob.problems = issue.get('problems')
         prob.save()
 
     def import_problem(self):
@@ -149,21 +151,28 @@ class JiraEventsImporter(BaseImporter):
 
     def fetch_all(self, type):
         ci_fieldname = settings.ISSUETRACKERS['default']['CI_FIELD_NAME']
+        analysis = settings.ISSUETRACKERS['default']['IMPACT_ANALYSIS_FIELD_NAME']
+        problems_field = settings.ISSUETRACKERS['default']['PROBLEMS_FIELD_NAME']
         params = dict(jql='type=%s' % type, maxResults=1024)
         issues = Jira().find_issues(params)
         items_list = []
         for i in issues.get('issues'):
             f = i.get('fields')
-            ci_id = f.get(ci_fieldname)
             assignee = f.get('assignee')
-            items_list.append(dict(
-                ci=ci_id,
-                key=i.get('key'),
-                description=f.get('description', ''),
-                summary=f.get('summary'),
-                status=f.get('status').get('name'),
-                time=f.get('updated') or f.get('created'),
-                assignee=assignee.get('displayName') if assignee else '')
+            problems = f.get(problems_field) or []
+            ret_problems = [problem.get('value') for problem in problems]
+            selected_problems = ', '.join(ret_problems) if ret_problems else None
+            items_list.append(
+                dict(
+                    ci=f.get(ci_fieldname),
+                    key=i.get('key'),
+                    description=f.get('description', ''),
+                    summary=f.get('summary'),
+                    status=f.get('status').get('name'),
+                    time=f.get('updated') or f.get('created'),
+                    assignee=assignee.get('displayName') if assignee else '',
+                    analysis=f.get(analysis),
+                    problems=selected_problems,
+                )
             )
         return items_list
-

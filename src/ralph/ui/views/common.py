@@ -5,6 +5,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import datetime
+
 from django.conf import settings
 from django.contrib import messages
 from django.core.urlresolvers import reverse
@@ -19,7 +20,7 @@ from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Language, TagStem
 from bob.menu import MenuItem
 from powerdns.models import Record
-from discovery.models_device import DeprecationKind, MarginKind
+from ralph.discovery.models_device import DeprecationKind, MarginKind
 
 from ralph.account.models import Perm
 from ralph.business.models import RolePropertyValue, Venture, VentureRole
@@ -58,7 +59,6 @@ from ralph.ui.forms.addresses import (
     IPAddressFormSet,
     DNSFormSet,
 )
-from ralph.util.pricing import is_deprecated
 from ralph.ui.forms.deployment import (
     ServerMoveStep1Form,
     ServerMoveStep2FormSet,
@@ -110,10 +110,12 @@ def _get_balancers(dev):
         }
 
 
-def _get_details(dev, purchase_only=False, with_price=False, ignore_deprecation=False):
+def _get_details(dev, purchase_only=False, with_price=False, ignore_deprecation=False, exclude=[]):
     for detail in pricing.details_all(
-        dev, purchase_only,
-        ignore_deprecation=ignore_deprecation
+        dev,
+        purchase_only,
+        ignore_deprecation=ignore_deprecation,
+        exclude=exclude,
     ):
         if 'icon' not in detail:
             if detail['group'] == 'dev':
@@ -532,7 +534,7 @@ class Prices(DeviceUpdateView):
             'components': _get_details(self.object,
                                        purchase_only=False,
                                        with_price=True),
-            'deprecated': is_deprecated(self.object),
+            'deprecated': self.object.is_deprecated(),
         })
         return ret
 
@@ -830,7 +832,7 @@ class Costs(DeviceDetailView):
             'query_variable_name': query_variable_name,
             'ALWAYS_DATE': ALWAYS_DATE,
             'FOREVER_DATE': FOREVER_DATE,
-            'deprecated': is_deprecated(self.object),
+            'deprecated': self.object.is_deprecated(),
         })
         last_month = datetime.date.today() - datetime.timedelta(days=31)
         splunk = self.object.splunkusage_set.filter(

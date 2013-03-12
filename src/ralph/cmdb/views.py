@@ -60,8 +60,8 @@ SAVE_PRIORITY = 200
 
 
 def get_icon_for(ci):
-    if not ci or not ci.content_object:
-        return
+    if not ci or not ci.content_type:
+        return ''
     ctname = ci.content_type.name
     if ctname == 'venture':
         return get_venture_icon(ci.content_object)
@@ -153,8 +153,6 @@ class BaseCMDBView(Base):
                 'fugue-git'),
             ('/cmdb/changes/changes?type=2', 'Agent events',
                 'fugue-flask'),
-            ('/cmdb/changes/changes?type=5', 'Status Office events',
-                'fugue-plug'),
             ('/cmdb/changes/incidents', 'Incidents',
                 'fugue-question'),
             ('/cmdb/changes/problems', 'Problems',
@@ -184,7 +182,13 @@ class BaseCMDBView(Base):
                 label=t[1],
                 fugue_icon=t[2],
                 href=t[0]
-            ) for t in events]
+            ) for t in events] +
+            [MenuHeader('Other')] +
+            [MenuItem(
+                label='Archive',
+                fugue_icon='fugue-vise-drawer',
+                href='/cmdb/archive/assets/',
+            )]
         )
         return sidebar_items
 
@@ -491,11 +495,6 @@ class BaseCIDetails(BaseCMDBView):
             False
         ):
             tabs.append(('Incidents', 'incidents'))
-        if self.get_permissions_dict(self.request.user.id).get(
-            'read_configuration_item_info_generic_perm',
-            False
-        ):
-            tabs.append(('SO Events', 'so'))
         return tabs
 
     def generate_breadcrumb(self):
@@ -1232,59 +1231,6 @@ class CIIncidentsView(CIIncidentsEdit):
         return _update_labels(ret, self.ci)
 
 
-class CISOEventsEdit(BaseCIDetails):
-    template_name = 'cmdb/ci_so_events.html'
-    active_tab = 'so'
-
-    def check_perm(self):
-        if not self.get_permissions_dict(self.request.user.id).get(
-            'read_configuration_item_info_generic_perm',
-            False,
-        ):
-            return HttpResponseForbidden()
-
-    def initialize_vars(self):
-        super(CISOEventsEdit, self).initialize_vars()
-        self.so_events = []
-
-    def get_context_data(self, **kwargs):
-        ret = super(CISOEventsEdit, self).get_context_data(**kwargs)
-        ret.update({
-            'so_events': self.so_events,
-        })
-        return ret
-
-    def get(self, *args, **kwargs):
-        perm = self.check_perm()
-        if perm:
-            return perm
-        self.initialize_vars()
-        try:
-            ci_id = self.get_ci_id()
-        except db.CI.DoesNotExist:
-            # CI doesn's exists.
-            return HttpResponseRedirect('/cmdb/ci/jira_ci_unknown')
-        if ci_id:
-            self.ci = get_object_or_404(db.CI, id=ci_id)
-            try:
-                page = int(self.request.GET.get('page', 1))
-            except ValueError:
-                page = 1
-            query = db.CIChange.objects.filter(
-                type=db.CI_CHANGE_TYPES.STATUSOFFICE.id,
-                ci=self.ci,
-            ).all()
-            paginator = Paginator(query, 20)
-            self.so_events = paginator.page(page)
-        return super(CISOEventsEdit, self).get(*args, **kwargs)
-
-
-class CISOEventsView(CISOEventsEdit):
-    def get_context_data(self, **kwargs):
-        ret = super(CISOEventsView, self).get_context_data(**kwargs)
-        return _update_labels(ret, self.ci)
-
-
 class Search(BaseCMDBView):
     template_name = 'cmdb/search_ci.html'
     Form = CISearchForm
@@ -1707,5 +1653,3 @@ class Graphs(BaseCMDBView):
                 ))
 
         return super(BaseCMDBView, self).get(*args, **kwargs)
-
-
