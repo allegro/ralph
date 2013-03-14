@@ -8,13 +8,14 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from functools import partial
 import re
 import textwrap
 import traceback
 
-from celery.task import task
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
+import django_rq
 from ipaddr import IPv4Network, IPv6Network
 
 from ralph.discovery.models import Network, IPAddress
@@ -29,25 +30,18 @@ NETWORK_TASK_DELEGATION_TIMEOUT = settings.NETWORK_TASK_DELEGATION_TIMEOUT
 SINGLE_DISCOVERY_TIMEOUT = settings.SINGLE_DISCOVERY_TIMEOUT
 
 
-class DCRouter(object):
+def set_queue(context):
     """Route the discovery tasks to the right data center for them.
-       Use the default queue if no network matches the IP address."""
-
-    def route_for_task(self, task, args=None, kwargs=None):
-        if task == 'ralph.discovery.tasks.run_chain':
-            return args[1] or 'celery'
-        if task != 'ralph.discovery.tasks.discover_single':
-            return 'celery'
+    Use the default queue if no network matches the IP address."""
+    try:
+        queue = context[0]['queue']
+    except KeyError:
         try:
-            queue = args[0]['queue']
-        except KeyError:
-            try:
-                net = Network.from_ip(args[0]['ip'])
-                queue = net.queue.name or net.data_center.name
-            except (IndexError, KeyError):
-                queue = 'celery'
-            args[0]['queue'] = queue
-        return queue
+            net = Network.from_ip(context[0]['ip'])
+            queue = net.queue.name or net.data_center.name
+        except (IndexError, KeyError):
+            queue = 'default'
+        context[0]['queue'] = queue
 
 
 def sanity_check(perform_network_checks=True):
@@ -123,7 +117,9 @@ def run_next_plugin(context, requirements=None, interactive=False,
                     clear_down=True, done_requirements=None, outputs=None):
     discover = discover_single
     if not interactive:
-        discover = discover.delay
+        set_queue(context)
+        queue = django_rq.get_queue(context['queue'])
+        discover = partial(queue.enqueue, discover)
     to_run = plugin.next('discovery', requirements) - done_requirements
     if to_run:
         plugin_name = plugin.highest_priority('discovery', to_run)
@@ -136,26 +132,31 @@ def run_next_plugin(context, requirements=None, interactive=False,
                     interactive, clear_down, done_requirements, outputs)
 
 
-@task(ignore_result=True, expires=3600)
+#@task(ignore_result=True, expires=3600)
 def dummy_task(interactive=False, index=None):
     stdout = output.get(interactive)
     if index:
+        if not index % 25:
+            raise LookupError(
+                "You called {} and it failed on purpose.".format(index),
+            )
         stdout("Ping {}.".format(index))
     else:
         stdout("Ping.")
 
 
-@task(ignore_result=True, expires=3600)
+#@task(ignore_result=True, expires=3600)
 def dummy_horde(interactive=False, how_many=1000):
     if interactive:
         for i in xrange(how_many):
             dummy_task(interactive=interactive, index=i+1)
     else:
+        queue = django_rq.get_queue()
         for i in xrange(how_many):
-            dummy_task.delay(interactive=interactive, index=i+1)
+            queue.enqueue(dummy_task, interactive=interactive, index=i+1)
 
 
-@task(ignore_result=True)
+#@task(ignore_result=True)
 def run_chain(context, chain_name, requirements=None, interactive=False,
               clear_down=True, done_requirements=None, outputs=None):
     if requirements is None:
@@ -172,7 +173,7 @@ def run_chain(context, chain_name, requirements=None, interactive=False,
               done_requirements, outputs)
 
 
-@task(ignore_result=True, expires=SINGLE_DISCOVERY_TIMEOUT)
+#@task(ignore_result=True, expires=SINGLE_DISCOVERY_TIMEOUT)
 def discover_single(context, plugin_name='ping', requirements=None,
     interactive=False, clear_down=True, done_requirements=None,
     restarts=MAX_RESTARTS, outputs=None):
@@ -193,7 +194,9 @@ def discover_single(context, plugin_name='ping', requirements=None,
         if restarts > 0:
             discover = discover_single
             if not interactive:
-                discover = discover.delay
+                set_queue(context)
+                queue = django_rq.get_queue(context['queue'])
+                discover = partial(queue.enqueue, discover)
             discover(context, plugin_name, requirements, interactive,
                     clear_down, done_requirements, restarts=restarts-1)
             restarted = True
@@ -251,7 +254,7 @@ def discover_single_synchro(ip):
     yield 'Finished.\n'
 
 
-@task(ignore_result=True, time_limit=NETWORK_TASK_DELEGATION_TIMEOUT)
+#@task(ignore_result=True, time_limit=NETWORK_TASK_DELEGATION_TIMEOUT)
 def discover_network(network, plugin_name='ping', requirements=None,
     interactive=False, update_existing=False, outputs=None):
     """Runs discovery for a single `network`. The argument may be
@@ -301,7 +304,9 @@ def discover_network(network, plugin_name='ping', requirements=None,
             discover_single(context, plugin_name=plugin_name,
                 requirements=requirements, interactive=True)
         else:
-            discover_single.delay(context, plugin_name=plugin_name,
+            set_queue(context)
+            queue = django_rq.get_queue(context['queue'])
+            queue.enqueue(discover_single, context, plugin_name=plugin_name,
                 requirements=requirements, clear_down=False)
     if interactive:
         stdout()
@@ -309,7 +314,7 @@ def discover_network(network, plugin_name='ping', requirements=None,
         stdout('Scanning network {} finished.'.format(net))
 
 
-@task(ignore_result=True)
+#@task(ignore_result=True)
 def discover_all(interactive=False, update_existing=False, outputs=None):
     """Runs discovery on all networks defined in the database."""
     sanity_check()
@@ -323,6 +328,7 @@ def discover_all(interactive=False, update_existing=False, outputs=None):
             discover_network(net.network, interactive=True,
                 update_existing=True)
         else:
-            discover_network.delay(net.network,
+            queue = django_rq.get_queue()
+            queue.enqueue(discover_network, net.network,
                 update_existing=update_existing)
     stdout()
