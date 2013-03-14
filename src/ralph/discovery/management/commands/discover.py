@@ -70,9 +70,9 @@ class Command(BaseCommand):
         or to asynchronous processing using Rabbit."""
         discover = OptionBag()
         if options['remote']:
-            discover.all = discover_all.delay
-            discover.network = discover_network.delay
-            discover.single = discover_single.delay
+            discover.all = discover_all
+            discover.network = discover_network
+            discover.single = discover_single
         else:
             if options['plugins']:
                 plugin.purge(set(options['plugins'].split(',')))
