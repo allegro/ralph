@@ -22,7 +22,7 @@ import django.dispatch
 # using models_ci not models, for dependency chain.
 from ralph.cmdb import models_ci as cdb
 from ralph.cmdb import models_changes as chdb
-from ralph.cmdb.integration.splunk import SplunkLogger
+from ralph.cmdb.integration.splunk import log_change_to_splunk
 from ralph.cmdb.integration.issuetracker import IssueTracker
 from ralph.cmdb.integration.exceptions import IssueTrackerException
 from ralph.cmdb.models_common import getfunc
@@ -90,16 +90,6 @@ def change_delete_post_save(sender, instance, **kwargs):
         pass
 
 
-def log_change_to_splunk(instance, log_type):
-    message = vars(instance)['_field_state']
-    message['ci_name'] = instance.ci.name if instance.ci else None
-    message['type'] = log_type
-    message['ralph_link'] = reverse(
-        'ci_view_main', kwargs={'ci_id': instance.ci.id}
-    ) if instance.ci else None
-    SplunkLogger().log_dict(message)
-
-
 @receiver(post_save, sender=chdb.CIChangeCMDBHistory,
           dispatch_uid='ralph.cmdb.change_post_save')
 @receiver(post_save, sender=chdb.CIChangePuppet,
@@ -126,6 +116,8 @@ def post_create_change(sender, instance, raw, using, **kwargs):
                 time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             ci = instance.ci
         elif isinstance(instance, chdb.CIChangeCMDBHistory):
+            if SPLUNK_HOST:
+                log_change_to_splunk(instance, 'CHANGE_HISTORY')
             # register only user triggered cmdb history
             if instance.user_id:
                 registration_type = \
