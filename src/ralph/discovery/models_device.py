@@ -392,6 +392,10 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
                 },
             )
         elif dev.deleted:
+            # Ignore the priority and undelete even if it was manually deleted
+            priorities = dev.get_save_priorities()
+            priorities['deleted'] = 0
+            dev.update_save_priorities(priorities)
             dev.deleted = False
         if model and model.type != DeviceType.unknown.id:
             dev.model = model
