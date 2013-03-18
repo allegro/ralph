@@ -8,10 +8,6 @@ namespace DonPedro
 {
 	public class Rest
 	{
-		public Rest()
-		{
-		}
-		
 		public string Post(string url, string jsonData)
 		{
 			HttpWebRequest req = WebRequest.Create(new Uri(url)) as HttpWebRequest;
