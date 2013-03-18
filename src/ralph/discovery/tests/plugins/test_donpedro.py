@@ -9,17 +9,25 @@ import json
 from django.test import TestCase
 
 from ralph.discovery.models import (
-    Device, DiskShare, DiskShareMount, DeviceType, Storage, ComponentModel,
-    ComponentType
+    ComponentModel,
+    ComponentType,
+    Device,
+    DeviceType,
+    DiskShare,
+    DiskShareMount,
+    Software,
+    Storage,
 )
 from ralph.discovery.tests.plugins.samples.donpedro import (
-    data, incomplete_data, no_eth_data
+    data,
+    incomplete_data,
+    no_eth_data,
 )
 from ralph.discovery.api_donpedro import (
-    save_device_data,
     NoRequiredDataError,
-    save_storage,
     NoRequiredIPAddressError,
+    save_device_data,
+    save_storage,
 )
 
 
@@ -378,3 +386,8 @@ class DonPedroPluginTest(TestCase):
                 json.loads(no_eth_data).get('data'),
                 '30.30.30.30'
             )
+
+    def test_software(self):
+        self.assertTrue(Software.objects.count(), 2)
+        self.assertEquals(Software.objects.all()[0].version, "1.2.33")
+        self.assertEquals(Software.objects.all()[1].version, "0.8.99")

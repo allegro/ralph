@@ -35,6 +35,17 @@ namespace DonPedro.Detectors
 			return wmiDetector.GetStorageInfo();
 		}
 		
+		public List<SoftwareDTOResponse> GetSoftwareInfo()
+		{
+			WindowsRegistryDetectorSource regInfo = new WindowsRegistryDetectorSource();
+			List<SoftwareDTOResponse> software = regInfo.GetSoftwareInfo();
+			if (software.Count == 0) {
+
+				software = wmiDetector.GetSoftwareInfo();
+			}
+			return software;
+		}
+		
 		public List<EthernetDTOResponse> GetEthernetInfo()
 		{
 			return wmiDetector.GetEthernetInfo();
@@ -77,6 +88,8 @@ namespace DonPedro.Detectors
 			json += GetOperatingSystemInfo().ToJSON();
 			json += ",\n \"processors\": [";
 			json += string.Join(",", GetProcessorsInfo().ConvertAll(s => s.ToJSON()).ToArray());
+			json += "],\n \"software\": [";
+			json += string.Join(",", GetSoftwareInfo().ConvertAll(s => s.ToJSON()).ToArray());
 			json += "],\n \"device\": ";
 			json += GetDeviceInfo().ToJSON();
 			json += "}}";
