@@ -139,7 +139,7 @@ class PricingGroupForm(forms.ModelForm):
 
 class PricingDeviceForm(forms.Form):
     device = ajax_select.fields.AutoCompleteSelectField(
-        'device',
+        ('ralph.ui.channels', 'DeviceLookup'),
         help_text=None,
         required=False,
     )

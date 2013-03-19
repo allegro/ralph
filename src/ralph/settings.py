@@ -193,11 +193,6 @@ CELERYD_TASK_TIME_LIMIT = 900
 CELERY_ROUTES = (
     "ralph.discovery.tasks.DCRouter",
 )
-# define the lookup channels in use on the site
-AJAX_LOOKUP_CHANNELS = {
-    'ci': ('ralph.cmdb.models', 'CILookup'),
-    'device': ('ralph.ui.channels', 'DeviceLookup'),
-}
 # magically include jqueryUI/js/css
 AJAX_SELECT_BOOTSTRAP = True
 AJAX_SELECT_INLINES = 'inline'
@@ -285,6 +280,8 @@ SSH_P2000_PASSWORD = None
 SPLUNK_HOST = None
 SPLUNK_USER = None
 SPLUNK_PASSWORD = None
+SPLUNK_LOGGER_PORT = None
+SPLUNK_LOGGER_HOST = None
 PUPPET_DB_URL = None
 ZABBIX_URL = None
 ZABBIX_USER = None

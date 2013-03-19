@@ -18,11 +18,23 @@ from django.conf import settings
 from lck.django.common.models import MACAddressField
 from lck.django.common import remote_addr, nested_commit_on_success
 
-from ralph.discovery.models import (Device, DeviceType, IPAddress, Memory,
-                                    Processor, ComponentModel, ComponentType,
-                                    OperatingSystem, Storage, DiskShare,
-                                    DiskShareMount, FibreChannel,
-                                    MAC_PREFIX_BLACKLIST, EthernetSpeed)
+from ralph.discovery.models import (
+    ComponentModel,
+    ComponentType,
+    Device,
+    DeviceType,
+    DiskShare,
+    DiskShareMount,
+    EthernetSpeed,
+    FibreChannel,
+    IPAddress,
+    MAC_PREFIX_BLACKLIST,
+    Memory,
+    OperatingSystem,
+    Processor,
+    Software,
+    Storage,
+)
 from ralph.discovery.models_component import CPU_VIRTUAL_LIST
 from ralph.util import Eth
 from ralph.discovery.models_history import DiscoveryWarning
@@ -224,6 +236,30 @@ def save_fibre_channel(fcs, dev):
     dev.fibrechannel_set.exclude(pk__in=detected_fc_cards).delete()
 
 
+@nested_commit_on_success
+def save_software(software, dev):
+    detected_software = []
+    for item in software:
+        name = item.get('label', '')
+        version = item.get('version', '')
+        vendor = item.get('vendor', '')
+        if version in name:
+            name = name.replace(version, '').replace('()', '').strip()
+        package_name = '{} - {} - {}'.format(vendor, name, version)
+        detected_software.append(
+            Software.create(
+                dev=dev,
+                path=package_name,
+                model_name=name,
+                label=name,
+                family=name,
+                version=version,
+                priority=SAVE_PRIORITY,
+            ).id,
+        )
+    dev.software_set.exclude(id__in=detected_software).delete()
+
+
 def str_to_ethspeed(str_value):
     if not str_value:
         return EthernetSpeed.unknown.id
@@ -293,6 +329,7 @@ def save_device_data(data, remote_ip):
     save_storage(data['storage'], dev)
     save_shares(data['shares'], dev, ip_address)
     save_fibre_channel(data['fcs'], dev)
+    save_software(data.get('software', []), dev)
     return dev
 
 
@@ -316,4 +353,3 @@ class WindowsDeviceResource(MResource):
         cache = SimpleCache()
         throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
                                  expiration=EXPIRATION)
-
