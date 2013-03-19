@@ -10,12 +10,14 @@ from __future__ import unicode_literals
 
 from datetime import datetime, date
 
+from django.conf import settings
 from django.db import models as db
-from django.utils.translation import ugettext_lazy as _
 from django.db.models.signals import (post_save, pre_save, pre_delete,
                                       post_delete)
 from django.dispatch import receiver
+from django.utils.translation import ugettext_lazy as _
 
+from ralph.cmdb.integration.splunk import log_change_to_splunk
 from ralph.discovery.models_device import (Device, DeprecationKind,
                                            DeviceModel, DeviceModelGroup)
 from ralph.discovery.models_device import LoadBalancerMember
@@ -31,6 +33,7 @@ FOREVER = '2199-1-1'  # not all DB backends will accept '9999-1-1'
 ALWAYS = '0001-1-1'  # not all DB backends will accept '0000-0-0'
 ALWAYS_DATE = date(1, 1, 1)
 FOREVER_DATE = date(2199, 1, 1)
+SPLUNK_HOST = settings.SPLUNK_LOGGER_HOST
 
 
 class HistoryChange(db.Model):
@@ -63,6 +66,12 @@ class HistoryChange(db.Model):
             return "'{}'.{} = '{}' -> '{}' by {} on {} ({})".format(
                 self.device, self.field_name, self.old_value, self.new_value,
                 self.user, self.date, self.id)
+
+
+@receiver(post_save, sender=HistoryChange, dispatch_uid='ralph.history')
+def history_change_post_save(sender, instance, raw, using, **kwargs):
+    if SPLUNK_HOST:
+        log_change_to_splunk(instance, 'CHANGE_HISTORY')
 
 
 @receiver(post_save, sender=Device, dispatch_uid='ralph.history')

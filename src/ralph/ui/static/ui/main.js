@@ -1,7 +1,7 @@
 $(document).ajaxSend(function(event, xhr, settings) {
     function getCookie(name) {
         var cookieValue = null;
-        if (document.cookie && document.cookie != '') {
+        if (document.cookie && document.cookie !== '') {
             var cookies = document.cookie.split(';');
             for (var i = 0; i < cookies.length; i++) {
                 var cookie = $.trim(cookies[i]);
@@ -114,8 +114,8 @@ $(function ($) {
 
     $('form#disco-form').submit(function () {
         var $form = $(this);
-        var $console = $('#disco-console')
-        var $button = $form.find('button')
+        var $console = $('#disco-console');
+        var $button = $form.find('button');
         var interval = null;
         $form.find('button, input').addClass('disabled').attr('disabled', '');
         $button.find('i').addClass('loading')
@@ -127,8 +127,8 @@ $(function ($) {
             timeout: 600000,
             success: function (data, textStatus, request) {
                 $form.find('button, input').removeClass('disabled').attr('disabled', null);
-                $button.find('i').removeClass('loading')
-                $console.removeClass('loading')
+                $button.find('i').removeClass('loading');
+                $console.removeClass('loading');
             
                 clearInterval(interval);
                 $console.val(request.responseText).removeClass('loading');
@@ -181,7 +181,7 @@ $(function ($) {
         return date;
     };
     var formatDate = function (d) {
-        var pad = function (n) { return n < 10 ? '0' + n : n };
+        var pad = function (n) { return n < 10 ? '0' + n : n; };
         return  d.getUTCFullYear() + '-' +
                 pad(d.getUTCMonth()+1) + '-' +
                 pad(d.getUTCDate());
@@ -263,6 +263,6 @@ $(function ($) {
     $('.close').click(function () {
         if ($(this).attr('data-dismiss') == 'alert'){
             $(this).parents('.alerts').filter(':first').remove();
-        };
-    })
+        }
+    });
 });

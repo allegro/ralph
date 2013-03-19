@@ -234,4 +234,3 @@ class CurrencyWidget(forms.TextInput):
         attrs['class'] = attrs.get('class', '') + ' currency'
         return super(CurrencyWidget, self).render(name, value, attrs,
                                                   *args, **kwargs)
-

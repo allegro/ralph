@@ -63,7 +63,7 @@ urlpatterns = patterns(
 
     url(r'^ci/view/(?P<ci_id>[a-z]{0,2}-?[0-9]+)$', login_required(MainCIView.as_view()), name='ci_view'),
 
-    url(r'^ci/view/(?P<ci_id>[a-z]{0,2}-?[0-9]+)/main/$', login_required(MainCIView.as_view()), name='ci_view'),
+    url(r'^ci/view/(?P<ci_id>[a-z]{0,2}-?[0-9]+)/main/$', login_required(MainCIView.as_view()), name='ci_view_main'),
     url(r'^ci/view/(?P<ci_id>[a-z]{0,2}-?[0-9]+)/relations/$', login_required(CIRelationsView.as_view()), name='ci_view'),
     url(r'^ci/view/(?P<ci_id>[a-z]{0,2}-?[0-9]+)/git/$', login_required(CIGitView.as_view()), name='ci_view'),
     url(r'^ci/view/(?P<ci_id>[a-z]{0,2}-?[0-9]+)/puppet/$', login_required(CIPuppetView.as_view()), name='ci_view'),
