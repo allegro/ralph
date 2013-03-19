@@ -54,6 +54,7 @@
     <Compile Include="Exceptions\ExternalCommandExecutionException.cs" />
     <Compile Include="FCInfoDetectorSource.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WindowsRegistryDetectorSource.cs" />
     <Compile Include="WMIDetectorSource.cs" />
   </ItemGroup>
   <ItemGroup>

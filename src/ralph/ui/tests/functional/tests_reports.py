@@ -34,7 +34,7 @@ CURRENT_DIR = settings.CURRENT_DIR
 class AccessToReportsTest(TestCase):
     def setUp(self):
         self.client = login_as_su(
-            login='ralph1',
+            username='ralph_root',
             password='top_securet',
             email='ralph1@ralph.local',
             is_staff=False,

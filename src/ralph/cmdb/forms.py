@@ -163,8 +163,18 @@ class CIRelationEditForm(forms.ModelForm):
     icons = {
     }
 
-    parent = make_ajax_field(models.CIRelation, 'parent', 'ci', help_text=None)
-    child = make_ajax_field(models.CIRelation, 'child', 'ci', help_text=None)
+    parent = make_ajax_field(
+        models.CIRelation,
+         'parent',
+         ('ralph.cmdb.models', 'CILookup'),
+         help_text=None,
+    )
+    child = make_ajax_field(
+        models.CIRelation,
+         'child',
+         ('ralph.cmdb.models', 'CILookup'),
+         help_text=None,
+     )
 
     def __init__(self, *args, **kwargs):
         super(CIRelationEditForm, self).__init__(*args, **kwargs)
@@ -174,8 +184,7 @@ class CIRelationEditForm(forms.ModelForm):
 
 class SearchImpactForm(forms.Form):
     ci = AutoCompleteSelectField(
-        'ci', required=True,
+        ('ralph.cmdb.models', 'CILookup'),
+        required=True,
         plugin_options={'minLength': 2}
     )
-
-
