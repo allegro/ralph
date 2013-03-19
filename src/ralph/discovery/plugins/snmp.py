@@ -321,7 +321,7 @@ def do_snmp_mac(snmp_name, community, snmp_version, ip, kwargs):
     name = snmp_name
     dev = Device.create(ethernets=ethernets, model_name=model_name,
                         model_type=model_type, name=name, sn=sn)
-    ip_address = IPAddress.objects.get(address=str(ip))
+    ip_address = IPAddress.concurrent_get_or_create(address=str(ip))
     ip_address.device = dev
     ip_address.is_management = is_management
     if is_management:
@@ -374,7 +374,7 @@ def _cisco_snmp_model(model_oid, sn_oid, **kwargs):
     sn = unicode(sn[0][1])
     model = 'Cisco %s' % unicode(model[0][1])
     dev = Device.create(sn=sn, model_name=model, model_type=DeviceType.switch)
-    ip_address = IPAddress.objects.get(address=str(ip))
+    ip_address = IPAddress.concurrent_get_or_create(address=str(ip))
     ip_address.device = dev
     ip_address.is_management = True
     ip_address.save()
@@ -469,7 +469,7 @@ def nortel_snmp(**kwargs):
     sn = unicode(sn[0][1])
     model = kwargs['snmp_name']
     dev = Device.create(sn=sn, model_name=model, model_type=DeviceType.switch)
-    ip_address = IPAddress.objects.get(address=str(ip))
+    ip_address = IPAddress.concurrent_get_or_create(address=str(ip))
     ip_address.device = dev
     ip_address.is_management = True
     ip_address.save()
