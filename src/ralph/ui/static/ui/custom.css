@@ -134,8 +134,8 @@ html .nolink {
 }
 
 h3 {
-    padding-bottom: 10px; 
-    padding-top: 10px; 
+    padding-bottom: 10px;
+    padding-top: 10px;
 }
 
 .details-report th{
@@ -182,4 +182,10 @@ tr.table-highlight td {
 {
     width: 15%;
     text-align: right;
+}
+
+img.waiting
+{
+    display: block;
+    margin: 30px auto 30px auto;
 }
