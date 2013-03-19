@@ -125,7 +125,7 @@ class JiraEventsImporter(BaseImporter):
     def tz_time(self, field):
         if field:
             return strip_timezone(field)
-        return field
+        return ''
 
     def import_obj(self, issue, classtype):
         logger.debug(issue)
@@ -139,12 +139,10 @@ class JiraEventsImporter(BaseImporter):
             prob = obj[0]
         else:
             prob = classtype()
-
-
         prob.summary = self.utf8_field(issue.get('summary'))
         prob.status = self.utf8_field(issue.get('status'))
         prob.assignee = self.utf8_field(issue.get('assignee'))
-        prob.jira_id = self.utf8_field(issue.get('jira_id'))
+        prob.jira_id = self.utf8_field(issue.get('key'))
         prob.analysis = self.utf8_field(issue.get('analysis'))
         prob.problems = self.utf8_field(issue.get('problems'))
         prob.priority = issue.get('priority')
@@ -184,29 +182,31 @@ class JiraEventsImporter(BaseImporter):
         params = dict(jql='type=%s' % type, maxResults=1024)
         issues = Jira().find_issues(params)
         items_list = []
-        for i in issues.get('issues'):
-            f = i.get('fields')
-            assignee = f.get('assignee')
-            problems = f.get(problems_field) or []
+        for issue in issues.get('issues'):
+            field = issue.get('fields')
+            assignee = field.get('assignee')
+            problems = field.get(problems_field) or []
             ret_problems = [problem.get('value') for problem in problems]
             selected_problems = ', '.join(ret_problems) if ret_problems else None
+            priority = field.get('priority')
+            issuetype = field.get('issuetype')
             items_list.append(
                 dict(
-                    ci=f.get(ci_fieldname),
-                    key=i.get('key'),
-                    description=f.get('description', ''),
-                    summary=f.get('summary'),
-                    status=f.get('status').get('name'),
+                    ci=field.get(ci_fieldname),
+                    key=issue.get('key'),
+                    description=field.get('description', ''),
+                    summary=field.get('summary'),
+                    status=field.get('status').get('name'),
                     assignee=assignee.get('displayName') if assignee else '',
-                    analysis=f.get(analysis),
+                    analysis=field.get(analysis),
                     problems=selected_problems,
-                    priority=f.get('priority').get('iconUrl') if f.get('priority') else '',
-                    issue_type=f.get('issuetype').get('name') if f.get('issuetype') else '',
-                    update_date=f.get('updated'),
-                    created_date=f.get('created'),
-                    resolvet_date=f.get('resolutiondate'),
-                    planned_start_date=f.get('customfield_11602'),
-                    planned_end_date=f.get('customfield_11601'),
+                    priority=priority.get('iconUrl') if priority else '',
+                    issue_type=issuetype.get('name') if issuetype else '',
+                    update_date=field.get('updated'),
+                    created_date=field.get('created'),
+                    resolvet_date=field.get('resolutiondate'),
+                    planned_start_date=field.get('customfield_11602'),
+                    planned_end_date=field.get('customfield_11601'),
                 )
             )
         return items_list
