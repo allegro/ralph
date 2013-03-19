@@ -41,7 +41,7 @@
     <ul class='breadcrumb'>
         {% for segment in breadcrumbs %}
         <li>
-        <a href='/cmdb/search?parent={{ segment.id }}'> {{ segment.name }}</a> &gt; 
+        <a href='/cmdb/search?parent={{ segment.id }}'> {{ segment.name }}</a> &gt;
         </li>
         {% endfor %}
     </ul>
@@ -54,7 +54,7 @@
 {% endblock %}
 
 {% block sidebar %}
-    {% if sidebar_items %}    
+    {% if sidebar_items %}
         {% sidebar_menu sidebar_items sidebar_selected %}
     {% endif %}
 {% endblock %}

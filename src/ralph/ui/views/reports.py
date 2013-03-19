@@ -11,7 +11,9 @@ import cStringIO as StringIO
 
 from django.db import models as db
 from django.http import HttpResponseForbidden, HttpResponse, Http404
+from django.core.cache import DEFAULT_CACHE_ALIAS, get_cache
 from django.conf import settings
+from django.contrib import messages
 from django.db.models import Q
 from django.utils.safestring import mark_safe
 from django.utils.html import escape
@@ -20,6 +22,7 @@ from django.utils.translation import ugettext_lazy as _
 from bob.menu import MenuItem
 from bob.csvutil import make_csv_response
 from dj.choices import Choices
+import django_rq
 
 from ralph.account.models import Perm, ralph_permission
 from ralph.business.models import Venture, VentureExtraCostType
@@ -56,6 +59,10 @@ from ralph.ui.forms.reports import (
     ReportDeviceListForm,
     WarrantyRangeReportForm,
 )
+from ralph.util.async_reports import (
+    get_cache_key,
+    async_report_provider,
+)
 from ralph.util.pricing import (
     details_all,
     get_device_auto_price,
@@ -68,6 +75,7 @@ from ralph.util.pricing import (
     get_device_operatingsystem_price,
     get_device_software_price,
 )
+
 
 def threshold(days):
     return datetime.date.today() + datetime.timedelta(days=days)
@@ -241,6 +249,44 @@ class SidebarReports(object):
             'subsection': self.subsection,
         })
         return context
+
+
+class AsyncReportMixin(object):
+    data_provider = None
+
+    def get_data(self, *args, **kwargs):
+        assert (
+            not callable(self.data_provider) or
+            not hasattr(self.data_provider, 'async_report_results_expiration'),
+        ), (
+            'Define ``data_provider`` function with ',
+            '``@async_report_provider`` decorator.',
+        )
+        cache_key = get_cache_key(
+            self.data_provider.func_name,
+            *args,
+            **kwargs
+        )
+        cache = get_cache(
+            self.data_provider.async_report_cache_alias,
+        )
+        data = cache.get(cache_key)
+        if data is not None:
+            return None if data == 'in progress' else data
+        cache.set(
+            cache_key,
+            'in progress',
+            self.data_provider.async_report_results_expiration,
+        )
+        django_rq.enqueue(
+            func='%s.%s' % (
+                self.data_provider.__module__,
+                self.data_provider.func_name,
+            ),
+            args=args,
+            kwargs=kwargs,
+            result_ttl=0,
+        )
 
 
 class ReportMargins(SidebarReports, Base):
@@ -533,7 +579,39 @@ class ReportVentures(SidebarReports, Base):
         return context
 
 
-class ReportServices(SidebarReports, Base):
+@async_report_provider(timeout=300)
+def _report_services_data_provider():
+    services = CI.objects.filter(type=CI_TYPES.SERVICE.id)
+    relations = CIRelation.objects.filter(
+        child__type=CI_TYPES.SERVICE.id,
+        parent__type=CI_TYPES.VENTURE.id,
+        type=CI_RELATION_TYPES.CONTAINS.id,
+    )
+    invalid_relations = []
+    for relation in relations:
+        child = relation.child
+        child.state = CI_STATE_TYPES.NameFromID(child.state)
+        child.venture_id = relation.parent.id
+        child.venture = relation.parent.name
+        child.relation_type = CI_RELATION_TYPES.NameFromID(relation.type)
+        child.relation_type_id = relation.type
+        invalid_relations.append(child)
+    services_without_venture = []
+    for service in services:
+        if CIRelation.objects.filter(
+            parent=service,
+            type=CI_RELATION_TYPES.CONTAINS,
+            child__type=CI_TYPES.VENTURE
+        ).exists():
+            service.state = CI_STATE_TYPES.NameFromID(service.state)
+            services_without_venture.append(service)
+    return {
+        'invalid_relations': invalid_relations,
+        'services_without_venture': services_without_venture,
+    }
+
+
+class ReportServices(SidebarReports, AsyncReportMixin, Base):
     template_name = 'ui/report_services.html'
     subsection = 'services'
     perms = [
@@ -542,41 +620,22 @@ class ReportServices(SidebarReports, Base):
             'msg': _("You don't have permission to see reports."),
         },
     ]
+    data_provider = _report_services_data_provider
 
     @ralph_permission(perms)
     def get(self, *args, **kwargs):
-        services = CI.objects.filter(type=CI_TYPES.SERVICE.id)
-        relations = CIRelation.objects.filter(
-            child__type=CI_TYPES.SERVICE.id,
-            parent__type=CI_TYPES.VENTURE.id,
-            type=CI_RELATION_TYPES.CONTAINS.id,
-        )
-        self.invalid_relation = []
-        for relation in relations:
-            child = relation.child
-            child.state = CI_STATE_TYPES.NameFromID(child.state)
-            child.venture_id = relation.parent.id
-            child.venture = relation.parent.name
-            child.relation_type = CI_RELATION_TYPES.NameFromID(relation.type)
-            child.relation_type_id = relation.type
-            self.invalid_relation.append(child)
-
-        self.services_without_venture = []
-        for service in services:
-            if CIRelation.objects.filter(
-                parent=service,
-                type=CI_RELATION_TYPES.CONTAINS,
-                child__type=CI_TYPES.VENTURE
-            ).exists():
-                service.state = CI_STATE_TYPES.NameFromID(service.state)
-                self.services_without_venture.append(service)
+        self.data = self.get_data()
+        if self.data is None:
+            messages.info(
+                self.request,
+                "Report processing in progress. Please wait...",
+            )
         return super(ReportServices, self).get(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(ReportServices, self).get_context_data(**kwargs)
         context.update({
-            'invalid_relation': self.invalid_relation,
-            'services_without_venture': self.services_without_venture,
+            'data': self.data,
         })
         return context
 
