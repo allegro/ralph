@@ -231,9 +231,7 @@ class ArchivedPuppetLog(AbstractPuppetLog):
 
 class CIEvent(TimeTrackable):
     ''' Abstract for CIProblem/CIIncident '''
-    ci = models.ForeignKey(
-        'CI', null=True, blank=True)
-    time = models.DateTimeField()
+    ci = models.ForeignKey('CI', null=True, blank=True)
     summary = models.CharField(max_length=1024)
     description = models.CharField(max_length=1024)
     jira_id = models.CharField(max_length=100)
@@ -241,6 +239,14 @@ class CIEvent(TimeTrackable):
     assignee = models.CharField(max_length=300)
     analysis = models.CharField(max_length=1024, null=True, blank=True)
     problems = models.CharField(max_length=1024, null=True, blank=True)
+    priority = models.CharField(max_length=254, null=True, blank=True)
+    issue_type = models.CharField(max_length=254, null=True, blank=True)
+    created_date = models.DateTimeField(null=True, blank=True)
+    update_date = models.DateTimeField(null=True, blank=True)
+    resolvet_date = models.DateTimeField(null=True, blank=True)
+    planned_start_date = models.DateTimeField(null=True, blank=True)
+    planned_end_date = models.DateTimeField(null=True, blank=True)
+
     class Meta:
         abstract = True
 
@@ -250,4 +256,8 @@ class CIProblem(CIEvent):
 
 
 class CIIncident(CIEvent):
+    pass
+
+
+class JiraChanges(CIEvent):
     pass

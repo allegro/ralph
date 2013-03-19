@@ -197,6 +197,25 @@ class Incidents(ChangesBase, PaginatedView):
         return super(Incidents, self).get(*args, **kwargs)
 
 
+class JiraChanges(ChangesBase, PaginatedView):
+    template_name = 'cmdb/search_jirachanges.html'
+
+    def get_context_data(self, **kwargs):
+        ret = super(JiraChanges, self).get_context_data(**kwargs)
+        ret.update({
+            'changes': self.data,
+            'subsection': 'JiraChanges',
+            'sidebar_selected': 'JiraChanges',
+        })
+        return ret
+
+    def get(self, *args, **kwargs):
+        queryset = db.JiraChanges.objects.order_by('-time')
+        queryset = self.paginate_query(queryset)
+        self.data = queryset
+        return super(JiraChanges, self).get(*args, **kwargs)
+
+
 class DashboardDetails(ChangesBase, PaginatedView):
     template_name = 'cmdb/dashboard_details_ci.html'
 

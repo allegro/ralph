@@ -47,8 +47,7 @@ class ZabbixImporter(BaseImporter):
     @staticmethod
     @plugin.register(chain='cmdb_zabbix')
     def zabbix_hosts(context):
-        x = ZabbixImporter()
-        x.import_hosts()
+        ZabbixImporter().import_hosts()
         return (True, 'Done', context)
 
     @staticmethod
@@ -91,6 +90,7 @@ class ZabbixImporter(BaseImporter):
             c.message = ch.description
             c.save()
 
+
 class JiraEventsImporter(BaseImporter):
     """
     Jira integration  - Incidents/Problems importing as CI events.
@@ -98,16 +98,34 @@ class JiraEventsImporter(BaseImporter):
     @staticmethod
     @plugin.register(chain='cmdb_jira')
     def jira_problems(context, successful_plugins=None):
-        x = JiraEventsImporter()
-        x.import_problem()
+        JiraEventsImporter().import_problem()
         return (True, 'Done', context)
 
     @staticmethod
     @plugin.register(chain='cmdb_jira')
     def jira_incidents(context, successful_plugins=None):
-        x = JiraEventsImporter()
-        x.import_incident()
+        JiraEventsImporter().import_incident()
         return (True, 'Done', context)
+
+    @staticmethod
+    @plugin.register(chain='cmdb_jira')
+    def jira_changes(context, successful_plugins=None):
+        JiraEventsImporter().import_jirachange()
+        return (True, 'Done', context)
+
+
+    def utf8_field(self, field, cut=1024):
+        # API Jira returned byte or unicode
+        if field:
+            if not isinstance(field, unicode):
+                return unicode(field, 'utf-8')[:cut]
+            return field[:cut]
+        return ''
+
+    def tz_time(self, field):
+        if field:
+            return strip_timezone(field)
+        return field
 
     def import_obj(self, issue, classtype):
         logger.debug(issue)
@@ -121,21 +139,25 @@ class JiraEventsImporter(BaseImporter):
             prob = obj[0]
         else:
             prob = classtype()
-        prob.description = issue.get('description')
-        if prob.description is not None:
-            if prob.description and len(prob.description) > 1024:
-                prob.description = prob.description[0:1024]
-        else:
-            prob.description = ''
-        prob.summary = issue.get('summary')
-        prob.status = issue.get('status')
-        prob.assignee = issue.get('assignee')
+
+
+        prob.summary = self.utf8_field(issue.get('summary'))
+        prob.status = self.utf8_field(issue.get('status'))
+        prob.assignee = self.utf8_field(issue.get('assignee'))
+        prob.jira_id = self.utf8_field(issue.get('jira_id'))
+        prob.analysis = self.utf8_field(issue.get('analysis'))
+        prob.problems = self.utf8_field(issue.get('problems'))
+        prob.priority = issue.get('priority')
+        prob.issue_type = self.utf8_field(issue.get('issue_type'))
+        prob.description = self.utf8_field(issue.get('description'))
+        prob.update_date = self.tz_time(issue.get('update_date'))
+        prob.created_date = self.tz_time(issue.get('created_date'))
+        prob.resolvet_date = self.tz_time(issue.get('resolvet_date'))
+        prob.planned_start_date = self.tz_time(issue.get('planned_start_date'))
+        prob.planned_end_date = self.tz_time(issue.get('planned_end_date'))
         prob.ci = ci_obj
-        prob.time = strip_timezone(issue.get('time'))  # created or updated
-        prob.jira_id = issue.get('key')
-        prob.analysis = issue.get('analysis')
-        prob.problems = issue.get('problems')
         prob.save()
+
 
     def import_problem(self):
         type = settings.ISSUETRACKERS['default']['PROBLEMS']['ISSUETYPE']
@@ -148,6 +170,12 @@ class JiraEventsImporter(BaseImporter):
         issues = self.fetch_all(type)
         for issue in issues:
             self.import_obj(issue, db.CIIncident)
+
+    def import_jirachange(self):
+        for type in settings.ISSUETRACKERS['default']['CHANGES']['ISSUETYPE']:
+            issues = self.fetch_all(type)
+        for issue in issues:
+            self.import_obj(issue, db.JiraChanges)
 
     def fetch_all(self, type):
         ci_fieldname = settings.ISSUETRACKERS['default']['CI_FIELD_NAME']
@@ -169,10 +197,16 @@ class JiraEventsImporter(BaseImporter):
                     description=f.get('description', ''),
                     summary=f.get('summary'),
                     status=f.get('status').get('name'),
-                    time=f.get('updated') or f.get('created'),
                     assignee=assignee.get('displayName') if assignee else '',
                     analysis=f.get(analysis),
                     problems=selected_problems,
+                    priority=f.get('priority').get('iconUrl') if f.get('priority') else '',
+                    issue_type=f.get('issuetype').get('name') if f.get('issuetype') else '',
+                    update_date=f.get('updated'),
+                    created_date=f.get('created'),
+                    resolvet_date=f.get('resolutiondate'),
+                    planned_start_date=f.get('customfield_11602'),
+                    planned_end_date=f.get('customfield_11601'),
                 )
             )
         return items_list

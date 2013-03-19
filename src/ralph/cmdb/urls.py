@@ -43,6 +43,7 @@ from ralph.cmdb.views_changes import (
     DashboardDetails,
     Incidents,
     Problems,
+    JiraChanges,
     Reports,
     TimeLine,
 )
@@ -95,6 +96,7 @@ urlpatterns = patterns(
     (r'^changes/changes$', login_required(Changes.as_view())),
     (r'^changes/incidents$', login_required(Incidents.as_view())),
     (r'^changes/problems$', login_required(Problems.as_view())),
+    (r'^changes/jira_changes$', login_required(JiraChanges.as_view())),
 
     (r'^changes/timeline$', login_required(TimeLine.as_view())),
     (r'^changes/timeline_ajax$', login_required(TimeLine.get_ajax)),

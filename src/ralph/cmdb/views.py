@@ -156,7 +156,9 @@ class BaseCMDBView(Base):
             ('/cmdb/changes/incidents', 'Incidents',
                 'fugue-question'),
             ('/cmdb/changes/problems', 'Problems',
-                'fugue-bomb')
+                'fugue-bomb'),
+            ('/cmdb/changes/jira_changes', 'Jira Changes',
+                'fugue-arrow-retweet'),
         )
         sidebar_items = (
             [MenuHeader('Configuration Items')] +
