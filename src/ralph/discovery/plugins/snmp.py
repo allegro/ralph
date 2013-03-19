@@ -270,12 +270,12 @@ def do_snmp_mac(snmp_name, community, snmp_version, ip, kwargs):
         sn = m.group(1) if m else None
         is_management = True
         model_type = DeviceType.power_distribution_unit
-    elif 'fibre channel switch' in snmp_name.lower() or (
+    elif ('fibre channel switch' in snmp_name.lower() or
             'san switch module' in snmp_name.lower()):
         model_name = snmp_name
         model_type = DeviceType.fibre_channel_switch
         is_management = True
-    elif 'ethernet switch module' in snmp_name.lower() or (
+    elif ('ethernet switch module' in snmp_name.lower() or
             snmp_name.startswith('ProCurve')):
         model_name = snmp_name
         if ',' in model_name:
@@ -384,7 +384,7 @@ def _cisco_snmp_model(model_oid, sn_oid, **kwargs):
 @plugin.register(chain='discovery', requires=['ping', 'snmp'])
 def cisco_snmp(**kwargs):
     for substring, oids in _cisco_oids.iteritems():
-        if 'snmp_name' in kwargs and kwargs['snmp_name'] and (
+        if ('snmp_name' in kwargs and kwargs['snmp_name'] and
                 substring in kwargs['snmp_name'].lower()):
             return _cisco_snmp_model(oids[0], oids[1], **kwargs)
     return False, "no match.", kwargs
@@ -400,11 +400,10 @@ def juniper_snmp(**kwargs):
     else:
         community = str(kwargs['community'])
     substring = "juniper networks"
-    if not ('snmp_name' in kwargs and kwargs['snmp_name'] and (
-            substring in kwargs['snmp_name'].lower())):
+    if not ('snmp_name' in kwargs and kwargs['snmp_name'] and
+            substring in kwargs['snmp_name'].lower()):
         return False, "no match.", kwargs
     ip = str(kwargs['ip'])
-    version = kwargs.get('snmp_version')
     sn = snmp_command(
         ip,
         community,
@@ -423,15 +422,13 @@ def juniper_snmp(**kwargs):
     )
     if not sn or not model:
         return False, "silent.", kwargs
-    sn = unicode(sn[0][1])
-    model = unicode(model[0][1])
+    sn = unicode(str(sn[0][1]), encoding='utf-8')
+    model = unicode(str(model[0][1]), encoding='utf-8')
     dev = Device.create(sn=sn, model_name=model, model_type=DeviceType.switch)
     ip_address = IPAddress.objects.get(address=str(ip))
     ip_address.device = dev
     ip_address.is_management = True
     ip_address.save()
-    kwargs['model'] = model
-    kwargs['sn'] = sn
     return True, sn, kwargs
 
 
