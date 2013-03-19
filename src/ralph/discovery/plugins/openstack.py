@@ -28,6 +28,9 @@ def make_tenant(tenant):
             sn='openstack-%s' % tenant['tenant_id']
         )
     dev.save()
+    return dev
+
+def make_components(tenant, dev, region):
     total_daily_cost = [0]
     def make_component(name, symbol, key, multiplier, unit):
         if key not in tenant:
@@ -39,7 +42,7 @@ def make_tenant(tenant):
             priority=0,
         )
         res, created = GenericComponent.concurrent_get_or_create(
-            sn='%s-%s' % (symbol, tenant['tenant_id']),
+            sn='%s-%s-%s' % (symbol, tenant['tenant_id'], region),
             defaults=dict(
                 model=model,
                 device=dev,
@@ -63,35 +66,40 @@ def make_tenant(tenant):
                    'total_volume_gb_usage', 1, 'Volume')
     make_component('OpenStack 10000 Images GiB Hours', 'openstackimages',
                    'total_images_gb_usage', 1, 'Images')
-    return dev, total_daily_cost[0]
+    return total_daily_cost[0]
 
 
 @plugin.register(chain='openstack')
 def openstack(**kwargs):
     if settings.OPENSTACK_URL is None:
         return False, 'not configured.', kwargs
-    stack = OpenStack(
-                settings.OPENSTACK_URL,
-                settings.OPENSTACK_USER,
-                settings.OPENSTACK_PASS,
-            )
+    tenants = collections.defaultdict(lambda: collections.defaultdict(dict))
     end = kwargs.get('end') or datetime.datetime.today().replace(
                 hour=0, minute=0, second=0, microsecond=0)
     start = kwargs.get('start') or end - datetime.timedelta(days=1)
-    tenants = collections.defaultdict(dict)
-    for data in stack.simple_tenant_usage(start, end):
-        tenants[data['tenant_id']].update(data)
+    for region in getattr(settings, 'OPENSTACK_REGIONS', ['']):
+        stack = OpenStack(
+                    settings.OPENSTACK_URL,
+                    settings.OPENSTACK_USER,
+                    settings.OPENSTACK_PASS,
+                    region=region,
+                )
+        for data in stack.simple_tenant_usage(start, end):
+            tenants[data['tenant_id']][region].update(data)
     for url, query in getattr(settings, 'OPENSTACK_EXTRA_QUERIES', []):
         for data in stack.query(query, url=url,
                 start=start.strftime('%Y-%m-%dT%H:%M:%S'),
                 end=end.strftime('%Y-%m-%dT%H:%M:%S'),
             ):
-            tenants[data['tenant_id']].update(data)
-    for tenant_id, data in tenants.iteritems():
-        dev, cost = make_tenant(data)
+            tenants[data['tenant_id']][url].update(data)
+    for tenant_id, regions in tenants.iteritems():
+        dev = make_tenant(data)
         dev.historycost_set.filter(start=start).delete()
         margin_in_percent = dev.get_margin() or 0
-        total_cost = cost * (1 + margin_in_percent / 100)
+        total_cost = 0
+        for region, data in regions.iteritems():
+            cost = make_components(data, dev, region)
+            total_cost += cost * (1 + margin_in_percent / 100)
         hc = HistoryCost(
             device=dev,
             venture=dev.venture,
