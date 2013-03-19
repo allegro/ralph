@@ -208,7 +208,7 @@ def snmp_vmware(parent, ipaddr, **kwargs):
             management=ipaddr,
             ethernets=[Eth(mac=mac, label='Virtual MAC', speed=0)],
             model_name='VMware ESX virtual server',
-            model_type=DeviceType.virtual_server
+            model_type=DeviceType.virtual_server,
         )
 
 
