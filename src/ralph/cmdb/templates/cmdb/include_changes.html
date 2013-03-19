@@ -7,12 +7,11 @@
 <table class="table table-striped table-bordered table-condensed ">
     <thead><tr>
         {% spaceless %}
-            {% include 'cmdb/column-header.html' with label='CI' name='ci' always=1 %}
-            {% include 'cmdb/column-header.html' with label='Jira key' name='jira_key' always=1 %}
             {% include 'cmdb/column-header.html' with label='Piority' name='piority' always=1 %}
             {% include 'cmdb/column-header.html' with label='Status' name='status' always=1 %}
             {% include 'cmdb/column-header.html' with label='Assignee' name='assignee' always=1 %}
-            {% include 'cmdb/column-header.html' with label='Summary' name='summary' always=1 %}
+            {% include 'cmdb/column-header.html' with label='Key and Summary' name='summary' always=1 %}
+            {% include 'cmdb/column-header.html' with label='CI' name='ci' always=1 %}
             {% include 'cmdb/column-header.html' with label='Description' name='description' always=1 %}
             {% include 'cmdb/column-header.html' with label='Analysis' name='analysis' always=1 %}
             {% include 'cmdb/column-header.html' with label='Problems' name='problems' always=1 %}
@@ -26,20 +25,19 @@
     <tbody>
         {% for d in rows %}
         <tr>
-            <td><a href='/cmdb/ci/view/{{ d.ci.id }}' target='_noblank'>{{ d.ci.name }}</a></td>
-            <td><a href="{{ jira_url }}/{{ d.jira_id }}">{{ d.jira_id }}</a></td>
             <td><img src="{{ d.priority }}" /> {{ d.issue_type }}</td>
             <td>{{ d.status }}</td>
             <td>{{ d.assignee }}</td>
-            <td><a href="{{ jira_url }}/{{ d.jira_id }}">{{ d.summary }}</a></td>
+            <td><a href="{{ jira_url }}/{{ d.jira_id }}">{{ d.jira_id }}</a> - {{ d.summary }}</td>
+            <td><a href='/cmdb/ci/view/{{ d.ci.id }}' target='_noblank'>{{ d.ci.name }}</a></td>
             <td>{{ d.description }}</td>
             <td>{{ d.analysis }}</td>
             <td>{{ d.problems }}</td>
-            <td>{{ d.created_date }}</td>
-            <td>{{ d.update_date }}</td>
-            <td>{{ d.resolvet_date }}</td>
-            <td>{{ d.planned_start_date }}</td>
-            <td>{{ d.planned_end_date }}</td>
+            <td>{{ d.created_date|default:"" }}</td>
+            <td>{{ d.update_date|default:"" }}</td>
+            <td>{{ d.resolvet_date|default:"" }}</td>
+            <td>{{ d.planned_start_date|default:"" }}</td>
+            <td>{{ d.planned_end_date|default:"" }}</td>
         </tr>
         {% endfor %}
     </tbody>

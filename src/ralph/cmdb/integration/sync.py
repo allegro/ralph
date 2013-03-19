@@ -125,7 +125,7 @@ class JiraEventsImporter(BaseImporter):
     def tz_time(self, field):
         if field:
             return strip_timezone(field)
-        return ''
+        return None
 
     def import_obj(self, issue, classtype):
         logger.debug(issue)
