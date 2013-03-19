@@ -425,7 +425,7 @@ def juniper_snmp(**kwargs):
     sn = unicode(str(sn[0][1]), encoding='utf-8')
     model = unicode(str(model[0][1]), encoding='utf-8')
     dev = Device.create(sn=sn, model_name=model, model_type=DeviceType.switch)
-    ip_address = IPAddress.objects.get(address=str(ip))
+    ip_address = IPAddress.concurrent_get_or_create(address=str(ip))
     ip_address.device = dev
     ip_address.is_management = True
     ip_address.save()
