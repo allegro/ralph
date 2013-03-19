@@ -158,59 +158,66 @@ class Changes(ChangesBase, PaginatedView):
 
 
 class Problems(ChangesBase, PaginatedView):
-    template_name = 'cmdb/search_problems.html'
+    template_name = 'cmdb/report_changes.html'
 
     def get_context_data(self, **kwargs):
         ret = super(Problems, self).get_context_data(**kwargs)
+        section = 'Problems'
         ret.update({
-            'problems': self.data,
+            'data': self.data,
             'jira_url': urljoin(settings.ISSUETRACKERS['default']['URL'], 'browse'),
-            'subsection': 'Problems',
-            'sidebar_selected': 'problems',
+            'subsection': section,
+            'sidebar_selected': section,
+            'title': section,
         })
         return ret
 
     def get(self, *args, **kwargs):
-        queryset = db.CIProblem.objects.order_by('-time')
+        queryset = db.CIProblem.objects.order_by('-created_date')
         queryset = self.paginate_query(queryset)
         self.data = queryset
         return super(Problems, self).get(*args, **kwargs)
 
 
 class Incidents(ChangesBase, PaginatedView):
-    template_name = 'cmdb/search_incidents.html'
+    template_name = 'cmdb/report_changes.html'
 
     def get_context_data(self, **kwargs):
         ret = super(Incidents, self).get_context_data(**kwargs)
+        section = 'Incidents'
         ret.update({
-            'incidents': self.data,
+            'data': self.data,
             'jira_url': urljoin(settings.ISSUETRACKERS['default']['URL'], 'browse'),
-            'subsection': 'Incidents',
-            'sidebar_selected': 'incidents',
+            'subsection': section,
+            'sidebar_selected': section,
+            'title': section,
         })
         return ret
 
     def get(self, *args, **kwargs):
-        queryset = db.CIIncident.objects.order_by('-time')
+        queryset = db.CIIncident.objects.order_by('-created_date')
         queryset = self.paginate_query(queryset)
         self.data = queryset
         return super(Incidents, self).get(*args, **kwargs)
 
 
 class JiraChanges(ChangesBase, PaginatedView):
-    template_name = 'cmdb/search_jirachanges.html'
+    template_name = 'cmdb/report_changes.html'
 
     def get_context_data(self, **kwargs):
         ret = super(JiraChanges, self).get_context_data(**kwargs)
+        section = 'Jira Changes'
         ret.update({
-            'changes': self.data,
-            'subsection': 'JiraChanges',
-            'sidebar_selected': 'JiraChanges',
+            'data': self.data,
+            'jira_url': urljoin(settings.ISSUETRACKERS['default']['URL'], 'browse'),
+            'subsection': section,
+            'sidebar_selected': section,
+            'title': section,
         })
         return ret
 
     def get(self, *args, **kwargs):
-        queryset = db.JiraChanges.objects.order_by('-time')
+        queryset = db.JiraChanges.objects.order_by('-created_date')
         queryset = self.paginate_query(queryset)
         self.data = queryset
         return super(JiraChanges, self).get(*args, **kwargs)
