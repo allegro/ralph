@@ -35,14 +35,14 @@ class DNSRecordForm(forms.ModelForm):
         widgets = {
             'name': AutocompleteWidget(
                 attrs={
-                    'class': 'span12',
+                    'class': 'span12 dropdown',
                     'placeholder': "name",
                     'style': 'min-width: 16ex',
                 },
             ),
             'content': AutocompleteWidget(
                 attrs={
-                    'class': 'span12',
+                    'class': 'span12 dropdown',
                     'placeholder': "content",
                     'style': 'min-width: 16ex',
                 },
@@ -149,14 +149,14 @@ class DHCPEntryForm(forms.ModelForm):
         widgets = {
             'ip': AutocompleteWidget(
                 attrs={
-                    'class': 'span12',
+                    'class': 'span12 dropdown',
                     'placeholder': "IP address",
                     'style': 'min-width: 16ex',
                 },
             ),
             'mac': AutocompleteWidget(
                 attrs={
-                    'class': 'span12',
+                    'class': 'span12 dropdown',
                     'placeholder': "MAC address",
                     'style': 'min-width: 16ex',
                 },
