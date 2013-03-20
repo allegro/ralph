@@ -53,8 +53,7 @@ class ZabbixImporter(BaseImporter):
     @staticmethod
     @plugin.register(chain='cmdb_zabbix', requires=['zabbix_hosts'])
     def zabbix_triggers(context):
-        x = ZabbixImporter()
-        x.import_triggers()
+        ZabbixImporter().import_triggers()
         return (True, 'Done' ,context)
 
     def import_triggers(self):
@@ -123,9 +122,8 @@ class JiraEventsImporter(BaseImporter):
         return ''
 
     def tz_time(self, field):
-        if field:
-            return strip_timezone(field)
-        return None
+        return strip_timezone(field) if field else None
+
 
     def import_obj(self, issue, classtype):
         logger.debug(issue)
@@ -135,10 +133,7 @@ class JiraEventsImporter(BaseImporter):
             logger.error('Issue : %s Can''t find ci: %s' % (issue.get('key'),issue.get('ci')))
             ci_obj = None
         obj = classtype.objects.filter(jira_id=issue.get('key')).all()
-        if obj:
-            prob = obj[0]
-        else:
-            prob = classtype()
+        prob = obj[0] if obj else classtype()
         prob.summary = self.utf8_field(issue.get('summary'))
         prob.status = self.utf8_field(issue.get('status'))
         prob.assignee = self.utf8_field(issue.get('assignee'))
@@ -172,8 +167,8 @@ class JiraEventsImporter(BaseImporter):
     def import_jirachange(self):
         for type in settings.ISSUETRACKERS['default']['CHANGES']['ISSUETYPE']:
             issues = self.fetch_all(type)
-        for issue in issues:
-            self.import_obj(issue, db.JiraChanges)
+            for issue in issues:
+                self.import_obj(issue, db.JiraChanges)
 
     def fetch_all(self, type):
         ci_fieldname = settings.ISSUETRACKERS['default']['CI_FIELD_NAME']

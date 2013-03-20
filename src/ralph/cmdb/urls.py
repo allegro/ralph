@@ -20,6 +20,7 @@ from ralph.cmdb.views import (
     CIIncidentsView,
     CIProblemsEdit,
     CIProblemsView,
+    JiraChangesView,
     CIPuppetEdit,
     CIPuppetView,
     CIRalphEdit,
@@ -72,6 +73,7 @@ urlpatterns = patterns(
     url(r'^ci/view/(?P<ci_id>[a-z]{0,2}-?[0-9]+)/zabbix/$', login_required(CIZabbixView.as_view()), name='ci_view'),
     url(r'^ci/view/(?P<ci_id>[a-z]{0,2}-?[0-9]+)/problems/$', login_required(CIProblemsView.as_view()), name='ci_view'),
     url(r'^ci/view/(?P<ci_id>[a-z]{0,2}-?[0-9]+)/incidents/$', login_required(CIIncidentsView.as_view()), name='ci_view'),
+    url(r'^ci/view/(?P<ci_id>[a-z]{0,2}-?[0-9]+)/jira_changes/$', login_required(JiraChangesView.as_view()), name='ci_view'),
 
     (r'^ci/jira_ci_unknown/$', login_required(ViewUnknown.as_view())),
 
