@@ -100,6 +100,7 @@ class PrebootFileAdmin(ModelAdmin):
             'fields': ['file', 'raw_config'],
             'description': _("Fill either <b>file</b> or <b>raw config</b>."),
         }),
+        (None, {'fields': ['description',]}),
     )
     list_display = ('name', 'ftype', config_slug)
     list_filter = ('ftype',)

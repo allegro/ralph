@@ -144,11 +144,19 @@ def get_first_free_ip(network_name, reserved_ip_addresses=[]):
     max_ip_number = network.max_ip - network.reserved_top_margin
     for ip_number in range(min_ip_number, max_ip_number + 1):
         ip_string = str(ipaddr.IPAddress(ip_number))
-        if (ip_number not in addresses_in_dhcp and
-            ip_number not in addresses_in_discovery and
-            ip_number not in addresses_in_dns and
-            ip_string not in addresses_in_running_deployments and
-            ip_string not in reserved_ip_addresses):
+        if all((
+            ip_number not in addresses_in_dhcp,
+            ip_number not in addresses_in_discovery,
+            ip_number not in addresses_in_dns,
+            ip_string not in addresses_in_running_deployments,
+            ip_string not in reserved_ip_addresses,
+            not Record.objects.filter(
+                name='%s.in-addr.arpa' % '.'.join(
+                    reversed(ip_string.split('.')),
+                ),
+                type='PTR',
+            ).exists(),
+        )):
             return str(ipaddr.IPAddress(ip_number))
 
 
