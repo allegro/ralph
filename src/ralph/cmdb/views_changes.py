@@ -9,6 +9,8 @@ import calendar
 import datetime
 from urlparse import urljoin
 
+from bob.data_table import DataTableMixin, DataTableColumn
+
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import connection
@@ -23,7 +25,6 @@ from ralph.cmdb.views import BaseCMDBView, get_icon_for
 from ralph.cmdb.forms import CIChangeSearchForm, CIReportsParamsForm
 from ralph.cmdb.util import PaginatedView
 
-from bob.data_table import DataTableMixin, DataTableColumn
 
 
 class ChangesBase(BaseCMDBView):
