@@ -59,6 +59,7 @@ def puppet(**kwargs):
         return False, dev_name, kwargs
 
     parse_wwn(facts, dev)
+    parse_3ware(facts, dev)
     parse_smartctl(facts, dev)
     parse_hpacu(facts, dev)
     parse_megaraid(facts, dev)
@@ -142,6 +143,20 @@ def parse_wwn(facts, dev):
     for mount in dev.disksharemount_set.filter(
             server=None).exclude(share__wwn__in=wwns):
         mount.delete()
+
+
+_3WARE_GENERAL_REGEX = re.compile(r'tw_([^_]+_[^_]+)_([^_]+)')
+@nested_commit_on_success
+def parse_3ware(facts, dev):
+    disks = {}
+    for k, value in facts.iteritems():
+        m = _3WARE_GENERAL_REGEX.match(k)
+        if not m:
+            continue
+        key = m.group(2)
+        physical_disk = m.group(1)
+        disks.setdefault(physical_disk, {})[key] = value.strip()
+    hardware.handle_3ware(dev, disks, SAVE_PRIORITY)
 
 
 HPACU_GENERAL_REGEX = re.compile(r'hpacu_([^_]+)__(.+)')
