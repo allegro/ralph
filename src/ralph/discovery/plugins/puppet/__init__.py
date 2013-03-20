@@ -146,6 +146,7 @@ def parse_wwn(facts, dev):
 
 
 _3WARE_GENERAL_REGEX = re.compile(r'tw_([^_]+_[^_]+)_([^_]+)')
+
 @nested_commit_on_success
 def parse_3ware(facts, dev):
     disks = {}

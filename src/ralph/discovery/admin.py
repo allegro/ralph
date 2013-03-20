@@ -7,6 +7,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import re
+import logging
 
 from django import forms
 from django.contrib import admin
@@ -26,7 +27,6 @@ from ralph.business.admin import RolePropertyValueInline
 SAVE_PRIORITY = 200
 HOSTS_NAMING_TEMPLATE_REGEX = re.compile(r'<[0-9]+,[0-9]+>.*\.[a-zA-Z0-9]+')
 
-
 def copy_network(modeladmin, request, queryset):
     for net in queryset:
         name = 'Copy of %s' % net.name
@@ -43,7 +43,9 @@ def copy_network(modeladmin, request, queryset):
         except ValidationError:
             messages.error(request, "Network %s already exists." % address)
         except Exception:
-            messages.error(request, "Failed to create %s." % address)
+            message = "Failed to create %s." % address
+            messages.error(request, message)
+            logging.exception(message)
         else:
             new_net.terminators = net.terminators.all()
             new_net.save()
