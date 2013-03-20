@@ -15,13 +15,40 @@ import ipaddr
 from lck.django.common.admin import (
     ModelAdmin, ForeignKeyAutocompleteTabularInline
 )
+from django.core.exceptions import ValidationError
+from django.contrib import messages
+
 
 from ralph.discovery import models as m
 from ralph.business.admin import RolePropertyValueInline
 
-SAVE_PRIORITY = 200
 
+SAVE_PRIORITY = 200
 HOSTS_NAMING_TEMPLATE_REGEX = re.compile(r'<[0-9]+,[0-9]+>.*\.[a-zA-Z0-9]+')
+
+
+def copy_network(modeladmin, request, queryset):
+    for net in queryset:
+        name = 'Copy of %s' % net.name
+        address = net.address.rsplit('/', 1)[0] + '/1'
+        new_net = m.Network(
+            name=name,
+            address=address,
+            gateway=net.gateway,
+            kind=net.kind,
+            data_center=net.data_center,
+        )
+        try:
+            new_net.save()
+        except ValidationError:
+            messages.error(request, "Network %s already exists." % address)
+        except Exception:
+            messages.error(request, "Failed to create %s." % address)
+        else:
+            new_net.terminators = net.terminators.all()
+            new_net.save()
+
+copy_network.short_description = "Copy network"
 
 
 class NetworkAdminForm(forms.ModelForm):
@@ -60,6 +87,7 @@ class NetworkAdmin(ModelAdmin):
     filter_horizontal = ('terminators', 'racks')
     save_on_top = True
     form = NetworkAdminForm
+    actions = [copy_network]
 
 admin.site.register(m.Network, NetworkAdmin)
 
