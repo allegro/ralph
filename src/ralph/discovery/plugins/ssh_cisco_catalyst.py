@@ -12,7 +12,7 @@ import time
 from django.conf import settings
 from lck.django.common import nested_commit_on_success
 
-from ralph.util import network, plugin
+from ralph.util import network, plugin, Eth
 from ralph.discovery.cisco import cisco_component, cisco_inventory
 from ralph.discovery.models import DeviceType, Device, IPAddress
 
@@ -41,9 +41,9 @@ class CiscoSSHClient(paramiko.SSHClient):
         self._cisco_chan = self._transport.open_session()
         self._cisco_chan.invoke_shell()
         self._cisco_chan.sendall('\r\n')
-        time.sleep(0.125)
+        time.sleep(4)
         chunk = self._cisco_chan.recv(1024)
-        if not chunk.endswith('#'):
+        if not chunk.endswith(('#', '>')):
             raise ConsoleError('Expected system prompt, got %r.' % chunk)
 
     def cisco_command(self, command):
@@ -65,7 +65,7 @@ class CiscoSSHClient(paramiko.SSHClient):
             buffer.extend(lines[1:])
             if '% Invalid input' in buffer:
                 raise ConsoleError('Invalid input %r.' % buffer)
-            if buffer[-1].endswith('#'):
+            if buffer[-1].endswith(('#', '>')):
                 return buffer[1:-1]
 
 def _connect_ssh(ip):
@@ -76,21 +76,46 @@ def _connect_ssh(ip):
 def _run_ssh_catalyst(ip):
     ssh = _connect_ssh(ip)
     try:
+        mac = '\n'.join(ssh.cisco_command(
+            "show version | include Base ethernet MAC Address"
+        ))
+
         raw = '\n'.join(ssh.cisco_command("show inventory"))
     finally:
         ssh.close()
 
+    mac = mac.strip()
+    if mac.startswith("Base ethernet MAC Address") and ':' in mac:
+        ethernets = [
+            Eth(
+                "Base ethernet MAC Address",
+                mac.split(':', 1)[1].strip(),
+                None,
+            ),
+        ]
+    else:
+        ethernets = None
+
     inventory = list(cisco_inventory(raw))
 
     serials = [inv['sn'] for inv in inventory]
-
+    dev_inv = inventory[0]
     try:
         dev = Device.objects.get(sn__in=serials)
     except Device.DoesNotExist:
-        dev_inv = inventory[0]
-        dev = Device.create(sn=dev_inv['sn'], model_name='Cisco %s' % dev_inv['pid'],
-                model_type=DeviceType.switch,
-                name=dev_inv['descr'][:255])
+        sn = dev_inv['sn']
+        model_name='Cisco %s' % dev_inv['pid']
+    else:
+        # This is a stacked device, use the base device for it
+        sn = dev.sn
+        model_name = dev.model.name
+    dev = Device.create(
+        ethernets=ethernets,
+        sn=sn,
+        model_name=model_name,
+        model_type=DeviceType.switch,
+        name=dev_inv['descr'][:255],
+    )
     dev.save(update_last_seen=True)
 
     for inv in inventory:
