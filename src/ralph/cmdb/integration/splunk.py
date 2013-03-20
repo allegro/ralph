@@ -53,9 +53,9 @@ def log_change_to_splunk(instance, log_type):
         message['ralph_link'] = reverse(
             'ci_view_main', kwargs={'ci_id': instance.ci.id}
         ) if instance.ci else None
-    if hasattr(instance, 'user') and instance.user:
+    if getattr(instance, 'user', None):
         message['author'] = instance.user.username
-    if hasattr(instance, 'device') and instance.device:
+    if getattr(instance, 'device', None):
         message['device_name'] = instance.device.name
         message['venture'] = instance.device.venture.name
         message['role'] = instance.device.venture_role.name
