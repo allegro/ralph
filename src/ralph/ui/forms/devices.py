@@ -178,7 +178,7 @@ class DeviceForm(forms.ModelForm):
 
     def clean_chassis_position(self):
         chassis_position = self.cleaned_data.get('chassis_position')
-        if chassis_position not in range(0, 65536):
+        if not 0 < chassis_position < 65536:
             raise forms.ValidationError(
                 "Invalid numeric position, use range 0 to 65535"
             )
