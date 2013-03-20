@@ -156,7 +156,9 @@ class BaseCMDBView(Base):
             ('/cmdb/changes/incidents', 'Incidents',
                 'fugue-question'),
             ('/cmdb/changes/problems', 'Problems',
-                'fugue-bomb')
+                'fugue-bomb'),
+            ('/cmdb/changes/jira_changes', 'Jira Changes',
+                'fugue-arrow-retweet'),
         )
         sidebar_items = (
             [MenuHeader('Configuration Items')] +
@@ -495,6 +497,11 @@ class BaseCIDetails(BaseCMDBView):
             False
         ):
             tabs.append(('Incidents', 'incidents'))
+        if self.get_permissions_dict(self.request.user.id).get(
+            'read_configuration_item_info_jira_perm',
+            False
+        ):
+            tabs.append(('Jira Changes', 'jira_changes'))
         return tabs
 
     def generate_breadcrumb(self):
@@ -1128,7 +1135,7 @@ class CIZabbixView(CIZabbixEdit):
 
 
 class CIProblemsEdit(BaseCIDetails):
-    template_name = 'cmdb/ci_problems.html'
+    template_name = 'cmdb/ci_changes_tab.html'
     active_tab = 'problems'
 
     def check_perm(self):
@@ -1167,7 +1174,7 @@ class CIProblemsEdit(BaseCIDetails):
                 page = 1
             query = db.CIProblem.objects.filter(
                 ci=self.ci,
-            ).order_by('-time').all()
+            ).order_by('-created_date').all()
             paginator = Paginator(query, 20)
             self.problems = paginator.page(page)
         return super(CIProblemsEdit, self).get(*args, **kwargs)
@@ -1179,8 +1186,60 @@ class CIProblemsView(CIProblemsEdit):
         return _update_labels(ret, self.ci)
 
 
+class JiraChangesEdit(BaseCIDetails):
+    template_name = 'cmdb/ci_changes_tab.html'
+    active_tab = 'jira_changes'
+
+    def check_perm(self):
+        if not self.get_permissions_dict(self.request.user.id).get(
+            'read_configuration_item_info_jira_perm',
+            False,
+        ):
+            return HttpResponseForbidden()
+
+    def initialize_vars(self):
+        super(JiraChangesEdit, self).initialize_vars()
+        self.jira_changes = []
+
+    def get_context_data(self, **kwargs):
+        ret = super(JiraChangesEdit, self).get_context_data(**kwargs)
+        ret.update({
+            'data': self.jira_changes,
+        })
+        return ret
+
+    def get(self, *args, **kwargs):
+        perm = self.check_perm()
+        if perm:
+            return perm
+        self.initialize_vars()
+        try:
+            ci_id = self.get_ci_id()
+        except db.CI.DoesNotExist:
+            # CI doesn's exists.
+            return HttpResponseRedirect('/cmdb/ci/jira_ci_unknown')
+        if ci_id:
+            self.ci = get_object_or_404(db.CI, id=ci_id)
+            try:
+                page = int(self.request.GET.get('page', 1))
+            except ValueError:
+                page = 1
+            query = db.JiraChanges.objects.filter(
+                ci=self.ci,
+            ).order_by('-created_date').all()
+            paginator = Paginator(query, 20)
+            self.jira_changes = paginator.page(page)
+        return super(JiraChangesEdit, self).get(*args, **kwargs)
+
+
+class JiraChangesView(JiraChangesEdit):
+    def get_context_data(self, **kwargs):
+        ret = super(JiraChangesView, self).get_context_data(**kwargs)
+        return _update_labels(ret, self.ci)
+
+
 class CIIncidentsEdit(BaseCIDetails):
-    template_name = 'cmdb/ci_incidents.html'
+    template_name = 'cmdb/ci_changes_tab.html'
     active_tab = 'incidents'
 
     def check_perm(self):
@@ -1197,7 +1256,7 @@ class CIIncidentsEdit(BaseCIDetails):
     def get_context_data(self, **kwargs):
         ret = super(CIIncidentsEdit, self).get_context_data(**kwargs)
         ret.update({
-            'incidents': self.incidents,
+            'data': self.incidents,
         })
         return ret
 
@@ -1219,7 +1278,7 @@ class CIIncidentsEdit(BaseCIDetails):
                 page = 1
             query = db.CIIncident.objects.filter(
                 ci=self.ci,
-            ).order_by('-time').all()
+            ).order_by('-created_date').all()
             paginator = Paginator(query, 20)
             self.incidents = paginator.page(page)
         return super(CIIncidentsEdit, self).get(*args, **kwargs)
