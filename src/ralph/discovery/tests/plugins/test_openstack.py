@@ -10,7 +10,7 @@ from django.test import TestCase
 from django.conf import settings
 
 from ralph.discovery.plugins.openstack import (openstack as openstack_runner,
-    make_tenant)
+    make_tenant, make_components)
 from ralph.discovery.tests.plugins.samples.openstack import simple_tenant_usage_data
 from ralph.discovery.models import (Device, ComponentModel, GenericComponent,
         MarginKind, ComponentModelGroup)
@@ -101,11 +101,12 @@ class OpenStackPluginTest(TestCase):
         )
         with mock.patch('ralph.discovery.plugins.openstack.OpenStack') as OpenStack:
             OpenStack.side_effect = MockOpenStack
-            result = make_tenant(tenant_params)
+            dev = make_tenant(tenant_params)
+            cost = make_components(tenant_params, dev, '')
             # no componentModel assigned to the group. Cost will be 0
-            self.assertEqual(result[1], 0)
+            self.assertEqual(cost, 0)
 
-            d=Device.objects.get(model__name='OpenStack Tenant')
+            d = Device.objects.get(model__name='OpenStack Tenant')
             self.assertEqual(d.model.get_type_display(), 'cloud server')
             self.assertEqual(d.sn, 'openstack-3ff63bf0e1384a1d87b6eaba8dad1196')
             # only recognized component models auto-created.
@@ -131,6 +132,7 @@ class OpenStackPluginTest(TestCase):
                 i.save()
             # then the costs of half components appears when reimporting tenant. \
             # Rest of components are unassigned to the group, so not counted
-            result = make_tenant(tenant_params)
-            self.assertEqual(result[1], 200.0)
+            dev = make_tenant(tenant_params)
+            cost = make_components(tenant_params, dev, '')
+            self.assertEqual(cost, 200.0)
 
