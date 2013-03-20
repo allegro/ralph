@@ -64,6 +64,8 @@ from ralph.ui.forms.deployment import (
     ServerMoveStep2FormSet,
     ServerMoveStep3FormSet,
 )
+from ralph import VERSION
+
 
 SAVE_PRIORITY = 200
 HISTORY_PAGE_SIZE = 25
@@ -195,6 +197,13 @@ class BaseMixin(object):
                     'Report a bug', fugue_icon='fugue-bug', pull_right=True,
                     href=settings.BUGTRACKER_URL)
             )
+        footer_items.append(
+            MenuItem(
+                "Version %s" % '.'.join((str(part) for part in VERSION)),
+                fugue_icon='fugue-document-number',
+                href=settings.BUGTRACKER_URL or '#',
+            )
+        )
         if self.request.user.is_staff:
             footer_items.append(
                 MenuItem('Admin', fugue_icon='fugue-toolbox', href='/admin'))
