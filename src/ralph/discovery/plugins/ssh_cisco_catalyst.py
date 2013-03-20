@@ -10,6 +10,7 @@ import paramiko
 import time
 
 from django.conf import settings
+from django.core.exceptions import MultipleObjectsReturned
 from lck.django.common import nested_commit_on_success
 
 from ralph.util import network, plugin, Eth
@@ -102,6 +103,11 @@ def _run_ssh_catalyst(ip):
     dev_inv = inventory[0]
     try:
         dev = Device.objects.get(sn__in=serials)
+    except MultipleObjectsReturned:
+        raise Error(
+            "Stacked devices with serials %r should be merged.",
+            serials,
+        )
     except Device.DoesNotExist:
         sn = dev_inv['sn']
         model_name='Cisco %s' % dev_inv['pid']
