@@ -255,13 +255,13 @@ class AsyncReportMixin(object):
     data_provider = None
 
     def get_data(self, *args, **kwargs):
-        assert (
-            not callable(self.data_provider) or
-            not hasattr(self.data_provider, 'async_report_results_expiration'),
-        ), (
-            'Define ``data_provider`` function with ',
-            '``@async_report_provider`` decorator.',
-        )
+        # assert (
+        #     not callable(self.data_provider) or
+        #     not hasattr(self.data_provider, 'async_report_results_expiration'),
+        # ), (
+        #     'Define ``data_provider`` function with ',
+        #     '``@async_report_provider`` decorator.',
+        # )
         cache_key = get_cache_key(
             self.data_provider.func_name,
             *args,
@@ -884,6 +884,74 @@ class ReportDevices(SidebarReports, Base):
             }
         )
         return context
+
+
+def _prices_per_venture_device_details(device, exclude=[]):
+    components, stock = [], []
+    total = 0
+    for detail in _get_details(
+        device,
+        ignore_deprecation=True,
+        exclude=exclude,
+    ):
+        model = detail.get('model')
+        price = detail.get('price') or 0
+        if not model:
+            components.append({
+                'model': 'n/a',
+                'icon': 'n/a',
+                'count': 'n/a',
+                'price': 'n/a',
+                'serial': 'n/a',
+            })
+        if model not in stock:
+            components.append({
+                'model': model,
+                'icon': detail.get('icon'),
+                'count': 1,
+                'price': price,
+                'serial': detail.get('serial'),
+            })
+        else:
+            for component in components:
+                if component['model'] == model:
+                    component['count'] = component['count'] + 1
+        total += price
+        stock.append(model)
+    return {
+        'device': {
+            'id': device.id,
+            'name': device.name,
+            'sn': device.sn,
+            'barcode': device.barcode,
+            'deprecation_date': device.deprecation_date,
+            'cached_price': device.cached_price,
+        },
+        'components': components,
+        'total': total,
+        'deprecated': device.is_deprecated(),
+    }
+
+
+def _prices_per_venture_data_provider(venture_id):
+    try:
+        venture = Venture.objects.get(id=venture_id)
+    except Venture.DoesNotExist:
+        return []
+    venture_devices = []
+    for descendant in venture.find_descendant_ids():
+        venture_devices.extend(
+            Device.objects.filter(venture_id=descendant),
+        )
+    devices = []
+    for device in venture_devices:
+        devices.append(
+            _prices_per_venture_device_details(
+                device=device,
+                exclude=['software'],
+            ),
+        )
+    return devices
 
 
 class ReportDevicePricesPerVenture(SidebarReports, Base):
