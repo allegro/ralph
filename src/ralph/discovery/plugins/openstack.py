@@ -79,11 +79,11 @@ def openstack(**kwargs):
     start = kwargs.get('start') or end - datetime.timedelta(days=1)
     for region in getattr(settings, 'OPENSTACK_REGIONS', ['']):
         stack = OpenStack(
-                    settings.OPENSTACK_URL,
-                    settings.OPENSTACK_USER,
-                    settings.OPENSTACK_PASS,
-                    region=region,
-                )
+            settings.OPENSTACK_URL,
+            settings.OPENSTACK_USER,
+            settings.OPENSTACK_PASS,
+            region=region,
+        )
         for data in stack.simple_tenant_usage(start, end):
             tenants[data['tenant_id']][region].update(data)
     for url, query in getattr(settings, 'OPENSTACK_EXTRA_QUERIES', []):

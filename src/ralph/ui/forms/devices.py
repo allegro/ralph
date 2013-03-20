@@ -176,6 +176,14 @@ class DeviceForm(forms.ModelForm):
                 )
         return deleted
 
+    def clean_chassis_position(self):
+        chassis_position = self.cleaned_data.get('chassis_position')
+        if not 0 <= chassis_position <= 65535:
+            raise forms.ValidationError(
+                "Invalid numeric position, use range 0 to 65535"
+            )
+        return chassis_position
+
 
 class DeviceCreateForm(DeviceForm):
     class Meta(DeviceForm.Meta):
