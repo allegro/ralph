@@ -206,7 +206,6 @@ class DeploymentUtilTest(TestCase):
     def test_get_firstfreeip(self):
         ip = get_first_free_ip('net2')
         self.assertEqual(ip, '127.0.0.10')  # first ten addresses are reserved
-
         Record.objects.create(
             domain=self.domain_temp1,
             name='host123.temp1',
@@ -217,14 +216,21 @@ class DeploymentUtilTest(TestCase):
             mac='aa:43:c2:11:22:33',
             ip='127.0.1.5'
         )
+        Record.objects.create(
+            domain=self.domain_temp1,
+            name='6.1.0.127.in-addr.arpa',
+            content='host321.temp1',
+            type='PTR'
+        )
         ip = get_first_free_ip('net1', ['127.0.1.1'])
         # 127.0.1.1 - reserved
         # 127.0.1.2 - deployment
-        # 127.0.1.3 - dns
+        # 127.0.1.3 - dns (A)
         # 127.0.1.4 - discovery
         # 127.0.1.5 - dhcp
-        # 127.0.1.6 - should be free
-        self.assertEqual(ip, '127.0.1.6')
+        # 127.0.1.6 - dns (PTR)
+        # 127.0.1.7 - should be free
+        self.assertEqual(ip, '127.0.1.7')
 
         ip = get_first_free_ip('net3')
         self.assertEqual(ip, None)  # bad margins...
