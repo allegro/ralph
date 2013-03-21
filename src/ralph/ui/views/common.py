@@ -90,6 +90,7 @@ TEMPLATE_MENU_ITEMS = [
         href='/ui/racks//move/',
     ),
 ]
+CHANGELOG_URL = "http://ralph.allegrogroup.com/doc/changes.html"
 
 
 def _get_balancers(dev):
@@ -201,7 +202,7 @@ class BaseMixin(object):
             MenuItem(
                 "Version %s" % '.'.join((str(part) for part in VERSION)),
                 fugue_icon='fugue-document-number',
-                href=settings.BUGTRACKER_URL or '#',
+                href=CHANGELOG_URL,
             )
         )
         if self.request.user.is_staff:
