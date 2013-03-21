@@ -201,7 +201,7 @@ class BaseMixin(object):
             MenuItem(
                 "Version %s" % '.'.join((str(part) for part in VERSION)),
                 fugue_icon='fugue-document-number',
-                href=settings.BUGTRACKER_URL or '#',
+                href="http://ralph.allegrogroup.com/doc/changes.html",
             )
         )
         if self.request.user.is_staff:
