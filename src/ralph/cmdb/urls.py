@@ -20,6 +20,7 @@ from ralph.cmdb.views import (
     CIIncidentsView,
     CIProblemsEdit,
     CIProblemsView,
+    JiraChangesView,
     CIPuppetEdit,
     CIPuppetView,
     CIRalphEdit,
@@ -43,6 +44,7 @@ from ralph.cmdb.views_changes import (
     DashboardDetails,
     Incidents,
     Problems,
+    JiraChanges,
     Reports,
     TimeLine,
 )
@@ -71,6 +73,7 @@ urlpatterns = patterns(
     url(r'^ci/view/(?P<ci_id>[a-z]{0,2}-?[0-9]+)/zabbix/$', login_required(CIZabbixView.as_view()), name='ci_view'),
     url(r'^ci/view/(?P<ci_id>[a-z]{0,2}-?[0-9]+)/problems/$', login_required(CIProblemsView.as_view()), name='ci_view'),
     url(r'^ci/view/(?P<ci_id>[a-z]{0,2}-?[0-9]+)/incidents/$', login_required(CIIncidentsView.as_view()), name='ci_view'),
+    url(r'^ci/view/(?P<ci_id>[a-z]{0,2}-?[0-9]+)/jira_changes/$', login_required(JiraChangesView.as_view()), name='ci_view'),
 
     (r'^ci/jira_ci_unknown/$', login_required(ViewUnknown.as_view())),
 
@@ -95,6 +98,7 @@ urlpatterns = patterns(
     (r'^changes/changes$', login_required(Changes.as_view())),
     (r'^changes/incidents$', login_required(Incidents.as_view())),
     (r'^changes/problems$', login_required(Problems.as_view())),
+    (r'^changes/jira_changes$', login_required(JiraChanges.as_view())),
 
     (r'^changes/timeline$', login_required(TimeLine.as_view())),
     (r'^changes/timeline_ajax$', login_required(TimeLine.get_ajax)),
