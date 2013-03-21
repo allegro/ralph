@@ -10,6 +10,10 @@ import datetime
 import re
 from urlparse import urljoin
 
+
+from bob.data_table import DataTableMixin, DataTableColumn
+from bob.menu import MenuItem, MenuHeader
+
 from django.db.models import Q
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
@@ -23,10 +27,12 @@ from django.utils.safestring import mark_safe
 from django.utils import simplejson
 from django.utils.html import escape
 from django.conf import settings
+
 from lck.cache.memoization import memoize
 from lck.django.common import nested_commit_on_success
 from lck.django.filters import slugify
-from bob.menu import MenuItem, MenuHeader
+
+from ralph.account.models import Perm, ralph_permission
 
 from ralph.cmdb.forms import (
     CISearchForm,
@@ -156,7 +162,9 @@ class BaseCMDBView(Base):
             ('/cmdb/changes/incidents', 'Incidents',
                 'fugue-question'),
             ('/cmdb/changes/problems', 'Problems',
-                'fugue-bomb')
+                'fugue-bomb'),
+            ('/cmdb/changes/jira_changes', 'Jira Changes',
+                'fugue-arrow-retweet'),
         )
         sidebar_items = (
             [MenuHeader('Configuration Items')] +
@@ -495,6 +503,11 @@ class BaseCIDetails(BaseCMDBView):
             False
         ):
             tabs.append(('Incidents', 'incidents'))
+        if self.get_permissions_dict(self.request.user.id).get(
+            'read_configuration_item_info_jira_perm',
+            False
+        ):
+            tabs.append(('Jira Changes', 'jira_changes'))
         return tabs
 
     def generate_breadcrumb(self):
@@ -1127,49 +1140,114 @@ class CIZabbixView(CIZabbixEdit):
         return _update_labels(ret, self.ci)
 
 
-class CIProblemsEdit(BaseCIDetails):
-    template_name = 'cmdb/ci_problems.html'
-    active_tab = 'problems'
+def _table_colums():
+    _ = DataTableColumn
+    columns = [
+        _(
+            'Issue updated',
+            field='update_date',
+            sort_expression='update_date',
+            bob_tag=True,
+        ),
+        _(
+            'Type',
+            field='issue_type',
+            sort_expression='issue_type',
+            bob_tag=True,
 
-    def check_perm(self):
-        if not self.get_permissions_dict(self.request.user.id).get(
-            'read_configuration_item_info_jira_perm',
-            False,
-        ):
-            return HttpResponseForbidden()
+        ),
+        _(
+            'Status',
+            field='resolvet_date',
+            sort_expression='resolvet_date',
+            bob_tag=True,
+        ),
+        _(
+            'Summary',
+            field='summary',
+            bob_tag=True,
+        ),
+        _(
+            'Assignee',
+            field='assignee',
+            bob_tag=True,
+        ),
+        _(
+            'Description',
+            field='description',
+            bob_tag=True,
+        ),
+        _(
+            'Analysis',
+            field='analysis',
+            bob_tag=True,
+        ),
+        _(
+            'Problems',
+            field='problems',
+            bob_tag=True,
+        ),
+        _(
+            'Planed start',
+            field='planned_start_date',
+            sort_expression='planned_start_date',
+            bob_tag=True,
+        ),
+        _(
+            'Planed end',
+            field='planned_end_date',
+            sort_expression='planned_end_date',
+            bob_tag=True,
+        ),
+    ]
+    return columns
+
+
+class CIProblemsEdit(BaseCIDetails, DataTableMixin):
+    template_name = 'cmdb/ci_changes_tab.html'
+    active_tab = 'problems'
+    sort_variable_name = 'sort'
+    export_variable_name = None  # fix in bob!
+    columns = _table_colums()
+    perms = [
+        {
+            'perm': Perm.read_configuration_item_info_jira,
+            'msg': _("You don't have permission to see that."),
+        },
+    ]
 
     def initialize_vars(self):
         super(CIProblemsEdit, self).initialize_vars()
         self.problems = []
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, *args, **kwargs):
         ret = super(CIProblemsEdit, self).get_context_data(**kwargs)
+        ret.update(
+            super(CIProblemsEdit, self).get_context_data_paginator(
+                *args,
+                **kwargs
+            )
+        )
         ret.update({
-            'problems': self.problems,
+            'sort_variable_name': self.sort_variable_name,
+            'url_query': self.request.GET,
+            'sort': self.sort,
+            'columns': self.columns,
         })
         return ret
 
+    @ralph_permission(perms)
     def get(self, *args, **kwargs):
-        perm = self.check_perm()
-        if perm:
-            return perm
         self.initialize_vars()
         try:
             ci_id = self.get_ci_id()
         except db.CI.DoesNotExist:
-            # CI doesn's exists.
             return HttpResponseRedirect('/cmdb/ci/jira_ci_unknown')
-        if ci_id:
-            self.ci = get_object_or_404(db.CI, id=ci_id)
-            try:
-                page = int(self.request.GET.get('page', 1))
-            except ValueError:
-                page = 1
-            query = db.CIProblem.objects.filter(
-                ci=self.ci,
-            ).order_by('-time').all()
-            paginator = Paginator(query, 20)
-            self.problems = paginator.page(page)
+        self.ci = get_object_or_404(db.CI, id=ci_id)
+        problems = db.CIProblem.objects.filter(
+            ci=self.ci,
+        ).order_by('-created_date').all()
+        self.data_table_query(problems)
         return super(CIProblemsEdit, self).get(*args, **kwargs)
 
 
@@ -1179,49 +1257,106 @@ class CIProblemsView(CIProblemsEdit):
         return _update_labels(ret, self.ci)
 
 
-class CIIncidentsEdit(BaseCIDetails):
-    template_name = 'cmdb/ci_incidents.html'
-    active_tab = 'incidents'
+class JiraChangesEdit(BaseCIDetails, DataTableMixin):
+    template_name = 'cmdb/ci_changes_tab.html'
+    active_tab = 'jira_changes'
+    sort_variable_name = 'sort'
+    export_variable_name = None  # fix in bob!
+    columns = _table_colums()
+    perms = [
+        {
+            'perm': Perm.read_configuration_item_info_jira,
+            'msg': _("You don't have permission to see that."),
+        },
+    ]
 
-    def check_perm(self):
-        if not self.get_permissions_dict(self.request.user.id).get(
-            'read_configuration_item_info_jira_perm',
-            False,
-        ):
-            return HttpResponseForbidden()
+    def initialize_vars(self):
+        super(JiraChangesEdit, self).initialize_vars()
+        self.jira_changes = []
+
+    def get_context_data(self,  *args, **kwargs):
+        ret = super(JiraChangesEdit, self).get_context_data(**kwargs)
+        ret.update(
+            super(JiraChangesEdit, self).get_context_data_paginator(
+                *args,
+                **kwargs
+            )
+        )
+        ret.update({
+            'sort_variable_name': self.sort_variable_name,
+            'url_query': self.request.GET,
+            'sort': self.sort,
+            'columns': self.columns,
+        })
+        return ret
+
+    @ralph_permission(perms)
+    def get(self, *args, **kwargs):
+        self.initialize_vars()
+        try:
+            ci_id = self.get_ci_id()
+        except db.CI.DoesNotExist:
+            return HttpResponseRedirect('/cmdb/ci/jira_ci_unknown')
+        self.ci = get_object_or_404(db.CI, id=ci_id)
+        jira_changes = db.JiraChanges.objects.filter(
+            ci=self.ci,
+        ).order_by('-created_date').all()
+        self.data_table_query(jira_changes)
+        return super(JiraChangesEdit, self).get(*args, **kwargs)
+
+
+class JiraChangesView(JiraChangesEdit):
+    def get_context_data(self, **kwargs):
+        ret = super(JiraChangesView, self).get_context_data(**kwargs)
+        return _update_labels(ret, self.ci)
+
+
+class CIIncidentsEdit(BaseCIDetails, DataTableMixin):
+    template_name = 'cmdb/ci_changes_tab.html'
+    active_tab = 'incidents'
+    sort_variable_name = 'sort'
+    export_variable_name = None  # fix in bob!
+    columns = _table_colums()
+    perms = [
+        {
+            'perm': Perm.read_configuration_item_info_jira,
+            'msg': _("You don't have permission to see that."),
+        },
+    ]
 
     def initialize_vars(self):
         super(CIIncidentsEdit, self).initialize_vars()
         self.incidents = []
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, *args, **kwargs):
         ret = super(CIIncidentsEdit, self).get_context_data(**kwargs)
+        ret.update(
+            super(CIIncidentsEdit, self).get_context_data_paginator(
+                *args,
+                **kwargs
+            )
+        )
         ret.update({
-            'incidents': self.incidents,
+            'sort_variable_name': self.sort_variable_name,
+            'url_query': self.request.GET,
+            'sort': self.sort,
+            'columns': self.columns,
         })
         return ret
 
+    @ralph_permission(perms)
     def get(self, *args, **kwargs):
-        perm = self.check_perm()
-        if perm:
-            return perm
+
         self.initialize_vars()
         try:
             ci_id = self.get_ci_id()
         except db.CI.DoesNotExist:
-            # CI doesn's exists.
             return HttpResponseRedirect('/cmdb/ci/jira_ci_unknown')
-        if ci_id:
-            self.ci = get_object_or_404(db.CI, id=ci_id)
-            try:
-                page = int(self.request.GET.get('page', 1))
-            except ValueError:
-                page = 1
-            query = db.CIIncident.objects.filter(
-                ci=self.ci,
-            ).order_by('-time').all()
-            paginator = Paginator(query, 20)
-            self.incidents = paginator.page(page)
+        self.ci = get_object_or_404(db.CI, id=ci_id)
+        incident = db.CIIncident.objects.filter(
+            ci=self.ci,
+        ).order_by('-created_date').all()
+        self.data_table_query(incident)
         return super(CIIncidentsEdit, self).get(*args, **kwargs)
 
 
