@@ -23,6 +23,10 @@ from ralph.cmdb.integration.ralph import AssetChangeImporter
 from optparse import OptionParser
 
 
+from ralph.util.views import force_utf8
+
+
+
 logger = logging.getLogger(__name__)
 
 class ZabbixImporter(BaseImporter):
@@ -112,15 +116,6 @@ class JiraEventsImporter(BaseImporter):
         JiraEventsImporter().import_jirachange()
         return (True, 'Done', context)
 
-
-    def utf8_field(self, field, cut=1024):
-        # API Jira returned byte or unicode
-        if field:
-            if not isinstance(field, unicode):
-                return unicode(field, 'utf-8')[:cut]
-            return field[:cut]
-        return ''
-
     def tz_time(self, field):
         return strip_timezone(field) if field else None
 
@@ -132,17 +127,17 @@ class JiraEventsImporter(BaseImporter):
         except:
             logger.error('Issue : %s Can''t find ci: %s' % (issue.get('key'),issue.get('ci')))
             ci_obj = None
-        obj = classtype.objects.filter(jira_id=issue.get('key')).all()
+        obj = classtype.objects.filter(jira_id=issue.get('key')).all()[:1]
         prob = obj[0] if obj else classtype()
-        prob.summary = self.utf8_field(issue.get('summary'))
-        prob.status = self.utf8_field(issue.get('status'))
-        prob.assignee = self.utf8_field(issue.get('assignee'))
-        prob.jira_id = self.utf8_field(issue.get('key'))
-        prob.analysis = self.utf8_field(issue.get('analysis'))
-        prob.problems = self.utf8_field(issue.get('problems'))
+        prob.summary = self.force_utf8(issue.get('summary'))
+        prob.status = force_utf8(issue.get('status'))
+        prob.assignee = force_utf8(issue.get('assignee'))
+        prob.jira_id = force_utf8(issue.get('key'))
+        prob.analysis = force_utf8(issue.get('analysis'), cut=1024)
+        prob.problems = force_utf8(issue.get('problems'), cut=1024)
         prob.priority = issue.get('priority')
-        prob.issue_type = self.utf8_field(issue.get('issue_type'))
-        prob.description = self.utf8_field(issue.get('description'))
+        prob.issue_type = force_utf8(issue.get('issue_type'))
+        prob.description = force_utf8(issue.get('description'), cut=1024)
         prob.update_date = self.tz_time(issue.get('update_date'))
         prob.created_date = self.tz_time(issue.get('created_date'))
         prob.resolvet_date = self.tz_time(issue.get('resolvet_date'))

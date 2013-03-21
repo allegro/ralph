@@ -15,7 +15,7 @@
             {% for d in bob_page %}
             <tr>
                 <td>{{ d.update_date|date:"d.m.y H:i"|default:"" }}</td>
-                <td style="white-space:nowrap"><img src="{{ d.priority }}" />&nbsp;{{ d.issue_type }}</td>
+                <td style="white-space:nowrap"><img src="{{ d.priority }}">&nbsp;{{ d.issue_type }}</td>
                 <td>
                     <span class="label
                         {% if d.status == 'Open' %}
