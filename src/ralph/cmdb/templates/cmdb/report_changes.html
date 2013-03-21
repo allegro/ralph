@@ -3,6 +3,8 @@
 {% load bob %}
 {% load query %}
 
+
+
 {% block content %}
 	<h3>{{ title }}</h3>
     <table class="table table-striped table-bordered table-condensed ">
@@ -18,18 +20,20 @@
                 <td style="white-space:nowrap"><img src="{{ d.priority }}" />&nbsp;{{ d.issue_type }}</td>
                 <td>
                     <span class="label
-                    {% if d.status = 'Open' %}
-                        label-important
-                    {% elif d.status = 'Resolved' %}
-                        label-success
-                    {% elif d.status = 'Todo' %}
-                        label-warning
-                    {% elif d.status = 'In Progress' %}
-                        label-info
-                    {% elif d.status = 'Closed' %}
-                        label-inverse
-                    {% endif %}"> {{ d.status }}</span>
-                    {{ d.resolvet_date|date:"d.m.y H:i"|default:"" }}</td>
+                        {% if d.status == 'Open' %}
+                            label-important
+                        {% elif d.status == 'Resolved' %}
+                            label-success
+                        {% elif d.status == 'Todo' %}
+                            label-warning
+                        {% elif d.status == 'In Progress' %}
+                            label-info
+                        {% elif d.status == 'Closed' %}
+                            label-inverse
+                        {% endif %}
+                    ">{{ d.status }}</span>
+                    {{ d.resolvet_date|date:"d.m.y H:i"|default:"" }}
+                </td>
                 <td><a href='/cmdb/ci/view/{{ d.ci.id }}' target='_noblank'>{{ d.ci.name }}</a></td>
                 <td><a href="{{ jira_url }}/{{ d.jira_id }}">{{ d.jira_id }}</a> - {{ d.summary }}</td>
                 <td>{{ d.assignee }}</td>

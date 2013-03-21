@@ -18,18 +18,20 @@
                 <td style="white-space:nowrap"><img src="{{ d.priority }}" />&nbsp;{{ d.issue_type }}</td>
                 <td>
                     <span class="label
-                    {% if d.status = 'Open' %}
-                        label-important
-                    {% elif d.status = 'Resolved' %}
-                        label-success
-                    {% elif d.status = 'Todo' %}
-                        label-warning
-                    {% elif d.status = 'In Progress' %}
-                        label-info
-                    {% elif d.status = 'Closed' %}
-                        label-inverse
-                    {% endif %}"> {{ d.status }}</span>
-                    {{ d.resolvet_date|date:"d.m.y H:i"|default:"" }}</td>
+                        {% if d.status == 'Open' %}
+                            label-important
+                        {% elif d.status == 'Resolved' %}
+                            label-success
+                        {% elif d.status == 'Todo' %}
+                            label-warning
+                        {% elif d.status == 'In Progress' %}
+                            label-info
+                        {% elif d.status == 'Closed' %}
+                            label-inverse
+                        {% endif %}
+                    "> {{ d.status }}</span>
+                    {{ d.resolvet_date|date:"d.m.y H:i"|default:"" }}
+                </td>
                 <td><a href="{{ jira_url }}/{{ d.jira_id }}">{{ d.jira_id }}</a> - {{ d.summary }}</td>
                 <td>{{ d.assignee }}</td>
                 <td style="width: 26%">{{ d.description|linebreaks }}</td>
