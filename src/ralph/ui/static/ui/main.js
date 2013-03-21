@@ -265,4 +265,13 @@ $(function ($) {
             $(this).parents('.alerts').filter(':first').remove();
         }
     });
+
+    /* Make the autocomplete fields show their dropdowns immediatelly. */
+    $('input.dropdown').focus(function () {
+        var t = $(this).data('typeahead');
+        var items = $.isFunction(t.source) ? this.source(t.query, $.proxy(t.process, this)) : t.source;
+        t.query = $(this).val();
+        t.process(items);
+        t.show();
+    });
 });

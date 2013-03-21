@@ -38,12 +38,17 @@
     {%- block rootrellink %}
     <a
         class="brand"
+        {% if theme_main_menu and theme_main_menu != '[]' %}
         href="{{ pathto(theme_main_menu[0][1]) }}"
+        {% else %}
+        href="{{ pathto(master_doc) }}"
+        {% endif %}
         >
         {%- if logo %}
         <img class="logo" src="{{ pathto('_static/' + logo, 1) }}" alt="Logo"
         >{%- endif %}{{ shorttitle|title }}</a>
     {%- endblock %}
+    {% if theme_main_menu and theme_main_menu != '[]' %}
     <ul class="nav">
         {%- for label, href in theme_main_menu %}
         <li
@@ -59,6 +64,7 @@
             >{{ parent.title }}</a></li>
         {%- endfor %}
     </ul>
+    {% endif %}
     {%- block sidebarsearch %}
     <form id="searchbox" class="navbar-search pull-right"
           action="{{ pathto('search') }}" method="get" style="display:none">
