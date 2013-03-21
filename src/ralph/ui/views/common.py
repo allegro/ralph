@@ -95,7 +95,10 @@ CHANGELOG_URL = "http://ralph.allegrogroup.com/doc/changes.html"
 
 def _get_balancers(dev):
     for ip in dev.ipaddress_set.all():
-        for member in ip.loadbalancermember_set.select_related('device', 'pool').order_by('device'):
+        for member in ip.loadbalancermember_set.select_related(
+            'device__name',
+            'pool__name',
+        ).order_by('device'):
             yield {
                     'balancer': member.device.name,
                     'pool': member.pool.name,
@@ -103,7 +106,9 @@ def _get_balancers(dev):
                     'server': None,
                     'port': member.port,
             }
-    for vserv in dev.loadbalancervirtualserver_set.select_related('default_pool').all():
+    for vserv in dev.loadbalancervirtualserver_set.select_related(
+        'default_pool__name',
+    ).all():
         yield {
             'balancer': dev.name,
             'pool': vserv.default_pool.name,
