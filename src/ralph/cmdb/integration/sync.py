@@ -119,7 +119,6 @@ class JiraEventsImporter(BaseImporter):
     def tz_time(self, field):
         return strip_timezone(field) if field else None
 
-
     def import_obj(self, issue, classtype):
         logger.debug(issue)
         try:
@@ -129,7 +128,7 @@ class JiraEventsImporter(BaseImporter):
             ci_obj = None
         obj = classtype.objects.filter(jira_id=issue.get('key')).all()[:1]
         prob = obj[0] if obj else classtype()
-        prob.summary = self.force_utf8(issue.get('summary'))
+        prob.summary = force_utf8(issue.get('summary'))
         prob.status = force_utf8(issue.get('status'))
         prob.assignee = force_utf8(issue.get('assignee'))
         prob.jira_id = force_utf8(issue.get('key'))
