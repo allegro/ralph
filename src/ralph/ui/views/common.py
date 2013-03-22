@@ -209,8 +209,18 @@ class BaseMixin(object):
                 MenuItem('Admin', fugue_icon='fugue-toolbox', href='/admin'))
         footer_items.append(
             MenuItem(
-                '%s (logout)' % self.request.user,
+                '%s (preference)' % self.request.user,
                 fugue_icon='fugue-user',
+                view_name='preference',
+                view_args=[details or 'info', ''],
+                pull_right=True,
+                href=reverse('user_preference', args=[]),
+            )
+        )
+        footer_items.append(
+            MenuItem(
+                'logout',
+                fugue_icon='fugue-door-open-out',
                 view_name='logout',
                 view_args=[details or 'info', ''],
                 pull_right=True,
