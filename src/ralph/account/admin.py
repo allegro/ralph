@@ -11,11 +11,14 @@ from django.contrib.auth.models import User, Group
 from django.utils.translation import ugettext_lazy as _
 
 from lck.django.activitylog.admin import IPInline, UserAgentInline
-from lck.django.common.admin import ForeignKeyAutocompleteTabularInline
+from lck.django.common.admin import (
+    ForeignKeyAutocompleteTabularInline,
+    ModelAdmin,
+)
 from lck.django.profile.admin import ProfileInlineFormSet
 from tastypie.models import ApiKey
 
-from ralph.account.models import BoundPerm, Profile
+from ralph.account.models import BoundPerm, Profile, UserPreference
 
 
 class ProfileInline(admin.StackedInline):
@@ -61,6 +64,10 @@ class ApiKeyInline(admin.StackedInline):
     extra = 0
 
 
+class UserPreferenceInline(admin.StackedInline):
+    model = UserPreference
+
+
 class ProfileAdmin(UserAdmin):
     def groups_show(self):
         return "<br> ".join([g.name for g in self.groups.order_by('name')])
@@ -69,7 +76,7 @@ class ProfileAdmin(UserAdmin):
 
     inlines = [
             ProfileInline, ProfileBoundPermInline, ApiKeyInline,
-            ProfileIPInline, ProfileUserAgentInline,
+            ProfileIPInline, ProfileUserAgentInline, UserPreferenceInline,
     ]
     list_display = ('username', 'email', 'first_name', 'last_name',
         groups_show, 'is_staff', 'is_active')

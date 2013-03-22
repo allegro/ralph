@@ -1,4 +1,5 @@
 from django.conf.urls.defaults import patterns, include, url
+from django.core.urlresolvers import reverse
 from django.views.generic import RedirectView
 from tastypie.api import Api
 from ralph.business.api import (VentureResource, VentureLightResource,
@@ -60,7 +61,7 @@ class VhostRedirectView(RedirectView):
         if host == settings.DASHBOARD_SITE_DOMAIN:
             self.url = '/ventures/'
         else:
-            self.url = '/ui/search/info/'
+            self.url = reverse('search')
         return super(VhostRedirectView, self).get_redirect_url(**kwargs)
 
 
@@ -76,7 +77,7 @@ urlpatterns = patterns(
      {'document_root': settings.STATIC_ROOT, 'show_indexes': True}),
     (r'^u/(?P<path>.*)$', 'django.views.static.serve',
      {'document_root': settings.MEDIA_ROOT, 'show_indexes': True}),
-    url(r'^login/', 'django.contrib.auth.views.login',
+    url(r'^login/', 'ralph.account.views.login',
         {'template_name': 'admin/login.html'}),
     url(r'^logout/', 'django.contrib.auth.views.logout'),  # {'template_name': 'admin/logout.html'}),
     url(r'^ventures/(?P<venture_id>.+)/$',
@@ -106,6 +107,7 @@ urlpatterns = patterns(
         name='preboot-default-view', kwargs={'file_type': 'boot_ipxe'}),
     url(r'^pxe/DONE/$', 'ralph.deployment.views.preboot_complete_view',
         name='preboot-complete-view'),
+    url(r'^user/', include('ralph.account.urls')),
 
     # include the lookup urls
     (r'^admin/lookups/', include(ajax_select_urls)),
