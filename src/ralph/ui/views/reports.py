@@ -63,6 +63,7 @@ from ralph.util.async_reports import (
     get_cache_key,
     async_report_provider,
 )
+from ralph.util.presentation import get_device_icon
 from ralph.util.pricing import (
     details_all,
     get_device_auto_price,
@@ -255,13 +256,6 @@ class AsyncReportMixin(object):
     data_provider = None
 
     def get_data(self, *args, **kwargs):
-        # assert (
-        #     not callable(self.data_provider) or
-        #     not hasattr(self.data_provider, 'async_report_results_expiration'),
-        # ), (
-        #     'Define ``data_provider`` function with ',
-        #     '``@async_report_provider`` decorator.',
-        # )
         cache_key = get_cache_key(
             self.data_provider.func_name,
             *args,
@@ -285,6 +279,7 @@ class AsyncReportMixin(object):
             ),
             args=args,
             kwargs=kwargs,
+            timeout=3600,
             result_ttl=0,
         )
 
@@ -889,35 +884,42 @@ class ReportDevices(SidebarReports, Base):
 def _prices_per_venture_device_details(device, exclude=[]):
     components, stock = [], []
     total = 0
-    for detail in _get_details(
-        device,
-        ignore_deprecation=True,
-        exclude=exclude,
-    ):
-        model = detail.get('model')
-        price = detail.get('price') or 0
-        if not model:
-            components.append({
-                'model': 'n/a',
-                'icon': 'n/a',
-                'count': 'n/a',
-                'price': 'n/a',
-                'serial': 'n/a',
-            })
-        if model not in stock:
-            components.append({
-                'model': model,
-                'icon': detail.get('icon'),
-                'count': 1,
-                'price': price,
-                'serial': detail.get('serial'),
-            })
-        else:
-            for component in components:
-                if component['model'] == model:
-                    component['count'] = component['count'] + 1
-        total += price
-        stock.append(model)
+    try:
+        for detail in _get_details(
+            device,
+            ignore_deprecation=True,
+            exclude=exclude,
+        ):
+            model = detail.get('model')
+            price = detail.get('price') or 0
+            if not model:
+                components.append({
+                    'model': 'n/a',
+                    'icon': 'n/a',
+                    'count': 'n/a',
+                    'price': 'n/a',
+                    'serial': 'n/a',
+                })
+            if model not in stock:
+                components.append({
+                    'model': model.name if hasattr(model, 'name') else model,
+                    'icon': detail.get('icon'),
+                    'count': 1,
+                    'price': price,
+                    'serial': detail.get('serial'),
+                })
+            else:
+                for component in components:
+                    if component['model'] == model:
+                        component['count'] = component['count'] + 1
+            total += price
+            stock.append(model)
+        venture = 'N/a'
+        if device.venture and device.venture.symbol:
+            venture = device.venture.symbol
+    except Exception as e:
+        print(e)
+        print(device)
     return {
         'device': {
             'id': device.id,
@@ -926,6 +928,9 @@ def _prices_per_venture_device_details(device, exclude=[]):
             'barcode': device.barcode,
             'deprecation_date': device.deprecation_date,
             'cached_price': device.cached_price,
+            'icon': get_device_icon(device),
+            'venture': venture,
+            'role': device.role or 'N/a',
         },
         'components': components,
         'total': total,
@@ -933,18 +938,22 @@ def _prices_per_venture_device_details(device, exclude=[]):
     }
 
 
-def _prices_per_venture_data_provider(venture_id):
-    try:
-        venture = Venture.objects.get(id=venture_id)
-    except Venture.DoesNotExist:
-        return []
-    venture_devices = []
-    for descendant in venture.find_descendant_ids():
-        venture_devices.extend(
-            Device.objects.filter(venture_id=descendant),
-        )
+@async_report_provider(timeout=3600)
+def _prices_per_venture_data_provider(venture_id=None):
+    if venture_id:
+        try:
+            venture = Venture.objects.get(id=venture_id)
+        except Venture.DoesNotExist:
+            return []
+        devices_to_process = []
+        for descendant in venture.find_descendant_ids():
+            devices_to_process.extend(
+                Device.objects.filter(venture_id=descendant),
+            )
+    else:
+        devices_to_process = Device.objects.all()
     devices = []
-    for device in venture_devices:
+    for device in devices_to_process:
         devices.append(
             _prices_per_venture_device_details(
                 device=device,
@@ -954,7 +963,7 @@ def _prices_per_venture_data_provider(venture_id):
     return devices
 
 
-class ReportDevicePricesPerVenture(SidebarReports, Base):
+class ReportDevicePricesPerVenture(SidebarReports, AsyncReportMixin, Base):
     template_name = 'ui/report_device_prices_per_venture.html'
     subsection = 'device_prices_per_venture'
     perms = [
@@ -963,90 +972,26 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
             'msg': _("You don't have permission to see reports."),
         },
     ]
+    data_provider = _prices_per_venture_data_provider
 
-    def device_details(self, device, exclude):
-        """Returns device and its components"""
-        components, stock = [], []
-        total = 0
-        for detail in _get_details(
-            device,
-            ignore_deprecation=True,
-            exclude=exclude,
-        ):
-            model = detail.get('model')
-            price = detail.get('price') or 0
-            if not model:
-                components.append(
-                    {
-                        'model': 'n/a',
-                        'icon': 'n/a',
-                        'count': 'n/a',
-                        'price': 'n/a',
-                        'serial': 'n/a',
-                    }
-                )
-
-            if model not in stock:
-                components.append(
-                    {
-                        'model': model,
-                        'icon': detail.get('icon'),
-                        'count': 1,
-                        'price': price,
-                        'serial': detail.get('serial'),
-                    }
-                )
-            else:
-                for component in components:
-                    if component['model'] == model:
-                        component['count'] = component['count'] + 1
-            total += price
-            stock.append(model)
-        return {
-                    'device': device,
-                    'components': components,
-                    'total': total,
-                    'deprecated': device.is_deprecated,
-                }
-
-    def devices_list(self, venture):
-        """Returns devices list from venture and descendant venture"""
-        venture_devices = []
-        for descendant in venture[0].find_descendant_ids():
-            venture_devices.extend(
-                Device.objects.filter(venture_id=descendant),
-            )
-        for device in venture_devices:
-            self.devices.append(
-                self.device_details(device, exclude=['software']),
-            )
-
-    def get_csv_data(self, devices, give_all=False):
+    def get_csv_data(self, devices):
         """Prepare data to export to CSV"""
-        max = 0
-        rows = []
-        if not give_all:
-            data = devices
-        else:
-            all_devices = Device.objects.all()
-            data = self.device_details(all_devices, exclude=['software'])
-
-        for dev in data:
+        max_components_count, rows = 0, []
+        for dev in devices:
             device = dev.get('device')
             components = dev.get('components')
             deprecated = dev.get('deprecated')
-            ven = device.venture.symbol if device.venture.symbol else 'N/a'
             row = [
-                ven,
-                ven,
-                device.name or 'N/a',
-                device.role or 'N/a',
-                device.sn or 'N/a',
-                device.barcode or 'N/a',
-                device.cached_price if not deprecated else dev.get('total'),
+                device['venture'],
+                device['venture'],
+                device['name'],
+                device['role'],
+                device['sn'] or 'N/a',
+                device['barcode'] or 'N/a',
+                device['cached_price'] if not deprecated else dev.get('total'),
                 'True' if deprecated else 'False',
             ]
-            max = len(components) if max < len(components) else max
+            max_components_count = max(max_components_count, len(components))
             for component in components:
                 details = [
                     component['model'],
@@ -1059,7 +1004,7 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
             'Venture', 'Venture ID', 'Device', 'Role', 'SN', 'Barcode',
             'Quoted price (PLN)', 'Deprecated',
         ]
-        for i in range(max):
+        for i in range(max_components_count):
             headers.extend(
                 ['Component name', 'Component count', 'Component total'],
             )
@@ -1069,41 +1014,57 @@ class ReportDevicePricesPerVenture(SidebarReports, Base):
     @ralph_permission(perms)
     def get(self, *args, **kwargs):
         self.devices = []
-        self.form = ReportVentureCost()
         self.venture_id = self.request.GET.get('venture')
+        self.export_all = self.request.GET.get('export-all', '') == 'csv'
+        self.task_in_progress = False
+        self.form = ReportVentureCost(
+            initial={'venture': self.venture_id},
+        )
         if self.venture_id:
-            venture = Venture.objects.filter(id=self.venture_id)
-            if venture:
-                self.form = ReportVentureCost(
-                    initial={'venture': self.venture_id},
+            try:
+                venture = Venture.objects.get(id=self.venture_id)
+            except Venture.DoesNotExist:
+                venture = None
+        if any((
+            self.venture_id and venture,
+            not self.venture_id and self.export_all,
+        )):
+            self.devices = self.get_data(venture_id=self.venture_id)
+            if self.devices is None:
+                self.task_in_progress = True
+                messages.info(
+                    self.request,
+                    "Report processing in progress. Please wait...",
                 )
-                self.devices_list(venture)
-                if self.request.GET.get('export') == 'csv':
-                    filename = 'report_devices_prices_per_venture-%s-%s.csv' % (
-                        venture[0].symbol, datetime.date.today(),
-                    )
-                    return make_csv_response(
-                        data=self.get_csv_data(self.devices),
-                        filename=filename,
-                    )
-        if self.request.GET.get('exportall') == 'csv':
-            filename = 'report_devices_prices_per_venture-all-%s.csv' % (
-                datetime.date.today()
-            )
-            return make_csv_response(
-                data=self.get_csv_data(self.devices, give_all=True),
-                filename=filename,
-            )
+            if all((
+                not self.task_in_progress,
+                self.request.GET.get('export') == 'csv'
+            )):
+                filename = 'report_devices_prices_per_venture-%s-%s.csv' % (
+                    venture.symbol, datetime.date.today(),
+                )
+                return make_csv_response(
+                    data=self.get_csv_data(self.devices),
+                    filename=filename,
+                )
+            if not self.task_in_progress and self.export_all:
+                filename = 'report_devices_prices_per_venture-all-%s.csv' % (
+                    datetime.date.today()
+                )
+                return make_csv_response(
+                    data=self.get_csv_data(self.devices),
+                    filename=filename,
+                )
         return super(ReportDevicePricesPerVenture, self).get(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(ReportDevicePricesPerVenture, self).get_context_data(
-            **kwargs)
-        context.update(
-            {
-                'form': self.form,
-                'rows': self.devices,
-                'venture': self.venture_id,
-            },
+            **kwargs
         )
+        context.update({
+            'form': self.form,
+            'rows': self.devices,
+            'venture': self.venture_id,
+            'task_in_progress': self.task_in_progress,
+        })
         return context
