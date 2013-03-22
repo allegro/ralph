@@ -90,11 +90,15 @@ TEMPLATE_MENU_ITEMS = [
         href='/ui/racks//move/',
     ),
 ]
+CHANGELOG_URL = "http://ralph.allegrogroup.com/doc/changes.html"
 
 
 def _get_balancers(dev):
-    for ip in dev.ipaddress_set.select_related().all():
-        for member in ip.loadbalancermember_set.order_by('device'):
+    for ip in dev.ipaddress_set.all():
+        for member in ip.loadbalancermember_set.select_related(
+            'device__name',
+            'pool__name',
+        ).order_by('device'):
             yield {
                     'balancer': member.device.name,
                     'pool': member.pool.name,
@@ -102,7 +106,9 @@ def _get_balancers(dev):
                     'server': None,
                     'port': member.port,
             }
-    for vserv in dev.loadbalancervirtualserver_set.all():
+    for vserv in dev.loadbalancervirtualserver_set.select_related(
+        'default_pool__name',
+    ).all():
         yield {
             'balancer': dev.name,
             'pool': vserv.default_pool.name,
@@ -201,7 +207,7 @@ class BaseMixin(object):
             MenuItem(
                 "Version %s" % '.'.join((str(part) for part in VERSION)),
                 fugue_icon='fugue-document-number',
-                href=settings.BUGTRACKER_URL or '#',
+                href=CHANGELOG_URL,
             )
         )
         if self.request.user.is_staff:
@@ -812,9 +818,10 @@ class Addresses(DeviceDetailView):
                         'network_name': network.name,
                         'first_free_ip': first_free_ip,
                     })
+        balancers = list(_get_balancers(self.object))
         ret.update({
             'canedit': can_edit,
-            'balancers': list(_get_balancers(self.object)),
+            'balancers': balancers,
             'dnsformset': self.dns_formset,
             'dhcpformset': self.dhcp_formset,
             'ipformset': self.ip_formset,
