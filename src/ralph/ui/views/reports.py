@@ -63,7 +63,7 @@ from ralph.util.async_reports import (
     get_cache_key,
     async_report_provider,
 )
-from ralph.util.presentation import get_device_icon
+from ralph.util.presentation import get_device_icon, get_venture_icon
 from ralph.util.pricing import (
     details_all,
     get_device_auto_price,
@@ -381,7 +381,112 @@ def _currency(value):
     return '{:,.2f} {}'.format(value or 0, settings.CURRENCY).replace(',', ' ')
 
 
-class ReportVentures(SidebarReports, Base):
+def _report_ventures_get_totals(start, end, query, extra_types):
+    venture_total = get_total_cost(query, start, end)
+    venture_count, venture_count_now, devices = get_total_count(
+        # Exclude all non-physical devices.
+        query.exclude(
+            device__model__type__in=(
+                DeviceType.cloud_server,
+                DeviceType.virtual_server,
+                DeviceType.unknown,
+                DeviceType.data_center,
+                DeviceType.rack,
+                DeviceType.management,
+            ),
+        ),
+        start,
+        end,
+    )
+    venture_core_count = get_total_cores(devices, start, end)
+    venture_virtual_core_count = get_total_virtual_cores(
+        devices, start, end
+    )
+    q = query.filter(extra=None)
+    venture_hardware_cost = get_total_cost(q, start, end)
+    cloud_cost = get_total_cost(
+        query.filter(
+            device__model__type=DeviceType.cloud_server.id
+        ), start, end
+    )
+    venture_extras = []
+    for extra_type in extra_types:
+        cost = None
+        for extra_cost in extra_type.ventureextracost_set.all():
+            q = query.filter(extra=extra_cost)
+            c = get_total_cost(q, start, end)
+            cost = cost + (c or 0) if cost else c
+        venture_extras.append(cost)
+    return {
+        'count': venture_count,
+        'count_now': venture_count_now,
+        'core_count': venture_core_count,
+        'virtual_core_count': venture_virtual_core_count,
+        'hardware_cost': venture_hardware_cost,
+        'cloud_cost': cloud_cost,
+        'extras': venture_extras,
+        'total': venture_total,
+    }
+
+
+@async_report_provider(timeout=3600)
+def _report_ventures_data_provider(start, end, ventures_ids, extra_types):
+    ventures = Venture.objects.filter(id__in=ventures_ids).order_by('path')
+    total_cloud_cost = get_total_cost(
+        HistoryCost.objects.filter(
+            device__model__type=DeviceType.cloud_server.id,
+        ),
+        start,
+        end,
+    )
+    result = []
+    for venture in ventures:
+        query = HistoryCost.objects.filter(
+            db.Q(venture=venture) |
+            db.Q(venture__parent=venture) |
+            db.Q(venture__parent__parent=venture) |
+            db.Q(venture__parent__parent__parent=venture) |
+            db.Q(venture__parent__parent__parent__parent=venture)
+        ).exclude(device__deleted=True)
+        data = _report_ventures_get_totals(start, end, query, extra_types)
+        data.update({
+            'id': venture.id,
+            'name': venture.name,
+            'symbol': venture.symbol,
+            'path': venture.path,
+            'department': unicode(venture.department or ''),
+            'margin': venture.get_margin(),
+            'top_level': venture.parent is None,
+            'venture_icon': get_venture_icon(venture),
+            'cloud_use': (
+                (data['cloud_cost'] or 0) / total_cloud_cost
+            ) if total_cloud_cost else 0,
+        })
+        result.append(data)
+        if venture.parent is not None:
+            continue
+        if not venture.child_set.exists():
+            continue
+        query = HistoryCost.objects.filter(venture=venture)
+        data = _report_ventures_get_totals(start, end, query, extra_types)
+        data.update({
+            'id': venture.id,
+            'name': '-',
+            'symbol': venture.symbol,
+            'path': venture.path,
+            'department': unicode(venture.department or ''),
+            'margin': venture.get_margin(),
+            'top_level': False,
+            'venture_icon': get_venture_icon(venture),
+            'cloud_use': (
+                (data['cloud_cost'] or 0) / total_cloud_cost
+            ) if total_cloud_cost else 0,
+        })
+        result.append(data)
+    return result
+
+
+class ReportVentures(SidebarReports, AsyncReportMixin, Base):
     template_name = 'ui/report_ventures.html'
     subsection = 'ventures'
     perms = [
@@ -390,6 +495,7 @@ class ReportVentures(SidebarReports, Base):
             'msg': _("You don't have permission to see reports."),
         },
     ]
+    data_provider = _report_ventures_data_provider
 
     def export_csv(self):
         def iter_rows():
@@ -429,105 +535,11 @@ class ReportVentures(SidebarReports, Base):
             filename='ReportVentures.csv',
         )
 
-    def _get_totals(self, start, end, query, extra_types):
-        venture_total = get_total_cost(query, start, end)
-        venture_count, venture_count_now, devices = get_total_count(
-            # Exclude all non-physical devices.
-            query.exclude(
-                device__model__type__in=(
-                    DeviceType.cloud_server,
-                    DeviceType.virtual_server,
-                    DeviceType.unknown,
-                    DeviceType.data_center,
-                    DeviceType.rack,
-                    DeviceType.management,
-                ),
-            ),
-            start,
-            end,
-        )
-        venture_core_count = get_total_cores(devices, start, end)
-        venture_virtual_core_count = get_total_virtual_cores(
-            devices, start, end
-        )
-        q = query.filter(extra=None)
-        venture_hardware_cost = get_total_cost(q, start, end)
-        cloud_cost = get_total_cost(
-            query.filter(
-                device__model__type=DeviceType.cloud_server.id
-            ), start, end
-        )
-        venture_extras = []
-        for extra_type in extra_types:
-            cost = None
-            for extra_cost in extra_type.ventureextracost_set.all():
-                q = query.filter(extra=extra_cost)
-                c = get_total_cost(q, start, end)
-                cost = cost + (c or 0) if cost else c
-            venture_extras.append(cost)
-        return {
-            'count': venture_count,
-            'count_now': venture_count_now,
-            'core_count': venture_core_count,
-            'virtual_core_count': venture_virtual_core_count,
-            'hardware_cost': venture_hardware_cost,
-            'cloud_cost': cloud_cost,
-            'extras': venture_extras,
-            'total': venture_total,
-        }
-
-    def _get_venture_data(self, start, end, ventures, extra_types):
-        total_cloud_cost = get_total_cost(
-            HistoryCost.objects.filter(
-                device__model__type=DeviceType.cloud_server.id
-            ), start, end
-        )
-        for venture in ventures:
-            query = HistoryCost.objects.filter(
-                db.Q(venture=venture) |
-                db.Q(venture__parent=venture) |
-                db.Q(venture__parent__parent=venture) |
-                db.Q(venture__parent__parent__parent=venture) |
-                db.Q(venture__parent__parent__parent__parent=venture)
-            ).exclude(device__deleted=True)
-            data = self._get_totals(start, end, query, extra_types)
-            data.update({
-                'id': venture.id,
-                'name': venture.name,
-                'symbol': venture.symbol,
-                'path': venture.path,
-                'department': unicode(venture.department or ''),
-                'margin': venture.get_margin(),
-                'top_level': venture.parent is None,
-                'venture': venture,
-                'cloud_use': (
-                    (data['cloud_cost'] or 0) / total_cloud_cost
-                ) if total_cloud_cost else 0,
-            })
-            yield data
-            if venture.parent is not None:
-                continue
-            if not venture.child_set.exists():
-                continue
-            query = HistoryCost.objects.filter(venture=venture)
-            data = self._get_totals(start, end, query, extra_types)
-            data.update({
-                'id': venture.id,
-                'name': '-',
-                'symbol': venture.symbol,
-                'path': venture.path,
-                'department': unicode(venture.department or ''),
-                'margin': venture.get_margin(),
-                'top_level': False,
-                'venture': venture,
-                'cloud_use': (
-                    (data['cloud_cost'] or 0) / total_cloud_cost
-                ) if total_cloud_cost else 0,
-            })
-            yield data
 
     @ralph_permission(perms)
     def get(self, *args, **kwargs):
+        self.venture_data = []
+        self.task_in_progress = False
         profile = self.request.user.get_profile()
         if 'start' in self.request.GET:
             self.form = DateRangeForm(self.request.GET)
@@ -543,22 +555,31 @@ class ReportVentures(SidebarReports, Base):
             self.ventures = profile.perm_ventures(
                 Perm.read_device_info_reports
             ).filter(
-                db.Q(parent=None) |
-                db.Q(parent__parent=None),
+                db.Q(parent=None) | db.Q(parent__parent=None),
                 show_in_ralph=True
+            ).values_list(
+                'id',
+                flat=True,
             ).order_by('path')
             start = self.form.cleaned_data['start']
             end = self.form.cleaned_data['end']
-            self.venture_data = self._get_venture_data(
+            self.venture_data = self.get_data(
                 start,
                 end,
                 self.ventures,
                 self.extra_types,
             )
+            if self.venture_data is None:
+                self.task_in_progress = True
+                messages.info(
+                    self.request,
+                    "Report processing in progress. Please wait...",
+                )
         else:
             self.ventures = Venture.objects.none()
             self.venture_data = []
-        if self.request.GET.get('export') == 'csv':
+        if (self.request.GET.get('export') == 'csv' and
+            self.venture_data is not None):
             return self.export_csv()
         return super(ReportVentures, self).get(*args, **kwargs)
 
@@ -570,6 +591,7 @@ class ReportVentures(SidebarReports, Base):
             'venture_data': self.venture_data,
             'profile': self.request.user.get_profile(),
             'extra_types': self.extra_types,
+            'task_in_progress': self.task_in_progress,
         })
         return context
 
