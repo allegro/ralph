@@ -9,7 +9,7 @@ import calendar
 import datetime
 from urlparse import urljoin
 
-from bob.data_table import DataTableMixin, DataTableColumn
+from bob.data_table import DataTableMixin
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -28,7 +28,7 @@ from ralph.cmdb.forms import (
     ReportFilters,
     ReportFiltersDateRamge,
 )
-from ralph.cmdb.util import report_filters, add_filter
+from ralph.cmdb.util import report_filters, add_filter, table_colums
 from ralph.cmdb.models_ci import CI
 from ralph.account.models import Perm, ralph_permission
 from django.utils.translation import ugettext_lazy as _
@@ -169,80 +169,11 @@ class Changes(ChangesBase):
         return super(Changes, self).get(*args)
 
 
-def _table_colums():
-    _ = DataTableColumn
-    columns = [
-        _(
-            'Issue updated',
-            field='update_date',
-            sort_expression='update_date',
-            bob_tag=True,
-        ),
-        _(
-            'Type',
-            field='issue_type',
-            sort_expression='issue_type',
-            bob_tag=True,
-
-        ),
-        _(
-            'Status',
-            field='resolvet_date',
-            sort_expression='resolvet_date',
-            bob_tag=True,
-        ),
-        _(
-            'CI',
-            field='ci',
-            sort_expression='ci',
-            bob_tag=True,
-        ),
-        _(
-            'Summary',
-            field='summary',
-            bob_tag=True,
-        ),
-        _(
-            'Assignee',
-            field='assignee',
-            bob_tag=True,
-        ),
-        _(
-            'Description',
-            field='description',
-            bob_tag=True,
-        ),
-        _(
-            'Analysis',
-            field='analysis',
-            bob_tag=True,
-        ),
-        _(
-            'Problems',
-            field='problems',
-            bob_tag=True,
-        ),
-        _(
-            'Planed start',
-            field='planned_start_date',
-            sort_expression='planned_start_date',
-            bob_tag=True,
-        ),
-        _(
-            'Planed end',
-            field='planned_end_date',
-            sort_expression='planned_end_date',
-            bob_tag=True,
-        ),
-    ]
-    return columns
-
-
 class Problems(ChangesBase, DataTableMixin):
     template_name = 'cmdb/report_changes.html'
     sort_variable_name = 'sort'
     export_variable_name = None  # fix in bob!
-    columns = _table_colums()
+    columns = table_colums()
     perms = [
         {
             'perm': Perm.read_configuration_item_info_jira,
@@ -291,7 +222,7 @@ class Incidents(ChangesBase, DataTableMixin):
     template_name = 'cmdb/report_changes.html'
     sort_variable_name = 'sort'
     export_variable_name = None  # fix in bob!
-    columns = _table_colums()
+    columns = table_colums()
     perms = [
         {
             'perm': Perm.read_configuration_item_info_jira,
@@ -340,7 +271,7 @@ class JiraChanges(ChangesBase, DataTableMixin):
     template_name = 'cmdb/report_changes.html'
     sort_variable_name = 'sort'
     export_variable_name = None  # fix in bob!
-    columns = _table_colums()
+    columns = table_colums()
     perms = [
         {
             'perm': Perm.read_configuration_item_info_jira,
