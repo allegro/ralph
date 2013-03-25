@@ -616,11 +616,18 @@ class Dashboard(ChangesBase):
         return super(Dashboard, self).get(*args)
 
 
-class Reports(ChangesBase):
+class Reports(ChangesBase, DataTableMixin):
     template_name = 'cmdb/view_report.html'
-    exporting_csv_file = False
+    sort_variable_name = 'sort'
+    export_variable_name = None  # fix in bob!
+    perms = [
+        {
+            'perm': Perm.read_configuration_item_info_jira,
+            'msg': _("You don't have permission to see that."),
+        },
+    ]
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, *args, **kwargs):
         subsection = ''
         kind = self.request.GET.get('kind')
         if kind:
@@ -634,8 +641,17 @@ class Reports(ChangesBase):
         }
         ret = super(Reports, self).get_context_data(**kwargs)
         ret.update(
+            super(Reports, self).get_context_data_paginator(
+                *args,
+                **kwargs
+            )
+        )
+        ret.update(
             {
-                'data': self.data,
+                'sort_variable_name': self.sort_variable_name,
+                'url_query': self.request.GET,
+                'sort': self.sort,
+                'columns': self.columns,
                 'form': self.form,
                 'report_kind': self.request.GET.get('kind', 'top'),
                 'report_name': self.report_name,
@@ -658,31 +674,122 @@ class Reports(ChangesBase):
         return queryset
 
     def top_ci_problems(self):
+        _ = DataTableColumn
+        self.columns = [
+            _(
+                'problems count',
+                field='ciname',
+                sort_expression='ciname',
+                bob_tag=True,
+            ),
+            _(
+                'configuration item',
+                field='count',
+                bob_tag=True,
+            ),
+            _(
+                'Technical owners',
+                field='towners',
+                bob_tag=True,
+            ),
+            _(
+                'Business owners',
+                field='bowners',
+                bob_tag=True,
+            )
+        ]
         queryset = db.CI.objects.annotate(num=Count('ciproblem')).order_by('-num')
         queryset = self.handle_params(queryset)
-        queryset = self.paginate_query(queryset)
         rows = [(x.num, x) for x in queryset]
         return rows
 
     def top_ci_incidents(self):
+        _ = DataTableColumn
+        self.columns = [
+            _(
+                'incidents count',
+                field='ciname',
+                            sort_expression='ciname',
+                bob_tag=True,
+            ),
+            _(
+                'configuration item',
+                field='count',
+                bob_tag=True,
+            ),
+            _(
+                'Technical owners',
+                field='towners',
+                bob_tag=True,
+            ),
+            _(
+                'Business owners',
+                field='bowners',
+                bob_tag=True,
+            )
+        ]
         queryset = db.CI.objects.annotate(num=Count('ciincident')).order_by('-num')
         queryset = self.handle_params(queryset)
-        queryset = self.paginate_query(queryset)
         rows = [(x.num, x) for x in queryset]
         return rows
 
     def least_ci_changes(self):
+        self.columns = [
+            _(
+                'problems count',
+                field='ciname',
+                sort_expression='ciname',
+                bob_tag=True,
+            ),
+            _(
+                'configuration item',
+                field='count',
+                bob_tag=True,
+            ),
+            _(
+                'Technical owners',
+                field='towners',
+                bob_tag=True,
+            ),
+            _(
+                'Business owners',
+                field='bowners',
+                bob_tag=True,
+            )
+        ]
         queryset = db.CI.objects.annotate(
             num=Count('cichange')).filter(num=0).order_by('num')
         queryset = self.handle_params(queryset)
-        queryset = self.paginate_query(queryset)
         rows = [(x.num, x) for x in queryset]
         return rows
 
     def top_ci_changes(self):
+        _ = DataTableColumn
+        self.columns = [
+            _(
+                'problems count',
+                field='ciname',
+                sort_expression='ciname',
+                bob_tag=True,
+            ),
+            _(
+                'configuration item',
+                field='count',
+                bob_tag=True,
+            ),
+            _(
+                'Technical owners',
+                field='towners',
+                bob_tag=True,
+            ),
+            _(
+                'Business owners',
+                field='bowners',
+                bob_tag=True,
+            )
+        ]
         queryset = db.CI.objects.annotate(num=Count('cichange')).order_by('-num')
         queryset = self.handle_params(queryset)
-        queryset = self.paginate_query(queryset)
         rows = [(x.num, x) for x in queryset]
         return rows
 
@@ -697,20 +804,21 @@ class Reports(ChangesBase):
     def populate_data(self, *args, **kwargs):
         report_type = self.request.GET.get('kind', 'top')
         if report_type == 'top_changes':
-            self.data = self.top_ci_changes()
+            self.data_table_query(self.top_ci_changes())
             self.report_name = 'Top CI Changes'
         elif report_type == 'top_problems':
-            self.data = self.top_ci_problems()
+            self.data_table_query(self.top_ci_problems())
             self.report_name = 'Top CI Problems'
         elif report_type == 'top_incidents':
-            self.data = self.top_ci_incidents()
+            self.data_table_query(self.top_ci_incidents())
             self.report_name = 'Top CI Incidents'
         elif report_type == 'usage':
             self.report_name = 'Top CI Incidents'
-            self.data = self.least_ci_changes()
+            self.data_table_query(self.least_ci_changes())
         else:
             raise UserWarning("Unknown report type %s " % report_type)
 
+    @ralph_permission(perms)
     def get(self, *args, **kwargs):
         values = self.request.GET
         self.form = CIReportsParamsForm(initial=values)
