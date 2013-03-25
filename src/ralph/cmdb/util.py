@@ -1,10 +1,10 @@
 import cStringIO as StringIO
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+from django.db.models import Q
 from django.http import HttpResponse
 
 from bob import csvutil
 from ralph.cmdb.views import BaseCMDBView, _get_pages
-
 
 ROWS_PER_PAGE=20
 
@@ -60,3 +60,11 @@ class PaginatedView(BaseCMDBView):
         return response
 
 
+def report_filters(cls, order, filters=None):
+    q = Q()
+    if filters:
+        filters_list = filters.pop()
+        for name, value in filters_list.items():
+            q &= Q(**{name:value})
+        return cls.objects.filter(q).order_by(order)
+    return cls.objects.order_by(order)

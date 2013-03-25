@@ -18,6 +18,7 @@ from ralph.cmdb.models import CILayer, CIType
 from ralph.cmdb import models as db
 
 from ajax_select.fields import AutoCompleteSelectField
+from ralph.ui.widgets import DateWidget
 
 
 class CISearchForm(forms.Form):
@@ -187,4 +188,146 @@ class SearchImpactForm(forms.Form):
         ('ralph.cmdb.models', 'CILookup'),
         required=True,
         plugin_options={'minLength': 2}
+    )
+
+
+class ReportFilters(forms.Form):
+    ci = forms.CharField(
+        required=False,
+        widget=forms.TextInput(
+            attrs={'placeholder': 'ralph'}
+        )
+    )
+    assignee = forms.CharField(
+        required=False,
+        widget=forms.TextInput(
+            attrs={'placeholder': 'Jan Kowalski'}
+        )
+    )
+    jira_id = forms.CharField(
+        required=False,
+        widget=forms.TextInput(
+            attrs={'placeholder': 'RALPH-512'}
+        )
+    )
+    issue_type  = forms.ChoiceField(
+        required=False,
+        choices=[
+            ('', '----'),
+            ('Bug', 'Bug'),
+            ('Change-EM', 'Change-EM'),
+            ('Change-OP', 'Change-OP'),
+            ('Change-PL', 'Change-PL'),
+            ('Improvement', 'Improvement'),
+            ('Incident', 'Incident'),
+            ('Incident-Security', 'Incident-Security'),
+            ('New Feature', 'New Feature'),
+            ('Problem', 'Problem'),
+            ('Project Info', 'Project Info'),
+            ('SR-Permission', 'SR-Permission'),
+            ('Service Request', 'Service Request'),
+            ('Task', 'Task'),
+        ],
+        label='Issue type'
+    )
+    status = forms.ChoiceField(
+        required=False,
+        choices=[
+            ('', '----'),
+            ('Open', 'Open'),
+            ('In Progress', 'In Progress'),
+            ('Reopened', 'Reopened'),
+            ('Resolved', 'Resolved'),
+            ('Closed', 'Closed'),
+            ('Blocked', 'Blocked'),
+            ('Todo', 'Todo'),
+            ('In Test', 'In Test'),
+            ('To Deploy', 'To Deploy'),
+            ('In Deploy', 'In Deploy'),
+            ('Accepted', 'Accepted'),
+        ],
+        label='Issue status'
+    )
+
+
+class ReportFiltersDateRamge(forms.Form):
+    start_update = forms.DateField(
+        required=False,
+        widget=DateWidget(
+            attrs={
+                'placeholder': 'Start',
+                'data-collapsed': True,
+            }
+        ),
+        label="Update",
+    )
+    end_update = forms.DateField(
+        required=False,
+        widget=DateWidget(
+            attrs={
+                'placeholder': 'End',
+                'data-collapsed': True,
+            }
+        ),
+        label="",
+    )
+    start_resolved = forms.DateField(
+        required=False,
+        widget=DateWidget(
+            attrs={
+                'placeholder': 'Start',
+                'data-collapsed': True,
+            }
+        ),
+        label="Resolved",
+    )
+    end_resolved = forms.DateField(
+        required=False,
+        widget=DateWidget(
+            attrs={
+                'placeholder': 'End',
+                'data-collapsed': True,
+            }
+        ),
+        label="",
+    )
+    start_planned_start = forms.DateField(
+        required=False,
+        widget=DateWidget(
+            attrs={
+                'placeholder': 'Start',
+                'data-collapsed': True,
+            }
+        ),
+        label="Planed start",
+    )
+    end_planned_start = forms.DateField(
+        required=False,
+        widget=DateWidget(
+            attrs={
+                'placeholder': 'End',
+                'data-collapsed': True,
+            }
+        ),
+        label="",
+    )
+    start_planned_end = forms.DateField(
+        required=False,
+        widget=DateWidget(
+            attrs={
+                'placeholder': 'Start',
+                'data-collapsed': True,
+            }
+        ),
+        label="Planed end",
+    )
+    end_planned_end = forms.DateField(
+        required=False,
+        widget=DateWidget(
+            attrs={
+                'placeholder': 'End',
+                'data-collapsed': True,
+            }
+        ),
+        label="",
     )

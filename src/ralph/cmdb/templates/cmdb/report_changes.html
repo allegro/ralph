@@ -7,6 +7,8 @@
 
 {% block content %}
 	<h3>{{ title }}</h3>
+    {% if form %}{% include 'cmdb/form_filters.html' with form=form %}{% endif %}
+
     <table class="table table-striped table-bordered table-condensed ">
         <thead>
             <tr>

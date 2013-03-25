@@ -712,7 +712,7 @@ class ReportDevices(SidebarReports, Base):
             self.form_support_range = SupportRangeReportForm(initial={
                 's_start': datetime.date.today() - datetime.timedelta(days=30),
                 's_end': datetime.date.today(),
-                })
+            })
         # Deprecation Range
         d_start = self.request.GET.get('d_start', None)
         d_end = self.request.GET.get('d_end', None)

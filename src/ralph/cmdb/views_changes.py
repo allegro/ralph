@@ -22,9 +22,18 @@ from django.utils import simplejson
 import ralph.cmdb.models as db
 from ralph.cmdb.models_changes import CI_CHANGE_TYPES
 from ralph.cmdb.views import BaseCMDBView, get_icon_for
-from ralph.cmdb.forms import CIChangeSearchForm, CIReportsParamsForm
-from ralph.cmdb.util import PaginatedView
+from ralph.cmdb.forms import (
+    CIChangeSearchForm,
+    CIReportsParamsForm,
+    ReportFilters,
+    ReportFiltersDateRamge,
+)
+from ralph.cmdb.util import PaginatedView, report_filters
+from ralph.cmdb.models_ci import CI
+from ralph.account.models import Perm, ralph_permission
+from django.utils.translation import ugettext_lazy as _
 
+JIRA_URL = urljoin(settings.ISSUETRACKERS['default']['URL'], 'browse')
 
 
 class ChangesBase(BaseCMDBView):
@@ -229,11 +238,64 @@ def _table_colums():
     return columns
 
 
+def add_filter(request):
+    filters = []
+    if request.get('ci'):
+        ci_id = CI.objects.select_related('id').filter(
+            name=request.get('ci')
+        )
+        filters.append({'ci_id': ci_id[0]})
+    if request.get('assignee'):
+        filters.append({'assignee': request.get('assignee')})
+    if request.get('jira_id'):
+        filters.append({'jira_id': request.get('jira_id')})
+    if request.get('issue_type'):
+        filters.append({'issue_type': request.get('issue_type')})
+    if request.get('status'):
+        filters.append({'status': request.get('status')})
+    if request.get('start_update') and request.get('end_update'):
+        filters.append(
+            {'update_date__lte': request.get('start_update')}
+        )
+        filters.append(
+            {'update_date__gte': request.get('end_update')}
+        )
+    if request.get('start_resolved') and request.get('end_resolved'):
+        filters.append(
+            {'resolvet_date_lte': request.get('start_resolved')}
+        )
+        filters.append(
+            {'resolvet_date_gte': request.get('end_resolved')}
+        )
+    if request.get('start_planned_start') and request.get('end_planned_start'):
+        filters.append(
+            {'planned_start_date_lte': request.get('start_planned_start')}
+        )
+        filters.append(
+            {'planned_start_date_gte': request.get('end_planned_start')}
+        )
+    if request.get('start_planned_end') and request.get('end_planned_end'):
+        filters.append(
+            {'planned_end_date_lte': request.get('start_planned_end')}
+        )
+        filters.append(
+            {'planned_end_date_gte': request.get('start_planned_end')}
+        )
+    return filters
+
+
+
 class Problems(ChangesBase, PaginatedView, DataTableMixin):
     template_name = 'cmdb/report_changes.html'
     sort_variable_name = 'sort'
     export_variable_name = None  # fix in bob!
     columns = _table_colums()
+    perms = [
+        {
+            'perm': Perm.read_configuration_item_info_jira,
+            'msg': _("You don't have permission to see that."),
+        },
+    ]
 
     def get_context_data(self, *args, **kwargs):
         section = 'Problems'
@@ -249,16 +311,26 @@ class Problems(ChangesBase, PaginatedView, DataTableMixin):
             'url_query': self.request.GET,
             'sort': self.sort,
             'columns': self.columns,
-            'jira_url': urljoin(settings.ISSUETRACKERS['default']['URL'], 'browse'),
+            'jira_url': JIRA_URL,
             'subsection': section,
             'sidebar_selected': section,
             'title': section,
+            'form': {
+                'filters': ReportFilters(self.request.GET),
+                'date_range': ReportFiltersDateRamge(self.request.GET),
+            },
         })
         return ret
 
+    @ralph_permission(perms)
     def get(self, *args, **kwargs):
-        problems = db.CIProblem.objects.order_by('-update_date')
-        self.data_table_query(problems)
+        self.data_table_query(
+            report_filters(
+                cls=db.CIProblem,
+                order='-update_date',
+                filters=add_filter(self.request.GET),
+            )
+        )
         return super(Problems, self).get(*args, **kwargs)
 
 
@@ -267,6 +339,12 @@ class Incidents(ChangesBase, PaginatedView, DataTableMixin):
     sort_variable_name = 'sort'
     export_variable_name = None  # fix in bob!
     columns = _table_colums()
+    perms = [
+        {
+            'perm': Perm.read_configuration_item_info_jira,
+            'msg': _("You don't have permission to see that."),
+        },
+    ]
 
     def get_context_data(self, *args, **kwargs):
         section = 'Incidents'
@@ -282,16 +360,26 @@ class Incidents(ChangesBase, PaginatedView, DataTableMixin):
             'url_query': self.request.GET,
             'sort': self.sort,
             'columns': self.columns,
-            'jira_url': urljoin(settings.ISSUETRACKERS['default']['URL'], 'browse'),
+            'jira_url': JIRA_URL,
             'subsection': section,
             'sidebar_selected': section,
             'title': section,
+            'form': {
+                'filters': ReportFilters(self.request.GET),
+                'date_range': ReportFiltersDateRamge(self.request.GET),
+            },
         })
         return ret
 
+    @ralph_permission(perms)
     def get(self, *args, **kwargs):
-        incidents = db.CIIncident.objects.order_by('-update_date')
-        self.data_table_query(incidents)
+        self.data_table_query(
+            report_filters(
+                cls=db.CIIncident,
+                order='-update_date',
+                filters=add_filter(self.request.GET),
+            )
+        )
         return super(Incidents, self).get(*args, **kwargs)
 
 
@@ -300,6 +388,12 @@ class JiraChanges(ChangesBase, PaginatedView, DataTableMixin):
     sort_variable_name = 'sort'
     export_variable_name = None  # fix in bob!
     columns = _table_colums()
+    perms = [
+        {
+            'perm': Perm.read_configuration_item_info_jira,
+            'msg': _("You don't have permission to see that."),
+        },
+    ]
 
     def get_context_data(self, *args, **kwargs):
         section = 'Jira Changes'
@@ -315,16 +409,26 @@ class JiraChanges(ChangesBase, PaginatedView, DataTableMixin):
             'url_query': self.request.GET,
             'sort': self.sort,
             'columns': self.columns,
-            'jira_url': urljoin(settings.ISSUETRACKERS['default']['URL'], 'browse'),
+            'jira_url': JIRA_URL,
             'subsection': section,
             'sidebar_selected': section,
             'title': section,
+            'form': {
+                'filters': ReportFilters(self.request.GET),
+                'date_range': ReportFiltersDateRamge(self.request.GET),
+            },
         })
         return ret
 
+    @ralph_permission(perms)
     def get(self, *args, **kwargs):
-        jira_changes = db.JiraChanges.objects.order_by('-update_date')
-        self.data_table_query(jira_changes)
+        self.data_table_query(
+            report_filters(
+                cls=db.JiraChanges,
+                order='-update_date',
+                filters=add_filter(self.request.GET),
+            )
+        )
         return super(JiraChanges, self).get(*args, **kwargs)
 
 
