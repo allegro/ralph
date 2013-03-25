@@ -35,7 +35,7 @@ class BaseUser(Base):
                 preferences = (
                     (
                         reverse('user_home_page', args=[]),
-                        'Home Page',
+                        _('Home Page'),
                         'fugue-home'
                     ),
                 )
@@ -79,13 +79,13 @@ class BaseUserPreferenceEdit(BaseUser):
             self.form = self.Form(self.request.POST, instance=instance)
             if self.form.is_valid():
                 self.form.save()
-                messages.success(self.request, "Changes saved.")
+                messages.success(self.request, _("Changes saved."))
             return super(BaseUserPreferenceEdit, self).get(*args, **kwargs)
 
     def get_context_data(self, *args, **kwargs):
         ret = super(BaseUserPreferenceEdit, self).get_context_data(**kwargs)
         ret.update({
-            'section': 'User Preference - ' + self.header,
+            'section': _('User Preference - ') + self.header,
             'form': self.form,
             'action_url': reverse('user_home_page', args=[]),
             'header': self.header
@@ -96,7 +96,7 @@ class BaseUserPreferenceEdit(BaseUser):
 class UserHomePageEdit(BaseUserPreferenceEdit):
     Form = UserHomePageForm
     preference_type = Preference.home_page.id
-    header = 'Home Page'
+    header = _('Home Page')
 
 
 @sensitive_post_parameters()
