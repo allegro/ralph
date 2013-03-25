@@ -28,7 +28,7 @@ from ralph.cmdb.forms import (
     ReportFilters,
     ReportFiltersDateRamge,
 )
-from ralph.cmdb.util import PaginatedView, report_filters
+from ralph.cmdb.util import report_filters, add_filter
 from ralph.cmdb.models_ci import CI
 from ralph.account.models import Perm, ralph_permission
 from django.utils.translation import ugettext_lazy as _
@@ -123,7 +123,7 @@ class Change(ChangesBase):
         return super(Change, self).get(*args, **kwargs)
 
 
-class Changes(ChangesBase, PaginatedView):
+class Changes(ChangesBase):
     template_name = 'cmdb/search_changes.html'
 
     def get_context_data(self, **kwargs):
@@ -238,54 +238,7 @@ def _table_colums():
     return columns
 
 
-def add_filter(request):
-    filters = []
-    if request.get('ci'):
-        ci_id = CI.objects.select_related('id').filter(
-            name=request.get('ci')
-        )
-        filters.append({'ci_id': ci_id[0]})
-    if request.get('assignee'):
-        filters.append({'assignee': request.get('assignee')})
-    if request.get('jira_id'):
-        filters.append({'jira_id': request.get('jira_id')})
-    if request.get('issue_type'):
-        filters.append({'issue_type': request.get('issue_type')})
-    if request.get('status'):
-        filters.append({'status': request.get('status')})
-    if request.get('start_update') and request.get('end_update'):
-        filters.append(
-            {'update_date__lte': request.get('start_update')}
-        )
-        filters.append(
-            {'update_date__gte': request.get('end_update')}
-        )
-    if request.get('start_resolved') and request.get('end_resolved'):
-        filters.append(
-            {'resolvet_date_lte': request.get('start_resolved')}
-        )
-        filters.append(
-            {'resolvet_date_gte': request.get('end_resolved')}
-        )
-    if request.get('start_planned_start') and request.get('end_planned_start'):
-        filters.append(
-            {'planned_start_date_lte': request.get('start_planned_start')}
-        )
-        filters.append(
-            {'planned_start_date_gte': request.get('end_planned_start')}
-        )
-    if request.get('start_planned_end') and request.get('end_planned_end'):
-        filters.append(
-            {'planned_end_date_lte': request.get('start_planned_end')}
-        )
-        filters.append(
-            {'planned_end_date_gte': request.get('start_planned_end')}
-        )
-    return filters
-
-
-
-class Problems(ChangesBase, PaginatedView, DataTableMixin):
+class Problems(ChangesBase, DataTableMixin):
     template_name = 'cmdb/report_changes.html'
     sort_variable_name = 'sort'
     export_variable_name = None  # fix in bob!
@@ -334,7 +287,7 @@ class Problems(ChangesBase, PaginatedView, DataTableMixin):
         return super(Problems, self).get(*args, **kwargs)
 
 
-class Incidents(ChangesBase, PaginatedView, DataTableMixin):
+class Incidents(ChangesBase, DataTableMixin):
     template_name = 'cmdb/report_changes.html'
     sort_variable_name = 'sort'
     export_variable_name = None  # fix in bob!
@@ -383,7 +336,7 @@ class Incidents(ChangesBase, PaginatedView, DataTableMixin):
         return super(Incidents, self).get(*args, **kwargs)
 
 
-class JiraChanges(ChangesBase, PaginatedView, DataTableMixin):
+class JiraChanges(ChangesBase, DataTableMixin):
     template_name = 'cmdb/report_changes.html'
     sort_variable_name = 'sort'
     export_variable_name = None  # fix in bob!
@@ -432,7 +385,7 @@ class JiraChanges(ChangesBase, PaginatedView, DataTableMixin):
         return super(JiraChanges, self).get(*args, **kwargs)
 
 
-class DashboardDetails(ChangesBase, PaginatedView):
+class DashboardDetails(ChangesBase):
     template_name = 'cmdb/dashboard_details_ci.html'
 
     def get_context_data(self, **kwargs):
@@ -669,7 +622,7 @@ class Dashboard(ChangesBase):
         return super(Dashboard, self).get(*args)
 
 
-class Reports(ChangesBase, PaginatedView):
+class Reports(ChangesBase):
     template_name = 'cmdb/view_report.html'
     exporting_csv_file = False
 
