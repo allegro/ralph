@@ -23,7 +23,7 @@ def all(iterable):
 
 class SimpleDHCPManager(object):
     def __init__(self, api_url, api_username, api_key, dhcp_config, restart,
-            logger, dc, **kwargs):
+            logger, dc, with_networks, **kwargs):
         self.api_url = api_url.rstrip('/')
         self.api_username = api_username
         self.api_key = api_key
@@ -31,6 +31,7 @@ class SimpleDHCPManager(object):
         self.dhcp_service_name = restart
         self.logger = logger
         self.dc = dc
+        self.with_networks = with_networks
 
     def update_configuration(self):
         config = self._get_configuration()
@@ -45,6 +46,8 @@ class SimpleDHCPManager(object):
                                                           self.api_key)
         if self.dc:
             url += '&dc=' + self.dc
+        if self.with_networks:
+            url += '&with_networks=1'
         req = urllib2.Request(url)
         try:
             resp = urllib2.urlopen(req)
@@ -138,6 +141,8 @@ def _get_cmd_options():
         'restart.')
     opts_parser.add_option('-v', '--verbose', help='Increase verbosity.',
         action="store_true", default=False)
+    opts_parser.add_option('-n', '--with-networks',
+        help='Include network config.', action="store_true", default=False)
     opts = opts_parser.parse_args()[0]
     result = vars(opts)
     result['logger'] = _setup_logging(opts.log_path, opts.verbose)
