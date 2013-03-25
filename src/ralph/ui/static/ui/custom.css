@@ -134,8 +134,8 @@ html .nolink {
 }
 
 h3 {
-    padding-bottom: 10px; 
-    padding-top: 10px; 
+    padding-bottom: 10px;
+    padding-top: 10px;
 }
 
 .details-report th{
@@ -182,4 +182,18 @@ tr.table-highlight td {
 {
     width: 15%;
     text-align: right;
+}
+
+.cmdb_report_filter .datepicker
+{
+    width: 55px;
+}
+
+.cmdb_report_filter .form_line:first-of-type
+{
+    padding-top: 0px;
+}
+.cmdb_report_filter .form_line
+{
+    padding-top: 10px;
 }
