@@ -1,9 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.conf.urls.defaults import patterns, include, url
-from django.core.urlresolvers import reverse
 from django.views.generic import RedirectView
 from tastypie.api import Api
-from ralph.account.models import get_user_home_page
 from ralph.business.api import (VentureResource, VentureLightResource,
                                 RoleResource, RoleLightResource,
                                 DepartmentResource, RolePropertyTypeResource,
@@ -22,6 +20,7 @@ from ralph.cmdb.api import (BusinessLineResource, ServiceResource,
                             CIChangeCMDBHistoryResource, CILayersResource,
                             CITypesResource)
 from ralph.discovery.api_donpedro import WindowsDeviceResource
+from ralph.ui.views.common import VhostRedirectView
 
 from django.conf import settings
 from django.contrib import admin
@@ -54,20 +53,6 @@ for r in (BusinessLineResource, ServiceResource, CIResource,
 # deployment API
 for r in (DeploymentResource,):
     v09_api.register(r())
-
-
-class VhostRedirectView(RedirectView):
-    def get_redirect_url(self, **kwargs):
-        host = self.request.META.get(
-            'HTTP_X_FORWARDED_HOST', self.request.META['HTTP_HOST'])
-        user_url = get_user_home_page(self.request.user.username)
-        if host == settings.DASHBOARD_SITE_DOMAIN:
-            self.url = '/ventures/'
-        elif user_url:
-            self.url = user_url
-        else:
-            self.url = reverse('search')
-        return super(VhostRedirectView, self).get_redirect_url(**kwargs)
 
 
 urlpatterns = patterns(
