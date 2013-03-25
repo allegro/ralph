@@ -11,10 +11,7 @@ from django.contrib.auth.models import User, Group
 from django.utils.translation import ugettext_lazy as _
 
 from lck.django.activitylog.admin import IPInline, UserAgentInline
-from lck.django.common.admin import (
-    ForeignKeyAutocompleteTabularInline,
-    ModelAdmin,
-)
+from lck.django.common.admin import ForeignKeyAutocompleteTabularInline
 from lck.django.profile.admin import ProfileInlineFormSet
 from tastypie.models import ApiKey
 
@@ -30,8 +27,14 @@ class ProfileInline(admin.StackedInline):
 
 class ProfileBoundPermInline(ForeignKeyAutocompleteTabularInline):
     model = BoundPerm
-    exclude = ['created', 'modified', 'created_by', 'modified_by', 'role',
-            'group']
+    exclude = [
+        'created',
+        'modified',
+        'created_by',
+        'modified_by',
+        'role',
+        'group'
+    ]
     related_search_fields = {
         'venture': ['^name'],
     }
@@ -75,15 +78,31 @@ class ProfileAdmin(UserAdmin):
     groups_show.short_description = _("groups")
 
     inlines = [
-            ProfileInline, ProfileBoundPermInline, ApiKeyInline,
-            ProfileIPInline, ProfileUserAgentInline, UserPreferenceInline,
+        ProfileInline,
+        ProfileBoundPermInline,
+        ApiKeyInline,
+        ProfileIPInline,
+        ProfileUserAgentInline,
+        UserPreferenceInline,
     ]
-    list_display = ('username', 'email', 'first_name', 'last_name',
-        groups_show, 'is_staff', 'is_active')
+    list_display = (
+        'username',
+        'email',
+        'first_name',
+        'last_name',
+        groups_show,
+        'is_staff',
+        'is_active'
+    )
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups',)
     save_on_top = True
-    search_fields = ('username', 'first_name', 'last_name',
-        'email', 'profile__nick')
+    search_fields = (
+        'username',
+        'first_name',
+        'last_name',
+        'email',
+        'profile__nick'
+    )
 
 
 admin.site.unregister(User)
@@ -92,8 +111,14 @@ admin.site.register(User, ProfileAdmin)
 
 class GroupBoundPermInline(ForeignKeyAutocompleteTabularInline):
     model = BoundPerm
-    exclude = ['created', 'modified', 'created_by', 'modified_by', 'role',
-            'profile']
+    exclude = [
+        'created',
+        'modified',
+        'created_by',
+        'modified_by',
+        'role',
+        'profile'
+    ]
     related_search_fields = {
         'venture': ['^name'],
     }

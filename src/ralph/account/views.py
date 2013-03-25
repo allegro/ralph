@@ -10,21 +10,21 @@ import urlparse
 
 from bob.menu import MenuItem, MenuHeader
 from django.conf import settings
-from django.core.urlresolvers import reverse
 from django.contrib import messages
+from django.contrib.auth import REDIRECT_FIELD_NAME, login as auth_login
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.sites.models import get_current_site
+from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.template.response import TemplateResponse
-from django.contrib.auth import REDIRECT_FIELD_NAME, login as auth_login
-from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.sites.models import get_current_site
 
 
 from ralph.account.forms import UserHomePageForm
-from ralph.account.models import Preference, UserPreference, get_user_home_page
+from ralph.account.models import get_user_home_page, Preference, UserPreference
 from ralph.ui.views.common import Base
 
 
@@ -116,7 +116,9 @@ def login(request, template_name='registration/login.html',
             netloc = urlparse.urlparse(redirect_to)[1]
             # Use default setting if redirect_to is empty
             if redirect_to == reverse('search'):
-                user_redirect = get_user_home_page(request.POST.get('username'))
+                user_redirect = get_user_home_page(
+                    request.POST.get('username')
+                )
                 if user_redirect:
                     redirect_to = user_redirect
             if not redirect_to:
@@ -142,4 +144,6 @@ def login(request, template_name='registration/login.html',
     }
     if extra_context is not None:
         context.update(extra_context)
-    return TemplateResponse(request, template_name, context, current_app=current_app)
+    return TemplateResponse(
+        request, template_name, context, current_app=current_app
+    )
