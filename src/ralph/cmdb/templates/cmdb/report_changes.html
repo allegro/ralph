@@ -2,9 +2,6 @@
 {% load icons %}
 {% load bob %}
 {% load query %}
-
-
-
 {% block content %}
 	<h3>{{ title }}</h3>
     {% if form %}{% include 'cmdb/form_filters.html' with form=form %}{% endif %}

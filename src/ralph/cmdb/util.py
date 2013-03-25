@@ -6,6 +6,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from django.db.models import Q
+from bob.data_table import DataTableMixin, DataTableColumn
 
 
 def report_filters(cls, order, filters=None):
@@ -64,3 +65,72 @@ def add_filter(request, ci=None):
             {'planned_end_date_gte': request.get('start_planned_end')}
         )
     return filters
+
+
+def table_colums():
+    _ = DataTableColumn
+    columns = [
+        _(
+            'Issue updated',
+            field='update_date',
+            sort_expression='update_date',
+            bob_tag=True,
+        ),
+        _(
+            'Type',
+            field='issue_type',
+            sort_expression='issue_type',
+            bob_tag=True,
+
+        ),
+        _(
+            'Status',
+            field='resolvet_date',
+            sort_expression='resolvet_date',
+            bob_tag=True,
+        ),
+        _(
+            'Ci',
+            field='ci',
+            sort_expression='ci',
+            bob_tag=True,
+        ),
+        _(
+            'Summary',
+            field='summary',
+            bob_tag=True,
+        ),
+        _(
+            'Assignee',
+            field='assignee',
+            bob_tag=True,
+        ),
+        _(
+            'Description',
+            field='description',
+            bob_tag=True,
+        ),
+        _(
+            'Analysis',
+            field='analysis',
+            bob_tag=True,
+        ),
+        _(
+            'Problems',
+            field='problems',
+            bob_tag=True,
+        ),
+        _(
+            'Planed start',
+            field='planned_start_date',
+            sort_expression='planned_start_date',
+            bob_tag=True,
+        ),
+        _(
+            'Planed end',
+            field='planned_end_date',
+            sort_expression='planned_end_date',
+            bob_tag=True,
+        ),
+    ]
+    return columns
