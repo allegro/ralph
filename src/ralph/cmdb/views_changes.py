@@ -9,7 +9,7 @@ import calendar
 import datetime
 from urlparse import urljoin
 
-from bob.data_table import DataTableMixin
+from bob.data_table import DataTableMixin, DataTableColumn
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -123,11 +123,71 @@ class Change(ChangesBase):
         return super(Change, self).get(*args, **kwargs)
 
 
-class Changes(ChangesBase):
-    template_name = 'cmdb/search_changes.html'
 
-    def get_context_data(self, **kwargs):
+class Changes(ChangesBase, DataTableMixin):
+    template_name = 'cmdb/search_changes.html'
+    sort_variable_name = 'sort'
+    export_variable_name = None  # fix in bob!
+    perms = [
+        {
+            'perm': Perm.read_configuration_item_info_jira,
+            'msg': _("You don't have permission to see that."),
+        },
+    ]
+    _ = DataTableColumn
+    columns = [
+        _(
+            'Time',
+            field='time',
+            sort_expression='time',
+            bob_tag=True,
+        ),
+        _(
+            'Comment',
+            field='comment',
+            sort_expression='comment',
+            bob_tag=True,
+        ),
+        _(
+            'Configuration Item',
+            field='ci',
+            sort_expression='ci',
+            bob_tag=True,
+        ),
+        _(
+            'Type',
+            field='priority',
+            sort_expression='priority',
+            bob_tag=True,
+        ),
+        _(
+            'Source',
+            field='type',
+            sort_expression='type',
+            bob_tag=True,
+        ),
+        _(
+            'Jira Ticket',
+            field='ticket',
+            sort_expression='ticket',
+            bob_tag=True,
+        ),
+        _(
+            'Details',
+            field='details',
+            sort_expression='details',
+            bob_tag=True,
+        ),
+    ]
+
+    def get_context_data(self, *args, **kwargs):
         ret = super(Changes, self).get_context_data(**kwargs)
+        ret.update(
+            super(Changes, self).get_context_data_paginator(
+                *args,
+                **kwargs
+            )
+        )
         subsection = ''
         get_type = self.request.GET.get('type')
         if get_type:
@@ -143,14 +203,18 @@ class Changes(ChangesBase):
         }
         sidebar_selected = select.get(get_type, 'all events')
         ret.update({
-            'changes': [(x, get_icon_for(x.ci)) for x in self.changes],
+            'sort_variable_name': self.sort_variable_name,
+            'url_query': self.request.GET,
+            'sort': self.sort,
+            'columns': self.columns,
             'form': self.form,
             'subsection': subsection,
             'sidebar_selected': sidebar_selected,
-            'jira_url': urljoin(settings.ISSUETRACKERS['default']['URL'], 'browse'),
+            'jira_url': JIRA_URL,
         })
         return ret
 
+    @ralph_permission(perms)
     def get(self, *args, **kwargs):
         values = self.request.GET
         self.form = CIChangeSearchForm(initial=values)
@@ -164,8 +228,7 @@ class Changes(ChangesBase):
         if values.get('uid'):
             changes = changes.filter(Q(ci__name__icontains=values.get('uid')))
         changes = changes.order_by('-time')
-        self.paginate(changes)
-        self.changes = self.page_contents
+        self.data_table_query(changes)
         return super(Changes, self).get(*args)
 
 
