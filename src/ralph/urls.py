@@ -1,7 +1,9 @@
+from django.contrib.auth.decorators import login_required
 from django.conf.urls.defaults import patterns, include, url
 from django.core.urlresolvers import reverse
 from django.views.generic import RedirectView
 from tastypie.api import Api
+from ralph.account.models import get_user_home_page
 from ralph.business.api import (VentureResource, VentureLightResource,
                                 RoleResource, RoleLightResource,
                                 DepartmentResource, RolePropertyTypeResource,
@@ -58,8 +60,11 @@ class VhostRedirectView(RedirectView):
     def get_redirect_url(self, **kwargs):
         host = self.request.META.get(
             'HTTP_X_FORWARDED_HOST', self.request.META['HTTP_HOST'])
+        user_url = get_user_home_page(self.request.user.username)
         if host == settings.DASHBOARD_SITE_DOMAIN:
             self.url = '/ventures/'
+        elif user_url:
+            self.url = user_url
         else:
             self.url = reverse('search')
         return super(VhostRedirectView, self).get_redirect_url(**kwargs)
@@ -67,7 +72,7 @@ class VhostRedirectView(RedirectView):
 
 urlpatterns = patterns(
     '',
-    url(r'^$', VhostRedirectView.as_view(permanent=False)),
+    url(r'^$', login_required(VhostRedirectView.as_view(permanent=False))),
     url(r'^report-a-bug$', RedirectView.as_view(url=settings.BUGTRACKER_URL)),
     url(r'^favicon\.ico$',
         RedirectView.as_view(url='/static/img/favicon.ico')),
@@ -77,7 +82,7 @@ urlpatterns = patterns(
      {'document_root': settings.STATIC_ROOT, 'show_indexes': True}),
     (r'^u/(?P<path>.*)$', 'django.views.static.serve',
      {'document_root': settings.MEDIA_ROOT, 'show_indexes': True}),
-    url(r'^login/', 'ralph.account.views.login',
+    url(r'^login/', 'django.contrib.auth.views.login',
         {'template_name': 'admin/login.html'}),
     url(r'^logout/', 'django.contrib.auth.views.logout'),  # {'template_name': 'admin/logout.html'}),
     url(r'^ventures/(?P<venture_id>.+)/$',
