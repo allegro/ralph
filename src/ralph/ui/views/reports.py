@@ -10,7 +10,12 @@ import datetime
 import cStringIO as StringIO
 
 from django.db import models as db
-from django.http import HttpResponseForbidden, HttpResponse, Http404
+from django.http import (
+    Http404,
+    HttpResponse,
+    HttpResponseForbidden,
+    HttpResponseRedirect,
+)
 from django.core.cache import DEFAULT_CACHE_ALIAS, get_cache
 from django.conf import settings
 from django.contrib import messages
@@ -283,6 +288,20 @@ class AsyncReportMixin(object):
             result_ttl=0,
         )
 
+    def invalidate_data(self, *args, **kwargs):
+        cache_key = get_cache_key(
+            self.data_provider.func_name,
+            *args,
+            **kwargs
+        )
+        cache = get_cache(
+            self.data_provider.async_report_cache_alias,
+        )
+        data = cache.get(cache_key)
+        if data is None or data == 'in progress':
+            return
+        cache.delete(cache_key)
+
 
 class ReportMargins(SidebarReports, Base):
     template_name = 'ui/report_margins.html'
@@ -535,7 +554,6 @@ class ReportVentures(SidebarReports, AsyncReportMixin, Base):
             filename='ReportVentures.csv',
         )
 
-
     @ralph_permission(perms)
     def get(self, *args, **kwargs):
         self.venture_data = []
@@ -563,6 +581,21 @@ class ReportVentures(SidebarReports, AsyncReportMixin, Base):
             ).order_by('path')
             start = self.form.cleaned_data['start']
             end = self.form.cleaned_data['end']
+            if self.request.GET.get('invalidate-cache') == 'true':
+                self.invalidate_data(
+                    start,
+                    end,
+                    self.ventures,
+                    self.extra_types,
+                )
+                get_params = self.request.GET.dict()
+                del get_params['invalidate-cache']
+                return HttpResponseRedirect('%s?%s' % (
+                    self.request.path,
+                    '&'.join([
+                        '%s=%s' % (key, value) for key, value in get_params.items()
+                    ]),
+                ))
             self.venture_data = self.get_data(
                 start,
                 end,
@@ -1042,6 +1075,16 @@ class ReportDevicePricesPerVenture(SidebarReports, AsyncReportMixin, Base):
         self.form = ReportVentureCost(
             initial={'venture': self.venture_id},
         )
+        if self.request.GET.get('invalidate-cache', '') == 'true':
+            self.invalidate_data(venture_id=self.venture_id)
+            get_params = self.request.GET.dict()
+            del get_params['invalidate-cache']
+            return HttpResponseRedirect('%s?%s' % (
+                self.request.path,
+                '&'.join([
+                    '%s=%s' % (key, value) for key, value in get_params.items()
+                ]),
+            ))
         if self.venture_id:
             try:
                 venture = Venture.objects.get(id=self.venture_id)

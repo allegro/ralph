@@ -39,6 +39,10 @@
                                 <a href="?export-all=csv" class="btn">
                                     {% icon 'fugue-fugue-icon fugue-blue-document-excel-csv' %}&nbsp;Export all devices to CSV
                                 </a>{% endspaceless %}
+                            {% spaceless %}
+                                <a href="?invalidate-cache=true{% if venture %}&venture={{ venture }}{% endif %}" class="btn">
+                                    {% icon 'fugue-fugue-icon fugue-arrow-circle-double' %}&nbsp;Refresh cache
+                                </a>{% endspaceless %}
                         </div>
                         {% endif %}
                     {% endfor %}

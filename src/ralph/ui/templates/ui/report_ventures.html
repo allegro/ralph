@@ -22,6 +22,9 @@
     <button type="submit" class="btn">{% spaceless %}
         {% icon 'fugue-calendar-search-result' %}&nbsp;Update
         {% endspaceless %}</button>
+    <button class="btn" name="invalidate-cache" value="true">{% spaceless %}
+        {% icon 'fugue-arrow-circle-double' %}&nbsp;Refresh cache
+    {% endspaceless %}</button>
     <button class="btn pull-right" name="export" value="csv">{% spaceless %}
         {% icon 'fugue-document-excel-csv' %}&nbsp;Export to CSV
     {% endspaceless %}</button>
