@@ -448,7 +448,7 @@ def _report_ventures_get_totals(start, end, query, extra_types):
     }
 
 
-@async_report_provider(timeout=3600)
+@async_report_provider(timeout=3600, cache_alias='bigdata')
 def _report_ventures_data_provider(start, end, ventures_ids, extra_types):
     ventures = Venture.objects.filter(id__in=ventures_ids).order_by('path')
     total_cloud_cost = get_total_cost(
@@ -593,7 +593,8 @@ class ReportVentures(SidebarReports, AsyncReportMixin, Base):
                 return HttpResponseRedirect('%s?%s' % (
                     self.request.path,
                     '&'.join([
-                        '%s=%s' % (key, value) for key, value in get_params.items()
+                        '%s=%s' % (key, value)
+                        for key, value in get_params.items()
                     ]),
                 ))
             self.venture_data = self.get_data(
@@ -993,7 +994,7 @@ def _prices_per_venture_device_details(device, exclude=[]):
     }
 
 
-@async_report_provider(timeout=3600)
+@async_report_provider(timeout=3600, cache_alias='bigdata')
 def _prices_per_venture_data_provider(venture_id=None):
     if venture_id:
         try:

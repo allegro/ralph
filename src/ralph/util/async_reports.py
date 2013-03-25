@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 
 from hashlib import md5
 
+from django.conf import settings
 from django.core.cache import DEFAULT_CACHE_ALIAS, get_cache
 
 
@@ -28,15 +29,22 @@ def async_report_provider(timeout, cache_alias=DEFAULT_CACHE_ALIAS):
     def _async_report_provider(func):
         def wrapper(*args, **kwargs):
             result = func(*args, **kwargs)
-            cache = get_cache(cache_alias)
+            cache = get_cache(
+                cache_alias
+                if cache_alias in settings.CACHES else DEFAULT_CACHE_ALIAS,
+            )
             cache.set(
                 get_cache_key(func.func_name, *args, **kwargs),
                 result,
                 timeout,
             )
             return result
-        wrapper.func_dict['async_report_results_expiration'] = timeout
-        wrapper.func_dict['async_report_cache_alias'] = cache_alias
+        wrapper.func_dict.update({
+            'async_report_results_expiration': timeout,
+            'async_report_cache_alias': cache_alias if (
+                cache_alias in settings.CACHES
+            ) else DEFAULT_CACHE_ALIAS
+        })
         wrapper.__name__ = func.__name__
         wrapper.__module__ = func.__module__
         return wrapper
