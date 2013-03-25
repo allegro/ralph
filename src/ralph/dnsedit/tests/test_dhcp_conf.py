@@ -70,7 +70,7 @@ class DHCPConfTest(TestCase):
         net.save()
         entry = DHCPEntry(ip='127.0.0.1', mac='deadbeefcafe')
         entry.save()
-        config = generate_dhcp_config(dc=dc)
+        config = generate_dhcp_config(dc=dc, with_networks=True)
         # remove first line with the date and last line
         config = '\n'.join(config.splitlines()[1:-1])
         self.assertEqual(
