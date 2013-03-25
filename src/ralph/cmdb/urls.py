@@ -100,7 +100,7 @@ urlpatterns = patterns(
     (r'^changes/problems$', login_required(Problems.as_view())),
     (r'^changes/jira_changes$', login_required(JiraChanges.as_view())),
 
-    (r'^changes/timeline$', login_required(TimeLine.as_view())),
+    url(r'^changes/timeline$', login_required(TimeLine.as_view()), name='cmdb_timeline'),
     (r'^changes/timeline_ajax$', login_required(TimeLine.get_ajax)),
 
     (r'^changes/dashboard$', login_required(Dashboard.as_view())),
