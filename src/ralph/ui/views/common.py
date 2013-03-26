@@ -14,7 +14,12 @@ from django.db import models as db
 from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.utils import simplejson as json
 from django.utils.translation import ugettext_lazy as _
-from django.views.generic import UpdateView, DetailView, TemplateView
+from django.views.generic import (
+    DetailView,
+    RedirectView,
+    TemplateView,
+    UpdateView,
+)
 
 from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Language, TagStem
@@ -22,7 +27,7 @@ from bob.menu import MenuItem
 from powerdns.models import Record
 from ralph.discovery.models_device import DeprecationKind, MarginKind
 
-from ralph.account.models import Perm
+from ralph.account.models import get_user_home_page, Perm
 from ralph.business.models import RolePropertyValue, Venture, VentureRole
 from ralph.cmdb.models import CI
 from ralph.deployment.util import get_next_free_hostname, get_first_free_ip
@@ -90,11 +95,15 @@ TEMPLATE_MENU_ITEMS = [
         href='/ui/racks//move/',
     ),
 ]
+CHANGELOG_URL = "http://ralph.allegrogroup.com/doc/changes.html"
 
 
 def _get_balancers(dev):
-    for ip in dev.ipaddress_set.select_related().all():
-        for member in ip.loadbalancermember_set.order_by('device'):
+    for ip in dev.ipaddress_set.all():
+        for member in ip.loadbalancermember_set.select_related(
+            'device__name',
+            'pool__name',
+        ).order_by('device'):
             yield {
                     'balancer': member.device.name,
                     'pool': member.pool.name,
@@ -102,7 +111,9 @@ def _get_balancers(dev):
                     'server': None,
                     'port': member.port,
             }
-    for vserv in dev.loadbalancervirtualserver_set.all():
+    for vserv in dev.loadbalancervirtualserver_set.select_related(
+        'default_pool__name',
+    ).all():
         yield {
             'balancer': dev.name,
             'pool': vserv.default_pool.name,
@@ -201,7 +212,7 @@ class BaseMixin(object):
             MenuItem(
                 "Version %s" % '.'.join((str(part) for part in VERSION)),
                 fugue_icon='fugue-document-number',
-                href=settings.BUGTRACKER_URL or '#',
+                href=CHANGELOG_URL,
             )
         )
         if self.request.user.is_staff:
@@ -209,8 +220,18 @@ class BaseMixin(object):
                 MenuItem('Admin', fugue_icon='fugue-toolbox', href='/admin'))
         footer_items.append(
             MenuItem(
-                '%s (logout)' % self.request.user,
+                '%s (preference)' % self.request.user,
                 fugue_icon='fugue-user',
+                view_name='preference',
+                view_args=[details or 'info', ''],
+                pull_right=True,
+                href=reverse('user_preference', args=[]),
+            )
+        )
+        footer_items.append(
+            MenuItem(
+                'logout',
+                fugue_icon='fugue-door-open-out',
                 view_name='logout',
                 view_args=[details or 'info', ''],
                 pull_right=True,
@@ -802,9 +823,10 @@ class Addresses(DeviceDetailView):
                         'network_name': network.name,
                         'first_free_ip': first_free_ip,
                     })
+        balancers = list(_get_balancers(self.object))
         ret.update({
             'canedit': can_edit,
-            'balancers': list(_get_balancers(self.object)),
+            'balancers': balancers,
             'dnsformset': self.dns_formset,
             'dhcpformset': self.dhcp_formset,
             'ipformset': self.ip_formset,
@@ -1263,3 +1285,17 @@ class Software(DeviceDetailView):
             'components': _get_details(self.object, purchase_only=False),
             })
         return ret
+
+
+class VhostRedirectView(RedirectView):
+    def get_redirect_url(self, **kwargs):
+        host = self.request.META.get(
+            'HTTP_X_FORWARDED_HOST', self.request.META['HTTP_HOST'])
+        user_url = get_user_home_page(self.request.user.username)
+        if host == settings.DASHBOARD_SITE_DOMAIN:
+            self.url = '/ventures/'
+        elif user_url:
+            self.url = user_url
+        else:
+            self.url = reverse('search')
+        return super(VhostRedirectView, self).get_redirect_url(**kwargs)

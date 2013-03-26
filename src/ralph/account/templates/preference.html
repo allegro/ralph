@@ -1,0 +1,8 @@
+{%extends 'base.html'%}
+{% load bob %}
+{% load icons %}
+
+{% block content %}
+    <h2>{{ header }}</h2><hr/>
+    {% form_horizontal form=form method="post" action=action_url %}
+{% endblock %}
