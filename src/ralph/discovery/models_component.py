@@ -152,8 +152,8 @@ class ComponentModelGroup(Named, TimeTrackable, SavingUser):
                 GenericComponent, Software))
 
 
-class ComponentModel(Named.NonUnique, SavePrioritized,
-                     WithConcurrentGetOrCreate, SavingUser):
+class ComponentModel(SavePrioritized, WithConcurrentGetOrCreate, SavingUser):
+    name = db.CharField(verbose_name=_("name"), max_length=255)
     speed = db.PositiveIntegerField(verbose_name=_("speed (MHz)"),
         default=0, blank=True)
     cores = db.PositiveIntegerField(verbose_name=_("number of cores"),
@@ -170,6 +170,9 @@ class ComponentModel(Named.NonUnique, SavePrioritized,
         unique_together = ('speed', 'cores', 'size', 'type', 'family')
         verbose_name = _("component model")
         verbose_name_plural = _("component models")
+
+    def __unicode__(self):
+        return self.name
 
     @classmethod
     def concurrent_get_or_create(cls, *args, **kwargs):
@@ -373,6 +376,8 @@ class DiskShare(Component):
         for the specified values (for example, it has division by zero),
         NaN is returned instead of a price.
         """
+        if self.device and self.device.is_deprecated():
+            return 0
         if not (self.model and self.model.group):
             return 0
         size = self.get_total_size() / 1024
@@ -419,6 +424,8 @@ class DiskShareMount(TimeTrackable, WithConcurrentGetOrCreate):
         return self.size or self.share.get_total_size()
 
     def get_price(self):
+        if self.share.device and self.share.device.is_deprecated():
+            return 0
         if self.size and self.share.model and self.share.model.group:
             size = self.get_size() / 1024
             formula = self.share.get_price_formula()
@@ -573,7 +580,7 @@ class Software(Component):
         unique_together = ('device', 'path')
 
     def __unicode__(self):
-        return '%r at %r (%r)' % (self.label, self.path, self.model)
+        return '%r' % self.label
 
     @classmethod
     def create(cls, dev, path, model_name, priority, label=None, sn=None,
@@ -629,6 +636,34 @@ class SplunkUsage(Component):
         if not size:
             size = self.size
         return self.model.get_price(size=size)
+
+    @classmethod
+    def get_cost(cls, venture, start, end, shallow=False):
+        splunk_usage = cls.objects.filter(day__gte=start, day__lte=end)
+        if venture and venture != '*':
+            if shallow:
+                splunk_usage = splunk_usage.filter(device__venture=venture)
+            else:
+                splunk_usage = splunk_usage.filter(
+                    db.Q(device__venture=venture) |
+                    db.Q(device__venture__parent=venture) |
+                    db.Q(device__venture__parent__parent=venture) |
+                    db.Q(device__venture__parent__parent__parent=venture) |
+                    db.Q(device__venture__parent__parent__parent__parent=venture)
+                )
+        elif not venture: # specifically "devices with no venture set"
+            splunk_usage = splunk_usage.filter(device__venture=None)
+        if splunk_usage.count():
+            splunk_size = splunk_usage.aggregate(
+                db.Sum('size')
+            )['size__sum'] or 0
+            splunk_count = splunk_usage.values('device').distinct().count()
+            yesterday = datetime.date.today() - datetime.timedelta(days=1)
+            splunk_count_now = SplunkUsage.objects.filter(
+                    day=yesterday).values('device').distinct().count()
+            splunk_cost = splunk_usage[0].get_price(size=splunk_size)
+            return splunk_cost, splunk_count, splunk_count_now, splunk_size
+        return None, None, None, None
 
 
 class OperatingSystem(Component):

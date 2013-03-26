@@ -167,6 +167,7 @@ class UptimeSupport(db.Model):
     """Adds an `uptime` attribute to the model. This attribute is shifted
     by the current time on each get. Returns a timedelta object, accepts
     None, timedelta and int values on set."""
+
     uptime_seconds = db.PositiveIntegerField(
         verbose_name=_("uptime in seconds"), default=0)
     uptime_timestamp = db.DateTimeField(verbose_name=_("uptime timestamp"),
@@ -179,18 +180,18 @@ class UptimeSupport(db.Model):
     def uptime(self):
         if not self.uptime_seconds or not self.uptime_timestamp:
             return None
-        return datetime.now() - self.uptime_timestamp + \
-            timedelta(seconds=self.uptime_seconds)
+        return (datetime.datetime.now() - self.uptime_timestamp +
+                datetime.timedelta(seconds=self.uptime_seconds))
 
     @uptime.setter
     def uptime(self, value):
         if not value:
             del self.uptime
             return
-        if isinstance(value, timedelta):
+        if isinstance(value, datetime.timedelta):
             value = abs(int(value.total_seconds()))
         self.uptime_seconds = value
-        self.uptime_timestamp = datetime.now()
+        self.uptime_timestamp = datetime.datetime.now()
 
     @uptime.deleter
     def uptime(self):
@@ -208,7 +209,7 @@ class UptimeSupport(db.Model):
         hours = int(u.seconds / 60 / 60)
         minutes = int(u.seconds / 60) - 60 * hours
         seconds = int(u.seconds) - 3600 * hours - 60 * minutes
-        return msg + ", %02d:%02d:%02d" % (hours, minutes, seconds)
+        return "%s, %02d:%02d:%02d" % (msg, hours, minutes, seconds)
 
 
 class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
@@ -391,6 +392,10 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
                 },
             )
         elif dev.deleted:
+            # Ignore the priority and undelete even if it was manually deleted
+            priorities = dev.get_save_priorities()
+            priorities['deleted'] = 0
+            dev.update_save_priorities(priorities)
             dev.deleted = False
         if model and model.type != DeviceType.unknown.id:
             dev.model = model
@@ -511,6 +516,17 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
             return None
         else:
             return default_deprecation_kind
+
+    def is_deprecated(self):
+        """ Return True if device is Deprecated """
+        if not self.deprecation_date:
+            return False
+        today_midnight = datetime.datetime.combine(
+            datetime.datetime.today(),
+            datetime.time(),
+        )
+        return self.deprecation_date < today_midnight
+
 
     def get_core_count(self):
         return sum(cpu.get_cores() for cpu in self.processor_set.all())

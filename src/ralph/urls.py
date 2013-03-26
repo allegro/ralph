@@ -16,7 +16,6 @@ from ralph.cmdb.api import (BusinessLineResource, ServiceResource,
                             CIRelationResource, CIResource, CIChangeResource,
                             CIChangeGitResource, CIChangePuppetResource,
                             CIChangeZabbixTriggerResource,
-                            CIChangeStatusOfficeIncidentResource,
                             CIChangeCMDBHistoryResource, CILayersResource,
                             CITypesResource)
 from ralph.discovery.api_donpedro import WindowsDeviceResource
@@ -28,7 +27,7 @@ from ajax_select import urls as ajax_select_urls
 admin.autodiscover()
 
 v09_api = Api(api_name='v0.9')
-
+OPTIONAL_APPS = ['ralph_assets',]
 # business API
 for r in (VentureResource, VentureLightResource, RoleResource,
           RoleLightResource, DepartmentResource, RolePropertyTypeResource,
@@ -46,8 +45,7 @@ for r in (IPAddressResource, ModelGroupResource, ModelResource,
 for r in (BusinessLineResource, ServiceResource, CIResource,
           CIRelationResource, CIChangeResource, CIChangeGitResource,
           CIChangePuppetResource, CIChangeZabbixTriggerResource,
-          CIChangeStatusOfficeIncidentResource, CIChangeCMDBHistoryResource,
-          CITypesResource, CILayersResource):
+          CIChangeCMDBHistoryResource, CITypesResource, CILayersResource):
     v09_api.register(r())
 
 # deployment API
@@ -115,3 +113,8 @@ urlpatterns = patterns(
     (r'^admin/', include(admin.site.urls)),
 
 )
+
+for app in settings.INSTALLED_APPS:
+    if app in OPTIONAL_APPS:
+        app_urls = url(r'^{}/'.format(app[6:]), include('{}.urls'.format(app)))
+        urlpatterns.append(app_urls)

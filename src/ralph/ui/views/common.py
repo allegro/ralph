@@ -5,6 +5,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import datetime
+
 from django.conf import settings
 from django.contrib import messages
 from django.core.urlresolvers import reverse
@@ -58,12 +59,13 @@ from ralph.ui.forms.addresses import (
     IPAddressFormSet,
     DNSFormSet,
 )
-from ralph.util.pricing import is_deprecated
 from ralph.ui.forms.deployment import (
     ServerMoveStep1Form,
     ServerMoveStep2FormSet,
     ServerMoveStep3FormSet,
 )
+from ralph import VERSION
+
 
 SAVE_PRIORITY = 200
 HISTORY_PAGE_SIZE = 25
@@ -88,11 +90,15 @@ TEMPLATE_MENU_ITEMS = [
         href='/ui/racks//move/',
     ),
 ]
+CHANGELOG_URL = "http://ralph.allegrogroup.com/doc/changes.html"
 
 
 def _get_balancers(dev):
-    for ip in dev.ipaddress_set.select_related().all():
-        for member in ip.loadbalancermember_set.order_by('device'):
+    for ip in dev.ipaddress_set.all():
+        for member in ip.loadbalancermember_set.select_related(
+            'device__name',
+            'pool__name',
+        ).order_by('device'):
             yield {
                     'balancer': member.device.name,
                     'pool': member.pool.name,
@@ -100,7 +106,9 @@ def _get_balancers(dev):
                     'server': None,
                     'port': member.port,
             }
-    for vserv in dev.loadbalancervirtualserver_set.all():
+    for vserv in dev.loadbalancervirtualserver_set.select_related(
+        'default_pool__name',
+    ).all():
         yield {
             'balancer': dev.name,
             'pool': vserv.default_pool.name,
@@ -110,10 +118,12 @@ def _get_balancers(dev):
         }
 
 
-def _get_details(dev, purchase_only=False, with_price=False, ignore_deprecation=False):
+def _get_details(dev, purchase_only=False, with_price=False, ignore_deprecation=False, exclude=[]):
     for detail in pricing.details_all(
-        dev, purchase_only,
-        ignore_deprecation=ignore_deprecation
+        dev,
+        purchase_only,
+        ignore_deprecation=ignore_deprecation,
+        exclude=exclude,
     ):
         if 'icon' not in detail:
             if detail['group'] == 'dev':
@@ -182,12 +192,24 @@ class BaseMixin(object):
                 MenuItem('CMDB', fugue_icon='fugue-thermometer',
                          href='/cmdb/changes/timeline')
             )
+        if ('ralph_assets' in settings.INSTALLED_APPS):
+            mainmenu_items.append(
+                MenuItem('Assets', fugue_icon='fugue-box-label',
+                         href='/assets')
+            )
         if settings.BUGTRACKER_URL:
             mainmenu_items.append(
                 MenuItem(
                     'Report a bug', fugue_icon='fugue-bug', pull_right=True,
                     href=settings.BUGTRACKER_URL)
             )
+        footer_items.append(
+            MenuItem(
+                "Version %s" % '.'.join((str(part) for part in VERSION)),
+                fugue_icon='fugue-document-number',
+                href=CHANGELOG_URL,
+            )
+        )
         if self.request.user.is_staff:
             footer_items.append(
                 MenuItem('Admin', fugue_icon='fugue-toolbox', href='/admin'))
@@ -527,7 +549,7 @@ class Prices(DeviceUpdateView):
             'components': _get_details(self.object,
                                        purchase_only=False,
                                        with_price=True),
-            'deprecated': is_deprecated(self.object),
+            'deprecated': self.object.is_deprecated(),
         })
         return ret
 
@@ -786,9 +808,10 @@ class Addresses(DeviceDetailView):
                         'network_name': network.name,
                         'first_free_ip': first_free_ip,
                     })
+        balancers = list(_get_balancers(self.object))
         ret.update({
             'canedit': can_edit,
-            'balancers': list(_get_balancers(self.object)),
+            'balancers': balancers,
             'dnsformset': self.dns_formset,
             'dhcpformset': self.dhcp_formset,
             'ipformset': self.ip_formset,
@@ -825,7 +848,7 @@ class Costs(DeviceDetailView):
             'query_variable_name': query_variable_name,
             'ALWAYS_DATE': ALWAYS_DATE,
             'FOREVER_DATE': FOREVER_DATE,
-            'deprecated': is_deprecated(self.object),
+            'deprecated': self.object.is_deprecated(),
         })
         last_month = datetime.date.today() - datetime.timedelta(days=31)
         splunk = self.object.splunkusage_set.filter(

@@ -23,6 +23,10 @@ from ralph.cmdb.integration.ralph import AssetChangeImporter
 from optparse import OptionParser
 
 
+from ralph.util.views import force_utf8
+
+
+
 logger = logging.getLogger(__name__)
 
 class ZabbixImporter(BaseImporter):
@@ -47,15 +51,13 @@ class ZabbixImporter(BaseImporter):
     @staticmethod
     @plugin.register(chain='cmdb_zabbix')
     def zabbix_hosts(context):
-        x = ZabbixImporter()
-        x.import_hosts()
+        ZabbixImporter().import_hosts()
         return (True, 'Done', context)
 
     @staticmethod
     @plugin.register(chain='cmdb_zabbix', requires=['zabbix_hosts'])
     def zabbix_triggers(context):
-        x = ZabbixImporter()
-        x.import_triggers()
+        ZabbixImporter().import_triggers()
         return (True, 'Done' ,context)
 
     def import_triggers(self):
@@ -91,49 +93,58 @@ class ZabbixImporter(BaseImporter):
             c.message = ch.description
             c.save()
 
+
 class JiraEventsImporter(BaseImporter):
     """
     Jira integration  - Incidents/Problems importing as CI events.
     """
     @staticmethod
     @plugin.register(chain='cmdb_jira')
-    def jira_problems(context):
-        x = JiraEventsImporter()
-        x.import_problem()
-        return (True, 'Done' ,context)
+    def jira_problems(context, successful_plugins=None):
+        JiraEventsImporter().import_problem()
+        return (True, 'Done', context)
 
     @staticmethod
     @plugin.register(chain='cmdb_jira')
-    def jira_incidents(context):
-        x = JiraEventsImporter()
-        x.import_incident()
-        return (True, 'Done' ,context)
+    def jira_incidents(context, successful_plugins=None):
+        JiraEventsImporter().import_incident()
+        return (True, 'Done', context)
+
+    @staticmethod
+    @plugin.register(chain='cmdb_jira')
+    def jira_changes(context, successful_plugins=None):
+        JiraEventsImporter().import_jirachange()
+        return (True, 'Done', context)
+
+    def tz_time(self, field):
+        return strip_timezone(field) if field else None
 
     def import_obj(self, issue, classtype):
         logger.debug(issue)
         try:
-            ci_obj=db.CI.objects.get(uid=issue.get('ci'))
+            ci_obj = db.CI.objects.get(uid=issue.get('ci'))
         except:
             logger.error('Issue : %s Can''t find ci: %s' % (issue.get('key'),issue.get('ci')))
             ci_obj = None
-        obj = classtype.objects.filter(jira_id=issue.get('key')).all()
-        if obj:
-            prob = obj[0]
-        else:
-            prob = classtype()
-        prob.description = issue.get('description', '')
-        if prob.description is not None:
-            if prob.description and len(prob.description) > 1024:
-                prob.description = prob.description[0:1024]
-        else:
-            prob.description = ''
-        prob.summary = issue.get('summary')
-        prob.status = issue.get('status')
-        prob.assignee = issue.get('assignee')
+        obj = classtype.objects.filter(jira_id=issue.get('key')).all()[:1]
+        prob = obj[0] if obj else classtype()
+        prob.summary = force_utf8(issue.get('summary'))
+        prob.status = force_utf8(issue.get('status'))
+        prob.assignee = force_utf8(issue.get('assignee'))
+        prob.jira_id = force_utf8(issue.get('key'))
+        prob.analysis = force_utf8(issue.get('analysis'), cut=1024)
+        prob.problems = force_utf8(issue.get('problems'), cut=1024)
+        prob.priority = issue.get('priority')
+        prob.issue_type = force_utf8(issue.get('issue_type'))
+        prob.description = force_utf8(issue.get('description'), cut=1024)
+        prob.update_date = self.tz_time(issue.get('update_date'))
+        prob.created_date = self.tz_time(issue.get('created_date'))
+        prob.resolvet_date = self.tz_time(issue.get('resolvet_date'))
+        prob.planned_start_date = self.tz_time(issue.get('planned_start_date'))
+        prob.planned_end_date = self.tz_time(issue.get('planned_end_date'))
         prob.ci = ci_obj
-        prob.time = strip_timezone(issue.get('time')) #created or updated
-        prob.jira_id = issue.get('key')
         prob.save()
+
 
     def import_problem(self):
         type = settings.ISSUETRACKERS['default']['PROBLEMS']['ISSUETYPE']
@@ -147,23 +158,44 @@ class JiraEventsImporter(BaseImporter):
         for issue in issues:
             self.import_obj(issue, db.CIIncident)
 
+    def import_jirachange(self):
+        for type in settings.ISSUETRACKERS['default']['CHANGES']['ISSUETYPE']:
+            issues = self.fetch_all(type)
+            for issue in issues:
+                self.import_obj(issue, db.JiraChanges)
+
     def fetch_all(self, type):
         ci_fieldname = settings.ISSUETRACKERS['default']['CI_FIELD_NAME']
+        analysis = settings.ISSUETRACKERS['default']['IMPACT_ANALYSIS_FIELD_NAME']
+        problems_field = settings.ISSUETRACKERS['default']['PROBLEMS_FIELD_NAME']
         params = dict(jql='type=%s' % type, maxResults=1024)
         issues = Jira().find_issues(params)
         items_list = []
-        for i in issues.get('issues'):
-            f = i.get('fields')
-            ci_id = f.get(ci_fieldname)
-            assignee = f.get('assignee')
-            items_list.append(dict(
-                ci=ci_id,
-                key=i.get('key'),
-                description=f.get('description', ''),
-                summary=f.get('summary'),
-                status=f.get('status').get('name'),
-                time=f.get('updated') or f.get('created'),
-                assignee=assignee.get('displayName') if assignee else '')
+        for issue in issues.get('issues'):
+            field = issue.get('fields')
+            assignee = field.get('assignee')
+            problems = field.get(problems_field) or []
+            ret_problems = [problem.get('value') for problem in problems]
+            selected_problems = ', '.join(ret_problems) if ret_problems else None
+            priority = field.get('priority')
+            issuetype = field.get('issuetype')
+            items_list.append(
+                dict(
+                    ci=field.get(ci_fieldname),
+                    key=issue.get('key'),
+                    description=field.get('description', ''),
+                    summary=field.get('summary'),
+                    status=field.get('status').get('name'),
+                    assignee=assignee.get('displayName') if assignee else '',
+                    analysis=field.get(analysis),
+                    problems=selected_problems,
+                    priority=priority.get('iconUrl') if priority else '',
+                    issue_type=issuetype.get('name') if issuetype else '',
+                    update_date=field.get('updated'),
+                    created_date=field.get('created'),
+                    resolvet_date=field.get('resolutiondate'),
+                    planned_start_date=field.get('customfield_11602'),
+                    planned_end_date=field.get('customfield_11601'),
+                )
             )
         return items_list
-

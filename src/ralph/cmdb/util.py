@@ -2,7 +2,7 @@ import cStringIO as StringIO
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.http import HttpResponse
 
-from ralph.util import csvutil
+from bob import csvutil
 from ralph.cmdb.views import BaseCMDBView, _get_pages
 
 

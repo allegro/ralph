@@ -7,47 +7,35 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import datetime
-import cStringIO as StringIO
 
 from django.db import models as db
-from django.http import HttpResponseForbidden, HttpResponse, Http404
 from django.conf import settings
 from django.db.models import Q
-from django.shortcuts import get_list_or_404
 from django.utils.safestring import mark_safe
 from django.utils.html import escape
+from django.utils.translation import ugettext_lazy as _
 
 from bob.menu import MenuItem
+from bob.csvutil import make_csv_response
 from dj.choices import Choices
 
-from ralph.account.models import Perm
+from ralph.account.models import Perm, ralph_permission
 from ralph.business.models import Venture, VentureExtraCostType
 from ralph.cmdb.models_ci import (
     CI,
     CIRelation,
     CI_STATE_TYPES,
     CI_RELATION_TYPES,
-    CI_TYPES
+    CI_TYPES,
 )
 from ralph.deployment.models import DeploymentStatus
-from ralph.discovery.models_component import (
-    Component,
-    ComponentType,
-    FibreChannel,
-    GenericComponent,
-    Memory,
-    OperatingSystem,
-    Processor,
-    Software,
-    Storage,
-)
-from ralph.discovery.models_device import (
+from ralph.discovery.models import (
     Device,
-    DeviceModelGroup,
     DeviceType,
     MarginKind,
+    SplunkUsage,
+    HistoryCost,
 )
-from ralph.discovery.models_history import HistoryCost
 from ralph.ui.forms import DateRangeForm, MarginsReportForm
 from ralph.ui.reports import (
     get_total_cores,
@@ -58,7 +46,6 @@ from ralph.ui.reports import (
 from ralph.ui.views.common import Base, DeviceDetailView, _get_details
 from ralph.ui.views.devices import DEVICE_SORT_COLUMNS
 from ralph.ui.forms.reports import (
-
     DeprecationRangeReportForm,
     DevicesChoiceReportForm,
     SupportRangeReportForm,
@@ -66,19 +53,7 @@ from ralph.ui.forms.reports import (
     ReportDeviceListForm,
     WarrantyRangeReportForm,
 )
-from ralph.util import csvutil
-from ralph.util.pricing import (
-    get_device_auto_price,
-    get_device_chassis_price,
-    get_device_components_price,
-    get_device_cpu_price,
-    get_device_fc_price,
-    get_device_local_storage_price,
-    get_device_memory_price,
-    get_device_operatingsystem_price,
-    get_device_software_price,
-    is_deprecated,
-)
+
 
 def threshold(days):
     return datetime.date.today() + datetime.timedelta(days=days)
@@ -257,14 +232,15 @@ class SidebarReports(object):
 class ReportMargins(SidebarReports, Base):
     template_name = 'ui/report_margins.html'
     subsection = 'margins'
+    perms = [
+        {
+            'perm': Perm.read_device_info_reports,
+            'msg': _("You don't have permission to see reports."),
+        },
+    ]
 
+    @ralph_permission(perms)
     def get(self, *args, **kwargs):
-        profile = self.request.user.get_profile()
-        has_perm = profile.has_perm
-        if not has_perm(Perm.read_device_info_reports):
-            return HttpResponseForbidden(
-                "You don't have permission to see reports."
-            )
         self.margin_kinds = MarginKind.objects.all()
         if 'start' in self.request.GET:
             self.form = MarginsReportForm(self.margin_kinds, self.request.GET)
@@ -275,6 +251,7 @@ class ReportMargins(SidebarReports, Base):
             })
         return super(ReportMargins, self).get(*args, **kwargs)
 
+    @ralph_permission(perms)
     def post(self, *args, **kwargs):
         return self.get(*args, **kwargs)
 
@@ -352,45 +329,48 @@ def _currency(value):
 class ReportVentures(SidebarReports, Base):
     template_name = 'ui/report_ventures.html'
     subsection = 'ventures'
+    perms = [
+        {
+            'perm': Perm.read_device_info_reports,
+            'msg': _("You don't have permission to see reports."),
+        },
+    ]
 
-    def export_csv(self):
-        def iter_rows():
+    def export_csv(self, venture_data, extra_types):
+        yield [
+            'Venture ID',
+            'Venture',
+            'Path',
+            'Department',
+            'Default margin',
+            'Device count',
+            'Core count',
+            'Virtual core count',
+            'Cloud use',
+            'Cloud cost',
+        ] + [extra_type.name for extra_type in extra_types] + [
+            'Splunk cost',
+            'Hardware cost',
+            'Total cost',
+        ]
+        for data in venture_data:
             yield [
-                'Venture ID',
-                'Venture',
-                'Path',
-                'Department',
-                'Default margin',
-                'Device count',
-                'Core count',
-                'Virtual core count',
-                'Cloud use',
-                'Cloud cost',
-            ] + [extra_type.name for extra_type in self.extra_types] + [
-                'Hardware cost',
-                'Total cost',
+                '%d' % data['id'],
+                data['name'],
+                data['path'],
+                data['department'],
+                '%d%%' % data['margin'],
+                '%d' % (data['count'] or 0),
+                '%d' % (data['core_count'] or 0),
+                '%d' % (data['virtual_core_count'] or 0),
+                '%f' % (data['cloud_use'] or 0),
+                _currency(data['cloud_cost']),
+            ] + [_currency(v) for v in data['extras']] + [
+                _currency(data['splunk_cost']),
+                _currency(data['hardware_cost']),
+                _currency(data['total']),
             ]
-            for data in self.venture_data:
-                yield [
-                    '%d' % data['id'],
-                    data['name'],
-                    data['path'],
-                    data['department'],
-                    '%d%%' % data['margin'],
-                    '%d' % (data['count'] or 0),
-                    '%d' % (data['core_count'] or 0),
-                    '%d' % (data['virtual_core_count'] or 0),
-                    '%f' % (data['cloud_use'] or 0),
-                    _currency(data['cloud_cost']),
-                ] + [_currency(v) for v in data['extras']] + [
-                    _currency(data['hardware_cost']),
-                    _currency(data['total']),
-                ]
-        f = StringIO.StringIO()
-        csvutil.UnicodeWriter(f).writerows(iter_rows())
-        response = HttpResponse(f.getvalue(), content_type='application/csv')
-        response['Content-Disposition'] = 'attachment; filename=ventures.csv'
-        return response
+
 
     def _get_totals(self, start, end, query, extra_types):
         venture_total = get_total_cost(query, start, end)
@@ -454,6 +434,12 @@ class ReportVentures(SidebarReports, Base):
                 db.Q(venture__parent__parent__parent__parent=venture)
             ).exclude(device__deleted=True)
             data = self._get_totals(start, end, query, extra_types)
+            (
+                splunk_cost,
+                splunk_count,
+                splunk_count_now,
+                splunk_size,
+            ) = SplunkUsage.get_cost(venture, start, end)
             data.update({
                 'id': venture.id,
                 'name': venture.name,
@@ -466,6 +452,7 @@ class ReportVentures(SidebarReports, Base):
                 'cloud_use': (
                     (data['cloud_cost'] or 0) / total_cloud_cost
                 ) if total_cloud_cost else 0,
+                'splunk_cost': splunk_cost,
             })
             yield data
             if venture.parent is not None:
@@ -474,6 +461,12 @@ class ReportVentures(SidebarReports, Base):
                 continue
             query = HistoryCost.objects.filter(venture=venture)
             data = self._get_totals(start, end, query, extra_types)
+            (
+                splunk_cost,
+                splunk_count,
+                splunk_count_now,
+                splunk_size,
+            ) = SplunkUsage.get_cost(venture, start, end, shallow=True)
             data.update({
                 'id': venture.id,
                 'name': '-',
@@ -486,16 +479,13 @@ class ReportVentures(SidebarReports, Base):
                 'cloud_use': (
                     (data['cloud_cost'] or 0) / total_cloud_cost
                 ) if total_cloud_cost else 0,
+                'splunk_cost': splunk_cost,
             })
             yield data
 
+    @ralph_permission(perms)
     def get(self, *args, **kwargs):
         profile = self.request.user.get_profile()
-        has_perm = profile.has_perm
-        if not has_perm(Perm.read_device_info_reports):
-            return HttpResponseForbidden(
-                "You don't have permission to see reports."
-            )
         if 'start' in self.request.GET:
             self.form = DateRangeForm(self.request.GET)
         else:
@@ -526,7 +516,10 @@ class ReportVentures(SidebarReports, Base):
             self.ventures = Venture.objects.none()
             self.venture_data = []
         if self.request.GET.get('export') == 'csv':
-            return self.export_csv()
+            return make_csv_response(
+                data=self.export_csv(self.venture_data, self.extra_types),
+                filename='ReportVentures.csv',
+            )
         return super(ReportVentures, self).get(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -544,15 +537,15 @@ class ReportVentures(SidebarReports, Base):
 class ReportServices(SidebarReports, Base):
     template_name = 'ui/report_services.html'
     subsection = 'services'
+    perms = [
+        {
+            'perm': Perm.read_device_info_reports,
+            'msg': _("You don't have permission to see reports."),
+        },
+    ]
 
+    @ralph_permission(perms)
     def get(self, *args, **kwargs):
-        profile = self.request.user.get_profile()
-        has_perm = profile.has_perm
-        if not has_perm(Perm.read_device_info_reports):
-            return HttpResponseForbidden(
-                "You don't have permission to see reports.",
-            )
-        self.perm_to_edit = has_perm(Perm.edit_configuration_item_relations)
         services = CI.objects.filter(type=CI_TYPES.SERVICE.id)
         relations = CIRelation.objects.filter(
             child__type=CI_TYPES.SERVICE.id,
@@ -585,7 +578,6 @@ class ReportServices(SidebarReports, Base):
         context.update({
             'invalid_relation': self.invalid_relation,
             'services_without_venture': self.services_without_venture,
-            'perm_to_edit': self.perm_to_edit,
         })
         return context
 
@@ -623,16 +615,12 @@ class ReportDeviceList(object):
 class ReportDevices(SidebarReports, Base):
     template_name = 'ui/report_devices.html'
     subsection = 'devices'
-
-    def export_csv(self, data, fname):
-        export = []
-        for item in data:
-            export.append([unicode(x) for x in item])
-        f = StringIO.StringIO()
-        csvutil.UnicodeWriter(f).writerows(export)
-        response = HttpResponse(f.getvalue(), content_type='application/csv')
-        response['Content-Disposition'] = 'attachment; filename=%s.csv' % fname
-        return response
+    perms = [
+        {
+            'perm': Perm.read_device_info_reports,
+            'msg': _("You don't have permission to see reports."),
+        },
+    ]
 
     def get_name(self, name, id):
         id = escape(id)
@@ -640,15 +628,10 @@ class ReportDevices(SidebarReports, Base):
         html = '<a href="/ui/search/info/%s">%s</a> (%s)' % (id, name, id)
         return mark_safe(html)
 
+    @ralph_permission(perms)
     def get(self, *args, **kwargs):
-        profile = self.request.user.get_profile()
-        has_perm = profile.has_perm
-        if not has_perm(Perm.read_device_info_reports):
-            return HttpResponseForbidden(
-                "You don't have permission to see reports.")
         self.perm_edit = False
-        if has_perm(Perm.edit_device_info_financial):
-            self.perm_edit = True
+
         request = self.request.GET
         csv_conf = {
             'name': 'report_devices',
@@ -816,7 +799,10 @@ class ReportDevices(SidebarReports, Base):
                 ])
         if request.get('export') == 'csv':
             rows.insert(0, headers)
-            return self.export_csv(rows, csv_conf.get('name'))
+            return make_csv_response(
+                data=rows,
+                filename=csv_conf.get('name'),
+            )
         self.headers = headers
         self.rows = rows
         self.csv_url = csv_conf.get('url')
@@ -842,215 +828,156 @@ class ReportDevices(SidebarReports, Base):
         return context
 
 
-def is_bladesystem(component):
-    """ Check if component is bladesystem - be careful BladeSystem and
-    RAM have the same type_id. If component type is RAM runs except """
-    model = component.get('model')
-    if model in component:
-        type = model.type
-        bladeservers_models = DeviceModelGroup.objects.filter(
-            type=type
-        )
-        group = model.group
-        if (bladeservers_models and group in bladeservers_models
-            and type == DeviceType.blade_system):
-            return True
-    return False
-
-
 class ReportDevicePricesPerVenture(SidebarReports, Base):
-    template_name = 'ui/report_venture_costs.html'
-    subsection = 'venture_costs'
+    template_name = 'ui/report_device_prices_per_venture.html'
+    subsection = 'device_prices_per_venture'
+    perms = [
+        {
+            'perm': Perm.read_device_info_reports,
+            'msg': _("You don't have permission to see reports."),
+        },
+    ]
 
-    def generate_csv(self, data, view_components=True):
-        rows = []
+    def device_details(self, device, exclude):
+        """Returns device and its components"""
+        components, stock = [], []
+        total = 0
+        for detail in _get_details(
+            device,
+            ignore_deprecation=True,
+            exclude=exclude,
+        ):
+            model = detail.get('model')
+            price = detail.get('price') or 0
+            if not model:
+                components.append(
+                    {
+                        'model': 'n/a',
+                        'icon': 'n/a',
+                        'count': 'n/a',
+                        'price': 'n/a',
+                        'serial': 'n/a',
+                    }
+                )
+
+            if model not in stock:
+                components.append(
+                    {
+                        'model': model,
+                        'icon': detail.get('icon'),
+                        'count': 1,
+                        'price': price,
+                        'serial': detail.get('serial'),
+                    }
+                )
+            else:
+                for component in components:
+                    if component['model'] == model:
+                        component['count'] = component['count'] + 1
+            total += price
+            stock.append(model)
+        return {
+                    'device': device,
+                    'components': components,
+                    'total': total,
+                    'deprecated': device.is_deprecated,
+                }
+
+    def devices_list(self, venture):
+        """Returns devices list from venture and descendant venture"""
+        venture_devices = []
+        for descendant in venture[0].find_descendant_ids():
+            venture_devices.extend(
+                Device.objects.filter(venture_id=descendant),
+            )
+        for device in venture_devices:
+            self.devices.append(
+                self.device_details(device, exclude=['software']),
+            )
+
+    def get_csv_data(self, devices, give_all=False):
+        """Prepare data to export to CSV"""
         max = 0
-        for item in data:
-            details = []
-            dev = item.get('device')
-            price = item.get('price')
-            components = item.get('components')
+        rows = []
+        if not give_all:
+            data = devices
+        else:
+            all_devices = Device.objects.all()
+            data = self.device_details(all_devices, exclude=['software'])
+
+        for dev in data:
+            device = dev.get('device')
+            components = dev.get('components')
+            deprecated = dev.get('deprecated')
+            ven = device.venture.symbol if device.venture.symbol else 'N/a'
             row = [
-                dev.venture.symbol,
-                dev.name,
-                dev.role,
-                dev.sn,
-                dev.barcode or '',
-                dev.cached_price or 'N/A',
-                price or 'N/A',
+                ven,
+                ven,
+                device.name or 'N/a',
+                device.role or 'N/a',
+                device.sn or 'N/a',
+                device.barcode or 'N/a',
+                device.cached_price if not deprecated else dev.get('total'),
+                'True' if deprecated else 'False',
             ]
-            row = [unicode(c) for c in row]
-            if view_components:
-                max = len(components) if max < len(components) else max
-                for detail in components:
-                    details.extend([
-                        detail.get('name'),
-                        detail.get('count'),
-                        detail.get('price') or 'N/A',
-                        detail.get('total_component') or 'N/A',
-                    ])
-                    details = [unicode(d) for d in details]
+            max = len(components) if max < len(components) else max
+            for component in components:
+                details = [
+                    component['model'],
+                    component['count'],
+                    component['price'],
+                ]
                 row.extend(details)
             rows.append(row)
         headers = [
-            'Venture', 'Device', 'Role', 'SN', 'Barcode', 'Quoted price (PLN)',
-            'Total component (PLN)',
+            'Venture', 'Venture ID', 'Device', 'Role', 'SN', 'Barcode',
+            'Quoted price (PLN)', 'Deprecated',
         ]
-        if view_components:
-            for i in range(max):
-                headers.extend([
-                    'Component name',
-                    'Component count',
-                    'Component price (PLN)',
-                    'Component total (PLN)',
-                ])
+        for i in range(max):
+            headers.extend(
+                ['Component name', 'Component count', 'Component total'],
+            )
         rows.insert(0, headers)
         return rows
 
-    def export_csv(self, data, all_devices=False):
-        if all_devices:
-            rows = self.generate_csv(data, view_components=False)
-            filename = 'report_all_devices_prices-%s.csv' % (
-                datetime.date.today()
-            )
-        else:
-            rows = self.generate_csv(data)
-            venture = Venture.objects.get(id=self.venture_id)
-            filename = 'report_devices_prices_per_venture-%s-%s.csv' % (
-                venture.symbol, datetime.date.today()
-            )
-        f = StringIO.StringIO()
-        csvutil.UnicodeWriter(f).writerows(rows)
-        response = HttpResponse(f.getvalue(), content_type='application/csv')
-        disposition = 'attachment; filename=%s' % filename
-        response['Content-Disposition'] = disposition
-        return response
-
-    def get_device_with_components(self, venture_devices, blacklist):
-        devices = []
-        for device in venture_devices:
-            all_components_price = 0
-            components = []
-            for component in _get_details(device, ignore_deprecation=True):
-                count = 1
-                model = component.get('model')
-                if not isinstance(model, basestring):
-                    component_type = model.type
-                    component_group = model.group_id
-                    model_group = model.group
-                else:
-                    component_group = None
-                    component_type = None
-                    model_group = None
-                act_components = [x.get('name') for x in components]
-                if (model not in act_components and
-                    component_type not in blacklist):
-                    if is_bladesystem(component):
-                        bs_count = device.child_set.filter(
-                            deleted=False).count() or 1
-                        chassis_price = get_device_chassis_price(device)
-                        auto_price = get_device_auto_price(device)
-                        bs_price = 0
-                        if device.price != 0:
-                            bs_price = device.price / bs_count
-                        elif chassis_price != 0:
-                            bs_price = chassis_price
-                        elif auto_price != 0:
-                            bs_price = auto_price / bs_count
-                        components.append({
-                            'icon': component.get('icon'),
-                            'name': model,
-                            'price': bs_price,
-                            'count': count,
-                            'bs_count': bs_count,
-                        })
-                    elif component_type == ComponentType.share:
-                        components.append({
-                            'icon': component.get('icon'),
-                            'name': model,
-                            'price': component.get('price') or 0,
-                            'count': component.get('count') or 1,
-                        })
-                    else:
-                        d_price = 0
-                        if device.price and device.price != 0:
-                            d_price = device.price
-                        else:
-                            d_price = component.get('price') or 0
-                        components.append({
-                            'icon': component.get('icon'),
-                            'name': model,
-                            'price': d_price,
-                            'model_group': model_group,
-                            'count': count,
-                        })
-                else:
-                    for component in components:
-                        if component.get('name') == model:
-                            count = component.get('count')
-                            component.update(count=count + 1)
-            for component in components:
-                count = component.get('count')
-                price = component.get('price')
-                total_component = price * count
-                component['total_component'] = total_component
-                all_components_price += total_component
-            devices.append({
-                'device': device,
-                'deprecated': is_deprecated(device),
-                'price': all_components_price,
-                'components': components
-            })
-        return devices
-
+    @ralph_permission(perms)
     def get(self, *args, **kwargs):
-        profile = self.request.user.get_profile()
-        has_perm = profile.has_perm
-        if not has_perm(Perm.read_device_info_reports):
-            return HttpResponseForbidden(
-                "You don't have permission to see reports.")
-        self.perm_edit = False
-        if has_perm(Perm.edit_device_info_financial):
-            self.perm_edit = True
+        self.devices = []
         self.form = ReportVentureCost()
         self.venture_id = self.request.GET.get('venture')
-        venture_devices = None
-        if self.venture_id not in ['', None] and not self.venture_id.isdigit():
-            raise Http404
         if self.venture_id:
-            venture_devices = Device.objects.filter(venture_id=self.venture_id)
-            self.form = ReportVentureCost(initial={'venture': self.venture_id})
-        if venture_devices:
-            self.devices = self.get_device_with_components(
-                venture_devices,
-                blacklist=[
-                    ComponentType.software,
-                    ComponentType.os,
-                ]
+            venture = Venture.objects.filter(id=self.venture_id)
+            if venture:
+                self.form = ReportVentureCost(
+                    initial={'venture': self.venture_id},
+                )
+                self.devices_list(venture)
+                if self.request.GET.get('export') == 'csv':
+                    filename = 'report_devices_prices_per_venture-%s-%s.csv' % (
+                        venture[0].symbol, datetime.date.today(),
+                    )
+                    return make_csv_response(
+                        data=self.get_csv_data(self.devices),
+                        filename=filename,
+                    )
+        if self.request.GET.get('exportall') == 'csv':
+            filename = 'report_devices_prices_per_venture-all-%s.csv' % (
+                datetime.date.today()
             )
-        else:
-            self.devices = None
-        if self.request.GET.get('export') == 'csv':
-            return self.export_csv(self.devices)
-        if self.request.GET.get('export-all') == 'csv':
-            devices = Device.objects.all()
-            csv = self.get_device_with_components(devices, blacklist=[
-                    ComponentType.software,
-                    ComponentType.os,
-                ])
-            return self.export_csv(csv, all_devices=True)
+            return make_csv_response(
+                data=self.get_csv_data(self.devices, give_all=True),
+                filename=filename,
+            )
         return super(ReportDevicePricesPerVenture, self).get(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(ReportDevicePricesPerVenture, self).get_context_data(
             **kwargs)
-
-        context.update({
-            'form': self.form,
-        })
-        if self.venture_id:
-            context.update({
+        context.update(
+            {
+                'form': self.form,
                 'rows': self.devices,
                 'venture': self.venture_id,
-            })
+            },
+        )
         return context

@@ -99,16 +99,3 @@ def create_device(device, cpu=None, memory=None, storage=None):
                 model=model,
                 label=storage.get('label'),
             ).save()
-
-
-def sum_for_view(device):
-    sum_dev = 0
-    price = device.get('price')
-    count = 0
-    total_component = 0
-    sum_dev += price
-    for component in device.get('component', []):
-        count = component.get('count')
-        total_component = component.get('total_component')
-        sum_dev += total_component
-    return count, price, total_component, sum_dev

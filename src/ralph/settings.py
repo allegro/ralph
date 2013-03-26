@@ -271,6 +271,8 @@ SSH_P2000_PASSWORD = None
 SPLUNK_HOST = None
 SPLUNK_USER = None
 SPLUNK_PASSWORD = None
+SPLUNK_LOGGER_PORT = None
+SPLUNK_LOGGER_HOST = None
 PUPPET_DB_URL = None
 ZABBIX_URL = None
 ZABBIX_USER = None
@@ -298,11 +300,12 @@ ISSUETRACKERS = {
         'CI_NAME_FIELD_NAME': '',
         'TEMPLATE_FIELD_NAME': '',
         'PROFILE_FIELD_NAME': '',
+        'IMPACT_ANALYSIS_FIELD_NAME': '',
+        'PROBLEMS_FIELD_NAME': '',
         'CMDB_PROJECT': '',
         'CMDB_VIEWCHANGE_LINK': 'http://url/%s',
         'USE_CELERY': True,   # FIXME: rename this attribute?
         'OPA': {
-            'RSS_URL': '',
             'BOWNER_FIELD_NAME': '',
             'TOWNER_FIELD_NAME': '',
             'TEMPLATE': '',

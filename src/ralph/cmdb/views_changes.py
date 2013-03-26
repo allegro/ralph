@@ -9,6 +9,8 @@ import calendar
 import datetime
 from urlparse import urljoin
 
+from bob.data_table import DataTableMixin, DataTableColumn
+
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import connection
@@ -22,6 +24,7 @@ from ralph.cmdb.models_changes import CI_CHANGE_TYPES
 from ralph.cmdb.views import BaseCMDBView, get_icon_for
 from ralph.cmdb.forms import CIChangeSearchForm, CIReportsParamsForm
 from ralph.cmdb.util import PaginatedView
+
 
 
 class ChangesBase(BaseCMDBView):
@@ -128,7 +131,6 @@ class Changes(ChangesBase, PaginatedView):
             2: 'agent events',
             3: 'asset attr. changes',
             4: 'monitoring events',
-            5: 'status office events',
         }
         sidebar_selected = select.get(get_type, 'all events')
         ret.update({
@@ -158,44 +160,172 @@ class Changes(ChangesBase, PaginatedView):
         return super(Changes, self).get(*args)
 
 
-class Problems(ChangesBase, PaginatedView):
-    template_name = 'cmdb/search_problems.html'
+def _table_colums():
+    _ = DataTableColumn
+    columns = [
+        _(
+            'Issue updated',
+            field='update_date',
+            sort_expression='update_date',
+            bob_tag=True,
+        ),
+        _(
+            'Type',
+            field='issue_type',
+            sort_expression='issue_type',
+            bob_tag=True,
 
-    def get_context_data(self, **kwargs):
+        ),
+        _(
+            'Status',
+            field='resolvet_date',
+            sort_expression='resolvet_date',
+            bob_tag=True,
+        ),
+        _(
+            'CI',
+            field='ci',
+            sort_expression='ci',
+            bob_tag=True,
+        ),
+        _(
+            'Summary',
+            field='summary',
+            bob_tag=True,
+        ),
+        _(
+            'Assignee',
+            field='assignee',
+            bob_tag=True,
+        ),
+        _(
+            'Description',
+            field='description',
+            bob_tag=True,
+        ),
+        _(
+            'Analysis',
+            field='analysis',
+            bob_tag=True,
+        ),
+        _(
+            'Problems',
+            field='problems',
+            bob_tag=True,
+        ),
+        _(
+            'Planed start',
+            field='planned_start_date',
+            sort_expression='planned_start_date',
+            bob_tag=True,
+        ),
+        _(
+            'Planed end',
+            field='planned_end_date',
+            sort_expression='planned_end_date',
+            bob_tag=True,
+        ),
+    ]
+    return columns
+
+
+class Problems(ChangesBase, PaginatedView, DataTableMixin):
+    template_name = 'cmdb/report_changes.html'
+    sort_variable_name = 'sort'
+    export_variable_name = None  # fix in bob!
+    columns = _table_colums()
+
+    def get_context_data(self, *args, **kwargs):
+        section = 'Problems'
         ret = super(Problems, self).get_context_data(**kwargs)
+        ret.update(
+            super(Problems, self).get_context_data_paginator(
+                *args,
+                **kwargs
+            )
+        )
         ret.update({
-            'problems': self.data,
+            'sort_variable_name': self.sort_variable_name,
+            'url_query': self.request.GET,
+            'sort': self.sort,
+            'columns': self.columns,
             'jira_url': urljoin(settings.ISSUETRACKERS['default']['URL'], 'browse'),
-            'subsection': 'Problems',
-            'sidebar_selected': 'problems',
+            'subsection': section,
+            'sidebar_selected': section,
+            'title': section,
         })
         return ret
 
     def get(self, *args, **kwargs):
-        queryset = db.CIProblem.objects.order_by('-time')
-        queryset = self.paginate_query(queryset)
-        self.data = queryset
+        problems = db.CIProblem.objects.order_by('-update_date')
+        self.data_table_query(problems)
         return super(Problems, self).get(*args, **kwargs)
 
 
-class Incidents(ChangesBase, PaginatedView):
-    template_name = 'cmdb/search_incidents.html'
+class Incidents(ChangesBase, PaginatedView, DataTableMixin):
+    template_name = 'cmdb/report_changes.html'
+    sort_variable_name = 'sort'
+    export_variable_name = None  # fix in bob!
+    columns = _table_colums()
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, *args, **kwargs):
+        section = 'Incidents'
         ret = super(Incidents, self).get_context_data(**kwargs)
+        ret.update(
+            super(Incidents, self).get_context_data_paginator(
+                *args,
+                **kwargs
+            )
+        )
         ret.update({
-            'incidents': self.data,
+            'sort_variable_name': self.sort_variable_name,
+            'url_query': self.request.GET,
+            'sort': self.sort,
+            'columns': self.columns,
             'jira_url': urljoin(settings.ISSUETRACKERS['default']['URL'], 'browse'),
-            'subsection': 'Incidents',
-            'sidebar_selected': 'incidents',
+            'subsection': section,
+            'sidebar_selected': section,
+            'title': section,
         })
         return ret
 
     def get(self, *args, **kwargs):
-        queryset = db.CIIncident.objects.order_by('-time')
-        queryset = self.paginate_query(queryset)
-        self.data = queryset
+        incidents = db.CIIncident.objects.order_by('-update_date')
+        self.data_table_query(incidents)
         return super(Incidents, self).get(*args, **kwargs)
+
+
+class JiraChanges(ChangesBase, PaginatedView, DataTableMixin):
+    template_name = 'cmdb/report_changes.html'
+    sort_variable_name = 'sort'
+    export_variable_name = None  # fix in bob!
+    columns = _table_colums()
+
+    def get_context_data(self, *args, **kwargs):
+        section = 'Jira Changes'
+        ret = super(JiraChanges, self).get_context_data(**kwargs)
+        ret.update(
+            super(JiraChanges, self).get_context_data_paginator(
+                *args,
+                **kwargs
+            )
+        )
+        ret.update({
+            'sort_variable_name': self.sort_variable_name,
+            'url_query': self.request.GET,
+            'sort': self.sort,
+            'columns': self.columns,
+            'jira_url': urljoin(settings.ISSUETRACKERS['default']['URL'], 'browse'),
+            'subsection': section,
+            'sidebar_selected': section,
+            'title': section,
+        })
+        return ret
+
+    def get(self, *args, **kwargs):
+        jira_changes = db.JiraChanges.objects.order_by('-update_date')
+        self.data_table_query(jira_changes)
+        return super(JiraChanges, self).get(*args, **kwargs)
 
 
 class DashboardDetails(ChangesBase, PaginatedView):

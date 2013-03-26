@@ -399,6 +399,36 @@ namespace DonPedro.Detectors
 			return mounts;
 		}
 		
+		public List<SoftwareDTOResponse> GetSoftwareInfo()
+		{
+			List<SoftwareDTOResponse> software = new List<SoftwareDTOResponse>();
+
+			try
+			{
+				SelectQuery query = new SelectQuery(
+					@"select Name, Vendor, Version 
+					  from Win32_Product"
+				);
+				ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
+				
+				foreach (ManagementObject obj in searcher.Get())
+				{
+				    SoftwareDTOResponse soft = new SoftwareDTOResponse();
+				    soft.Label = GetValueAsString(obj, "Name");
+				    soft.Vendor = GetValueAsString(obj, "Vendor");
+				    soft.Version = GetValueAsString(obj, "Version");
+				    
+				    software.Add(soft);
+				}
+			}
+			catch (ManagementException e)
+			{
+				Logger.Instance.LogError(e.ToString());
+			}
+			
+			return software;
+		}
+		
 		public DeviceDTOResponse GetDeviceInfo()
 		{
 			DeviceDTOResponse device = new DeviceDTOResponse();
@@ -522,7 +552,7 @@ namespace DonPedro.Detectors
 					  from Win32_Processor"
 				);
 				ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
-				
+
 				foreach (ManagementObject obj in searcher.Get())
 				{
 					ProcessorDTOResponse processor = new ProcessorDTOResponse();

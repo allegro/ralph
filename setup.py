@@ -32,8 +32,8 @@ setup (
     package_dir = {'':'src'},
     zip_safe = False, # because templates are loaded from file path
     install_requires = [
-        'django-ajax-selects==1.2.5',
-        'django-bob==1.5.2',
+        'bob-ajax-selects==1.3.1',
+        'django-bob==1.5.5',
         'django-powerdns-dnssec==0.9.2',
         'django-tastypie==0.9.11',
         'django-rq==0.4.4',
@@ -63,6 +63,8 @@ setup (
         'South==0.7.6',
         'splunk-sdk==0.8.0',
         'SQLAlchemy==0.7.8',
+        'null==0.5',
+        'xlwt==0.7.4',
     ],
     entry_points={
         'console_scripts': [

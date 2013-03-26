@@ -12,7 +12,7 @@ import cStringIO as StringIO
 from django.http import HttpResponse, HttpResponseRedirect
 from django.utils import simplejson as json
 
-from ralph.util import csvutil
+from bob import csvutil
 
 
 def jsonify(func):
@@ -38,3 +38,11 @@ def csvify(func):
     return wrapper
 
 
+def force_utf8(string, cut=None):
+        """Coerce the value to unicode and limit it to cut characters."""
+        if string:
+            if not isinstance(string, unicode):
+                urf8 = unicode(string, 'utf-8')
+                return urf8[:cut] if cut else urf8
+            return string[:cut] if cut else string
+        return ''
