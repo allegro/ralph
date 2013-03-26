@@ -42,8 +42,13 @@ def dhcp_config(request):
         dc = DataCenter.objects.get(name__iexact=request.GET['dc'])
     else:
         dc = None
+    with_networks = bool(request.GET.get('with_networks', False))
     address = remote_addr(request)
     return HttpResponse(
-        generate_dhcp_config(dc=dc, server_address=address),
+        generate_dhcp_config(
+            dc=dc,
+            server_address=address,
+            with_networks=with_networks,
+        ),
         content_type="text/plain",
     )
