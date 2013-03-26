@@ -7,10 +7,8 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import datetime
-import cStringIO as StringIO
 
 from django.db import models as db
-from django.http import HttpResponseForbidden, HttpResponse, Http404
 from django.conf import settings
 from django.db.models import Q
 from django.utils.safestring import mark_safe
@@ -31,14 +29,13 @@ from ralph.cmdb.models_ci import (
     CI_TYPES,
 )
 from ralph.deployment.models import DeploymentStatus
-from ralph.discovery.models_component import ComponentType
-from ralph.discovery.models_device import (
+from ralph.discovery.models import (
     Device,
-    DeviceModelGroup,
     DeviceType,
     MarginKind,
+    SplunkUsage,
+    HistoryCost,
 )
-from ralph.discovery.models_history import HistoryCost
 from ralph.ui.forms import DateRangeForm, MarginsReportForm
 from ralph.ui.reports import (
     get_total_cores,
@@ -56,18 +53,7 @@ from ralph.ui.forms.reports import (
     ReportDeviceListForm,
     WarrantyRangeReportForm,
 )
-from ralph.util.pricing import (
-    details_all,
-    get_device_auto_price,
-    get_device_chassis_price,
-    get_device_components_price,
-    get_device_cpu_price,
-    get_device_fc_price,
-    get_device_local_storage_price,
-    get_device_memory_price,
-    get_device_operatingsystem_price,
-    get_device_software_price,
-)
+
 
 def threshold(days):
     return datetime.date.today() + datetime.timedelta(days=days)
@@ -363,6 +349,7 @@ class ReportVentures(SidebarReports, Base):
             'Cloud use',
             'Cloud cost',
         ] + [extra_type.name for extra_type in extra_types] + [
+            'Splunk cost',
             'Hardware cost',
             'Total cost',
         ]
@@ -379,6 +366,7 @@ class ReportVentures(SidebarReports, Base):
                 '%f' % (data['cloud_use'] or 0),
                 _currency(data['cloud_cost']),
             ] + [_currency(v) for v in data['extras']] + [
+                _currency(data['splunk_cost']),
                 _currency(data['hardware_cost']),
                 _currency(data['total']),
             ]
@@ -446,6 +434,12 @@ class ReportVentures(SidebarReports, Base):
                 db.Q(venture__parent__parent__parent__parent=venture)
             ).exclude(device__deleted=True)
             data = self._get_totals(start, end, query, extra_types)
+            (
+                splunk_cost,
+                splunk_count,
+                splunk_count_now,
+                splunk_size,
+            ) = SplunkUsage.get_cost(venture, start, end)
             data.update({
                 'id': venture.id,
                 'name': venture.name,
@@ -458,6 +452,7 @@ class ReportVentures(SidebarReports, Base):
                 'cloud_use': (
                     (data['cloud_cost'] or 0) / total_cloud_cost
                 ) if total_cloud_cost else 0,
+                'splunk_cost': splunk_cost,
             })
             yield data
             if venture.parent is not None:
@@ -466,6 +461,12 @@ class ReportVentures(SidebarReports, Base):
                 continue
             query = HistoryCost.objects.filter(venture=venture)
             data = self._get_totals(start, end, query, extra_types)
+            (
+                splunk_cost,
+                splunk_count,
+                splunk_count_now,
+                splunk_size,
+            ) = SplunkUsage.get_cost(venture, start, end, shallow=True)
             data.update({
                 'id': venture.id,
                 'name': '-',
@@ -478,6 +479,7 @@ class ReportVentures(SidebarReports, Base):
                 'cloud_use': (
                     (data['cloud_cost'] or 0) / total_cloud_cost
                 ) if total_cloud_cost else 0,
+                'splunk_cost': splunk_cost,
             })
             yield data
 

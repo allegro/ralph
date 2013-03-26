@@ -258,6 +258,8 @@ def get_storage_from_lshw(lshw, no_ignore=False):
             # empty slot
             continue
         sn = unicode(storage.get('serial') or '') or None
+        if sn and sn.startswith('OCZ-'):
+            sn = sn.replace('OCZ-', '')
         if (not sn or (sn.startswith('QM000') and not no_ignore) or
             (storage.get('vendor', '').strip().lower() in
                 DISK_VENDOR_BLACKLIST) or
