@@ -12,6 +12,7 @@ import re
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from django.core.urlresolvers import reverse
 from django.dispatch import receiver
 from django.db.models.signals import post_delete, post_save, pre_delete
 from django.db import IntegrityError
@@ -21,6 +22,7 @@ import django.dispatch
 # using models_ci not models, for dependency chain.
 from ralph.cmdb import models_ci as cdb
 from ralph.cmdb import models_changes as chdb
+from ralph.cmdb.integration.splunk import log_change_to_splunk
 from ralph.cmdb.integration.issuetracker import IssueTracker
 from ralph.cmdb.integration.exceptions import IssueTrackerException
 from ralph.cmdb.models_common import getfunc
@@ -28,6 +30,7 @@ from ralph.discovery.models import Device, DataCenter, Network
 from ralph.business.models import Venture, VentureRole, Service, BusinessLine
 
 
+SPLUNK_HOST = settings.SPLUNK_LOGGER_HOST
 logger = logging.Logger(__name__)
 
 user_match = re.compile(r".*\<(.*)@.*\>")
@@ -73,8 +76,6 @@ def get_login_from_user(long_user_text):
           dispatch_uid='ralph.cmdb.cichangedelete')
 @receiver(post_delete, sender=chdb.CIChangeZabbixTrigger,
           dispatch_uid='ralph.cmdb.cichangedelete')
-@receiver(post_delete, sender=chdb.CIChangeStatusOfficeIncident,
-          dispatch_uid='ralph.cmdb.cichangedelete')
 @receiver(post_delete, sender=chdb.CIChangeCMDBHistory,
           dispatch_uid='ralph.cmdb.cichangedelete')
 @receiver(post_delete, sender=chdb.CIChangePuppet,
@@ -102,6 +103,8 @@ def post_create_change(sender, instance, raw, using, **kwargs):
         """ Classify change, and create record - CIChange """
         logger.debug('Hooking post save CIChange creation.')
         if isinstance(instance, chdb.CIChangeGit):
+            if SPLUNK_HOST:
+                log_change_to_splunk(instance, 'CHANGE_GIT')
             # register every git change (treat as manual)
             registration_type = chdb.CI_CHANGE_REGISTRATION_TYPES.WAITING.id
             priority = chdb.CI_CHANGE_PRIORITY_TYPES.WARNING.id
@@ -113,6 +116,8 @@ def post_create_change(sender, instance, raw, using, **kwargs):
                 time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             ci = instance.ci
         elif isinstance(instance, chdb.CIChangeCMDBHistory):
+            if SPLUNK_HOST:
+                log_change_to_splunk(instance, 'CHANGE_HISTORY')
             # register only user triggered cmdb history
             if instance.user_id:
                 registration_type = \
@@ -124,6 +129,8 @@ def post_create_change(sender, instance, raw, using, **kwargs):
             time = instance.time
             ci = instance.ci
         elif isinstance(instance, chdb.CIChangePuppet):
+            if SPLUNK_HOST:
+                log_change_to_splunk(instance, 'CHANGE_PUPPET')
             if instance.status == 'failed':
                 priority = chdb.CI_CHANGE_PRIORITY_TYPES.ERROR.id
             elif instance.status == 'changed':

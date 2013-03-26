@@ -20,14 +20,13 @@ from ralph.cmdb.views import (
     CIIncidentsView,
     CIProblemsEdit,
     CIProblemsView,
+    JiraChangesView,
     CIPuppetEdit,
     CIPuppetView,
     CIRalphEdit,
     CIRalphView,
     CIRelationsEdit,
     CIRelationsView,
-    CISOEventsEdit,
-    CISOEventsView,
     CIZabbixEdit,
     CIZabbixView,
     EditRelation,
@@ -45,9 +44,17 @@ from ralph.cmdb.views_changes import (
     DashboardDetails,
     Incidents,
     Problems,
+    JiraChanges,
     Reports,
+    TimeLine,
 )
-from ralph.cmdb.views_changes import TimeLine
+from ralph.cmdb.views_archive import (
+    ArchivedAssetsChanges,
+    ArchivedZabbixTriggers,
+    ArchivedGitChanges,
+    ArchivedPuppetChanges,
+    ArchivedCIAttributesChanges,
+)
 from ralph.cmdb.views import Graphs
 
 
@@ -57,7 +64,7 @@ urlpatterns = patterns(
 
     url(r'^ci/view/(?P<ci_id>[a-z]{0,2}-?[0-9]+)$', login_required(MainCIView.as_view()), name='ci_view'),
 
-    url(r'^ci/view/(?P<ci_id>[a-z]{0,2}-?[0-9]+)/main/$', login_required(MainCIView.as_view()), name='ci_view'),
+    url(r'^ci/view/(?P<ci_id>[a-z]{0,2}-?[0-9]+)/main/$', login_required(MainCIView.as_view()), name='ci_view_main'),
     url(r'^ci/view/(?P<ci_id>[a-z]{0,2}-?[0-9]+)/relations/$', login_required(CIRelationsView.as_view()), name='ci_view'),
     url(r'^ci/view/(?P<ci_id>[a-z]{0,2}-?[0-9]+)/git/$', login_required(CIGitView.as_view()), name='ci_view'),
     url(r'^ci/view/(?P<ci_id>[a-z]{0,2}-?[0-9]+)/puppet/$', login_required(CIPuppetView.as_view()), name='ci_view'),
@@ -66,7 +73,7 @@ urlpatterns = patterns(
     url(r'^ci/view/(?P<ci_id>[a-z]{0,2}-?[0-9]+)/zabbix/$', login_required(CIZabbixView.as_view()), name='ci_view'),
     url(r'^ci/view/(?P<ci_id>[a-z]{0,2}-?[0-9]+)/problems/$', login_required(CIProblemsView.as_view()), name='ci_view'),
     url(r'^ci/view/(?P<ci_id>[a-z]{0,2}-?[0-9]+)/incidents/$', login_required(CIIncidentsView.as_view()), name='ci_view'),
-    url(r'^ci/view/(?P<ci_id>[a-z]{0,2}-?[0-9]+)/so/$', login_required(CISOEventsView.as_view()), name='ci_view'),
+    url(r'^ci/view/(?P<ci_id>[a-z]{0,2}-?[0-9]+)/jira_changes/$', login_required(JiraChangesView.as_view()), name='ci_view'),
 
     (r'^ci/jira_ci_unknown/$', login_required(ViewUnknown.as_view())),
 
@@ -80,7 +87,6 @@ urlpatterns = patterns(
     url(r'^ci/edit/(?P<ci_id>\w+)/zabbix/$', login_required(CIZabbixEdit.as_view()), name='ci_edit'),
     url(r'^ci/edit/(?P<ci_id>\w+)/problems/$', login_required(CIProblemsEdit.as_view()), name='ci_edit'),
     url(r'^ci/edit/(?P<ci_id>\w+)/incidents/$', login_required(CIIncidentsEdit.as_view()), name='ci_edit'),
-    url(r'^ci/edit/(?P<ci_id>\w+)/so/$', login_required(CISOEventsEdit.as_view()), name='ci_edit'),
 
     (r'^ci/get_last_changes/(?P<ci_id>.*)$', login_required(LastChanges.as_view())),
     (r'^relation/add/(?P<ci_id>\w+)$', login_required(AddRelation.as_view())),
@@ -92,6 +98,7 @@ urlpatterns = patterns(
     (r'^changes/changes$', login_required(Changes.as_view())),
     (r'^changes/incidents$', login_required(Incidents.as_view())),
     (r'^changes/problems$', login_required(Problems.as_view())),
+    (r'^changes/jira_changes$', login_required(JiraChanges.as_view())),
 
     (r'^changes/timeline$', login_required(TimeLine.as_view())),
     (r'^changes/timeline_ajax$', login_required(TimeLine.get_ajax)),
@@ -103,4 +110,10 @@ urlpatterns = patterns(
         login_required(DashboardDetails.as_view())),
     (r'^changes/reports$', login_required(Reports.as_view())),
     (r'^graphs$', login_required(Graphs.as_view())),
+
+    url(r'^archive/assets/$', login_required(ArchivedAssetsChanges.as_view()), name='archive'),
+    url(r'^archive/zabbix/$', login_required(ArchivedZabbixTriggers.as_view()), name='archive'),
+    url(r'^archive/git/$', login_required(ArchivedGitChanges.as_view()), name='archive'),
+    url(r'^archive/puppet/$', login_required(ArchivedPuppetChanges.as_view()), name='archive'),
+    url(r'^archive/cmdb/$', login_required(ArchivedCIAttributesChanges.as_view()), name='archive'),
 )

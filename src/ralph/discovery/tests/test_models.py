@@ -5,10 +5,12 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import datetime
 
 from django.test import TestCase
+import mock
 
-from ralph.discovery.models import DeviceType, Device
+from ralph.discovery.models import DeviceType, Device, UptimeSupport
 from ralph.discovery.models_history import HistoryChange
 
 
@@ -61,3 +63,18 @@ class ModelsTest(TestCase):
         self.assertEqual(dev_db.name, 'dev1')
         self.assertEqual(dev_db.sn, 'xaxaxa')
 
+
+class MockDateTime(datetime.datetime):
+    @classmethod
+    def now(cls):
+        return datetime.datetime(2010,10,3,14,53,21)
+
+class UptimeSupportTest(TestCase):
+    @mock.patch('ralph.discovery.models_device.datetime.datetime', MockDateTime)
+    def test_uptime(self):
+        class Model(UptimeSupport):
+            pass
+        m = Model()
+        self.assertEqual(m.uptime, None)
+        m.uptime = 132
+        self.assertEqual(m.uptime, datetime.timedelta(seconds=132))

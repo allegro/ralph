@@ -1,5 +1,22 @@
 Change Log
 ----------
+1.1.18
+~~~~~~
+
+Release on March 19, 2013
+
+* Added CMDB - Splunk integration.
+
+* Added archivization feature for CMDB.
+
+* Added Autoci feature for CMDB.
+
+* Improved jira integration.
+
+* Added ability to discover Windows software using don pedro plugin.
+
+* Discovery of hardware fixed and improved.
+
 
 1.1.17
 ~~~~~~

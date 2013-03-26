@@ -15,7 +15,6 @@ from ralph.util import Eth
 from ralph.ui.widgets import (
     DateWidget,
     ReadOnlySelectWidget,
-    DeviceWidget,
     DeviceModelWidget,
     ReadOnlyWidget,
     RackWidget,
@@ -177,6 +176,14 @@ class DeviceForm(forms.ModelForm):
                 )
         return deleted
 
+    def clean_chassis_position(self):
+        chassis_position = self.cleaned_data.get('chassis_position')
+        if not 0 <= chassis_position <= 65535:
+            raise forms.ValidationError(
+                "Invalid numeric position, use range 0 to 65535"
+            )
+        return chassis_position
+
 
 class DeviceCreateForm(DeviceForm):
     class Meta(DeviceForm.Meta):
@@ -233,6 +240,10 @@ class DeviceCreateForm(DeviceForm):
             raise forms.ValidationError(
                     "Either MACs or serial number required.")
         return ' '.join(macs)
+
+    def clean_model(self):
+        model = self.cleaned_data['model']
+        return model or None
 
 
 class DeviceBulkForm(DeviceForm):

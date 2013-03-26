@@ -16,12 +16,12 @@ class Error(Exception):
 
 
 class OpenStack(object):
-    def __init__(self, url, user, password):
+    def __init__(self, url, user, password, region=''):
         self.auth_url = url
         self.user = user
-        self.public_url, self.auth_token = self.auth(password)
+        self.public_url, self.auth_token = self.auth(password, region)
 
-    def auth(self, password):
+    def auth(self, password, region):
         auth_url = '/'.join([self.auth_url, 'v2.0/tokens'])
         auth_data = json.dumps({
             'auth': {
@@ -40,7 +40,12 @@ class OpenStack(object):
         auth_reply = json.loads(urllib2.urlopen(request).read())
         for service in auth_reply['access']['serviceCatalog']:
             if service['name'] == 'nova':
-                public_url = service['endpoints'][0]['publicURL']
+                for endpoint in service['endpoints']:
+                    if not region or endpoint['region'] == region:
+                        public_url = endpoint['publicURL']
+                        break
+                else:
+                    raise Error('Service "nova" not available for this region')
                 break
         else:
             raise Error('Service "nova" not available')
