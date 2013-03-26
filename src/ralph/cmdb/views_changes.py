@@ -709,7 +709,7 @@ class Reports(ChangesBase, DataTableMixin):
             _(
                 'incidents count',
                 field='ciname',
-                            sort_expression='ciname',
+                sort_expression='ciname',
                 bob_tag=True,
             ),
             _(
@@ -734,6 +734,7 @@ class Reports(ChangesBase, DataTableMixin):
         return rows
 
     def least_ci_changes(self):
+        _ = DataTableColumn
         self.columns = [
             _(
                 'problems count',
@@ -779,12 +780,12 @@ class Reports(ChangesBase, DataTableMixin):
             ),
             _(
                 'Technical owners',
-                field='towners',
+                field='count',
                 bob_tag=True,
             ),
             _(
                 'Business owners',
-                field='bowners',
+                field='count',
                 bob_tag=True,
             )
         ]
@@ -813,8 +814,8 @@ class Reports(ChangesBase, DataTableMixin):
             self.data_table_query(self.top_ci_incidents())
             self.report_name = 'Top CI Incidents'
         elif report_type == 'usage':
-            self.report_name = 'Top CI Incidents'
             self.data_table_query(self.least_ci_changes())
+            self.report_name = 'Top CI Incidents'
         else:
             raise UserWarning("Unknown report type %s " % report_type)
 
