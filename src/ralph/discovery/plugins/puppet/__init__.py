@@ -13,19 +13,18 @@ import random
 import re
 import time
 
+from django.conf import settings
 from lck.django.common import nested_commit_on_success
 import MySQLdb
 import requests
-from django.conf import settings
 
 from ralph.util import network, plugin
 from ralph.discovery.models import IPAddress, DiskShare, DiskShareMount
 from ralph.discovery import hardware
-
 from .facts import parse_facts, handle_facts_os, handle_facts_packages
 from .lshw import parse_lshw
 from .util import connect_db, get_ip_hostname_sets
-from ralph.discovery.plugins.puppet.yaml import load
+from .yaml import load
 
 
 SAVE_PRIORITY = 51
@@ -43,14 +42,18 @@ class PuppetAPIProvider(PuppetProvider):
 
     def get_all_facts_by_hostname_set(self, hostname_set):
         for hostname in hostname_set:
-            facts = load(self.get_data_for_hostname(hostname))
-            if facts:
-                return facts
+            data = self.get_data_for_hostname(hostname)
+            if data:
+                return load(data)['values']
 
     def get_data_for_hostname(self, hostname):
+        """Return contents of yaml from given hostname resource or None if no
+        resource has been found"""
         r = requests.get(
             "%(base_url)s/%(hostname)s" % dict(
-            base_url=settings.PUPPET_API_URL, hostname=hostname),
+                base_url=settings.PUPPET_API_URL,
+                hostname=hostname,
+            ),
             headers={'Accept': 'yaml'},
             verify=False,
         )
@@ -61,9 +64,16 @@ class PuppetAPIProvider(PuppetProvider):
 class PuppetDBProvider(PuppetProvider):
     def get_facts(self, ip_set, hostname_set):
         db = connect_db()
-        facts = self.get_all_facts_by_ip_set(db, ip_set)
-        if not facts and hostname_set:
-            facts = self.get_all_facts_by_hostname_set(db, hostname_set)
+        try:
+            facts = self.get_all_facts_by_ip_set(db, ip_set)
+            if not facts and hostname_set:
+                facts = self.get_all_facts_by_hostname_set(db, hostname_set)
+        except MySQLdb.OperationalError as e:
+            if (e.args[0] in (1205, 1213)
+                    and 'try restarting transaction' in e.args[1]):
+                time.sleep(random.choice(range(10)) + 1)
+                raise plugin.Restart(unicode(e), kwargs)
+            raise
         return facts
 
     def get_all_facts_by_ip_set(self, db, ip_set):
@@ -110,28 +120,19 @@ def puppet(**kwargs):
     ip = str(kwargs['ip'])
     ip_set, hostname_set = get_ip_hostname_sets(ip)
     if settings.PUPPET_DB_URL:
-        puppet = PuppetAPIProvider()
-    else:
         puppet = PuppetDBProvider()
-
+    else:
+        puppet = PuppetAPIProvider()
     facts = puppet.get_facts(ip_set, hostname_set)
-
     if not facts:
         return False, "host config not found.", kwargs
+    is_virtual = is_host_virtual(facts)
     try:
-        is_virtual = is_host_virtual(facts)
-        try:
-            lshw = facts['lshw']
-        except KeyError:
-            dev, dev_name = parse_facts(facts, is_virtual)
-        else:
-            dev, dev_name = parse_lshw(lshw, facts, is_virtual)
-    except MySQLdb.OperationalError as e:
-        if (e.args[0] in (1205, 1213)
-                and 'try restarting transaction' in e.args[1]):
-            time.sleep(random.choice(range(10)) + 1)
-            raise plugin.Restart(unicode(e), kwargs)
-        raise
+        lshw = facts['lshw']
+    except KeyError:
+        dev, dev_name = parse_facts(facts, is_virtual)
+    else:
+        dev, dev_name = parse_lshw(lshw, facts, is_virtual)
     if not dev:
         return False, dev_name, kwargs
 
