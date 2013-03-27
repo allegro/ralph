@@ -8,6 +8,8 @@ from __future__ import unicode_literals
 
 import functools
 
+
+from django.conf import settings
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.signals import user_logged_in
 from django.core.urlresolvers import reverse
@@ -30,6 +32,17 @@ from lck.django.profile.models import (
 )
 
 from ralph.business.models import Venture, VentureRole
+
+
+class AvailableHomePage(Choices):
+    _ = Choices.Choice
+    default = _('Default home page')
+    ventures = _("Ventures list")
+    racks = _("Racks list")
+    networks = _("Network list")
+    reports = _("Reports")
+    catalog = _("Catalog")
+    cmdb_timeline = _("CMDB timeline")
 
 
 class Perm(Choices):
@@ -75,6 +88,11 @@ class Profile(BasicInfo, ActivationSupport, GravatarSupport,
     class Meta:
         verbose_name = _("profile")
         verbose_name_plural = _("profiles")
+
+    home_page = ChoiceField(
+        choices=AvailableHomePage,
+        default=AvailableHomePage.default
+    )
 
     def __unicode__(self):
         return self.nick
@@ -223,46 +241,10 @@ def ralph_permission(perms):
     return decorator
 
 
-class Preference(Choices):
-    _ = Choices.Choice
-    GUI = Choices.Group(0)
-    home_page = _("home page")
-
-
-class UserPreference(db.Model):
-    class Meta:
-        unique_together = ['preference', 'user']
-
-    preference = db.PositiveIntegerField(
-        choices=Preference(),
-    )
-    user = db.ForeignKey(User)
-    value = db.CharField(max_length=512)
-
-    def __unicode__(self):
-        return '%s - %s' % (self.user, self.preference)
-
-
-class AvailableHomePage(Choices):
-    _ = Choices.Choice
-    search = _('Default home page')
-    ventures = _("Ventures list")
-    racks = _("Racks list")
-    networks = _("Network list")
-    reports = _("Reports")
-    catalog = _("Catalog")
-    cmdb_timeline = _("CMDB timeline")
-
-
-def get_user_home_page(user):
-    try:
-        home_page = UserPreference.objects.get(
-            user__username=user,
-            preference=Preference.home_page.id
-        )
-    except UserPreference.DoesNotExist:
-        home_page = None
-    if home_page:
-        reverse_name = AvailableHomePage.from_id(int(home_page.value)).name
-        home_page = reverse(reverse_name, args=[])
-    return home_page or None
+def get_user_home_page_url(user):
+    profile = user.get_profile()
+    if profile.home_page == AvailableHomePage.default:
+        home_page = reverse(settings.HOME_PAGE_URL_NAME, args=[])
+    else:
+        home_page = reverse(profile.home_page.name)
+    return home_page

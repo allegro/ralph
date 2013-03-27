@@ -15,7 +15,7 @@ from lck.django.common.admin import ForeignKeyAutocompleteTabularInline
 from lck.django.profile.admin import ProfileInlineFormSet
 from tastypie.models import ApiKey
 
-from ralph.account.models import BoundPerm, Profile, UserPreference
+from ralph.account.models import BoundPerm, Profile
 
 
 class ProfileInline(admin.StackedInline):
@@ -67,10 +67,6 @@ class ApiKeyInline(admin.StackedInline):
     extra = 0
 
 
-class UserPreferenceInline(admin.StackedInline):
-    model = UserPreference
-
-
 class ProfileAdmin(UserAdmin):
     def groups_show(self):
         return "<br> ".join([g.name for g in self.groups.order_by('name')])
@@ -83,7 +79,6 @@ class ProfileAdmin(UserAdmin):
         ApiKeyInline,
         ProfileIPInline,
         ProfileUserAgentInline,
-        UserPreferenceInline,
     ]
     list_display = (
         'username',
