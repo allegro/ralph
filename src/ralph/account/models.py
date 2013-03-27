@@ -12,7 +12,7 @@ import functools
 from django.conf import settings
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.signals import user_logged_in
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, NoReverseMatch
 from django.db import models as db
 from django.db.utils import DatabaseError
 from django.dispatch import receiver
@@ -244,7 +244,10 @@ def ralph_permission(perms):
 def get_user_home_page_url(user):
     profile = user.get_profile()
     if profile.home_page == AvailableHomePage.default:
-        home_page = reverse(settings.HOME_PAGE_URL_NAME, args=[])
+        try:
+            home_page = reverse(settings.HOME_PAGE_URL_NAME, args=[])
+        except NoReverseMatch:
+            home_page = reverse('search')
     else:
         home_page = reverse(profile.home_page.name)
     return home_page
