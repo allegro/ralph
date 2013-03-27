@@ -440,8 +440,8 @@ def nortel_snmp(**kwargs):
                   "bnt layer 2/3 copper gigabit ethernet "
                   "switch module for ibm bladecenter"]
     if (not ('snmp_name' in kwargs and kwargs['snmp_name'] and (
-        any([substring in kwargs['snmp_name'].lower()
-             for substring in substrings])))):
+        any(substring in kwargs['snmp_name'].lower()
+             for substring in substrings)))):
         return False, "no match.", kwargs
     ip = str(kwargs['ip'])
     version = kwargs.get('snmp_version')
