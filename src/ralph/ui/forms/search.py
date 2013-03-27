@@ -29,8 +29,11 @@ class TooltipContent(Choices):
 
     empty_field = _('Enter "none" to search for empty fields')
     empty_field_venture = _('Enter "none" or "-" to search for empty fields')
-    software_field = _('Enter "package_name" or "package_name version" to '
-                       'search software package')
+    software_field = _(
+        'Enter "package_name" or "package_name operator version" to search '
+        'software package. Operators list: " > >= < <= == " and "=" for '
+        'startswith version.'
+    )
 
 
 class SearchForm(forms.Form):
