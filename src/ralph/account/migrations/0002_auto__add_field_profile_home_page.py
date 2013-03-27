@@ -8,25 +8,15 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding model 'UserPreference'
-        db.create_table('account_userpreference', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('preference', self.gf('django.db.models.fields.PositiveIntegerField')()),
-            ('user', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
-            ('value', self.gf('django.db.models.fields.CharField')(max_length=512)),
-        ))
-        db.send_create_signal('account', ['UserPreference'])
-
-        # Adding unique constraint on 'UserPreference', fields ['preference', 'user']
-        db.create_unique('account_userpreference', ['preference', 'user_id'])
+        # Adding field 'Profile.home_page'
+        db.add_column('account_profile', 'home_page',
+                      self.gf(u'dj.choices.fields.ChoiceField')(unique=False, primary_key=False, db_column=None, blank=False, default=1, null=False, _in_south=True, db_index=False),
+                      keep_default=False)
 
 
     def backwards(self, orm):
-        # Removing unique constraint on 'UserPreference', fields ['preference', 'user']
-        db.delete_unique('account_userpreference', ['preference', 'user_id'])
-
-        # Deleting model 'UserPreference'
-        db.delete_table('account_userpreference')
+        # Deleting field 'Profile.home_page'
+        db.delete_column('account_profile', 'home_page')
 
 
     models = {
@@ -51,18 +41,12 @@ class Migration(SchemaMigration):
             'city': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
             'country': ('django.db.models.fields.PositiveIntegerField', [], {'default': '153'}),
             'gender': ('django.db.models.fields.PositiveIntegerField', [], {'default': '2'}),
+            'home_page': (u'dj.choices.fields.ChoiceField', [], {'unique': 'False', 'primary_key': 'False', 'db_column': 'None', 'blank': 'False', u'default': '1', 'null': 'False', '_in_south': 'True', 'db_index': 'False'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'last_active': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True', 'blank': 'True'}),
             'nick': ('django.db.models.fields.CharField', [], {'default': "u''", 'max_length': '30', 'blank': 'True'}),
             'time_zone': ('django.db.models.fields.FloatField', [], {'default': '1.0'}),
             'user': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['auth.User']", 'unique': 'True'})
-        },
-        'account.userpreference': {
-            'Meta': {'unique_together': "([u'preference', u'user'],)", 'object_name': 'UserPreference'},
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'preference': ('django.db.models.fields.PositiveIntegerField', [], {}),
-            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"}),
-            'value': ('django.db.models.fields.CharField', [], {'max_length': '512'})
         },
         'auth.group': {
             'Meta': {'object_name': 'Group'},
@@ -139,6 +123,7 @@ class Migration(SchemaMigration):
             'Meta': {'ordering': "(u'name',)", 'object_name': 'Preboot'},
             'cache_version': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
             'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
+            'description': ('django.db.models.fields.TextField', [], {'default': "u''", 'blank': 'True'}),
             'files': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': "orm['deployment.PrebootFile']", 'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
@@ -146,6 +131,7 @@ class Migration(SchemaMigration):
         },
         'deployment.prebootfile': {
             'Meta': {'object_name': 'PrebootFile'},
+            'description': ('django.db.models.fields.TextField', [], {'default': "u''", 'blank': 'True'}),
             'file': ('django.db.models.fields.files.FileField', [], {'default': 'None', 'max_length': '100', 'null': 'True', 'blank': 'True'}),
             'ftype': (u'dj.choices.fields.ChoiceField', [], {'unique': 'False', 'primary_key': 'False', 'db_column': 'None', 'blank': 'False', u'default': '101', 'null': 'False', '_in_south': 'True', 'db_index': 'False'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
