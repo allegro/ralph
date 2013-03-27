@@ -294,9 +294,8 @@ def discover_network(network, plugin_name='ping', requirements=None,
         hosts = net.iterhosts()
     for index, host in enumerate(hosts):
         context = {'ip': host}
-        if dbnet:
+        if dbnet and dbnet.queue:
             context['queue'] = dbnet.queue.name
-
         if interactive:
             discover_single(context, plugin_name=plugin_name,
                 requirements=requirements, interactive=True)
