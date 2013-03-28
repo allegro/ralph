@@ -13,6 +13,9 @@ from django.http import (
 )
 from django.template import Template, Context
 from lck.django.common import remote_addr
+from django.http import HttpResponse, HttpResponseForbidden
+from django.shortcuts import get_object_or_404
+import json
 
 from ralph.deployment.models import (
     Deployment,
@@ -20,8 +23,9 @@ from ralph.deployment.models import (
     FileType,
     PrebootFile,
 )
-from ralph.discovery.models import IPAddress
+from ralph.discovery.models import IPAddress, Device
 from ralph.discovery.tasks import discover_single
+from ralph.util import api
 
 
 def get_current_deployment(request):
@@ -142,3 +146,42 @@ def preboot_complete_view(request):
     )
     deployment.archive()
     return HttpResponse()
+
+
+def puppet_classifier(request):
+    if not api.is_authenticated(request):
+        return HttpResponseForbidden('API key required.')
+    hostname = request.GET.get('hostname', '').strip()
+    device = get_object_or_404(Device, name=hostname)
+    location = device.get_position() or ''
+    node = device.parent
+    visited = set()
+    while node and node not in visited:
+        visited.add(node)
+        name = (node.name or '?')
+        location = name + '__' + location if location else name
+        node = node.parent
+    department = device.venture.get_department()
+    response = {
+        'hostname': hostname,
+        'device_id': device.id,
+        'venture': device.venture.symbol,
+        'role': device.venture_role.full_name.replace(' / ', '__'),
+        'department': department.name if department else None,
+        'owners': [{
+                'first_name': o.owner.first_name,
+                'last_name': o.owner.last_name,
+                'email': o.owner.email,
+                'type': o.type,
+            } for o in device.venture.all_ownerships()],
+        'verified': device.verified,
+        'last_seen': device.last_seen.strftime('%Y-%m-%dT%H:%M:%S'),
+        'model': device.model.name,
+        'model_group': device.model.group.name if device.model else None,
+        'location': location,
+    }
+    return HttpResponse(
+        json.dumps(response),
+        content_type='application/json; charset=utf-8',
+    )
+
