@@ -7,15 +7,10 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from django.conf import settings
-from django.http import (
-    HttpResponse,
-    HttpResponseNotFound,
-)
 from django.template import Template, Context
 from lck.django.common import remote_addr
-from django.http import HttpResponse, HttpResponseForbidden
-from django.shortcuts import get_object_or_404
-from django.http import Http404
+from django.http import HttpResponse, HttpResponseForbidden, Http404
+from django.db.models import Q
 import json
 
 from ralph.deployment.models import (
@@ -24,7 +19,7 @@ from ralph.deployment.models import (
     FileType,
     PrebootFile,
 )
-from ralph.discovery.models import IPAddress
+from ralph.discovery.models import IPAddress, Device
 from ralph.discovery.tasks import discover_single
 from ralph.util import api
 
@@ -153,10 +148,13 @@ def puppet_classifier(request):
     if not api.is_authenticated(request):
         return HttpResponseForbidden('API key required.')
     hostname = request.GET.get('hostname', '').strip()
-    ipaddress = get_object_or_404(IPAddress, hostname=hostname)
-    device = ipaddress.device
-    if not device:
-        raise Http404('No device has address %s' % ipaddress.address)
+    for device in Device.objects.filter(
+                Q(name=hostname) |
+                Q(ipaddress__hostname=hostname)
+            ).distinct():
+        break
+    else:
+        raise Http404('Hostname %s not found' % hostname)
     location = device.get_position() or ''
     node = device.parent
     visited = set()
