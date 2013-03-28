@@ -350,14 +350,15 @@ class RoleProperty(db.Model):
         blank=True,
         default=None,
     )
-
-    def __unicode__(self):
-        return self.symbol
+    default = db.TextField(verbose_name=_("value"), null=True, default=None)
 
     class Meta:
         unique_together = ('symbol', 'role')
         verbose_name = _("property")
         verbose_name_plural = _("properties")
+
+    def __unicode__(self):
+        return self.symbol
 
 
 class RolePropertyValue(TimeTrackable, WithConcurrentGetOrCreate, SavingUser):

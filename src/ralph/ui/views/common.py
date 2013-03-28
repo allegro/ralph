@@ -478,17 +478,18 @@ class Info(DeviceUpdateView):
         props = {}
         if not self.object.venture_role:
             return None
-        for p in self.object.venture_role.roleproperty_set.all():
-            try:
-                value = p.rolepropertyvalue_set.filter(
-                    device=self.object,
-                )[0].value
-            except IndexError:
-                value = ''
-            props[p.symbol] = value
-        properties = list(self.object.venture_role.roleproperty_set.all())
+        properties = self.object.venture_role.roleproperty_set.all()
         if not properties:
             return None
+        for prop in properties:
+            for property_value in prop.rolepropertyvalue_set.filter(
+                    device=self.object,
+                )[:1]:
+                value = property_value.value
+                break
+            else:
+                value = prop.default
+            props[prop.symbol] = value
         return PropertyForm(properties, initial=props)
 
     def post(self, *args, **kwargs):
