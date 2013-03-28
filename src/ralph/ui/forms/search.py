@@ -31,8 +31,8 @@ class TooltipContent(Choices):
     empty_field_venture = _('Enter "none" or "-" to search for empty fields')
     software_field = _(
         'Enter "package_name" or "package_name operator version" to search '
-        'software package. Operators list: " > >= < <= == " and "=" for '
-        'startswith version.'
+        'software package. Operators list: " > >= < <= == " and "^=" for '
+        'startswith version. Example: "Apache<=2.4.4"'
     )
 
 
