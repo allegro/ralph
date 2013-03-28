@@ -28,7 +28,12 @@ from powerdns.models import Record
 from ralph.discovery.models_device import DeprecationKind, MarginKind
 
 from ralph.account.models import get_user_home_page, Perm
-from ralph.business.models import RolePropertyValue, Venture, VentureRole
+from ralph.business.models import (
+    RoleProperty,
+    RolePropertyValue,
+    Venture,
+    VentureRole,
+)
 from ralph.cmdb.models import CI
 from ralph.deployment.util import get_next_free_hostname, get_first_free_ip
 from ralph.dnsedit.models import DHCPEntry
@@ -481,7 +486,11 @@ class Info(DeviceUpdateView):
 
     def save_properties(self, device, properties):
         for symbol, value in properties.iteritems():
-            p = device.venture_role.roleproperty_set.get(symbol=symbol)
+            try:
+                p = device.venture_role.roleproperty_set.get(symbol=symbol)
+            except RoleProperty.DoesNotExist:
+                p = device.venture.roleproperty_set.get(symbol=symbol)
+            print(p)
             pv, created = RolePropertyValue.concurrent_get_or_create(
                 property=p,
                 device=device,
@@ -492,14 +501,15 @@ class Info(DeviceUpdateView):
             else:
                 pv.delete()
 
-    def get_property_form(self):
+    def get_property_form(self, data=None):
         if not self.object.venture_role:
             return None
         values = self.object.venture_role.get_properties(self.object)
         if not values:
             return None
-        properties = self.object.venture_role.roleproperty_set.all()
-        return PropertyForm(properties, initial=values)
+        properties = list(self.object.venture_role.roleproperty_set.all())
+        properties.extend(self.object.venture.roleproperty_set.all())
+        return PropertyForm(properties, data, initial=values)
 
     def post(self, *args, **kwargs):
         self.object = self.get_object()
@@ -510,8 +520,7 @@ class Info(DeviceUpdateView):
             )
         self.property_form = self.get_property_form()
         if 'propertiessave' in self.request.POST:
-            properties = list(self.object.venture_role.roleproperty_set.all())
-            self.property_form = PropertyForm(properties, self.request.POST)
+            self.property_form = self.get_property_form(self.request.POST)
             if self.property_form.is_valid():
                 messages.success(self.request, "Properties updated.")
                 self.save_properties(
