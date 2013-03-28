@@ -7,7 +7,6 @@ from __future__ import unicode_literals
 
 import os
 
-
 from django.conf import settings
 from django.test import TestCase
 import mock
@@ -23,6 +22,7 @@ from ralph.discovery.plugins.puppet.facts import (
     handle_facts_disks,
 )
 from ralph.discovery.plugins.puppet import PuppetAPIProvider
+
 
 CURRENT_DIR = settings.CURRENT_DIR
 
