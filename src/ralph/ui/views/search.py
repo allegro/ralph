@@ -23,7 +23,11 @@ from ralph.ui.views.devices import BaseDeviceList
 from ralph.ui.views.reports import Reports, ReportDeviceList
 
 
-SOFTWARE_SEPARATOR = re.compile('==|=|>=|<=|>|<')
+SOFTWARE_RE = re.compile(
+    r"^(?P<name>[^<=>^]*)\s*((?P<operator>==|\^=|>=|<=|>|<)\s*"
+    "(?P<version1>[^<=>^]*)|(?P<version2>[^<=>^ ]*))$",
+    re.U
+)
 
 
 def _search_fields_or(fields, values):
@@ -203,45 +207,43 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                     ], data['software'].split('|'))
                     self.query = self.query.filter(q).distinct()
                 else:
-                    software = SOFTWARE_SEPARATOR.split(data['software'], 1)
-                    operator = SOFTWARE_SEPARATOR.findall(data['software'])
-                    name = software[0].strip()
+                    match = SOFTWARE_RE.match(data['software'])
+                    if match:
+                        name, operator, version = (
+                            match.group('name'),
+                            match.group('operator'),
+                            match.group('version1') or match.group('version2'),
+                        )
+                    else:
+                        name = data['software'].strip()
+                        operator, version = None, None
                     # We take 3 formats into the consideration:
                     # 1) package name
                     # 2) package name + == or > or < or >= or >= + version
-                    # 3) package name + = + version - is startswith
-                    if len(software) == 1:
+                    # 3) package name + ^= + version - is startswith
+                    if not operator:
                         self.query = self.query.filter(
                             Q(software__label__icontains=name) |
-                            Q(software__model__name__icontains=data[
-                                'software'
-                            ]) |
-                            Q(software__model__group__name__icontains=data[
-                                'software'
-                            ])).distinct()
-                    elif len(software) == 2:
-                        operator = operator[0]
-                        version = software[1].strip()
-                        if operator == '=':
-                            soft_q = Q(software__version__startswith=version)
-                        elif operator == '==':
-                            soft_q = Q(software__version=version)
-                        elif operator == '>':
-                            soft_q = Q(software__version__gt=version)
-                        elif operator == '>=':
-                            soft_q = Q(software__version__gte=version)
-                        elif operator == '<':
-                            soft_q = Q(software__version__lt=version)
-                        elif operator == '<=':
-                            soft_q = Q(software__version__lte=version)
-                        self.query = self.query.filter(
-                            (Q(software__label__icontains=name) & soft_q) |
-                            Q(software__model__name__icontains=data[
-                                'software']
-                            ) |
-                            Q(software__model__group__name__icontains=data[
-                                'software']
-                            )).distinct()
+                            Q(software__model__name__icontains=name) |
+                            Q(software__model__group__name__icontains=name)
+                        ).distinct()
+                    elif name and operator and version:
+                        operators = {
+                            '==': '',
+                            '^=': '__startswith',
+                            '>': '__gt',
+                            '>=': '__gte',
+                            '<': '__lt',
+                            '<=': '__lte',
+                        }
+                        soft_q = Q(
+                            **{'software__version' + operators[operator]: version}
+                        )
+                        self.query = self.query.filter((
+                            Q(software__label__icontains=name) & soft_q) |
+                            Q(software__model__name__icontains=name) |
+                            Q(software__model__group__name__icontains=name)
+                        ).distinct()
             if data['serial']:
                 if data['serial'] == empty_field:
                     self.query = self.query.filter(
