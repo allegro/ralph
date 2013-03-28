@@ -104,6 +104,18 @@ class ProfileAdmin(UserAdmin):
         'profile__nick'
     )
 
+    def get_formsets(self, request, obj=None):
+        """Skips inlines in add form.
+
+        See: https://github.com/allegro/ralph/issues/495
+        """
+        if not obj:
+            return
+        for formset in super(ProfileAdmin, self).get_formsets(
+            request, obj=obj,
+        ):
+            yield formset
+
 
 admin.site.unregister(User)
 admin.site.register(User, ProfileAdmin)
