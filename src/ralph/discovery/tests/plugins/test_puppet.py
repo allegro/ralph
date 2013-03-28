@@ -44,7 +44,7 @@ class PuppetAPIProviderTest(TestCase):
                 get_data_for_hostname.return_value = contents
                 provider = PuppetAPIProvider()
                 facts = provider.get_facts([], ['', 's10132.dc2'])
-                self.assertItemsEqual(facts, facts_api_data)
+                self.assertItemsEqual(facts, facts_api_data['values'])
 
 
 class PuppetPluginTest(TestCase):
