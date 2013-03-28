@@ -1,46 +1,62 @@
-{%extends 'cmdb/base.html'%}
-   
+{% extends 'cmdb/base.html' %}
 {% load icons %}
 {% load query %}
+{% load bob %}
 
 {% block content %}
-<style type="text/css" media="screen">
-    form.form-inline select
-    {
-        width: auto;
-    }
-</style>
-    <h3> CMDB Reports</h3>
-    <hr>
+    <style type="text/css" media="screen">
+        form.form-inline select
+        {
+            width: auto;
+        }
+    </style>
     {% if report_kind == 'top_changes' %}
-    <p>
-    <h3> Top CI Changes </h3>
-    <hr>
-        {% include 'cmdb/reports/top-ci-changes.html' with rows=data %}
-    </p>
-    <hr>
+        <h3>CMDB Reports - Top CI Changes</h3>
+        {% include 'cmdb/reports/include_params.html' %}
     {% elif report_kind == 'top_problems' %}
-    <p>
-    <h3> Top CI Problems  </h3>
-    <hr>
-        {% include 'cmdb/reports/top-ci-problems.html' with rows=data %}
-    </p>
-
-    <hr>
-    <p>
+        <h3>CMDB Reports - Top CI Problems</h3>
+        {% include 'cmdb/reports/include_params.html' %}
     {% elif report_kind == 'top_incidents' %}
-    <h3> Top CI Incidents </h3>
-    <hr>
-        {% include 'cmdb/reports/top-ci-incidents.html' with rows=data %}
-    </p>
-
-    <hr>
+        <h3>CMDB Reports - Top CI Incidents</h3>
+        {% include 'cmdb/reports/include_params.html' %}
     {% elif report_kind == 'usage' %}
-    <p>
-    <h3> Unchanged Configuration Items </h3>
-    <hr>
-        {% include 'cmdb/reports/least-ci-changes.html' with rows=data %}
-    </p>
+        <h3>CMDB Reports - Unchanged Configuration Items</h3>
+        {% include 'cmdb/include_params.html' %}
     {% endif %}
 
+    <table class="table table-striped table-bordered table-condensed ">
+        <thead>
+            <tr>
+                {% table_header columns url_query sort fugue_icons=1 %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for change in bob_page %}
+            <tr>
+                <td>
+                    {{ change.0 }}
+                </td>
+                <td>
+                    <a href='/cmdb/ci/view/{{ change.1.id }}'> {{ change.1.name}} </a>
+                </td>
+                <td>
+                    {{ change.1.type }}
+                </td>
+                <td>
+                    {% for t in change.1.get_technical_owners %}
+                        {{ t }}
+                    {% endfor %}
+
+                </td>
+                <td>
+                    {% for t in change.1.get_business_owners %}
+                        {{ t }}
+                    {% endfor %}
+                </td>
+
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% pagination page url_query=url_query show_all=0 show_csv=0 fugue_icons=1 %}
 {% endblock %}
