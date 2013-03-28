@@ -209,3 +209,18 @@ class CITypesResource(MResource):
         throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
                                  expiration=EXPIRATION)
 
+
+class CIOwnerResource(MResource):
+    class Meta:
+        queryset = CIOwner.objects.all()
+        authentication = ApiKeyAuthentication()
+        authorization = DjangoAuthorization()
+        list_allowed_methods = ['get']
+        filtering = {
+            'first_name': ('startswith', 'exact',),
+            'last_name': ('startswith', 'exact',),
+            'email': ('startswith', 'exact',),
+        }
+        resource_name = 'ciowner'
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+                                 expiration=EXPIRATION)
