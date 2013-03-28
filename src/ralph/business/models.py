@@ -296,6 +296,18 @@ class VentureRole(Named.NonUnique, PrebootMixin, HasSymbolBasedPath,
     def roleproperty(self):
         return self.roleproperty_set
 
+    def get_properties(self, device):
+        props = {}
+        for prop in self.roleproperty_set.all():
+            try:
+                pv = prop.rolepropertyvalue_set.get(device=device)
+            except RolePropertyValue.DoesNotExist:
+                value = prop.default
+            else:
+                value = pv.value
+            props[prop.symbol] = value
+        return props
+
 
 class RolePropertyType(db.Model):
     symbol = db.CharField(
