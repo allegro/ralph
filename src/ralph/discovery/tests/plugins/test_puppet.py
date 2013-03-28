@@ -7,17 +7,16 @@ from __future__ import unicode_literals
 
 import os
 
-import mock
 
 from django.conf import settings
 from django.test import TestCase
+import mock
 
 from ralph.discovery.models import (Device, DeviceType, OperatingSystem)
 from ralph.discovery.tests.plugins.samples.puppet import (
     facts_db_data, packages_data, packages_data_not_encoded,
     facts_api_data,
 )
-
 from ralph.discovery.plugins.puppet.facts import (
     handle_facts_os,
     handle_facts_packages,
