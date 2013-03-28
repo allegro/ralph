@@ -34,8 +34,8 @@ class PuppetAPIProviderTest(TestCase):
         """Check if yaml is parsed correctly."""
         contents = None
         with open(os.path.join(
-                CURRENT_DIR, 'discovery', 'tests',
-                'plugins', 'samples', 'puppet.yaml')) as yaml_file:
+                  CURRENT_DIR, 'discovery', 'tests',
+                  'plugins', 'samples', 'puppet.yaml')) as yaml_file:
             contents = yaml_file.read()
 
         with mock.patch(
