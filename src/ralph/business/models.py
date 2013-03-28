@@ -350,14 +350,15 @@ class RoleProperty(db.Model):
         blank=True,
         default=None,
     )
-
-    def __unicode__(self):
-        return self.symbol
+    default = db.TextField(verbose_name=_("default value"), null=True, default=None)
 
     class Meta:
         unique_together = ('symbol', 'role')
         verbose_name = _("property")
         verbose_name_plural = _("properties")
+
+    def __unicode__(self):
+        return self.symbol
 
 
 class RolePropertyValue(TimeTrackable, WithConcurrentGetOrCreate, SavingUser):
@@ -504,7 +505,7 @@ def role_property_value_pre_delete(sender, instance, using, **kwargs):
     HistoryChange.objects.create(
         device=instance.device,
         field_name="%s (property)" % instance.property.symbol,
-        old_value=instance.value,
+        old_value=unicode(instance.value, errors='replace'),
         new_value='None',
     )
 
