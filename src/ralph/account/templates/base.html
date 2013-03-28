@@ -1,0 +1,14 @@
+{%extends 'ui/base.html'%}
+{% load bob %}
+{% load icons %}
+
+{% block contentarea %}
+        {% block content %}
+        {% endblock %}
+{% endblock %}
+
+{% block sidebar %}
+    {% if sidebar_items %}
+        {% sidebar_menu sidebar_items sidebar_selected %}
+    {% endif %}
+{% endblock %}
