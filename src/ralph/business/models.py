@@ -505,7 +505,7 @@ def role_property_value_pre_delete(sender, instance, using, **kwargs):
     HistoryChange.objects.create(
         device=instance.device,
         field_name="%s (property)" % instance.property.symbol,
-        old_value=unicode(instance.value),
+        old_value=unicode(instance.value, errors='replace'),
         new_value='None',
     )
 
