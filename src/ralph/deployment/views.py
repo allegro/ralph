@@ -163,22 +163,29 @@ def puppet_classifier(request):
         node = node.parent
     department = device.venture.get_department()
     response = {
-        'hostname': hostname,
+        'name': device.name,
         'device_id': device.id,
-        'venture': device.venture.symbol,
-        'role': device.venture_role.full_name.replace(' / ', '__'),
+        'venture': device.venture.symbol if device.venture else None,
+        'role': device.venture_role.full_name.replace(
+                ' / ',
+                '__',
+            ) if device.venture_role else None,
         'department': department.name if department else None,
-        'owners': [{
-                'first_name': o.owner.first_name,
-                'last_name': o.owner.last_name,
-                'email': o.owner.email,
-                'type': o.type,
-            } for o in device.venture.all_ownerships()],
+        'owners': [
+                {
+                    'first_name': o.owner.first_name,
+                    'last_name': o.owner.last_name,
+                    'email': o.owner.email,
+                    'type': o.type,
+                } for o in device.venture.all_ownerships()
+            ] if device.venture else [],
         'verified': device.verified,
         'last_seen': device.last_seen.strftime('%Y-%m-%dT%H:%M:%S'),
-        'model': device.model.name,
+        'model': device.model.name if device.model else None,
         'model_group': device.model.group.name if device.model else None,
         'location': location,
+        'properties': device.venture_role.get_properties(
+            ) if device.venture_role else {}
     }
     return HttpResponse(
         json.dumps(response),

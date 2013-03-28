@@ -493,21 +493,13 @@ class Info(DeviceUpdateView):
                 pv.delete()
 
     def get_property_form(self):
-        props = {}
         if not self.object.venture_role:
             return None
-        properties = self.object.venture_role.roleproperty_set.all()
-        if not properties:
+        values = self.object.venture_role.get_properties(self.object)
+        if not values:
             return None
-        for prop in properties:
-            try:
-                pv = prop.rolepropertyvalue_set.get(device=self.object)
-            except RolePropertyValue.DoesNotExist:
-                value = prop.default
-            else:
-                value = pv.value
-            props[prop.symbol] = value
-        return PropertyForm(properties, initial=props)
+        properties = self.object.venture_role.roleproperty_set.all()
+        return PropertyForm(properties, initial=values)
 
     def post(self, *args, **kwargs):
         self.object = self.get_object()
