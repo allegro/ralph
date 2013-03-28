@@ -1,8 +1,7 @@
 .main-body {
     min-height: 40em;
 }
-.browser-min-width
-{
+.browser-min-width{
     min-width: 1000px;
 }
 table.table-list tr.active > td {
@@ -134,8 +133,8 @@ html .nolink {
 }
 
 h3 {
-    padding-bottom: 10px; 
-    padding-top: 10px; 
+    padding-bottom: 10px;
+    padding-top: 10px;
 }
 
 .details-report th{
@@ -150,8 +149,7 @@ tr.table-highlight td {
     min-width: 200px;
 }
 
-.end-date-field
-{
+.end-date-field {
     margin-top: -10px !important;
 }
 
@@ -159,27 +157,35 @@ tr.table-highlight td {
     font-family: monospace;
 }
 
-.reports-form-right-line
-{
+.reports-form-right-line {
     border-right: 1px solid silver;
     padding-right: 20px;
 }
 
-.reports-table-component
-{
+.reports-table-component {
     margin-left: -6px;
     margin-top: -4px;
 }
 
-.reports-table-component td:nth-child(2)
-{
+.reports-table-component td:nth-child(2) {
     width: 10%;
     text-align: center;
 }
 
 .reports-table-component td:nth-child(3),
-.reports-table-component td:nth-child(4)
-{
+.reports-table-component td:nth-child(4) {
     width: 15%;
     text-align: right;
+}
+
+.cmdb_report_filter .datepicker {
+    width: 55px;
+}
+
+.cmdb_report_filter .form_line:first-of-type {
+    padding-top: 0px;
+}
+
+.cmdb_report_filter .form_line {
+    padding-top: 10px;
 }
