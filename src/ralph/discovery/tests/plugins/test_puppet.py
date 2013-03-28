@@ -29,9 +29,7 @@ CURRENT_DIR = settings.CURRENT_DIR
 
 
 class PuppetAPIProviderTest(TestCase):
-    def setUp(self):
-        pass
-
+    """Try to provide facts from YAML"""
     def test_load(self):
         """Check if yaml is parsed correctly."""
         contents = None
