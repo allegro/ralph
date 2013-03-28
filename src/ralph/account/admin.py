@@ -109,9 +109,12 @@ class ProfileAdmin(UserAdmin):
 
         See: https://github.com/allegro/ralph/issues/495
         """
-        if obj:
-            for inline in self.get_inline_instances(request):
-                yield inline.get_formset(request, obj)
+        if not obj:
+            return
+        for formset in super(ProfileAdmin, self).get_formsets(
+            request, obj=obj,
+        ):
+            yield formset
 
 
 admin.site.unregister(User)
