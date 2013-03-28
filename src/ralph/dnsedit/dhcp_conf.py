@@ -61,7 +61,7 @@ def _generate_entries(filter_ips, dc):
         yield name, address, mac, next_server
 
 
-def generate_dhcp_config(dc=None, server_address=None):
+def generate_dhcp_config(dc=None, server_address=None, with_networks=False):
     """Generate host DHCP configuration. If `dc` is provided, only yield hosts
     with addresses from networks of the specified DC.
 
@@ -75,8 +75,9 @@ def generate_dhcp_config(dc=None, server_address=None):
             pass
     template = loader.get_template('dnsedit/dhcp.conf')
     last_modified_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    for last in  DHCPEntry.objects.order_by('-modified'):
+    for last in DHCPEntry.objects.order_by('-modified')[:1]:
         last_modified_date = last.modified.strftime('%Y-%m-%d %H:%M:%S')
+        break
     if dc:
         networks = dc.network_set.all()
         nets = {ipaddr.IPNetwork(network.address) for network in networks}
@@ -91,9 +92,15 @@ def generate_dhcp_config(dc=None, server_address=None):
         networks = Network.objects.all()
         def filter_ips(ips):
             return ips
+    for last in networks.exclude(dhcp_config='').order_by('-modified')[:1]:
+        last_modified_date = max(
+            last_modified_date,
+            last.modified.strftime('%Y-%m-%d %H:%M:%S'),
+        )
+        break
     c = Context({
         'server_config': server.dhcp_config if server else '',
-        'networks': _generate_networks(networks),
+        'networks': _generate_networks(networks) if with_networks else [],
         'entries': _generate_entries(filter_ips, dc),
         'last_modified_date': last_modified_date,
     })
