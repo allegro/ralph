@@ -51,6 +51,8 @@ CMDB available resources
 +-------------------------------------+--------------------------------------------------+
 | :ref:`cilayers`                     | returns a list of all available layers CI's      |
 +-------------------------------------+--------------------------------------------------+
+| :ref:`ciowners`                     | returns a list of all owners                     |
++-------------------------------------+--------------------------------------------------+
 | :ref:`cirelations`                  | returns relationships between CI's               |
 +-------------------------------------+--------------------------------------------------+
 | :ref:`citypes`                      | returns a list of all available types CI's       |
@@ -292,6 +294,51 @@ CILAYERS
           }
        ]
     }
+
+.. _ciowners:
+
+CIOWNERS
+~~~~~~~~
+
+- **link** ::
+
+    http://localhost:8000/api/v0.9/ciowners/
+
+- HTTP Methods
+    * GET
+
+- **example returned data** ::
+
+    {
+      "meta": {
+          "limit": 1,
+          "next": "/api/v0.9/ciowners/?username=username&limit=2&format=json&api_key=api_key",
+          "offset": 0,
+          "previous": null,
+          "total_count": 175
+      },
+      "objects": [
+          {
+              "cache_version": 0,
+              "created": "2012-09-22T16:07:15",
+              "email": john.ralph@ralph.local,
+              "first_name": "John",
+              "id": "1",
+              "last_name": "Ralph",
+              "modified": "2012-10-24T12:07:15",
+              "resource_uri": "/api/v0.9/ciowner/1/"
+          }
+      ]
+    }
+
+**Ability to filter the resource CIOWNERS**
+
+Availability methods:
+
+- startswith
+    - fields ``first_name, last_name, email``
+- exact
+    - fields ``first_name, last_name, email``
 
 .. _cirelations:
 
