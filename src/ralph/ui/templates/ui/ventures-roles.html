@@ -39,6 +39,7 @@
         <th width="16"></th>
         <th>Property</th>
         <th>Type</th>
+        <th>Default</th>
     </tr></thead>
     <tbody>
         {% for p in role.roleproperty_set.all %}
@@ -46,6 +47,7 @@
                 <td>{% icon 'fugue-property' %}</td>
                 <td>{{ p.symbol }}</td>
                 <td>{{ p.type.symbol }}</td>
+                <td>{{ p.type.default }}</td>
             </tr>
         {% endfor %}
     </tbody>
