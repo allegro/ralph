@@ -11,7 +11,7 @@ import re
 from urlparse import urljoin
 
 
-from bob.data_table import DataTableMixin, DataTableColumn
+from bob.data_table import DataTableMixin
 from bob.menu import MenuItem, MenuHeader
 
 from django.db.models import Q
@@ -60,6 +60,12 @@ from ralph.util.presentation import (
     get_network_icon,
 )
 
+from ralph.cmdb.forms import (
+    ReportFilters,
+    ReportFiltersDateRamge,
+)
+
+from ralph.cmdb.util import report_filters, add_filter, table_colums
 
 ROWS_PER_PAGE = 20
 SAVE_PRIORITY = 200
@@ -1140,75 +1146,12 @@ class CIZabbixView(CIZabbixEdit):
         return _update_labels(ret, self.ci)
 
 
-def _table_colums():
-    _ = DataTableColumn
-    columns = [
-        _(
-            'Issue updated',
-            field='update_date',
-            sort_expression='update_date',
-            bob_tag=True,
-        ),
-        _(
-            'Type',
-            field='issue_type',
-            sort_expression='issue_type',
-            bob_tag=True,
-
-        ),
-        _(
-            'Status',
-            field='resolvet_date',
-            sort_expression='resolvet_date',
-            bob_tag=True,
-        ),
-        _(
-            'Summary',
-            field='summary',
-            bob_tag=True,
-        ),
-        _(
-            'Assignee',
-            field='assignee',
-            bob_tag=True,
-        ),
-        _(
-            'Description',
-            field='description',
-            bob_tag=True,
-        ),
-        _(
-            'Analysis',
-            field='analysis',
-            bob_tag=True,
-        ),
-        _(
-            'Problems',
-            field='problems',
-            bob_tag=True,
-        ),
-        _(
-            'Planed start',
-            field='planned_start_date',
-            sort_expression='planned_start_date',
-            bob_tag=True,
-        ),
-        _(
-            'Planed end',
-            field='planned_end_date',
-            sort_expression='planned_end_date',
-            bob_tag=True,
-        ),
-    ]
-    return columns
-
-
 class CIProblemsEdit(BaseCIDetails, DataTableMixin):
     template_name = 'cmdb/ci_changes_tab.html'
     active_tab = 'problems'
     sort_variable_name = 'sort'
     export_variable_name = None  # fix in bob!
-    columns = _table_colums()
+    columns = table_colums()
     perms = [
         {
             'perm': Perm.read_configuration_item_info_jira,
@@ -1233,6 +1176,10 @@ class CIProblemsEdit(BaseCIDetails, DataTableMixin):
             'url_query': self.request.GET,
             'sort': self.sort,
             'columns': self.columns,
+            'form': {
+                'filters': ReportFilters(self.request.GET),
+                'date_range': ReportFiltersDateRamge(self.request.GET),
+            },
         })
         return ret
 
@@ -1244,10 +1191,16 @@ class CIProblemsEdit(BaseCIDetails, DataTableMixin):
         except db.CI.DoesNotExist:
             return HttpResponseRedirect('/cmdb/ci/jira_ci_unknown')
         self.ci = get_object_or_404(db.CI, id=ci_id)
-        problems = db.CIProblem.objects.filter(
-            ci=self.ci,
-        ).order_by('-created_date').all()
-        self.data_table_query(problems)
+        self.data_table_query(
+            report_filters(
+                cls=db.CIProblem,
+                order='-update_date',
+                filters=add_filter(self.request.GET, ci=self.ci),
+            )
+        )
+
+
+
         return super(CIProblemsEdit, self).get(*args, **kwargs)
 
 
@@ -1262,7 +1215,7 @@ class JiraChangesEdit(BaseCIDetails, DataTableMixin):
     active_tab = 'jira_changes'
     sort_variable_name = 'sort'
     export_variable_name = None  # fix in bob!
-    columns = _table_colums()
+    columns = table_colums()
     perms = [
         {
             'perm': Perm.read_configuration_item_info_jira,
@@ -1287,6 +1240,10 @@ class JiraChangesEdit(BaseCIDetails, DataTableMixin):
             'url_query': self.request.GET,
             'sort': self.sort,
             'columns': self.columns,
+            'form': {
+                'filters': ReportFilters(self.request.GET),
+                'date_range': ReportFiltersDateRamge(self.request.GET),
+            },
         })
         return ret
 
@@ -1298,10 +1255,13 @@ class JiraChangesEdit(BaseCIDetails, DataTableMixin):
         except db.CI.DoesNotExist:
             return HttpResponseRedirect('/cmdb/ci/jira_ci_unknown')
         self.ci = get_object_or_404(db.CI, id=ci_id)
-        jira_changes = db.JiraChanges.objects.filter(
-            ci=self.ci,
-        ).order_by('-created_date').all()
-        self.data_table_query(jira_changes)
+        self.data_table_query(
+            report_filters(
+                cls=db.JiraChanges,
+                order='-update_date',
+                filters=add_filter(self.request.GET, ci=self.ci),
+            )
+        )
         return super(JiraChangesEdit, self).get(*args, **kwargs)
 
 
@@ -1316,7 +1276,7 @@ class CIIncidentsEdit(BaseCIDetails, DataTableMixin):
     active_tab = 'incidents'
     sort_variable_name = 'sort'
     export_variable_name = None  # fix in bob!
-    columns = _table_colums()
+    columns = table_colums()
     perms = [
         {
             'perm': Perm.read_configuration_item_info_jira,
@@ -1341,6 +1301,10 @@ class CIIncidentsEdit(BaseCIDetails, DataTableMixin):
             'url_query': self.request.GET,
             'sort': self.sort,
             'columns': self.columns,
+            'form': {
+                'filters': ReportFilters(self.request.GET),
+                'date_range': ReportFiltersDateRamge(self.request.GET),
+            },
         })
         return ret
 
@@ -1353,10 +1317,13 @@ class CIIncidentsEdit(BaseCIDetails, DataTableMixin):
         except db.CI.DoesNotExist:
             return HttpResponseRedirect('/cmdb/ci/jira_ci_unknown')
         self.ci = get_object_or_404(db.CI, id=ci_id)
-        incident = db.CIIncident.objects.filter(
-            ci=self.ci,
-        ).order_by('-created_date').all()
-        self.data_table_query(incident)
+        self.data_table_query(
+            report_filters(
+                cls=db.CIIncident,
+                order='-update_date',
+                filters=add_filter(self.request.GET, ci=self.ci),
+            )
+        )
         return super(CIIncidentsEdit, self).get(*args, **kwargs)
 
 

@@ -87,6 +87,7 @@ urlpatterns = patterns(
     url(r'^ci/edit/(?P<ci_id>\w+)/zabbix/$', login_required(CIZabbixEdit.as_view()), name='ci_edit'),
     url(r'^ci/edit/(?P<ci_id>\w+)/problems/$', login_required(CIProblemsEdit.as_view()), name='ci_edit'),
     url(r'^ci/edit/(?P<ci_id>\w+)/incidents/$', login_required(CIIncidentsEdit.as_view()), name='ci_edit'),
+    url(r'^ci/edit/(?P<ci_id>[a-z]{0,2}-?[0-9]+)/jira_changes/$', login_required(JiraChangesView.as_view()), name='ci_view'),
 
     (r'^ci/get_last_changes/(?P<ci_id>.*)$', login_required(LastChanges.as_view())),
     (r'^relation/add/(?P<ci_id>\w+)$', login_required(AddRelation.as_view())),
