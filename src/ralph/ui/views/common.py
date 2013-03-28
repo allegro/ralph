@@ -471,8 +471,11 @@ class Info(DeviceUpdateView):
                 property=p,
                 device=device,
             )
-            pv.value = value
-            pv.save(user=self.request.user)
+            if value != p.default:
+                pv.value = value
+                pv.save(user=self.request.user)
+            else:
+                pv.delete()
 
     def get_property_form(self):
         props = {}
@@ -482,13 +485,12 @@ class Info(DeviceUpdateView):
         if not properties:
             return None
         for prop in properties:
-            for property_value in prop.rolepropertyvalue_set.filter(
-                    device=self.object,
-                )[:1]:
-                value = property_value.value
-                break
-            else:
+            try:
+                pv = prop.rolepropertyvalue_set.get(device=self.object)
+            except RolePropertyValue.DoesNotExist:
                 value = prop.default
+            else:
+                value = pv.value
             props[prop.symbol] = value
         return PropertyForm(properties, initial=props)
 
