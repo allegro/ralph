@@ -28,6 +28,7 @@ from ralph.cmdb.models import (
 )
 from ralph.cmdb.models_ci import CIOwnership, CI, CIOwner, CIType, CIRelation
 
+
 CURRENT_DIR = settings.CURRENT_DIR
 
 
@@ -45,7 +46,7 @@ class CMDBApiTest(TestCase):
         self.user = User.objects.create_user(
             'api_user',
             'test@mail.local',
-            'password'
+            'password',
         )
         self.user.save()
         self.api_key = ApiKey.objects.get(user=self.user)
@@ -60,13 +61,13 @@ class CMDBApiTest(TestCase):
         self.owner1 = CIOwner(
             first_name='first_name_owner1',
             last_name='last_name_owner1',
-            email='first_name_owner1.last_name_owner1@ralph.local'
+            email='first_name_owner1.last_name_owner1@ralph.local',
         )
         self.owner1.save()
         self.owner2 = CIOwner(
             first_name='first_name_owner2',
             last_name='last_name_owner2',
-            email='first_name_owner2.last_name_owner2@ralph.local'
+            email='first_name_owner2.last_name_owner2@ralph.local',
         )
         self.owner2.save()
 
@@ -138,7 +139,7 @@ class CMDBApiTest(TestCase):
         response = self.client.get(path=path, data=self.data, format='json')
         json_string = response.content
         json_data = json.loads(json_string)
-        resource_uris = [x['resource_uri'] for x in json_data['objects']]
+        resource_uris = [ci_layer['resource_uri'] for ci_layer in json_data['objects']]
 
         response = self.client.get(
             path=resource_uris[0], data=self.data, format='json'
@@ -159,7 +160,7 @@ class CMDBApiTest(TestCase):
         response = self.client.get(path=path, data=self.data, format='json')
         json_string = response.content
         json_data = json.loads(json_string)
-        resource_uris = [x['resource_uri'] for x in json_data['objects']]
+        resource_uris = [ci_type['resource_uri'] for ci_type in json_data['objects']]
 
         response = self.client.get(
             path=resource_uris[0], data=self.data, format='json'
@@ -181,7 +182,7 @@ class CMDBApiTest(TestCase):
         response = self.client.get(path=path, data=self.data, format='json')
         json_string = response.content
         json_data = json.loads(json_string)
-        resource_uris = [x['resource_uri'] for x in json_data['objects']]
+        resource_uris = [ci['resource_uri'] for ci in json_data['objects']]
 
         response = self.client.get(
             path=resource_uris[0], data=self.data, format='json'
@@ -224,7 +225,7 @@ class CMDBApiTest(TestCase):
         response = self.client.get(path=path, data=self.data, format='json')
         json_string = response.content
         json_data = json.loads(json_string)
-        resource_uris = [x['resource_uri'] for x in json_data['objects']]
+        resource_uris = [ci_relation['resource_uri'] for ci_relation in json_data['objects']]
 
         response = self.client.get(
             path=resource_uris[0], data=self.data, format='json'
@@ -246,14 +247,15 @@ class CMDBApiTest(TestCase):
 
     def test_ci_filter_exact(self):
         path = "/api/v0.9/ci/"
-        self.data['name__exact'] = 'otherci'
-        response = self.client.get(path=path, data=self.data, format='json')
+        data = self.data.copy()
+        data['name__exact'] = 'otherci'
+        response = self.client.get(path=path, data=data, format='json')
         json_string = response.content
         json_data = json.loads(json_string)
-        resource_uris = [x['resource_uri'] for x in json_data['objects']]
+        resource_uris = [ci['resource_uri'] for ci in json_data['objects']]
         self.assertEqual(len(resource_uris), 1)
         response = self.client.get(
-            path=resource_uris[0], data=self.data, format='json'
+            path=resource_uris[0], data=data, format='json'
         )
         json_string = response.content
         json_data = json.loads(json_string)
@@ -262,18 +264,18 @@ class CMDBApiTest(TestCase):
         self.assertEqual(json_data['name'], self.ci3.name)
         self.assertEqual(json_data['type']['name'], self.ci3.type.name)
         self.assertEqual(json_data['uid'], self.ci3.uid)
-        del(self.data['name__exact'])
 
     def test_ci_filter_startswith(self):
+        data = self.data.copy()
         path = "/api/v0.9/ci/"
-        self.data['name__startswith'] = 'ciname'
-        response = self.client.get(path=path, data=self.data, format='json')
+        data['name__startswith'] = 'ciname'
+        response = self.client.get(path=path, data=data, format='json')
         json_string = response.content
         json_data = json.loads(json_string)
-        resource_uris = [x['resource_uri'] for x in json_data['objects']]
+        resource_uris = [ci['resource_uri'] for ci in json_data['objects']]
         self.assertEqual(len(resource_uris), 2)
         response = self.client.get(
-            path=resource_uris[0], data=self.data, format='json'
+            path=resource_uris[0], data=data, format='json'
         )
         json_string = response.content
         json_data = json.loads(json_string)
@@ -284,7 +286,7 @@ class CMDBApiTest(TestCase):
         self.assertEqual(json_data['uid'], self.ci1.uid)
 
         response = self.client.get(
-            path=resource_uris[1], data=self.data, format='json'
+            path=resource_uris[1], data=data, format='json'
         )
         json_string = response.content
         json_data = json.loads(json_string)
@@ -293,8 +295,6 @@ class CMDBApiTest(TestCase):
         self.assertEqual(json_data['name'], self.ci2.name)
         self.assertEqual(json_data['type']['name'], self.ci2.type.name)
         self.assertEqual(json_data['uid'], self.ci2.uid)
-
-        del(self.data['name__startswith'])
 
 
 class CIApiTest(TestCase):
@@ -325,13 +325,14 @@ class CIApiTest(TestCase):
 
         temp_venture = Venture.objects.create(name='TempTestVenture')
         if settings.AUTOCI:
-            self.ci = CI.objects.all()[0]
+            self.ci = CI.get_by_content_object(temp_venture)
         else:
+            CIImporter().import_single_object(temp_venture)
             self.ci = CI.objects.create(
-            name='TempTestVentureCI',
-            uid=CI.get_uid_by_content_object(temp_venture),
-            type_id=4
-        )
+                name='TempTestVentureCI',
+                uid=CI.get_uid_by_content_object(temp_venture),
+                type_id=4,
+            )
 
         self.cmdb_new_value = 'nv_%s' % random.randrange(0, 1000)
         self.cmdb_old_value = 'ov_%s' % random.randrange(0, 1000)
@@ -375,7 +376,10 @@ class CIApiTest(TestCase):
         self.assertEqual(
             CIChange.objects.filter(
                 object_id=git_change.id,
-                type=chdb.CI_CHANGE_TYPES.CONF_GIT.id).count(), 1)
+                type=chdb.CI_CHANGE_TYPES.CONF_GIT.id
+            ).count(),
+            1,
+        )
 
     def test_ci_change_cmdbhistory_registration(self):
         cmdb_change = None
@@ -389,4 +393,7 @@ class CIApiTest(TestCase):
         self.assertEqual(
             CIChange.objects.filter(
                 object_id=cmdb_change.id,
-                type=chdb.CI_CHANGE_TYPES.CI.id).count(), 1)
+                type=chdb.CI_CHANGE_TYPES.CI.id
+            ).count(),
+            1,
+        )

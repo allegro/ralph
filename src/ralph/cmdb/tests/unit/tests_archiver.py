@@ -39,7 +39,7 @@ class CMDBArchiverToolsTest(TestCase):
         class Foo(models.Model):
             foo1 = models.CharField()
             foo2 = models.IntegerField()
-        self.sampleDbModel = Foo
+        self.sampleDBModel = Foo
 
     def test_get_used_db_backend_name(self):
         db_backend = archiver._get_used_db_backend_name()
@@ -48,7 +48,7 @@ class CMDBArchiverToolsTest(TestCase):
         )
 
     def test_get_db_columns_for_model(self):
-        cols = archiver._get_db_columns_for_model(self.sampleDbModel)
+        cols = archiver._get_db_columns_for_model(self.sampleDBModel)
         self.assertEqual(
             cols,
             ['id', 'foo1', 'foo2'],
@@ -56,7 +56,7 @@ class CMDBArchiverToolsTest(TestCase):
 
     def test_get_db_table_for_model(self):
         self.assertEqual(
-            archiver._get_db_table_for_model(self.sampleDbModel),
+            archiver._get_db_table_for_model(self.sampleDBModel),
             'unit_foo',
         )
 
@@ -66,16 +66,16 @@ class CMDBArchiverToolsTest(TestCase):
         ) as db_backend:
             db_backend.return_value = 'mysql'
             sql = archiver._make_advanced_delete_query(
-                self.sampleDbModel,
-                self.sampleDbModel,
+                self.sampleDBModel,
+                self.sampleDBModel,
             )
             self.assertTrue(sql.lower().startswith(
                 'delete unit_foo.* from unit_foo',
             ))
             db_backend.return_value = 'postgresql'
             sql = archiver._make_advanced_delete_query(
-                self.sampleDbModel,
-                self.sampleDbModel,
+                self.sampleDBModel,
+                self.sampleDBModel,
             )
             sql = ' '.join(sql.split())
             self.assertTrue(sql.lower().startswith(
@@ -83,8 +83,8 @@ class CMDBArchiverToolsTest(TestCase):
             ))
             db_backend.return_value = 'sqlite'
             sql = archiver._make_advanced_delete_query(
-                self.sampleDbModel,
-                self.sampleDbModel,
+                self.sampleDBModel,
+                self.sampleDBModel,
             )
             sql = ' '.join(sql.split())
             self.assertTrue(sql.lower().startswith(
@@ -108,12 +108,12 @@ class CMDBArchiverTest(TestCase):
         self.sample_device = Device.create(
             sn='sn_123456789_1',
             model_name='sampleDevice',
-            model_type=DeviceType.unknown
+            model_type=DeviceType.unknown,
         )
         self.other_sample_device = Device.create(
             sn='sn_123456789_2',
             model_name='otherSampleDevice',
-            model_type=DeviceType.unknown
+            model_type=DeviceType.unknown,
         )
         created = datetime.datetime.now() - datetime.timedelta(days=31)
         change = CIChange(
@@ -370,7 +370,7 @@ class CMDBArchiverTest(TestCase):
 
     def test_run_cichange_zabbix_archivization(self):
         archiver.run_cichange_zabbix_archivization(
-            datetime.datetime.now() - datetime.timedelta(days=30)
+            datetime.datetime.now()-datetime.timedelta(days=30)
         )
         self.assertFalse(
             CIChange.objects.filter(pk=self.cichange_zabbix_id).exists(),
@@ -478,12 +478,12 @@ class CMDBArchiverTest(TestCase):
         )
         self.assertFalse(
             PuppetLog.objects.filter(
-                pk=self.puppet_log_1_id ,
+                pk=self.puppet_log_1_id,
             ).exists(),
         )
         self.assertTrue(
             ArchivedPuppetLog.objects.filter(
-                pk=self.puppet_log_1_id ,
+                pk=self.puppet_log_1_id,
             ).exists(),
         )
         self.assertTrue(
@@ -508,11 +508,11 @@ class CMDBArchiverTest(TestCase):
         )
         self.assertTrue(
             PuppetLog.objects.filter(
-                pk=self.puppet_log_2_id ,
+                pk=self.puppet_log_2_id,
             ).exists(),
         )
         self.assertFalse(
             ArchivedPuppetLog.objects.filter(
-                pk=self.puppet_log_2_id ,
+                pk=self.puppet_log_2_id,
             ).exists(),
         )

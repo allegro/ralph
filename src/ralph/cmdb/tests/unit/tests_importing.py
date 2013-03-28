@@ -4,10 +4,11 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from django.test import TestCase
+from unittest import skipIf
+
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from unittest import skipIf
+from django.test import TestCase
 
 from ralph.business.models import (
     Venture,
@@ -34,7 +35,7 @@ CURRENT_DIR = settings.CURRENT_DIR
 
 
 class CIImporterTest(TestCase):
-
+    """Test creating CI's and relations between them from base ralph data types."""
     def setUp(self):
         self.top_venture = Venture(name='top_venture')
         self.top_venture.save()
@@ -51,22 +52,20 @@ class CIImporterTest(TestCase):
             parent=self.role,
         )
         self.child_role.save()
-        dm = self.add_model('DC model sample', DeviceType.data_center.id)
-        self.dc = Device.create(
-            sn='sn1', model=dm
-        )
+        dm = self.add_model('DC model sample', DeviceType.data_center)
+        self.dc = Device.create(sn='sn1', model=dm)
         self.dc.name = 'dc'
         self.dc.save()
-        dm = self.add_model('Rack model sample', DeviceType.rack_server.id)
+        dm = self.add_model('Rack model sample', DeviceType.rack_server)
         self.rack = Device.create(
             venture=self.child_venture,
             sn='sn2',
-            model=dm
+            model=dm,
         )
         self.rack.parent = self.dc
         self.rack.name = 'rack'
         self.rack.save()
-        dm = self.add_model('Blade model sample', DeviceType.blade_server.id)
+        dm = self.add_model('Blade model sample', DeviceType.blade_server)
         self.blade = Device.create(
             venture=self.child_venture,
             sn='sn3',
@@ -138,7 +137,8 @@ class CIImporterTest(TestCase):
         for o in objs:
             ct = ContentType.objects.get_for_model(o)
             cis.extend(
-                CIImporter().import_all_ci([ct], asset_id=o.id))
+                CIImporter().import_all_ci([ct], asset_id=o.id)
+            )
             # Rack should be inside DC
         try:
             CIRelation.objects.get(
@@ -148,7 +148,10 @@ class CIImporterTest(TestCase):
             self.fail('Cant find relation %s %s %s' % (ci_dc, ci_rack))
             # Blade should be inside Rack
         CIRelation.objects.get(
-            parent=ci_rack, child=ci_blade, type=CI_RELATION_TYPES.CONTAINS.id)
+            parent=ci_rack, 
+            child=ci_blade, 
+            type=CI_RELATION_TYPES.CONTAINS.id,
+        )
 
         # every device in composition chain should have relation
         # to Venture and Role as well.
@@ -191,13 +194,14 @@ class CIImporterTest(TestCase):
 
 class AddOrUpdateCITest(TestCase):
     def setUp(self):
-    # create Venture and CI
+        # create Venture and CI
         self.venture = Venture.objects.create(name='TestVenture')
 
         # create VentureRole and CI
         v = Venture.objects.create(name='SomeAssignedVenture')
         self.venture_role = VentureRole.objects.create(
-            name='TestVentureRole', venture=v
+            name='TestVentureRole',
+            venture=v,
         )
 
         # create DataCenter and CI
@@ -206,12 +210,15 @@ class AddOrUpdateCITest(TestCase):
         # create Network and CI
         dc = DataCenter.objects.create(name='SomeDC')
         self.network = Network.objects.create(
-            name='TestNetwork', address='192.168.56.1', data_center=dc
+            name='TestNetwork',
+            address='192.168.56.1',
+            data_center=dc,
         )
 
         # create Device and CI
         device_model = DeviceModel.objects.create(
-            name='SomeDeviceModel', type=DeviceType.rack_server.id)
+            name='SomeDeviceModel', type=DeviceType.rack_server.id
+        )
         self.device = Device.create(
             name='TestDevice', sn='sn123', model=device_model
         )
@@ -273,14 +280,20 @@ class AutoCIRemoveTest(TestCase):
         # create Network and CI
         dc = DataCenter.objects.create(name='SomeDC')
         self.network = Network.objects.create(
-            name='TestNetwork', address='192.168.56.1', data_center=dc
+            name='TestNetwork',
+            address='192.168.56.1',
+            data_center=dc,
         )
 
         # create Device and CI
         device_model = DeviceModel.objects.create(
-            name='SomeDeviceModel', type=DeviceType.rack_server.id)
+            name='SomeDeviceModel', 
+            type=DeviceType.rack_server,
+        )
         self.device = Device.create(
-            name='TestDevice', sn='sn123', model=device_model
+            name='TestDevice',
+            sn='sn123',
+            model=device_model,
         )
 
         # create Service and CI
@@ -288,7 +301,7 @@ class AutoCIRemoveTest(TestCase):
         self.service = Service.objects.create(
             name='someservice.com',
             external_key='abc123',
-            business_line=bl.name
+            business_line=bl.name,
         )
 
         # create BusinessLIne and CI
