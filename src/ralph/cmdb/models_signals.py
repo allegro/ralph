@@ -12,7 +12,6 @@ import re
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.core.urlresolvers import reverse
 from django.dispatch import receiver
 from django.db.models.signals import post_delete, post_save, pre_delete
 from django.db import IntegrityError
@@ -31,7 +30,7 @@ from ralph.business.models import Venture, VentureRole, Service, BusinessLine
 
 
 SPLUNK_HOST = settings.SPLUNK_LOGGER_HOST
-logger = logging.Logger(__name__)
+logger = logging.getLogger(__name__)
 
 user_match = re.compile(r".*\<(.*)@.*\>")
 register_issue_signal = django.dispatch.Signal(providing_args=["change_id"])

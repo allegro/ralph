@@ -436,9 +436,12 @@ def juniper_snmp(**kwargs):
 def nortel_snmp(**kwargs):
     sn_oid = (1, 3, 6, 1, 4, 1, 1872, 2, 5, 1, 3, 1, 18, 0)
     uuid_oid = (1, 3, 6, 1, 4, 1, 1872, 2, 5, 1, 3, 1, 17, 0)
-    substring = "nortel layer2-3 gbe switch"
-    if not ('snmp_name' in kwargs and kwargs['snmp_name'] and (
-            substring in kwargs['snmp_name'].lower())):
+    substrings = ["nortel layer2-3 gbe switch",
+                  "bnt layer 2/3 copper gigabit ethernet "
+                  "switch module for ibm bladecenter"]
+    snmp_name = kwargs.get('snmp_name', '')
+    if not (snmp_name and any(substring in kwargs['snmp_name'].lower()
+            for substring in substrings)):
         return False, "no match.", kwargs
     ip = str(kwargs['ip'])
     version = kwargs.get('snmp_version')

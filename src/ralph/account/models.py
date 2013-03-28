@@ -9,14 +9,19 @@ from __future__ import unicode_literals
 import functools
 
 from django.contrib.auth.models import User, Group
+from django.contrib.auth.signals import user_logged_in
+from django.core.urlresolvers import reverse
 from django.db import models as db
 from django.db.utils import DatabaseError
 from django.dispatch import receiver
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden,  HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
+from django.shortcuts import redirect
+
 from dj.choices import Choices
 from dj.choices.fields import ChoiceField
 from lck.django.activitylog.models import MonitoredActivity
+from lck.django.choices import Choices
 from lck.django.common.models import TimeTrackable, EditorTrackable
 from lck.django.profile.models import (
     BasicInfo,
@@ -216,3 +221,48 @@ def ralph_permission(perms):
             return func(self, *args, **kwargs)
         return functools.wraps(func)(inner_decorator)
     return decorator
+
+
+class Preference(Choices):
+    _ = Choices.Choice
+    GUI = Choices.Group(0)
+    home_page = _("home page")
+
+
+class UserPreference(db.Model):
+    class Meta:
+        unique_together = ['preference', 'user']
+
+    preference = db.PositiveIntegerField(
+        choices=Preference(),
+    )
+    user = db.ForeignKey(User)
+    value = db.CharField(max_length=512)
+
+    def __unicode__(self):
+        return '%s - %s' % (self.user, self.preference)
+
+
+class AvailableHomePage(Choices):
+    _ = Choices.Choice
+    search = _('Default home page')
+    ventures = _("Ventures list")
+    racks = _("Racks list")
+    networks = _("Network list")
+    reports = _("Reports")
+    catalog = _("Catalog")
+    cmdb_timeline = _("CMDB timeline")
+
+
+def get_user_home_page(user):
+    try:
+        home_page = UserPreference.objects.get(
+            user__username=user,
+            preference=Preference.home_page.id
+        )
+    except UserPreference.DoesNotExist:
+        home_page = None
+    if home_page:
+        reverse_name = AvailableHomePage.from_id(int(home_page.value)).name
+        home_page = reverse(reverse_name, args=[])
+    return home_page or None
