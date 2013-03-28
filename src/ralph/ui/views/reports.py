@@ -277,7 +277,10 @@ class AsyncReportMixin(object):
             'in progress',
             self.data_provider.async_report_results_expiration,
         )
-        django_rq.enqueue(
+        queue = django_rq.get_queue(
+            name='reports' if 'reports' in settings.RQ_QUEUES else 'default',
+        )
+        queue.enqueue_call(
             func='%s.%s' % (
                 self.data_provider.__module__,
                 self.data_provider.func_name,
