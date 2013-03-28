@@ -6,18 +6,21 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from ajax_select import make_ajax_field
+from ajax_select.fields import AutoCompleteSelectField
+
 from django import forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
-from ajax_select import make_ajax_field
 
 from ralph.cmdb import models
-from ralph.cmdb.models_ci import CIOwnership, CIOwner
-from ralph.ui.widgets import (ReadOnlyWidget, ReadOnlyMultipleChoiceWidget,
-                              ReadOnlySelectWidget)
-from ralph.cmdb.models import CILayer, CIType
 from ralph.cmdb import models as db
-
-from ajax_select.fields import AutoCompleteSelectField
+from ralph.cmdb.models import CILayer, CIType
+from ralph.cmdb.models_ci import CIOwnership, CIOwner
+from ralph.ui.widgets import (
+    ReadOnlyWidget,
+    ReadOnlyMultipleChoiceWidget,
+    ReadOnlySelectWidget
+)
 from ralph.ui.widgets import DateWidget
 
 
@@ -251,14 +254,13 @@ class ReportFilters(forms.Form):
 
 
 class ReportFiltersDateRamge(forms.Form):
+    date_attrs = {
+        'placeholder': 'Start',
+        'data-collapsed': True,
+    }
     start_update = forms.DateField(
         required=False,
-        widget=DateWidget(
-            attrs={
-                'placeholder': 'Start',
-                'data-collapsed': True,
-            }
-        ),
+        widget=DateWidget(date_attrs),
         label="Update",
     )
     end_update = forms.DateField(
@@ -273,61 +275,31 @@ class ReportFiltersDateRamge(forms.Form):
     )
     start_resolved = forms.DateField(
         required=False,
-        widget=DateWidget(
-            attrs={
-                'placeholder': 'Start',
-                'data-collapsed': True,
-            }
-        ),
+        widget=DateWidget(date_attrs),
         label="Resolved",
     )
     end_resolved = forms.DateField(
         required=False,
-        widget=DateWidget(
-            attrs={
-                'placeholder': 'End',
-                'data-collapsed': True,
-            }
-        ),
+        widget=DateWidget(date_attrs),
         label="",
     )
     start_planned_start = forms.DateField(
         required=False,
-        widget=DateWidget(
-            attrs={
-                'placeholder': 'Start',
-                'data-collapsed': True,
-            }
-        ),
+        widget=DateWidget(date_attrs),
         label="Planed start",
     )
     end_planned_start = forms.DateField(
         required=False,
-        widget=DateWidget(
-            attrs={
-                'placeholder': 'End',
-                'data-collapsed': True,
-            }
-        ),
+        widget=DateWidget(date_attrs),
         label="",
     )
     start_planned_end = forms.DateField(
         required=False,
-        widget=DateWidget(
-            attrs={
-                'placeholder': 'Start',
-                'data-collapsed': True,
-            }
-        ),
+        widget=DateWidget(date_attrs),
         label="Planed end",
     )
     end_planned_end = forms.DateField(
         required=False,
-        widget=DateWidget(
-            attrs={
-                'placeholder': 'End',
-                'data-collapsed': True,
-            }
-        ),
+        widget=DateWidget(date_attrs),
         label="",
     )

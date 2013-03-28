@@ -7,15 +7,13 @@ from __future__ import unicode_literals
 
 from django.db.models import Q
 from bob.data_table import DataTableMixin, DataTableColumn
-
+from ralph.cmdb.models import CI
 
 def report_filters(cls, order, filters=None):
     q = Q()
     if filters:
         filters_list = filters.pop()
-        for name, value in filters_list.items():
-            q &= Q(**{name:value})
-        return cls.objects.filter(q).order_by(order).all()
+        return cls.objects.filter(**dict(filters_list)).order_by(order)
     return cls.objects.order_by(order).all()
 
 
@@ -27,7 +25,8 @@ def add_filter(request, ci=None):
         ci_id = CI.objects.select_related('id').filter(
             name=request.get('ci')
         )
-        filters.append({'ci_id': ci_id[0]})
+        ci_id = {'ci_id': ci_id[0]} if ci_id else {'ci_id': None}
+        filters.append(ci_id)
     if request.get('assignee'):
         filters.append({'assignee': request.get('assignee')})
     if request.get('jira_id'):

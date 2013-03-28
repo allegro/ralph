@@ -626,6 +626,30 @@ class Reports(ChangesBase, DataTableMixin):
             'msg': _("You don't have permission to see that."),
         },
     ]
+    _ = DataTableColumn
+    columns = [
+        _(
+            'Problems count',
+            field='ciname',
+            sort_expression='ciname',
+            bob_tag=True,
+        ),
+        _(
+            'Configuration item',
+            field='count',
+            bob_tag=True,
+        ),
+        _(
+            'Technical owners',
+            field='towners',
+            bob_tag=True,
+        ),
+        _(
+            'Business owners',
+            field='bowners',
+            bob_tag=True,
+        )
+    ]
 
     def get_context_data(self, *args, **kwargs):
         subsection = ''
@@ -674,90 +698,18 @@ class Reports(ChangesBase, DataTableMixin):
         return queryset
 
     def top_ci_problems(self):
-        _ = DataTableColumn
-        self.columns = [
-            _(
-                'problems count',
-                field='ciname',
-                sort_expression='ciname',
-                bob_tag=True,
-            ),
-            _(
-                'configuration item',
-                field='count',
-                bob_tag=True,
-            ),
-            _(
-                'Technical owners',
-                field='towners',
-                bob_tag=True,
-            ),
-            _(
-                'Business owners',
-                field='bowners',
-                bob_tag=True,
-            )
-        ]
         queryset = db.CI.objects.annotate(num=Count('ciproblem')).order_by('-num')
         queryset = self.handle_params(queryset)
         rows = [(x.num, x) for x in queryset]
         return rows
 
     def top_ci_incidents(self):
-        _ = DataTableColumn
-        self.columns = [
-            _(
-                'incidents count',
-                field='ciname',
-                sort_expression='ciname',
-                bob_tag=True,
-            ),
-            _(
-                'configuration item',
-                field='count',
-                bob_tag=True,
-            ),
-            _(
-                'Technical owners',
-                field='towners',
-                bob_tag=True,
-            ),
-            _(
-                'Business owners',
-                field='bowners',
-                bob_tag=True,
-            )
-        ]
         queryset = db.CI.objects.annotate(num=Count('ciincident')).order_by('-num')
         queryset = self.handle_params(queryset)
         rows = [(x.num, x) for x in queryset]
         return rows
 
     def least_ci_changes(self):
-        _ = DataTableColumn
-        self.columns = [
-            _(
-                'problems count',
-                field='ciname',
-                sort_expression='ciname',
-                bob_tag=True,
-            ),
-            _(
-                'configuration item',
-                field='count',
-                bob_tag=True,
-            ),
-            _(
-                'Technical owners',
-                field='towners',
-                bob_tag=True,
-            ),
-            _(
-                'Business owners',
-                field='bowners',
-                bob_tag=True,
-            )
-        ]
         queryset = db.CI.objects.annotate(
             num=Count('cichange')).filter(num=0).order_by('num')
         queryset = self.handle_params(queryset)
@@ -765,30 +717,6 @@ class Reports(ChangesBase, DataTableMixin):
         return rows
 
     def top_ci_changes(self):
-        _ = DataTableColumn
-        self.columns = [
-            _(
-                'problems count',
-                field='ciname',
-                sort_expression='ciname',
-                bob_tag=True,
-            ),
-            _(
-                'configuration item',
-                field='count',
-                bob_tag=True,
-            ),
-            _(
-                'Technical owners',
-                field='count',
-                bob_tag=True,
-            ),
-            _(
-                'Business owners',
-                field='count',
-                bob_tag=True,
-            )
-        ]
         queryset = db.CI.objects.annotate(num=Count('cichange')).order_by('-num')
         queryset = self.handle_params(queryset)
         rows = [(x.num, x) for x in queryset]
