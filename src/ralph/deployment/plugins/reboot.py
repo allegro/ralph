@@ -29,16 +29,17 @@ def reboot(deployment_id):
     management = deployment.device.find_management()
     if not management:
         return True
+    management_ip = management.address
     user, password = settings.ILO_USER, settings.ILO_PASSWORD
-    if user and IloHost(management, user, password).reboot(True):
+    if user and IloHost(management_ip, user, password).reboot(True):
         return True
     user, password = settings.IPMI_USER, settings.IPMI_PASSWORD
-    if user and ipmi_reboot(management, user, password, True):
+    if user and ipmi_reboot(management_ip, user, password, True):
         return True
     user = settings.SSH_IBM_USER
     bay = deployment.device.chassis_position
     if user and bay:
-        ssh_ibm_reboot(management, bay)
+        ssh_ibm_reboot(management_ip, bay)
     return True
 
 

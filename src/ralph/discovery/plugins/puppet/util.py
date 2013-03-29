@@ -39,6 +39,7 @@ def connect_db():
         conn = engine.connect()
     return conn
 
+
 def get_ip_hostname_sets(ip):
     hostname_set = {network.hostname(ip)}
     try:
@@ -55,6 +56,7 @@ def get_ip_hostname_sets(ip):
         ip_set = {ip}
     return ip_set, hostname_set
 
+
 def assign_ips(dev, ip_addresses):
     ip_addresses = {str(ip) for ip in ip_addresses}
     for addr in IPAddress.objects.filter(device=dev, is_management=False):
@@ -68,12 +70,14 @@ def assign_ips(dev, ip_addresses):
         addr.last_puppet = datetime.datetime.now()
         addr.save()
 
+
 def get_id(arg):
     id = arg['id']
     if isinstance(id, list):
         return id[0]
     else:
         return id
+
 
 def get_default_mac(facts):
     for suffix in ('', '_eth0', '_igb0', '_bnx0', '_bge0', '_nfo0', '_nge0'):

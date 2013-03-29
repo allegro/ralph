@@ -27,8 +27,13 @@ from bob.menu import MenuItem
 from powerdns.models import Record
 from ralph.discovery.models_device import DeprecationKind, MarginKind
 
-from ralph.account.models import get_user_home_page, Perm
-from ralph.business.models import RolePropertyValue, Venture, VentureRole
+from ralph.business.models import (
+    RoleProperty,
+    RolePropertyValue,
+    Venture,
+    VentureRole,
+)
+from ralph.account.models import get_user_home_page_url, Perm
 from ralph.cmdb.models import CI
 from ralph.deployment.util import get_next_free_hostname, get_first_free_ip
 from ralph.dnsedit.models import DHCPEntry
@@ -481,7 +486,10 @@ class Info(DeviceUpdateView):
 
     def save_properties(self, device, properties):
         for symbol, value in properties.iteritems():
-            p = device.venture_role.roleproperty_set.get(symbol=symbol)
+            try:
+                p = device.venture_role.roleproperty_set.get(symbol=symbol)
+            except RoleProperty.DoesNotExist:
+                p = device.venture.roleproperty_set.get(symbol=symbol)
             pv, created = RolePropertyValue.concurrent_get_or_create(
                 property=p,
                 device=device,
@@ -492,22 +500,15 @@ class Info(DeviceUpdateView):
             else:
                 pv.delete()
 
-    def get_property_form(self):
-        props = {}
+    def get_property_form(self, data=None):
         if not self.object.venture_role:
             return None
-        properties = self.object.venture_role.roleproperty_set.all()
-        if not properties:
+        values = self.object.venture_role.get_properties(self.object)
+        if not values:
             return None
-        for prop in properties:
-            try:
-                pv = prop.rolepropertyvalue_set.get(device=self.object)
-            except RolePropertyValue.DoesNotExist:
-                value = prop.default
-            else:
-                value = pv.value
-            props[prop.symbol] = value
-        return PropertyForm(properties, initial=props)
+        properties = list(self.object.venture_role.roleproperty_set.all())
+        properties.extend(self.object.venture.roleproperty_set.all())
+        return PropertyForm(properties, data, initial=values)
 
     def post(self, *args, **kwargs):
         self.object = self.get_object()
@@ -518,8 +519,7 @@ class Info(DeviceUpdateView):
             )
         self.property_form = self.get_property_form()
         if 'propertiessave' in self.request.POST:
-            properties = list(self.object.venture_role.roleproperty_set.all())
-            self.property_form = PropertyForm(properties, self.request.POST)
+            self.property_form = self.get_property_form(self.request.POST)
             if self.property_form.is_valid():
                 messages.success(self.request, "Properties updated.")
                 self.save_properties(
@@ -1294,11 +1294,9 @@ class VhostRedirectView(RedirectView):
     def get_redirect_url(self, **kwargs):
         host = self.request.META.get(
             'HTTP_X_FORWARDED_HOST', self.request.META['HTTP_HOST'])
-        user_url = get_user_home_page(self.request.user.username)
+        user_url = get_user_home_page_url(self.request.user)
         if host == settings.DASHBOARD_SITE_DOMAIN:
             self.url = '/ventures/'
-        elif user_url:
-            self.url = user_url
         else:
-            self.url = reverse('search')
+            self.url = user_url
         return super(VhostRedirectView, self).get_redirect_url(**kwargs)
