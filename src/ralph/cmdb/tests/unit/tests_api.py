@@ -104,19 +104,19 @@ class CMDBApiTest(TestCase):
         self.ciownership1 = CIOwnership(
             ci=self.ci1,
             owner=self.owner1,
-            type=CIOwnershipType.technical
+            type=CIOwnershipType.technical,
         )
         self.ciownership1.save()
         self.ciownership2 = CIOwnership(
             ci=self.ci1,
             owner=self.owner2,
-            type=CIOwnershipType.business
+            type=CIOwnershipType.business,
         )
         self.ciownership2.save()
         self.ciownership3 = CIOwnership(
             ci=self.ci2,
             owner=self.owner2,
-            type=CIOwnershipType.business
+            type=CIOwnershipType.business,
         )
         self.ciownership3.save()
 
@@ -142,14 +142,14 @@ class CMDBApiTest(TestCase):
         resource_uris = [ci_layer['resource_uri'] for ci_layer in json_data['objects']]
 
         response = self.client.get(
-            path=resource_uris[0], data=self.data, format='json'
+            path=resource_uris[0], data=self.data, format='json',
         )
         json_string = response.content
         json_data = json.loads(json_string)
         self.assertEqual(json_data['name'], self.layers[0].name)
 
         response = self.client.get(
-            path=resource_uris[1], data=self.data, format='json'
+            path=resource_uris[1], data=self.data, format='json',
         )
         json_string = response.content
         json_data = json.loads(json_string)
@@ -163,7 +163,7 @@ class CMDBApiTest(TestCase):
         resource_uris = [ci_type['resource_uri'] for ci_type in json_data['objects']]
 
         response = self.client.get(
-            path=resource_uris[0], data=self.data, format='json'
+            path=resource_uris[0], data=self.data, format='json',
         )
         json_string = response.content
         json_data = json.loads(json_string)
@@ -171,7 +171,7 @@ class CMDBApiTest(TestCase):
         self.assertEqual(json_data['name'], self.types[0].name)
 
         response = self.client.get(
-            path=resource_uris[1], data=self.data, format='json'
+            path=resource_uris[1], data=self.data, format='json',
         )
         json_string = response.content
         json_data = json.loads(json_string)
@@ -185,7 +185,7 @@ class CMDBApiTest(TestCase):
         resource_uris = [ci['resource_uri'] for ci in json_data['objects']]
 
         response = self.client.get(
-            path=resource_uris[0], data=self.data, format='json'
+            path=resource_uris[0], data=self.data, format='json',
         )
         json_string = response.content
         json_data = json.loads(json_string)
@@ -205,7 +205,7 @@ class CMDBApiTest(TestCase):
         )
 
         response = self.client.get(
-            path=resource_uris[1], data=self.data, format='json'
+            path=resource_uris[1], data=self.data, format='json',
         )
         json_string = response.content
         json_data = json.loads(json_string)
@@ -228,7 +228,7 @@ class CMDBApiTest(TestCase):
         resource_uris = [ci_relation['resource_uri'] for ci_relation in json_data['objects']]
 
         response = self.client.get(
-            path=resource_uris[0], data=self.data, format='json'
+            path=resource_uris[0], data=self.data, format='json',
         )
         json_string = response.content
         json_data = json.loads(json_string)
@@ -255,7 +255,7 @@ class CMDBApiTest(TestCase):
         resource_uris = [ci['resource_uri'] for ci in json_data['objects']]
         self.assertEqual(len(resource_uris), 1)
         response = self.client.get(
-            path=resource_uris[0], data=data, format='json'
+            path=resource_uris[0], data=data, format='json',
         )
         json_string = response.content
         json_data = json.loads(json_string)
@@ -275,7 +275,7 @@ class CMDBApiTest(TestCase):
         resource_uris = [ci['resource_uri'] for ci in json_data['objects']]
         self.assertEqual(len(resource_uris), 2)
         response = self.client.get(
-            path=resource_uris[0], data=data, format='json'
+            path=resource_uris[0], data=data, format='json',
         )
         json_string = response.content
         json_data = json.loads(json_string)
@@ -286,7 +286,7 @@ class CMDBApiTest(TestCase):
         self.assertEqual(json_data['uid'], self.ci1.uid)
 
         response = self.client.get(
-            path=resource_uris[1], data=data, format='json'
+            path=resource_uris[1], data=data, format='json',
         )
         json_string = response.content
         json_data = json.loads(json_string)
@@ -306,7 +306,7 @@ class CIApiTest(TestCase):
                 'host': 's11111.dc2',
                 'kind': 'apply',
                 'status': 'failed',
-                'time': '2012-11-14 13:00:00'
+                'time': '2012-11-14 13:00:00',
             })
         puppet_resource = CIChangePuppetResource()
         puppet_resource.obj_create(bundle=puppet_bundle)
@@ -343,7 +343,7 @@ class CIApiTest(TestCase):
                 'field_name': 'child',
                 'new_value': self.cmdb_new_value,
                 'old_value': self.cmdb_old_value,
-                'time': '2012-11-15 12:00:00'
+                'time': '2012-11-15 12:00:00',
             })
         cmdb_resource = CIChangeCMDBHistoryResource()
         cmdb_resource.obj_create(bundle=cmdb_bundle)
@@ -376,7 +376,7 @@ class CIApiTest(TestCase):
         self.assertEqual(
             CIChange.objects.filter(
                 object_id=git_change.id,
-                type=chdb.CI_CHANGE_TYPES.CONF_GIT.id
+                type=chdb.CI_CHANGE_TYPES.CONF_GIT.id,
             ).count(),
             1,
         )
