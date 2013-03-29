@@ -378,7 +378,7 @@ class RoleProperty(db.Model):
         blank=True,
         default=None,
     )
-    default = db.TextField(verbose_name=_("default value"), null=True, default=None)
+    default = db.TextField(verbose_name=_("default value"), null=True, default=None, blank=True)
 
     class Meta:
         unique_together = [
