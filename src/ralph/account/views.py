@@ -14,7 +14,7 @@ from django.utils.translation import ugettext_lazy as _
 
 
 from ralph.account.forms import UserHomePageForm
-from ralph.account.models import Preference, UserPreference
+from ralph.account.models import Profile
 from ralph.ui.views.common import Base
 
 
@@ -50,21 +50,18 @@ class BaseUser(Base):
 class BaseUserPreferenceEdit(BaseUser):
     template_name = 'preference.html'
     Form = None
-    preference_type = None
     header = None
 
     def get(self, *args, **kwargs):
-        instance, created = UserPreference.objects.get_or_create(
-            preference=self.preference_type,
-            user=self.request.user,
+        instance = Profile.objects.get(
+            user_id=self.request.user.id,
         )
         self.form = self.Form(instance=instance)
         return super(BaseUserPreferenceEdit, self).get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
-            instance, created = UserPreference.objects.get_or_create(
-                preference=self.preference_type,
-                user=self.request.user,
+            instance = Profile.objects.get(
+                user_id=self.request.user.id,
             )
             self.form = self.Form(self.request.POST, instance=instance)
             if self.form.is_valid():
@@ -85,5 +82,4 @@ class BaseUserPreferenceEdit(BaseUser):
 
 class UserHomePageEdit(BaseUserPreferenceEdit):
     Form = UserHomePageForm
-    preference_type = Preference.home_page.id
     header = _('Home Page')
