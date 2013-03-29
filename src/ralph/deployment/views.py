@@ -151,7 +151,15 @@ def puppet_classifier(request):
     for device in Device.objects.filter(
                 Q(name=hostname) |
                 Q(ipaddress__hostname=hostname)
-            ).distinct():
+            ).distinct().select_related(*([
+                    'parent',
+                    'venture',
+                    'venture_role',
+                    'model',
+                    'model__group',
+                ] + [
+                    'parent' + '__parent' * i for i in range(5)
+                ])):
         break
     else:
         raise Http404('Hostname %s not found' % hostname)
@@ -160,7 +168,7 @@ def puppet_classifier(request):
     visited = set()
     while node and node not in visited:
         visited.add(node)
-        name = (node.name or '?')
+        name = node.name or '?'
         location = name + '__' + location if location else name
         node = node.parent
     department = device.venture.get_department()
@@ -179,7 +187,8 @@ def puppet_classifier(request):
                     'last_name': o.owner.last_name,
                     'email': o.owner.email,
                     'type': o.type,
-                } for o in device.venture.all_ownerships()
+                } for o in
+                device.venture.all_ownerships().select_related('owner')
             ] if device.venture else [],
         'verified': device.verified,
         'last_seen': device.last_seen.strftime('%Y-%m-%dT%H:%M:%S'),

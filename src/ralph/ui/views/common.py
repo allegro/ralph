@@ -490,7 +490,6 @@ class Info(DeviceUpdateView):
                 p = device.venture_role.roleproperty_set.get(symbol=symbol)
             except RoleProperty.DoesNotExist:
                 p = device.venture.roleproperty_set.get(symbol=symbol)
-            print(p)
             pv, created = RolePropertyValue.concurrent_get_or_create(
                 property=p,
                 device=device,
