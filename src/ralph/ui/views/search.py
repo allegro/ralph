@@ -239,10 +239,12 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                         soft_q = Q(
                             **{'software__version' + operators[operator]: version}
                         )
-                        self.query = self.query.filter((
-                            Q(software__label__icontains=name) & soft_q) |
-                            Q(software__model__name__icontains=name) |
-                            Q(software__model__group__name__icontains=name)
+                        self.query = self.query.filter(
+                            (Q(software__label__icontains=name) & soft_q) |
+                            (Q(software__model__name__icontains=name) &
+                                soft_q) |
+                            (Q(software__model__group__name__icontains=name) &
+                                soft_q)
                         ).distinct()
             if data['serial']:
                 if data['serial'] == empty_field:
