@@ -27,7 +27,7 @@ from bob.menu import MenuItem
 from powerdns.models import Record
 from ralph.discovery.models_device import DeprecationKind, MarginKind
 
-from ralph.account.models import get_user_home_page, Perm
+from ralph.account.models import get_user_home_page_url, Perm
 from ralph.business.models import RolePropertyValue, Venture, VentureRole
 from ralph.cmdb.models import CI
 from ralph.deployment.util import get_next_free_hostname, get_first_free_ip
@@ -1294,11 +1294,9 @@ class VhostRedirectView(RedirectView):
     def get_redirect_url(self, **kwargs):
         host = self.request.META.get(
             'HTTP_X_FORWARDED_HOST', self.request.META['HTTP_HOST'])
-        user_url = get_user_home_page(self.request.user.username)
+        user_url = get_user_home_page_url(self.request.user)
         if host == settings.DASHBOARD_SITE_DOMAIN:
             self.url = '/ventures/'
-        elif user_url:
-            self.url = user_url
         else:
-            self.url = reverse('search')
+            self.url = user_url
         return super(VhostRedirectView, self).get_redirect_url(**kwargs)
