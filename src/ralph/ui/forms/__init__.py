@@ -73,6 +73,7 @@ class RolePropertyForm(forms.ModelForm):
         model = RoleProperty
         widgets = {
             'role': forms.HiddenInput,
+            'venture': forms.HiddenInput,
             'default': forms.TextInput,
         }
 
