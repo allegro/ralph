@@ -397,8 +397,10 @@ class PropertyForm(forms.Form):
     def __init__(self, properties, *args, **kwargs):
         super(PropertyForm, self).__init__(*args, **kwargs)
         for p in properties:
-            if p.type is None:
+            if p.type is None or p.type.symbol == 'STRING':
                 field = forms.CharField(label=p.symbol, required=False)
+            elif p.type.symbol == 'INTEGER':
+                field = forms.IntegerField(label=p.symbol, required=False)
             else:
                 choices = [(tv.value, tv.value) for tv in
                            p.type.rolepropertytypevalue_set.all()]

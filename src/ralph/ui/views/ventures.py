@@ -247,23 +247,27 @@ class VenturesRoles(Ventures, Base):
         return self.get(*args, **kwargs)
 
     def get(self, *args, **kwargs):
+        self.set_venture()
         role_id = self.kwargs.get('role')
         if role_id:
             self.role = get_object_or_404(VentureRole, id=role_id)
         else:
             self.role = None
         if self.form is None:
-            self.form = RolePropertyForm(initial={'role': role_id})
+            if self.role:
+                self.form = RolePropertyForm(initial={'role': role_id})
+            else:
+                self.form = RolePropertyForm(initial={'venture': self.venture.id})
         return super(VenturesRoles, self).get(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
         ret = super(VenturesRoles, self).get_context_data(**kwargs)
-        self.set_venture()
         has_perm = self.request.user.get_profile().has_perm
         ret.update({
             'items': (self.venture.venturerole_set.all() if
                       self.venture and self.venture != '*' else []),
             'role': self.role,
+            'venture': self.venture,
             'form': self.form,
             'editable': has_perm(Perm.edit_ventures_roles, self.venture if
                                self.venture and self.venture != '*' else None),
