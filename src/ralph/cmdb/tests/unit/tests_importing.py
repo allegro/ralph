@@ -148,8 +148,8 @@ class CIImporterTest(TestCase):
             self.fail('Cant find relation %s %s %s' % (ci_dc, ci_rack))
             # Blade should be inside Rack
         CIRelation.objects.get(
-            parent=ci_rack, 
-            child=ci_blade, 
+            parent=ci_rack,
+            child=ci_blade,
             type=CI_RELATION_TYPES.CONTAINS.id,
         )
 
@@ -217,7 +217,7 @@ class AddOrUpdateCITest(TestCase):
 
         # create Device and CI
         device_model = DeviceModel.objects.create(
-            name='SomeDeviceModel', type=DeviceType.rack_server.id
+            name='SomeDeviceModel', type=DeviceType.rack_server.id,
         )
         self.device = Device.create(
             name='TestDevice', sn='sn123', model=device_model
@@ -287,7 +287,7 @@ class AutoCIRemoveTest(TestCase):
 
         # create Device and CI
         device_model = DeviceModel.objects.create(
-            name='SomeDeviceModel', 
+            name='SomeDeviceModel',
             type=DeviceType.rack_server,
         )
         self.device = Device.create(

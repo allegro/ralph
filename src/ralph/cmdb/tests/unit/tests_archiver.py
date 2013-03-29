@@ -370,7 +370,7 @@ class CMDBArchiverTest(TestCase):
 
     def test_run_cichange_zabbix_archivization(self):
         archiver.run_cichange_zabbix_archivization(
-            datetime.datetime.now()-datetime.timedelta(days=30)
+            datetime.datetime.now() - datetime.timedelta(days=30),
         )
         self.assertFalse(
             CIChange.objects.filter(pk=self.cichange_zabbix_id).exists(),
@@ -413,7 +413,7 @@ class CMDBArchiverTest(TestCase):
 
     def test_run_cichange_cmdb_history_archivization(self):
         archiver.run_cichange_cmdb_history_archivization(
-            datetime.datetime.now() - datetime.timedelta(days=30)
+            datetime.datetime.now() - datetime.timedelta(days=30),
         )
         self.assertFalse(
             CIChange.objects.filter(pk=self.cichange_cmdb_id).exists(),
@@ -456,7 +456,7 @@ class CMDBArchiverTest(TestCase):
 
     def test_run_cichange_puppet_archivization(self):
         archiver.run_cichange_puppet_archivization(
-            datetime.datetime.now() - datetime.timedelta(days=30)
+            datetime.datetime.now() - datetime.timedelta(days=30),
         )
         self.assertFalse(
             CIChange.objects.filter(pk=self.cichange_puppet_id).exists(),
