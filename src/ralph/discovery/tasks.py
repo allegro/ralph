@@ -34,14 +34,14 @@ def set_queue(context):
     """Route the discovery tasks to the right data center for them.
     Use the default queue if no network matches the IP address."""
     try:
-        queue = context[0]['queue']
+        queue = context['queue']
     except KeyError:
         try:
-            net = Network.from_ip(context[0]['ip'])
+            net = Network.from_ip(context['ip'])
             queue = net.queue.name or net.data_center.name
         except (IndexError, KeyError):
             queue = 'default'
-        context[0]['queue'] = queue
+        context['queue'] = queue
 
 
 def sanity_check(perform_network_checks=True):
@@ -63,6 +63,107 @@ def sanity_check(perform_network_checks=True):
                or
              * are you using setuid bin/python""").strip().format(
                  SANITY_CHECK_PING_ADDRESS))
+
+
+def dummy_task(interactive=False, index=None):
+    stdout = output.get(interactive)
+    if index:
+        if not index % 25:
+            raise LookupError(
+                "You called {} and it failed on purpose.".format(index),
+            )
+        stdout("Ping {}.".format(index))
+    else:
+        stdout("Ping.")
+
+
+def dummy_horde(interactive=False, how_many=1000):
+    if interactive:
+        for i in xrange(how_many):
+            dummy_task(interactive=interactive, index=i+1)
+    else:
+        queue = django_rq.get_queue()
+        for i in xrange(how_many):
+            queue.enqueue(dummy_task, interactive=interactive, index=i+1)
+
+
+def run_next_plugin(context, requirements=None, interactive=False,
+                    clear_down=True, done_requirements=None, outputs=None):
+    """Runs the next plugin, asynchronously if interactive=False is given."""
+    if requirements is None:
+        requirements = set()
+    if done_requirements is None:
+        done_requirements = set()
+    if interactive:
+        run = run_plugin
+    else:
+        set_queue(context)
+        queue = django_rq.get_queue(context['queue'])
+        run = partial(queue.enqueue, run_plugin)
+    chains = ['discovery', 'postprocess']
+    for chain in chains:
+        to_run = plugin.next(chain, requirements) - done_requirements
+        if to_run:
+            plugin_name = plugin.highest_priority(chain, to_run)
+            run(context, chain, plugin_name, requirements,
+                interactive, clear_down, done_requirements, outputs)
+            return
+
+
+def run_chain(context, chain_name, requirements=None, interactive=False,
+              clear_down=True, done_requirements=None, outputs=None):
+    """Runs the whole chain at once, asynchronously if interactive=False
+       is given."""
+    if interactive:
+        run = _run_chain
+    else:
+        set_queue(context)
+        queue = django_rq.get_queue(context['queue'])
+        run = partial(queue.enqueue, _run_chain)
+    run(context, chain_name, requirements, interactive, clear_down,
+        done_requirements, outputs)
+
+
+def run_plugin(context, chain='discovery', plugin_name='ping',
+    requirements=None, interactive=False, clear_down=True,
+    done_requirements=None, restarts=MAX_RESTARTS, outputs=None):
+    """
+    Synchronously runs a plugin named `plugin_name` from the specified `chain`
+    using a given `context`. Automatically advances the chain scheduling the
+    next plugin to be run. If `interactive` is True, returns output on stdout
+    and runs the next plugin synchronously. In that case, when `clear_down` is
+    True (the default), lines listing addresses of hosts which are down are
+    cleared from output.
+    """
+    if requirements is None:
+        requirements = set()
+    if done_requirements is None:
+        done_requirements = set()
+    restarted = False
+    try:
+        _run_plugin(context, chain, plugin_name, requirements,
+                    interactive, clear_down, done_requirements, outputs)
+    except plugin.Restart as e:
+        if restarts > 0:
+            run = run_plugin
+            if not interactive:
+                set_queue(context)
+                queue = django_rq.get_queue(context['queue'])
+                run = partial(queue.enqueue, run)
+            run(context, plugin_name, requirements, interactive,
+                clear_down, done_requirements, restarts=restarts-1)
+            restarted = True
+        else:
+            if outputs:
+                stdout, stdout_verbose, stderr = outputs
+            else:
+                stderr = output.get(interactive, err=True)
+            stderr("Exceeded allowed number of restarts in plugin '{}' for "
+                "'{}': {}".format(plugin_name, context['ip'], unicode(e)),
+                end='\n')
+    if not restarted:
+        run_next_plugin(context, requirements, interactive, clear_down,
+                        done_requirements, outputs)
 
 
 def _run_plugin(context, chain, plugin_name, requirements, interactive,
@@ -113,51 +214,7 @@ def _run_plugin(context, chain, plugin_name, requirements, interactive,
     context['successful_plugins'] = ', '.join(sorted(requirements))
 
 
-def run_next_plugin(context, requirements=None, interactive=False,
-                    clear_down=True, done_requirements=None, outputs=None):
-    discover = discover_single
-    if not interactive:
-        set_queue(context)
-        queue = django_rq.get_queue(context['queue'])
-        discover = partial(queue.enqueue, discover)
-    to_run = plugin.next('discovery', requirements) - done_requirements
-    if to_run:
-        plugin_name = plugin.highest_priority('discovery', to_run)
-        discover(context, plugin_name, requirements, interactive, clear_down,
-                 done_requirements)
-        return
-    to_run = plugin.next('postprocess', requirements) - done_requirements
-    for plugin_name in plugin.prioritize('postprocess', to_run):
-        _run_plugin(context, 'postprocess', plugin_name, requirements,
-                    interactive, clear_down, done_requirements, outputs)
-
-
-#@task(ignore_result=True, expires=3600)
-def dummy_task(interactive=False, index=None):
-    stdout = output.get(interactive)
-    if index:
-        if not index % 25:
-            raise LookupError(
-                "You called {} and it failed on purpose.".format(index),
-            )
-        stdout("Ping {}.".format(index))
-    else:
-        stdout("Ping.")
-
-
-#@task(ignore_result=True, expires=3600)
-def dummy_horde(interactive=False, how_many=1000):
-    if interactive:
-        for i in xrange(how_many):
-            dummy_task(interactive=interactive, index=i+1)
-    else:
-        queue = django_rq.get_queue()
-        for i in xrange(how_many):
-            queue.enqueue(dummy_task, interactive=interactive, index=i+1)
-
-
-#@task(ignore_result=True)
-def run_chain(context, chain_name, requirements=None, interactive=False,
+def _run_chain(context, chain_name, requirements=None, interactive=False,
               clear_down=True, done_requirements=None, outputs=None):
     if requirements is None:
         requirements = set()
@@ -173,88 +230,6 @@ def run_chain(context, chain_name, requirements=None, interactive=False,
               done_requirements, outputs)
 
 
-#@task(ignore_result=True, expires=SINGLE_DISCOVERY_TIMEOUT)
-def discover_single(context, plugin_name='ping', requirements=None,
-    interactive=False, clear_down=True, done_requirements=None,
-    restarts=MAX_RESTARTS, outputs=None):
-    """
-    Runs discovery on a single `ip`. If `interactive` is True, returns
-    output on stdout. In that case, when `clear_down` is True (the default),
-    lines listing addresses of hosts which are down are cleared from output.
-    """
-    if requirements is None:
-        requirements = set()
-    if done_requirements is None:
-        done_requirements = set()
-    restarted = False
-    try:
-        _run_plugin(context, 'discovery', plugin_name, requirements,
-                    interactive, clear_down, done_requirements, outputs)
-    except plugin.Restart as e:
-        if restarts > 0:
-            discover = discover_single
-            if not interactive:
-                set_queue(context)
-                queue = django_rq.get_queue(context['queue'])
-                discover = partial(queue.enqueue, discover)
-            discover(context, plugin_name, requirements, interactive,
-                    clear_down, done_requirements, restarts=restarts-1)
-            restarted = True
-        else:
-            if outputs:
-                stdout, stdout_verbose, stderr = outputs
-            else:
-                stderr = output.get(interactive, err=True)
-            stderr("Exceeded allowed number of restarts in plugin '{}' for "
-                "'{}': {}".format(plugin_name, context['ip'], unicode(e)),
-                end='\n')
-
-    if not restarted:
-        run_next_plugin(context, requirements, interactive, clear_down,
-                        done_requirements, outputs)
-
-
-def discover_single_synchro(ip):
-    """Run discovery of a single host in a synchronous way."""
-    requirements = set()
-    done_requirements = set()
-    to_run = ['ping']
-    context = {'ip': ip}
-
-    messages = []
-    def output(*args, **kwargs):
-        messages.append(''.join(args))
-        messages.append(kwargs.get('end', '\n'))
-    outputs = (output, output, output)
-
-    while to_run:
-        messages[:] = []
-        plugin_name = plugin.highest_priority('discovery', to_run)
-        for retry in range(5):
-            try:
-                _run_plugin(context, 'discovery', plugin_name, requirements,
-                            True, False, done_requirements, outputs)
-            except plugin.Restart:
-                pass
-            else:
-                break
-        else:
-            messages.append('Plugin failed after %d retries.\n' % retry)
-        to_run = plugin.next('discovery', requirements) - done_requirements
-        yield ''.join(messages)
-        yield '\n'
-
-    to_run = plugin.next('postprocess', requirements) - done_requirements
-    for plugin_name in plugin.prioritize('postprocess', to_run):
-        messages[:] = []
-        _run_plugin(context, 'postprocess', plugin_name, requirements,
-                    True, False, done_requirements, outputs)
-        yield ''.join(messages)
-        yield '\n'
-    yield 'Finished.\n'
-
-
-#@task(ignore_result=True, time_limit=NETWORK_TASK_DELEGATION_TIMEOUT)
 def discover_network(network, plugin_name='ping', requirements=None,
     interactive=False, update_existing=False, outputs=None):
     """Runs discovery for a single `network`. The argument may be
@@ -299,21 +274,15 @@ def discover_network(network, plugin_name='ping', requirements=None,
         context = {'ip': host}
         if dbnet and dbnet.queue:
             context['queue'] = dbnet.queue.name
-        if interactive:
-            discover_single(context, plugin_name=plugin_name,
-                requirements=requirements, interactive=True)
-        else:
-            set_queue(context)
-            queue = django_rq.get_queue(context['queue'])
-            queue.enqueue(discover_single, context, plugin_name=plugin_name,
-                requirements=requirements, clear_down=False)
+        run_next_plugin(context, plugin_name=plugin_name,
+            requirements=requirements, interactive=interactive,
+            clear_down=not interactive)
     if interactive:
         stdout()
     else:
         stdout('Scanning network {} finished.'.format(net))
 
 
-#@task(ignore_result=True)
 def discover_all(interactive=False, update_existing=False, outputs=None):
     """Runs discovery on all networks defined in the database."""
     sanity_check()

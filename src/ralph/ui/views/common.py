@@ -297,11 +297,6 @@ class BaseMixin(object):
                 MenuItem('Purchase', fugue_icon='fugue-baggage-cart-box',
                          href=tab_href('purchase')),
             ])
-        if has_perm(Perm.run_discovery, venture):
-            tab_items.extend([
-                MenuItem('Discover', fugue_icon='fugue-flashlight',
-                         href=tab_href('discover')),
-            ])
         if ('ralph.cmdb' in settings.INSTALLED_APPS and
             has_perm(Perm.read_configuration_item_info_generic)):
             ci = ''
@@ -937,25 +932,6 @@ class Purchase(DeviceUpdateView):
                 ),
             }
         )
-        return ret
-
-
-class Discover(DeviceDetailView):
-    template_name = 'ui/device_discover.html'
-    read_perm = Perm.run_discovery
-
-    def get_context_data(self, **kwargs):
-        ret = super(Discover, self).get_context_data(**kwargs)
-        addresses = [ip.address for ip in self.object.ipaddress_set.all()]
-        warnings = DiscoveryWarning.objects.filter(
-            db.Q(device=self.object),
-            db.Q(ip__in=addresses),
-        ).order_by('-date')
-        ret.update({
-            'address': addresses[0] if addresses else '',
-            'addresses': json.dumps(addresses),
-            'warnings': warnings,
-        })
         return ret
 
 

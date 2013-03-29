@@ -15,7 +15,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.dispatch import receiver
 from django.db.models.signals import post_delete, post_save, pre_delete
 from django.db import IntegrityError
-from celery.task import task
 import django.dispatch
 
 # using models_ci not models, for dependency chain.
@@ -223,7 +222,6 @@ def ci_post_save(sender, instance, raw, using, **kwargs):
         ch.save()
 
 
-@task(queue='cmdb_git')
 def create_issue(change_id, retry_count=1):
     ch = chdb.CIChange.objects.get(id=change_id)
     if ch.registration_type == chdb.CI_CHANGE_REGISTRATION_TYPES.OP.id:
