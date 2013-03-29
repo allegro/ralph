@@ -5,7 +5,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import datetime
-from os.path import join as djoin
+import os
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -25,7 +25,6 @@ from ralph.cmdb.models import (
     GitPathMapping
 )
 from ralph.cmdb.models_changes import PuppetLog
-from ralph.deployment.models import DeploymentPoll
 
 
 CURRENT_DIR = settings.CURRENT_DIR
@@ -37,18 +36,18 @@ _PATCHED_TICKETS_ENABLE_NO = False
 
 
 class OPRegisterTest(TestCase):
-
+    """Test creating OP changes and registering in the Issue Tracker"""
     def test_create_puppet_change(self):
         hostci = CI(name='s11401.dc2', uid='mm-1')
         hostci.type_id = CI_TYPES.DEVICE.id
         hostci.save()
         p = PuppetAgentsImporter()
         changed_yaml = open(
-            djoin(CURRENT_DIR, 'cmdb/tests/samples/canonical.yaml')
+            os.path.join(CURRENT_DIR, 'cmdb/tests/samples/canonical.yaml'),
         ).read()
         p.import_contents(changed_yaml)
         unchanged_yaml = open(
-            djoin(CURRENT_DIR, 'cmdb/tests/samples/canonical_unchanged.yaml')
+            os.path.join(CURRENT_DIR, 'cmdb/tests/samples/canonical_unchanged.yaml'),
         ).read()
         p.import_contents(unchanged_yaml)
         chg = CIChange.objects.get(type=CI_CHANGE_TYPES.CONF_AGENT.id)
@@ -192,13 +191,15 @@ class MockFisheye(object):
 
     def get_changes(self, *args, **kwargs):
         xml = open(
-            djoin(CURRENT_DIR, 'cmdb/tests/samples/fisheye_changesets.xml')
+            os.path.join(CURRENT_DIR, 'cmdb',
+            'tests', 'samples', 'fisheye_changesets.xml'),
         ).read()
         return objectify.fromstring(xml)
 
     def get_details(self, *args, **kwargs):
         xml = open(
-            djoin(CURRENT_DIR + 'cmdb/tests/samples/fisheye_details.xml')
+            os.path.join(CURRENT_DIR,
+            'cmdb', 'tests', 'samples', 'fisheye_details.xml'),
         ).read()
         return objectify.fromstring(xml)
 
@@ -215,7 +216,6 @@ class CIChangeGitTest(TestCase):
     2. Regex
 
     """
-
     def setUp(self):
         v = Venture(symbol='test_venture')
         v.save()
