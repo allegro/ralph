@@ -210,7 +210,7 @@ class CITypesResource(MResource):
                                  expiration=EXPIRATION)
 
 
-class CIOwnerResource(MResource):
+class CIOwnersResource(MResource):
     class Meta:
         queryset = CIOwner.objects.all()
         authentication = ApiKeyAuthentication()
