@@ -154,6 +154,7 @@ def puppet_classifier(request):
             ).distinct().select_related(*([
                     'parent',
                     'venture',
+                    'department',
                     'venture_role',
                     'model',
                     'model__group',
