@@ -221,6 +221,6 @@ class CIOwnerResource(MResource):
             'last_name': ('startswith', 'exact',),
             'email': ('startswith', 'exact',),
         }
-        resource_name = 'ciowner'
+        resource_name = 'ciowners'
         throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
                                  expiration=EXPIRATION)

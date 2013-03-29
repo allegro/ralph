@@ -12,7 +12,8 @@ from ralph.deployment.api import DeploymentResource
 from ralph.discovery.api import (IPAddressResource, ModelGroupResource,
                                  ModelResource, PhysicalServerResource,
                                  RackServerResource, VirtualServerResource,
-                                 BladeServerResource, DevResource)
+                                 BladeServerResource, DevResource,
+                                 DeviceWithPricingResource)
 from ralph.cmdb.api import (BusinessLineResource, ServiceResource,
                             CIRelationResource, CIResource, CIChangeResource,
                             CIChangeGitResource, CIChangePuppetResource,
@@ -40,7 +41,8 @@ for r in (VentureResource, VentureLightResource, RoleResource,
 # discovery API
 for r in (IPAddressResource, ModelGroupResource, ModelResource,
           PhysicalServerResource, RackServerResource, BladeServerResource,
-          VirtualServerResource, DevResource, WindowsDeviceResource):
+          VirtualServerResource, DevResource, WindowsDeviceResource,
+          DeviceWithPricingResource):
     v09_api.register(r())
 
 # CMDB API
