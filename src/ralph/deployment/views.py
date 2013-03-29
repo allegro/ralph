@@ -151,16 +151,15 @@ def puppet_classifier(request):
     for device in Device.objects.filter(
                 Q(name=hostname) |
                 Q(ipaddress__hostname=hostname)
-            ).distinct().select_related(*([
-                    'parent',
+            ).distinct().select_related(*(
+                [
                     'venture',
                     'department',
                     'venture_role',
                     'model',
                     'model__group',
-                ] + [
-                    'parent' + '__parent' * i for i in range(5)
-                ])):
+                ] + ['__'.join(['parent'] * i) for i in range(1, 6)]
+                ))[:1]:
         break
     else:
         raise Http404('Hostname %s not found' % hostname)
