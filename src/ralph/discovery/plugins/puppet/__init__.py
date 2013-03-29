@@ -47,8 +47,13 @@ class PuppetAPIProvider(PuppetProvider):
                 return load(data)['values']
 
     def get_data_for_hostname(self, hostname):
-        """Return contents of yaml from given hostname resource or None if no
-        resource has been found"""
+        """Return contents of yaml for given hostname.
+
+        :param hostname: hostname to query
+        :returns: string -- contents of yaml from puppet server or None if
+            not found
+
+        """
         r = requests.get(
             "%(base_url)s/%(hostname)s" % dict(
                 base_url=settings.PUPPET_API_URL,
@@ -57,7 +62,7 @@ class PuppetAPIProvider(PuppetProvider):
             headers={'Accept': 'yaml'},
             verify=False,
         )
-        if r.status_code == requests.codes['\o/']:
+        if r.status_code == requests.codes.ok:
             return r.text
 
 
