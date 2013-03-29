@@ -12,8 +12,12 @@ BY_REQUIREMENTS = {}
 PRIORITIES = {}
 
 
+class PluginFailed(Exception):
+    """Raised when a scan plugin is unsuccessful."""
+
+
 class Restart(Exception):
-    pass
+    """Raised when the plugin should be re-run."""
 
 
 def register(func=None, chain="default", requires=None, priority=None):
