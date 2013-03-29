@@ -137,7 +137,7 @@ class CIImporterTest(TestCase):
         for o in objs:
             ct = ContentType.objects.get_for_model(o)
             cis.extend(
-                CIImporter().import_all_ci([ct], asset_id=o.id)
+                CIImporter().import_all_ci([ct], asset_id=o.id),
             )
             # Rack should be inside DC
         try:
@@ -220,7 +220,7 @@ class AddOrUpdateCITest(TestCase):
             name='SomeDeviceModel', type=DeviceType.rack_server.id,
         )
         self.device = Device.create(
-            name='TestDevice', sn='sn123', model=device_model
+            name='TestDevice', sn='sn123', model=device_model,
         )
 
         # create Service and CI
@@ -228,19 +228,19 @@ class AddOrUpdateCITest(TestCase):
         self.service = Service.objects.create(
             name='someservice.com',
             external_key='abc123',
-            business_line=bl.name
+            business_line=bl.name,
         )
 
         # create BusinessLIne and CI
         self.business_line = BusinessLine.objects.create(
-            name='TestBusinessLine'
+            name='TestBusinessLine',
         )
 
     @skipIf(not settings.AUTOCI, settings.AUTOCI_SKIP_MSG)
     def test_add_ci(self):
         assets = [
             self.venture, self.venture_role, self.data_center, self.network,
-            self.device, self.service, self.business_line
+            self.device, self.service, self.business_line,
         ]
         for asset in assets:
             ci = CI.get_by_content_object(asset)
@@ -271,7 +271,7 @@ class AutoCIRemoveTest(TestCase):
         # create VentureRole and CI
         v = Venture.objects.create(name='SomeAssignedVenture')
         self.venture_role = VentureRole.objects.create(
-            name='TestVentureRole', venture=v
+            name='TestVentureRole', venture=v,
         )
 
         # create DataCenter and CI
@@ -306,7 +306,7 @@ class AutoCIRemoveTest(TestCase):
 
         # create BusinessLIne and CI
         self.business_line = BusinessLine.objects.create(
-            name='TestBusinessLine'
+            name='TestBusinessLine',
         )
 
     @skipIf(not settings.AUTOCI, settings.AUTOCI_SKIP_MSG)
