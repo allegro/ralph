@@ -19,7 +19,7 @@ from ralph.cmdb.api import (BusinessLineResource, ServiceResource,
                             CIChangeGitResource, CIChangePuppetResource,
                             CIChangeZabbixTriggerResource,
                             CIChangeCMDBHistoryResource, CILayersResource,
-                            CITypesResource, CIOwnerResource)
+                            CITypesResource, CIOwnersResource)
 from ralph.discovery.api_donpedro import WindowsDeviceResource
 from ralph.ui.views.common import VhostRedirectView
 
@@ -48,7 +48,7 @@ for r in (IPAddressResource, ModelGroupResource, ModelResource,
 # CMDB API
 for r in (BusinessLineResource, ServiceResource, CIResource,
           CIRelationResource, CIChangeResource, CIChangeGitResource,
-          CIOwnerResource, CIChangePuppetResource, CIChangeZabbixTriggerResource,
+          CIOwnersResource, CIChangePuppetResource, CIChangeZabbixTriggerResource,
           CIChangeCMDBHistoryResource, CITypesResource, CILayersResource):
     v09_api.register(r())
 
