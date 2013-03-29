@@ -296,6 +296,27 @@ class VentureRole(Named.NonUnique, PrebootMixin, HasSymbolBasedPath,
     def roleproperty(self):
         return self.roleproperty_set
 
+    def get_properties(self, device):
+        def property_dict(properties):
+            props = {}
+            for prop in properties:
+                try:
+                    pv = prop.rolepropertyvalue_set.get(device=device)
+                except RolePropertyValue.DoesNotExist:
+                    value = prop.default
+                else:
+                    value = pv.value
+                props[prop.symbol] = value
+            return props
+        values = {}
+        values.update(property_dict(
+            self.venture.roleproperty_set.filter(role=None),
+        ))
+        values.update(property_dict(
+            self.roleproperty_set.filter(venture=None),
+        ))
+        return values
+
 
 class RolePropertyType(db.Model):
     symbol = db.CharField(
@@ -343,6 +364,13 @@ class RoleProperty(db.Model):
         blank=True,
         default=None,
     )
+    venture = db.ForeignKey(
+        Venture,
+        verbose_name=_("venture"),
+        null=True,
+        blank=True,
+        default=None,
+    )
     type = db.ForeignKey(
         RolePropertyType,
         verbose_name=_("type"),
@@ -350,10 +378,13 @@ class RoleProperty(db.Model):
         blank=True,
         default=None,
     )
-    default = db.TextField(verbose_name=_("default value"), null=True, default=None)
+    default = db.TextField(verbose_name=_("default value"), null=True, default=None, blank=True)
 
     class Meta:
-        unique_together = ('symbol', 'role')
+        unique_together = [
+            ('symbol', 'role'),
+            ('symbol', 'venture'),
+        ]
         verbose_name = _("property")
         verbose_name_plural = _("properties")
 
@@ -505,7 +536,7 @@ def role_property_value_pre_delete(sender, instance, using, **kwargs):
     HistoryChange.objects.create(
         device=instance.device,
         field_name="%s (property)" % instance.property.symbol,
-        old_value=unicode(instance.value, errors='replace'),
+        old_value=unicode(instance.value),
         new_value='None',
     )
 
