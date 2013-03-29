@@ -43,11 +43,11 @@ class OPRegisterTest(TestCase):
         hostci.save()
         p = PuppetAgentsImporter()
         changed_yaml = open(
-            os.path.join(CURRENT_DIR, 'cmdb/tests/samples/canonical.yaml')
+            os.path.join(CURRENT_DIR, 'cmdb/tests/samples/canonical.yaml'),
         ).read()
         p.import_contents(changed_yaml)
         unchanged_yaml = open(
-            os.path.join(CURRENT_DIR, 'cmdb/tests/samples/canonical_unchanged.yaml')
+            os.path.join(CURRENT_DIR, 'cmdb/tests/samples/canonical_unchanged.yaml'),
         ).read()
         p.import_contents(unchanged_yaml)
         chg = CIChange.objects.get(type=CI_CHANGE_TYPES.CONF_AGENT.id)
@@ -191,15 +191,15 @@ class MockFisheye(object):
 
     def get_changes(self, *args, **kwargs):
         xml = open(
-            os.path.join(CURRENT_DIR, 'cmdb', 
-            'tests', 'samples', 'fisheye_changesets.xml')
+            os.path.join(CURRENT_DIR, 'cmdb',
+            'tests', 'samples', 'fisheye_changesets.xml'),
         ).read()
         return objectify.fromstring(xml)
 
     def get_details(self, *args, **kwargs):
         xml = open(
-            os.path.join(CURRENT_DIR, 
-            'cmdb', 'tests', 'samples', 'fisheye_details.xml')
+            os.path.join(CURRENT_DIR,
+            'cmdb', 'tests', 'samples', 'fisheye_details.xml'),
         ).read()
         return objectify.fromstring(xml)
 
