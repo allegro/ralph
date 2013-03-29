@@ -5,17 +5,45 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import os
+
+from django.conf import settings
 from django.test import TestCase
+import mock
 
 from ralph.discovery.models import (Device, DeviceType, OperatingSystem)
 from ralph.discovery.tests.plugins.samples.puppet import (
-    data, data_second, data_not_encoded)
-
+    facts_db_data, packages_data, packages_data_not_encoded,
+    facts_api_data,
+)
 from ralph.discovery.plugins.puppet.facts import (
     handle_facts_os,
     handle_facts_packages,
     handle_facts_disks,
 )
+from ralph.discovery.plugins.puppet import PuppetAPIProvider
+
+
+CURRENT_DIR = settings.CURRENT_DIR
+
+
+class PuppetAPIProviderTest(TestCase):
+    """Try to provide facts from YAML"""
+    def test_load(self):
+        """Check if yaml is parsed correctly."""
+        contents = None
+        with open(os.path.join(
+                  CURRENT_DIR, 'discovery', 'tests',
+                  'plugins', 'samples', 'puppet.yaml')) as yaml_file:
+            contents = yaml_file.read()
+
+        with mock.patch(
+                'ralph.discovery.plugins.puppet.PuppetAPIProvider'
+                '.get_data_for_hostname') as get_data_for_hostname:
+                get_data_for_hostname.return_value = contents
+                provider = PuppetAPIProvider()
+                facts = provider.get_facts([], ['', 's10132.dc2'])
+                self.assertItemsEqual(facts, facts_api_data['values'])
 
 
 class PuppetPluginTest(TestCase):
@@ -32,7 +60,7 @@ class PuppetPluginTest(TestCase):
         )
 
     def test_handle_facts_os(self):
-        handle_facts_os(self.dev, data, is_virtual=True)
+        handle_facts_os(self.dev, facts_db_data, is_virtual=True)
         os = OperatingSystem.objects.get(label='CentOS 5.6 2.6.36.2')
         self.assertEqual(os.model.name, 'CentOS 5.6')
         self.assertEqual(os.memory, 1000)
@@ -40,7 +68,7 @@ class PuppetPluginTest(TestCase):
         self.assertEqual(os.model.get_type_display(), 'operating system')
 
     def test_handle_facts_disks(self):
-        handle_facts_disks(self.dev, data)
+        handle_facts_disks(self.dev, facts_db_data)
         # should not find because vendor is in black list
         self.assertFalse(
             self.dev.storage_set.filter(sn='sn_test_1231232').exists()
@@ -58,9 +86,9 @@ class PuppetPluginTest(TestCase):
         self.assertEqual(disk.label, 'FUJITSU MBE2147RC 0103')
 
     def test_handle_facts_packages(self):
-        handle_facts_packages(self.dev, data['packages'])
-        handle_facts_packages(self.dev2, data_not_encoded['packages'])
-        handle_facts_packages(self.dev2, data['packages'])
+        handle_facts_packages(self.dev, facts_db_data['packages'])
+        handle_facts_packages(self.dev2, packages_data_not_encoded['packages'])
+        handle_facts_packages(self.dev2, facts_db_data['packages'])
         device = Device.objects.get(sn='device')
         device_packages = [
             (x.label, x.version) for x in device.software_set.all()
