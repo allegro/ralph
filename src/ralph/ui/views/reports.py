@@ -695,7 +695,7 @@ class ReportDevices(SidebarReports, Base):
                 if no_rol:
                     row.append(dev.venture_role)
                 rows.append(row)
-        # Filtering of th range
+        # Filtering of the range
         # Support Range
         s_start = self.request.GET.get('s_start', None)
         s_end = self.request.GET.get('s_end', None)
@@ -762,27 +762,27 @@ class ReportDevices(SidebarReports, Base):
             if all_devices and all_deleted_devices:
                 show_devices = Device.admin_objects.all()
                 csv_conf = {
-                    'title': 'Show all devices (active and deleted)',
+                    'title': 'All devices (active and deleted)',
                     'name': 'report_all_devices',
                     'url': '?show_all_devices=on&show_all_deleted_devices=on&export=csv',
                     }
             elif all_devices:
                 show_devices = Device.objects.all()
                 csv_conf = {
-                    'title': 'Show all active devices',
+                    'title': 'All active devices',
                     'name': 'report_all_active_devices',
                     'url': '?show_all_devices=on&export=csv',
                     }
             elif all_deleted_devices:
                 show_devices = Device.admin_objects.filter(deleted=True)
                 csv_conf = {
-                    'title': 'Show all deleted devices',
+                    'title': 'All deleted devices',
                     'name': 'report_deleted_devices',
                     'url': '?show_all_deleted_devices=on&export=csv',
                     }
             headers = [
                 'Device', 'Model', 'SN', 'Barcode', 'Auto price', 'Venture',
-                'Venture ID', 'Role', 'Remarks', 'Verified', 'Deleted'
+                'Role', 'Remarks', 'Verified', 'Deleted',
             ]
             for dev in show_devices:
                 rows.append([
