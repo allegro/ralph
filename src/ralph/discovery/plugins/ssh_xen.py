@@ -47,6 +47,10 @@ def get_macs(ssh):
     macs = collections.defaultdict(set)
     label = ''
     for line in _ssh_lines(ssh, 'sudo xe vif-list params=vm-name-label,MAC'):
+        try:
+            line = unicode(line, 'utf-8')
+        except TypeError:
+            pass
         line = line.strip()
         if not line:
             continue
