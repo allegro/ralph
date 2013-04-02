@@ -581,7 +581,7 @@ SERVICE
 
 
 Discovery available resources
-------------------------
+-----------------------------
 
 +-------------------------------------+--------------------------------------------------+
 |  Resource                           |      Description                                 |
@@ -593,7 +593,7 @@ Discovery available resources
 .. _devicewithpricing:
 
 DEVICEWITHPRICING
-~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 
 - **link** ::
 
