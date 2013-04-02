@@ -7,12 +7,11 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from django.conf import settings
-from django.http import (
-    HttpResponse,
-    HttpResponseNotFound,
-)
 from django.template import Template, Context
 from lck.django.common import remote_addr
+from django.http import HttpResponse, HttpResponseForbidden, Http404
+from django.db.models import Q
+import json
 
 from ralph.deployment.models import (
     Deployment,
@@ -20,8 +19,9 @@ from ralph.deployment.models import (
     FileType,
     PrebootFile,
 )
-from ralph.discovery.models import IPAddress
+from ralph.discovery.models import IPAddress, Device
 from ralph.discovery.tasks import discover_single
+from ralph.util import api
 
 
 def get_current_deployment(request):
@@ -142,3 +142,65 @@ def preboot_complete_view(request):
     )
     deployment.archive()
     return HttpResponse()
+
+
+def puppet_classifier(request):
+    if not api.is_authenticated(request):
+        return HttpResponseForbidden('API key required.')
+    hostname = request.GET.get('hostname', '').strip()
+    for device in Device.objects.filter(
+                Q(name=hostname) |
+                Q(ipaddress__hostname=hostname)
+            ).distinct().select_related(*(
+                [
+                    'venture',
+                    'department',
+                    'venture_role',
+                    'model',
+                    'model__group',
+                ] + ['__'.join(['parent'] * i) for i in range(1, 6)]
+                ))[:1]:
+        break
+    else:
+        raise Http404('Hostname %s not found' % hostname)
+    location = device.get_position() or ''
+    node = device.parent
+    visited = set()
+    while node and node not in visited:
+        visited.add(node)
+        name = node.name or '?'
+        location = name + '__' + location if location else name
+        node = node.parent
+    department = device.venture.get_department()
+    response = {
+        'name': device.name,
+        'device_id': device.id,
+        'venture': device.venture.symbol if device.venture else None,
+        'role': device.venture_role.full_name.replace(
+                ' / ',
+                '__',
+            ) if device.venture_role else None,
+        'department': department.name if department else None,
+        'owners': [
+                {
+                    'first_name': o.owner.first_name,
+                    'last_name': o.owner.last_name,
+                    'email': o.owner.email,
+                    'type': o.type,
+                } for o in
+                device.venture.all_ownerships().select_related('owner')
+            ] if device.venture else [],
+        'verified': device.verified,
+        'last_seen': device.last_seen.strftime('%Y-%m-%dT%H:%M:%S'),
+        'model': device.model.name if device.model else None,
+        'model_group': device.model.group.name if device.model else None,
+        'location': location,
+        'properties': device.venture_role.get_properties(
+                device,
+            ) if device.venture_role else {}
+    }
+    return HttpResponse(
+        json.dumps(response),
+        content_type='application/json; charset=utf-8',
+    )
+
