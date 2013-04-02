@@ -48,18 +48,48 @@ class DevicesChoiceReportForm(forms.Form):
 
 
 class SupportRangeReportForm(forms.Form):
-    s_start = forms.DateField(widget=DateWidget, label='Start date')
-    s_end = forms.DateField(widget=DateWidget, label='End date')
+    s_start = forms.DateField(
+        widget=DateWidget(
+            attrs={'class': 'input-small'},
+        ),
+        label='Start date',
+    )
+    s_end = forms.DateField(
+        widget=DateWidget(
+            attrs={'class': 'input-small'},
+        ),
+        label='End date',
+    )
 
 
 class DeprecationRangeReportForm(forms.Form):
-    d_start = forms.DateField(widget=DateWidget, label='Start date')
-    d_end = forms.DateField(widget=DateWidget, label='End date')
+    d_start = forms.DateField(
+        widget=DateWidget(
+            attrs={'class': 'input-small'},
+        ),
+        label='Start date',
+    )
+    d_end = forms.DateField(
+        widget=DateWidget(
+            attrs={'class': 'input-small'},
+        ),
+        label='End date',
+    )
 
 
 class WarrantyRangeReportForm(forms.Form):
-    w_start = forms.DateField(widget=DateWidget, label='Start date')
-    w_end = forms.DateField(widget=DateWidget, label='End date')
+    w_start = forms.DateField(
+        widget=DateWidget(
+            attrs={'class': 'input-small'},
+        ),
+        label='Start date',
+    )
+    w_end = forms.DateField(
+        widget=DateWidget(
+            attrs={'class': 'input-small'},
+        ),
+        label='End date',
+    )
 
 
 class ReportVentureCost(forms.Form):
