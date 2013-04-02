@@ -578,3 +578,223 @@ SERVICE
           }
        ]
     }
+
+
+Discovery available resources
+------------------------
+
++-------------------------------------+--------------------------------------------------+
+|  Resource                           |      Description                                 |
++=====================================+==================================================+
+| :ref:`devicewithpricing`            | returns a list of devices with pricing           |
++-------------------------------------+--------------------------------------------------+
+
+
+.. _devicewithpricing:
+
+DEVICEWITHPRICING
+~~~~~~~~~~~~
+
+- **link** ::
+
+    http://localhost:8000/api/v0.9/devicewithpricing/
+
+- HTTP Methods
+    * GET
+
+- **example returned data** ::
+
+    {
+    "meta": {
+        "limit": 1,
+        "next": "/api/v0.9/devicewithpricing/?username=ralph&api_key=ralph_pass&limit=1&offset=1&format=json",
+        "offset": 0,
+        "previous": null,
+        "total_count": 5408
+    },
+    "objects": [
+        {
+            "barcode": "123456789",
+            "boot_firmware": null,
+            "cache_version": 21,
+            "cached_cost": 666.73,
+            "cached_price": 170.0725,
+            "chassis_position": 123456789,
+            "components": [
+                {
+                    "count": 4,
+                    "model": "CPU Quad-Core Xeon 2533MHz, 4-core",
+                    "price": 2824,
+                    "serial": null
+                },
+                {
+                    "count": 1,
+                    "model": "[rack server] HP ProLiant DL360 G6",
+                    "price": 6700,
+                    "serial": "SN-2334GLBS"
+                },
+                {
+                    "count": 12,
+                    "model": "RAM 4096MiB",
+                    "price": 228,
+                    "serial": null
+                },
+                {
+                    "count": 5,
+                    "model": "HP EGSW23FAW SAS 307200MiB, 10000RPM",
+                    "price": 0,
+                    "serial": "SF#DGD32456354SD"
+                },
+                {
+                    "count": 776,
+                    "model": [
+                        "software"
+                    ],
+                    "price": 0,
+                    "serial": null
+                },
+                {
+                    "count": 4,
+                    "model": "HP DG0353GE SAS 307200MiB, 10000RPM",
+                    "price": 0,
+                    "serial": "3536GRERGE45"
+                },
+                {
+                    "count": 5,
+                    "model": "Speed unknown",
+                    "price": 0,
+                    "serial": "45645HER343A"
+                }
+            ],
+            "created": "2013-11-13T15:45:31",
+            "dc": "DataCenter1",
+            "deleted": false,
+            "deprecated": false,
+            "deprecation_date": "2012-12-01T00:00:00",
+            "diag_firmware": null,
+            "hard_firmware": null,
+            "id": 1,
+            "ip_addresses": [
+                {
+                    "address": "127.0.0.1",
+                    "cache_version": 10,
+                    "created": "2012-10-05T10:12:00",
+                    "device": "/api/v0.9/dev/23/",
+                    "hostname": "server_prod1",
+                    "http_family": "HP",
+                    "id": 23,
+                    "is_management": true,
+                    "last_plugins": "",
+                    "last_puppet": "2012-01-08T07:02:50",
+                    "last_seen": "2012-01-08T07:02:50",
+                    "modified": "2012-01-09T05:46:37",
+                    "number": "1323234",
+                    "resource_uri": "/api/v0.9/ipaddress/23/",
+                    "snmp_community": null
+                }
+            ],
+            "last_seen": "2012-01-08T07:02:49",
+            "management": {
+                "address": "127.0.0.1",
+                "cache_version": 10,
+                "created": "2012-10-05T10:12:00",
+                "device": "/api/v0.9/dev/24/",
+                "hostname": "mgmt_server1",
+                "http_family": "HP",
+                "id": 24,
+                "is_management": true,
+                "last_plugins": "",
+                "last_puppet": "2012-01-08T07:02:50",
+                "last_seen": "2012-01-08T07:02:50",
+                "modified": "2012-01-09T05:46:37",
+                "number": "24",
+                "resource_uri": "/api/v0.9/ipaddress/24/",
+                "snmp_community": null
+            },
+            "max_save_priority": 200,
+            "mgmt_firmware": "MALO 12 Advanced, Jul 16 2012,",
+            "model": {
+                "cache_version": 1,
+                "chassis_size": null,
+                "created": "2012-07-11T14:55:06",
+                "group": {
+                    "cache_version": 0,
+                    "created": "2012-09-24T15:19:58",
+                    "id": 12,
+                    "modified": "2012-09-24T15:19:58",
+                    "name": "HP ProLiant DL360 G6",
+                    "price": 9999,
+                    "resource_uri": "/api/v0.9/modelgroup/12/",
+                    "slots": 0,
+                    "type": 201
+                },
+                "id": 3856220,
+                "modified": "2012-07-12T13:56:40",
+                "name": "HP ProLiant DL360 G6",
+                "resource_uri": "/api/v0.9/model/323/",
+                "type": 201
+            },
+            "modified": "2013-03-19T13:25:03",
+            "name": "prod_server1",
+            "name2": "test",
+            "position": "44",
+            "price": null,
+            "properties": [],
+            "purchase_date": "2009-12-01T00:00:00",
+            "rack": "Rack 666",
+            "remarks": "Test remarks",
+            "resource_uri": "/api/v0.9/devicewithpricing/1/",
+            "role": {
+                "cache_version": 123,
+                "created": "2012-06-19T13:02:31",
+                "id": 666,
+                "modified": "2012-10-15T14:28:50",
+                "name": "www",
+                "parent": null,
+                "path": "www",
+                "resource_uri": "/api/v0.9/role/666/",
+                "venture": "/api/v0.9/venture/12/"
+            },
+            "save_priorities": "hard_firmware=200 model_id=53 support_kind=200 margin_kind_id=200 verified=200 deleted=200 venture_id=200 chassis_position=200 barcode=200 diag_firmware=200 boot_firmware=200 remarks=200 position=200 support_expiration_date=200 venture_role_id=200 last_seen=53",
+            "sn": "26234672SHSD",
+            "splunk": {
+                "splunk_daily_cost": 0,
+                "splunk_monthly_cost": 0,
+                "splunk_size": 0
+            },
+            "support_expiration_date": null,
+            "support_kind": null,
+            "total_cost": 7859.073,
+            "uptime_seconds": 2348929,
+            "uptime_timestamp": "2011-01-08T07:02:50",
+            "venture": {
+                "cache_version": 999,
+                "created": "2012-10-12T17:13:09",
+                "department": {
+                    "id": 1,
+                    "name": "Infrastrukture",
+                    "resource_uri": "/api/v0.9/department/1/"
+                },
+                "id": 65,
+                "is_infrastructure": true,
+                "modified": "2012-06-14T13:10:33",
+                "name": "Infrastrukture",
+                "path": "inf",
+                "resource_uri": "/api/v0.9/venture/65/",
+                "show_in_ralph": true,
+                "symbol": "inf"
+            },
+            "verified": false,
+            "warranty_expiration_date": null
+            }
+        ]
+    }
+
+- **Splunk cost**:
+
+  This resource contains a Splunk cost from last 31 days. If you want have other date range you must use additional parameters:
+
+    * ``splunk_start`` - define a start of date
+    * ``splunk_end`` - define a end of datet
+
+  ``splunk_start`` and ``splunk_end`` value must be in format ``Y-m-d`` (example 2012-01-24)

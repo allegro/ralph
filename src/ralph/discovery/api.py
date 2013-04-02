@@ -313,12 +313,13 @@ class DeviceWithPricingResource(DeviceResource):
     def dehydrate(self, bundle):
         device = bundle.obj
         details = _get_details(bundle.obj)
-        components, stock = [], []
+        components = dict()
         total = 0
         for detail in details:
             model = detail.get('model')
             price = detail.get('price') or 0
             model_type = None
+            model_name = str(model)
             try:
                 if isinstance(model, ComponentModel):
                     model_type = ComponentType.from_id(
@@ -328,23 +329,18 @@ class DeviceWithPricingResource(DeviceResource):
                     pass
             if model_type and model_type == ComponentType.software:
                 model = ComponentType.software.name,
-                model = model[0]
-            if model not in stock:
-                components.append(
-                    {
-                        'model': model,
-                        'count': 1,
-                        'price': price,
-                        'serial': detail.get('serial'),
-                    }
-                )
+                model_name = model
+            if not components.get(model_name):
+                components[model_name] = {
+                    'model': model,
+                    'count': 1,
+                    'price': price,
+                    'serial': detail.get('serial'),
+                }
             else:
-                for component in components:
-                    if component['model'] == model:
-                        component['count'] = component['count'] + 1
+                components[model_name]['count'] += 1
             total += price
-            stock.append(model)
-        bundle.data['components'] = components
+        bundle.data['components'] = components.values()
         bundle.data['total_cost'] = total
         bundle.data['deprecated'] = device.is_deprecated()
         splunk_start = bundle.request.GET.get('splunk_start')
