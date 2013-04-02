@@ -128,6 +128,7 @@ from lck.django import current_dir_support
 execfile(current_dir_support)
 
 SYNERGY_URL_BASE = "/"
+HOME_PAGE_URL_NAME = 'search'
 DASHBOARD_SITE_DOMAIN = "dashboard.local"
 IPMI_USER = None
 IPMI_PASSWORD = None
@@ -163,6 +164,7 @@ SPLUNK_HOST = None
 SPLUNK_USER = None
 SPLUNK_PASSWORD = None
 PUPPET_DB_URL = None
+PUPPET_API_URL = None
 ZABBIX_URL = None
 ZABBIX_USER = None
 ZABBIX_PASSWORD = None

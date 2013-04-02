@@ -99,6 +99,8 @@ urlpatterns = patterns(
         name='preboot-default-view', kwargs={'file_type': 'boot_ipxe'}),
     url(r'^pxe/DONE/$', 'ralph.deployment.views.preboot_complete_view',
         name='preboot-complete-view'),
+    url(r'^puppet-classifier/$', 'ralph.deployment.views.puppet_classifier',
+        name='puppet-classifier'),
     url(r'^user/', include('ralph.account.urls')),
 
     # include the lookup urls
