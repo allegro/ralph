@@ -34,7 +34,7 @@ from ralph.cmdb.models_ci import CIOwner, CIOwnershipType
 from ralph.cmdb.models_audits import get_login_from_owner_name
 
 THROTTLE_AT = settings.API_THROTTLING['throttle_at']
-TIMEFREME = settings.API_THROTTLING['timeframe']
+TIMEFRAME = settings.API_THROTTLING['timeframe']
 EXPIRATION = settings.API_THROTTLING['expiration']
 
 
@@ -47,7 +47,7 @@ class BusinessLineResource(MResource):
         authorization = DjangoAuthorization()
         list_allowed_methods = ['get']
         resource_name = 'businessline'
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
                                  expiration=EXPIRATION)
 
 
@@ -58,7 +58,7 @@ class ServiceResource(MResource):
         authorization = DjangoAuthorization()
         list_allowed_methods = ['get']
         resource_name = 'service'
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
                                  expiration=EXPIRATION)
 
     def dehydrate(self, bundle):
@@ -79,7 +79,7 @@ class CIRelationResource(MResource):
         authorization = DjangoAuthorization()
         list_allowed_methods = ['get']
         resource_name = 'cirelation'
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
                                  expiration=EXPIRATION)
 
     def dehydrate(self, bundle):
@@ -106,7 +106,7 @@ class CIResource(MResource):
             'technical_owners': ALL,
             'bussiness_owners': ALL,
         }
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
                                  expiration=EXPIRATION)
 
     def dehydrate(self, bundle):
@@ -137,7 +137,7 @@ class CILayersResource(MResource):
         list_allowed_methods = ['get']
         resourse_name = 'cilayers'
         excludes = ['cache_version', 'created', 'modified']
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
                                  expiration=EXPIRATION)
 
 
@@ -148,7 +148,7 @@ class CIChangeResource(MResource):
         authorization = DjangoAuthorization()
         allowed_methods = ['get']
         resource_name = 'cichange'
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
                                  expiration=EXPIRATION)
 
 
@@ -159,7 +159,7 @@ class CIChangeZabbixTriggerResource(MResource):
         authorization = DjangoAuthorization()
         list_allowed_methods = ['get', 'post']
         resource_name = 'cichangezabbixtrigger'
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
                                  expiration=EXPIRATION)
 
 
@@ -170,7 +170,7 @@ class CIChangeGitResource(MResource):
         authorization = DjangoAuthorization()
         list_allowed_methods = ['get', 'post']
         resource_name = 'cichangegit'
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
                                  expiration=EXPIRATION)
 
 
@@ -181,7 +181,7 @@ class CIChangePuppetResource(MResource):
         authorization = DjangoAuthorization()
         list_allowed_methods = ['get', 'post']
         resource_name = 'cichangepuppet'
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
                                  expiration=EXPIRATION)
 
 
@@ -194,7 +194,7 @@ class CIChangeCMDBHistoryResource(MResource):
         authorization = DjangoAuthorization()
         list_allowed_methods = ['get']
         resource_name = 'cichangecmdbhistory'
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
                                  expiration=EXPIRATION)
 
 
@@ -206,7 +206,7 @@ class CITypesResource(MResource):
         list_allowed_methods = ['get']
         resourse_name = 'citypes'
         excludes = ['cache_version', 'created', 'modified']
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
                                  expiration=EXPIRATION)
 
 
@@ -222,5 +222,5 @@ class CIOwnersResource(MResource):
             'email': ('startswith', 'exact',),
         }
         resource_name = 'ciowners'
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
                                  expiration=EXPIRATION)
