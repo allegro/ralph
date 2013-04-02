@@ -18,14 +18,34 @@ from bob.menu import MenuItem
 
 from ralph.account.models import Perm
 from ralph.business.models import Venture, VentureRole, VentureExtraCost
-from ralph.discovery.models import (ReadOnlyDevice, DeviceType, DataCenter,
-                                    Device, DeviceModelGroup, HistoryCost,
-                                    SplunkUsage, ComponentModel)
-from ralph.ui.forms import (RolePropertyForm, DateRangeForm,
-                            VentureFilterForm)
-from ralph.ui.views.common import (Info, Prices, Addresses, Costs, Purchase,
-                                   Components, History, Discover, BaseMixin,
-                                   Base, DeviceDetailView, Software)
+from ralph.discovery.models import (
+    ComponentModel,
+    DataCenter,
+    Device,
+    DeviceModelGroup,
+    DeviceType,
+    HistoryCost,
+    ReadOnlyDevice,
+    SplunkUsage,
+)
+from ralph.ui.forms import (
+    DateRangeForm,
+    RolePropertyForm,
+    VentureFilterForm,
+)
+from ralph.ui.views.common import (
+    Addresses,
+    Base,
+    BaseMixin,
+    Components,
+    Costs,
+    Discover,
+    History,
+    Info,
+    Prices,
+    Purchase,
+    Software,
+)
 from ralph.ui.views.devices import BaseDeviceList
 from ralph.ui.views.reports import Reports, ReportDeviceList
 from ralph.ui.reports import (
@@ -227,23 +247,27 @@ class VenturesRoles(Ventures, Base):
         return self.get(*args, **kwargs)
 
     def get(self, *args, **kwargs):
+        self.set_venture()
         role_id = self.kwargs.get('role')
         if role_id:
             self.role = get_object_or_404(VentureRole, id=role_id)
         else:
             self.role = None
         if self.form is None:
-            self.form = RolePropertyForm(initial={'role': role_id})
+            if self.role:
+                self.form = RolePropertyForm(initial={'role': role_id})
+            else:
+                self.form = RolePropertyForm(initial={'venture': self.venture.id})
         return super(VenturesRoles, self).get(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
         ret = super(VenturesRoles, self).get_context_data(**kwargs)
-        self.set_venture()
         has_perm = self.request.user.get_profile().has_perm
         ret.update({
             'items': (self.venture.venturerole_set.all() if
                       self.venture and self.venture != '*' else []),
             'role': self.role,
+            'venture': self.venture,
             'form': self.form,
             'editable': has_perm(Perm.edit_ventures_roles, self.venture if
                                self.venture and self.venture != '*' else None),
@@ -416,21 +440,13 @@ def _get_summaries(query, start, end, overlap=True, venture=None):
             ).filter(device__dc__iexact=dc.name), start, end,
                 _get_search_url(venture, dc=dc, type=(DeviceType.unknown.id,))
             )
-    splunk_usage = SplunkUsage.objects.filter(day__gte=start, day__lte=end)
-    if venture and venture != '*':
-        splunk_usage = splunk_usage.filter(db.Q(device__venture=venture) |
-            db.Q(device__venture__parent=venture) |
-            db.Q(device__venture__parent__parent=venture) |
-            db.Q(device__venture__parent__parent__parent=venture) |
-            db.Q(device__venture__parent__parent__parent__parent=venture))
-    elif not venture: # specifically "devices with no venture set"
-        splunk_usage = splunk_usage.filter(device__venture=None)
-    if splunk_usage.count():
-        splunk_size = splunk_usage.aggregate(db.Sum('size'))['size__sum'] or 0
-        splunk_count = splunk_usage.values('device').distinct().count()
-        yesterday = datetime.date.today() - datetime.timedelta(days=1)
-        splunk_count_now = SplunkUsage.objects.filter(
-                day=yesterday).values('device').distinct().count()
+    (
+        splunk_cost,
+        splunk_count,
+        splunk_count_now,
+        splunk_size,
+    ) = SplunkUsage.get_cost(venture, start, end)
+    if splunk_cost:
         url = None
         try:
             splunk_model = ComponentModel.objects.get(family='splunkvolume')
@@ -439,11 +455,11 @@ def _get_summaries(query, start, end, overlap=True, venture=None):
         else:
             if splunk_model.group_id:
                 url = ('/ui/search/components/'
-                       '?component_group=%d' % splunk_model.group_id)
+                    '?component_group=%d' % splunk_model.group_id)
         yield {
             'name': 'Splunk usage ({:,.0f} MB)'.format(
                                     splunk_size).replace(',', ' '),
-            'cost': splunk_usage[0].get_price(size=splunk_size),
+            'cost': splunk_cost,
             'count': splunk_count,
             'count_now': splunk_count_now,
             'url': url,
@@ -481,6 +497,8 @@ def _get_summaries(query, start, end, overlap=True, venture=None):
                     DeviceType.rack,
                     DeviceType.management,
                 ),
+            ).exclude(
+                device=None,
             ),
             start,
             end,

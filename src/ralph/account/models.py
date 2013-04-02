@@ -8,15 +8,22 @@ from __future__ import unicode_literals
 
 import functools
 
+
+from django.conf import settings
 from django.contrib.auth.models import User, Group
+from django.contrib.auth.signals import user_logged_in
+from django.core.urlresolvers import reverse, NoReverseMatch
 from django.db import models as db
 from django.db.utils import DatabaseError
 from django.dispatch import receiver
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden,  HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
+from django.shortcuts import redirect
+
 from dj.choices import Choices
 from dj.choices.fields import ChoiceField
 from lck.django.activitylog.models import MonitoredActivity
+from lck.django.choices import Choices
 from lck.django.common.models import TimeTrackable, EditorTrackable
 from lck.django.profile.models import (
     BasicInfo,
@@ -25,6 +32,17 @@ from lck.django.profile.models import (
 )
 
 from ralph.business.models import Venture, VentureRole
+
+
+class AvailableHomePage(Choices):
+    _ = Choices.Choice
+    default = _('Default home page')
+    ventures = _("Ventures list")
+    racks = _("Racks list")
+    networks = _("Network list")
+    reports = _("Reports")
+    catalog = _("Catalog")
+    cmdb_timeline = _("CMDB timeline")
 
 
 class Perm(Choices):
@@ -70,6 +88,11 @@ class Profile(BasicInfo, ActivationSupport, GravatarSupport,
     class Meta:
         verbose_name = _("profile")
         verbose_name_plural = _("profiles")
+
+    home_page = ChoiceField(
+        choices=AvailableHomePage,
+        default=AvailableHomePage.default
+    )
 
     def __unicode__(self):
         return self.nick
@@ -151,32 +174,6 @@ class Profile(BasicInfo, ActivationSupport, GravatarSupport,
             ).distinct()
 
 
-def create_a_user_profile_ignoring_dberrors(instance):
-        try:
-            profile, new = Profile.objects.get_or_create(user=instance)
-            profile.save() # to trigger nick update etc.
-        except DatabaseError:
-            pass # no such table yet, first syncdb
-
-
-@receiver(db.signals.post_save, sender=User)
-def user_post_save(sender, instance, created, **kwargs):
-    if created:
-        create_a_user_profile_ignoring_dberrors(instance)
-
-
-# ensure at start no user comes without a profile
-try:
-    for u in User.objects.order_by('id'):
-        create_a_user_profile_ignoring_dberrors(u)
-except DatabaseError:
-    pass # no such table yet, first syncdb
-except Exception as e:
-    import traceback
-    traceback.print_exc()
-    raise SystemExit
-
-
 class BoundPerm(TimeTrackable, EditorTrackable):
     profile = db.ForeignKey(Profile, verbose_name=_("profile"),
             null=True, blank=True, default=None)
@@ -216,3 +213,15 @@ def ralph_permission(perms):
             return func(self, *args, **kwargs)
         return functools.wraps(func)(inner_decorator)
     return decorator
+
+
+def get_user_home_page_url(user):
+    profile = user.get_profile()
+    if profile.home_page == AvailableHomePage.default:
+        try:
+            home_page = reverse(settings.HOME_PAGE_URL_NAME, args=[])
+        except NoReverseMatch:
+            home_page = reverse('search')
+    else:
+        home_page = reverse(profile.home_page.name)
+    return home_page

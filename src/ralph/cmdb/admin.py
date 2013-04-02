@@ -24,7 +24,9 @@ class GitPathMappingAdminForm(forms.ModelForm):
     class Meta:
         model = db.GitPathMapping
 
-    ci = AutoCompleteSelectField('ci')
+    ci = AutoCompleteSelectField(
+        ('ralph.cmdb.models', 'CILookup')
+    )
     occurences = forms.CharField(
         required=False,
         widget=ReadOnlyPreWidget(),

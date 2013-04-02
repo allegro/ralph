@@ -9,6 +9,8 @@ import calendar
 import datetime
 from urlparse import urljoin
 
+from bob.data_table import DataTableMixin, DataTableColumn
+
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import connection
@@ -20,8 +22,18 @@ from django.utils import simplejson
 import ralph.cmdb.models as db
 from ralph.cmdb.models_changes import CI_CHANGE_TYPES
 from ralph.cmdb.views import BaseCMDBView, get_icon_for
-from ralph.cmdb.forms import CIChangeSearchForm, CIReportsParamsForm
-from ralph.cmdb.util import PaginatedView
+from ralph.cmdb.forms import (
+    CIChangeSearchForm,
+    CIReportsParamsForm,
+    ReportFilters,
+    ReportFiltersDateRamge,
+)
+from ralph.cmdb.util import report_filters, add_filter, table_colums
+from ralph.cmdb.models_ci import CI
+from ralph.account.models import Perm, ralph_permission
+from django.utils.translation import ugettext_lazy as _
+
+JIRA_URL = urljoin(settings.ISSUETRACKERS['default']['URL'], 'browse')
 
 
 class ChangesBase(BaseCMDBView):
@@ -111,11 +123,71 @@ class Change(ChangesBase):
         return super(Change, self).get(*args, **kwargs)
 
 
-class Changes(ChangesBase, PaginatedView):
-    template_name = 'cmdb/search_changes.html'
 
-    def get_context_data(self, **kwargs):
+class Changes(ChangesBase, DataTableMixin):
+    template_name = 'cmdb/search_changes.html'
+    sort_variable_name = 'sort'
+    export_variable_name = None  # fix in bob!
+    perms = [
+        {
+            'perm': Perm.read_configuration_item_info_jira,
+            'msg': _("You don't have permission to see that."),
+        },
+    ]
+    _ = DataTableColumn
+    columns = [
+        _(
+            'Time',
+            field='time',
+            sort_expression='time',
+            bob_tag=True,
+        ),
+        _(
+            'Comment',
+            field='comment',
+            sort_expression='comment',
+            bob_tag=True,
+        ),
+        _(
+            'Configuration Item',
+            field='ci',
+            sort_expression='ci',
+            bob_tag=True,
+        ),
+        _(
+            'Type',
+            field='priority',
+            sort_expression='priority',
+            bob_tag=True,
+        ),
+        _(
+            'Source',
+            field='type',
+            sort_expression='type',
+            bob_tag=True,
+        ),
+        _(
+            'Jira Ticket',
+            field='ticket',
+            sort_expression='ticket',
+            bob_tag=True,
+        ),
+        _(
+            'Details',
+            field='details',
+            sort_expression='details',
+            bob_tag=True,
+        ),
+    ]
+
+    def get_context_data(self, *args, **kwargs):
         ret = super(Changes, self).get_context_data(**kwargs)
+        ret.update(
+            super(Changes, self).get_context_data_paginator(
+                *args,
+                **kwargs
+            )
+        )
         subsection = ''
         get_type = self.request.GET.get('type')
         if get_type:
@@ -131,14 +203,18 @@ class Changes(ChangesBase, PaginatedView):
         }
         sidebar_selected = select.get(get_type, 'all events')
         ret.update({
-            'changes': [(x, get_icon_for(x.ci)) for x in self.changes],
+            'sort_variable_name': self.sort_variable_name,
+            'url_query': self.request.GET,
+            'sort': self.sort,
+            'columns': self.columns,
             'form': self.form,
             'subsection': subsection,
             'sidebar_selected': sidebar_selected,
-            'jira_url': urljoin(settings.ISSUETRACKERS['default']['URL'], 'browse'),
+            'jira_url': JIRA_URL,
         })
         return ret
 
+    @ralph_permission(perms)
     def get(self, *args, **kwargs):
         values = self.request.GET
         self.form = CIChangeSearchForm(initial=values)
@@ -152,52 +228,158 @@ class Changes(ChangesBase, PaginatedView):
         if values.get('uid'):
             changes = changes.filter(Q(ci__name__icontains=values.get('uid')))
         changes = changes.order_by('-time')
-        self.paginate(changes)
-        self.changes = self.page_contents
+        self.data_table_query(changes)
         return super(Changes, self).get(*args)
 
 
-class Problems(ChangesBase, PaginatedView):
-    template_name = 'cmdb/search_problems.html'
+class Problems(ChangesBase, DataTableMixin):
+    template_name = 'cmdb/report_changes.html'
+    sort_variable_name = 'sort'
+    export_variable_name = None  # fix in bob!
+    columns = table_colums()
+    perms = [
+        {
+            'perm': Perm.read_configuration_item_info_jira,
+            'msg': _("You don't have permission to see that."),
+        },
+    ]
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, *args, **kwargs):
+        section = 'Problems'
         ret = super(Problems, self).get_context_data(**kwargs)
+        ret.update(
+            super(Problems, self).get_context_data_paginator(
+                *args,
+                **kwargs
+            )
+        )
         ret.update({
-            'problems': self.data,
-            'jira_url': urljoin(settings.ISSUETRACKERS['default']['URL'], 'browse'),
-            'subsection': 'Problems',
-            'sidebar_selected': 'problems',
+            'sort_variable_name': self.sort_variable_name,
+            'url_query': self.request.GET,
+            'sort': self.sort,
+            'columns': self.columns,
+            'jira_url': JIRA_URL,
+            'subsection': section,
+            'sidebar_selected': section,
+            'title': section,
+            'form': {
+                'filters': ReportFilters(self.request.GET),
+                'date_range': ReportFiltersDateRamge(self.request.GET),
+            },
         })
         return ret
 
+    @ralph_permission(perms)
     def get(self, *args, **kwargs):
-        queryset = db.CIProblem.objects.order_by('-time')
-        queryset = self.paginate_query(queryset)
-        self.data = queryset
+        self.data_table_query(
+            report_filters(
+                cls=db.CIProblem,
+                order='-update_date',
+                filters=add_filter(self.request.GET),
+            )
+        )
         return super(Problems, self).get(*args, **kwargs)
 
 
-class Incidents(ChangesBase, PaginatedView):
-    template_name = 'cmdb/search_incidents.html'
+class Incidents(ChangesBase, DataTableMixin):
+    template_name = 'cmdb/report_changes.html'
+    sort_variable_name = 'sort'
+    export_variable_name = None  # fix in bob!
+    columns = table_colums()
+    perms = [
+        {
+            'perm': Perm.read_configuration_item_info_jira,
+            'msg': _("You don't have permission to see that."),
+        },
+    ]
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, *args, **kwargs):
+        section = 'Incidents'
         ret = super(Incidents, self).get_context_data(**kwargs)
+        ret.update(
+            super(Incidents, self).get_context_data_paginator(
+                *args,
+                **kwargs
+            )
+        )
         ret.update({
-            'incidents': self.data,
-            'jira_url': urljoin(settings.ISSUETRACKERS['default']['URL'], 'browse'),
-            'subsection': 'Incidents',
-            'sidebar_selected': 'incidents',
+            'sort_variable_name': self.sort_variable_name,
+            'url_query': self.request.GET,
+            'sort': self.sort,
+            'columns': self.columns,
+            'jira_url': JIRA_URL,
+            'subsection': section,
+            'sidebar_selected': section,
+            'title': section,
+            'form': {
+                'filters': ReportFilters(self.request.GET),
+                'date_range': ReportFiltersDateRamge(self.request.GET),
+            },
         })
         return ret
 
+    @ralph_permission(perms)
     def get(self, *args, **kwargs):
-        queryset = db.CIIncident.objects.order_by('-time')
-        queryset = self.paginate_query(queryset)
-        self.data = queryset
+        self.data_table_query(
+            report_filters(
+                cls=db.CIIncident,
+                order='-update_date',
+                filters=add_filter(self.request.GET),
+            )
+        )
         return super(Incidents, self).get(*args, **kwargs)
 
 
-class DashboardDetails(ChangesBase, PaginatedView):
+class JiraChanges(ChangesBase, DataTableMixin):
+    template_name = 'cmdb/report_changes.html'
+    sort_variable_name = 'sort'
+    export_variable_name = None  # fix in bob!
+    columns = table_colums()
+    perms = [
+        {
+            'perm': Perm.read_configuration_item_info_jira,
+            'msg': _("You don't have permission to see that."),
+        },
+    ]
+
+    def get_context_data(self, *args, **kwargs):
+        section = 'Jira Changes'
+        ret = super(JiraChanges, self).get_context_data(**kwargs)
+        ret.update(
+            super(JiraChanges, self).get_context_data_paginator(
+                *args,
+                **kwargs
+            )
+        )
+        ret.update({
+            'sort_variable_name': self.sort_variable_name,
+            'url_query': self.request.GET,
+            'sort': self.sort,
+            'columns': self.columns,
+            'jira_url': JIRA_URL,
+            'subsection': section,
+            'sidebar_selected': section,
+            'title': section,
+            'form': {
+                'filters': ReportFilters(self.request.GET),
+                'date_range': ReportFiltersDateRamge(self.request.GET),
+            },
+        })
+        return ret
+
+    @ralph_permission(perms)
+    def get(self, *args, **kwargs):
+        self.data_table_query(
+            report_filters(
+                cls=db.JiraChanges,
+                order='-update_date',
+                filters=add_filter(self.request.GET),
+            )
+        )
+        return super(JiraChanges, self).get(*args, **kwargs)
+
+
+class DashboardDetails(ChangesBase):
     template_name = 'cmdb/dashboard_details_ci.html'
 
     def get_context_data(self, **kwargs):
@@ -434,11 +616,42 @@ class Dashboard(ChangesBase):
         return super(Dashboard, self).get(*args)
 
 
-class Reports(ChangesBase, PaginatedView):
+class Reports(ChangesBase, DataTableMixin):
     template_name = 'cmdb/view_report.html'
-    exporting_csv_file = False
+    sort_variable_name = 'sort'
+    export_variable_name = None  # fix in bob!
+    perms = [
+        {
+            'perm': Perm.read_configuration_item_info_jira,
+            'msg': _("You don't have permission to see that."),
+        },
+    ]
+    _ = DataTableColumn
+    columns = [
+        _(
+            'Problems count',
+            field='ciname',
+            sort_expression='ciname',
+            bob_tag=True,
+        ),
+        _(
+            'Configuration item',
+            field='count',
+            bob_tag=True,
+        ),
+        _(
+            'Technical owners',
+            field='towners',
+            bob_tag=True,
+        ),
+        _(
+            'Business owners',
+            field='bowners',
+            bob_tag=True,
+        )
+    ]
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, *args, **kwargs):
         subsection = ''
         kind = self.request.GET.get('kind')
         if kind:
@@ -452,8 +665,17 @@ class Reports(ChangesBase, PaginatedView):
         }
         ret = super(Reports, self).get_context_data(**kwargs)
         ret.update(
+            super(Reports, self).get_context_data_paginator(
+                *args,
+                **kwargs
+            )
+        )
+        ret.update(
             {
-                'data': self.data,
+                'sort_variable_name': self.sort_variable_name,
+                'url_query': self.request.GET,
+                'sort': self.sort,
+                'columns': self.columns,
                 'form': self.form,
                 'report_kind': self.request.GET.get('kind', 'top'),
                 'report_name': self.report_name,
@@ -478,14 +700,12 @@ class Reports(ChangesBase, PaginatedView):
     def top_ci_problems(self):
         queryset = db.CI.objects.annotate(num=Count('ciproblem')).order_by('-num')
         queryset = self.handle_params(queryset)
-        queryset = self.paginate_query(queryset)
         rows = [(x.num, x) for x in queryset]
         return rows
 
     def top_ci_incidents(self):
         queryset = db.CI.objects.annotate(num=Count('ciincident')).order_by('-num')
         queryset = self.handle_params(queryset)
-        queryset = self.paginate_query(queryset)
         rows = [(x.num, x) for x in queryset]
         return rows
 
@@ -493,14 +713,12 @@ class Reports(ChangesBase, PaginatedView):
         queryset = db.CI.objects.annotate(
             num=Count('cichange')).filter(num=0).order_by('num')
         queryset = self.handle_params(queryset)
-        queryset = self.paginate_query(queryset)
         rows = [(x.num, x) for x in queryset]
         return rows
 
     def top_ci_changes(self):
         queryset = db.CI.objects.annotate(num=Count('cichange')).order_by('-num')
         queryset = self.handle_params(queryset)
-        queryset = self.paginate_query(queryset)
         rows = [(x.num, x) for x in queryset]
         return rows
 
@@ -515,20 +733,21 @@ class Reports(ChangesBase, PaginatedView):
     def populate_data(self, *args, **kwargs):
         report_type = self.request.GET.get('kind', 'top')
         if report_type == 'top_changes':
-            self.data = self.top_ci_changes()
+            self.data_table_query(self.top_ci_changes())
             self.report_name = 'Top CI Changes'
         elif report_type == 'top_problems':
-            self.data = self.top_ci_problems()
+            self.data_table_query(self.top_ci_problems())
             self.report_name = 'Top CI Problems'
         elif report_type == 'top_incidents':
-            self.data = self.top_ci_incidents()
+            self.data_table_query(self.top_ci_incidents())
             self.report_name = 'Top CI Incidents'
         elif report_type == 'usage':
+            self.data_table_query(self.least_ci_changes())
             self.report_name = 'Top CI Incidents'
-            self.data = self.least_ci_changes()
         else:
             raise UserWarning("Unknown report type %s " % report_type)
 
+    @ralph_permission(perms)
     def get(self, *args, **kwargs):
         values = self.request.GET
         self.form = CIReportsParamsForm(initial=values)

@@ -35,14 +35,14 @@ class DNSRecordForm(forms.ModelForm):
         widgets = {
             'name': AutocompleteWidget(
                 attrs={
-                    'class': 'span12',
+                    'class': 'span12 dropdown',
                     'placeholder': "name",
                     'style': 'min-width: 16ex',
                 },
             ),
             'content': AutocompleteWidget(
                 attrs={
-                    'class': 'span12',
+                    'class': 'span12 dropdown',
                     'placeholder': "content",
                     'style': 'min-width: 16ex',
                 },
@@ -111,8 +111,8 @@ class DNSRecordForm(forms.ModelForm):
         return ptr
 
     def clean(self):
-        type = self.cleaned_data['type']
-        name = self.cleaned_data['name']
+        type = self.cleaned_data.get('type', '')
+        name = self.cleaned_data.get('name', '')
         if type != 'CNAME' and name not in self.hostnames:
             self._errors.setdefault('name', []).append(
                 "Invalid hostname for this device."
@@ -149,14 +149,14 @@ class DHCPEntryForm(forms.ModelForm):
         widgets = {
             'ip': AutocompleteWidget(
                 attrs={
-                    'class': 'span12',
+                    'class': 'span12 dropdown',
                     'placeholder': "IP address",
                     'style': 'min-width: 16ex',
                 },
             ),
             'mac': AutocompleteWidget(
                 attrs={
-                    'class': 'span12',
+                    'class': 'span12 dropdown',
                     'placeholder': "MAC address",
                     'style': 'min-width: 16ex',
                 },

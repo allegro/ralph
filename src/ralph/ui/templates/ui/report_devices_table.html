@@ -1,17 +1,16 @@
 {% load icons %}
-    <h3>Result {{ title }}</h3>
-<div class="form-actions">
-    {% if csv_url %}
+
+{% if title %}<h3>{{ title }}</h3>{% endif %}
+
+{% if csv_url %}
+    <div class="form-actions">
         {% spaceless %}
             <a href="{{ csv_url }}" class="btn pull-right">
                 {% icon 'fugue-fugue-icon fugue-blue-document-excel-csv' %}&nbsp;Export result to CSV
             </a>
         {% endspaceless %}
-    {% endif %}
-</div>
-<p>
-
-</p>
+    </div>
+{% endif %}
 
 <table class="table table-striped table-bordered table-condensed">
     <tr>

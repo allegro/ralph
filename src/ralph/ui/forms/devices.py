@@ -176,6 +176,14 @@ class DeviceForm(forms.ModelForm):
                 )
         return deleted
 
+    def clean_chassis_position(self):
+        chassis_position = self.cleaned_data.get('chassis_position')
+        if not 0 <= chassis_position <= 65535:
+            raise forms.ValidationError(
+                "Invalid numeric position, use range 0 to 65535"
+            )
+        return chassis_position
+
 
 class DeviceCreateForm(DeviceForm):
     class Meta(DeviceForm.Meta):
@@ -389,8 +397,10 @@ class PropertyForm(forms.Form):
     def __init__(self, properties, *args, **kwargs):
         super(PropertyForm, self).__init__(*args, **kwargs)
         for p in properties:
-            if p.type is None:
+            if p.type is None or p.type.symbol == 'STRING':
                 field = forms.CharField(label=p.symbol, required=False)
+            elif p.type.symbol == 'INTEGER':
+                field = forms.IntegerField(label=p.symbol, required=False)
             else:
                 choices = [(tv.value, tv.value) for tv in
                            p.type.rolepropertytypevalue_set.all()]

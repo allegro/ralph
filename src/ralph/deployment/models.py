@@ -70,6 +70,11 @@ class PrebootFile(Named):
         blank=True,
         default=None,
     )
+    description = db.TextField(
+        verbose_name=_("description"),
+        blank=True,
+        default="",
+    )
 
     class Meta:
         verbose_name = _("preboot file")
@@ -91,6 +96,11 @@ class Preboot(Named, TimeTrackable):
         null=True,
         blank=True,
         verbose_name=_("files"),
+    )
+    description = db.TextField(
+        verbose_name=_("description"),
+        blank=True,
+        default="",
     )
 
     class Meta:

@@ -9,10 +9,6 @@ namespace DonPedro.Detectors
 {
 	public class FCInfoDetectorSource
 	{
-		public FCInfoDetectorSource()
-		{
-		}
-		
 		public List<FibreChannelDTOResponse> GetFibreChannelInfo()
 		{
 			List<FibreChannelDTOResponse> fc = new List<FibreChannelDTOResponse>();
