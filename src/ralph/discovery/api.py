@@ -36,7 +36,7 @@ from ralph.discovery.models import (
 from ralph.ui.views.common import _get_details
 
 THROTTLE_AT = settings.API_THROTTLING['throttle_at']
-TIMEFREME = settings.API_THROTTLING['timeframe']
+TIMEFRAME = settings.API_THROTTLING['timeframe']
 EXPIRATION = settings.API_THROTTLING['expiration']
 SAVE_PRIORITY=10
 
@@ -58,7 +58,7 @@ class IPAddressResource(MResource):
         excludes = ('save_priorities', 'max_save_priority', 'dns_info',
             'snmp_name')
         cache = SimpleCache()
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
                                 expiration=EXPIRATION)
 
 
@@ -68,7 +68,7 @@ class ModelGroupResource(MResource):
         authentication = ApiKeyAuthentication()
         authorization = DjangoAuthorization()
         cache = SimpleCache()
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
                                 expiration=EXPIRATION)
 
 
@@ -85,7 +85,7 @@ class ModelResource(MResource):
         filtering = {
             'type': ALL,
         }
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
                                 expiration=EXPIRATION)
 
 
@@ -117,7 +117,7 @@ class DeviceResource(MResource):
         authentication = ApiKeyAuthentication()
         authorization = DjangoAuthorization()
         cache = SimpleCache()
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
                                 expiration=EXPIRATION)
 
     def obj_update(self, bundle, request=None, **kwargs):
@@ -248,7 +248,7 @@ class PhysicalServerResource(DeviceResource):
     class Meta(DeviceResource.Meta):
         queryset = Device.objects.filter(model__type__in={
             DeviceType.rack_server.id, DeviceType.blade_server.id})
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
                                 expiration=EXPIRATION)
 
 
@@ -256,7 +256,7 @@ class RackServerResource(DeviceResource):
     class Meta(DeviceResource.Meta):
         queryset = Device.objects.filter(model__type=
             DeviceType.rack_server.id)
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
                                 expiration=EXPIRATION)
 
 
@@ -264,7 +264,7 @@ class BladeServerResource(DeviceResource):
     class Meta(DeviceResource.Meta):
         queryset = Device.objects.filter(model__type=
             DeviceType.blade_server.id)
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
                                 expiration=EXPIRATION)
 
 
@@ -272,14 +272,14 @@ class VirtualServerResource(DeviceResource):
     class Meta(DeviceResource.Meta):
         queryset = Device.objects.filter(model__type=
             DeviceType.virtual_server.id)
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
                                 expiration=EXPIRATION)
 
 
 class DevResource(DeviceResource):
     class Meta(DeviceResource.Meta):
         queryset = Device.objects.all()
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
                                 expiration=EXPIRATION)
 
 
@@ -301,7 +301,7 @@ class IPAddressResource(MResource):
         excludes = ('save_priorities', 'max_save_priority', 'dns_info',
             'snmp_name')
         cache = SimpleCache()
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
                                 expiration=EXPIRATION)
 
 
