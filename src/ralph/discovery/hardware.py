@@ -26,6 +26,7 @@ INQUIRY_REGEXES = (
     re.compile(r'^(?P<vendor>IBM)-(?P<product>[a-zA-Z0-9]+)\s+(?P<sn>[a-zA-Z0-9]+)$'),
     re.compile(r'^(?P<vendor>HP)\s+(?P<product>[a-zA-Z0-9]{11})\s+(?P<sn>[a-zA-Z0-9]{12})$'),
     re.compile(r'^(?P<vendor>HITACHI)\s+(?P<product>[a-zA-Z0-9]{15})(?P<sn>[a-zA-Z0-9]{15})$'),
+    re.compile(r'^(?P<vendor>HITACHI)\s+(?P<product>[a-zA-Z0-9]{15})\s+(?P<sn>[a-zA-Z0-9]{12})$'),
 )
 
 
@@ -342,6 +343,33 @@ def handle_megaraid(dev, disks, priority=0):
         )
         stor.save(priority=priority)
 
+def handle_3ware(dev, disks, priority=0):
+    for disk_handle, disk in disks.iteritems():
+        if not disk.get('serial'):
+            continue
+        stor, created = Storage.concurrent_get_or_create(
+            device=dev, sn=disk['serial'], mount_point=None,
+        )
+        stor.device = dev
+        size_value, size_unit, trash = disk['capacity'].split(None, 2)
+        stor.size = int(float(size_value) / units.size_divisor[size_unit])
+        stor.label = disk['model']
+        disk_default = dict(
+            model='unknown',
+            firmware_revision='unknown',
+            interface_type='unknown',
+            size='unknown',
+            rotational_speed='unknown',
+            status='unknown',
+        )
+        disk_default.update(disk)
+        stor.model, c = ComponentModel.create(
+            ComponentType.disk,
+            size=stor.size,
+            family=stor.label,
+            priority=priority,
+        )
+        stor.save(priority=priority)
 
 def handle_hpacu(dev, disks, priority=0):
     for disk_handle, disk in disks.iteritems():

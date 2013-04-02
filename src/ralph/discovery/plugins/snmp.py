@@ -80,6 +80,7 @@ def _snmp(ip, community, oid, attempts=2, timeout=3, snmp_version='2c'):
             is_up = True
     return is_up, message
 
+
 @plugin.register(chain='discovery', requires=['ping', 'http'])
 def snmp(**kwargs):
     http_family = kwargs.get('http_family')
@@ -153,14 +154,14 @@ def snmp(**kwargs):
 
 
 def _snmp_modular(ip, community, parent):
-    oid = (1, 3, 6, 1, 4, 1, 343, 2, 19, 1, 2, 10, 12, 0) # Max blades
+    oid = (1, 3, 6, 1, 4, 1, 343, 2, 19, 1, 2, 10, 12, 0)  # Max blades
     message = snmp_command(ip, community, oid, attempts=1, timeout=0.5)
     max_blades = int(message[0][1])
     blades_macs = {}
     for blade_no in range(1, max_blades + 1):
         oid = (1, 3, 6, 1, 4, 1, 343, 2, 19, 1, 2, 10, 202, 3, 1, 1, blade_no)
-        blades_macs[blade_no] =  set(snmp_macs(ip, community, oid,
-                                                       attempts=1, timeout=0.5))
+        blades_macs[blade_no] = set(snmp_macs(ip, community, oid,
+                                    attempts=1, timeout=0.5))
     for i, macs in blades_macs.iteritems():
         unique_macs = macs
         for j, other_macs in blades_macs.iteritems():
@@ -171,16 +172,17 @@ def _snmp_modular(ip, community, parent):
             unique_macs]
         if ethernets:
             dev = Device.create(
-                    name='Intel Modular Blade',
-                    model_name='Intel Modular Blade',
-                    model_type=DeviceType.blade_server,
-                    ethernets=ethernets,
-                    management=parent.management,
-                    chassis_position=i,
-                    position = str(i),
-                    parent=parent,
-                )
+                name='Intel Modular Blade',
+                model_name='Intel Modular Blade',
+                model_type=DeviceType.blade_server,
+                ethernets=ethernets,
+                management=parent.management,
+                chassis_position=i,
+                position=str(i),
+                parent=parent,
+            )
             dev.save(update_last_seen=True, priority=SAVE_PRIORITY)
+
 
 def snmp_f5(**kwargs):
     ip = str(kwargs['ip'])
@@ -193,17 +195,21 @@ def snmp_f5(**kwargs):
         attempts=1, timeout=0.5)[0][1])
     return 'F5 %s' % model, sn
 
+
 def snmp_vmware(parent, ipaddr, **kwargs):
     ip = str(kwargs['ip'])
     community = str(kwargs['community'])
     oid = (1,3,6,1,4,1,6876,2,4,1,7)
     snmp_version = 1
     for mac in snmp_macs(ip, community, oid, attempts=2,
-                                 timeout=3, snmp_version=snmp_version):
-        dev = Device.create(parent=parent, management=ipaddr,
-                ethernets=[Eth(mac=mac, label='Virtual MAC', speed=0)],
-                model_name='VMware ESX virtual server',
-                model_type=DeviceType.virtual_server)
+                         timeout=3, snmp_version=snmp_version):
+        Device.create(
+            parent=parent,
+            management=ipaddr,
+            ethernets=[Eth(mac=mac, label='Virtual MAC', speed=0)],
+            model_name='VMware ESX virtual server',
+            model_type=DeviceType.virtual_server,
+        )
 
 
 @plugin.register(chain='discovery', requires=['ping', 'snmp'])
@@ -264,12 +270,14 @@ def do_snmp_mac(snmp_name, community, snmp_version, ip, kwargs):
         sn = m.group(1) if m else None
         is_management = True
         model_type = DeviceType.power_distribution_unit
-    elif 'fibre channel switch' in snmp_name.lower() or 'san switch module' in snmp_name.lower():
+    elif ('fibre channel switch' in snmp_name.lower() or
+            'san switch module' in snmp_name.lower()):
         model_name = snmp_name
         model_type = DeviceType.fibre_channel_switch
         is_management = True
-    elif 'ethernet switch module' in snmp_name.lower() or snmp_name.startswith('ProCurve'):
-        model_name= snmp_name
+    elif ('ethernet switch module' in snmp_name.lower() or
+            snmp_name.startswith('ProCurve')):
+        model_name = snmp_name
         if ',' in model_name:
             model_name, trash = model_name.split(',', 1)
         model_type = DeviceType.switch
@@ -289,12 +297,13 @@ def do_snmp_mac(snmp_name, community, snmp_version, ip, kwargs):
         raise Error('no match.')
     ethernets = []
     for mac in snmp_macs(ip, community, oid, attempts=2,
-                                 timeout=3, snmp_version=snmp_version):
+                         timeout=3, snmp_version=snmp_version):
         # Skip virtual devices
         if mac[0:6] in MAC_PREFIX_BLACKLIST:
             continue
         if snmp_name.startswith('Brocade') and not mac.startswith('00051E'):
-            # Only use the first right mac of the Brocade switches, the rest is trash.
+            # Only use the first right mac of the Brocade switches,
+            # the rest is trash.
             continue
         if model_name == 'Windows' and mac.startswith('000C29'):
             # Skip VMWare interfaces on Windows
@@ -311,8 +320,8 @@ def do_snmp_mac(snmp_name, community, snmp_version, ip, kwargs):
         raise Error('no MAC.')
     name = snmp_name
     dev = Device.create(ethernets=ethernets, model_name=model_name,
-            model_type=model_type, name=name, sn=sn)
-    ip_address = IPAddress.objects.get(address=str(ip))
+                        model_type=model_type, name=name, sn=sn)
+    ip_address, created = IPAddress.concurrent_get_or_create(address=str(ip))
     ip_address.device = dev
     ip_address.is_management = is_management
     if is_management:
@@ -335,6 +344,7 @@ def do_snmp_mac(snmp_name, community, snmp_version, ip, kwargs):
             OperatingSystem.create(dev, os_name=snmp_name, family=family,
                                    priority=SAVE_PRIORITY)
     return ethernets
+
 
 def _cisco_snmp_model(model_oid, sn_oid, **kwargs):
     ip = str(kwargs['ip'])
@@ -364,27 +374,74 @@ def _cisco_snmp_model(model_oid, sn_oid, **kwargs):
     sn = unicode(sn[0][1])
     model = 'Cisco %s' % unicode(model[0][1])
     dev = Device.create(sn=sn, model_name=model, model_type=DeviceType.switch)
-    ip_address = IPAddress.objects.get(address=str(ip))
+    ip_address, created = IPAddress.concurrent_get_or_create(address=str(ip))
     ip_address.device = dev
     ip_address.is_management = True
     ip_address.save()
     return True, sn, kwargs
 
+
 @plugin.register(chain='discovery', requires=['ping', 'snmp'])
 def cisco_snmp(**kwargs):
     for substring, oids in _cisco_oids.iteritems():
-        if 'snmp_name' in kwargs and kwargs['snmp_name'] and \
-            substring in kwargs['snmp_name'].lower():
+        if ('snmp_name' in kwargs and kwargs['snmp_name'] and
+                substring in kwargs['snmp_name'].lower()):
             return _cisco_snmp_model(oids[0], oids[1], **kwargs)
     return False, "no match.", kwargs
 
+
+@plugin.register(chain='discovery', requires=['ping', 'snmp'])
+def juniper_snmp(**kwargs):
+    sn_oid = (1, 3, 6, 1, 4, 1, 2636, 3, 1, 3, 0)
+    model_oid = (1, 3, 6, 1, 4, 1, 2636, 3, 1, 2, 0)
+    version = kwargs.get('snmp_version')
+    if version == '3':
+        community = SNMP_V3_AUTH
+    else:
+        community = str(kwargs['community'])
+    substring = "juniper networks"
+    if not ('snmp_name' in kwargs and kwargs['snmp_name'] and
+            substring in kwargs['snmp_name'].lower()):
+        return False, "no match.", kwargs
+    ip = str(kwargs['ip'])
+    sn = snmp_command(
+        ip,
+        community,
+        sn_oid,
+        attempts=2,
+        timeout=3,
+        snmp_version=version,
+    )
+    model = snmp_command(
+        ip,
+        community,
+        model_oid,
+        attempts=2,
+        timeout=3,
+        snmp_version=version,
+    )
+    if not sn or not model:
+        return False, "silent.", kwargs
+    sn = unicode(str(sn[0][1]), encoding='utf-8')
+    model = unicode(str(model[0][1]), encoding='utf-8')
+    dev = Device.create(sn=sn, model_name=model, model_type=DeviceType.switch)
+    ip_address, created = IPAddress.concurrent_get_or_create(address=str(ip))
+    ip_address.device = dev
+    ip_address.is_management = True
+    ip_address.save()
+    return True, sn, kwargs
+
+
 @plugin.register(chain='discovery', requires=['ping', 'snmp'])
 def nortel_snmp(**kwargs):
-    sn_oid = (1,3,6,1,4,1,1872,2,5,1,3,1,18,0)
-    uuid_oid = (1,3,6,1,4,1,1872,2,5,1,3,1,17,0)
-    substring = "nortel layer2-3 gbe switch"
-    if not ('snmp_name' in kwargs and kwargs['snmp_name'] and
-        substring in kwargs['snmp_name'].lower()):
+    sn_oid = (1, 3, 6, 1, 4, 1, 1872, 2, 5, 1, 3, 1, 18, 0)
+    uuid_oid = (1, 3, 6, 1, 4, 1, 1872, 2, 5, 1, 3, 1, 17, 0)
+    substrings = ["nortel layer2-3 gbe switch",
+                  "bnt layer 2/3 copper gigabit ethernet "
+                  "switch module for ibm bladecenter"]
+    snmp_name = kwargs.get('snmp_name', '')
+    if not (snmp_name and any(substring in kwargs['snmp_name'].lower()
+            for substring in substrings)):
         return False, "no match.", kwargs
     ip = str(kwargs['ip'])
     version = kwargs.get('snmp_version')
@@ -415,7 +472,7 @@ def nortel_snmp(**kwargs):
     sn = unicode(sn[0][1])
     model = kwargs['snmp_name']
     dev = Device.create(sn=sn, model_name=model, model_type=DeviceType.switch)
-    ip_address = IPAddress.objects.get(address=str(ip))
+    ip_address, created = IPAddress.concurrent_get_or_create(address=str(ip))
     ip_address.device = dev
     ip_address.is_management = True
     ip_address.save()

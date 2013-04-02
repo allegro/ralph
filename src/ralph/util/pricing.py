@@ -367,7 +367,6 @@ def details_dev(dev, purchase_only=False, ignore_deprecation=False):
 
 def details_cpu(dev, purchase_only=False):
     has_cpu = False
-
     for cpu in dev.processor_set.all():
         has_cpu = True
         speed = cpu.model.speed if (cpu.model and

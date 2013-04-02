@@ -14,7 +14,12 @@ from django.db import models as db
 from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.utils import simplejson as json
 from django.utils.translation import ugettext_lazy as _
-from django.views.generic import UpdateView, DetailView, TemplateView
+from django.views.generic import (
+    DetailView,
+    RedirectView,
+    TemplateView,
+    UpdateView,
+)
 
 from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Language, TagStem
@@ -22,8 +27,13 @@ from bob.menu import MenuItem
 from powerdns.models import Record
 from ralph.discovery.models_device import DeprecationKind, MarginKind
 
-from ralph.account.models import Perm
-from ralph.business.models import RolePropertyValue, Venture, VentureRole
+from ralph.business.models import (
+    RoleProperty,
+    RolePropertyValue,
+    Venture,
+    VentureRole,
+)
+from ralph.account.models import get_user_home_page_url, Perm
 from ralph.cmdb.models import CI
 from ralph.deployment.util import get_next_free_hostname, get_first_free_ip
 from ralph.dnsedit.models import DHCPEntry
@@ -64,6 +74,8 @@ from ralph.ui.forms.deployment import (
     ServerMoveStep2FormSet,
     ServerMoveStep3FormSet,
 )
+from ralph import VERSION
+
 
 SAVE_PRIORITY = 200
 HISTORY_PAGE_SIZE = 25
@@ -88,11 +100,15 @@ TEMPLATE_MENU_ITEMS = [
         href='/ui/racks//move/',
     ),
 ]
+CHANGELOG_URL = "http://ralph.allegrogroup.com/doc/changes.html"
 
 
 def _get_balancers(dev):
-    for ip in dev.ipaddress_set.select_related().all():
-        for member in ip.loadbalancermember_set.order_by('device'):
+    for ip in dev.ipaddress_set.all():
+        for member in ip.loadbalancermember_set.select_related(
+            'device__name',
+            'pool__name',
+        ).order_by('device'):
             yield {
                     'balancer': member.device.name,
                     'pool': member.pool.name,
@@ -100,7 +116,9 @@ def _get_balancers(dev):
                     'server': None,
                     'port': member.port,
             }
-    for vserv in dev.loadbalancervirtualserver_set.all():
+    for vserv in dev.loadbalancervirtualserver_set.select_related(
+        'default_pool__name',
+    ).all():
         yield {
             'balancer': dev.name,
             'pool': vserv.default_pool.name,
@@ -184,19 +202,41 @@ class BaseMixin(object):
                 MenuItem('CMDB', fugue_icon='fugue-thermometer',
                          href='/cmdb/changes/timeline')
             )
+        if ('ralph_assets' in settings.INSTALLED_APPS):
+            mainmenu_items.append(
+                MenuItem('Assets', fugue_icon='fugue-box-label',
+                         href='/assets')
+            )
         if settings.BUGTRACKER_URL:
             mainmenu_items.append(
                 MenuItem(
                     'Report a bug', fugue_icon='fugue-bug', pull_right=True,
                     href=settings.BUGTRACKER_URL)
             )
+        footer_items.append(
+            MenuItem(
+                "Version %s" % '.'.join((str(part) for part in VERSION)),
+                fugue_icon='fugue-document-number',
+                href=CHANGELOG_URL,
+            )
+        )
         if self.request.user.is_staff:
             footer_items.append(
                 MenuItem('Admin', fugue_icon='fugue-toolbox', href='/admin'))
         footer_items.append(
             MenuItem(
-                '%s (logout)' % self.request.user,
+                '%s (preference)' % self.request.user,
                 fugue_icon='fugue-user',
+                view_name='preference',
+                view_args=[details or 'info', ''],
+                pull_right=True,
+                href=reverse('user_preference', args=[]),
+            )
+        )
+        footer_items.append(
+            MenuItem(
+                'logout',
+                fugue_icon='fugue-door-open-out',
                 view_name='logout',
                 view_args=[details or 'info', ''],
                 pull_right=True,
@@ -256,11 +296,6 @@ class BaseMixin(object):
             tab_items.extend([
                 MenuItem('Purchase', fugue_icon='fugue-baggage-cart-box',
                          href=tab_href('purchase')),
-            ])
-        if has_perm(Perm.run_discovery, venture):
-            tab_items.extend([
-                MenuItem('Discover', fugue_icon='fugue-flashlight',
-                         href=tab_href('discover')),
             ])
         if ('ralph.cmdb' in settings.INSTALLED_APPS and
             has_perm(Perm.read_configuration_item_info_generic)):
@@ -446,30 +481,29 @@ class Info(DeviceUpdateView):
 
     def save_properties(self, device, properties):
         for symbol, value in properties.iteritems():
-            p = device.venture_role.roleproperty_set.get(symbol=symbol)
+            try:
+                p = device.venture_role.roleproperty_set.get(symbol=symbol)
+            except RoleProperty.DoesNotExist:
+                p = device.venture.roleproperty_set.get(symbol=symbol)
             pv, created = RolePropertyValue.concurrent_get_or_create(
                 property=p,
                 device=device,
             )
-            pv.value = value
-            pv.save(user=self.request.user)
+            if value != p.default:
+                pv.value = value
+                pv.save(user=self.request.user)
+            else:
+                pv.delete()
 
-    def get_property_form(self):
-        props = {}
+    def get_property_form(self, data=None):
         if not self.object.venture_role:
             return None
-        for p in self.object.venture_role.roleproperty_set.all():
-            try:
-                value = p.rolepropertyvalue_set.filter(
-                    device=self.object,
-                )[0].value
-            except IndexError:
-                value = ''
-            props[p.symbol] = value
-        properties = list(self.object.venture_role.roleproperty_set.all())
-        if not properties:
+        values = self.object.venture_role.get_properties(self.object)
+        if not values:
             return None
-        return PropertyForm(properties, initial=props)
+        properties = list(self.object.venture_role.roleproperty_set.all())
+        properties.extend(self.object.venture.roleproperty_set.all())
+        return PropertyForm(properties, data, initial=values)
 
     def post(self, *args, **kwargs):
         self.object = self.get_object()
@@ -480,8 +514,7 @@ class Info(DeviceUpdateView):
             )
         self.property_form = self.get_property_form()
         if 'propertiessave' in self.request.POST:
-            properties = list(self.object.venture_role.roleproperty_set.all())
-            self.property_form = PropertyForm(properties, self.request.POST)
+            self.property_form = self.get_property_form(self.request.POST)
             if self.property_form.is_valid():
                 messages.success(self.request, "Properties updated.")
                 self.save_properties(
@@ -788,9 +821,10 @@ class Addresses(DeviceDetailView):
                         'network_name': network.name,
                         'first_free_ip': first_free_ip,
                     })
+        balancers = list(_get_balancers(self.object))
         ret.update({
             'canedit': can_edit,
-            'balancers': list(_get_balancers(self.object)),
+            'balancers': balancers,
             'dnsformset': self.dns_formset,
             'dhcpformset': self.dhcp_formset,
             'ipformset': self.ip_formset,
@@ -898,25 +932,6 @@ class Purchase(DeviceUpdateView):
                 ),
             }
         )
-        return ret
-
-
-class Discover(DeviceDetailView):
-    template_name = 'ui/device_discover.html'
-    read_perm = Perm.run_discovery
-
-    def get_context_data(self, **kwargs):
-        ret = super(Discover, self).get_context_data(**kwargs)
-        addresses = [ip.address for ip in self.object.ipaddress_set.all()]
-        warnings = DiscoveryWarning.objects.filter(
-            db.Q(device=self.object),
-            db.Q(ip__in=addresses),
-        ).order_by('-date')
-        ret.update({
-            'address': addresses[0] if addresses else '',
-            'addresses': json.dumps(addresses),
-            'warnings': warnings,
-        })
         return ret
 
 
@@ -1249,3 +1264,15 @@ class Software(DeviceDetailView):
             'components': _get_details(self.object, purchase_only=False),
             })
         return ret
+
+
+class VhostRedirectView(RedirectView):
+    def get_redirect_url(self, **kwargs):
+        host = self.request.META.get(
+            'HTTP_X_FORWARDED_HOST', self.request.META['HTTP_HOST'])
+        user_url = get_user_home_page_url(self.request.user)
+        if host == settings.DASHBOARD_SITE_DOMAIN:
+            self.url = '/ventures/'
+        else:
+            self.url = user_url
+        return super(VhostRedirectView, self).get_redirect_url(**kwargs)

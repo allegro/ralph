@@ -1,0 +1,49 @@
+{% extends 'cmdb/ci_details.html' %}
+{% load icons %}
+{% load bob %}
+{% load query %}
+
+{% block ci_content %}
+    {% if form %}{% include 'cmdb/form_filters.html' with form=form %}{% endif %}
+    <table class="table table-striped table-bordered table-condensed ">
+        <thead>
+            <tr>
+                {% table_header columns url_query sort fugue_icons=1 %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for d in bob_page %}
+            <tr>
+                <td>{{ d.update_date|date:"d.m.y H:i"|default:"" }}</td>
+                <td style="white-space:nowrap"><img src="{{ d.priority }}">&nbsp;{{ d.issue_type }}</td>
+                <td>
+                    <span class="label
+                        {% if d.status == 'Open' %}
+                            label-important
+                        {% elif d.status == 'Resolved' %}
+                            label-success
+                        {% elif d.status == 'Todo' %}
+                            label-warning
+                        {% elif d.status == 'In Progress' %}
+                            label-info
+                        {% elif d.status == 'Closed' %}
+                            label-inverse
+                        {% endif %}
+                    "> {{ d.status }}</span>
+                    {{ d.resolvet_date|date:"d.m.y H:i"|default:"" }}
+                </td>
+                <td><a href="/cmdb/ci/view/{{ d.ci.id }}" target="_noblank">{{ d.ci.name }}</a></td>
+                <td><a href="{{ jira_url }}/{{ d.jira_id }}">{{ d.jira_id }}</a> - {{ d.summary }}</td>
+                <td>{{ d.assignee }}</td>
+                <td style="width: 26%">{{ d.description|linebreaks }}</td>
+                <td style="width: 11%">{{ d.analysis|linebreaks  }}</td>
+                <td style="width: 11%">{{ d.problems|linebreaks  }}</td>
+                <td>{{ d.planned_start_date|date:"d.m.y H:i"|default:"" }}</td>
+                <td>{{ d.planned_end_date|date:"d.m.y H:i"|default:"" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% pagination page url_query=url_query show_all=0 show_csv=0 fugue_icons=1 %}
+{% endblock %}

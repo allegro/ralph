@@ -27,8 +27,14 @@ class ProfileInline(admin.StackedInline):
 
 class ProfileBoundPermInline(ForeignKeyAutocompleteTabularInline):
     model = BoundPerm
-    exclude = ['created', 'modified', 'created_by', 'modified_by', 'role',
-            'group']
+    exclude = [
+        'created',
+        'modified',
+        'created_by',
+        'modified_by',
+        'role',
+        'group'
+    ]
     related_search_fields = {
         'venture': ['^name'],
     }
@@ -68,15 +74,42 @@ class ProfileAdmin(UserAdmin):
     groups_show.short_description = _("groups")
 
     inlines = [
-            ProfileInline, ProfileBoundPermInline, ApiKeyInline,
-            ProfileIPInline, ProfileUserAgentInline,
+        ProfileInline,
+        ProfileBoundPermInline,
+        ApiKeyInline,
+        ProfileIPInline,
+        ProfileUserAgentInline,
     ]
-    list_display = ('username', 'email', 'first_name', 'last_name',
-        groups_show, 'is_staff', 'is_active')
+    list_display = (
+        'username',
+        'email',
+        'first_name',
+        'last_name',
+        groups_show,
+        'is_staff',
+        'is_active'
+    )
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups',)
     save_on_top = True
-    search_fields = ('username', 'first_name', 'last_name',
-        'email', 'profile__nick')
+    search_fields = (
+        'username',
+        'first_name',
+        'last_name',
+        'email',
+        'profile__nick'
+    )
+
+    def get_formsets(self, request, obj=None):
+        """Skips inlines in add form.
+
+        See: https://github.com/allegro/ralph/issues/495
+        """
+        if not obj:
+            return
+        for formset in super(ProfileAdmin, self).get_formsets(
+            request, obj=obj,
+        ):
+            yield formset
 
 
 admin.site.unregister(User)
@@ -85,8 +118,14 @@ admin.site.register(User, ProfileAdmin)
 
 class GroupBoundPermInline(ForeignKeyAutocompleteTabularInline):
     model = BoundPerm
-    exclude = ['created', 'modified', 'created_by', 'modified_by', 'role',
-            'profile']
+    exclude = [
+        'created',
+        'modified',
+        'created_by',
+        'modified_by',
+        'role',
+        'profile'
+    ]
     related_search_fields = {
         'venture': ['^name'],
     }

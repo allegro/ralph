@@ -7,19 +7,13 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import datetime
-import cStringIO as StringIO
 
-from django.db import models as db
-from django.http import (
-    Http404,
-    HttpResponse,
-    HttpResponseForbidden,
-    HttpResponseRedirect,
-)
-from django.core.cache import DEFAULT_CACHE_ALIAS, get_cache
 from django.conf import settings
 from django.contrib import messages
+from django.core.cache import DEFAULT_CACHE_ALIAS, get_cache
+from django.db import models as db
 from django.db.models import Q
+from django.http import HttpResponseRedirect
 from django.utils.safestring import mark_safe
 from django.utils.html import escape
 from django.utils.translation import ugettext_lazy as _
@@ -39,14 +33,13 @@ from ralph.cmdb.models_ci import (
     CI_TYPES,
 )
 from ralph.deployment.models import DeploymentStatus
-from ralph.discovery.models_component import ComponentType
-from ralph.discovery.models_device import (
+from ralph.discovery.models import (
     Device,
-    DeviceModelGroup,
     DeviceType,
     MarginKind,
+    SplunkUsage,
+    HistoryCost,
 )
-from ralph.discovery.models_history import HistoryCost
 from ralph.ui.forms import DateRangeForm, MarginsReportForm
 from ralph.ui.reports import (
     get_total_cores,
@@ -69,18 +62,6 @@ from ralph.util.async_reports import (
     async_report_provider,
 )
 from ralph.util.presentation import get_device_icon, get_venture_icon
-from ralph.util.pricing import (
-    details_all,
-    get_device_auto_price,
-    get_device_chassis_price,
-    get_device_components_price,
-    get_device_cpu_price,
-    get_device_fc_price,
-    get_device_local_storage_price,
-    get_device_memory_price,
-    get_device_operatingsystem_price,
-    get_device_software_price,
-)
 
 
 def threshold(days):
@@ -471,6 +452,12 @@ def _report_ventures_data_provider(start, end, ventures_ids, extra_types):
             db.Q(venture__parent__parent__parent__parent=venture)
         ).exclude(device__deleted=True)
         data = _report_ventures_get_totals(start, end, query, extra_types)
+        (
+            splunk_cost,
+            splunk_count,
+            splunk_count_now,
+            splunk_size,
+        ) = SplunkUsage.get_cost(venture, start, end)
         data.update({
             'id': venture.id,
             'name': venture.name,
@@ -483,6 +470,7 @@ def _report_ventures_data_provider(start, end, ventures_ids, extra_types):
             'cloud_use': (
                 (data['cloud_cost'] or 0) / total_cloud_cost
             ) if total_cloud_cost else 0,
+            'splunk_cost': splunk_cost,
         })
         result.append(data)
         if venture.parent is not None:
@@ -491,6 +479,12 @@ def _report_ventures_data_provider(start, end, ventures_ids, extra_types):
             continue
         query = HistoryCost.objects.filter(venture=venture)
         data = _report_ventures_get_totals(start, end, query, extra_types)
+        (
+            splunk_cost,
+            splunk_count,
+            splunk_count_now,
+            splunk_size,
+        ) = SplunkUsage.get_cost(venture, start, end, shallow=True)
         data.update({
             'id': venture.id,
             'name': '-',
@@ -503,6 +497,7 @@ def _report_ventures_data_provider(start, end, ventures_ids, extra_types):
             'cloud_use': (
                 (data['cloud_cost'] or 0) / total_cloud_cost
             ) if total_cloud_cost else 0,
+            'splunk_cost': splunk_cost,
         })
         result.append(data)
     return result
@@ -519,43 +514,40 @@ class ReportVentures(SidebarReports, AsyncReportMixin, Base):
     ]
     data_provider = _report_ventures_data_provider
 
-    def export_csv(self):
-        def iter_rows():
+    def export_csv(self, venture_data, extra_types):
+        yield [
+            'Venture ID',
+            'Venture',
+            'Path',
+            'Department',
+            'Default margin',
+            'Device count',
+            'Core count',
+            'Virtual core count',
+            'Cloud use',
+            'Cloud cost',
+        ] + [extra_type.name for extra_type in extra_types] + [
+            'Splunk cost',
+            'Hardware cost',
+            'Total cost',
+        ]
+        for data in venture_data:
             yield [
-                'Venture ID',
-                'Venture',
-                'Path',
-                'Department',
-                'Default margin',
-                'Device count',
-                'Core count',
-                'Virtual core count',
-                'Cloud use',
-                'Cloud cost',
-            ] + [extra_type.name for extra_type in self.extra_types] + [
-                'Hardware cost',
-                'Total cost',
+                '%d' % data['id'],
+                data['name'],
+                data['path'],
+                data['department'],
+                '%d%%' % data['margin'],
+                '%d' % (data['count'] or 0),
+                '%d' % (data['core_count'] or 0),
+                '%d' % (data['virtual_core_count'] or 0),
+                '%f' % (data['cloud_use'] or 0),
+                _currency(data['cloud_cost']),
+            ] + [_currency(v) for v in data['extras']] + [
+                _currency(data['splunk_cost']),
+                _currency(data['hardware_cost']),
+                _currency(data['total']),
             ]
-            for data in self.venture_data:
-                yield [
-                    '%d' % data['id'],
-                    data['name'],
-                    data['path'],
-                    data['department'],
-                    '%d%%' % data['margin'],
-                    '%d' % (data['count'] or 0),
-                    '%d' % (data['core_count'] or 0),
-                    '%d' % (data['virtual_core_count'] or 0),
-                    '%f' % (data['cloud_use'] or 0),
-                    _currency(data['cloud_cost']),
-                ] + [_currency(v) for v in data['extras']] + [
-                    _currency(data['hardware_cost']),
-                    _currency(data['total']),
-                ]
-        return make_csv_response(
-            data=iter_rows(),
-            filename='ReportVentures.csv',
-        )
 
     @ralph_permission(perms)
     def get(self, *args, **kwargs):
@@ -617,7 +609,10 @@ class ReportVentures(SidebarReports, AsyncReportMixin, Base):
             self.venture_data = []
         if (self.request.GET.get('export') == 'csv' and
             self.venture_data is not None):
-            return self.export_csv()
+            return make_csv_response(
+                data=self.export_csv(self.venture_data, self.extra_types),
+                filename='ReportVentures.csv',
+            )
         return super(ReportVentures, self).get(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -807,7 +802,7 @@ class ReportDevices(SidebarReports, Base):
                 if no_rol:
                     row.append(dev.venture_role)
                 rows.append(row)
-        # Filtering of th range
+        # Filtering of the range
         # Support Range
         s_start = self.request.GET.get('s_start', None)
         s_end = self.request.GET.get('s_end', None)
@@ -826,7 +821,7 @@ class ReportDevices(SidebarReports, Base):
             self.form_support_range = SupportRangeReportForm(initial={
                 's_start': datetime.date.today() - datetime.timedelta(days=30),
                 's_end': datetime.date.today(),
-                })
+            })
         # Deprecation Range
         d_start = self.request.GET.get('d_start', None)
         d_end = self.request.GET.get('d_end', None)
@@ -874,27 +869,27 @@ class ReportDevices(SidebarReports, Base):
             if all_devices and all_deleted_devices:
                 show_devices = Device.admin_objects.all()
                 csv_conf = {
-                    'title': 'Show all devices (active and deleted)',
+                    'title': 'All devices (active and deleted)',
                     'name': 'report_all_devices',
                     'url': '?show_all_devices=on&show_all_deleted_devices=on&export=csv',
                     }
             elif all_devices:
                 show_devices = Device.objects.all()
                 csv_conf = {
-                    'title': 'Show all active devices',
+                    'title': 'All active devices',
                     'name': 'report_all_active_devices',
                     'url': '?show_all_devices=on&export=csv',
                     }
             elif all_deleted_devices:
                 show_devices = Device.admin_objects.filter(deleted=True)
                 csv_conf = {
-                    'title': 'Show all deleted devices',
+                    'title': 'All deleted devices',
                     'name': 'report_deleted_devices',
                     'url': '?show_all_deleted_devices=on&export=csv',
                     }
             headers = [
                 'Device', 'Model', 'SN', 'Barcode', 'Auto price', 'Venture',
-                'Venture ID', 'Role', 'Remarks', 'Verified', 'Deleted'
+                'Role', 'Remarks', 'Verified', 'Deleted',
             ]
             for dev in show_devices:
                 rows.append([

@@ -49,6 +49,7 @@
                 {% for extra_type in extra_types %}
                 <th>{{ extra_type.name }}</th>
                 {% endfor %}
+                <th>Splunk cost</th>
                 <th>Hardware cost</th>
                 <th>Total cost</th>
                 {% if profile.is_staff %}
@@ -88,6 +89,9 @@
                     {{ extra|currency }}
                 </td>
                 {% endfor %}
+                <td class="currency">
+                    {{ venture.splunk_cost|currency }}
+                </td>
                 <td class="currency">
                     {{ venture.hardware_cost|currency }}
                 </td>
