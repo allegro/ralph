@@ -68,6 +68,18 @@ def threshold(days):
     return datetime.date.today() + datetime.timedelta(days=days)
 
 
+def _get_after_report_invalidation_link(request, invalidate_param):
+    get_params = request.GET.dict()
+    del get_params[invalidate_param]
+    return '%s?%s' % (
+        request.path,
+        '&'.join([
+            '%s=%s' % (key, value)
+            for key, value in get_params.items()
+        ]),
+    )
+
+
 class ReportType(Choices):
     _ = Choices.Choice
 
@@ -583,15 +595,12 @@ class ReportVentures(SidebarReports, AsyncReportMixin, Base):
                     self.ventures,
                     self.extra_types,
                 )
-                get_params = self.request.GET.dict()
-                del get_params['invalidate-cache']
-                return HttpResponseRedirect('%s?%s' % (
-                    self.request.path,
-                    '&'.join([
-                        '%s=%s' % (key, value)
-                        for key, value in get_params.items()
-                    ]),
-                ))
+                return HttpResponseRedirect(
+                    _get_after_report_invalidation_link(
+                        self.request,
+                        'invalidate-cache',
+                    ),
+                )
             self.venture_data = self.get_data(
                 start,
                 end,
@@ -1076,14 +1085,12 @@ class ReportDevicePricesPerVenture(SidebarReports, AsyncReportMixin, Base):
         )
         if self.request.GET.get('invalidate-cache', '') == 'true':
             self.invalidate_data(venture_id=self.venture_id)
-            get_params = self.request.GET.dict()
-            del get_params['invalidate-cache']
-            return HttpResponseRedirect('%s?%s' % (
-                self.request.path,
-                '&'.join([
-                    '%s=%s' % (key, value) for key, value in get_params.items()
-                ]),
-            ))
+            return HttpResponseRedirect(
+                _get_after_report_invalidation_link(
+                    self.request,
+                    'invalidate-cache',
+                ),
+            )
         if self.venture_id:
             try:
                 venture = Venture.objects.get(id=self.venture_id)
