@@ -74,8 +74,8 @@ class Command(BaseCommand):
         discover.network = partial(discover_network, interactive=interactive)
         discover.single = partial(
             run_next_plugin,
+            chains=('discovery', 'postprocess'),
             interactive=interactive,
-            clear_down=not interactive,
         )
         if options['plugins']:
             if not interactive:

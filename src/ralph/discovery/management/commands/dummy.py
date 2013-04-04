@@ -17,21 +17,20 @@ import django_rq
 from ralph.discovery.tasks import dummy_horde
 
 
-class OptionBag(object): pass
-
-
 class Command(BaseCommand):
-    """Runs a horde of dummy tasks for testing whether the scaffolding works. 
+    """
+    Runs a horde of dummy tasks for testing whether the scaffolding works.
     """
     help = textwrap.dedent(__doc__).strip()
     option_list = BaseCommand.option_list + (
-            make_option('--remote',
-                action='store_true',
-                dest='remote',
-                default=False,
-                help='Run the horde by scheduling it on '
-                     'the message queue.'),
-            )
+        make_option(
+            '--remote',
+            action='store_true',
+            dest='remote',
+            default=False,
+            help='Run the horde by scheduling it on the message queue.',
+        ),
+    )
     requires_model_validation = False
 
     def handle(self, *args, **options):

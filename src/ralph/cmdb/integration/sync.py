@@ -9,6 +9,7 @@ from __future__ import unicode_literals
 import logging
 import datetime
 from django.conf import settings
+from django.utils.encoding import force_unicode
 
 from ralph.util import plugin
 from ralph.cmdb.integration.base import BaseImporter
@@ -20,14 +21,9 @@ from ralph.cmdb import models as db
 # hook git plugins
 from ralph.cmdb.integration.puppet import PuppetGitImporter
 from ralph.cmdb.integration.ralph import AssetChangeImporter
-from optparse import OptionParser
-
-
-from ralph.util.views import force_utf8
-
-
 
 logger = logging.getLogger(__name__)
+
 
 class ZabbixImporter(BaseImporter):
     """
@@ -128,15 +124,15 @@ class JiraEventsImporter(BaseImporter):
             ci_obj = None
         obj = classtype.objects.filter(jira_id=issue.get('key')).all()[:1]
         prob = obj[0] if obj else classtype()
-        prob.summary = force_utf8(issue.get('summary'))
-        prob.status = force_utf8(issue.get('status'))
-        prob.assignee = force_utf8(issue.get('assignee'))
-        prob.jira_id = force_utf8(issue.get('key'))
-        prob.analysis = force_utf8(issue.get('analysis'), cut=1024)
-        prob.problems = force_utf8(issue.get('problems'), cut=1024)
+        prob.summary = force_unicode(issue.get('summary'))
+        prob.status = force_unicode(issue.get('status'))
+        prob.assignee = force_unicode(issue.get('assignee'))
+        prob.jira_id = force_unicode(issue.get('key'))
+        prob.analysis = force_unicode(issue.get('analysis'))[:1024]
+        prob.problems = force_unicode(issue.get('problems'))[:1024]
         prob.priority = issue.get('priority')
-        prob.issue_type = force_utf8(issue.get('issue_type'))
-        prob.description = force_utf8(issue.get('description'), cut=1024)
+        prob.issue_type = force_unicode(issue.get('issue_type'))
+        prob.description = force_unicode(issue.get('description'))[:1024]
         prob.update_date = self.tz_time(issue.get('update_date'))
         prob.created_date = self.tz_time(issue.get('created_date'))
         prob.resolvet_date = self.tz_time(issue.get('resolvet_date'))
@@ -144,7 +140,6 @@ class JiraEventsImporter(BaseImporter):
         prob.planned_end_date = self.tz_time(issue.get('planned_end_date'))
         prob.ci = ci_obj
         prob.save()
-
 
     def import_problem(self):
         type = settings.ISSUETRACKERS['default']['PROBLEMS']['ISSUETYPE']
