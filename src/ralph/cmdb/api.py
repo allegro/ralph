@@ -10,6 +10,12 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+# Monkeypatch Tastypie
+# fix in https://github.com/toastdriven/django-tastypie/pull/863
+from ralph.cmdb.monkey import method_check
+from tastypie.resources import Resource
+Resource.method_check = method_check
+
 from django.conf import settings
 from tastypie.authentication import ApiKeyAuthentication
 from tastypie.authorization import DjangoAuthorization

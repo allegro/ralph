@@ -10,24 +10,31 @@ import random
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.cache import cache
+from django.http import HttpRequest
 from django.test import TestCase
 from tastypie.bundle import Bundle
 from tastypie.models import ApiKey
 
 from ralph.business.models import Venture
 from ralph.cmdb import models as chdb
-from ralph.cmdb.api import (
-    CIChangePuppetResource, CIChangeGitResource, CIChangeCMDBHistoryResource,
-)
+from ralph.cmdb.api import CIChangeCMDBHistoryResource
+from ralph.cmdb.importer import CIImporter
 from ralph.cmdb.models import (
-    CIChangePuppet, CIChangeGit, CIChangeCMDBHistory, CIChange,
-    CIOwnershipType
+    CIChangePuppet,
+    CIChangeGit,
+    CIChangeCMDBHistory,
+    CIChange,
+    CILayer,
+    CI_RELATION_TYPES,
 )
-from ralph.cmdb.models import (
-    CILayer, CI_RELATION_TYPES,
+from ralph.cmdb.models_ci import (
+    CIOwnershipType,
+    CIOwnership,
+    CI,
+    CIOwner,
+    CIType,
+    CIRelation,
 )
-from ralph.cmdb.models_ci import CIOwnership, CI, CIOwner, CIType, CIRelation
-
 
 CURRENT_DIR = settings.CURRENT_DIR
 
@@ -299,29 +306,25 @@ class CMDBApiTest(TestCase):
 
 class CIApiTest(TestCase):
     def setUp(self):
+        self.create_user()
+
         self.puppet_cv = "v%s" % random.randrange(0, 1000)
-        puppet_bundle = Bundle(
-            data={
-                'configuration_version': self.puppet_cv,
-                'host': 's11111.dc2',
-                'kind': 'apply',
-                'status': 'failed',
-                'time': '2012-11-14 13:00:00',
-            })
-        puppet_resource = CIChangePuppetResource()
-        puppet_resource.obj_create(bundle=puppet_bundle)
+        self.post_data_puppet = {
+            'configuration_version': self.puppet_cv,
+            'host': 's11111.dc2',
+            'kind': 'apply',
+            'status': 'failed',
+            'time': '2012-11-14 13:00:00',
+        }
 
         self.git_changeset = "change:%s" % random.randrange(0, 1000)
         self.git_comment = "comment:%s" % random.randrange(0, 1000)
-        git_bundle = Bundle(
-            data={
-                'author': 'Jan Kowalski',
-                'changeset': self.git_changeset,
-                'comment': self.git_comment,
-                'file_paths': '/some/path',
-            })
-        git_resource = CIChangeGitResource()
-        git_resource.obj_create(bundle=git_bundle)
+        self.post_data_git = {
+            'author': 'Jan Kowalski',
+            'changeset': self.git_changeset,
+            'comment': self.git_comment,
+            'file_paths': '/some/path',
+        }
 
         temp_venture = Venture.objects.create(name='TempTestVenture')
         if settings.AUTOCI:
@@ -336,19 +339,35 @@ class CIApiTest(TestCase):
 
         self.cmdb_new_value = 'nv_%s' % random.randrange(0, 1000)
         self.cmdb_old_value = 'ov_%s' % random.randrange(0, 1000)
-        cmdb_bundle = Bundle(
-            data={
-                'ci': '/api/v0.9/ci/%d/' % self.ci.pk,
-                'comment': 'test api',
-                'field_name': 'child',
-                'new_value': self.cmdb_new_value,
-                'old_value': self.cmdb_old_value,
-                'time': '2012-11-15 12:00:00',
-            })
-        cmdb_resource = CIChangeCMDBHistoryResource()
-        cmdb_resource.obj_create(bundle=cmdb_bundle)
+        self.post_data_cmdb_change = {
+            'ci': '/api/v0.9/ci/%d/' % self.ci.pk,
+            'comment': 'test api',
+            'field_name': 'child',
+            'new_value': self.cmdb_new_value,
+            'old_value': self.cmdb_old_value,
+            'time': '2012-11-15 12:00:00',
+        }
+
+    def create_user(self):
+        self.user = User.objects.create_user(
+            'api_user',
+            'test@mail.local',
+            'password',
+        )
+        self.user.is_superuser = True
+        self.user.save()
+        self.api_key = ApiKey.objects.get(user=self.user)
 
     def test_ci_change_puppet_registration(self):
+        response = self.client.post(
+            '/api/v0.9/cichangepuppet/?username={}&api_key={}'.format(
+                self.user.username,
+                self.api_key.key,
+            ),
+            json.dumps(self.post_data_puppet),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 201)
         puppet_change = None
         try:
             puppet_change = CIChangePuppet.objects.get(
@@ -364,6 +383,15 @@ class CIApiTest(TestCase):
                 type=chdb.CI_CHANGE_TYPES.CONF_AGENT.id).count(), 1)
 
     def test_ci_change_git_registration(self):
+        response = self.client.post(
+            '/api/v0.9/cichangegit/?username={}&api_key={}'.format(
+                self.user.username,
+                self.api_key.key,
+            ),
+            json.dumps(self.post_data_git),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 201)
         git_change = None
         try:
             git_change = CIChangeGit.objects.get(changeset=self.git_changeset,
@@ -382,6 +410,12 @@ class CIApiTest(TestCase):
         )
 
     def test_ci_change_cmdbhistory_registration(self):
+        request = HttpRequest()
+        request.user = self.user
+        cmdb_bundle = Bundle(data=self.post_data_cmdb_change, request=request)
+        cmdb_resource = CIChangeCMDBHistoryResource()
+        cmdb_resource.obj_create(bundle=cmdb_bundle)
+
         cmdb_change = None
         try:
             cmdb_change = CIChangeCMDBHistory.objects.get(
@@ -397,3 +431,50 @@ class CIApiTest(TestCase):
             ).count(),
             1,
         )
+
+
+class NewCIApiTest(TestCase):
+    def setUp(self):
+        self.create_user()
+        self.puppet_cv = "v%s" % random.randrange(0, 1000)
+        self.post_data = {
+            'configuration_version': self.puppet_cv,
+            'host': 's11111.dc2',
+            'kind': 'apply',
+            'status': 'failed',
+            'time': '2012-11-14 13:00:00',
+        }
+
+    def create_user(self):
+        self.user = User.objects.create_user(
+            'api_user',
+            'test@mail.local',
+            'password',
+        )
+        self.user.is_superuser = True
+        self.user.save()
+        self.api_key = ApiKey.objects.get(user=self.user)
+
+    def test_ci_change_puppet_registration(self):
+        response = self.client.post(
+            '/api/v0.9/cichangepuppet/?username={}&api_key={}'.format(
+                self.user.username,
+                self.api_key.key,
+            ),
+            json.dumps(self.post_data),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 201)
+        puppet_change = None
+        try:
+            puppet_change = CIChangePuppet.objects.get(
+                host='s11111.dc2', configuration_version=self.puppet_cv)
+        except CIChangePuppet.DoesNotExist:
+            pass
+        self.assertNotEqual(puppet_change, None)
+        self.assertEqual(puppet_change.kind, 'apply')
+        self.assertEqual(puppet_change.status, 'failed')
+        self.assertEqual(
+            CIChange.objects.filter(
+                object_id=puppet_change.id,
+                type=chdb.CI_CHANGE_TYPES.CONF_AGENT.id).count(), 1)
