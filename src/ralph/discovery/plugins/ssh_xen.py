@@ -11,6 +11,7 @@ import collections
 import logging
 
 from django.conf import settings
+from django.utils.encoding import force_unicode
 
 from ralph.util import network, Eth, plugin, parse
 from ralph.discovery.models import (Device, DeviceType, ComponentModel, Storage,
@@ -47,11 +48,7 @@ def get_macs(ssh):
     macs = collections.defaultdict(set)
     label = ''
     for line in _ssh_lines(ssh, 'sudo xe vif-list params=vm-name-label,MAC'):
-        try:
-            line = unicode(line, 'utf-8')
-        except TypeError:
-            pass
-        line = line.strip()
+        line = force_unicode(line, errors='ignore').strip()
         if not line:
             continue
         if line.startswith('vm-name-label'):
