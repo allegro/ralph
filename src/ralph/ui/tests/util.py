@@ -99,3 +99,4 @@ def create_device(device, cpu=None, memory=None, storage=None):
                 model=model,
                 label=storage.get('label'),
             ).save()
+    return dev
