@@ -179,10 +179,6 @@ class RacksPurchase(Racks, Purchase):
     pass
 
 
-class RacksDiscover(Racks, Discover):
-    pass
-
-
 class RacksReports(Racks, Reports):
     pass
 
