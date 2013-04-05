@@ -12,7 +12,10 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import datetime
+
 from django.conf import settings
+from django.db import models as db
 from tastypie import fields
 from tastypie.authentication import ApiKeyAuthentication
 from tastypie.authorization import DjangoAuthorization
@@ -21,11 +24,19 @@ from tastypie.constants import ALL, ALL_WITH_RELATIONS
 from tastypie.resources import ModelResource as MResource
 from tastypie.throttle import CacheThrottle
 
-from ralph.discovery.models import Device, DeviceModel, DeviceModelGroup,\
-    DeviceType, IPAddress
+from ralph.discovery.models import (
+    ComponentModel,
+    ComponentType,
+    Device,
+    DeviceModel,
+    DeviceModelGroup,
+    DeviceType,
+    IPAddress,
+)
+from ralph.ui.views.common import _get_details
 
 THROTTLE_AT = settings.API_THROTTLING['throttle_at']
-TIMEFREME = settings.API_THROTTLING['timeframe']
+TIMEFRAME = settings.API_THROTTLING['timeframe']
 EXPIRATION = settings.API_THROTTLING['expiration']
 SAVE_PRIORITY=10
 
@@ -47,7 +58,7 @@ class IPAddressResource(MResource):
         excludes = ('save_priorities', 'max_save_priority', 'dns_info',
             'snmp_name')
         cache = SimpleCache()
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
                                 expiration=EXPIRATION)
 
 
@@ -57,7 +68,7 @@ class ModelGroupResource(MResource):
         authentication = ApiKeyAuthentication()
         authorization = DjangoAuthorization()
         cache = SimpleCache()
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
                                 expiration=EXPIRATION)
 
 
@@ -74,7 +85,7 @@ class ModelResource(MResource):
         filtering = {
             'type': ALL,
         }
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
                                 expiration=EXPIRATION)
 
 
@@ -106,7 +117,7 @@ class DeviceResource(MResource):
         authentication = ApiKeyAuthentication()
         authorization = DjangoAuthorization()
         cache = SimpleCache()
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
                                 expiration=EXPIRATION)
 
     def obj_update(self, bundle, request=None, **kwargs):
@@ -237,7 +248,7 @@ class PhysicalServerResource(DeviceResource):
     class Meta(DeviceResource.Meta):
         queryset = Device.objects.filter(model__type__in={
             DeviceType.rack_server.id, DeviceType.blade_server.id})
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
                                 expiration=EXPIRATION)
 
 
@@ -245,7 +256,7 @@ class RackServerResource(DeviceResource):
     class Meta(DeviceResource.Meta):
         queryset = Device.objects.filter(model__type=
             DeviceType.rack_server.id)
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
                                 expiration=EXPIRATION)
 
 
@@ -253,7 +264,7 @@ class BladeServerResource(DeviceResource):
     class Meta(DeviceResource.Meta):
         queryset = Device.objects.filter(model__type=
             DeviceType.blade_server.id)
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
                                 expiration=EXPIRATION)
 
 
@@ -261,14 +272,14 @@ class VirtualServerResource(DeviceResource):
     class Meta(DeviceResource.Meta):
         queryset = Device.objects.filter(model__type=
             DeviceType.virtual_server.id)
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
                                 expiration=EXPIRATION)
 
 
 class DevResource(DeviceResource):
     class Meta(DeviceResource.Meta):
         queryset = Device.objects.all()
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
                                 expiration=EXPIRATION)
 
 
@@ -290,7 +301,81 @@ class IPAddressResource(MResource):
         excludes = ('save_priorities', 'max_save_priority', 'dns_info',
             'snmp_name')
         cache = SimpleCache()
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
                                 expiration=EXPIRATION)
 
 
+class DeviceWithPricingResource(DeviceResource):
+    class Meta:
+        queryset = Device.objects.all()
+        resource_name = 'devicewithpricing'
+
+    def dehydrate(self, bundle):
+        device = bundle.obj
+        details = _get_details(bundle.obj)
+        components = dict()
+        total = 0
+        for detail in details:
+            model = detail.get('model')
+            price = detail.get('price') or 0
+            model_type = None
+            model_name = str(model)
+            if hasattr(model, 'type'):
+                try:
+                    model_type = ComponentType.from_id(model.type)
+                except ValueError:
+                    pass
+            if model_type and model_type == ComponentType.software:
+                model = ComponentType.software.name,
+                model_name = model
+            if not components.get(model_name):
+                components[model_name] = {
+                    'model': model,
+                    'count': 1,
+                    'price': price,
+                    'serial': detail.get('serial'),
+                }
+            else:
+                components[model_name]['count'] += 1
+            total += price
+        bundle.data['components'] = components.values()
+        bundle.data['total_cost'] = total
+        bundle.data['deprecated'] = device.is_deprecated()
+        splunk_start = bundle.request.GET.get('splunk_start')
+        splunk_end = bundle.request.GET.get('splunk_end')
+        if splunk_start and splunk_end:
+            try:
+                splunk_start = datetime.datetime.strptime(splunk_start, '%Y-%m-%d')
+                splunk_end = datetime.datetime.strptime(splunk_end, '%Y-%m-%d')
+            except ValueError:
+                splunk_start, splunk_end = None, None
+        splunk = self.splunk_cost(bundle.obj, splunk_start, splunk_end)
+        bundle.data['splunk'] = splunk
+        return bundle
+
+    def splunk_cost(self, device, start_date=None, end_date=None):
+        splunk_cost = {
+            'splunk_size': 0,
+            'splunk_monthly_cost': 0,
+            'splunk_daily_cost': 0,
+        }
+        if start_date and end_date:
+            splunk = device.splunkusage_set.filter(
+                day__range=(start_date, end_date)
+            ).order_by('-day')
+        else:
+            last_month = datetime.date.today() - datetime.timedelta(days=30)
+            splunk = device.splunkusage_set.filter(
+                    day__gte=last_month
+            ).order_by('-day')
+        if splunk.count():
+            splunk_size = splunk.aggregate(db.Sum('size'))['size__sum'] or 0
+            splunk_monthly_cost = (
+                splunk[0].get_price(size=splunk_size) /
+                splunk[0].model.group.size_modifier
+            ) or 0
+            splunk_daily_cost = (splunk_monthly_cost / splunk.count()) or 0
+            splunk_cost['splunk_size'] = splunk_size
+            splunk_cost['splunk_monthly_cost'] = splunk_monthly_cost
+            splunk_cost['splunk_daily_cost'] = splunk_daily_cost
+        return splunk_cost
