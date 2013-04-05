@@ -3,6 +3,7 @@
 {% load icons %}
 {% load formats %}
 {% load bob %}
+{% load reports %}
 
 {% block contentarea %}
     <div class="row-fluid">
@@ -35,8 +36,12 @@
                                     </a>{% endspaceless %}
                             {% endif %}
                             {% spaceless %}
-                                <a href="?venture={{ venture }}&export-all=csv" class="btn">
+                                <a href="?export-all=csv" class="btn">
                                     {% icon 'fugue-fugue-icon fugue-blue-document-excel-csv' %}&nbsp;Export all devices to CSV
+                                </a>{% endspaceless %}
+                            {% spaceless %}
+                                <a href="?invalidate-cache=true{% if venture %}&venture={{ venture }}{% endif %}" class="btn">
+                                    {% icon 'fugue-fugue-icon fugue-arrow-circle-double' %}&nbsp;Refresh cache
                                 </a>{% endspaceless %}
                         </div>
                         {% endif %}
@@ -46,87 +51,91 @@
         </div>
     </div>
 
-    {% if rows %}
-    <div class="row-fluid">
-        <div class="span12">
-            <table class="table table-striped table-bordered table-condensed device-list">
-                <thead>
-                    <th></th>
-                    <th>Device</th>
-                    <th>SN</th>
-                    <th>Barcode</th>
-                    <th>Deprecation date</th>
-                    <th>Quoted price</th>
-                    <th>Components</th>
-                </thead>
-                <tbody>
-                    {% for row in rows %}
-                    <tr>
-                        <td>{{ forloop.counter }}.</td>
-                        <td>
-                            {{ row.device|device_icon }}&nbsp;<a href="/ui/search/info/{{ row.device.id }}">{{ row.device.name }}</a>
-                        </td>
-                        <td>{{ row.device.sn }}</td>
-                        <td>{{ row.device.barcode }}</td>
-                        <td>
-                            {% if not row.device.deprecation_date %}
-                                N/A
-                            {% endif %}
-                            {{ row.device.deprecation_date|date:"Y-m-d" }}
-                        </td>
-                        <td>{% if row.deprecated %}
-                                Deprecated ({{ row.total|currency }})
-                            {% elif row.device.cached_price == None %}
-                                N/A
-                            {% else %}
-                                {{ row.device.cached_price|currency }}
-                            {% endif %}
-                        </td>
-                        <td>
-                        {% if row.components %}
-                            <table class="table reports-table-component">
-                                <thead>
-                                    <th>Name:</th>
-                                    <th>Count:</th>
-                                    <th>Unit price:</th>
-                                </thead>
-                                <tbody>
-                                {% for comp in row.components %}
-                                    <tr>
-                                        <td>
-                                            {% icon comp.icon %}&nbsp;{% if comp.model.name %}{{ comp.model.name }}{% else %}{{ comp.model }}{% endif %}
-                                            {% if comp.serial %}
-                                                (Serial: {{ comp.serial }})
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            {{ comp.count }}
-                                            {% if comp.disk_count %}
-                                                {{ comp.disk_count }}
-                                            {% endif %}
-                                        </td>
-                                        <td>{% if not comp.price %}
-                                                N/A{% if not comp.group %}&nbsp;{% icon "notebook--minus" %}
-                                            {% endif %}
-                                            {% else %}
-                                                {{ comp.price|currency }}
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                                </tbody>
-                            </table>
-                        {% else %}
-                            N/A
-                        {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
+    {% if task_in_progress %}
+        {% wait_for_results autoreload=1 reload_frequency=15 %}
     {% else %}
-        No result
+        {% if rows %}
+        <div class="row-fluid">
+            <div class="span12">
+                <table class="table table-striped table-bordered table-condensed device-list">
+                    <thead>
+                        <th></th>
+                        <th>Device</th>
+                        <th>SN</th>
+                        <th>Barcode</th>
+                        <th>Deprecation date</th>
+                        <th>Quoted price</th>
+                        <th>Components</th>
+                    </thead>
+                    <tbody>
+                        {% for row in rows %}
+                        <tr>
+                            <td>{{ forloop.counter }}.</td>
+                            <td>
+                                {% icon row.device.icon %}&nbsp;<a href="/ui/search/info/{{ row.device.id }}">{{ row.device.name }}</a>
+                            </td>
+                            <td>{{ row.device.sn }}</td>
+                            <td>{{ row.device.barcode }}</td>
+                            <td>
+                                {% if not row.device.deprecation_date %}
+                                    N/A
+                                {% endif %}
+                                {{ row.device.deprecation_date|date:"Y-m-d" }}
+                            </td>
+                            <td>{% if row.deprecated %}
+                                    Deprecated ({{ row.total|currency }})
+                                {% elif row.device.cached_price == None %}
+                                    N/A
+                                {% else %}
+                                    {{ row.device.cached_price|currency }}
+                                {% endif %}
+                            </td>
+                            <td>
+                            {% if row.components %}
+                                <table class="table reports-table-component">
+                                    <thead>
+                                        <th>Name:</th>
+                                        <th>Count:</th>
+                                        <th>Unit price:</th>
+                                    </thead>
+                                    <tbody>
+                                    {% for comp in row.components %}
+                                        <tr>
+                                            <td>
+                                                {% icon comp.icon %}&nbsp;{% if comp.model.name %}{{ comp.model.name }}{% else %}{{ comp.model }}{% endif %}
+                                                {% if comp.serial %}
+                                                    (Serial: {{ comp.serial }})
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {{ comp.count }}
+                                                {% if comp.disk_count %}
+                                                    {{ comp.disk_count }}
+                                                {% endif %}
+                                            </td>
+                                            <td>{% if not comp.price %}
+                                                    N/A{% if not comp.group %}&nbsp;{% icon "notebook--minus" %}
+                                                {% endif %}
+                                                {% else %}
+                                                    {{ comp.price|currency }}
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            {% else %}
+                                N/A
+                            {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% else %}
+            No result
+        {% endif %}
     {% endif %}
 {% endblock %}
