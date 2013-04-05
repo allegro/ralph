@@ -42,6 +42,11 @@ class Command(BaseCommand):
             how_many = 1000
         if options['remote']:
             queue = django_rq.get_queue()
-            queue.enqueue(dummy_horde, how_many=how_many, interactive=False)
+            queue.enqueue_call(
+                func=dummy_horde,
+                kwargs=dict(how_many=how_many, interactive=False),
+                timeout=60,
+                result_ttl=0,
+            )
         else:
             dummy_horde(how_many=how_many, interactive=True)

@@ -8,12 +8,10 @@ import json
 import random
 
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.http import HttpRequest
 from django.test import TestCase
 from tastypie.bundle import Bundle
-from tastypie.models import ApiKey
 
 from ralph.business.models import Venture
 from ralph.cmdb import models as chdb
