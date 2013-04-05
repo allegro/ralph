@@ -24,7 +24,6 @@ from ralph.ui.views.common import (
     Purchase,
     Components,
     History,
-    Discover,
     BaseMixin,
     Base,
     Software,

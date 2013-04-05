@@ -39,7 +39,6 @@ from ralph.ui.views.common import (
     BaseMixin,
     Components,
     Costs,
-    Discover,
     History,
     Info,
     Prices,
