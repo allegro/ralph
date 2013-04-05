@@ -320,12 +320,10 @@ class DeviceWithPricingResource(DeviceResource):
             price = detail.get('price') or 0
             model_type = None
             model_name = str(model)
-            try:
-                if isinstance(model, ComponentModel):
-                    model_type = ComponentType.from_id(
-                        model.type
-                    )
-            except ValueError:
+            if hasattr(model, 'type'):
+                try:
+                    model_type = ComponentType.from_id(model.type)
+                except ValueError:
                     pass
             if model_type and model_type == ComponentType.software:
                 model = ComponentType.software.name,
@@ -366,7 +364,7 @@ class DeviceWithPricingResource(DeviceResource):
                 day__range=(start_date, end_date)
             ).order_by('-day')
         else:
-            last_month = datetime.date.today() - datetime.timedelta(days=31)
+            last_month = datetime.date.today() - datetime.timedelta(days=30)
             splunk = device.splunkusage_set.filter(
                     day__gte=last_month
             ).order_by('-day')

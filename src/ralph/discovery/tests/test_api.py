@@ -25,10 +25,7 @@ from ralph.ui.tests.util import create_device, create_model
 class DeviceWithPricingResourceTest(ResourceTestCase):
     def setUp(self):
         super(DeviceWithPricingResourceTest, self).setUp()
-
         self.resource = 'devicewithpricing'
-        self.username = 'daniel'
-        self.password = 'pass'
         self.user = User.objects.create_user(
             'ralph',
             'ralph@ralph.local',
@@ -56,7 +53,7 @@ class DeviceWithPricingResourceTest(ResourceTestCase):
             'family': 'Intsels',
             'price': 120,
             'count': 2,
-            'speed': 1200
+            'speed': 1200,
         }
         srv1_memory = {
             'priority': 0,
@@ -79,7 +76,7 @@ class DeviceWithPricingResourceTest(ResourceTestCase):
             device=srv1,
             cpu=srv1_cpu,
             memory=srv1_memory,
-            storage=srv1_storage
+            storage=srv1_storage,
         )
         self.device.save()
 
@@ -107,19 +104,10 @@ class DeviceWithPricingResourceTest(ResourceTestCase):
         res.size = 10
         res.save()
 
-        self.detail_url = '/api/v9/{0}/{1}/'.format(
-            self.resource,
-            self.device.pk
-        )
-
-    def get_credentials(self):
-        return self.create_basic(username=self.username, password=self.password)
-
     def test_get_list_json(self):
         resp = self.api_client.get(
             '/api/v0.9/{0}/'.format(self.resource),
             format='json',
-            authentication=self.get_credentials()
         )
         self.assertValidJSONResponse(resp)
         device = self.deserialize(resp)['objects'][0]

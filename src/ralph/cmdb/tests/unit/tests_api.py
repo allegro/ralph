@@ -35,32 +35,24 @@ from ralph.cmdb.models_ci import (
     CIType,
     CIRelation,
 )
+from ralph.ui.tests.global_utils import create_user
 
 CURRENT_DIR = settings.CURRENT_DIR
 
 
 class CMDBApiTest(TestCase):
     def setUp(self):
-        self.create_user()
+        self.user = create_user('api_user', 'test@mail.local', 'password')
         self.layers = CILayer.objects.all()
         self.types = CIType.objects.all()
         self.create_owners()
         self.create_cis()
         self.create_ownerships()
         self.create_relations()
-
-    def create_user(self):
-        self.user = User.objects.create_user(
-            'api_user',
-            'test@mail.local',
-            'password',
-        )
-        self.user.save()
-        self.api_key = ApiKey.objects.get(user=self.user)
         self.data = {
             'format': 'json',
             'username': self.user.username,
-            'api_key': self.api_key.key
+            'api_key': self.user.api_key.key
         }
         cache.delete("api_user_accesses")
 
@@ -306,8 +298,12 @@ class CMDBApiTest(TestCase):
 
 class CIApiTest(TestCase):
     def setUp(self):
-        self.create_user()
-
+        self.user = create_user(
+            'api_user',
+            'test@mail.local',
+            'password',
+            is_superuser=True
+        )
         self.puppet_cv = "v%s" % random.randrange(0, 1000)
         self.post_data_puppet = {
             'configuration_version': self.puppet_cv,
@@ -348,21 +344,11 @@ class CIApiTest(TestCase):
             'time': '2012-11-15 12:00:00',
         }
 
-    def create_user(self):
-        self.user = User.objects.create_user(
-            'api_user',
-            'test@mail.local',
-            'password',
-        )
-        self.user.is_superuser = True
-        self.user.save()
-        self.api_key = ApiKey.objects.get(user=self.user)
-
     def test_ci_change_puppet_registration(self):
         response = self.client.post(
             '/api/v0.9/cichangepuppet/?username={}&api_key={}'.format(
                 self.user.username,
-                self.api_key.key,
+                self.user.api_key.key,
             ),
             json.dumps(self.post_data_puppet),
             content_type='application/json'
@@ -386,7 +372,7 @@ class CIApiTest(TestCase):
         response = self.client.post(
             '/api/v0.9/cichangegit/?username={}&api_key={}'.format(
                 self.user.username,
-                self.api_key.key,
+                self.user.api_key.key,
             ),
             json.dumps(self.post_data_git),
             content_type='application/json'
