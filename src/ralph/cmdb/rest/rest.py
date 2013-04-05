@@ -12,19 +12,18 @@ from ralph.cmdb.integration.puppet import PuppetAgentsImporter
 from ralph.discovery.tasks import run_chain
 from ralph.util.views import jsonify
 
+
 @csrf_exempt
 @jsonify
 def notify_puppet_agent(request):
-    contents=request.body
+    contents = request.body
     x = PuppetAgentsImporter()
     x.import_contents(contents)
-    return {'ok' : True}
+    return {'ok': True}
+
 
 @csrf_exempt
 @jsonify
 def commit_hook(request):
-    context={'context': ''}
-    #deferred run
-    run = run_chain.delay
-    run(context, 'cmdb_git')
-    return dict(status='Queued.')
+    run_chain({'queue': 'cmdb_git'}, 'cmdb_git')
+    return {'status': 'Queued.'}

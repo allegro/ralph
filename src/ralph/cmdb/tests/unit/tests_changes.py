@@ -29,9 +29,9 @@ from ralph.cmdb.models_changes import PuppetLog
 
 CURRENT_DIR = settings.CURRENT_DIR
 _PATCHED_OP_TEMPLATE = 'test'
-_PATCHED_OP_START_DATE = '2012-01-02'
+_PATCHED_OP_START_DATE = datetime.date(2012, 1, 2)
 _PATCHED_TICKETS_ENABLE = True
-_PATCHED_USE_CELERY = False
+_PATCHED_ENQUEUE_REGISTRATION = False
 _PATCHED_TICKETS_ENABLE_NO = False
 
 
@@ -82,7 +82,7 @@ class OPRegisterTest(TestCase):
     @patch('ralph.cmdb.models_signals.OP_START_DATE', _PATCHED_OP_START_DATE)
     @patch('ralph.cmdb.models_signals.OP_TICKETS_ENABLE',
            _PATCHED_TICKETS_ENABLE)
-    @patch('ralph.cmdb.models_common.USE_CELERY', _PATCHED_USE_CELERY)
+    @patch('ralph.cmdb.models_common.ENQUEUE_REGISTRATION', _PATCHED_ENQUEUE_REGISTRATION)
     def test_create_issues(self):
         # if change is registered after date of start, ticket is registered
         c = CIChangeGit()
@@ -117,7 +117,7 @@ class OPRegisterTest(TestCase):
     @patch('ralph.cmdb.models_signals.OP_START_DATE', _PATCHED_OP_START_DATE)
     @patch('ralph.cmdb.models_signals.OP_TICKETS_ENABLE',
            _PATCHED_TICKETS_ENABLE_NO)
-    @patch('ralph.cmdb.models_common.USE_CELERY', _PATCHED_USE_CELERY)
+    @patch('ralph.cmdb.models_common.ENQUEUE_REGISTRATION', _PATCHED_ENQUEUE_REGISTRATION)
     def test_create_ci_generate_change(self):
         # TICKETS REGISTRATION IN THIS TEST IS DISABLED.
         # first case - automatic change
@@ -162,10 +162,11 @@ class OPRegisterTest(TestCase):
     @patch('ralph.cmdb.models_signals.OP_START_DATE', _PATCHED_OP_START_DATE)
     @patch('ralph.cmdb.models_signals.OP_TICKETS_ENABLE',
            _PATCHED_TICKETS_ENABLE_NO)
-    @patch('ralph.cmdb.models_common.USE_CELERY', _PATCHED_USE_CELERY)
+    @patch('ralph.cmdb.models_common.ENQUEUE_REGISTRATION',
+           _PATCHED_ENQUEUE_REGISTRATION)
     def test_dont_create_issues(self):
         # The date is ok, but tickets enabled is set to no.
-        # Dont register ticket.
+        # Don't register tickets.
         c = CIChangeGit()
         c.time = datetime.datetime(year=2012, month=1, day=2)
         c.changeset = 'testchangeset'

@@ -9,6 +9,7 @@ from django.db import models as db
 from django.utils.translation import ugettext_lazy as _
 from lck.django.choices import Choices
 
+
 class IntegrationType(Choices):
     _ = Choices.Choice
 
@@ -25,3 +26,6 @@ class RoleIntegration(db.Model):
     name = db.CharField(verbose_name=_("name"), max_length=64)
     value = db.TextField(verbose_name=_("value"), blank=True, default="")
 
+
+# Register plugins
+from ralph.integration import zabbix   # noqa
