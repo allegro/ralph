@@ -343,6 +343,7 @@ class CIApiTest(TestCase):
             'old_value': self.cmdb_old_value,
             'time': '2012-11-15 12:00:00',
         }
+        cache.clear()
 
     def test_ci_change_puppet_registration(self):
         response = self.client.post(
