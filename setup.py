@@ -59,6 +59,7 @@ setup (
         'requests==0.14.2',
         'RestKit==4.2.0',
         'rq==0.3.7',
+        'rq-scheduler==0.3.6',
         'setproctitle==1.1.6',
         'South==0.7.6',
         'splunk-sdk==0.8.0',

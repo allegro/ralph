@@ -306,7 +306,7 @@ ISSUETRACKERS = {
         'PROBLEMS_FIELD_NAME': '',
         'CMDB_PROJECT': '',
         'CMDB_VIEWCHANGE_LINK': 'http://url/%s',
-        'USE_CELERY': True,   # FIXME: rename this attribute?
+        'ENQUEUE_REGISTRATION': True,
         'OPA': {
             'BOWNER_FIELD_NAME': '',
             'TOWNER_FIELD_NAME': '',

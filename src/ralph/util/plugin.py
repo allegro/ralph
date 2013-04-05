@@ -24,7 +24,6 @@ def register(func=None, chain="default", requires=None, priority=None):
     """
     A decorator that registers a function as plugin.
     """
-
     if func is None:
         def wrapper(f):
             return register(func=f, chain=chain,
@@ -33,17 +32,22 @@ def register(func=None, chain="default", requires=None, priority=None):
     if not requires:
         requires = set()
     BY_NAME.setdefault(chain, {})[func.func_name] = func
-    BY_REQUIREMENTS.setdefault(chain, {}).setdefault(frozenset(requires),
-        []).append(func.func_name)
+    BY_REQUIREMENTS.setdefault(
+        chain,
+        {},
+    ).setdefault(
+        frozenset(requires),
+        [],
+    ).append(func.func_name)
     PRIORITIES.setdefault(chain, {})[func.func_name] = priority or 100
     return func
+
 
 def next(chain, done_reqs):
     """
     Return a list of plugins that can be run given the list of plugins
     that has already been ran.
     """
-
     ret = set()
     if chain not in BY_REQUIREMENTS:
         return ret
@@ -53,29 +57,42 @@ def next(chain, done_reqs):
             ret |= set(plugins)
     return ret
 
+
 def highest_priority(chain, plugins):
+    """
+    Selects a plugin from given `plugins` on a specified `chain` with the
+    highest priority.
+    """
     ret = max(plugins, key=lambda p: PRIORITIES.get(chain, {}).get(p, 100))
     return ret
 
-def prioritize(chain, reqs):
-    return sorted(reqs, key=lambda p: -PRIORITIES.get(chain, {}).get(p, 100))
+
+def prioritize(chain, plugins):
+    """
+    Returns the `plugins` sequence sorted in descending priority.
+    """
+    return sorted(
+        plugins,
+        key=lambda p: -PRIORITIES.get(chain, {}).get(p, 100),
+    )
+
 
 def run(chain, func_name, **kwargs):
     """
-    Run a plugin by a name.
+    Run a single plugin by a name.
     """
-
     return BY_NAME[chain][func_name](**kwargs)
 
 
 def purge(plugin_set):
-    from ralph.util import plugin
-    for ck, cv in plugin.BY_REQUIREMENTS.iteritems():
+    """Remove all plugins from the plugin subsystem which are not related by
+    means of requirements to the given `plugin_set`."""
+    for ck, cv in BY_REQUIREMENTS.iteritems():
         for pk, pv in cv.iteritems():
             for p in pv:
                 if p in plugin_set:
                     plugin_set |= pk
-    for ck, cv in plugin.BY_REQUIREMENTS.iteritems():
+    for ck, cv in BY_REQUIREMENTS.iteritems():
         for pk, pv in cv.iteritems():
             to_delete = set()
             for p in pv:

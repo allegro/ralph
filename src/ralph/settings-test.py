@@ -71,7 +71,7 @@ ISSUETRACKERS = {
         'PROBLEMS_FIELD_NAME': '',
         'CMDB_PROJECT': '',
         'CMDB_VIEWCHANGE_LINK': 'http://url/%s',
-        'USE_CELERY': True,
+        'ENQUEUE_REGISTRATION': True,
         'OPA': {
                 'RSS_URL' : '',
                 'BOWNER_FIELD_NAME': '',
