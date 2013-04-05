@@ -1727,7 +1727,9 @@ class Graphs(BaseCMDBView):
             if len(search_tree) > MAX_RELATIONS_COUNT:
                 # in case of large relations count, skip generating json data
                 # for chart purposes
-                self.graph_data = simplejson.dumps({'overflow': len(st)})
+                self.graph_data = simplejson.dumps(
+                    {'overflow': len(search_tree)}
+                )
             else:
                 ci_names = dict(CI.objects.values_list('id', 'name'))
                 relations = [dict(
