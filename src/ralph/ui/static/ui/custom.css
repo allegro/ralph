@@ -178,6 +178,12 @@ tr.table-highlight td {
     text-align: right;
 }
 
+img.waiting
+{
+    display: block;
+    margin: 30px auto;
+}
+
 .cmdb_report_filter .datepicker {
     width: 55px;
 }
