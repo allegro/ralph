@@ -33,7 +33,7 @@ class Command(BaseCommand):
     )
 
     def handle(self, *args, **options):
-        interactive = not bool(options['remote'])
+        interactive = not options['remote']
         options['queue'] = 'zabbix'
         role_ids = VentureRole.objects.filter(
             roleintegration__type=IntegrationType.zabbix

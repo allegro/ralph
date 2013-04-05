@@ -47,7 +47,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         specified_option = False
-        interactive = not bool(options['remote'])
+        interactive = not options['remote']
         for chain_name in get_cmdb_plugins():
             if not options.get(chain_name):
                 continue

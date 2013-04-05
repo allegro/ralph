@@ -37,7 +37,7 @@ class Command(BaseCommand):
     requires_model_validation = True
 
     def handle(self, *args, **options):
-        interactive = not bool(options['remote'])
+        interactive = not options['remote']
         run_chain(
             options, 'splunk', interactive=interactive,
         )
