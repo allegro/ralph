@@ -334,10 +334,19 @@ API_THROTTLING = {
     'timeframe': 3600,
     'expiration': None,
 }
-
+RQ_QUEUE_LIST = ('reports', 'email', 'cmdb_git', 'cmdb_jira', 'cmdb_jira_int',
+                 'cmdb_zabbix', 'cmdb_assets')
+RQ_QUEUES = {
+    'default': {
+        'HOST': 'localhost',
+        'PORT': 6379,
+        'DB': 0,
+    },
+}
+for queue in RQ_QUEUE_LIST:
+    RQ_QUEUES[queue] = dict(RQ_QUEUES['default'])
 AUTOCI = True
 AUTOCI_SKIP_MSG = 'AUTOCI is disabled'
-
 # </template>
 
 #

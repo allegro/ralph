@@ -18,7 +18,7 @@ from tastypie.throttle import CacheThrottle
 from ralph.deployment.models import Deployment
 
 THROTTLE_AT = settings.API_THROTTLING['throttle_at']
-TIMEFREME = settings.API_THROTTLING['timeframe']
+TIMEFRAME = settings.API_THROTTLING['timeframe']
 EXPIRATION = settings.API_THROTTLING['expiration']
 
 class DeploymentResource(MResource):
@@ -52,5 +52,5 @@ class DeploymentResource(MResource):
         excludes = ('save_priorities', 'max_save_priority',)
         cache = SimpleCache()
         limit = 10
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
                                 expiration=EXPIRATION)
