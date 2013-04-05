@@ -10,13 +10,9 @@ from django.views.decorators.csrf import csrf_exempt
 from ralph.util.views import jsonify
 from django.contrib import auth
 from django.http import HttpResponseRedirect
-from django.http import HttpResponse
-from ralph.discovery import tasks
 
 from ralph.business.models import Venture
 from ralph.discovery.models_device import Device
-from ralph.discovery.models_network import Network
-from ralph.account.models import Perm
 
 
 @csrf_exempt
@@ -56,21 +52,3 @@ def unlock_field(request):
 def logout(request):
     auth.logout(request)
     return HttpResponseRedirect('/')
-
-
-def discover(request):
-    has_perm = request.user.get_profile().has_perm
-    if not has_perm(Perm.run_discovery):
-        raise Http404('Forbidden')
-    ip = request.POST.get('ip', '')
-    try:
-        Network.from_ip(ip)
-    except (IndexError, ValueError):
-        raise Http404('No such address.')
-    def data():
-        yield 'Running discovery for %s\n' % ip
-        for chunk in tasks.discover_single_synchro(ip):
-            yield chunk
-    response = HttpResponse(''.join(data()), content_type='text/plain')
-    response['Cache-Control'] = 'no-cache'
-    return response

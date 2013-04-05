@@ -18,8 +18,8 @@ from django.core.management.base import BaseCommand
 from ipaddr import IPNetwork
 
 from ralph.discovery.models import Network
-from ralph.discovery.tasks import discover_single, discover_network, \
-    discover_all
+from ralph.discovery.tasks import (run_next_plugin, discover_network,
+                                   discover_all)
 from ralph.util import network, plugin
 
 
@@ -60,27 +60,31 @@ class Command(BaseCommand):
             dest='queues',
             default=None,
             help='Run only the discovery on networks on the specified '
-                 'Celery queues.'),
+                 'queues.'),
     )
 
     requires_model_validation = False
 
     def handle(self, *args, **options):
         """Dispatches the request to either direct, interactive execution
-        or to asynchronous processing using Rabbit."""
+        or to asynchronous processing using the queue."""
+        interactive = not options['remote']
         discover = OptionBag()
-        if options['remote']:
-            discover.all = discover_all.delay
-            discover.network = discover_network.delay
-            discover.single = discover_single.delay
-        else:
-            if options['plugins']:
-                plugin.purge(set(options['plugins'].split(',')))
-            discover.all = partial(discover_all, interactive=True)
-            discover.network = partial(discover_network, interactive=True)
-            discover.single = partial(
-                discover_single, interactive=True, clear_down=False,
-            )
+        discover.all = partial(discover_all, interactive=interactive)
+        discover.network = partial(discover_network, interactive=interactive)
+        discover.single = partial(
+            run_next_plugin,
+            chains=('discovery', 'postprocess'),
+            interactive=interactive,
+        )
+        if options['plugins']:
+            if not interactive:
+                print(
+                    'Limiting plugins not supported on remote execution.',
+                    file=sys.stderr,
+                )
+                sys.exit(2)
+            plugin.purge(set(options['plugins'].split(',')))
         try:
             self._handle(*args, discover=discover, **options)
         except ImproperlyConfigured, e:

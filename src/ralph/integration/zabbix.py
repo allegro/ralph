@@ -7,46 +7,34 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from django.conf import settings
-from celery.task import task
 
 from ralph.util.zabbix import Zabbix
-from ralph.integration.models import IntegrationType
-from ralph.discovery.models import IPAddress
-from ralph.business.models import VentureRole
+from ralph.discovery.models import Device, IPAddress
 from ralph.util import plugin
 
 
 class Error(Exception):
     pass
 
+
 class UpdateError(Error):
     pass
 
 
-def _calculate_zabbix_templates(role):
-    values = role.roleintegration_set.filter(
-        type=IntegrationType.zabbix.id
-    ).filter(
-        name='template'
-    ).values_list('value')
+def _calculate_zabbix_templates(role_id):
+    from ralph.integration.models import RoleIntegration, IntegrationType
+    values = RoleIntegration.objects.filter(
+        venture_role__id=role_id,
+        type=IntegrationType.zabbix,
+        name='template',
+    ).values_list('value', flat=True)
     if not values:
         raise UpdateError("No Zabbix integration for this role.")
-    templates = [value for value, in values if value]
-    return templates
+    return filter(None, values)
 
 
-@task(ignore_result=True, queue='zabbix')
-def zabbix_update_task(hostname, ip, templates):
-    if not settings.ZABBIX_URL:
-        return
-    zabbix = Zabbix(settings.ZABBIX_URL, settings.ZABBIX_USER,
-                    settings.ZABBIX_PASSWORD)
-    zabbix.set_host_templates(hostname, ip, templates,
-            group_name=settings.ZABBIX_DEFAULT_GROUP)
-
-
-def update_zabbix_templates(device, templates=None, remote=False):
-    hostname = device.name
+def update_zabbix_templates(device, templates=None):
+    hostname = device.name   # FIXME: is this deliberate?
     role = device.venture_role
     try:
         ip = device.ipaddress_set.get(hostname=hostname)
@@ -54,24 +42,25 @@ def update_zabbix_templates(device, templates=None, remote=False):
         return
     if templates is None:
         templates = _calculate_zabbix_templates(role)
-    if remote:
-        task = zabbix_update_task.delay
-    else:
-        task = zabbix_update_task
-    task(hostname, str(ip.address), templates)
-
-
-def update_role_zabbix_templates(role, remote=False):
-    templates = _calculate_zabbix_templates(role)
-    for device in role.device_set.all():
-        update_zabbix_templates(device, templates, remote=remote)
+    zabbix = Zabbix(settings.ZABBIX_URL, settings.ZABBIX_USER,
+                    settings.ZABBIX_PASSWORD)
+    zabbix.set_host_templates(hostname, str(ip.address), templates,
+                              group_name=settings.ZABBIX_DEFAULT_GROUP)
 
 
 @plugin.register(chain='zabbix')
-def zabbix(remote, **args):
-    for role in VentureRole.objects.filter(
-            roleintegration__type=IntegrationType.zabbix.id
-        ):
-        update_role_zabbix_templates(role, remote)
-    return True, 'done.', {}
-
+def update_role_zabbix_templates(**kwargs):
+    role_id = kwargs['uid']
+    if not all((
+        settings.ZABBIX_URL,
+        settings.ZABBIX_USER,
+        settings.ZABBIX_PASSWORD,
+    )):
+        return False, 'Zabbix not configured in settings.', {}
+    try:
+        templates = _calculate_zabbix_templates(role_id)
+        for device in Device.objects.filter(venture_role__id=role_id):
+            update_zabbix_templates(device, templates)
+        return True, 'done.', kwargs
+    except Error:
+        return False, 'failed.', kwargs
