@@ -39,7 +39,7 @@ def get_hypervisor(name, hypervisors):
     if hypervisor is None:
         try:
             hypervisor = Device.objects.get(name__contains=name)
-        except MultipleObjectsReturned:
+        except (MultipleObjectsReturned, Device.DoesNotExist):
             try:
                 hypervisor = Device.objects.get(name=name)
             except Device.DoesNotExist:
@@ -59,9 +59,10 @@ def save_device(data, hypervisors):
         family='Virtualization',
         priority=SAVE_PRIORITY,
     )
+    dev.name = data['host']
     if hypervisor:
         dev.parent = hypervisor
-        dev.save(priority=SAVE_PRIORITY)
+    dev.save(priority=SAVE_PRIORITY)
     if data['ip']:
         ip_address, created = IPAddress.concurrent_get_or_create(
             address=data['ip'],
