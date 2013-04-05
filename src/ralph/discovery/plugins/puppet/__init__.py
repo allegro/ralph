@@ -77,7 +77,7 @@ class PuppetDBProvider(PuppetProvider):
             if (e.args[0] in (1205, 1213)
                     and 'try restarting transaction' in e.args[1]):
                 time.sleep(random.choice(range(10)) + 1)
-                raise plugin.Restart(unicode(e), kwargs)
+                raise plugin.Restart(unicode(e))
             raise
         return facts
 

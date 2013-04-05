@@ -23,25 +23,55 @@
                 <h4>Filtering by the expiration date</h4>
                 <p>Use this report when you want to filter devices list by date range of Support, Warranty or Deprecation.</p>
                 <h5>Support</h5>
-                <form class="form" method="get">
-                    {% for f in form_support_range %}
-                        {{ f }}
-                    {% endfor %}
-                    <button class="btn pull-right"><i class="fugue-icon fugue-calculator"></i>&nbsp;Show</button>
+                <form class="form-inline" method="get">
+                    <div class="span12">
+                        {% for f in form_support_range %}
+                            <div class="span4 control-group {% if f.errors %}error{% endif %}">
+                                <label class="control-label">{{ f.label }}</label>
+                                {{ f }}
+                                {% for e in f.errors %}
+                                    <div class="help-block">{{ e }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                        <div class="span4">
+                            <button class="btn pull-right"><i class="fugue-icon fugue-calculator"></i>&nbsp;Show</button>
+                        </div>
+                    </div>
                 </form>
                 <h5>Warranty</h5>
-                <form class="form" method="get">
-                    {% for f in form_warranty_range %}
-                        {{ f }}
-                    {% endfor %}
-                    <button class="btn pull-right"><i class="fugue-icon fugue-calculator"></i>&nbsp;Show</button>
+                <form class="form-inline" method="get">
+                    <div class="span12">
+                        {% for f in form_warranty_range %}
+                            <div class="span4 control-group {% if f.errors %}error{% endif %}">
+                                <label class="control-label">{{ f.label }}</label>
+                                {{ f }}
+                                {% for e in f.errors %}
+                                    <div class="help-block">{{ e }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                        <div class="span4">
+                            <button class="btn pull-right"><i class="fugue-icon fugue-calculator"></i>&nbsp;Show</button>
+                        </div>
+                    </div>
                 </form>
                 <h5>Deprecation</h5>
-                <form class="form" method="get">
-                    {% for f in form_deprecation_range %}
-                        {{ f }}
-                    {% endfor %}
-                    <button class="btn pull-right"><i class="fugue-icon fugue-calculator"></i>&nbsp;Show</button>
+                <form class="form-inline" method="get">
+                    <div class="span12">
+                        {% for f in form_deprecation_range %}
+                            <div class="span4 control-group {% if f.errors %}error{% endif %}">
+                                <label class="control-label">{{ f.label }}</label>
+                                {{ f }}
+                                {% for e in f.errors %}
+                                    <div class="help-block">{{ e }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                        <div class="span4">
+                            <button class="btn pull-right"><i class="fugue-icon fugue-calculator"></i>&nbsp;Show</button>
+                        </div>
+                    </div>
                 </form>
             </div>
             <div class="span6">
