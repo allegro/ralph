@@ -461,10 +461,6 @@ class SearchPurchase(Search, Purchase):
     pass
 
 
-class SearchDiscover(Search, Discover):
-    pass
-
-
 class SearchReports(Search, Reports):
     pass
 
