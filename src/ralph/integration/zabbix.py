@@ -28,7 +28,7 @@ def _calculate_zabbix_templates(role_id):
         type=IntegrationType.zabbix,
         name='template',
     ).values_list('value', flat=True)
-    if not values.exists():
+    if not values:
         raise UpdateError("No Zabbix integration for this role.")
     return filter(None, values)
 
@@ -52,9 +52,9 @@ def update_zabbix_templates(device, templates=None):
 def update_role_zabbix_templates(**kwargs):
     role_id = kwargs['uid']
     if not all((
-            settings.ZABBIX_URL,
-            settings.ZABBIX_USER,
-            settings.ZABBIX_PASSWORD,
+        settings.ZABBIX_URL,
+        settings.ZABBIX_USER,
+        settings.ZABBIX_PASSWORD,
     )):
         return False, 'Zabbix not configured in settings.', {}
     try:

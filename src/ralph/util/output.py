@@ -72,8 +72,10 @@ def get(interactive, err=False):
             logging_buffer[:] = ()
 
     def actual_stdout(*args, **kwargs):
-        if 'verbose' in kwargs:
+        try:
             del kwargs['verbose']
+        except KeyError:
+            pass
         print(*args, file=sys.stdout if not err else sys.stderr, **kwargs)
         sys.stdout.flush()
         sys.stderr.flush()

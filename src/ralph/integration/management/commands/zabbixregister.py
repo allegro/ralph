@@ -38,7 +38,7 @@ class Command(BaseCommand):
         role_ids = VentureRole.objects.filter(
             roleintegration__type=IntegrationType.zabbix
         ).exclude(device=None).values_list('id', flat=True)
-        if not role_ids.exists():
+        if not role_ids:
             print('No venture roles configured for Zabbix integration.',
                   file=sys.stderr)
             sys.exit(1)
