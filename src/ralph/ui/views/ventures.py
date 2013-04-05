@@ -214,10 +214,6 @@ class VenturesPurchase(Ventures, Purchase):
     pass
 
 
-class VenturesDiscover(Ventures, Discover):
-    pass
-
-
 class VenturesReports(Ventures, Reports):
     pass
 
