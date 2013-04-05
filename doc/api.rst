@@ -321,7 +321,7 @@ CIOWNERS
           {
               "cache_version": 0,
               "created": "2012-09-22T16:07:15",
-              "email": john.ralph@ralph.local,
+              "email": "john.ralph@ralph.local",
               "first_name": "John",
               "id": "1",
               "last_name": "Ralph",
