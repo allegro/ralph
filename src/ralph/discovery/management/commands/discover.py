@@ -68,7 +68,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         """Dispatches the request to either direct, interactive execution
         or to asynchronous processing using the queue."""
-        interactive = not bool(options['remote'])
+        interactive = not options['remote']
         discover = OptionBag()
         discover.all = partial(discover_all, interactive=interactive)
         discover.network = partial(discover_network, interactive=interactive)
