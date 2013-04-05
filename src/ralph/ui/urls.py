@@ -10,7 +10,7 @@ from django.views.generic.simple import redirect_to
 
 from ralph.cmdb.views import Search as SearchCmdb
 
-from ralph.ui.views import typeahead_roles, unlock_field, logout, discover
+from ralph.ui.views import typeahead_roles, unlock_field, logout
 from ralph.ui.views.common import Home, BulkEdit, ServerMove
 from ralph.ui.views.ventures import (
     ReportVenturesDeviceList,
