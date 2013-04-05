@@ -15,7 +15,7 @@ from ralph.discovery.models import ReadOnlyDevice, Network, IPAddress
 from ralph.ui.forms import NetworksFilterForm
 from ralph.ui.views.common import (BaseMixin, DeviceDetailView, Info,
                                    Prices, Addresses, Costs, Purchase,
-                                   Components, History, Discover, Software)
+                                   Components, History, Software)
 from ralph.ui.views.devices import BaseDeviceList
 from ralph.ui.views.reports import Reports, ReportDeviceList
 from ralph.util import presentation
@@ -178,14 +178,9 @@ class NetworksPurchase(Networks, Purchase):
     pass
 
 
-class NetworksDiscover(Networks, Discover):
-    pass
-
-
 class NetworksReports(Networks, Reports):
     pass
 
 
 class ReportNetworksDeviceList(ReportDeviceList, NetworksDeviceList):
     pass
-
