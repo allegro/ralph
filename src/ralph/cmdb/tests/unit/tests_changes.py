@@ -82,7 +82,7 @@ class OPRegisterTest(TestCase):
     @patch('ralph.cmdb.models_signals.OP_START_DATE', _PATCHED_OP_START_DATE)
     @patch('ralph.cmdb.models_signals.OP_TICKETS_ENABLE',
            _PATCHED_TICKETS_ENABLE)
-    @patch('ralph.cmdb.models_common.ENQUEUE_REGISTRATION', _PATCHED_ENQUEUE_REGISTRATION)
+    @patch('ralph.cmdb.models_signals.ENQUEUE_REGISTRATION', _PATCHED_ENQUEUE_REGISTRATION)
     def test_create_issues(self):
         # if change is registered after date of start, ticket is registered
         c = CIChangeGit()
@@ -117,7 +117,7 @@ class OPRegisterTest(TestCase):
     @patch('ralph.cmdb.models_signals.OP_START_DATE', _PATCHED_OP_START_DATE)
     @patch('ralph.cmdb.models_signals.OP_TICKETS_ENABLE',
            _PATCHED_TICKETS_ENABLE_NO)
-    @patch('ralph.cmdb.models_common.ENQUEUE_REGISTRATION', _PATCHED_ENQUEUE_REGISTRATION)
+    @patch('ralph.cmdb.models_signals.ENQUEUE_REGISTRATION', _PATCHED_ENQUEUE_REGISTRATION)
     def test_create_ci_generate_change(self):
         # TICKETS REGISTRATION IN THIS TEST IS DISABLED.
         # first case - automatic change
@@ -162,7 +162,7 @@ class OPRegisterTest(TestCase):
     @patch('ralph.cmdb.models_signals.OP_START_DATE', _PATCHED_OP_START_DATE)
     @patch('ralph.cmdb.models_signals.OP_TICKETS_ENABLE',
            _PATCHED_TICKETS_ENABLE_NO)
-    @patch('ralph.cmdb.models_common.ENQUEUE_REGISTRATION',
+    @patch('ralph.cmdb.models_signals.ENQUEUE_REGISTRATION',
            _PATCHED_ENQUEUE_REGISTRATION)
     def test_dont_create_issues(self):
         # The date is ok, but tickets enabled is set to no.

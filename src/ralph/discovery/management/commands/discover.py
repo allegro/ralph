@@ -18,8 +18,8 @@ from django.core.management.base import BaseCommand
 from ipaddr import IPNetwork
 
 from ralph.discovery.models import Network
-from ralph.discovery.tasks import run_next_plugin, discover_network, \
-    discover_all
+from ralph.discovery.tasks import (run_next_plugin, discover_network,
+                                   discover_all)
 from ralph.util import network, plugin
 
 
