@@ -41,7 +41,7 @@ from ralph.discovery.models_history import DiscoveryWarning
 
 
 THROTTLE_AT = settings.API_THROTTLING['throttle_at']
-TIMEFREME = settings.API_THROTTLING['timeframe']
+TIMEFRAME = settings.API_THROTTLING['timeframe']
 EXPIRATION = settings.API_THROTTLING['expiration']
 SAVE_PRIORITY = 51
 
@@ -351,5 +351,5 @@ class WindowsDeviceResource(MResource):
         excludes = ('save_priorities', 'max_save_priority', 'dns_info',
                     'snmp_name')
         cache = SimpleCache()
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFREME,
+        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
                                  expiration=EXPIRATION)
