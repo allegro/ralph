@@ -102,8 +102,7 @@ def run_next_plugin(context, chains, requirements=None, interactive=False,
     if done_requirements is None:
         done_requirements = set()
     run = _select_run_method(context, interactive, run_plugin, after)
-    for index in xrange(len(chains)):
-        chain = chains[index]
+    for index, chain in enumerate(chains):
         to_run = plugin.next(chain, requirements) - done_requirements
         if to_run:
             plugin_name = plugin.highest_priority(chain, to_run)
