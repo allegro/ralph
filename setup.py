@@ -36,7 +36,7 @@ setup (
         'django-bob==1.5.6',
         'django-celery==3.0.10',
         'django-powerdns-dnssec==0.9.3',
-        'django-tastypie==0.9.11',
+        'django-tastypie==0.9.14',
         'django==1.4.2',
         'dnspython==1.10.0',
         'feedparser==5.1.2',
