@@ -953,42 +953,38 @@ class ReportDevices(SidebarReports, Base):
 def _prices_per_venture_device_details(device, exclude=[]):
     components, stock = [], []
     total = 0
-    try:
-        for detail in _get_details(
-            device,
-            ignore_deprecation=True,
-            exclude=exclude,
-        ):
-            model = detail.get('model')
-            price = detail.get('price') or 0
-            if not model:
-                components.append({
-                    'model': 'n/a',
-                    'icon': 'n/a',
-                    'count': 'n/a',
-                    'price': 'n/a',
-                    'serial': 'n/a',
-                })
-            if model not in stock:
-                components.append({
-                    'model': model.name if hasattr(model, 'name') else model,
-                    'icon': detail.get('icon'),
-                    'count': 1,
-                    'price': price,
-                    'serial': detail.get('serial'),
-                })
-            else:
-                for component in components:
-                    if component['model'] == model:
-                        component['count'] = component['count'] + 1
-            total += price
-            stock.append(model)
-        venture = 'N/a'
-        if device.venture and device.venture.symbol:
-            venture = device.venture.symbol
-    except Exception as e:
-        print(e)
-        print(device)
+    for detail in _get_details(
+        device,
+        ignore_deprecation=True,
+        exclude=exclude,
+    ):
+        model = detail.get('model')
+        price = detail.get('price') or 0
+        if not model:
+            components.append({
+                'model': 'n/a',
+                'icon': 'n/a',
+                'count': 'n/a',
+                'price': 'n/a',
+                'serial': 'n/a',
+            })
+        if model not in stock:
+            components.append({
+                'model': model.name if hasattr(model, 'name') else model,
+                'icon': detail.get('icon'),
+                'count': 1,
+                'price': price,
+                'serial': detail.get('serial'),
+            })
+        else:
+            for component in components:
+                if component['model'] == model:
+                    component['count'] = component['count'] + 1
+        total += price
+        stock.append(model)
+    venture = 'N/a'
+    if device.venture and device.venture.symbol:
+        venture = device.venture.symbol
     return {
         'device': {
             'id': device.id,
