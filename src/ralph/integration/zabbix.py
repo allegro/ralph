@@ -51,11 +51,11 @@ def update_zabbix_templates(device, templates=None):
 @plugin.register(chain='zabbix')
 def update_role_zabbix_templates(**kwargs):
     role_id = kwargs['uid']
-    if not all(
+    if not all((
             settings.ZABBIX_URL,
             settings.ZABBIX_USER,
             settings.ZABBIX_PASSWORD,
-    ):
+    )):
         return False, 'Zabbix not configured in settings.', {}
     try:
         templates = _calculate_zabbix_templates(role_id)

@@ -179,7 +179,7 @@ def post_create_change(sender, instance, raw, using, **kwargs):
 
 
 def can_register_change(instance):
-    if not all(OP_TEMPLATE, OP_START_DATE, OP_TICKETS_ENABLE):
+    if not all((OP_TEMPLATE, OP_START_DATE, OP_TICKETS_ENABLE)):
         logger.debug(
             'Settings not configured for OP tickets registration. Skipping.')
         return False

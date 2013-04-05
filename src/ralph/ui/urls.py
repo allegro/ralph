@@ -92,7 +92,6 @@ from ralph.ui.views.reports import (
 
 urlpatterns = patterns('',
     url(r'^logout/$', login_required(logout), {}, 'logout'),
-    url(r'^discover/$', login_required(discover), {}, 'discover'),
     url(r'^typeahead/roles/$', login_required(typeahead_roles), {}, 'typeahead-roles'),
     url(r'^unlock-field/$', login_required(unlock_field), {}, 'unlock-field'),
     url(r'^$', login_required(Home.as_view()), {}, 'home'),

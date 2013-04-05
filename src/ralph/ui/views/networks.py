@@ -178,14 +178,9 @@ class NetworksPurchase(Networks, Purchase):
     pass
 
 
-class NetworksDiscover(Networks, Discover):
-    pass
-
-
 class NetworksReports(Networks, Reports):
     pass
 
 
 class ReportNetworksDeviceList(ReportDeviceList, NetworksDeviceList):
     pass
-
