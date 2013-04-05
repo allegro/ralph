@@ -28,7 +28,6 @@ from ralph.util import output, plugin
 DNS_TXT_ATTRIBUTE_REGEX = re.compile(r'(?P<attribute>[^:]+): (?P<value>.*)')
 MAX_RESTARTS = 3
 SANITY_CHECK_PING_ADDRESS = settings.SANITY_CHECK_PING_ADDRESS
-NETWORK_TASK_DELEGATION_TIMEOUT = settings.NETWORK_TASK_DELEGATION_TIMEOUT
 SINGLE_DISCOVERY_TIMEOUT = settings.SINGLE_DISCOVERY_TIMEOUT
 
 
@@ -91,7 +90,12 @@ def dummy_horde(interactive=False, how_many=1000):
     else:
         queue = django_rq.get_queue()
         for i in xrange(how_many):
-            queue.enqueue(dummy_task, interactive=interactive, index=i + 1)
+            queue.enqueue_call(
+                func=dummy_task,
+                kwargs=dict(interactive=interactive, index=i + 1),
+                timeout=60,
+                result_ttl=0,
+            )
 
 
 def run_next_plugin(context, chains, requirements=None, interactive=False,
@@ -237,7 +241,8 @@ def _select_run_method(context, interactive, function, after):
         return function
     set_queue(context)
     if after:
-        scheduler = django_rq.get_scheduler(context['queue'])
+        # FIXME: what about timeout= and result_ttl= for scheduled tasks?
+        scheduler = django_rq.get_scheduler(context['queue'], )
         if isinstance(after, timedelta):
             enqueue = scheduler.enqueue_in
         elif isinstance(after, datetime):
@@ -247,8 +252,20 @@ def _select_run_method(context, interactive, function, after):
                 "after={!r} not supported.".format(after),
             )
         return partial(enqueue, after, function)
-    queue = django_rq.get_queue(context['queue'])
-    return partial(queue.enqueue, function)
+    queue = django_rq.get_queue(
+        context['queue'],
+    )
+    return partial(_enqueue, queue, function)
+
+
+def _enqueue(queue, function, *args, **kwargs):
+    queue.enqueue_call(
+        func=function,
+        args=args,
+        kwargs=kwargs,
+        timeout=SINGLE_DISCOVERY_TIMEOUT,
+        result_ttl=0,
+    )
 
 
 def discover_network(network, plugin_name='ping', requirements=None,

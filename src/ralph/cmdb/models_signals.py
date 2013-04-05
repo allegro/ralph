@@ -196,7 +196,8 @@ def register_issue_handler(sender, change_id, **kwargs):
     if can_register_change(instance):
         if ENQUEUE_REGISTRATION:
             queue = django_rq.get_queue('cmdb_git')
-            queue.enqueue(create_issue, instance.id)
+            queue.enqueue_call(func=create_issue, args=(instance.id,),
+                               result_ttl=0)
         else:
             create_issue(instance.id)
 
