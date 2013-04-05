@@ -51,11 +51,13 @@ class AccessToReportsTest(TestCase):
             '/ui/reports/device_prices_per_venture/',
         ]
 
+    @skip("Not testable async report.")
     def test_no_perms_to_reports(self):
         for url in self.report_urls:
             get_request = self.client.get(url)
             self.assertEqual(get_request.status_code, 403)
 
+    @skip("Not testable async report.")
     def test_perms_to_reports(self):
         for url in self.report_urls:
             get_request = self.client_su.get(url)
