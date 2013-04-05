@@ -9,9 +9,8 @@ from optparse import make_option
 
 from django.core.management.base import BaseCommand
 
-from ralph.util import plugin
 from ralph.cmdb import models_changes as chdb
-from ralph.cmdb import models_signals as signals
+from ralph.cmdb.models_signals import register_issue_signal
 
 
 logger = logging.getLogger(__name__)
@@ -22,26 +21,19 @@ class Command(BaseCommand):
     help = textwrap.dedent(__doc__).strip()
     requires_model_validation = True
 
-    def get_cmdb_plugins(self):
-        return dict(
-            [(x, plugin.BY_NAME[x])
-                for x in plugin.BY_NAME.keys() if x.startswith('cmdb')])
-
-    def __init__(self, *args, **kwargs):
-        self.option_list = []
-        self.option_list.extend(BaseCommand.option_list)
-        self.option_list.append(make_option(
-            '--run', dest="run", action="store_true", help="Runs syncing",
-            default=False
-        ))
+    option_list = BaseCommand.option_list + (
+        make_option(
+            '--run',
+            action='store_true',
+            dest='run',
+            default=False,
+            help='Deprecated. Does nothing.',
+        ),
+    )
 
     def handle(self, *args, **options):
-        if options.get('run'):
-            logger.debug('Syncing tickets.')
-            for change in chdb.CIChange.objects.filter(
-                    registration_type=chdb.CI_CHANGE_REGISTRATION_TYPES.WAITING.id):
-                signals.register_issue_signal.send(sender=self, change_id=change.id)
-            logger.debug('Finished syncing tickets.')
-        else:
-            print('Please specify option.')
-
+        logger.debug('Syncing tickets.')
+        for change in chdb.CIChange.objects.filter(
+                registration_type=chdb.CI_CHANGE_REGISTRATION_TYPES.WAITING):
+            register_issue_signal.send(sender=self, change_id=change.id)
+        logger.debug('Finished syncing tickets.')

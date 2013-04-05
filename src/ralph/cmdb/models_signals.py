@@ -15,8 +15,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.dispatch import receiver
 from django.db.models.signals import post_delete, post_save, pre_delete
 from django.db import IntegrityError
-from celery.task import task
 import django.dispatch
+import django_rq
 
 # using models_ci not models, for dependency chain.
 from ralph.cmdb import models_ci as cdb
@@ -24,7 +24,6 @@ from ralph.cmdb import models_changes as chdb
 from ralph.cmdb.integration.splunk import log_change_to_splunk
 from ralph.cmdb.integration.issuetracker import IssueTracker
 from ralph.cmdb.integration.exceptions import IssueTrackerException
-from ralph.cmdb.models_common import getfunc
 from ralph.discovery.models import Device, DataCenter, Network
 from ralph.business.models import Venture, VentureRole, Service, BusinessLine
 
@@ -35,26 +34,37 @@ logger = logging.getLogger(__name__)
 user_match = re.compile(r".*\<(.*)@.*\>")
 register_issue_signal = django.dispatch.Signal(providing_args=["change_id"])
 
-if settings.ISSUETRACKERS['default']['ENGINE'] == '':
-    # Dont register changes at all.
-    RALPH_CHANGE_LINK = '%s'
-    OP_TEMPLATE = ''
-    OP_ISSUE_TYPE = ''
-    DEFAULT_ASSIGNEE = ''
-    OP_START_DATE = ''
-    OP_PROFILE = ''
-    OP_TICKETS_ENABLE = False
-else:
-    RALPH_CHANGE_LINK = \
-        settings.ISSUETRACKERS['default']['CMDB_VIEWCHANGE_LINK']
+CHANGE_LINK = '%s'
+OP_TEMPLATE = None
+OP_ISSUE_TYPE = None
+DEFAULT_ASSIGNEE = None
+OP_START_DATE = None
+OP_PROFILE = None
+OP_TICKETS_ENABLE = False
+ENQUEUE_REGISTRATION = False
+
+if (settings.ISSUETRACKERS and settings.ISSUETRACKERS.get('default') and
+        settings.ISSUETRACKERS['default'].get('ENGINE')):
+    CHANGE_LINK = settings.ISSUETRACKERS['default']['CMDB_VIEWCHANGE_LINK']
     OP_TEMPLATE = settings.ISSUETRACKERS['default']['OP']['TEMPLATE']
     OP_PROFILE = settings.ISSUETRACKERS['default']['OP']['PROFILE']
     OP_ISSUE_TYPE = settings.ISSUETRACKERS['default']['OP']['ISSUETYPE']
     DEFAULT_ASSIGNEE = \
         settings.ISSUETRACKERS['default']['OP']['DEFAULT_ASSIGNEE']
-    OP_START_DATE = settings.ISSUETRACKERS['default']['OP']['START_DATE']
+    try:
+        OP_START_DATE = datetime.datetime.strptime(
+            settings.ISSUETRACKERS['default']['OP']['START_DATE'],
+            '%Y-%m-%d',
+        ).date()
+    except (TypeError, ValueError):
+        pass
     OP_TICKETS_ENABLE = \
         settings.ISSUETRACKERS['default']['OP']['ENABLE_TICKETS']
+    ENQUEUE_REGISTRATION = settings.ISSUETRACKERS['default'].get(
+        'ENQUEUE_REGISTRATION',
+        # fall back to the deprecated name
+        settings.ISSUETRACKERS['default'].get('USE_CELERY', True),
+    )
 
 
 def get_login_from_user(long_user_text):
@@ -147,7 +157,8 @@ def post_create_change(sender, instance, raw, using, **kwargs):
             content_type=ContentType.objects.get_for_model(instance),
             object_id=instance.id,
         ).exists():
-            # already created parent cichange(e.g while saving for 2 time). Skip it.
+            # already created parent cichange (e.g while saving twice).
+            # Skip it.
             return
         ch = chdb.CIChange()
         ch.time = time
@@ -168,15 +179,13 @@ def post_create_change(sender, instance, raw, using, **kwargs):
 
 
 def can_register_change(instance):
-    if not OP_TEMPLATE or not OP_START_DATE or not OP_TICKETS_ENABLE:
+    if not all((OP_TEMPLATE, OP_START_DATE, OP_TICKETS_ENABLE)):
         logger.debug(
             'Settings not configured for OP tickets registration. Skipping.')
         return False
     return (
-        (instance.time.date() >= date_from_str(OP_START_DATE))
-        and instance.registration_type ==
-            chdb.CI_CHANGE_REGISTRATION_TYPES.WAITING.id
-            and not instance.external_key
+        instance.registration_type == chdb.CI_CHANGE_REGISTRATION_TYPES.WAITING
+        and not instance.external_key and instance.time.date() >= OP_START_DATE
     )
 
 
@@ -185,7 +194,12 @@ def can_register_change(instance):
 def register_issue_handler(sender, change_id, **kwargs):
     instance = chdb.CIChange.objects.get(id=change_id)
     if can_register_change(instance):
-        getfunc(create_issue)(instance.id)
+        if ENQUEUE_REGISTRATION:
+            queue = django_rq.get_queue('cmdb_git')
+            queue.enqueue_call(func=create_issue, args=(instance.id,),
+                               result_ttl=0)
+        else:
+            create_issue(instance.id)
 
 
 @receiver(post_save, sender=cdb.CI, dispatch_uid='ralph.cmdb.history')
@@ -223,7 +237,6 @@ def ci_post_save(sender, instance, raw, using, **kwargs):
         ch.save()
 
 
-@task(queue='cmdb_git')
 def create_issue(change_id, retry_count=1):
     ch = chdb.CIChange.objects.get(id=change_id)
     if ch.registration_type == chdb.CI_CHANGE_REGISTRATION_TYPES.OP.id:
@@ -245,7 +258,7 @@ def create_issue(change_id, retry_count=1):
         ''' % (dict(
             changeset=ch.content_object.changeset,
             summary=ch.message,
-            change_link=RALPH_CHANGE_LINK % (ch.id),
+            change_link=CHANGE_LINK % (ch.id),
             author=ch.content_object.author,
         ))
 
@@ -266,7 +279,7 @@ def create_issue(change_id, retry_count=1):
             new_value=ch.content_object.new_value,
             description=ch.content_object.comment,
             author=unicode(ch.content_object.user),
-            cmdb_link=RALPH_CHANGE_LINK % (ch.id),
+            cmdb_link=CHANGE_LINK % (ch.id),
         ))
 
     elif ch.type == chdb.CI_CHANGE_TYPES.CI.id:
@@ -286,7 +299,7 @@ def create_issue(change_id, retry_count=1):
             new_value=ch.content_object.new_value,
             description=ch.content_object.comment,
             author=unicode(ch.content_object.user),
-            cmdb_link=RALPH_CHANGE_LINK % (ch.id),
+            cmdb_link=CHANGE_LINK % (ch.id),
         ))
     if len(ch.message.split('\n')) > 1:
         description = '%s\n\n%s' % (ch.message, description)
@@ -322,10 +335,6 @@ def create_issue(change_id, retry_count=1):
         logger.warning(
             'Issue tracker exception for change: %d (%s)' % (change_id, e)
         )
-
-
-def date_from_str(s):
-    return datetime.datetime.strptime(s, '%Y-%m-%d').date()
 
 
 @receiver(post_delete, sender=chdb.CIChange,
