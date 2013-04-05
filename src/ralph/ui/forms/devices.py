@@ -6,6 +6,8 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from django import forms
+from django.contrib import messages
+from django.utils.translation import ugettext_lazy as _
 from lck.django.common.models import MACAddressField
 
 from ralph.deployment.util import get_next_free_hostname
@@ -264,6 +266,7 @@ class DeviceBulkForm(DeviceForm):
             'support_kind',
             'deleted',
         )
+
     def __init__(self, *args, **kwargs):
         super(DeviceBulkForm, self).__init__(*args, **kwargs)
         self.fields['venture'].choices = all_ventures()
