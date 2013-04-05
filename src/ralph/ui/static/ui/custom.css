@@ -181,7 +181,7 @@ tr.table-highlight td {
 img.waiting
 {
     display: block;
-    margin: 30px auto 30px auto;
+    margin: 30px auto;
 }
 
 .cmdb_report_filter .datepicker {
