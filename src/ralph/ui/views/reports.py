@@ -696,58 +696,64 @@ class ReportDevices(SidebarReports, Base):
                     row.append(dev.venture_role)
                 rows.append(row)
         # Filtering of the range
-        # Support Range
+        # Support range
         s_start = self.request.GET.get('s_start', None)
         s_end = self.request.GET.get('s_end', None)
         if s_start and s_end:
             self.form_support_range = SupportRangeReportForm(request)
-            devices = Device.objects.all()
-            devs = devices.filter(
-                support_expiration_date__gte=s_start,
-                support_expiration_date__lte=s_end,
-            )
-            headers = ('Name', 'Support expiration date')
-            for dev in devs:
-                name = self.get_name(dev.name, dev.id)
-                rows.append([name, dev.support_expiration_date])
+            if self.form_support_range.is_valid():
+                headers = ('Name', 'Support expiration date')
+                rows.extend([
+                    (
+                        self.get_name(dev.name, dev.id),
+                        dev.support_expiration_date,
+                    ) for dev in Device.objects.filter(
+                        support_expiration_date__gte=s_start,
+                        support_expiration_date__lte=s_end,
+                    )
+                ])
         else:
             self.form_support_range = SupportRangeReportForm(initial={
                 's_start': datetime.date.today() - datetime.timedelta(days=30),
                 's_end': datetime.date.today(),
             })
-        # Deprecation Range
+        # Deprecation range
         d_start = self.request.GET.get('d_start', None)
         d_end = self.request.GET.get('d_end', None)
         if d_start and d_end:
             self.form_deprecation_range = DeprecationRangeReportForm(request)
-            devices = Device.objects.all()
-            devs = devices.filter(
-                deprecation_date__gte=d_start,
-                deprecation_date__lte=d_end,
-            )
-            headers = ('Name', 'Depreciation date')
-            for dev in devs:
-                name = self.get_name(dev.name, dev.id)
-                rows.append([name, dev.deprecation_date])
+            if self.form_deprecation_range.is_valid():
+                headers = ('Name', 'Depreciation date')
+                rows.extend([
+                    (
+                        self.get_name(dev.name, dev.id),
+                        dev.deprecation_date,
+                    ) for dev in Device.objects.filter(
+                        deprecation_date__gte=d_start,
+                        deprecation_date__lte=d_end,
+                    )
+                ])
         else:
             self.form_deprecation_range = DeprecationRangeReportForm(initial={
                 'd_start': datetime.date.today() - datetime.timedelta(days=30),
                 'd_end': datetime.date.today(),
-                })
-        # warranty_expiration_date Range
+            })
+        # Warranty range
         w_start = self.request.GET.get('w_start', None)
         w_end = self.request.GET.get('w_end', None)
         if w_start and w_end:
             self.form_warranty_range = WarrantyRangeReportForm(request)
-            devices = Device.objects.all()
-            devs = devices.filter(
-                warranty_expiration_date__gte=w_start,
-                warranty_expiration_date__lte=w_end,
-            )
-            headers = ('Name', 'Warranty expiration date')
-            for dev in devs:
-                name = self.get_name(dev.name, dev.id)
-                rows.append([name, dev.warranty_expiration_date])
+            if self.form_warranty_range.is_valid():
+                headers = ('Name', 'Warranty expiration date')
+                rows.extend([
+                    (
+                        self.get_name(dev.name, dev.id),
+                        dev.warranty_expiration_date,
+                    ) for dev in Device.objects.filter(
+                        warranty_expiration_date__gte=w_start,
+                        warranty_expiration_date__lte=w_end,
+                    )
+                ])
         else:
             self.form_warranty_range = WarrantyRangeReportForm(initial={
                 'w_start': datetime.date.today() - datetime.timedelta(days=30),
