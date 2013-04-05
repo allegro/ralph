@@ -19,6 +19,7 @@ from ralph.cmdb import models as chdb
 from ralph.cmdb.api import (
     CIChangePuppetResource, CIChangeGitResource, CIChangeCMDBHistoryResource,
 )
+from ralph.cmdb.importer import CIImporter
 from ralph.cmdb.models import (
     CIChangePuppet, CIChangeGit, CIChangeCMDBHistory, CIChange,
     CIOwnershipType
