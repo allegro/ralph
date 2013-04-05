@@ -673,7 +673,6 @@ class ReportDevices(SidebarReports, Base):
             queries.update({Q(venture_role=None)})
         if no_par:
             headers.append('No parent')
-            p_deleted = parent.deleted
             queries.update({Q(parent=None) | Q(p_deleted=True)})
         if len(queries) > 1:
             devices = Device.objects.filter(*queries)
