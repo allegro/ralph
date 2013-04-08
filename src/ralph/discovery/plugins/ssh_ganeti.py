@@ -84,11 +84,10 @@ def run_ssh_ganeti(ssh, ip):
         save_device(host, master_ip=master_ip, hypervisors=hypervisors)
 
 
-# @plugin.register(chain='discovery', requires=['ping', 'ssh_linux'])
-@plugin.register(chain='discovery', requires=['ping'])
+@plugin.register(chain='discovery', requires=['ping', 'ssh_linux'])
 def ssh_ganeti(**kwargs):
-    # if not kwargs.get('ganeti_master', False):
-    #     return False, 'no match', kwargs
+    if not kwargs.get('ganeti_master', False):
+        return False, 'no match', kwargs
     ip = str(kwargs['ip'])
     if not network.check_tcp_port(ip, 22):
         return False, 'closed', kwargs
