@@ -24,7 +24,6 @@ from ralph.ui.views.common import (
     Purchase,
     Components,
     History,
-    Discover,
     BaseMixin,
     Base,
     Software,
@@ -177,10 +176,6 @@ class RacksHistory(Racks, History):
 
 
 class RacksPurchase(Racks, Purchase):
-    pass
-
-
-class RacksDiscover(Racks, Discover):
     pass
 
 

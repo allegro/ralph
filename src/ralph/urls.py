@@ -120,8 +120,8 @@ urlpatterns = patterns(
         name='preboot-complete-view'),
     url(r'^puppet-classifier/$', 'ralph.deployment.views.puppet_classifier',
         name='puppet-classifier'),
+    url(r'^rq/', include('django_rq.urls')),
     url(r'^user/', include('ralph.account.urls')),
-
     # include the lookup urls
     (r'^admin/lookups/', include(ajax_select_urls)),
     (r'^admin/', include(admin.site.urls)),
