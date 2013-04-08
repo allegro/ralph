@@ -2,23 +2,43 @@ from django.contrib.auth.decorators import login_required
 from django.conf.urls.defaults import patterns, include, url
 from django.views.generic import RedirectView
 from tastypie.api import Api
-from ralph.business.api import (VentureResource, VentureLightResource,
-                                RoleResource, RoleLightResource,
-                                DepartmentResource, RolePropertyTypeResource,
-                                RolePropertyTypeValueResource,
-                                RolePropertyResource,
-                                RolePropertyValueResource)
+from ralph.business.api import (
+    DepartmentResource,
+    RoleLightResource,
+    RolePropertyResource,
+    RolePropertyTypeResource,
+    RolePropertyTypeValueResource,
+    RolePropertyValueResource,
+    RoleResource,
+    VentureLightResource,
+    VentureResource,
+)
 from ralph.deployment.api import DeploymentResource
-from ralph.discovery.api import (IPAddressResource, ModelGroupResource,
-                                 ModelResource, PhysicalServerResource,
-                                 RackServerResource, VirtualServerResource,
-                                 BladeServerResource, DevResource)
-from ralph.cmdb.api import (BusinessLineResource, ServiceResource,
-                            CIRelationResource, CIResource, CIChangeResource,
-                            CIChangeGitResource, CIChangePuppetResource,
-                            CIChangeZabbixTriggerResource,
-                            CIChangeCMDBHistoryResource, CILayersResource,
-                            CITypesResource)
+from ralph.discovery.api import (
+    BladeServerResource,
+    DeviceWithPricingResource,
+    DevResource,
+    IPAddressResource,
+    ModelGroupResource,
+    ModelResource,
+    PhysicalServerResource,
+    RackServerResource,
+    VirtualServerResource,
+)
+from ralph.cmdb.api import (
+    BusinessLineResource,
+    CIChangeCMDBHistoryResource,
+    CIChangeGitResource,
+    CIChangePuppetResource,
+    CIChangeResource,
+    CIChangeZabbixTriggerResource,
+    CILayersResource,
+    CIOwnersResource,
+    CIRelationResource,
+    CIResource,
+    CITypesResource,
+    ServiceResource,
+)
 from ralph.discovery.api_donpedro import WindowsDeviceResource
 from ralph.ui.views.common import VhostRedirectView
 
@@ -29,7 +49,7 @@ from ajax_select import urls as ajax_select_urls
 admin.autodiscover()
 
 v09_api = Api(api_name='v0.9')
-OPTIONAL_APPS = ['ralph_assets',]
+OPTIONAL_APPS = ['ralph_assets', ]
 # business API
 for r in (VentureResource, VentureLightResource, RoleResource,
           RoleLightResource, DepartmentResource, RolePropertyTypeResource,
@@ -40,13 +60,14 @@ for r in (VentureResource, VentureLightResource, RoleResource,
 # discovery API
 for r in (IPAddressResource, ModelGroupResource, ModelResource,
           PhysicalServerResource, RackServerResource, BladeServerResource,
-          VirtualServerResource, DevResource, WindowsDeviceResource):
+          VirtualServerResource, DevResource, WindowsDeviceResource,
+          DeviceWithPricingResource):
     v09_api.register(r())
 
 # CMDB API
 for r in (BusinessLineResource, ServiceResource, CIResource,
           CIRelationResource, CIChangeResource, CIChangeGitResource,
-          CIChangePuppetResource, CIChangeZabbixTriggerResource,
+          CIOwnersResource, CIChangePuppetResource, CIChangeZabbixTriggerResource,
           CIChangeCMDBHistoryResource, CITypesResource, CILayersResource):
     v09_api.register(r())
 
@@ -99,8 +120,8 @@ urlpatterns = patterns(
         name='preboot-complete-view'),
     url(r'^puppet-classifier/$', 'ralph.deployment.views.puppet_classifier',
         name='puppet-classifier'),
+    url(r'^rq/', include('django_rq.urls')),
     url(r'^user/', include('ralph.account.urls')),
-
     # include the lookup urls
     (r'^admin/lookups/', include(ajax_select_urls)),
     (r'^admin/', include(admin.site.urls)),
