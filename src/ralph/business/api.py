@@ -29,16 +29,25 @@ from ralph.business.models import (
     RoleProperty,
     RolePropertyValue,
 )
+from ralph.util.api import trottle_hook
 
 THROTTLE_AT = settings.API_THROTTLING['throttle_at']
 TIMEFRAME = settings.API_THROTTLING['timeframe']
 EXPIRATION = settings.API_THROTTLING['expiration']
 
+
 class VentureResource(MResource):
     devices = fields.ToManyField('ralph.discovery.api.DevResource', 'device')
-    roles = fields.ToManyField('ralph.business.api.RoleResource', 'venturerole')
-    department = fields.ForeignKey('ralph.business.api.DepartmentResource',
-        'department', null=True, full=True)
+    roles = fields.ToManyField(
+        'ralph.business.api.RoleResource',
+        'venturerole',
+    )
+    department = fields.ForeignKey(
+        'ralph.business.api.DepartmentResource',
+        'department',
+         null=True,
+         full=True,
+    )
 
     class Meta:
         queryset = Venture.objects.all()
@@ -53,16 +62,21 @@ class VentureResource(MResource):
         }
         excludes = ('save_priorities', 'max_save_priority',)
         cache = SimpleCache()
-        throttle = CacheThrottle(
-            throttle_at=THROTTLE_AT,
-            timeframe=TIMEFRAME,
-            expiration=EXPIRATION,
-        )
+        if trottle_hook():
+            throttle = CacheThrottle(
+                throttle_at=THROTTLE_AT,
+                timeframe=TIMEFRAME,
+                expiration=EXPIRATION,
+            )
 
 
 class VentureLightResource(MResource):
-    department = fields.ForeignKey('ralph.business.api.DepartmentResource',
-        'department', null=True, full=True)
+    department = fields.ForeignKey(
+        'ralph.business.api.DepartmentResource',
+        'department',
+        null=True,
+        full=True,
+    )
 
     class Meta:
         queryset = Venture.objects.all()
@@ -77,11 +91,12 @@ class VentureLightResource(MResource):
         }
         excludes = ('save_priorities', 'max_save_priority',)
         cache = SimpleCache()
-        throttle = CacheThrottle(
-            throttle_at=THROTTLE_AT,
-            timeframe=TIMEFRAME,
-            expiration=EXPIRATION,
-        )
+        if trottle_hook():
+            throttle = CacheThrottle(
+                throttle_at=THROTTLE_AT,
+                timeframe=TIMEFRAME,
+                expiration=EXPIRATION,
+            )
 
     def dehydrate_resource_uri(self, bundle):
         uri = super(VentureLightResource, self).dehydrate_resource_uri(bundle)
@@ -110,11 +125,12 @@ class RoleResource(MResource):
         }
         excludes = ('save_priorities', 'max_save_priority',)
         cache = SimpleCache()
-        throttle = CacheThrottle(
-            throttle_at=THROTTLE_AT,
-            timeframe=TIMEFRAME,
-            expiration=EXPIRATION,
-        )
+        if trottle_hook():
+            throttle = CacheThrottle(
+                throttle_at=THROTTLE_AT,
+                timeframe=TIMEFRAME,
+                expiration=EXPIRATION,
+            )
 
 
 class RoleLightResource(MResource):
@@ -136,11 +152,12 @@ class RoleLightResource(MResource):
         }
         excludes = ('save_priorities', 'max_save_priority',)
         cache = SimpleCache()
-        throttle = CacheThrottle(
-            throttle_at=THROTTLE_AT,
-            timeframe=TIMEFRAME,
-            expiration=EXPIRATION,
-        )
+        if trottle_hook():
+            throttle = CacheThrottle(
+                throttle_at=THROTTLE_AT,
+                timeframe=TIMEFRAME,
+                expiration=EXPIRATION,
+            )
 
     def dehydrate_resource_uri(self, bundle):
         uri = super(RoleLightResource, self).dehydrate_resource_uri(bundle)
@@ -158,11 +175,12 @@ class DepartmentResource(MResource):
         }
         cache = SimpleCache()
         excludes = ('icon',)
-        throttle = CacheThrottle(
-            throttle_at=THROTTLE_AT,
-            timeframe=TIMEFRAME,
-            expiration=EXPIRATION,
-        )
+        if trottle_hook():
+            throttle = CacheThrottle(
+                throttle_at=THROTTLE_AT,
+                timeframe=TIMEFRAME,
+                expiration=EXPIRATION,
+            )
 
 
 class RolePropertyTypeResource(MResource):
@@ -175,11 +193,12 @@ class RolePropertyTypeResource(MResource):
             'symbol': ALL,
         }
         cache = SimpleCache()
-        throttle = CacheThrottle(
-            throttle_at=THROTTLE_AT,
-            timeframe=TIMEFRAME,
-            expiration=EXPIRATION,
-        )
+        if trottle_hook():
+            throttle = CacheThrottle(
+                throttle_at=THROTTLE_AT,
+                timeframe=TIMEFRAME,
+                expiration=EXPIRATION,
+            )
 
 
 class RolePropertyTypeValueResource(MResource):
@@ -198,11 +217,12 @@ class RolePropertyTypeValueResource(MResource):
             'id': ALL,
         }
         cache = SimpleCache()
-        throttle = CacheThrottle(
-            throttle_at=THROTTLE_AT,
-            timeframe=TIMEFRAME,
-            expiration=EXPIRATION,
-        )
+        if trottle_hook():
+            throttle = CacheThrottle(
+                throttle_at=THROTTLE_AT,
+                timeframe=TIMEFRAME,
+                expiration=EXPIRATION,
+            )
 
 
 class RolePropertyResource(MResource):
@@ -222,11 +242,12 @@ class RolePropertyResource(MResource):
             'id': ALL,
         }
         cache = SimpleCache()
-        throttle = CacheThrottle(
-            throttle_at=THROTTLE_AT,
-            timeframe=TIMEFRAME,
-            expiration=EXPIRATION,
-        )
+        if trottle_hook():
+            throttle = CacheThrottle(
+                throttle_at=THROTTLE_AT,
+                timeframe=TIMEFRAME,
+                expiration=EXPIRATION,
+            )
 
 
 class RolePropertyValueResource(MResource):
@@ -251,8 +272,9 @@ class RolePropertyValueResource(MResource):
             'value': ALL,
         }
         cache = SimpleCache()
-        throttle = CacheThrottle(
-            throttle_at=THROTTLE_AT,
-            timeframe=TIMEFRAME,
-            expiration=EXPIRATION,
-        )
+        if trottle_hook():
+            throttle = CacheThrottle(
+                throttle_at=THROTTLE_AT,
+                timeframe=TIMEFRAME,
+                expiration=EXPIRATION,
+            )
