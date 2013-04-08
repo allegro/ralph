@@ -20,9 +20,15 @@ from tastypie.constants import ALL, ALL_WITH_RELATIONS
 from tastypie.resources import ModelResource as MResource
 from tastypie.throttle import CacheThrottle
 
-from ralph.business.models import (Venture, VentureRole, Department,
-    RolePropertyType, RolePropertyTypeValue, RoleProperty,
-    RolePropertyValue)
+from ralph.business.models import (
+    Venture,
+    VentureRole,
+    Department,
+    RolePropertyType,
+    RolePropertyTypeValue,
+    RoleProperty,
+    RolePropertyValue,
+)
 
 THROTTLE_AT = settings.API_THROTTLING['throttle_at']
 TIMEFRAME = settings.API_THROTTLING['timeframe']
@@ -47,9 +53,11 @@ class VentureResource(MResource):
         }
         excludes = ('save_priorities', 'max_save_priority',)
         cache = SimpleCache()
-        limit = 10
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
-                                expiration=EXPIRATION)
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
 
 
 class VentureLightResource(MResource):
@@ -69,8 +77,11 @@ class VentureLightResource(MResource):
         }
         excludes = ('save_priorities', 'max_save_priority',)
         cache = SimpleCache()
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
-                                expiration=EXPIRATION)
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
 
     def dehydrate_resource_uri(self, bundle):
         uri = super(VentureLightResource, self).dehydrate_resource_uri(bundle)
@@ -79,8 +90,11 @@ class VentureLightResource(MResource):
 
 class RoleResource(MResource):
     venture = fields.ForeignKey(VentureResource, 'venture', null=True)
-    parent = fields.ForeignKey('ralph.business.api.RoleResource',
-        'parent', null=True)
+    parent = fields.ForeignKey(
+        'ralph.business.api.RoleResource',
+        'parent',
+        null=True
+    )
     devices = fields.ToManyField('ralph.discovery.api.DevResource', 'device')
     properties = fields.ToManyField('ralph.business.api.RolePropertyResource',
         'roleproperty', full=True)
@@ -96,14 +110,20 @@ class RoleResource(MResource):
         }
         excludes = ('save_priorities', 'max_save_priority',)
         cache = SimpleCache()
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
-                                expiration=EXPIRATION)
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
 
 
 class RoleLightResource(MResource):
     venture = fields.ForeignKey(VentureResource, 'venture', null=True)
-    parent = fields.ForeignKey('ralph.business.api.RoleResource',
-        'parent', null=True)
+    parent = fields.ForeignKey(
+        'ralph.business.api.RoleResource',
+        'parent',
+        null=True
+    )
 
     class Meta:
         queryset = VentureRole.objects.all()
@@ -116,8 +136,11 @@ class RoleLightResource(MResource):
         }
         excludes = ('save_priorities', 'max_save_priority',)
         cache = SimpleCache()
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
-                                expiration=EXPIRATION)
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
 
     def dehydrate_resource_uri(self, bundle):
         uri = super(RoleLightResource, self).dehydrate_resource_uri(bundle)
@@ -135,8 +158,11 @@ class DepartmentResource(MResource):
         }
         cache = SimpleCache()
         excludes = ('icon',)
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
-                                expiration=EXPIRATION)
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
 
 
 class RolePropertyTypeResource(MResource):
@@ -149,13 +175,20 @@ class RolePropertyTypeResource(MResource):
             'symbol': ALL,
         }
         cache = SimpleCache()
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
-                                expiration=EXPIRATION)
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
 
 
 class RolePropertyTypeValueResource(MResource):
-    type = fields.ForeignKey(RolePropertyTypeResource, 'type', null=True,
-        full=True)
+    type = fields.ForeignKey(
+        RolePropertyTypeResource,
+        'type',
+        null=True,
+        full=True,
+    )
 
     class Meta:
         queryset = RolePropertyTypeValue.objects.all()
@@ -165,14 +198,21 @@ class RolePropertyTypeValueResource(MResource):
             'id': ALL,
         }
         cache = SimpleCache()
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
-                                expiration=EXPIRATION)
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
 
 
 class RolePropertyResource(MResource):
     role = fields.ForeignKey(RoleResource, 'role', null=True)
-    type = fields.ForeignKey(RolePropertyTypeResource, 'type', null=True,
-        full=True)
+    type = fields.ForeignKey(
+        RolePropertyTypeResource,
+        'type',
+        null=True,
+        full=True,
+    )
 
     class Meta:
         queryset = RoleProperty.objects.all()
@@ -182,15 +222,25 @@ class RolePropertyResource(MResource):
             'id': ALL,
         }
         cache = SimpleCache()
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
-                                expiration=EXPIRATION)
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
 
 
 class RolePropertyValueResource(MResource):
-    property = fields.ForeignKey(RolePropertyResource, 'property', null=True,
-        full=True)
-    device = fields.ForeignKey('ralph.discovery.api.DevResource', 'device',
-        null=True)
+    property = fields.ForeignKey(
+        RolePropertyResource,
+        'property',
+        null=True,
+        full=True,
+    )
+    device = fields.ForeignKey(
+        'ralph.discovery.api.DevResource',
+        'device',
+        null=True,
+    )
 
     class Meta:
         queryset = RolePropertyValue.objects.all()
@@ -201,5 +251,8 @@ class RolePropertyValueResource(MResource):
             'value': ALL,
         }
         cache = SimpleCache()
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
-                                expiration=EXPIRATION)
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
