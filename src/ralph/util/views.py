@@ -36,13 +36,3 @@ def csvify(func):
         csvutil.UnicodeWriter(f).writerows(reply)
         return HttpResponse(f.getvalue(), mimetype="application/csv")
     return wrapper
-
-
-def force_utf8(string, cut=None):
-        """Coerce the value to unicode and limit it to cut characters."""
-        if string:
-            if not isinstance(string, unicode):
-                urf8 = unicode(string, 'utf-8')
-                return urf8[:cut] if cut else urf8
-            return string[:cut] if cut else string
-        return ''
