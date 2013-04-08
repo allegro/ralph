@@ -34,7 +34,7 @@ def get_instances_list(ssh):
         }
 
 
-def get_hypervisor(name, hypervisors):
+def get_hypervisor(name, hypervisors={}):
     hypervisor = hypervisors.get(name)
     if hypervisor is None:
         try:
@@ -49,7 +49,7 @@ def get_hypervisor(name, hypervisors):
 
 
 @nested_commit_on_success
-def save_device(data, hypervisors):
+def save_device(data, master_ip=None, hypervisors={}):
     hypervisor = get_hypervisor(data['primary_node'], hypervisors)
     ethernets = [Eth(label='eth0', mac=data['mac'], speed=0)]
     dev = Device.create(
@@ -62,6 +62,8 @@ def save_device(data, hypervisors):
     dev.name = data['host']
     if hypervisor:
         dev.parent = hypervisor
+    if master_ip:
+        dev.management = master_ip
     dev.save(priority=SAVE_PRIORITY)
     if data['ip']:
         ip_address, created = IPAddress.concurrent_get_or_create(
@@ -71,10 +73,15 @@ def save_device(data, hypervisors):
         ip_address.save()
 
 
-def run_ssh_ganeti(ssh):
+def run_ssh_ganeti(ssh, ip):
     hypervisors = {}
+    master_ip = None
+    try:
+        master_ip = IPAddress.objects.get(address=ip)
+    except IPAddress.DoesNotExist:
+        pass
     for host in get_instances_list(ssh):
-        save_device(host, hypervisors)
+        save_device(host, master_ip=master_ip, hypervisors=hypervisors)
 
 
 # @plugin.register(chain='discovery', requires=['ping', 'ssh_linux'])
@@ -102,7 +109,7 @@ def ssh_ganeti(**kwargs):
                 break
         else:
             return False, 'authorization failed', kwargs
-        run_ssh_ganeti(ssh)
+        run_ssh_ganeti(ssh, ip)
     except (network.Error, SSHException) as e:
         return False, str(e), kwargs
     return True, 'done', kwargs
