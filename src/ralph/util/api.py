@@ -6,14 +6,12 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from django.contrib.auth.models import User
+from django.conf import settings
 
-
-def is_authenticated(request):
-    username = request.GET.get('username')
-    api_key = request.GET.get('api_key')
-    try:
-        user = User.objects.get(username=username)
-    except User.DoesNotExist:
-        user = None
-    return user and user.api_key.key == api_key
+def trottle_hook():
+    '''If cache backend is DummyCache, TastyPie returns error'''
+    cache = getattr(settings, 'CACHES', {})
+    cache_default = cache.get('default')
+    if cache_default and cache_default['BACKEND'].endswith('DummyCache'):
+        return False
+    return True
