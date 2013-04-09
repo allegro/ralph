@@ -50,22 +50,36 @@ class BusinessLineResource(MResource):
         queryset = CI.objects.filter(
             type__id=db.CI_TYPES.BUSINESSLINE.id).all()
         authentication = ApiKeyAuthentication()
-        authorization = DjangoAuthorization()
+        authorization = RalphAuthorization(
+            required_perms=[
+                Perm.read_configuration_item_info_generic,
+            ]
+        )
         list_allowed_methods = ['get']
         resource_name = 'businessline'
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
-                                 expiration=EXPIRATION)
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
 
 
 class ServiceResource(MResource):
     class Meta:
         queryset = CI.objects.filter(type__id=db.CI_TYPES.SERVICE.id).all()
         authentication = ApiKeyAuthentication()
-        authorization = DjangoAuthorization()
+        authorization = RalphAuthorization(
+            required_perms=[
+                Perm.read_configuration_item_info_generic,
+            ]
+        )
         list_allowed_methods = ['get']
         resource_name = 'service'
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
-                                 expiration=EXPIRATION)
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
 
     def dehydrate(self, bundle):
         # CMDB base info completed with content_object info
@@ -82,11 +96,18 @@ class CIRelationResource(MResource):
     class Meta:
         queryset = CIRelation.objects.all()
         authentication = ApiKeyAuthentication()
-        authorization = DjangoAuthorization()
+        authorization = RalphAuthorization(
+            required_perms=[
+                Perm.read_configuration_item_info_generic,
+            ]
+        )
         list_allowed_methods = ['get']
         resource_name = 'cirelation'
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
-                                 expiration=EXPIRATION)
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
 
     def dehydrate(self, bundle):
         cirelation = CIRelation.objects.get(pk=bundle.data.get('id'))
@@ -99,7 +120,11 @@ class CIResource(MResource):
     class Meta:
         queryset = CI.objects.all()
         authentication = ApiKeyAuthentication()
-        authorization = DjangoAuthorization()
+        authorization = RalphAuthorization(
+            required_perms=[
+                Perm.read_configuration_item_info_generic,
+            ]
+        )
         list_allowed_methods = ['get']
         resource_name = 'ci'
         filtering = {
@@ -112,8 +137,11 @@ class CIResource(MResource):
             'technical_owners': ALL,
             'bussiness_owners': ALL,
         }
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
-                                 expiration=EXPIRATION)
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
 
     def dehydrate(self, bundle):
         ci = CI.objects.get(uid=bundle.data.get('uid'))
@@ -139,56 +167,91 @@ class CILayersResource(MResource):
     class Meta:
         queryset = CILayer.objects.all()
         authentication = ApiKeyAuthentication()
-        authorization = DjangoAuthorization()
+        authorization = RalphAuthorization(
+            required_perms=[
+                Perm.read_configuration_item_info_generic,
+            ]
+        )
         list_allowed_methods = ['get']
         resourse_name = 'cilayers'
         excludes = ['cache_version', 'created', 'modified']
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
-                                 expiration=EXPIRATION)
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
 
 
 class CIChangeResource(MResource):
     class Meta:
         queryset = CIChange.objects.all()
         authentication = ApiKeyAuthentication()
-        authorization = DjangoAuthorization()
+        authorization = RalphAuthorization(
+            required_perms=[
+                Perm.read_configuration_item_info_generic,
+            ]
+        )
         allowed_methods = ['get']
         resource_name = 'cichange'
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
-                                 expiration=EXPIRATION)
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
 
 
 class CIChangeZabbixTriggerResource(MResource):
     class Meta:
         queryset = CIChangeZabbixTrigger.objects.all()
         authentication = ApiKeyAuthentication()
-        authorization = DjangoAuthorization()
+        authorization = RalphAuthorization(
+            required_perms=[
+                Perm.read_configuration_item_info_generic,
+            ]
+        )
         list_allowed_methods = ['get', 'post']
         resource_name = 'cichangezabbixtrigger'
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
-                                 expiration=EXPIRATION)
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
 
 
 class CIChangeGitResource(MResource):
     class Meta:
         queryset = CIChangeGit.objects.all()
         authentication = ApiKeyAuthentication()
-        authorization = DjangoAuthorization()
+        authorization = RalphAuthorization(
+            required_perms=[
+                Perm.read_configuration_item_info_git,
+            ]
+        )
         list_allowed_methods = ['get', 'post']
         resource_name = 'cichangegit'
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
-                                 expiration=EXPIRATION)
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
 
 
 class CIChangePuppetResource(MResource):
     class Meta:
         queryset = CIChangePuppet.objects.all()
         authentication = ApiKeyAuthentication()
-        authorization = DjangoAuthorization()
+        authorization = RalphAuthorization(
+            required_perms=[
+                Perm.read_configuration_item_info_puppet,
+            ]
+        )
         list_allowed_methods = ['get', 'post']
         resource_name = 'cichangepuppet'
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
-                                 expiration=EXPIRATION)
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
 
 
 class CIChangeCMDBHistoryResource(MResource):
@@ -197,30 +260,48 @@ class CIChangeCMDBHistoryResource(MResource):
     class Meta:
         queryset = CIChangeCMDBHistory.objects.all()
         authentication = ApiKeyAuthentication()
-        authorization = DjangoAuthorization()
+        authorization = RalphAuthorization(
+            required_perms=[
+                Perm.read_configuration_item_info_generic,
+            ]
+        )
         list_allowed_methods = ['get']
         resource_name = 'cichangecmdbhistory'
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
-                                 expiration=EXPIRATION)
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
 
 
 class CITypesResource(MResource):
     class Meta:
         queryset = CIType.objects.all()
         authentication = ApiKeyAuthentication()
-        authorization = DjangoAuthorization()
+        authorization = RalphAuthorization(
+            required_perms=[
+                Perm.read_configuration_item_info_generic,
+            ]
+        )
         list_allowed_methods = ['get']
         resourse_name = 'citypes'
         excludes = ['cache_version', 'created', 'modified']
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
-                                 expiration=EXPIRATION)
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
 
 
 class CIOwnersResource(MResource):
     class Meta:
         queryset = CIOwner.objects.all()
         authentication = ApiKeyAuthentication()
-        authorization = DjangoAuthorization()
+        authorization = RalphAuthorization(
+            required_perms=[
+                Perm.read_configuration_item_info_generic,
+            ]
+        )
         list_allowed_methods = ['get']
         filtering = {
             'first_name': ('startswith', 'exact',),
@@ -228,5 +309,8 @@ class CIOwnersResource(MResource):
             'email': ('startswith', 'exact',),
         }
         resource_name = 'ciowners'
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
-                                 expiration=EXPIRATION)
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
