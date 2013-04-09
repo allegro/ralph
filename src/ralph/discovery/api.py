@@ -24,6 +24,8 @@ from tastypie.constants import ALL, ALL_WITH_RELATIONS
 from tastypie.resources import ModelResource as MResource
 from tastypie.throttle import CacheThrottle
 
+from ralph.account.api_auth import RalphAuthorization
+from ralph.account.models import Perm
 from ralph.discovery.models import (
     ComponentModel,
     ComponentType,
@@ -50,7 +52,11 @@ class IPAddressResource(MResource):
     class Meta:
         queryset = IPAddress.objects.all()
         authentication = ApiKeyAuthentication()
-        authorization = DjangoAuthorization()
+        authorization = RalphAuthorization(
+            required_perms=[
+                Perm.read_network_structure,
+            ]
+        )
         filtering = {
             'address': ALL,
             'hostname': ALL,
@@ -76,7 +82,11 @@ class ModelGroupResource(MResource):
     class Meta:
         queryset = DeviceModelGroup.objects.all()
         authentication = ApiKeyAuthentication()
-        authorization = DjangoAuthorization()
+        authorization = RalphAuthorization(
+            required_perms=[
+                Perm.read_dc_structure,
+            ]
+        )
         cache = SimpleCache()
         throttle = CacheThrottle(
             throttle_at=THROTTLE_AT,
@@ -86,13 +96,21 @@ class ModelGroupResource(MResource):
 
 
 class ModelResource(MResource):
-    group = fields.ForeignKey(ModelGroupResource, 'group', null=True,
-        full=True)
+    group = fields.ForeignKey(
+        ModelGroupResource,
+        'group',
+        null=True,
+        full=True,
+    )
 
     class Meta:
         queryset = DeviceModel.objects.all()
         authentication = ApiKeyAuthentication()
-        authorization = DjangoAuthorization()
+        authorization = RalphAuthorization(
+            required_perms=[
+                Perm.read_dc_structure,
+            ]
+        )
         excludes = ('save_priorities', 'max_save_priority',)
         cache = SimpleCache()
         filtering = {
@@ -151,7 +169,11 @@ class DeviceResource(MResource):
             'dc': ALL,
         }
         authentication = ApiKeyAuthentication()
-        authorization = DjangoAuthorization()
+        authorization = RalphAuthorization(
+            required_perms=[
+                Perm.read_dc_structure,
+            ]
+        )
         cache = SimpleCache()
         throttle = CacheThrottle(
             throttle_at=THROTTLE_AT,
@@ -242,7 +264,10 @@ class DeviceResource(MResource):
 
             # Because sometimes it's ``None`` & that's OK.
             if related_obj:
-                related_obj.save(priority=200, user=request.user if request else None)
+                related_obj.save(
+                    priority=200,
+                    user=request.user if request else None,
+                )
                 setattr(bundle.obj, field_object.attribute, related_obj)
 
     def save_m2m(self, bundle, request=None):
@@ -277,7 +302,10 @@ class DeviceResource(MResource):
             related_objs = []
 
             for related_bundle in bundle.data[field_name]:
-                related_bundle.obj.save(priority=200, user=request.user if request else None)
+                related_bundle.obj.save(
+                    priority=200,
+                    user=request.user if request else None,
+                )
                 related_objs.append(related_bundle.obj)
 
             related_mngr.add(*related_objs)
@@ -337,35 +365,6 @@ class VirtualServerResource(DeviceResource):
 class DevResource(DeviceResource):
     class Meta(DeviceResource.Meta):
         queryset = Device.objects.all()
-        throttle = CacheThrottle(
-            throttle_at=THROTTLE_AT,
-            timeframe=TIMEFRAME,
-            expiration=EXPIRATION,
-        )
-
-
-class IPAddressResource(MResource):
-    device = fields.ForeignKey('ralph.discovery.api.DevResource', 'device',
-        null=True)
-
-    class Meta:
-        queryset = IPAddress.objects.all()
-        authentication = ApiKeyAuthentication()
-        authorization = DjangoAuthorization()
-        filtering = {
-            'address': ALL,
-            'hostname': ALL,
-            'snmp_community': ALL,
-            'device': ALL,
-            'is_management': ALL,
-        }
-        excludes = (
-            'save_priorities',
-            'max_save_priority',
-            'dns_info',
-            'snmp_name',
-        )
-        cache = SimpleCache()
         throttle = CacheThrottle(
             throttle_at=THROTTLE_AT,
             timeframe=TIMEFRAME,
@@ -451,3 +450,36 @@ class DeviceWithPricingResource(DeviceResource):
             splunk_cost['splunk_monthly_cost'] = splunk_monthly_cost
             splunk_cost['splunk_daily_cost'] = splunk_daily_cost
         return splunk_cost
+
+
+class IPAddressResource(MResource):
+    device = fields.ForeignKey('ralph.discovery.api.DevResource', 'device',
+        null=True)
+
+    class Meta:
+        queryset = IPAddress.objects.all()
+        authentication = ApiKeyAuthentication()
+        authorization = RalphAuthorization(
+            required_perms=[
+                Perm.read_network_structure,
+            ]
+        )
+        filtering = {
+            'address': ALL,
+            'hostname': ALL,
+            'snmp_community': ALL,
+            'device': ALL,
+            'is_management': ALL,
+        }
+        excludes = (
+            'save_priorities',
+            'max_save_priority',
+            'dns_info',
+            'snmp_name',
+        )
+        cache = SimpleCache()
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
