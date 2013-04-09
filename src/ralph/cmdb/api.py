@@ -24,6 +24,8 @@ from tastypie.fields import ForeignKey as TastyForeignKey
 from tastypie.resources import ModelResource as MResource
 from tastypie.throttle import CacheThrottle
 
+from ralph.account.api_auth import RalphAuthorization
+from ralph.account.models import Perm
 from ralph.cmdb.models import (
     CI,
     CIType,
