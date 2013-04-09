@@ -12,6 +12,7 @@ from django.utils.translation import ugettext as _
 from tastypie.authorization import Authorization
 from tastypie.exceptions import Unauthorized
 
+NO_ACCESS_MSG = _('Access Denied')
 
 class RalphAuthorization(Authorization):
     def __init__(self, required_perms, *args, **kwargs):
