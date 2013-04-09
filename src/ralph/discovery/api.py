@@ -41,8 +41,11 @@ EXPIRATION = settings.API_THROTTLING['expiration']
 SAVE_PRIORITY=10
 
 class IPAddressResource(MResource):
-    device = fields.ForeignKey('ralph.discovery.api.DevResource', 'device',
-        null=True)
+    device = fields.ForeignKey(
+        'ralph.discovery.api.DevResource',
+        'device',
+        null=True,
+    )
 
     class Meta:
         queryset = IPAddress.objects.all()
@@ -55,11 +58,18 @@ class IPAddressResource(MResource):
             'device': ALL,
             'is_management': ALL,
         }
-        excludes = ('save_priorities', 'max_save_priority', 'dns_info',
-            'snmp_name')
+        excludes = (
+            'save_priorities',
+            'max_save_priority',
+            'dns_info',
+            'snmp_name',
+        )
         cache = SimpleCache()
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
-                                expiration=EXPIRATION)
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
 
 
 class ModelGroupResource(MResource):
@@ -68,8 +78,11 @@ class ModelGroupResource(MResource):
         authentication = ApiKeyAuthentication()
         authorization = DjangoAuthorization()
         cache = SimpleCache()
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
-                                expiration=EXPIRATION)
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
 
 
 class ModelResource(MResource):
@@ -85,22 +98,45 @@ class ModelResource(MResource):
         filtering = {
             'type': ALL,
         }
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
-                                expiration=EXPIRATION)
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
 
 
 class DeviceResource(MResource):
     model = fields.ForeignKey(ModelResource, 'model', null=True, full=True)
-    management = fields.ForeignKey(IPAddressResource, 'management', null=True,
-        full=True)
-    venture = fields.ForeignKey('ralph.business.api.VentureLightResource',
-        'venture', null=True, full=True)
-    role = fields.ForeignKey('ralph.business.api.RoleLightResource',
-        'venture_role', null=True, full=True)
-    ip_addresses = fields.ToManyField(IPAddressResource, 'ipaddress',
-        related_name='device', full=True)
-    properties = fields.ToManyField('ralph.business.api.RolePropertyValueResource',
-        'rolepropertyvalue', related_name='device', full=True)
+    management = fields.ForeignKey(
+        IPAddressResource,
+        'management',
+        null=True,
+        full=True,
+    )
+    venture = fields.ForeignKey(
+        'ralph.business.api.VentureLightResource',
+        'venture',
+        null=True,
+        full=True,
+    )
+    role = fields.ForeignKey(
+        'ralph.business.api.RoleLightResource',
+        'venture_role',
+        null=True,
+        full=True,
+    )
+    ip_addresses = fields.ToManyField(
+        IPAddressResource,
+        'ipaddress',
+        related_name='device',
+        full=True,
+    )
+    properties = fields.ToManyField(
+        'ralph.business.api.RolePropertyValueResource',
+        'rolepropertyvalue',
+        related_name='device',
+        full=True,
+    )
 
     class Meta:
         excludes = ('save_priorities', 'max_save_priority')
@@ -117,8 +153,11 @@ class DeviceResource(MResource):
         authentication = ApiKeyAuthentication()
         authorization = DjangoAuthorization()
         cache = SimpleCache()
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
-                                expiration=EXPIRATION)
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
 
     def obj_update(self, bundle, request=None, **kwargs):
         """
@@ -246,41 +285,63 @@ class DeviceResource(MResource):
 
 class PhysicalServerResource(DeviceResource):
     class Meta(DeviceResource.Meta):
-        queryset = Device.objects.filter(model__type__in={
-            DeviceType.rack_server.id, DeviceType.blade_server.id})
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
-                                expiration=EXPIRATION)
+        queryset = Device.objects.filter(
+            model__type__in={
+                DeviceType.rack_server.id,
+                DeviceType.blade_server.id,
+            }
+        )
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
 
 
 class RackServerResource(DeviceResource):
     class Meta(DeviceResource.Meta):
-        queryset = Device.objects.filter(model__type=
-            DeviceType.rack_server.id)
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
-                                expiration=EXPIRATION)
+        queryset = Device.objects.filter(
+            model__type=DeviceType.rack_server.id,
+        )
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
 
 
 class BladeServerResource(DeviceResource):
     class Meta(DeviceResource.Meta):
-        queryset = Device.objects.filter(model__type=
-            DeviceType.blade_server.id)
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
-                                expiration=EXPIRATION)
+        queryset = Device.objects.filter(
+            model__type=DeviceType.blade_server.id,
+        )
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
 
 
 class VirtualServerResource(DeviceResource):
     class Meta(DeviceResource.Meta):
-        queryset = Device.objects.filter(model__type=
-            DeviceType.virtual_server.id)
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
-                                expiration=EXPIRATION)
+        queryset = Device.objects.filter(
+            model__type=DeviceType.virtual_server.id,
+        )
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
 
 
 class DevResource(DeviceResource):
     class Meta(DeviceResource.Meta):
         queryset = Device.objects.all()
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
-                                expiration=EXPIRATION)
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
 
 
 class IPAddressResource(MResource):
@@ -298,11 +359,18 @@ class IPAddressResource(MResource):
             'device': ALL,
             'is_management': ALL,
         }
-        excludes = ('save_priorities', 'max_save_priority', 'dns_info',
-            'snmp_name')
+        excludes = (
+            'save_priorities',
+            'max_save_priority',
+            'dns_info',
+            'snmp_name',
+        )
         cache = SimpleCache()
-        throttle = CacheThrottle(throttle_at=THROTTLE_AT, timeframe=TIMEFRAME,
-                                expiration=EXPIRATION)
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
 
 
 class DeviceWithPricingResource(DeviceResource):
@@ -345,8 +413,12 @@ class DeviceWithPricingResource(DeviceResource):
         splunk_end = bundle.request.GET.get('splunk_end')
         if splunk_start and splunk_end:
             try:
-                splunk_start = datetime.datetime.strptime(splunk_start, '%Y-%m-%d')
-                splunk_end = datetime.datetime.strptime(splunk_end, '%Y-%m-%d')
+                splunk_start = datetime.datetime.strptime(
+                    splunk_start, '%Y-%m-%d'
+                )
+                splunk_end = datetime.datetime.strptime(
+                    splunk_end, '%Y-%m-%d'
+                )
             except ValueError:
                 splunk_start, splunk_end = None, None
         splunk = self.splunk_cost(bundle.obj, splunk_start, splunk_end)
