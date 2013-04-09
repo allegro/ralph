@@ -20,6 +20,8 @@ from tastypie.constants import ALL, ALL_WITH_RELATIONS
 from tastypie.resources import ModelResource as MResource
 from tastypie.throttle import CacheThrottle
 
+from ralph.account.api_auth import RalphAuthorization
+from ralph.account.models import Perm
 from ralph.business.models import (
     Venture,
     VentureRole,
@@ -29,12 +31,11 @@ from ralph.business.models import (
     RoleProperty,
     RolePropertyValue,
 )
-from ralph.util.api import trottle_hook
+
 
 THROTTLE_AT = settings.API_THROTTLING['throttle_at']
 TIMEFRAME = settings.API_THROTTLING['timeframe']
 EXPIRATION = settings.API_THROTTLING['expiration']
-
 
 class VentureResource(MResource):
     devices = fields.ToManyField('ralph.discovery.api.DevResource', 'device')
@@ -52,7 +53,11 @@ class VentureResource(MResource):
     class Meta:
         queryset = Venture.objects.all()
         authentication = ApiKeyAuthentication()
-        authorization = DjangoAuthorization()
+        authorization = RalphAuthorization(
+            required_perms=[
+                Perm.read_dc_structure,
+            ]
+        )
         filtering = {
             'id': ALL,
             'name': ALL,
@@ -62,12 +67,11 @@ class VentureResource(MResource):
         }
         excludes = ('save_priorities', 'max_save_priority',)
         cache = SimpleCache()
-        if trottle_hook():
-            throttle = CacheThrottle(
-                throttle_at=THROTTLE_AT,
-                timeframe=TIMEFRAME,
-                expiration=EXPIRATION,
-            )
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
 
 
 class VentureLightResource(MResource):
@@ -81,7 +85,11 @@ class VentureLightResource(MResource):
     class Meta:
         queryset = Venture.objects.all()
         authentication = ApiKeyAuthentication()
-        authorization = DjangoAuthorization()
+        authorization = RalphAuthorization(
+            required_perms=[
+                Perm.read_dc_structure,
+            ]
+        )
         filtering = {
             'id': ALL,
             'name': ALL,
@@ -91,12 +99,11 @@ class VentureLightResource(MResource):
         }
         excludes = ('save_priorities', 'max_save_priority',)
         cache = SimpleCache()
-        if trottle_hook():
-            throttle = CacheThrottle(
-                throttle_at=THROTTLE_AT,
-                timeframe=TIMEFRAME,
-                expiration=EXPIRATION,
-            )
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
 
     def dehydrate_resource_uri(self, bundle):
         uri = super(VentureLightResource, self).dehydrate_resource_uri(bundle)
@@ -117,7 +124,11 @@ class RoleResource(MResource):
     class Meta:
         queryset = VentureRole.objects.all()
         authentication = ApiKeyAuthentication()
-        authorization = DjangoAuthorization()
+        authorization = RalphAuthorization(
+            required_perms=[
+                Perm.read_dc_structure,
+            ]
+        )
         filtering = {
             'id': ALL,
             'name': ALL,
@@ -125,12 +136,11 @@ class RoleResource(MResource):
         }
         excludes = ('save_priorities', 'max_save_priority',)
         cache = SimpleCache()
-        if trottle_hook():
-            throttle = CacheThrottle(
-                throttle_at=THROTTLE_AT,
-                timeframe=TIMEFRAME,
-                expiration=EXPIRATION,
-            )
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
 
 
 class RoleLightResource(MResource):
@@ -144,7 +154,11 @@ class RoleLightResource(MResource):
     class Meta:
         queryset = VentureRole.objects.all()
         authentication = ApiKeyAuthentication()
-        authorization = DjangoAuthorization()
+        authorization = RalphAuthorization(
+            required_perms=[
+                Perm.read_dc_structure,
+            ]
+        )
         filtering = {
             'id': ALL,
             'name': ALL,
@@ -152,12 +166,11 @@ class RoleLightResource(MResource):
         }
         excludes = ('save_priorities', 'max_save_priority',)
         cache = SimpleCache()
-        if trottle_hook():
-            throttle = CacheThrottle(
-                throttle_at=THROTTLE_AT,
-                timeframe=TIMEFRAME,
-                expiration=EXPIRATION,
-            )
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
 
     def dehydrate_resource_uri(self, bundle):
         uri = super(RoleLightResource, self).dehydrate_resource_uri(bundle)
@@ -168,37 +181,43 @@ class DepartmentResource(MResource):
     class Meta:
         queryset = Department.objects.all()
         authentication = ApiKeyAuthentication()
-        authorization = DjangoAuthorization()
+        authorization = RalphAuthorization(
+            required_perms=[
+                Perm.read_dc_structure,
+            ]
+        )
         filtering = {
             'id': ALL,
             'name': ALL,
         }
         cache = SimpleCache()
         excludes = ('icon',)
-        if trottle_hook():
-            throttle = CacheThrottle(
-                throttle_at=THROTTLE_AT,
-                timeframe=TIMEFRAME,
-                expiration=EXPIRATION,
-            )
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
 
 
 class RolePropertyTypeResource(MResource):
     class Meta:
         queryset = RolePropertyType.objects.all()
         authentication = ApiKeyAuthentication()
-        authorization = DjangoAuthorization()
+        authorization = RalphAuthorization(
+            required_perms=[
+                Perm.read_dc_structure,
+            ]
+        )
         filtering = {
             'id': ALL,
             'symbol': ALL,
         }
         cache = SimpleCache()
-        if trottle_hook():
-            throttle = CacheThrottle(
-                throttle_at=THROTTLE_AT,
-                timeframe=TIMEFRAME,
-                expiration=EXPIRATION,
-            )
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
 
 
 class RolePropertyTypeValueResource(MResource):
@@ -212,17 +231,20 @@ class RolePropertyTypeValueResource(MResource):
     class Meta:
         queryset = RolePropertyTypeValue.objects.all()
         authentication = ApiKeyAuthentication()
-        authorization = DjangoAuthorization()
+        authorization = RalphAuthorization(
+            required_perms=[
+                Perm.read_dc_structure,
+            ]
+        )
         filtering = {
             'id': ALL,
         }
         cache = SimpleCache()
-        if trottle_hook():
-            throttle = CacheThrottle(
-                throttle_at=THROTTLE_AT,
-                timeframe=TIMEFRAME,
-                expiration=EXPIRATION,
-            )
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
 
 
 class RolePropertyResource(MResource):
@@ -237,17 +259,20 @@ class RolePropertyResource(MResource):
     class Meta:
         queryset = RoleProperty.objects.all()
         authentication = ApiKeyAuthentication()
-        authorization = DjangoAuthorization()
+        authorization = RalphAuthorization(
+            required_perms=[
+                Perm.read_dc_structure,
+            ]
+        )
         filtering = {
             'id': ALL,
         }
         cache = SimpleCache()
-        if trottle_hook():
-            throttle = CacheThrottle(
-                throttle_at=THROTTLE_AT,
-                timeframe=TIMEFRAME,
-                expiration=EXPIRATION,
-            )
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
 
 
 class RolePropertyValueResource(MResource):
@@ -266,15 +291,18 @@ class RolePropertyValueResource(MResource):
     class Meta:
         queryset = RolePropertyValue.objects.all()
         authentication = ApiKeyAuthentication()
-        authorization = DjangoAuthorization()
+        authorization = RalphAuthorization(
+            required_perms=[
+                Perm.read_dc_structure,
+            ]
+        )
         filtering = {
             'id': ALL,
             'value': ALL,
         }
         cache = SimpleCache()
-        if trottle_hook():
-            throttle = CacheThrottle(
-                throttle_at=THROTTLE_AT,
-                timeframe=TIMEFRAME,
-                expiration=EXPIRATION,
-            )
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
