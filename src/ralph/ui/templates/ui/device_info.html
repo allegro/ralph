@@ -3,6 +3,18 @@
 {% load icons %}
 
 {% block content %}
+{% if running_deployment %}
+    <div class="alert alert-block">
+        <strong>The deployment is running.</strong>
+        {% if done_plugins %}
+            <strong>Done plugins:</strong>
+            {% for plugin in done_plugins %}
+            <span class="label label-info">{{ plugin }}</span>
+            {% endfor %}
+        {% endif %}
+    </div>
+{% endif %}
+
 <div class="row-fluid">
 <div class="span6">
 {% include 'ui/device-form.html' with form=form %}
