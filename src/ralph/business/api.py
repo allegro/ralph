@@ -115,7 +115,7 @@ class RoleResource(MResource):
     parent = fields.ForeignKey(
         'ralph.business.api.RoleResource',
         'parent',
-        null=True
+        null=True,
     )
     devices = fields.ToManyField('ralph.discovery.api.DevResource', 'device')
     properties = fields.ToManyField('ralph.business.api.RolePropertyResource',
@@ -148,7 +148,7 @@ class RoleLightResource(MResource):
     parent = fields.ForeignKey(
         'ralph.business.api.RoleResource',
         'parent',
-        null=True
+        null=True,
     )
 
     class Meta:
