@@ -35,6 +35,7 @@ from ralph.business.models import (
 )
 from ralph.account.models import get_user_home_page_url, Perm
 from ralph.cmdb.models import CI
+from ralph.deployment.models import Deployment, DeploymentStatus
 from ralph.deployment.util import get_next_free_hostname, get_first_free_ip
 from ralph.dnsedit.models import DHCPEntry
 from ralph.dnsedit.util import (
@@ -459,6 +460,19 @@ class Info(DeviceUpdateView):
             'dc_name': self.object.dc,
         }
 
+    def get_running_deployment_info(self):
+        try:
+            deployment = Deployment.objects.exclude(
+                status=DeploymentStatus.done,
+            ).get(device=self.object)
+        except Deployment.DoesNotExist:
+            return False, []
+        return True, [
+            plugin.strip()
+            for plugin in deployment.done_plugins.split(',')
+            if plugin.strip()
+        ]
+
     def get_context_data(self, **kwargs):
         ret = super(Info, self).get_context_data(**kwargs)
         if self.object:
@@ -467,10 +481,13 @@ class Info(DeviceUpdateView):
         else:
             tags = []
         tags = ['"%s"' % t.name if ',' in t.name else t.name for t in tags]
+        running_deployment, done_plugins = self.get_running_deployment_info()
         ret.update({
             'property_form': self.property_form,
             'tags': ', '.join(tags),
             'dt': DeviceType,
+            'running_deployment': running_deployment,
+            'done_plugins': done_plugins,
         })
         return ret
 
