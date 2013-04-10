@@ -25,7 +25,6 @@ def reboot(deployment_id):
         # But before running script assure status didn't change
         # in meantime.
         return False
-    _in_progress(deployment)
     management = deployment.device.find_management()
     if not management:
         return True
@@ -41,16 +40,3 @@ def reboot(deployment_id):
     if user and bay:
         ssh_ibm_reboot(management_ip, bay)
     return True
-
-
-def _in_progress(deployment):
-    """Change deployment status to in_progress and returns True
-
-    Just before sending reboot command we set in_progress status.  Then, we do
-    nothing more until python script from inside fresh target machine changes
-    REST deployment resource  to 'done'.
-    """
-    deployment.status = DeploymentStatus.in_progress
-    deployment.save()
-    return True
-
