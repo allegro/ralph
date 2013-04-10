@@ -57,6 +57,7 @@ from ralph.discovery.models_history import (
     DiscoveryWarning,
 )
 from ralph.util import presentation, pricing
+from ralph.util.plugin import BY_NAME as AVAILABLE_PLUGINS
 from ralph.ui.forms.devices import (
     DeviceInfoForm,
     DeviceInfoVerifiedForm,
@@ -467,27 +468,34 @@ class Info(DeviceUpdateView):
             ).get(device=self.object)
         except Deployment.DoesNotExist:
             return False, []
-        return True, [
+        deployment_plugins = AVAILABLE_PLUGINS['deployment'].keys()
+        done_plugins = [
             plugin.strip()
             for plugin in deployment.done_plugins.split(',')
             if plugin.strip()
+        ]
+        return True, [
+            {'name': plugin, 'state': plugin in done_plugins}
+            for plugin in deployment_plugins
         ]
 
     def get_context_data(self, **kwargs):
         ret = super(Info, self).get_context_data(**kwargs)
         if self.object:
-            tags = self.object.get_tags(official=False,
-                                      author=self.request.user)
+            tags = self.object.get_tags(
+                official=False,
+                author=self.request.user,
+            )
         else:
             tags = []
         tags = ['"%s"' % t.name if ',' in t.name else t.name for t in tags]
-        running_deployment, done_plugins = self.get_running_deployment_info()
+        running_deployment, plugins = self.get_running_deployment_info()
         ret.update({
             'property_form': self.property_form,
             'tags': ', '.join(tags),
             'dt': DeviceType,
             'running_deployment': running_deployment,
-            'done_plugins': done_plugins,
+            'plugins': plugins,
         })
         return ret
 
