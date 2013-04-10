@@ -5,13 +5,10 @@
 {% block content %}
 {% if running_deployment %}
     <div class="alert alert-block">
-        <strong>The deployment is running.</strong>
-        {% if done_plugins %}
-            <strong>Done plugins:</strong>
-            {% for plugin in done_plugins %}
-            <span class="label label-info">{{ plugin }}</span>
-            {% endfor %}
-        {% endif %}
+        <strong>The deployment is running. Status of plugins execution:</strong>
+        {% for plugin in plugins %}
+        <span title="{% if plugin.state %}done{% else %}waiting{% endif %}" class="label {% if plugin.state %}label-success{% endif %}">{{ plugin.name }}</span>
+        {% endfor %}
     </div>
 {% endif %}
 
