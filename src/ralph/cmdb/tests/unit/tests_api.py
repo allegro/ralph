@@ -13,6 +13,7 @@ from django.http import HttpRequest
 from django.test import TestCase
 from tastypie.bundle import Bundle
 
+from ralph.account. models import BoundPerm, Profile, Perm
 from ralph.business.models import Venture
 from ralph.cmdb import models as chdb
 from ralph.cmdb.api import CIChangeCMDBHistoryResource
@@ -416,3 +417,225 @@ class CIApiTest(TestCase):
             ).count(),
             1,
         )
+
+
+class AccessToCMDBApiTest(TestCase):
+    def setUp(self):
+        self.user = create_user(
+            'api_user',
+            'test@mail.local',
+            'password',
+            is_staff=False,
+            is_superuser=False,
+        )
+        self.api_login = {
+            'format': 'json',
+            'username': self.user.username,
+            'api_key': self.user.api_key.key,
+        }
+
+    def get_response(self, resource):
+        path = "/api/v0.9/%s/" % resource
+        response = self.client.get(
+            path=path,
+            data=self.api_login,
+            format='json',
+        )
+        return response
+
+    def add_perms(self, perms):
+        user_profile = Profile.objects.get(user=self.user)
+        for perm in perms:
+            BoundPerm(profile=user_profile, perm=perm).save()
+
+    def test_businessline_resource(self):
+        resource = 'businessline'
+        perms = [Perm.read_configuration_item_info_generic,]
+
+        schema = '%s/schema' % resource
+        response = self.get_response(schema)
+        self.assertEqual(response.status_code, 200)
+
+        response = self.get_response(resource)
+        self.assertEqual(response.status_code, 401)
+
+        # Add perms to display resources
+        self.add_perms(perms=perms)
+        response = self.get_response(resource)
+        self.assertEqual(response.status_code, 200)
+
+    def test_service_resource(self):
+        resource = 'service'
+        perms = [Perm.read_configuration_item_info_generic,]
+
+        schema = '%s/schema' % resource
+        response = self.get_response(schema)
+        self.assertEqual(response.status_code, 200)
+
+        response = self.get_response(resource)
+        self.assertEqual(response.status_code, 401)
+
+        # Add perms to display resources
+        self.add_perms(perms=perms)
+        response = self.get_response(resource)
+        self.assertEqual(response.status_code, 200)
+
+    def test_cirelation_resource(self):
+        resource = 'cirelation'
+        perms = [Perm.read_configuration_item_info_generic,]
+
+        schema = '%s/schema' % resource
+        response = self.get_response(schema)
+        self.assertEqual(response.status_code, 200)
+
+        response = self.get_response(resource)
+        self.assertEqual(response.status_code, 401)
+
+        # Add perms to display resources
+        self.add_perms(perms=perms)
+        response = self.get_response(resource)
+        self.assertEqual(response.status_code, 200)
+
+    def test_ci_resource(self):
+        resource = 'ci'
+        perms = [Perm.read_configuration_item_info_generic,]
+
+        schema = '%s/schema' % resource
+        response = self.get_response(schema)
+        self.assertEqual(response.status_code, 200)
+
+        response = self.get_response(resource)
+        self.assertEqual(response.status_code, 401)
+
+        # Add perms to display resources
+        self.add_perms(perms=perms)
+        response = self.get_response(resource)
+        self.assertEqual(response.status_code, 200)
+
+    def test_cilayers_resource(self):
+        resource = 'cilayers'
+        perms = [Perm.read_configuration_item_info_generic,]
+
+        schema = '%s/schema' % resource
+        response = self.get_response(schema)
+        self.assertEqual(response.status_code, 200)
+
+        response = self.get_response(resource)
+        self.assertEqual(response.status_code, 401)
+
+        # Add perms to display resources
+        self.add_perms(perms=perms)
+        response = self.get_response(resource)
+        self.assertEqual(response.status_code, 200)
+
+    def test_cichange_resource(self):
+        resource = 'cichange'
+        perms = [Perm.read_configuration_item_info_generic,]
+
+        schema = '%s/schema' % resource
+        response = self.get_response(schema)
+        self.assertEqual(response.status_code, 200)
+
+        response = self.get_response(resource)
+        self.assertEqual(response.status_code, 401)
+
+        # Add perms to display resources
+        self.add_perms(perms=perms)
+        response = self.get_response(resource)
+        self.assertEqual(response.status_code, 200)
+
+    def test_cichangezabbixtrigger_resource(self):
+        resource = 'cichangezabbixtrigger'
+        perms = [Perm.read_configuration_item_info_generic,]
+
+        schema = '%s/schema' % resource
+        response = self.get_response(schema)
+        self.assertEqual(response.status_code, 200)
+
+        response = self.get_response(resource)
+        self.assertEqual(response.status_code, 401)
+
+        # Add perms to display resources
+        self.add_perms(perms=perms)
+        response = self.get_response(resource)
+        self.assertEqual(response.status_code, 200)
+
+    def test_cichangegit_resource(self):
+        resource = 'cichangegit'
+        perms = [Perm.read_configuration_item_info_git,]
+
+        schema = '%s/schema' % resource
+        response = self.get_response(schema)
+        self.assertEqual(response.status_code, 200)
+
+        response = self.get_response(resource)
+        self.assertEqual(response.status_code, 401)
+
+        # Add perms to display resources
+        self.add_perms(perms=perms)
+        response = self.get_response(resource)
+        self.assertEqual(response.status_code, 200)
+
+    def test_cichangepuppet_resource(self):
+        resource = 'cichangepuppet'
+        perms = [Perm.read_configuration_item_info_puppet,]
+
+        schema = '%s/schema' % resource
+        response = self.get_response(schema)
+        self.assertEqual(response.status_code, 200)
+
+        response = self.get_response(resource)
+        self.assertEqual(response.status_code, 401)
+
+        # Add perms to display resources
+        self.add_perms(perms=perms)
+        response = self.get_response(resource)
+        self.assertEqual(response.status_code, 200)
+
+    def test_cichangecmdbhistory_resource(self):
+        resource = 'cichangecmdbhistory'
+        perms = [Perm.read_configuration_item_info_generic,]
+
+        schema = '%s/schema' % resource
+        response = self.get_response(schema)
+        self.assertEqual(response.status_code, 200)
+
+        response = self.get_response(resource)
+        self.assertEqual(response.status_code, 401)
+
+        # Add perms to display resources
+        self.add_perms(perms=perms)
+        response = self.get_response(resource)
+        self.assertEqual(response.status_code, 200)
+
+    def test_citypes_resource(self):
+        resource = 'citypes'
+        perms = [Perm.read_configuration_item_info_generic,]
+
+        schema = '%s/schema' % resource
+        response = self.get_response(schema)
+        self.assertEqual(response.status_code, 200)
+
+        response = self.get_response(resource)
+        self.assertEqual(response.status_code, 401)
+
+        # Add perms to display resources
+        self.add_perms(perms=perms)
+        response = self.get_response(resource)
+        self.assertEqual(response.status_code, 200)
+
+    def test_ciowners_resource(self):
+        resource = 'ciowners'
+        perms = [Perm.read_configuration_item_info_generic,]
+
+        schema = '%s/schema' % resource
+        response = self.get_response(schema)
+        self.assertEqual(response.status_code, 200)
+
+        response = self.get_response(resource)
+        self.assertEqual(response.status_code, 401)
+
+        # Add perms to display resources
+        self.add_perms(perms=perms)
+        response = self.get_response(resource)
+        self.assertEqual(response.status_code, 200)
