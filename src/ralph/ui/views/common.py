@@ -44,7 +44,6 @@ from ralph.dnsedit.util import (
     reset_dns,
     update_txt_records,
 )
-
 from ralph.dnsedit.util import Error as DNSError
 from ralph.discovery.models import (
     Device,
@@ -55,7 +54,6 @@ from ralph.discovery.models import (
 from ralph.discovery.models_history import (
     FOREVER_DATE,
     ALWAYS_DATE,
-    DiscoveryWarning,
 )
 from ralph.util import presentation, pricing
 from ralph.ui.forms.devices import (
