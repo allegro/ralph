@@ -329,8 +329,8 @@ class ApiTest(TestCase):
             response = self.client.get(path=path, data=data, follow=True)
             status_list.append(response.status_code)
         gen_list = [200 for x in range(0, THROTTLE_AT)]
-        gen_list.append(403)
-        gen_list.append(403)
+        gen_list.append(429)
+        gen_list.append(429)
         self.maxDiff = None
         self.assertListEqual(gen_list, status_list)
 

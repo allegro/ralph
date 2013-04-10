@@ -31,8 +31,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.admin',
-#   slows down testing - disabled
-#   'djcelery',
     'south',
     'lck.django.common',
 #   slows down testing - disabled
@@ -73,7 +71,7 @@ ISSUETRACKERS = {
         'PROBLEMS_FIELD_NAME': '',
         'CMDB_PROJECT': '',
         'CMDB_VIEWCHANGE_LINK': 'http://url/%s',
-        'USE_CELERY': True,
+        'ENQUEUE_REGISTRATION': True,
         'OPA': {
                 'RSS_URL' : '',
                 'BOWNER_FIELD_NAME': '',
