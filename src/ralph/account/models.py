@@ -175,17 +175,37 @@ class Profile(BasicInfo, ActivationSupport, GravatarSupport,
 
 
 class BoundPerm(TimeTrackable, EditorTrackable):
-    profile = db.ForeignKey(Profile, verbose_name=_("profile"),
-            null=True, blank=True, default=None)
-    group = db.ForeignKey(Group, verbose_name=_("group"),
-            null=True, blank=True, default=None)
+    profile = db.ForeignKey(
+        Profile,
+        verbose_name=_("profile"),
+        null=True,
+        blank=True,
+        default=None,
+    )
+    group = db.ForeignKey(
+        Group,
+        verbose_name=_("group"),
+        null=True,
+        blank=True,
+        default=None
+    )
     perm = ChoiceField(verbose_name=_("permission"), choices=Perm)
-    venture = db.ForeignKey(Venture, verbose_name=_("venture"),
-            null=True, blank=True, default=None)
-    role = db.ForeignKey(VentureRole, verbose_name=_("venture role"),
-            null=True, blank=True, default=None,
-            help_text=_("if left empty, the permission applies to all roles "
-              "within the selected venture"))
+    venture = db.ForeignKey(
+        Venture,
+        verbose_name=_("venture"),
+        null=True,
+        blank=True,
+        default=None
+    )
+    role = db.ForeignKey(
+        VentureRole,
+        verbose_name=_("venture role"),
+        null=True,
+        blank=True,
+        default=None,
+        help_text=_("if left empty, the permission applies to all roles "
+        "within the selected venture")
+    )
 
     class Meta:
         verbose_name = _("bound permission")
