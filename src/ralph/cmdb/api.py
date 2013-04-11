@@ -57,6 +57,24 @@ class BusinessLineResource(MResource):
                 Perm.read_configuration_item_info_generic,
             ]
         )
+        filtering = {
+            'status': ALL,
+            'business_service': ALL,
+            'created': ALL,
+            'barcode': ALL,
+            'technical_service': ALL,
+            'modified': ALL,
+            'object_id': ALL,
+            'zabbix_id': ALL,
+            'pci_scope': ALL,
+            'state': ALL,
+            'added_manually': ALL,
+            'resource_uri': ALL,
+            'uid': ALL,
+            'id': ALL,
+            'name': ALL,
+        }
+        excludes = ('cache_version', )
         list_allowed_methods = ['get']
         resource_name = 'businessline'
         throttle = CacheThrottle(
@@ -75,6 +93,23 @@ class ServiceResource(MResource):
                 Perm.read_configuration_item_info_generic,
             ]
         )
+        filtering = {
+            'status': ALL,
+            'name': ALL,
+            'business_service': ALL,
+            'created': ALL,
+            'barcode': ALL,
+            'technical_service': ALL,
+            'modified': ALL,
+            'object_id': ALL,
+            'zabbix_id': ALL,
+            'pci_scope': ALL,
+            'state': ALL,
+            'added_manually': ALL,
+            'uid': ALL,
+            'resource_uri': ALL,
+        }
+        excludes = ('cache_version', )
         list_allowed_methods = ['get']
         resource_name = 'service'
         throttle = CacheThrottle(
@@ -103,6 +138,15 @@ class CIRelationResource(MResource):
                 Perm.read_configuration_item_info_generic,
             ]
         )
+        filtering = {
+            'id': ALL,
+            'created': ALL,
+            'modified': ALL,
+            'readonly': ALL,
+            'type': ALL,
+            'resource_uri': ALL,
+        }
+        excludes = ('cache_version', )
         list_allowed_methods = ['get']
         resource_name = 'cirelation'
         throttle = CacheThrottle(
@@ -138,6 +182,18 @@ class CIResource(MResource):
             'type': ALL_WITH_RELATIONS,
             'technical_owners': ALL,
             'bussiness_owners': ALL,
+            'status': ALL,
+            'business_service': ALL,
+            'cache_version': ALL,
+            'created': ALL,
+            'technical_service': ALL,
+            'modified': ALL,
+            'zabbix_id': ALL,
+            'state': ALL,
+            'added_manually': ALL,
+            'resource_uri': ALL,
+            'uid': ALL,
+            'id': ALL,
         }
         throttle = CacheThrottle(
             throttle_at=THROTTLE_AT,
@@ -174,6 +230,12 @@ class CILayersResource(MResource):
                 Perm.read_configuration_item_info_generic,
             ]
         )
+        filtering = {
+            'id': ALL,
+            'resource_uri': ALL,
+            'name': ALL,
+        }
+        excludes = ('icon', )
         list_allowed_methods = ['get']
         resourse_name = 'cilayers'
         excludes = ['cache_version', 'created', 'modified']
@@ -193,6 +255,20 @@ class CIChangeResource(MResource):
                 Perm.read_configuration_item_info_generic,
             ]
         )
+        filtering = {
+            'id': ALL,
+            'external_key': ALL,
+            'created': ALL,
+            'modified': ALL,
+            'object_id': ALL,
+            'priority': ALL,
+            'time': ALL,
+            'message': ALL,
+            'resource_uri': ALL,
+            'type': ALL,
+            'registration_type': ALL,
+        }
+        excludes = ('cache_version', )
         allowed_methods = ['get']
         resource_name = 'cichange'
         throttle = CacheThrottle(
@@ -211,6 +287,21 @@ class CIChangeZabbixTriggerResource(MResource):
                 Perm.read_configuration_item_info_generic,
             ]
         )
+        filtering = {
+            'id': ALL,
+            'status': ALL,
+            'description': ALL,
+            'created': ALL,
+            'lastchange': ALL,
+            'comments': ALL,
+            'modified': ALL,
+            'priority': ALL,
+            'host': ALL,
+            'trigger_id': ALL,
+            'host_id': ALL,
+            'resource_uri': ALL,
+        }
+        excludes = ('cache_version', )
         list_allowed_methods = ['get', 'post']
         resource_name = 'cichangezabbixtrigger'
         throttle = CacheThrottle(
@@ -229,6 +320,18 @@ class CIChangeGitResource(MResource):
                 Perm.read_configuration_item_info_git,
             ]
         )
+        filtering = {
+            'id': ALL,
+            'comment': ALL,
+            'changeset': ALL,
+            'file_paths': ALL,
+            'created': ALL,
+            'author': ALL,
+            'modified': ALL,
+            'time': ALL,
+            'resource_uri': ALL,
+        }
+        excludes = ('cache_version', )
         list_allowed_methods = ['get', 'post']
         resource_name = 'cichangegit'
         throttle = CacheThrottle(
@@ -247,6 +350,18 @@ class CIChangePuppetResource(MResource):
                 Perm.read_configuration_item_info_puppet,
             ]
         )
+        filtering = {
+            'id': ALL,
+            'status': ALL,
+            'kind': ALL,
+            'configuration_version': ALL,
+            'created': ALL,
+            'modified': ALL,
+            'host': ALL,
+            'time': ALL,
+            'resource_uri': ALL,
+        }
+        excludes = ('cache_version', )
         list_allowed_methods = ['get', 'post']
         resource_name = 'cichangepuppet'
         throttle = CacheThrottle(
@@ -267,6 +382,19 @@ class CIChangeCMDBHistoryResource(MResource):
                 Perm.read_configuration_item_info_generic,
             ]
         )
+        filtering = {
+            'id': ALL,
+            'comment': ALL,
+            'ci': ALL,
+            'created': ALL,
+            'old_value': ALL,
+            'modified': ALL,
+            'time': ALL,
+            'new_value': ALL,
+            'field_name': ALL,
+            'resource_uri': ALL,
+        }
+        excludes = ('cache_version', )
         list_allowed_methods = ['get']
         resource_name = 'cichangecmdbhistory'
         throttle = CacheThrottle(
@@ -285,6 +413,11 @@ class CITypesResource(MResource):
                 Perm.read_configuration_item_info_generic,
             ]
         )
+        filtering = {
+            'id': ALL,
+            'resource_uri': ALL,
+            'name': ALL,
+        }
         list_allowed_methods = ['get']
         resourse_name = 'citypes'
         excludes = ['cache_version', 'created', 'modified']
@@ -306,10 +439,17 @@ class CIOwnersResource(MResource):
         )
         list_allowed_methods = ['get']
         filtering = {
-            'first_name': ('startswith', 'exact',),
-            'last_name': ('startswith', 'exact',),
-            'email': ('startswith', 'exact',),
+            'first_name': ALL,
+            'last_name': ALL,
+            'email': ALL,
+            'cache_version': ALL,
+            'created': ALL,
+            'modified': ALL,
+            'id': ALL,
+            'resource_uri': ALL,
+
         }
+        excludes = ('cache_version', )
         resource_name = 'ciowners'
         throttle = CacheThrottle(
             throttle_at=THROTTLE_AT,
