@@ -474,7 +474,7 @@ class Info(DeviceUpdateView):
             for plugin in deployment.done_plugins.split(',')
             if plugin.strip()
         ]
-        return True, [
+        return DeploymentStatus.raw_from_id(deployment.status), [
             {'name': plugin, 'state': plugin in done_plugins}
             for plugin in deployment_plugins
         ]
@@ -489,12 +489,12 @@ class Info(DeviceUpdateView):
         else:
             tags = []
         tags = ['"%s"' % t.name if ',' in t.name else t.name for t in tags]
-        running_deployment, plugins = self.get_running_deployment_info()
+        deployment_status, plugins = self.get_running_deployment_info()
         ret.update({
             'property_form': self.property_form,
             'tags': ', '.join(tags),
             'dt': DeviceType,
-            'running_deployment': running_deployment,
+            'deployment_status': deployment_status,
             'plugins': plugins,
         })
         return ret
