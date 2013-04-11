@@ -23,7 +23,7 @@ class SshGanetiTest(TestCase):
         dev = Device.create(
             sn='sn_master_abc_1',
             model_name='SomeDeviceModelName',
-            model_type=DeviceType.unknown
+            model_type=DeviceType.unknown,
         )
         IPAddress.objects.create(address='127.0.1.88', device=dev)
 
@@ -31,21 +31,21 @@ class SshGanetiTest(TestCase):
         dev = Device.create(
             sn='sn_hy_abc_1',
             model_name='SomeDeviceModelName',
-            model_type=DeviceType.unknown
+            model_type=DeviceType.unknown,
         )
         dev.name = 'gnt-test.dc.local'
         dev.save()
         dev = Device.create(
             sn='sn_hy_abc_2',
             model_name='SomeDeviceModelName',
-            model_type=DeviceType.unknown
+            model_type=DeviceType.unknown,
         )
         dev.name = 'gnt10.dc.local'
         dev.save()
         dev = Device.create(
             sn='sn_hy_abc_3',
             model_name='SomeDeviceModelName',
-            model_type=DeviceType.unknown
+            model_type=DeviceType.unknown,
         )
         dev.name = 'gnt11.dc'
         dev.save()
@@ -82,7 +82,7 @@ class SshGanetiTest(TestCase):
             'ip': '127.0.1.111',
             'host': 'host123.dc55',
             'secondary_nodes': 'gnt-test-2.dc',
-            'primary_node': 'gnt-test.dc'
+            'primary_node': 'gnt-test.dc',
         }
         hypervisor = Device.objects.get(sn='sn_hy_abc_1')
         master_ip = IPAddress.objects.get(address='127.0.1.88')
