@@ -14,6 +14,9 @@ from ralph.discovery.tests.plugins.samples.ganeti import raw_data, parsed_data
 from ralph.discovery.tests.util import MockSSH
 
 
+CMD = "/usr/sbin/gnt-instance list -o name,pnode,snodes,ip,mac --no-headers"
+
+
 class SshGanetiTest(TestCase):
     def setUp(self):
         self._create_cluster_master()
@@ -51,10 +54,7 @@ class SshGanetiTest(TestCase):
         dev.save()
 
     def test_get_instances_list(self):
-        ssh = MockSSH([(
-            "/usr/sbin/gnt-instance list -o name,pnode,snodes,ip,mac --no-headers",
-            raw_data,
-        )])
+        ssh = MockSSH([(CMD, raw_data)])
         instances = list(ssh_ganeti.get_instances_list(ssh))
         self.assertEquals(instances, parsed_data)
 
@@ -101,10 +101,7 @@ class SshGanetiTest(TestCase):
         )
 
     def test_run_ssh_ganeti(self):
-        ssh = MockSSH([(
-            "gnt-instance list -o name,pnode,snodes,ip,mac --no-headers",
-            raw_data,
-        )])
+        ssh = MockSSH([(CMD, raw_data)])
         ssh_ganeti.run_ssh_ganeti(ssh, '127.0.1.88')
         master_ip = IPAddress.objects.get(address='127.0.1.88')
         hypervisor_1 = Device.objects.get(sn='sn_hy_abc_2')
