@@ -60,8 +60,10 @@ class DeploymentResource(MResource):
             'kickstart_path': ALL,
             'venture': ALL_WITH_RELATIONS,
             'venture_role': ALL_WITH_RELATIONS,
+            'is_running': ALL,
+            'done_plugins': ALL,
         }
-        excludes = ('save_priorities', 'max_save_priority',)
+        excludes = ('save_priorities', 'max_save_priority', 'cache_version', )
         cache = SimpleCache()
         throttle = CacheThrottle(
             throttle_at=THROTTLE_AT,

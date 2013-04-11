@@ -63,12 +63,22 @@ class IPAddressResource(MResource):
             'snmp_community': ALL,
             'device': ALL,
             'is_management': ALL,
+            'number': ALL,
+            'created': ALL,
+            'last_plugins': ALL,
+            'modified': ALL,
+            'http_family': ALL,
+            'last_puppet': ALL,
+            'resource_uri': ALL,
+            'id': ALL,
+            'last_seen': ALL,
         }
         excludes = (
             'save_priorities',
             'max_save_priority',
             'dns_info',
             'snmp_name',
+            'cache_version',
         )
         cache = SimpleCache()
         throttle = CacheThrottle(
@@ -86,6 +96,19 @@ class ModelGroupResource(MResource):
             required_perms=[
                 Perm.read_dc_structure,
             ]
+        )
+        filtering = {
+            'ip': ALL,
+            'name': ALL,
+            'created': ALL,
+            'price': ALL,
+            'modified': ALL,
+            'slots': ALL,
+            'type': ALL,
+            'resource_uri': ALL,
+        }
+        excludes = (
+            'cache_version',
         )
         cache = SimpleCache()
         throttle = CacheThrottle(
@@ -111,7 +134,16 @@ class ModelResource(MResource):
                 Perm.read_dc_structure,
             ]
         )
-        excludes = ('save_priorities', 'max_save_priority',)
+        filtering = {
+            'group': ALL,
+            'name': ALL,
+            'created': ALL,
+            'modified': ALL,
+            'chassis_size': ALL,
+            'id': ALL,
+            'resource_uri': ALL,
+        }
+        excludes = ('save_priorities', 'max_save_priority', 'cache_version', )
         cache = SimpleCache()
         filtering = {
             'type': ALL,
@@ -167,7 +199,35 @@ class DeviceResource(MResource):
             'ip_addresses': ALL_WITH_RELATIONS,
             'verified': ALL,
             'dc': ALL,
+            'uptime_timestamp': ALL,
+            'deprecation_date': ALL,
+            'cached_price': ALL,
+            'boot_firmware': ALL,
+            'id': ALL,
+            'management': ALL,
+            'chassis_position': ALL,
+            'purchase_date': ALL,
+            'uptime_seconds': ALL,
+            'hard_firmware': ALL,
+            'deleted': ALL,
+            'price': ALL,
+            'cached_cost': ALL,
+            'remarks': ALL,
+            'mgmt_firmware': ALL,
+            'properties': ALL,
+            'support_kind': ALL,
+            'name': ALL,
+            'created': ALL,
+            'warranty_expiration_date': ALL,
+            'modified': ALL,
+            'diag_firmware': ALL,
+            'support_expiration_date': ALL,
+            'position': ALL,
+            'resource_uri': ALL,
+            'rack': ALL,
+            'last_seen': ALL,
         }
+        excludes = ('cache_version')
         authentication = ApiKeyAuthentication()
         authorization = RalphAuthorization(
             required_perms=[
