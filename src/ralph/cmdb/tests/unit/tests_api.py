@@ -433,6 +433,8 @@ class AccessToCMDBApiTest(TestCase):
             'username': self.user.username,
             'api_key': self.user.api_key.key,
         }
+        cache.delete("api_user_accesses")
+
 
     def get_response(self, resource):
         path = "/api/v0.9/%s/" % resource

@@ -8,6 +8,7 @@ from __future__ import unicode_literals
 import datetime
 
 from django.contrib.auth.models import User
+from django.core.cache import cache
 
 from ralph.account. models import BoundPerm, Profile, Perm
 from ralph.business.models import Venture
@@ -146,6 +147,7 @@ class AccessToDiscoveyApiTest(TestCase):
             'username': self.user.username,
             'api_key': self.user.api_key.key,
         }
+        cache.delete("api_user_accesses")
 
     def get_response(self, resource):
         path = "/api/v0.9/%s/" % resource
