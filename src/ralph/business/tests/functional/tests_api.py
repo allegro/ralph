@@ -4,8 +4,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-# from django.contrib.auth.models import User
-
 from ralph.account. models import BoundPerm, Profile, Perm
 from ralph.ui.tests.global_utils import create_user
 
