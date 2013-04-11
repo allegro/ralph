@@ -21,7 +21,7 @@ SAVE_PRIORITY = 5
 
 def get_instances_list(ssh):
     stdin, stdout, stderr = ssh.exec_command(
-        "gnt-instance list -o name,pnode,snodes,ip,mac --no-headers",
+        "/usr/sbin/gnt-instance list -o name,pnode,snodes,ip,mac --no-headers",
     )
     for line in stdout.read().strip().splitlines():
         data = line.strip().split()

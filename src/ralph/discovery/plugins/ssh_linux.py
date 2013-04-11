@@ -137,7 +137,7 @@ def update_hostname(ssh, dev):
 
 
 def is_ganeti_cluster_master(ssh, dev):
-    stdin, stdout, stderr = ssh.exec_command("gnt-cluster getmaster")
+    stdin, stdout, stderr = ssh.exec_command("/usr/sbin/gnt-cluster getmaster")
     master = stdout.read().strip()
     if not master:
         return False
