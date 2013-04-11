@@ -5,6 +5,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from ralph.account. models import BoundPerm, Profile, Perm
+from django.core.cache import cache
 from ralph.ui.tests.global_utils import create_user
 
 from django.test import TestCase
@@ -23,6 +24,7 @@ class BusinessApiTest(TestCase):
             'username': self.user.username,
             'api_key': self.user.api_key.key,
         }
+        cache.delete("api_user_accesses")
 
     def get_response(self, resource):
         path = "/api/v0.9/%s/" % resource
