@@ -52,7 +52,7 @@ class SshGanetiTest(TestCase):
 
     def test_get_instances_list(self):
         ssh = MockSSH([(
-            "gnt-instance list -o name,pnode,snodes,ip,mac --no-headers",
+            "/usr/sbin/gnt-instance list -o name,pnode,snodes,ip,mac --no-headers",
             raw_data,
         )])
         instances = list(ssh_ganeti.get_instances_list(ssh))
