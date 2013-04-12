@@ -82,6 +82,7 @@ INSTALLED_APPS = [
     'ralph.deployment',
     'ajax_select',
     'powerdns',
+    'allegro_plugins',
 ]
 TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.auth.context_processors.auth',
@@ -138,6 +139,11 @@ LOGGING = {
         },
         'ralph': {
             'handlers': ['file'],
+            'propagate': True,
+            'level': 'DEBUG',
+        },
+        'allegro_plugins.hamster': {
+            'handlers': ['file', 'console'],
             'propagate': True,
             'level': 'DEBUG',
         },
@@ -301,6 +307,8 @@ IDRAC_PASSWORD = None
 OPENSTACK_EXTRA_QUERIES = []
 FISHEYE_URL = ""
 FISHEYE_PROJECT_NAME = ""
+HAMSTER_API_URL = ""
+
 ISSUETRACKERS = {
     'default': {
         'ENGINE': '',
