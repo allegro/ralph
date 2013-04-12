@@ -39,7 +39,6 @@ from ralph.ui.views.common import (
     BaseMixin,
     Components,
     Costs,
-    Discover,
     History,
     Info,
     Prices,
@@ -212,10 +211,6 @@ class VenturesHistory(Ventures, History):
 
 
 class VenturesPurchase(Ventures, Purchase):
-    pass
-
-
-class VenturesDiscover(Ventures, Discover):
     pass
 
 

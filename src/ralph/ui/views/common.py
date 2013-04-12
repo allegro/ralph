@@ -35,6 +35,7 @@ from ralph.business.models import (
 )
 from ralph.account.models import get_user_home_page_url, Perm
 from ralph.cmdb.models import CI
+from ralph.deployment.models import Deployment, DeploymentStatus
 from ralph.deployment.util import get_next_free_hostname, get_first_free_ip
 from ralph.dnsedit.models import DHCPEntry
 from ralph.dnsedit.util import (
@@ -56,6 +57,7 @@ from ralph.discovery.models_history import (
     DiscoveryWarning,
 )
 from ralph.util import presentation, pricing
+from ralph.util.plugin import BY_NAME as AVAILABLE_PLUGINS
 from ralph.ui.forms.devices import (
     DeviceInfoForm,
     DeviceInfoVerifiedForm,
@@ -297,11 +299,6 @@ class BaseMixin(object):
                 MenuItem('Purchase', fugue_icon='fugue-baggage-cart-box',
                          href=tab_href('purchase')),
             ])
-        if has_perm(Perm.run_discovery, venture):
-            tab_items.extend([
-                MenuItem('Discover', fugue_icon='fugue-flashlight',
-                         href=tab_href('discover')),
-            ])
         if ('ralph.cmdb' in settings.INSTALLED_APPS and
             has_perm(Perm.read_configuration_item_info_generic)):
             ci = ''
@@ -464,18 +461,41 @@ class Info(DeviceUpdateView):
             'dc_name': self.object.dc,
         }
 
+    def get_running_deployment_info(self):
+        try:
+            deployment = Deployment.objects.exclude(
+                status=DeploymentStatus.done,
+            ).get(device=self.object)
+        except Deployment.DoesNotExist:
+            return False, []
+        deployment_plugins = AVAILABLE_PLUGINS['deployment'].keys()
+        done_plugins = [
+            plugin.strip()
+            for plugin in deployment.done_plugins.split(',')
+            if plugin.strip()
+        ]
+        return DeploymentStatus.raw_from_id(deployment.status), [
+            {'name': plugin, 'state': plugin in done_plugins}
+            for plugin in deployment_plugins
+        ]
+
     def get_context_data(self, **kwargs):
         ret = super(Info, self).get_context_data(**kwargs)
         if self.object:
-            tags = self.object.get_tags(official=False,
-                                      author=self.request.user)
+            tags = self.object.get_tags(
+                official=False,
+                author=self.request.user,
+            )
         else:
             tags = []
         tags = ['"%s"' % t.name if ',' in t.name else t.name for t in tags]
+        deployment_status, plugins = self.get_running_deployment_info()
         ret.update({
             'property_form': self.property_form,
             'tags': ', '.join(tags),
             'dt': DeviceType,
+            'deployment_status': deployment_status,
+            'plugins': plugins,
         })
         return ret
 
@@ -937,25 +957,6 @@ class Purchase(DeviceUpdateView):
                 ),
             }
         )
-        return ret
-
-
-class Discover(DeviceDetailView):
-    template_name = 'ui/device_discover.html'
-    read_perm = Perm.run_discovery
-
-    def get_context_data(self, **kwargs):
-        ret = super(Discover, self).get_context_data(**kwargs)
-        addresses = [ip.address for ip in self.object.ipaddress_set.all()]
-        warnings = DiscoveryWarning.objects.filter(
-            db.Q(device=self.object),
-            db.Q(ip__in=addresses),
-        ).order_by('-date')
-        ret.update({
-            'address': addresses[0] if addresses else '',
-            'addresses': json.dumps(addresses),
-            'warnings': warnings,
-        })
         return ret
 
 

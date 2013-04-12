@@ -12,25 +12,25 @@ from optparse import make_option
 import textwrap
 
 from django.core.management.base import BaseCommand
+import django_rq
 
 from ralph.discovery.tasks import dummy_horde
 
 
-class OptionBag(object): pass
-
-
 class Command(BaseCommand):
-    """Runs a horde of dummy tasks for testing whether the scaffolding works. 
+    """
+    Runs a horde of dummy tasks for testing whether the scaffolding works.
     """
     help = textwrap.dedent(__doc__).strip()
     option_list = BaseCommand.option_list + (
-            make_option('--remote',
-                action='store_true',
-                dest='remote',
-                default=False,
-                help='Run the horde by scheduling it on '
-                     'the message queue.'),
-            )
+        make_option(
+            '--remote',
+            action='store_true',
+            dest='remote',
+            default=False,
+            help='Run the horde by scheduling it on the message queue.',
+        ),
+    )
     requires_model_validation = False
 
     def handle(self, *args, **options):
@@ -41,6 +41,12 @@ class Command(BaseCommand):
         except (ValueError, TypeError, IndexError):
             how_many = 1000
         if options['remote']:
-            dummy_horde.delay(how_many=how_many, interactive=False)
+            queue = django_rq.get_queue()
+            queue.enqueue_call(
+                func=dummy_horde,
+                kwargs=dict(how_many=how_many, interactive=False),
+                timeout=60,
+                result_ttl=0,
+            )
         else:
             dummy_horde(how_many=how_many, interactive=True)
