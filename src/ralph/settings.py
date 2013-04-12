@@ -59,7 +59,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.admin',
-    'djcelery',
+    'django_rq',
     'south',
     'lck.django.common',
     'lck.django.activitylog',
@@ -187,19 +187,11 @@ EDITOR_TRACKABLE_MODEL = AUTH_PROFILE_MODULE
 SCORE_VOTER_MODEL = AUTH_PROFILE_MODULE
 # lck.django.tags models
 TAG_AUTHOR_MODEL = AUTH_PROFILE_MODULE
-# Celery
-from multiprocessing import cpu_count
-CELERYD_CONCURRENCY = min(4 * cpu_count(), 32)
-BROKER_POOL_LIMIT = 4 * CELERYD_CONCURRENCY
-CELERY_SEND_TASK_ERROR_EMAILS = True
-CELERY_RESULT_BACKEND = "disabled"
-CELERY_DISABLE_RATE_LIMITS = True
-CELERYD_POOL_PUTLOCKS = False
-CELERYD_FORCE_EXECV = False
-CELERYD_TASK_TIME_LIMIT = 900
-CELERY_ROUTES = (
-    "ralph.discovery.tasks.DCRouter",
-)
+# define the lookup channels in use on the site
+AJAX_LOOKUP_CHANNELS = {
+    'ci': ('ralph.cmdb.models', 'CILookup'),
+    'device': ('ralph.ui.channels', 'DeviceLookup'),
+}
 # magically include jqueryUI/js/css
 AJAX_SELECT_BOOTSTRAP = True
 AJAX_SELECT_INLINES = 'inline'
@@ -245,7 +237,6 @@ CACHES = dict(
     )
 )
 LOGGING['handlers']['file']['filename'] = CURRENT_DIR + 'runtime.log'
-BROKER_URL = "sqla+sqlite:///" + CURRENT_DIR + 'dbcelery.sqlite'
 MEDIA_ROOT = '~/.ralph/shared/uploads'
 STATIC_ROOT = '~/.ralph/shared/static'
 FILE_UPLOAD_TEMP_DIR = '~/.ralph/shared/uploads-part'
@@ -323,7 +314,7 @@ ISSUETRACKERS = {
         'PROBLEMS_FIELD_NAME': '',
         'CMDB_PROJECT': '',
         'CMDB_VIEWCHANGE_LINK': 'http://url/%s',
-        'USE_CELERY': True,
+        'ENQUEUE_REGISTRATION': True,
         'OPA': {
             'BOWNER_FIELD_NAME': '',
             'TOWNER_FIELD_NAME': '',
@@ -351,18 +342,24 @@ API_THROTTLING = {
     'timeframe': 3600,
     'expiration': None,
 }
-
+RQ_QUEUE_LIST = ('reports', 'email', 'cmdb_git', 'cmdb_jira', 'cmdb_jira_int',
+                 'cmdb_zabbix', 'cmdb_assets')
+RQ_QUEUES = {
+    'default': {
+        'HOST': 'localhost',
+        'PORT': 6379,
+        'DB': 0,
+    },
+}
+for queue in RQ_QUEUE_LIST:
+    RQ_QUEUES[queue] = dict(RQ_QUEUES['default'])
 AUTOCI = True
 AUTOCI_SKIP_MSG = 'AUTOCI is disabled'
-
 # </template>
 
 #
 # programmatic stuff that need to be at the end of the file
 #
-import djcelery
-djcelery.setup_loader()
-
 import os
 local_profile = os.environ.get('DJANGO_SETTINGS_PROFILE', 'local')
 ralph_settings_path = os.environ.get('RALPH_SETTINGS_PATH', '~/.ralph')

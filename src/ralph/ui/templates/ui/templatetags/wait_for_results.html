@@ -1,0 +1,6 @@
+<img class="waiting" src="/static/ui/img/cup.png" alt="Loading..." />
+{% if autoreload %}
+    <script type="text/javascript">
+        setTimeout(function() {location.reload(true);}, {{ reload_frequency }});
+    </script>
+{% endif %}
