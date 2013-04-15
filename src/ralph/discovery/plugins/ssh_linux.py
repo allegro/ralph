@@ -136,6 +136,14 @@ def update_hostname(ssh, dev):
     dev.save(priority=SAVE_PRIORITY)
 
 
+def is_ganeti_cluster_master(ssh, dev):
+    stdin, stdout, stderr = ssh.exec_command("/usr/sbin/gnt-cluster getmaster")
+    master = stdout.read().strip()
+    if not master:
+        return False
+    return dev.name == master
+
+
 def run_ssh_linux(ssh, ip):
     ethernets = get_ethernets(ssh)
     dev = run_dmidecode(ssh, ethernets)
@@ -144,7 +152,8 @@ def run_ssh_linux(ssh, ip):
         update_shares(ssh, dev)
         update_os(ssh, dev)
         update_hostname(ssh, dev)
-    return dev.name if dev else ''
+        return dev.name, is_ganeti_cluster_master(ssh, dev)
+    return '', False
 
 
 @plugin.register(chain='discovery', requires=['ping', 'snmp'])
@@ -174,8 +183,8 @@ def ssh_linux(**kwargs):
                 break
         else:
             return False, 'Authorization failed', kwargs
-        name = run_ssh_linux(ssh, ip)
+        name, ganeti_master = run_ssh_linux(ssh, ip)
     except (network.Error, paramiko.SSHException) as e:
         return False, str(e), kwargs
+    kwargs['ganeti_master'] = ganeti_master
     return True, name, kwargs
-
