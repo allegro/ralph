@@ -111,7 +111,7 @@ def run_ssh_ganeti(ip):
     return master_hostname
 
 
-@plugin.register(chain='discovery', requires=['ping', 'http'])
+@plugin.register(chain='discovery', requires=['ping', 'snmp'])
 def ssh_ganeti(**kwargs):
     if 'nx-os' in kwargs.get('snmp_name', '').lower():
         return False, 'incompatible Nexus found.', kwargs
