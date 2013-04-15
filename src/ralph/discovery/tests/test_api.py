@@ -10,7 +10,6 @@ import datetime
 from django.contrib.auth.models import User
 from django.core.cache import cache
 
-from ralph.account. models import BoundPerm, Profile, Perm
 from ralph.business.models import Venture
 from ralph.discovery.models import (
     ComponentModel,
@@ -20,8 +19,7 @@ from ralph.discovery.models import (
     DeviceType,
     SplunkUsage,
 )
-from ralph.ui.tests.util import create_device, create_model
-from ralph.ui.tests.global_utils import create_user
+from ralph.ui.tests.util import create_device
 from tastypie.test import ResourceTestCase
 
 
@@ -285,23 +283,6 @@ class AccessToDiscoveyApiTest(TestCase):
     def test_virtualserver_resource(self):
         resource = 'virtualserver'
         perms = [Perm.read_dc_structure,]
-
-        schema = '%s/schema' % resource
-        response = self.get_response(schema)
-        self.assertEqual(response.status_code, 200)
-
-        response = self.get_response(resource)
-        self.assertEqual(response.status_code, 401)
-
-        # Add perms to display resources
-        self.add_perms(perms=perms)
-
-        response = self.get_response(resource)
-        self.assertEqual(response.status_code, 200)
-
-    def test_ipaddress_resource(self):
-        resource = 'ipaddress'
-        perms = [Perm.read_network_structure,]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)
