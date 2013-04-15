@@ -82,7 +82,6 @@ INSTALLED_APPS = [
     'ralph.deployment',
     'ajax_select',
     'powerdns',
-    'allegro_plugins',
 ]
 TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.auth.context_processors.auth',
