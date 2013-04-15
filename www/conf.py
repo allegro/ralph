@@ -209,6 +209,30 @@ latex_documents = [
 # If false, no module index is generated.
 # latex_use_modindex = True
 all_releases = [
+    dict(version='1.2.0',
+        release_date='April 15, 2013',
+        description_lines=[
+            'This is a major release. It brings new big features and bugfixes.',
+            'Added new modules: asset management, ralph beast command line client,'
+            'windows software discovery',
+            'Replaced workers architecture with RQ',
+            'New integrations with external systems',
+            'And much more.',
+        ],
+    ),
+    dict(
+        version='1.1.18',
+        release_date='March 19, 2013',
+        description_lines=[
+            "Introduced 3rd party module for Ralph - Offline Assets Management",
+            "Added CMDB - Splunk integration.",
+            "Added archivization feature for CMDB.",
+            "Added AutoCI feature for CMDB.",
+            "Improved Jira integration.",
+            "Added ability to discover Windows software using don pedro plugin.",
+            "Discovery of hardware fixed and improved.",
+        ],
+    ),
     dict(
         version='1.1.17',
         release_date='February 19, 2013',
