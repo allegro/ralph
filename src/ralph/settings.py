@@ -141,8 +141,8 @@ LOGGING = {
             'propagate': True,
             'level': 'DEBUG',
         },
-        'allegro_plugins.hamster': {
-            'handlers': ['file', 'console'],
+        'allegro_plugins': {
+            'handlers': ['file'],
             'propagate': True,
             'level': 'DEBUG',
         },
