@@ -43,6 +43,7 @@ from ralph.dnsedit.util import (
     set_revdns_record,
     get_revdns_records,
     reset_dns,
+    update_txt_records,
 )
 from ralph.dnsedit.util import Error as DNSError
 from ralph.discovery.models import (
@@ -54,7 +55,6 @@ from ralph.discovery.models import (
 from ralph.discovery.models_history import (
     FOREVER_DATE,
     ALWAYS_DATE,
-    DiscoveryWarning,
 )
 from ralph.util import presentation, pricing
 from ralph.util.plugin import BY_NAME as AVAILABLE_PLUGINS
@@ -724,6 +724,15 @@ class Addresses(DeviceDetailView):
                                         r.content,
                                     ),
                                 )
+                                try:
+                                    ipaddress = IPAddress.objects.get(
+                                        address=r.content,
+                                    )
+                                except IPAddress.DoesNotExist:
+                                    pass
+                                else:
+                                    if ipaddress.device:
+                                        update_txt_records(ipaddress.device)
                         else:
                             for ptr in get_revdns_records(
                                     r.content).filter(content=r.name):
