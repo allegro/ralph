@@ -1,5 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""
+A discovery plugin for ganeti virtual server hypervisors.
+
+This plugin tries to connect through SSH to the server and execute Ganeti-
+-specific commands to get information about its cluster master, and all
+the virtual servers running on it. I also sets all the virtual servers that
+were there but are not anymore to deleted.
+
+"""
 
 from __future__ import absolute_import
 from __future__ import division
