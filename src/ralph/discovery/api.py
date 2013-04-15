@@ -18,7 +18,6 @@ from django.conf import settings
 from django.db import models as db
 from tastypie import fields
 from tastypie.authentication import ApiKeyAuthentication
-from tastypie.authorization import DjangoAuthorization
 from tastypie.cache import SimpleCache
 from tastypie.constants import ALL, ALL_WITH_RELATIONS
 from tastypie.resources import ModelResource as MResource
@@ -27,7 +26,6 @@ from tastypie.throttle import CacheThrottle
 from ralph.account.api_auth import RalphAuthorization
 from ralph.account.models import Perm
 from ralph.discovery.models import (
-    ComponentModel,
     ComponentType,
     Device,
     DeviceModel,

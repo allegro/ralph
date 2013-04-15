@@ -18,7 +18,6 @@ Resource.method_check = method_check
 
 from django.conf import settings
 from tastypie.authentication import ApiKeyAuthentication
-from tastypie.authorization import DjangoAuthorization
 from tastypie.constants import ALL, ALL_WITH_RELATIONS
 from tastypie.fields import ForeignKey as TastyForeignKey
 from tastypie.resources import ModelResource as MResource
