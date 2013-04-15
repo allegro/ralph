@@ -726,7 +726,7 @@ class Addresses(DeviceDetailView):
                                 )
                                 try:
                                     ipaddress = IPAddress.objects.get(
-                                        address=r.content
+                                        address=r.content,
                                     )
                                 except IPAddress.DoesNotExist:
                                     pass
