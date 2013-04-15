@@ -141,11 +141,6 @@ LOGGING = {
             'propagate': True,
             'level': 'DEBUG',
         },
-        'allegro_plugins': {
-            'handlers': ['file'],
-            'propagate': True,
-            'level': 'DEBUG',
-        },
         'critical_only': {
             'handlers': ['file', 'mail_admins'],
             'level': 'CRITICAL',
@@ -297,7 +292,6 @@ IDRAC_PASSWORD = None
 OPENSTACK_EXTRA_QUERIES = []
 FISHEYE_URL = ""
 FISHEYE_PROJECT_NAME = ""
-HAMSTER_API_URL = ""
 
 ISSUETRACKERS = {
     'default': {
