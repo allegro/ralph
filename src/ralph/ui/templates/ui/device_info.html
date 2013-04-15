@@ -3,6 +3,15 @@
 {% load icons %}
 
 {% block content %}
+{% if deployment_status %}
+    <div class="alert alert-block">
+        <strong>The deployment is running. Deployment status: <span class="label label-warning">{{ deployment_status }}</span> Status of plugins execution:</strong>
+        {% for plugin in plugins %}
+        <span title="{% if plugin.state %}done{% else %}waiting{% endif %}" class="label {% if plugin.state %}label-success{% endif %}">{{ plugin.name }}</span>
+        {% endfor %}
+    </div>
+{% endif %}
+
 <div class="row-fluid">
 <div class="span6">
 {% include 'ui/device-form.html' with form=form %}
