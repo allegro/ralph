@@ -38,10 +38,8 @@ def get_device(hostname, default=None):
         Q(ipaddress__hostname=hostname)
     ).distinct()
     for device in qs[:1]:
-        break
-    else:
-        return default
-    return device
+        return device
+    return default
 
 
 def get_master_hostname(ssh):
