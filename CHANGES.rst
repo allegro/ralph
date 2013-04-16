@@ -2,34 +2,38 @@ Change Log
 ----------
 
 1.2.0
-~~~~~~
+~~~~~
 
 Released on April 15, 2013
 
-* Replaced Celery workers engine with RQ (http://python-rq.org/)
+* Replaced Celery asynchronous worker engine with RQ, see:
+  http://python-rq.org.
 
-* Introduced Ralph commandline tool - Beast, see: https://github.com/allegro/ralph_beast
+* Introduced Ralph commandline tool - Beast, see:
+  https://github.com/allegro/ralph_beast.
 
-* Introduced Offline Asset Mgmt module for Ralph, see: https://github.com/allegro/ralph_assets
+* Introduced Offline Asset Mgmt module for Ralph, see:
+  https://github.com/allegro/ralph_assets.
 
-* Discovery improvements: added Ganeti devices support, Juniper and Nortel switches, 
-  3ware controllers. Added new Puppet REST integration.
+* Discovery improvements: added Ganeti devices support, Juniper and Nortel
+  switches, 3ware controllers. Added new Puppet REST integration.
 
-* Introduced discovery for Windows Sofware via Don-Pedro plugin, and extended ability
-  to search software versions using complex operators (<, <=, >, >= etc).
+* Introduced discovery for Windows Sofware via Don-Pedro plugin and extended
+  ability to search software versions using complex operators (<, <=, >, >= etc).
 
-* Integration CMDB-Splunk introduced.
+* CMDB-Splunk integration introduced.
 
-* Reports don't block UI anymore ("asynchronous reports")
+* Reports are now asynchronous (don't block the UI anymore, happen on the queue).
 
-* Added User Preferences framework - for now ability to change landing page per user.
+* Added User Preferences framework - for now with the ability to change landing
+  page per user.
 
-* REST API extended - new filters, and new resources (owners).
+* REST API extended - new filters and new resources (owners).
 
-* Deployment improvements: statuses plugin fixed, duplicating networks added, 
-  firstfreeip function fixed.
+* Deployment improvements: statuses plugin fixed, duplicating networks added,
+  ``firstfreeip`` function fixed.
 
-* Performance improvements in the CMDB
+* Performance improvements in the CMDB.
 
 * May Ralph UI bugs and discovery fixes.
 
