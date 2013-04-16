@@ -57,26 +57,25 @@ class IPAddressResource(MResource):
         )
         filtering = {
             'address': ALL,
-            'hostname': ALL,
-            'snmp_community': ALL,
-            'device': ALL,
-            'is_management': ALL,
-            'number': ALL,
             'created': ALL,
-            'last_plugins': ALL,
-            'modified': ALL,
+            'device': ALL,
+            'hostname': ALL,
             'http_family': ALL,
-            'last_puppet': ALL,
-            'resource_uri': ALL,
             'id': ALL,
+            'is_management': ALL,
+            'last_plugins': ALL,
+            'last_puppet': ALL,
             'last_seen': ALL,
+            'modified': ALL,
+            'number': ALL,
+            'snmp_community': ALL,
         }
         excludes = (
-            'save_priorities',
-            'max_save_priority',
-            'dns_info',
-            'snmp_name',
             'cache_version',
+            'dns_info',
+            'max_save_priority',
+            'save_priorities',
+            'snmp_name',
         )
         cache = SimpleCache()
         throttle = CacheThrottle(
@@ -96,14 +95,13 @@ class ModelGroupResource(MResource):
             ]
         )
         filtering = {
-            'ip': ALL,
-            'name': ALL,
             'created': ALL,
-            'price': ALL,
+            'ip': ALL,
             'modified': ALL,
+            'name': ALL,
+            'price': ALL,
             'slots': ALL,
             'type': ALL,
-            'resource_uri': ALL,
         }
         excludes = (
             'cache_version',
@@ -133,13 +131,12 @@ class ModelResource(MResource):
             ]
         )
         filtering = {
-            'group': ALL,
-            'name': ALL,
-            'created': ALL,
-            'modified': ALL,
             'chassis_size': ALL,
+            'created': ALL,
+            'group': ALL,
             'id': ALL,
-            'resource_uri': ALL,
+            'modified': ALL,
+            'name': ALL,
         }
         excludes = ('save_priorities', 'max_save_priority', 'cache_version', )
         cache = SimpleCache()
@@ -189,41 +186,40 @@ class DeviceResource(MResource):
     class Meta:
         excludes = ('save_priorities', 'max_save_priority')
         filtering = {
-            'model': ALL_WITH_RELATIONS,
-            'sn': ALL,
             'barcode': ALL,
-            'venture': ALL_WITH_RELATIONS,
-            'role': ALL_WITH_RELATIONS,
-            'ip_addresses': ALL_WITH_RELATIONS,
-            'verified': ALL,
-            'dc': ALL,
-            'uptime_timestamp': ALL,
-            'deprecation_date': ALL,
-            'cached_price': ALL,
             'boot_firmware': ALL,
-            'id': ALL,
-            'management': ALL,
-            'chassis_position': ALL,
-            'purchase_date': ALL,
-            'uptime_seconds': ALL,
-            'hard_firmware': ALL,
-            'deleted': ALL,
-            'price': ALL,
             'cached_cost': ALL,
-            'remarks': ALL,
-            'mgmt_firmware': ALL,
-            'properties': ALL,
-            'support_kind': ALL,
-            'name': ALL,
+            'cached_price': ALL,
+            'chassis_position': ALL,
             'created': ALL,
-            'warranty_expiration_date': ALL,
-            'modified': ALL,
+            'dc': ALL,
+            'deleted': ALL,
+            'deprecation_date': ALL,
             'diag_firmware': ALL,
-            'support_expiration_date': ALL,
-            'position': ALL,
-            'resource_uri': ALL,
-            'rack': ALL,
+            'hard_firmware': ALL,
+            'id': ALL,
+            'ip_addresses': ALL_WITH_RELATIONS,
             'last_seen': ALL,
+            'management': ALL,
+            'mgmt_firmware': ALL,
+            'model': ALL_WITH_RELATIONS,
+            'modified': ALL,
+            'name': ALL,
+            'position': ALL,
+            'price': ALL,
+            'properties': ALL,
+            'purchase_date': ALL,
+            'rack': ALL,
+            'remarks': ALL,
+            'role': ALL_WITH_RELATIONS,
+            'sn': ALL,
+            'support_expiration_date': ALL,
+            'support_kind': ALL,
+            'uptime_seconds': ALL,
+            'uptime_timestamp': ALL,
+            'venture': ALL_WITH_RELATIONS,
+            'verified': ALL,
+            'warranty_expiration_date': ALL,
         }
         excludes = ('cache_version')
         authentication = ApiKeyAuthentication()
@@ -526,15 +522,15 @@ class IPAddressResource(MResource):
         )
         filtering = {
             'address': ALL,
-            'hostname': ALL,
-            'snmp_community': ALL,
             'device': ALL,
+            'hostname': ALL,
             'is_management': ALL,
+            'snmp_community': ALL,
         }
         excludes = (
-            'save_priorities',
-            'max_save_priority',
             'dns_info',
+            'max_save_priority',
+            'save_priorities',
             'snmp_name',
         )
         cache = SimpleCache()

@@ -44,23 +44,23 @@ class DeploymentResource(MResource):
             ]
         )
         filtering = {
-            'id': ALL,
             'created': ALL,
-            'modified': ALL,
-            'status_lastchanged': ALL,
-            'issue_key': ALL,
-            'user': ALL_WITH_RELATIONS,
             'device': ALL_WITH_RELATIONS,
-            'mac': ALL,
-            'status': ALL,
-            'ip': ALL,
+            'done_plugins': ALL,
             'hostname': ALL,
+            'id': ALL,
             'img_path': ALL,
+            'ip': ALL,
+            'is_running': ALL,
+            'issue_key': ALL,
             'kickstart_path': ALL,
+            'mac': ALL,
+            'modified': ALL,
+            'status': ALL,
+            'status_lastchanged': ALL,
+            'user': ALL_WITH_RELATIONS,
             'venture': ALL_WITH_RELATIONS,
             'venture_role': ALL_WITH_RELATIONS,
-            'is_running': ALL,
-            'done_plugins': ALL,
         }
         excludes = ('save_priorities', 'max_save_priority', 'cache_version', )
         cache = SimpleCache()
