@@ -471,10 +471,12 @@ class DeviceWithPricingResource(DeviceResource):
         if splunk_start and splunk_end:
             try:
                 splunk_start = datetime.datetime.strptime(
-                    splunk_start, '%Y-%m-%d'
+                    splunk_start,
+                    '%Y-%m-%d',
                 )
                 splunk_end = datetime.datetime.strptime(
-                    splunk_end, '%Y-%m-%d'
+                    splunk_end,
+                    '%Y-%m-%d',
                 )
             except ValueError:
                 splunk_start, splunk_end = None, None
