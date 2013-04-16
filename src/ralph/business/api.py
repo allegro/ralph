@@ -70,7 +70,6 @@ class VentureResource(MResource):
             'department': ALL,
             'path': ALL,
             'is_infrastructure': ALL,
-            'resource_uri': ALL,
         }
         excludes = ('save_priorities', 'max_save_priority', 'cache_version', )
         cache = SimpleCache()
@@ -108,7 +107,6 @@ class VentureLightResource(MResource):
             'department': ALL,
             'path': ALL,
             'is_infrastructure': ALL,
-            'resource_uri': ALL,
         }
         excludes = ('save_priorities', 'max_save_priority', 'cache_version', )
         cache = SimpleCache()
@@ -152,7 +150,6 @@ class RoleResource(MResource):
             'devices': ALL,
             'properties': ALL,
             'path': ALL,
-            'resource_uri': ALL,
         }
         excludes = ('save_priorities', 'max_save_priority', 'cache_version', )
         cache = SimpleCache()
@@ -187,7 +184,6 @@ class RoleLightResource(MResource):
             'created': ALL,
             'modified': ALL,
             'path': ALL,
-            'resource_uri': ALL,
         }
         excludes = ('save_priorities', 'max_save_priority', 'cache_version', )
         cache = SimpleCache()
@@ -214,7 +210,6 @@ class DepartmentResource(MResource):
         filtering = {
             'id': ALL,
             'name': ALL,
-            'resource_uri': ALL,
         }
         cache = SimpleCache()
         excludes = ('icon',)
@@ -237,7 +232,6 @@ class RolePropertyTypeResource(MResource):
         filtering = {
             'id': ALL,
             'symbol': ALL,
-            'resource_uri': ALL,
         }
         cache = SimpleCache()
         throttle = CacheThrottle(
@@ -269,7 +263,6 @@ class RolePropertyTypeValueResource(MResource):
             'symbol': ALL,
             'role': ALL,
             'type': ALL,
-            'resource_uri': ALL,
             'value': ALL,
         }
         cache = SimpleCache()
@@ -303,7 +296,6 @@ class RolePropertyResource(MResource):
             'symbol': ALL,
             'role': ALL,
             'type': ALL,
-            'resource_uri': ALL,
         }
         cache = SimpleCache()
         throttle = CacheThrottle(
@@ -342,7 +334,6 @@ class RolePropertyValueResource(MResource):
             'modified': ALL,
             'device': ALL,
             'property': ALL,
-            'resource_uri': ALL,
         }
         cache = SimpleCache()
         throttle = CacheThrottle(
