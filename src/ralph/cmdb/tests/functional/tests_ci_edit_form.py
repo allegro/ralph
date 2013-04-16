@@ -306,7 +306,7 @@ class CIFormsTest(TestCase):
         )
         self.assertEqual(response_r.status_code, 302)
         rel = db.CIRelation.objects.get(
-            parent_id=ci3.id, 
+            parent_id=ci3.id,
             child_id=ci1.id,
             type=db.CI_RELATION_TYPES.HASROLE,
         )
