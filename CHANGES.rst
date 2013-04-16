@@ -1,6 +1,16 @@
 Change Log
 ----------
 
+1.2.1
+~~~~~
+
+Release on April 16, 2013
+
+* Fixed bug in the Catalog and Account areas.
+
+* API permissions fixed.
+
+
 1.2.0
 ~~~~~~
 
@@ -20,7 +30,7 @@ Released on April 15, 2013
 
 * Integration CMDB-Splunk introduced.
 
-* Reports don't block UI anymore ("asynchronous reports")
+* Reports don't block UI anymore ("asynchronous reports").
 
 * Added User Preferences framework - for now ability to change landing page per user.
 
@@ -29,9 +39,9 @@ Released on April 15, 2013
 * Deployment improvements: statuses plugin fixed, duplicating networks added, 
   firstfreeip function fixed.
 
-* Performance improvements in the CMDB
+* Performance improvements in the CMDB.
 
-* May Ralph UI bugs and discovery fixes.
+* Many Ralph UI bugs and discovery fixes.
 
 
 1.1.18
