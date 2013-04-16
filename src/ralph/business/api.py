@@ -58,18 +58,18 @@ class VentureResource(MResource):
             ]
         )
         filtering = {
-            'id': ALL,
-            'name': ALL,
-            'symbol': ALL,
-            'data_center': ALL_WITH_RELATIONS,
-            'show_in_ralph': ALL,
             'created': ALL,
-            'modified': ALL,
-            'devices': ALL,
-            'roles': ALL,
+            'data_center': ALL_WITH_RELATIONS,
             'department': ALL,
-            'path': ALL,
+            'devices': ALL,
+            'id': ALL,
             'is_infrastructure': ALL,
+            'modified': ALL,
+            'name': ALL,
+            'path': ALL,
+            'roles': ALL,
+            'show_in_ralph': ALL,
+            'symbol': ALL,
         }
         excludes = ('save_priorities', 'max_save_priority', 'cache_version', )
         cache = SimpleCache()
@@ -97,16 +97,16 @@ class VentureLightResource(MResource):
             ]
         )
         filtering = {
-            'id': ALL,
-            'name': ALL,
-            'symbol': ALL,
-            'data_center': ALL_WITH_RELATIONS,
-            'show_in_ralph': ALL,
             'created': ALL,
-            'modified': ALL,
+            'data_center': ALL_WITH_RELATIONS,
             'department': ALL,
-            'path': ALL,
+            'id': ALL,
             'is_infrastructure': ALL,
+            'modified': ALL,
+            'name': ALL,
+            'path': ALL,
+            'show_in_ralph': ALL,
+            'symbol': ALL,
         }
         excludes = ('save_priorities', 'max_save_priority', 'cache_version', )
         cache = SimpleCache()
@@ -141,15 +141,15 @@ class RoleResource(MResource):
             ]
         )
         filtering = {
-            'id': ALL,
-            'name': ALL,
-            'venture': ALL_WITH_RELATIONS,
-            'parent': ALL,
             'created': ALL,
-            'modified': ALL,
             'devices': ALL,
-            'properties': ALL,
+            'id': ALL,
+            'modified': ALL,
+            'name': ALL,
+            'parent': ALL,
             'path': ALL,
+            'properties': ALL,
+            'venture': ALL_WITH_RELATIONS,
         }
         excludes = ('save_priorities', 'max_save_priority', 'cache_version', )
         cache = SimpleCache()
@@ -177,13 +177,13 @@ class RoleLightResource(MResource):
             ]
         )
         filtering = {
-            'id': ALL,
-            'name': ALL,
-            'venture': ALL_WITH_RELATIONS,
-            'parent': ALL,
             'created': ALL,
+            'id': ALL,
             'modified': ALL,
+            'name': ALL,
+            'parent': ALL,
             'path': ALL,
+            'venture': ALL_WITH_RELATIONS,
         }
         excludes = ('save_priorities', 'max_save_priority', 'cache_version', )
         cache = SimpleCache()
@@ -258,10 +258,10 @@ class RolePropertyTypeValueResource(MResource):
             ]
         )
         filtering = {
-            'id': ALL,
             'default': ALL,
-            'symbol': ALL,
+            'id': ALL,
             'role': ALL,
+            'symbol': ALL,
             'type': ALL,
             'value': ALL,
         }
@@ -291,10 +291,10 @@ class RolePropertyResource(MResource):
             ]
         )
         filtering = {
-            'id': ALL,
             'default': ALL,
-            'symbol': ALL,
+            'id': ALL,
             'role': ALL,
+            'symbol': ALL,
             'type': ALL,
         }
         cache = SimpleCache()
@@ -327,14 +327,14 @@ class RolePropertyValueResource(MResource):
             ]
         )
         filtering = {
-            'id': ALL,
-            'value': ALL,
-            'cache_version': ALL,
             'created': ALL,
-            'modified': ALL,
             'device': ALL,
+            'id': ALL,
+            'modified': ALL,
             'property': ALL,
+            'value': ALL,
         }
+        excludes = ('cache_version', )
         cache = SimpleCache()
         throttle = CacheThrottle(
             throttle_at=THROTTLE_AT,

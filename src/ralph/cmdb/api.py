@@ -57,21 +57,21 @@ class BusinessLineResource(MResource):
             ]
         )
         filtering = {
-            'status': ALL,
+            'added_manually': ALL,
+            'barcode': ALL,
             'business_service': ALL,
             'created': ALL,
-            'barcode': ALL,
-            'technical_service': ALL,
-            'modified': ALL,
-            'object_id': ALL,
-            'zabbix_id': ALL,
-            'pci_scope': ALL,
-            'state': ALL,
-            'added_manually': ALL,
-            'resource_uri': ALL,
-            'uid': ALL,
             'id': ALL,
+            'modified': ALL,
             'name': ALL,
+            'object_id': ALL,
+            'pci_scope': ALL,
+            'resource_uri': ALL,
+            'state': ALL,
+            'status': ALL,
+            'technical_service': ALL,
+            'uid': ALL,
+            'zabbix_id': ALL,
         }
         excludes = ('cache_version', )
         list_allowed_methods = ['get']
@@ -93,20 +93,20 @@ class ServiceResource(MResource):
             ]
         )
         filtering = {
-            'status': ALL,
-            'name': ALL,
+            'added_manually': ALL,
+            'barcode': ALL,
             'business_service': ALL,
             'created': ALL,
-            'barcode': ALL,
-            'technical_service': ALL,
             'modified': ALL,
+            'name': ALL,
             'object_id': ALL,
-            'zabbix_id': ALL,
             'pci_scope': ALL,
-            'state': ALL,
-            'added_manually': ALL,
-            'uid': ALL,
             'resource_uri': ALL,
+            'state': ALL,
+            'status': ALL,
+            'technical_service': ALL,
+            'uid': ALL,
+            'zabbix_id': ALL,
         }
         excludes = ('cache_version', )
         list_allowed_methods = ['get']
@@ -138,12 +138,12 @@ class CIRelationResource(MResource):
             ]
         )
         filtering = {
-            'id': ALL,
             'created': ALL,
+            'id': ALL,
             'modified': ALL,
             'readonly': ALL,
-            'type': ALL,
             'resource_uri': ALL,
+            'type': ALL,
         }
         excludes = ('cache_version', )
         list_allowed_methods = ['get']
@@ -173,26 +173,26 @@ class CIResource(MResource):
         list_allowed_methods = ['get']
         resource_name = 'ci'
         filtering = {
-            'name': ('startswith', 'exact',),
+            'added_manually': ALL,
             'barcode': ('startswith', 'exact',),
-            'layers': ALL_WITH_RELATIONS,
-            'object_id': ('exact',),
-            'pci_scope': ('exact',),
-            'type': ALL_WITH_RELATIONS,
-            'technical_owners': ALL,
-            'bussiness_owners': ALL,
-            'status': ALL,
             'business_service': ALL,
+            'bussiness_owners': ALL,
             'cache_version': ALL,
             'created': ALL,
-            'technical_service': ALL,
-            'modified': ALL,
-            'zabbix_id': ALL,
-            'state': ALL,
-            'added_manually': ALL,
-            'resource_uri': ALL,
-            'uid': ALL,
             'id': ALL,
+            'layers': ALL_WITH_RELATIONS,
+            'modified': ALL,
+            'name': ('startswith', 'exact',),
+            'object_id': ('exact',),
+            'pci_scope': ('exact',),
+            'resource_uri': ALL,
+            'state': ALL,
+            'status': ALL,
+            'technical_owners': ALL,
+            'technical_service': ALL,
+            'type': ALL_WITH_RELATIONS,
+            'uid': ALL,
+            'zabbix_id': ALL,
         }
         throttle = CacheThrottle(
             throttle_at=THROTTLE_AT,
@@ -231,8 +231,8 @@ class CILayersResource(MResource):
         )
         filtering = {
             'id': ALL,
-            'resource_uri': ALL,
             'name': ALL,
+            'resource_uri': ALL,
         }
         excludes = ('icon', )
         list_allowed_methods = ['get']
@@ -255,17 +255,17 @@ class CIChangeResource(MResource):
             ]
         )
         filtering = {
-            'id': ALL,
-            'external_key': ALL,
             'created': ALL,
+            'external_key': ALL,
+            'id': ALL,
+            'message': ALL,
             'modified': ALL,
             'object_id': ALL,
             'priority': ALL,
-            'time': ALL,
-            'message': ALL,
-            'resource_uri': ALL,
-            'type': ALL,
             'registration_type': ALL,
+            'resource_uri': ALL,
+            'time': ALL,
+            'type': ALL,
         }
         excludes = ('cache_version', )
         allowed_methods = ['get']
@@ -287,18 +287,18 @@ class CIChangeZabbixTriggerResource(MResource):
             ]
         )
         filtering = {
-            'id': ALL,
-            'status': ALL,
-            'description': ALL,
-            'created': ALL,
-            'lastchange': ALL,
             'comments': ALL,
+            'created': ALL,
+            'description': ALL,
+            'host': ALL,
+            'host_id': ALL,
+            'id': ALL,
+            'lastchange': ALL,
             'modified': ALL,
             'priority': ALL,
-            'host': ALL,
-            'trigger_id': ALL,
-            'host_id': ALL,
             'resource_uri': ALL,
+            'status': ALL,
+            'trigger_id': ALL,
         }
         excludes = ('cache_version', )
         list_allowed_methods = ['get', 'post']
@@ -320,15 +320,15 @@ class CIChangeGitResource(MResource):
             ]
         )
         filtering = {
-            'id': ALL,
-            'comment': ALL,
-            'changeset': ALL,
-            'file_paths': ALL,
-            'created': ALL,
             'author': ALL,
+            'changeset': ALL,
+            'comment': ALL,
+            'created': ALL,
+            'file_paths': ALL,
+            'id': ALL,
             'modified': ALL,
-            'time': ALL,
             'resource_uri': ALL,
+            'time': ALL,
         }
         excludes = ('cache_version', )
         list_allowed_methods = ['get', 'post']
@@ -350,15 +350,15 @@ class CIChangePuppetResource(MResource):
             ]
         )
         filtering = {
-            'id': ALL,
-            'status': ALL,
-            'kind': ALL,
             'configuration_version': ALL,
             'created': ALL,
-            'modified': ALL,
             'host': ALL,
-            'time': ALL,
+            'id': ALL,
+            'kind': ALL,
+            'modified': ALL,
             'resource_uri': ALL,
+            'status': ALL,
+            'time': ALL,
         }
         excludes = ('cache_version', )
         list_allowed_methods = ['get', 'post']
@@ -382,16 +382,16 @@ class CIChangeCMDBHistoryResource(MResource):
             ]
         )
         filtering = {
-            'id': ALL,
-            'comment': ALL,
             'ci': ALL,
+            'comment': ALL,
             'created': ALL,
-            'old_value': ALL,
-            'modified': ALL,
-            'time': ALL,
-            'new_value': ALL,
             'field_name': ALL,
+            'id': ALL,
+            'modified': ALL,
+            'new_value': ALL,
+            'old_value': ALL,
             'resource_uri': ALL,
+            'time': ALL,
         }
         excludes = ('cache_version', )
         list_allowed_methods = ['get']
@@ -414,8 +414,8 @@ class CITypesResource(MResource):
         )
         filtering = {
             'id': ALL,
-            'resource_uri': ALL,
             'name': ALL,
+            'resource_uri': ALL,
         }
         list_allowed_methods = ['get']
         resourse_name = 'citypes'
@@ -438,13 +438,13 @@ class CIOwnersResource(MResource):
         )
         list_allowed_methods = ['get']
         filtering = {
-            'first_name': ALL,
-            'last_name': ALL,
-            'email': ALL,
             'cache_version': ALL,
             'created': ALL,
-            'modified': ALL,
+            'email': ALL,
+            'first_name': ALL,
             'id': ALL,
+            'last_name': ALL,
+            'modified': ALL,
             'resource_uri': ALL,
 
         }
