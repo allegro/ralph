@@ -9,7 +9,9 @@ import datetime
 
 from django.contrib.auth.models import User
 from django.core.cache import cache
+from django.test import TestCase
 
+from ralph.account.models import BoundPerm, Profile, Perm
 from ralph.business.models import Venture
 from ralph.discovery.models import (
     ComponentModel,
@@ -20,6 +22,7 @@ from ralph.discovery.models import (
     SplunkUsage,
 )
 from ralph.ui.tests.util import create_device
+from ralph.ui.tests.global_utils import create_user
 from tastypie.test import ResourceTestCase
 
 
@@ -125,11 +128,6 @@ class DeviceWithPricingResourceTest(ResourceTestCase):
             }
         )
 
-
-from ralph.account. models import BoundPerm, Profile, Perm
-from ralph.ui.tests.global_utils import create_user
-
-from django.test import TestCase
 
 class AccessToDiscoveyApiTest(TestCase):
     def setUp(self):

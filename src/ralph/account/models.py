@@ -91,7 +91,7 @@ class Profile(BasicInfo, ActivationSupport, GravatarSupport,
 
     home_page = ChoiceField(
         choices=AvailableHomePage,
-        default=AvailableHomePage.default
+        default=AvailableHomePage.default,
     )
 
     def __unicode__(self):
@@ -187,7 +187,7 @@ class BoundPerm(TimeTrackable, EditorTrackable):
         verbose_name=_("group"),
         null=True,
         blank=True,
-        default=None
+        default=None,
     )
     perm = ChoiceField(verbose_name=_("permission"), choices=Perm)
     venture = db.ForeignKey(
@@ -195,7 +195,7 @@ class BoundPerm(TimeTrackable, EditorTrackable):
         verbose_name=_("venture"),
         null=True,
         blank=True,
-        default=None
+        default=None,
     )
     role = db.ForeignKey(
         VentureRole,
@@ -204,7 +204,7 @@ class BoundPerm(TimeTrackable, EditorTrackable):
         blank=True,
         default=None,
         help_text=_("if left empty, the permission applies to all roles "
-        "within the selected venture")
+        "within the selected venture"),
     )
 
     class Meta:
