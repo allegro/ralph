@@ -6,6 +6,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import ipaddr
+
+from django import forms
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 from lck.django.common.admin import ModelAdmin
@@ -29,6 +32,18 @@ admin.site.register(
 )
 
 
+class DeploymentAdminForm(forms.ModelForm):
+    class Meta:
+        model = Deployment
+
+    def clean_hostname(self):
+        hostname = self.cleaned_data.get('hostname')
+        try:
+            ipaddr.IPAddress(hostname)
+        except ValueError:
+            return hostname
+        raise forms.ValidationError("IP address can't be hostname")
+
 class DeploymentAdmin(ModelAdmin):
     list_display = (
         'device', 'mac', 'status', 'venture', 'venture_role',
@@ -45,6 +60,7 @@ class DeploymentAdmin(ModelAdmin):
         'venture': ['^name'],
         'venture_role': ['^name'],
     }
+    form = DeploymentAdminForm
 
     def _move_deployment_to_archive(modeladmin, request, queryset):
         for deployment in queryset:
