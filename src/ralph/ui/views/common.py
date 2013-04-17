@@ -35,6 +35,7 @@ from ralph.business.models import (
 )
 from ralph.account.models import get_user_home_page_url, Perm
 from ralph.cmdb.models import CI
+from ralph.deployment.models import Deployment, DeploymentStatus
 from ralph.deployment.util import get_next_free_hostname, get_first_free_ip
 from ralph.dnsedit.models import DHCPEntry
 from ralph.dnsedit.util import (
@@ -42,6 +43,7 @@ from ralph.dnsedit.util import (
     set_revdns_record,
     get_revdns_records,
     reset_dns,
+    update_txt_records,
 )
 from ralph.dnsedit.util import Error as DNSError
 from ralph.discovery.models import (
@@ -53,9 +55,9 @@ from ralph.discovery.models import (
 from ralph.discovery.models_history import (
     FOREVER_DATE,
     ALWAYS_DATE,
-    DiscoveryWarning,
 )
 from ralph.util import presentation, pricing
+from ralph.util.plugin import BY_NAME as AVAILABLE_PLUGINS
 from ralph.ui.forms.devices import (
     DeviceInfoForm,
     DeviceInfoVerifiedForm,
@@ -459,18 +461,41 @@ class Info(DeviceUpdateView):
             'dc_name': self.object.dc,
         }
 
+    def get_running_deployment_info(self):
+        try:
+            deployment = Deployment.objects.exclude(
+                status=DeploymentStatus.done,
+            ).get(device=self.object)
+        except Deployment.DoesNotExist:
+            return False, []
+        deployment_plugins = AVAILABLE_PLUGINS['deployment'].keys()
+        done_plugins = [
+            plugin.strip()
+            for plugin in deployment.done_plugins.split(',')
+            if plugin.strip()
+        ]
+        return DeploymentStatus.raw_from_id(deployment.status), [
+            {'name': plugin, 'state': plugin in done_plugins}
+            for plugin in deployment_plugins
+        ]
+
     def get_context_data(self, **kwargs):
         ret = super(Info, self).get_context_data(**kwargs)
         if self.object:
-            tags = self.object.get_tags(official=False,
-                                      author=self.request.user)
+            tags = self.object.get_tags(
+                official=False,
+                author=self.request.user,
+            )
         else:
             tags = []
         tags = ['"%s"' % t.name if ',' in t.name else t.name for t in tags]
+        deployment_status, plugins = self.get_running_deployment_info()
         ret.update({
             'property_form': self.property_form,
             'tags': ', '.join(tags),
             'dt': DeviceType,
+            'deployment_status': deployment_status,
+            'plugins': plugins,
         })
         return ret
 
@@ -699,6 +724,15 @@ class Addresses(DeviceDetailView):
                                         r.content,
                                     ),
                                 )
+                                try:
+                                    ipaddress = IPAddress.objects.get(
+                                        address=r.content,
+                                    )
+                                except IPAddress.DoesNotExist:
+                                    pass
+                                else:
+                                    if ipaddress.device:
+                                        update_txt_records(ipaddress.device)
                         else:
                             for ptr in get_revdns_records(
                                     r.content).filter(content=r.name):

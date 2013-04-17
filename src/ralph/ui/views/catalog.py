@@ -133,7 +133,7 @@ class Catalog(Base):
                 MenuItem(
                     label=t.raw.title(),
                     name='component-%d' % t.id,
-                    fugue_icon = COMPONENT_ICONS[t.id],
+                    fugue_icon = COMPONENT_ICONS.get(t.id),
                     view_name='catalog',
                     view_args=('component', t.id),
                 ) for t in ComponentType(item=lambda t: t)
@@ -143,7 +143,7 @@ class Catalog(Base):
                 MenuItem(
                         label=t.raw.title(),
                         name='device-%d' % t.id,
-                        fugue_icon = DEVICE_ICONS[t.id],
+                        fugue_icon = DEVICE_ICONS.get(t.id),
                         view_name='catalog',
                         view_args=('device', t.id),
                     ) for t in DeviceType(item=lambda t: t)

@@ -75,6 +75,7 @@ class DeviceType(Choices):
     STORAGE = Choices.Group(300)
     storage = _("storage")
     fibre_channel_switch = _("fibre channel switch")
+    mogilefs_storage = _("MogileFS storage")
 
     UNKNOWN = Choices.Group(400)
     unknown = _("unknown")

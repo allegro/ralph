@@ -70,3 +70,73 @@ The groups are also edited in the admin interface.
 In order for the users to be able to access the web API programmatically, they
 need to have an :index:`API key` generated for them -- this can be done on the
 user's page in the admin interface.
+
+List of bound permissions
+-------------------------
+
++----------------------+-------------------------------------+
+|Resource              |Perm                                 |
++======================+=====================================+
+|bladeserver           |read_dc_structure                    |
++----------------------+-------------------------------------+
+|businessline          |read_configuration_item_info_generic |
++----------------------+-------------------------------------+
+|ci                    |read_configuration_item_info_generic |
++----------------------+-------------------------------------+
+|cichange              |read_configuration_item_info_generic |
++----------------------+-------------------------------------+
+|cichangecmdbhistory   |read_configuration_item_info_generic |
++----------------------+-------------------------------------+
+|cichangegit           |read_configuration_item_info_git     |
++----------------------+-------------------------------------+
+|cichangepuppet        |read_configuration_item_info_puppet  |
++----------------------+-------------------------------------+
+|cichangezabbixtrigger |read_configuration_item_info_generic |
++----------------------+-------------------------------------+
+|cilayers              |read_configuration_item_info_generic |
++----------------------+-------------------------------------+
+|ciowners              |read_configuration_item_info_generic |
++----------------------+-------------------------------------+
+|cirelation            |read_configuration_item_info_generic |
++----------------------+-------------------------------------+
+|citypes               |read_configuration_item_info_generic |
++----------------------+-------------------------------------+
+|department            |read_dc_structure                    |
++----------------------+-------------------------------------+
+|deployment            |read_deployment                      |
++----------------------+-------------------------------------+
+|dev                   |read_dc_structure                    |
++----------------------+-------------------------------------+
+|devicewithpricing     |read_dc_structure                    |
++----------------------+-------------------------------------+
+|ipaddress             |read_network_structure               |
++----------------------+-------------------------------------+
+|model                 |read_dc_structure                    |
++----------------------+-------------------------------------+
+|modelgroup            |read_dc_structure                    |
++----------------------+-------------------------------------+
+|physicalserver        |read_dc_structure                    |
++----------------------+-------------------------------------+
+|rackserver            |read_dc_structure                    |
++----------------------+-------------------------------------+
+|role                  |read_dc_structure                    |
++----------------------+-------------------------------------+
+|rolelight             |read_dc_structure                    |
++----------------------+-------------------------------------+
+|roleproperty          |read_dc_structure                    |
++----------------------+-------------------------------------+
+|rolepropertytype      |read_dc_structure                    |
++----------------------+-------------------------------------+
+|rolepropertytypevalue |read_dc_structure                    |
++----------------------+-------------------------------------+
+|rolepropertyvalue     |read_dc_structure                    |
++----------------------+-------------------------------------+
+|service               |read_configuration_item_info_generic |
++----------------------+-------------------------------------+
+|venture               |read_dc_structure                    |
++----------------------+-------------------------------------+
+|venturelight          |read_dc_structure                    |
++----------------------+-------------------------------------+
+|virtualserver         |read_dc_structure                    |
++----------------------+-------------------------------------+
+
