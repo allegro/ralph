@@ -1,5 +1,49 @@
 Change Log
 ----------
+
+1.2.1
+~~~~~
+
+Release on April 16, 2013
+
+* Fixed bug in the Catalog and Account areas.
+
+* API permissions fixed.
+
+
+1.2.0
+~~~~~~
+
+Released on April 15, 2013
+
+* Replaced Celery workers engine with RQ (http://python-rq.org/)
+
+* Introduced Ralph commandline tool - Beast, see: https://github.com/allegro/ralph_beast
+
+* Introduced Offline Asset Mgmt module for Ralph, see: https://github.com/allegro/ralph_assets
+
+* Discovery improvements: added Ganeti devices support, Juniper and Nortel switches, 
+  3ware controllers. Added new Puppet REST integration.
+
+* Introduced discovery for Windows Sofware via Don-Pedro plugin, and extended ability
+  to search software versions using complex operators (<, <=, >, >= etc).
+
+* Integration CMDB-Splunk introduced.
+
+* Reports don't block UI anymore ("asynchronous reports").
+
+* Added User Preferences framework - for now ability to change landing page per user.
+
+* REST API extended - new filters, and new resources (owners).
+
+* Deployment improvements: statuses plugin fixed, duplicating networks added, 
+  firstfreeip function fixed.
+
+* Performance improvements in the CMDB.
+
+* Many Ralph UI bugs and discovery fixes.
+
+
 1.1.18
 ~~~~~~
 
