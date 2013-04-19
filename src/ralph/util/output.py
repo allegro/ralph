@@ -7,39 +7,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import logging
-import os
-import subprocess
 import sys
-
-from django.conf import settings
-from django.core.mail import mail_admins
-from lck import git
-
-import ralph
-
-
-BOILERPLATE = 20
-try:
-    COLUMNS = int(os.popen('stty size', 'r').read().split()[1])
-except IndexError:
-    # script ran from a daemon, without a STTY. No padding.
-    WIDTH = 0
-else:
-    WIDTH = COLUMNS - BOILERPLATE
-HOSTNAME = subprocess.check_output(['hostname', '-f']).strip()
-GIT_VERSION = git.get_version(os.path.dirname(__file__))
-RELEASE_VERSION = ".".join(str(num) for num in ralph.VERSION)
-VERSION = GIT_VERSION or RELEASE_VERSION
-CELERY_SEND_TASK_ERROR_EMAILS = getattr(   # deprecated name
-    settings,
-    'CELERY_SEND_TASK_ERROR_EMAILS',
-    False,
-)
-SEND_TASK_ERROR_EMAILS = getattr(
-    settings,
-    'SEND_TASK_ERROR_EMAILS',
-    CELERY_SEND_TASK_ERROR_EMAILS,
-)
 
 
 def get(interactive, err=False):
@@ -59,12 +27,6 @@ def get(interactive, err=False):
             message = "".join(logging_buffer).strip()
             if err:
                 logger.error(message)
-                if SEND_TASK_ERROR_EMAILS:
-                    subject = '[{}] {}'.format(
-                        HOSTNAME,
-                        message.split(':', 1)[0],
-                    )
-                    mail_admins(subject, message + '\t \n\t \n' + VERSION)
             elif verbose:
                 logger.debug(message)
             else:
