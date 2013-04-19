@@ -13,7 +13,6 @@ from functools import partial
 import sys
 import textwrap
 
-from django.core.exceptions import ImproperlyConfigured
 from django.core.management.base import BaseCommand
 from ipaddr import IPNetwork
 
@@ -87,8 +86,8 @@ class Command(BaseCommand):
             plugin.purge(set(options['plugins'].split(',')))
         try:
             self._handle(*args, discover=discover, **options)
-        except ImproperlyConfigured, e:
-            print(e.message, file=sys.stderr)
+        except Exception as e:
+            print('fatal:', e.message, file=sys.stderr)
             sys.exit(1)
 
     def _handle(self, *args, **options):
