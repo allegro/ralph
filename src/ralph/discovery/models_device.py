@@ -543,6 +543,16 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
     def rolepropertyvalue(self):
         return self.rolepropertyvalue_set
 
+    @property
+    def get_components(self):
+        details = {}
+        details['processors'] = self.processor_set.all()
+        details['memory'] = self.memory_set.all()
+        details['storages'] = self.storage_set.all()
+        details['ethernets'] = self.ethernet_set.all()
+        details['fibrechannels'] = self.fibrechannel_set.all()
+        return details
+
     def save(self, *args, **kwargs):
         if self.model and self.model.type == DeviceType.blade_server.id:
             if not self.position:
