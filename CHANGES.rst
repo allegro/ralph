@@ -1,6 +1,16 @@
 Change Log
 ----------
 
+1.2.1
+~~~~~
+
+Release on April 16, 2013
+
+* Fixed bug in the Catalog and Account areas.
+
+* API permissions fixed.
+
+
 1.2.0
 ~~~~~
 
@@ -35,7 +45,7 @@ Released on April 15, 2013
 
 * Performance improvements in the CMDB.
 
-* May Ralph UI bugs and discovery fixes.
+* Many Ralph UI bugs and discovery fixes.
 
 
 1.1.18
