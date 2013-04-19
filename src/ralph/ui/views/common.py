@@ -1178,14 +1178,14 @@ def bulk_update(devices, fields, data, user):
             values[name] = field_classes[name].objects.get(id=data[name])
         else:
             values[name] = data[name]
-    for d in devices:
+    for device in devices:
         if 'venture' in fields:
-            d.venture_role = None
+            device.venture_role = None
         for name in fields:
-            setattr(d, name, values[name])
-            d.save_comment = data.get('save_comment')
-            d.save(priority=SAVE_PRIORITY, user=user)
-            pricing.device_update_cached(d)
+            setattr(device, name, values[name])
+            device.save_comment = data.get('save_comment')
+            device.save(priority=SAVE_PRIORITY, user=user)
+            pricing.device_update_cached(device)
 
 
 class BulkEdit(BaseMixin, TemplateView):
