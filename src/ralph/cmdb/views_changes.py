@@ -386,16 +386,6 @@ class DashboardDetails(ChangesBase):
         ret.update({'statistics': self.data, })
         return ret
 
-    def get_csv_data(self):
-        report_type = self.kwargs.get('report_type')
-        if report_type == 'ci':
-            self.csv_data = [(unicode(x['name']),
-                              unicode(x['count']),
-                              unicode(x['venture'])) for x in self.data]
-        else:
-            self.csv_data = [(unicode(x[0]), unicode(x[1])) for x in self.data]
-        return self.csv_data
-
     def get(self, *args, **kwargs):
         type = kwargs.get('type')
         prio = kwargs.get('prio')
@@ -412,6 +402,7 @@ class DashboardDetails(ChangesBase):
             AND YEAR(ch.time)=YEAR(NOW())
             GROUP BY cc.id DESC
             ORDER BY COUNT(*) DESC, cc.name ASC
+            LIMIT 20
         ''', [type, prio, month])
         if report_type == 'ci':
             self.data = []
@@ -448,8 +439,6 @@ class DashboardDetails(ChangesBase):
                         prio=prio,
                         type=type,
                     ))
-            self.paginate(self.data)
-            self.data = self.page_contents
         else:
             self.template_name = 'cmdb/dashboard_details_venture.html'
             self.data_dict = {}
@@ -480,8 +469,6 @@ class DashboardDetails(ChangesBase):
 
             self.data = [(self.data_dict[x], x) for x in self.data_dict]
             self.data = sorted(self.data, reverse=True)
-            self.paginate(self.data)
-            self.data = self.page_contents
         return super(DashboardDetails, self).get(*args)
 
 
