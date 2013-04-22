@@ -6,7 +6,8 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 
-from ralph.business import Venture
+from ralph.business.models import Venture
+from ralph.discovery.models import Device, DeviceType
 
 
 def get_ventures():
@@ -21,3 +22,16 @@ def get_ventures():
             'department': department.name if department else '',
         }
 
+def get_devices():
+    """Yields dicts describing all the devices to be imported into pricing."""
+
+    for device in Device.objects.select_related(
+            'model__type',
+        ).filter(deleted=False):
+        yield {
+            'id': device.id,
+            'name': device.name,
+            'venture_id': device.venture_id,
+            'is_virtual': device.model.type == DeviceType.virtual_server,
+            'is_blade': device.model.type == DeviceType.blade_server,
+        }
