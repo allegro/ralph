@@ -82,20 +82,20 @@ setting up MySQL could look like this::
 Message queue broker
 --------------------
 
-To change the default SQLite message broker to another one, you need to edit the
-:index:`BROKER_URL` setting. For the complete set of options check `the official
-Celery docs
-<http://docs.celeryproject.org/en/latest/getting-started/brokers/index.html>`_.
-For example, setting up Redis could look like this::
+There is a number of Redis queues you need to have. By default they are:
 
-  BROKER_URL = "redis://127.0.0.1:6379/4"
+* default - all control tasks go here
 
-.. note::
+* email - asynchronous e-mail sent from the application goes here
 
-  For Redis support you will also need to install a connector library. Simply
-  type::
+* cmdb_* - CMDB related tasks go here
 
-    $ pip install redis
+* reports - asynchronous reports from the Web app go here
+
+You should also create an entry for each data center you use. You can use
+a separate Redis server for any queue. Use the ``RQ_QUEUES`` dictionary for
+that. If you only need to reuse the ``'default'`` Redis instance, add your
+queues to ``RQ_QUEUES_LIST``.
 
 Cache
 -----
