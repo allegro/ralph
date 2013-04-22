@@ -19,6 +19,7 @@ from powerdns.models import Record, Domain
 from ralph.business.models import Venture, VentureRole
 from ralph.deployment.models import Deployment, Preboot
 from ralph.deployment.util import (
+    clean_hostname,
     hostname_exists,
     ip_address_exists,
     is_mac_address_known,
@@ -31,16 +32,15 @@ from ralph.discovery.models import Device, Network, IPAddress, DeviceType
 from ralph.discovery.models_component import is_mac_valid
 from ralph.dnsedit.models import DHCPEntry
 from ralph.dnsedit.util import (
-    is_valid_hostname,
     find_addresses_for_hostname,
-    get_revdns_records,
     get_domain,
+    get_revdns_records,
+    is_valid_hostname,
 )
 from ralph.ui.widgets import DeviceWidget
 from ralph.util import Eth
 from bob.csvutil import UnicodeReader
 from ralph.ui.widgets import ReadOnlySelectWidget, ReadOnlyWidget
-
 
 class DeploymentForm(forms.ModelForm):
     class Meta:
@@ -81,19 +81,16 @@ class DeploymentForm(forms.ModelForm):
             'ip': proposed_ip,
             'venture': device.venture,
             'venture_role': device.venture_role,
-            'preboot': (device.venture_role.get_preboot() if
+            'preboot': (
+                device.venture_role.get_preboot() if
                         device.venture_role else ''),
             'hostname': device.name,
         })
         self.fields['venture'].queryset = Venture.objects.order_by('name')
 
     def clean_hostname(self):
-        hostname = self.cleaned_data['hostname'].strip().lower()
-        if not is_valid_hostname(hostname):
-            raise forms.ValidationError("Invalid hostname.")
-        if '.' not in hostname:
-            raise forms.ValidationError("Hostname has to include the domain.")
-        return hostname
+        hostname = self.cleaned_data['hostname']
+        return clean_hostname(hostname)
 
     def clean_ip(self):
         ip = self.cleaned_data.get('ip')
