@@ -6,8 +6,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import ipaddr
-
 from django import forms
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
@@ -16,6 +14,7 @@ from lck.django.common.admin import ModelAdmin
 from ralph.deployment.models import (
     ArchivedDeployment, Deployment, Preboot, PrebootFile, MassDeployment,
 )
+from ralph.deployment.util import clean_hostname
 
 
 class MassDeploymentAdmin(ModelAdmin):
@@ -38,11 +37,7 @@ class DeploymentAdminForm(forms.ModelForm):
 
     def clean_hostname(self):
         hostname = self.cleaned_data.get('hostname')
-        try:
-            ipaddr.IPAddress(hostname)
-        except ValueError:
-            return hostname
-        raise forms.ValidationError("IP address can't be hostname")
+        return clean_hostname(hostname)
 
 class DeploymentAdmin(ModelAdmin):
     list_display = (
