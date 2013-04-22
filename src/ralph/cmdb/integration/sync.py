@@ -46,15 +46,15 @@ class ZabbixImporter(BaseImporter):
 
     @staticmethod
     @plugin.register(chain='cmdb_zabbix')
-    def zabbix_hosts(context):
+    def zabbix_hosts(*args, **kwargs):
         ZabbixImporter().import_hosts()
-        return (True, 'Done', context)
+        return (True, 'Done')
 
     @staticmethod
     @plugin.register(chain='cmdb_zabbix', requires=['zabbix_hosts'])
-    def zabbix_triggers(context):
+    def zabbix_triggers(*args, **kwargs):
         ZabbixImporter().import_triggers()
-        return (True, 'Done' ,context)
+        return (True, 'Done')
 
     def import_triggers(self):
         ''' Create/update zabbix IDn for all matched CI's '''
@@ -96,21 +96,21 @@ class JiraEventsImporter(BaseImporter):
     """
     @staticmethod
     @plugin.register(chain='cmdb_jira')
-    def jira_problems(context, successful_plugins=None):
+    def jira_problems(*args, **kwargs):
         JiraEventsImporter().import_problem()
-        return (True, 'Done', context)
+        return (True, 'Done')
 
     @staticmethod
     @plugin.register(chain='cmdb_jira')
-    def jira_incidents(context, successful_plugins=None):
+    def jira_incidents(*args, **kwargs):
         JiraEventsImporter().import_incident()
-        return (True, 'Done', context)
+        return (True, 'Done')
 
     @staticmethod
     @plugin.register(chain='cmdb_jira')
-    def jira_changes(context, successful_plugins=None):
+    def jira_changes(*args, **kwargs):
         JiraEventsImporter().import_jirachange()
-        return (True, 'Done', context)
+        return (True, 'Done')
 
     def tz_time(self, field):
         return strip_timezone(field) if field else None
