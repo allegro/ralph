@@ -62,7 +62,7 @@ from ralph.util.presentation import (
 
 from ralph.cmdb.forms import (
     ReportFilters,
-    ReportFiltersDateRamge,
+    ReportFiltersDateRange,
 )
 
 from ralph.cmdb.util import report_filters, add_filter, table_colums
@@ -1178,7 +1178,7 @@ class CIProblemsEdit(BaseCIDetails, DataTableMixin):
             'columns': self.columns,
             'form': {
                 'filters': ReportFilters(self.request.GET),
-                'date_range': ReportFiltersDateRamge(self.request.GET),
+                'date_range': ReportFiltersDateRange(self.request.GET),
             },
         })
         return ret
@@ -1242,7 +1242,7 @@ class JiraChangesEdit(BaseCIDetails, DataTableMixin):
             'columns': self.columns,
             'form': {
                 'filters': ReportFilters(self.request.GET),
-                'date_range': ReportFiltersDateRamge(self.request.GET),
+                'date_range': ReportFiltersDateRange(self.request.GET),
             },
         })
         return ret
@@ -1303,7 +1303,7 @@ class CIIncidentsEdit(BaseCIDetails, DataTableMixin):
             'columns': self.columns,
             'form': {
                 'filters': ReportFilters(self.request.GET),
-                'date_range': ReportFiltersDateRamge(self.request.GET),
+                'date_range': ReportFiltersDateRange(self.request.GET),
             },
         })
         return ret
