@@ -21,15 +21,14 @@ from django.utils import simplejson
 
 import ralph.cmdb.models as db
 from ralph.cmdb.models_changes import CI_CHANGE_TYPES
-from ralph.cmdb.views import BaseCMDBView, get_icon_for
+from ralph.cmdb.views import BaseCMDBView
 from ralph.cmdb.forms import (
     CIChangeSearchForm,
     CIReportsParamsForm,
     ReportFilters,
-    ReportFiltersDateRamge,
+    ReportFiltersDateRange,
 )
 from ralph.cmdb.util import report_filters, add_filter, table_colums
-from ralph.cmdb.models_ci import CI
 from ralph.account.models import Perm, ralph_permission
 from django.utils.translation import ugettext_lazy as _
 
@@ -111,23 +110,23 @@ class Change(ChangesBase):
             user_info = user[0].get('username', '–') if user else '–'
             report = [
                 {
-                    'time':change.content_object.time,
+                    'time': change.content_object.time,
                     'user': user_info,
-                    'field_name':change.content_object.field_name,
-                    'old_value':change.content_object.old_value,
-                    'new_value':change.content_object.new_value,
-                    'comment':change.content_object.comment,
+                    'field_name': change.content_object.field_name,
+                    'old_value': change.content_object.old_value,
+                    'new_value': change.content_object.new_value,
+                    'comment': change.content_object.comment,
                 }
             ]
             self.ci_attributes_changes = report
         return super(Change, self).get(*args, **kwargs)
 
 
-
 class Changes(ChangesBase, DataTableMixin):
     template_name = 'cmdb/search_changes.html'
     sort_variable_name = 'sort'
     export_variable_name = None  # fix in bob!
+    rows_per_page = 20
     perms = [
         {
             'perm': Perm.read_configuration_item_info_jira,
@@ -264,7 +263,7 @@ class Problems(ChangesBase, DataTableMixin):
             'title': section,
             'form': {
                 'filters': ReportFilters(self.request.GET),
-                'date_range': ReportFiltersDateRamge(self.request.GET),
+                'date_range': ReportFiltersDateRange(self.request.GET),
             },
         })
         return ret
@@ -313,7 +312,7 @@ class Incidents(ChangesBase, DataTableMixin):
             'title': section,
             'form': {
                 'filters': ReportFilters(self.request.GET),
-                'date_range': ReportFiltersDateRamge(self.request.GET),
+                'date_range': ReportFiltersDateRange(self.request.GET),
             },
         })
         return ret
@@ -362,7 +361,7 @@ class JiraChanges(ChangesBase, DataTableMixin):
             'title': section,
             'form': {
                 'filters': ReportFilters(self.request.GET),
-                'date_range': ReportFiltersDateRamge(self.request.GET),
+                'date_range': ReportFiltersDateRange(self.request.GET),
             },
         })
         return ret

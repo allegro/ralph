@@ -14,8 +14,8 @@ from django.contrib.admin.widgets import FilteredSelectMultiple
 
 from ralph.cmdb import models
 from ralph.cmdb import models as db
-from ralph.cmdb.models import CILayer, CIType
-from ralph.cmdb.models_ci import CIOwnership, CIOwner
+from ralph.cmdb.models import CIType
+from ralph.cmdb.models_ci import CIOwner
 from ralph.ui.widgets import (
     ReadOnlyWidget,
     ReadOnlyMultipleChoiceWidget,
@@ -91,7 +91,8 @@ class CIEditForm(forms.ModelForm):
             for own in owns:
                 if own.type == 1:
                     try:
-                        technical_owners.append(CIOwner.objects.get(id=own.owner_id))
+                        technical_owners.append(
+                            CIOwner.objects.get(id=own.owner_id))
                     except CIOwner.DoesNotExist:
                         pass
                 elif own.type == 2:
@@ -195,25 +196,27 @@ class SearchImpactForm(forms.Form):
 
 
 class ReportFilters(forms.Form):
+    input_attrs = {'class': 'input-small'}
+
     ci = forms.CharField(
         required=False,
         widget=forms.TextInput(
-            attrs={'placeholder': 'ralph'}
+            attrs=dict(input_attrs, placeholder='ralph'),
         )
     )
     assignee = forms.CharField(
         required=False,
         widget=forms.TextInput(
-            attrs={'placeholder': 'Jan Kowalski'}
+            attrs=dict(input_attrs, placeholder='John.'),
         )
     )
     jira_id = forms.CharField(
         required=False,
         widget=forms.TextInput(
-            attrs={'placeholder': 'RALPH-512'}
+            attrs=dict(input_attrs, placeholder='TICKET-NUMBER'),
         )
     )
-    issue_type  = forms.ChoiceField(
+    issue_type = forms.ChoiceField(
         required=False,
         choices=[
             ('', '----'),
@@ -231,7 +234,10 @@ class ReportFilters(forms.Form):
             ('Service Request', 'Service Request'),
             ('Task', 'Task'),
         ],
-        label='Issue type'
+        label='Issue type',
+        widget=forms.Select(
+            attrs=dict(input_attrs, placeholder='TICKET-NUMBER'),
+        )
     )
     status = forms.ChoiceField(
         required=False,
@@ -249,19 +255,25 @@ class ReportFilters(forms.Form):
             ('In Deploy', 'In Deploy'),
             ('Accepted', 'Accepted'),
         ],
-        label='Issue status'
+        label='Issue status',
+        widget=forms.Select(
+            attrs=dict(input_attrs, placeholder='TICKET-NUMBER')
+        )
     )
 
 
-class ReportFiltersDateRamge(forms.Form):
+class ReportFiltersDateRange(forms.Form):
     date_attrs = {
-        'placeholder': 'Start',
         'data-collapsed': True,
+        'class': 'input-small',
     }
     start_update = forms.DateField(
         required=False,
-        widget=DateWidget(date_attrs),
-        label="Update",
+        widget=DateWidget(dict(
+            date_attrs,
+            placeholder='From',
+        )),
+        label="Update"
     )
     end_update = forms.DateField(
         required=False,
@@ -269,37 +281,38 @@ class ReportFiltersDateRamge(forms.Form):
             attrs={
                 'placeholder': 'End',
                 'data-collapsed': True,
+                'class': 'input-small',
             }
         ),
         label="",
     )
     start_resolved = forms.DateField(
         required=False,
-        widget=DateWidget(date_attrs),
+        widget=DateWidget(dict(date_attrs, placeholder='From')),
         label="Resolved",
     )
     end_resolved = forms.DateField(
         required=False,
-        widget=DateWidget(date_attrs),
+        widget=DateWidget(dict(date_attrs, placeholder='To')),
         label="",
     )
     start_planned_start = forms.DateField(
         required=False,
-        widget=DateWidget(date_attrs),
+        widget=DateWidget(dict(date_attrs, placeholder='From')),
         label="Planed start",
     )
     end_planned_start = forms.DateField(
         required=False,
-        widget=DateWidget(date_attrs),
+        widget=DateWidget(dict(date_attrs, placeholder='To')),
         label="",
     )
     start_planned_end = forms.DateField(
         required=False,
-        widget=DateWidget(date_attrs),
+        widget=DateWidget(dict(date_attrs, placeholder='From')),
         label="Planed end",
     )
     end_planned_end = forms.DateField(
         required=False,
-        widget=DateWidget(date_attrs),
+        widget=DateWidget(dict(date_attrs, placeholder='To')),
         label="",
     )
