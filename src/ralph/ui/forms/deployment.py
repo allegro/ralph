@@ -81,8 +81,7 @@ class DeploymentForm(forms.ModelForm):
             'ip': proposed_ip,
             'venture': device.venture,
             'venture_role': device.venture_role,
-            'preboot': (
-                device.venture_role.get_preboot() if
+            'preboot': (device.venture_role.get_preboot() if
                         device.venture_role else ''),
             'hostname': device.name,
         })
