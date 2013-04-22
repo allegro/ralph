@@ -236,7 +236,7 @@ class ReportFilters(forms.Form):
         ],
         label='Issue type',
         widget=forms.Select(
-            attrs=dict(input_attrs, placeholder='TICKET-NUMBER'),
+            attrs=input_attrs,
         )
     )
     status = forms.ChoiceField(
@@ -257,7 +257,7 @@ class ReportFilters(forms.Form):
         ],
         label='Issue status',
         widget=forms.Select(
-            attrs=dict(input_attrs, placeholder='TICKET-NUMBER')
+            attrs=input_attrs,
         )
     )
 
