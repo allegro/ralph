@@ -94,10 +94,10 @@ class PuppetGitImporter(BaseImporter):
 
     @staticmethod
     @plugin.register(chain='cmdb_git')
-    def git(context):
+    def git(**kwargs):
         x = PuppetGitImporter()
         x.import_git()
-        return (True, 'Done', context)
+        return True, 'Done', kwargs
 
     def is_imported(self, changeset):
         return db.CIChangeGit.objects.filter(changeset=changeset).exists()

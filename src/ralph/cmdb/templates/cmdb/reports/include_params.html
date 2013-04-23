@@ -4,8 +4,8 @@
 
 <form class="form-inline well">
     {% for f in form %}
-            {{ f.label_tag }}
-            {{ f }}
+        {{ f.label_tag }}
+        {{ f }}
     {% endfor %}
     <button type="submit" class="btn btn-primary">
         {% icon 'fugue-funnel' %}&nbsp;Filter

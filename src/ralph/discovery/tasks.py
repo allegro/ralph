@@ -165,9 +165,10 @@ def run_plugin(context, chains, plugin_name,
                 "'{}': {}".format(plugin_name, _get_uid(context), unicode(e)),
                 end='\n',
             )
-    if not restarted:
-        run_next_plugin(context, chains, requirements, interactive,
-                        done_requirements, outputs)
+    finally:
+        if not restarted:
+            run_next_plugin(context, chains, requirements, interactive,
+                            done_requirements, outputs)
 
 
 def _run_plugin(context, chain, plugin_name, requirements, interactive,
@@ -184,8 +185,6 @@ def _run_plugin(context, chain, plugin_name, requirements, interactive,
     try:
         is_up, message, new_context = plugin.run(chain, plugin_name,
                                                  **context)
-        if is_up:
-            requirements.add(plugin_name)
     except plugin.Restart as e:
         stdout('needs to be restarted: {}'.format(unicode(e)))
         raise
@@ -199,13 +198,16 @@ def _run_plugin(context, chain, plugin_name, requirements, interactive,
             ),
             end='\n',
         )
+        raise
     else:
         if message:
             stdout(message, verbose=not is_up)
+        if is_up:
+            requirements.add(plugin_name)
+            context['successful_plugins'] = ', '.join(sorted(requirements))
+        context.update(new_context)
     finally:
         done_requirements.add(plugin_name)
-    context.update(new_context)
-    context['successful_plugins'] = ', '.join(sorted(requirements))
 
 
 def _run_chain(context, chain_name, requirements=None, interactive=False,
@@ -218,10 +220,12 @@ def _run_chain(context, chain_name, requirements=None, interactive=False,
     if not to_run:
         return
     plugin_name = plugin.highest_priority(chain_name, to_run)
-    _run_plugin(context, chain_name, plugin_name, requirements, interactive,
-                done_requirements, outputs)
-    run_chain(context, chain_name, requirements, interactive,
-              done_requirements, outputs)
+    try:
+        _run_plugin(context, chain_name, plugin_name, requirements,
+                    interactive, done_requirements, outputs)
+    finally:
+        run_chain(context, chain_name, requirements, interactive,
+                  done_requirements, outputs)
 
 
 def _get_uid(context):
