@@ -66,6 +66,7 @@ setup (
         'SQLAlchemy==0.7.8',
         'null==0.6.1',
         'xlwt==0.7.4',
+        'django-discover-runner>=0.4',
     ],
     entry_points={
         'console_scripts': [
