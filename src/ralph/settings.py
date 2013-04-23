@@ -156,7 +156,6 @@ import ralph
 TEST_DISCOVERY_ROOT = os.path.realpath(os.path.dirname(ralph.__file__))
 TEST_RUNNER = b'discover_runner.DiscoverRunner'
 # django.contrib.auth settings
-
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 )
