@@ -302,6 +302,10 @@ def discover_network(network, plugin_name='ping', requirements=None,
             # a non-existent network.
         net = network.network
         dbnet = network
+    if not dbnet or not dbnet.queue:
+        # Only do discover on networks that have a queue defined.
+        stdout("Skipping network {} -- no queue defined.".format(net))
+    queue_name = dbnet.queue.name
     stdout("Scanning network {} started.".format(net))
     if update_existing:
         ip_address_queryset = IPAddress.objects.filter(
@@ -310,11 +314,8 @@ def discover_network(network, plugin_name='ping', requirements=None,
     else:
         hosts = net.iterhosts()
     for index, host in enumerate(hosts):
-        context = {'ip': host}
-        if dbnet and dbnet.queue:
-            context['queue'] = dbnet.queue.name
         run_next_plugin(
-            context,
+            {'ip': host, 'queue': queue_name},
             ('discovery', 'postprocess'),
             requirements=requirements,
             interactive=interactive,
