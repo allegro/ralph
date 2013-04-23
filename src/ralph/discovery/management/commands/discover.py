@@ -131,7 +131,7 @@ class Command(BaseCommand):
                 if addr.numhosts > 1:
                     discover.network(addr)
                 else:
-                    discover.single({'ip': addr.ip})
+                    discover.single(addr.ip)
         print()
         if error:
             sys.exit(2)
