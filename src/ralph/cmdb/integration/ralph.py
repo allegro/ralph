@@ -27,10 +27,10 @@ class AssetChangeImporter(BaseImporter):
 
     @staticmethod
     @plugin.register(chain='cmdb_assets', requires=[])
-    def assets(context):
+    def assets(**kwargs):
         x = AssetChangeImporter()
         x.import_changes()
-        return (True, 'Done', context)
+        return True, 'Done', kwargs
 
     def import_changes(self):
         device_type = ContentType.objects.get(
