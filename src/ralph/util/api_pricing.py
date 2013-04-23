@@ -25,9 +25,7 @@ def get_ventures():
 def get_devices():
     """Yields dicts describing all the devices to be imported into pricing."""
 
-    for device in Device.objects.select_related(
-            'model__type',
-        ).filter(deleted=False):
+    for device in Device.objects.select_related('model').filter(deleted=False):
         yield {
             'id': device.id,
             'name': device.name,
