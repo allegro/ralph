@@ -84,11 +84,7 @@ class Command(BaseCommand):
                 )
                 sys.exit(2)
             plugin.purge(set(options['plugins'].split(',')))
-        try:
-            self._handle(*args, discover=discover, **options)
-        except Exception as e:
-            print('fatal:', e.message, file=sys.stderr)
-            sys.exit(1)
+        self._handle(*args, discover=discover, **options)
 
     def _handle(self, *args, **options):
         """Actual handling of the request."""
