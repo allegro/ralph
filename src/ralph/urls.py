@@ -49,7 +49,7 @@ from ajax_select import urls as ajax_select_urls
 admin.autodiscover()
 
 v09_api = Api(api_name='v0.9')
-OPTIONAL_APPS = ['ralph_assets', ]
+OPTIONAL_APPS = ['ralph_assets', 'ralph_pricing']
 # business API
 for r in (VentureResource, VentureLightResource, RoleResource,
           RoleLightResource, DepartmentResource, RolePropertyTypeResource,
@@ -74,7 +74,6 @@ for r in (BusinessLineResource, ServiceResource, CIResource,
 # deployment API
 for r in (DeploymentResource,):
     v09_api.register(r())
-
 
 urlpatterns = patterns(
     '',
