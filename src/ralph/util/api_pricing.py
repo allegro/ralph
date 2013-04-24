@@ -29,6 +29,7 @@ def get_devices():
         yield {
             'id': device.id,
             'name': device.name,
+            'parent_id': device.parent_id,
             'venture_id': device.venture_id,
             'is_virtual': device.model.type == DeviceType.virtual_server,
             'is_blade': device.model.type == DeviceType.blade_server,
