@@ -17,8 +17,12 @@ from django.core.management.base import BaseCommand
 from ipaddr import IPNetwork
 
 from ralph.discovery.models import Network
-from ralph.discovery.tasks import (run_next_plugin, discover_network,
-                                   discover_all)
+from ralph.discovery.tasks import (
+    discover_address,
+    discover_all,
+    discover_network,
+    NoQueueError,
+)
 from ralph.util import network, plugin
 
 
@@ -71,11 +75,7 @@ class Command(BaseCommand):
         discover = OptionBag()
         discover.all = partial(discover_all, interactive=interactive)
         discover.network = partial(discover_network, interactive=interactive)
-        discover.single = partial(
-            run_next_plugin,
-            chains=('discovery', 'postprocess'),
-            interactive=interactive,
-        )
+        discover.single = partial(discover_address, interactive=interactive)
         if options['plugins']:
             if not interactive:
                 print(
@@ -120,7 +120,10 @@ class Command(BaseCommand):
                 except Network.DoesNotExist:
                     ip = network.hostname(arg, reverse=True)
                     if ip:
-                        discover.single({'ip': ip})
+                        try:
+                            discover.single(ip)
+                        except NoQueueError as e:
+                            print(e)
                     else:
                         print('Hostname or network unknown:', arg)
                         error = True
@@ -128,7 +131,7 @@ class Command(BaseCommand):
                 if addr.numhosts > 1:
                     discover.network(addr)
                 else:
-                    discover.single({'ip': addr.ip})
+                    discover.single(addr.ip)
         print()
         if error:
             sys.exit(2)

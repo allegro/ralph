@@ -82,6 +82,7 @@ INSTALLED_APPS = [
     'ralph.deployment',
     'ajax_select',
     'powerdns',
+    'discover_runner',
 ]
 TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.auth.context_processors.auth',
@@ -152,8 +153,8 @@ FORCE_SCRIPT_NAME = ''
 # testing settings
 import os
 import ralph
-TEST_DISCOVERY_ROOT = os.path.realpath(os.path.dirname(ralph.__file__))
-TEST_RUNNER = b'ralph.util.DiscoveryDjangoTestSuiteRunner'
+TEST_DISCOVER_ROOT = os.path.realpath(os.path.dirname(ralph.__file__))
+TEST_RUNNER = b'discover_runner.DiscoverRunner'
 # django.contrib.auth settings
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
