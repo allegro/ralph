@@ -3,7 +3,6 @@
 
 """Django settings for Ralph. Customize the middle section and save it
    in settings-local.py."""
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -82,6 +81,7 @@ INSTALLED_APPS = [
     'ralph.deployment',
     'ajax_select',
     'powerdns',
+    'ralph_pricing',
 ]
 TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.auth.context_processors.auth',
@@ -383,3 +383,4 @@ for path in (MEDIA_ROOT, STATIC_ROOT, FILE_UPLOAD_TEMP_DIR):
         os.makedirs(path)
     except (IOError, OSError):
         continue
+
