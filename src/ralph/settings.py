@@ -383,4 +383,3 @@ for path in (MEDIA_ROOT, STATIC_ROOT, FILE_UPLOAD_TEMP_DIR):
         os.makedirs(path)
     except (IOError, OSError):
         continue
-
