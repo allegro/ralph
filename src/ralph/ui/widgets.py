@@ -236,11 +236,11 @@ class CurrencyWidget(forms.TextInput):
                                                   *args, **kwargs)
 
 
-class ButtonCheckboxWidget(forms.Widget):
+class ButtonWidget(forms.Widget):
     def render(self, name, value='', attrs=None, choices=()):
         attr_class = escape(self.attrs.get('class', ''))
         attr_value = escape(self.attrs.get('value', ''))
         return mark_safe(
-            '<button type="button" class="btn btn-danger %s">%s</button>' % (
+            '<button type="button" class="btn %s">%s</button>' % (
                 attr_class, attr_value)
         );
