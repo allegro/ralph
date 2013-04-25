@@ -33,7 +33,7 @@ setup (
     zip_safe = False, # because templates are loaded from file path
     install_requires = [
         'bob-ajax-selects==1.3.1',
-        'django-bob==1.5.6',
+        'django-bob==1.5.7',
         'django-powerdns-dnssec==0.9.3',
         'django-tastypie==0.9.14',
         'django-rq==0.4.5',
@@ -66,6 +66,7 @@ setup (
         'SQLAlchemy==0.7.8',
         'null==0.6.1',
         'xlwt==0.7.4',
+        'django-discover-runner>=0.4',
     ],
     entry_points={
         'console_scripts': [

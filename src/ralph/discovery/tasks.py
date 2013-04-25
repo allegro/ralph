@@ -31,6 +31,14 @@ SANITY_CHECK_PING_ADDRESS = settings.SANITY_CHECK_PING_ADDRESS
 SINGLE_DISCOVERY_TIMEOUT = settings.SINGLE_DISCOVERY_TIMEOUT
 
 
+class Error(Exception):
+    """Errors during discovery tasks."""
+
+
+class NoQueueError(Error):
+    """No discovery queue defined."""
+
+
 def set_queue(context):
     """Route the discovery tasks to the right data center for them.
     Use the default queue if no network matches the IP address.
@@ -40,9 +48,10 @@ def set_queue(context):
     except KeyError:
         try:
             net = Network.from_ip(context['ip'])
-            queue = net.queue.name or net.data_center.name
-        except (IndexError, KeyError):
+        except KeyError:
             queue = 'default'
+        else:
+            queue = net.queue.name if net.queue else 'default'
         context['queue'] = queue
 
 
@@ -101,6 +110,7 @@ def dummy_horde(interactive=False, how_many=1000):
 def run_next_plugin(context, chains, requirements=None, interactive=False,
                     done_requirements=None, outputs=None, after=None):
     """Runs the next plugin, asynchronously if interactive=False is given."""
+
     if requirements is None:
         requirements = set()
     if done_requirements is None:
@@ -121,6 +131,7 @@ def run_chain(context, chain_name, requirements=None, interactive=False,
     """Runs a single chain in its entirety at once, asynchronously if
     interactive=False is given.
     """
+
     run = _select_run_method(context, interactive, _run_chain, after)
     run(context, chain_name, requirements, interactive, done_requirements,
         outputs)
@@ -136,6 +147,7 @@ def run_plugin(context, chains, plugin_name,
 
     If `interactive` is True, returns output on stdout and runs the next plugin
     synchronously."""
+
     if requirements is None:
         requirements = set()
     if done_requirements is None:
@@ -165,9 +177,10 @@ def run_plugin(context, chains, plugin_name,
                 "'{}': {}".format(plugin_name, _get_uid(context), unicode(e)),
                 end='\n',
             )
-    if not restarted:
-        run_next_plugin(context, chains, requirements, interactive,
-                        done_requirements, outputs)
+    finally:
+        if not restarted:
+            run_next_plugin(context, chains, requirements, interactive,
+                            done_requirements, outputs)
 
 
 def _run_plugin(context, chain, plugin_name, requirements, interactive,
@@ -184,8 +197,6 @@ def _run_plugin(context, chain, plugin_name, requirements, interactive,
     try:
         is_up, message, new_context = plugin.run(chain, plugin_name,
                                                  **context)
-        if is_up:
-            requirements.add(plugin_name)
     except plugin.Restart as e:
         stdout('needs to be restarted: {}'.format(unicode(e)))
         raise
@@ -199,13 +210,16 @@ def _run_plugin(context, chain, plugin_name, requirements, interactive,
             ),
             end='\n',
         )
+        raise
     else:
         if message:
             stdout(message, verbose=not is_up)
+        if is_up:
+            requirements.add(plugin_name)
+            context['successful_plugins'] = ', '.join(sorted(requirements))
+        context.update(new_context)
     finally:
         done_requirements.add(plugin_name)
-    context.update(new_context)
-    context['successful_plugins'] = ', '.join(sorted(requirements))
 
 
 def _run_chain(context, chain_name, requirements=None, interactive=False,
@@ -218,15 +232,18 @@ def _run_chain(context, chain_name, requirements=None, interactive=False,
     if not to_run:
         return
     plugin_name = plugin.highest_priority(chain_name, to_run)
-    _run_plugin(context, chain_name, plugin_name, requirements, interactive,
-                done_requirements, outputs)
-    run_chain(context, chain_name, requirements, interactive,
-              done_requirements, outputs)
+    try:
+        _run_plugin(context, chain_name, plugin_name, requirements,
+                    interactive, done_requirements, outputs)
+    finally:
+        run_chain(context, chain_name, requirements, interactive,
+                  done_requirements, outputs)
 
 
 def _get_uid(context):
     """Returns a unique context identifier for logging purposes for a plugin.
     """
+
     if 'uid' in context:
         return context['uid']
     return context.get('ip', '')
@@ -237,6 +254,7 @@ def _select_run_method(context, interactive, function, after):
     `interactive` is True), enqueues it right away or schedules its enqueueing
     (if `after` is given).
     """
+
     if interactive:
         return function
     set_queue(context)
@@ -265,6 +283,22 @@ def _enqueue(queue, function, *args, **kwargs):
         kwargs=kwargs,
         timeout=SINGLE_DISCOVERY_TIMEOUT,
         result_ttl=0,
+    )
+
+
+def discover_address(address, requirements=None, interactive=True, queue=None):
+    if queue is None:
+        net = Network.from_ip(address)
+        if not net.queue:
+            raise NoQueueError(
+                'The network {} has no discovery queue.'.format(net),
+            )
+        queue = net.queue.name
+    run_next_plugin(
+        {'ip': address, 'queue': queue},
+        ('discovery', 'postprocess'),
+        requirements=requirements,
+        interactive=interactive,
     )
 
 
@@ -302,6 +336,11 @@ def discover_network(network, plugin_name='ping', requirements=None,
             # a non-existent network.
         net = network.network
         dbnet = network
+    if not dbnet or not dbnet.queue:
+        # Only do discover on networks that have a queue defined.
+        stdout("Skipping network {} -- no queue defined.".format(net))
+        return
+    queue_name = dbnet.queue.name
     stdout("Scanning network {} started.".format(net))
     if update_existing:
         ip_address_queryset = IPAddress.objects.filter(
@@ -309,16 +348,8 @@ def discover_network(network, plugin_name='ping', requirements=None,
         hosts = (i.address for i in ip_address_queryset)
     else:
         hosts = net.iterhosts()
-    for index, host in enumerate(hosts):
-        context = {'ip': host}
-        if dbnet and dbnet.queue:
-            context['queue'] = dbnet.queue.name
-        run_next_plugin(
-            context,
-            ('discovery', 'postprocess'),
-            requirements=requirements,
-            interactive=interactive,
-        )
+    for host in hosts:
+        discover_address(host, requirements, interactive, queue_name)
     if interactive:
         stdout()
     else:
