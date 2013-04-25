@@ -81,7 +81,6 @@ INSTALLED_APPS = [
     'ralph.deployment',
     'ajax_select',
     'powerdns',
-    'ralph_pricing',
 ]
 TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.auth.context_processors.auth',
