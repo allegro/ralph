@@ -44,10 +44,10 @@ def add_filter(request, ci=None):
         )
     if request.get('start_resolved') and request.get('end_resolved'):
         filters.append(
-            {'resolvet_date_lte': request.get('start_resolved')}
+            {'resolvet_date__lte': request.get('start_resolved')}
         )
         filters.append(
-            {'resolvet_date_gte': request.get('end_resolved')}
+            {'resolvet_date__gte': request.get('end_resolved')}
         )
     if request.get('start_planned_start') and request.get('end_planned_start'):
         filters.append(

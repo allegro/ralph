@@ -57,17 +57,11 @@ Please note that we set caps directly on the binary (e.g. **not on a symlink**).
 Message queue
 -------------
 
-Ralph works in a distributed fashion, communication between worker nodes happens
-through a central queue. For evaluation purposes and simple installations, the
-default is to use an SQLite database which requires no configuration. For larger
-deployments we strongly recommend either `Redis <http://redis.io/>`_ or
-`RabbitMQ <http://www.rabbitmq.com/>`_ as the broker.
+Ralph works in a distributed fashion, communication between worker nodes
+happens through a central queue with `Redis <http://redis.io/>`_ as the broker.
 
-Redis
-~~~~~
-
-We like to use ``Redis`` as the message broker because of its performance and
-simplicity. We require **at least version 2.2** because of our use of list
+We chose ``Redis`` as the message broker because of its performance and
+simplicity.  We require **at least version 2.2** because of our use of list
 commands which were added in that version. Ubuntu Server 12.04 LTS delivers::
 
   $ sudo apt-get install redis-server
@@ -123,44 +117,6 @@ We can check the status of the Redis server::
 .. note::
 
   Remember to configure redis in `settings.py <configuration.html#message-queue-broker>`_.
-
-rabbitmq
-~~~~~~~~
-
-Alternatively, ``rabbitmq`` can be used as a production-grade message broker for
-Ralph tasks.  We require **at least version 2.5** because earlier implementation
-didn't handle running out of physical memory well. Ubuntu Server 12.04 LTS ships
-a sensible version, we can simply ``apt-get`` it::
-
-  $ sudo apt-get install rabbitmq-server
-
-Once it's installed, we should remove the default ``guest`` account and replace
-it with a dedicated one (replace ``$PASSWORD`` with a password of your choice)::
-
-  $ sudo rabbitmqctl delete_user guest
-  $ sudo rabbitmqctl add_user ralph $PASSWORD
-  $ sudo rabbitmqctl add_vhost /ralph
-  $ sudo rabbitmqctl set_permissions -p /ralph ralph ".*" ".*" ".*"
-
-By default, Rabbit listens on port *5672* which can also be customized::
-
-  $ sudo sh -c 'echo "NODE_PORT=5672" >> /etc/rabbitmq/rabbitmq-env.conf'
-  $ sudo /etc/init.d/rabbitmq-server restart
-
-Finally we can check the status of the newly configured server::
-
-    $ sudo rabbitmqctl status
-    Status of node rabbit@s10821 ...
-    [{pid,29097},
-    {running_applications,[{rabbit,"RabbitMQ","2.4.1"},
-                            {mnesia,"MNESIA  CXC 138 12","4.4.12"},
-                            {os_mon,"CPO  CXC 138 46","2.2.4"},
-                            {sasl,"SASL  CXC 138 11","2.1.8"},
-                            {stdlib,"ERTS  CXC 138 10","1.16.4"},
-                            {kernel,"ERTS  CXC 138 10","2.13.4"}]},
-    {nodes,[{disc,[rabbit@s10821]}]},
-    {running_nodes,[rabbit@s10821]}]
-    ...done.
 
 Database 
 --------
@@ -402,10 +358,10 @@ From the project directory run::
   Django version 1.3, using settings 'ralph.settings'
   Server is running
   Quit the server with CONTROL-C.
-  2011-04-18 13:39:34 [17904] [INFO] Starting gunicorn 0.12.1 2011-04-18
-  13:39:34 [17904] [INFO] Listening at: http://127.0.0.1:8000 (17904) 2011-04-18
-  13:39:34 [17904] [INFO] Using worker: sync 2011-04-18 13:39:34 [17912] [INFO]
-  Booting worker with pid: 17912
+  2011-04-18 13:39:34 [17904] [INFO] Starting gunicorn 0.12.1
+  2011-04-18 13:39:34 [17904] [INFO] Listening at: http://127.0.0.1:8000 (17904)
+  2011-04-18 13:39:34 [17904] [INFO] Using worker: sync
+  2011-04-18 13:39:34 [17912] [INFO] Booting worker with pid: 17912
 
 The service should be accessible from the localhost. You may invoke this command
 with a ``host:port`` argument to see the web app from a remote host. For
@@ -418,32 +374,13 @@ Message queue
 
 From the project directory run::
 
-  (ralph)$ ralph celeryd -l info
-  [2011-04-11 14:41:22,958: WARNING/MainProcess]  
+  (ralph)$ ralph rqworker -v2 default
+  16:43:19 RQ worker started, version 0.3.7
+  16:43:19
+  16:43:19 *** Listening on default, dc2...
 
-  -------------- celery@Macallan.local v2.2.5
-  ---- **** -----
-  --- * ***  * -- [Configuration]
-  -- * - **** ---   . broker:      amqplib://ralph@localhost:25672/ralph
-  - ** ----------   . loader:      djcelery.loaders.DjangoLoader
-  - ** ----------   . logfile:     [stderr]@INFO
-  - ** ----------   . concurrency: 4
-  - ** ----------   . events:      OFF
-  - *** --- * ---   . beat:        OFF
-  -- ******* ----
-  --- ***** ----- [Queues]
-  --------------   . celery:      exchange:celery (direct) binding:celery
-                    
-  [Tasks]
-
-  [2011-04-11 14:41:22,970: INFO/PoolWorker-1] child process calling self.run()
-  [2011-04-11 14:41:22,971: INFO/PoolWorker-2] child process calling self.run()
-  [2011-04-11 14:41:22,972: INFO/PoolWorker-3] child process calling self.run()
-  [2011-04-11 14:41:22,975: INFO/PoolWorker-4] child process calling self.run()
-  [2011-04-11 14:41:22,977: WARNING/MainProcess] celery@Macallan.local has started.
-
-This runs the worker processes. Leave it open for now, in the next step we'll
-check if the communication works alright.
+This runs a single worker process. Leave it open for now, in the next step
+we'll check if the communication works alright.
 
 Ralph tasks
 ~~~~~~~~~~~
@@ -463,9 +400,13 @@ If everything's alright, let's try to run the discovery remotely::
 This won't return anything on stdout but on your Celeryd console you should
 see::
 
-  [2011-04-19 14:44:38,843: INFO/MainProcess] Got task from broker: ralph.discovery.tasks.discover_single[d9eed94e-4741-47a2-b539-91464a17695d]
-  [2011-04-19 14:44:38,882: INFO/PoolWorker-64] 127.0.0.1... up!
-  [2011-04-19 14:44:38,883: INFO/MainProcess] Task ralph.discovery.tasks.discover_single[d9eed94e-4741-47a2-b539-91464a17695d] succeeded in 0.0220642089844s: True
+  16:44:44 default: ralph.discovery.tasks.run_plugin({u'queue': u'default',
+           u'ip': IPv4Address('127.0.0.1')}, (u'discovery', u'postprocess'),
+           'ping', set([]), False, set([]), None)
+           (48cd4afc-10c0-4ed0-9646-6db81c1e1ea5)
+  16:44:44 [ping] 127.0.0.1... up!
+  16:44:44 Job OK
+  16:44:44 Result discarded immediately.
 
 That's it!
 ----------

@@ -12,7 +12,6 @@ from django.core.urlresolvers import reverse
 from django.core.paginator import Paginator
 from django.db import models as db
 from django.http import HttpResponseRedirect, HttpResponseForbidden
-from django.utils import simplejson as json
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import (
     DetailView,
@@ -1167,25 +1166,26 @@ class ServerMove(BaseMixin, TemplateView):
 
 @nested_commit_on_success
 def bulk_update(devices, fields, data, user):
-    for d in devices:
+    field_classes = {
+        'deprecation_kind': DeprecationKind,
+        'venture': Venture,
+        'venture_role': VentureRole,
+        'margin_kind': MarginKind,
+    }
+    values = {}
+    for name in fields:
+        if name in field_classes:
+            values[name] = field_classes[name].objects.get(id=data[name])
+        else:
+            values[name] = data[name]
+    for device in devices:
         if 'venture' in fields:
-            d.venture_role = None
-
-        field_classes = {
-            'deprecation_kind': DeprecationKind,
-            'venture': Venture,
-            'venture_role': VentureRole,
-            'margin_kind': MarginKind,
-        }
-
+            device.venture_role = None
         for name in fields:
-            if name in field_classes:
-                setattr(d, name, field_classes[name].objects.get(id=data[name]))
-            else:
-                setattr(d, name, data[name])
-        d.save_comment = data.get('save_comment')
-        d.save(priority=SAVE_PRIORITY, user=user)
-        pricing.device_update_cached(d)
+            setattr(device, name, values[name])
+            device.save_comment = data.get('save_comment')
+            device.save(priority=SAVE_PRIORITY, user=user)
+            pricing.device_update_cached(device)
 
 
 class BulkEdit(BaseMixin, TemplateView):
@@ -1208,7 +1208,7 @@ class BulkEdit(BaseMixin, TemplateView):
             )
             return super(BulkEdit, self).get(*args, **kwargs)
         selected = self.request.POST.getlist('select')
-        self.devices = Device.objects.filter(id__in=selected)
+        self.devices = Device.objects.filter(id__in=selected).select_related()
         self.edit_fields = self.request.POST.getlist('edit')
         initial = {}
         self.different_fields = []

@@ -334,8 +334,8 @@ def save_device_data(data, remote_ip):
 
 
 class WindowsDeviceResource(MResource):
-    def obj_create(self, bundle, request=None, **kwargs):
-        ip = remote_addr(request)
+    def obj_create(self, bundle, **kwargs):
+        ip = remote_addr(bundle.request)
         logger.debug('Got json data: %s' % bundle.data.get('data'))
         try:
             return save_device_data(bundle.data.get('data'), ip)
