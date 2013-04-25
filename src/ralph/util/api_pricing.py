@@ -22,6 +22,7 @@ def get_ventures():
             'department': department.name if department else '',
         }
 
+
 def get_devices():
     """Yields dicts describing all the devices to be imported into pricing."""
 
@@ -34,3 +35,36 @@ def get_devices():
             'is_virtual': device.model.type == DeviceType.virtual_server,
             'is_blade': device.model.type == DeviceType.blade_server,
         }
+
+
+def get_device_components(sn):
+    """Yields dicts describing all device components to be taken in assets"""
+    try:
+        ralph_device = Device.objects.get(sn=sn)
+    except Device.DoesNotExist:
+        yield {}
+    else:
+        components = ralph_device.get_components
+        for processor in components.get('processors'):
+            yield {
+                'model_proposed': processor.model.name,
+            }
+        for memory in components.get('memory'):
+            yield {
+                'model_proposed': memory.model.name,
+            }
+        for storage in components.get('storages'):
+            yield {
+                'model_proposed': storage.model.name,
+                'sn': storage.sn,
+            }
+        for ethernet in components.get('ethernets'):
+            yield {
+                'model_proposed': ethernet,
+                'sn': ethernet.mac,
+            }
+        for fibrechannel in components.get('fibrechannels'):
+            yield {
+                'model_proposed': fibrechannel.model.name,
+                'sn': fibrechannel.mac,
+            }
