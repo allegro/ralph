@@ -6,6 +6,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from django import forms
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 from lck.django.common.admin import ModelAdmin
@@ -13,6 +14,7 @@ from lck.django.common.admin import ModelAdmin
 from ralph.deployment.models import (
     ArchivedDeployment, Deployment, Preboot, PrebootFile, MassDeployment,
 )
+from ralph.deployment.util import clean_hostname
 
 
 class MassDeploymentAdmin(ModelAdmin):
@@ -28,6 +30,14 @@ admin.site.register(
     MassDeployment, MassDeploymentAdmin
 )
 
+
+class DeploymentAdminForm(forms.ModelForm):
+    class Meta:
+        model = Deployment
+
+    def clean_hostname(self):
+        hostname = self.cleaned_data.get('hostname')
+        return clean_hostname(hostname)
 
 class DeploymentAdmin(ModelAdmin):
     list_display = (
@@ -45,6 +55,7 @@ class DeploymentAdmin(ModelAdmin):
         'venture': ['^name'],
         'venture_role': ['^name'],
     }
+    form = DeploymentAdminForm
 
     def _move_deployment_to_archive(modeladmin, request, queryset):
         for deployment in queryset:
