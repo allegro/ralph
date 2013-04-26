@@ -332,6 +332,12 @@ class MassDeploymentForm(forms.Form):
             parsed_macs.add(mac)
             hostname = cols[0].strip()
             _validate_hostname(hostname, mac, parsed_hostnames, row_number)
+            if not clean_hostname(hostname):
+                raise forms.ValidationError("Invalid hostname")
+
+
+
+
             parsed_hostnames.add(hostname)
             network_name = cols[5].strip()
             try:
