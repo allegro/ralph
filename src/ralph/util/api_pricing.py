@@ -22,6 +22,7 @@ def get_ventures():
             'department': department.name if department else '',
         }
 
+
 def get_devices():
     """Yields dicts describing all the devices to be imported into pricing."""
 
