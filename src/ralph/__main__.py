@@ -2,6 +2,7 @@
 import os
 import sys
 
+
 def ubuntu_1020872_workaround():
     """Workaround for spurious "Error opening file for reading: Permission
     denied" printed to stderr while importing _imaging due to libjpeg not being
@@ -11,7 +12,7 @@ def ubuntu_1020872_workaround():
     dup = os.dup(2)
     os.close(2)
     try:
-        import _imaging
+        import _imaging  # noqa
     finally:
         os.dup2(dup, 2)
         try:
@@ -20,6 +21,7 @@ def ubuntu_1020872_workaround():
         except IOError:
             pass
         sys.__stderr__ = sys.stderr = os.fdopen(2, 'a')
+
 
 def main():
     if sys.platform.startswith('linux'):
@@ -30,7 +32,17 @@ def main():
     from django.core.management import execute_from_command_line
 
     sys.argv[0] = os.path.dirname(__file__)
-    execute_from_command_line(sys.argv)
+    try:
+        execute_from_command_line(sys.argv)
+    except Exception as e:
+        try:
+            from raven.contrib.django.raven_compat.models import client
+        except ImportError:
+            pass
+        else:
+            client.captureException()
+        raise e
+
 
 if __name__ == "__main__":
     main()
