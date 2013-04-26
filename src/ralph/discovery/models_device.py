@@ -543,7 +543,6 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
     def rolepropertyvalue(self):
         return self.rolepropertyvalue_set
 
-    @property
     def get_components(self):
         details = {}
         details['processors'] = self.processor_set.all()
