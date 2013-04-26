@@ -14,7 +14,7 @@ def get_device_components(sn):
     try:
         ralph_device = Device.objects.get(sn=sn)
     except Device.DoesNotExist:
-        yield {}
+        raise LookupError('Device not found')
     else:
         components = ralph_device.get_components()
         for processor in components.get('processors', []):
