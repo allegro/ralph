@@ -528,7 +528,6 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
         )
         return self.deprecation_date < today_midnight
 
-
     def get_core_count(self):
         return sum(cpu.get_cores() for cpu in self.processor_set.all())
 
