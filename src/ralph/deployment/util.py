@@ -25,7 +25,7 @@ from ralph.discovery.models import (
 )
 from ralph.dnsedit.models import DHCPEntry
 from ralph.util import Eth
-
+from django import forms
 
 def _get_next_hostname_number(hostname, template, iteration_definition,
                               min_number, number_len):
@@ -264,3 +264,13 @@ def create_deployments(data, user, mass_deployment):
             venture_role=item['venture_role'],
             mass_deployment=mass_deployment,
         )
+
+def clean_hostname(hostname):
+    hostname = hostname.strip().lower()
+    if '.' not in hostname:
+        raise forms.ValidationError("Hostname has to include the domain.")
+    try:
+        ipaddr.IPAddress(hostname)
+    except ValueError:
+        return hostname
+    raise forms.ValidationError("IP address can't be hostname")
