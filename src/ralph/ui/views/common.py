@@ -208,6 +208,12 @@ class BaseMixin(object):
                 MenuItem('Assets', fugue_icon='fugue-box-label',
                          href='/assets')
             )
+        if ('ralph_pricing' in settings.INSTALLED_APPS):
+            mainmenu_items.append(
+                MenuItem('Pricing', fugue_icon='fugue-money-coin',
+                         href='/pricing')
+            )
+
         if settings.BUGTRACKER_URL:
             mainmenu_items.append(
                 MenuItem(
