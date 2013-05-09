@@ -20,6 +20,7 @@ def get_ventures():
             'parent_id': venture.parent_id,
             'name': venture.name,
             'department': department.name if department else '',
+            'symbol': venture.symbol,
         }
 
 

@@ -348,6 +348,7 @@ for queue in RQ_QUEUE_LIST:
     RQ_QUEUES[queue] = dict(RQ_QUEUES['default'])
 AUTOCI = True
 AUTOCI_SKIP_MSG = 'AUTOCI is disabled'
+HAMSTER_API_URL = ""
 # </template>
 
 #
