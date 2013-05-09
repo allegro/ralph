@@ -1,6 +1,18 @@
 Change Log
 ----------
 
+1.2.2
+~~~~~
+
+Release on April 23, 2013
+
+* Removed Git, hostname and stty process forking.
+
+* Cleaned up plugins chains.
+
+* Fixed pagination, templates and filters in the CMDB.
+
+
 1.2.1
 ~~~~~
 

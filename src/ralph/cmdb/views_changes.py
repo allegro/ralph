@@ -21,15 +21,14 @@ from django.utils import simplejson
 
 import ralph.cmdb.models as db
 from ralph.cmdb.models_changes import CI_CHANGE_TYPES
-from ralph.cmdb.views import BaseCMDBView, get_icon_for
+from ralph.cmdb.views import BaseCMDBView
 from ralph.cmdb.forms import (
     CIChangeSearchForm,
     CIReportsParamsForm,
     ReportFilters,
-    ReportFiltersDateRamge,
+    ReportFiltersDateRange,
 )
 from ralph.cmdb.util import report_filters, add_filter, table_colums
-from ralph.cmdb.models_ci import CI
 from ralph.account.models import Perm, ralph_permission
 from django.utils.translation import ugettext_lazy as _
 
@@ -111,23 +110,23 @@ class Change(ChangesBase):
             user_info = user[0].get('username', '–') if user else '–'
             report = [
                 {
-                    'time':change.content_object.time,
+                    'time': change.content_object.time,
                     'user': user_info,
-                    'field_name':change.content_object.field_name,
-                    'old_value':change.content_object.old_value,
-                    'new_value':change.content_object.new_value,
-                    'comment':change.content_object.comment,
+                    'field_name': change.content_object.field_name,
+                    'old_value': change.content_object.old_value,
+                    'new_value': change.content_object.new_value,
+                    'comment': change.content_object.comment,
                 }
             ]
             self.ci_attributes_changes = report
         return super(Change, self).get(*args, **kwargs)
 
 
-
 class Changes(ChangesBase, DataTableMixin):
     template_name = 'cmdb/search_changes.html'
     sort_variable_name = 'sort'
     export_variable_name = None  # fix in bob!
+    rows_per_page = 20
     perms = [
         {
             'perm': Perm.read_configuration_item_info_jira,
@@ -264,7 +263,7 @@ class Problems(ChangesBase, DataTableMixin):
             'title': section,
             'form': {
                 'filters': ReportFilters(self.request.GET),
-                'date_range': ReportFiltersDateRamge(self.request.GET),
+                'date_range': ReportFiltersDateRange(self.request.GET),
             },
         })
         return ret
@@ -313,7 +312,7 @@ class Incidents(ChangesBase, DataTableMixin):
             'title': section,
             'form': {
                 'filters': ReportFilters(self.request.GET),
-                'date_range': ReportFiltersDateRamge(self.request.GET),
+                'date_range': ReportFiltersDateRange(self.request.GET),
             },
         })
         return ret
@@ -362,7 +361,7 @@ class JiraChanges(ChangesBase, DataTableMixin):
             'title': section,
             'form': {
                 'filters': ReportFilters(self.request.GET),
-                'date_range': ReportFiltersDateRamge(self.request.GET),
+                'date_range': ReportFiltersDateRange(self.request.GET),
             },
         })
         return ret
@@ -387,16 +386,6 @@ class DashboardDetails(ChangesBase):
         ret.update({'statistics': self.data, })
         return ret
 
-    def get_csv_data(self):
-        report_type = self.kwargs.get('report_type')
-        if report_type == 'ci':
-            self.csv_data = [(unicode(x['name']),
-                              unicode(x['count']),
-                              unicode(x['venture'])) for x in self.data]
-        else:
-            self.csv_data = [(unicode(x[0]), unicode(x[1])) for x in self.data]
-        return self.csv_data
-
     def get(self, *args, **kwargs):
         type = kwargs.get('type')
         prio = kwargs.get('prio')
@@ -413,6 +402,7 @@ class DashboardDetails(ChangesBase):
             AND YEAR(ch.time)=YEAR(NOW())
             GROUP BY cc.id DESC
             ORDER BY COUNT(*) DESC, cc.name ASC
+            LIMIT 20
         ''', [type, prio, month])
         if report_type == 'ci':
             self.data = []
@@ -449,8 +439,6 @@ class DashboardDetails(ChangesBase):
                         prio=prio,
                         type=type,
                     ))
-            self.paginate(self.data)
-            self.data = self.page_contents
         else:
             self.template_name = 'cmdb/dashboard_details_venture.html'
             self.data_dict = {}
@@ -481,8 +469,6 @@ class DashboardDetails(ChangesBase):
 
             self.data = [(self.data_dict[x], x) for x in self.data_dict]
             self.data = sorted(self.data, reverse=True)
-            self.paginate(self.data)
-            self.data = self.page_contents
         return super(DashboardDetails, self).get(*args)
 
 
