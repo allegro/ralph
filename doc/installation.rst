@@ -308,13 +308,15 @@ zero configuration options.
 After creating the default config file, let's synchronize the database from
 sources by running the standard ``syncdb`` management command::
 
-  (ralph)$ ralph syncdb
+  (ralph)$ ralph syncdb --all
 
 Django will create some tables, setup some default values and ask whether you
 want to create a superuser. Do so, you will use the credentials given to test
-whether the setup worked. Then migrate the rest of the tables::
+whether the setup worked. The ``--all`` switch to ``syncdb`` created all
+tables, even if there are existing migrations for them. Mark all those
+migrations as done by running::
 
-  (ralph)$ ralph migrate
+  (ralph)$ ralph migrate --fake
 
 Lastly, we need to link the static images, CSS files, JavaScript sources, etc.
 to a common place so the front-end Web server can pick them up. That way the
