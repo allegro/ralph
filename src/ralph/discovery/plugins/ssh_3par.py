@@ -7,6 +7,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import paramiko
+import re
 
 from django.conf import settings
 from lck.django.common import nested_commit_on_success
@@ -84,11 +85,12 @@ def _save_device(ip, name, model_name, sn):
 
 
 def _run_ssh_3par(ip):
+    par_re = re.compile(r'^\s+ID\s+-+Name-+\s+-+Model-+')
     ssh = _connect_ssh(ip)
     try:
         stdin, stdout, stderr = ssh.exec_command("showsys")
         lines = list(stdout.readlines())
-        if not lines[1].startswith('  ID ---Name--- ---Model-'):
+        if not par_re.match(lines[1]):
             raise Error('not a 3PAR.')
         line = lines[-1]
         name = line[5:15].strip()
