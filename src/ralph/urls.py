@@ -49,7 +49,7 @@ from ajax_select import urls as ajax_select_urls
 admin.autodiscover()
 
 v09_api = Api(api_name='v0.9')
-OPTIONAL_APPS = ['ralph_assets', 'ralph_pricing']
+OPTIONAL_APPS = ['ralph_assets', 'ralph_pricing', 'ralph_assets_imports']
 # business API
 for r in (VentureResource, VentureLightResource, RoleResource,
           RoleLightResource, DepartmentResource, RolePropertyTypeResource,
