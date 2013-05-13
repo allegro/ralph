@@ -47,6 +47,7 @@ setup (
         'jpath==1.2',
         'lck.django==0.8.10',
         'lxml==2.3.5',
+        'defusedxml==0.4.1',
         'mock==0.8.0',
         'MySQL-python==1.2.3',
         'paramiko==1.9.0',
