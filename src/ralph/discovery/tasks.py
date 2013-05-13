@@ -288,10 +288,16 @@ def _enqueue(queue, function, *args, **kwargs):
 
 def discover_address(address, requirements=None, interactive=True, queue=None):
     if queue is None:
-        net = Network.from_ip(address)
+        try:
+            net = Network.from_ip(address)
+        except IndexError:
+            raise NoQueueError(
+                "Address {0} doesn't belong to any configured "
+                "network.".format(address),
+            )
         if not net.queue:
             raise NoQueueError(
-                'The network {} has no discovery queue.'.format(net),
+                "The network {0} has no discovery queue.".format(net),
             )
         queue = net.queue.name
     run_next_plugin(
