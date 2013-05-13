@@ -2,6 +2,11 @@
 import os
 import sys
 
+try:
+    from raven.contrib.django.raven_compat.models import client as raven_client
+except ImportError:
+    raven_client = None # noqa
+
 
 def ubuntu_1020872_workaround():
     """Workaround for spurious "Error opening file for reading: Permission
@@ -34,14 +39,10 @@ def main():
     sys.argv[0] = os.path.dirname(__file__)
     try:
         execute_from_command_line(sys.argv)
-    except Exception as e:
-        try:
-            from raven.contrib.django.raven_compat.models import client
-        except ImportError:
-            pass
-        else:
-            client.captureException()
-        raise e
+    except Exception:
+        if raven_client:
+            raven_client.captureException()
+        raise
 
 
 if __name__ == "__main__":
