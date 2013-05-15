@@ -5,9 +5,11 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-
 from ralph.business.models import Venture
 from ralph.discovery.models import Device, DeviceType
+
+from django.db import models as db
+
 
 
 def get_ventures():
@@ -27,14 +29,12 @@ def get_ventures():
 def get_devices():
     """Yields dicts describing all the devices to be imported into pricing."""
 
-    virtual = {
-        DeviceType.virtual_server,
+    exclude = {
         DeviceType.cloud_server,
         DeviceType.mogilefs_storage,
     }
     for device in Device.objects.select_related('model').exclude(
-        model__type__in=virtual,
-        deleted=True,
+        model__type__in=exclude,
     ):
         if device.model is None:
             continue
@@ -56,7 +56,6 @@ def get_physical_cores():
     }
     for device in Device.objects.filter(
         model__type__in=physical_servers,
-        deleted=False,
     ):
         cores = device.get_core_count()
         if not cores:
@@ -66,3 +65,21 @@ def get_physical_cores():
             'venture_id': device.venture_id,
             'physical_cores': cores,
         }
+
+def get_virtual_usages():
+    """Yields dicts reporting the number of virtual cores, memory and disk."""
+
+    for device in Device.objects.select_related('model').filter(
+        model__type=DeviceType.virtual_server,
+    ):
+        cores = device.get_core_count()
+        memory = device.memory_set.aggregate(db.Sum('size'))['size_sum']
+        disk = device.storage_set.aggregate(db.Sum('size'))['size_sum']
+        yield {
+            'id': device.id,
+            'venture_id': device.venture_id,
+            'virtual_cores': cores,
+            'virtual_memory': memory,
+            'virtual_disk': disk,
+        }
+
