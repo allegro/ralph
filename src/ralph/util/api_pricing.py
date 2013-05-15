@@ -6,7 +6,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from ralph.business.models import Venture
-from ralph.discovery.models import Device, DeviceType
+from ralph.discovery.models import Device, DeviceType, DiskShareMount
 
 from django.db import models as db
 
@@ -59,7 +59,12 @@ def get_physical_cores():
     ):
         cores = device.get_core_count()
         if not cores:
-            continue
+            for system in device.operatingsystem_set.all():
+                cores = system.cores_count
+                if cores:
+                    break
+            else:
+                continue
         yield {
             'device_id': device.id,
             'venture_id': device.venture_id,
@@ -69,17 +74,45 @@ def get_physical_cores():
 def get_virtual_usages():
     """Yields dicts reporting the number of virtual cores, memory and disk."""
 
-    for device in Device.objects.select_related('model').filter(
-        model__type=DeviceType.virtual_server,
-    ):
+    for device in Device.objects.filter(model__type=DeviceType.virtual_server):
         cores = device.get_core_count()
-        memory = device.memory_set.aggregate(db.Sum('size'))['size_sum']
-        disk = device.storage_set.aggregate(db.Sum('size'))['size_sum']
+        memory = device.memory_set.aggregate(db.Sum('size'))['size__sum']
+        disk = device.storage_set.aggregate(db.Sum('size'))['size__sum']
+        shares_size = sum(
+            mount.get_size()
+            for mount in device.disksharemount_set.all()
+        )
+        for system in device.operatingsystem_set.all():
+            if not disk:
+                disk = max((system.storage or 0)- shares_size, 0)
+            if not cores:
+                cores = system.cores_count
+            if not memory:
+                memory = system.memory
         yield {
-            'id': device.id,
+            'device_id': device.id,
             'venture_id': device.venture_id,
-            'virtual_cores': cores,
-            'virtual_memory': memory,
-            'virtual_disk': disk,
+            'virtual_cores': cores or 0,
+            'virtual_memory': memory or 0,
+            'virtual_disk': disk or 0,
+        }
+
+def get_shares():
+    """Yields dicts reporting the storage shares for all servers."""
+
+    for mount in DiskShareMount.objects.select_related(
+        'share',
+    ).filter(is_virtual=False):
+        yield {
+            'storage_device_id': mount.share.device_id,
+            'mount_device_id': mount.device_id,
+            'model': (
+                mount.share.model.group.name
+                if mount.share.model.group
+                else mount.share.model.name
+            ),
+            'label': mount.share.label,
+            'size': mount.get_size(),
+            'share_mount_count': mount.get_total_mounts(),
         }
 
