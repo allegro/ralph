@@ -49,6 +49,7 @@ def get_devices():
             'is_blade': device.model.type == DeviceType.blade_server,
         }
 
+
 def get_physical_cores():
     """Yields dicts reporting the number of physical CPU cores on devices."""
 
@@ -74,6 +75,7 @@ def get_physical_cores():
             'physical_cores': cores,
         }
 
+
 def get_virtual_usages():
     """Yields dicts reporting the number of virtual cores, memory and disk."""
 
@@ -89,7 +91,7 @@ def get_virtual_usages():
         )
         for system in device.operatingsystem_set.all():
             if not disk:
-                disk = max((system.storage or 0)- shares_size, 0)
+                disk = max((system.storage or 0) - shares_size, 0)
             if not cores:
                 cores = system.cores_count
             if not memory:
