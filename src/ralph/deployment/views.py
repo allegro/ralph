@@ -201,7 +201,10 @@ def puppet_classifier(request):
         'verified': device.verified,
         'last_seen': device.last_seen.strftime('%Y-%m-%dT%H:%M:%S'),
         'model': device.model.name if device.model else None,
-        'model_group': device.model.group.name if device.model else None,
+        'model_group': device.model.group.name if (
+                device.model and
+                device.model.group
+            ) else None,
         'location': location,
         'properties': device.venture_role.get_properties(
             device,
