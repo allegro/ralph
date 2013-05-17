@@ -15,7 +15,6 @@ from django.db import models as db
 def get_ventures():
     """Yields dicts describing all the ventures to be imported into pricing."""
 
-    return # XXX DEBUG
     for venture in Venture.objects.select_related('department').all():
         department = venture.get_department()
         yield {
@@ -30,7 +29,6 @@ def get_ventures():
 def get_devices():
     """Yields dicts describing all the devices to be imported into pricing."""
 
-    return # XXX DEBUG
     exclude = {
         DeviceType.cloud_server,
         DeviceType.mogilefs_storage,
@@ -53,7 +51,6 @@ def get_devices():
 def get_physical_cores():
     """Yields dicts reporting the number of physical CPU cores on devices."""
 
-    return # XXX DEBUG
     physical_servers = {
         DeviceType.blade_server,
         DeviceType.rack_server,
@@ -78,8 +75,6 @@ def get_physical_cores():
 
 def get_virtual_usages():
     """Yields dicts reporting the number of virtual cores, memory and disk."""
-
-    return # XXX DEBUG
 
     for device in Device.objects.filter(model__type=DeviceType.virtual_server):
         cores = device.get_core_count()
