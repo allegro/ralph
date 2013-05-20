@@ -38,5 +38,4 @@ def get_device_components(sn):
         for fibrechannel in components.get('fibrechannels', []):
             yield {
                 'model_proposed': fibrechannel.model.name,
-                'sn': fibrechannel.mac,
             }
