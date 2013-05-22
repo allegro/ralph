@@ -349,6 +349,7 @@ for queue in RQ_QUEUE_LIST:
 AUTOCI = True
 AUTOCI_SKIP_MSG = 'AUTOCI is disabled'
 HAMSTER_API_URL = ""
+SCALEME_API_URL = ""
 # </template>
 
 #
