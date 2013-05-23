@@ -41,6 +41,8 @@ def get_devices():
         yield {
             'id': device.id,
             'name': device.name,
+            'sn': device.sn,
+            'barcode': device.barcode,
             'parent_id': device.parent_id,
             'venture_id': device.venture_id,
             'is_virtual': device.model.type == DeviceType.virtual_server,
