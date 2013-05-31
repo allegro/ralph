@@ -11,7 +11,6 @@ from ralph.discovery.models import Device, DeviceType, DiskShareMount
 from django.db import models as db
 
 
-
 def get_ventures():
     """Yields dicts describing all the ventures to be imported into pricing."""
 
@@ -23,6 +22,8 @@ def get_ventures():
             'name': venture.name,
             'department': department.name if department else '',
             'symbol': venture.symbol,
+            'business_segment': venture.business_segment.name,
+            'pricing_center': venture.pricing_center.name,
         }
 
 
