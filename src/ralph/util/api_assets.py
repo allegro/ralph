@@ -8,19 +8,13 @@ from __future__ import unicode_literals
 from ralph.discovery.models import Device
 
 
-def get_device_components(sn=None, barcode=None):
+def get_device_components(ralph_device_id):
     """Yields dicts describing all device components to be taken in assets"""
-    if sn:
-        try:
-            ralph_device = Device.objects.get(sn=sn)
-        except Device.DoesNotExist:
-            raise LookupError('Device not found')
-    elif barcode:
-        try:
-            ralph_device = Device.objects.get(barcode=barcode)
-        except Device.DoesNotExist:
-            raise LookupError('Device not found')
-    if ralph_device:
+    try:
+        ralph_device = Device.objects.get(id=ralph_device_id)
+    except Device.DoesNotExist:
+        raise LookupError('Device not found')
+    else:
         components = ralph_device.get_components()
         for processor in components.get('processors', []):
             yield {
