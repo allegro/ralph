@@ -154,7 +154,7 @@ class VentureAdminForm(forms.ModelForm):
         data = self.cleaned_data['business_segment']
         if not data:
             raise forms.ValidationError(
-                "Business segment can't be empty"
+                "Business segment is required"
             )
         return data
 
@@ -162,7 +162,7 @@ class VentureAdminForm(forms.ModelForm):
         data = self.cleaned_data['pricing_center']
         if not data:
             raise forms.ValidationError(
-                "Pricing center can't be empty"
+                "Pricing center segment is required"
             )
         return data
 

@@ -39,7 +39,8 @@ class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option(
             '--connect_business_segment',
-            default=None,
+            action='store_true',
+            default=False,
             help='Connect venture to existing Pricing Center and '
             'Business Segment',
         ),
@@ -48,15 +49,15 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         if not args:
-            print('You must specidied file to import!')
+            print('You must specify filename to import!')
         for filename in args:
             self.handle_single(filename, **options)
 
     def handle_single(self, filename, **options):
         if options['connect_business_segment']:
-            connetct_business_segment = True
+            connect_business_segment = True
         else:
-            connetct_business_segment = False
+            connect_business_segment = False
         print('Importing information from {}...'.format(filename))
         with open(filename, 'rb') as f:
             self.not_found_ventures = []
@@ -67,7 +68,7 @@ class Command(BaseCommand):
                             i, len(value)
                         )
                     )
-                if not connetct_business_segment:
+                if not connect_business_segment:
                     venture_id, pricing_center, description = value
                     venture = self.get_venture(venture_id, i)
                     if not venture:
@@ -108,10 +109,10 @@ class Command(BaseCommand):
                                 venture.pricing_center = pricing_center
                                 venture.business_segment = business_segment
                                 venture.save()
-            print("Ventures with ids {} does not exist".format(
+            print("Ventures with ids {} don't exist".format(
                 [v for v in self.not_found_ventures]
             ))
-            if connetct_business_segment:
+            if connect_business_segment:
                 print("Business Segments with name {} does not exist".format(
                     [v for v in self.not_found_business_segments]
                 ))
