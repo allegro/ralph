@@ -128,7 +128,7 @@ class Venture(Named, PrebootMixin, HasSymbolBasedPath, TimeTrackable):
         null=True,
         blank=True,
         default=None,
-        on_delete=db.SET_NULL
+        on_delete=db.SET_NULL,
     )
     pricing_center = db.ForeignKey(
         PricingCenter,
@@ -136,7 +136,7 @@ class Venture(Named, PrebootMixin, HasSymbolBasedPath, TimeTrackable):
         null=True,
         blank=True,
         default=None,
-        on_delete=db.SET_NULL
+        on_delete=db.SET_NULL,
     )
 
     class Meta:
