@@ -69,6 +69,14 @@ class HasSymbolBasedPath(db.Model):
             child.save()
 
 
+class BusinessSegment(Named):
+    pass
+
+
+class PricingCenter(Named):
+    description = db.TextField(null=True, default=None)
+
+
 class Venture(Named, PrebootMixin, HasSymbolBasedPath, TimeTrackable):
     data_center = db.ForeignKey(
         DataCenter,
@@ -113,6 +121,22 @@ class Venture(Named, PrebootMixin, HasSymbolBasedPath, TimeTrackable):
         blank=True,
         default=None,
         on_delete=db.SET_NULL
+    )
+    business_segment = db.ForeignKey(
+        BusinessSegment,
+        verbose_name=_("Business segment"),
+        null=True,
+        blank=True,
+        default=None,
+        on_delete=db.SET_NULL,
+    )
+    pricing_center = db.ForeignKey(
+        PricingCenter,
+        verbose_name=_("Pricing center"),
+        null=True,
+        blank=True,
+        default=None,
+        on_delete=db.SET_NULL,
     )
 
     class Meta:
