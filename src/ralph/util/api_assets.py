@@ -5,14 +5,13 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-
 from ralph.discovery.models import Device
 
 
-def get_device_components(sn):
+def get_device_components(ralph_device_id):
     """Yields dicts describing all device components to be taken in assets"""
     try:
-        ralph_device = Device.objects.get(sn=sn)
+        ralph_device = Device.objects.get(id=ralph_device_id)
     except Device.DoesNotExist:
         raise LookupError('Device not found')
     else:
