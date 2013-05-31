@@ -13,11 +13,22 @@ from django.utils.translation import ugettext_lazy as _
 from lck.django.common.admin import (ModelAdmin,
                                      ForeignKeyAutocompleteTabularInline)
 
-from ralph.business.models import (Venture, VentureRole,
-    VentureExtraCost, VentureExtraCostType)
+from ralph.business.models import (
+    Venture,
+    VentureExtraCost,
+    VentureExtraCostType,
+    VentureRole,
+)
 from ralph.cmdb.models_ci import CIOwner, CI, CIOwnershipType
-from ralph.business.models import (RoleProperty, RolePropertyType,
-        RolePropertyTypeValue, RolePropertyValue, Department)
+from ralph.business.models import (
+    BusinessSegment,
+    Department,
+    PricingCenter,
+    RoleProperty,
+    RolePropertyType,
+    RolePropertyTypeValue,
+    RolePropertyValue,
+)
 from ralph.integration.admin import RoleIntegrationInline
 
 import ralph.util.venture as util_venture
@@ -139,6 +150,22 @@ class VentureAdminForm(forms.ModelForm):
                 pass
         return data
 
+    def clean_business_segment(self):
+        data = self.cleaned_data['business_segment']
+        if not data:
+            raise forms.ValidationError(
+                "Business segment can't be empty"
+            )
+        return data
+
+    def clean_pricing_center(self):
+        data = self.cleaned_data['pricing_center']
+        if not data:
+            raise forms.ValidationError(
+                "Pricing center can't be empty"
+            )
+        return data
+
 
 class VentureAdmin(ModelAdmin):
     inlines = [
@@ -186,10 +213,23 @@ class VentureAdmin(ModelAdmin):
     business_owners.short_description = _("business owners")
     business_owners.allow_tags = True
 
-    list_display = ('name', 'path', 'data_center',
-                    members, technical_owners, business_owners)
+    list_display = (
+        'name',
+        'path',
+        'data_center',
+        members,
+        technical_owners,
+        business_owners,
+        'business_segment',
+        'pricing_center',
+    )
     list_filter = ('data_center', 'show_in_ralph',)
-    search_fields = ('name', 'symbol')
+    search_fields = (
+        'name',
+        'symbol',
+        'business_segment__name',
+        'pricing_center__name'
+    )
     save_on_top = True
 
 admin.site.register(Venture, VentureAdmin)
@@ -201,3 +241,20 @@ class DepartmentAdmin(ModelAdmin):
     save_on_top = True
 
 admin.site.register(Department, DepartmentAdmin)
+
+
+class PricingCenterAdmin(ModelAdmin):
+    list_display = ('name', 'description')
+    search_fields = ('name', 'description')
+    save_on_top = True
+
+admin.site.register(PricingCenter, PricingCenterAdmin)
+
+
+class BusinessSegmentAdmin(ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)
+    save_on_top = True
+
+admin.site.register(BusinessSegment, BusinessSegmentAdmin)
+
