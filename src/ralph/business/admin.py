@@ -158,11 +158,11 @@ class VentureAdminForm(forms.ModelForm):
             )
         return data
 
-    def clean_pricing_center(self):
-        data = self.cleaned_data['pricing_center']
+    def clean_profit_center(self):
+        data = self.cleaned_data['profit_center']
         if not data:
             raise forms.ValidationError(
-                "Pricing center segment is required"
+                "Profit center segment is required"
             )
         return data
 
