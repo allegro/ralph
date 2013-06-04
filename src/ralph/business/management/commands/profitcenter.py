@@ -12,7 +12,7 @@ from django.core.management.base import BaseCommand
 from bob.csvutil import UnicodeReader
 from optparse import make_option
 
-from ralph.business.models import BusinessSegment, PricingCenter, Venture
+from ralph.business.models import BusinessSegment, ProfitCenter, Venture
 
 
 class Error(Exception):
@@ -32,7 +32,7 @@ class VentureDoesNotExistError(Error):
 
 
 class Command(BaseCommand):
-    """Import Pricing Center from csv file, record should be in this format:
+    """Import Profit Center from csv file, record should be in this format:
     venture id;pricing center name;description
     """
     help = textwrap.dedent(__doc__).strip()
@@ -41,7 +41,7 @@ class Command(BaseCommand):
             '--connect_business_segment',
             action='store_true',
             default=False,
-            help='Connect venture to existing Pricing Center and '
+            help='Connect venture to existing Profit Center and '
             'Business Segment',
         ),
     )
@@ -69,35 +69,35 @@ class Command(BaseCommand):
                         )
                     )
                 if not connect_business_segment:
-                    venture_id, pricing_center, description = value
+                    venture_id, profit_center, description = value
                     venture = self.get_venture(venture_id, i)
                     if not venture:
                         continue
                     else:
-                        pricing_center, created = PricingCenter.objects.get_or_create(
-                            name=pricing_center or 'Other'
+                        profit_center, created = ProfitCenter.objects.get_or_create(  # noqa
+                            name=profit_center or 'Other'
                         )
-                        pricing_center.description = description or 'Other'
-                        pricing_center.save()
-                        venture.pricing_center = pricing_center
+                        profit_center.description = description or 'Other'
+                        profit_center.save()
+                        venture.profit_center = profit_center
                         venture.save()
                         print(
-                            'pricing center {} joined to venture {}'.format(
-                                pricing_center, venture.name
+                            'profit center {} joined to venture {}'.format(
+                                profit_center, venture.name
                             )
                         )
                 else:
-                    venture_id, pricing_center_name, business_segment_name = value
-                    self.not_found_pricing_centers = []
+                    venture_id, profit_center_name, business_segment_name = value   # noqa
+                    self.not_found_profit_centers = []
                     self.not_found_business_segments = []
                     venture = self.get_venture(venture_id, i)
                     if not venture:
                         continue
                     else:
-                        pricing_center = self.get_pricing_center(
-                            pricing_center_name, i,
+                        profit_center = self.get_profit_center(
+                            profit_center_name, i,
                         )
-                        if not pricing_center:
+                        if not profit_center:
                             continue
                         else:
                             business_segment = self.get_business_segment(
@@ -106,7 +106,7 @@ class Command(BaseCommand):
                             if not business_segment:
                                 continue
                             else:
-                                venture.pricing_center = pricing_center
+                                venture.profit_center = profit_center
                                 venture.business_segment = business_segment
                                 venture.save()
             print("Ventures with ids {} don't exist".format(
@@ -116,8 +116,8 @@ class Command(BaseCommand):
                 print("Business Segments with name {} does not exist".format(
                     [v for v in self.not_found_business_segments]
                 ))
-                print("Pricing Center with name {} does not exist".format(
-                    [v for v in self.not_found_pricing_centers]
+                print("Profit Center with name {} does not exist".format(
+                    [v for v in self.not_found_profit_centers]
                 ))
 
     def get_venture(self, venture_id, row_number):
@@ -132,19 +132,19 @@ class Command(BaseCommand):
             self.not_found_ventures.append(venture_id)
         return venture
 
-    def get_pricing_center(self, pricing_center_name, row_number):
-        pricing_center = None
+    def get_profit_center(self, profit_center_name, row_number):
+        profit_center = None
         try:
-            pricing_center = PricingCenter.objects.get(
-                name=pricing_center_name,
+            profit_center = ProfitCenter.objects.get(
+                name=profit_center_name,
             )
-        except PricingCenter.DoesNotExist:
+        except ProfitCenter.DoesNotExist:
             print(
-                'Pricing Center with name `{}` specified in row {}'
-                ' does not exist'.format(pricing_center_name, row_number)
+                'Profit Center with name `{}` specified in row {}'
+                ' does not exist'.format(profit_center_name, row_number)
             )
-            self.not_found_pricing_centers.append(pricing_center)
-        return pricing_center
+            self.not_found_profit_centers.append(profit_center)
+        return profit_center
 
     def get_business_segment(self, business_segment_name, row_number):
         business_segment = None
@@ -154,7 +154,7 @@ class Command(BaseCommand):
             )
         except BusinessSegment.DoesNotExist:
             print(
-                'Business segment  with name `{}` specified in'
+                'Business segment with name `{}` specified in'
                 ' row {} does not exist'.format(
                     business_segment_name, row_number,
                 )
