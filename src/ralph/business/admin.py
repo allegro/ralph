@@ -221,14 +221,14 @@ class VentureAdmin(ModelAdmin):
         technical_owners,
         business_owners,
         'business_segment',
-        'pricing_center',
+        'profit_center',
     )
     list_filter = ('data_center', 'show_in_ralph',)
     search_fields = (
         'name',
         'symbol',
         'business_segment__name',
-        'pricing_center__name'
+        'profit_center__name'
     )
     save_on_top = True
 
