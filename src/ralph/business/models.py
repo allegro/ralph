@@ -76,6 +76,9 @@ class BusinessSegment(Named):
 class PricingCenter(Named):
     description = db.TextField(null=True, default=None)
 
+    def __unicode__(self):
+        return '{} - {}'.format(self.name, self.description)
+
 
 class Venture(Named, PrebootMixin, HasSymbolBasedPath, TimeTrackable):
     data_center = db.ForeignKey(
