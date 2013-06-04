@@ -23,7 +23,7 @@ from ralph.cmdb.models_ci import CIOwner, CI, CIOwnershipType
 from ralph.business.models import (
     BusinessSegment,
     Department,
-    PricingCenter,
+    ProfitCenter,
     RoleProperty,
     RolePropertyType,
     RolePropertyTypeValue,
@@ -243,12 +243,12 @@ class DepartmentAdmin(ModelAdmin):
 admin.site.register(Department, DepartmentAdmin)
 
 
-class PricingCenterAdmin(ModelAdmin):
+class ProfitCenterAdmin(ModelAdmin):
     list_display = ('name', 'description')
     search_fields = ('name', 'description')
     save_on_top = True
 
-admin.site.register(PricingCenter, PricingCenterAdmin)
+admin.site.register(ProfitCenter, ProfitCenterAdmin)
 
 
 class BusinessSegmentAdmin(ModelAdmin):
@@ -257,4 +257,3 @@ class BusinessSegmentAdmin(ModelAdmin):
     save_on_top = True
 
 admin.site.register(BusinessSegment, BusinessSegmentAdmin)
-

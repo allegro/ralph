@@ -73,7 +73,7 @@ class BusinessSegment(Named):
     pass
 
 
-class PricingCenter(Named):
+class ProfitCenter(Named):
     description = db.TextField(null=True, default=None)
 
     def __unicode__(self):
@@ -133,9 +133,9 @@ class Venture(Named, PrebootMixin, HasSymbolBasedPath, TimeTrackable):
         default=None,
         on_delete=db.SET_NULL,
     )
-    pricing_center = db.ForeignKey(
-        PricingCenter,
-        verbose_name=_("Pricing center"),
+    profit_center = db.ForeignKey(
+        ProfitCenter,
+        verbose_name=_("Profit center"),
         null=True,
         blank=True,
         default=None,
