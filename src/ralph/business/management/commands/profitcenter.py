@@ -33,7 +33,7 @@ class VentureDoesNotExistError(Error):
 
 class Command(BaseCommand):
     """Import Profit Center from csv file, record should be in this format:
-    venture id;pricing center name;description
+    venture id;profit center name;description
     """
     help = textwrap.dedent(__doc__).strip()
     option_list = BaseCommand.option_list + (
