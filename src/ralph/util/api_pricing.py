@@ -23,7 +23,7 @@ def get_ventures():
             'department': department.name if department else '',
             'symbol': venture.symbol,
             'business_segment': venture.business_segment.name,
-            'pricing_center': venture.pricing_center.name,
+            'profit_center': venture.profit_center.name,
         }
 
 
