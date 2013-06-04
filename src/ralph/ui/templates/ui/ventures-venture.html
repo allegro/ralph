@@ -76,6 +76,20 @@
                 <td>{{ venture.department }}</td>
             </tr>
         {% endif %}
+            <tr>
+                <td>{% icon 'fugue-lighthouse' %}</td>
+                <td>
+                    <strong>business segment: </strong>
+                    {{ venture.business_segment|default:"―" }}
+                </td>
+            </tr>
+            <tr>
+                <td>{% icon 'fugue-bank' %}</td>
+                <td>
+                    <strong>profit center: </strong>
+                    {{ venture.profit_center|default:"―" }}
+                </td>
+            </tr>
     </tbody>
 </table>
 {% endblock %}
