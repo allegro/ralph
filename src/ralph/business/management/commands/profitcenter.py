@@ -61,6 +61,8 @@ class Command(BaseCommand):
         print('Importing information from {}...'.format(filename))
         with open(filename, 'rb') as f:
             self.not_found_ventures = []
+            self.not_found_profit_centers = set()
+            self.not_found_business_segments = set()
             for i, value in enumerate(UnicodeReader(f), 1):
                 if len(value) != 3:
                     raise IncorrectLengthRowError(
@@ -88,8 +90,6 @@ class Command(BaseCommand):
                         )
                 else:
                     venture_id, profit_center_name, business_segment_name = value   # noqa
-                    self.not_found_profit_centers = []
-                    self.not_found_business_segments = []
                     venture = self.get_venture(venture_id, i)
                     if not venture:
                         continue
@@ -97,18 +97,14 @@ class Command(BaseCommand):
                         profit_center = self.get_profit_center(
                             profit_center_name, i,
                         )
-                        if not profit_center:
-                            continue
-                        else:
-                            business_segment = self.get_business_segment(
-                                business_segment_name, i,
-                            )
-                            if not business_segment:
-                                continue
-                            else:
-                                venture.profit_center = profit_center
-                                venture.business_segment = business_segment
-                                venture.save()
+                        business_segment = self.get_business_segment(
+                            business_segment_name, i,
+                        )
+                        if profit_center:
+                            venture.profit_center = profit_center
+                        if business_segment:
+                            venture.business_segment = business_segment
+                        venture.save()
             print("Ventures with ids {} don't exist".format(
                 [v for v in self.not_found_ventures]
             ))
@@ -143,7 +139,7 @@ class Command(BaseCommand):
                 'Profit Center with name `{}` specified in row {}'
                 ' does not exist'.format(profit_center_name, row_number)
             )
-            self.not_found_profit_centers.append(profit_center)
+            self.not_found_profit_centers.add(profit_center_name)
         return profit_center
 
     def get_business_segment(self, business_segment_name, row_number):
@@ -159,5 +155,5 @@ class Command(BaseCommand):
                     business_segment_name, row_number,
                 )
             )
-            self.not_found_business_segments.append(business_segment)
+            self.not_found_business_segments.add(business_segment_name)
         return business_segment
