@@ -97,15 +97,9 @@ class Command(BaseCommand):
                         profit_center = self.get_profit_center(
                             profit_center_name, i,
                         )
-                        # if not profit_center:
-                        #     continue
-                        # else:
                         business_segment = self.get_business_segment(
                             business_segment_name, i,
                         )
-                        # if not business_segment:
-                        #     continue
-                        # else:
                         if profit_center:
                             venture.profit_center = profit_center
                         if business_segment:
