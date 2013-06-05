@@ -5,10 +5,16 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import datetime
+import re
+
 from ralph.business.models import Venture
 from ralph.discovery.models import Device, DeviceType, DiskShareMount
 
 from django.db import models as db
+
+DEVICE_REPR_RE = re.compile(r'^(?P<name>.*)[(](?P<id>\d+)[)]$')
+
 
 
 def get_ventures():
@@ -122,4 +128,64 @@ def get_shares():
             'size': mount.get_size(),
             'share_mount_count': mount.get_total_mounts(),
         }
+
+
+def devices_history(end_date):
+    exclude = {
+        DeviceType.cloud_server,
+        DeviceType.mogilefs_storage,
+    }
+    for device in Device.admin_objects.exclude(
+        model__type__in=exclude,
+    ):
+        date = datetime.date.today()
+        data = {
+            'id': device.id,
+            'date': date,
+            'name': device.name,
+            'sn': device.sn,
+            'barcode': device.barcode,
+            'parent_id': device.parent_id,
+            'venture_id': device.venture_id,
+            'is_virtual': device.model.type == DeviceType.virtual_server,
+            'is_blade': device.model.type == DeviceType.blade_server,
+            'cpu_cores': device.get_core_count(),
+            'memory_size': sum(m.get_size() for m in device.memory_set.all()),
+        }
+        while date > end_date:
+            date -= datetime.timedelta(days=1)
+            if date < device.created:
+                break
+            day_changes = device.historychange_set.filter(date=date)
+            day_costs = device.historycost_set.filter(end=date)
+
+            # Parent changes
+            for change in day_changes.filter(
+                field_name='.parent',
+                component_id=None,
+            ):
+                if change.old_value == 'None':
+                    data['parent_id'] = None
+                else:
+                    match = DEVICE_REPR_RE.match(change.new_value)
+                    if match:
+                        data['parent_id'] = int(match.group('id'))
+
+            # Memory for virtual servers
+            if data['is_virtual']:
+                # we assume that if memory changes, it changes all at once
+                memory_size = sum(
+                    int(change.old_value)
+                    for change in day_changes.filter(
+                        field_name__endswith=').size',
+                    ).exclude(component_id=None)
+                    if 'Virtual RAM' in change.field_name
+                )
+                if memory_size:
+                    data['memory_size'] = memory_size
+
+            # Venture and CPU cores
+            for cost in day_costs:
+                data['venture_id'] = cost.venture_id
+                data['cpu_cores'] = cost.cores
 
