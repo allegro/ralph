@@ -139,8 +139,9 @@ def devices_history(start_date, end_date):
         model__type__in=exclude,
     ):
         date = start_date
+        cores = device.get_core_count()
         data = {
-            'id': device.id,
+            'device_id': device.id,
             'date': date,
             'name': device.name,
             'sn': device.sn,
@@ -149,8 +150,9 @@ def devices_history(start_date, end_date):
             'venture_id': device.venture_id,
             'is_virtual': device.model.type == DeviceType.virtual_server,
             'is_blade': device.model.type == DeviceType.blade_server,
-            'cpu_cores': device.get_core_count(),
-            'memory_size': sum(m.get_size() for m in device.memory_set.all()),
+            'virtual_cores': cores,
+            'physical_cores': cores,
+            'virtual_memory': sum(m.get_size() for m in device.memory_set.all()),
         }
         while date > end_date:
             date -= datetime.timedelta(days=1)
@@ -182,10 +184,12 @@ def devices_history(start_date, end_date):
                     if 'Virtual RAM' in change.field_name
                 )
                 if memory_size:
-                    data['memory_size'] = memory_size
+                    data['virtual_memory'] = memory_size
 
             # Venture and CPU cores
             for cost in day_costs:
                 data['venture_id'] = cost.venture_id
-                data['cpu_cores'] = cost.cores
+                data['virtual_cores'] = cost.cores
+                data['physical_cores'] = cost.cores
 
+            yield data
