@@ -142,6 +142,7 @@ def devices_history(start_date, end_date):
         cores = device.get_core_count()
         data = {
             'device_id': device.id,
+            'id': device.id,
             'date': date,
             'name': device.name,
             'sn': device.sn,
@@ -156,10 +157,11 @@ def devices_history(start_date, end_date):
         }
         while date > end_date:
             date -= datetime.timedelta(days=1)
-            if date < device.created:
+            if date < device.created.date():
                 break
             day_changes = device.historychange_set.filter(date=date)
             day_costs = device.historycost_set.filter(end=date)
+            data['date'] = date
 
             # Parent changes
             for change in day_changes.filter(
