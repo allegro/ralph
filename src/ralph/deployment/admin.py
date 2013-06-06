@@ -45,7 +45,7 @@ class DeploymentAdmin(ModelAdmin):
         'device', 'mac', 'status', 'venture', 'venture_role',
         'mass_deployment', 'user', 'created',
     )
-    list_filter = ('status', 'status_lastchanged', 'venture')
+    list_filter = ('status', 'status_lastchanged',)
     search_fields = (
         'device__name', 'mac', 'venture__name', 'venture__symbol',
         'venture_role__name', 'user__last_name',
