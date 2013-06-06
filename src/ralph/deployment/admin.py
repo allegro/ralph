@@ -39,21 +39,21 @@ class DeploymentAdminForm(forms.ModelForm):
         hostname = self.cleaned_data.get('hostname')
         return clean_hostname(hostname)
 
+
 class DeploymentAdmin(ModelAdmin):
     list_display = (
         'device', 'mac', 'status', 'venture', 'venture_role',
-        'mass_deployment',
+        'mass_deployment', 'user', 'created',
     )
-    list_filter = ('status', 'status_lastchanged')
+    list_filter = ('status', 'status_lastchanged',)
     search_fields = (
         'device__name', 'mac', 'venture__name', 'venture__symbol',
-        'venture_role__name',
+        'venture_role__name', 'user__last_name',
     )
     save_on_top = True
     related_search_fields = {
         'device': ['^name', '^model__name', '^ipaddress__hostname'],
-        'venture': ['^name'],
-        'venture_role': ['^name'],
+        'venture': ['^name'], 'venture_role': ['^name'],
     }
     form = DeploymentAdminForm
 
