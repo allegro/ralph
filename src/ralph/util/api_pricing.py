@@ -130,7 +130,7 @@ def get_shares():
         }
 
 
-def devices_history(end_date):
+def devices_history(start_date, end_date):
     exclude = {
         DeviceType.cloud_server,
         DeviceType.mogilefs_storage,
@@ -138,7 +138,7 @@ def devices_history(end_date):
     for device in Device.admin_objects.exclude(
         model__type__in=exclude,
     ):
-        date = datetime.date.today()
+        date = start_date
         data = {
             'id': device.id,
             'date': date,
