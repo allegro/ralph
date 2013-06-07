@@ -1,10 +1,37 @@
 Change Log
 ----------
 
+
+1.2.3
+~~~~~
+
+Released on June 7, 2013
+
+* Enhancements to the Ventures - added Profit Center and Business Segment information.
+
+* Added ability to import Ventures data(PC, Business Segment) from CSV file.
+
+* Added API integration with Ralph Pricing and Ralph Assets.
+
+* Fixed puppet classifier crashing on models without model group.
+
+* Fixed 3PAR detection.
+
+* Better error reporting for discovery errors.
+
+* PostgresSQL support provided.
+
+* Fixed hostname validation in the deployment area.
+
+* Testing profiles updated.
+
+* Fixed out of range error while discovering devices with unknown Networks.
+
+
 1.2.2
 ~~~~~
 
-Release on April 23, 2013
+Released on April 23, 2013
 
 * Removed Git, hostname and stty process forking.
 
@@ -16,7 +43,7 @@ Release on April 23, 2013
 1.2.1
 ~~~~~
 
-Release on April 16, 2013
+Released on April 16, 2013
 
 * Fixed bug in the Catalog and Account areas.
 
