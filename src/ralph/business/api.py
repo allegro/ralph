@@ -29,12 +29,15 @@ from ralph.business.models import (
     RolePropertyTypeValue,
     RoleProperty,
     RolePropertyValue,
+    BusinessSegment,
+    ProfitCenter,
 )
 
 
 THROTTLE_AT = settings.API_THROTTLING['throttle_at']
 TIMEFRAME = settings.API_THROTTLING['timeframe']
 EXPIRATION = settings.API_THROTTLING['expiration']
+
 
 class VentureResource(MResource):
     devices = fields.ToManyField('ralph.discovery.api.DevResource', 'device')
@@ -45,6 +48,18 @@ class VentureResource(MResource):
     department = fields.ForeignKey(
         'ralph.business.api.DepartmentResource',
         'department',
+         null=True,
+         full=True,
+    )
+    business_segment = fields.ForeignKey(
+        'ralph.business.api.BusinessSegmentResource',
+        'business_segment',
+         null=True,
+         full=True,
+    )
+    profit_center = fields.ForeignKey(
+        'ralph.business.api.ProfitCenterResource',
+        'profit_center',
          null=True,
          full=True,
     )
@@ -60,7 +75,9 @@ class VentureResource(MResource):
         filtering = {
             'created': ALL,
             'data_center': ALL_WITH_RELATIONS,
-            'department': ALL,
+            'business_segment': ALL_WITH_RELATIONS,
+            'profit_center': ALL_WITH_RELATIONS,
+            'department': ALL_WITH_RELATIONS,
             'devices': ALL,
             'id': ALL,
             'is_infrastructure': ALL,
@@ -335,6 +352,48 @@ class RolePropertyValueResource(MResource):
             'value': ALL,
         }
         excludes = ('cache_version', )
+        cache = SimpleCache()
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
+
+
+class BusinessSegmentResource(MResource):
+    class Meta:
+        queryset = BusinessSegment.objects.all()
+        authentication = ApiKeyAuthentication()
+        authorization = RalphAuthorization(
+            required_perms=[
+                Perm.read_dc_structure,
+            ]
+        )
+        filtering = {
+            'id': ALL,
+            'name': ALL,
+        }
+        cache = SimpleCache()
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
+
+
+class ProfitCenterResource(MResource):
+    class Meta:
+        queryset = ProfitCenter.objects.all()
+        authentication = ApiKeyAuthentication()
+        authorization = RalphAuthorization(
+            required_perms=[
+                Perm.read_dc_structure,
+            ]
+        )
+        filtering = {
+            'id': ALL,
+            'name': ALL,
+        }
         cache = SimpleCache()
         throttle = CacheThrottle(
             throttle_at=THROTTLE_AT,

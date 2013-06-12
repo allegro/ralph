@@ -12,6 +12,8 @@ from ralph.business.api import (
     RoleResource,
     VentureLightResource,
     VentureResource,
+    BusinessSegmentResource,
+    ProfitCenterResource,
 )
 from ralph.deployment.api import DeploymentResource
 from ralph.discovery.api import (
@@ -54,7 +56,8 @@ OPTIONAL_APPS = ['ralph_assets', 'ralph_pricing', 'ralph_assets_imports']
 for r in (VentureResource, VentureLightResource, RoleResource,
           RoleLightResource, DepartmentResource, RolePropertyTypeResource,
           RolePropertyTypeValueResource, RolePropertyResource,
-          RolePropertyValueResource):
+          RolePropertyValueResource, BusinessSegmentResource,
+          ProfitCenterResource):
     v09_api.register(r())
 
 # discovery API
