@@ -285,7 +285,7 @@ def save_device_data(data, remote_ip):
     if not ethernets and not sn:
         raise NoRequiredDataError('No MAC addresses and no device SN.')
     ip_addresses = [
-        e['ipaddress'] for e in data['ethernets'] if e['ipaddress']
+        e['ipaddress'] for e in data['ethernets'] if e.get('ipaddress')
     ]
     if not ip_addresses:
         raise NoRequiredIPAddressError(
