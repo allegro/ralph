@@ -109,7 +109,7 @@ def get_virtual_usages():
             'virtual_disk': disk or 0,
         }
 
-exit
+
 def get_shares():
     """Yields dicts reporting the storage shares for all servers."""
 
