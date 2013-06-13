@@ -8,13 +8,12 @@ from __future__ import unicode_literals
 import datetime
 import re
 
-from ralph.business.models import Venture
+from ralph.business.models import Venture, VentureExtraCost
 from ralph.discovery.models import Device, DeviceType, DiskShareMount
 
 from django.db import models as db
 
 DEVICE_REPR_RE = re.compile(r'^(?P<name>.*)[(](?P<id>\d+)[)]$')
-
 
 
 def get_ventures():
@@ -110,6 +109,7 @@ def get_virtual_usages():
             'virtual_disk': disk or 0,
         }
 
+exit
 def get_shares():
     """Yields dicts reporting the storage shares for all servers."""
 
@@ -127,6 +127,17 @@ def get_shares():
             'label': mount.share.label,
             'size': mount.get_size(),
             'share_mount_count': mount.get_total_mounts(),
+        }
+
+
+def get_extra_cost():
+    for extracost in VentureExtraCost.objects.all():
+        yield {
+            'venture': extracost.venture_id,
+            'type': extracost.type.name,
+            'cost': extracost.cost,
+            'start': extracost.created,
+            'end': extracost.expire,
         }
 
 
