@@ -134,7 +134,7 @@ def get_extra_cost():
     for extracost in VentureExtraCost.objects.all():
         yield {
             'venture_id': extracost.venture_id,
-            'venture': extracost.name,
+            'venture': extracost.venture.name,
             'type': extracost.type.name,
             'cost': extracost.cost,
             'start': extracost.created,
