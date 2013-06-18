@@ -1,6 +1,14 @@
 Change Log
 ----------
 
+1.2.4
+~~~~~
+Released on June 18, 2013
+
+* Bugfixes in discovery module.
+
+* Extended APIs for assets and pricing.
+
 
 1.2.3
 ~~~~~
