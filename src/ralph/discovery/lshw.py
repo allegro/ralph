@@ -57,7 +57,7 @@ def _nullify(value):
 def parse_lshw(as_string):
     parser = ET.ETCompatXMLParser(recover=True)
     response = ET.fromstring(as_string, parser=parser)
-    if response.tag.upper() != 'NODE':
+    if response.tag is None or response.tag.upper() != 'NODE':
         return None, as_string
     for element in response.findall('.//'):
         for k in element.attrib.keys():
