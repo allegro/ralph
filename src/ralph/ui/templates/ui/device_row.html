@@ -20,15 +20,7 @@
     </td>
     {% endif %}
     {% if 'model' in columns %}
-    <td>
-        {% if d.model.group %}
-        <a 
-            href="{% url 'search' 'components' '' %}?device_group={{ d.model.group.id }}"
-        >{{ d.get_model_name }}</a>
-        {% else %}
-            {{ d.get_model_name }}
-        {% endif %} 
-    </td>
+    <td>{{ d.get_model_name }}</td>
     {% endif %}
     {% if 'margin' in columns %}
     <td>{{ d.get_margin|default:'0' }}%</td>
