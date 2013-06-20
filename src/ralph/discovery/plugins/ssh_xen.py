@@ -234,7 +234,12 @@ def run_ssh_xen(ipaddr, parent):
                 mount.save(priority=SAVE_PRIORITY)
             else:
                 storage, created = Storage.concurrent_get_or_create(
-                    device=dev, mount_point=device, sn=uuid)
+                    device=dev,
+                    mount_point=device,
+                    defaults={
+                        'sn': uuid,
+                    },
+                )
                 storage.size = size
                 storage.model = disk_model
                 storage.label = device
