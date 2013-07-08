@@ -120,7 +120,6 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                 ], name.split()) | Q(
                     ipaddress__address__in=ips,
                 ))
-                import pdb; pdb.set_trace()
                 self.query = self.query.filter(q).distinct()
             if data['address']:
                 if data['address'] == empty_field:
