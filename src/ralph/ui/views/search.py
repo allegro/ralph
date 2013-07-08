@@ -115,11 +115,12 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                     Q(name__in=names)
                 ).values_list('content'))
                 q = (_search_fields_or([
-                    'name',
+                    'name__contains',
                     'ipaddress__hostname__icontains',
                 ], name.split()) | Q(
                     ipaddress__address__in=ips,
                 ))
+                import pdb; pdb.set_trace()
                 self.query = self.query.filter(q).distinct()
             if data['address']:
                 if data['address'] == empty_field:
