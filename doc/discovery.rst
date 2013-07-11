@@ -197,6 +197,7 @@ information about the virtual servers running in a Proxmox cluster on this
 server. It will add the information about those virtual servers to the Ralph's
 database.
 
+
 SSH XEN Plugin
 ~~~~~~~~~~~~~~~~~~
 
@@ -211,6 +212,17 @@ allow login and executing of the following commands::
     sudo xe vm-disk-list vdi-params=sr-uuid,uuid,virtual-size vbd-params=vm-name-label,type,device 
     sudo xe sr-list params=uuid,physical-size,type
     sudo xe vm-list params=uuid,name-label,power-state,VCPUs-number,memory-actual
+
+
+SSH Ganeti Plugin
+~~~~~~~~~~~~~~~~~
+
+This plugin will attempt to connect to the specified IP address using SSH, log
+into it configured ``SSH_USER`` and ``SSH_PASSWORD`` and retrieve information
+about the virtual servers running in a Ganeti cluster on this server. It will
+add the information about those virtual servers to the Ralph's database.
+
+
 
 
 Integration with external services
