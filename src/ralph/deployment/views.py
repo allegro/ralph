@@ -212,6 +212,8 @@ def puppet_classifier(request):
         'property_types': device.venture_role.get_property_types(
             device,
         ) if device.venture_role else {},
+        'data_center': device.dc,
+        'rack': device.rack,
     }
     return HttpResponse(
         json.dumps(response),
