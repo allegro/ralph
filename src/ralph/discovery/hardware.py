@@ -413,7 +413,7 @@ def parse_dmidecode(data):
             return value
 
     def num(value):
-        if value is None:
+        if value is None or value.lower() == 'unknown':
             return None
         try:
             num, unit = value.split(None, 1)

@@ -401,6 +401,7 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
             self.query = profile.filter_by_perm(self.query,
                 Perm.list_devices_generic)
         self.query = super(SearchDeviceList, self).get_queryset(self.query)
+        self.query = self.query.distinct()
         return self.query
 
     def get(self, *args, **kwargs):
