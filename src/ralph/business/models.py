@@ -344,6 +344,20 @@ class VentureRole(Named.NonUnique, PrebootMixin, HasSymbolBasedPath,
         ))
         return values
 
+    def get_property_types(self, device):
+        types = {}
+        types.update({
+            p.symbol:p.type.symbol for p in
+            self.venture.roleproperty_set.filter(role=None)
+            if p.type
+        })
+        types.update({
+            p.symbol:p.type.symbol for p in
+            self.roleproperty_set.filter(venture=None)
+            if p.type
+        })
+        return types
+
 
 class RolePropertyType(db.Model):
     symbol = db.CharField(
