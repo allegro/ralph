@@ -333,7 +333,7 @@ class VentureRole(Named.NonUnique, PrebootMixin, HasSymbolBasedPath,
                     value = prop.default
                 else:
                     value = pv.value
-                props[prop.symbol] = value
+                props[prop.symbol] = value or ''
             return props
         values = {}
         values.update(property_dict(
