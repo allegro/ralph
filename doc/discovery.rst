@@ -105,6 +105,125 @@ commands respectively.  You can export the DHCP server configuration with
 ``dhcpexport``. The DNS server configuration can be used directly by PowerDNS
 server, if you point it to use Ralph's database.
 
+Discovery plugins
+-----------------
+
+Ralph comes with a number of discovery plugins built in. Some of them are
+necessary for discovery to function, others can be safely skipped.
+
+Ping Plugin
+~~~~~~~~~~~~
+
+This plugin requires no additional settings. It will ping the specified IP
+address to check whether it is available. Most discovery plugins will not run
+if this plugin failed. This plugin doesn't create any devices in the database.
+
+
+HTTP Plugin
+~~~~~~~~~~~
+
+This plugin will attempt to connect to ports 80 and 443 of the specified IP
+address and try to get a page using HTTP or HTTPS, respectively. Then it will
+parse its response headers and body content, and attempt to guess the vendor
+and model of the device in question, using a number of hard-coded heuristics.
+This plugin doesn't require any configuration. This plugin doesn't create any
+devices in the database.
+
+
+SNMP Plugin
+~~~~~~~~~~~
+
+This plugin will try to connect to the specified IP address through the SNMP
+protocol, and retrieve its System Name property. To function properly, this
+plugin needs to know the list of SNMP communities to try, which you set in the
+``SNMP_PLUGIN_COMMUNITIES`` variable. Optionally, this plugin can also attempt
+to use SNMP version 3 -- then it also needs ``SNMP_V3_USER``,
+``SNMP_V3_AUTH_KEY`` and ``SNMP_V3_PRIV_KEY`` set. This plugin doesn't create
+any devices in the database, but collects information that is later used by
+many other plugins.
+
+
+SNMP MAC Plugin
+~~~~~~~~~~~~~~~
+
+This plugin will attempt to get the list of device's MAC hardware addresses
+through the SNMP protocol. In addition, it may be able to retrieve the model
+name and serial number for some models of devices. It doesn't require any
+additional configuration, apart from that already done for the ``SNMP Plugin``.
+If it retrieves the MAC addresses or a serial number, it will create a device
+in Ralph's database.
+
+
+IPMI Plugin
+~~~~~~~~~~~
+
+This plugin will try to connect to the specified IP using the IPMI protocol,
+and attempt to retrieve information about the device's vendor, model, serial
+number, MAC addresses and hardware components. If it succeeds, it creates a
+corresponding device in the Ralph's database. For proper operation this plugin
+requires a ``ipmitool`` binary to be installed, and the ``IPMI_USER`` and
+``IPMI_PASSWORD`` settings variables set.
+
+
+HTTP Supermicro Plugin
+~~~~~~~~~~~~~~~~~~~~~~
+
+This plugin will attempt to log into the web interface of a Supermicro server
+management, and scrap the information about its hardware MAC addresses. If
+successful, it will create a corresponding device in Ralph's database. It will
+use the same credentials as the ``IPMI Plugin``.
+
+
+SSH Linux Plugin
+~~~~~~~~~~~~~~~~
+
+This plugin will attempt to connect to the specified IP address using SSH, log
+into the configured user account and retrieve information about the device's
+hardware using common linux commands. This plugin requires that the remote
+system allows logging in using the ``SSH_USER`` and ``SSH_PASSWORD`` or
+``XEN_USER`` and ``XEN_PASSWORD`` as credentials. It also requires that this
+user is allowed to run ``sudo dmidecode``, ``ip``, ``hostname``, ``uname``,
+``df`` and read ``/proc/meminfo`` and ``/proc/cpuinfo``. If the plugin manages
+to retrieve the MAC addresses or device's serial number, it creates a
+corresponding entry in Ralph's database.
+
+
+SSH Proxmox Plugin
+~~~~~~~~~~~~~~~~~~
+
+This plugin will attempt to connect to the specified IP address using SSH, log
+into the root account using configured ``SSH_PASSWORD`` and retrieve
+information about the virtual servers running in a Proxmox cluster on this
+server. It will add the information about those virtual servers to the Ralph's
+database.
+
+
+SSH XEN Plugin
+~~~~~~~~~~~~~~~~~~
+
+This plugin will attempt to connect to the specified IP address using SSH, log
+into it configured ``XEN_USER`` and ``XEN_PASSWORD`` and retrieve information
+about the virtual servers running in a XEN cluster on this server. It will add
+the information about those virtual servers to the Ralph's database. For this
+plugin to work correctly, the server needs to have the account configured to
+allow login and executing of the following commands::
+
+    sudo xe vif-list params=vm-name-label,MAC
+    sudo xe vm-disk-list vdi-params=sr-uuid,uuid,virtual-size vbd-params=vm-name-label,type,device 
+    sudo xe sr-list params=uuid,physical-size,type
+    sudo xe vm-list params=uuid,name-label,power-state,VCPUs-number,memory-actual
+
+
+SSH Ganeti Plugin
+~~~~~~~~~~~~~~~~~
+
+This plugin will attempt to connect to the specified IP address using SSH, log
+into it configured ``SSH_USER`` and ``SSH_PASSWORD`` and retrieve information
+about the virtual servers running in a Ganeti cluster on this server. It will
+add the information about those virtual servers to the Ralph's database.
+
+
+
 
 Integration with external services
 ----------------------------------
