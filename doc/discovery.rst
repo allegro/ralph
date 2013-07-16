@@ -108,7 +108,7 @@ server, if you point it to use Ralph's database.
 Discovery plugins
 -----------------
 
-Ralph comes with a number of discovery plygins build in. Some of them are
+Ralph comes with a number of discovery plugins built in. Some of them are
 necessary for discovery to function, others can be safely skipped.
 
 Ping Plugin
