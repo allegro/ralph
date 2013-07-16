@@ -1,6 +1,12 @@
 Change Log
 ----------
 
+1.2.5
+~~~~~
+Released on July 17, 2013
+[to be filled]
+
+
 1.2.4
 ~~~~~
 Released on June 18, 2013
