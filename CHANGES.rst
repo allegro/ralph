@@ -1,6 +1,13 @@
 Change Log
 ----------
 
+1.2.6
+~~~~~
+Released on 
+
+* Fixed OpenStack plugin - assigning costs to the wrong device
+
+
 1.2.5
 ~~~~~
 Released on July 17, 2013
