@@ -101,7 +101,7 @@ class OpenStackPluginTest(TestCase):
         )
         with mock.patch('ralph.discovery.plugins.openstack.OpenStack') as OpenStack:
             OpenStack.side_effect = MockOpenStack
-            dev = make_tenant(tenant_params)
+            dev = make_tenant(tenant_params['tenant_id'])
             cost = make_components(tenant_params, dev, '')
             # no componentModel assigned to the group. Cost will be 0
             self.assertEqual(cost, 0)
