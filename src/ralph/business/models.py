@@ -333,7 +333,7 @@ class VentureRole(Named.NonUnique, PrebootMixin, HasSymbolBasedPath,
                     value = prop.default
                 else:
                     value = pv.value
-                props[prop.symbol] = value
+                props[prop.symbol] = value or ''
             return props
         values = {}
         values.update(property_dict(
@@ -343,6 +343,20 @@ class VentureRole(Named.NonUnique, PrebootMixin, HasSymbolBasedPath,
             self.roleproperty_set.filter(venture=None),
         ))
         return values
+
+    def get_property_types(self, device):
+        types = {}
+        types.update({
+            p.symbol:p.type.symbol for p in
+            self.venture.roleproperty_set.filter(role=None)
+            if p.type
+        })
+        types.update({
+            p.symbol:p.type.symbol for p in
+            self.roleproperty_set.filter(venture=None)
+            if p.type
+        })
+        return types
 
 
 class RolePropertyType(db.Model):
