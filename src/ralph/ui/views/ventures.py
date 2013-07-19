@@ -104,6 +104,8 @@ def venture_tree_menu(ventures, details, show_all=False):
 
 
 class SidebarVentures(object):
+    section = 'ventures'
+
     def __init__(self, *args, **kwargs):
         super(SidebarVentures, self).__init__(*args, **kwargs)
         self.venture = None
@@ -593,7 +595,6 @@ class VenturesVenture(SidebarVentures, Base):
 
 
 class VenturesDeviceList(SidebarVentures, BaseMixin, BaseDeviceList):
-    section = 'ventures'
 
     def user_allowed(self):
         self.set_venture()
