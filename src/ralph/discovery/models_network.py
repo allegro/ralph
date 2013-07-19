@@ -247,6 +247,7 @@ class IPAddress(LastSeen, TimeTrackable, WithConcurrentGetOrCreate):
         default=None,
     )
     last_plugins = db.TextField(_("last plugins"),  blank=True)
+    dead_ping_count = db.IntegerField(_("dead ping count"), default=0)
 
     class Meta:
         verbose_name = _("IP address")
