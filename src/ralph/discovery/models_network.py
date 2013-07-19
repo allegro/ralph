@@ -100,7 +100,6 @@ class AbstractNetwork(db.Model):
         _("last scan"), null=True, blank=True, default=None,
     )
 
-
     class Meta:
         abstract = True
 
@@ -252,6 +251,7 @@ class IPAddress(LastSeen, TimeTrackable, WithConcurrentGetOrCreate):
     )
     last_plugins = db.TextField(_("last plugins"),  blank=True)
     dead_ping_count = db.IntegerField(_("dead ping count"), default=0)
+    is_buried = db.BooleanField(_("Buried from autoscan"), default=False)
 
     class Meta:
         verbose_name = _("IP address")
