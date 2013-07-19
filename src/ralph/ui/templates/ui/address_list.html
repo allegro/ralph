@@ -86,9 +86,15 @@
         <div class="form-actions bulk-edit">
             {% csrf_token %}
             <div class="controls">
-                <button type="submit" class="btn" name="delete">
-                    {% icon 'fugue-cross' %} Delete selected
-                </button>
+                {% if status_selected == 'buried' %}
+                    <button type="submit" class="btn" name="resurrect">
+                        {% icon 'fugue-candle' %} Resurrect selected
+                    </button>
+                {% else %}
+                    <button type="submit" class="btn" name="bury">
+                        {% icon 'fugue-headstone' %} Bury selected
+                    </button>
+                {% endif %}
             </div>
         </div>
         {% endif %}

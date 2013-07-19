@@ -105,9 +105,18 @@ def _autoscan_group(addresses):
 def _autoscan_address(address):
     """Autoscans a single address on the worker."""
 
+    try:
+        ipaddress = IPAddress.objects.get(address=address)
+    except IPAddress.DoesNotExist:
+        ipaddress = None
+    if ipaddress and ipaddress.is_buried:
+        return
     pinged = ping(address)
     if pinged:
-        ipaddress, created = IPAddress.objects.get_or_create(address=address)
+        if not ipaddress:
+            ipaddress, created = IPAddress.objects.get_or_create(
+                address=address,
+            )
         ipaddress.http_family = get_http_family(ipaddress.address)
         (
             ipaddress.snmp_name,
@@ -117,11 +126,7 @@ def _autoscan_address(address):
         ipaddress.dead_ping_count = 0
         ipaddress.save(update_last_seen=True)
     else:
-        try:
-            ipaddress = IPAddress.objects.get(address=address)
-        except IPAddress.DoesNotExist:
-            pass
-        else:
+        if ipaddress:
             ipaddress.http_family = None
             ipaddress.snmp_name = None
             ipaddress.snmp_community = None

@@ -238,6 +238,9 @@ class NetworksScan(SidebarNetworks, BaseMixin, BaseDeviceList):
             ).exclude(
                 device__isnull=False,
             )
+            query = query.filter(is_buried=False)
+        elif self.status == 'changed':
+            query = query.filter(is_buried=False)
         elif self.status == 'dead':
             query = query.filter(
                 dead_ping_count__gt=2,
@@ -245,6 +248,9 @@ class NetworksScan(SidebarNetworks, BaseMixin, BaseDeviceList):
             ).exclude(
                 device__deleted=True,
             )
+            query = query.filter(is_buried=False)
+        elif self.status == 'buried':
+            query = query.filter(is_buried=True)
         else:
             query = IPAddress.objects.none()
         return self.sort_queryset(
@@ -300,4 +306,24 @@ class NetworksScan(SidebarNetworks, BaseMixin, BaseDeviceList):
         if 'scan' in self.request.POST and self.network:
             autoscan.autoscan_network(self.network)
             messages.success(self.request, "Network scan scheduled.")
+        elif 'bury' in self.request.POST:
+            selected = self.request.POST.getlist('select')
+            addresses = IPAddress.objects.filter(id__in=selected)
+            for address in addresses:
+                address.is_buried = True
+                address.save(update_last_seen=False)
+            messages.success(
+                self.request,
+                "%d addresses buried." % len(addresses),
+            )
+        elif 'resurrect' in self.request.POST:
+            selected = self.request.POST.getlist('select')
+            addresses = IPAddress.objects.filter(id__in=selected)
+            for address in addresses:
+                address.is_buried = False
+                address.save(update_last_seen=False)
+            messages.success(
+                self.request,
+                "%d addresses resurrected." % len(addresses),
+            )
         return self.get(*args, **kwargs)
