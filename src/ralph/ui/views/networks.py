@@ -19,7 +19,7 @@ from ralph.ui.views.common import (BaseMixin, DeviceDetailView, Info,
 from ralph.ui.views.devices import BaseDeviceList
 from ralph.ui.views.reports import Reports, ReportDeviceList
 from ralph.util import presentation
-
+from django.views.generic import ListView
 
 def network_tree_menu(networks, details, children, show_ip):
     icon = presentation.get_network_icon
@@ -184,3 +184,49 @@ class NetworksReports(Networks, Reports):
 
 class ReportNetworksDeviceList(ReportDeviceList, NetworksDeviceList):
     pass
+
+
+class NetworksScan(SidebarNetworks, BaseMixin, BaseDeviceList):
+    template_name = 'ui/address_list.html'
+
+    def user_allowed(self):
+        return True
+
+    def get_queryset(self):
+        self.status = self.kwargs.get('status', 'new')
+        self.set_network()
+        if self.network is None:
+            query = IPAddress.objects.none()
+        if self.network == '':
+            query = IPAddress.objects.all()
+        else:
+            query = self.network.ipaddress_set.all()
+        if self.status == 'new':
+            query = query.filter(
+                device=None,
+                dead_ping_count=0,
+            )
+        elif self.status == 'dead':
+            query = query.filter(
+                dead_ping_count__gt=2,
+            ).exclude(
+                device=None,
+            )
+        else:
+            query = IPAddress.objects.none()
+        return query
+
+    def get_context_data(self, **kwargs):
+        ret = super(NetworksScan, self).get_context_data(**kwargs)
+        status_menu_items = [
+            MenuItem('New', fugue_icon='fugue-star', href='../new/'),
+            MenuItem('Changed', fugue_icon='fugue-question', href='../changed/'),
+            MenuItem('Dead', fugue_icon='fugue-skull', href='../dead/'),
+            MenuItem('Buried', fugue_icon='fugue-headstone', href='../buried/'),
+        ]
+        ret.update({
+            'subsection': self.network.name if self.network else self.network,
+            'status_menu_items': status_menu_items,
+            'status_selected': self.status,
+        })
+        return ret

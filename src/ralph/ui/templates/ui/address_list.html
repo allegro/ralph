@@ -1,0 +1,56 @@
+{% extends "ui/base-devices.html" %}
+{% load url from future %}
+{% load icons %}
+{% load bob %}
+
+{% block contentarea %}
+  <div class="row-fluid">
+    <div class="span10">
+        <form 
+            method="POST" 
+            class="form form-inline" 
+            action="../bulkedit/?{{ url_query.urlencode }}"
+        >
+        <table class="table table-striped table-bordered table-condensed table-list device-list">
+            <thead><tr>
+                {% spaceless %}
+                {% if show_bulk %}
+                <th width="16"><div class="dropdown">
+                    <a href="#" data-toggle="dropdown" class="dropdown-toggle">{% icon 'fugue-ui-check-boxes-series' %}</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#" class="select-all">{% icon 'fugue-ui-check-box' %}&nbsp;Select all on this page</a></li>
+                        <li><a href="#" class="select-toggle">{% icon 'fugue-ui-check-box-mix' %}&nbsp;Reverse selection</a></li>
+                        <li><a href="#" class="select-none">{% icon 'fugue-ui-check-box-uncheck' %}&nbsp;Deselect all</a></li>
+                    </ul>
+                </div></th>
+                {% endif %}
+                {% include 'ui/column-header.html' with label='Address' name='address' always=1 %}
+                {% endspaceless %}
+            </tr></thead>
+            <tbody>
+                {% for d in object_list %}
+                    <tr>
+                        <td class="column-checkbox"><input type="checkbox" name="select" value="{{ d.id }}"></td>
+                        <td class="column-address">{{ d.address }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% pagination page_obj url_query=url_query show_all=1 show_csv=1 fugue_icons=1 %}
+        {% if show_bulk %}
+        <div class="form-actions bulk-edit">
+            {% csrf_token %}
+            <div class="controls">
+                <button type="submit" class="btn" name="delete">
+                    {% icon 'fugue-cross' %} Delete selected
+                </button>
+            </div>
+        </div>
+        {% endif %}
+        </form>
+    </div>
+    <div class="span2 scan-tabs">
+      {% tab_menu status_menu_items status_selected side='right' %}
+    </div>
+  </div>
+{% endblock contentarea %}
