@@ -81,7 +81,7 @@
                 {% endfor %}
             </tbody>
         </table>
-        {% pagination page_obj url_query=url_query show_all=1 show_csv=1 fugue_icons=1 %}
+        {% pagination page_obj url_query=url_query show_all=1 fugue_icons=1 %}
         {% if show_bulk %}
         <div class="form-actions bulk-edit">
             {% csrf_token %}
