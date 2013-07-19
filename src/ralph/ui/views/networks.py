@@ -118,7 +118,7 @@ class SidebarNetworks(object):
         if has_perm(Perm.edit_device_info_generic):
             ret['tab_items'].extend([
                 MenuItem('Autoscan', name='scan', fugue_icon='fugue-radar',
-                         href=self.tab_href('scan', 'new/')),
+                         href=self.tab_href('scan', 'new')),
             ])
 
         ret.update({
@@ -215,6 +215,7 @@ class ReportNetworksDeviceList(ReportDeviceList, NetworksDeviceList):
 
 class NetworksScan(SidebarNetworks, BaseMixin, BaseDeviceList):
     template_name = 'ui/address_list.html'
+    section = 'networks'
 
     def user_allowed(self):
         profile = self.request.user.get_profile()

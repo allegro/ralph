@@ -170,13 +170,23 @@ class BaseMixin(object):
         super(BaseMixin, self).__init__(*args, **kwargs)
         self.venture = None
         self.object = None
+        self.status = ''
 
     def tab_href(self, name, obj=''):
-        return '../%s/%s?%s' % (
-                name,
-                self.object.id if self.object else obj,
-                self.request.GET.urlencode()
-            )
+        if not obj and self.object:
+            obj = self.object.id
+        if self.section == 'racks':
+            args = [self.kwargs.get('rack'), name, obj]
+        elif self.section == 'networks':
+            args = [self.kwargs.get('network'), name, obj]
+        elif self.section == 'ventures':
+            args = [self.kwargs.get('venture'), name, obj]
+        else:
+            args = []
+        return '%s?%s' % (
+            reverse(self.section, args=args),
+            self.request.GET.urlencode(),
+        )
 
     def get_context_data(self, **kwargs):
         ret = super(BaseMixin, self).get_context_data(**kwargs)

@@ -78,6 +78,8 @@ def _get_identifier(asset):
 
 
 class SidebarRacks(BaseRacksMixin):
+    section = 'racks'
+
     def __init__(self, *args, **kwargs):
         super(SidebarRacks, self).__init__(*args, **kwargs)
         self.rack = None
