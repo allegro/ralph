@@ -69,6 +69,8 @@ class SidebarNetworks(object):
 
     def get_context_data(self, **kwargs):
         ret = super(SidebarNetworks, self).get_context_data(**kwargs)
+        profile = self.request.user.get_profile()
+        has_perm = profile.has_perm
         self.set_network()
         networks = Network.objects.all()
         contains =  self.request.GET.get('contains')
@@ -113,6 +115,12 @@ class SidebarNetworks(object):
                 status=self.status,
             ),
         )
+        if has_perm(Perm.edit_device_info_generic):
+            ret['tab_items'].extend([
+                MenuItem('Autoscan', name='scan', fugue_icon='fugue-radar',
+                         href=self.tab_href('scan', 'new/')),
+            ])
+
         ret.update({
             'sidebar_items': sidebar_items,
             'sidebar_selected': (self.network.name if
@@ -209,7 +217,8 @@ class NetworksScan(SidebarNetworks, BaseMixin, BaseDeviceList):
     template_name = 'ui/address_list.html'
 
     def user_allowed(self):
-        return True
+        profile = self.request.user.get_profile()
+        return profile.has_perm(Perm.edit_device_info_generic)
 
     def get_queryset(self):
         self.status = self.kwargs.get('status', 'new') or 'new'
