@@ -267,10 +267,10 @@ class BaseMixin(object):
                 self.object.venture if self.object else None
             )
 
-        def tab_href(name):
+        def tab_href(name, obj=''):
             return '../%s/%s?%s' % (
                     name,
-                    self.object.id if self.object else '',
+                    self.object.id if self.object else obj,
                     self.request.GET.urlencode()
                 )
         if has_perm(Perm.read_device_info_generic, venture):
@@ -334,6 +334,11 @@ class BaseMixin(object):
             tab_items.extend([
                 MenuItem('Bulk edit', fugue_icon='fugue-pencil-field',
                          name='bulkedit'),
+            ])
+        if has_perm(Perm.edit_device_info_generic, venture):
+            tab_items.extend([
+                MenuItem('Scan', fugue_icon='fugue-radar',
+                         href=tab_href('scan', 'new')),
             ])
         ret.update({
             'section': self.section,
