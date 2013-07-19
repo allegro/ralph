@@ -64,7 +64,7 @@ def autoscan_network(network):
             func=_autoscan_group,
             args=[group],
             timeout=60,
-            result_ttil=0,
+            result_ttl=0,
         )
 
 
