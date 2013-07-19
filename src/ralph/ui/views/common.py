@@ -338,7 +338,7 @@ class BaseMixin(object):
         if has_perm(Perm.edit_device_info_generic, venture):
             tab_items.extend([
                 MenuItem('Scan', fugue_icon='fugue-radar',
-                         href=tab_href('scan', 'new')),
+                         href=tab_href('scan', 'new/')),
             ])
         ret.update({
             'section': self.section,

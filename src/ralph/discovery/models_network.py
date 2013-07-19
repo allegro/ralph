@@ -96,6 +96,10 @@ class AbstractNetwork(db.Model):
     dhcp_config = db.TextField(
         _("DHCP configuration"), blank=True, default='',
     )
+    last_scan = db.DateTimeField(
+        _("last scan"), null=True, blank=True, default=None,
+    )
+
 
     class Meta:
         abstract = True

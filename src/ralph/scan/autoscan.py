@@ -6,6 +6,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import itertools
+import datetime
 
 import django_rq
 
@@ -66,6 +67,8 @@ def autoscan_network(network):
             timeout=60,
             result_ttl=0,
         )
+    network.last_scan = datetime.datetime.now()
+    network.save()
 
 
 def autoscan_address(address):
