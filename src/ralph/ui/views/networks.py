@@ -237,7 +237,17 @@ class NetworksScan(SidebarNetworks, BaseMixin, BaseDeviceList):
             )
         else:
             query = IPAddress.objects.none()
-        return query
+        return self.sort_queryset(
+            query,
+            columns={
+                'address':  ('number',),
+                'hostname': ('hostname',),
+                'last_seen': ('last_seen',),
+                'device': ('device__model__name',),
+                'snmp_name': ('snmp_name',),
+                'http_family': ('http_family'),
+            },
+        )
 
     def get_context_data(self, **kwargs):
         ret = super(NetworksScan, self).get_context_data(**kwargs)
