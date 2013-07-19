@@ -251,6 +251,8 @@ class NetworksScan(SidebarNetworks, BaseMixin, BaseDeviceList):
             query = query.filter(is_buried=False)
         elif self.status == 'buried':
             query = query.filter(is_buried=True)
+        elif self.status == 'all':
+            query = query.all()
         else:
             query = IPAddress.objects.none()
         return self.sort_queryset(
@@ -267,30 +269,31 @@ class NetworksScan(SidebarNetworks, BaseMixin, BaseDeviceList):
 
     def get_context_data(self, **kwargs):
         ret = super(NetworksScan, self).get_context_data(**kwargs)
-        if self.kwargs.get('status'):
-            prefix = '../'
-        else:
-            prefix = ''
         status_menu_items = [
             MenuItem(
                 'New',
                 fugue_icon='fugue-star',
-                href=prefix + 'new/',
+                href=self.tab_href('scan', 'new'),
             ),
             MenuItem(
                 'Changed',
                 fugue_icon='fugue-question',
-                href=prefix + 'changed/',
+                href=self.tab_href('scan', 'changed'),
             ),
             MenuItem(
                 'Dead',
                 fugue_icon='fugue-skull',
-                href=prefix + 'dead/',
+                href=self.tab_href('scan', 'dead'),
             ),
             MenuItem(
                 'Buried',
                 fugue_icon='fugue-headstone',
-                href=prefix + 'buried/',
+                href=self.tab_href('scan', 'buried'),
+            ),
+            MenuItem(
+                'All',
+                fugue_icon='fugue-network-ip',
+                href=self.tab_href('scan', 'all'),
             ),
         ]
         ret.update({
