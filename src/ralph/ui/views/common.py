@@ -170,6 +170,23 @@ class BaseMixin(object):
         super(BaseMixin, self).__init__(*args, **kwargs)
         self.venture = None
         self.object = None
+        self.status = ''
+
+    def tab_href(self, name, obj=''):
+        if not obj and self.object:
+            obj = self.object.id
+        if self.section == 'racks':
+            args = [self.kwargs.get('rack'), name, obj]
+        elif self.section == 'networks':
+            args = [self.kwargs.get('network'), name, obj]
+        elif self.section == 'ventures':
+            args = [self.kwargs.get('venture'), name, obj]
+        else:
+            args = []
+        return '%s?%s' % (
+            reverse(self.section, args=args),
+            self.request.GET.urlencode(),
+        )
 
     def get_context_data(self, **kwargs):
         ret = super(BaseMixin, self).get_context_data(**kwargs)
@@ -267,42 +284,36 @@ class BaseMixin(object):
                 self.object.venture if self.object else None
             )
 
-        def tab_href(name):
-            return '../%s/%s?%s' % (
-                    name,
-                    self.object.id if self.object else '',
-                    self.request.GET.urlencode()
-                )
         if has_perm(Perm.read_device_info_generic, venture):
             tab_items.extend([
                 MenuItem('Info', fugue_icon='fugue-wooden-box',
-                         href=tab_href('info')),
+                         href=self.tab_href('info')),
                 MenuItem('Components', fugue_icon='fugue-box',
-                        href=tab_href('components')),
+                        href=self.tab_href('components')),
                 MenuItem('Software', fugue_icon='fugue-disc',
-                         href=tab_href('software')),
+                         href=self.tab_href('software')),
                 MenuItem('Addresses', fugue_icon='fugue-network-ip',
-                        href=tab_href('addresses')),
+                        href=self.tab_href('addresses')),
             ])
         if has_perm(Perm.edit_device_info_financial, venture):
             tab_items.extend([
                 MenuItem('Prices', fugue_icon='fugue-money-coin',
-                        href=tab_href('prices')),
+                        href=self.tab_href('prices')),
             ])
         if has_perm(Perm.read_device_info_financial, venture):
             tab_items.extend([
                 MenuItem('Costs', fugue_icon='fugue-wallet',
-                        href=tab_href('costs')),
+                        href=self.tab_href('costs')),
             ])
         if has_perm(Perm.read_device_info_history, venture):
             tab_items.extend([
                 MenuItem('History', fugue_icon='fugue-hourglass',
-                         href=tab_href('history')),
+                         href=self.tab_href('history')),
             ])
         if has_perm(Perm.read_device_info_support, venture):
             tab_items.extend([
                 MenuItem('Purchase', fugue_icon='fugue-baggage-cart-box',
-                         href=tab_href('purchase')),
+                         href=self.tab_href('purchase')),
             ])
         if ('ralph.cmdb' in settings.INSTALLED_APPS and
             has_perm(Perm.read_configuration_item_info_generic)):
@@ -328,7 +339,7 @@ class BaseMixin(object):
         if has_perm(Perm.read_device_info_reports, venture):
             tab_items.extend([
                 MenuItem('Reports', fugue_icon='fugue-reports-stack',
-                         href=tab_href('reports')),
+                         href=self.tab_href('reports')),
             ])
         if details == 'bulkedit':
             tab_items.extend([
