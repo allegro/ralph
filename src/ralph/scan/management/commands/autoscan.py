@@ -18,8 +18,8 @@ from ralph.scan.autoscan import (
     autoscan_address,
     autoscan_data_center,
     autoscan_network,
-    Error,
 )
+from ralph.scan.errors import Error
 from ralph.discovery.models import DiscoveryQueue, DataCenter, Network
 
 
