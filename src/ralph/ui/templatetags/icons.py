@@ -64,7 +64,9 @@ def component_model_type_icon(model_type_id):
     icon_name = presentation.COMPONENT_ICONS.get(model_type_id, 'fugue-box')
     return icon_filter(icon_name)
 
-
+@register.filter
+def network_icon(network):
+    return icon_filter(presentation.get_network_icon(network))
 
 @register.simple_tag
 def icon(icon_name):

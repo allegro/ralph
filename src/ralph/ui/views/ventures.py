@@ -44,6 +44,7 @@ from ralph.ui.views.common import (
     Prices,
     Purchase,
     Software,
+    Scan,
 )
 from ralph.ui.views.devices import BaseDeviceList
 from ralph.ui.views.reports import Reports, ReportDeviceList
@@ -217,6 +218,10 @@ class VenturesPurchase(Ventures, Purchase):
 
 
 class VenturesReports(Ventures, Reports):
+    pass
+
+
+class VenturesScan(Ventures, Scan):
     pass
 
 

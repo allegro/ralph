@@ -25,6 +25,7 @@ from ralph.ui.views.ventures import (
     VenturesRoles,
     VenturesSoftware,
     VenturesVenture,
+    VenturesScan,
 )
 from ralph.ui.views.racks import (
     RacksAddDevice,
@@ -38,6 +39,7 @@ from ralph.ui.views.racks import (
     RacksRack,
     RacksReports,
     RacksSoftware,
+    RacksScan,
     ReportRacksDeviceList,
 )
 from ralph.ui.views.search import (
@@ -52,6 +54,7 @@ from ralph.ui.views.search import (
     SearchPurchase,
     SearchReports,
     SearchSoftware,
+    SearchScan,
 )
 from ralph.ui.views.networks import (
     NetworksAddresses,
@@ -65,6 +68,7 @@ from ralph.ui.views.networks import (
     NetworksReports,
     NetworksSoftware,
     ReportNetworksDeviceList,
+    NetworksAutoscan,
     NetworksScan,
 )
 from ralph.ui.views.catalog import (
@@ -164,6 +168,8 @@ urlpatterns = patterns('',
         login_required(VenturesRoles.as_view()), {}, 'ventures'),
     url(r'^ventures/(?P<venture>[.\w*-]*)/(?P<details>venture)/(?P<device>)$',
         login_required(VenturesVenture.as_view()), {}, 'ventures'),
+    url(r'^ventures/(?P<venture>[.\w*-]*)/(?P<details>scan)/(?P<address>[\d.]*)/$',
+        login_required(VenturesScan.as_view()), {}, 'ventures'),
 
     url(r'^racks/$',
         login_required(RacksDeviceList.as_view()), {}, 'racks'),
@@ -194,6 +200,8 @@ urlpatterns = patterns('',
         login_required(RacksReports.as_view()), {}, 'racks'),
     url(r'^racks/(?P<rack>[-\w]*)/(?P<details>\w+)/(?P<device>)$',
         login_required(RacksDeviceList.as_view()), {}, 'racks'),
+    url(r'^racks/(?P<rack>[-\w]*)/(?P<details>scan)/(?P<address>[\d.]*)/$',
+        login_required(RacksScan.as_view()), {}, 'racks'),
 
     url(r'^networks/$',
         login_required(NetworksDeviceList.as_view()), {}, 'networks'),
@@ -217,9 +225,11 @@ urlpatterns = patterns('',
         login_required(ReportNetworksDeviceList.as_view()), {'device': ''}, 'networks'),
     url(r'^networks/(?P<network>[^/]*)/(?P<details>reports)/(?P<device>\d+)$',
         login_required(NetworksReports.as_view()), {}, 'networks'),
-    url(r'^networks/(?P<network>[^/]*)/(?P<details>scan)/$',
-        login_required(NetworksScan.as_view()), {'status': 'new'}, 'networks'),
-    url(r'^networks/(?P<network>[^/]*)/(?P<details>scan)/(?P<status>new|changed|dead|buried|all)/$',
+    url(r'^networks/(?P<network>[^/]*)/(?P<details>autoscan)/$',
+        login_required(NetworksAutoscan.as_view()), {'status': 'new'}, 'networks'),
+    url(r'^networks/(?P<network>[^/]*)/(?P<details>autoscan)/(?P<status>new|changed|dead|buried|all)/$',
+        login_required(NetworksAutoscan.as_view()), {}, 'networks'),
+    url(r'^networks/(?P<network>[^/]*)/(?P<details>scan)/(?P<address>[\d.]*)/$',
         login_required(NetworksScan.as_view()), {}, 'networks'),
     url(r'^networks/(?P<network>[^/]*)/(?P<details>\w+)/(?P<device>)$',
         login_required(NetworksDeviceList.as_view()), {}, 'networks'),
