@@ -31,7 +31,9 @@ def owner_icon(owner):
 
 @register.filter
 def address_icon(ip):
-    if ip.is_management:
+    if ip.is_buried:
+        icon_name = 'fugue-headstone'
+    elif ip.is_management:
         icon_name = 'fugue-system-monitor-network'
     else:
         icon_name = 'fugue-network-ip'
