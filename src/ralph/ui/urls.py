@@ -65,6 +65,7 @@ from ralph.ui.views.networks import (
     NetworksReports,
     NetworksSoftware,
     ReportNetworksDeviceList,
+    NetworksScan,
 )
 from ralph.ui.views.catalog import (
     Catalog,
@@ -216,6 +217,10 @@ urlpatterns = patterns('',
         login_required(ReportNetworksDeviceList.as_view()), {'device': ''}, 'networks'),
     url(r'^networks/(?P<network>[^/]*)/(?P<details>reports)/(?P<device>\d+)$',
         login_required(NetworksReports.as_view()), {}, 'networks'),
+    url(r'^networks/(?P<network>[^/]*)/(?P<details>scan)/$',
+        login_required(NetworksScan.as_view()), {'status': 'new'}, 'networks'),
+    url(r'^networks/(?P<network>[^/]*)/(?P<details>scan)/(?P<status>new|changed|dead|buried|all)/$',
+        login_required(NetworksScan.as_view()), {}, 'networks'),
     url(r'^networks/(?P<network>[^/]*)/(?P<details>\w+)/(?P<device>)$',
         login_required(NetworksDeviceList.as_view()), {}, 'networks'),
 
