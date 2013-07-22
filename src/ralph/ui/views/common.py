@@ -315,6 +315,11 @@ class BaseMixin(object):
                 MenuItem('Purchase', fugue_icon='fugue-baggage-cart-box',
                          href=self.tab_href('purchase')),
             ])
+        if has_perm(Perm.edit_device_info_generic):
+            tab_items.extend([
+                MenuItem('Scan', name='scan', fugue_icon='fugue-flashlight',
+                         href=self.tab_href('scan')),
+            ])
         if ('ralph.cmdb' in settings.INSTALLED_APPS and
             has_perm(Perm.read_configuration_item_info_generic)):
             ci = ''
@@ -1305,3 +1310,41 @@ class VhostRedirectView(RedirectView):
         else:
             self.url = user_url
         return super(VhostRedirectView, self).get_redirect_url(**kwargs)
+
+
+class Scan(BaseMixin, TemplateView):
+    template_name = 'ui/scan.html'
+
+    def get(self, *args, **kwargs):
+        try:
+            device_id = int(self.kwargs.get('address'))
+        except ValueError:
+            self.object = None
+        else:
+            self.object = Device.objects.get(id=device_id)
+        return super(Scan, self).get(*args, **kwargs)
+
+
+    def get_context_data(self, **kwargs):
+        ret = super(Scan, self).get_context_data(**kwargs)
+        address = self.kwargs.get('address')
+        if address and not self.object:
+            try:
+                ipaddress = IPAddress.objects.get(address=address)
+            except IPAddress.DoesNotExist:
+                ipaddress = None
+            try:
+                network = Network.from_ip(address)
+            except Network.DoesNotExist:
+                network = None
+        else:
+            ipaddress = None
+            network = None
+        ret.update({
+            'subsection': 'scan',
+            'device': self.object,
+            'address': address,
+            'ipaddress': ipaddress,
+            'network': network,
+        })
+        return ret

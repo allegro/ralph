@@ -17,8 +17,18 @@ from powerdns.models import Record
 from ralph.account.models import Perm
 from ralph.discovery.models import ReadOnlyDevice, Device, ComponentModel
 from ralph.ui.forms.search import SearchForm
-from ralph.ui.views.common import (BaseMixin, Info, Prices, Addresses, Costs,
-                                   Purchase, Components, History, Software)
+from ralph.ui.views.common import (
+    Addresses,
+    BaseMixin,
+    Components,
+    Costs,
+    History,
+    Info,
+    Prices,
+    Purchase,
+    Software,
+    Scan,
+)
 from ralph.ui.views.devices import BaseDeviceList
 from ralph.ui.views.reports import Reports, ReportDeviceList
 
@@ -465,7 +475,12 @@ class SearchPurchase(Search, Purchase):
 class SearchReports(Search, Reports):
     pass
 
+
 class SearchSoftware(Search, Software):
+    pass
+
+
+class SearchScan(Search, Scan):
     pass
 
 
