@@ -6,6 +6,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 
+import rq
 import django_rq
 from django.utils.importlib import import_module
 
@@ -14,6 +15,8 @@ from ralph.scan.errors import NoQueueError
 
 
 def scan_address(address, plugins):
+    """Queue manual discovery on the specified address."""
+
     try:
         network = Network.from_ip(address)
     except IndexError:
@@ -45,10 +48,20 @@ def scan_address(address, plugins):
     )
     return job
 
+
 def _scan_address(address, plugins, **kwargs):
-    results = []
+    """The function that is actually running on the worker."""
+
+    job = rq.get_current_job()
+    results = {}
+    job.meta['messages'] = []
+    job.meta['plugins'] = []
     for plugin_name in plugins:
         module = import_module(plugin_name)
         result = module.scan_address(address, plugins, **kwargs)
-        results.append(result)
+        results[plugin_name] = result
+        for message in result.get('messages', []):
+            job.meta['messages'].append((address, plugin_name, message))
+        job.meta['plugins'].append(plugin_name)
+        job.save()
     return results
