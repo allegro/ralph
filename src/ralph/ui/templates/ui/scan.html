@@ -39,11 +39,10 @@
         </div>
     </form>
 </div><div class="span6">
-    {% if ipaddress %}
-        <table class="table table-bordered table-striped">
+    <table class="table table-bordered table-striped">
             <tr>
             <th width="20%">Address</th>
-            <td>{{ ipaddress|address_icon }}&nbsp;{{ ipaddress.hostname|default:'' }} ({{ ipaddress.address }})</td>
+            <td>{{ ipaddress|address_icon }}&nbsp;{{ ipaddress.hostname|default:'' }} ({{ ipaddress.address|default:address }})</td>
             </tr>
             <tr>
                 <th>Device</th>
@@ -75,8 +74,7 @@
             <th>Discovery queue</th>
             <td>{{ network.queue }}</td>
             </tr>
-        </table>
-    {% endif %}
+    </table>
 </div></div>
 {% endif %}
 {% endblock %}
