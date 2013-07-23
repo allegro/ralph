@@ -50,7 +50,7 @@ class Command(BaseCommand):
             raise SystemExit(e)
         plugins = [
             'ralph.scan.plugins.snmp_macs',
-            'ralph.scan.plugins.snmp_macs',
+            'ralph.scan.plugins.snmp_mac',
             'ralph.scan.plugins.snmp_macs',
         ]
         last_message = 0
@@ -59,7 +59,7 @@ class Command(BaseCommand):
             while not job.is_finished:
                 job.refresh()
                 print('Progress: %d/%d plugins' %
-                      (len(job.meta.get('plugins', [])), len(plugins)))
+                      (len(job.meta.get('finished', [])), len(plugins)))
                 last_message = print_job_messages(job, last_message)
                 if job.is_failed:
                     raise SystemExit(job.exc_info)

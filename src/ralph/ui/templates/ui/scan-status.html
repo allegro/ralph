@@ -1,0 +1,69 @@
+{% extends "ui/base.html" %}
+
+{% load url from future %}
+{% load icons %}
+{% load bob %}
+
+{% block extra_headers %}
+{{ block.super }}
+{% if job and not job.is_finished and not job.is_failed %}
+<meta http-equiv="refresh" content="5">
+{% endif %}
+{% endblock %}
+
+{% block sidebar %}
+{% if status %}
+<div class="well">
+    <ul class="unstyled">
+        {% for name, bar, icon in status %}
+        <li style="white-space:nowrap">{% icon icon %}&nbsp;{{ name }}</li>
+        {% endfor %}
+    </ul>
+</div>
+<div class="form-actions">
+    <a href="../{{ address }}/" class="btn">
+        {% icon 'fugue-arrow-circle-double' %}&nbsp;Rescan
+    </a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block contentarea %}
+{% if job %}
+    <div class="well">
+        <p>Scanning <strong>{{ address }}</strong>...</p>
+        <div class="progress progress-striped {% if not job.is_finished %}active{% endif %}">
+            {% for name, bar, icon in status %}
+            <div
+                class="bar bar-{{ bar }}"
+                style="width:{{ task_size }}%"
+                title="{{ name }}"
+            ></div>
+            {% endfor %}
+            {% if not job.is_finished %}
+            <div
+                class="bar"
+                style="width:{{ task_size }}%"
+                title="working..."
+            ></div>
+            {% endif %}
+        </div>
+    </div>
+    {% for addr, name, kind,  message in job.meta.messages %}
+    <div class="alert alert-{{ kind }}">
+        <p><strong>{{ name }}</strong>: {{ message }}</p>
+    </div>
+    {% endfor %}
+    {% if job.is_finished %}
+    <div class="alert alert-success">
+        <p>Scanning finished.</p>
+    </div>
+    {% endif %}
+    {% if job.is_failed %}
+    <div class="alert alert-error">
+        <p>Scanning failed.</p>
+        <pre>{{ job.exc_info }}</pre>
+    </div>
+    {% endif %}
+{% endif %}
+{% endblock %}

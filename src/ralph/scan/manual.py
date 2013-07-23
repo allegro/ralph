@@ -44,7 +44,7 @@ def scan_address(address, plugins):
             'snmp_name': ipaddress.snmp_name,
         },
         timeout=60,
-        result_ttl=60,
+        result_ttl=3600,
     )
     return job
 
@@ -55,13 +55,24 @@ def _scan_address(address, plugins, **kwargs):
     job = rq.get_current_job()
     results = {}
     job.meta['messages'] = []
-    job.meta['plugins'] = []
+    job.meta['finished'] = []
+    job.meta['status'] = {}
     for plugin_name in plugins:
-        module = import_module(plugin_name)
-        result = module.scan_address(address, plugins, **kwargs)
-        results[plugin_name] = result
-        for message in result.get('messages', []):
-            job.meta['messages'].append((address, plugin_name, message))
-        job.meta['plugins'].append(plugin_name)
+        message = "Running plugin %s." % plugin_name
+        job.meta['messages'].append((address, plugin_name, 'info', message))
+        job.save()
+        try:
+            module = import_module(plugin_name)
+        except ImportError as e:
+            message = 'Failed to import: %s.' % e
+            job.meta['messages'].append((address, plugin_name, 'error', message))
+            job.meta['status'][plugin_name] = 'error'
+        else:
+            result = module.scan_address(address, plugins, **kwargs)
+            results[plugin_name] = result
+            for message in result.get('messages', []):
+                job.meta['messages'].append((address, plugin_name, 'warning', message))
+            job.meta['status'][plugin_name] = result.get('status', 'success')
+        job.meta['finished'].append(plugin_name)
         job.save()
     return results

@@ -19,33 +19,18 @@
 {% else %}
 <div class="row-fluid"><div class="span6">
     <form method="post" class="form form-horizontal">
+        {% csrf_token %}
         <fieldset>
             <legend>Scanning {{ address }}</legend>
             <p>Select the plugins to run:</p>
+            {% for plugin_name, plugin_settings in plugins.iteritems %}
             <div class="control-group">
-                <label class="control-label">SNMP MACs</label>
+                <label class="control-label">{{ plugin_settings.name|default:plugin_name }}</label>
                 <div class="controls">
-                    <input type="checkbox" value="snmp_mac" name="plugins">
+                    <input type="checkbox" value="{{ plugin_name }}" name="plugins">
                 </div>
             </div>
-            <div class="control-group">
-                <label class="control-label">Proxmox</label>
-                <div class="controls">
-                    <input type="checkbox" value="proxmox" name="plugins">
-                </div>
-            </div>
-            <div class="control-group">
-                <label class="control-label">Dell IDRAC</label>
-                <div class="controls">
-                    <input type="checkbox" value="dell_idrac" name="plugins">
-                </div>
-            </div>
-            <div class="control-group">
-                <label class="control-label">IPMI</label>
-                <div class="controls">
-                    <input type="checkbox" value="ipmi" name="plugins">
-                </div>
-            </div>
+            {% endfor %}
         </fieldset>
         <div class="form-actions">
             <button type="submit" class="btn btn-primary" value="scan">

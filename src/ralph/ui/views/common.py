@@ -6,6 +6,8 @@ from __future__ import unicode_literals
 
 import datetime
 
+import django_rq
+import rq
 from django.conf import settings
 from django.contrib import messages
 from django.core.urlresolvers import reverse
@@ -25,7 +27,8 @@ from lck.django.tags.models import Language, TagStem
 from bob.menu import MenuItem
 from powerdns.models import Record
 from ralph.discovery.models_device import DeprecationKind, MarginKind
-
+from ralph.scan.errors import Error as ScanError
+from ralph.scan.manual import scan_address
 from ralph.business.models import (
     RoleProperty,
     RolePropertyValue,
@@ -1324,6 +1327,19 @@ class Scan(BaseMixin, TemplateView):
             self.object = Device.objects.get(id=device_id)
         return super(Scan, self).get(*args, **kwargs)
 
+    def post(self, *args, **kwargs):
+        plugins = self.request.POST.getlist('plugins')
+        if not plugins:
+            messages.error(self.request, "You have to select some plugins.")
+            return self.get(*args, **kwargs)
+        address = self.kwargs.get('address')
+        try:
+            job = scan_address(address, plugins)
+        except ScanError as e:
+            messages.error(self.request, unicode(e))
+            return self.get(*args, **kwargs)
+        return HttpResponseRedirect(reverse('scan', args=(job.id,)))
+
 
     def get_context_data(self, **kwargs):
         ret = super(Scan, self).get_context_data(**kwargs)
@@ -1346,5 +1362,52 @@ class Scan(BaseMixin, TemplateView):
             'address': address,
             'ipaddress': ipaddress,
             'network': network,
+            'plugins': getattr(settings, 'SCAN_PLUGINS', {}),
         })
+        return ret
+
+class ScanStatus(BaseMixin, TemplateView):
+    template_name = 'ui/scan-status.html'
+
+    def get_context_data(self, **kwargs):
+        ret = super(ScanStatus, self).get_context_data(**kwargs)
+        job_id = self.kwargs.get('job_id')
+        try:
+            job = rq.job.Job.fetch(job_id, django_rq.get_connection())
+        except rq.exceptions.NoSuchJobError:
+            messages.error(
+                self.request,
+                "This scan has timed out. Please run it again.",
+            )
+        else:
+            address, plugins = job.args
+            icons = {
+                'success': 'fugue-puzzle',
+                'error': 'fugue-cross-button',
+                'warning': 'fugue-puzzle--exclamation',
+                None: 'fugue-clock',
+            }
+            bar_styles = {
+                'success': 'success',
+                'error': 'danger',
+                'warning': 'warning',
+                None: 'info',
+            }
+            ret.update({
+                'address': address,
+                'plugins': plugins,
+                'status': [
+                    (
+                        p.split('.')[-1],
+                        bar_styles.get(
+                            job.meta['status'].get(p),
+                        ),
+                        icons.get(
+                            job.meta['status'].get(p),
+                        ),
+                    ) for p in plugins
+                ],
+                'task_size': 100 / len(plugins),
+                'job': job,
+            })
         return ret
