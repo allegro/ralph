@@ -10,6 +10,7 @@ import time
 
 def scan_address(address, plugins, **kwargs):
     time.sleep(10)
+    raise KeyError('bleble')
     return {
         "messages": [
             "ziew",

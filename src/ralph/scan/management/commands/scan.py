@@ -9,10 +9,10 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from optparse import make_option
-import traceback
 import textwrap
 import time
 import sys
+import json
 
 import ipaddr
 import pprint
@@ -25,7 +25,7 @@ from ralph.scan.manual import (
 
 def print_job_messages(job, last_message):
     messages = job.meta.get('messages', [])
-    for address, plugin, message in messages[last_message:]:
+    for address, plugin, status, message in messages[last_message:]:
         print('%s(%s): %s' % (plugin, address, message), file=sys.stderr)
     return len(messages)
 
@@ -65,4 +65,4 @@ class Command(BaseCommand):
                     raise SystemExit(job.exc_info)
                 time.sleep(5)
             last_message = print_job_messages(job, last_message)
-            pprint.pprint(job.result)
+            print(json.dumps(job.result))

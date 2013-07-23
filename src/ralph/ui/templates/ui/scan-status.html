@@ -32,17 +32,19 @@
 {% if job %}
     <div class="well">
         <p>Scanning <strong>{{ address }}</strong>...</p>
-        <div class="progress progress-striped {% if not job.is_finished %}active{% endif %}">
+        <div class="progress progress-striped {% if not job.is_finished and not job.is_failed  %}active{% endif %}">
             {% for name, bar, icon in status %}
+            {% if bar %}
             <div
                 class="bar bar-{{ bar }}"
                 style="width:{{ task_size }}%"
                 title="{{ name }}"
             ></div>
+            {% endif %}
             {% endfor %}
             {% if not job.is_finished %}
             <div
-                class="bar"
+                class="bar {% if job.is_failed %}bar-danger{% else %}bar-info{% endif %}"
                 style="width:{{ task_size }}%"
                 title="working..."
             ></div>

@@ -11,7 +11,7 @@
         <ul class="unstyled">
         {% for ip in device.ipaddress_set.all %}
             <li><a href="../{{ ip.address }}" class="btn btn-link">
-                {{ ip|address_icon }}&nbsp;{{ ip.address }}
+                {{ ip|address_icon }}&nbsp;{{ ip.hostname|default:'' }} ({{ ip.address }})
             </a></li>
         {% endfor %}
         </ul>
