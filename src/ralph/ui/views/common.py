@@ -1357,7 +1357,7 @@ class Scan(BaseMixin, TemplateView):
             ipaddress = None
             network = None
         ret.update({
-            'subsection': 'scan',
+            'details': 'scan',
             'device': self.object,
             'address': address,
             'ipaddress': ipaddress,
