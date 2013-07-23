@@ -1391,7 +1391,6 @@ class ScanStatus(BaseMixin, TemplateView):
                 'success': 'success',
                 'error': 'danger',
                 'warning': 'warning',
-                None: 'info',
             }
             ret.update({
                 'address': address,
