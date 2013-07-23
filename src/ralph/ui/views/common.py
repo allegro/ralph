@@ -1351,7 +1351,7 @@ class Scan(BaseMixin, TemplateView):
                 ipaddress = None
             try:
                 network = Network.from_ip(address)
-            except Network.DoesNotExist:
+            except (Network.DoesNotExist, IndexError):
                 network = None
         else:
             ipaddress = None
