@@ -50,8 +50,6 @@ class Command(BaseCommand):
             raise SystemExit(e)
         plugins = [
             'ralph.scan.plugins.snmp_macs',
-            'ralph.scan.plugins.snmp_mac',
-            'ralph.scan.plugins.snmp_macs',
         ]
         last_message = 0
         for address in addresses:

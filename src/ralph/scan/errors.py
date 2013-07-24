@@ -17,3 +17,7 @@ class NoQueueError(Error):
 class NoMacError(Error):
     """No MAC address."""
 
+
+class NoMatchError(Error):
+    """No match."""
+
