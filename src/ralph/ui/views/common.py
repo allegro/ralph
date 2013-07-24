@@ -1399,10 +1399,10 @@ class ScanStatus(BaseMixin, TemplateView):
                     (
                         p.split('.')[-1],
                         bar_styles.get(
-                            job.meta['status'].get(p),
+                            job.meta.get('status', {}).get(p),
                         ),
                         icons.get(
-                            job.meta['status'].get(p),
+                            job.meta.get('status', {}).get(p),
                         ),
                     ) for p in plugins
                 ],
