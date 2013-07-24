@@ -5,6 +5,245 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import re
 
-def scan_address(address, plugins, **kwargs):
-    return "ziew"
+from django.conf import settings
+
+from ralph.discovery.models import DeviceType, MAC_PREFIX_BLACKLIST
+from ralph.discovery.snmp import snmp_command, snmp_macs
+from ralph.scan.errors import Error, NoMacError
+from ralph.scan.plugins import get_base_result_template
+
+
+SETTINGS = settings.SCAN_PLUGINS.get('ralph.scan.plugins.snmp_macs', {})
+
+
+def _snmp_f5(ip_address, snmp_community):
+    model = str(
+        snmp_command(
+            ip_address,
+            snmp_community,
+            [int(i) for i in '1.3.6.1.4.1.3375.2.1.3.5.2.0'.split('.')],
+            attempts=1,
+            timeout=0.5,
+        )[0][1],
+    )
+    sn = str(
+        snmp_command(
+            ip_address,
+            snmp_community,
+            [int(i) for i in '1.3.6.1.4.1.3375.2.1.3.3.3.0'.split('.')],
+            attempts=1,
+            timeout=0.5,
+        )[0][1],
+    )
+    return 'F5 %s' % model, sn
+
+
+def _snmp_vmware(ip_address, snmp_community):
+    oid = (1,3,6,1,4,1,6876,2,4,1,7)
+    snmp_version = 1
+    results = []
+    for mac in snmp_macs(ip_address, snmp_community, oid, attempts=2,
+                         timeout=3, snmp_version=snmp_version):
+        results.append({
+            'type': str(DeviceType.virtual_server),
+            'model_name': 'VMware ESX virtual server',
+            'mac_addresses': [mac],
+            'management_ip_addresses': [ip_address],
+        })
+    return results
+
+
+def _snmp_modular(ip_address, ip_address_is_management, snmp_community):
+    oid = (1, 3, 6, 1, 4, 1, 343, 2, 19, 1, 2, 10, 12, 0)  # Max blades
+    message = snmp_command(
+        ip_address, snmp_community, oid, attempts=1, timeout=0.5,
+    )
+    max_blades = int(message[0][1])
+    blades_macs = {}
+    for blade_no in range(1, max_blades + 1):
+        oid = (1, 3, 6, 1, 4, 1, 343, 2, 19, 1, 2, 10, 202, 3, 1, 1, blade_no)
+        blades_macs[blade_no] = set(
+            snmp_macs(
+                ip_address, snmp_community, oid, attempts=1, timeout=0.5,
+            ),
+        )
+    results = []
+    management_ip_addresses = []
+    if ip_address_is_management:
+        management_ip_addresses.append(ip_address)
+    for i, macs in blades_macs.iteritems():
+        unique_macs = macs
+        for j, other_macs in blades_macs.iteritems():
+            if i == j:
+                continue
+            unique_macs -= other_macs
+        if unique_macs:
+            results.append({
+                'type': str(DeviceType.blade_server),
+                'model_name': 'Intel Modular Blade',
+                'mac_addresses': unique_macs,
+                'management_ip_addresses': management_ip_addresses,
+                'chassis_position': i,
+            })
+    return results
+
+def _snmp_mac(address, snmp_name, snmp_community, snmp_version):
+    oid = (1, 3, 6, 1, 2, 1, 2, 2, 1, 6)
+    sn = None
+    is_management = False
+    if snmp_name.lower().startswith('sunos'):
+        model_name = 'SunOs'
+        model_type = str(DeviceType.unknown)
+    elif snmp_name.lower().startswith('hardware:') and 'Windows' in snmp_name:
+        model_name = 'Windows'
+        model_type = str(DeviceType.unknown)
+    elif snmp_name.lower().startswith('vmware esx'):
+        model_name = 'VMware ESX'
+        model_type = str(DeviceType.unknown)
+        oid = (1, 3, 6, 1, 2, 1, 2, 2, 1, 6)
+        snmp_version = 1
+    elif snmp_name.startswith('IronPort'):
+        parts = snmp_name.split(',')
+        model_name = parts[0].strip()
+        model_type = str(DeviceType.smtp_gateway)
+        is_management = True
+        pairs = dict(
+            (k.strip(), v.strip()) for (k, v) in (
+                part.split(':') for part in parts if ':' in part
+            )
+        )
+        sn = pairs.get('Serial #')
+    elif snmp_name.startswith('Intel Modular'):
+        model_name = 'Intel Modular Blade System'
+        model_type = str(DeviceType.blade_system)
+        is_management = True
+    elif snmp_name.startswith('IBM PowerPC CHRP Computer'):
+        model_name = 'IBM pSeries'
+        model_type = str(DeviceType.unknown)
+    elif 'Software:UCOS' in snmp_name:
+        model_name = 'Cisco UCOS'
+        model_type = str(DeviceType.appliance)
+        is_management = True
+    elif snmp_name.startswith('Codian'):
+        model_name = snmp_name
+        model_type = str(DeviceType.appliance)
+        is_management = True
+    elif snmp_name.startswith('APC'):
+        m = re.search(r'\sMN:\s*(\S+)', snmp_name)
+        model_name = m.group(1) if m else 'APC'
+        m = re.search(r'\sSN:\s*(\S+)', snmp_name)
+        sn = m.group(1) if m else None
+        is_management = True
+        model_type = str(DeviceType.power_distribution_unit)
+    elif ('fibre channel switch' in snmp_name.lower() or
+          'san switch module' in snmp_name.lower()):
+        model_name = snmp_name
+        model_type = str(DeviceType.fibre_channel_switch)
+        is_management = True
+    elif ('ethernet switch module' in snmp_name.lower() or
+          snmp_name.startswith('ProCurve')):
+        model_name = snmp_name
+        if ',' in model_name:
+            model_name, trash = model_name.split(',', 1)
+        model_type = str(DeviceType.switch)
+        is_management = True
+    elif '.f5app' in snmp_name:
+        model_name, sn = _snmp_f5(address, snmp_community)
+        model_type = str(DeviceType.load_balancer)
+    elif 'StorageWorks' in snmp_name:
+        model_name = snmp_name
+        model_type = str(DeviceType.storage)
+    elif 'linux' in snmp_name.lower():
+        model_name = 'Linux'
+        model_type = str(DeviceType.unknown)
+    else:
+        model_name = 'Unknown'
+        model_type = str(DeviceType.unknown)
+        raise Error('No match.')
+    mac_addresses = set()
+    for mac in snmp_macs(address, snmp_community, oid, attempts=2,
+                         timeout=3, snmp_version=snmp_version):
+        # Skip virtual devices
+        if mac[0:6] in MAC_PREFIX_BLACKLIST:
+            continue
+        if snmp_name.startswith('Brocade') and not mac.startswith('00051E'):
+            # Only use the first right mac of the Brocade switches,
+            # the rest is trash.
+            continue
+        if model_name == 'Windows' and mac.startswith('000C29'):
+            # Skip VMWare interfaces on Windows
+            continue
+        if mac.startswith('0001D7') and model_type != DeviceType.load_balancer:
+            # This is an F5
+            model_name, sn = _snmp_f5(address, snmp_community)
+            model_type = str(DeviceType.load_balancer)
+        mac_addresses.add(mac)
+    if model_type == DeviceType.load_balancer:
+        # For F5, macs that start with 02 are the maqueraded macs
+        mac_addresses = set([
+            mac for mac in mac_addresses if not mac.startswith('02')
+        ])
+    if not mac_addresses and not sn:
+        raise NoMacError('No MAC address.')
+    result = {
+        'type': model_type,
+        'model_name': model_name,
+        'mac_addresses': list(mac_addresses),
+    }
+    subdevices = []
+    if model_name == 'VMware ESX':
+        subdevices.extend(_snmp_vmware(address, snmp_community))
+    if model_name == 'Intel Modular Blade System':
+        subdevices.extend(
+            _snmp_modular(address, is_management, snmp_community),
+        )
+    if subdevices:
+        result.update({
+            'subdevices': subdevices,
+        })
+    if sn:
+        result.update({
+            'sn': sn,
+        })
+    if is_management:
+        result.update({
+            'management_ip_addresses': [address],
+        })
+    if model_name.lower() in ('linux', 'sunos'):
+        family = 'Linux' if model_name.lower() == 'linux' else 'Sun'
+        result.update({
+            'system': {
+                'family': family,
+            },
+        })
+    return result
+
+
+def scan_address(address, **kwargs):
+    snmp_name = kwargs.get('snmp_name', '')
+    snmp_version = kwargs.get('snmp_version', '2c')
+    if snmp_version == '3':
+        snmp_community = SETTINGS['snmp_v3_auth']
+    else:
+        snmp_community = str(kwargs.get(
+            'snmp_community', SETTINGS['snmp_v3_auth'],
+        ))
+    result = get_base_result_template('snmp_macs')
+    try:
+        device_info = _snmp_mac(
+            address, snmp_name, snmp_community, snmp_version,
+        )
+    except (NoMacError, Error) as e:
+        result.update({
+            'status': 'failed',
+            'messages': [str(e)],
+        })
+    else:
+        result.update({
+            'status': 'ok',
+            'devices': [device_info],
+        })
+    return result
+

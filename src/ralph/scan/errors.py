@@ -12,3 +12,8 @@ class Error(Exception):
 
 class NoQueueError(Error):
     """No discovery queue defined."""
+
+
+class NoMacError(Error):
+    """No MAC address."""
+
