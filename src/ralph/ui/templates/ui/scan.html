@@ -11,7 +11,7 @@
         <ul class="unstyled">
         {% for ip in device.ipaddress_set.all %}
             <li><a href="../{{ ip.address }}" class="btn btn-link">
-                {{ ip|address_icon }}&nbsp;{{ ip.address }}
+                {{ ip|address_icon }}&nbsp;{{ ip.hostname|default:'' }} ({{ ip.address }})
             </a></li>
         {% endfor %}
         </ul>
@@ -19,33 +19,18 @@
 {% else %}
 <div class="row-fluid"><div class="span6">
     <form method="post" class="form form-horizontal">
+        {% csrf_token %}
         <fieldset>
             <legend>Scanning {{ address }}</legend>
             <p>Select the plugins to run:</p>
+            {% for plugin_name, plugin_settings in plugins.iteritems %}
             <div class="control-group">
-                <label class="control-label">SNMP MACs</label>
+                <label class="control-label">{{ plugin_settings.name|default:plugin_name }}</label>
                 <div class="controls">
-                    <input type="checkbox" value="snmp_mac" name="plugins">
+                    <input type="checkbox" value="{{ plugin_name }}" name="plugins">
                 </div>
             </div>
-            <div class="control-group">
-                <label class="control-label">Proxmox</label>
-                <div class="controls">
-                    <input type="checkbox" value="proxmox" name="plugins">
-                </div>
-            </div>
-            <div class="control-group">
-                <label class="control-label">Dell IDRAC</label>
-                <div class="controls">
-                    <input type="checkbox" value="dell_idrac" name="plugins">
-                </div>
-            </div>
-            <div class="control-group">
-                <label class="control-label">IPMI</label>
-                <div class="controls">
-                    <input type="checkbox" value="ipmi" name="plugins">
-                </div>
-            </div>
+            {% endfor %}
         </fieldset>
         <div class="form-actions">
             <button type="submit" class="btn btn-primary" value="scan">
@@ -54,11 +39,10 @@
         </div>
     </form>
 </div><div class="span6">
-    {% if ipaddress %}
-        <table class="table table-bordered table-striped">
+    <table class="table table-bordered table-striped">
             <tr>
             <th width="20%">Address</th>
-            <td>{{ ipaddress|address_icon }}&nbsp;{{ ipaddress.hostname|default:'' }} ({{ ipaddress.address }})</td>
+            <td>{{ ipaddress|address_icon }}&nbsp;{{ ipaddress.hostname|default:'' }} ({{ ipaddress.address|default:address }})</td>
             </tr>
             <tr>
                 <th>Device</th>
@@ -90,8 +74,7 @@
             <th>Discovery queue</th>
             <td>{{ network.queue }}</td>
             </tr>
-        </table>
-    {% endif %}
+    </table>
 </div></div>
 {% endif %}
 {% endblock %}

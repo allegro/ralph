@@ -6,6 +6,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 
+import rq
 import django_rq
 from django.utils.importlib import import_module
 
@@ -14,6 +15,8 @@ from ralph.scan.errors import NoQueueError
 
 
 def scan_address(address, plugins):
+    """Queue manual discovery on the specified address."""
+
     try:
         network = Network.from_ip(address)
     except IndexError:
@@ -42,14 +45,36 @@ def scan_address(address, plugins):
             'snmp_name': ipaddress.snmp_name,
         },
         timeout=60,
-        result_ttl=60,
+        result_ttl=3600,
     )
     return job
 
+
 def _scan_address(address, plugins, **kwargs):
-    results = []
+    """The function that is actually running on the worker."""
+
+    job = rq.get_current_job()
+    results = {}
+    job.meta['messages'] = []
+    job.meta['finished'] = []
+    job.meta['status'] = {}
     for plugin_name in plugins:
-        module = import_module(plugin_name)
-        result = module.scan_address(address, **kwargs)
-        results.append(result)
+        message = "Running plugin %s." % plugin_name
+        job.meta['messages'].append((address, plugin_name, 'info', message))
+        job.save()
+        try:
+            module = import_module(plugin_name)
+        except ImportError as e:
+            message = 'Failed to import: %s.' % e
+            job.meta['messages'].append((address, plugin_name, 'error', message))
+            job.meta['status'][plugin_name] = 'error'
+        else:
+            result = module.scan_address(address, **kwargs)
+            results[plugin_name] = result
+            for message in result.get('messages', []):
+                job.meta['messages'].append((address, plugin_name, 'warning', message))
+            job.meta['status'][plugin_name] = result.get('status', 'success')
+        job.meta['finished'].append(plugin_name)
+        job.save()
     return results
+
