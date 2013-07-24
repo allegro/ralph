@@ -68,7 +68,7 @@ def _scan_address(address, plugins, **kwargs):
             job.meta['messages'].append((address, plugin_name, 'error', message))
             job.meta['status'][plugin_name] = 'error'
         else:
-            result = module.scan_address(address, plugins, **kwargs)
+            result = module.scan_address(address, **kwargs)
             results[plugin_name] = result
             for message in result.get('messages', []):
                 job.meta['messages'].append((address, plugin_name, 'warning', message))
