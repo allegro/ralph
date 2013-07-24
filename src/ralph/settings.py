@@ -388,10 +388,8 @@ for path in (MEDIA_ROOT, STATIC_ROOT, FILE_UPLOAD_TEMP_DIR):
         continue
 
 SCAN_PLUGINS = {
-    'ralph.scan.plugins.snmp_macs': {
-        'name': 'SNMP MACs',
-        'communities': SNMP_PLUGIN_COMMUNITIES,
-        'snmp_v3_auth': (SNMP_V3_USER, SNMP_V3_AUTH_KEY, SNMP_V3_PRIV_KEY),
+    'ralph.scan.plugins.test1': {
     },
-    'ralph.scan.plugins.snmp_mac': {},
+    'ralph.scan.plugins.test2': {
+    },
 }
