@@ -37,6 +37,7 @@ def scan_address(address, plugins):
         kwargs={
             'snmp_community': ipaddress.snmp_community,
 #            'snmp_version': ipaddress.snmp_version,
+            'snmp_version': '2c',
             'http_family': ipaddress.http_family,
             'snmp_name': ipaddress.snmp_name,
         },
@@ -49,6 +50,6 @@ def _scan_address(address, plugins, **kwargs):
     results = []
     for plugin_name in plugins:
         module = import_module(plugin_name)
-        result = module.scan_address(address, plugins, **kwargs)
+        result = module.scan_address(address, **kwargs)
         results.append(result)
     return results
