@@ -40,6 +40,7 @@ def scan_address(address, plugins):
         kwargs={
             'snmp_community': ipaddress.snmp_community,
 #            'snmp_version': ipaddress.snmp_version,
+            'snmp_version': '2c',
             'http_family': ipaddress.http_family,
             'snmp_name': ipaddress.snmp_name,
         },
@@ -76,3 +77,4 @@ def _scan_address(address, plugins, **kwargs):
         job.meta['finished'].append(plugin_name)
         job.save()
     return results
+
