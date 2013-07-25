@@ -60,6 +60,9 @@
     <div class="alert alert-success">
         <p>Scanning finished.</p>
     </div>
+    <pre>
+    {{ job.result|pprint }}
+    </pre>
     {% endif %}
     {% if job.is_failed %}
     <div class="alert alert-error">

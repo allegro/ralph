@@ -6,12 +6,21 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import time
+import datetime
 
 
 def scan_address(address, **kwargs):
     time.sleep(4)
+    messages = []
+    messages.append("Testing plugin number one.")
     return {
-        "messages": [
-            "Test plugin 1",
-        ],
+        'status': 'success',
+        'plugin': 'test1',
+        'date': datetime.date.today().strftime('%Y-%m-%d'),
+        'messages': messages,
+        'device': {
+            'serial_number': '123abc',
+            'mac_addresses': ['BEEFDEADCAFE'],
+            'management_ip_addresses': [address],
+        },
     }
