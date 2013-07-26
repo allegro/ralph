@@ -28,7 +28,7 @@ from bob.menu import MenuItem
 from powerdns.models import Record
 from ralph.discovery.models_device import DeprecationKind, MarginKind
 from ralph.scan.errors import Error as ScanError
-from ralph.scan.manual import scan_address
+from ralph.scan.manual import scan_address, merge_devices, find_devices
 from ralph.business.models import (
     RoleProperty,
     RolePropertyValue,
@@ -1409,4 +1409,17 @@ class ScanStatus(BaseMixin, TemplateView):
                 'task_size': 100 / len(plugins),
                 'job': job,
             })
+            if job.is_finished:
+                result = job.result
+                devices = find_devices(result)
+                results = {}
+                results["new"] = merge_devices(result)
+                for device in devices:
+                    results[device.name] = merge_devices(
+                        result,
+                        {
+                            'database': { 'device': device.get_data() },
+                        },
+                    )
+                ret['results'] = results
         return ret
