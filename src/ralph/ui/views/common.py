@@ -1411,13 +1411,19 @@ class ScanStatus(BaseMixin, TemplateView):
                 'task_size': 100 / len(plugins),
                 'job': job,
             })
+            device_names = {}
             if job.is_finished:
                 result = job.result
                 devices = find_devices(result)
                 results = {}
                 results["[new]"] = merge_devices(result)
+                results["[new]"].update({
+                    'asset': {},
+                })
                 for device in devices:
-                    results[device.name] = merge_devices(
+                    name = unicode(device)
+                    device_names[name] = device
+                    results[name] = merge_devices(
                         result,
                         {
                             'database': { 'device': device.get_data() },
@@ -1425,4 +1431,5 @@ class ScanStatus(BaseMixin, TemplateView):
                         only_multiple=True,
                     )
                 ret['results'] = results
+                ret['device_names'] = device_names
         return ret
