@@ -394,5 +394,6 @@ SCAN_PLUGINS = {
     },
     'ralph.scan.plugins.test1': {},
     'ralph.scan.plugins.test2': {},
+    'ralph.scan.plugins.dns_hostname': {},
 }
 
