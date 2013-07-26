@@ -601,10 +601,10 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
         }
         if self.name != 'unknown':
             data['hostname'] = self.name
-        if self.type != DeviceType.unknown:
-            data['type'] = self.type
         if self.model:
             data['model_name'] = self.model.name
+            if self.model.type != DeviceType.unknown:
+                data['type'] = self.model.type
         if self.sn:
             data['serial_number'] = self.sn
         if self.chassis_position:

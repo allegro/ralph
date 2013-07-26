@@ -2,6 +2,7 @@
 
 {% load url from future %}
 {% load icons %}
+{% load formats %}
 {% load bob %}
 
 {% block extra_headers %}
@@ -58,19 +59,51 @@
     </div>
     {% endfor %}
     </p>
-    {% if job.is_finished %}
-    <div class="alert alert-success">
-        <p>Scanning finished.</p>
-    </div>
-    <pre>
-    {{ job.result|pprint }}
-    </pre>
-    {% endif %}
     {% if job.is_failed %}
     <div class="alert alert-error">
         <p>Scanning failed.</p>
         <pre>{{ job.exc_info }}</pre>
     </div>
+    {% endif %}
+    {% if job.is_finished %}
+        <div class="alert alert-success">
+            <p>Scanning finished.</p>
+        </div>
+        <ul class="nav nav-tabs">
+            {%for device_name, result in results.iteritems %}
+            <li><a
+                href="#device-{{ device_name|slugify }}"
+                data-toggle="tab"
+            >{{ device_name }}</a></li>
+            {% endfor %}
+        </ul>
+        <div class="tab-content">
+        {%for device_name, result in results.iteritems %}
+        <form method="POST" id="device-{{ device_name|slugify }}" class="tab-pane">
+            {% csrf_token %}
+            {% for name, values in result.iteritems %}
+                <fieldset>
+                    <legend>{{ name|deslug|capfirst }}</legend>
+                    {% for plugin, value in values.iteritems %}
+                        <label class="radio">
+                            <input
+                                type="radio"
+                                name="{{ name }}"
+                                value="{{ plugin }}"
+                                {% if plugin == 'database' %}checked="on"{% endif %}
+                                > <b>{{ value }}</b> (from <i>{{ plugin }}</i>)
+                        </label>
+                    {% endfor %}
+                </fieldset>
+            {% endfor %}
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    Save {{ device_name }}
+                </button>
+            </div>
+        </form>
+        {% endfor %}
+        </div>
     {% endif %}
 {% endif %}
 {% endblock %}

@@ -9,8 +9,9 @@ from __future__ import unicode_literals
 import rq
 import django_rq
 from django.utils.importlib import import_module
+from django.db import models as db
 
-from ralph.discovery.models import IPAddress, Network
+from ralph.discovery.models import IPAddress, Network, Device
 from ralph.scan.errors import NoQueueError
 
 
@@ -78,3 +79,25 @@ def _scan_address(address, plugins, **kwargs):
         job.save()
     return results
 
+
+def merge_devices(*args):
+    merged = {}
+    for result in args:
+        for plugin_name, data in result.iteritems():
+            for key, value in data.get('device', {}).iteritems():
+                merged.setdefault(key, {})[plugin_name] = value
+    return merged
+
+
+def find_devices(result):
+    serials = set(
+        r['device']['serial_number']
+        for r in result.itervalues() if 'serial_number' in r.get('device', {})
+    )
+    macs = set()
+    for r in result.itervalues():
+        macs |= set(r.get('device', {}).get('mac_addresses', []))
+    return Device.objects.filter(
+        db.Q(sn__in=serials) |
+        db.Q(ethernet__mac__in=macs)
+    ).distinct()

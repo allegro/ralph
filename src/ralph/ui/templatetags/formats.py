@@ -38,3 +38,7 @@ def order_by(query, by):
 @register.filter
 def chassis_order(query):
     return query.order_by('model__type', 'chassis_position', 'position')
+
+@register.filter
+def deslug(s):
+    return s.replace('_', ' ').replace('-', ' ')

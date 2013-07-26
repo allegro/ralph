@@ -20,7 +20,7 @@ def scan_address(address, **kwargs):
         'messages': messages,
         'device': {
             'serial_number': '123abc',
-            'mac_addresses': ['BEEFDEADCAFE'],
+            'mac_addresses': ['00C0B7D28588'],
             'management_ip_addresses': [address],
         },
     }
