@@ -71,7 +71,8 @@
         </div>
         <ul class="nav nav-tabs">
             {%for device_name, result in results.iteritems %}
-            <li><a
+            <li {% if forloop.first %}class="active"{% endif %}
+            ><a
                 href="#device-{{ device_name|slugify }}"
                 data-toggle="tab"
             >{{ device_name }}</a></li>
@@ -79,19 +80,27 @@
         </ul>
         <div class="tab-content">
         {%for device_name, result in results.iteritems %}
-        <form method="POST" id="device-{{ device_name|slugify }}" class="tab-pane">
+        <form
+            method="POST"
+            id="device-{{ device_name|slugify }}"
+            class="tab-pane{%if forloop.first %} active{% endif %}"
+        >
             {% csrf_token %}
             {% for name, values in result.iteritems %}
                 <fieldset>
                     <legend>{{ name|deslug|capfirst }}</legend>
-                    {% for plugin, value in values.iteritems %}
+                    {% for sources, value in values.iteritems %}
                         <label class="radio">
                             <input
                                 type="radio"
                                 name="{{ name }}"
-                                value="{{ plugin }}"
-                                {% if plugin == 'database' %}checked="on"{% endif %}
-                                > <b>{{ value }}</b> (from <i>{{ plugin }}</i>)
+                                value="{{ sources|first }}"
+                                {% if 'database' in sources %}
+                                    checked="on"
+                                {% endif %}
+                            >
+                            <b>{{ value }}</b>
+                            (from <i>{{ sources|join:', ' }}</i>)
                         </label>
                     {% endfor %}
                 </fieldset>

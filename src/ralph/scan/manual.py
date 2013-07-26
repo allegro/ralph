@@ -80,13 +80,27 @@ def _scan_address(address, plugins, **kwargs):
     return results
 
 
-def merge_devices(*args):
+def merge_devices(*args, **kwargs):
+    only_multiple = kwargs.get('only_multiple', False)
     merged = {}
     for result in args:
         for plugin_name, data in result.iteritems():
             for key, value in data.get('device', {}).iteritems():
                 merged.setdefault(key, {})[plugin_name] = value
-    return merged
+    # Now, make the values unique.
+    unique = {}
+    for key, values in merged.iteritems():
+        repeated = {}
+        for source, value in values.iteritems():
+            repeated.setdefault(unicode(value), []).append(source)
+        if only_multiple and len(repeated) <= 1:
+            continue
+        for value_str, sources in repeated.iteritems():
+            unique.setdefault(
+                key,
+                {},
+            )[tuple(sources)] = merged[key][sources[0]]
+    return unique
 
 
 def find_devices(result):
