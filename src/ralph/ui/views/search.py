@@ -65,6 +65,8 @@ def _search_fields_and(fields, values):
 
 
 class SidebarSearch(object):
+    section = 'search'
+
     def __init__(self, *args, **kwargs):
         super(SidebarSearch, self).__init__(*args, **kwargs)
         self.searchform = None
@@ -80,7 +82,6 @@ class SidebarSearch(object):
         ret = super(SidebarSearch, self).get_context_data(**kwargs)
         self.set_searchform()
         ret.update({
-            'section': 'home',
             'subsection': 'search',
             'searchform': self.searchform,
         })
