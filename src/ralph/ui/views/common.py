@@ -1415,13 +1415,14 @@ class ScanStatus(BaseMixin, TemplateView):
                 result = job.result
                 devices = find_devices(result)
                 results = {}
-                results["new"] = merge_devices(result)
+                results["[new]"] = merge_devices(result)
                 for device in devices:
                     results[device.name] = merge_devices(
                         result,
                         {
                             'database': { 'device': device.get_data() },
                         },
+                        only_multiple=True,
                     )
                 ret['results'] = results
         return ret
