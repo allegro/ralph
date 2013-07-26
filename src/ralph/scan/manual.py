@@ -111,7 +111,7 @@ def find_devices(result):
     macs = set()
     for r in result.itervalues():
         macs |= set(r.get('device', {}).get('mac_addresses', []))
-    return Device.objects.filter(
+    return Device.admin_objects.filter(
         db.Q(sn__in=serials) |
         db.Q(ethernet__mac__in=macs)
     ).distinct()

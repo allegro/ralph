@@ -75,7 +75,7 @@
             ><a
                 href="#device-{{ device_name|slugify }}"
                 data-toggle="tab"
-            >{{ device_name }}</a></li>
+            >{{ device_names|key:device_name|device_icon }}&nbsp;{{ device_name }}</a></li>
             {% endfor %}
         </ul>
         <div class="tab-content">
@@ -103,6 +103,14 @@
                             (from <i>{{ sources|join:', ' }}</i>)
                         </label>
                     {% endfor %}
+                        <label class="radio">
+                            <input
+                                type="radio"
+                                name="{{ name }}"
+                                value="custom"
+                            >
+                            <input type="text" name="{{ name }}-custom">
+                        </label>
                 </fieldset>
             {% endfor %}
             <div class="form-actions">
