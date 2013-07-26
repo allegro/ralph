@@ -51,11 +51,13 @@
             {% endif %}
         </div>
     </div>
+    <p>
     {% for addr, name, kind,  message in job.meta.messages %}
-    <div class="alert alert-{{ kind }}">
-        <p><strong>{{ name }}</strong>: {{ message }}</p>
+    <div class="text-{{ kind }}">
+        <strong>{{ name }}</strong>: {{ message }}
     </div>
     {% endfor %}
+    </p>
     {% if job.is_finished %}
     <div class="alert alert-success">
         <p>Scanning finished.</p>

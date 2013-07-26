@@ -584,6 +584,57 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
             self.saving_plugin = name
         return super(Device, self).save(*args, **kwargs)
 
+    def get_data(self):
+        data = {
+            'id': self.id,
+            'system_ip_addresses': [
+                ip.address for ip in
+                self.ipaddress_set.filter(is_management=False)
+            ],
+            'management_ip_addresses': [
+                ip.address for ip in
+                self.ipaddress_set.filter(is_management=True)
+            ],
+            'mac_addresses': [
+                eth.mac for eth in self.ethernet_set.all()
+            ],
+        }
+        if self.name != 'unknown':
+            data['hostname'] = self.name
+        if self.type != DeviceType.unknown:
+            data['type'] = self.type
+        if self.model:
+            data['model_name'] = self.model.name
+        if self.sn:
+            data['serial_number'] = self.sn
+        if self.chassis_position:
+            data['chassis_position'] = self.chassis_position
+        if self.dc:
+            data['data_center'] = self.dc
+        if self.rack:
+            data['rack'] = self.rack
+        if self.memory_set.exists():
+            data['memory'] = {
+                'total_size': sum(m.get_size() for m in self.memory_set.all()),
+                'count': self.memory_set.count(),
+            }
+        if self.processor_set.exists():
+            data['processors'] = {
+                'count': self.processor_set.count(),
+                'cores': sum(p.get_cores() for p in self.processor_set.all()),
+            }
+            processor = self.processor_set.all()[0]
+            if processor.model:
+                data['processors']['model'] = processor.model.name
+            if processor.speed:
+                data['processors']['speed'] = processor.speed
+        # XXX do parts
+        # XXX do disks
+        # XXX do disk shares and exports
+        # XXX do installed_software
+        # XXX do subdevices
+        return data
+
 
 class ReadOnlyDevice(Device):
     class Meta:
