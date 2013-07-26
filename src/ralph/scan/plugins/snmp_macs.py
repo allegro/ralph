@@ -129,11 +129,14 @@ def _snmp_mac(ip_address, snmp_name, snmp_community, snmp_version,
     if sn:
         result.update(sn=sn)
     if is_management:
-        result.update(management_ip_addresses=[ip_address])
+        result['management_ip_addresses'] = [ip_address]
         if model_name.lower() == 'linux':
-            result.get('system', {}).update(family="Linux")
+            result['system_family'] = "Linux"
         elif model_name.lower() == 'sunos':
-            result.get('system', {}).update(family="Sun")
+            result['system_family'] = "Sun"
+    else:
+        result['system_ip_addresses'] = [ip_address]
+
     return result
 
 
