@@ -184,6 +184,8 @@ class BaseMixin(object):
             args = [self.kwargs.get('network'), name, obj]
         elif self.section == 'ventures':
             args = [self.kwargs.get('venture'), name, obj]
+        elif self.section == 'search':
+            args = [name, obj]
         else:
             args = []
         return '%s?%s' % (

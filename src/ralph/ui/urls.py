@@ -134,6 +134,8 @@ urlpatterns = patterns('',
             login_required(SearchDeviceList.as_view()), {}, 'search'),
     url(r'^search/(?P<details>cmdb)/(?P<device>\d+)$',
         login_required(SearchCmdb.as_view()), {}, 'search'),
+    url(r'^search/(?P<details>scan)/(?P<address>[\d.]*)/$',
+        login_required(SearchScan.as_view()), {}, 'search'),
 
     url(r'^ventures/$',
         login_required(VenturesDeviceList.as_view()), {}, 'ventures'),
