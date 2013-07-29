@@ -27,6 +27,7 @@ from ralph.ui.views.common import (
     BaseMixin,
     Base,
     Software,
+    Scan,
     TEMPLATE_MENU_ITEMS,
 )
 from ralph.ui.views.devices import BaseDeviceList
@@ -182,6 +183,10 @@ class RacksPurchase(Racks, Purchase):
 
 
 class RacksReports(Racks, Reports):
+    pass
+
+
+class RacksScan(Racks, Scan):
     pass
 
 
