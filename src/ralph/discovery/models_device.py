@@ -585,6 +585,11 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
         return super(Device, self).save(*args, **kwargs)
 
     def get_data(self):
+        """
+        Return a dict describing this device in the same format, as the
+        scanning plugins return.
+        """
+
         data = {
             'id': self.id,
             'system_ip_addresses': [
@@ -628,11 +633,12 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
                 data['processors']['model'] = processor.model.name
             if processor.speed:
                 data['processors']['speed'] = processor.speed
-        # XXX do parts
-        # XXX do disks
-        # XXX do disk shares and exports
-        # XXX do installed_software
-        # XXX do subdevices
+        # Some details of the device are still not returned:
+        # TODO do parts
+        # TODO do disks
+        # TODO do disk shares and exports
+        # TODO do installed_software
+        # TODO do subdevices
         return data
 
 

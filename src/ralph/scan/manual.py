@@ -80,7 +80,9 @@ def _scan_address(address, plugins, **kwargs):
     return results
 
 
-def merge_devices(*args, **kwargs):
+def merge_data(*args, **kwargs):
+    """Merge several dicts with data from a scan into a single dict."""
+
     only_multiple = kwargs.get('only_multiple', False)
     merged = {}
     for result in args:
@@ -104,6 +106,8 @@ def merge_devices(*args, **kwargs):
 
 
 def find_devices(result):
+    """Find all devices that can be possibly matched to this scan data."""
+
     serials = set(
         r['device']['serial_number']
         for r in result.itervalues() if 'serial_number' in r.get('device', {})

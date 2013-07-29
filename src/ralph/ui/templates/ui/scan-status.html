@@ -55,7 +55,7 @@
     <p>
     {% for addr, name, kind,  message in job.meta.messages %}
     <div class="text-{{ kind }}">
-        <strong>{{ name }}</strong>: {{ message }}
+        <strong>{{ name|lastdot }}</strong>: {{ message }}
     </div>
     {% endfor %}
     </p>
@@ -70,25 +70,32 @@
             <p>Scanning finished.</p>
         </div>
         <ul class="nav nav-tabs">
-            {%for device_name, result in results.iteritems %}
-            <li {% if forloop.first %}class="active"{% endif %}
-            ><a
-                href="#device-{{ device_name|slugify }}"
-                data-toggle="tab"
-            >{{ device_names|key:device_name|device_icon }}&nbsp;{{ device_name }}</a></li>
+            {%for device, result in results %}
+                <li {% if forloop.first %}class="active"{% endif %}
+                ><a
+                    href="#device-{{ device.id|default:'new' }}"
+                    data-toggle="tab"
+                >
+                {% if device == None %}
+                    {% icon 'fugue-wand-hat' %}&nbsp;Create new
+                {% else %}
+                    {{ device|device_icon }}&nbsp;{{ device }}
+                {% endif %}
+                </a></li>
             {% endfor %}
         </ul>
         <div class="tab-content">
-        {%for device_name, result in results.iteritems %}
-        <form
-            method="POST"
-            id="device-{{ device_name|slugify }}"
+        {%for device, result in results %}
+        <div
             class="tab-pane{%if forloop.first %} active{% endif %}"
+            id="device-{{ device.id|default:'new' }}"
         >
+            <form method="POST" class="form form-horizontal">
             {% csrf_token %}
-            {% for name, values in result.iteritems %}
-                <fieldset>
-                    <legend>{{ name|deslug|capfirst }}</legend>
+            {% for name, values in result %}
+            <div class="control-group">
+                <label class="control-label">{{ name|deslug|capfirst }}</label>
+                <div class="controls">
                     {% for sources, value in values.iteritems %}
                         <label class="radio">
                             <input
@@ -99,26 +106,28 @@
                                     checked="on"
                                 {% endif %}
                             >
-                            <b>{{ value }}</b>
-                            (from <i>{{ sources|join:', ' }}</i>)
+                            <b>{{ value|nice }}</b>
+                            (from <i>{{ sources|lastdot|join:', ' }}</i>)
                         </label>
                     {% endfor %}
-                        <label class="radio">
-                            <input
-                                type="radio"
-                                name="{{ name }}"
-                                value="custom"
-                            >
-                            <input type="text" name="{{ name }}-custom">
-                        </label>
-                </fieldset>
+                    <label class="radio">
+                        <input
+                            type="radio"
+                            name="{{ name }}"
+                            value="custom"
+                        >
+                        <input type="text" name="{{ name }}-custom">
+                    </label>
+                </div>
+            </div>
             {% endfor %}
             <div class="form-actions">
-                <button type="submit" class="btn btn-primary">
-                    Save {{ device_name }}
+                <button type="submit" class="btn btn-primary" name="save" value="{{ device.id|default:'new' }}">
+                    Save {{ device|default:'' }}
                 </button>
             </div>
-        </form>
+            </form>
+        </div>
         {% endfor %}
         </div>
     {% endif %}
