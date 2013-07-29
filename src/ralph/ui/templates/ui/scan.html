@@ -1,0 +1,80 @@
+{% extends "ui/base-devices.html" %}
+
+{% load url from future %}
+{% load icons %}
+{% load bob %}
+
+{% block contentarea %}
+{% if device %}
+    <div class="alert alert-info">
+        <p>Device {{ device.name }} has following addresses:</p>
+        <ul class="unstyled">
+        {% for ip in device.ipaddress_set.all %}
+            <li><a href="../{{ ip.address }}" class="btn btn-link">
+                {{ ip|address_icon }}&nbsp;{{ ip.hostname|default:'' }} ({{ ip.address }})
+            </a></li>
+        {% endfor %}
+        </ul>
+    </div>
+{% else %}
+<div class="row-fluid"><div class="span6">
+    <form method="post" class="form form-horizontal">
+        {% csrf_token %}
+        <fieldset>
+            <legend>Scanning {{ address }}</legend>
+            <p>Select the plugins to run:</p>
+            {% for plugin_name, plugin_settings in plugins.iteritems %}
+            <div class="control-group">
+                <label class="control-label">{{ plugin_settings.name|default:plugin_name }}</label>
+                <div class="controls">
+                    <input type="checkbox" value="{{ plugin_name }}" name="plugins">
+                </div>
+            </div>
+            {% endfor %}
+        </fieldset>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary" value="scan">
+                {% icon 'fugue-flashlight' %}&nbsp;Scan
+            </button>
+        </div>
+    </form>
+</div><div class="span6">
+    <table class="table table-bordered table-striped">
+            <tr>
+            <th width="20%">Address</th>
+            <td>{{ ipaddress|address_icon }}&nbsp;{{ ipaddress.hostname|default:'' }} ({{ ipaddress.address|default:address }})</td>
+            </tr>
+            <tr>
+                <th>Device</th>
+                <td>
+                    {% if ipaddress.device %}
+                    <a href="../../info/{{ ipaddress.device.id }}">
+                        {{ ipaddress.device|device_icon }}&nbsp;{{ ipaddress.device.model.name|default:'' }}
+                    </a>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <th>Last seen</th>
+                <td>{{ ipaddress.last_seen|date:"Y-m-d H:i" }}</td>
+            </tr>
+            <tr>
+            <th>SNMP Name</th>
+            <td>{{ ipaddress.snmp_name|default:'' }}</td>
+            </tr>
+            <tr>
+            <th>HTTP Family</th>
+            <td>{{ ipaddress.http_family|default:'' }}</td>
+            </tr>
+            <tr>
+            <th>Network</th>
+            <td>{{ network|network_icon }}&nbsp;{{ network.name }} ({{ network.address }})</td>
+            </tr>
+            <tr>
+            <th>Discovery queue</th>
+            <td>{{ network.queue }}</td>
+            </tr>
+    </table>
+</div></div>
+{% endif %}
+{% endblock %}
