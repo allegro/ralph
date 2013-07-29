@@ -28,7 +28,7 @@ from bob.menu import MenuItem
 from powerdns.models import Record
 from ralph.discovery.models_device import DeprecationKind, MarginKind
 from ralph.scan.errors import Error as ScanError
-from ralph.scan.manual import scan_address, merge_devices, find_devices
+from ralph.scan.manual import scan_address, merge_data, find_devices
 from ralph.business.models import (
     RoleProperty,
     RolePropertyValue,
@@ -1411,25 +1411,25 @@ class ScanStatus(BaseMixin, TemplateView):
                 'task_size': 100 / len(plugins),
                 'job': job,
             })
-            device_names = {}
+            results = []
             if job.is_finished:
                 result = job.result
                 devices = find_devices(result)
-                results = {}
-                results["[new]"] = merge_devices(result)
-                results["[new]"].update({
+                for device in devices:
+                    results.append((
+                        device,
+                        sorted(merge_data(
+                            result,
+                            {
+                                'database': { 'device': device.get_data() },
+                            },
+                            only_multiple=True,
+                        ).iteritems()),
+                    ))
+                new = merge_data(result)
+                new.update({
                     'asset': {},
                 })
-                for device in devices:
-                    name = unicode(device)
-                    device_names[name] = device
-                    results[name] = merge_devices(
-                        result,
-                        {
-                            'database': { 'device': device.get_data() },
-                        },
-                        only_multiple=True,
-                    )
+                results.append((None, sorted(new.iteritems())))
                 ret['results'] = results
-                ret['device_names'] = device_names
         return ret
