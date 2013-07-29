@@ -14,17 +14,10 @@ from ralph.util.network import ping
 from ralph.discovery.http import get_http_family
 from ralph.discovery.models import IPAddress, Network
 from ralph.scan.snmp import get_snmp
+from ralph.scan.errors import NoQueueError
 
 
 ADDRESS_GROUP_SIZE = 32
-
-
-class Error(Exception):
-    """Errors during the scan."""
-
-
-class NoQueueError(Error):
-    """No discovery queue defined."""
 
 
 def _split_into_groups(iterable, group_size):
@@ -63,7 +56,7 @@ def autoscan_network(network):
         ):
         queue.enqueue_call(
             func=_autoscan_group,
-            args=[group],
+            args=(group,),
             timeout=60,
             result_ttl=0,
         )
@@ -89,7 +82,7 @@ def autoscan_address(address):
     queue = django_rq.get_queue(queue_name)
     queue.enqueue_call(
         func=_autoscan_group,
-        args=[[address]],
+        args=([address],),
         timeout=60,
         result_ttl=0,
     )
