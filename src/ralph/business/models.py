@@ -548,7 +548,7 @@ def cost_post_save(sender, instance, raw, using, **kwargs):
             # Ignore changes due to rounding errors
             changed = True
     if changed:
-        HistoryCost.start_span(extra=instance, end=instance.expire)
+        HistoryCost.start_span(extra=instance, start=instance.created, end=instance.expire)
 
 
 @receiver(
