@@ -633,9 +633,19 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
                 data['processors']['model'] = processor.model.name
             if processor.speed:
                 data['processors']['speed'] = processor.speed
+        data['disks'] = sorted(
+            ({
+                'serial_number': disk.sn,
+                'label': disk.label,
+                'mount_point': disk.mount_point,
+                'size': disk.size,
+                'model_name': disk.model.name if disk.model else "",
+            } for disk in self.storage_set.all()),
+            key=lambda d: (d['serial_number'], d['mount_point']),
+        )
+
         # Some details of the device are still not returned:
         # TODO do parts
-        # TODO do disks
         # TODO do disk shares and exports
         # TODO do installed_software
         # TODO do subdevices
