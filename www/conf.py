@@ -209,6 +209,13 @@ latex_documents = [
 # If false, no module index is generated.
 # latex_use_modindex = True
 all_releases = [
+    dict(version='1.2.5',
+        release_date='July 17, 2013',
+        description_lines=[
+            'This is a minor bugfix release.',
+            'Bugfixes in the discovery module and documentation enhancements.',
+        ],
+    ),
     dict(version='1.2.4',
         release_date='June 18, 2013',
         description_lines=[

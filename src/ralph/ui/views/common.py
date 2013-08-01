@@ -6,6 +6,8 @@ from __future__ import unicode_literals
 
 import datetime
 
+import django_rq
+import rq
 from django.conf import settings
 from django.contrib import messages
 from django.core.urlresolvers import reverse
@@ -25,7 +27,8 @@ from lck.django.tags.models import Language, TagStem
 from bob.menu import MenuItem
 from powerdns.models import Record
 from ralph.discovery.models_device import DeprecationKind, MarginKind
-
+from ralph.scan.errors import Error as ScanError
+from ralph.scan.manual import scan_address, merge_data, find_devices
 from ralph.business.models import (
     RoleProperty,
     RolePropertyValue,
@@ -170,6 +173,25 @@ class BaseMixin(object):
         super(BaseMixin, self).__init__(*args, **kwargs)
         self.venture = None
         self.object = None
+        self.status = ''
+
+    def tab_href(self, name, obj=''):
+        if not obj and self.object:
+            obj = self.object.id
+        if self.section == 'racks':
+            args = [self.kwargs.get('rack'), name, obj]
+        elif self.section == 'networks':
+            args = [self.kwargs.get('network'), name, obj]
+        elif self.section == 'ventures':
+            args = [self.kwargs.get('venture'), name, obj]
+        elif self.section == 'search':
+            args = [name, obj]
+        else:
+            args = []
+        return '%s?%s' % (
+            reverse(self.section, args=args),
+            self.request.GET.urlencode(),
+        )
 
     def get_context_data(self, **kwargs):
         ret = super(BaseMixin, self).get_context_data(**kwargs)
@@ -267,42 +289,41 @@ class BaseMixin(object):
                 self.object.venture if self.object else None
             )
 
-        def tab_href(name):
-            return '../%s/%s?%s' % (
-                    name,
-                    self.object.id if self.object else '',
-                    self.request.GET.urlencode()
-                )
         if has_perm(Perm.read_device_info_generic, venture):
             tab_items.extend([
                 MenuItem('Info', fugue_icon='fugue-wooden-box',
-                         href=tab_href('info')),
+                         href=self.tab_href('info')),
                 MenuItem('Components', fugue_icon='fugue-box',
-                        href=tab_href('components')),
+                        href=self.tab_href('components')),
                 MenuItem('Software', fugue_icon='fugue-disc',
-                         href=tab_href('software')),
+                         href=self.tab_href('software')),
                 MenuItem('Addresses', fugue_icon='fugue-network-ip',
-                        href=tab_href('addresses')),
+                        href=self.tab_href('addresses')),
             ])
         if has_perm(Perm.edit_device_info_financial, venture):
             tab_items.extend([
                 MenuItem('Prices', fugue_icon='fugue-money-coin',
-                        href=tab_href('prices')),
+                        href=self.tab_href('prices')),
             ])
         if has_perm(Perm.read_device_info_financial, venture):
             tab_items.extend([
                 MenuItem('Costs', fugue_icon='fugue-wallet',
-                        href=tab_href('costs')),
+                        href=self.tab_href('costs')),
             ])
         if has_perm(Perm.read_device_info_history, venture):
             tab_items.extend([
                 MenuItem('History', fugue_icon='fugue-hourglass',
-                         href=tab_href('history')),
+                         href=self.tab_href('history')),
             ])
         if has_perm(Perm.read_device_info_support, venture):
             tab_items.extend([
                 MenuItem('Purchase', fugue_icon='fugue-baggage-cart-box',
-                         href=tab_href('purchase')),
+                         href=self.tab_href('purchase')),
+            ])
+        if has_perm(Perm.edit_device_info_generic):
+            tab_items.extend([
+                MenuItem('Scan', name='scan', fugue_icon='fugue-flashlight',
+                         href=self.tab_href('scan')),
             ])
         if ('ralph.cmdb' in settings.INSTALLED_APPS and
             has_perm(Perm.read_configuration_item_info_generic)):
@@ -328,7 +349,7 @@ class BaseMixin(object):
         if has_perm(Perm.read_device_info_reports, venture):
             tab_items.extend([
                 MenuItem('Reports', fugue_icon='fugue-reports-stack',
-                         href=tab_href('reports')),
+                         href=self.tab_href('reports')),
             ])
         if details == 'bulkedit':
             tab_items.extend([
@@ -1294,3 +1315,121 @@ class VhostRedirectView(RedirectView):
         else:
             self.url = user_url
         return super(VhostRedirectView, self).get_redirect_url(**kwargs)
+
+
+class Scan(BaseMixin, TemplateView):
+    template_name = 'ui/scan.html'
+
+    def get(self, *args, **kwargs):
+        try:
+            device_id = int(self.kwargs.get('address'))
+        except ValueError:
+            self.object = None
+        else:
+            self.object = Device.objects.get(id=device_id)
+        return super(Scan, self).get(*args, **kwargs)
+
+    def post(self, *args, **kwargs):
+        plugins = self.request.POST.getlist('plugins')
+        if not plugins:
+            messages.error(self.request, "You have to select some plugins.")
+            return self.get(*args, **kwargs)
+        address = self.kwargs.get('address')
+        try:
+            job = scan_address(address, plugins)
+        except ScanError as e:
+            messages.error(self.request, unicode(e))
+            return self.get(*args, **kwargs)
+        return HttpResponseRedirect(reverse('scan', args=(job.id,)))
+
+
+    def get_context_data(self, **kwargs):
+        ret = super(Scan, self).get_context_data(**kwargs)
+        address = self.kwargs.get('address')
+        if address and not self.object:
+            try:
+                ipaddress = IPAddress.objects.get(address=address)
+            except IPAddress.DoesNotExist:
+                ipaddress = None
+            try:
+                network = Network.from_ip(address)
+            except (Network.DoesNotExist, IndexError):
+                network = None
+        else:
+            ipaddress = None
+            network = None
+        ret.update({
+            'details': 'scan',
+            'device': self.object,
+            'address': address,
+            'ipaddress': ipaddress,
+            'network': network,
+            'plugins': getattr(settings, 'SCAN_PLUGINS', {}),
+        })
+        return ret
+
+class ScanStatus(BaseMixin, TemplateView):
+    template_name = 'ui/scan-status.html'
+
+    def get_context_data(self, **kwargs):
+        ret = super(ScanStatus, self).get_context_data(**kwargs)
+        job_id = self.kwargs.get('job_id')
+        try:
+            job = rq.job.Job.fetch(job_id, django_rq.get_connection())
+        except rq.exceptions.NoSuchJobError:
+            messages.error(
+                self.request,
+                "This scan has timed out. Please run it again.",
+            )
+        else:
+            address, plugins = job.args
+            icons = {
+                'success': 'fugue-puzzle',
+                'error': 'fugue-cross-button',
+                'warning': 'fugue-puzzle--exclamation',
+                None: 'fugue-clock',
+            }
+            bar_styles = {
+                'success': 'success',
+                'error': 'danger',
+                'warning': 'warning',
+            }
+            ret.update({
+                'address': address,
+                'plugins': plugins,
+                'status': [
+                    (
+                        p.split('.')[-1],
+                        bar_styles.get(
+                            job.meta.get('status', {}).get(p),
+                        ),
+                        icons.get(
+                            job.meta.get('status', {}).get(p),
+                        ),
+                    ) for p in plugins
+                ],
+                'task_size': 100 / len(plugins),
+                'job': job,
+            })
+            results = []
+            if job.is_finished:
+                result = job.result
+                devices = find_devices(result)
+                for device in devices:
+                    results.append((
+                        device,
+                        sorted(merge_data(
+                            result,
+                            {
+                                'database': { 'device': device.get_data() },
+                            },
+                            only_multiple=True,
+                        ).iteritems()),
+                    ))
+                new = merge_data(result)
+                new.update({
+                    'asset': {},
+                })
+                results.append((None, sorted(new.iteritems())))
+                ret['results'] = results
+        return ret

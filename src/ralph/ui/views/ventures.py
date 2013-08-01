@@ -44,6 +44,7 @@ from ralph.ui.views.common import (
     Prices,
     Purchase,
     Software,
+    Scan,
 )
 from ralph.ui.views.devices import BaseDeviceList
 from ralph.ui.views.reports import Reports, ReportDeviceList
@@ -104,6 +105,8 @@ def venture_tree_menu(ventures, details, show_all=False):
 
 
 class SidebarVentures(object):
+    section = 'ventures'
+
     def __init__(self, *args, **kwargs):
         super(SidebarVentures, self).__init__(*args, **kwargs)
         self.venture = None
@@ -215,6 +218,10 @@ class VenturesPurchase(Ventures, Purchase):
 
 
 class VenturesReports(Ventures, Reports):
+    pass
+
+
+class VenturesScan(Ventures, Scan):
     pass
 
 
@@ -593,7 +600,6 @@ class VenturesVenture(SidebarVentures, Base):
 
 
 class VenturesDeviceList(SidebarVentures, BaseMixin, BaseDeviceList):
-    section = 'ventures'
 
     def user_allowed(self):
         self.set_venture()

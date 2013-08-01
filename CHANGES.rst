@@ -1,6 +1,32 @@
 Change Log
 ----------
 
+
+1.2.5
+~~~~~
+Released on July 17, 2013
+
+* Added documentation for the discovery subsystem.
+
+* Added new Xeon processors support.
+
+* Added data_center and rack to the puppet classifier output.
+
+* Fixed DonPedro 'ipaddress' KeyError.
+
+* Disabled reboot plugin for the deployment.
+
+* Fixed XEN disk discovery.
+
+* Added property_types to the puppet classifier response.
+
+* Ralph search results are now unique.
+
+* Fixed border-case for lshw discovery when response tag is none.
+
+* Fixed OpenStack plugin - assigning costs to the wrong device
+
+
 1.2.4
 ~~~~~
 Released on June 18, 2013

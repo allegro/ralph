@@ -17,8 +17,18 @@ from powerdns.models import Record
 from ralph.account.models import Perm
 from ralph.discovery.models import ReadOnlyDevice, Device, ComponentModel
 from ralph.ui.forms.search import SearchForm
-from ralph.ui.views.common import (BaseMixin, Info, Prices, Addresses, Costs,
-                                   Purchase, Components, History, Software)
+from ralph.ui.views.common import (
+    Addresses,
+    BaseMixin,
+    Components,
+    Costs,
+    History,
+    Info,
+    Prices,
+    Purchase,
+    Software,
+    Scan,
+)
 from ralph.ui.views.devices import BaseDeviceList
 from ralph.ui.views.reports import Reports, ReportDeviceList
 
@@ -55,6 +65,8 @@ def _search_fields_and(fields, values):
 
 
 class SidebarSearch(object):
+    section = 'search'
+
     def __init__(self, *args, **kwargs):
         super(SidebarSearch, self).__init__(*args, **kwargs)
         self.searchform = None
@@ -70,7 +82,6 @@ class SidebarSearch(object):
         ret = super(SidebarSearch, self).get_context_data(**kwargs)
         self.set_searchform()
         ret.update({
-            'section': 'home',
             'subsection': 'search',
             'searchform': self.searchform,
         })
@@ -465,7 +476,12 @@ class SearchPurchase(Search, Purchase):
 class SearchReports(Search, Reports):
     pass
 
+
 class SearchSoftware(Search, Software):
+    pass
+
+
+class SearchScan(Search, Scan):
     pass
 
 
