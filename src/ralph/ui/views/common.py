@@ -29,6 +29,7 @@ from powerdns.models import Record
 from ralph.discovery.models_device import DeprecationKind, MarginKind
 from ralph.scan.errors import Error as ScanError
 from ralph.scan.manual import scan_address, merge_data, find_devices
+from ralph.scan.forms import DiffForm
 from ralph.business.models import (
     RoleProperty,
     RolePropertyValue,
@@ -1411,25 +1412,24 @@ class ScanStatus(BaseMixin, TemplateView):
                 'task_size': 100 / len(plugins),
                 'job': job,
             })
-            results = []
+            forms = []
             if job.is_finished:
                 result = job.result
                 devices = find_devices(result)
                 for device in devices:
-                    results.append((
-                        device,
-                        sorted(merge_data(
-                            result,
-                            {
-                                'database': { 'device': device.get_data() },
-                            },
-                            only_multiple=True,
-                        ).iteritems()),
-                    ))
+                    data = merge_data(
+                        result,
+                        {
+                            'database': { 'device': device.get_data() },
+                        },
+                        only_multiple=True,
+                    )
+                    forms.append((device, DiffForm(data)))
                 new = merge_data(result)
-                new.update({
-                    'asset': {},
-                })
-                results.append((None, sorted(new.iteritems())))
-                ret['results'] = results
+                if 'ralph_assets' in settings.INSTALLED_APPS:
+                    new.update({
+                        'asset': {},
+                    })
+                forms.append((None, DiffForm(new)))
+                ret['forms'] = forms
         return ret
