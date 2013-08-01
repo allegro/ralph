@@ -68,7 +68,9 @@ def _get_model_info(snmp_name):
         model_type = DeviceType.unknown
     else:
         raise Error(
-            "The SNMP name %r doesn't match any supported device."
+            "The SNMP name `%s` doesn't match any supported device." % (
+                snmp_name,
+            ),
         )
     return model_name, model_type, is_management
 
@@ -82,7 +84,6 @@ def _snmp_mac(ip_address, snmp_name, snmp_community, snmp_version,
             "Empty SNMP name or community. "
             "Please perform an autoscan of this address first."
         )
-        return
     model_name, model_type, is_management = _get_model_info(snmp_name)
     if snmp_name.startswith('IronPort'):
         parts = snmp_name.split(',')
@@ -166,3 +167,4 @@ def scan_address(ip_address, **kwargs):
             'device': device_info,
         })
     return result
+
