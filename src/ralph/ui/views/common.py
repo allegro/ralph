@@ -1372,18 +1372,58 @@ class Scan(BaseMixin, TemplateView):
 class ScanStatus(BaseMixin, TemplateView):
     template_name = 'ui/scan-status.html'
 
-    def get_context_data(self, **kwargs):
-        ret = super(ScanStatus, self).get_context_data(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(ScanStatus, self).__init__(*args, **kwargs)
+        self.forms = []
+        self.job = None
+        self.device_id = None
+
+    def get_job(self):
         job_id = self.kwargs.get('job_id')
         try:
-            job = rq.job.Job.fetch(job_id, django_rq.get_connection())
+            return rq.job.Job.fetch(job_id, django_rq.get_connection())
         except rq.exceptions.NoSuchJobError:
+            return None
+
+    def get_forms(self, result, device_id=None, post=None):
+        forms = []
+        devices = find_devices(result)
+        for device in devices:
+            data = merge_data(
+                result,
+                {
+                    'database': { 'device': device.get_data() },
+                },
+                only_multiple=True,
+            )
+            if post and device.id == device_id:
+                form = DiffForm(data, post)
+            else:
+                form = DiffForm(data)
+            forms.append((device, form))
+        data = merge_data(result)
+        if 'ralph_assets' in settings.INSTALLED_APPS:
+            data.update({
+                'asset': {},
+            })
+        if post and device_id=='new':
+            form = DiffForm(data, post)
+        else:
+            form = DiffForm(data)
+        forms.append((None, form))
+        return forms
+
+    def get_context_data(self, **kwargs):
+        ret = super(ScanStatus, self).get_context_data(**kwargs)
+        if not self.job:
+            self.job = self.get_job()
+        if not self.job:
             messages.error(
                 self.request,
                 "This scan has timed out. Please run it again.",
             )
         else:
-            address, plugins = job.args
+            address, plugins = self.job.args
             icons = {
                 'success': 'fugue-puzzle',
                 'error': 'fugue-cross-button',
@@ -1402,34 +1442,58 @@ class ScanStatus(BaseMixin, TemplateView):
                     (
                         p.split('.')[-1],
                         bar_styles.get(
-                            job.meta.get('status', {}).get(p),
+                            self.job.meta.get('status', {}).get(p),
                         ),
                         icons.get(
-                            job.meta.get('status', {}).get(p),
+                            self.job.meta.get('status', {}).get(p),
                         ),
                     ) for p in plugins
                 ],
                 'task_size': 100 / len(plugins),
-                'job': job,
+                'job': self.job,
             })
-            forms = []
-            if job.is_finished:
-                result = job.result
-                devices = find_devices(result)
-                for device in devices:
-                    data = merge_data(
-                        result,
-                        {
-                            'database': { 'device': device.get_data() },
-                        },
-                        only_multiple=True,
-                    )
-                    forms.append((device, DiffForm(data)))
-                new = merge_data(result)
-                if 'ralph_assets' in settings.INSTALLED_APPS:
-                    new.update({
-                        'asset': {},
-                    })
-                forms.append((None, DiffForm(new)))
-                ret['forms'] = forms
+            if self.job.is_finished:
+                if not self.forms:
+                    self.forms = self.get_forms(self.job.result)
+                ret['forms'] = self.forms
+                if self.device_id is None:
+                    device = self.forms[0][0]
+                    self.device_id = device.id if device else 'new'
+                ret['device_id'] = self.device_id
         return ret
+
+    def post(self, *args, **kwargs):
+        self.device_id = self.request.POST.get('save')
+        try:
+            self.device_id = int(self.device_id)
+        except ValueError:
+            pass
+        if not self.job:
+            self.job = self.get_job()
+        if self.job:
+            self.forms = self.get_forms(
+                self.job.result,
+                self.device_id,
+                self.request.POST,
+            )
+            for device, form in self.forms:
+                if form.is_bound:
+                    break
+            else:
+                form = None
+            if form and form.is_valid():
+                data = {
+                    field_name: form.get_value(field_name)
+                    for field_name in form.result
+                }
+                if device is None:
+                    device = Device.from_data(data)
+                else:
+                    device.save_data(data)
+                messages.success(self.request, "Device %s saved." % device)
+                return HttpResponseRedirect(self.request.path)
+            else:
+                messages.error(self.request, "Errors in the form.")
+                for error in form.non_field_errors():
+                    messages.error(self.request, error)
+        return self.get(*args, **kwargs)

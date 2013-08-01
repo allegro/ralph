@@ -42,3 +42,7 @@ def chassis_order(query):
 @register.filter
 def getfield(d, key_name):
     return d[key_name]
+
+@register.filter
+def getfielderrors(d, key_name):
+    return d[key_name].errors
