@@ -7,6 +7,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import re
+import datetime
 
 from django.conf import settings
 from django.db import models as db
@@ -548,7 +549,8 @@ def cost_post_save(sender, instance, raw, using, **kwargs):
             # Ignore changes due to rounding errors
             changed = True
     if changed:
-        HistoryCost.start_span(extra=instance, end=instance.expire)
+        start = min(datetime.datetime.now(), instance.expire)
+        HistoryCost.start_span(extra=instance, start=start, end=instance.expire)
 
 
 @receiver(
