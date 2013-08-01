@@ -560,12 +560,12 @@ class IPAddressResource(MResource):
     device = fields.ForeignKey(
         'ralph.discovery.api.DevResource',
         'device',
-        null=True
+        null=True,
     )
     network = fields.ForeignKey(
         'ralph.discovery.api.NetworksResource',
         'network',
-        null=True
+        null=True,
     )
 
     class Meta:
