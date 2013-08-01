@@ -31,7 +31,11 @@ def owner_icon(owner):
 
 @register.filter
 def address_icon(ip):
-    if ip.is_management:
+    if not ip:
+        return ''
+    if ip.is_buried:
+        icon_name = 'fugue-headstone'
+    elif ip.is_management:
         icon_name = 'fugue-system-monitor-network'
     else:
         icon_name = 'fugue-network-ip'
@@ -62,7 +66,9 @@ def component_model_type_icon(model_type_id):
     icon_name = presentation.COMPONENT_ICONS.get(model_type_id, 'fugue-box')
     return icon_filter(icon_name)
 
-
+@register.filter
+def network_icon(network):
+    return icon_filter(presentation.get_network_icon(network))
 
 @register.simple_tag
 def icon(icon_name):
