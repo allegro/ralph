@@ -32,6 +32,8 @@ from ralph.discovery.models import (
     DeviceModelGroup,
     DeviceType,
     IPAddress,
+    Network,
+    NetworkKind,
 )
 from ralph.ui.views.common import _get_details
 
@@ -508,9 +510,63 @@ class DeviceWithPricingResource(DeviceResource):
         return splunk_cost
 
 
+class NetworkKindsResource(MResource):
+    class Meta:
+        queryset = NetworkKind.objects.all()
+        authentication = ApiKeyAuthentication()
+        authorization = RalphAuthorization(
+            required_perms=[
+                Perm.read_network_structure,
+            ]
+        )
+        filtering = {'name'}
+        excludes = ('icon')
+        cache = SimpleCache()
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
+
+
+class NetworksResource(MResource):
+    network_kind = fields.ForeignKey(
+        'ralph.discovery.api.NetworkKindsResource',
+        'kind',
+        null=True,
+    )
+
+    class Meta:
+        queryset = Network.objects.all()
+        authentication = ApiKeyAuthentication()
+        authorization = RalphAuthorization(
+            required_perms=[
+                Perm.read_network_structure,
+            ]
+        )
+        filtering = {
+        }
+        excludes = (
+        )
+        cache = SimpleCache()
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
+
+
 class IPAddressResource(MResource):
-    device = fields.ForeignKey('ralph.discovery.api.DevResource', 'device',
-        null=True)
+    device = fields.ForeignKey(
+        'ralph.discovery.api.DevResource',
+        'device',
+        null=True,
+    )
+    network = fields.ForeignKey(
+        'ralph.discovery.api.NetworksResource',
+        'network',
+        null=True,
+    )
 
     class Meta:
         queryset = IPAddress.objects.all()
@@ -532,6 +588,7 @@ class IPAddressResource(MResource):
             'max_save_priority',
             'save_priorities',
             'snmp_name',
+            'cache_version',
         )
         cache = SimpleCache()
         throttle = CacheThrottle(
@@ -539,3 +596,14 @@ class IPAddressResource(MResource):
             timeframe=TIMEFRAME,
             expiration=EXPIRATION,
         )
+
+    def dehydrate(self, bundle):
+        ipaddress = IPAddress.objects.get(id=bundle.data.get('id'))
+        bundle.data['network_details'] = {
+            'name': ipaddress.network.name if ipaddress.network else '',
+            'address': ipaddress.network.address if ipaddress.network else '',
+            'network_kind': (
+                ipaddress.network.kind.name if ipaddress.network.kind else ''
+            ),
+        }
+        return bundle

@@ -23,6 +23,8 @@ from ralph.discovery.api import (
     IPAddressResource,
     ModelGroupResource,
     ModelResource,
+    NetworkKindsResource,
+    NetworksResource,
     PhysicalServerResource,
     RackServerResource,
     VirtualServerResource,
@@ -61,10 +63,11 @@ for r in (VentureResource, VentureLightResource, RoleResource,
     v09_api.register(r())
 
 # discovery API
-for r in (IPAddressResource, ModelGroupResource, ModelResource,
-          PhysicalServerResource, RackServerResource, BladeServerResource,
-          VirtualServerResource, DevResource, WindowsDeviceResource,
-          DeviceWithPricingResource):
+for r in (IPAddressResource, NetworksResource, ModelGroupResource,
+          ModelResource, PhysicalServerResource, RackServerResource,
+          BladeServerResource, VirtualServerResource, DevResource,
+          WindowsDeviceResource, DeviceWithPricingResource,
+          NetworkKindsResource):
     v09_api.register(r())
 
 # CMDB API
