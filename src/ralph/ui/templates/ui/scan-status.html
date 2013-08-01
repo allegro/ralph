@@ -71,7 +71,7 @@
         </div>
         <ul class="nav nav-tabs">
             {%for device, form in forms %}
-            <li {% if forloop.first %}class="active"{% endif %}>
+            <li {% if device_id == device.id|default:'new' %}class="active"{% endif %}>
                 <a
                     href="#device-{{ device.id|default:'new' }}"
                     data-toggle="tab"
@@ -88,24 +88,42 @@
         <div class="tab-content">
             {%for device, form in forms %}
             <div
-                class="tab-pane{%if forloop.first %} active{% endif %}"
+                class="tab-pane{%if device_id == device.id|default:'new' %} active{% endif %}"
                 id="device-{{ device.id|default:'new' }}"
             >
                 <form method="POST" class="form form-horizontal">
                 {% csrf_token %}
                 {% for f in form %}
-                {% if not '-custom' in f.name %}
-                <div class="control-group {% if f.errors %}error{% endif %}">
-                    <label class="control-label">{{ f.label }}</label>
-                    <div class="controls">
-                        {{ f }}
-                        <label class="radio">
-                            <input type="radio" name="{{ f.name }}" value="custom">
-                            {{ form|getfield:f.field.subfield_name }}
-                        </label>
+                    {% if not '-custom' in f.name %}
+                    <div
+                        class="
+                            control-group 
+                        {% if f.errors or form|getfielderrors:f.field.subfield_name %}
+                            error
+                        {% endif %}
+                        "
+                    >
+                        <label class="control-label">{{ f.label }}</label>
+                        <div class="controls">
+                            {{ f }}
+                            <label class="radio">
+                                <input
+                                    type="radio"
+                                    name="{{ f.name }}"
+                                    value="custom"
+                                    {% if f.value == 'custom' %}checked="on"{% endif %}
+                                >
+                                {{ form|getfield:f.field.subfield_name }}
+                                {% for error in form|getfielderrors:f.field.subfield_name %}
+                                <div class="help-block">{{ error }}</div>
+                                {% endfor %}
+                            </label>
+                            {% for error in f.errors %}
+                            <div class="help-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
                     </div>
-                </div>
-                {% endif %}
+                    {% endif %}
                 {% endfor %}
                 <div class="form-actions">
                     <button
@@ -115,9 +133,9 @@
                         value="{{ device.id|default:'new' }}"
                     >
                         {% if device %}
-                        {% icon 'fugue-quill' %}&nbsp;Update&nbsp;{{ device }}
+                            {% icon 'fugue-quill' %}&nbsp;Update&nbsp;{{ device }}
                         {% else %}
-                        {% icon 'fugue-wand-hat' %}&nbsp;Create
+                            {% icon 'fugue-wand-hat' %}&nbsp;Create
                         {% endif %}
                     </button>
                 </div>
