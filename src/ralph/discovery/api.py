@@ -599,11 +599,12 @@ class IPAddressResource(MResource):
 
     def dehydrate(self, bundle):
         ipaddress = IPAddress.objects.get(id=bundle.data.get('id'))
+        network = ipaddress.network
         bundle.data['network_details'] = {
-            'name': ipaddress.network.name if ipaddress.network else '',
-            'address': ipaddress.network.address if ipaddress.network else '',
+            'name': network.name if network else '',
+            'address': network.address if network else '',
             'network_kind': (
-                ipaddress.network.kind.name if ipaddress.network.kind else ''
+                network.kind.name if (network and network.kind) else ''
             ),
         }
         return bundle
