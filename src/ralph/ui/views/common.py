@@ -1397,19 +1397,24 @@ class ScanStatus(BaseMixin, TemplateView):
                 only_multiple=True,
             )
             if post and device.id == device_id:
-                form = DiffForm(data, post)
+                form = DiffForm(data, post, default='database')
             else:
-                form = DiffForm(data)
+                form = DiffForm(data, default='database')
             forms.append((device, form))
         data = merge_data(result)
+        # Add required fields.
         if 'ralph_assets' in settings.INSTALLED_APPS:
             data.update({
                 'asset': {},
             })
+        data['model_name'] = data.get('model_name', {})
+        data['type'] = data.get('type', {})
+        data['mac_addresses'] = data.get('mac_addresses', {})
+        data['serial_number'] = data.get('serial_number', {})
         if post and device_id=='new':
-            form = DiffForm(data, post)
+            form = DiffForm(data, post, default='custom')
         else:
-            form = DiffForm(data)
+            form = DiffForm(data, default='custom')
         forms.append((None, form))
         return forms
 
