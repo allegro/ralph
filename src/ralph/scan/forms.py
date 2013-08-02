@@ -9,10 +9,59 @@ import operator
 
 from django import forms
 from django.utils.safestring import mark_safe
-from django.utils.html import escape
+from django.utils.html import escape, conditional_escape
 from ajax_select.fields import AutoCompleteSelectField
 
 from ralph.discovery.models import DeviceType
+
+
+class WidgetTable(forms.MultiWidget):
+    def __init__(self, headers, rows, attrs=None):
+        self.rows = rows
+        self.headers = headers
+        widgets = []
+        for i in xrange(self.rows):
+            for h in self.headers:
+                widgets.append(forms.TextInput(attrs=attrs))
+        super(WidgetTable, self).__init__(widgets, attrs)
+
+    def decompress(self, value):
+        values = []
+        for row in value or []:
+            for h in self.headers:
+                values.append(row.get(h, ''))
+        values.extend([''] * (self.rows - len(value or [])) * len(self.headers))
+        return values
+
+    def format_output(self, rendered_widgets):
+        widgets = iter(rendered_widgets)
+        output = [
+            '<table class="table table-condensed table-bordered" style="width:auto; display:inline-block;vertical-align: top;">',
+            '<tr>',
+        ]
+        for h in self.headers:
+            output.append('<th>%s</th>' % escape(h.replace('_', ' ').title()))
+        output.append('</tr>')
+        for i in xrange(self.rows):
+            output.append('<tr>')
+            for h in self.headers:
+                output.append('<td>%s</td>' % widgets.next())
+            output.append('</tr>')
+        output.append('</table>')
+        return '\n'.join(output)
+
+    def value_from_datadict(self, data, files, name):
+        values = iter(
+            widget.value_from_datadict(data, files, name + '_%s' % i)
+            for i, widget in enumerate(self.widgets)
+        )
+        value = []
+        for i in xrange(self.rows):
+            line = {}
+            for h in self.headers:
+                line[h] = values.next()
+            value.append(line)
+        return value
 
 
 class DiffSelect(forms.Select):
@@ -30,10 +79,10 @@ class DiffSelect(forms.Select):
             else:
                 html_input = '<input type="radio" name="%s" value="%s">'
             output.append(html_input % (escape(name), escape(option)))
-            output.append('<b>%s</b>' % escape(label))
+            output.append(conditional_escape(label))
             output.append(' (from <i>%s</i>)' % escape(option))
             output.append('</label>')
-        return mark_safe(u'\n'.join(output))
+        return mark_safe('\n'.join(output))
 
 
 class DefaultInfo(object):
@@ -50,6 +99,43 @@ class ListInfo(DefaultInfo):
     @staticmethod
     def clean(value):
         return value.replace(',', ' ').split()
+
+class DictListInfo(ListInfo):
+    headers = []
+
+    @classmethod
+    def display(cls, value):
+        if not cls.headers:
+            keyset = set()
+            for d in value:
+                keyset |= set(d)
+            cls.headers = sorted(keyset)
+        output = [
+                '<table class="table table-condensed table-bordered" style="width:auto; display:inline-block;vertical-align: top;">',
+            '<tr>',
+            '<th>#</th>',
+            ''.join(
+                '<th>%s</th>' % escape(h.replace('_', ' ').title())
+                for h in cls.headers
+            ),
+            '</tr>',
+        ]
+        line = []
+        for i, d in enumerate(value):
+            line.append('<tr>')
+            line.append('<td>%d</td>' % (i + 1))
+            for h in cls.headers:
+                line.append('<td>%s</td>' % d.get(h, ''))
+            line.append('</tr>')
+            output.append(''.join(line))
+        output.append('</table>')
+        return mark_safe('\n'.join(output))
+
+
+
+class DiskInfo(DictListInfo):
+    headers = ['model', 'serial_number', 'size']
+    Widget = WidgetTable(headers, 4)
 
 
 class AssetInfo(DefaultInfo):
@@ -98,6 +184,7 @@ class DiffForm(forms.Form):
         'asset': AssetInfo,
         'type': TypeInfo,
         'model_name': RequiredInfo,
+        'disks': DiskInfo,
     }
 
 
