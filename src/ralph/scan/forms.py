@@ -12,6 +12,8 @@ from django.utils.safestring import mark_safe
 from django.utils.html import escape
 from ajax_select.fields import AutoCompleteSelectField
 
+from ralph.discovery.models import DeviceType
+
 
 class DiffSelect(forms.Select):
     """A widget for selecting one of the values of a diff."""
@@ -37,7 +39,7 @@ class DiffSelect(forms.Select):
 class DefaultInfo(object):
     display = unicode
     Field = forms.CharField
-    Widget = forms.TextInput
+    Widget = None
     clean = unicode
 
 
@@ -60,9 +62,30 @@ class AssetInfo(DefaultInfo):
 
     @classmethod
     def Field(cls, *args, **kwargs):
-        kwargs.update(help_text = "Enter barcode or serial number.")
+        kwargs.update(help_text="Enter barcode or serial number.")
         lookup = ('ralph_assets.models', 'AssetLookup')
         return AutoCompleteSelectField(lookup, *args, **kwargs)
+
+
+class TypeInfo(DefaultInfo):
+    @classmethod
+    def Field(cls, *args, **kwargs):
+        choices = [
+            (t.raw, t.raw.title())
+            for t in DeviceType(item=lambda t: t)
+        ]
+        # Make "Unknown" the first choice
+        choices.insert(0, choices.pop())
+        kwargs['choices'] = choices
+        return forms.ChoiceField(*args, **kwargs)
+
+
+class RequiredInfo(DefaultInfo):
+    @staticmethod
+    def clean(value):
+        if not value:
+            raise ValueError('This field is required.')
+        return value
 
 
 class DiffForm(forms.Form):
@@ -73,10 +96,16 @@ class DiffForm(forms.Form):
         'management_ip_addresses': ListInfo,
         'system_ip_addresses': ListInfo,
         'asset': AssetInfo,
+        'type': TypeInfo,
+        'model_name': RequiredInfo,
     }
 
 
     def __init__(self, data, *args, **kwargs):
+        try:
+            default = kwargs.pop('default')
+        except KeyError:
+            default = 'custom'
         super(DiffForm, self).__init__(*args, **kwargs)
         self.result = data
         for field_name, values in sorted(data.iteritems()):
@@ -91,7 +120,7 @@ class DiffForm(forms.Form):
                 choices=choices,
                 widget=DiffSelect,
             )
-            field.initial = 'database'
+            field.initial = default
             self.fields[field_name] = field
             subfield = info.Field(widget=info.Widget, required=False)
             field.subfield_name = '%s-custom' % field_name
