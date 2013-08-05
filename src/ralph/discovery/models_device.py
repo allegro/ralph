@@ -448,7 +448,8 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
     def save_data(self, data):
         """Update a device based on a dict of data from the scan."""
 
-        # TODO do the thing
+        # TODO Go through the submitted data, and update the Device object
+        # in accordance with the meaning of the particular fields.
 
 
     def get_margin(self):
