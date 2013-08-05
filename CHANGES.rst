@@ -9,6 +9,8 @@ Released on ...
 
 * Added `network_details` to Ipaddress API resource
 
+* Extra costs that don't appear in the given time range are not displayed in the venture summery view.
+
 
 1.2.5
 ~~~~~
