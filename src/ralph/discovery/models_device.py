@@ -13,6 +13,7 @@ import datetime
 import re
 import sys
 import os
+import itertools
 
 from django.db import models as db
 from django.db import IntegrityError, transaction
@@ -25,7 +26,13 @@ from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Taggable
 from django.utils.html import escape
 
-from ralph.discovery.models_component import is_mac_valid, Ethernet
+from ralph.discovery.models_component import (
+    is_mac_valid,
+    Ethernet,
+    Storage,
+    ComponentModel,
+    ComponentType,
+)
 from ralph.discovery.models_util import LastSeen, SavingUser
 from ralph.util import Eth
 
@@ -445,13 +452,6 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
         device.save_data(data)
         return device
 
-    def save_data(self, data):
-        """Update a device based on a dict of data from the scan."""
-
-        # TODO Go through the submitted data, and update the Device object
-        # in accordance with the meaning of the particular fields.
-
-
     def get_margin(self):
         if self.margin_kind:
             return self.margin_kind.margin
@@ -677,6 +677,109 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
         # TODO do installed_software
         # TODO do subdevices
         return data
+
+    def save_data(self, data):
+        """Update a device based on a dict of data from the scan."""
+
+        # TODO Go through the submitted data, and update the Device object
+        # in accordance with the meaning of the particular fields.
+        fields = {
+            'serial_number': 'sn',
+            'hostname': 'name',
+            'data_center': 'dc',
+            'rack': 'rack',
+            'barcode': 'barcode',
+        }
+        for key_name, field_name in fields.iteritems():
+            if key_name in data:
+                setattr(self, field_name, data[key_name])
+        if 'disks' in data:
+            # Update the disks
+            add_by_serial = {
+                disk['serial_number']: disk
+                for disk in data['disks'] if 'serial_number' in disk
+            }
+            add_by_mount = {
+                disk['mount_point']: disk
+                for disk in data['disks'] if 'mount_point' in disk
+            }
+            to_delete = []
+            for storage in self.storage_set.all():
+                disk = add_by_serial.get(storage.sn)
+                if disk is None:
+                    disk = add_by_mount.pop(storage.mount_point)
+                if disk is None:
+                    # Disk no longer detected, schedule for delete.
+                    to_delete.append(storage)
+                else:
+                    try:
+                        del add_by_serial[storage.sn]
+                    except KeyError:
+                        pass
+                    try:
+                        del add_by_mount[storage.mount_point]
+                    except KeyError:
+                        pass
+                    # Update the existing disk.
+                    for key_name, field_name in [
+                        ('serial_number', 'sn'),
+                        ('label', 'label'),
+                        ('mount_point', 'mount_point'),
+                        ('size', 'size'),
+                        ('speed', 'speed'),
+                    ]:
+                        if key_name in disk:
+                            setattr(storage, field_name, disk[key_name])
+                    storage.save()
+            for storage in to_delete:
+                # Delete scheduled disks.
+                storage.delete()
+            added = []
+            for disk in itertools.chain(
+                add_by_serial.itervalues(),
+                add_by_mount.itervalues(),
+            ):
+                # Add the missing disks.
+                if disk in added:
+                    continue
+                added.append(disk)
+                model, created = ComponentModel.create(
+                    type=ComponentType.disk,
+                    family=disk.get('model_name'),
+                    speed=disk.get('speed'),
+                    size=disk.get('size'),
+                    priotity=0,
+                )
+                storage = None
+                if disk.get('serial_number'):
+                    try:
+                        # This disk is already in some other device?
+                        storage = Storage.objects.exclude(
+                            device=self,
+                        ).get(
+                            sn=disk['serial_number'],
+                        )
+                    except Storage.DoesNotExist:
+                        pass
+                    else:
+                        storage.mount_point = disk.get('mount_point'),
+                        storage.label = disk.get('label'),
+                        storage.size = disk.get('size'),
+                        storage.speed = disk.get('speed'),
+                        storage.device = self,
+                        storage.model = model,
+                if storage is None:
+                    storage = Storage(
+                        sn=disk.get('serial_number'),
+                        mount_point=disk.get('mount_point'),
+                        label=disk.get('label'),
+                        size=disk.get('size'),
+                        speed=disk.get('speed'),
+                        device=self,
+                        model=model,
+                    )
+                storage.save()
+
 
 
 class ReadOnlyDevice(Device):
