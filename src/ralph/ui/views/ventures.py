@@ -473,13 +473,14 @@ def _get_summaries(query, start, end, overlap=True, venture=None):
         q = query.filter(extra=extra)
         cost = get_total_cost(q, start, end)
         count, count_now, devices = get_total_count(q, start, end)
-        yield {
-            'name': extra.name + ' (from %s)' % extra.venture.name,
-            'count': 'expires %s' % extra.expire.strftime(
-                '%Y-%m-%d') if extra.expire else '',
-            'cost': cost,
-            'count_now': count_now,
-        }
+        if count:
+            yield {
+                'name': extra.name + ' (from %s)' % extra.venture.name,
+                'count': 'expires %s' % extra.expire.strftime(
+                    '%Y-%m-%d') if extra.expire else '',
+                'cost': cost,
+                'count_now': count_now,
+            }
     if overlap:
         yield _total_dict(
             'Total',
