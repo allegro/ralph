@@ -9,6 +9,10 @@ Released on ...
 
 * Added `network_details` to Ipaddress API resource
 
+* 'Numeric position' field no longer required
+
+* 'Barcode' field (in admin) can be set to None for more than one devices
+
 
 1.2.5
 ~~~~~
