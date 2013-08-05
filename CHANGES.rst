@@ -1,6 +1,14 @@
 Change Log
 ----------
 
+1.2.6
+~~~~~
+Released on ...
+
+* Added new resources to API: Network, NetworkKind
+
+* Added `network_details` to Ipaddress API resource
+
 
 1.2.5
 ~~~~~
