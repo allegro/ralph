@@ -98,6 +98,7 @@ def merge_data(*args, **kwargs):
         if only_multiple and len(repeated) <= 1:
             continue
         for value_str, sources in repeated.iteritems():
+            sources.sort()
             unique.setdefault(
                 key,
                 {},
