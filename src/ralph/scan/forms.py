@@ -38,12 +38,14 @@ class WidgetTable(forms.MultiWidget):
         output = [
             '<table class="table table-condensed table-bordered" style="width:auto; display:inline-block;vertical-align: top;">',
             '<tr>',
+            '<th>#</th>',
         ]
         for h in self.headers:
             output.append('<th>%s</th>' % escape(h.replace('_', ' ').title()))
         output.append('</tr>')
         for i in xrange(self.rows):
             output.append('<tr>')
+            output.append('<td>%d</td>' % (i + 1))
             for h in self.headers:
                 output.append('<td>%s</td>' % widgets.next())
             output.append('</tr>')
@@ -91,71 +93,65 @@ class DefaultInfo(object):
     Widget = None
     clean = unicode
 
-
 class ListInfo(DefaultInfo):
     display = ', '.join
     Widget = forms.Textarea
 
-    @staticmethod
-    def clean(value):
+    def clean(self, value):
         return value.replace(',', ' ').split()
 
 class DictListInfo(ListInfo):
-    headers = []
+    def __init__(self, headers, rows):
+        self.headers = headers
+        self.rows = rows
 
-    @classmethod
-    def display(cls, value):
-        if not cls.headers:
+    def display(self, value):
+        if not self.headers:
             keyset = set()
             for d in value:
                 keyset |= set(d)
-            cls.headers = sorted(keyset)
+            self.headers = sorted(keyset)
         output = [
                 '<table class="table table-condensed table-bordered" style="width:auto; display:inline-block;vertical-align: top;">',
             '<tr>',
             '<th>#</th>',
             ''.join(
                 '<th>%s</th>' % escape(h.replace('_', ' ').title())
-                for h in cls.headers
+                for h in self.headers
             ),
             '</tr>',
         ]
-        line = []
         for i, d in enumerate(value):
+            line = []
             line.append('<tr>')
             line.append('<td>%d</td>' % (i + 1))
-            for h in cls.headers:
+            for h in self.headers:
                 line.append('<td>%s</td>' % d.get(h, ''))
             line.append('</tr>')
             output.append(''.join(line))
         output.append('</table>')
         return mark_safe('\n'.join(output))
 
-
-
-class DiskInfo(DictListInfo):
-    headers = ['model', 'serial_number', 'size']
-    Widget = WidgetTable(headers, 4)
+    @property
+    def Widget(self):
+        return WidgetTable(self.headers, self.rows)
 
 
 class AssetInfo(DefaultInfo):
     display = operator.attrgetter('name')
     Widget = None
 
-    @staticmethod
-    def clean(value):
+    def clean(self, value):
         return value
 
-    @classmethod
-    def Field(cls, *args, **kwargs):
+    def Field(self, *args, **kwargs):
         kwargs.update(help_text="Enter barcode or serial number.")
         lookup = ('ralph_assets.models', 'AssetLookup')
         return AutoCompleteSelectField(lookup, *args, **kwargs)
 
 
 class TypeInfo(DefaultInfo):
-    @classmethod
-    def Field(cls, *args, **kwargs):
+    def Field(self, *args, **kwargs):
         choices = [
             (t.raw, t.raw.title())
             for t in DeviceType(item=lambda t: t)
@@ -167,8 +163,7 @@ class TypeInfo(DefaultInfo):
 
 
 class RequiredInfo(DefaultInfo):
-    @staticmethod
-    def clean(value):
+    def clean(self, value):
         if not value:
             raise ValueError('This field is required.')
         return value
@@ -178,13 +173,13 @@ class DiffForm(forms.Form):
     """Form for selecting the results of a scan."""
 
     field_info = {
-        'mac_addresses': ListInfo,
-        'management_ip_addresses': ListInfo,
-        'system_ip_addresses': ListInfo,
-        'asset': AssetInfo,
-        'type': TypeInfo,
-        'model_name': RequiredInfo,
-        'disks': DiskInfo,
+        'mac_addresses': ListInfo(),
+        'management_ip_addresses': ListInfo(),
+        'system_ip_addresses': ListInfo(),
+        'asset': AssetInfo(),
+        'type': TypeInfo(),
+        'model_name': RequiredInfo(),
+        'disks': DictListInfo(['model', 'serial_number', 'size'], 4),
     }
 
 
@@ -196,7 +191,7 @@ class DiffForm(forms.Form):
         super(DiffForm, self).__init__(*args, **kwargs)
         self.result = data
         for field_name, values in sorted(data.iteritems()):
-            info = self.field_info.get(field_name, DefaultInfo)
+            info = self.field_info.get(field_name, DefaultInfo())
             choices = [
                 (', '.join(sorted(sources)), info.display(value))
                 for (sources, value) in values.iteritems()
@@ -218,7 +213,7 @@ class DiffForm(forms.Form):
             if name.endswith('-custom'):
                 continue
             if value == 'custom':
-                info = self.field_info.get(name, DefaultInfo)
+                info = self.field_info.get(name, DefaultInfo())
                 try:
                     value = info.clean(self.cleaned_data[name + '-custom'])
                 except (TypeError, ValueError, forms.ValidationError) as e:
@@ -228,7 +223,7 @@ class DiffForm(forms.Form):
     def get_value(self, name):
         value = self.cleaned_data[name]
         if value == 'custom':
-            info = self.field_info.get(name, DefaultInfo)
+            info = self.field_info.get(name, DefaultInfo())
             return info.clean(self.cleaned_data[name + '-custom'])
         key = tuple(value.split(', '))
         return self.result[name][key]
