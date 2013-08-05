@@ -321,11 +321,12 @@ class BaseMixin(object):
                 MenuItem('Purchase', fugue_icon='fugue-baggage-cart-box',
                          href=self.tab_href('purchase')),
             ])
-        if has_perm(Perm.edit_device_info_generic):
-            tab_items.extend([
-                MenuItem('Scan', name='scan', fugue_icon='fugue-flashlight',
-                         href=self.tab_href('scan')),
-            ])
+# TODO Don't show the Scan tab until it is ready.
+#        if has_perm(Perm.edit_device_info_generic):
+#            tab_items.extend([
+#                MenuItem('Scan', name='scan', fugue_icon='fugue-flashlight',
+#                         href=self.tab_href('scan')),
+#            ])
         if ('ralph.cmdb' in settings.INSTALLED_APPS and
             has_perm(Perm.read_configuration_item_info_generic)):
             ci = ''
