@@ -28,8 +28,14 @@ from bob.menu import MenuItem
 from powerdns.models import Record
 from ralph.discovery.models_device import DeprecationKind, MarginKind
 from ralph.scan.errors import Error as ScanError
-from ralph.scan.manual import scan_address, merge_data, find_devices
+from ralph.scan.manual import scan_address, find_devices
 from ralph.scan.forms import DiffForm
+from ralph.scan.data import (
+    device_from_data,
+    set_device_data,
+    get_device_data,
+    merge_data,
+)
 from ralph.business.models import (
     RoleProperty,
     RolePropertyValue,
@@ -1393,7 +1399,7 @@ class ScanStatus(BaseMixin, TemplateView):
             data = merge_data(
                 result,
                 {
-                    'database': { 'device': device.get_data() },
+                    'database': { 'device': get_device_data(device) },
                 },
                 only_multiple=True,
             )
@@ -1493,9 +1499,10 @@ class ScanStatus(BaseMixin, TemplateView):
                     for field_name in form.result
                 }
                 if device is None:
-                    device = Device.from_data(data)
+                    device = device_from_data(data)
                 else:
-                    device.save_data(data)
+                    set_device_data(device, data)
+                    device.save()
                 messages.success(self.request, "Device %s saved." % device)
                 return HttpResponseRedirect(self.request.path)
             else:
