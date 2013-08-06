@@ -7,7 +7,6 @@
 
 {% block contentarea %}
     {% if data %}
-    xxxxxx
         <div class="row-fluid">
             <div class="span12">
                 {% include 'ui/report_services_table.html' with title='Services with invalid relations' services=data.invalid_relation services_without_venture_mode=0 %}
