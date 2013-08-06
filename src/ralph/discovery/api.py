@@ -42,6 +42,7 @@ TIMEFRAME = settings.API_THROTTLING['timeframe']
 EXPIRATION = settings.API_THROTTLING['expiration']
 SAVE_PRIORITY=10
 
+
 class IPAddressResource(MResource):
     device = fields.ForeignKey(
         'ralph.discovery.api.DevResource',
@@ -64,9 +65,17 @@ class IPAddressResource(MResource):
         )
         filtering = {
             'address': ALL,
+            'created': ALL,
             'device': ALL,
             'hostname': ALL,
+            'http_family': ALL,
+            'id': ALL,
             'is_management': ALL,
+            'last_plugins': ALL,
+            'last_puppet': ALL,
+            'last_seen': ALL,
+            'modified': ALL,
+            'number': ALL,
             'snmp_community': ALL,
         }
         excludes = (
@@ -374,6 +383,16 @@ class DeviceResource(MResource):
                 related_objs.append(related_bundle.obj)
 
             related_mngr.add(*related_objs)
+
+    def dehydrate(self, bundle):
+        ipaddress = IPAddress.objects.get(id=bundle.data.get('id'))
+        network = ipaddress.network
+        bundle.data['management'] += {
+            'network_kind': (
+                network.kind.name if (network and network.kind) else ''
+            ),
+        }
+        return bundle
 
 
 class PhysicalServerResource(DeviceResource):
