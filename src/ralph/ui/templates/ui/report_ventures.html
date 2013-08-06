@@ -4,9 +4,13 @@
 {% load formats %}
 {% load bob %}
 {% load reports %}
+{% load i18n %}
 
 {% block contentarea %}
-
+    <div class="well well-small">
+        <h4>Ventures Report</h4>
+        {% trans "This report provides detailed info regarding costs for all ventures within selected time frame (with the possibility to edit the ventures afterwards)." %}
+    </div>
 <form class="form form-inline daterange-form">
 <div class="form-actions">
     {% for f in form %}
