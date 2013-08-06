@@ -3,14 +3,15 @@
 {% load icons %}
 {% load formats %}
 {% load bob %}
+{% load i18n %}
 
 {% block contentarea %}
 </div>
 <div class="row-fluid">
 <div class="span12">
     <div class="well well-small">
-        <h4>Margins</h4> 
-        {% trans "of simulated costs (at given margin) with current costs in selected timeframe and venture." noop %}
+        <h4>Margins Report</h4>
+        {% trans "This report allows you to compare current and simulated costs for selected venture within given time frame." %}
     </div>
     <form class="form form-inline daterange-form">
         <div class="form-actions">
