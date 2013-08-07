@@ -198,9 +198,11 @@ class ComponentModel(SavePrioritized, WithConcurrentGetOrCreate, SavingUser):
         name is truncated to 50 characters.
         """
         # sanitize None, 0 and empty strings
-        for field in ('speed', 'cores', 'size', 'family', 'group', 'name'):
-            if field in kwargs and not kwargs[field]:
-                del kwargs[field]
+        kwargs = {
+            name: kwargs[name]
+            for name in ('speed', 'cores', 'size', 'family', 'group', 'name')
+            if name in kwargs and kwargs[name]
+        }
         # put sensible empty values
         kwargs.setdefault('speed', 0)
         kwargs.setdefault('cores', 0)
@@ -212,23 +214,23 @@ class ComponentModel(SavePrioritized, WithConcurrentGetOrCreate, SavingUser):
             assert 'name' not in kwargs, "Custom `name` forbidden for memory."
             name = ' '.join(['RAM', family])
             if kwargs['size']:
-                name += ' %dMiB' % kwargs['size']
+                name += ' %dMiB' % int(kwargs['size'])
             if kwargs['speed']:
-                name += ', %dMHz' % kwargs['speed']
+                name += ', %dMHz' % int(kwargs['speed'])
         elif kwargs['type'] == ComponentType.disk:
             assert 'name' not in kwargs, "Custom `name` forbidden for disks."
             assert family, "`family` not given (required for disks)."
             name = family
             if kwargs['size']:
-                name += ' %dMiB' % kwargs['size']
+                name += ' %dMiB' % int(kwargs['size'])
             if kwargs['speed']:
-                name += ', %dRPM' % kwargs['speed']
+                name += ', %dRPM' % int(kwargs['speed'])
         else:
             name = kwargs.pop('name', family)
-        kwargs['defaults'] = {
+        kwargs.update({
             'group': group,
             'name': name[:50],
-        }
+        })
         if kwargs['type'] == ComponentType.processor:
             assert family, "`family` not given (required for CPUs)."
             kwargs['cores'] = max(
@@ -237,19 +239,17 @@ class ComponentModel(SavePrioritized, WithConcurrentGetOrCreate, SavingUser):
                 cores_from_model(name) if not is_virtual_cpu(family) else 1,
             )
             kwargs['size'] = kwargs['cores']
-        obj, c = super(ComponentModel, cls).concurrent_get_or_create(**kwargs)
-        if c:
-            obj.mark_dirty(
-                'cores',
-                'family',
-                'group',
-                'name',
-                'size',
-                'speed',
-                'type',
-            )
+        try:
+            unique_args = {
+                name: kwargs[name]
+                for name in ('speed', 'cores', 'size', 'type', 'family')
+            }
+            obj = cls.objects.get(**unique_args)
+            return obj, False
+        except cls.DoesNotExist:
+            obj = cls(**kwargs)
             obj.save(priority=priority)
-        return obj, c
+            return obj, True
 
     def get_price(self, size=None):
         if not self.group:
