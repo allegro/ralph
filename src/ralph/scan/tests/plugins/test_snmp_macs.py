@@ -9,22 +9,11 @@ import mock
 
 from django.test import TestCase
 
-from ralph.discovery.models import DeviceType, IPAddress, MAC_PREFIX_BLACKLIST
+from ralph.discovery.models import DeviceType, MAC_PREFIX_BLACKLIST
 from ralph.scan.plugins.snmp_macs import _snmp_mac, _get_model_info, Error
 
 
 class SnmpMacsPluginTest(TestCase):
-    def setUp(self):
-        self.ip = IPAddress.objects.create(
-            address='127.0.0.1',
-            snmp_name='Linux 2.6.9-42.0.10.plus.c4smp #1 SMP i686',
-            snmp_community='public',
-            snmp_version='2c',
-        )
-
-    def tearDown(self):
-        self.ip.delete()
-
     def test_get_model_info(self):
         self.assertRaises(Error, _get_model_info, 'bla bla bla')
         self.assertEqual(
@@ -56,42 +45,68 @@ class SnmpMacsPluginTest(TestCase):
                 },
             )
             # no snmp_name or snmp_community
-            self.assertRaises(
-                Error,
-                _snmp_mac,
-                '127.0.0.1',
-                '',
-                'public',
-                '2c',
+            with self.assertRaises(Error) as context:
+                _snmp_mac(
+                    '127.0.0.1',
+                    '',
+                    'public',
+                    '2c',
+                )
+            self.assertTrue(
+                'empty snmp name or community'
+                in context.exception.message.lower(),
             )
-            self.assertRaises(
-                Error,
-                _snmp_mac,
-                '127.0.0.1',
-                'Linux',
-                '',
-                '2c',
+            with self.assertRaises(Error) as context:
+                _snmp_mac(
+                    '127.0.0.1',
+                    'Linux',
+                    '',
+                    '2c',
+                )
+            self.assertTrue(
+                'empty snmp name or community'
+                in context.exception.message.lower(),
             )
             # no mac address
             snmp_macs.return_value = []
-            self.assertRaises(Error, _snmp_mac, **run_params)
+            with self.assertRaises(Error) as context:
+                _snmp_mac(**run_params)
+            self.assertTrue(
+                'no valid mac' in context.exception.message.lower(),
+            )
             # virtual device mac
             snmp_macs.return_value = [
                 "%s332211" % iter(MAC_PREFIX_BLACKLIST).next(),
             ]
-            self.assertRaises(Error, _snmp_mac, **run_params)
+            with self.assertRaises(Error) as context:
+                _snmp_mac(**run_params)
+            self.assertTrue(
+                'no valid mac' in context.exception.message.lower(),
+            )
             # Brocade switch
             run_params['snmp_name'] = 'Brocade'
             snmp_macs.return_value = ['001A643320EA']
-            self.assertRaises(Error, _snmp_mac, **run_params)
+            with self.assertRaises(Error) as context:
+                _snmp_mac(**run_params)
+            self.assertTrue(
+                'no valid mac' in context.exception.message.lower(),
+            )
             # VMWare interface on Windows
-            run_params['snmp_name'] = 'Windows'
+            run_params['snmp_name'] = 'hardware: Windows'
             snmp_macs.return_value = ['000C293320EA']
-            self.assertRaises(Error, _snmp_mac, **run_params)
+            with self.assertRaises(Error) as context:
+                _snmp_mac(**run_params)
+            self.assertTrue(
+                'no valid mac' in context.exception.message.lower(),
+            )
             # f5
             run_params['snmp_name'] = 'Linux'
             snmp_macs.return_value = ['0001D7112233']
-            self.assertRaises(Error, _snmp_mac, **run_params)
+            with self.assertRaises(Error) as context:
+                _snmp_mac(**run_params)
+            self.assertTrue(
+                'this is an f5' in context.exception.message.lower(),
+            )
             # test sn detection...
             run_params['snmp_name'] = 'IronPort 1, Serial #: qwe123'
             snmp_macs.return_value = ['001A643320EA']

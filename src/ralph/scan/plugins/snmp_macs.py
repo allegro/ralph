@@ -63,6 +63,9 @@ def _get_model_info(snmp_name):
     elif 'StorageWorks' in snmp_name:
         model_name = snmp_name
         model_type = DeviceType.storage
+    elif 'brocade' in snmp_name.lower():
+        model_name = snmp_name
+        model_type = DeviceType.switch
     elif 'linux' in snmp_name.lower():
         model_name = 'Linux'
         model_type = DeviceType.unknown
