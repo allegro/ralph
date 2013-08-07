@@ -425,6 +425,33 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
             ethernet.save(priority=priority)
         return dev
 
+    @classmethod
+    def from_data(cls, data):
+        """Create a device based on a dict of data from the scan."""
+
+        sn = data.get('serial_number')
+        ethernets = [('', mac, None) for mac in data.get('mac_addresses', [])]
+        model_name = data.get('model_name')
+        model_type = DeviceType.unknown
+        for t in DeviceType(item=lambda t:t):
+            if data.get('type').lower() == t.raw.lower():
+                model_type = t
+        device = cls.create(
+            sn=sn,
+            ethernets=ethernets,
+            model_name=model_name,
+            model_type=model_type,
+        )
+        device.save_data(data)
+        return device
+
+    def save_data(self, data):
+        """Update a device based on a dict of data from the scan."""
+
+        # TODO Go through the submitted data, and update the Device object
+        # in accordance with the meaning of the particular fields.
+
+
     def get_margin(self):
         if self.margin_kind:
             return self.margin_kind.margin

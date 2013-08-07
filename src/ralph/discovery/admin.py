@@ -225,6 +225,10 @@ class DeviceForm(forms.ModelForm):
             raise forms.ValidationError(_("Model is required"))
         return model
 
+    def clean_barcode(self):
+        barcode = self.cleaned_data['barcode']
+        return barcode or None
+
 
 class ProcessorInline(ForeignKeyAutocompleteTabularInline):
     model = m.Processor
