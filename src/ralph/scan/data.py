@@ -17,7 +17,9 @@ from ralph.discovery.models_component import (
     Memory,
     Ethernet,
 )
-
+from ralph.discovery.models_network import (
+    IPAddress,
+)
 from ralph.discovery.models_device import (
     Device,
     DeviceType,
@@ -83,8 +85,10 @@ def _update_component_data(
             fields = {
                 field: data[field_map[field]]
                 for field in group
-                if data.get(field_map[field])
+                if data.get(field_map[field]) is not None
             }
+            if not fields:
+                continue
             try:
                 component = Component.objects.get(**fields)
             except Component.DoesNotExist:
@@ -92,28 +96,33 @@ def _update_component_data(
             break
         else:
             # No matching component found, create a new one
-            fields = {
-                field: data[field_map[field]]
-                for field in field_map
-                if data.get(field_map[field])
-            }
             if model_type is not None or 'model_type' in data:
                 # If model_type is provided, create the model
+                model = None
                 if model_type is None:
                     try:
                         model_type = ComponentType.from_name(data['model_type'])
                     except ValueError:
                         model_type = None
                 if model_type is not None:
-                    model_fields = dict(fields)
+                    model_fields = {
+                        field: data[field_map[field]]
+                        for field in field_map
+                        if data.get(field_map[field])
+                    }
                     if 'model_name' in data:
                         model_fields['name'] = data['model_name']
-                    fields['model'], created = ComponentModel.create(
+                    model, created = ComponentModel.create(
                         model_type,
+                        0,
                         **model_fields)
-            component = Component(**fields)
+                if model is None:
+                    raise ValueError('Unknown model')
+                component = Component(model=model)
+            else:
+                component = Component()
         # Fill the component with values from the data dict
-        for key, field in field_map.iteritems():
+        for field, key in field_map.iteritems():
             if key in data:
                 setattr(component, field, data[key])
         component.save()
@@ -156,35 +165,41 @@ def get_device_data(device):
         data['data_center'] = device.dc
     if device.rack:
         data['rack'] = device.rack
-    if device.memory_set.exists():
-        data['memory'] = [
-            {
-                'label': m.label,
-                'size': m.size,
-                'speed': m.speed,
-                'index': m.index,
-            } for m in device.memory_set.order_by('index')
-        ]
-    if device.processor_set.exists():
-        data['processors'] = [
-            {
-                'model_name': p.model.name if p.model else '',
-                'speed': p.speed,
-                'cores': p.get_cores(),
-                'family': p.model.family if p.model else '',
-                'label': p.label,
-                'index': p.index,
-            } for p in device.processor_set.order_by('index')
-        ]
-    data['disks'] = [
+    data['memory'] = [
         {
-            'serial_number': disk.sn,
-            'label': disk.label,
-            'mount_point': disk.mount_point,
-            'size': disk.size,
-            'model_name': disk.model.name if disk.model else "",
-        } for disk in device.storage_set.order_by('sn', 'mount_point')
+            'label': m.label,
+            'size': m.size,
+            'speed': m.speed,
+            'index': m.index,
+        } for m in device.memory_set.order_by('index')
     ]
+    data['processors'] = [
+        {
+            'model_name': p.model.name if p.model else '',
+            'speed': p.speed,
+            'cores': p.get_cores(),
+            'family': p.model.family if p.model else '',
+            'label': p.label,
+            'index': p.index,
+        } for p in device.processor_set.order_by('index')
+    ]
+    disks = []
+    for disk in device.storage_set.order_by('sn', 'mount_point'):
+        disk_data = {
+            'label': disk.label,
+            'size': disk.size,
+        }
+        if disk.sn:
+            disk_data['serial_number'] = disk.sn
+        if disk.mount_point:
+            disk_data['mount_point'] = disk.mount_point
+        if disk.model:
+            disk_data.update({
+                'model_name': disk.model.name,
+                'family': disk.model.family,
+            })
+        disks.append(disk_data)
+    data['disks'] = disks
 
     # Some details of the device are still not returned:
     # TODO do parts
@@ -228,11 +243,12 @@ def set_device_data(device, data):
                 name=data['model_name'],
             )
         except DeviceModel.DoesNotExist:
-            device.model = DeviceModel(
+            model = DeviceModel(
                 type=model_type,
                 name=data['model_name'],
             )
-            device.model.save()
+            model.save()
+            device.model = model
     if 'disks' in data:
         _update_component_data(
             device,
@@ -245,6 +261,8 @@ def set_device_data(device, data):
                 'speed': 'speed',
                 'mount_point': 'mount_point',
                 'label': 'label',
+                'family': 'family',
+                'model_name': 'model_name',
             },
             [
                 ('sn',),
@@ -253,6 +271,8 @@ def set_device_data(device, data):
             ComponentType.disk,
         )
     if 'processors' in data:
+        for index, processor in enumerate(data['processors']):
+            processor['index'] = index
         _update_component_data(
             device,
             data['processors'],
@@ -272,6 +292,8 @@ def set_device_data(device, data):
             ComponentType.processor,
         )
     if 'memory' in data:
+        for index, memory in enumerate(data['memory']):
+            memory['index'] = index
         _update_component_data(
             device,
             data['memory'],
@@ -295,9 +317,10 @@ def set_device_data(device, data):
             Ethernet,
             {
                 'mac': 'mac',
+                'device': 'device',
             },
             [
-                ('mac'),
+                ('mac',),
             ],
             None,
         )
