@@ -1497,13 +1497,17 @@ class ScanStatus(BaseMixin, TemplateView):
                     field_name: form.get_value(field_name)
                     for field_name in form.result
                 }
-                if device is None:
-                    device = device_from_data(data)
+                try:
+                    if device is None:
+                        device = device_from_data(data)
+                    else:
+                        set_device_data(device, data)
+                        device.save()
+                except ValueError as e:
+                    messages.error(self.request, e)
                 else:
-                    set_device_data(device, data)
-                    device.save()
-                messages.success(self.request, "Device %s saved." % device)
-                return HttpResponseRedirect(self.request.path)
+                    messages.success(self.request, "Device %s saved." % device)
+                    return HttpResponseRedirect(self.request.path)
             else:
                 messages.error(self.request, "Errors in the form.")
                 for error in form.non_field_errors():

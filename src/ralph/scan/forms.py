@@ -35,13 +35,17 @@ class CSVWidget(forms.Widget):
         field_data = data[name]
         values = []
         for line in field_data.splitlines():
+            if not line.strip():
+                continue
             row = {}
-            values.append(row)
             row_values = [v.strip() for v in line.split(';')]
+            if not any(row_values):
+                continue
             if row_values == self.headers:
                 continue
             for h, value in itertools.izip_longest(self.headers, row_values):
                 row[h] = value
+            values.append(row)
         return values
 
 
@@ -196,6 +200,8 @@ class AssetInfo(DefaultInfo):
     Widget = None
 
     def clean(self, value):
+        if not value:
+            raise ValueError('You have to select an asset for device.')
         return value
 
     def Field(self, *args, **kwargs):
