@@ -3,7 +3,7 @@ Change Log
 
 1.2.6
 ~~~~~
-Released on ...
+Released on August 08, 2013
 
 * Added new resources to API: Network, NetworkKind
 
@@ -485,7 +485,7 @@ Released on August 08, 2012.
 
 * bugfixes in the discovery plugins
 
-1.0.3 
+1.0.3
 ~~~~~
 
 Released on August 01, 2012.
@@ -495,11 +495,11 @@ Released on August 01, 2012.
 
 * venture tree collapsible
 
-* CMDB integration scripts integrated into framework 
+* CMDB integration scripts integrated into framework
 
 * CMDB supports distributed plugins
 
-* minor fixes in the Web app  
+* minor fixes in the Web app
 
 1.0.2
 ~~~~~
