@@ -1,6 +1,20 @@
 Change Log
 ----------
 
+1.2.6
+~~~~~
+Released on ...
+
+* Added new resources to API: Network, NetworkKind
+
+* Added ``network_details`` to Ipaddress API resource
+
+* Extra costs that don't appear in the given time range are not displayed in the venture summery view.
+
+* ``Numeric position`` field no longer required
+
+* ``Barcode`` field (in admin) can be set to None for more than one devices
+
 
 1.2.5
 ~~~~~
