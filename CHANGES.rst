@@ -15,6 +15,8 @@ Released on ...
 
 * ``Barcode`` field (in admin) can be set to None for more than one devices
 
+* Fixed owners' links in admin/business/ventures; fixed admin history change.
+
 
 1.2.5
 ~~~~~
