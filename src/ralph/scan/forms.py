@@ -6,6 +6,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import operator
+import itertools
 
 from django import forms
 from django.utils.safestring import mark_safe
@@ -13,6 +14,35 @@ from django.utils.html import escape, conditional_escape
 from ajax_select.fields import AutoCompleteSelectField
 
 from ralph.discovery.models import DeviceType
+
+
+class CSVWidget(forms.Widget):
+    def __init__(self, headers, attrs=None):
+        self.headers=headers
+        super(CSVWidget, self).__init__(attrs)
+
+    def render(self, name, value, attrs=None):
+        output = [
+                '<textarea name="%s" rows="10" style="width:90%%">' % escape(name),
+            escape(';'.join(h.rjust(16) for h in self.headers)),
+        ]
+        for row in value or []:
+            output.append(escape(';'.join(row.get(h, '') for h in self.headers)))
+        output.append('</textarea>'),
+        return mark_safe('\n'.join(output))
+
+    def value_from_datadict(self, data, files, name):
+        field_data = data[name]
+        values = []
+        for line in field_data.splitlines():
+            row = {}
+            values.append(row)
+            row_values = [v.strip() for v in line.split(';')]
+            if row_values == self.headers:
+                continue
+            for h, value in itertools.izip_longest(self.headers, row_values):
+                row[h] = value
+        return values
 
 
 class WidgetTable(forms.MultiWidget):
@@ -70,7 +100,8 @@ class DiffSelect(forms.Select):
     """A widget for selecting one of the values of a diff."""
 
     def render(self, name, value, attrs=None, choices=()):
-        if value is None: value = ''
+        if value is None:
+            value = ''
         output = []
         for option, label in self.choices:
             if option == 'custom':
@@ -93,12 +124,35 @@ class DefaultInfo(object):
     Widget = None
     clean = unicode
 
+class IntInfo(DefaultInfo):
+    display = int
+    Field = forms.IntegerField
+    clean = int
+
 class ListInfo(DefaultInfo):
     display = ', '.join
     Widget = forms.Textarea
 
     def clean(self, value):
         return value.replace(',', ' ').split()
+
+class CSVInfo(DefaultInfo):
+    def __init__(self, headers):
+        self.headers = headers
+
+    def display(self, value):
+        output = [
+                '<pre style="display:inline-block; vertical-align:top;">',
+            '<b>%s</b>' % escape(';'.join(h.rjust(16) for h in self.headers)),
+            escape('\n'.join(';'.join(unicode(row.get(h, '')).rjust(16) for h in self.headers) for row in value)),
+            '</pre>',
+        ]
+        return mark_safe('\n'.join(output))
+
+    @property
+    def Widget(self):
+        return CSVWidget(self.headers)
+
 
 class DictListInfo(ListInfo):
     def __init__(self, headers, rows):
@@ -179,7 +233,10 @@ class DiffForm(forms.Form):
         'asset': AssetInfo(),
         'type': TypeInfo(),
         'model_name': RequiredInfo(),
-        'disks': DictListInfo(['model', 'serial_number', 'size'], 4),
+        'chassis_position': IntInfo(),
+        'disks': CSVInfo(['mount_point', 'family', 'serial_number', 'size', 'speed', 'label']),
+        'memory': CSVInfo(['size', 'speed', 'label']),
+        'processors': CSVInfo(['family', 'speed', 'cores', 'label']),
     }
 
 
