@@ -1,6 +1,13 @@
 Change Log
 ----------
 
+1.2.7
+~~~~~
+Released on ...
+
+* Added info on form validation errors (wishlist 15); added terabytes as unit in size_divisor.
+
+
 1.2.6
 ~~~~~
 Released on August 08, 2013
