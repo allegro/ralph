@@ -8,7 +8,12 @@ from __future__ import unicode_literals
 from django.test import TestCase
 from unittest import skip
 
-from ralph.scan.data import get_device_data, set_device_data
+from ralph.scan.data import (
+    get_device_data,
+    set_device_data,
+    device_from_data,
+    merge_data,
+)
 from ralph.discovery.models import (
     DeviceType,
     DeviceModel,
@@ -398,3 +403,61 @@ class SetDeviceDataTest(TestCase):
         self.assertEqual(len(management_addresses), 2)
         address = IPAddress.objects.get(address='127.0.0.4')
         self.assertEqual(address.device, None)
+
+class DeviceFromDataTest(TestCase):
+    def test_device_from_data(self):
+        device = device_from_data({
+            'serial_number': "12345",
+            'model_name': "ziew-X",
+        })
+        self.assertEqual(device.sn, '12345')
+        self.assertEqual(device.model.name, "ziew-X")
+        self.assertEqual(device.model.type, DeviceType.unknown)
+
+
+class DeviceMergeDataTest(TestCase):
+    def test_basic_data(self):
+        data = [
+            {
+                'one': {
+                    'device':{
+                        'key1': 'value1',
+                        'key2': 'value2',
+                    },
+                },
+                'two': {
+                    'device': {
+                        'key1': 'value1',
+                        'key2': 'value2',
+                    },
+                },
+            },
+            {
+                'three': {
+                    'device': {
+                        'key1': 'value2',
+                        'key3': 'value3',
+                    },
+                },
+            },
+        ]
+        merged = merge_data(*data)
+        self.assertEqual(merged, {
+            'key1': {
+                ('one', 'two'): 'value1',
+                ('three',): 'value2',
+            },
+            'key2': {
+                ('one', 'two'): 'value2',
+            },
+            'key3': {
+                ('three',): 'value3',
+            },
+        })
+        merged = merge_data(*data, only_multiple=True)
+        self.assertEqual(merged, {
+            'key1': {
+                ('one', 'two'): 'value1',
+                ('three',): 'value2',
+            },
+        })
