@@ -119,11 +119,12 @@ class SidebarNetworks(object):
                 status=self.status,
             ),
         )
-        if has_perm(Perm.edit_device_info_generic) and not self.object:
-            ret['tab_items'].extend([
-                MenuItem('Autoscan', fugue_icon='fugue-radar',
-                         href=self.tab_href('autoscan', 'new')),
-            ])
+# TODO Don't show the Autoscan tab until it is ready
+#        if has_perm(Perm.edit_device_info_generic) and not self.object:
+#            ret['tab_items'].extend([
+#                MenuItem('Autoscan', fugue_icon='fugue-radar',
+#                         href=self.tab_href('autoscan', 'new')),
+#            ])
 
         ret.update({
             'sidebar_items': sidebar_items,

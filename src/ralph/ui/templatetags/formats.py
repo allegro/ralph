@@ -40,19 +40,9 @@ def chassis_order(query):
     return query.order_by('model__type', 'chassis_position', 'position')
 
 @register.filter
-def deslug(s):
-    return s.replace('_', ' ').replace('-', ' ')
+def getfield(d, key_name):
+    return d[key_name]
 
 @register.filter
-def lastdot(s):
-    if isinstance(s, tuple):
-        return [lastdot(x) for x in s]
-    return s.split('.')[-1]
-
-@register.filter
-def nice(thing):
-    if isinstance(thing, basestring):
-        return thing
-    elif isinstance(thing, (list, tuple)):
-        return ', '.join(thing)
-    return unicode(thing)
+def getfielderrors(d, key_name):
+    return d[key_name].errors
