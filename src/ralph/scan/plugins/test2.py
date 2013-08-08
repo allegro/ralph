@@ -19,8 +19,28 @@ def scan_address(address, **kwargs):
             'serial_number': '123abc',
             'mac_addresses': ['BEEFDEADCAFE'],
             'management_ip_addresses': [address],
-            'memory_total_size': 8000,
-            'memory_chip_count': 4,
+            'processors': [
+                {
+                    'family': 'xeon',
+                },
+                {
+                    'family': 'xeon',
+                },
+            ],
+            'memory': [
+                {
+                    'size': 128000,
+                },
+                {
+                    'size': 128000,
+                },
+                {
+                    'size': 128000,
+                },
+                {
+                    'size': 128000,
+                },
+            ],
             'disks': [
                 {
                     'model': 'toshiba',
