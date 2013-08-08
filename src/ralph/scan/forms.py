@@ -23,7 +23,7 @@ class CSVWidget(forms.Widget):
 
     def render(self, name, value, attrs=None):
         output = [
-                '<textarea name="%s" rows="10" style="width:90%%">' % escape(name),
+                '<textarea name="%s" rows="10" style="width:90%%; font-family: monospace">' % escape(name),
             escape(';'.join(h.rjust(16) for h in self.headers)),
         ]
         for row in value or []:

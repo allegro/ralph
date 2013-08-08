@@ -206,6 +206,7 @@ def get_device_data(device):
     # TODO do disk shares and exports
     # TODO do installed_software
     # TODO do subdevices
+    # TODO asset
     return data
 
 
@@ -219,6 +220,7 @@ def set_device_data(device, data):
     # TODO disk shares and exports
     # TODO installed software
     # TODO subdevices
+    # TODO asset
 
     keys = {
         'sn': 'serial_number',
