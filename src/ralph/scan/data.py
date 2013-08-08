@@ -331,26 +331,32 @@ def set_device_data(device, data):
 
 
 def device_from_data(data):
+    """
+    Create or find a device based on the provided scan data.
+    """
+
     sn = data.get('serial_number')
     ethernets = [('', mac, None) for mac in data.get('mac_addresses', [])]
     model_name = data.get('model_name')
-    model_type = DeviceType.unknown
-    for t in DeviceType(item=lambda t:t):
-        if data.get('type').lower() == t.raw.lower():
-            model_type = t
+    model_type = DeviceType.from_name(data.get('type', 'unknown').lower())
     device = Device.create(
         sn=sn,
         ethernets=ethernets,
         model_name=model_name,
         model_type=model_type,
     )
-    set_device_data(data)
+    set_device_data(device, data)
     device.save()
     return device
 
 
 def merge_data(*args, **kwargs):
-    """Merge several dicts with data from a scan into a single dict."""
+    """
+    Merge several dicts with data from a scan into a single dict.
+
+    :param *args: data to merge
+    :param only_multiple: if True, only keys with multiple values are returned
+    """
 
     only_multiple = kwargs.get('only_multiple', False)
     merged = {}
