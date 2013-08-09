@@ -85,6 +85,10 @@ def _scan_address(address, plugins, **kwargs):
 def find_devices(result):
     """Find all devices that can be possibly matched to this scan data."""
 
+    ids = set(
+        r['device']['id']
+        for r in result.itervalues() if 'id' in r.get('device', {})
+    )
     serials = set(
         r['device']['serial_number']
         for r in result.itervalues() if 'serial_number' in r.get('device', {})
@@ -93,6 +97,7 @@ def find_devices(result):
     for r in result.itervalues():
         macs |= set(r.get('device', {}).get('mac_addresses', []))
     return Device.admin_objects.filter(
+        db.Q(id__in=ids) |
         db.Q(sn__in=serials) |
         db.Q(ethernet__mac__in=macs)
     ).distinct()

@@ -200,12 +200,73 @@ def get_device_data(device):
             })
         disks.append(disk_data)
     data['disks'] = disks
+    data['disk_exports'] = [
+        {
+            'serial_number': share.wwn,
+            'full': share.full,
+            'size': share.size,
+            'snapshot_size': share.snapshot_size,
+            'label': share.label,
+            'share_id': share.share_id,
+            'model_name': share.model.name if share.model else '',
+        } for share in device.diskshare_set.order_by('wwn')
+    ]
+    data['disk_shares'] = [
+        {
+            'serial_number': mount.share.wwn if mount.share else '',
+            'size': mount.size,
+            'address': mount.address.address if mount.address else '',
+            'is_virtual': mount.is_virtual,
+            'volume': mount.volume,
+            'server_serial_number': mount.server.sn if mount.server else '',
+        } for mount in device.disksharemount_set.order_by('volume', 'address')
+    ]
+    data['installed_software'] = [
+        {
+            'label': soft.label,
+            'version': soft.version,
+            'path': soft.path,
+            'serial_number': soft.sn,
+            'model_name': soft.model.name if soft.model else '',
+        } for soft in device.software_set.order_by('label', 'version')
+    ]
+    data['fibrechannel_cards'] = [
+        {
+            'physical_id': fc.physical_id,
+            'label': fc.label,
+            'model_name': fc.model.name if fc.model else '',
+        } for fc in device.fibrechannel_set.order_by('label')
+    ]
+    data['parts'] = [
+        {
+            'serial_number': part.sn,
+            'label': part.label,
+            'boot_firmware': part.boot_firmware,
+            'hard_firmware': part.hard_firmware,
+            'diag_firmware': part.diag_firmware,
+            'mgmt_firmware': part.mgmt_firmware,
+            'model_name': part.model.name if part.model else '',
+            'type': ComponentType.from_id(
+                    part.model.type,
+                ).raw if part.model else '',
+        } for part in device.genericcomponent_set.order_by('sn')
+    ]
+    data['subdevices'] = [
+        {
+            'device': get_device_data(dev),
+        } for dev in device.child_set.order_by('id')
+    ]
+    if device.operatingsystem_set.exists():
+        system = device.operatingsystem_set.all()[0]
+        data['system_label'] = system.label,
+        data['system_memory'] = system.memory,
+        data['system_storage'] = system.storage,
+        data['system_cores_count'] = system.cores_count
+        if system.model:
+            data['system_family'] = system.model.family
+            data['system_model_name'] = system.model.name
 
     # Some details of the device are still not returned:
-    # TODO do parts
-    # TODO do disk shares and exports
-    # TODO do installed_software
-    # TODO do subdevices
     # TODO asset
     return data
 
@@ -216,10 +277,14 @@ def set_device_data(device, data):
     in accordance with the meaning of the particular fields.
     """
 
+    # Some details of the device are still not updated:
     # TODO parts
-    # TODO disk shares and exports
+    # TODO fibrechannel cards
+    # TODO disk shares
+    # TODO disk exports
     # TODO installed software
     # TODO subdevices
+    # TODO system
     # TODO asset
 
     keys = {
