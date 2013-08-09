@@ -8,7 +8,7 @@ from __future__ import unicode_literals
 from django.conf import settings
 
 from ralph.discovery.models import DeviceType
-from ralph.discovery.snmp import snmp_command, snmp_macs
+from ralph.discovery.snmp import snmp_command
 from ralph.scan.plugins import get_base_result_template
 
 
@@ -19,7 +19,7 @@ class Error(Exception):
     pass
 
 
-def _snmp_f5(ip_address, snmp_name, snmp_community, snmp_version):
+def _snmp_f5(ip_address, snmp_name, snmp_community):
     if '.f5app' not in snmp_name:
         raise Error('The SNMP name `%s` is not supported by this plugin.' % (
             snmp_name,
@@ -47,26 +47,10 @@ def _snmp_f5(ip_address, snmp_name, snmp_community, snmp_version):
         raise Error('No answer.')
     except IndexError:
         raise Error('Incorrect answer.')
-    oid = (1, 3, 6, 1, 2, 1, 2, 2, 1, 6)
-    mac_addresses = set()
-    for mac in snmp_macs(
-        ip_address,
-        snmp_community,
-        oid,
-        attempts=2,
-        timeout=3,
-        snmp_version=snmp_version,
-    ):
-        # For F5, macs that start with 02 are the masqueraded macs
-        if not mac.startswith('02'):
-            mac_addresses.add(mac)
-    if not mac_addresses:
-        raise Error("No valid MAC addresses in the SNMP response.")
     return {
         'type': str(DeviceType.load_balancer),
         'model_name': 'F5 %s' % model,
         'serial_number': sn,
-        'mac_addresses': list(mac_addresses),
     }
 
 
@@ -84,7 +68,6 @@ def scan_address(ip_address, **kwargs):
             ip_address,
             snmp_name,
             snmp_community,
-            snmp_version,
         )
     except Error as e:
         messages.append(unicode(e))
