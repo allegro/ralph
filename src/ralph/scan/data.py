@@ -258,9 +258,9 @@ def get_device_data(device):
     ]
     if device.operatingsystem_set.exists():
         system = device.operatingsystem_set.all()[0]
-        data['system_label'] = system.label,
-        data['system_memory'] = system.memory,
-        data['system_storage'] = system.storage,
+        data['system_label'] = system.label
+        data['system_memory'] = system.memory
+        data['system_storage'] = system.storage
         data['system_cores_count'] = system.cores_count
         if system.model:
             data['system_family'] = system.model.family

@@ -29,6 +29,7 @@ from ralph.discovery.models import (
     Processor,
     Software,
     Storage,
+    OperatingSystem,
 )
 
 
@@ -207,10 +208,55 @@ class GetDeviceDataTest(TestCase):
         self.assertEqual(len(mounts), 1)
         self.assertEqual(mounts[0]['serial_number'], "deadbeefcafe1234")
 
+    def test_system(self):
+        OperatingSystem.create(
+            self.device,
+            "Haiku",
+            0,
+            version="1.0.0",
+            memory='512',
+            storage='2048',
+            cores_count='4',
+            family="BeOS",
+        )
+        data = get_device_data(Device.objects.get(sn='123456789'))
+        self.assertEqual(data['system_memory'], 512)
+        self.assertEqual(data['system_storage'], 2048)
+        self.assertEqual(data['system_cores_count'], 4)
+        self.assertEqual(data['system_family'], "BeOS")
+        self.assertEqual(data['system_model_name'], "Haiku")
+        self.assertEqual(data['system_label'], "Haiku 1.0.0")
+
+    def test_subdevices(self):
+        Device(
+            parent=self.device,
+            model=self.device_model,
+            sn='1',
+            name='ziew1',
+        ).save()
+        Device(
+            parent=self.device,
+            model=self.device_model,
+            sn='2',
+            name='ziew2',
+        ).save()
+        Device(
+            parent=self.device,
+            model=self.device_model,
+            sn='3',
+            name='ziew3',
+        ).save()
+        data = get_device_data(Device.objects.get(sn='123456789'))
+        sub = data['subdevices']
+        self.assertEqual(len(sub), 3)
+
 
 class SetDeviceDataTest(TestCase):
     def setUp(self):
-        self.device_model = DeviceModel(type=DeviceType.rack_server, name="ziew-X")
+        self.device_model = DeviceModel(
+            type=DeviceType.rack_server,
+            name="ziew-X",
+        )
         self.device_model.save()
         self.device = Device(
             model=self.device_model,
