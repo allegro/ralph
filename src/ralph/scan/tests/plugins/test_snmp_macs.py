@@ -101,11 +101,15 @@ class SnmpMacsPluginTest(TestCase):
             )
             # f5
             run_params['snmp_name'] = 'Linux'
-            snmp_macs.return_value = ['0001D7112233']
-            with self.assertRaises(Error) as context:
-                _snmp_mac(**run_params)
-            self.assertTrue(
-                'this is an f5' in context.exception.message.lower(),
+            snmp_macs.return_value = ['0001D7112233', '0201D7112233']
+            self.assertEqual(
+                _snmp_mac(**run_params),
+                {
+                    'mac_addresses': ['0001D7112233'],
+                    'model_name': 'F5',
+                    'system_ip_addresses': ['127.0.0.1'],
+                    'type': 'load balancer',
+                },
             )
             # test sn detection...
             run_params['snmp_name'] = 'IronPort 1, Serial #: qwe123'
