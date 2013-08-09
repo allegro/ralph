@@ -6,7 +6,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from django.test import TestCase
-from unittest import skip
 
 from ralph.scan.data import (
     get_device_data,
@@ -15,17 +14,21 @@ from ralph.scan.data import (
     merge_data,
 )
 from ralph.discovery.models import (
-    DeviceType,
-    DeviceModel,
-    Device,
-    Memory,
-    Processor,
     ComponentModel,
     ComponentType,
-    Storage,
-    FibreChannel,
+    Device,
+    DeviceModel,
+    DeviceType,
+    DiskShare,
+    DiskShareMount,
     Ethernet,
+    FibreChannel,
+    GenericComponent,
     IPAddress,
+    Memory,
+    Processor,
+    Software,
+    Storage,
 )
 
 
@@ -116,29 +119,93 @@ class GetDeviceDataTest(TestCase):
         self.assertEqual(disks[0]['serial_number'], "abc3")
         self.assertEqual(disks[0]['mount_point'], "/dev/hda")
 
-    @skip('not implemented yet')
-    def test_parts(self):
+    def test_fc(self):
         model = ComponentModel(
             type=ComponentType.fibre,
             name="FC-336",
         )
-        model.save
+        model.save()
         FibreChannel(
             physical_id='deadbeefcafe',
             label='ziew',
             device=self.device,
+            model=model,
         ).save()
         data = get_device_data(Device.objects.get(sn='123456789'))
-        parts = data['parts']
-        self.assertEqual(len(parts), 1)
-        self.assertEqual(parts[0]['physical_id'], 'deadbeefcafe')
-        self.assertEqual(parts[0]['type'], 'fibre')
-        self.assertEqual(parts[0]['model_name'], 'FC-336')
+        fc = data['fibrechannel_cards']
+        self.assertEqual(len(fc), 1)
+        self.assertEqual(fc[0]['physical_id'], 'deadbeefcafe')
+        self.assertEqual(fc[0]['model_name'], 'FC-336')
 
     def test_mac_addresses(self):
         for i in xrange(5):
             mac = 'deadbeefcaf%d' % i
             Ethernet(mac=mac, device=self.device).save()
+
+    def test_parts(self):
+        model = ComponentModel(
+            type=ComponentType.management,
+            name="weapons of mass destruction",
+        )
+        model.save()
+        GenericComponent(
+            label='ziew',
+            device=self.device,
+            model=model,
+        ).save()
+        data = get_device_data(Device.objects.get(sn='123456789'))
+        parts = data['parts']
+        self.assertEqual(parts[0]['type'], "management")
+        self.assertEqual(parts[0]['model_name'], "weapons of mass destruction")
+        self.assertEqual(len(parts), 1)
+
+    def test_software(self):
+        model = ComponentModel(
+            type=ComponentType.software,
+            name="cobol",
+        )
+        model.save()
+        Software(
+            label='cobol',
+            device=self.device,
+            model=model,
+            version='1.0.0',
+            path='/usr/bin/cobol',
+            sn='0000001',
+        ).save()
+        data = get_device_data(Device.objects.get(sn='123456789'))
+        soft = data['installed_software']
+        self.assertEqual(soft[0]['version'], "1.0.0")
+        self.assertEqual(soft[0]['model_name'], "cobol")
+        self.assertEqual(len(soft), 1)
+
+    def test_disk_shares_and_exports(self):
+        model = ComponentModel(
+            type=ComponentType.share,
+            name="3par share",
+        )
+        model.save()
+        share = DiskShare(
+            device=self.device,
+            model=model,
+            label="pr0n",
+            size="2048",
+            wwn="deadbeefcafe1234",
+        )
+        share.save()
+        address = IPAddress(address='127.0.0.1')
+        address.save()
+        DiskShareMount(
+            device=self.device,
+            share=share,
+            address=address,
+        ).save()
+        data = get_device_data(Device.objects.get(sn='123456789'))
+        exports = data['disk_exports']
+        mounts = data['disk_shares']
+        self.assertEqual(len(exports), 1)
+        self.assertEqual(len(mounts), 1)
+        self.assertEqual(mounts[0]['serial_number'], "deadbeefcafe1234")
 
 
 class SetDeviceDataTest(TestCase):
@@ -403,6 +470,7 @@ class SetDeviceDataTest(TestCase):
         self.assertEqual(len(management_addresses), 2)
         address = IPAddress.objects.get(address='127.0.0.4')
         self.assertEqual(address.device, None)
+
 
 class DeviceFromDataTest(TestCase):
     def test_device_from_data(self):
