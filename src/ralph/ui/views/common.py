@@ -431,7 +431,7 @@ class DeviceUpdateView(UpdateView):
     def form_invalid(self, form):
         messages.error(
             self.request,
-            "There are some errors in your form. See below for details."
+            _("There are some errors in your form. See below for details.")
         )
         return super(DeviceUpdateView, self).form_invalid(form)
 
