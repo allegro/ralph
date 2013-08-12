@@ -28,13 +28,14 @@ from bob.menu import MenuItem
 from powerdns.models import Record
 from ralph.discovery.models_device import DeprecationKind, MarginKind
 from ralph.scan.errors import Error as ScanError
-from ralph.scan.manual import scan_address, find_devices
+from ralph.scan.manual import scan_address
 from ralph.scan.forms import DiffForm
 from ralph.scan.data import (
     device_from_data,
-    set_device_data,
+    find_devices,
     get_device_data,
     merge_data,
+    set_device_data,
 )
 from ralph.business.models import (
     RoleProperty,
