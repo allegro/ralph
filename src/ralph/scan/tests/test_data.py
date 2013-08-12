@@ -628,6 +628,31 @@ class SetDeviceDataTest(TestCase):
         self.assertEqual(system.model.family, "BeOS")
         self.assertEqual(system.model.type, ComponentType.os)
 
+    def test_subdevices(self):
+        data = {
+            'subdevices': [
+                {
+                    'serial_number': '1',
+                    'type': 'virtual_server',
+                    'hostname': 'ziew1',
+                    'model_name': 'XEN Virtual Server',
+                },
+                {
+                    'mac_addresses': ['beefcafedead'],
+                    'type': 'virtual_server',
+                    'hostname': 'ziew2',
+                    'model_name': 'XEN Virtual Server',
+                },
+            ],
+        }
+        set_device_data(self.device, data)
+        self.device.save()
+        device = Device.objects.get(sn='123456789')
+        subdevices = list(device.child_set.order_by('name'))
+        self.assertEqual(len(subdevices), 2)
+        self.assertEqual(subdevices[0].name, 'ziew1')
+        self.assertEqual(subdevices[1].name, 'ziew2')
+
 
 class DeviceFromDataTest(TestCase):
     def test_device_from_data(self):

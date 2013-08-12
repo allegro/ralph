@@ -261,9 +261,8 @@ def get_device_data(device):
         } for part in device.genericcomponent_set.order_by('sn')
     ]
     data['subdevices'] = [
-        {
-            'device': get_device_data(dev),
-        } for dev in device.child_set.order_by('id')
+        get_device_data(dev)
+        for dev in device.child_set.order_by('id')
     ]
     if device.operatingsystem_set.exists():
         system = device.operatingsystem_set.all()[0]
@@ -286,8 +285,6 @@ def set_device_data(device, data):
     """
 
     # Some details of the device are still not updated:
-    # TODO system
-    # TODO subdevices
     # TODO asset
 
     keys = {
@@ -533,8 +530,16 @@ def set_device_data(device, data):
             ],
             ComponentType.os,
         )
-
-
+    if 'subdevices' in data:
+        subdevice_ids = []
+        for subdevice_data in data['subdevices']:
+            subdevice = device_from_data(subdevice_data)
+            subdevice.parent = device
+            subdevice.save()
+            subdevice_ids.append(subdevice.id)
+        for subdevice in device.child_set.exclude(id__in=subdevice_ids):
+            subdevice.parent = None
+            subdevice.save()
 
 
 def device_from_data(data):
