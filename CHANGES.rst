@@ -1,19 +1,28 @@
 Change Log
 ----------
 
-1.2.6
+1.2.7
 ~~~~~
 Released on ...
 
-* Added new resources to API: Network, NetworkKind
+* Added info on form validation errors (wishlist 15); added terabytes as unit in size_divisor.
 
-* Added `network_details` to Ipaddress API resource
+
+1.2.6
+~~~~~
+Released on August 08, 2013
+
+* Added new resources to API: Network, NetworkKind.
+
+* Added ``network_details`` to Ipaddress API resource.
 
 * Extra costs that don't appear in the given time range are not displayed in the venture summery view.
 
-* 'Numeric position' field no longer required
+* ``Numeric position`` field no longer required.
 
-* 'Barcode' field (in admin) can be set to None for more than one devices
+* ``Barcode`` field (in admin) can be set to None for more than one devices.
+
+* Fixed owners links in admin/business/ventures; fixed admin history change.
 
 
 1.2.5
@@ -483,7 +492,7 @@ Released on August 08, 2012.
 
 * bugfixes in the discovery plugins
 
-1.0.3 
+1.0.3
 ~~~~~
 
 Released on August 01, 2012.
@@ -493,11 +502,11 @@ Released on August 01, 2012.
 
 * venture tree collapsible
 
-* CMDB integration scripts integrated into framework 
+* CMDB integration scripts integrated into framework
 
 * CMDB supports distributed plugins
 
-* minor fixes in the Web app  
+* minor fixes in the Web app
 
 1.0.2
 ~~~~~

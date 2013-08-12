@@ -434,6 +434,13 @@ class DeviceUpdateView(UpdateView):
         messages.success(self.request, "Changes saved.")
         return HttpResponseRedirect(self.request.path)
 
+    def form_invalid(self, form):
+        messages.error(
+            self.request,
+            _("There are some errors in your form. See below for details.")
+        )
+        return super(DeviceUpdateView, self).form_invalid(form)
+
     def get(self, *args, **kwargs):
         self.object = self.get_object()
         has_perm = self.request.user.get_profile().has_perm
