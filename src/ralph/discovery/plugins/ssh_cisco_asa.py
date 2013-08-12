@@ -10,7 +10,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import paramiko
-import threading
 import time
 
 from django.conf import settings
