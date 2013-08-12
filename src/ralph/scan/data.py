@@ -9,9 +9,14 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+
+from django.db import models as db
+
 from ralph.discovery.models_component import (
     ComponentModel,
     ComponentType,
+    DiskShare,
+    DiskShareMount,
     Ethernet,
     FibreChannel,
     GenericComponent,
@@ -280,8 +285,6 @@ def set_device_data(device, data):
     """
 
     # Some details of the device are still not updated:
-    # TODO disk exports
-    # TODO disk shares
     # TODO installed software
     # TODO subdevices
     # TODO system
@@ -427,6 +430,55 @@ def set_device_data(device, data):
                 ('sn',),
             ],
         )
+    if 'disk_exports' in data:
+        _update_component_data(
+            device,
+            data['disk_exports'],
+            DiskShare,
+            {
+                'device': 'device',
+                'label': 'label',
+                'wwn': 'serial_number',
+                'size': 'size',
+                'full': 'full',
+                'snapshot_size': 'snapshot_size',
+                'share_id': 'share_id',
+                'model_name': 'model_name',
+            },
+            [
+                ('wwn',),
+            ],
+            ComponentType.share,
+        )
+    if 'disk_shares' in data:
+        for share in data['disk_shares']:
+            if share.get('server'):
+                servers = find_devices({
+                    'server': share['server'],
+                })
+                share['server'] = servers[0]
+            else:
+                share['server'] = None
+            share['share'] = DiskShare.objects.get(wwn=share['serial_number'])
+            if share.get('address'):
+                share['address'] = IPAddress.objects.get(address=share['address'])
+        _update_component_data(
+            device,
+            data['disk_shares'],
+            DiskShareMount,
+            {
+                'share': 'share',
+                'size': 'size',
+                'address': 'address',
+                'is_virtual': 'is_virtual',
+                'volume': 'volume',
+                'server': 'server',
+                'device': 'device',
+            },
+            [
+                ('device', 'share'),
+            ],
+        )
 
 
 def device_from_data(data):
@@ -478,3 +530,25 @@ def merge_data(*args, **kwargs):
                 {},
             )[tuple(sources)] = merged[key][sources[0]]
     return unique
+
+
+def find_devices(result):
+    """Find all devices that can be possibly matched to this scan data."""
+
+    ids = set(
+        r['device']['id']
+        for r in result.itervalues() if 'id' in r.get('device', {})
+    )
+    serials = set(
+        r['device']['serial_number']
+        for r in result.itervalues() if 'serial_number' in r.get('device', {})
+    )
+    macs = set()
+    for r in result.itervalues():
+        macs |= set(r.get('device', {}).get('mac_addresses', []))
+    return Device.admin_objects.filter(
+        db.Q(id__in=ids) |
+        db.Q(sn__in=serials) |
+        db.Q(ethernet__mac__in=macs)
+    ).distinct()
+

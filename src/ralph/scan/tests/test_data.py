@@ -557,6 +557,37 @@ class SetDeviceDataTest(TestCase):
         self.assertEqual(part.model.type, ComponentType.management)
         self.assertEqual(part.sn, "abc123")
 
+    def test_disk_exports_and_shares(self):
+        data = {
+            'disk_exports': [
+                {
+                    'serial_number': "deadbeefcafe1234",
+                    'size': '2048',
+                    'label': 'pr0n',
+                },
+            ],
+            'disk_shares': [
+                {
+                    'serial_number': "deadbeefcafe1234",
+                    'server': {
+                        'device': {
+                            'serial_number': '123456789',
+                        },
+                    },
+                },
+            ],
+        }
+        set_device_data(self.device, data)
+        self.device.save()
+        device = Device.objects.get(sn='123456789')
+        export = device.diskshare_set.get()
+        mount = device.disksharemount_set.get()
+        self.assertEqual(export.label, "pr0n")
+        self.assertEqual(export.size, 2048)
+        self.assertEqual(export.wwn, "deadbeefcafe1234")
+        self.assertEqual(mount.share, export)
+        self.assertEqual(mount.server, device)
+
 
 class DeviceFromDataTest(TestCase):
     def test_device_from_data(self):
