@@ -72,7 +72,6 @@ class CiscoSSHClient(paramiko.SSHClient):
                 return buffer[1:-1]
 
 
-
 def _connect_ssh(ip, username='root', password=''):
     return network.connect_ssh(ip, SSH_USER, SSH_PASS, client=CiscoSSHClient)
 
@@ -82,7 +81,6 @@ def run_ssh_asa(ip):
     try:
         lines = ssh.asa_command(
              "show version | grep (^Hardware|Boot microcode|^Serial|address is)"
-            #"show version"
         )
         raw_inventory = '\n'.join(ssh.asa_command("show inventory"))
     finally:
