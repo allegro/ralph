@@ -517,6 +517,25 @@ class SetDeviceDataTest(TestCase):
         address = IPAddress.objects.get(address='127.0.0.4')
         self.assertEqual(address.device, None)
 
+    def test_fc(self):
+        data = {
+            'fibrechannel_cards': [
+                {
+                    'physical_id': "deadbeefcafe",
+                    'label': "ziew",
+                    'model_name': "FC-1000",
+                },
+            ],
+        }
+        set_device_data(self.device, data)
+        self.device.save()
+        device = Device.objects.get(sn='123456789')
+        fc = device.fibrechannel_set.get()
+        self.assertEqual(fc.physical_id, "deadbeefcafe")
+        self.assertEqual(fc.label, "ziew")
+        self.assertEqual(fc.model.name, "FC-1000")
+        self.assertEqual(fc.model.type, ComponentType.fibre)
+
 
 class DeviceFromDataTest(TestCase):
     def test_device_from_data(self):

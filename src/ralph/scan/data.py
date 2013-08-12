@@ -10,12 +10,13 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from ralph.discovery.models_component import (
-    ComponentType,
     ComponentModel,
-    Storage,
-    Processor,
-    Memory,
+    ComponentType,
     Ethernet,
+    FibreChannel,
+    Memory,
+    Processor,
+    Storage,
 )
 from ralph.discovery.models_network import (
     IPAddress,
@@ -279,7 +280,6 @@ def set_device_data(device, data):
 
     # Some details of the device are still not updated:
     # TODO parts
-    # TODO fibrechannel cards
     # TODO disk shares
     # TODO disk exports
     # TODO installed software
@@ -395,6 +395,22 @@ def set_device_data(device, data):
         _update_addresses(device, data['management_ip_addresses'], True)
     if 'system_ip_addresses' in data:
         _update_addresses(device, data['system_ip_addresses'], False)
+    if 'fibrechannel_cards' in data:
+        _update_component_data(
+            device,
+            data['fibrechannel_cards'],
+            FibreChannel,
+            {
+                'device': 'device',
+                'label': 'label',
+                'model_name': 'model_name',
+                'physical_id': 'physical_id',
+            },
+            [
+                ('physical_id',),
+            ],
+            ComponentType.fibre,
+        )
 
 
 def device_from_data(data):
