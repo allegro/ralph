@@ -588,6 +588,27 @@ class SetDeviceDataTest(TestCase):
         self.assertEqual(mount.share, export)
         self.assertEqual(mount.server, device)
 
+    def test_software(self):
+        data = {
+            'installed_software': [
+                {
+                    'label': 'Doom 2',
+                    'version': '2',
+                    'path': '/usr/local/games/bin/doom',
+                    'model_name': 'Doom',
+                    'serial_number': 'Blooood!',
+                },
+            ],
+        }
+        set_device_data(self.device, data)
+        self.device.save()
+        device = Device.objects.get(sn='123456789')
+        soft = device.software_set.get()
+        self.assertEqual(soft.label, "Doom 2")
+        self.assertEqual(soft.version, "2")
+        self.assertEqual(soft.model.name, "Doom")
+        self.assertEqual(soft.model.type, ComponentType.software)
+
 
 class DeviceFromDataTest(TestCase):
     def test_device_from_data(self):
