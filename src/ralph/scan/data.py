@@ -21,6 +21,7 @@ from ralph.discovery.models_component import (
     FibreChannel,
     GenericComponent,
     Memory,
+    OperatingSystem,
     Processor,
     Storage,
     Software,
@@ -272,7 +273,6 @@ def get_device_data(device):
         data['system_cores_count'] = system.cores_count
         if system.model:
             data['system_family'] = system.model.family
-            data['system_model_name'] = system.model.name
 
     # Some details of the device are still not returned:
     # TODO asset
@@ -286,8 +286,8 @@ def set_device_data(device, data):
     """
 
     # Some details of the device are still not updated:
-    # TODO subdevices
     # TODO system
+    # TODO subdevices
     # TODO asset
 
     keys = {
@@ -507,6 +507,33 @@ def set_device_data(device, data):
             ],
             ComponentType.software,
         )
+    if (
+        'system_label' in data or
+        'system_memory' in data or
+        'system_storage' in data or
+        'system_cores_coutn' in data or
+        'system_family' in data or
+        'system_model_name' in data
+    ):
+        _update_component_data(
+            device,
+            [data],
+            OperatingSystem,
+            {
+                'device': 'device',
+                'memory': 'system_memory',
+                'storage': 'system_storage',
+                'cores_count': 'system_cores_count',
+                'family': 'system_family',
+                'label': 'system_label',
+                'model_name': 'system_model_name',
+            },
+            [
+                ('device',),
+            ],
+            ComponentType.os,
+        )
+
 
 
 

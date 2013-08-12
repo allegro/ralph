@@ -224,7 +224,6 @@ class GetDeviceDataTest(TestCase):
         self.assertEqual(data['system_storage'], 2048)
         self.assertEqual(data['system_cores_count'], 4)
         self.assertEqual(data['system_family'], "BeOS")
-        self.assertEqual(data['system_model_name'], "Haiku")
         self.assertEqual(data['system_label'], "Haiku 1.0.0")
 
     def test_subdevices(self):
@@ -608,6 +607,26 @@ class SetDeviceDataTest(TestCase):
         self.assertEqual(soft.version, "2")
         self.assertEqual(soft.model.name, "Doom")
         self.assertEqual(soft.model.type, ComponentType.software)
+
+    def test_system(self):
+        data = {
+            'system_label': 'Haiku 1.0.0',
+            'system_memory': '512',
+            'system_storage': '2048',
+            'system_cores_count': 4,
+            'system_family': 'BeOS',
+        }
+        set_device_data(self.device, data)
+        self.device.save()
+        device = Device.objects.get(sn='123456789')
+        system = device.operatingsystem_set.get()
+        self.assertEqual(system.label, "Haiku 1.0.0")
+        self.assertEqual(system.memory, 512)
+        self.assertEqual(system.storage, 2048)
+        self.assertEqual(system.cores_count, 4)
+        self.assertEqual(system.model.name, "BeOS")
+        self.assertEqual(system.model.family, "BeOS")
+        self.assertEqual(system.model.type, ComponentType.os)
 
 
 class DeviceFromDataTest(TestCase):
