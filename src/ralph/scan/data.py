@@ -23,6 +23,7 @@ from ralph.discovery.models_component import (
     Memory,
     Processor,
     Storage,
+    Software,
 )
 from ralph.discovery.models_network import (
     IPAddress,
@@ -285,7 +286,6 @@ def set_device_data(device, data):
     """
 
     # Some details of the device are still not updated:
-    # TODO installed software
     # TODO subdevices
     # TODO system
     # TODO asset
@@ -456,12 +456,22 @@ def set_device_data(device, data):
                 servers = find_devices({
                     'server': share['server'],
                 })
+                if len(servers) > 1:
+                    raise ValueError(
+                        "Multiple servers found for share mount %r" % share,
+                    )
+                elif len(servers) <= 0:
+                    raise ValueError(
+                        "No server found for share mount %r" % share,
+                    )
                 share['server'] = servers[0]
             else:
                 share['server'] = None
             share['share'] = DiskShare.objects.get(wwn=share['serial_number'])
             if share.get('address'):
-                share['address'] = IPAddress.objects.get(address=share['address'])
+                share['address'] = IPAddress.objects.get(
+                    address=share['address'],
+                )
         _update_component_data(
             device,
             data['disk_shares'],
@@ -479,6 +489,25 @@ def set_device_data(device, data):
                 ('device', 'share'),
             ],
         )
+    if 'installed_software' in data:
+        _update_component_data(
+            device,
+            data['installed_software'],
+            Software,
+            {
+                'device': 'device',
+                'path': 'path',
+                'label': 'label',
+                'version': 'version',
+                'model_name': 'model_name',
+                'sn': 'serial_number',
+            },
+            [
+                ('device', 'path'),
+            ],
+            ComponentType.software,
+        )
+
 
 
 def device_from_data(data):
