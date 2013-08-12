@@ -243,6 +243,12 @@ class DiffForm(forms.Form):
         'disks': CSVInfo(['mount_point', 'family', 'serial_number', 'size', 'speed', 'label']),
         'memory': CSVInfo(['size', 'speed', 'label']),
         'processors': CSVInfo(['family', 'speed', 'cores', 'label']),
+        'disk_exports': CSVInfo(['model_name', 'serial_number', 'full', 'size', 'snapshot_size', 'share_id', 'label']),
+        'disk_shares': CSVInfo(['serial_number', 'address', 'is_virtual', 'size', 'volume', 'server']),
+        'installed_software': CSVInfo(['model_name', 'version', 'serial_number', 'path', 'label']),
+        'fibrechannel_cards': CSVInfo(['model_name', 'physical_id', 'label']),
+        'parts': CSVInfo(['model_name', 'type', 'serial_number', 'label', 'boot_firmware', 'hard_firmware', 'diag_firmware', 'mgmt_firmware']),
+        'subdevices': CSVInfo(['hostname', 'serial_number', 'id']),
     }
 
 

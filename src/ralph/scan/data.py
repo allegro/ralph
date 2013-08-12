@@ -146,6 +146,12 @@ def _update_component_data(
 
 
 def get_device_data(device):
+    """
+    Generate a dict with all information that is stored in the database
+    about this device, in a format compatible with that returned by the
+    discovery plugins.
+    """
+
     data = {
         'id': device.id,
         'system_ip_addresses': [
@@ -220,16 +226,23 @@ def get_device_data(device):
             'model_name': share.model.name if share.model else '',
         } for share in device.diskshare_set.order_by('wwn')
     ]
-    data['disk_shares'] = [
-        {
+    disk_shares = []
+    for mount in device.disksharemount_set.order_by('volume', 'address'):
+        mount_data = {
             'serial_number': mount.share.wwn if mount.share else '',
             'size': mount.size,
             'address': mount.address.address if mount.address else '',
             'is_virtual': mount.is_virtual,
             'volume': mount.volume,
-            'server_serial_number': mount.server.sn if mount.server else '',
-        } for mount in device.disksharemount_set.order_by('volume', 'address')
-    ]
+        }
+        if mount.server:
+            mount_data['server'] =  {
+                'serial_number': mount.server.sn,
+            }
+        else:
+            mount_data['server'] = None
+        disk_shares.append(mount_data)
+    data['disk_shares'] = disk_shares
     data['installed_software'] = [
         {
             'label': soft.label,
@@ -594,7 +607,9 @@ def merge_data(*args, **kwargs):
 
 
 def find_devices(result):
-    """Find all devices that can be possibly matched to this scan data."""
+    """
+    Find all devices that can be possibly matched to this scan data.
+    """
 
     ids = set(
         r['device']['id']
