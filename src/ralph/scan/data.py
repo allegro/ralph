@@ -14,6 +14,7 @@ from ralph.discovery.models_component import (
     ComponentType,
     Ethernet,
     FibreChannel,
+    GenericComponent,
     Memory,
     Processor,
     Storage,
@@ -97,19 +98,19 @@ def _update_component_data(
             break
         else:
             # No matching component found, create a new one
-            if model_type is not None or 'model_type' in data:
+            if model_type is not None or 'type' in data:
                 # If model_type is provided, create the model
                 model = None
                 if model_type is None:
                     try:
-                        model_type = ComponentType.from_name(data['model_type'])
+                        model_type = ComponentType.from_name(data['type'])
                     except ValueError:
                         model_type = None
                 if model_type is not None:
                     model_fields = {
                         field: data[field_map[field]]
                         for field in field_map
-                        if data.get(field_map[field])
+                        if data.get(field_map[field]) and field != 'type'
                     }
                     if 'model_name' in data:
                         model_fields['name'] = data['model_name']
@@ -279,9 +280,8 @@ def set_device_data(device, data):
     """
 
     # Some details of the device are still not updated:
-    # TODO parts
-    # TODO disk shares
     # TODO disk exports
+    # TODO disk shares
     # TODO installed software
     # TODO subdevices
     # TODO system
@@ -410,6 +410,22 @@ def set_device_data(device, data):
                 ('physical_id',),
             ],
             ComponentType.fibre,
+        )
+    if 'parts' in data:
+        _update_component_data(
+            device,
+            data['parts'],
+            GenericComponent,
+            {
+                'device': 'device',
+                'label': 'label',
+                'model_name': 'model_name',
+                'sn': 'serial_number',
+                'type': 'type',
+            },
+            [
+                ('sn',),
+            ],
         )
 
 

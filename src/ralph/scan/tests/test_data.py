@@ -536,6 +536,27 @@ class SetDeviceDataTest(TestCase):
         self.assertEqual(fc.model.name, "FC-1000")
         self.assertEqual(fc.model.type, ComponentType.fibre)
 
+    def test_parts(self):
+        data = {
+            'parts': [
+                {
+                    'serial_number': "abc123",
+                    'type': 'management',
+                    'label': "Terminator management",
+                    'model_name': "T-500 management module",
+                    'hard_firmware': "T-500-1",
+                },
+            ],
+        }
+        set_device_data(self.device, data)
+        self.device.save()
+        device = Device.objects.get(sn='123456789')
+        part = device.genericcomponent_set.get()
+        self.assertEqual(part.label, "Terminator management")
+        self.assertEqual(part.model.name, "T-500 management module")
+        self.assertEqual(part.model.type, ComponentType.management)
+        self.assertEqual(part.sn, "abc123")
+
 
 class DeviceFromDataTest(TestCase):
     def test_device_from_data(self):
