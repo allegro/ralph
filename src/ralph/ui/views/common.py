@@ -81,6 +81,12 @@ from ralph.ui.forms.deployment import (
 )
 from ralph import VERSION
 
+# if ralph_assets app is installed...
+try:
+    from ralph_assets.api_ralph import get_asset
+except ImportError:
+    pass
+
 
 SAVE_PRIORITY = 200
 HISTORY_PAGE_SIZE = 25
@@ -316,10 +322,15 @@ class BaseMixin(object):
                 MenuItem('History', fugue_icon='fugue-hourglass',
                          href=self.tab_href('history')),
             ])
-        if has_perm(Perm.read_device_info_support, venture):
+        if all((
+            'ralph_assets' in settings.INSTALLED_APPS,
+            has_perm(Perm.read_device_info_support, venture),
+        )):
             tab_items.extend([
-                MenuItem('Purchase', fugue_icon='fugue-baggage-cart-box',
-                         href=self.tab_href('purchase')),
+                MenuItem(
+                    'Asset',
+                    fugue_icon='fugue-baggage-cart-box',
+                    href=self.tab_href('asset')),
             ])
 # TODO Don't show the Scan tab until it is ready.
 #        if has_perm(Perm.edit_device_info_generic):
@@ -995,6 +1006,34 @@ class Purchase(DeviceUpdateView):
             }
         )
         return ret
+
+
+class Asset(BaseMixin, TemplateView):
+    template_name = 'ui/device_asset.html'
+
+    def get_context_data(self, **kwargs):
+        ret = super(Asset, self).get_context_data(**kwargs)
+        ret.update({
+            'show_bulk': False,
+            'device': self.object,
+        })
+        try:
+            # if ralph_assets app is installed...
+            ret.update({
+                'asset': get_asset(self.object.id),
+            })
+        except NameError:
+            pass
+        return ret
+
+    def get(self, *args, **kwargs):
+        try:
+            device_id = int(self.kwargs.get('device'))
+        except ValueError:
+            self.object = None
+        else:
+            self.object = Device.objects.get(id=device_id)
+        return super(Asset, self).get(*args, **kwargs)
 
 
 class ServerMove(BaseMixin, TemplateView):

@@ -20,8 +20,8 @@ from ralph.ui.views.common import (
     Info,
     Prices,
     Addresses,
+    Asset,
     Costs,
-    Purchase,
     Components,
     History,
     BaseMixin,
@@ -178,7 +178,7 @@ class RacksHistory(Racks, History):
     pass
 
 
-class RacksPurchase(Racks, Purchase):
+class RacksAsset(Racks, Asset):
     pass
 
 

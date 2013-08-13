@@ -17,13 +17,13 @@ from ralph.discovery.models import ReadOnlyDevice, Network, IPAddress
 from ralph.ui.forms import NetworksFilterForm
 from ralph.ui.views.common import (
     Addresses,
+    Asset,
     BaseMixin,
     Components,
     Costs,
     History,
     Info,
     Prices,
-    Purchase,
     Software,
     Scan,
 )
@@ -205,7 +205,7 @@ class NetworksHistory(Networks, History):
     pass
 
 
-class NetworksPurchase(Networks, Purchase):
+class NetworksAsset(Networks, Asset):
     pass
 
 
