@@ -54,7 +54,7 @@ class CiscoSSHClient(paramiko.SSHClient):
         self._asa_chan.sendall(command)
         buffer = ''
         while not command.endswith(
-            buffer[max(0, buffer.rfind('\b')):][:len(command)].strip('\b')
+            buffer[max(0, buffer.rfind('\b')):][:len(command)].strip('\b'),
         ):
             chunk = self._asa_chan.recv(1024)
             buffer += chunk.replace('\b', '')
@@ -79,7 +79,7 @@ def run_ssh_asa(ip):
     ssh = _connect_ssh(ip)
     try:
         lines = ssh.asa_command(
-             "show version | grep (^Hardware|Boot microcode|^Serial|address is)"
+            "show version | grep (^Hardware|Boot microcode|^Serial|address is)"
         )
         raw_inventory = '\n'.join(ssh.asa_command("show inventory"))
     finally:
@@ -119,7 +119,7 @@ def run_ssh_asa(ip):
     for label, mac, speed in ethernets:
         eth, created = Ethernet.concurrent_get_or_create(
             mac=mac,
-            defaults={'device': dev}
+            defaults={'device': dev},
         )
         eth.label = label
         eth.device = dev
