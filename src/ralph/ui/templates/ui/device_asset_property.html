@@ -1,0 +1,7 @@
+{% load icons %}
+<tr>
+    <td width="16">{% icon 'fugue-property' %}</td>
+    <td><strong>{{ name }}</strong></td>
+    <td>{% if bool_value %}{{ value|yesno }}{% else %}{{ value|default:'' }}{% endif %}</td>
+</tr>
+
