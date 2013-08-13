@@ -55,7 +55,7 @@ setup (
         'pysnmp==4.2.2',
         'PyYAML==3.10',
         'python-graph-core==1.8.2',
-        'pytz',
+        'pytz==2012b',
         'pyzabbix>=0.1',
         'requests>=0.14.2',
         'RestKit==4.2.0',
