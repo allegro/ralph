@@ -15,6 +15,7 @@ This documentation
    catalog
    pricing
    discovery
+   deployment
    cmdb
    api
    faq
