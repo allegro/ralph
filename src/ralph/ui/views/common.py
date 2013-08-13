@@ -21,7 +21,7 @@ from django.views.generic import (
     TemplateView,
     UpdateView,
 )
-
+from django.utils.importlib import import_module
 from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Language, TagStem
 from bob.menu import MenuItem
@@ -80,12 +80,6 @@ from ralph.ui.forms.deployment import (
     ServerMoveStep3FormSet,
 )
 from ralph import VERSION
-
-# if ralph_assets app is installed...
-try:
-    from ralph_assets.api_ralph import get_asset
-except ImportError:
-    pass
 
 
 SAVE_PRIORITY = 200
@@ -1017,13 +1011,15 @@ class Asset(BaseMixin, TemplateView):
             'show_bulk': False,
             'device': self.object,
         })
-        try:
-            # if ralph_assets app is installed...
-            ret.update({
-                'asset': get_asset(self.object.id),
-            })
-        except NameError:
-            pass
+        if 'ralph_assets' in settings.INSTALLED_APPS:
+            try:
+                assets_api_ralph = import_module('ralph_assets.api_ralph')
+            except ImportError:
+                pass
+            else:
+                ret.update({
+                    'asset': assets_api_ralph.get_asset(self.object.id),
+                })
         return ret
 
     def get(self, *args, **kwargs):
