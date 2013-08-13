@@ -96,7 +96,7 @@ def guess_family(headers, document):
     return family
 
 
-def get_http_family(address):
+def get_http_family(ip):
     headers, document = get_http_info(ip)
     family = guess_family(headers, document)
     return family
