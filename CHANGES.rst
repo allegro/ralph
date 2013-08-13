@@ -11,7 +11,7 @@ HEAD
 ~~~~~
 Released on August 08, 2013
 
-This is as bugfix release. Changed many many features.
+This is as bugfix release. 
 
 * Added new resources to API: Network, NetworkKind.
 
