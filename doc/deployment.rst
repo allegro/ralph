@@ -79,7 +79,6 @@ performs the following tasks:
 * disassociate all the IP addresses from the server,
 * remove all software information associated with the server,
 * remove all disk share information associated with the server,
-* remove all disk share information associated with the server,
 * remove the operating system information associated with the server,
 * disassociate all sub-devices,
 * reset the uptime information,
