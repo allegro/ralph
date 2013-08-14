@@ -16,6 +16,8 @@ This documentation
    pricing
    discovery
    deployment
+   dns
+   dhcp
    cmdb
    api
    faq
