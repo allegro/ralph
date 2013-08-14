@@ -26,3 +26,9 @@ Ralph, Ralph will note this fact in the database. This is later used during
 server deployment to wait for all DHCP servers to update their configuration.
 If a DHCP server is not on the list, Ralph will not wait for it to update
 before proceeding with deployment.
+
+Importing and exporting DHCP configuration
+==========================================
+
+You can use the ``dhcpimport`` and ``dhcpexport`` Ralph commands to import or
+export DHCP entries.
