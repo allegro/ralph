@@ -82,7 +82,7 @@ def _update_component_data(
     :param Component: model to use to query and create components
     :param field_map: mapping from database fields to component_data keys
     :param unique_fields: list of tuples of fields that are unique together
-    :prarm model_type: If provided, a 'model' field will be added
+    :param model_type: If provided, a 'model' field will be added
     """
 
     component_ids = []
