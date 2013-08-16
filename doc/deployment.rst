@@ -54,7 +54,8 @@ Bulk deployment
 
 It is also possible to start deployments in bulk. The "add device" tab in the
 "racks" section has an option called "servers" that lets you specify a CSV file
-with all the required information, and will start deployments in bulk from it.
+with all the required information, validates it and automatically fills in
+missing information, and then starts deployments in bulk from it.
 
 
 Plugins
@@ -108,8 +109,8 @@ DHCP plugin
 
 The "dhcp" plugin is responsible for updating the DHCP entries in the Ralph
 database, and then for waiting until all the DHCP servers have the updated
-documentation. It will fail until all configured DHCP servers have downloaded
-the new configuration.
+documentation. It will keep failing until all configured DHCP servers have
+downloaded the new configuration.
 
 
 Reboot plugin
