@@ -20,6 +20,9 @@ size_divisor = dict(
     gigabytes = 1/1024,
     GB = 1/1024,
     GiB = 1/1024,
+    terabytes = 1/(1024*1024),
+    TB = 1/(1024*1024),
+    TiB = 1/(1024*1024),
 )
 
 speed_divisor = dict(
