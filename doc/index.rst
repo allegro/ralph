@@ -15,6 +15,9 @@ This documentation
    catalog
    pricing
    discovery
+   deployment
+   dns
+   dhcp
    cmdb
    api
    faq
