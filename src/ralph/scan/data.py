@@ -374,6 +374,7 @@ def set_device_data(device, data):
     if 'memory' in data:
         for index, memory in enumerate(data['memory']):
             memory['index'] = index
+            memory['speed'] = memory.get('speed', None) or None
         _update_component_data(
             device,
             data['memory'],

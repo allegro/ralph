@@ -27,7 +27,10 @@ class CSVWidget(forms.Widget):
             escape(';'.join(h.rjust(16) for h in self.headers)),
         ]
         for row in value or []:
-            output.append(escape(';'.join(row.get(h, '') for h in self.headers)))
+            output.append(escape(';'.join(
+                row.get(h, '') or ''
+                for h in self.headers
+            )))
         output.append('</textarea>'),
         return mark_safe('\n'.join(output))
 
@@ -128,27 +131,36 @@ class DefaultInfo(object):
     Widget = None
     clean = unicode
 
+
 class IntInfo(DefaultInfo):
     display = int
     Field = forms.IntegerField
     clean = int
 
+
 class ListInfo(DefaultInfo):
     display = ', '.join
+    Field = forms.Field
     Widget = forms.Textarea
 
     def clean(self, value):
         return value.replace(',', ' ').split()
 
+
 class CSVInfo(DefaultInfo):
+    Field = forms.Field
+
     def __init__(self, headers):
         self.headers = headers
 
     def display(self, value):
         output = [
-                '<pre style="display:inline-block; vertical-align:top;">',
+            '<pre style="display:inline-block; vertical-align:top;">',
             '<b>%s</b>' % escape(';'.join(h.rjust(16) for h in self.headers)),
-            escape('\n'.join(';'.join(unicode(row.get(h, '')).rjust(16) for h in self.headers) for row in value)),
+            escape('\n'.join(';'.join(
+                unicode(row.get(h, '') or '').rjust(16)
+                for h in self.headers) for row in value
+            )),
             '</pre>',
         ]
         return mark_safe('\n'.join(output))
@@ -156,6 +168,9 @@ class CSVInfo(DefaultInfo):
     @property
     def Widget(self):
         return CSVWidget(self.headers)
+
+    def clean(self, value):
+        return value
 
 
 class DictListInfo(ListInfo):
