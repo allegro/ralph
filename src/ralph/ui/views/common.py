@@ -14,6 +14,7 @@ from django.core.urlresolvers import reverse
 from django.core.paginator import Paginator
 from django.db import models as db
 from django.http import HttpResponseRedirect, HttpResponseForbidden
+from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import (
     DetailView,
@@ -61,6 +62,7 @@ from ralph.discovery.models_history import (
 )
 from ralph.util import presentation, pricing
 from ralph.util.plugin import BY_NAME as AVAILABLE_PLUGINS
+from ralph.ui.forms import ChooseAssetForm
 from ralph.ui.forms.devices import (
     DeviceInfoForm,
     DeviceInfoVerifiedForm,
@@ -1004,14 +1006,21 @@ class Purchase(DeviceUpdateView):
 
 class Asset(BaseMixin, TemplateView):
     template_name = 'ui/device_asset.html'
+    form = None
+    asset = None
+
+    def is_ralph_assets_enabled(self):
+        return 'ralph_assets' in settings.INSTALLED_APPS
 
     def get_context_data(self, **kwargs):
         ret = super(Asset, self).get_context_data(**kwargs)
         ret.update({
             'show_bulk': False,
             'device': self.object,
+            'form': self.form,
+            'ralph_assets_enabled': self.is_ralph_assets_enabled(),
         })
-        if 'ralph_assets' in settings.INSTALLED_APPS:
+        if self.is_ralph_assets_enabled():
             try:
                 assets_api_ralph = import_module('ralph_assets.api_ralph')
             except ImportError:
@@ -1028,7 +1037,42 @@ class Asset(BaseMixin, TemplateView):
         except ValueError:
             self.object = None
         else:
-            self.object = Device.objects.get(id=device_id)
+            self.object = get_object_or_404(
+                Device,
+                id=device_id,
+            )
+            if self.is_ralph_assets_enabled():
+                try:
+                    assets_api_ralph = import_module('ralph_assets.api_ralph')
+                except ImportError:
+                    pass
+                else:
+                    self.asset =  assets_api_ralph.get_asset(self.object.id)
+                self.form = ChooseAssetForm(
+                    initial={
+                        'asset': self.asset['asset_id']
+                            if self.asset else None,
+                    },
+                    device_id=self.object.id,
+                )
+        return super(Asset, self).get(*args, **kwargs)
+
+    def post(self, *args, **kwargs):
+        self.object = get_object_or_404(
+            Device,
+            id=self.kwargs.get('device'),
+        )
+        if self.is_ralph_assets_enabled():
+            self.form = ChooseAssetForm(
+                data=self.request.POST,
+                device_id=self.object.id,
+            )
+            if self.form.is_valid():
+                asset = self.form.cleaned_data['asset']
+                assets_api_ralph = import_module('ralph_assets.api_ralph')
+                assets_api_ralph.assign_asset(self.object, asset)
+                messages.success(self.request, "Asset assigned successfully.")
+                return HttpResponseRedirect(self.request.get_full_path())
         return super(Asset, self).get(*args, **kwargs)
 
 

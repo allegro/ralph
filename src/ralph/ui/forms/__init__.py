@@ -6,7 +6,10 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 
+from ajax_select.fields import AutoCompleteSelectField
 from django import forms
+from django.conf import settings
+from django.utils.importlib import import_module
 
 from ralph.business.models import RoleProperty
 from ralph.ui.forms.util import all_ventures
@@ -81,4 +84,33 @@ class RolePropertyForm(forms.ModelForm):
         'symbol': 'fugue-hand-property',
         'type': 'fugue-property-blue',
     }
+
+
+class ChooseAssetForm(forms.Form):
+    asset = AutoCompleteSelectField(
+        ('ralph_assets.api_ralph', 'UnassignedDCDeviceLookup'),
+        required=True,
+    )
+
+    def __init__(self, device_id, *args, **kwargs):
+        super(ChooseAssetForm, self).__init__(*args, **kwargs)
+        self.fields['asset'].widget.show_help_text = False
+        self.device_id = device_id
+
+    def clean_asset(self):
+        asset = self.cleaned_data['asset']
+        if 'ralph_assets' in settings.INSTALLED_APPS:
+            try:
+                assets_api_ralph = import_module('ralph_assets.api_ralph')
+            except ImportError:
+                pass
+            else:
+                if assets_api_ralph.is_asset_assigned(
+                    asset_id=asset.id,
+                    exclude_devices=[self.device_id],
+                ):
+                    raise forms.ValidationError(
+                        'This asset is assigned to other device.',
+                    )
+        return asset
 
