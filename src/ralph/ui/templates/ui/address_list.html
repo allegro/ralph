@@ -1,0 +1,107 @@
+{% extends "ui/base-devices.html" %}
+{% load url from future %}
+{% load icons %}
+{% load bob %}
+
+{% block contentarea %}
+  <div class="row-fluid">
+    <div class="span10">
+      <form method="POST" class="form form-inline">
+        {% if network and not network.queue %}
+        <div class="alert alert-warning">
+            <a
+                href="/admin/discovery/network/{{ network.id }}"
+                class="btn pull-right"
+            >
+                {% icon 'fugue-toolbox' %}
+                Edit network
+            </a>
+            <p>This network has no discovery queue configured.</p>
+        </div>
+        {% else %}
+            {% if network %}
+            <div class="alert alert-info">
+                <button class="btn btn-info pull-right" name="scan">
+                    {% icon 'fugue-radar' %}
+                    Scan now
+                </button>
+                {% if network.last_scan %}
+                    <p>Last scan of this network happened {{ network.last_scan }}.</p>
+                {% else %}
+                    <p>This network has never been scanned.</p>
+                {% endif %}
+            </div>
+            {% endif %}
+        {% endif %}
+        <table class="table table-striped table-bordered table-condensed table-list device-list">
+            <thead><tr>
+                {% spaceless %}
+                {% if show_bulk %}
+                <th width="16"><div class="dropdown">
+                    <a href="#" data-toggle="dropdown" class="dropdown-toggle">{% icon 'fugue-ui-check-boxes-series' %}</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#" class="select-all">{% icon 'fugue-ui-check-box' %}&nbsp;Select all on this page</a></li>
+                        <li><a href="#" class="select-toggle">{% icon 'fugue-ui-check-box-mix' %}&nbsp;Reverse selection</a></li>
+                        <li><a href="#" class="select-none">{% icon 'fugue-ui-check-box-uncheck' %}&nbsp;Deselect all</a></li>
+                    </ul>
+                </div></th>
+                {% endif %}
+                {% include 'ui/column-header.html' with label='Address' name='address' always=1 type='number' %}
+                {% include 'ui/column-header.html' with label='Hostname' name='hostname' always=1 %}
+                {% include 'ui/column-header.html' with label='Device' name='device' always=1 %}
+                {% include 'ui/column-header.html' with label='Last seen' name='last_seen' always=1 type='date' %}
+                {% include 'ui/column-header.html' with label='SNMP' name='snmp_name' always=1 %}
+                {% include 'ui/column-header.html' with label='HTTP' name='http_family' always=1 %}
+                {% endspaceless %}
+            </tr></thead>
+            <tbody>
+                {% for d in object_list %}
+                    <tr>
+                        <td class="column-checkbox"><input type="checkbox" name="select" value="{{ d.id }}"></td>
+                        <td class="column-address" style="width:9em">
+                            <a 
+                                href="{% url 'networks' network_name 'scan' d.address %}"
+                                style="white-space:nowrap"
+                            >
+                                {{ d|address_icon }}&nbsp;{{ d.address }}
+                            </a>
+                        </td>
+                        <td class="column-hostname">{{ d.hostname|default:'' }}</td>
+                        <td class="column-device">
+                            {% if d.device %}
+                            <a href="../../info/{{ d.device.id }}">
+                            {{ d.device|device_icon }}&nbsp;{{ d.device.model.name|default:'' }}
+                            </a>
+                            {% endif %}
+                        </td>
+                        <td class="column-last-seen" style="width:8em">{{ d.last_seen|date:"Y-m-d H:i" }}</td>
+                        <td class="column-snmp">{{ d.snmp_name|default:'' }}</td>
+                        <td class="column-http">{{ d.http_family|default:'' }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% pagination page_obj url_query=url_query show_all=1 fugue_icons=1 %}
+        {% if show_bulk %}
+        <div class="form-actions bulk-edit">
+            {% csrf_token %}
+            <div class="controls">
+                {% if status_selected == 'buried' %}
+                    <button type="submit" class="btn" name="resurrect">
+                        {% icon 'fugue-candle' %} Resurrect selected
+                    </button>
+                {% else %}
+                    <button type="submit" class="btn" name="bury">
+                        {% icon 'fugue-headstone' %} Bury selected
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+      </form>
+    </div>
+    <div class="span2 scan-tabs">
+      {% tab_menu status_menu_items status_selected side='right' %}
+    </div>
+  </div>
+{% endblock contentarea %}

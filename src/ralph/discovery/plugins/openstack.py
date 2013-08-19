@@ -25,7 +25,7 @@ def make_tenant(tenant):
             name='OpenStack',
             model_name = 'OpenStack Tenant',
             model_type = DeviceType.cloud_server,
-            sn='openstack-%s' % tenant['tenant_id']
+            sn='openstack-%s' % tenant
         )
     dev.save()
     return dev
@@ -93,7 +93,7 @@ def openstack(**kwargs):
             ):
             tenants[data['tenant_id']][url].update(data)
     for tenant_id, regions in tenants.iteritems():
-        dev = make_tenant(data)
+        dev = make_tenant(tenant_id)
         dev.historycost_set.filter(start=start).delete()
         margin_in_percent = dev.get_margin() or 0
         total_cost = 0

@@ -55,9 +55,9 @@ setup (
         'pysnmp==4.2.2',
         'PyYAML==3.10',
         'python-graph-core==1.8.2',
-        'pytz',
-        'pyzabbix==0.1',
-        'requests==0.14.2',
+        'pytz==2012b',
+        'pyzabbix>=0.1',
+        'requests>=0.14.2',
         'RestKit==4.2.0',
         'rq==0.3.7',
         'rq-scheduler==0.3.6',
@@ -68,6 +68,7 @@ setup (
         'null==0.6.1',
         'xlwt==0.7.4',
         'django-discover-runner>=0.4',
+        'Pillow==2.0.0',
     ],
     entry_points={
         'console_scripts': [

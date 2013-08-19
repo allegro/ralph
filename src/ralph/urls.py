@@ -12,6 +12,8 @@ from ralph.business.api import (
     RoleResource,
     VentureLightResource,
     VentureResource,
+    BusinessSegmentResource,
+    ProfitCenterResource,
 )
 from ralph.deployment.api import DeploymentResource
 from ralph.discovery.api import (
@@ -21,6 +23,8 @@ from ralph.discovery.api import (
     IPAddressResource,
     ModelGroupResource,
     ModelResource,
+    NetworkKindsResource,
+    NetworksResource,
     PhysicalServerResource,
     RackServerResource,
     VirtualServerResource,
@@ -54,14 +58,16 @@ OPTIONAL_APPS = ['ralph_assets', 'ralph_pricing', 'ralph_assets_imports']
 for r in (VentureResource, VentureLightResource, RoleResource,
           RoleLightResource, DepartmentResource, RolePropertyTypeResource,
           RolePropertyTypeValueResource, RolePropertyResource,
-          RolePropertyValueResource):
+          RolePropertyValueResource, BusinessSegmentResource,
+          ProfitCenterResource):
     v09_api.register(r())
 
 # discovery API
-for r in (IPAddressResource, ModelGroupResource, ModelResource,
-          PhysicalServerResource, RackServerResource, BladeServerResource,
-          VirtualServerResource, DevResource, WindowsDeviceResource,
-          DeviceWithPricingResource):
+for r in (IPAddressResource, NetworksResource, ModelGroupResource,
+          ModelResource, PhysicalServerResource, RackServerResource,
+          BladeServerResource, VirtualServerResource, DevResource,
+          WindowsDeviceResource, DeviceWithPricingResource,
+          NetworkKindsResource):
     v09_api.register(r())
 
 # CMDB API

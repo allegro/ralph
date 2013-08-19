@@ -425,6 +425,33 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
             ethernet.save(priority=priority)
         return dev
 
+    @classmethod
+    def from_data(cls, data):
+        """Create a device based on a dict of data from the scan."""
+
+        sn = data.get('serial_number')
+        ethernets = [('', mac, None) for mac in data.get('mac_addresses', [])]
+        model_name = data.get('model_name')
+        model_type = DeviceType.unknown
+        for t in DeviceType(item=lambda t:t):
+            if data.get('type').lower() == t.raw.lower():
+                model_type = t
+        device = cls.create(
+            sn=sn,
+            ethernets=ethernets,
+            model_name=model_name,
+            model_type=model_type,
+        )
+        device.save_data(data)
+        return device
+
+    def save_data(self, data):
+        """Update a device based on a dict of data from the scan."""
+
+        # TODO Go through the submitted data, and update the Device object
+        # in accordance with the meaning of the particular fields.
+
+
     def get_margin(self):
         if self.margin_kind:
             return self.margin_kind.margin
@@ -583,6 +610,73 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
                 name = filename
             self.saving_plugin = name
         return super(Device, self).save(*args, **kwargs)
+
+    def get_data(self):
+        """
+        Return a dict describing this device in the same format, as the
+        scanning plugins return.
+        """
+
+        data = {
+            'id': self.id,
+            'system_ip_addresses': [
+                ip.address for ip in
+                self.ipaddress_set.filter(is_management=False)
+            ],
+            'management_ip_addresses': [
+                ip.address for ip in
+                self.ipaddress_set.filter(is_management=True)
+            ],
+            'mac_addresses': [
+                eth.mac for eth in self.ethernet_set.all()
+            ],
+        }
+        if self.name != 'unknown':
+            data['hostname'] = self.name
+        if self.model:
+            data['model_name'] = self.model.name
+            if self.model.type != DeviceType.unknown:
+                data['type'] = self.model.type
+        if self.sn:
+            data['serial_number'] = self.sn
+        if self.chassis_position:
+            data['chassis_position'] = self.chassis_position
+        if self.dc:
+            data['data_center'] = self.dc
+        if self.rack:
+            data['rack'] = self.rack
+        if self.memory_set.exists():
+            data['memory'] = {
+                'total_size': sum(m.get_size() for m in self.memory_set.all()),
+                'count': self.memory_set.count(),
+            }
+        if self.processor_set.exists():
+            data['processors'] = {
+                'count': self.processor_set.count(),
+                'cores': sum(p.get_cores() for p in self.processor_set.all()),
+            }
+            processor = self.processor_set.all()[0]
+            if processor.model:
+                data['processors']['model'] = processor.model.name
+            if processor.speed:
+                data['processors']['speed'] = processor.speed
+        data['disks'] = sorted(
+            ({
+                'serial_number': disk.sn,
+                'label': disk.label,
+                'mount_point': disk.mount_point,
+                'size': disk.size,
+                'model_name': disk.model.name if disk.model else "",
+            } for disk in self.storage_set.all()),
+            key=lambda d: (d['serial_number'], d['mount_point']),
+        )
+
+        # Some details of the device are still not returned:
+        # TODO do parts
+        # TODO do disk shares and exports
+        # TODO do installed_software
+        # TODO do subdevices
+        return data
 
 
 class ReadOnlyDevice(Device):
