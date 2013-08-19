@@ -243,4 +243,4 @@ class ButtonWidget(forms.Widget):
         return mark_safe(
             '<button type="button" class="btn %s">%s</button>' % (
                 attr_class, attr_value)
-        );
+        )
