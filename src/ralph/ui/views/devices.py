@@ -185,6 +185,10 @@ class BaseDeviceList(ListView):
             'sort': self.sort,
             'now': datetime.datetime.now(),
             'device_types': DeviceType,
+            'object_list': (
+                ret.get('object_list') or
+                getattr(ret.get('page_object'), 'object_list', None)
+            ),
         })
         return ret
 

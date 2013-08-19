@@ -27,6 +27,7 @@ from ralph.ui.views.common import (
     BaseMixin,
     Base,
     Software,
+    Scan,
     TEMPLATE_MENU_ITEMS,
 )
 from ralph.ui.views.devices import BaseDeviceList
@@ -78,6 +79,8 @@ def _get_identifier(asset):
 
 
 class SidebarRacks(BaseRacksMixin):
+    section = 'racks'
+
     def __init__(self, *args, **kwargs):
         super(SidebarRacks, self).__init__(*args, **kwargs)
         self.rack = None
@@ -180,6 +183,10 @@ class RacksPurchase(Racks, Purchase):
 
 
 class RacksReports(Racks, Reports):
+    pass
+
+
+class RacksScan(Racks, Scan):
     pass
 
 

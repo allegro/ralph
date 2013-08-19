@@ -65,12 +65,12 @@ class VentureRoleInline(ForeignKeyAutocompleteTabularInline):
 
 class VentureExtraCostInline(admin.TabularInline):
     model = VentureExtraCost
-    exclude = ('created', 'modified')
+    exclude = ('modified',)
 
 
 class AutocompleteVentureExtraCostInline(ForeignKeyAutocompleteTabularInline):
     model = VentureExtraCost
-    exclude = ('created', 'modified')
+    exclude = ('created', 'modified',)
     extra = 3
     related_search_fields = {
         'venture': ['^name'],

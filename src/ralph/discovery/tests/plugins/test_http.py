@@ -8,32 +8,32 @@ from __future__ import unicode_literals
 from django.test import TestCase
 import mock
 
-from ralph.discovery.plugins import http
 from ralph.discovery.plugins import http_supermicro
+from ralph.discovery.http import guess_family
 
 
 class HttpPluginTest(TestCase):
     def test_guess_family_empty(self):
-        family = http.guess_family({}, '')
+        family = guess_family({}, '')
         self.assertEqual(family, 'Unspecified')
 
     def test_guess_family_sun(self):
-        family = http.guess_family({'Server': 'Sun-ILOM-Web-Server'}, '')
+        family = guess_family({'Server': 'Sun-ILOM-Web-Server'}, '')
         self.assertEqual(family, 'Sun')
 
     def test_guess_family_f5(self):
-        family = http.guess_family({'Server': 'Apache'}, '<title>BIG-IP</title>')
+        family = guess_family({'Server': 'Apache'}, '<title>BIG-IP</title>')
         self.assertEqual(family, 'F5')
 
     def test_guess_family_juniper(self):
         test_string = '<title>Log In - Juniper Web Device Manager</title>'
-        family = http.guess_family({'Server': 'Mbedthis-Appweb/2.4.2'},
+        family = guess_family({'Server': 'Mbedthis-Appweb/2.4.2'},
                                    test_string)
         self.assertEqual(family, 'Juniper')
 
     def test_guess_family_dell(self):
         test_string = 'top.document.location.href = "/sclogin.html?console"'
-        family = http.guess_family({'Server': 'Mbedthis-Appweb/2.4.2'},
+        family = guess_family({'Server': 'Mbedthis-Appweb/2.4.2'},
                                    test_string)
         self.assertEqual(family, 'Dell')
 

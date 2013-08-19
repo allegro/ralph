@@ -32,6 +32,8 @@ from ralph.discovery.models import (
     DeviceModelGroup,
     DeviceType,
     IPAddress,
+    Network,
+    NetworkKind,
 )
 from ralph.ui.views.common import _get_details
 
@@ -40,10 +42,16 @@ TIMEFRAME = settings.API_THROTTLING['timeframe']
 EXPIRATION = settings.API_THROTTLING['expiration']
 SAVE_PRIORITY=10
 
+
 class IPAddressResource(MResource):
     device = fields.ForeignKey(
         'ralph.discovery.api.DevResource',
         'device',
+        null=True,
+    )
+    network = fields.ForeignKey(
+        'ralph.discovery.api.NetworksResource',
+        'network',
         null=True,
     )
 
@@ -71,11 +79,11 @@ class IPAddressResource(MResource):
             'snmp_community': ALL,
         }
         excludes = (
-            'cache_version',
             'dns_info',
             'max_save_priority',
             'save_priorities',
             'snmp_name',
+            'cache_version',
         )
         cache = SimpleCache()
         throttle = CacheThrottle(
@@ -83,6 +91,17 @@ class IPAddressResource(MResource):
             timeframe=TIMEFRAME,
             expiration=EXPIRATION,
         )
+
+    def dehydrate(self, bundle):
+        network = self.instance.network
+        bundle.data['network_details'] = {
+            'name': network.name if network else '',
+            'address': network.address if network else '',
+            'network_kind': (
+                network.kind.name if network and network.kind else ''
+            ),
+        }
+        return bundle
 
 
 class ModelGroupResource(MResource):
@@ -234,6 +253,7 @@ class DeviceResource(MResource):
             timeframe=TIMEFRAME,
             expiration=EXPIRATION,
         )
+        limit = 100
 
     def obj_update(self, bundle, request=None, **kwargs):
         """
@@ -508,12 +528,34 @@ class DeviceWithPricingResource(DeviceResource):
         return splunk_cost
 
 
-class IPAddressResource(MResource):
-    device = fields.ForeignKey('ralph.discovery.api.DevResource', 'device',
-        null=True)
+class NetworkKindsResource(MResource):
+    class Meta:
+        queryset = NetworkKind.objects.all()
+        authentication = ApiKeyAuthentication()
+        authorization = RalphAuthorization(
+            required_perms=[
+                Perm.read_network_structure,
+            ]
+        )
+        filtering = {'name'}
+        excludes = ('icon')
+        cache = SimpleCache()
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
+
+
+class NetworksResource(MResource):
+    network_kind = fields.ForeignKey(
+        'ralph.discovery.api.NetworkKindsResource',
+        'kind',
+        null=True,
+    )
 
     class Meta:
-        queryset = IPAddress.objects.all()
+        queryset = Network.objects.all()
         authentication = ApiKeyAuthentication()
         authorization = RalphAuthorization(
             required_perms=[
@@ -521,17 +563,8 @@ class IPAddressResource(MResource):
             ]
         )
         filtering = {
-            'address': ALL,
-            'device': ALL,
-            'hostname': ALL,
-            'is_management': ALL,
-            'snmp_community': ALL,
         }
         excludes = (
-            'dns_info',
-            'max_save_priority',
-            'save_priorities',
-            'snmp_name',
         )
         cache = SimpleCache()
         throttle = CacheThrottle(

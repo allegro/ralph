@@ -16,7 +16,7 @@ from ralph.util import network
 from ralph.util import plugin, Eth
 from ralph.discovery.models import (DeviceType, Device, Processor, IPAddress,
                                     ComponentModel, ComponentType, Memory)
-from ralph.discovery.plugins.http import guess_family, get_http_info
+from ralph.discovery.http import guess_family, get_http_info
 
 
 USER = settings.IBM_SYSTEM_X_USER

@@ -15,9 +15,10 @@ from ralph.discovery.hp_ilo import IloHost
 from ralph.deployment.models import Deployment, DeploymentStatus
 
 
-@plugin.register(chain='deployment',
-                 requires=['dns', 'dhcp', 'role'],
-                 priority=0)
+# This plugin is temporarily disabled.
+#@plugin.register(chain='deployment',
+#                 requires=['dns', 'dhcp', 'role'],
+#                 priority=0)
 def reboot(deployment_id):
     deployment = Deployment.objects.get(id=deployment_id)
     if deployment.status == DeploymentStatus.done:

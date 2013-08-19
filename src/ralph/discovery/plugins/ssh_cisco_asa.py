@@ -53,10 +53,11 @@ class CiscoSSHClient(paramiko.SSHClient):
         time.sleep(0.125)
         self._asa_chan.sendall(command)
         buffer = ''
-        end = command[-32:]
-        while not buffer.strip('\b ').endswith(end):
+        while not command.endswith(
+            buffer[max(0, buffer.rfind('\b')):][:len(command)].strip('\b'),
+        ):
             chunk = self._asa_chan.recv(1024)
-            buffer += chunk
+            buffer += chunk.replace('\b', '')
         self._asa_chan.sendall('\r\n')
         buffer = ['']
         while True:
@@ -69,6 +70,7 @@ class CiscoSSHClient(paramiko.SSHClient):
             if '> ' in buffer[-1]:
                 return buffer[1:-1]
 
+
 def _connect_ssh(ip, username='root', password=''):
     return network.connect_ssh(ip, SSH_USER, SSH_PASS, client=CiscoSSHClient)
 
@@ -77,7 +79,8 @@ def run_ssh_asa(ip):
     ssh = _connect_ssh(ip)
     try:
         lines = ssh.asa_command(
-            "show version | grep (^Hardware|Boot microcode|^Serial|address is)")
+            "show version | grep (^Hardware|Boot microcode|^Serial|address is)"
+        )
         raw_inventory = '\n'.join(ssh.asa_command("show inventory"))
     finally:
         ssh.close()
@@ -114,7 +117,10 @@ def run_ssh_asa(ip):
     ipaddr.save()
 
     for label, mac, speed in ethernets:
-        eth, created = Ethernet.concurrent_get_or_create(mac=mac, device=dev)
+        eth, created = Ethernet.concurrent_get_or_create(
+            mac=mac,
+            defaults={'device': dev},
+        )
         eth.label = label
         eth.device = dev
         eth.save()

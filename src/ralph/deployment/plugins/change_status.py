@@ -11,7 +11,7 @@ from ralph.util import plugin
 
 
 @plugin.register(chain='deployment',
-                 requires=['dns', 'dhcp', 'role', 'reboot'],
+                 requires=['dns', 'dhcp', 'role'],
                  priority=0)
 def change_status(deployment_id):
     deployment = Deployment.objects.get(id=deployment_id)

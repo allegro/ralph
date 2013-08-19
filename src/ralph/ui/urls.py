@@ -11,7 +11,7 @@ from django.views.generic.simple import redirect_to
 from ralph.cmdb.views import Search as SearchCmdb
 
 from ralph.ui.views import typeahead_roles, unlock_field, logout
-from ralph.ui.views.common import Home, BulkEdit, ServerMove
+from ralph.ui.views.common import Home, BulkEdit, ServerMove, ScanStatus, Scan
 from ralph.ui.views.ventures import (
     ReportVenturesDeviceList,
     VenturesAddresses,
@@ -25,6 +25,7 @@ from ralph.ui.views.ventures import (
     VenturesRoles,
     VenturesSoftware,
     VenturesVenture,
+    VenturesScan,
 )
 from ralph.ui.views.racks import (
     RacksAddDevice,
@@ -38,6 +39,7 @@ from ralph.ui.views.racks import (
     RacksRack,
     RacksReports,
     RacksSoftware,
+    RacksScan,
     ReportRacksDeviceList,
 )
 from ralph.ui.views.search import (
@@ -52,6 +54,7 @@ from ralph.ui.views.search import (
     SearchPurchase,
     SearchReports,
     SearchSoftware,
+    SearchScan,
 )
 from ralph.ui.views.networks import (
     NetworksAddresses,
@@ -65,6 +68,8 @@ from ralph.ui.views.networks import (
     NetworksReports,
     NetworksSoftware,
     ReportNetworksDeviceList,
+    NetworksAutoscan,
+    NetworksScan,
 )
 from ralph.ui.views.catalog import (
     Catalog,
@@ -129,6 +134,8 @@ urlpatterns = patterns('',
             login_required(SearchDeviceList.as_view()), {}, 'search'),
     url(r'^search/(?P<details>cmdb)/(?P<device>\d+)$',
         login_required(SearchCmdb.as_view()), {}, 'search'),
+    url(r'^search/(?P<details>scan)/(?P<address>[\d.]*)/$',
+        login_required(SearchScan.as_view()), {}, 'search'),
 
     url(r'^ventures/$',
         login_required(VenturesDeviceList.as_view()), {}, 'ventures'),
@@ -163,6 +170,8 @@ urlpatterns = patterns('',
         login_required(VenturesRoles.as_view()), {}, 'ventures'),
     url(r'^ventures/(?P<venture>[.\w*-]*)/(?P<details>venture)/(?P<device>)$',
         login_required(VenturesVenture.as_view()), {}, 'ventures'),
+    url(r'^ventures/(?P<venture>[.\w*-]*)/(?P<details>scan)/(?P<address>[\d.]*)/$',
+        login_required(VenturesScan.as_view()), {}, 'ventures'),
 
     url(r'^racks/$',
         login_required(RacksDeviceList.as_view()), {}, 'racks'),
@@ -193,6 +202,8 @@ urlpatterns = patterns('',
         login_required(RacksReports.as_view()), {}, 'racks'),
     url(r'^racks/(?P<rack>[-\w]*)/(?P<details>\w+)/(?P<device>)$',
         login_required(RacksDeviceList.as_view()), {}, 'racks'),
+    url(r'^racks/(?P<rack>[-\w]*)/(?P<details>scan)/(?P<address>[\d.]*)/$',
+        login_required(RacksScan.as_view()), {}, 'racks'),
 
     url(r'^networks/$',
         login_required(NetworksDeviceList.as_view()), {}, 'networks'),
@@ -216,6 +227,12 @@ urlpatterns = patterns('',
         login_required(ReportNetworksDeviceList.as_view()), {'device': ''}, 'networks'),
     url(r'^networks/(?P<network>[^/]*)/(?P<details>reports)/(?P<device>\d+)$',
         login_required(NetworksReports.as_view()), {}, 'networks'),
+    url(r'^networks/(?P<network>[^/]*)/(?P<details>autoscan)/$',
+        login_required(NetworksAutoscan.as_view()), {'status': 'new'}, 'networks'),
+    url(r'^networks/(?P<network>[^/]*)/(?P<details>autoscan)/(?P<status>new|changed|dead|buried|all)/$',
+        login_required(NetworksAutoscan.as_view()), {}, 'networks'),
+    url(r'^networks/(?P<network>[^/]*)/(?P<details>scan)/(?P<address>[\d.]*)/$',
+        login_required(NetworksScan.as_view()), {}, 'networks'),
     url(r'^networks/(?P<network>[^/]*)/(?P<details>\w+)/(?P<device>)$',
         login_required(NetworksDeviceList.as_view()), {}, 'networks'),
 
@@ -241,4 +258,9 @@ urlpatterns = patterns('',
         login_required(PrepareMassDeployment.as_view())),
     url(r'^deployment/mass/define/(?P<deployment>[0-9]+)/$',
         login_required(MassDeployment.as_view())),
+
+    url(r'^scan/(?P<job_id>[a-z0-9-]+)/$',
+        login_required(ScanStatus.as_view()), {}, 'scan'),
+    url(r'^scan/(?P<address>[0-9.]+)/$',
+        login_required(Scan.as_view()), {}, 'scan'),
 )

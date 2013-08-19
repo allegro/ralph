@@ -7,6 +7,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import re
+import datetime
 
 from django.conf import settings
 from django.db import models as db
@@ -333,7 +334,7 @@ class VentureRole(Named.NonUnique, PrebootMixin, HasSymbolBasedPath,
                     value = prop.default
                 else:
                     value = pv.value
-                props[prop.symbol] = value
+                props[prop.symbol] = value or ''
             return props
         values = {}
         values.update(property_dict(
@@ -343,6 +344,20 @@ class VentureRole(Named.NonUnique, PrebootMixin, HasSymbolBasedPath,
             self.roleproperty_set.filter(venture=None),
         ))
         return values
+
+    def get_property_types(self, device):
+        types = {}
+        types.update({
+            p.symbol:p.type.symbol for p in
+            self.venture.roleproperty_set.filter(role=None)
+            if p.type
+        })
+        types.update({
+            p.symbol:p.type.symbol for p in
+            self.roleproperty_set.filter(venture=None)
+            if p.type
+        })
+        return types
 
 
 class RolePropertyType(db.Model):
@@ -534,7 +549,8 @@ def cost_post_save(sender, instance, raw, using, **kwargs):
             # Ignore changes due to rounding errors
             changed = True
     if changed:
-        HistoryCost.start_span(extra=instance, end=instance.expire)
+        start = min(datetime.datetime.now(), instance.expire)
+        HistoryCost.start_span(extra=instance, start=start, end=instance.expire)
 
 
 @receiver(

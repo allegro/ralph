@@ -1,0 +1,148 @@
+{% extends "ui/base.html" %}
+
+{% load url from future %}
+{% load icons %}
+{% load formats %}
+{% load bob %}
+
+{% block extra_headers %}
+{{ block.super }}
+{% if job and not job.is_finished and not job.is_failed %}
+<meta http-equiv="refresh" content="5">
+{% endif %}
+{% endblock %}
+
+{% block sidebar %}
+{% if status %}
+<div class="well">
+    <ul class="unstyled">
+        {% for name, bar, icon in status %}
+        <li style="white-space:nowrap">{% icon icon %}&nbsp;{{ name }}</li>
+        {% endfor %}
+    </ul>
+</div>
+<div class="form-actions">
+    <a href="../{{ address }}/" class="btn">
+        {% icon 'fugue-arrow-circle-double' %}&nbsp;Rescan
+    </a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block contentarea %}
+{% if job %}
+    <div class="well">
+        <p>Scanning <strong>{{ address }}</strong>...</p>
+        <div class="progress progress-striped {% if not job.is_finished and not job.is_failed  %}active{% endif %}">
+            {% for name, bar, icon in status %}
+            {% if bar %}
+            <div
+                class="bar bar-{{ bar }}"
+                style="width:{{ task_size }}%"
+                title="{{ name }}"
+            ></div>
+            {% endif %}
+            {% endfor %}
+            {% if not job.is_finished %}
+            <div
+                class="bar {% if job.is_failed %}bar-danger{% else %}bar-info{% endif %}"
+                style="width:{{ task_size }}%"
+                title="working..."
+            ></div>
+            {% endif %}
+        </div>
+    </div>
+    <p>
+    {% for addr, name, kind,  message in job.meta.messages %}
+    <div class="text-{{ kind }}">
+        <strong>{{ name }}</strong>: {{ message }}
+    </div>
+    {% endfor %}
+    </p>
+    {% if job.is_failed %}
+    <div class="alert alert-error">
+        <p>Scanning failed.</p>
+        <pre>{{ job.exc_info }}</pre>
+    </div>
+    {% endif %}
+    {% if job.is_finished %}
+        <div class="alert alert-success">
+            <p>Scanning finished.</p>
+        </div>
+        <ul class="nav nav-tabs">
+            {%for device, form in forms %}
+            <li {% if device_id == device.id|default:'new' %}class="active"{% endif %}>
+                <a
+                    href="#device-{{ device.id|default:'new' }}"
+                    data-toggle="tab"
+                >
+                {% if device == None %}
+                    {% icon 'fugue-wand-hat' %}&nbsp;Create new
+                {% else %}
+                    {{ device|device_icon }}&nbsp;{{ device }}
+                {% endif %}
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+        <div class="tab-content">
+            {%for device, form in forms %}
+            <div
+                class="tab-pane{%if device_id == device.id|default:'new' %} active{% endif %}"
+                id="device-{{ device.id|default:'new' }}"
+            >
+                <form method="POST" class="form form-horizontal">
+                {% csrf_token %}
+                {% for f in form %}
+                    {% if not '-custom' in f.name %}
+                    <div
+                        class="
+                            control-group 
+                        {% if f.errors or form|getfielderrors:f.field.subfield_name %}
+                            error
+                        {% endif %}
+                        "
+                    >
+                        <label class="control-label">{{ f.label }}</label>
+                        <div class="controls">
+                            {{ f }}
+                            <label class="radio">
+                                <input
+                                    type="radio"
+                                    name="{{ f.name }}"
+                                    value="custom"
+                                    {% if f.value == 'custom' %}checked="on"{% endif %}
+                                >
+                                {{ form|getfield:f.field.subfield_name }}
+                                {% for error in form|getfielderrors:f.field.subfield_name %}
+                                <div class="help-block">{{ error }}</div>
+                                {% endfor %}
+                            </label>
+                            {% for error in f.errors %}
+                            <div class="help-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+                <div class="form-actions">
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                        name="save"
+                        value="{{ device.id|default:'new' }}"
+                    >
+                        {% if device %}
+                            {% icon 'fugue-quill' %}&nbsp;Update&nbsp;{{ device }}
+                        {% else %}
+                            {% icon 'fugue-wand-hat' %}&nbsp;Create
+                        {% endif %}
+                    </button>
+                </div>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endif %}
+{% endblock %}

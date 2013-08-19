@@ -38,3 +38,11 @@ def order_by(query, by):
 @register.filter
 def chassis_order(query):
     return query.order_by('model__type', 'chassis_position', 'position')
+
+@register.filter
+def getfield(d, key_name):
+    return d[key_name]
+
+@register.filter
+def getfielderrors(d, key_name):
+    return d[key_name].errors
