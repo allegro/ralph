@@ -112,12 +112,14 @@
                                     name="{{ f.name }}"
                                     value="custom"
                                     {% if f.value == 'custom' %}checked="on"{% endif %}
-                                >
+                                > Custom:
+                            </label>
+                            <div class="custom-control">
                                 {{ form|getfield:f.field.subfield_name }}
                                 {% for error in form|getfielderrors:f.field.subfield_name %}
                                 <div class="help-block">{{ error }}</div>
                                 {% endfor %}
-                            </label>
+                            </div>
                             {% for error in f.errors %}
                             <div class="help-block">{{ error }}</div>
                             {% endfor %}

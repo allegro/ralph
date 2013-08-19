@@ -9,9 +9,8 @@ from __future__ import unicode_literals
 import rq
 import django_rq
 from django.utils.importlib import import_module
-from django.db import models as db
 
-from ralph.discovery.models import IPAddress, Network, Device
+from ralph.discovery.models import IPAddress, Network
 from ralph.scan.errors import NoQueueError
 
 
@@ -77,45 +76,3 @@ def _scan_address(address, plugins, **kwargs):
         job.meta['finished'].append(plugin_name)
         job.save()
     return results
-
-
-def merge_data(*args, **kwargs):
-    """Merge several dicts with data from a scan into a single dict."""
-
-    only_multiple = kwargs.get('only_multiple', False)
-    merged = {}
-    for result in args:
-        for plugin_name, data in result.iteritems():
-            for key, value in data.get('device', {}).iteritems():
-                merged.setdefault(key, {})[plugin_name] = value
-    # Now, make the values unique.
-    unique = {}
-    for key, values in merged.iteritems():
-        repeated = {}
-        for source, value in values.iteritems():
-            repeated.setdefault(unicode(value), []).append(source)
-        if only_multiple and len(repeated) <= 1:
-            continue
-        for value_str, sources in repeated.iteritems():
-            sources.sort()
-            unique.setdefault(
-                key,
-                {},
-            )[tuple(sources)] = merged[key][sources[0]]
-    return unique
-
-
-def find_devices(result):
-    """Find all devices that can be possibly matched to this scan data."""
-
-    serials = set(
-        r['device']['serial_number']
-        for r in result.itervalues() if 'serial_number' in r.get('device', {})
-    )
-    macs = set()
-    for r in result.itervalues():
-        macs |= set(r.get('device', {}).get('mac_addresses', []))
-    return Device.admin_objects.filter(
-        db.Q(sn__in=serials) |
-        db.Q(ethernet__mac__in=macs)
-    ).distinct()
