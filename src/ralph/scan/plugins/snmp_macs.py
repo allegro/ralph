@@ -28,9 +28,16 @@ def _get_model_info(snmp_name):
     elif snmp_name.lower().startswith('hardware:') and 'Windows' in snmp_name:
         model_name = 'Windows'
         model_type = DeviceType.unknown
+    elif snmp_name.lower().startswith('vmware esx'):
+        model_name = 'VMware ESX'
+        model_type = str(DeviceType.unknown)
     elif snmp_name.startswith('IronPort'):
         model_name = snmp_name.split(',')[0].strip()
         model_type = DeviceType.smtp_gateway
+        is_management = True
+    elif snmp_name.startswith('Intel Modular'):
+        model_name = 'Intel Modular Blade System'
+        model_type = str(DeviceType.blade_system)
         is_management = True
     elif snmp_name.startswith('IBM PowerPC CHRP Computer'):
         model_name = 'IBM pSeries'
@@ -60,15 +67,23 @@ def _get_model_info(snmp_name):
             model_name, trash = model_name.split(',', 1)
         model_type = DeviceType.switch
         is_management = True
+    elif '.f5app' in snmp_name:
+        model_name = snmp_name
+        model_type = str(DeviceType.load_balancer)
     elif 'StorageWorks' in snmp_name:
         model_name = snmp_name
         model_type = DeviceType.storage
+    elif 'brocade' in snmp_name.lower():
+        model_name = snmp_name
+        model_type = DeviceType.switch
     elif 'linux' in snmp_name.lower():
         model_name = 'Linux'
         model_type = DeviceType.unknown
     else:
         raise Error(
-            "The SNMP name %r doesn't match any supported device."
+            "The SNMP name `%s` doesn't match any supported device." % (
+                snmp_name,
+            ),
         )
     return model_name, model_type, is_management
 
@@ -82,9 +97,11 @@ def _snmp_mac(ip_address, snmp_name, snmp_community, snmp_version,
             "Empty SNMP name or community. "
             "Please perform an autoscan of this address first."
         )
-        return
     model_name, model_type, is_management = _get_model_info(snmp_name)
-    if snmp_name.startswith('IronPort'):
+    if snmp_name.lower().startswith('vmware esx'):
+        oid = (1, 3, 6, 1, 2, 1, 2, 2, 1, 6)
+        snmp_version = 1
+    elif snmp_name.startswith('IronPort'):
         parts = snmp_name.split(',')
         pairs = dict(
             (k.strip(), v.strip()) for (k, v) in (
@@ -92,7 +109,7 @@ def _snmp_mac(ip_address, snmp_name, snmp_community, snmp_version,
             )
         )
         sn = pairs.get('Serial #')
-    if snmp_name.startswith('APC'):
+    elif snmp_name.startswith('APC'):
         m = re.search(r'\sSN:\s*(\S+)', snmp_name)
         if m:
             sn = m.group(1)
@@ -116,11 +133,17 @@ def _snmp_mac(ip_address, snmp_name, snmp_community, snmp_version,
             # Skip VMWare interfaces on Windows
             continue
         if mac.startswith('0001D7') and model_type != DeviceType.load_balancer:
-            raise Error("This is an F5.")
+            # This is an F5
+            model_name = 'F5'
+            model_type = DeviceType.load_balancer
         mac_addresses.add(mac)
+    if model_type == DeviceType.load_balancer:
+        # For F5, macs that start with 02 are the masqueraded macs
+        mac_addresses = set([
+            mac for mac in mac_addresses if not mac.startswith('02')
+        ])
     if not mac_addresses:
         raise Error("No valid MAC addresses in the SNMP response.")
-
     result = {
         'type': str(model_type),
         'model_name': model_name,
@@ -136,7 +159,6 @@ def _snmp_mac(ip_address, snmp_name, snmp_community, snmp_version,
             result['system_family'] = "Sun"
     else:
         result['system_ip_addresses'] = [ip_address]
-
     return result
 
 
@@ -166,3 +188,4 @@ def scan_address(ip_address, **kwargs):
             'device': device_info,
         })
     return result
+
