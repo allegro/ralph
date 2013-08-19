@@ -11,7 +11,6 @@ from ralph.discovery.models import Device, DeviceType, DiskShareMount
 from django.db import models as db
 
 
-
 def get_ventures():
     """Yields dicts describing all the ventures to be imported into pricing."""
 
@@ -23,6 +22,10 @@ def get_ventures():
             'name': venture.name,
             'department': department.name if department else '',
             'symbol': venture.symbol,
+            'business_segment': venture.business_segment.name if
+            venture.business_segment else "",
+            'profit_center': venture.profit_center.name if
+            venture.profit_center else "",
         }
 
 
@@ -41,6 +44,8 @@ def get_devices():
         yield {
             'id': device.id,
             'name': device.name,
+            'sn': device.sn,
+            'barcode': device.barcode,
             'parent_id': device.parent_id,
             'venture_id': device.venture_id,
             'is_virtual': device.model.type == DeviceType.virtual_server,
