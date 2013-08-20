@@ -13,11 +13,3 @@ class Error(Exception):
 class NoQueueError(Error):
     """No discovery queue defined."""
 
-
-class NoMacError(Error):
-    """No MAC address."""
-
-
-class NoMatchError(Error):
-    """No match."""
-
