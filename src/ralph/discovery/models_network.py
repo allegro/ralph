@@ -226,6 +226,13 @@ class IPAddress(LastSeen, TimeTrackable, WithConcurrentGetOrCreate):
         _("SNMP community"), max_length=64, null=True, blank=True,
         default=None,
     )
+    snmp_version = db.CharField(
+        _("SNMP version"),
+        max_length=5,
+        null=True,
+        blank=True,
+        default=None,
+    )
     device = db.ForeignKey(
         'Device', verbose_name=_("device"), null=True, blank=True,
         default=None, on_delete=db.SET_NULL,
