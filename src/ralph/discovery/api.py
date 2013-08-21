@@ -93,13 +93,12 @@ class IPAddressResource(MResource):
         )
 
     def dehydrate(self, bundle):
-        ipaddress = IPAddress.objects.get(id=bundle.data.get('id'))
-        network = ipaddress.network
+        network = self.instance.network
         bundle.data['network_details'] = {
             'name': network.name if network else '',
             'address': network.address if network else '',
             'network_kind': (
-                network.kind.name if (network and network.kind) else ''
+                network.kind.name if network and network.kind else ''
             ),
         }
         return bundle
@@ -254,6 +253,7 @@ class DeviceResource(MResource):
             timeframe=TIMEFRAME,
             expiration=EXPIRATION,
         )
+        limit = 100
 
     def obj_update(self, bundle, request=None, **kwargs):
         """
@@ -383,16 +383,6 @@ class DeviceResource(MResource):
                 related_objs.append(related_bundle.obj)
 
             related_mngr.add(*related_objs)
-
-    def dehydrate(self, bundle):
-        ipaddress = IPAddress.objects.get(id=bundle.data.get('id'))
-        network = ipaddress.network
-        bundle.data['management'] += {
-            'network_kind': (
-                network.kind.name if (network and network.kind) else ''
-            ),
-        }
-        return bundle
 
 
 class PhysicalServerResource(DeviceResource):

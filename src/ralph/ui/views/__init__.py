@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 
 from django.shortcuts import get_object_or_404
 from django.http import Http404
+
 from django.views.decorators.csrf import csrf_exempt
 from ralph.util.views import jsonify
 from django.contrib import auth

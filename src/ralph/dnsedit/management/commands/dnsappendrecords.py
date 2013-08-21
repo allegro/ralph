@@ -9,9 +9,10 @@ from __future__ import unicode_literals
 import textwrap
 
 from django.core.management.base import BaseCommand
-from powerdns.models import Domain, Record, RECORD_TYPES
+from powerdns.models import Record, RECORD_TYPES
 
 from bob.csvutil import UnicodeReader
+from ralph.dnsedit.util import get_domain
 
 
 class Error(Exception):
@@ -31,9 +32,11 @@ class EmptyRecordValueError(Error):
 
 
 class Command(BaseCommand):
-    """Append DNS records form csv file to existing Domain
-    record should be in this format:
-    name;type;content;domain name
+    """
+    Append DNS records form csv file to existing Domain
+    record should be in this format::
+
+        name;type;content
     """
 
     help = textwrap.dedent(__doc__).strip()
@@ -49,33 +52,34 @@ class Command(BaseCommand):
             for i, value in enumerate(UnicodeReader(f), 1):
                 if len(value) != 4:
                     raise IncorrectLengthRowError(
-                        'CSV row {} have {} elements, should be 4'.format(
+                        'CSV row {} has {} elements, should be 3'.format(
                             i,
                             len(value),
                         )
                     )
-                name, type, content, domain_name = value
-                if not all((name, type, content, domain_name)):
-                    raise EmptyRecordValueError('Record fields can not be empty')
-                if type in RECORD_TYPES:
-                    domain = Domain.objects.get(name=domain_name)
-                    self.create_record(type, domain, name, content)
-                else:
+                name, type, content = value
+                if not all((name, type, content)):
+                    raise EmptyRecordValueError(
+                        'Record fields can not be empty',
+                    )
+                if type not in RECORD_TYPES:
                     raise DisallowedRecordTypeError(
                         'Record type {} is not allowed. Use:\n {}'.format(
                             type,
                             RECORD_TYPES,
-                        )
+                        ),
                     )
+                self.create_record(name, type, content)
 
-    def create_record(self, type, domain, name, content):
+    def create_record(self, name, type, content):
+        domain = get_domain(name)
         record, created = Record.objects.get_or_create(
             domain=domain,
             name=name,
             type=type,
             content=content,
         )
-        print('Record {}: {} IN {} {} {}'.format(
+        print('Record {}: {} IN {} {} (zone {})'.format(
             'created' if created else 'exists',
             record.name,
             record.type,
