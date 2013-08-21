@@ -7,11 +7,13 @@ from __future__ import unicode_literals
 import collections
 
 from bob.menu import MenuItem
+from django.conf import settings
 from django.contrib import messages
 from django.db.models import Q
 from django.http import HttpResponseForbidden, HttpResponseRedirect, Http404
 from django.shortcuts import get_object_or_404
 from django.views.generic import CreateView
+from django.utils.importlib import import_module
 
 from ralph.account.models import Perm
 from ralph.discovery.models import ReadOnlyDevice, Device, DeviceType
@@ -416,6 +418,16 @@ class DeviceCreateView(BaseRacksMixin, CreateView):
         )
         dev.name = form.cleaned_data['name']
         dev.save(priority=1, user=self.request.user)
+        if all((
+            'ralph_assets' in settings.INSTALLED_APPS,
+            'asset' in form.cleaned_data.keys(),
+        )):
+            try:
+                assets_api_ralph = import_module('ralph_assets.api_ralph')
+            except ImportError:
+                pass
+            else:
+                assets_api_ralph.assign_asset(dev, form.cleaned_data['asset'])
         messages.success(self.request, "Device created.")
         return HttpResponseRedirect(self.request.path + '../info/%d' % dev.id)
 
