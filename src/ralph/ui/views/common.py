@@ -29,8 +29,15 @@ from bob.menu import MenuItem
 from powerdns.models import Record
 from ralph.discovery.models_device import DeprecationKind, MarginKind
 from ralph.scan.errors import Error as ScanError
-from ralph.scan.manual import scan_address, merge_data, find_devices
+from ralph.scan.manual import scan_address
 from ralph.scan.forms import DiffForm
+from ralph.scan.data import (
+    device_from_data,
+    find_devices,
+    get_device_data,
+    merge_data,
+    set_device_data,
+)
 from ralph.business.models import (
     RoleProperty,
     RolePropertyValue,
@@ -328,12 +335,11 @@ class BaseMixin(object):
                     fugue_icon='fugue-baggage-cart-box',
                     href=self.tab_href('asset')),
             ])
-# TODO Don't show the Scan tab until it is ready.
-#        if has_perm(Perm.edit_device_info_generic):
-#            tab_items.extend([
-#                MenuItem('Scan', name='scan', fugue_icon='fugue-flashlight',
-#                         href=self.tab_href('scan')),
-#            ])
+        if has_perm(Perm.edit_device_info_generic):
+            tab_items.extend([
+                MenuItem('Scan', name='scan', fugue_icon='fugue-flashlight',
+                         href=self.tab_href('scan')),
+            ])
         if ('ralph.cmdb' in settings.INSTALLED_APPS and
             has_perm(Perm.read_configuration_item_info_generic)):
             ci = ''
@@ -434,6 +440,13 @@ class DeviceUpdateView(UpdateView):
         pricing.device_update_cached(model)
         messages.success(self.request, "Changes saved.")
         return HttpResponseRedirect(self.request.path)
+
+    def form_invalid(self, form):
+        messages.error(
+            self.request,
+            _("There are some errors in your form. See below for details.")
+        )
+        return super(DeviceUpdateView, self).form_invalid(form)
 
     def get(self, *args, **kwargs):
         self.object = self.get_object()
@@ -1472,7 +1485,7 @@ class ScanStatus(BaseMixin, TemplateView):
             data = merge_data(
                 result,
                 {
-                    'database': { 'device': device.get_data() },
+                    'database': { 'device': get_device_data(device) },
                 },
                 only_multiple=True,
             )
@@ -1571,12 +1584,17 @@ class ScanStatus(BaseMixin, TemplateView):
                     field_name: form.get_value(field_name)
                     for field_name in form.result
                 }
-                if device is None:
-                    device = Device.from_data(data)
+                try:
+                    if device is None:
+                        device = device_from_data(data)
+                    else:
+                        set_device_data(device, data)
+                        device.save()
+                except ValueError as e:
+                    messages.error(self.request, e)
                 else:
-                    device.save_data(data)
-                messages.success(self.request, "Device %s saved." % device)
-                return HttpResponseRedirect(self.request.path)
+                    messages.success(self.request, "Device %s saved." % device)
+                    return HttpResponseRedirect(self.request.path)
             else:
                 messages.error(self.request, "Errors in the form.")
                 for error in form.non_field_errors():

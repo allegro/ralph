@@ -2,7 +2,7 @@
     {% for row in releases %}
     <div class="page-header">
         <h1>Ralph <small>{{row.version}}</small></h1>
-        <span class="muted">Released on {{row.release_date}}</span>
+        <span class="muted">{{row.release_date}}</span>
     </div>
     <div class="row">
         <div class="span8">
@@ -20,7 +20,7 @@
                 Download version {{row.version}}</a></p>
        </div>
    </div>
-   {% if loop.last %}
+   {% if loop.last and not archived %}
    <div class="row">
        <div class="span8">
        <p>See <a href="{{ pathto('download_archive') }}">download archive</a> of previous releases.</p>

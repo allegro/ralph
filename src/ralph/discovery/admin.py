@@ -437,7 +437,7 @@ class HistoryChangeAdmin(ModelAdmin):
     list_per_page = 250
     readonly_fields = ('date', 'device', 'user', 'field_name', 'new_value',
                        'old_value', 'component')
-    search_fields = ('user__name', 'field_name', 'new_value')
+    search_fields = ('user__username', 'field_name', 'new_value')
 
 admin.site.register(m.HistoryChange, HistoryChangeAdmin)
 
