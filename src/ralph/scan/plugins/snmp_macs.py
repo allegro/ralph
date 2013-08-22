@@ -10,7 +10,7 @@ import re
 from django.conf import settings
 
 from ralph.discovery.models import DeviceType, MAC_PREFIX_BLACKLIST
-from ralph.discovery.snmp import snmp_macs
+from ralph.discovery.snmp import snmp_command, snmp_macs
 from ralph.scan.plugins import get_base_result_template
 
 SETTINGS = settings.SCAN_PLUGINS.get(__name__, {})
@@ -88,6 +88,56 @@ def _get_model_info(snmp_name):
     return model_name, model_type, is_management
 
 
+def _snmp_vmware_macs(ip_address, snmp_community):
+    oid = (1, 3, 6, 1, 4, 1, 6876, 2, 4, 1, 7)
+    snmp_version = 1
+    results = []
+    for mac in snmp_macs(ip_address, snmp_community, oid, attempts=2,
+                         timeout=3, snmp_version=snmp_version):
+        results.append({
+            'type': unicode(DeviceType.virtual_server),
+            'model_name': 'VMware ESX virtual server',
+            'mac_addresses': [mac],
+            'management_ip_addresses': [ip_address],
+        })
+    return results
+
+
+def _snmp_modular_macs(ip_address, ip_address_is_management, snmp_community):
+    oid = (1, 3, 6, 1, 4, 1, 343, 2, 19, 1, 2, 10, 12, 0)  # Max blades
+    message = snmp_command(
+        ip_address, snmp_community, oid, attempts=1, timeout=0.5,
+    )
+    max_blades = int(message[0][1])
+    blades_macs = {}
+    for blade_no in range(1, max_blades + 1):
+        oid = (1, 3, 6, 1, 4, 1, 343, 2, 19, 1, 2, 10, 202, 3, 1, 1, blade_no)
+        blades_macs[blade_no] = set(
+            snmp_macs(
+                ip_address, snmp_community, oid, attempts=1, timeout=0.5,
+            ),
+        )
+    results = []
+    management_ip_addresses = []
+    if ip_address_is_management:
+        management_ip_addresses.append(ip_address)
+    for i, macs in blades_macs.iteritems():
+        unique_macs = macs
+        for j, other_macs in blades_macs.iteritems():
+            if i == j:
+                continue
+            unique_macs -= other_macs
+        if unique_macs:
+            results.append({
+                'type': unicode(DeviceType.blade_server),
+                'model_name': 'Intel Modular Blade',
+                'mac_addresses': list(unique_macs),
+                'management_ip_addresses': management_ip_addresses,
+                'chassis_position': i,
+            })
+    return results
+
+
 def _snmp_mac(ip_address, snmp_name, snmp_community, snmp_version,
               messages=[]):
     oid = (1, 3, 6, 1, 2, 1, 2, 2, 1, 6)
@@ -159,6 +209,17 @@ def _snmp_mac(ip_address, snmp_name, snmp_community, snmp_version,
             result['system_family'] = "Sun"
     else:
         result['system_ip_addresses'] = [ip_address]
+    subdevices = []
+    if model_name == 'VMware ESX':
+        subdevices.extend(_snmp_vmware_macs(ip_address, snmp_community))
+    if model_name == 'Intel Modular Blade System':
+        subdevices.extend(
+            _snmp_modular_macs(ip_address, is_management, snmp_community),
+        )
+    if subdevices:
+        result.update({
+            'subdevices': subdevices,
+        })
     return result
 
 
