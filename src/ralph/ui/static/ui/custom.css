@@ -195,3 +195,9 @@ img.waiting
 .cmdb_report_filter .form_line {
     padding-top: 10px;
 }
+
+.choose-asset-form .choose-asset-label {
+    text-align: right;
+    line-height: 22px;
+}
+
