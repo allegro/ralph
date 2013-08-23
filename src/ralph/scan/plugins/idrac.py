@@ -328,6 +328,7 @@ def scan_address(ip_address, **kwargs):
             result.update(status='error')
             messages.append(unicode(e))
         else:
+            device_info['management_ip_addresses'] = [ip_address]
             result.update({
                 'status': 'success',
                 'device': device_info,
