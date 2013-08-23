@@ -11,6 +11,7 @@ from __future__ import unicode_literals
 
 
 from django.db import models as db
+from django.conf import settings
 
 from ralph.discovery.models_component import (
     ComponentModel,
@@ -285,9 +286,10 @@ def get_device_data(device):
         data['system_cores_count'] = system.cores_count
         if system.model:
             data['system_family'] = system.model.family
-
-    # Some details of the device are still not returned:
-    # TODO asset
+    if 'ralph_assets' in settings.INSTALLED_APPS:
+        from ralph_assets.api_ralph import get_asset
+        asset = get_asset(device.id)['asset_id']
+        data['asset'] = asset['asset_id'] if asset else None
     return data
 
 
@@ -296,9 +298,6 @@ def set_device_data(device, data):
     Go through the submitted data, and update the Device object
     in accordance with the meaning of the particular fields.
     """
-
-    # Some details of the device are still not updated:
-    # TODO asset
 
     keys = {
         'sn': 'serial_number',
@@ -554,6 +553,9 @@ def set_device_data(device, data):
         for subdevice in device.child_set.exclude(id__in=subdevice_ids):
             subdevice.parent = None
             subdevice.save()
+    if 'asset' in data and 'ralph_assets' in settings.INSTALLED_APPS:
+        from ralph_assets.api_ralph import assign_asset
+        assign_asset(device.id, data['asset'] or None)
 
 
 def device_from_data(data):
