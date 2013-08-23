@@ -233,8 +233,7 @@ class DeviceCreateForm(DeviceForm):
                 required=True,
             )
             self.fields['asset'].widget.help_text = (
-                'Enter asset sn, barcode '
-                'or model'
+                'Enter asset sn, barcode or model'
             )
         del self.fields['save_comment']
 

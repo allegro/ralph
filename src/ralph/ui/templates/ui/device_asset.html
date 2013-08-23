@@ -79,10 +79,6 @@
         <div class="row-fluid">
             <a href="/assets/dc/edit/device/{{ asset.asset_id }}" class="btn btn-primary">{% icon 'fugue-briefcase--pencil' %}&nbsp;Edit this asset</a>
         </div>
-    {% elif not ralph_assets_enabled %}
-        <div class="alert alert-error">
-            Assets module is not installed.
-        </div>
     {% else %}
         <div class="alert alert-info">
             This device doesn't have asset.

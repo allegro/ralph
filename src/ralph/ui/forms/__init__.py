@@ -9,7 +9,6 @@ from __future__ import unicode_literals
 from ajax_select.fields import AutoCompleteSelectField
 from django import forms
 from django.conf import settings
-from django.utils.importlib import import_module
 
 from ralph.business.models import RoleProperty
 from ralph.ui.forms.util import all_ventures
@@ -100,17 +99,13 @@ class ChooseAssetForm(forms.Form):
     def clean_asset(self):
         asset = self.cleaned_data['asset']
         if 'ralph_assets' in settings.INSTALLED_APPS:
-            try:
-                assets_api_ralph = import_module('ralph_assets.api_ralph')
-            except ImportError:
-                pass
-            else:
-                if assets_api_ralph.is_asset_assigned(
-                    asset_id=asset.id,
-                    exclude_devices=[self.device_id],
-                ):
-                    raise forms.ValidationError(
-                        'This asset is assigned to other device.',
-                    )
+            from ralph_assets.api_ralph import is_asset_assigned
+            if is_asset_assigned(
+                asset_id=asset.id,
+                exclude_devices=[self.device_id],
+            ):
+                raise forms.ValidationError(
+                    'This asset is assigned to other device.',
+                )
         return asset
 

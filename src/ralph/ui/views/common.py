@@ -13,7 +13,7 @@ from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.core.paginator import Paginator
 from django.db import models as db
-from django.http import HttpResponseRedirect, HttpResponseForbidden
+from django.http import HttpResponseRedirect, HttpResponseForbidden, Http404
 from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import (
@@ -22,7 +22,6 @@ from django.views.generic import (
     TemplateView,
     UpdateView,
 )
-from django.utils.importlib import import_module
 from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Language, TagStem
 from bob.menu import MenuItem
@@ -1022,70 +1021,64 @@ class Asset(BaseMixin, TemplateView):
     form = None
     asset = None
 
-    def is_ralph_assets_enabled(self):
-        return 'ralph_assets' in settings.INSTALLED_APPS
-
     def get_context_data(self, **kwargs):
         ret = super(Asset, self).get_context_data(**kwargs)
         ret.update({
             'show_bulk': False,
             'device': self.object,
             'form': self.form,
-            'ralph_assets_enabled': self.is_ralph_assets_enabled(),
+            'asset': self.asset,
         })
-        if self.is_ralph_assets_enabled():
-            try:
-                assets_api_ralph = import_module('ralph_assets.api_ralph')
-            except ImportError:
-                pass
-            else:
-                ret.update({
-                    'asset': assets_api_ralph.get_asset(self.object.id),
-                })
         return ret
 
     def get(self, *args, **kwargs):
+        if 'ralph_assets' not in settings.INSTALLED_APPS:
+            raise Http404()
         try:
             device_id = int(self.kwargs.get('device'))
-        except ValueError:
+        except (TypeError, ValueError):
             self.object = None
         else:
             self.object = get_object_or_404(
                 Device,
                 id=device_id,
             )
-            if self.is_ralph_assets_enabled():
-                try:
-                    assets_api_ralph = import_module('ralph_assets.api_ralph')
-                except ImportError:
-                    pass
-                else:
-                    self.asset =  assets_api_ralph.get_asset(self.object.id)
-                self.form = ChooseAssetForm(
-                    initial={
-                        'asset': self.asset['asset_id']
-                            if self.asset else None,
-                    },
-                    device_id=self.object.id,
-                )
+            from ralph_assets.api_ralph import get_asset
+            self.asset =  get_asset(self.object.id)
+            self.form = ChooseAssetForm(
+                initial={
+                    'asset': self.asset['asset_id']
+                        if self.asset else None,
+                },
+                device_id=self.object.id,
+            )
         return super(Asset, self).get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
+        if 'ralph_assets' not in settings.INSTALLED_APPS:
+            raise Http404()
         self.object = get_object_or_404(
             Device,
             id=self.kwargs.get('device'),
         )
-        if self.is_ralph_assets_enabled():
-            self.form = ChooseAssetForm(
-                data=self.request.POST,
-                device_id=self.object.id,
-            )
-            if self.form.is_valid():
-                asset = self.form.cleaned_data['asset']
-                assets_api_ralph = import_module('ralph_assets.api_ralph')
-                assets_api_ralph.assign_asset(self.object, asset)
-                messages.success(self.request, "Asset assigned successfully.")
+        self.form = ChooseAssetForm(
+            data=self.request.POST,
+            device_id=self.object.id,
+        )
+        if self.form.is_valid():
+            asset = self.form.cleaned_data['asset']
+            from ralph_assets.api_ralph import assign_asset
+            if assign_asset(self.object.id, asset.id):
+                messages.success(
+                    self.request,
+                    "Asset assigned successfully.",
+                )
                 return HttpResponseRedirect(self.request.get_full_path())
+            else:
+                messages.error(
+                    self.request,
+                    "An error occurred. Please try again.",
+                )
         return super(Asset, self).get(*args, **kwargs)
 
 
