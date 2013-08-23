@@ -51,6 +51,7 @@ class Command(BaseCommand):
         plugins = [
             'ralph.scan.plugins.snmp_macs',
             'ralph.scan.plugins.snmp_f5',
+            'ralph.scan.plugins.idrac',
         ]
         last_message = 0
         for address in addresses:
