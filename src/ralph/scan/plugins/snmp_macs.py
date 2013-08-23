@@ -217,9 +217,7 @@ def _snmp_mac(ip_address, snmp_name, snmp_community, snmp_version,
             _snmp_modular_macs(ip_address, is_management, snmp_community),
         )
     if subdevices:
-        result.update({
-            'subdevices': subdevices,
-        })
+        result['subdevices'] = subdevices
     return result
 
 
