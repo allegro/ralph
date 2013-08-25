@@ -1,17 +1,18 @@
 Change Log
 ----------
 
-HEAD
-~~~~
 
-* Added info on form validation errors (wishlist 15); added terabytes as unit in size_divisor.
+* Added Asset tab for views with informations about devices
+
+* Added info on form validation errors (wishlist 15); added terabytes as unit
+  in size_divisor.
 
 
 1.2.6
 ~~~~~
 Released on August 08, 2013
 
-This is as bugfix release. 
+This is as bugfix release.
 
 * Added new resources to API: Network, NetworkKind.
 
@@ -30,7 +31,7 @@ This is as bugfix release.
 ~~~~~
 Released on July 17, 2013
 
-This is a minor bugfix release. Bugfixes in the discovery module and 
+This is a minor bugfix release. Bugfixes in the discovery module and
 documentation enhancements.
 
 * Added documentation for the discovery subsystem.
@@ -422,7 +423,7 @@ problems with running unit tests. Django version bumped to 1.4.2.
 
 Released on October 15, 2012.
 
-This is a minor release. Adds role properties to the RESTful API. 
+This is a minor release. Adds role properties to the RESTful API.
 Fixes deprecation so that deprecated devices no longer report a monthly cost.
 
 * role properties available in API
