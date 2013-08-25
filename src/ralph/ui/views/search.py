@@ -19,13 +19,13 @@ from ralph.discovery.models import ReadOnlyDevice, Device, ComponentModel
 from ralph.ui.forms.search import SearchForm
 from ralph.ui.views.common import (
     Addresses,
+    Asset,
     BaseMixin,
     Components,
     Costs,
     History,
     Info,
     Prices,
-    Purchase,
     Software,
     Scan,
 )
@@ -453,6 +453,10 @@ class SearchAddresses(Search, Addresses):
     pass
 
 
+class SearchAsset(Search, Asset):
+    pass
+
+
 class SearchComponents(Search, Components):
     pass
 
@@ -466,10 +470,6 @@ class SearchCosts(Search, Costs):
 
 
 class SearchHistory(Search, History):
-    pass
-
-
-class SearchPurchase(Search, Purchase):
     pass
 
 
