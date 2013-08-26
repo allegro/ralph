@@ -52,7 +52,6 @@ from ralph.cmdb.models_ci import (
 )
 import ralph.cmdb.models as db
 from ralph.cmdb.graphs import ImpactCalculator
-from ralph.account.models import Perm
 from ralph.ui.views.common import Base
 from ralph.util.presentation import (
     get_device_icon,
