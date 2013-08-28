@@ -11,13 +11,6 @@ Change Log
 
 * Fixed links to Jira tickets in CMDB's Jira Changes, Problems and Incidents.
 
-* Venture's deletion in admin is now disabled; name/symbol cannot be changed once verified.
-
-
-* ``Venture`` dropdown on ``Info`` now displays items in proper hierarchy.
-
-* Fixed links to Jira tickets in CMDB's Jira Changes, Problems and Incidents.
-
 * Venture's deletion in admin is now disabled; name/symbol cannot be changed once verified (schema migration on ``Venture`` model).
 
 
