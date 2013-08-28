@@ -13,7 +13,7 @@ Released on ...
 ~~~~~
 Released on August 08, 2013
 
-* Fixed plugin ``ssh_cisco_asa`` - plugin not respond.
+* Fixed plugin ``ssh_cisco_asa`` - plugin not responding.
 
 * Added new resources to API: Network, NetworkKind.
 
