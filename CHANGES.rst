@@ -7,6 +7,13 @@ Change Log
 * Added info on form validation errors (wishlist 15); added terabytes as unit
   in size_divisor.
 
+* ``Venture`` dropdown on ``Info`` now displays items in proper hierarchy.
+
+* Fixed links to Jira tickets in CMDB's Jira Changes, Problems and Incidents.
+
+* Venture's deletion in admin is now disabled; name/symbol cannot be changed once verified.
+
+
 
 1.2.6
 ~~~~~
