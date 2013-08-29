@@ -288,7 +288,7 @@ def get_device_data(device):
             data['system_family'] = system.model.family
     if 'ralph_assets' in settings.INSTALLED_APPS:
         from ralph_assets.api_ralph import get_asset
-        asset = get_asset(device.id)['asset_id']
+        asset = get_asset(device.id)
         data['asset'] = asset['asset_id'] if asset else None
     return data
 
