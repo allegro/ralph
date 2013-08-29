@@ -13,6 +13,8 @@ Change Log
 
 * Venture's deletion in admin is now disabled; name/symbol cannot be changed once verified (schema migration on ``Venture`` model).
 
+* Added ``tags`` field to devices API.
+
 
 
 1.2.6
