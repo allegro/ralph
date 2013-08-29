@@ -16,6 +16,7 @@ import datetime
 
 from django.conf import settings
 from django.db import models as db
+from lck.django.tags.models import Tag
 from tastypie import fields
 from tastypie.authentication import ApiKeyAuthentication
 from tastypie.cache import SimpleCache
@@ -40,7 +41,7 @@ from ralph.ui.views.common import _get_details
 THROTTLE_AT = settings.API_THROTTLING['throttle_at']
 TIMEFRAME = settings.API_THROTTLING['timeframe']
 EXPIRATION = settings.API_THROTTLING['expiration']
-SAVE_PRIORITY=10
+SAVE_PRIORITY = 10
 
 
 class IPAddressResource(MResource):
@@ -169,6 +170,18 @@ class ModelResource(MResource):
         )
 
 
+class TagResource(MResource):
+    class Meta:
+        queryset = Tag.objects.all()
+        list_allowed_methods = ('get')
+        excludes = ('cache_version')
+        throttle = CacheThrottle(
+            throttle_at=THROTTLE_AT,
+            timeframe=TIMEFRAME,
+            expiration=EXPIRATION,
+        )
+
+
 class DeviceResource(MResource):
     model = fields.ForeignKey(ModelResource, 'model', null=True, full=True)
     management = fields.ForeignKey(
@@ -198,6 +211,12 @@ class DeviceResource(MResource):
     properties = fields.ToManyField(
         'ralph.business.api.RolePropertyValueResource',
         'rolepropertyvalue',
+        related_name='device',
+        full=True,
+    )
+    tags = fields.ToManyField(
+        TagResource,
+        'tags',
         related_name='device',
         full=True,
     )
@@ -234,6 +253,7 @@ class DeviceResource(MResource):
             'sn': ALL,
             'support_expiration_date': ALL,
             'support_kind': ALL,
+            'tags': ALL_WITH_RELATIONS,
             'uptime_seconds': ALL,
             'uptime_timestamp': ALL,
             'venture': ALL_WITH_RELATIONS,
@@ -261,10 +281,16 @@ class DeviceResource(MResource):
 
         A ORM-specific implementation of ``obj_update``.
         """
-        from tastypie.resources import NOT_AVAILABLE, ObjectDoesNotExist, NotFound
+        from tastypie.resources import (
+            NOT_AVAILABLE,
+            ObjectDoesNotExist,
+            NotFound,
+        )
         if not bundle.obj or not bundle.obj.pk:
-            # Attempt to hydrate data from kwargs before doing a lookup for the object.
-            # This step is needed so certain values (like datetime) will pass model validation.
+            # Attempt to hydrate data from kwargs before doing a lookup
+            # for the object.
+            # This step is needed so certain values (like datetime)
+            # will pass model validation.
             try:
                 bundle.obj = self.get_object_list(request).model()
                 bundle.data.update(kwargs)
@@ -274,7 +300,8 @@ class DeviceResource(MResource):
                 for key in kwargs.keys():
                     if key == 'pk':
                         continue
-                    elif getattr(bundle.obj, key, NOT_AVAILABLE) is not NOT_AVAILABLE:
+                    elif getattr(bundle.obj, key, NOT_AVAILABLE) \
+                            is not NOT_AVAILABLE:
                         lookup_kwargs[key] = getattr(bundle.obj, key)
                     else:
                         del lookup_kwargs[key]
@@ -287,7 +314,8 @@ class DeviceResource(MResource):
             try:
                 bundle.obj = self.obj_get(request, **lookup_kwargs)
             except ObjectDoesNotExist:
-                raise NotFound("A model instance matching the provided arguments could not be found.")
+                raise NotFound("A model instance matching the provided "
+                               "arguments could not be found.")
 
         bundle = self.full_hydrate(bundle)
 
@@ -350,8 +378,9 @@ class DeviceResource(MResource):
 
         Handles the saving of related M2M data.
 
-        Due to the way Django works, the M2M data must be handled after the
-        main instance, which is why this isn't a part of the main ``save`` bits.
+        Due to the way Django works, the M2M data must be handled after
+        the main instance, which is why this isn't a part of
+        the main ``save`` bits.
 
         Currently slightly inefficient in that it will clear out the whole
         relation and recreate the related data as needed.
@@ -513,7 +542,7 @@ class DeviceWithPricingResource(DeviceResource):
         else:
             last_month = datetime.date.today() - datetime.timedelta(days=30)
             splunk = device.splunkusage_set.filter(
-                    day__gte=last_month
+                day__gte=last_month
             ).order_by('-day')
         if splunk.count():
             splunk_size = splunk.aggregate(db.Sum('size'))['size__sum'] or 0
