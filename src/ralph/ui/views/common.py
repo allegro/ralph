@@ -13,7 +13,8 @@ from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.core.paginator import Paginator
 from django.db import models as db
-from django.http import HttpResponseRedirect, HttpResponseForbidden
+from django.http import HttpResponseRedirect, HttpResponseForbidden, Http404
+from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import (
     DetailView,
@@ -21,7 +22,6 @@ from django.views.generic import (
     TemplateView,
     UpdateView,
 )
-
 from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Language, TagStem
 from bob.menu import MenuItem
@@ -68,6 +68,7 @@ from ralph.discovery.models_history import (
 )
 from ralph.util import presentation, pricing
 from ralph.util.plugin import BY_NAME as AVAILABLE_PLUGINS
+from ralph.ui.forms import ChooseAssetForm
 from ralph.ui.forms.devices import (
     DeviceInfoForm,
     DeviceInfoVerifiedForm,
@@ -323,10 +324,15 @@ class BaseMixin(object):
                 MenuItem('History', fugue_icon='fugue-hourglass',
                          href=self.tab_href('history')),
             ])
-        if has_perm(Perm.read_device_info_support, venture):
+        if all((
+            'ralph_assets' in settings.INSTALLED_APPS,
+            has_perm(Perm.read_device_info_support, venture),
+        )):
             tab_items.extend([
-                MenuItem('Purchase', fugue_icon='fugue-baggage-cart-box',
-                         href=self.tab_href('purchase')),
+                MenuItem(
+                    'Asset',
+                    fugue_icon='fugue-baggage-cart-box',
+                    href=self.tab_href('asset')),
             ])
         if has_perm(Perm.edit_device_info_generic):
             tab_items.extend([
@@ -1008,6 +1014,72 @@ class Purchase(DeviceUpdateView):
             }
         )
         return ret
+
+
+class Asset(BaseMixin, TemplateView):
+    template_name = 'ui/device_asset.html'
+    form = None
+    asset = None
+
+    def get_context_data(self, **kwargs):
+        ret = super(Asset, self).get_context_data(**kwargs)
+        ret.update({
+            'show_bulk': False,
+            'device': self.object,
+            'form': self.form,
+            'asset': self.asset,
+        })
+        return ret
+
+    def get(self, *args, **kwargs):
+        if 'ralph_assets' not in settings.INSTALLED_APPS:
+            raise Http404()
+        try:
+            device_id = int(self.kwargs.get('device'))
+        except (TypeError, ValueError):
+            self.object = None
+        else:
+            self.object = get_object_or_404(
+                Device,
+                id=device_id,
+            )
+            from ralph_assets.api_ralph import get_asset
+            self.asset =  get_asset(self.object.id)
+            self.form = ChooseAssetForm(
+                initial={
+                    'asset': self.asset['asset_id']
+                        if self.asset else None,
+                },
+                device_id=self.object.id,
+            )
+        return super(Asset, self).get(*args, **kwargs)
+
+    def post(self, *args, **kwargs):
+        if 'ralph_assets' not in settings.INSTALLED_APPS:
+            raise Http404()
+        self.object = get_object_or_404(
+            Device,
+            id=self.kwargs.get('device'),
+        )
+        self.form = ChooseAssetForm(
+            data=self.request.POST,
+            device_id=self.object.id,
+        )
+        if self.form.is_valid():
+            asset = self.form.cleaned_data['asset']
+            from ralph_assets.api_ralph import assign_asset
+            if assign_asset(self.object.id, asset.id):
+                messages.success(
+                    self.request,
+                    "Asset assigned successfully.",
+                )
+                return HttpResponseRedirect(self.request.get_full_path())
+            else:
+                messages.error(
+                    self.request,
+                    "An error occurred. Please try again.",
+                )
+        return super(Asset, self).get(*args, **kwargs)
 
 
 class ServerMove(BaseMixin, TemplateView):

@@ -10,7 +10,13 @@ import mock
 from django.test import TestCase
 
 from ralph.discovery.models import DeviceType, MAC_PREFIX_BLACKLIST
-from ralph.scan.plugins.snmp_macs import _snmp_mac, _get_model_info, Error
+from ralph.scan.plugins.snmp_macs import (
+    _get_model_info,
+    _snmp_mac,
+    _snmp_modular_macs,
+    _snmp_vmware_macs,
+    Error,
+)
 
 
 class SnmpMacsPluginTest(TestCase):
@@ -134,5 +140,118 @@ class SnmpMacsPluginTest(TestCase):
                     'model_name': 'APC',
                     'mac_addresses': ['001A643320EA'],
                 },
+            )
+
+    def test_snmp_vmware_macs(self):
+        with mock.patch('ralph.scan.plugins.snmp_macs.snmp_macs') as snmp_macs:
+            snmp_macs.return_value = ['001A643320EA', '001A643320EB']
+            self.assertEqual(
+                _snmp_vmware_macs(
+                    ip_address='127.0.0.1',
+                    snmp_community='public',
+                ),
+                [
+                    {
+                        'mac_addresses': ['001A643320EA'],
+                        'management_ip_addresses': ['127.0.0.1'],
+                        'model_name': 'VMware ESX virtual server',
+                        'type': 'virtual server',
+                    },
+                    {
+                        'mac_addresses': ['001A643320EB'],
+                        'management_ip_addresses': ['127.0.0.1'],
+                        'model_name': 'VMware ESX virtual server',
+                        'type': 'virtual server',
+                    },
+                ],
+            )
+
+    def test_snmp_modular_macs(self):
+        def macs_side(ip, community, oid, *args, **kwargs):
+            return {
+                1: set([
+                    u'001E670C5960', u'001E67123169', u'001E67123168',
+                    u'001E670C5961', u'001E670C53BD', u'001E6710DD9D',
+                    u'001E6710DD9C', u'001E670C53BC', u'001E671232F5',
+                    u'001E671232F4', u'001E670C5395', u'001E670C5394',
+                ]),
+                2: set([
+                    u'001E670C5960', u'001E670C5961', u'001E670C53BD',
+                    u'001E6710DD9D', u'001E6710DD9C', u'001E670C53BC',
+                    u'001E671232F5', u'001E671232F4', u'001E670C5395',
+                    u'001E670C5394',
+                ]),
+                3: set([
+                    u'001E670C5960', u'001E670C5961', u'001E670C53BD',
+                    u'001E6710DD9D', u'001E6710DD9C', u'001E670C53BC',
+                    u'001E670C5395', u'001E670C5394',
+                ]),
+                4: set([
+                    u'001E670C5960', u'001E670C5961', u'001E670C53BD',
+                    u'001E670C53BC', u'001E670C5395', u'001E670C5394',
+                ]),
+                5: set([
+                    u'001E670C5960', u'001E670C5961', u'001E670C5395',
+                    u'001E670C5394',
+                ]),
+                6: set([u'001E670C5960', u'001E670C5961']),
+            }[oid[-1]]
+        with mock.patch(
+            'ralph.scan.plugins.snmp_macs.snmp_macs',
+        ) as snmp_macs, mock.patch(
+             'ralph.scan.plugins.snmp_macs.snmp_command',
+        ) as snmp_command:
+            snmp_macs.side_effect = macs_side
+            snmp_command.return_value = [[None, 6]]
+            self.assertEqual(
+                _snmp_modular_macs(
+                    ip_address='127.0.0.1',
+                    ip_address_is_management=True,
+                    snmp_community='public',
+                ),
+                [
+                    {
+                        'chassis_position': 1,
+                        'mac_addresses': ['001E67123168', '001E67123169'],
+                        'management_ip_addresses': ['127.0.0.1'],
+                        'model_name': 'Intel Modular Blade',
+                        'type': 'blade server',
+                    },
+                    {
+                        'chassis_position': 2,
+                        'mac_addresses': ['001E671232F5', '001E671232F4'],
+                        'management_ip_addresses': ['127.0.0.1'],
+                        'model_name': 'Intel Modular Blade',
+                        'type': 'blade server',
+                    },
+                    {
+                        'chassis_position': 3,
+                        'mac_addresses': ['001E6710DD9D', '001E6710DD9C'],
+                        'management_ip_addresses': ['127.0.0.1'],
+                        'model_name': 'Intel Modular Blade',
+                        'type': 'blade server',
+                    },
+                    {
+                        'chassis_position': 4,
+                        'mac_addresses': ['001E670C53BD', '001E670C53BC'],
+                        'management_ip_addresses': ['127.0.0.1'],
+                        'model_name': 'Intel Modular Blade',
+                        'type': 'blade server',
+                    },
+                    {
+                        'chassis_position': 5,
+                        'mac_addresses': ['001E670C5395', '001E670C5394'],
+                        'management_ip_addresses': ['127.0.0.1'],
+                        'model_name': 'Intel Modular Blade',
+                        'type': 'blade server',
+                    },
+                    {
+                        'chassis_position': 6,
+                        'mac_addresses': ['001E670C5960', '001E670C5961'],
+                        'management_ip_addresses': ['127.0.0.1'],
+                        'model_name': 'Intel Modular Blade',
+                        'type': 'blade server',
+                    },
+                ],
             )
 
