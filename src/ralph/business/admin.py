@@ -14,13 +14,6 @@ from lck.django.common.admin import (ModelAdmin,
                                      ForeignKeyAutocompleteTabularInline)
 
 from ralph.business.models import (
-    Venture,
-    VentureExtraCost,
-    VentureExtraCostType,
-    VentureRole,
-)
-from ralph.cmdb.models_ci import CIOwner, CI, CIOwnershipType
-from ralph.business.models import (
     BusinessSegment,
     Department,
     ProfitCenter,
@@ -28,8 +21,14 @@ from ralph.business.models import (
     RolePropertyType,
     RolePropertyTypeValue,
     RolePropertyValue,
+    Venture,
+    VentureExtraCost,
+    VentureExtraCostType,
+    VentureRole,
 )
+from ralph.cmdb.models_ci import CIOwner, CI, CIOwnershipType
 from ralph.integration.admin import RoleIntegrationInline
+from ralph.ui.widgets import ReadOnlyWidget
 
 import ralph.util.venture as util_venture
 
@@ -134,6 +133,23 @@ class SubVentureInline(admin.TabularInline):
 
 
 class VentureAdminForm(forms.ModelForm):
+    class Meta:
+        model = Venture
+        fields = [
+            'name',
+            'verified',
+            'preboot',
+            'data_center',
+            'parent',
+            'symbol',
+            'show_in_ralph',
+            'is_infrastructure',
+            'margin_kind',
+            'department',
+            'business_segment',
+            'profit_center',
+        ]
+
     def clean_symbol(self):
         data = self.cleaned_data['symbol'].lower()
         if not util_venture.slug_validation(data):
@@ -167,6 +183,22 @@ class VentureAdminForm(forms.ModelForm):
         return data
 
 
+class VentureAdminVerifiedForm(VentureAdminForm):
+    class Meta(VentureAdminForm.Meta):
+        fields = [field for field in
+                  VentureAdminForm.Meta.fields if field != 'verified']
+        widgets = {
+            'name': ReadOnlyWidget,
+            'symbol': ReadOnlyWidget,
+        }
+
+        def clean_name(self):
+            return self.instance.name
+
+        def clean_symbol(self):
+            return self.instance.symbol
+
+
 class VentureAdmin(ModelAdmin):
     inlines = [
         VentureExtraCostInline,
@@ -176,7 +208,14 @@ class VentureAdmin(ModelAdmin):
     related_search_fields = {
         'parent': ['^name'],
     }
-    form = VentureAdminForm
+
+    def get_form(self, request, obj=None):
+        if obj.verified:
+            return VentureAdminVerifiedForm
+        return VentureAdminForm
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
     def members(self):
         from ralph.discovery.models import Device
@@ -228,11 +267,12 @@ class VentureAdmin(ModelAdmin):
         'name',
         'symbol',
         'business_segment__name',
-        'profit_center__name'
+        'profit_center__name',
     )
     save_on_top = True
 
 admin.site.register(Venture, VentureAdmin)
+admin.site.disable_action('delete_selected')
 
 
 class DepartmentAdmin(ModelAdmin):

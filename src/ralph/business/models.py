@@ -142,6 +142,7 @@ class Venture(Named, PrebootMixin, HasSymbolBasedPath, TimeTrackable):
         default=None,
         on_delete=db.SET_NULL,
     )
+    verified = db.BooleanField(verbose_name=_("verified"), default=False)
 
     class Meta:
         verbose_name = _("venture")
