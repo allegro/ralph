@@ -41,7 +41,10 @@ class IdracPluginTest(TestCase):
     def test_get_base_info(self):
         self.assertEquals(
             _get_base_info(self.idrac_manager),
-            {'model_name': 'Dell PowerEdge R720xd', 'sn': 'AMSFG5J'},
+            {
+                'model_name': 'Dell PowerEdge R720xd',
+                'serial_number': 'AMSFG5J',
+            },
         )
 
     def test_get_mac_addresses(self):

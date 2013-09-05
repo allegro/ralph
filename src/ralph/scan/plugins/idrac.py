@@ -134,7 +134,7 @@ def _get_base_info(idrac):
                 "{}{}".format(xmlns_n1, 'Model'),
             ).text.strip(),
         ),
-        'sn': records[0].find(
+        'serial_number': records[0].find(
             "{}{}".format(xmlns_n1, 'ChassisServiceTag'),
         ).text.strip(),
     }
