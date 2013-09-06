@@ -551,7 +551,7 @@ def cost_post_save(sender, instance, raw, using, **kwargs):
             changed = True
     if changed:
         if instance.expire:
-            start = min(datetime.datetime.now().date(), instance.expire)
+            start = min(datetime.date.today(), instance.expire)
         else:
             start = datetime.datetime.now()
         HistoryCost.start_span(extra=instance, start=start, end=instance.expire)
