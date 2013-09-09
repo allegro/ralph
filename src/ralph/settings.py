@@ -400,7 +400,7 @@ SCAN_PLUGINS = {
         'auths': [
             (SSH_USER or 'root', SSH_PASSWORD),
             (XEN_USER, XEN_PASSWORD),
-        ]
+        ],
     },
     'ralph.scan.plugins.test1': {},
     'ralph.scan.plugins.test2': {},

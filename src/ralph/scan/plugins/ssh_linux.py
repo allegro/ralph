@@ -50,10 +50,10 @@ def _parse_dmidecode(data):
             'family': cpu['Family'],
         }
         speed = num(cpu['Current Speed'])
-        if speed is not None:
+        if speed:
             processor['speed'] = speed
         cores = num(cpu.get('Core Count'))
-        if cores is not None:
+        if cores:
             processor['cores'] = cores
         if 'not specified' not in cpu['Version'].lower():
             processor['model_name'] = cpu['Version']

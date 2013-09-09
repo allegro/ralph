@@ -67,7 +67,6 @@ LogVol01 VolGroup00 -wi-ao   2080.37M
 """
 
 
-
 class SshLinuxPluginTest(TestCase):
     def test_get_mac_addresses(self):
         ssh = MockSSH([
