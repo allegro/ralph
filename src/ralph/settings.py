@@ -396,6 +396,10 @@ SCAN_PLUGINS = {
         'communities': SNMP_PLUGIN_COMMUNITIES,
         'snmp_v3_auth': (SNMP_V3_USER, SNMP_V3_AUTH_KEY, SNMP_V3_PRIV_KEY),
     },
+    'ralph.scan.plugins.puppet': {
+        'puppet_api_url': PUPPET_API_URL,
+        'puppet_db_url': PUPPET_DB_URL,
+    },
     'ralph.scan.plugins.test1': {},
     'ralph.scan.plugins.test2': {},
     'ralph.scan.plugins.dns_hostname': {},

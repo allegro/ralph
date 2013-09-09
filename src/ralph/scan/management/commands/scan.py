@@ -8,14 +8,12 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from optparse import make_option
 import textwrap
 import time
 import sys
 import json
 
 import ipaddr
-import pprint
 from django.core.management.base import BaseCommand
 
 from ralph.scan.manual import (
@@ -51,6 +49,7 @@ class Command(BaseCommand):
         plugins = [
             'ralph.scan.plugins.snmp_macs',
             'ralph.scan.plugins.snmp_f5',
+            'ralph.scan.plugins.puppet',
         ]
         last_message = 0
         for address in addresses:
