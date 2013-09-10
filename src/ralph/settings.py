@@ -396,6 +396,12 @@ SCAN_PLUGINS = {
         'communities': SNMP_PLUGIN_COMMUNITIES,
         'snmp_v3_auth': (SNMP_V3_USER, SNMP_V3_AUTH_KEY, SNMP_V3_PRIV_KEY),
     },
+    'ralph.scan.plugins.ssh_linux': {
+        'auths': [
+            (SSH_USER or 'root', SSH_PASSWORD),
+            (XEN_USER, XEN_PASSWORD),
+        ],
+    },
     'ralph.scan.plugins.puppet': {
         'puppet_api_url': PUPPET_API_URL,
         'puppet_db_url': PUPPET_DB_URL,
