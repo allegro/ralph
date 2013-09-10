@@ -48,6 +48,8 @@ SOAP_ENUM_WSMAN_TEMPLATE = '''<?xml version="1.0"?>
 </s:Envelope>
 '''
 
+FC_INFO_EXPRESSION = re.compile(r'([0-9]+)-[0-9]+')
+
 
 class Error(Exception):
     pass
@@ -64,8 +66,8 @@ def _send_soap(post_url, login, password, message):
         auth=(login, password),
         verify=False,
         headers={
-            'Content-Type': 'application/soap+xml;charset=UTF-8'
-        }
+            'Content-Type': 'application/soap+xml;charset=UTF-8',
+        },
     )
     if not r.ok:
         if r.status_code == 401:
@@ -276,10 +278,9 @@ def _get_fibrechannel_cards(idrac_manager):
         ).text
         if 'fibre channel' not in label.lower():
             continue
-        match = re.search(
-            r'([0-9]+)-[0-9]+',
-            record.find(
-                "{}{}".format(xmlns_n1, "FQDD")
+        match = FC_INFO_EXPRESSION.search(
+             record.find(
+                "{}{}".format(xmlns_n1, "FQDD"),
             ).text,
         )
         if not match:
