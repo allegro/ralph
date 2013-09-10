@@ -406,8 +406,6 @@ SCAN_PLUGINS = {
         'puppet_api_url': PUPPET_API_URL,
         'puppet_db_url': PUPPET_DB_URL,
     },
-    'ralph.scan.plugins.test1': {},
-    'ralph.scan.plugins.test2': {},
     'ralph.scan.plugins.dns_hostname': {},
 }
 
