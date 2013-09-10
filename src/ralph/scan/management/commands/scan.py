@@ -14,6 +14,7 @@ import sys
 import json
 
 import ipaddr
+
 from django.core.management.base import BaseCommand
 
 from ralph.scan.manual import (
@@ -49,6 +50,7 @@ class Command(BaseCommand):
         plugins = [
             'ralph.scan.plugins.snmp_macs',
             'ralph.scan.plugins.snmp_f5',
+            'ralph.scan.plugins.ssh_linux',
             'ralph.scan.plugins.puppet',
         ]
         last_message = 0
@@ -64,3 +66,4 @@ class Command(BaseCommand):
                 time.sleep(5)
             last_message = print_job_messages(job, last_message)
             print(json.dumps(job.result))
+
