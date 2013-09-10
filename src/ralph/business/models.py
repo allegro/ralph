@@ -550,7 +550,10 @@ def cost_post_save(sender, instance, raw, using, **kwargs):
             # Ignore changes due to rounding errors
             changed = True
     if changed:
-        start = min(datetime.datetime.now(), instance.expire)
+        if instance.expire:
+            start = min(datetime.date.today(), instance.expire)
+        else:
+            start = datetime.datetime.now()
         HistoryCost.start_span(extra=instance, start=start, end=instance.expire)
 
 
