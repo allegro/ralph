@@ -400,6 +400,12 @@ SCAN_PLUGINS = {
         'user': IDRAC_USER,
         'password': IDRAC_PASSWORD,
     },
+    'ralph.scan.plugins.ssh_linux': {
+        'auths': [
+            (SSH_USER or 'root', SSH_PASSWORD),
+            (XEN_USER, XEN_PASSWORD),
+        ],
+    },
     'ralph.scan.plugins.test1': {},
     'ralph.scan.plugins.test2': {},
     'ralph.scan.plugins.dns_hostname': {},
