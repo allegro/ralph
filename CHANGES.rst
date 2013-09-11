@@ -14,12 +14,15 @@ Change Log
 * Venture's deletion in admin is now disabled; name/symbol cannot be changed once verified (schema migration on ``Venture`` model).
 
 
+* Fixed ``http`` plugin -  recognition Cisco ASDM 7.1
 
 1.2.6
 ~~~~~
 Released on August 08, 2013
 
 This is as bugfix release.
+
+* Fixed plugin ``ssh_cisco_asa`` - plugin not responding,
 
 * Added new resources to API: Network, NetworkKind.
 
