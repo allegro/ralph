@@ -17,13 +17,13 @@ from ralph.discovery.models import ReadOnlyDevice, Network, IPAddress
 from ralph.ui.forms import NetworksFilterForm
 from ralph.ui.views.common import (
     Addresses,
+    Asset,
     BaseMixin,
     Components,
     Costs,
     History,
     Info,
     Prices,
-    Purchase,
     Software,
     Scan,
 )
@@ -119,12 +119,11 @@ class SidebarNetworks(object):
                 status=self.status,
             ),
         )
-# TODO Don't show the Autoscan tab until it is ready
-#        if has_perm(Perm.edit_device_info_generic) and not self.object:
-#            ret['tab_items'].extend([
-#                MenuItem('Autoscan', fugue_icon='fugue-radar',
-#                         href=self.tab_href('autoscan', 'new')),
-#            ])
+        if has_perm(Perm.edit_device_info_generic) and not self.object:
+            ret['tab_items'].extend([
+                MenuItem('Autoscan', fugue_icon='fugue-radar',
+                         href=self.tab_href('autoscan', 'new')),
+            ])
 
         ret.update({
             'sidebar_items': sidebar_items,
@@ -205,7 +204,7 @@ class NetworksHistory(Networks, History):
     pass
 
 
-class NetworksPurchase(Networks, Purchase):
+class NetworksAsset(Networks, Asset):
     pass
 
 

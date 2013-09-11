@@ -4048,7 +4048,7 @@ a.thumbnail:hover {
   line-height: 18px;
   font-size: 14px;
 }
-span.pre {
+tt.literal {
   font-family: "Ubuntu Mono", monospace;
   font-size: 12px;
   -webkit-border-radius: 3px;

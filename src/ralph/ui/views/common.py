@@ -13,7 +13,8 @@ from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.core.paginator import Paginator
 from django.db import models as db
-from django.http import HttpResponseRedirect, HttpResponseForbidden
+from django.http import HttpResponseRedirect, HttpResponseForbidden, Http404
+from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import (
     DetailView,
@@ -21,15 +22,21 @@ from django.views.generic import (
     TemplateView,
     UpdateView,
 )
-
 from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Language, TagStem
 from bob.menu import MenuItem
 from powerdns.models import Record
 from ralph.discovery.models_device import DeprecationKind, MarginKind
 from ralph.scan.errors import Error as ScanError
-from ralph.scan.manual import scan_address, merge_data, find_devices
+from ralph.scan.manual import scan_address
 from ralph.scan.forms import DiffForm
+from ralph.scan.data import (
+    device_from_data,
+    find_devices,
+    get_device_data,
+    merge_data,
+    set_device_data,
+)
 from ralph.business.models import (
     RoleProperty,
     RolePropertyValue,
@@ -61,6 +68,7 @@ from ralph.discovery.models_history import (
 )
 from ralph.util import presentation, pricing
 from ralph.util.plugin import BY_NAME as AVAILABLE_PLUGINS
+from ralph.ui.forms import ChooseAssetForm
 from ralph.ui.forms.devices import (
     DeviceInfoForm,
     DeviceInfoVerifiedForm,
@@ -316,17 +324,21 @@ class BaseMixin(object):
                 MenuItem('History', fugue_icon='fugue-hourglass',
                          href=self.tab_href('history')),
             ])
-        if has_perm(Perm.read_device_info_support, venture):
+        if all((
+            'ralph_assets' in settings.INSTALLED_APPS,
+            has_perm(Perm.read_device_info_support, venture),
+        )):
             tab_items.extend([
-                MenuItem('Purchase', fugue_icon='fugue-baggage-cart-box',
-                         href=self.tab_href('purchase')),
+                MenuItem(
+                    'Asset',
+                    fugue_icon='fugue-baggage-cart-box',
+                    href=self.tab_href('asset')),
             ])
-# TODO Don't show the Scan tab until it is ready.
-#        if has_perm(Perm.edit_device_info_generic):
-#            tab_items.extend([
-#                MenuItem('Scan', name='scan', fugue_icon='fugue-flashlight',
-#                         href=self.tab_href('scan')),
-#            ])
+        if has_perm(Perm.edit_device_info_generic):
+            tab_items.extend([
+                MenuItem('Scan', name='scan', fugue_icon='fugue-flashlight',
+                         href=self.tab_href('scan')),
+            ])
         if ('ralph.cmdb' in settings.INSTALLED_APPS and
             has_perm(Perm.read_configuration_item_info_generic)):
             ci = ''
@@ -1004,6 +1016,72 @@ class Purchase(DeviceUpdateView):
         return ret
 
 
+class Asset(BaseMixin, TemplateView):
+    template_name = 'ui/device_asset.html'
+    form = None
+    asset = None
+
+    def get_context_data(self, **kwargs):
+        ret = super(Asset, self).get_context_data(**kwargs)
+        ret.update({
+            'show_bulk': False,
+            'device': self.object,
+            'form': self.form,
+            'asset': self.asset,
+        })
+        return ret
+
+    def get(self, *args, **kwargs):
+        if 'ralph_assets' not in settings.INSTALLED_APPS:
+            raise Http404()
+        try:
+            device_id = int(self.kwargs.get('device'))
+        except (TypeError, ValueError):
+            self.object = None
+        else:
+            self.object = get_object_or_404(
+                Device,
+                id=device_id,
+            )
+            from ralph_assets.api_ralph import get_asset
+            self.asset =  get_asset(self.object.id)
+            self.form = ChooseAssetForm(
+                initial={
+                    'asset': self.asset['asset_id']
+                        if self.asset else None,
+                },
+                device_id=self.object.id,
+            )
+        return super(Asset, self).get(*args, **kwargs)
+
+    def post(self, *args, **kwargs):
+        if 'ralph_assets' not in settings.INSTALLED_APPS:
+            raise Http404()
+        self.object = get_object_or_404(
+            Device,
+            id=self.kwargs.get('device'),
+        )
+        self.form = ChooseAssetForm(
+            data=self.request.POST,
+            device_id=self.object.id,
+        )
+        if self.form.is_valid():
+            asset = self.form.cleaned_data['asset']
+            from ralph_assets.api_ralph import assign_asset
+            if assign_asset(self.object.id, asset.id):
+                messages.success(
+                    self.request,
+                    "Asset assigned successfully.",
+                )
+                return HttpResponseRedirect(self.request.get_full_path())
+            else:
+                messages.error(
+                    self.request,
+                    "An error occurred. Please try again.",
+                )
+        return super(Asset, self).get(*args, **kwargs)
+
+
 class ServerMove(BaseMixin, TemplateView):
     template_name = 'ui/bulk-move.html'
 
@@ -1400,7 +1478,7 @@ class ScanStatus(BaseMixin, TemplateView):
             data = merge_data(
                 result,
                 {
-                    'database': { 'device': device.get_data() },
+                    'database': { 'device': get_device_data(device) },
                 },
                 only_multiple=True,
             )
@@ -1499,12 +1577,17 @@ class ScanStatus(BaseMixin, TemplateView):
                     field_name: form.get_value(field_name)
                     for field_name in form.result
                 }
-                if device is None:
-                    device = Device.from_data(data)
+                try:
+                    if device is None:
+                        device = device_from_data(data)
+                    else:
+                        set_device_data(device, data)
+                        device.save()
+                except ValueError as e:
+                    messages.error(self.request, e)
                 else:
-                    device.save_data(data)
-                messages.success(self.request, "Device %s saved." % device)
-                return HttpResponseRedirect(self.request.path)
+                    messages.success(self.request, "Device %s saved." % device)
+                    return HttpResponseRedirect(self.request.path)
             else:
                 messages.error(self.request, "Errors in the form.")
                 for error in form.non_field_errors():

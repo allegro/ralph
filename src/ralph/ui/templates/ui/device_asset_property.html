@@ -1,0 +1,5 @@
+<tr>
+    <td><strong>{{ name }}</strong></td>
+    <td>{% if bool_value %}{{ value|yesno }}{% else %}{{ value|default:'' }}{% endif %}</td>
+</tr>
+

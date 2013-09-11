@@ -35,6 +35,7 @@ from ralph.ui.forms import (
 )
 from ralph.ui.views.common import (
     Addresses,
+    Asset,
     Base,
     BaseMixin,
     Components,
@@ -42,7 +43,6 @@ from ralph.ui.views.common import (
     History,
     Info,
     Prices,
-    Purchase,
     Software,
     Scan,
 )
@@ -213,7 +213,7 @@ class VenturesHistory(Ventures, History):
     pass
 
 
-class VenturesPurchase(Ventures, Purchase):
+class VenturesAsset(Ventures, Asset):
     pass
 
 
