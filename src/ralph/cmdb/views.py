@@ -52,7 +52,6 @@ from ralph.cmdb.models_ci import (
 )
 import ralph.cmdb.models as db
 from ralph.cmdb.graphs import ImpactCalculator
-from ralph.account.models import Perm
 from ralph.ui.views.common import Base
 from ralph.util.presentation import (
     get_device_icon,
@@ -67,6 +66,7 @@ from ralph.cmdb.forms import (
 
 from ralph.cmdb.util import report_filters, add_filter, table_colums
 
+JIRA_URL = urljoin(settings.ISSUETRACKERS['default']['URL'], 'browse')
 ROWS_PER_PAGE = 20
 SAVE_PRIORITY = 200
 
@@ -435,7 +435,7 @@ class LastChanges(BaseCMDBView):
         ret = super(LastChanges, self).get_context_data(**kwargs)
         ret.update({
             'last_changes': self.last_changes,
-            'jira_url': urljoin(settings.ISSUETRACKERS['default']['URL'], 'browse'),
+            'jira_url': JIRA_URL,
         })
         return ret
 
@@ -1176,6 +1176,7 @@ class CIProblemsEdit(BaseCIDetails, DataTableMixin):
             'url_query': self.request.GET,
             'sort': self.sort,
             'columns': self.columns,
+            'jira_url': JIRA_URL,
             'form': {
                 'filters': ReportFilters(self.request.GET),
                 'date_range': ReportFiltersDateRange(self.request.GET),
@@ -1240,6 +1241,7 @@ class JiraChangesEdit(BaseCIDetails, DataTableMixin):
             'url_query': self.request.GET,
             'sort': self.sort,
             'columns': self.columns,
+            'jira_url': JIRA_URL,
             'form': {
                 'filters': ReportFilters(self.request.GET),
                 'date_range': ReportFiltersDateRange(self.request.GET),
@@ -1301,6 +1303,7 @@ class CIIncidentsEdit(BaseCIDetails, DataTableMixin):
             'url_query': self.request.GET,
             'sort': self.sort,
             'columns': self.columns,
+            'jira_url': JIRA_URL,
             'form': {
                 'filters': ReportFilters(self.request.GET),
                 'date_range': ReportFiltersDateRange(self.request.GET),

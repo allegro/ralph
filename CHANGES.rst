@@ -1,11 +1,18 @@
 Change Log
 ----------
 
-1.2.7
-~~~~~
-Released on ...
 
-* Added info on form validation errors (wishlist 15); added terabytes as unit in size_divisor.
+* Added Asset tab for views with informations about devices
+
+* Added info on form validation errors (wishlist 15); added terabytes as unit
+  in size_divisor.
+
+* ``Venture`` dropdown on ``Info`` now displays items in proper hierarchy.
+
+* Fixed links to Jira tickets in CMDB's Jira Changes, Problems and Incidents.
+
+* Venture's deletion in admin is now disabled; name/symbol cannot be changed once verified (schema migration on ``Venture`` model).
+
 
 * Fixed ``http`` plugin -  recognition Cisco ASDM 7.1
 
@@ -13,7 +20,9 @@ Released on ...
 ~~~~~
 Released on August 08, 2013
 
-* Fixed plugin ``ssh_cisco_asa`` - plugin not responding.
+This is as bugfix release.
+
+* Fixed plugin ``ssh_cisco_asa`` - plugin not responding,
 
 * Added new resources to API: Network, NetworkKind.
 
@@ -31,6 +40,9 @@ Released on August 08, 2013
 1.2.5
 ~~~~~
 Released on July 17, 2013
+
+This is a minor bugfix release. Bugfixes in the discovery module and
+documentation enhancements.
 
 * Added documentation for the discovery subsystem.
 
@@ -57,6 +69,8 @@ Released on July 17, 2013
 ~~~~~
 Released on June 18, 2013
 
+This is a bugfix release.
+
 * Bugfixes in discovery module.
 
 * Extended APIs for assets and pricing.
@@ -66,6 +80,8 @@ Released on June 18, 2013
 ~~~~~
 
 Released on June 7, 2013
+
+This is a bugfix release.
 
 * Enhancements to the Ventures - added Profit Center and Business Segment information.
 
@@ -93,6 +109,8 @@ Released on June 7, 2013
 
 Released on April 23, 2013
 
+This is a bugfix release.
+
 * Removed Git, hostname and stty process forking.
 
 * Cleaned up plugins chains.
@@ -105,6 +123,8 @@ Released on April 23, 2013
 
 Released on April 16, 2013
 
+This is a bugfix release.
+
 * Fixed bug in the Catalog and Account areas.
 
 * API permissions fixed.
@@ -114,6 +134,11 @@ Released on April 16, 2013
 ~~~~~
 
 Released on April 15, 2013
+
+This is a major release. It brings new big features and bugfixes.
+Added new modules: asset management, ralph beast command line client, windows software discovery.
+Replaced workers architecture with RQ.
+New integrations with external systems. And much more.
 
 * Replaced Celery asynchronous worker engine with RQ, see:
   http://python-rq.org.
@@ -150,7 +175,16 @@ Released on April 15, 2013
 1.1.18
 ~~~~~~
 
-Release on March 19, 2013
+Released on March 19, 2013
+
+This is a major release. It brings new big features and bugfixes.
+Introduced 3rd party module for Ralph - Offline Assets Management
+Added CMDB - Splunk integration.
+Added archivization feature for CMDB.
+Added AutoCI feature for CMDB.
+Improved Jira integration.
+Added ability to discover Windows software using don pedro plugin.
+Discovery of hardware fixed and improved.
 
 * Added CMDB - Splunk integration.
 
@@ -170,6 +204,8 @@ Release on March 19, 2013
 
 Released on February 19, 2013
 
+This is a bugfix release.
+
 * Editable layers in CMDB.
 
 * Bugfixes in discovery plugins and CMDB.
@@ -181,6 +217,8 @@ Released on February 19, 2013
 ~~~~~~
 
 Released on February 07, 2013
+
+This is a major release with new features.
 
 * Adding next-server to DHCP configuration for devices in deployment.
 
@@ -200,6 +238,8 @@ Released on February 07, 2013
 
 Released on January 16, 2013
 
+This is a major release with new features.
+
 * Added custom DHCP configuration for networks and DHCP servers.
 
 * Networks can now be marked as non-unique, which prevents their IP addresses
@@ -215,6 +255,8 @@ Released on January 16, 2013
 
 Released on January 07, 2013
 
+This is a bugfix release.
+
 * Add detailed costs to the Ventures report,
 
 * Fix incorrect use of concurrent_get_or_create in discovery plugins
@@ -227,6 +269,8 @@ Released on January 07, 2013
 
 Released on December 31, 2012
 
+This is a bugfix release.
+
 * Allow bulk deployment to re-use existing devices
 
 * Clean up the way in which the discovery plugins create components
@@ -238,6 +282,8 @@ Released on December 31, 2012
 ~~~~~~
 
 Released on December 20, 2012.
+
+This is a bugfix release.
 
 * Dell PowerEdge servers supported
 
@@ -256,12 +302,16 @@ Released on December 20, 2012.
 
 Released on December 5, 2012.
 
+This is a bugfix release.
+
 * Fix bugs in the search and add device forms
 
 1.1.10
 ~~~~~~
 
 Released on December 5, 2012.
+
+This is a bugfix release as well as new discovery and usability features.
 
 * support for SNMPv3 in discovery
 
@@ -279,6 +329,9 @@ Released on December 5, 2012.
 
 Released on November 26, 2012.
 
+This is a bugfix release. Fixes regressions in discovery from version 1.1.9 and
+introduces DiscoveryWarnings for tracking problems with discovery.
+
 * Fixes for discovery regressions from 1.1.8
 
 * DiscoveryWarnings introduced
@@ -287,6 +340,11 @@ Released on November 26, 2012.
 ~~~~~
 
 Released on November 22, 2012.
+
+This is a major release.
+Includes system-level storage detection, improved CPU information for Windows
+machines, ability to edit DNS information straight from the Addresses tab on a
+device. CMDB now includes an impact report.
 
 * system-level storage detection stored in the OperatingSystem component
 
@@ -310,6 +368,10 @@ Released on November 22, 2012.
 
 Released on November 8, 2012.
 
+This is a bugfix release. Includes fixes in IPMI, SSG and Xen discovery as well
+as minor CMDB and DNS admin improvements. DHCP agent script is now compatible
+with Python 2.4 (for usage in RedHat 5.x environments).
+
 * Stability improved for discovering SSG firewalls
 
 * ``ralph_dhcp_agent.py`` is now compatible with Python 2.4
@@ -330,6 +392,9 @@ Released on November 8, 2012.
 
 Released on October 29, 2012.
 
+This is a bugfix release. Includes fixes in CMDB, device admin, device report
+and unit tests.
+
 * CMDB fixes: owners not required when saving a CI, cycles in relationships are
   detected, only manual changes generate tickets in external trackers
 
@@ -349,6 +414,9 @@ Released on October 29, 2012.
 
 Released on October 19, 2012.
 
+This is a bugfix release. Fixes order of database migrations and several
+problems with running unit tests. Django version bumped to 1.4.2.
+
 * bumped Django version to 1.4.2
 
 * fixes order of database migrations
@@ -365,6 +433,9 @@ Released on October 19, 2012.
 
 Released on October 15, 2012.
 
+This is a minor release. Adds role properties to the RESTful API.
+Fixes deprecation so that deprecated devices no longer report a monthly cost.
+
 * role properties available in API
 
 * virtual CPU count in the main ventures report
@@ -376,6 +447,9 @@ Released on October 15, 2012.
 
 Released on October 10, 2012.
 
+This is a bugfix release. Contains fixes in UI and discovery code, as well as
+shows cloud usage in the main venture report.
+
 * cloud usage is visible in the main ventures report
 
 * several minor fixes in UI and new plugins
@@ -384,6 +458,11 @@ Released on October 10, 2012.
 ~~~~~
 
 Released on October 8, 2012.
+
+This is a bugfix release. Includes a new experimental discovery agent for
+Windows called Donpedro as well as two new discovery plugins for Xen
+hypervisors and Linux machines not controlled by Puppet. Fixes bugs in UI, CMDB
+and discovery.
 
 * ``Donpedro`` introduced: a new dedicated discovery agent for Windows.  Works
   as a background Windows service; a lightweight alternative to SCCM
@@ -401,6 +480,10 @@ Released on October 8, 2012.
 
 Released on September 24, 2012.
 
+This is a bugfix release. Includes fixes in discovery and UI code, as well as
+updates in the price catalog: history of changes is tracked and the UI for
+specifying price per unit of size is now easier to use.
+
 * Price catalog updated: history of changes tracked, a more intuitive UI for
   prices per unit of size
 
@@ -410,6 +493,11 @@ Released on September 24, 2012.
 ~~~~~
 
 Released on September 19, 2012.
+
+This is a feature release. Includes support for deployment of physical hosts
+using PXE, simplified financial model (components can be now priced by unit of
+size, e.g. by core or GiB) and upgraded reporting system. Includes minor bug
+fixes.
 
 * Deployment of new machines using PXE implemented
 
@@ -438,6 +526,10 @@ Released on September 19, 2012.
 
 Released on August 20, 2012.
 
+This is a bugfix release. Includes fixes in CMDB and UI code, as well as a
+preliminary timeline view for CMDB, usability improvements in editing CI
+relations.
+
 * Pricing: cached prices updated after changes in the catalog; component price
   calculation includes custom sizes when relevant
 
@@ -458,6 +550,10 @@ Released on August 20, 2012.
 
 Released on August 13, 2012.
 
+This is a bugfix release. Includes fixes in CMDB, discovery and UI code, as
+well as the possibility to specify extra queries for OpenStack. Local storage
+costs are now also counted for Proxmox virtual machines.
+
 * OpenStack plugin now accepts OPENSTACK_EXTRA_QUERIES setting, containing a
   list of tuples in the form (url, query) of additional data sources to check.
 
@@ -477,6 +573,10 @@ Released on August 13, 2012.
 ~~~~~
 
 Released on August 08, 2012.
+
+This version has report and rack views, as well as some improvements in the
+user interface and important bug fixes in the discovery plugins. You can now
+delete from the database old devices that are no longer needed.
 
 * edit links for devices and components
 
@@ -500,6 +600,10 @@ Released on August 08, 2012.
 
 Released on August 01, 2012.
 
+This is a bugfix release. Includes fixes for minor issues in the Web app and
+ability to run CMDB integration plugins remotely. It introduces a rudimentary
+reports tab on device lists.
+
 * a rudimentary reports tab on device lists to filter devices according to
   specified rules
 
@@ -516,6 +620,9 @@ Released on August 01, 2012.
 
 Released on July 23, 2012.
 
+This is a bugfix release. It introduces the ability to create new devices
+manually (without autodiscovery) and fixes several minor issues.
+
 * ``ralph chains`` command to list available plug-in chains
 
 * fixed regression from 1.0.1: ``settings-local.py`` works correctly again
@@ -530,6 +637,9 @@ Released on July 23, 2012.
 ~~~~~
 
 Released on July 18, 2012.
+
+This is a bugfix release. It fixes several small problems with initial setup
+and configuration, and makes it easier to manage settings.
 
 * ``ralph`` management command introduced as a shortcut to ``python manage.py``
 
@@ -546,5 +656,7 @@ Released on July 18, 2012.
 ~~~~~
 
 Released on July 16, 2012.
+
+This is the first release of Ralph.
 
 * initial release

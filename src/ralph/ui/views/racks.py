@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 import collections
 
 from bob.menu import MenuItem
+from django.conf import settings
 from django.contrib import messages
 from django.db.models import Q
 from django.http import HttpResponseForbidden, HttpResponseRedirect, Http404
@@ -20,8 +21,8 @@ from ralph.ui.views.common import (
     Info,
     Prices,
     Addresses,
+    Asset,
     Costs,
-    Purchase,
     Components,
     History,
     BaseMixin,
@@ -178,7 +179,7 @@ class RacksHistory(Racks, History):
     pass
 
 
-class RacksPurchase(Racks, Purchase):
+class RacksAsset(Racks, Asset):
     pass
 
 
@@ -416,6 +417,12 @@ class DeviceCreateView(BaseRacksMixin, CreateView):
         )
         dev.name = form.cleaned_data['name']
         dev.save(priority=1, user=self.request.user)
+        if all((
+            'ralph_assets' in settings.INSTALLED_APPS,
+            'asset' in form.cleaned_data.keys(),
+        )):
+            from ralph_assets.api_ralph import assign_asset
+            assign_asset(dev.id, form.cleaned_data['asset'].id)
         messages.success(self.request, "Device created.")
         return HttpResponseRedirect(self.request.path + '../info/%d' % dev.id)
 

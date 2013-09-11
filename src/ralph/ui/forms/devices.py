@@ -5,7 +5,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from ajax_select.fields import AutoCompleteSelectField
 from django import forms
+from django.conf import settings
 from django.contrib import messages
 from django.utils.translation import ugettext_lazy as _
 from lck.django.common.models import MACAddressField
@@ -225,6 +227,14 @@ class DeviceCreateForm(DeviceForm):
         self.fields['venture_role'].choices = all_roles()
         self.fields['venture'].required = True
         self.fields['model'].required = True
+        if 'ralph_assets' in settings.INSTALLED_APPS:
+            self.fields['asset'] = AutoCompleteSelectField(
+                ('ralph_assets.api_ralph', 'UnassignedDCDeviceLookup'),
+                required=True,
+            )
+            self.fields['asset'].widget.help_text = (
+                'Enter asset sn, barcode or model'
+            )
         del self.fields['save_comment']
 
     def clean_macs(self):
