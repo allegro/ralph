@@ -70,7 +70,7 @@ def guess_family(headers, document):
             family = 'IBM'
         elif '<title>Proxmox Virtual Environment</title>' in document:
             family = 'Proxmox'
-        elif 'Cisco Systems, Inc.  All rights reserved.' in document:
+        elif 'Cisco Systems, Inc. All rights' in document:
             family = 'Cisco'
         elif '<title>BIG-IP' in document or 'mailto:support@f5.com' in document:
             family = 'F5'
