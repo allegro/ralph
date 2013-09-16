@@ -17,6 +17,17 @@ import yaml
 from django.conf import settings
 
 from ralph.discovery.models import IPAddress, SERIAL_BLACKLIST
+from ralph.scan.facts import (
+    handle_facts,
+    handle_facts_3ware_disks,
+    handle_facts_hpacu,
+    handle_facts_ip_addresses,
+    handle_facts_megaraid,
+    handle_facts_os,
+    handle_facts_packages,
+    handle_facts_smartctl,
+    handle_facts_wwn,
+)
 from ralph.scan.lshw import Error as LshwError
 from ralph.scan.lshw import handle_lshw
 from ralph.scan.plugins import get_base_result_template
@@ -201,9 +212,28 @@ def _parse_lshw(lshw, is_virtual, sn=None):
     return device_info
 
 
-def _parse_facts(facts, is_virtual):
-    # todo
-    return {}
+def _parse_facts(facts, is_virtual=False):
+    return handle_facts(facts, is_virtual)
+
+
+def _merge_disks_results(disks, disks_3ware):
+    result = []
+    for disk in disks:
+        disk_sn = disk.get('serial_number')
+        if not disk_sn:
+            result.append(disk)
+            continue
+        merged = False
+        for i, disk_3ware in enumerate(disks_3ware):
+            if disk_3ware['serial_number'] == disk_sn:
+                disk.update(disk_3ware)
+                result.append(disk)
+                merged = True
+                break
+        if merged:
+            disks_3ware.pop(i)
+    result.extend(disks_3ware)
+    return result
 
 
 def _puppet(provider, ip_address, messages=[]):
@@ -218,13 +248,37 @@ def _puppet(provider, ip_address, messages=[]):
         device_info = _parse_lshw(facts['lshw'], is_virtual)
     else:
         device_info = _parse_facts(facts, is_virtual)
-
-    # todo: ethernets for lshw?
-
-    import pprint
-    pprint.pprint(device_info)
-
-    return {}
+    ip_addresses = handle_facts_ip_addresses(facts)
+    if ip_addresses:
+        device_info['system_ip_addresses'] = ip_addresses
+    else:
+        device_info['system_ip_addresses'] = [ip_address]
+    disk_shares = handle_facts_wwn(facts)
+    if disk_shares:
+        device_info['disk_shares'] = disk_shares
+    disks = device_info.get('disks', [])
+    disks = _merge_disks_results(
+        disks,
+        handle_facts_3ware_disks(facts),
+    )
+    disks = _merge_disks_results(
+        disks,
+        handle_facts_smartctl(facts),
+    )
+    disks = _merge_disks_results(
+        disks,
+        handle_facts_hpacu(facts),
+    )
+    disks = _merge_disks_results(
+        disks,
+        handle_facts_megaraid(facts),
+    )
+    device_info['disks'] = disks
+    installed_software = handle_facts_packages(facts)
+    if installed_software:
+        device_info['installed_software'] = installed_software
+    device_info.update(handle_facts_os(facts, is_virtual))
+    return device_info
 
 
 def scan_address(ip_address, **kwargs):
