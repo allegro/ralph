@@ -69,7 +69,7 @@ class Command(BaseCommand):
         print('Importing DNS records from {}...'.format(filename))
         with open(filename, 'rb') as f:
             for i, value in enumerate(UnicodeReader(f), 1):
-                if len(value) != 4:
+                if len(value) != 3:
                     raise IncorrectLengthRowError(
                         'CSV row {} has {} elements, should be 3'.format(
                             i,
@@ -96,6 +96,10 @@ class Command(BaseCommand):
                 ipaddr.IPv4Address(content)  # just for address validation
                 self.create_record(domain, name, type, content)
                 if create_ptr:
+                    if type != 'A':
+                        raise DisallowedRecordTypeError(
+                            "PTR record can only be created for record type A."
+                        )
                     revname = '.'.join(
                         reversed(content.split('.'))
                     ) + '.in-addr.arpa'
