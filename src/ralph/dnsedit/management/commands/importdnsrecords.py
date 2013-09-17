@@ -96,7 +96,12 @@ class Command(BaseCommand):
                     try:
                         ipaddr.IPv4Address(content)
                     except ValueError:
-                        raise InvalidAddressError('Invalid IP address.')
+                        raise InvalidAddressError(
+                            'Record {} has invalid IP address ({}).'.format(
+                                name,
+                                content,
+                            )
+                        )
                 domain = get_domain(name)
                 if not domain:
                     raise DomainDoesNotExistError(
@@ -106,7 +111,7 @@ class Command(BaseCommand):
                 if create_ptr:
                     if type != 'A':
                         raise DisallowedRecordTypeError(
-                            "PTR record can only be created for record type A."
+                            'PTR record can only be created for record type A.'
                         )
                     revname = '.'.join(
                         reversed(content.split('.'))
