@@ -7,13 +7,14 @@ from __future__ import unicode_literals
 
 import re
 
+import ralph.discovery.models_device as discovery_models
+
 from django.db import models as db
 from lck.django.common import nested_commit_on_success
 from lck.django.common.models import MACAddressField
 from powerdns.models import Domain, Record
 
 from ralph.dnsedit.models import DHCPEntry
-from ralph.discovery.models import DeviceType
 
 
 HOSTNAME_CHUNK_PATTERN = re.compile(
@@ -214,8 +215,10 @@ def get_location(device):
 def get_model(device):
     if not device.model:
         return ''
-    model = '[%s] %s' % (DeviceType.name_from_id(device.model.type),
-                         device.model.name)
+    model = '[%s] %s' % (
+        discovery_models.DeviceType.name_from_id(device.model.type),
+        device.model.name
+    )
     if device.model.group:
         model += ' {%s}' % device.model.group.name
     return model
@@ -240,9 +243,8 @@ def update_txt_records(device):
             record_names.add(record.name)
     for name in record_names:
         set_txt_record(record.domain, name, 'VENTURE',
-               device.venture.name if device.venture else '')
+                device.venture.name if device.venture else '')
         set_txt_record(record.domain, name, 'ROLE',
-               device.venture_role.full_name if device.venture_role else '')
+                device.venture_role.full_name if device.venture_role else '')
         set_txt_record(record.domain, name, 'MODEL', get_model(device))
         set_txt_record(record.domain, name, 'LOCATION', get_location(device))
-

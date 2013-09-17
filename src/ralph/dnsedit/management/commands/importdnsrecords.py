@@ -6,7 +6,10 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import ipaddr
 import textwrap
+
+from optparse import make_option
 
 from django.core.management.base import BaseCommand
 from powerdns.models import Record, RECORD_TYPES
@@ -31,6 +34,14 @@ class EmptyRecordValueError(Error):
     """Trying to create record from empty values."""
 
 
+class DomainDoesNotExistError(Error):
+    """Trying to create record with domain that doesn't exist in Ralph."""
+
+
+class InvalidAddressError(Error):
+    """Trying to create record from invalid IP address."""
+
+
 class Command(BaseCommand):
     """
     Append DNS records form csv file to existing Domain
@@ -38,19 +49,31 @@ class Command(BaseCommand):
 
         name;type;content
     """
-
     help = textwrap.dedent(__doc__).strip()
     requires_model_validation = True
+    option_list = BaseCommand.option_list + (
+        make_option(
+            '-p',
+            '--create-ptr',
+            action='store_true',
+            default=False,
+            help='Create PTR record.',
+        ),
+    )
 
     def handle(self, *args, **options):
         for filename in args:
-            self.handle_single(filename)
+            self.handle_single(filename, **options)
 
-    def handle_single(self, filename):
+    def handle_single(self, filename, **options):
+        if options['create_ptr']:
+            create_ptr = True
+        else:
+            create_ptr = False
         print('Importing DNS records from {}...'.format(filename))
         with open(filename, 'rb') as f:
             for i, value in enumerate(UnicodeReader(f), 1):
-                if len(value) != 4:
+                if len(value) != 3:
                     raise IncorrectLengthRowError(
                         'CSV row {} has {} elements, should be 3'.format(
                             i,
@@ -69,10 +92,35 @@ class Command(BaseCommand):
                             RECORD_TYPES,
                         ),
                     )
-                self.create_record(name, type, content)
+                if type == 'A':
+                    try:
+                        ipaddr.IPv4Address(content)
+                    except ValueError:
+                        raise InvalidAddressError(
+                            'Record {} has invalid IP address ({}).'.format(
+                                name,
+                                content,
+                            )
+                        )
+                domain = get_domain(name)
+                if not domain:
+                    raise DomainDoesNotExistError(
+                        'Domain for {} does not exist in Ralph.'.format(name)
+                    )
+                self.create_record(domain, name, type, content)
+                if create_ptr:
+                    if type != 'A':
+                        raise DisallowedRecordTypeError(
+                            'PTR record can only be created for record type A.'
+                        )
+                    revname = '.'.join(
+                        reversed(content.split('.'))
+                    ) + '.in-addr.arpa'
+                    type = 'PTR'
+                    content = name + '.'
+                    self.create_record(domain, revname, type, content)
 
-    def create_record(self, name, type, content):
-        domain = get_domain(name)
+    def create_record(self, domain, name, type, content):
         record, created = Record.objects.get_or_create(
             domain=domain,
             name=name,
