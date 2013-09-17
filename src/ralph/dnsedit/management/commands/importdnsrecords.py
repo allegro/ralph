@@ -38,6 +38,10 @@ class DomainDoesNotExistError(Error):
     """Trying to create record with domain that doesn't exist in Ralph."""
 
 
+class InvalidAddressError(Error):
+    """Trying to create record from invalid IP address."""
+
+
 class Command(BaseCommand):
     """
     Append DNS records form csv file to existing Domain
@@ -88,12 +92,16 @@ class Command(BaseCommand):
                             RECORD_TYPES,
                         ),
                     )
+                if type == 'A':
+                    try:
+                        ipaddr.IPv4Address(content)
+                    except ValueError:
+                        raise InvalidAddressError('Invalid IP address.')
                 domain = get_domain(name)
                 if not domain:
                     raise DomainDoesNotExistError(
                         'Domain for {} does not exist in Ralph.'.format(name)
                     )
-                ipaddr.IPv4Address(content)  # just for address validation
                 self.create_record(domain, name, type, content)
                 if create_ptr:
                     if type != 'A':
