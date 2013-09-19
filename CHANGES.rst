@@ -1,6 +1,7 @@
 Change Log
 ----------
 
+* Added new search field in device - Deprecation (based on Device.deprecation_kind)
 
 * Added Asset tab for views with informations about devices
 
