@@ -37,7 +37,7 @@ setup (
         'django-powerdns-dnssec==0.9.3',
         'django-tastypie==0.9.14',
         'django-rq==0.4.5',
-        'django==1.4.6',
+        'django==1.4.8',
         'dnspython==1.11.0',
         'feedparser==5.1.2',
         'fugue-icons==3.5.3',

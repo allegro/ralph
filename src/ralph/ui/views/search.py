@@ -381,6 +381,15 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                     self.query = self.query.filter(
                         deprecation_date__lte=data['deprecation_date_end']
                     )
+            if data['deprecation_kind']:
+                if data['deprecation_kind'][0] == "None":
+                    self.query = self.query.filter(
+                        deprecation_kind__isnull=True,
+                    )
+                else:
+                    self.query = self.query.filter(
+                        deprecation_kind__id__exact=data['deprecation_kind'][0],
+                    )
             if data['no_warranty_expiration_date']:
                 self.query = self.query.filter(warranty_expiration_date=None)
             else:
