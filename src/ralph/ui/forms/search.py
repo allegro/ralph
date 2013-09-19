@@ -137,11 +137,13 @@ class SearchForm(forms.Form):
         widget=forms.CheckboxInput(attrs={
             'data-collapsed': True,
         }))
-    deprecation_kind = forms.MultipleChoiceField(required=False,
-        widget=forms.SelectMultiple(attrs={'class': 'span12',
-                                           'data-collapsed': True}),
+    deprecation_kind = forms.MultipleChoiceField(
+        required=False,
+        widget=forms.SelectMultiple(
+            attrs={'class': 'span12',
+                   'data-collapsed': True},),
         label="Deprecation",
-        choices=[('None', '-----')] + [(kind.id, kind.name) for kind in DeprecationKind.objects.all()]
+        choices=[('None', '-----')] + [(kind.id, kind.name) for kind in DeprecationKind.objects.all()],
         )
     warranty_expiration_date_start = forms.DateField(required=False,
         widget=DateWidget(attrs={
