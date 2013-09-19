@@ -9,7 +9,7 @@ import ipaddr
 from django import forms
 from lck.django.choices import Choices
 
-from ralph.discovery.models import DeviceType
+from ralph.discovery.models import DeviceType, DeprecationKind
 from ralph.ui.widgets import (
     DateWidget,
     DeviceGroupWidget,
@@ -137,6 +137,12 @@ class SearchForm(forms.Form):
         widget=forms.CheckboxInput(attrs={
             'data-collapsed': True,
         }))
+    deprecation_kind = forms.MultipleChoiceField(required=False,
+        widget=forms.SelectMultiple(attrs={'class': 'span12',
+                                           'data-collapsed': True}),
+        label="Deprecation",
+        choices=[('None', '-----')] + [(kind.id, kind.name) for kind in DeprecationKind.objects.all()]
+        )
     warranty_expiration_date_start = forms.DateField(required=False,
         widget=DateWidget(attrs={
             'class':'span12',
