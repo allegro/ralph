@@ -175,7 +175,10 @@ class PuppetDBProvider(PuppetBaseProvider):
 
 
 def _get_ip_addresses_hostnames_sets(ip):
-    hostnames_set = {network.hostname(ip)}
+    hostnames_set = set()
+    hostname = network.hostname(ip)
+    if hostname:
+        hostnames_set.add(hostname)
     try:
         ip_address = IPAddress.objects.get(address=ip)
     except IPAddress.DoesNotExist:
