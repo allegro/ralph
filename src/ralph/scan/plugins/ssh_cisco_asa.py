@@ -113,18 +113,18 @@ def scan_address(ip_address, **kwargs):
         'status': 'success',
         'device': {
             'model_name': 'Cisco ' + model,
-            'model_type': str(DeviceType.firewall),
+            'type': str(DeviceType.firewall),
             'serial_number': sn,
             'mac_adresses': macs,
             'boot_firmware': boot_firmware,
             'management_ip_addresses': [ip_address],
-            'memory': {
+            'memory': [{
                 'size': int(ram_size),
-                },
+            }],
             'processors': [{
                 'model_name': cpu_model,
                 'speed': int(cpu_speed),
-                }],
+            }],
             },
         }
     tpl = get_base_result_template('ssh_cisco_asa')
