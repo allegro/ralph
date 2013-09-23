@@ -411,3 +411,4 @@ SCAN_PLUGINS = {
     'ralph.scan.plugins.dns_hostname': {},
 }
 
+DEFAULT_SOA_RECORD_CONTENT = ''
