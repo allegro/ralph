@@ -63,7 +63,7 @@ class TestCiscoASA(TestCase):
             'messages': [],
             'device': {
                 'model_name': 'Cisco SOME_ASA_MODEL',
-                'model_type': 'firewall',
+                'type': 'firewall',
                 'serial_number': 'SOME-SN',
                 'mac_adresses': [u'AB12BC235556',
                                  u'AB12BC235558',
@@ -76,13 +76,13 @@ class TestCiscoASA(TestCase):
                                  ],
                 'boot_firmware': 'SOME-BOOT-FIRMWARE',
                 'management_ip_addresses': [ip, ],
-                'memory': {
+                'memory': [{
                     'size': 12288,
-                    },
+                    }, ],
                 'processors': [{
                     'model_name': 'AMD Opteron',
                     'speed': 2600,
-                    }]
+                    }, ]
                 },
             }
         ret = ssh_cisco_asa.scan_address(ip)
