@@ -19,7 +19,8 @@ from ralph.discovery.models import DeviceType
 from ralph.scan.plugins import get_base_result_template
 
 
-SSH_USER, SSH_PASS = settings.SSH_SSG_USER, settings.SSH_SSG_PASSWORD
+SETTINGS = settings.SCAN_PLUGINS.get(__name__, {})
+SSH_USER, SSH_PASS = SETTINGS['ssh_user'], SETTINGS['ssh_pass']
 
 
 class Error(Exception):
