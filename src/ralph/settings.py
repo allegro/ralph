@@ -351,6 +351,7 @@ AUTOCI = True
 AUTOCI_SKIP_MSG = 'AUTOCI is disabled'
 HAMSTER_API_URL = ""
 SCALEME_API_URL = ""
+DEFAULT_SOA_RECORD_CONTENT = ''
 # </template>
 
 #
@@ -410,4 +411,3 @@ SCAN_PLUGINS = {
     'ralph.scan.plugins.test2': {},
     'ralph.scan.plugins.dns_hostname': {},
 }
-
