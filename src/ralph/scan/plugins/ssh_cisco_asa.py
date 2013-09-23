@@ -14,7 +14,7 @@ import time
 import re
 
 from django.conf import settings
-from ralph.util import parse
+from ralph.util import parse, network
 from ralph.discovery.models import DeviceType
 from ralph.scan.plugins import get_base_result_template
 
