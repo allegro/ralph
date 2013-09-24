@@ -5,7 +5,15 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from django.test import TestCase
+from django.conf import settings
 from mock import Mock, patch, MagicMock
+
+settings.SCAN_PLUGINS.update({
+    'ralph.scan.plugins.ssh_cisco_asa': {
+        'ssh_user': "foo_user",
+        'ssh_pass': "foo_pass",
+    },
+})
 
 from ralph.scan import plugins
 from ralph.scan.plugins import ssh_cisco_asa
@@ -65,7 +73,8 @@ class TestCiscoASA(TestCase):
                 'model_name': 'Cisco SOME_ASA_MODEL',
                 'type': 'firewall',
                 'serial_number': 'SOME-SN',
-                'mac_adresses': [u'AB12BC235556',
+                'mac_adresses': [
+                                 u'AB12BC235556',
                                  u'AB12BC235558',
                                  u'DEF113DE4567',
                                  u'DEF113DE4566',
@@ -73,22 +82,23 @@ class TestCiscoASA(TestCase):
                                  u'DEF113DE5676',
                                  u'DEF113DE6785',
                                  u'DEF113DE6784',
-                                 ],
+                ],
                 'boot_firmware': 'SOME-BOOT-FIRMWARE',
                 'management_ip_addresses': [ip, ],
                 'memory': [{
                     'size': 12288,
-                    }, ],
+                    }],
                 'processors': [{
                     'model_name': 'AMD Opteron',
                     'speed': 2600,
-                    }, ]
+                    }]
                 },
             }
         ret = ssh_cisco_asa.scan_address(ip)
         correct_ret['date'] = ret['date']  # assuming datetime is working.
         self.assertEqual(ret, correct_ret)
-        command_mock.assert_any_call(("show version | grep "
-            "(^Hardware|Boot microcode|^Serial|address is)"))
+        command_mock.assert_any_call(
+            "show version | grep (^Hardware|Boot microcode|^Serial|address is)"
+        )
         command_mock.assert_any_call("show inventory")
         self.assertEqual(command_mock.call_count, 2)
