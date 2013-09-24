@@ -6,13 +6,15 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import datetime
 import ipaddr
 import textwrap
 
 from optparse import make_option
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
-from powerdns.models import Record, RECORD_TYPES
+from powerdns.models import Domain, Record, RECORD_TYPES
 
 from bob.csvutil import UnicodeReader
 from ralph.dnsedit.util import get_domain
@@ -58,6 +60,12 @@ class Command(BaseCommand):
             action='store_true',
             default=False,
             help='Create PTR record.',
+        ),
+        make_option(
+            '-s',
+            '--soa-content',
+            default=False,
+            help="Specify 'content' part for SOA record.",
         ),
     )
 
@@ -116,9 +124,33 @@ class Command(BaseCommand):
                     revname = '.'.join(
                         reversed(content.split('.'))
                     ) + '.in-addr.arpa'
+                    # we need to create SOA domain/record first
+                    today = datetime.date.today().strftime('%Y%m%d')
+                    soa_name = '.'.join(revname.split('.')[1:])
+                    soa_domain, created = Domain.objects.get_or_create(
+                        name=soa_name,
+                    )
+                    if created:
+                        # last 2 digits == version for a given day
+                        soa_domain.notified_serial = today + '01'
+                        soa_domain.type = 'MASTER'
+                        soa_domain.save()
+                        print('Domain {} of type {} created (sn: {}).'.format(
+                                soa_domain.name,
+                                soa_domain.type,
+                                soa_domain.notified_serial,
+                            )
+                        )
+                    type = 'SOA'
+                    if options['soa_content']:
+                        content = options['soa_content']
+                    else:
+                        content = settings.DEFAULT_SOA_RECORD_CONTENT
+                    self.create_record(soa_domain, soa_name, type, content)
                     type = 'PTR'
-                    content = name + '.'
-                    self.create_record(domain, revname, type, content)
+                    content = name
+                    self.create_record(soa_domain, revname, type, content)
+
 
     def create_record(self, domain, name, type, content):
         record, created = Record.objects.get_or_create(
