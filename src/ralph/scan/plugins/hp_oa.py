@@ -179,9 +179,9 @@ def _hp_oa(ip_address):
     data = _get_hp_xml_data(ip_address)
     if not data:
         return
-    device = _get_parent_device(data)
-    _handle_subdevices(device, data)
-    return device
+    device_info = _get_parent_device(data)
+    _handle_subdevices(device_info, data)
+    return device_info
 
 
 def scan_address(ip_address, **kwargs):
