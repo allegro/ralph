@@ -351,6 +351,7 @@ AUTOCI = True
 AUTOCI_SKIP_MSG = 'AUTOCI is disabled'
 HAMSTER_API_URL = ""
 SCALEME_API_URL = ""
+DEFAULT_SOA_RECORD_CONTENT = ''
 # </template>
 
 #
@@ -418,4 +419,3 @@ SCAN_PLUGINS = {
         'ssh_pass': SSH_SSG_PASSWORD,
     },
 }
-
