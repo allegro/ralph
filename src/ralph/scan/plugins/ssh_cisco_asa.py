@@ -19,8 +19,17 @@ from ralph.discovery.models import DeviceType
 from ralph.scan.plugins import get_base_result_template
 
 
+class NotConfiguredError(Exception):
+    pass
+
+
 SETTINGS = settings.SCAN_PLUGINS.get(__name__, {})
 SSH_USER, SSH_PASS = SETTINGS['ssh_user'], SETTINGS['ssh_pass']
+
+if not SSH_USER or not SSH_PASS:
+    raise NotConfiguredError(
+        "ssh not configured in plugin {}".format(__name__),
+    )
 
 
 class Error(Exception):
@@ -125,8 +134,8 @@ def scan_address(ip_address, **kwargs):
                 'model_name': cpu_model,
                 'speed': int(cpu_speed),
             }],
-            },
-        }
+        },
+    }
     tpl = get_base_result_template('ssh_cisco_asa')
     tpl.update(ret)
     return tpl
