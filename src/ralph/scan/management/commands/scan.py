@@ -52,6 +52,7 @@ class Command(BaseCommand):
             'ralph.scan.plugins.snmp_f5',
             'ralph.scan.plugins.idrac',
             'ralph.scan.plugins.ssh_linux',
+            'ralph.scan.plugins.hp_oa',
         ]
         last_message = 0
         for address in addresses:
