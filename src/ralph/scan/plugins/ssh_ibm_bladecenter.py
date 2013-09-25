@@ -204,7 +204,10 @@ def _component(model_type, pairs, parent, raw):
 def _dev(model_type, pairs, parent, raw):
     device = {}
     if 'Mach type/model' in pairs:
-        device['model_name'] = '%s (%s)' % (pairs['Mach type/model'], pairs['Part no.'])
+        device['model_name'] = '%s (%s)' % (
+            pairs['Mach type/model'],
+            pairs['Part no.'],
+        )
     elif 'Part no.' in pairs:
         device['model_name'] = pairs['Part no.']
     else:
@@ -341,7 +344,7 @@ def _add_dev_blade(ip, pairs, parent, raw, counts, dev_id):
             dev['mac_addresses'] = []
         dev['mac_addresses'].append(mac)
     if 'mac_addresses' in dev:
-        dev['mac_addresses'] = list(set(dev['mac_addresses']))  # remove duplicates
+        dev['mac_addresses'] = list(set(dev['mac_addresses']))
     return dev
 
 
@@ -355,7 +358,7 @@ def _add_dev_switch(ip, pairs, parent, raw, counts, dev_id):
         if 'mac_addresses' not in dev:
             dev['mac_addresses'] = []
         dev['mac_addresses'].append(mac)
-        dev['mac_addresses'] = list(set(dev['mac_addresses']))  # remove duplicates
+        dev['mac_addresses'] = list(set(dev['mac_addresses']))
     return dev
 
 
@@ -382,7 +385,7 @@ ADD_DEV = {
 
 
 def _prepare_devices(ssh, ip, dev_path, dev_id, components, parent=None,
-                       counts=None):
+                     counts=None,):
     if dev_path:
         full_path = '{}:{}'.format(dev_path, dev_id)
     else:
