@@ -53,6 +53,8 @@ class Command(BaseCommand):
             'ralph.scan.plugins.idrac',
             'ralph.scan.plugins.ssh_linux',
             'ralph.scan.plugins.puppet',
+            'ralph.scan.plugins.ssh_cisco_asa',
+            'ralph.scan.plugins.ssh_cisco_catalyst',
             'ralph.scan.plugins.ipmi',
             'ralph.scan.plugins.http_supermicro',
         ]
