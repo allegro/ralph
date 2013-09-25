@@ -407,6 +407,14 @@ SCAN_PLUGINS = {
             (XEN_USER, XEN_PASSWORD),
         ],
     },
+    'ralph.scan.plugins.ipmi': {
+        'user': IPMI_USER,
+        'password': IPMI_PASSWORD,
+    },
+    'ralph.scan.plugins.http_supermicro': {
+        'user': IPMI_USER,
+        'password': IPMI_PASSWORD,
+    },
     'ralph.scan.plugins.test1': {},
     'ralph.scan.plugins.test2': {},
     'ralph.scan.plugins.dns_hostname': {},
