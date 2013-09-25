@@ -48,10 +48,10 @@ class Command(BaseCommand):
         except ValueError as e:
             raise SystemExit(e)
         plugins = [
-            # 'ralph.scan.plugins.snmp_macs',
-            # 'ralph.scan.plugins.snmp_f5',
-            # 'ralph.scan.plugins.idrac',
-            # 'ralph.scan.plugins.ssh_linux',
+            'ralph.scan.plugins.snmp_macs',
+            'ralph.scan.plugins.snmp_f5',
+            'ralph.scan.plugins.idrac',
+            'ralph.scan.plugins.ssh_linux',
             'ralph.scan.plugins.ssh_ibm_bladecenter',
         ]
         last_message = 0
