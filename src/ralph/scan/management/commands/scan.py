@@ -52,6 +52,7 @@ class Command(BaseCommand):
             'ralph.scan.plugins.snmp_f5',
             'ralph.scan.plugins.idrac',
             'ralph.scan.plugins.ssh_linux',
+            'ralph.scan.plugins.ipmi',
             'ralph.scan.plugins.http_supermicro',
             'ralph.scan.plugins.ilo_hp',
         ]
