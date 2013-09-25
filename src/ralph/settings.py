@@ -407,11 +407,6 @@ SCAN_PLUGINS = {
             (XEN_USER, XEN_PASSWORD),
         ],
     },
-<<<<<<< HEAD
-    'ralph.scan.plugins.ssh_ibm_bladecenter': {
-        'ssh_ibm_user': SSH_IBM_USER,
-        'ssh_ibm_password': SSH_IBM_PASSWORD,
-=======
     'ralph.scan.plugins.ipmi': {
         'user': IPMI_USER,
         'password': IPMI_PASSWORD,
@@ -419,7 +414,6 @@ SCAN_PLUGINS = {
     'ralph.scan.plugins.http_supermicro': {
         'user': IPMI_USER,
         'password': IPMI_PASSWORD,
->>>>>>> master
     },
     'ralph.scan.plugins.test1': {},
     'ralph.scan.plugins.test2': {},

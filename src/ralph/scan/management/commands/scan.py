@@ -52,14 +52,11 @@ class Command(BaseCommand):
             'ralph.scan.plugins.snmp_f5',
             'ralph.scan.plugins.idrac',
             'ralph.scan.plugins.ssh_linux',
-<<<<<<< HEAD
             'ralph.scan.plugins.ssh_ibm_bladecenter',
-=======
             'ralph.scan.plugins.ssh_cisco_asa',
             'ralph.scan.plugins.ssh_cisco_catalyst',
             'ralph.scan.plugins.ipmi',
             'ralph.scan.plugins.http_supermicro',
->>>>>>> master
         ]
         last_message = 0
         for address in addresses:
