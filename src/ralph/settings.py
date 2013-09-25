@@ -408,6 +408,10 @@ SCAN_PLUGINS = {
         ],
     },
     'ralph.scan.plugins.hp_oa': {},
+    'ralph.scan.plugins.http_supermicro': {
+        'user': IPMI_USER,
+        'password': IPMI_PASSWORD,
+    },
     'ralph.scan.plugins.test1': {},
     'ralph.scan.plugins.test2': {},
     'ralph.scan.plugins.dns_hostname': {},
