@@ -418,4 +418,12 @@ SCAN_PLUGINS = {
     'ralph.scan.plugins.test1': {},
     'ralph.scan.plugins.test2': {},
     'ralph.scan.plugins.dns_hostname': {},
+    'ralph.scan.plugins.ssh_cisco_asa': {
+        'ssh_user': SSH_SSG_USER,
+        'ssh_pass': SSH_SSG_PASSWORD,
+    },
+    'ralph.scan.plugins.ssh_cisco_catalyst': {
+        'ssh_user': SSH_SSG_USER,
+        'ssh_pass': SSH_SSG_PASSWORD,
+    },
 }
