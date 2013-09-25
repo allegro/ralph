@@ -124,10 +124,7 @@ class Command(BaseCommand):
                     revname = '.'.join(
                         reversed(content.split('.'))
                     ) + '.in-addr.arpa'
-                    type = 'PTR'
-                    content = name + '.'
-                    self.create_record(domain, revname, type, content)
-                    # create SOA record/domain (needed by PTR to work):
+                    # we need to create SOA domain/record first
                     today = datetime.date.today().strftime('%Y%m%d')
                     soa_name = '.'.join(revname.split('.')[1:])
                     soa_domain, created = Domain.objects.get_or_create(
@@ -150,6 +147,10 @@ class Command(BaseCommand):
                     else:
                         content = settings.DEFAULT_SOA_RECORD_CONTENT
                     self.create_record(soa_domain, soa_name, type, content)
+                    type = 'PTR'
+                    content = name
+                    self.create_record(soa_domain, revname, type, content)
+
 
     def create_record(self, domain, name, type, content):
         record, created = Record.objects.get_or_create(
