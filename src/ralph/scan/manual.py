@@ -6,6 +6,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import datetime
+import logging
 from django.conf import settings
 from django.utils.importlib import import_module
 import django_rq
@@ -17,6 +18,7 @@ from ralph.discovery.models import IPAddress, Network
 from ralph.scan.errors import NoQueueError
 
 
+logger = logging.getLogger("SCAN")
 SCAN_LOG_DIRECTORY = getattr(settings, 'SCAN_LOG_DIRECTORY', None)
 
 
@@ -74,7 +76,20 @@ def _scan_address(address, plugins, **kwargs):
             job.meta['messages'].append((address, plugin_name, 'error', message))
             job.meta['status'][plugin_name] = 'error'
         else:
-            result = module.scan_address(address, **kwargs)
+            try:
+                result = module.scan_address(address, **kwargs)
+            except Exception as e:
+                name = plugin_name.split(".")[-1]
+                msg = "Exception occured in plugin {} and address {}".format(
+                    name, address,
+                )
+                logger.exception(msg)
+                result = {
+                    'status': 'error',
+                    'date': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                    'plugin': name,
+                    'messages': [msg, e.message],
+                }
             results[plugin_name] = result
             for message in result.get('messages', []):
                 job.meta['messages'].append((address, plugin_name, 'warning', message))

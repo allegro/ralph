@@ -53,6 +53,7 @@ class Command(BaseCommand):
             'ralph.scan.plugins.idrac',
             'ralph.scan.plugins.ssh_linux',
             'ralph.scan.plugins.puppet',
+            'ralph.scan.plugins.http_supermicro',
         ]
         last_message = 0
         for address in addresses:
