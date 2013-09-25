@@ -26,6 +26,7 @@ class Error(Exception):
 class ConsoleError(Error):
     pass
 
+
 class NotConfiguredError(Error):
     pass
 

@@ -24,6 +24,7 @@ class Error(Exception):
 class ConsoleError(Error):
     pass
 
+
 class NotConfiguredError(Error):
     pass
 
@@ -35,7 +36,6 @@ if not SSH_USER or not SSH_PASSWORD:
     raise NotConfiguredError(
         "ssh not configured in plugin {}".format(__name__),
     )
-
 
 
 class CiscoSSHClient(paramiko.SSHClient):
