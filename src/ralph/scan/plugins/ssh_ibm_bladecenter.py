@@ -156,24 +156,15 @@ def _component(model_type, pairs, parent, raw):
         model_type = ComponentType.cooling
     elif 'Fan' in model_name:
         model_type = ComponentType.cooling
-    model, mcreated = ComponentModel.create(
-        model_type,
-        family=model_name,
-        name=model_name,
-        priority=SAVE_PRIORITY,
-    )
-    component, created = GenericComponent.concurrent_get_or_create(
-        sn=sn,
-        defaults=dict(
-            device=parent,
-        ),
-    )
-    component.model = model
-    component.label = name
+    component = {}
+    component['model_name'] = model_name
+    component['serial_number'] = sn
+    component['type'] = model_type.id
+    component['label'] = name
     firmware = (pairs.get('AMM firmware') or pairs.get('FW/BIOS') or
                 pairs.get('Main Application 2'))
     if firmware:
-        component.hard_firmware = '%s %s rev %s' % (
+        component['hard_firmware'] = '%s %s rev %s' % (
             firmware['Build ID'],
             firmware['Rel date'],
             firmware['Rev'],
@@ -181,31 +172,33 @@ def _component(model_type, pairs, parent, raw):
     else:
         firmware = pairs.get('Power Module Cooling Device firmware rev.')
         if firmware:
-            component.hard_firmware = 'rev %s' % firmware
+            component['hard_firmware'] = 'rev %s' % firmware
     firmware = (pairs.get('Boot ROM') or pairs.get('Main Application 1') or
                 pairs.get('Blade Sys Mgmt Processor'))
     if firmware:
-        component.boot_firmware = '%s %s rev %s' % (
+        component['boot_firmware'] = '%s %s rev %s' % (
             firmware['Build ID'],
             firmware['Rel date'],
             firmware['Rev'],
         )
     firmware = (pairs.get('Blade Sys Mgmt Processor'))
     if firmware:
-        component.mgmt_firmware = '%s %s rev %s' % (
+        component['mgmt_firmware'] = '%s %s rev %s' % (
             firmware['Build ID'],
             firmware['Rel date'],
             firmware['Rev'],
         )
     firmware = (pairs.get('Diagnostics'))
     if firmware:
-        component.diag_firmware = '%s %s rev %s' % (
+        component['diag_firmware'] = '%s %s rev %s' % (
             firmware['Build ID'],
             firmware['Rel date'],
             firmware['Rev'],
         )
-    component.save(update_last_seen=True, priority=SAVE_PRIORITY)
-    return component
+    if 'parts' not in parent:
+        parent['parts'] = []
+    parent['parts'].append(component)
+    return parent
 
 
 def _dev(model_type, pairs, parent, raw):
@@ -269,87 +262,66 @@ def _dev(model_type, pairs, parent, raw):
 
 
 def _add_dev_mm(ip, pairs, parent, raw, counts, dev_id):
-    _component(ComponentType.management, pairs, parent, raw)
-
-    # XXX Clean up the previously added components
-    for child in parent.child_set.filter(
-        model__type__in=[DeviceType.management, DeviceType.unknown],
-    ):
-        child.delete()
+    parent['parts'] = [p for p in parent['parts'] if p['type'] != 9]
+    dev = _component(ComponentType.management, pairs, parent, raw)
+    return dev
 
 
 def _add_dev_generic(ip, pairs, parent, raw, counts, dev_id):
     if parent:
-        _component(ComponentType.unknown, pairs, parent, raw)
+        return _component(ComponentType.unknown, pairs, parent, raw)
     else:
         dev = _dev(DeviceType.unknown, pairs, parent, raw)
         return dev
 
 
 def _add_dev_cpu(ip, pairs, parent, raw, counts, dev_id):
-    try:
-        model = pairs['Mach type/model']
-    except KeyError:
-        DiscoveryWarning(
-            message="Processor model unknown",
-            plugin=__name__,
-            device=parent,
-            ip=ip,
-        ).save()
-        return
+    model = pairs.get('Mach type/model', 'unknown')
     counts.cpu += 1
     try:
         index = int(model.split()[-1])
     except ValueError:
         index = counts.cpu
-    cpu, created = Processor.concurrent_get_or_create(
-        device=parent,
-        index=index,
-    )
-    cpu.label = pairs['Mach type/model']
+    cpu = {
+        'index': index,
+    }
+    cpu['label'] = pairs['Mach type/model']
     family = pairs['Processor family']
     if family.startswith('Intel '):
-        family = cpu.label[len('Intel '):]
+        family = cpu['label'][len('Intel '):]
+    cpu['family'] = family
     speed = int(float(pairs['Speed'].replace('GHz', '')) * 1000)
     cores = int(pairs['Processor cores'])
-    cpu.model, c = ComponentModel.create(
-        ComponentType.processor,
-        speed=speed,
-        cores=cores,
-        name='CPU %s %d MHz, %s-core' % (family, speed, cores),
-        family=family,
-        priority=SAVE_PRIORITY,
-    )
-    cpu.save(priority=SAVE_PRIORITY)
+    cpu.update({
+        'model_name': model,
+        'name': 'CPU %s %d MHz, %s-core' % (family, speed, cores),
+        'speed': speed,
+        'cores': cores,
+    })
+    if not 'processors' in parent:
+        parent['processors'] = []
+    parent['processors'].append(cpu)
 
 
 def _add_dev_memory(ip, pairs, parent, raw, counts, dev_id):
-    try:
-        model = pairs['Mach type/model']
-    except KeyError:
-        DiscoveryWarning(
-            message="Memory model unknown",
-            plugin=__name__,
-            device=parent,
-            ip=ip,
-        ).save()
-        return
+    model = pairs.get('Mach type/model', 'unknown')
     counts.mem += 1
     try:
         index = int(model.split()[-1])
     except ValueError:
         index = counts.mem
-    mem, created = Memory.concurrent_get_or_create(device=parent, index=index)
     size = int(pairs['Size'].replace('GB', '')) * 1024
     speed = int(pairs.get('Speed', '0').replace('MHz', ''))
-    mem.label = pairs.get('Mach type/model', '')
-    mem.model, c = ComponentModel.create(
-        ComponentType.memory,
+    label = pairs.get('Mach type/model', '')
+    mem = dict(
         size=size,
         speed=speed,
-        priority=SAVE_PRIORITY,
+        label=label,
+        index=index,
     )
-    mem.save(priority=SAVE_PRIORITY)
+    if not 'memory' in parent:
+        parent['memory'] = []
+    parent['memory'].append(mem)
 
 
 def _add_dev_blade(ip, pairs, parent, raw, counts, dev_id):
@@ -380,12 +352,10 @@ def _add_dev_switch(ip, pairs, parent, raw, counts, dev_id):
     dev = _dev(dev_type, pairs, parent, raw)
     mac = pairs.get('MAC Address')
     if mac:
-        eth, created = Ethernet.concurrent_get_or_create(
-            mac=MACAddressField.normalize(mac),
-            defaults=dict(device=dev),
-        )
-        eth.label = 'Ethernet'
-        eth.save(priority=SAVE_PRIORITY)
+        if 'mac_addresses' not in dev:
+            dev['mac_addresses'] = []
+        dev['mac_addresses'].append(mac)
+        dev['mac_addresses'] = list(set(dev['mac_addresses']))  # remove duplicates
     return dev
 
 
@@ -428,8 +398,10 @@ def _prepare_devices(ssh, ip, dev_path, dev_id, components, parent=None,
     lines = ssh.ibm_command('info -T {}'.format(full_path))
     raw = '\n'.join(lines)
     pairs = parse.pairs(lines=lines)
-    from ipdb import set_trace; set_trace()
-    dev = add_func(ip, pairs, parent, raw, counts, dev_id)
+    try:
+        dev = add_func(ip, pairs, parent, raw, counts, dev_id)
+    except DeviceError as e:
+        return None
     for dev_info, components in components.iteritems():
         if counts is None:
             counts = Counts()
@@ -443,9 +415,11 @@ def _prepare_devices(ssh, ip, dev_path, dev_id, components, parent=None,
             dev,
             counts,
         )
-        if not 'subdevices' in dev:
-            dev['subdevices'] = []
-        dev['subdevices'].append(subdev)
+        if subdev and subdev != dev:
+            if not 'subdevices' in dev:
+                dev['subdevices'] = []
+            if not subdev in dev['subdevices']:
+                dev['subdevices'].append(subdev)
     return dev
 
 
@@ -459,6 +433,9 @@ def _blade_scan(ip_address):
     return device
 
 
-
 def scan_address(ip_address, **kwargs):
-    return _blade_scan(ip_address)
+    messages = []
+    result = get_base_result_template('ssh_ibm_bladecenter', messages)
+    result['device'] = _blade_scan(ip_address)
+    result['status'] = 'success'
+    return result
