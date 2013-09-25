@@ -351,6 +351,7 @@ AUTOCI = True
 AUTOCI_SKIP_MSG = 'AUTOCI is disabled'
 HAMSTER_API_URL = ""
 SCALEME_API_URL = ""
+DEFAULT_SOA_RECORD_CONTENT = ''
 # </template>
 
 #
@@ -410,6 +411,9 @@ SCAN_PLUGINS = {
         'puppet_api_url': PUPPET_API_URL,
         'puppet_db_url': PUPPET_DB_URL,
     },
+    'ralph.scan.plugins.http_supermicro': {
+        'user': IPMI_USER,
+        'password': IPMI_PASSWORD,
+    },
     'ralph.scan.plugins.dns_hostname': {},
 }
-
