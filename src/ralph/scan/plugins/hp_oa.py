@@ -168,6 +168,7 @@ def _handle_subdevices(device_info, data):
                         subdevice['chassis_position'] += 2000
                 else:
                     subdevice['chassis_position'] = int(bay)
+                subdevice['position'] = bay
             else:
                 subdevice['chassis_position'] = i + 1
             subdevices = device_info.get('subdevices', [])
