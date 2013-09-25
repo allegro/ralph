@@ -17,7 +17,14 @@ from ralph.discovery.cisco import cisco_component, cisco_inventory
 from ralph.scan.plugins import get_base_result_template
 
 
-class NotConfiguredError(Exception):
+class Error(Exception):
+    pass
+
+
+class ConsoleError(Error):
+    pass
+
+class NotConfiguredError(Error):
     pass
 
 
@@ -29,13 +36,6 @@ if not SSH_USER or not SSH_PASSWORD:
         "ssh not configured in plugin {}".format(__name__),
     )
 
-
-class Error(Exception):
-    pass
-
-
-class ConsoleError(Error):
-    pass
 
 
 class CiscoSSHClient(paramiko.SSHClient):
@@ -87,7 +87,7 @@ def scan_address(ip_address, **kwargs):
     ssh = _connect_ssh(ip_address)
     try:
         mac = '\n'.join(ssh.cisco_command(
-            "show version | include Base ethernet MAC Address"
+            "show version | include Base ethernet MAC Address",
         ))
         raw = '\n'.join(ssh.cisco_command("show inventory"))
     finally:
@@ -105,20 +105,20 @@ def scan_address(ip_address, **kwargs):
     sn = dev_inv['sn']
     model_type=DeviceType.switch
     device = {
-              'hostname': network.hostname(ip_address),
-              'model_name': model_name,
-              'type': str(model_type),
-              'serial_number': sn,
-              'mac_adresses': [mac, ],
-              'management_ip_addresses': [ip_address, ],
+        'hostname': network.hostname(ip_address),
+        'model_name': model_name,
+        'type': str(model_type),
+        'serial_number': sn,
+        'mac_adresses': [mac, ],
+        'management_ip_addresses': [ip_address, ],
     }
     parts = inventory[1:]
     device['parts'] = []
     for p in parts:
         part = {
-                'serial_number': p['sn'],
-                'name': p['name'],
-                'label': p['descr'],
+            'serial_number': p['sn'],
+            'name': p['name'],
+            'label': p['descr'],
         }
         device['parts'].append(part)
     ret = {

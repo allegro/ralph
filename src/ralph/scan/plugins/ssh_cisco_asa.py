@@ -19,7 +19,14 @@ from ralph.discovery.models import DeviceType
 from ralph.scan.plugins import get_base_result_template
 
 
-class NotConfiguredError(Exception):
+class Error(Exception):
+    pass
+
+
+class ConsoleError(Error):
+    pass
+
+class NotConfiguredError(Error):
     pass
 
 
@@ -30,14 +37,6 @@ if not SSH_USER or not SSH_PASS:
     raise NotConfiguredError(
         "ssh not configured in plugin {}".format(__name__),
     )
-
-
-class Error(Exception):
-    pass
-
-
-class ConsoleError(Error):
-    pass
 
 
 class CiscoSSHClient(paramiko.SSHClient):
