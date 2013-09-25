@@ -31,6 +31,7 @@ from ralph.discovery.models import (
     SERIAL_BLACKLIST,
 )
 from ralph.discovery.models_history import DiscoveryWarning
+from ralph.scan.plugins import get_base_result_template
 
 
 SAVE_PRIORITY = 50
@@ -116,8 +117,8 @@ class IBMSSHClient(paramiko.SSHClient):
 def _connect_ssh(ip):
     return network.connect_ssh(
         ip,
-        settings.SSH_IBM_USER,
-        settings.SSH_IBM_PASSWORD,
+        settings.SCAN_PLUGINS.get(__name__, {})['ssh_ibm_user'],
+        settings.SCAN_PLUGINS.get(__name__, {})['ssh_ibm_password'],
         client=IBMSSHClient,
     )
 

@@ -407,6 +407,10 @@ SCAN_PLUGINS = {
             (XEN_USER, XEN_PASSWORD),
         ],
     },
+    'ralph.scan.plugins.ssh_ibm_bladecenter': {
+        'ssh_ibm_user': SSH_IBM_USER,
+        'ssh_ibm_password': SSH_IBM_PASSWORD,
+    },
     'ralph.scan.plugins.test1': {},
     'ralph.scan.plugins.test2': {},
     'ralph.scan.plugins.dns_hostname': {},
