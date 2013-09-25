@@ -76,15 +76,16 @@ class TestCiscoCatalyst(TestCase):
                 'serial_number': 'SOME-SN',
                 'mac_adresses': ['AB12BC235556', ],
                 'management_ip_addresses': [ip, ],
-                'parts': [{
-                    'serial_number': 'eth-sn1',
-                    'name': 'GigabitEthernet0/45',
-                    'label': '1000BaseSX SFP',
+                'parts': [
+                    {
+                        'serial_number': 'eth-sn1',
+                        'name': 'GigabitEthernet0/45',
+                        'label': '1000BaseSX SFP',
                     },
                     {
-                    'serial_number': 'eth-sn2',
-                    'name': 'GigabitEthernet0/46',
-                    'label': '1000BaseSX SFP',
+                        'serial_number': 'eth-sn2',
+                        'name': 'GigabitEthernet0/46',
+                        'label': '1000BaseSX SFP',
                     },
                 ],
             },
@@ -94,7 +95,7 @@ class TestCiscoCatalyst(TestCase):
         self.assertEqual(ret, correct_ret)
         network_mock.assertCalledWith(ip)
         command_mock.assert_any_call(
-            "show version | include Base ethernet MAC Address"
+            "show version | include Base ethernet MAC Address",
         )
         command_mock.assert_any_call("show inventory")
         self.assertEqual(command_mock.call_count, 2)
