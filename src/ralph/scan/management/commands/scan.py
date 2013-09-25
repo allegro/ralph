@@ -52,7 +52,11 @@ class Command(BaseCommand):
             'ralph.scan.plugins.snmp_f5',
             'ralph.scan.plugins.idrac',
             'ralph.scan.plugins.ssh_linux',
+<<<<<<< HEAD
             'ralph.scan.plugins.hp_oa',
+=======
+            'ralph.scan.plugins.ipmi',
+>>>>>>> allegro/master
             'ralph.scan.plugins.http_supermicro',
         ]
         last_message = 0
