@@ -56,6 +56,7 @@ class Command(BaseCommand):
             'ralph.scan.plugins.ssh_cisco_catalyst',
             'ralph.scan.plugins.ipmi',
             'ralph.scan.plugins.http_supermicro',
+            'ralph.scan.plugins.ilo_hp',
         ]
         last_message = 0
         for address in addresses:
