@@ -420,6 +420,10 @@ SCAN_PLUGINS = {
         'password': IPMI_PASSWORD,
     },
     'ralph.scan.plugins.dns_hostname': {},
+    'ralph.scan.plugins.ilo_hp': {
+        'user': ILO_USER,
+        'password': ILO_PASSWORD,
+    },
     'ralph.scan.plugins.ssh_cisco_asa': {
         'ssh_user': SSH_SSG_USER,
         'ssh_pass': SSH_SSG_PASSWORD,
