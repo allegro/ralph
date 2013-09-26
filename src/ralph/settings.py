@@ -430,5 +430,9 @@ SCAN_PLUGINS = {
         'ssh_user': SSH_SSG_USER,
         'ssh_pass': SSH_SSG_PASSWORD,
     },
+    'ralph.scan.plugins.ssh_proxmox': {
+        'user': SSH_USER or 'root',
+        'password': SSH_PASSWORD,
+    },
 }
 
