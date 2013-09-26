@@ -411,6 +411,7 @@ SCAN_PLUGINS = {
         'puppet_api_url': PUPPET_API_URL,
         'puppet_db_url': PUPPET_DB_URL,
     },
+    'ralph.scan.plugins.hp_oa': {},
     'ralph.scan.plugins.ipmi': {
         'user': IPMI_USER,
         'password': IPMI_PASSWORD,
