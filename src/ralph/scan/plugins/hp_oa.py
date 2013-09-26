@@ -8,11 +8,12 @@ from __future__ import unicode_literals
 import httplib
 import lck.xml.converters
 
+from urllib2 import urlopen, URLError
+
 from lck.django.common.models import MACAddressField
 from lck.lang import Null, nullify
 from lck.xml import etree_to_dict
 from lxml import etree as ET
-from urllib2 import urlopen, URLError
 
 from ralph.discovery.models import DeviceType, SERIAL_BLACKLIST
 from ralph.scan.plugins import get_base_result_template
@@ -24,6 +25,10 @@ class Error(Exception):
 
 
 class IncompatibleAnswerError(Error):
+    pass
+
+
+class UncompleteAnswerError(Error):
     pass
 
 
@@ -43,15 +48,19 @@ def _get_hp_xml_data(ip_address, timeout=10):
             data = url.read()
         finally:
             url.close()
-    except (URLError, httplib.InvalidURL, httplib.BadStatusLine):
-        return
+    except (URLError, httplib.InvalidURL, httplib.BadStatusLine) as e:
+        raise IncompatibleAnswerError('Incompatible answer (%s).' % unicode(e))
     else:
         if not url.info().get('Content-Type', '').startswith('text/xml'):
-            return
+            raise IncompatibleAnswerError(
+                'Incompatible answer (improper content type).',
+            )
         data = data.decode('utf-8', 'replace').encode('utf-8')
         rimp = ET.fromstring(data)
         if rimp.tag.upper() != 'RIMP':
-            return
+            raise IncompatibleAnswerError(
+                'Incompatible answer (unknown content).',
+            )
         return nullify(
             etree_to_dict(
                 rimp,
@@ -72,7 +81,10 @@ def _get_parent_device(data):
     encl_name = unicode(data['INFRA2']['PN']).strip()
     encl_sn = unicode(data['INFRA2']['ENCL_SN']).strip()
     if not (rack_name and encl_name and encl_sn):
-        raise IncompatibleAnswerError()
+        raise UncompleteAnswerError(
+            'Received an uncomplete answer (required values: RACK, PN '
+            'and ENCL_SN).',
+        )
     if not encl_name.startswith('HP'):
         encl_name = 'HP ' + encl_name
     return {
@@ -178,8 +190,6 @@ def _handle_subdevices(device_info, data):
 
 def _hp_oa(ip_address):
     data = _get_hp_xml_data(ip_address)
-    if not data:
-        return
     device_info = _get_parent_device(data)
     _handle_subdevices(device_info, data)
     return device_info
@@ -188,12 +198,13 @@ def _hp_oa(ip_address):
 def scan_address(ip_address, **kwargs):
     messages = []
     result = get_base_result_template('hp_oa', messages)
-    device_info = _hp_oa(ip_address)
-    if not device_info:
-        messages.append('No answer.')
+    try:
+        device_info = _hp_oa(ip_address)
+    except (IncompatibleAnswerError, UncompleteAnswerError) as e:
+        messages.append(unicode(e))
         result['status'] = 'error'
     else:
         result['status'] = 'success'
-    result['device'] = device_info
+        result['device'] = device_info
     return result
 
