@@ -88,7 +88,10 @@ def scan_address(ip_address, **kwargs):
     result = get_base_result_template('ilo_hp', messages)
     if not user or not password:
         result['status'] = 'error'
-        messages.append('Not configured.')
+        messages.append(
+            'Not configured. Set ILO_USER and ILO_PASSWORD in your '
+            'configuration file.',
+        )
     else:
         device_info = _ilo_hp(ip_address, user, password)
         result['status'] = 'success'
