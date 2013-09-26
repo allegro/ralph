@@ -418,4 +418,9 @@ SCAN_PLUGINS = {
     'ralph.scan.plugins.test1': {},
     'ralph.scan.plugins.test2': {},
     'ralph.scan.plugins.dns_hostname': {},
+    'ralph.scan.plugins.ilo_hp': {
+        'user': ILO_USER,
+        'password': ILO_PASSWORD,
+    },
 }
+
