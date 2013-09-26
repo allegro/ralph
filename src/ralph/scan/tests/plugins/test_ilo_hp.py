@@ -26,22 +26,22 @@ class IloHpPluginTest(TestCase):
         self.assertEqual(
             _get_base_device_info(self.ilo),
             {
-                u'model_name': 'HP ProLiant BL2x220c G5',
-                u'parts': [
+                'model_name': 'HP ProLiant BL2x220c G5',
+                'parts': [
                     {
-                        u'mgmt_firmware': ', Dec 02 2008, rev 1.70',
-                        u'type': u'management',
+                        'mgmt_firmware': ', Dec 02 2008, rev 1.70',
+                        'type': 'management',
                     },
                 ],
-                u'serial_number': 'GB8911KH35',
-                u'type': u'blade server',
+                'serial_number': 'SN12345678',
+                'type': 'blade server',
             },
         )
 
     def test_get_mac_addresses(self):
         self.assertEqual(
             _get_mac_addresses(self.ilo),
-            ['00215AAFC712', '00215AAFC713', '00215AAFA3D8'],
+            ['00215AAABB12', '00215AAABB13', '00215AAABB14'],
         )
 
     def test_get_processors(self):
