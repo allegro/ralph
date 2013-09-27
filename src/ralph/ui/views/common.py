@@ -168,7 +168,7 @@ def _get_details(dev, purchase_only=False, with_price=False,
         if (detail['group'] != 'dev' and 'size' not in detail and
                 detail.get('model')
             ):
-                detail['size'] = detail['model'].size
+            detail['size'] = detail['model'].size
         if not detail.get('model'):
             detail['model'] = detail.get('model_name', '')
         yield detail
@@ -563,6 +563,15 @@ class Info(DeviceUpdateView):
                 )
                 pv.value = value
                 pv.save(user=self.request.user)
+            else:
+                try:
+                    pv = RolePropertyValue.objects.get(
+                        property=p,
+                        device=device,
+                    )
+                    pv.delete()
+                except RolePropertyValue.DoesNotExist:
+                    pass
 
     def get_property_form(self, data=None):
         if not self.object.venture_role:

@@ -252,7 +252,8 @@ class DeviceCreateForm(DeviceForm):
                 raise forms.ValidationError(e)
         if not (macs or sn):
             raise forms.ValidationError(
-                "Either MACs or serial number required.")
+                "Either MACs or serial number required."
+            )
         return ' '.join(macs)
 
     def clean_model(self):
@@ -417,8 +418,9 @@ class PropertyForm(forms.Form):
             elif p.type.symbol == 'INTEGER':
                 field = forms.IntegerField(label=p.symbol, required=False)
             else:
-                choices = [('', '------')] + [(tv.value, tv.value) for tv in
-                        p.type.rolepropertytypevalue_set.all()]
+                choices = [('', '------')] + [
+                    (tv.value, tv.value) for tv in p.type.rolepropertytypevalue_set.all()
+                ]
                 field = forms.ChoiceField(
                     label=p.symbol,
                     required=False,
