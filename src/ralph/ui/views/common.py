@@ -569,9 +569,10 @@ class Info(DeviceUpdateView):
                         property=p,
                         device=device,
                     )
-                    pv.delete()
                 except RolePropertyValue.DoesNotExist:
                     pass
+                else:
+                    pv.delete()
 
     def get_property_form(self, data=None):
         if not self.object.venture_role:
