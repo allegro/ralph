@@ -51,7 +51,7 @@ def scan_address(address, plugins):
             'http_family': ipaddress.http_family,
             'snmp_name': ipaddress.snmp_name,
         },
-        timeout=60,
+        timeout=600,
         result_ttl=3600,
     )
     return job

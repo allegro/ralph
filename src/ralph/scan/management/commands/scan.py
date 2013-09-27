@@ -60,6 +60,7 @@ class Command(BaseCommand):
             'ralph.scan.plugins.ilo_hp',
             'ralph.scan.plugins.ssh_cisco_asa',
             'ralph.scan.plugins.ssh_cisco_catalyst',
+            'ralph.scan.plugins.ssh_xen',
         ]
         last_message = 0
         for address in addresses:

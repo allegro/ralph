@@ -13,3 +13,14 @@ class Error(Exception):
 class NoQueueError(Error):
     """No discovery queue defined."""
 
+
+class NoQueueError(Error):
+    """No discovery queue defined."""
+
+
+class NotConfiguredError(Error):
+    """Somethings not configured"""
+
+
+class NoMatchError(Error):
+    """No match."""
