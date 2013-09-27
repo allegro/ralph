@@ -45,6 +45,12 @@ admin.site.register(RolePropertyType, RolePropertyTypeAdmin)
 
 class RolePropertyInline(admin.TabularInline):
     model = RoleProperty
+    exclude = ('venture',)
+
+
+class VenturePropertyInline(admin.TabularInline):
+    model = RoleProperty
+    exclude = ('role',)
 
 
 class VentureOwnerInline(admin.TabularInline):
@@ -131,6 +137,11 @@ class SubVentureInline(admin.TabularInline):
     exclude = ('created', 'modified', 'preboot',)
     extra = 0
 
+    def __init__(self, *args, **kwargs):
+        self.verbose_name = 'subventure'
+        self.verbose_name_plural = 'subventures'
+        super(SubVentureInline, self).__init__(*args, **kwargs)
+
 
 class VentureAdminForm(forms.ModelForm):
     class Meta:
@@ -201,9 +212,10 @@ class VentureAdminVerifiedForm(VentureAdminForm):
 
 class VentureAdmin(ModelAdmin):
     inlines = [
+        SubVentureInline,
         VentureExtraCostInline,
         VentureRoleInline,
-        SubVentureInline,
+        VenturePropertyInline,
     ]
     related_search_fields = {
         'parent': ['^name'],
