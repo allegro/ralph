@@ -34,12 +34,16 @@ class Error(Exception):
 
 
 def _connect_ssh(ip):
-    if not settings.SSH_PASSWORD:
-        raise Error('no password defined')
+    SETTINGS = settings.SCAN_PLUGINS.get(__name__, {})
+    SSH_USER, SSH_PASSWORD = SETTINGS['ssh_user'], SETTINGS['ssh_password']
+    if not SSH_PASSWORD:
+        raise NotConfiguredError(
+            "ssh not configured in plugin {}".format(__name__),
+        )
     return network.connect_ssh(
         ip,
-        settings.SSH_USER or 'root',
-        settings.SSH_PASSWORD,
+        SSH_USER or 'root',
+        SSH_PASSWORD,
     )
 
 
