@@ -431,5 +431,9 @@ SCAN_PLUGINS = {
         'ssh_user': SSH_SSG_USER,
         'ssh_pass': SSH_SSG_PASSWORD,
     },
+    'ralph.scan.plugins.ssh_3par': {
+        'user': SSH_3PAR_USER,
+        'password': SSH_3PAR_PASSWORD,
+    },
 }
 
