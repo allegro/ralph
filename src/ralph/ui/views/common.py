@@ -123,11 +123,11 @@ def _get_balancers(dev):
             'pool__name',
         ).order_by('device'):
             yield {
-                    'balancer': member.device.name,
-                    'pool': member.pool.name,
-                    'enabled': member.enabled,
-                    'server': None,
-                    'port': member.port,
+                'balancer': member.device.name,
+                'pool': member.pool.name,
+                'enabled': member.enabled,
+                'server': None,
+                'port': member.port,
             }
     for vserv in dev.loadbalancervirtualserver_set.select_related(
         'default_pool__name',
@@ -141,7 +141,8 @@ def _get_balancers(dev):
         }
 
 
-def _get_details(dev, purchase_only=False, with_price=False, ignore_deprecation=False, exclude=[]):
+def _get_details(dev, purchase_only=False, with_price=False,
+                 ignore_deprecation=False, exclude=[]):
     for detail in pricing.details_all(
         dev,
         purchase_only,
@@ -164,12 +165,10 @@ def _get_details(dev, purchase_only=False, with_price=False, ignore_deprecation=
                 detail['price'] = None
         if with_price and not detail['price']:
             continue
-        if (
-                detail['group'] != 'dev' and
-                'size' not in detail and
+        if (detail['group'] != 'dev' and 'size' not in detail and
                 detail.get('model')
             ):
-            detail['size'] = detail['model'].size
+                detail['size'] = detail['model'].size
         if not detail.get('model'):
             detail['model'] = detail.get('model_name', '')
         yield detail
@@ -303,21 +302,21 @@ class BaseMixin(object):
                 MenuItem('Info', fugue_icon='fugue-wooden-box',
                          href=self.tab_href('info')),
                 MenuItem('Components', fugue_icon='fugue-box',
-                        href=self.tab_href('components')),
+                         href=self.tab_href('components')),
                 MenuItem('Software', fugue_icon='fugue-disc',
                          href=self.tab_href('software')),
                 MenuItem('Addresses', fugue_icon='fugue-network-ip',
-                        href=self.tab_href('addresses')),
+                         href=self.tab_href('addresses')),
             ])
         if has_perm(Perm.edit_device_info_financial, venture):
             tab_items.extend([
                 MenuItem('Prices', fugue_icon='fugue-money-coin',
-                        href=self.tab_href('prices')),
+                         href=self.tab_href('prices')),
             ])
         if has_perm(Perm.read_device_info_financial, venture):
             tab_items.extend([
                 MenuItem('Costs', fugue_icon='fugue-wallet',
-                        href=self.tab_href('costs')),
+                         href=self.tab_href('costs')),
             ])
         if has_perm(Perm.read_device_info_history, venture):
             tab_items.extend([
@@ -340,7 +339,7 @@ class BaseMixin(object):
                          href=self.tab_href('scan')),
             ])
         if ('ralph.cmdb' in settings.INSTALLED_APPS and
-            has_perm(Perm.read_configuration_item_info_generic)):
+                has_perm(Perm.read_configuration_item_info_generic)):
             ci = ''
             device_id = self.kwargs.get('device')
             if device_id:
@@ -358,7 +357,7 @@ class BaseMixin(object):
             if ci:
                 tab_items.extend([
                     MenuItem('CMDB', fugue_icon='fugue-thermometer',
-                        href='/cmdb/ci/view/%s' % ci.id),
+                             href='/cmdb/ci/view/%s' % ci.id),
                     ])
         if has_perm(Perm.read_device_info_reports, venture):
             tab_items.extend([
@@ -557,15 +556,13 @@ class Info(DeviceUpdateView):
                 p = device.venture_role.roleproperty_set.get(symbol=symbol)
             except RoleProperty.DoesNotExist:
                 p = device.venture.roleproperty_set.get(symbol=symbol)
-            pv, created = RolePropertyValue.concurrent_get_or_create(
-                property=p,
-                device=device,
-            )
-            if value != p.default:
+            if value != p.default and not {value,  p.default} == {None, ''}:
+                pv, created = RolePropertyValue.concurrent_get_or_create(
+                    property=p,
+                    device=device,
+                )
                 pv.value = value
                 pv.save(user=self.request.user)
-            else:
-                pv.delete()
 
     def get_property_form(self, data=None):
         if not self.object.venture_role:
@@ -654,7 +651,7 @@ class Addresses(DeviceDetailView):
     def get_dns(self, limit_types=None):
         ips = set(ip.address for ip in self.object.ipaddress_set.all())
         names = set(ip.hostname for ip in self.object.ipaddress_set.all()
-                 if ip.hostname)
+                    if ip.hostname)
         dotnames = set(name+'.' for name in names)
         revnames = set('.'.join(reversed(ip.split('.'))) + '.in-addr.arpa'
                        for ip in ips)
@@ -668,7 +665,7 @@ class Addresses(DeviceDetailView):
                 db.Q(content__in=ips) |
                 db.Q(name__in=names) |
                 db.Q(content__in=names | dotnames)
-            ).distinct():
+                ).distinct():
             names.add(entry.name)
             if entry.type == 'A':
                 ips.add(entry.content)
@@ -681,9 +678,9 @@ class Addresses(DeviceDetailView):
                 parts.pop(0)
                 starnames.add('.'.join(['*'] + parts))
         query = Record.objects.filter(
-                db.Q(content__in=ips | names) |
-                db.Q(name__in=names | revnames | starnames | starrevnames)
-            ).distinct().order_by('type', 'name', 'content')
+            db.Q(content__in=ips | names) |
+            db.Q(name__in=names | revnames | starnames | starrevnames)
+        ).distinct().order_by('type', 'name', 'content')
         if limit_types is not None:
             query = query.filter(type__in=limit_types)
         return query
@@ -946,8 +943,8 @@ class Costs(DeviceDetailView):
         })
         last_month = datetime.date.today() - datetime.timedelta(days=31)
         splunk = self.object.splunkusage_set.filter(
-                day__gte=last_month
-            ).order_by('-day')
+            day__gte=last_month
+        ).order_by('-day')
         if splunk.count():
             size = splunk.aggregate(db.Sum('size'))['size__sum'] or 0
             cost = (
@@ -1044,7 +1041,7 @@ class Asset(BaseMixin, TemplateView):
                 id=device_id,
             )
             from ralph_assets.api_ralph import get_asset
-            self.asset =  get_asset(self.object.id)
+            self.asset = get_asset(self.object.id)
             self.form = ChooseAssetForm(
                 initial={
                     'asset': self.asset['asset_id']
@@ -1139,7 +1136,7 @@ class ServerMove(BaseMixin, TemplateView):
                     db.Q(name=old_ipaddress.hostname) |
                     db.Q(content=old_ipaddress.hostname) |
                     db.Q(content=old_ipaddress.address)
-                ):
+            ):
                 operations.append((
                     "warning",
                     "DNS record '%s %s %s' will be deleted." % (
@@ -1196,7 +1193,7 @@ class ServerMove(BaseMixin, TemplateView):
                 db.Q(name=old_ipaddress.hostname) |
                 db.Q(content=old_ipaddress.hostname) |
                 db.Q(content=old_ipaddress.address)
-            ):
+        ):
             r.delete()
         for e in DHCPEntry.objects.filter(ip=old_ipaddress.address):
             mac = e.mac
@@ -1205,8 +1202,8 @@ class ServerMove(BaseMixin, TemplateView):
         old_ipaddress.save()
         reset_dns(new_hostname, new_ip)
         new_ipaddress, c = IPAddress.concurrent_get_or_create(
-                address=new_ip,
-            )
+            address=new_ip,
+        )
         new_ipaddress.device = device
         new_ipaddress.hostname = new_hostname
         new_ipaddress.save()
@@ -1330,8 +1327,8 @@ class BulkEdit(BaseMixin, TemplateView):
             if name == 'save_comment':
                 continue
             query = Device.objects.filter(
-                    id__in=selected
-                ).values(name).distinct()
+                id__in=selected
+            ).values(name).distinct()
             if query.count() > 1:
                 self.different_fields.append(name)
             elif query.count() > 0:
@@ -1429,7 +1426,6 @@ class Scan(BaseMixin, TemplateView):
             return self.get(*args, **kwargs)
         return HttpResponseRedirect(reverse('scan', args=(job.id,)))
 
-
     def get_context_data(self, **kwargs):
         ret = super(Scan, self).get_context_data(**kwargs)
         address = self.kwargs.get('address')
@@ -1455,6 +1451,7 @@ class Scan(BaseMixin, TemplateView):
         })
         return ret
 
+
 class ScanStatus(BaseMixin, TemplateView):
     template_name = 'ui/scan-status.html'
 
@@ -1478,7 +1475,7 @@ class ScanStatus(BaseMixin, TemplateView):
             data = merge_data(
                 result,
                 {
-                    'database': { 'device': get_device_data(device) },
+                    'database': {'device': get_device_data(device)},
                 },
                 only_multiple=True,
             )
@@ -1497,7 +1494,7 @@ class ScanStatus(BaseMixin, TemplateView):
         data['type'] = data.get('type', {})
         data['mac_addresses'] = data.get('mac_addresses', {})
         data['serial_number'] = data.get('serial_number', {})
-        if post and device_id=='new':
+        if post and device_id == 'new':
             form = DiffForm(data, post, default='custom')
         else:
             form = DiffForm(data, default='custom')
