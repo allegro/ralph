@@ -14,6 +14,7 @@ from django.conf import settings
 
 from ralph.discovery.hardware import get_disk_shares
 from ralph.discovery.models import DeviceType
+from ralph.scan.errors import ConnectionError, NoMatchError, NoLanError
 from ralph.scan.plugins import get_base_result_template
 from ralph.util import network
 
@@ -22,22 +23,6 @@ SETTINGS = settings.SCAN_PLUGINS.get(__name__, {})
 
 
 logger = logging.getLogger("SCAN")
-
-
-class Error(Exception):
-    pass
-
-
-class ConnectionError(Error):
-    pass
-
-
-class NotProxmoxError(Error):
-    pass
-
-
-class NoLanError(Error):
-    pass
 
 
 def _connect_ssh(ip_address, user, password):
@@ -267,7 +252,7 @@ def _ssh_proxmox(ip_address, user, password):
             if data != '':
                 break
         else:
-            raise NotProxmoxError('This is not a PROXMOX server.')
+            raise NoMatchError('This is not a PROXMOX server.')
         master_ip_address = _get_master_ip_address(ssh, ip_address)
         cluster_member = _get_cluster_member(ssh, ip_address)
         subdevices = _get_virtual_machines(
@@ -296,7 +281,7 @@ def scan_address(ip_address, **kwargs):
     else:
         try:
             device_info = _ssh_proxmox(ip_address, user, password)
-        except (ConnectionError, NotProxmoxError) as e:
+        except (ConnectionError, NoMatchError) as e:
             result['status'] = 'error'
             messages.append(unicode(e))
         else:

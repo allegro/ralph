@@ -13,3 +13,15 @@ class Error(Exception):
 class NoQueueError(Error):
     """No discovery queue defined."""
 
+
+class NoMatchError(Error):
+    """No match."""
+
+
+class ConnectionError(Error):
+    """Connection error."""
+
+
+class NoLanError(Error):
+    """No LAN error."""
+
