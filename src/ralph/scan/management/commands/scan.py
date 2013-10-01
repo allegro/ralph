@@ -52,6 +52,7 @@ class Command(BaseCommand):
             'ralph.scan.plugins.snmp_f5',
             'ralph.scan.plugins.idrac',
             'ralph.scan.plugins.ssh_linux',
+            'ralph.scan.plugins.ssh_ibm_bladecenter',
             'ralph.scan.plugins.hp_oa',
             'ralph.scan.plugins.ssh_cisco_asa',
             'ralph.scan.plugins.ssh_cisco_catalyst',
@@ -60,6 +61,9 @@ class Command(BaseCommand):
             'ralph.scan.plugins.ilo_hp',
             'ralph.scan.plugins.ssh_cisco_asa',
             'ralph.scan.plugins.ssh_cisco_catalyst',
+            'ralph.scan.plugins.ssh_ganeti',
+            'ralph.scan.plugins.ssh_xen',
+            'ralph.scan.plugins.ssh_aix',
             'ralph.scan.plugins.ssh_onstor',
         ]
         last_message = 0

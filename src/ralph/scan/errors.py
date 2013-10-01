@@ -24,4 +24,3 @@ class NoMatchError(Error):
 
 class ConnectionError(Error):
     """Connection error."""
-
