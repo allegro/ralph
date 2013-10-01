@@ -20,10 +20,7 @@ class NotConfiguredError(Error):
 
 class NoMatchError(Error):
     """No match."""
-<<<<<<< HEAD
-=======
 
 
 class ConnectionError(Error):
     """Connection error."""
->>>>>>> 93b66c1cbe8e3c6f932af715aea18f04cf24c22f
