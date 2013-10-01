@@ -420,6 +420,10 @@ SCAN_PLUGINS = {
         'user': IPMI_USER,
         'password': IPMI_PASSWORD,
     },
+    'ralph.scan.plugins.ssh_ibm_bladecenter': {
+         'ssh_ibm_user': SSH_IBM_USER,
+         'ssh_ibm_password': SSH_IBM_PASSWORD,
+    },
     'ralph.scan.plugins.dns_hostname': {},
     'ralph.scan.plugins.ilo_hp': {
         'user': ILO_USER,
@@ -432,6 +436,31 @@ SCAN_PLUGINS = {
     'ralph.scan.plugins.ssh_cisco_catalyst': {
         'ssh_user': SSH_SSG_USER,
         'ssh_pass': SSH_SSG_PASSWORD,
+    },
+    'ralph.scan.plugins.ssh_proxmox': {
+        'user': SSH_USER or 'root',
+        'password': SSH_PASSWORD,
+    },
+    'ralph.scan.plugins.ssh_3par': {
+        'user': SSH_3PAR_USER,
+        'password': SSH_3PAR_PASSWORD,
+    },
+    'ralph.scan.plugins.ssh_ssg': {
+        'user': SSH_SSG_USER,
+        'password': SSH_SSG_PASSWORD,
+    },
+    'ralph.scan.plugins.ssh_ganeti': {
+        'ssh_user': SSH_USER,
+        'ssh_password': SSH_PASSWORD,
+    },
+    'ralph.scan.plugins.ssh_xen': {
+        'xen_user': XEN_USER,
+        'xen_password': XEN_PASSWORD,
+    },
+    'ralph.scan.plugins.ssh_aix': {
+        'aix_user': AIX_USER,
+        'aix_password': AIX_PASSWORD,
+        'aix_key': AIX_KEY,
     },
     'ralph.scan.plugins.ssh_onstor': {
         'user': SSH_ONSTOR_USER,
