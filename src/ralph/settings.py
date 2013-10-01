@@ -439,6 +439,7 @@ SCAN_PLUGINS = {
         'aix_user': AIX_USER,
         'aix_password': AIX_PASSWORD,
         'aix_key': AIX_KEY,
+    },
     'ralph.scan.plugins.ssh_onstor': {
         'user': SSH_ONSTOR_USER,
         'password': SSH_ONSTOR_PASSWORD,
