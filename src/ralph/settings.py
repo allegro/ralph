@@ -435,6 +435,10 @@ SCAN_PLUGINS = {
         'ssh_user': SSH_SSG_USER,
         'ssh_pass': SSH_SSG_PASSWORD,
     },
+    'ralph.scan.plugins.ssh_xen': {
+        'xen_user': XEN_USER,
+        'xen_password': XEN_PASSWORD,
+    },
     'ralph.scan.plugins.ssh_aix': {
         'aix_user': AIX_USER,
         'aix_password': AIX_PASSWORD,
