@@ -6,16 +6,12 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import paramiko
 import re
 
 from django.conf import settings
-from lck.django.common import nested_commit_on_success
 
-from ralph.util import network, Eth
-from ralph.util import plugin
+from ralph.util import network
 from ralph.discovery import guessmodel
-from ralph.discovery.hardware import normalize_wwn
 from ralph.scan.errors import Error, NotConfiguredError, NoMatchError
 from ralph.scan.plugins import get_base_result_template
 
@@ -31,8 +27,6 @@ MODELS = {
     'IBM,8233-E8B': 'IBM Power 750 Express',
 }
 
-SAVE_PRIORITY = 4
-
 
 def _connect_ssh(ip):
     return network.connect_ssh(ip, AIX_USER, AIX_PASSWORD, key=AIX_KEY)
@@ -44,7 +38,6 @@ def _ssh_lines(ssh, command):
         yield line
 
 
-@nested_commit_on_success
 def run_ssh_aix(ip):
     device = {}
     ssh = _connect_ssh(ip)
@@ -118,9 +111,12 @@ def run_ssh_aix(ip):
             'model_name': model_name
         })
     device['system_label'] = 'AIX ver. %s' % os_version
-    device['system_memory'] = os_memory or None
-    device['system_storage'] = os_storage_size or None
-    device['system_cores_count'] = os_corescount or None
+    if os_memory:
+        device['system_memory'] = os_memory
+    if os_storage_size:
+        device['system_storage'] = os_storage_size
+    if os_corescount:
+        device['system_cores_count'] = os_corescount
     device['system_family'] = 'AIX'
     return device
 
