@@ -17,6 +17,7 @@ import yaml
 from django.conf import settings
 
 from ralph.discovery.models import IPAddress, SERIAL_BLACKLIST
+from ralph.scan.errors import Error
 from ralph.scan.facts import (
     handle_facts,
     handle_facts_3ware_disks,
@@ -36,10 +37,6 @@ from ralph.util import network, uncompress_base64_data
 
 SETTINGS = settings.SCAN_PLUGINS.get(__name__, {})
 ENGINES = {}
-
-
-class Error(Exception):
-    pass
 
 
 class PuppetBaseProvider(object):

@@ -20,6 +20,7 @@ from ralph.discovery.models import (
     DISK_VENDOR_BLACKLIST,
     DeviceType,
 )
+from ralph.scan.errors import Error
 from ralph.util import units, untangle
 
 
@@ -33,10 +34,6 @@ TEXT_TRANSLATION_PAIRS = set([
     ('setting', 'value'),
 ])
 FC_CARD_PHYSICAL_ID_EXPRESSION = re.compile(r"([1-9][0-9]*)")
-
-
-class Error(Exception):
-    pass
 
 
 def _nullify(value):
