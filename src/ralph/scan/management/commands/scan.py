@@ -52,6 +52,7 @@ class Command(BaseCommand):
             'ralph.scan.plugins.snmp_f5',
             'ralph.scan.plugins.idrac',
             'ralph.scan.plugins.ssh_linux',
+            'ralph.scan.plugins.puppet',
             'ralph.scan.plugins.ssh_ibm_bladecenter',
             'ralph.scan.plugins.hp_oa',
             'ralph.scan.plugins.ssh_cisco_asa',
@@ -82,3 +83,4 @@ class Command(BaseCommand):
                 time.sleep(5)
             last_message = print_job_messages(job, last_message)
             print(json.dumps(job.result))
+
