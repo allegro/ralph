@@ -61,6 +61,7 @@ class Command(BaseCommand):
             'ralph.scan.plugins.ssh_cisco_asa',
             'ralph.scan.plugins.ssh_cisco_catalyst',
             'ralph.scan.plugins.ssh_ssg',
+            'ralph.scan.plugins.ssh_onstor',
         ]
         last_message = 0
         for address in addresses:
