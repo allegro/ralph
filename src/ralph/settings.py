@@ -416,6 +416,10 @@ SCAN_PLUGINS = {
         'user': IPMI_USER,
         'password': IPMI_PASSWORD,
     },
+    'ralph.scan.plugins.ssh_ibm_bladecenter': {
+         'ssh_ibm_user': SSH_IBM_USER,
+         'ssh_ibm_password': SSH_IBM_PASSWORD,
+    },
     'ralph.scan.plugins.test1': {},
     'ralph.scan.plugins.test2': {},
     'ralph.scan.plugins.dns_hostname': {},
@@ -435,6 +439,9 @@ SCAN_PLUGINS = {
         'aix_user': AIX_USER,
         'aix_password': AIX_PASSWORD,
         'aix_key': AIX_KEY,
+    'ralph.scan.plugins.ssh_onstor': {
+        'user': SSH_ONSTOR_USER,
+        'password': SSH_ONSTOR_PASSWORD,
     },
 }
 

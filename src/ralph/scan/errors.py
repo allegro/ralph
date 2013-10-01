@@ -20,3 +20,7 @@ class NotConfiguredError(Error):
 
 class NoMatchError(Error):
     """No match."""
+
+
+class ConnectionError(Error):
+    """Connection error."""
