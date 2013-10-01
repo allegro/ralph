@@ -6,31 +6,19 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import paramiko
 import collections
-import logging
 
 from django.conf import settings
 from django.utils.encoding import force_unicode
 
-from ralph.util import network, Eth, plugin, parse
+from ralph.util import network, parse
 from ralph.discovery import hardware
-from ralph.discovery.models_history import DiscoveryWarning
 from ralph.scan.plugins import get_base_result_template
 from ralph.scan.errors import NotConfiguredError, NoMatchError
 
 
 SETTINGS = settings.SCAN_PLUGINS.get(__name__, {})
 XEN_USER, XEN_PASSWORD = SETTINGS['xen_user'], SETTINGS['xen_password']
-
-
-SAVE_PRIORITY = 20
-
-logger = logging.getLogger(__name__)
-
-
-class Error(Exception):
-    pass
 
 
 def _connect_ssh(ip):
@@ -143,8 +131,8 @@ def get_running_vms(ssh):
             continue
         label = info['name-label']
         if (
-                label.startswith('Transfer VM for') or
-                label.startswith('Control domain on host:')
+            label.startswith('Transfer VM for') or
+            label.startswith('Control domain on host:')
         ):
             # Skip the helper virtual machines
             continue
@@ -175,7 +163,7 @@ def run_ssh_xen(ipaddr):
             mac for i, mac in enumerate(macs.get(vm_name, []))
         ]
         vm_device['serial_number'] = vm_uuid
-        vm_device['name'] = vm_name
+        vm_device['hostname'] = vm_name
         vm_device['processors'] = [
             {
                 'family': 'XEN Virtual',
