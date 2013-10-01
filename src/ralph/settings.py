@@ -407,6 +407,7 @@ SCAN_PLUGINS = {
             (XEN_USER, XEN_PASSWORD),
         ],
     },
+    'ralph.scan.plugins.hp_oa': {},
     'ralph.scan.plugins.ipmi': {
         'user': IPMI_USER,
         'password': IPMI_PASSWORD,
@@ -422,6 +423,10 @@ SCAN_PLUGINS = {
     'ralph.scan.plugins.test1': {},
     'ralph.scan.plugins.test2': {},
     'ralph.scan.plugins.dns_hostname': {},
+    'ralph.scan.plugins.ilo_hp': {
+        'user': ILO_USER,
+        'password': ILO_PASSWORD,
+    },
     'ralph.scan.plugins.ssh_cisco_asa': {
         'ssh_user': SSH_SSG_USER,
         'ssh_pass': SSH_SSG_PASSWORD,
@@ -430,4 +435,9 @@ SCAN_PLUGINS = {
         'ssh_user': SSH_SSG_USER,
         'ssh_pass': SSH_SSG_PASSWORD,
     },
+    'ralph.scan.plugins.ssh_onstor': {
+        'user': SSH_ONSTOR_USER,
+        'password': SSH_ONSTOR_PASSWORD,
+    },
 }
+

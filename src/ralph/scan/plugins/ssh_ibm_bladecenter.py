@@ -10,47 +10,18 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import time
-import socket
 
 from django.conf import settings
-from lck.django.common import nested_commit_on_success
 import paramiko
-from lck.django.common.models import MACAddressField
 
-from ralph.util import network, parse, plugin, Eth
+from ralph.util import network, parse
 from ralph.discovery.models import (
-    ComponentModel,
     ComponentType,
-    Device,
     DeviceType,
-    Ethernet,
-    GenericComponent,
-    IPAddress,
-    Memory,
-    Processor,
     SERIAL_BLACKLIST,
 )
-from ralph.discovery.models_history import DiscoveryWarning
 from ralph.scan.plugins import get_base_result_template
-
-
-SAVE_PRIORITY = 50
-
-
-class Error(Exception):
-    pass
-
-
-class TreeError(Error):
-    pass
-
-
-class ConsoleError(Error):
-    pass
-
-
-class DeviceError(Error):
-    pass
+from ralph.scan.errors import Error, TreeError, DeviceError, ConsoleError
 
 
 class Counts(object):
@@ -146,10 +117,6 @@ def _component(model_type, pairs, parent, raw):
     if 'Management' in model_name:
         model_type = ComponentType.management
     elif 'Fibre Channel' in model_name:
-        # FIXME: merge GenericComponent(model__type=fibre) and FibreChannel
-        model_type = ComponentType.fibre
-        return None
-    elif 'Power' in model_name:
         model_type = ComponentType.power
     elif 'Media' in model_name:
         model_type = ComponentType.media
@@ -171,9 +138,7 @@ def _component(model_type, pairs, parent, raw):
             firmware['Rev'],
         )
     else:
-        firmware = pairs.get('Power Module Cooling Device firmware rev.')
         if firmware:
-            component['hard_firmware'] = 'rev %s' % firmware
     firmware = (pairs.get('Boot ROM') or pairs.get('Main Application 1') or
                 pairs.get('Blade Sys Mgmt Processor'))
     if firmware:
@@ -288,8 +253,8 @@ def _add_dev_cpu(ip, pairs, parent, raw, counts, dev_id):
         index = counts.cpu
     cpu = {
         'index': index,
+        'label': pairs['Mach type/model'],
     }
-    cpu['label'] = pairs['Mach type/model']
     family = pairs['Processor family']
     if family.startswith('Intel '):
         family = cpu['label'][len('Intel '):]
@@ -440,6 +405,9 @@ def _blade_scan(ip_address):
 def scan_address(ip_address, **kwargs):
     messages = []
     result = get_base_result_template('ssh_ibm_bladecenter', messages)
-    result['device'] = _blade_scan(ip_address)
+    device = _blade_scan(ip_address)
+    if not device:
+        raise DeviceError("Malformed bladecenter device: %s" % ip_address)
+    result['device'] = device
     result['status'] = 'success'
     return result
