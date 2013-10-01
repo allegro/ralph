@@ -24,3 +24,8 @@ class NoMatchError(Error):
 
 class ConnectionError(Error):
     """Connection error."""
+
+
+class SSHConsoleError(Error):
+    """SSH console error."""
+
