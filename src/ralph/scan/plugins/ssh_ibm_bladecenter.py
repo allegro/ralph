@@ -139,8 +139,8 @@ def _component(model_type, pairs, parent, raw):
         )
     else:
         if firmware:
-    firmware = (pairs.get('Boot ROM') or pairs.get('Main Application 1') or
-                pairs.get('Blade Sys Mgmt Processor'))
+            firmware = (pairs.get('Boot ROM') or pairs.get('Main Application 1') or
+                        pairs.get('Blade Sys Mgmt Processor'))
     if firmware:
         component['boot_firmware'] = '%s %s rev %s' % (
             firmware['Build ID'],
