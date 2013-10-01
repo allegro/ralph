@@ -407,6 +407,10 @@ SCAN_PLUGINS = {
             (XEN_USER, XEN_PASSWORD),
         ],
     },
+    'ralph.scan.plugins.puppet': {
+        'puppet_api_url': PUPPET_API_URL,
+        'puppet_db_url': PUPPET_DB_URL,
+    },
     'ralph.scan.plugins.hp_oa': {},
     'ralph.scan.plugins.ipmi': {
         'user': IPMI_USER,
@@ -420,8 +424,6 @@ SCAN_PLUGINS = {
          'ssh_ibm_user': SSH_IBM_USER,
          'ssh_ibm_password': SSH_IBM_PASSWORD,
     },
-    'ralph.scan.plugins.test1': {},
-    'ralph.scan.plugins.test2': {},
     'ralph.scan.plugins.dns_hostname': {},
     'ralph.scan.plugins.ilo_hp': {
         'user': ILO_USER,
@@ -434,6 +436,18 @@ SCAN_PLUGINS = {
     'ralph.scan.plugins.ssh_cisco_catalyst': {
         'ssh_user': SSH_SSG_USER,
         'ssh_pass': SSH_SSG_PASSWORD,
+    },
+    'ralph.scan.plugins.ssh_proxmox': {
+        'user': SSH_USER or 'root',
+        'password': SSH_PASSWORD,
+    },
+    'ralph.scan.plugins.ssh_3par': {
+        'user': SSH_3PAR_USER,
+        'password': SSH_3PAR_PASSWORD,
+    },
+    'ralph.scan.plugins.ssh_ssg': {
+        'user': SSH_SSG_USER,
+        'password': SSH_SSG_PASSWORD,
     },
     'ralph.scan.plugins.ssh_ganeti': {
         'ssh_user': SSH_USER,

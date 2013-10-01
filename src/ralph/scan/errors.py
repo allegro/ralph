@@ -24,3 +24,12 @@ class NoMatchError(Error):
 
 class ConnectionError(Error):
     """Connection error."""
+
+
+class NoLanError(Error):
+    """No LAN error."""
+
+
+class SSHConsoleError(Error):
+    """SSH console error."""
+
