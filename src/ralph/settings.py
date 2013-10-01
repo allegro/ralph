@@ -407,6 +407,7 @@ SCAN_PLUGINS = {
             (XEN_USER, XEN_PASSWORD),
         ],
     },
+    'ralph.scan.plugins.hp_oa': {},
     'ralph.scan.plugins.ipmi': {
         'user': IPMI_USER,
         'password': IPMI_PASSWORD,
