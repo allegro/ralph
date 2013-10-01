@@ -18,19 +18,11 @@ from __future__ import unicode_literals
 from django.conf import settings
 from lck.django.common.models import MACAddressField
 from django.db.models import Q
-import paramiko
 
 from ralph.util import network
 from ralph.discovery.models import DeviceType
 from ralph.scan.errors import NotConfiguredError, NoMatchError
 from ralph.scan.plugins import get_base_result_template
-
-
-SAVE_PRIORITY = 50
-
-
-class Error(Exception):
-    pass
 
 
 def _connect_ssh(ip):
@@ -61,7 +53,7 @@ def get_master_hostname(ssh):
     stdin, stdout, stderr = ssh.exec_command('/usr/sbin/gnt-cluster getmaster')
     master = stdout.read().strip()
     if not master:
-        raise Error('not a ganeti node.')
+        raise NoMatchError('not a ganeti node.')
     return master
 
 
@@ -83,7 +75,6 @@ def get_instances(ssh):
 def run_ssh_ganeti(ip):
     ssh = _connect_ssh(ip)
     master_hostname = get_master_hostname(ssh)
-    existing_macs = set()
     master_device = {
         'subdevices': [],
         'hostname': master_hostname,
