@@ -88,7 +88,7 @@ def _scan_address(address, plugins, **kwargs):
                     'status': 'error',
                     'date': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                     'plugin': name,
-                    'messages': [msg, e.message],
+                    'messages': [msg, unicode(e.message)],
                 }
             results[plugin_name] = result
             for message in result.get('messages', []):
