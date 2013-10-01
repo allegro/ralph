@@ -14,6 +14,10 @@ class NoQueueError(Error):
     """No discovery queue defined."""
 
 
+class NotConfiguredError(Error):
+    """Somethings not configured"""
+
+
 class NoMatchError(Error):
     """No match."""
 
@@ -24,4 +28,8 @@ class ConnectionError(Error):
 
 class NoLanError(Error):
     """No LAN error."""
+
+
+class SSHConsoleError(Error):
+    """SSH console error."""
 

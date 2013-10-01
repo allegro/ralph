@@ -31,9 +31,12 @@ def _connect_ssh(ip_address, user, password):
     return network.connect_ssh(ip_address, user, password)
 
 
-def _get_master_ip_address(ssh, ip_address):
-    stdin, stdout, stderr = ssh.exec_command("cat /etc/pve/cluster.cfg")
-    data = stdout.read()
+def _get_master_ip_address(ssh, ip_address, cluster_cfg=None):
+    if not cluster_cfg:
+        stdin, stdout, stderr = ssh.exec_command("cat /etc/pve/cluster.cfg")
+        data = stdout.read()
+    else:
+        data = cluster_cfg
     if not data:
         stdin, stdout, stderr = ssh.exec_command("pvesh get /nodes")
         data = stdout.read()
@@ -241,6 +244,7 @@ def _get_virtual_machines(ssh, master_ip_address, hypervisor_ip_address):
 def _ssh_proxmox(ip_address, user, password):
     ssh = _connect_ssh(ip_address, user, password)
     try:
+        cluster_cfg = None
         for command in (
             'cat /etc/pve/cluster.cfg',
             'cat /etc/pve/cluster.conf',
@@ -250,10 +254,16 @@ def _ssh_proxmox(ip_address, user, password):
             stdin, stdout, stderr = ssh.exec_command(command)
             data = stdout.read()
             if data != '':
+                if command == 'cat /etc/pve/cluster.cfg':
+                    cluster_cfg = data
                 break
         else:
             raise NoMatchError('This is not a PROXMOX server.')
-        master_ip_address = _get_master_ip_address(ssh, ip_address)
+        master_ip_address = _get_master_ip_address(
+            ssh,
+            ip_address,
+            cluster_cfg,
+        )
         cluster_member = _get_cluster_member(ssh, ip_address)
         subdevices = _get_virtual_machines(
             ssh,
