@@ -61,6 +61,7 @@ class Command(BaseCommand):
             'ralph.scan.plugins.ilo_hp',
             'ralph.scan.plugins.ssh_cisco_asa',
             'ralph.scan.plugins.ssh_cisco_catalyst',
+            'ralph.scan.plugins.ssh_3par',
             'ralph.scan.plugins.ssh_ssg',
             'ralph.scan.plugins.ssh_ganeti',
             'ralph.scan.plugins.ssh_xen',
