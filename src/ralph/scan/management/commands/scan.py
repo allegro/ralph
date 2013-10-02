@@ -76,7 +76,6 @@ class Command(BaseCommand):
             'ralph.scan.plugins.ssh_xen',
             'ralph.scan.plugins.ssh_aix',
             'ralph.scan.plugins.ssh_onstor',
-            'ralph.scan.plugins.ssh_hp_p2000',
         ]
         if kwargs["plugins"]:
             new_plugins = map(lambda s: 'ralph.scan.plugins.{}'.format(s),
