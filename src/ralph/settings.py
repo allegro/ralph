@@ -466,5 +466,6 @@ SCAN_PLUGINS = {
         'user': SSH_ONSTOR_USER,
         'password': SSH_ONSTOR_PASSWORD,
     },
+    'ralph.scan.plugins.software': {},
 }
 
