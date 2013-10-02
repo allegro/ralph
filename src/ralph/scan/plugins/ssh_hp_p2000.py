@@ -149,7 +149,7 @@ def run_storageworks(ssh, ip):
 
 
 def _shares(volumes):
-    wwns = []
+    shares = []
     for (label, serial, size, volume_type, speed) in volumes:
         wwn = normalize_wwn(serial)
         share = {
@@ -157,8 +157,8 @@ def _shares(volumes):
             'size': size * 512 / 1024 / 1024,
             'label': 'MSA %s disk share' % volume_type,
         }
-        wwns.append(share)
-    return wwns
+        shares.append(share)
+    return shares
 
 
 def _device(ip, name, model_name, sn, macs, shares):
@@ -168,7 +168,7 @@ def _device(ip, name, model_name, sn, macs, shares):
         'model_name': model_name,
         'serial_number': sn,
         'mac_addresses': macs,
-        'disk_shares': shares,
+        'disk_exports': shares,
     }
     return device
 
