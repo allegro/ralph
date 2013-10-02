@@ -147,15 +147,9 @@ def scan_address(ip_address, **kwargs):
             'Not configured. Set SSH_MSA_USER and SSH_MSA_PASSWORD in '
             'your configuration file.',
         )
-    try:
-        device_info = _ssh_hp_msa(ip_address, user, password)
-    except ConnectionError as e:
-        result['status'] = 'error'
-        messages.append(unicode(e))
-    else:
-        result.update({
-            'status': 'success',
-            'device': device_info,
-        })
+    result.update({
+        'status': 'success',
+        'device': _ssh_hp_msa(ip_address, user, password),
+    })
     return result
 
