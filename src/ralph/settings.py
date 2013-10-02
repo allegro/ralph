@@ -470,5 +470,10 @@ SCAN_PLUGINS = {
         'user': IBM_SYSTEM_X_USER,
         'password': IBM_SYSTEM_X_PASSWORD,
     },
+    'ralph.scan.plugins.ssh_hp_msa': {
+        'user': SSH_MSA_USER,
+        'password': SSH_MSA_PASSWORD,
+    },
+    'ralph.scan.plugins.software': {},
 }
 
