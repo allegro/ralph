@@ -466,6 +466,10 @@ SCAN_PLUGINS = {
         'user': SSH_ONSTOR_USER,
         'password': SSH_ONSTOR_PASSWORD,
     },
+    'ralph.scan.plugins.ssh_hp_msa': {
+        'user': SSH_MSA_USER,
+        'password': SSH_MSA_PASSWORD,
+    },
     'ralph.scan.plugins.software': {},
 }
 
