@@ -470,5 +470,6 @@ SCAN_PLUGINS = {
         'user': SSH_MSA_USER,
         'password': SSH_MSA_PASSWORD,
     },
+    'ralph.scan.plugins.software': {},
 }
 
