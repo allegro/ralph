@@ -23,7 +23,6 @@ from ralph.scan.errors import (
 from ralph.scan.plugins import get_base_result_template
 
 
-
 class HPSSHClient(paramiko.SSHClient):
     """SSHClient modified for Cisco's broken ssh console."""
 
@@ -203,4 +202,3 @@ def scan_address(ip_address, **kwargs):
     tpl = get_base_result_template('ssh_hp_p2000')
     tpl.update(ret)
     return json.loads(json.dumps(tpl))  # to ensure its picklable
-

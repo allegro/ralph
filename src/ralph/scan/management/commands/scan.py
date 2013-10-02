@@ -84,4 +84,3 @@ class Command(BaseCommand):
                 time.sleep(5)
             last_message = print_job_messages(job, last_message)
             print(json.dumps(job.result))
-
