@@ -470,5 +470,10 @@ SCAN_PLUGINS = {
         'ssh_user': SSH_P2000_USER,
         'ssh_password': SSH_P2000_PASSWORD,
     },
+    'ralph.scan.plugins.ssh_hp_msa': {
+        'user': SSH_MSA_USER,
+        'password': SSH_MSA_PASSWORD,
+    },
+    'ralph.scan.plugins.software': {},
 }
 
