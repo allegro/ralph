@@ -8,6 +8,7 @@ import ipaddr
 import re
 import datetime
 
+from urllib import quote
 from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.db.models import Q
@@ -113,7 +114,7 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
             else:
                 self.query = Device.objects.all()
             if data['name']:
-                name = data['name'].strip()
+                name = quote(data['name'].strip())
                 names = set(n.strip('.') for (n,) in Record.objects.filter(
                     type='CNAME'
                 ).filter(
