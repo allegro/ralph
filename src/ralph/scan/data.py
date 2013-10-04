@@ -317,10 +317,7 @@ def set_device_data(device, data):
             model_type = ComponentType.unknown
         try:
             # Don't use get_or_create, because we are in transaction
-            device.model = DeviceModel.objects.get(
-                type=model_type,
-                name=data['model_name'],
-            )
+            device.model = DeviceModel.objects.get(name=data['model_name'])
         except DeviceModel.DoesNotExist:
             model = DeviceModel(
                 type=model_type,
@@ -328,6 +325,13 @@ def set_device_data(device, data):
             )
             model.save()
             device.model = model
+        else:
+            if all((
+                device.model.type != model_type,
+                model_type != ComponentType.unknown,
+            )):
+                device.model.type = model_type
+                device.model.save()
     if 'disks' in data:
         _update_component_data(
             device,
