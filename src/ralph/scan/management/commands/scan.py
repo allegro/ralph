@@ -12,6 +12,7 @@ import textwrap
 import time
 import sys
 import json
+from optparse import make_option
 
 import ipaddr
 
@@ -36,6 +37,12 @@ class Command(BaseCommand):
 
     help = textwrap.dedent(__doc__).strip()
     option_list = BaseCommand.option_list + (
+        make_option(
+            '--plugins',
+            dest='plugins',
+            default=None,
+            help='Run only the selected plugins. Works only in interactive'
+                 ' mode.'),
     )
 
     requires_model_validation = False
@@ -73,6 +80,11 @@ class Command(BaseCommand):
             'ralph.scan.plugins.ssh_hp_msa',
             'ralph.scan.plugins.software',
         ]
+        if kwargs["plugins"]:
+            new_plugins = map(lambda s: 'ralph.scan.plugins.{}'.format(s),
+                kwargs["plugins"].split(","),
+            )
+            plugins = filter(lambda plug: plug in new_plugins, plugins)
         last_message = 0
         for address in addresses:
             job = scan_address(address, plugins)
