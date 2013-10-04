@@ -76,6 +76,7 @@ class Command(BaseCommand):
             'ralph.scan.plugins.ssh_xen',
             'ralph.scan.plugins.ssh_aix',
             'ralph.scan.plugins.ssh_onstor',
+            'ralph.scan.plugins.http_ibm_system_x',
             'ralph.scan.plugins.ssh_hp_p2000',
             'ralph.scan.plugins.ssh_hp_msa',
             'ralph.scan.plugins.software',

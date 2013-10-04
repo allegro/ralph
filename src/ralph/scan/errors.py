@@ -10,6 +10,10 @@ class Error(Exception):
     """Errors during the scan."""
 
 
+class AuthError(Error):
+    """"Authentication error."""
+
+
 class NoQueueError(Error):
     """No discovery queue defined."""
 
