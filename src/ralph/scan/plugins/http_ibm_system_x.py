@@ -12,7 +12,12 @@ from xml.etree import cElementTree as ET
 
 from ralph.discovery.http import guess_family, get_http_info
 from ralph.discovery.models import DeviceType
-from ralph.scan.errors import Error, NotConfiguredError, NoMatchError
+from ralph.scan.errors import (
+    AuthError,
+    NoMatchError,
+    NotConfiguredError,
+    TreeError,
+)
 from ralph.scan.plugins import get_base_result_template
 
 
@@ -57,7 +62,7 @@ def _get_session_id(ip_address, user, password):
     response_data = response.readlines()
     if response_data and response_data[0][:2] == 'ok':
         return response_data[0][3:]
-    raise Error('Session error.')
+    raise AuthError('Session error.')
 
 
 def _get_model_name(management_url, session_id):
@@ -79,7 +84,13 @@ def _get_model_name(management_url, session_id):
         'GetVitalProductDataResponse/MachineLevelVPD/'
         'ProductName'.format('{http://www.w3.org/2003/05/soap-envelope}'),
     )
-    return product_name[0].text
+    try:
+        return product_name[0].text
+    except IndexError:
+        raise TreeError(
+            "Improper response. Couldn't find model name. "
+            "Full response: %s" % soap_result,
+        )
 
 
 def _get_sn(management_url, session_id):
@@ -99,8 +110,13 @@ def _get_sn(management_url, session_id):
     sn = tree.findall('{0}Body/GetSPNameSettingsResponse/SPName'.format(
         '{http://www.w3.org/2003/05/soap-envelope}',
     ))
-    sn = sn[0].text
-    return sn
+    try:
+        return sn[0].text
+    except IndexError:
+        raise TreeError(
+            "Improper response. Couldn't find serial number. "
+            "Full response: %s" % soap_result,
+        )
 
 
 def _get_mac_addresses(management_url, session_id):
@@ -228,15 +244,9 @@ def scan_address(ip_address, **kwargs):
     family = guess_family(headers, document)
     if family != 'IBM System X':
         raise NoMatchError('It is not IBM System X device.')
-    try:
-        device_info = _http_ibm_system_x(ip_address, user, password)
-    except Error as e:
-        result['status'] = 'error'
-        messages.append(unicode(e))
-    else:
-        result.update({
-            'status': 'success',
-            'device': device_info,
-        })
+    result.update({
+        'status': 'success',
+        'device': _http_ibm_system_x(ip_address, user, password),
+    })
     return result
 
