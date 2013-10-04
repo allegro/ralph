@@ -466,6 +466,10 @@ SCAN_PLUGINS = {
         'user': SSH_ONSTOR_USER,
         'password': SSH_ONSTOR_PASSWORD,
     },
+    'ralph.scan.plugins.http_ibm_system_x': {
+        'user': IBM_SYSTEM_X_USER,
+        'password': IBM_SYSTEM_X_PASSWORD,
+    },
     'ralph.scan.plugins.ssh_hp_p2000': {
         'ssh_user': SSH_P2000_USER,
         'ssh_password': SSH_P2000_PASSWORD,
