@@ -124,6 +124,7 @@ def scan_address(ip_address, **kwargs):
         try:
             device_info = _ssh_3par(ip_address, user, password)
         except ConnectionError as e:
+            device_info = None
             result['status'] = 'error'
             messages.append(unicode(e))
         else:
