@@ -27,6 +27,7 @@ INQUIRY_REGEXES = (
     re.compile(r'^(?P<vendor>HP)\s+(?P<product>[a-zA-Z0-9]{11})\s+(?P<sn>[a-zA-Z0-9]{12})$'),
     re.compile(r'^(?P<vendor>HITACHI)\s+(?P<product>[a-zA-Z0-9]{15})(?P<sn>[a-zA-Z0-9]{15})$'),
     re.compile(r'^(?P<vendor>HITACHI)\s+(?P<product>[a-zA-Z0-9]{15})\s+(?P<sn>[a-zA-Z0-9]{12})$'),
+    re.compile(r'^(?P<sn>[a-zA-Z0-9]{15})\s+(?P<vendor>Samsung)\s+(?P<product>[a-zA-Z0-9\s]+)\s+.*$'),
 )
 
 
@@ -288,6 +289,7 @@ def _handle_inquiry_data(raw, controller, disk):
         m = regex.match(raw)
         if m:
             return m.group('vendor'), m.group('product'), m.group('sn')
+    print(raw)
     raise ValueError(
         "Incompatible inquiry_data for disk {}/{}: {}".format(
             controller, disk, raw
