@@ -97,7 +97,7 @@ def _update_component_data(
                 for field in group
                 if data.get(field_map[field]) is not None
             }
-            if not fields:
+            if len(group) != len(fields):
                 continue
             try:
                 component = Component.objects.get(**fields)
