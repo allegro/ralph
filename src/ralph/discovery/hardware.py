@@ -289,7 +289,6 @@ def _handle_inquiry_data(raw, controller, disk):
         m = regex.match(raw)
         if m:
             return m.group('vendor'), m.group('product'), m.group('sn')
-    print(raw)
     raise ValueError(
         "Incompatible inquiry_data for disk {}/{}: {}".format(
             controller, disk, raw
