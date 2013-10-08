@@ -424,7 +424,7 @@ def set_device_data(device, data):
                 'physical_id': 'physical_id',
             },
             [
-                ('physical_id',),
+                ('physical_id', 'device'),
             ],
             ComponentType.fibre,
         )
