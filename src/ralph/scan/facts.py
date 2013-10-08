@@ -409,11 +409,14 @@ def handle_facts_megaraid(facts):
         disks.setdefault((controller, disk), {})[property] = value.strip()
     detected_disks = []
     for (controller_handle, disk_handle), disk in disks.iteritems():
-        disk['vendor'], disk['product'], disk['serial_number'] = \
-            _handle_inquiry_data(
-                disk.get('inquiry_data', ''),
-                controller_handle, disk_handle
-            )
+        inquiry_data = disk.get('inquiry_data', '')
+        if inquiry_data:
+            disk['vendor'], disk['product'], disk['serial_number'] = \
+                _handle_inquiry_data(
+                    inquiry_data,
+                    controller_handle,
+                    disk_handle,
+                )
         if not disk.get('serial_number') or disk.get('media_type') not in (
             'Hard Disk Device', 'Solid State Device',
         ):
