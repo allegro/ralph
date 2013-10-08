@@ -43,13 +43,13 @@ discovery happen asynchronously, done by several configured "worker" servers. Of
 course, in order to do that, you need to have the worker applications started
 on those servers. You do that with the command::
 
-    (ralph)$ ralph celeryd
+    (ralph)$ ralph rqworker
 
 It's possible to make some workers only process the addresses from certain
 networks. The network definitions have a ``queue`` parameter which tells to
 which worker queue the discovery requests should be sent. When starting a
-worker you can provide a ``-Q`` parameter, to list the queues that the worker
-should listen on.
+worker you can provide queue names as parameters to specify on which queues
+the workers should listen on.
 
 Note that remote discovery will not show you the output of the plugins -- the
 plugins are invoked on the workers, and not on the server where you run the
@@ -245,7 +245,7 @@ set the prices for them.  That information is then displayed in the "Venture"
 tab summary.
 
 You can add an optional ``--remote`` parameter to make the command run on any
-celery worker that listens on the ``openstack`` queue.
+RQ worker that listens on the ``openstack`` queue.
 
 Zabbix
 ~~~~~~
@@ -259,7 +259,7 @@ to automatically create Zabbix hosts and host templates for all the devices
 that have a zabbix integration "template" variable set in their roles.
 
 You can add an optional ``--remote`` parameter to make the command run on any
-celery worker that listens on the ``zabbix`` queue.
+RQ worker that listens on the ``zabbix`` queue.
 
 Splunk
 ~~~~~~
