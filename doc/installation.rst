@@ -399,7 +399,7 @@ If everything's alright, let's try to run the discovery remotely::
 
   $ ralph discover --remote 127.0.0.1
   
-This won't return anything on stdout but on your Celeryd console you should
+This won't return anything on stdout but on your rqworker console you should
 see::
 
   16:44:44 default: ralph.discovery.tasks.run_plugin({u'queue': u'default',
