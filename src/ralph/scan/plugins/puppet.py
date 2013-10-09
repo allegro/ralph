@@ -216,7 +216,7 @@ def _parse_facts(facts, is_virtual=False):
     return handle_facts(facts, is_virtual)
 
 
-def _merge_disks_results(disks, disks_3ware):
+def _merge_disks_results(disks, new_disks):
     result = []
     for disk in disks:
         disk_sn = disk.get('serial_number')
@@ -224,15 +224,17 @@ def _merge_disks_results(disks, disks_3ware):
             result.append(disk)
             continue
         merged = False
-        for i, disk_3ware in enumerate(disks_3ware):
-            if disk_3ware['serial_number'] == disk_sn:
-                disk.update(disk_3ware)
+        for i, new_disk in enumerate(new_disks):
+            if new_disk['serial_number'] == disk_sn:
+                disk.update(new_disk)
                 result.append(disk)
                 merged = True
                 break
         if merged:
-            disks_3ware.pop(i)
-    result.extend(disks_3ware)
+            new_disks.pop(i)
+        else:
+            result.append(disk)
+    result.extend(new_disks)
     return result
 
 

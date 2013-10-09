@@ -96,6 +96,13 @@ class PuppetPluginTest(TestCase):
                     'size': 100001,
                 },
                 {
+                        'size': 100000,
+                        'label': 'Hitachi',
+                        'mount_point': '/mnt/d2',
+                        'family': 'Hitachi',
+                        'serial_number': 'qwe123_2',
+                },
+                {
                     'family': 'Hitachi',
                     'label': 'Hitachi',
                     'mount_point': '/mnt/n1',
