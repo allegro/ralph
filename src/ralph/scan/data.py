@@ -71,6 +71,7 @@ def _update_component_data(
     field_map,
     unique_fields,
     model_type=None,
+    forbidden_model_fields=set(),
 ):
     """
     Update components of a device based on the data from scan.
@@ -84,6 +85,8 @@ def _update_component_data(
     :param field_map: mapping from database fields to component_data keys
     :param unique_fields: list of tuples of fields that are unique together
     :param model_type: If provided, a 'model' field will be added
+    :param forbidden_model_fields: If provided, model will be created
+                                   without those fields
     """
 
     component_ids = []
@@ -118,9 +121,16 @@ def _update_component_data(
                     model_fields = {
                         field: data[field_map[field]]
                         for field in field_map
-                        if data.get(field_map[field]) and field != 'type'
+                        if all((
+                            data.get(field_map[field]),
+                            field != 'type',
+                            field not in forbidden_model_fields,
+                        ))
                     }
-                    if 'model_name' in data:
+                    if all((
+                        'model_name' in data,
+                        'name' not in forbidden_model_fields,
+                    )):
                         model_fields['name'] = data['model_name']
                     model, created = ComponentModel.create(
                         model_type,
@@ -352,6 +362,7 @@ def set_device_data(device, data):
                 ('device', 'mount_point'),
             ],
             ComponentType.disk,
+            {'name'},
         )
     if 'processors' in data:
         for index, processor in enumerate(data['processors']):
@@ -393,6 +404,7 @@ def set_device_data(device, data):
                 ('device', 'index'),
             ],
             ComponentType.memory,
+            {'name'},
         )
     if 'mac_addresses' in data:
         _update_component_data(
