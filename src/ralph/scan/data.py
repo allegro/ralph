@@ -145,7 +145,7 @@ def _update_component_data(
         for field, key in field_map.iteritems():
             if key in data:
                 setattr(component, field, data[key])
-        component.save()
+        component.save(priority=100)
         component_ids.append(component.id)
     # Delete the components that are no longer current
     for component in Component.objects.filter(
@@ -537,7 +537,7 @@ def set_device_data(device, data):
         'system_label' in data or
         'system_memory' in data or
         'system_storage' in data or
-        'system_cores_coutn' in data or
+        'system_cores_count' in data or
         'system_family' in data or
         'system_model_name' in data
     ):
