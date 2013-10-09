@@ -256,12 +256,13 @@ class DiffForm(forms.Form):
         'model_name': RequiredInfo(),
         'chassis_position': IntInfo(),
         'disks': CSVInfo([
-            'mount_point',
+            'label',
+            'model_name',
             'family',
             'serial_number',
             'size',
             'speed',
-            'label',
+            'mount_point',
         ]),
         'memory': CSVInfo(['size', 'speed', 'label']),
         'processors': CSVInfo(['family', 'speed', 'cores', 'label']),
@@ -300,13 +301,6 @@ class DiffForm(forms.Form):
             'mgmt_firmware',
         ]),
         'subdevices': CSVInfo(['hostname', 'serial_number', 'id']),
-        'disks': CSVInfo([
-            'model_name',
-            'family',
-            'size',
-            'serial_number',
-            'mount_point',
-        ]),
     }
 
 
