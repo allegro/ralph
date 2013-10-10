@@ -136,6 +136,7 @@ def _get_balancers(dev):
             'balancer': dev.name,
             'pool': vserv.default_pool.name,
             'enabled': None,
+            'address': vserv.address.address,
             'server': vserv.name,
             'port': vserv.port,
         }
