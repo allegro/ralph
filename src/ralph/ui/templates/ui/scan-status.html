@@ -31,44 +31,48 @@
 
 {% block contentarea %}
 {% if job %}
-    <div class="well">
-        <p>Scanning <strong>{{ address }}</strong>...</p>
-        <div class="progress progress-striped {% if not job.is_finished and not job.is_failed  %}active{% endif %}">
-            {% for name, bar, icon in status %}
-            {% if bar %}
-            <div
-                class="bar bar-{{ bar }}"
-                style="width:{{ task_size }}%"
-                title="{{ name }}"
-            ></div>
-            {% endif %}
-            {% endfor %}
-            {% if not job.is_finished %}
-            <div
-                class="bar {% if job.is_failed %}bar-danger{% else %}bar-info{% endif %}"
-                style="width:{{ task_size }}%"
-                title="working..."
-            ></div>
-            {% endif %}
+    {% if not job.is_finished %}
+        <div class="well">
+            <p>Scanning <strong>{{ address }}</strong>...</p>
+            <div class="progress progress-striped {% if not job.is_finished and not job.is_failed  %}active{% endif %}">
+                {% for name, bar, icon in status %}
+                {% if bar %}
+                <div
+                    class="bar bar-{{ bar }}"
+                    style="width:{{ task_size }}%"
+                    title="{{ name }}"
+                ></div>
+                {% endif %}
+                {% endfor %}
+                {% if not job.is_finished %}
+                <div
+                    class="bar {% if job.is_failed %}bar-danger{% else %}bar-info{% endif %}"
+                    style="width:{{ task_size }}%"
+                    title="working..."
+                ></div>
+                {% endif %}
+            </div>
         </div>
-    </div>
-    <p>
-    {% for addr, name, kind,  message in job.meta.messages %}
-    <div class="text-{{ kind }}">
-        <strong>{{ name }}</strong>: {{ message }}
-    </div>
-    {% endfor %}
-    </p>
+    {% else %}
+        <div class="alert alert-success">
+            <p>Scanning finished.</p>
+        </div>
+    {% endif %}
     {% if job.is_failed %}
     <div class="alert alert-error">
         <p>Scanning failed.</p>
         <pre>{{ job.exc_info }}</pre>
     </div>
     {% endif %}
-    {% if job.is_finished %}
-        <div class="alert alert-success">
-            <p>Scanning finished.</p>
+    <div class="alert alert-info">
+        <strong>Logs:</strong>
+        {% for addr, name, kind,  message in job.meta.messages %}
+        <div class="text-{{ kind }}">
+            <strong>{{ name }}</strong>: {{ message }}
         </div>
+        {% endfor %}
+    </div>
+    {% if job.is_finished %}
         <ul class="nav nav-tabs">
             {%for device, form in forms %}
             <li {% if device_id == device.id|default:'new' %}class="active"{% endif %}>
@@ -97,7 +101,7 @@
                     {% if not '-custom' in f.name %}
                     <div
                         class="
-                            control-group 
+                            control-group
                         {% if f.errors or form|getfielderrors:f.field.subfield_name %}
                             error
                         {% endif %}

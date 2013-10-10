@@ -23,7 +23,7 @@ class CSVWidget(forms.Widget):
 
     def render(self, name, value, attrs=None):
         output = [
-                '<textarea name="%s" rows="10" style="width:90%%; font-family: monospace">' % escape(name),
+            '<textarea name="%s" rows="10" style="width:90%%; font-family: monospace">' % escape(name),
             escape(';'.join(h.rjust(16) for h in self.headers)),
         ]
         for row in value or []:
@@ -120,7 +120,7 @@ class DiffSelect(forms.Select):
                 html_input = '<input type="radio" name="%s" value="%s">'
             output.append(html_input % (escape(name), escape(option)))
             output.append(conditional_escape(label))
-            output.append(' (from <i>%s</i>)' % escape(option))
+            output.append('<br>(from <i>%s</i>)' % escape(option))
             output.append('</label>')
         return mark_safe('\n'.join(output))
 
@@ -153,12 +153,28 @@ class CSVInfo(DefaultInfo):
     def __init__(self, headers):
         self.headers = headers
 
+    def _get_cols_width(self, values):
+        width = 14
+        for row in values:
+            for header in self.headers:
+                header_len = len(header)
+                if header_len > width:
+                    width = header_len
+                value_len = len(unicode(row.get(header, '')))
+                if value_len > width:
+                    width = value_len
+        width += 2
+        return width
+
     def display(self, value):
+        cols_width = self._get_cols_width(value)
         output = [
-            '<pre style="display:inline-block; vertical-align:top;">',
-            '<b>%s</b>' % escape(';'.join(h.rjust(16) for h in self.headers)),
+            '<pre class="scan-display-results-for-component">',
+            '<b>%s</b>' % escape(
+                ';'.join((' %s' % h).ljust(cols_width) for h in self.headers),
+            ),
             escape('\n'.join(';'.join(
-                unicode(row.get(h, '') or '').rjust(16)
+                unicode((' %s' % (row.get(h, '') or ''))).ljust(cols_width)
                 for h in self.headers) for row in value
             )),
             '</pre>',
