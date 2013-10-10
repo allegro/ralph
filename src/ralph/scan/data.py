@@ -71,6 +71,7 @@ def _update_component_data(
     field_map,
     unique_fields,
     model_type=None,
+    forbidden_model_fields=set(),
 ):
     """
     Update components of a device based on the data from scan.
@@ -84,6 +85,8 @@ def _update_component_data(
     :param field_map: mapping from database fields to component_data keys
     :param unique_fields: list of tuples of fields that are unique together
     :param model_type: If provided, a 'model' field will be added
+    :param forbidden_model_fields: If provided, model will be created
+                                   without those fields
     """
 
     component_ids = []
@@ -97,7 +100,7 @@ def _update_component_data(
                 for field in group
                 if data.get(field_map[field]) is not None
             }
-            if not fields:
+            if len(group) != len(fields):
                 continue
             try:
                 component = Component.objects.get(**fields)
@@ -118,9 +121,16 @@ def _update_component_data(
                     model_fields = {
                         field: data[field_map[field]]
                         for field in field_map
-                        if data.get(field_map[field]) and field != 'type'
+                        if all((
+                            data.get(field_map[field]),
+                            field != 'type',
+                            field not in forbidden_model_fields,
+                        ))
                     }
-                    if 'model_name' in data:
+                    if all((
+                        'model_name' in data,
+                        'name' not in forbidden_model_fields,
+                    )):
                         model_fields['name'] = data['model_name']
                     model, created = ComponentModel.create(
                         model_type,
@@ -135,7 +145,7 @@ def _update_component_data(
         for field, key in field_map.iteritems():
             if key in data:
                 setattr(component, field, data[key])
-        component.save()
+        component.save(priority=100)
         component_ids.append(component.id)
     # Delete the components that are no longer current
     for component in Component.objects.filter(
@@ -317,10 +327,7 @@ def set_device_data(device, data):
             model_type = ComponentType.unknown
         try:
             # Don't use get_or_create, because we are in transaction
-            device.model = DeviceModel.objects.get(
-                type=model_type,
-                name=data['model_name'],
-            )
+            device.model = DeviceModel.objects.get(name=data['model_name'])
         except DeviceModel.DoesNotExist:
             model = DeviceModel(
                 type=model_type,
@@ -328,6 +335,13 @@ def set_device_data(device, data):
             )
             model.save()
             device.model = model
+        else:
+            if all((
+                device.model.type != model_type,
+                model_type != ComponentType.unknown,
+            )):
+                device.model.type = model_type
+                device.model.save()
     if 'disks' in data:
         _update_component_data(
             device,
@@ -348,6 +362,7 @@ def set_device_data(device, data):
                 ('device', 'mount_point'),
             ],
             ComponentType.disk,
+            {'name'},
         )
     if 'processors' in data:
         for index, processor in enumerate(data['processors']):
@@ -389,6 +404,7 @@ def set_device_data(device, data):
                 ('device', 'index'),
             ],
             ComponentType.memory,
+            {'name'},
         )
     if 'mac_addresses' in data:
         _update_component_data(
@@ -420,7 +436,7 @@ def set_device_data(device, data):
                 'physical_id': 'physical_id',
             },
             [
-                ('physical_id',),
+                ('physical_id', 'device'),
             ],
             ComponentType.fibre,
         )
@@ -521,7 +537,7 @@ def set_device_data(device, data):
         'system_label' in data or
         'system_memory' in data or
         'system_storage' in data or
-        'system_cores_coutn' in data or
+        'system_cores_count' in data or
         'system_family' in data or
         'system_model_name' in data
     ):
