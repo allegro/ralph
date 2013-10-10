@@ -182,6 +182,7 @@
             <th width="16"></th>
         <th>Load Balancer</th>
         <th>Pool</th>
+        <th>IP Address</th>
         <th>Port</th>
     </tr></thead>
     <tbody>
@@ -206,6 +207,7 @@
                 {% endif %}
             </td>
             <td>{{ item.pool }}</td>
+            <td>{{ item.address }}</td>
             <td>{{ item.port }}</td>
         </tr>
         {% endfor %}
