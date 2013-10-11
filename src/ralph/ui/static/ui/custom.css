@@ -201,3 +201,13 @@ img.waiting
     line-height: 22px;
 }
 
+.scan-display-results-for-component {
+    display: inline-block;
+    vertical-align: top;
+    width: 90%;
+    overflow: auto;
+    white-space: pre;
+    padding-bottom: 18px;
+    font-family: Menlo, Consolas, "Courier New", monospace;
+    max-height: 250px;
+}
