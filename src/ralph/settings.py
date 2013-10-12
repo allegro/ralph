@@ -392,92 +392,133 @@ SCAN_PLUGINS = {
     'ralph.scan.plugins.snmp_macs': {
         'communities': SNMP_PLUGIN_COMMUNITIES,
         'snmp_v3_auth': (SNMP_V3_USER, SNMP_V3_AUTH_KEY, SNMP_V3_PRIV_KEY),
+        'results_quality': {
+            'mac_addresses': 50,
+            'type': 25,
+            'model_name': 15,
+        },
     },
     'ralph.scan.plugins.snmp_f5': {
         'communities': SNMP_PLUGIN_COMMUNITIES,
         'snmp_v3_auth': (SNMP_V3_USER, SNMP_V3_AUTH_KEY, SNMP_V3_PRIV_KEY),
+        'results_quality': {},
     },
     'ralph.scan.plugins.idrac': {
         'user': IDRAC_USER,
         'password': IDRAC_PASSWORD,
+        'results_quality': {},
     },
     'ralph.scan.plugins.ssh_linux': {
         'auths': [
             (SSH_USER or 'root', SSH_PASSWORD),
             (XEN_USER, XEN_PASSWORD),
         ],
+        'results_quality': {},
     },
     'ralph.scan.plugins.puppet': {
         'puppet_api_url': PUPPET_API_URL,
         'puppet_db_url': PUPPET_DB_URL,
+        'results_quality': {
+            'type': 51,
+            'model_name': 51,
+            'mac_addresses': 51,
+            'system_ip_addresses': 51,
+            'processors': 51,
+            'memory': 51,
+            'disks': 51,
+            'fibrechannel_cards': 51,
+            'installed_software': 51,
+        },
     },
-    'ralph.scan.plugins.hp_oa': {},
+    'ralph.scan.plugins.hp_oa': {
+        'results_quality': {},
+    },
     'ralph.scan.plugins.ipmi': {
         'user': IPMI_USER,
         'password': IPMI_PASSWORD,
+        'results_quality': {},
     },
     'ralph.scan.plugins.http_supermicro': {
         'user': IPMI_USER,
         'password': IPMI_PASSWORD,
+        'results_quality': {},
     },
     'ralph.scan.plugins.ssh_ibm_bladecenter': {
-         'ssh_ibm_user': SSH_IBM_USER,
-         'ssh_ibm_password': SSH_IBM_PASSWORD,
+        'ssh_ibm_user': SSH_IBM_USER,
+        'ssh_ibm_password': SSH_IBM_PASSWORD,
+        'results_quality': {},
     },
-    'ralph.scan.plugins.dns_hostname': {},
+    'ralph.scan.plugins.dns_hostname': {
+        'results_quality': {},
+    },
     'ralph.scan.plugins.ilo_hp': {
         'user': ILO_USER,
         'password': ILO_PASSWORD,
+        'results_quality': {},
     },
     'ralph.scan.plugins.ssh_cisco_asa': {
         'ssh_user': SSH_SSG_USER,
         'ssh_pass': SSH_SSG_PASSWORD,
+        'results_quality': {},
     },
     'ralph.scan.plugins.ssh_cisco_catalyst': {
         'ssh_user': SSH_SSG_USER,
         'ssh_pass': SSH_SSG_PASSWORD,
+        'results_quality': {},
     },
     'ralph.scan.plugins.ssh_proxmox': {
         'user': SSH_USER or 'root',
         'password': SSH_PASSWORD,
+        'results_quality': {},
     },
     'ralph.scan.plugins.ssh_3par': {
         'user': SSH_3PAR_USER,
         'password': SSH_3PAR_PASSWORD,
+        'results_quality': {},
     },
     'ralph.scan.plugins.ssh_ssg': {
         'user': SSH_SSG_USER,
         'password': SSH_SSG_PASSWORD,
+        'results_quality': {},
     },
     'ralph.scan.plugins.ssh_ganeti': {
         'ssh_user': SSH_USER,
         'ssh_password': SSH_PASSWORD,
+        'results_quality': {},
     },
     'ralph.scan.plugins.ssh_xen': {
         'xen_user': XEN_USER,
         'xen_password': XEN_PASSWORD,
+        'results_quality': {},
     },
     'ralph.scan.plugins.ssh_aix': {
         'aix_user': AIX_USER,
         'aix_password': AIX_PASSWORD,
         'aix_key': AIX_KEY,
+        'results_quality': {},
     },
     'ralph.scan.plugins.ssh_onstor': {
         'user': SSH_ONSTOR_USER,
         'password': SSH_ONSTOR_PASSWORD,
+        'results_quality': {},
     },
     'ralph.scan.plugins.http_ibm_system_x': {
         'user': IBM_SYSTEM_X_USER,
         'password': IBM_SYSTEM_X_PASSWORD,
+        'results_quality': {},
     },
     'ralph.scan.plugins.ssh_hp_p2000': {
         'ssh_user': SSH_P2000_USER,
         'ssh_password': SSH_P2000_PASSWORD,
+        'results_quality': {},
     },
     'ralph.scan.plugins.ssh_hp_msa': {
         'user': SSH_MSA_USER,
         'password': SSH_MSA_PASSWORD,
+        'results_quality': {},
     },
-    'ralph.scan.plugins.software': {},
+    'ralph.scan.plugins.software': {
+        'results_quality': {},
+    },
 }
 
