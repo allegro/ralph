@@ -9,7 +9,7 @@ import mock
 
 from django.test import TestCase
 
-from ralph.scan.mergers import (
+from ralph.scan.merger import (
     _find_data,
     _get_ranked_plugins_list,
     _get_results_quality,
@@ -28,7 +28,7 @@ class UtilsTest(TestCase):
 
     def test_get_ranked_plugins_list(self):
         with mock.patch(
-            'ralph.scan.mergers._get_results_quality',
+            'ralph.scan.merger._get_results_quality',
         ) as mock_get_results_quality:
             mock_get_results_quality.side_effect = [50, 25, 75]
             self.assertEqual(
@@ -157,7 +157,7 @@ class MergerTest(TestCase):
 
     def test_merger(self):
         with mock.patch(
-            'ralph.scan.mergers._get_ranked_plugins_list',
+            'ralph.scan.merger._get_ranked_plugins_list',
         ) as mock_get_ranked_plugins_list:
             mock_get_ranked_plugins_list.return_value = [
                 'plugin_2', 'plugin_3', 'plugin_1',
