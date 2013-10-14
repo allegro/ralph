@@ -78,7 +78,7 @@ def merge(component, data, unique_fields):
                     useless_data[plugin] = []
                 useless_data[plugin].append(row)
     ranked_plugins = _get_ranked_plugins_list(usefull_data.keys(), component)
-    merged_data = []
+    merged_data = data.get('db', [])
     for plugin in ranked_plugins:
         groups = usefull_data.get(plugin, {}).keys()
         for unique_group in groups:

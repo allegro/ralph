@@ -74,6 +74,13 @@ class UtilsTest(TestCase):
 class MergerTest(TestCase):
     def setUp(self):
         self.sample = {
+            'db': [
+                {
+                    'serial_number': 'sn1',
+                    'param_1': 'value 1 0',
+                    'param_db': 'only in db',
+                },
+            ],
             'plugin_1': [
                 {
                     'serial_number': 'sn1',
@@ -165,6 +172,7 @@ class MergerTest(TestCase):
                     {
                         'param_1': 'value 1 1',
                         'param_2': 'value 2 1',
+                        'param_db': 'only in db',
                         'serial_number': 'sn1',
                     },
                     {
