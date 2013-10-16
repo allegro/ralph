@@ -37,7 +37,6 @@ from ralph.scan.data import (
     merge_data,
     set_device_data,
 )
-from ralph.scan.fuzzy import fuzzy_find_asset
 from ralph.business.models import (
     RoleProperty,
     RolePropertyValue,
