@@ -31,6 +31,7 @@ from ralph.scan.errors import Error as ScanError
 from ralph.scan.manual import scan_address
 from ralph.scan.forms import DiffForm
 from ralph.scan.data import (
+    append_merged_proposition,
     device_from_data,
     find_devices,
     get_device_data,
@@ -1474,7 +1475,7 @@ class ScanStatus(BaseMixin, TemplateView):
         try:
             return rq.job.Job.fetch(job_id, django_rq.get_connection())
         except rq.exceptions.NoSuchJobError:
-            return None
+            return
 
     def get_forms(self, result, device_id=None, post=None):
         forms = []
@@ -1487,6 +1488,7 @@ class ScanStatus(BaseMixin, TemplateView):
                 },
                 only_multiple=True,
             )
+            append_merged_proposition(data, device)
             if post and device.id == device_id:
                 form = DiffForm(data, post, default='database')
             else:
@@ -1598,3 +1600,4 @@ class ScanStatus(BaseMixin, TemplateView):
                 for error in form.non_field_errors():
                     messages.error(self.request, error)
         return self.get(*args, **kwargs)
+

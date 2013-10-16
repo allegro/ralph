@@ -35,6 +35,19 @@ from ralph.discovery.models_device import (
     DeviceType,
     DeviceModel,
 )
+from ralph.scan.merger import merge as merge_component
+
+
+UNIQUE_FIELDS_FOR_MERGER = {
+    'disks': [('serial_number',), ('device', 'mount_point')],
+    'processors': [('device', 'index')],
+    'memory': [('device', 'index')],
+    'fibrechannel_cards': [('physical_id', 'device')],
+    'parts': [('serial_number',)],
+    'disk_exports': [('serial_number',)],
+    'disk_shares': [('device', 'share')],
+    'installed_software': [('device', 'path')],
+}
 
 
 def _update_addresses(device, address_data, is_management=False):
@@ -415,9 +428,7 @@ def set_device_data(device, data):
                 'mac': 'mac',
                 'device': 'device',
             },
-            [
-                ('mac',),
-            ],
+            [('mac',)],
             None,
         )
     if 'management_ip_addresses' in data:
@@ -646,4 +657,32 @@ def find_devices(result):
         db.Q(sn__in=serials) |
         db.Q(ethernet__mac__in=macs)
     ).distinct()
+
+
+def append_merged_proposition(data, device):
+    for component, results in data.iteritems():
+        if component not in UNIQUE_FIELDS_FOR_MERGER:
+            continue
+        data_to_merge = {}
+        for (plugin_name,), plugin_data in results.iteritems():
+            data_to_merge[plugin_name] = []
+            for index, row in enumerate(plugin_data):
+                row.update({
+                    'device': device.pk,
+                    'index': index,
+                })
+                for key, value in row.items():
+                    if value is None:
+                        del row[key]
+                data_to_merge[plugin_name].append(row)
+        merged = merge_component(
+            component,
+            data_to_merge,
+            UNIQUE_FIELDS_FOR_MERGER[component],
+        )
+        if merged:
+            for row in merged:
+                del row['device']
+                del row['index']
+            data[component][('merged',)] = merged
 

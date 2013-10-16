@@ -33,11 +33,7 @@ class UtilsTest(TestCase):
             mock_get_results_quality.side_effect = [50, 25, 75]
             self.assertEqual(
                 _get_ranked_plugins_list(['test1', 'test2', 'test3'], 'foo'),
-                [
-                    {'quality': 25, 'plugin': 'test2'},
-                    {'quality': 50, 'plugin': 'test1'},
-                    {'quality': 75, 'plugin': 'test3'},
-                ],
+                ['test2', 'test1', 'test3'],
             )
 
     def test_find_data(self):
@@ -74,11 +70,16 @@ class UtilsTest(TestCase):
 class MergerTest(TestCase):
     def setUp(self):
         self.sample = {
-            'db': [
+            'database': [
                 {
                     'serial_number': 'sn1',
                     'param_1': 'value 1 0',
                     'param_db': 'only in db',
+                },
+                {
+                    'serial_number': 'sn5',
+                    'param_1': 'value 1 0',
+                    'param_2': 'value 2 0',
                 },
             ],
             'plugin_1': [

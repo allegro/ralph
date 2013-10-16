@@ -27,25 +27,27 @@ def _get_results_quality(plugin, component):
 
 
 def _get_ranked_plugins_list(plugins, component):
-    return sorted(
-        [
-            {
-                'plugin': plugin,
-                'quality': _get_results_quality(plugin, component),
-            } for plugin in plugins
-        ],
-        key=lambda k: k['quality'],
-    )
+    return [
+        item['plugin'] for item in sorted(
+            [
+                {
+                    'plugin': plugin,
+                    'quality': _get_results_quality(plugin, component),
+                } for plugin in plugins
+            ],
+            key=lambda k: k['quality'],
+        )
+    ]
 
 
 def _find_data(rows, lookup):
     for row in rows:
         matched = True
-        for field in lookup.keys():
+        for field, value in lookup.iteritems():
             if (
                 field not in row or
-                not row[field] or
-                str(lookup[field]).lower() != str(row[field]).lower()
+                not str(row[field]) or
+                str(value).strip().lower() != str(row[field]).strip().lower()
             ):
                 matched = False
                 break
@@ -53,18 +55,16 @@ def _find_data(rows, lookup):
             return row
 
 
-def merge(component, data, unique_fields):
+def merge(component, data, unique_fields, db_plugin_name='database'):
     usefull_data = {}
     useless_data = {}
     for plugin, plugin_results in data.iteritems():
-        if plugin == 'db':
-            continue
         for row in plugin_results:
             is_useless = True
             for unique_group in unique_fields:
                 fields = set([
                     field for field in unique_group
-                    if field in row and row[field]
+                    if unicode(row.get(field, ''))
                 ])
                 if set(unique_group) == fields:
                     if plugin not in usefull_data:
@@ -77,8 +77,15 @@ def merge(component, data, unique_fields):
                 if plugin not in useless_data:
                     useless_data[plugin] = []
                 useless_data[plugin].append(row)
-    ranked_plugins = _get_ranked_plugins_list(usefull_data.keys(), component)
-    merged_data = data.get('db', [])
+    plugins = usefull_data.keys()
+    try:
+        plugins.remove(db_plugin_name)
+    except ValueError:
+        pass
+    ranked_plugins = _get_ranked_plugins_list(plugins, component)
+    if db_plugin_name in data:
+        ranked_plugins.append(db_plugin_name)
+    merged_data = []
     for plugin in ranked_plugins:
         groups = usefull_data.get(plugin, {}).keys()
         for unique_group in groups:
@@ -88,7 +95,12 @@ def merge(component, data, unique_fields):
                     lookup[field] = new_row[field]
                 current_row = _find_data(merged_data, lookup)
                 if current_row:
-                    current_row.update(new_row)
+                    if plugin == db_plugin_name:
+                        for field, value in new_row.iteritems():
+                            if not current_row.get(field):
+                                current_row[field] = value
+                    else:
+                        current_row.update(new_row)
                 else:
                     exists_in_results = False
                     for alternative_group in set(groups) - set([unique_group]):
@@ -102,7 +114,7 @@ def merge(component, data, unique_fields):
                             if _find_data(merged_data, lookup):
                                 exists_in_results = True
                                 break
-                    if not exists_in_results:
-                        merged_data.append(new_row)
+                    if not exists_in_results and plugin != db_plugin_name:
+                        merged_data.append(new_row.copy())
     return merged_data
 
