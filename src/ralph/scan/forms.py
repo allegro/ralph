@@ -227,7 +227,6 @@ class DictListInfo(ListInfo):
 
 
 class AssetInfo(DefaultInfo):
-    display = operator.attrgetter('name')
     Widget = None
 
     def clean(self, value):
@@ -318,7 +317,6 @@ class DiffForm(forms.Form):
         ]),
         'subdevices': CSVInfo(['hostname', 'serial_number', 'id']),
     }
-
 
     def __init__(self, data, *args, **kwargs):
         try:

@@ -299,7 +299,10 @@ def get_device_data(device):
     if 'ralph_assets' in settings.INSTALLED_APPS:
         from ralph_assets.api_ralph import get_asset
         asset = get_asset(device.id)
-        data['asset'] = asset['asset_id'] if asset else None
+        if asset:
+            data['asset'] = '{}, sn: {}'.format(asset['model'], asset['sn'])
+        else:
+            data['asset'] = None
     return data
 
 
@@ -571,7 +574,8 @@ def set_device_data(device, data):
             subdevice.save()
     if 'asset' in data and 'ralph_assets' in settings.INSTALLED_APPS:
         from ralph_assets.api_ralph import assign_asset
-        assign_asset(device.id, data['asset'] or None)
+        if data['asset']:
+            assign_asset(device.id, data['asset'].id)
 
 
 def device_from_data(data):
