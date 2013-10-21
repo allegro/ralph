@@ -686,3 +686,32 @@ def append_merged_proposition(data, device):
                 del row['index']
             data[component][('merged',)] = merged
 
+
+def _sortkeypicker(keynames):
+    def getit(adict):
+        composite = []
+        for key in keynames:
+            if key in adict:
+                composite.append(adict[key])
+        return composite
+    return getit
+
+
+def sort_results(data, ignored_fields=set(['device'])):
+    for component, results in data.iteritems():
+        if component not in UNIQUE_FIELDS_FOR_MERGER:
+            continue
+        for (plugin_name,), plugin_data in results.iteritems():
+            keynames = set()
+            for fields_group in UNIQUE_FIELDS_FOR_MERGER[component]:
+                for field in fields_group:
+                    if field in ignored_fields:
+                        continue
+                    keynames.add(field)
+            if keynames:
+                plugin_data = sorted(
+                    plugin_data,
+                    key=_sortkeypicker(keynames),
+                )
+            data[component][(plugin_name,)] = plugin_data
+

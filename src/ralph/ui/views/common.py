@@ -37,6 +37,7 @@ from ralph.scan.data import (
     get_device_data,
     merge_data,
     set_device_data,
+    sort_results,
 )
 from ralph.business.models import (
     RoleProperty,
@@ -1489,6 +1490,7 @@ class ScanStatus(BaseMixin, TemplateView):
                 only_multiple=True,
             )
             append_merged_proposition(data, device)
+            sort_results(data)
             if post and device.id == device_id:
                 form = DiffForm(data, post, default='database')
             else:
