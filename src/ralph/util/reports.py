@@ -32,11 +32,13 @@ class Report(View):
 
     QUEUE_NAME = 'default'
     get_result = None
+    get_response = None
 
-    def __init__(self, get_result, **kwargs):
+    def __init__(self, get_result, get_response, **kwargs):
         self._jobid = None
         self._job = None
         self.get_result = get_result
+        self.get_response = get_response
         self.connection = django_rq.get_connection(self.QUEUE_NAME)
         self.queue = django_rq.get_queue(self.QUEUE_NAME)
         super(Report, self).__init__(**kwargs)
@@ -47,6 +49,10 @@ class Report(View):
             return self._jobid
         else:
             self._jobid = rq.get_current_job()
+
+    @property
+    def job(self):
+        return rq.job.Job.fetch(self.jobid, connection=self.connection)
 
     @property
     def progress(self):
@@ -73,7 +79,7 @@ class Report(View):
                     # Shouldn't happen if browser side is OK
                     return HttpResponseBadRequest()
                 else:
-                    return result
+                    return self.get_response(request, result)
             else:
                 if result is None:
                     result = json.dumps({
@@ -83,9 +89,10 @@ class Report(View):
                         'finished': False,
                     })
                 else:
-                    result = json.dumpa({
+                    result = json.dumps({
                         'jobid': self.job.id,
                         'progress': 100,
-                        'eta': {hours: 0, minutes: 0, seconds: 0},
+                        'eta': {'hours': 0, 'minutes': 0, 'seconds': 0},
                         'finished': True,
                     })
+            return HttpResponse(result, content_type='application/json')
