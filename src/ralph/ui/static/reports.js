@@ -2,8 +2,9 @@
 
 define(['jquery'], function ($) {
 
-    function AsyncLoader(url) {
-        this.url = url;
+    function AsyncLoader(settings) {
+        this.url = settings.url;
+        this.progressBar = settings.progressBar;
     }
 
     AsyncLoader.prototype.start = function() {
@@ -30,6 +31,10 @@ define(['jquery'], function ($) {
     };
 
     AsyncLoader.prototype.handleUpdate = function (result, success, response) {
+        if (result.progress) {
+            $(this.progressBar).children('.bar').css(
+                'width', result.progress.toString() + '%')
+        }
         if (result.finished) {
             clearInterval(this.intervalHandle);
             window.location = this.url + '?' + $.param(
@@ -39,9 +44,9 @@ define(['jquery'], function ($) {
     };
 
     function setup(settings) {
-        $(settings.progress_bar).hide();
+        $(settings.progressBar).hide();
         $(settings.trigger).click(function (ev) {
-            new AsyncLoader(settings.url).start();
+            new AsyncLoader(settings).start();
             return false;
         });
     } 

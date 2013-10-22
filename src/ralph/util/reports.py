@@ -35,31 +35,16 @@ class Report(View):
     get_response = None
 
     def __init__(self, get_result, get_response, **kwargs):
-        self._jobid = None
-        self._job = None
         self.get_result = get_result
         self.get_response = get_response
         self.connection = django_rq.get_connection(self.QUEUE_NAME)
         self.queue = django_rq.get_queue(self.QUEUE_NAME)
         super(Report, self).__init__(**kwargs)
 
-    @property
-    def jobid(self):
-        if self._jobid:
-            return self._jobid
-        else:
-            self._jobid = rq.get_current_job()
+    def progress(self, job):
+        return int(job.meta['progress'] * 100)
 
-    @property
-    def job(self):
-        return rq.job.Job.fetch(self.jobid, connection=self.connection)
-
-    @property
-    def progress(self):
-        return None
-
-    @property
-    def eta(self):
+    def eta(self, job):
         return None
 
 
@@ -69,11 +54,13 @@ class Report(View):
             job = self.queue.enqueue(
                     self.get_result, PicklableRequest(request),
                     *args, **kwargs)
+            job.meta['progress'] = 0
+            job.save()
             result = json.dumps({'jobid': job.id})
             return HttpResponse(result, content_type='application/json')
         else:
-            self._jobid = jobid
-            result = self.job.result
+            job = rq.job.Job.fetch(jobid, connection=self.connection)
+            result = job.result
             if request.GET.get('_report_finish'):
                 if result is None:
                     # Shouldn't happen if browser side is OK
@@ -83,14 +70,14 @@ class Report(View):
             else:
                 if result is None:
                     result = json.dumps({
-                        'jobid': self.job.id,
-                        'progress': self.progress,
-                        'eta': self.eta,
+                        'jobid': jobid,
+                        'progress': self.progress(job),
+                        'eta': self.eta(job),
                         'finished': False,
                     })
                 else:
                     result = json.dumps({
-                        'jobid': self.job.id,
+                        'jobid': jobid,
                         'progress': 100,
                         'eta': {'hours': 0, 'minutes': 0, 'seconds': 0},
                         'finished': True,
