@@ -6,6 +6,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import datetime
 import rq
 import django_rq
 import json
@@ -41,20 +42,31 @@ class Report(View):
         self.queue = django_rq.get_queue(self.QUEUE_NAME)
         super(Report, self).__init__(**kwargs)
 
+
     def progress(self, job):
+        """Returns progress in percent"""
         return int(job.meta['progress'] * 100)
 
     def eta(self, job):
-        return None
+        """Returns ETA in seconds"""
+        if not job.meta['progress'] or not job.meta['start_progress']:
+            return None
+        velocity = job.meta['progress'] / (
+                datetime.datetime.now() - job.meta['start_progress']
+        ).total_seconds()
+        return  (1.0 - job.meta['progress']) / velocity
 
 
     def get(self, request, *args, **kwargs):
+        """Perform the GET request."""
         jobid = request.GET.get('_report_jobid')
         if jobid is None:
             job = self.queue.enqueue(
                     self.get_result, PicklableRequest(request),
                     *args, **kwargs)
             job.meta['progress'] = 0
+            job.meta['start_progress'] = None
+            job.meta['start'] = datetime.datetime.now()
             job.save()
             result = json.dumps({'jobid': job.id})
             return HttpResponse(result, content_type='application/json')
