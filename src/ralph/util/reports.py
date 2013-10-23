@@ -24,8 +24,21 @@ class PicklableRequest(object):
         self._full_path = request.get_full_path()
 
     def get_full_path(self):
+        """Returns the full url of this request."""
         return self._full_path
 
+def get_progress(job):
+    """Returns job progress in percent"""
+    return int(job.meta['progress'] * 100)
+
+def get_eta(job):
+    """Returns job ETA in seconds"""
+    if not job.meta['progress'] or not job.meta['start_progress']:
+        return None
+    velocity = job.meta['progress'] / (
+            datetime.datetime.now() - job.meta['start_progress']
+    ).total_seconds()
+    return  (1.0 - job.meta['progress']) / velocity
 
 
 class Report(View):
@@ -42,19 +55,6 @@ class Report(View):
         self.queue = django_rq.get_queue(self.QUEUE_NAME)
         super(Report, self).__init__(**kwargs)
 
-
-    def progress(self, job):
-        """Returns progress in percent"""
-        return int(job.meta['progress'] * 100)
-
-    def eta(self, job):
-        """Returns ETA in seconds"""
-        if not job.meta['progress'] or not job.meta['start_progress']:
-            return None
-        velocity = job.meta['progress'] / (
-                datetime.datetime.now() - job.meta['start_progress']
-        ).total_seconds()
-        return  (1.0 - job.meta['progress']) / velocity
 
 
     def get(self, request, *args, **kwargs):
@@ -83,8 +83,8 @@ class Report(View):
                 if result is None:
                     result = json.dumps({
                         'jobid': jobid,
-                        'progress': self.progress(job),
-                        'eta': self.eta(job),
+                        'progress': get_progress(job),
+                        'eta': get_eta(job),
                         'finished': False,
                     })
                 else:
