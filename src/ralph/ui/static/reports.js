@@ -1,20 +1,23 @@
+/*jslint browser: true unparam: true*/
+/*global define: false */
 /* The browser side of the functionality implemented in util/reports.py */
 
 define(['jquery', 'moment', 'mustache'], function ($, moment, Mustache) {
+    'use strict';
 
     function AsyncLoader(settings) {
         this.url = settings.url;
         this.progressBar = settings.progressBar;
         this.etaEl = settings.etaEl;
         $(this.progressBar).show();
-        this.setUndefinedBar()
+        this.setUndefinedBar();
     }
 
-    AsyncLoader.prototype.start = function() {
+    AsyncLoader.prototype.start = function () {
         $.ajax({
             url: this.url,
             success: this.handleInitialReq,
-            context: this,
+            context: this
         });
     };
 
@@ -23,20 +26,20 @@ define(['jquery', 'moment', 'mustache'], function ($, moment, Mustache) {
         $(this.progressBar).children('.bar').css('width', '100%');
     };
 
-    AsyncLoader.prototype.handleInitialReq = function (result, success, response) {
+    AsyncLoader.prototype.handleInitialReq = function (result) {
         var that;
         that = this;
         this.jobid = result.jobid;
-        this.longIntervalHandle = setInterval(function () {
+        this.longIntervalHandle = window.setInterval(function () {
             $.ajax({
                 url: that.url,
-                data: {_report_jobid: that.jobid},
+                data: {'_report_jobid': that.jobid},
                 success: that.handleUpdate,
-                context: that,
+                context: that
             });
         }, 5e3);
-        this.shortIntervalHandle = setInterval(function () {
-            if(that.eta && that.eta.asSeconds() > 0) {
+        this.shortIntervalHandle = window.setInterval(function () {
+            if (that.eta && that.eta.asSeconds() > 0) {
                 that.eta.subtract(1, 'seconds');
                 that.updateEtaDisplay();
             }
@@ -50,9 +53,9 @@ define(['jquery', 'moment', 'mustache'], function ($, moment, Mustache) {
     };
 
     AsyncLoader.prototype.pad = function (v) {
-        var v = v.toString();
-        return v.length === 1 ? '0' + v : v;
-    }
+        var s = v.toString();
+        return s.length === 1 ? '0' + s : s;
+    };
 
     AsyncLoader.prototype.updateEtaDisplay = function () {
         if (!this.eta) {
@@ -65,11 +68,13 @@ define(['jquery', 'moment', 'mustache'], function ($, moment, Mustache) {
         }));
     };
 
-    AsyncLoader.prototype.handleUpdate = function (result, success, response) {
+    AsyncLoader.prototype.handleUpdate = function (result) {
         if (result.progress) {
             $(this.progressBar).removeClass('progress-striped active');
             $(this.progressBar).children('.bar').css(
-                'width', result.progress.toString() + '%')
+                'width',
+                result.progress.toString() + '%'
+            );
         }
         if (result.eta) {
             this.updateEtaWithSeconds(result.eta);
@@ -80,7 +85,8 @@ define(['jquery', 'moment', 'mustache'], function ($, moment, Mustache) {
             $(this.progressBar).hide();
             $(this.etaEl).html('');
             window.location = this.url + '?' + $.param(
-                    {_report_jobid: this.jobid, _report_finish: true});
+                {'_report_jobid': this.jobid, '_report_finish': true}
+            );
 
         }
     };
@@ -91,11 +97,11 @@ define(['jquery', 'moment', 'mustache'], function ($, moment, Mustache) {
             new AsyncLoader(settings).start();
             return false;
         });
-    } 
+    }
 
     return {
         AsyncLoader: AsyncLoader,
         setup: setup
-    }
+    };
 
 });
