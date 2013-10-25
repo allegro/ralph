@@ -86,7 +86,6 @@ define(['jquery', 'moment', 'mustache'], function ($, moment, Mustache) {
             window.location = this.url + '?' + $.param(
                 {'_report_jobid': this.jobid, '_report_finish': true}
             );
-
         }
     };
 
