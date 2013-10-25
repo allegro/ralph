@@ -40,10 +40,8 @@ def get_eta(job):
     ).total_seconds()
     return  (1.0 - job.meta['progress']) / velocity
 
-
 class Report(View):
     """Base class for asynchronous reports. It works as a view."""
-
     QUEUE_NAME = 'default'
     get_result = None
     get_response = None
@@ -54,8 +52,6 @@ class Report(View):
         self.connection = django_rq.get_connection(self.QUEUE_NAME)
         self.queue = django_rq.get_queue(self.QUEUE_NAME)
         super(Report, self).__init__(**kwargs)
-
-
 
     def get(self, request, *args, **kwargs):
         """Perform the GET request."""
