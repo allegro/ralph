@@ -49,7 +49,6 @@ define(['jquery', 'moment', 'mustache'], function ($, moment, Mustache) {
     AsyncLoader.prototype.updateEtaWithSeconds = function (eta) {
         this.eta = moment.duration(eta, 'seconds');
         this.updateEtaDisplay();
-
     };
 
     AsyncLoader.prototype.pad = function (v) {
