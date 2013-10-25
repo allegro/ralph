@@ -236,7 +236,7 @@ class AssetInfo(DefaultInfo):
 
     def Field(self, *args, **kwargs):
         kwargs.update(help_text="Enter barcode, model or serial number.")
-        lookup = ('ralph_assets.models', 'AssetLookupFuzzy')
+        lookup = ('ralph_assets.api_ralph', 'AssetLookupFuzzy')
         return AutoCompleteSelectField(lookup, *args, **kwargs)
 
 
