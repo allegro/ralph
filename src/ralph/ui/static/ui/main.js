@@ -226,7 +226,9 @@ $(function ($) {
         var $form = $(form);
         var $start = $form.find('input[name="start"]');
         var $end = $form.find('input[name="end"]');
-        $form.prepend(Mustache.render(calendar_tmpl, calendar));
+        require(['mustache'], function (Mustache) {
+            $form.prepend(Mustache.render(calendar_tmpl, calendar));
+        });
         $form.find('.years a').click(function (e) {
             var $this = $(this);
             var start_date = parseDate($start.val());
