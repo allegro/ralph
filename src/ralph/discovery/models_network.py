@@ -147,6 +147,13 @@ class AbstractNetwork(db.Model):
     def network(self):
         return ipaddr.IPNetwork(self.address)
 
+    def get_netmask(self):
+        try:
+            mask = self.address.split("/")[1]
+            return int(mask)
+        except (ValueError, IndexError):
+            return None
+
     def clean(self, *args, **kwargs):
         super(AbstractNetwork, self).clean(*args, **kwargs)
         try:
