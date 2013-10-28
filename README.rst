@@ -7,7 +7,7 @@ Ralph
     :target: https://crate.io/packages/ralph/
     :alt: Latest PyPI version
 
-.. image:: https://pypip.in/d/bob-ajax-selects/badge.png
+.. image:: https://pypip.in/d/ralph/badge.png
     :target: https://crate.io/packages/ralph/
     :alt: Number of PyPI downloads
 
