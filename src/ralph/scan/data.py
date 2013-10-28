@@ -683,7 +683,6 @@ def append_merged_proposition(data, device):
         if merged:
             for row in merged:
                 del row['device']
-                del row['index']
             data[component][('merged',)] = merged
 
 
@@ -714,4 +713,149 @@ def sort_results(data, ignored_fields=set(['device'])):
                     key=_sortkeypicker(keynames),
                 )
             data[component][(plugin_name,)] = plugin_data
+
+
+def _get_matched_row(rows, lookup):
+    for index, row in enumerate(rows):
+        matched = True
+        for field, value in lookup.items():
+            if str(row.get(field, '')).strip() != value:
+                matched = False
+                break
+        if matched:
+            return index, row
+    return None, None
+
+
+def _compare_dicts(ldict, rdict, ignored_fields=set(['device', 'index'])):
+    matched = True
+    diff = {}
+    keys = (set(ldict.keys()) | set(rdict.keys())) - ignored_fields
+    for key in keys:
+        lvalue = str(ldict.get(key, '')).strip()
+        rvalue = str(rdict.get(key, '')).strip()
+        if lvalue and not rvalue:
+            matched = False
+            diff[key] = (b'-', lvalue, '')
+        elif not lvalue and rvalue:
+            matched = False
+            diff[key] = (b'+', '', rvalue)
+        else:
+            if lvalue == rvalue:
+                diff[key] = (b'', lvalue, rvalue)
+            else:
+                matched = False
+                diff[key] = (b'?', lvalue, rvalue)
+    return matched, diff, keys
+
+
+def _compare_lists(*args):
+    if not args:
+        return True
+    compared_item = set(args[0])
+    for item in args[1:]:
+        if compared_item - set(item):
+            return False
+    return True
+
+
+def _compare_strings(*args):
+    if not args:
+        return True
+    compared_item = str(args[0]).strip()
+    for item in args[1:]:
+        if compared_item != str(item).strip():
+            return False
+    return True
+
+
+def diff_results(data, ignored_fields=set(['device'])):
+    diffs = {}
+    for component, results in data.iteritems():
+        diff_result = {
+            'is_equal': False,
+            'meta': {},
+        }
+        if component not in UNIQUE_FIELDS_FOR_MERGER:
+            if isinstance(results[('database',)], list):
+                diff_result.update({
+                    'is_equal': _compare_lists(*tuple(results.values())),
+                    'type': 'lists',
+                })
+            else:
+                diff_result.update({
+                    'is_equal': _compare_strings(*tuple(results.values())),
+                    'type': 'strings',
+                })
+        else:
+            diff_result.update({
+                'type': 'dicts',
+                'diff': [],
+            })
+            database = results.get(('database',), [])
+            merged = results.get(('merged',), [])
+            database_parsed_rows = set()
+            merged_parsed_rows = set()
+            headers = set()
+            add_items_count = 0
+            remove_items_count = 0
+            change_items_count = 0
+            for index, items in enumerate(database):
+                for field_group in UNIQUE_FIELDS_FOR_MERGER[component]:
+                    if index in database_parsed_rows:
+                        break
+                    lookup = {}
+                    for field in field_group:
+                        if field in ignored_fields:
+                            continue
+                        field_db_value = str(items.get(field, '')).strip()
+                        if not field_db_value:
+                            continue
+                        lookup[field] = field_db_value
+                    if lookup:
+                        matched_index, matched_row = _get_matched_row(
+                            merged,
+                            lookup,
+                        )
+                        if matched_row:
+                            database_parsed_rows.add(index)
+                            merged_parsed_rows.add(matched_index)
+                            status, row_diff, rows_keys = _compare_dicts(
+                                items,
+                                matched_row,
+                            )
+                            diff_result['diff'].append((
+                                b'?' if not status else b'',
+                                items,
+                                row_diff,
+                            ))
+                            if not status:
+                                change_items_count += 1
+                            headers |= rows_keys
+                if index not in database_parsed_rows:
+                    diff_result['diff'].append(('-', items))
+                    remove_items_count += 1
+                    headers |= set(items.keys())
+            for index, items in enumerate(merged):
+                if index not in merged_parsed_rows:
+                    diff_result['diff'].append(('+', items))
+                    add_items_count += 1
+                    headers |= set(items.keys())
+            headers -= ignored_fields
+            headers -= {'index'}
+            diff_result.update({
+                'is_equal': all((
+                    add_items_count == 0,
+                    remove_items_count == 0,
+                    change_items_count == 0,
+                )),
+                'meta': {
+                    'add_items_count': add_items_count,
+                    'remove_items_count': remove_items_count,
+                    'change_items_count': change_items_count,
+                    'headers': headers,
+                },
+            })
+        diffs[component] = diff_result
+    return diffs
 

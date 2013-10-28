@@ -33,6 +33,7 @@ from ralph.scan.forms import DiffForm
 from ralph.scan.data import (
     append_merged_proposition,
     device_from_data,
+    diff_results,
     find_devices,
     get_device_data,
     merge_data,
@@ -1491,10 +1492,17 @@ class ScanStatus(BaseMixin, TemplateView):
             )
             append_merged_proposition(data, device)
             sort_results(data)
+            diff = diff_results(data)
             if post and device.id == device_id:
-                form = DiffForm(data, post, default='database')
+                form = DiffForm(
+                    data, post, default='database', csv_default='merged',
+                    diff=diff,
+                )
             else:
-                form = DiffForm(data, default='database')
+                form = DiffForm(
+                    data, default='database', csv_default='merged',
+                    diff=diff,
+                )
             forms.append((device, form))
         data = merge_data(result)
         # Add required fields.

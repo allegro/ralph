@@ -46,3 +46,8 @@ def getfield(d, key_name):
 @register.filter
 def getfielderrors(d, key_name):
     return d[key_name].errors
+
+@register.filter
+def getvalue(d, key_name):
+    return d.get(key_name, '')
+
