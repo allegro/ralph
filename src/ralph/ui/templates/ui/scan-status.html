@@ -106,9 +106,9 @@
                         "
                     >
                         <label class="control-label">{{ f.label }}</label>
-                        <div class="controls">
+                        <div class="controls" data-role="controls_wrapper">
                             {{ f }}
-                            <div class="custom-control-wrapper"{% if f.field.widget.diff %} style="display: none;"{% endif %}>
+                            <div class="custom-control-wrapper"{% if f.field.widget.diff %} style="display: none;"{% endif %} data-role="custom_control_wrapper">
                                 <label class="radio">
                                     <input
                                         type="radio"
@@ -152,3 +152,9 @@
     {% endif %}
 {% endif %}
 {% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+    <script src="{{ STATIC_URL }}scan.js"></script>
+{% endblock scripts %}
+

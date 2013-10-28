@@ -1,6 +1,6 @@
 {% load getvalue from formats %}
 
-<div class="diff-select-widget" id="{{ name }}__diff_select_widget">
+<div class="diff-select-widget" id="{{ name }}__diff_select_widget" data-role="diff_select_widget">
     {% if diff %}
         <div class="alert alert-{% if diff.is_equal %}success{% else %}info{% endif %}">
             {% if not diff.is_equal %}
@@ -23,9 +23,9 @@
             </div>
         </div>
 
-        <div class="diff-details" data-role="diff-details">
+        <div class="diff-details" data-role="diff_details">
             {% if not diff.is_equal and diff.type == "dicts" %}
-                <p><strong>Results diff:</strong></p>
+                <p><strong>Diff:</strong></p>
                 <table class="table table-condensed table-hover table-bordered" style="width: 100%;">
                     <thead><tr>
                         <th>&nbsp;</th>
@@ -33,7 +33,7 @@
                     </tr></thead>
                     <tbody>{% for row in diff.diff %}
                         <tr class="{% if row.0 == "?" %}warning{% elif row.0 == "+" %}success{% elif row.0 == "-" %}error{% endif %}">
-                            <td{% if row.0 == "?" %} rowspan="2"{% endif %} style="vertical-align: middle;">{{ row.0 }}</td>
+                            <td{% if row.0 == "?" %} rowspan="2"{% endif %} style="vertical-align: middle;">{% if row.0 == "?" %}M{% else %}{{ row.0 }}{% endif %}</td>
                             {% for header in diff.meta.headers %}
                                 {% if row.0 == "?" %}
                                     {% with row_diff=row.2|getvalue:header %}
@@ -58,7 +58,7 @@
         </div>
     {% endif %}
 
-    <div class="advanced-mode"{% if diff %} style="display: none;"{% endif %} data-role="advanced-mode">
+    <div class="advanced-mode"{% if diff %} style="display: none;"{% endif %} data-role="advanced_mode">
         {% for option, label in choices %}
             {% if option != "custom" %}
                 <label class="radio">
@@ -70,28 +70,4 @@
         {% endfor %}
     </div>
 </div>
-
-<script type="text/javascript">
-    $(document).ready(function() {
-        var container = $('#{{ name }}__diff_select_widget');
-        $(container).find(
-            '[data-role="show_diff_btn"]'
-        ).click(function() {
-            if ($(this).hasClass('active')) {
-                $(container).find('.diff-details').hide();
-            } else {
-                $(container).find('.diff-details').show();
-            }
-        });
-        $(container).find(
-            '[data-role="show_advanced_mode_btn"]'
-        ).click(function() {
-            if ($(this).hasClass('active')) {
-                $(container).find('.advanced-mode').hide();
-            } else {
-                $(container).find('.advanced-mode').show();
-            }
-        });
-    });
-</script>
 
