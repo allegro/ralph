@@ -107,14 +107,17 @@ class WidgetTable(forms.MultiWidget):
 class DiffSelect(forms.Select):
     """A widget for selecting one of the values of a diff."""
 
-    def __init__(self, diff=None, *args, **kwargs):
+    def __init__(self, diff=None, default_value=None, *args, **kwargs):
         self.diff = diff
+        self.default_value = default_value
+        self.open_advanced_mode = False
         super(DiffSelect, self).__init__(*args, **kwargs)
 
 
     def render(self, name, value, attrs=None, choices=()):
         if value is None:
             value = ''
+        self.open_advanced_mode = self.default_value != value
         return render_to_string(
             'scan/widgets/diff_select.html',
             {
@@ -122,6 +125,7 @@ class DiffSelect(forms.Select):
                 'name': name,
                 'value': value,
                 'diff': self.diff,
+                'open_advanced_mode': self.open_advanced_mode,
             },
         )
 
@@ -333,17 +337,19 @@ class DiffForm(forms.Form):
                 for (sources, value) in values.iteritems()
             ]
             choices.append(('custom', ''))
+            if isinstance(info, CSVInfo):
+                default_value = csv_default
+            else:
+                default_value = default
             field = forms.ChoiceField(
                 label=field_name.replace('_', ' ').title(),
                 choices=choices,
                 widget=DiffSelect(
                     diff=diff.get(field_name) if diff else None,
+                    default_value=default_value,
                 ),
             )
-            if isinstance(info, CSVInfo):
-                field.initial = csv_default
-            else:
-                field.initial = default
+            field.initial = default_value
             self.fields[field_name] = field
             subfield = info.Field(widget=info.Widget, required=False)
             field.subfield_name = '%s-custom' % field_name

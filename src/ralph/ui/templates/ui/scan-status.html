@@ -108,7 +108,7 @@
                         <label class="control-label">{{ f.label }}</label>
                         <div class="controls" data-role="controls_wrapper">
                             {{ f }}
-                            <div class="custom-control-wrapper"{% if f.field.widget.diff %} style="display: none;"{% endif %} data-role="custom_control_wrapper">
+                            <div class="custom-control-wrapper"{% if f.field.widget.diff and not f.field.widget.open_advanced_mode %} style="display: none;"{% endif %} data-role="custom_control_wrapper">
                                 <label class="radio">
                                     <input
                                         type="radio"

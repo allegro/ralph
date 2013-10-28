@@ -19,7 +19,7 @@
                 {% if not diff.is_equal and diff.type == "dicts" %}
                     <button type="button" class="btn btn-mini" data-role="show_diff_btn">Display diff</button>
                 {% endif %}
-                <button type="button" class="btn btn-mini" data-role="show_advanced_mode_btn">Advanced mode</button>
+                <button type="button" class="btn btn-mini {% if open_advanced_mode %}active{% endif %}" data-role="show_advanced_mode_btn">Advanced mode</button>
             </div>
         </div>
 
@@ -58,7 +58,7 @@
         </div>
     {% endif %}
 
-    <div class="advanced-mode"{% if diff %} style="display: none;"{% endif %} data-role="advanced_mode">
+    <div class="advanced-mode"{% if diff and not open_advanced_mode %} style="display: none;"{% endif %} data-role="advanced_mode">
         {% for option, label in choices %}
             {% if option != "custom" %}
                 <label class="radio">
