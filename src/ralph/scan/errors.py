@@ -37,5 +37,10 @@ class NoLanError(Error):
 class SSHConsoleError(Error):
     """SSH console error."""
 
+
 class TreeError(Error):
     """xml tree error"""
+
+
+class DeviceError(Error):
+    """somethings wrong with device"""
