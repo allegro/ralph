@@ -2,9 +2,9 @@
 Ralph
 =====
 
-.. image:: https://api.travis-ci.org/quamilek/ralph.png?branch=master
+.. image:: https://api.travis-ci.org/allegro/ralph.png?branch=master
     :alt: Build Status
-    :target: http://api.travis-ci.org/quamilek/ralph
+    :target: http://api.travis-ci.org/allegro/ralph
 
 Ralph is an asset management system for your data center.  It lets you see what
 hardware and software is installed. It also lets you keep track of who is using
