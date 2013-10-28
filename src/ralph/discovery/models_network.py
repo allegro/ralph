@@ -140,7 +140,7 @@ class AbstractNetwork(db.Model):
         nets = cls.objects.filter(
             min_ip__lte=ip_int,
             max_ip__gte=ip_int
-        ).order_by('min_ip', '-max_ip')
+        ).order_by('-min_ip', 'max_ip')
         return nets
 
     @property
