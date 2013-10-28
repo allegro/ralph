@@ -2,6 +2,15 @@
 Ralph
 =====
 
+
+.. image:: https://pypip.in/v/ralph/badge.png
+    :target: https://crate.io/packages/ralph/
+    :alt: Latest PyPI version
+
+.. image:: https://pypip.in/d/bob-ajax-selects/badge.png
+    :target: https://crate.io/packages/ralph/
+    :alt: Number of PyPI downloads
+
 .. image:: https://api.travis-ci.org/allegro/ralph.png?branch=master
     :alt: Build Status
     :target: http://api.travis-ci.org/allegro/ralph
