@@ -77,40 +77,42 @@ function annotate_manual(plot, data, plot_title, issuetracker_url, min, max){
         }
         day_and_hour = t;
         o = plot.pointOffset({ x: d, y: plot.getAxes().yaxis.datamax});
-        point_content = Mustache.render(point_text_template, {
-            'comment': data[i].comment
-        });
+        require(['mustache'], function (Mustache) {
+            point_content = Mustache.render(point_text_template, {
+                'comment': data[i].comment
+            });
+            href_link = Mustache.render(
+                    '<a href="/cmdb/changes/change/{{id}}">View</a>',{
+                        'id': obj['id']
+            });
 
-        href_link = Mustache.render(
-                '<a href="/cmdb/changes/change/{{id}}">View</a>',{
-                    'id': obj['id']
-        });
-        external_key = obj.external_key;
-        if(data[i].errors_count>0)
-        {
-            row_class='row_error'
-        }
-        else
-        {
-            row_class=''
-        }
-        $("#changes_table").append(Mustache.render(row_template, {
-            'date': prettyDate(data[i].time),
-            'comment': data[i].comment,
-            'author': data[i].author,
-            'href_link':  href_link,
-            'external_key': external_key,
-            'issuetracker_url': issuetracker_url,
-            'failed_cis': data[i].errors_count,
-            'changed_cis': data[i].success_count,
-            'row_class': row_class
-        }));
+            external_key = obj.external_key;
+            if(data[i].errors_count>0)
+            {
+                row_class='row_error'
+            }
+            else
+            {
+                row_class=''
+            }
+            $("#changes_table").append(Mustache.render(row_template, {
+                'date': prettyDate(data[i].time),
+                'comment': data[i].comment,
+                'author': data[i].author,
+                'href_link':  href_link,
+                'external_key': external_key,
+                'issuetracker_url': issuetracker_url,
+                'failed_cis': data[i].errors_count,
+                'changed_cis': data[i].success_count,
+                'row_class': row_class
+            }));
 
-        $("#placeholder").append(Mustache.render('<div style="position:absolute;left:{{left_position}}px;top:{{top_position}}px">{{{point_content}}}</div>',{
-            'left_position': o.left + 4,
-            'top_position':  o.top,
-            'point_content': point_content
-        }));
+            $("#placeholder").append(Mustache.render('<div style="position:absolute;left:{{left_position}}px;top:{{top_position}}px">{{{point_content}}}</div>',{
+                'left_position': o.left + 4,
+                'top_position':  o.top,
+                'point_content': point_content
+            }));
+        });
     }
 }
 
