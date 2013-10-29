@@ -95,14 +95,15 @@ class IPAddressResource(MResource):
     def dehydrate(self, bundle):
         if not self.fields.get('network'):
             return bundle
-        network = self.fields['network'].fk_resource.instance
-        bundle.data['network_details'] = {
-            'name': network.name if network else '',
-            'address': network.address if network else '',
-            'network_kind': (
-                network.kind.name if network and network.kind else ''
-            ),
-        }
+        if self.fields['network'].fk_resource:
+            network = self.fields['network'].fk_resource.instance
+            bundle.data['network_details'] = {
+                'name': network.name if network else '',
+                'address': network.address if network else '',
+                'network_kind': (
+                    network.kind.name if network and network.kind else ''
+                ),
+            }
         return bundle
 
 
@@ -203,6 +204,11 @@ class DeviceResource(MResource):
         related_name='device',
         full=True,
     )
+
+    def dehydrate(self, bundle):
+        properties = bundle.obj.get_property_set()
+        bundle.data['properties_summary'] = properties
+        return bundle
 
     class Meta:
         excludes = ('save_priorities', 'max_save_priority')
