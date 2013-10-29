@@ -232,7 +232,6 @@ class DictListInfo(ListInfo):
 
 
 class AssetInfo(DefaultInfo):
-    display = operator.attrgetter('name')
     Widget = None
 
     def clean(self, value):
@@ -241,8 +240,8 @@ class AssetInfo(DefaultInfo):
         return value
 
     def Field(self, *args, **kwargs):
-        kwargs.update(help_text="Enter barcode or serial number.")
-        lookup = ('ralph_assets.models', 'AssetLookup')
+        kwargs.update(help_text="Enter barcode, model or serial number.")
+        lookup = ('ralph_assets.api_ralph', 'AssetLookupFuzzy')
         return AutoCompleteSelectField(lookup, *args, **kwargs)
 
 

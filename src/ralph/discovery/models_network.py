@@ -140,12 +140,19 @@ class AbstractNetwork(db.Model):
         nets = cls.objects.filter(
             min_ip__lte=ip_int,
             max_ip__gte=ip_int
-        ).order_by('min_ip', '-max_ip')
+        ).order_by('-min_ip', 'max_ip')
         return nets
 
     @property
     def network(self):
         return ipaddr.IPNetwork(self.address)
+
+    def get_netmask(self):
+        try:
+            mask = self.address.split("/")[1]
+            return int(mask)
+        except (ValueError, IndexError):
+            return None
 
     def clean(self, *args, **kwargs):
         super(AbstractNetwork, self).clean(*args, **kwargs)

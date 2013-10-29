@@ -1483,16 +1483,22 @@ class ScanStatus(BaseMixin, TemplateView):
         forms = []
         devices = find_devices(result)
         for device in devices:
+            device_data = get_device_data(device)
             data = merge_data(
                 result,
                 {
-                    'database': {'device': get_device_data(device)},
+                    'database': {'device': device_data},
                 },
                 only_multiple=True,
             )
             append_merged_proposition(data, device)
             sort_results(data)
             diff = diff_results(data)
+            if 'ralph_assets' in settings.INSTALLED_APPS:
+                if not 'asset' in data and not device_data['asset']:
+                    data['asset'] = {
+                        (u'database',): device_data['asset'],
+                    }
             if post and device.id == device_id:
                 form = DiffForm(
                     data, post, default='database', csv_default='merged',
@@ -1506,14 +1512,14 @@ class ScanStatus(BaseMixin, TemplateView):
             forms.append((device, form))
         data = merge_data(result)
         # Add required fields.
-        if 'ralph_assets' in settings.INSTALLED_APPS:
-            data.update({
-                'asset': {},
-            })
         data['model_name'] = data.get('model_name', {})
         data['type'] = data.get('type', {})
         data['mac_addresses'] = data.get('mac_addresses', {})
         data['serial_number'] = data.get('serial_number', {})
+        if 'ralph_assets' in settings.INSTALLED_APPS:
+            data['asset'] = {
+                (u'database',): device_data['asset'],
+            }
         if post and device_id == 'new':
             form = DiffForm(data, post, default='custom')
         else:
