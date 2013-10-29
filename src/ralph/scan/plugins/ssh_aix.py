@@ -12,7 +12,7 @@ from django.conf import settings
 
 from ralph.util import network
 from ralph.discovery import guessmodel
-from ralph.scan.errors import Error, NotConfiguredError, NoMatchError
+from ralph.scan.errors import NotConfiguredError, NoMatchError
 from ralph.scan.plugins import get_base_result_template
 
 
@@ -89,7 +89,7 @@ def run_ssh_aix(ip):
     finally:
         ssh.close()
     device['model_name'] = '%s AIX' % MODELS.get(machine_model, machine_model)
-    device['ip_addresses'] = [ip]
+    device['system_ip_addresses'] = [ip]
     wwns = []
     sns = []
     stors = []
