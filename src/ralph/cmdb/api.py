@@ -217,6 +217,8 @@ class CIResource(MResource):
         bundle.data['layers'] = []
         for layer in ci.layers.all():
             bundle.data['layers'].append({'name': layer.name, 'id': layer.id})
+        for attribute_value in ci.ciattributevalue_set.all():
+            bundle.data[attribute_value.attribute.name] = attribute_value.value
         return bundle
 
 

@@ -426,6 +426,30 @@ class CIAttributeValue(TimeTrackable):
     value_choice = models.ForeignKey(
         CIValueChoice, null=True, blank=True, verbose_name=_("choice value"))
 
+    TYPE_FIELDS_VALTYPES = {
+        CI_ATTRIBUTE_TYPES.INTEGER.id: ('value_integer', CIValueInteger),
+        CI_ATTRIBUTE_TYPES.STRING.id: ('value_string', CIValueString),
+        CI_ATTRIBUTE_TYPES.FLOAT.id: ('value_float', CIValueFloat),
+        CI_ATTRIBUTE_TYPES.DATE.id: ('value_date', CIValueDate),
+        CI_ATTRIBUTE_TYPES.CHOICE.id: ('value_choice', CIValueChoice),
+    }
+    
+
+    @property
+    def value(self):
+        """The property that find the "right" CIValueX."""
+        value_field, _ =  self.TYPE_FIELDS_VALTYPES[
+            self.attribute.attribute_type]
+        return getattr(self, value_field).value
+
+    @value.setter
+    def value(self, value):
+        value_field, ValueType =  self.TYPE_FIELDS_VALTYPES[
+            self.attribute.attribute_type]
+        val = ValueType(value=value)
+        val.save()
+        setattr(self, value_field, val)
+
 
 class CIOwnershipType(Choices):
     _ = Choices.Choice

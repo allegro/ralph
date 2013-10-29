@@ -24,7 +24,11 @@ from ralph.cmdb.models import (
     CIChangeCMDBHistory,
     CIChange,
     CILayer,
+    CIAttribute,
+    CIAttributeValue,
+    CIValueInteger,
     CI_RELATION_TYPES,
+    CI_ATTRIBUTE_TYPES,
 )
 from ralph.cmdb.models_ci import (
     CIOwnershipType,
@@ -47,6 +51,7 @@ class CMDBApiTest(TestCase):
         self.create_owners()
         self.create_cis()
         self.create_ownerships()
+        self.create_attributes()
         self.create_relations()
         self.data = {
             'format': 'json',
@@ -132,6 +137,23 @@ class CMDBApiTest(TestCase):
         )
         self.relation2.save()
 
+    def create_attributes(self):
+        self.attribute1 = CIAttribute(
+            name = 'Attribute 1',
+            attribute_type = CI_ATTRIBUTE_TYPES.INTEGER,
+            choices = '',
+        )
+        self.attribute1.save()
+        self.attribute1.ci_types.add(self.types[0]),
+        val = CIValueInteger(value=10)
+        val.save()
+        self.attribute_value1 = CIAttributeValue(
+            ci = self.ci1,
+            attribute = self.attribute1,
+            value_integer = val,
+        )
+        self.attribute_value1.save()
+
     def test_layers(self):
         path = "/api/v0.9/cilayers/"
         response = self.client.get(path=path, data=self.data, format='json')
@@ -152,6 +174,7 @@ class CMDBApiTest(TestCase):
         json_string = response.content
         json_data = json.loads(json_string)
         self.assertEqual(json_data['name'], self.layers[1].name)
+
 
     def test_types(self):
         path = "/api/v0.9/citypes/"
@@ -174,6 +197,7 @@ class CMDBApiTest(TestCase):
         json_string = response.content
         json_data = json.loads(json_string)
         self.assertEqual(json_data['name'], self.types[1].name)
+
 
     def test_ci(self):
         path = "/api/v0.9/ci/"
@@ -217,6 +241,21 @@ class CMDBApiTest(TestCase):
             json_data['business_owners'][0]['username'],
             '{}.{}'.format(self.owner2.first_name, self.owner2.last_name)
         )
+
+    def test_get_attribute(self):
+        path = "/api/v0.9/ci/"
+        response = self.client.get(path=path, data=self.data, format='json')
+        json_string = response.content
+        json_data = json.loads(json_string)
+        resource_uris = [ci['resource_uri'] for ci in json_data['objects']]
+
+        response = self.client.get(
+            path=resource_uris[0], data=self.data, format='json',
+        )
+        json_string = response.content
+        json_data = json.loads(json_string)
+        import pdb; pdb.set_trace()
+        self.assertEqual(json_data['Attribute 1'], 10)
 
     def test_relations(self):
         path = "/api/v0.9/cirelation/"
