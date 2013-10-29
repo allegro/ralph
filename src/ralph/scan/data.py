@@ -48,6 +48,7 @@ UNIQUE_FIELDS_FOR_MERGER = {
     'disk_shares': [('device', 'share')],
     'installed_software': [('device', 'path')],
 }
+SCAN_SAVE_PRIORITY = 100
 
 
 def _update_addresses(device, address_data, is_management=False):
@@ -77,6 +78,44 @@ def _update_addresses(device, address_data, is_management=False):
         ipaddress.save(update_last_seen=False)
 
 
+def _get_or_create_model_for_component(
+    model_type,
+    component_data,
+    field_map,
+    forbidden_model_fields=set(),
+):
+    model_fields = {
+        field: component_data[field_map[field]]
+        for field in field_map
+        if all((
+            component_data.get(field_map[field]),
+            field != 'type',
+            field not in forbidden_model_fields,
+        ))
+    }
+    if all((
+        'model_name' in component_data,
+        'name' not in forbidden_model_fields,
+    )):
+        model_fields['name'] = component_data['model_name']
+    if model_type == ComponentType.software:
+        path = model_fields.get('path')
+        family = model_fields.get('family')
+        if path and not family:
+            model_fields['family'] = path
+    model, created = ComponentModel.create(
+        model_type,
+        SCAN_SAVE_PRIORITY,
+        **model_fields)
+    if not created:
+        for field, value in model_fields.items():
+            if field in forbidden_model_fields:
+                continue
+            setattr(model, field, value)
+        model.save(priority=SCAN_SAVE_PRIORITY)
+    return model
+
+
 def _update_component_data(
     device,
     component_data,
@@ -104,6 +143,7 @@ def _update_component_data(
 
     component_ids = []
     for index, data in enumerate(component_data):
+        model = None
         data['device'] = device
         data['index'] = index
         for group in unique_fields:
@@ -124,31 +164,18 @@ def _update_component_data(
             # No matching component found, create a new one
             if model_type is not None or 'type' in data:
                 # If model_type is provided, create the model
-                model = None
                 if model_type is None:
                     try:
                         model_type = ComponentType.from_name(data['type'])
                     except ValueError:
                         model_type = None
                 if model_type is not None:
-                    model_fields = {
-                        field: data[field_map[field]]
-                        for field in field_map
-                        if all((
-                            data.get(field_map[field]),
-                            field != 'type',
-                            field not in forbidden_model_fields,
-                        ))
-                    }
-                    if all((
-                        'model_name' in data,
-                        'name' not in forbidden_model_fields,
-                    )):
-                        model_fields['name'] = data['model_name']
-                    model, created = ComponentModel.create(
+                    model = _get_or_create_model_for_component(
                         model_type,
-                        0,
-                        **model_fields)
+                        data,
+                        field_map,
+                        forbidden_model_fields,
+                    )
                 if model is None:
                     raise ValueError('Unknown model')
                 component = Component(model=model)
@@ -158,7 +185,20 @@ def _update_component_data(
         for field, key in field_map.iteritems():
             if key in data:
                 setattr(component, field, data[key])
-        component.save(priority=100)
+        if model_type is not None and model is None:
+            try:
+                model = _get_or_create_model_for_component(
+                    model_type,
+                    data,
+                    field_map,
+                    forbidden_model_fields,
+                )
+            except AssertionError:
+                pass
+            else:
+                if model:
+                    component.model = model
+        component.save(priority=SCAN_SAVE_PRIORITY)
         component_ids.append(component.id)
     # Delete the components that are no longer current
     for component in Component.objects.filter(
