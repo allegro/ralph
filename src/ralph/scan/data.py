@@ -235,7 +235,7 @@ def get_device_data(device):
     if device.model is not None:
         data['model_name'] = device.model.name
         if device.model.type != DeviceType.unknown:
-            data['type'] = DeviceType.from_id(device.model.type).name
+            data['type'] = DeviceType.from_id(device.model.type).raw
     if device.sn is not None:
         data['serial_number'] = device.sn
     if device.chassis_position:

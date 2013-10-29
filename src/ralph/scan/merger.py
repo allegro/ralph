@@ -57,10 +57,8 @@ def _find_data(rows, lookup):
 
 def merge(component, data, unique_fields, db_plugin_name='database'):
     usefull_data = {}
-    useless_data = {}
     for plugin, plugin_results in data.iteritems():
         for row in plugin_results:
-            is_useless = True
             for unique_group in unique_fields:
                 fields = set([
                     field for field in unique_group
@@ -72,11 +70,6 @@ def merge(component, data, unique_fields, db_plugin_name='database'):
                     if unique_group not in usefull_data[plugin]:
                         usefull_data[plugin][unique_group] = []
                     usefull_data[plugin][unique_group].append(row)
-                    is_useless = False
-            if is_useless:
-                if plugin not in useless_data:
-                    useless_data[plugin] = []
-                useless_data[plugin].append(row)
     plugins = usefull_data.keys()
     try:
         plugins.remove(db_plugin_name)
