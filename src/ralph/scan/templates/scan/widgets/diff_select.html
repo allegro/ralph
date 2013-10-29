@@ -14,7 +14,6 @@
             {% else %}
                 No changes.
             {% endif %}
-
             <div class="btn-group pull-right" data-toggle="buttons-checkbox" style="display: inline-block;">
                 {% if not diff.is_equal and diff.type == "dicts" %}
                     <button type="button" class="btn btn-mini" data-role="show_diff_btn">Display diff</button>
@@ -22,7 +21,6 @@
                 <button type="button" class="btn btn-mini {% if open_advanced_mode %}active{% endif %}" data-role="show_advanced_mode_btn">Advanced mode</button>
             </div>
         </div>
-
         <div class="diff-details" data-role="diff_details">
             {% if not diff.is_equal and diff.type == "dicts" %}
                 <p><strong>Diff:</strong></p>

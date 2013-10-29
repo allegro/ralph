@@ -700,9 +700,14 @@ def find_devices(result):
 
 
 def append_merged_proposition(data, device):
+    """
+    Add `merged data` proposition to other Scan results.
+    """
+
     for component, results in data.iteritems():
         if component not in UNIQUE_FIELDS_FOR_MERGER:
             continue
+        # sanitize data...
         data_to_merge = {}
         for (plugin_name,), plugin_data in results.iteritems():
             data_to_merge[plugin_name] = []
@@ -737,6 +742,10 @@ def _sortkeypicker(keynames):
 
 
 def sort_results(data, ignored_fields=set(['device'])):
+    """
+    Sort resutlts for all components and all plugins.
+    """
+
     for component, results in data.iteritems():
         if component not in UNIQUE_FIELDS_FOR_MERGER:
             continue
@@ -756,6 +765,10 @@ def sort_results(data, ignored_fields=set(['device'])):
 
 
 def _get_matched_row(rows, lookup):
+    """
+    Get matched by `lookup` row from list of rows.
+    """
+
     for index, row in enumerate(rows):
         matched = True
         for field, value in lookup.items():
@@ -768,6 +781,11 @@ def _get_matched_row(rows, lookup):
 
 
 def _compare_dicts(ldict, rdict, ignored_fields=set(['device', 'index'])):
+    """
+    Compare two dicts and return comparison status, diff and set of keys that
+    are available in compared dicts.
+    """
+
     matched = True
     diff = {}
     keys = (set(ldict.keys()) | set(rdict.keys())) - ignored_fields
@@ -790,6 +808,10 @@ def _compare_dicts(ldict, rdict, ignored_fields=set(['device', 'index'])):
 
 
 def _compare_lists(*args):
+    """
+    Compare two or more lists.
+    """
+
     if not args:
         return True
     compared_item = set(args[0])
@@ -800,6 +822,10 @@ def _compare_lists(*args):
 
 
 def _compare_strings(*args):
+    """
+    Compare two or more strings.
+    """
+
     if not args:
         return True
     compared_item = str(args[0]).strip()
@@ -810,6 +836,10 @@ def _compare_strings(*args):
 
 
 def diff_results(data, ignored_fields=set(['device'])):
+    """
+    Make diff from Scan results.
+    """
+
     diffs = {}
     for component, results in data.iteritems():
         diff_result = {

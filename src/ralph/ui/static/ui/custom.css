@@ -212,39 +212,14 @@ img.waiting
     max-height: 250px;
 }
 
-
-.diff-select-widget {}
 .diff-select-widget .diff-details {
     display: none;
     margin-bottom: 25px;
 }
-.diff-select-widget .diff-details .diff-results {
-    background-color: #fff;
-    padding: 0;
-    width: 100%;
-    border: none;
-    border-radius: 0;
-    margin-bottom: 20px;
-}
-.diff-select-widget .diff-details .diff-results span {
-    background-color: #f5f5f5;
-}
-.diff-select-widget .diff-details .diff-results .diff-line-add {
-    background-color: #ddffdd;
-}
-.diff-select-widget .diff-details .diff-results .diff-line-remove {
-    background-color: #ffdddd;
-}
-.diff-select-widget .advanced-mode {
-}
-
-.diff-prev span {
+.diff-select-widget .diff-prev span {
     background-color: #f2dede;
 }
-.diff-next span {
+.diff-select-widget .diff-next span {
     background-color: #dff0d8;
 }
 
-.custom-control-wrapper {
-
-}

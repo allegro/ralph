@@ -1,6 +1,3 @@
-/* jslint browser: true unparam: true */
-/* global require: false */
-
 require(['jquery'], function ($) {
     'use strict';
 
