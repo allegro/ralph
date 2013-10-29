@@ -48,7 +48,7 @@ class GetDeviceDataTest(TestCase):
         data = get_device_data(Device.objects.get(sn='123456789'))
         self.assertEqual(data['serial_number'], '123456789')
         self.assertEqual(data['hostname'], 'ziew')
-        self.assertEqual(data['type'], 'rack_server')
+        self.assertEqual(data['type'], 'rack server')
         self.assertEqual(data['model_name'], 'ziew-X')
 
     def test_position(self):

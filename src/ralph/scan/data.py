@@ -35,6 +35,20 @@ from ralph.discovery.models_device import (
     DeviceType,
     DeviceModel,
 )
+from ralph.scan.merger import merge as merge_component
+
+
+UNIQUE_FIELDS_FOR_MERGER = {
+    'disks': [('serial_number',), ('device', 'mount_point')],
+    'processors': [('device', 'index')],
+    'memory': [('device', 'index')],
+    'fibrechannel_cards': [('physical_id', 'device')],
+    'parts': [('serial_number',)],
+    'disk_exports': [('serial_number',)],
+    'disk_shares': [('device', 'share')],
+    'installed_software': [('device', 'path')],
+}
+SCAN_SAVE_PRIORITY = 100
 
 
 def _update_addresses(device, address_data, is_management=False):
@@ -64,6 +78,44 @@ def _update_addresses(device, address_data, is_management=False):
         ipaddress.save(update_last_seen=False)
 
 
+def _get_or_create_model_for_component(
+    model_type,
+    component_data,
+    field_map,
+    forbidden_model_fields=set(),
+):
+    model_fields = {
+        field: component_data[field_map[field]]
+        for field in field_map
+        if all((
+            component_data.get(field_map[field]),
+            field != 'type',
+            field not in forbidden_model_fields,
+        ))
+    }
+    if all((
+        'model_name' in component_data,
+        'name' not in forbidden_model_fields,
+    )):
+        model_fields['name'] = component_data['model_name']
+    if model_type == ComponentType.software:
+        path = model_fields.get('path')
+        family = model_fields.get('family')
+        if path and not family:
+            model_fields['family'] = path
+    model, created = ComponentModel.create(
+        model_type,
+        SCAN_SAVE_PRIORITY,
+        **model_fields)
+    if not created:
+        for field, value in model_fields.items():
+            if field in forbidden_model_fields:
+                continue
+            setattr(model, field, value)
+        model.save(priority=SCAN_SAVE_PRIORITY)
+    return model
+
+
 def _update_component_data(
     device,
     component_data,
@@ -91,6 +143,7 @@ def _update_component_data(
 
     component_ids = []
     for index, data in enumerate(component_data):
+        model = None
         data['device'] = device
         data['index'] = index
         for group in unique_fields:
@@ -111,31 +164,18 @@ def _update_component_data(
             # No matching component found, create a new one
             if model_type is not None or 'type' in data:
                 # If model_type is provided, create the model
-                model = None
                 if model_type is None:
                     try:
                         model_type = ComponentType.from_name(data['type'])
                     except ValueError:
                         model_type = None
                 if model_type is not None:
-                    model_fields = {
-                        field: data[field_map[field]]
-                        for field in field_map
-                        if all((
-                            data.get(field_map[field]),
-                            field != 'type',
-                            field not in forbidden_model_fields,
-                        ))
-                    }
-                    if all((
-                        'model_name' in data,
-                        'name' not in forbidden_model_fields,
-                    )):
-                        model_fields['name'] = data['model_name']
-                    model, created = ComponentModel.create(
+                    model = _get_or_create_model_for_component(
                         model_type,
-                        0,
-                        **model_fields)
+                        data,
+                        field_map,
+                        forbidden_model_fields,
+                    )
                 if model is None:
                     raise ValueError('Unknown model')
                 component = Component(model=model)
@@ -145,7 +185,20 @@ def _update_component_data(
         for field, key in field_map.iteritems():
             if key in data:
                 setattr(component, field, data[key])
-        component.save(priority=100)
+        if model_type is not None and model is None:
+            try:
+                model = _get_or_create_model_for_component(
+                    model_type,
+                    data,
+                    field_map,
+                    forbidden_model_fields,
+                )
+            except AssertionError:
+                pass
+            else:
+                if model:
+                    component.model = model
+        component.save(priority=SCAN_SAVE_PRIORITY)
         component_ids.append(component.id)
     # Delete the components that are no longer current
     for component in Component.objects.filter(
@@ -182,7 +235,7 @@ def get_device_data(device):
     if device.model is not None:
         data['model_name'] = device.model.name
         if device.model.type != DeviceType.unknown:
-            data['type'] = DeviceType.from_id(device.model.type).name
+            data['type'] = DeviceType.from_id(device.model.type).raw
     if device.sn is not None:
         data['serial_number'] = device.sn
     if device.chassis_position:
@@ -418,9 +471,7 @@ def set_device_data(device, data):
                 'mac': 'mac',
                 'device': 'device',
             },
-            [
-                ('mac',),
-            ],
+            [('mac',)],
             None,
         )
     if 'management_ip_addresses' in data:
@@ -650,4 +701,235 @@ def find_devices(result):
         db.Q(sn__in=serials) |
         db.Q(ethernet__mac__in=macs)
     ).distinct()
+
+
+def append_merged_proposition(data, device):
+    """
+    Add `merged data` proposition to other Scan results.
+    """
+
+    for component, results in data.iteritems():
+        if component not in UNIQUE_FIELDS_FOR_MERGER:
+            continue
+        # sanitize data...
+        data_to_merge = {}
+        for (plugin_name,), plugin_data in results.iteritems():
+            data_to_merge[plugin_name] = []
+            for index, row in enumerate(plugin_data):
+                row.update({
+                    'device': device.pk,
+                    'index': index,
+                })
+                for key, value in row.items():
+                    if value is None:
+                        del row[key]
+                data_to_merge[plugin_name].append(row)
+        merged = merge_component(
+            component,
+            data_to_merge,
+            UNIQUE_FIELDS_FOR_MERGER[component],
+        )
+        if merged:
+            for row in merged:
+                del row['device']
+            data[component][('merged',)] = merged
+
+
+def _sortkeypicker(keynames):
+    def getit(adict):
+        composite = []
+        for key in keynames:
+            if key in adict:
+                composite.append(adict[key])
+        return composite
+    return getit
+
+
+def sort_results(data, ignored_fields=set(['device'])):
+    """
+    Sort resutlts for all components and all plugins.
+    """
+
+    for component, results in data.iteritems():
+        if component not in UNIQUE_FIELDS_FOR_MERGER:
+            continue
+        for (plugin_name,), plugin_data in results.iteritems():
+            keynames = set()
+            for fields_group in UNIQUE_FIELDS_FOR_MERGER[component]:
+                for field in fields_group:
+                    if field in ignored_fields:
+                        continue
+                    keynames.add(field)
+            if keynames:
+                plugin_data = sorted(
+                    plugin_data,
+                    key=_sortkeypicker(keynames),
+                )
+            data[component][(plugin_name,)] = plugin_data
+
+
+def _get_matched_row(rows, lookup):
+    """
+    Get matched by `lookup` row from list of rows.
+    """
+
+    for index, row in enumerate(rows):
+        matched = True
+        for field, value in lookup.items():
+            if str(row.get(field, '')).strip() != value:
+                matched = False
+                break
+        if matched:
+            return index, row
+    return None, None
+
+
+def _compare_dicts(ldict, rdict, ignored_fields=set(['device', 'index'])):
+    """
+    Compare two dicts and return comparison status, diff and set of keys that
+    are available in compared dicts.
+    """
+
+    matched = True
+    diff = {}
+    keys = (set(ldict.keys()) | set(rdict.keys())) - ignored_fields
+    for key in keys:
+        lvalue = str(ldict.get(key, '')).strip()
+        rvalue = str(rdict.get(key, '')).strip()
+        if lvalue and not rvalue:
+            matched = False
+            diff[key] = (b'-', lvalue, '')
+        elif not lvalue and rvalue:
+            matched = False
+            diff[key] = (b'+', '', rvalue)
+        else:
+            if lvalue == rvalue:
+                diff[key] = (b'', lvalue, rvalue)
+            else:
+                matched = False
+                diff[key] = (b'?', lvalue, rvalue)
+    return matched, diff, keys
+
+
+def _compare_lists(*args):
+    """
+    Compare two or more lists.
+    """
+
+    if not args:
+        return True
+    compared_item = set(args[0])
+    for item in args[1:]:
+        if compared_item - set(item):
+            return False
+    return True
+
+
+def _compare_strings(*args):
+    """
+    Compare two or more strings.
+    """
+
+    if not args:
+        return True
+    compared_item = str(args[0]).strip()
+    for item in args[1:]:
+        if compared_item != str(item).strip():
+            return False
+    return True
+
+
+def diff_results(data, ignored_fields=set(['device'])):
+    """
+    Make diff from Scan results.
+    """
+
+    diffs = {}
+    for component, results in data.iteritems():
+        diff_result = {
+            'is_equal': False,
+            'meta': {},
+        }
+        if component not in UNIQUE_FIELDS_FOR_MERGER:
+            if isinstance(results[('database',)], list):
+                diff_result.update({
+                    'is_equal': _compare_lists(*tuple(results.values())),
+                    'type': 'lists',
+                })
+            else:
+                diff_result.update({
+                    'is_equal': _compare_strings(*tuple(results.values())),
+                    'type': 'strings',
+                })
+        else:
+            diff_result.update({
+                'type': 'dicts',
+                'diff': [],
+            })
+            database = results.get(('database',), [])
+            merged = results.get(('merged',), [])
+            database_parsed_rows = set()
+            merged_parsed_rows = set()
+            headers = set()
+            add_items_count = 0
+            remove_items_count = 0
+            change_items_count = 0
+            for index, items in enumerate(database):
+                for field_group in UNIQUE_FIELDS_FOR_MERGER[component]:
+                    if index in database_parsed_rows:
+                        break
+                    lookup = {}
+                    for field in field_group:
+                        if field in ignored_fields:
+                            continue
+                        field_db_value = str(items.get(field, '')).strip()
+                        if not field_db_value:
+                            continue
+                        lookup[field] = field_db_value
+                    if lookup:
+                        matched_index, matched_row = _get_matched_row(
+                            merged,
+                            lookup,
+                        )
+                        if matched_row:
+                            database_parsed_rows.add(index)
+                            merged_parsed_rows.add(matched_index)
+                            status, row_diff, rows_keys = _compare_dicts(
+                                items,
+                                matched_row,
+                            )
+                            diff_result['diff'].append((
+                                b'?' if not status else b'',
+                                items,
+                                row_diff,
+                            ))
+                            if not status:
+                                change_items_count += 1
+                            headers |= rows_keys
+                if index not in database_parsed_rows:
+                    diff_result['diff'].append(('-', items))
+                    remove_items_count += 1
+                    headers |= set(items.keys())
+            for index, items in enumerate(merged):
+                if index not in merged_parsed_rows:
+                    diff_result['diff'].append(('+', items))
+                    add_items_count += 1
+                    headers |= set(items.keys())
+            headers -= ignored_fields
+            headers -= {'index'}
+            diff_result.update({
+                'is_equal': all((
+                    add_items_count == 0,
+                    remove_items_count == 0,
+                    change_items_count == 0,
+                )),
+                'meta': {
+                    'add_items_count': add_items_count,
+                    'remove_items_count': remove_items_count,
+                    'change_items_count': change_items_count,
+                    'headers': headers,
+                },
+            })
+        diffs[component] = diff_result
+    return diffs
 
