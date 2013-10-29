@@ -415,9 +415,10 @@ def handle_facts_megaraid(facts):
     for (controller_handle, disk_handle), disk in disks.iteritems():
         try:
             disc_data = _handle_inquiry_data(
-                    disk.get('inquiry_data', ''),
-                    controller_handle, disk_handle
-                )
+                disk.get('inquiry_data', ''),
+                controller_handle,
+                disk_handle,
+            )
         except ValueError as e:
             logger.warning("Unable to parse disk {}".format(disk))
             continue
