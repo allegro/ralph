@@ -35,7 +35,7 @@ setup (
         'bob-ajax-selects==1.3.1',
         'django-bob==1.5.9',
         'django-powerdns-dnssec==0.9.3',
-        'django-tastypie==0.9.14',
+        'django-tastypie==0.10.0',
         'django-rq==0.4.5',
         'django==1.4.9',
         'dnspython==1.11.0',
