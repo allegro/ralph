@@ -105,7 +105,8 @@ class CIEditForm(DependencyForm, forms.ModelForm):
         for attribute in CIAttribute.objects.all():
             field_name = self._get_custom_attribute_field_name(attribute)
             FieldType = self.CUSTOM_ATTRIBUTE_FIELDS[attribute.attribute_type]
-            self.fields[field_name] = FieldType(label=attribute.name )
+            self.fields[field_name] = FieldType(
+                label=attribute.name, required=False)
             self.dependencies.append(Dependency(
                 field_name, 'type',
                 list(attribute.ci_types.all()), SHOW
@@ -139,7 +140,7 @@ class CIEditForm(DependencyForm, forms.ModelForm):
         for attribute in CIAttribute.objects.all():
             attribute_name = self._get_custom_attribute_field_name(attribute)
             value = self.cleaned_data.get(attribute_name)
-            if value is not None:
+            if value:
                 attribute_value = CIAttributeValue(
                     ci=instance, attribute=attribute)
                 attribute_value.save()
