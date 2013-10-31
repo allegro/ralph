@@ -129,7 +129,7 @@ class CIEditForm(DependencyForm, forms.ModelForm):
                 if attribute_value is not None:
                     field_name = self._get_custom_attribute_field_name(
                         attribute)
-                    self[field_name] = attribute_value.value
+                    self[field_name].field.initial = attribute_value.value
 
     def save(self, *args, **kwargs):
         instance = super(CIEditForm, self).save(*args, **kwargs)

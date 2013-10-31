@@ -450,7 +450,10 @@ class CIAttributeValue(TimeTrackable):
         value_field, _ = self.TYPE_FIELDS_VALTYPES[
             self.attribute.attribute_type
         ]
-        return getattr(self, value_field).value
+        value_object = getattr(self, value_field)
+        if value_object is None:
+            return None
+        return value_object.value
 
     @value.setter
     def value(self, value):
@@ -460,6 +463,7 @@ class CIAttributeValue(TimeTrackable):
         val = ValueType(value=value)
         val.save()
         setattr(self, value_field, val)
+        self.save()
 
 
 class CIOwnershipType(Choices):
