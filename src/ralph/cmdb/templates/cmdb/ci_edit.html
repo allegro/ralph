@@ -1,9 +1,10 @@
 {% extends 'cmdb/ci_details.html' %}
 {% load icons %}
 {% load query %}
+{% load bob %}
 
 {% block ci_content %}
-<form id='edit_form' class="form form-inline" method="POST">
+<form id='edit_form' class="form form-inline" method="POST" {% dependency_data form %}>
     <div class="span6">
         {% if editable %}
             {% csrf_token %}
@@ -46,9 +47,6 @@
                 <span><h3>Impact report</h3></span>
                 <a target="_blank" href='/cmdb/graphs?ci={{ ci_id }}' class="btn btn-info btn-large">Run impact report</a>
             {% endif %}
-            <span><h3>Custom Attributes</h3></span>
-            {% include 'cmdb/include_attributes.html' %}
-            <hr>
         {% endif %}
 
         <div class="row-fluid">
