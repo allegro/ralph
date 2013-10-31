@@ -402,7 +402,6 @@ class Add(BaseCMDBView):
                 if not model.content_object:
                     model.uid = "%s-%s" % ('mm', model.id)
                     model.save(user=self.request.user)
-
                 messages.success(self.request, _("Changes saved."))
                 return HttpResponseRedirect('/cmdb/ci/edit/' + unicode(model.id))
             else:
