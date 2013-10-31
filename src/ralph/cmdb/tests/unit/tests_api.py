@@ -155,7 +155,8 @@ class CMDBApiTest(TestCase):
         json_string = response.content
         json_data = json.loads(json_string)
         resource_uris = [
-            ci_layer['resource_uri'] for ci_layer in json_data['objects']]
+            ci_layer['resource_uri'] for ci_layer in json_data['objects']
+        ]
 
         response = self.client.get(
             path=resource_uris[0], data=self.data, format='json',
@@ -177,7 +178,8 @@ class CMDBApiTest(TestCase):
         json_string = response.content
         json_data = json.loads(json_string)
         resource_uris = [
-            ci_type['resource_uri'] for ci_type in json_data['objects']]
+            ci_type['resource_uri'] for ci_type in json_data['objects']
+        ]
         response = self.client.get(
             path=resource_uris[0], data=self.data, format='json',
         )

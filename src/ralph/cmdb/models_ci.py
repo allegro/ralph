@@ -208,7 +208,8 @@ class CIAttribute(TimeTrackable):
     def clean(self):
         validation_msg = (
             'Options: Invalid format! Valid  example is: 1.Option one|2.'
-            'Option two')
+            'Option two'
+        )
 
         def valid_chunk(chunk):
             try:
@@ -283,12 +284,15 @@ class CI(TimeTrackable):
     # not required, since auto-save
     name = models.CharField(max_length=256, verbose_name=_("CI name"))
     business_service = models.BooleanField(
-        verbose_name=_("Business service"), default=False)
+        verbose_name=_("Business service"), default=False
+    )
     technical_service = models.BooleanField(
-        verbose_name=_("Technical service"), default=True)
+        verbose_name=_("Technical service"), default=True
+    )
     pci_scope = models.BooleanField(default=False)
     layers = models.ManyToManyField(
-        CILayer, verbose_name=_("layers containing given CI"))
+        CILayer, verbose_name=_("layers containing given CI")
+    )
     barcode = models.CharField(
         verbose_name=_("barcode"), max_length=255, unique=True, null=True,
         default=None)
@@ -303,10 +307,12 @@ class CI(TimeTrackable):
     content_object = generic.GenericForeignKey('content_type', 'object_id')
     state = models.IntegerField(
         max_length=11, choices=CI_STATE_TYPES(),
-        default=CI_STATE_TYPES.INACTIVE.id, verbose_name=_("state"))
+        default=CI_STATE_TYPES.INACTIVE.id, verbose_name=_("state")
+    )
     status = models.IntegerField(
         max_length=11, choices=CI_STATUS_TYPES(),
-        default=CI_STATUS_TYPES.REFERENCE.id, verbose_name=_("status"))
+        default=CI_STATUS_TYPES.REFERENCE.id, verbose_name=_("status")
+    )
     type = models.ForeignKey(CIType)
     zabbix_id = models.CharField(
         null=True,
@@ -318,7 +324,8 @@ class CI(TimeTrackable):
     added_manually = models.BooleanField(default=False)
     owners = models.ManyToManyField(
         'CIOwner', through='CIOwnership',
-        verbose_name=_("configuration item owners"))
+        verbose_name=_("configuration item owners")
+    )
 
     class Meta:
         unique_together = ('content_type', 'object_id')
@@ -412,13 +419,17 @@ class CIAttributeValue(TimeTrackable):
     data according to type used """
     value_integer = models.ForeignKey(
         CIValueInteger, null=True, blank=True,
-        verbose_name=_("integer value "))
+        verbose_name=_("integer value ")
+    )
     value_string = models.ForeignKey(
-        CIValueString, null=True, blank=True, verbose_name=_("string value"))
+        CIValueString, null=True, blank=True, verbose_name=_("string value")
+    )
     value_date = models.ForeignKey(
-        CIValueDate, null=True, blank=True, verbose_name=_("date value"))
+        CIValueDate, null=True, blank=True, verbose_name=_("date value")
+    )
     value_float = models.ForeignKey(
-        CIValueFloat, null=True, blank=True, verbose_name=_("float value"))
+        CIValueFloat, null=True, blank=True, verbose_name=_("float value")
+    )
 
     value_choice = models.ForeignKey(
         CIValueChoice, null=True, blank=True, verbose_name=_("choice value"))
@@ -435,7 +446,8 @@ class CIAttributeValue(TimeTrackable):
     def value(self):
         """The property that find the "right" CIValueX."""
         value_field, _ = self.TYPE_FIELDS_VALTYPES[
-            self.attribute.attribute_type]
+            self.attribute.attribute_type
+        ]
         return getattr(self, value_field).value
 
     @value.setter
@@ -463,7 +475,8 @@ class CIOwnership(TimeTrackable):
 
     def __unicode__(self):
         return '%s is %s of %s ' % (
-            self.owner, self.get_type_display(), self.ci)
+            self.owner, self.get_type_display(), self.ci
+        )
 
 
 class CIOwner(TimeTrackable, WithConcurrentGetOrCreate):
