@@ -18,6 +18,15 @@ Change Log
 
 * New asynchronous report logic
 
+* New column in assets - is discovered
+
+* New search field in devices - deprecation kind
+
+* New search field in assets - deprecation rate
+
+* Some changes in load balancer addresses view
+
+
 1.2.6
 ~~~~~
 Released on August 08, 2013
