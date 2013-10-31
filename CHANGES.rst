@@ -1,6 +1,12 @@
 Change Log
 ----------
 
+1.2.7
+~~~~~
+Released on October 31, 2013
+
+This is as bugfix release.
+
 * Added new search field in device - Deprecation (based on Device.deprecation_kind)
 
 * Added Asset tab for views with informations about devices
@@ -16,7 +22,7 @@ Change Log
 
 * Fixed ``http`` plugin -  recognition Cisco ASDM 7.1
 
-* New asynchronous report logic
+* Improved asynchronous report logic
 
 * New column in assets - is discovered
 
