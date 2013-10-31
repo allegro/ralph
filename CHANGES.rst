@@ -18,8 +18,6 @@ Change Log
 
 * New asynchronous report logic
 
-* Scan module - new discovery
-
 * New column in assets - is discovered
 
 * New search field in devices - deprecation kind
