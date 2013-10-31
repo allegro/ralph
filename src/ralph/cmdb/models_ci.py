@@ -453,7 +453,8 @@ class CIAttributeValue(TimeTrackable):
     @value.setter
     def value(self, value):
         value_field, ValueType = self.TYPE_FIELDS_VALTYPES[
-            self.attribute.attribute_type]
+            self.attribute.attribute_type
+        ]
         val = ValueType(value=value)
         val.save()
         setattr(self, value_field, val)
