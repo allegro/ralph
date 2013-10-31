@@ -14,8 +14,9 @@ Change Log
 
 * Venture's deletion in admin is now disabled; name/symbol cannot be changed once verified (schema migration on ``Venture`` model).
 
-
 * Fixed ``http`` plugin -  recognition Cisco ASDM 7.1
+
+* New asynchronous report logic
 
 1.2.6
 ~~~~~
