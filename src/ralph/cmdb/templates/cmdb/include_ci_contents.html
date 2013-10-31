@@ -7,6 +7,7 @@
 </style>
 {% load icons %}
 {% load query %}
+{% load bob %}
 
   {% if ci_id %}{{ breadcrumb }}{% endif %}
 
@@ -15,7 +16,7 @@
         <br>
   {% endif %}
 
-  <form id='edit_form' class="form form-inline" method="POST">
+  <form id='edit_form' class="form form-inline" method="POST" {% dependency_data form %}>
       {% if tabs_left %}
           <div class='tabbable tabs-left'>
       {% else %}

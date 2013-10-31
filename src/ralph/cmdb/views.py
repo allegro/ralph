@@ -411,13 +411,13 @@ class Add(BaseCMDBView):
                 owners_t = self.form.data.getlist('base-technical_owners')
                 for owner in owners_t:
                     own = CIOwnership(ci=model,
-                                      owner=CIOwner.objects.get(pk=owner[0]),
+                                      owner=CIOwner.objects.get(pk=owner),
                                       type=1,)
                     own.save()
                 owners_b = self.form.data.getlist('base-business_owners')
                 for owner in owners_b:
                     own = CIOwnership(ci=model,
-                                      owner=CIOwner.objects.get(pk=owner[0]),
+                                      owner=CIOwner.objects.get(pk=owner),
                                       type=2,)
                     own.save()
                 messages.success(self.request, _("Changes saved."))

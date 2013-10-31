@@ -9,13 +9,14 @@ from __future__ import unicode_literals
 from ajax_select import make_ajax_field
 from ajax_select.fields import AutoCompleteSelectField
 
+from bob.forms.dependency import Dependency, DependencyForm, SHOW
 from django import forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
 
 from ralph.cmdb import models
 from ralph.cmdb import models as db
 from ralph.cmdb.models import CIType
-from ralph.cmdb.models_ci import CIOwner
+from ralph.cmdb.models_ci import CIOwner, CIAttribute, CI_ATTRIBUTE_TYPES
 from ralph.ui.widgets import (
     ReadOnlyWidget,
     ReadOnlyMultipleChoiceWidget,
@@ -49,7 +50,17 @@ class CIReportsParamsForm(forms.Form):
     kind = forms.CharField(label='', widget=forms.HiddenInput())
 
 
-class CIEditForm(forms.ModelForm):
+class CIEditForm(DependencyForm, forms.ModelForm):
+
+    CUSTOM_ATTRIBUTE_FIELDS = {
+        CI_ATTRIBUTE_TYPES.INTEGER.id: forms.IntegerField,
+        CI_ATTRIBUTE_TYPES.STRING.id: forms.CharField,
+        CI_ATTRIBUTE_TYPES.DATE.id: forms.DateField,
+        CI_ATTRIBUTE_TYPES.FLOAT.id: forms.FloatField,
+        CI_ATTRIBUTE_TYPES.CHOICE.id: forms.ChoiceField,
+
+    }
+
     class Meta:
         model = models.CI
         fields = (
@@ -83,6 +94,18 @@ class CIEditForm(forms.ModelForm):
         required=False
     )
 
+    def _add_customattribute_fields(self):
+        self.dependencies = self.dependencies or []
+        attributes = CIAttribute.objects.all()
+        for attribute in attributes:
+            field_name = 'attribute_{0}'.format(attribute.id)
+            FieldType = self.CUSTOM_ATTRIBUTE_FIELDS[attribute.attribute_type]
+            self.fields[field_name] = FieldType(label=attribute.name )
+            self.dependencies.append(Dependency(
+                field_name, 'type',
+                list(attribute.ci_types.all()), SHOW
+            ))
+    
     def __init__(self, *args, **kwargs):
         super(CIEditForm, self).__init__(*args, **kwargs)
         if len(self.initial):
@@ -104,6 +127,7 @@ class CIEditForm(forms.ModelForm):
                         pass
             self['technical_owners'].field.initial = technical_owners
             self['business_owners'].field.initial = bussines_owners
+        self._add_customattribute_fields()
 
 
 class CIViewForm(CIEditForm):
