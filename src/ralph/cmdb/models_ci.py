@@ -505,6 +505,29 @@ class CIOwnershipDescriptor(object):
 CI.business_owners = CIOwnershipDescriptor(CIOwnershipType.business.id)
 CI.technical_owners = CIOwnershipDescriptor(CIOwnershipType.technical.id)
 
+class CIOwnershipDescriptor(object):
+    """Descriptor simplifying the access to CI owners."""
+
+    def __init__(self, type):
+        self.type = type
+
+    def __get__(self, inst, cls):
+        if inst is None:
+            return self
+        return inst.owners.filter(ciownership__type=self.type)
+
+    def __set__(self, inst, owners):
+        self.__del__(inst)
+        for owner in owners:
+            own = CIOwnership(ci=inst, owner=owner, type=self.type)
+            own.save()
+
+    def __del__(self, inst):
+        CIOwnership.objects.filter(ci=inst, type=self.type).delete()
+
+CI.business_owners = CIOwnershipDescriptor(CIOwnershipType.business.id)
+CI.technical_owners = CIOwnershipDescriptor(CIOwnershipType.technical.id)
+
 
 class CIOwner(TimeTrackable, WithConcurrentGetOrCreate):
     first_name = models.CharField(max_length=50)

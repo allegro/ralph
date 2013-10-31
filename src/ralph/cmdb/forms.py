@@ -16,7 +16,9 @@ from django.contrib.admin.widgets import FilteredSelectMultiple
 from ralph.cmdb import models
 from ralph.cmdb import models as db
 from ralph.cmdb.models import CIType
-from ralph.cmdb.models_ci import CIOwner, CIAttribute, CI_ATTRIBUTE_TYPES
+from ralph.cmdb.models_ci import (
+    CIOwner, CIAttribute, CI_ATTRIBUTE_TYPES, CIAttributeValue
+)
 from ralph.ui.widgets import (
     ReadOnlyWidget,
     ReadOnlyMultipleChoiceWidget,
