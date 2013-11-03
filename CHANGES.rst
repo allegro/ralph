@@ -1,6 +1,12 @@
 Change Log
 ----------
 
+1.2.7
+~~~~~
+Released on October 31, 2013
+
+This is as bugfix release.
+
 * Added new search field in device - Deprecation (based on Device.deprecation_kind)
 
 * Added Asset tab for views with informations about devices
@@ -14,8 +20,18 @@ Change Log
 
 * Venture's deletion in admin is now disabled; name/symbol cannot be changed once verified (schema migration on ``Venture`` model).
 
-
 * Fixed ``http`` plugin -  recognition Cisco ASDM 7.1
+
+* Improved asynchronous report logic
+
+* New column in assets - is discovered
+
+* New search field in devices - deprecation kind
+
+* New search field in assets - deprecation rate
+
+* Some changes in load balancer addresses view
+
 
 1.2.6
 ~~~~~
