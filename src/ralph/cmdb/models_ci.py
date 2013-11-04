@@ -504,7 +504,7 @@ class CIOwnershipDescriptor(object):
             own = CIOwnership(ci=inst, owner=owner, type=self.type)
             own.save()
 
-    def __del__(self, inst):
+    def __delete__(self, inst):
         CIOwnership.objects.filter(ci=inst, type=self.type).delete()
 
 
