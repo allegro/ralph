@@ -105,8 +105,15 @@ class CIEditForm(DependencyForm, forms.ModelForm):
         for attribute in CIAttribute.objects.all():
             field_name = self._get_custom_attribute_field_name(attribute)
             FieldType = self.CUSTOM_ATTRIBUTE_FIELDS[attribute.attribute_type]
-            self.fields[field_name] = FieldType(
-                label=attribute.name, required=False)
+            kwargs = {
+                'label': attribute.name, 'required': False
+            }
+            if attribute.attribute_type == CI_ATTRIBUTE_TYPES.CHOICE:
+                kwargs['choices'] = [
+                    (x.split('.')[0], x.split('.')[-1])
+                    for x in attribute.choices.split('|')
+                ]
+            self.fields[field_name] = FieldType(**kwargs)
             self.dependencies.append(Dependency(
                 field_name, 'type',
                 list(attribute.ci_types.all()), SHOW
