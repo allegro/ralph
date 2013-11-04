@@ -41,14 +41,7 @@ from ralph.cmdb.forms import (
     CIRelationEditForm,
     SearchImpactForm,
 )
-from ralph.cmdb.models_ci import (
-    CIOwner,
-    CIOwnership,
-    CILayer,
-    CI_TYPES,
-    CI,
-    CIRelation,
-)
+from ralph.cmdb.models_ci import CILayer, CI_TYPES, CI, CIRelation
 import ralph.cmdb.models as db
 from ralph.cmdb.graphs import ImpactCalculator
 from ralph.ui.views.common import Base
@@ -402,7 +395,9 @@ class Add(BaseCMDBView):
                     model.uid = "%s-%s" % ('mm', model.id)
                     model.save(user=self.request.user)
                 messages.success(self.request, _("Changes saved."))
-                return HttpResponseRedirect('/cmdb/ci/edit/' + unicode(model.id))
+                return HttpResponseRedirect(
+                    '/cmdb/ci/edit/' + unicode(model.id)
+                )
             else:
                 messages.error(self.request, _("Correct the errors."))
 
@@ -634,8 +629,10 @@ class MainCIEdit(BaseCIDetails):
             return HttpResponseRedirect('/cmdb/ci/jira_ci_unknown')
         if ci_id:
             self.ci = get_object_or_404(db.CI, id=ci_id)
-            if (self.ci.content_object and
-                self.ci.content_type.name == 'device'):
+            if (
+                self.ci.content_object and
+                self.ci.content_type.name == 'device'
+            ):
                 self.show_in_ralph = True
                 self.ralph_ci_link = "/ui/search/info/%d" % (
                     self.ci.content_object.id
@@ -656,7 +653,7 @@ class MainCIEdit(BaseCIDetails):
             self.form = self.Form(
                 self.request.POST, **self.form_options
             )
-            if self.form.is_valid() :
+            if self.form.is_valid():
                 model = self.form.save(commit=False)
                 model.id = self.ci.id
                 model.save(user=self.request.user)
@@ -1119,9 +1116,6 @@ class CIProblemsEdit(BaseCIDetails, DataTableMixin):
                 filters=add_filter(self.request.GET, ci=self.ci),
             )
         )
-
-
-
         return super(CIProblemsEdit, self).get(*args, **kwargs)
 
 
@@ -1297,8 +1291,8 @@ class Search(BaseCMDBView):
         DEFAULT_COLS = (
             {'label': 'Type', 'name': 'type', 'sortable': 1},
             {'label': 'Layer', 'name': 'layers', 'sortable': 1},
-            {'label': 'Venture', 'name': 'Venture',},
-            {'label': 'Service', 'name': 'Service',},
+            {'label': 'Venture', 'name': 'Venture'},
+            {'label': 'Service', 'name': 'Service'},
             {'label': 'PCI Scope', 'name': 'pci_scope', 'sortable': 1},
         )
         table_header = (
@@ -1311,17 +1305,17 @@ class Search(BaseCMDBView):
             table_header += (
                 {'label': 'Type', 'name': 'type'},
                 {'label': 'Layer', 'name': 'layers', 'sortable': 1},
-                {'label': 'Venture', 'name': 'Venture',},
-                {'label': 'Service', 'name': 'Service',},
+                {'label': 'Venture', 'name': 'Venture'},
+                {'label': 'Service', 'name': 'Service'},
                 {'label': 'PCI Scope', 'name': 'pci_scope', 'sortable': 1},
             )
         elif type_ == CI_TYPES.DEVICE.id:
             table_header += (
                 {'label': 'Parent Device', 'name': 'Parent Device'},
-                {'label': 'Network', 'name': 'Network',},
-                {'label': 'DC', 'name': 'DC',},
-                {'label': 'Venture', 'name': 'Venture',},
-                {'label': 'Service', 'name': 'Service',},
+                {'label': 'Network', 'name': 'Network'},
+                {'label': 'DC', 'name': 'DC'},
+                {'label': 'Venture', 'name': 'Venture'},
+                {'label': 'Service', 'name': 'Service'},
                 {'label': 'PCI Scope', 'name': 'pci_scope', 'sortable': 1},
             )
         elif type_ == CI_TYPES.PROCEDURE.id:
@@ -1337,17 +1331,17 @@ class Search(BaseCMDBView):
         elif type_ == CI_TYPES.VENTUREROLE.id:
             table_header += (
                 {'label': 'Parent venture', 'name': 'Parent venture'},
-                {'label': 'Service', 'name': 'Service',},
+                {'label': 'Service', 'name': 'Service'},
                 {'label': 'Technical Owner', 'name': 'Technical Owner'},
             )
         elif type_ == CI_TYPES.BUSINESSLINE.id:
-            table_header += (
-                {'label': 'Services contained',
-                 'name': 'Services contained',},
-            )
+            table_header += ({
+                'label': 'Services contained',
+                'name': 'Services contained',
+            },)
         elif type_ == CI_TYPES.SERVICE.id:
             table_header += (
-                {'label': 'Contained Venture','name': 'Contained Venture'},
+                {'label': 'Contained Venture', 'name': 'Contained Venture'},
                 {'label': 'Business Line', 'name': 'Business Line'},
                 {'label': 'Technical Owner', 'name': 'Technical Owner'},
                 {'label': 'Business Owner', 'name': 'Business Owner'},
@@ -1358,15 +1352,13 @@ class Search(BaseCMDBView):
             table_header += DEFAULT_COLS
         elif type_ == CI_TYPES.NETWORKTERMINATOR.id:
             table_header += DEFAULT_COLS
-        table_header += (
-            {'label': 'Operations', 'name': 'Operations',},
-        )
+        table_header += ({'label': 'Operations', 'name': 'Operations'},)
         return table_header
 
     def get_name(self, i, icon):
-        return mark_safe('<a href="./ci/view/%s"> <i class="fugue-icon %s">'
-                         '</i> %s</a>' % (
-            escape(i.id), escape(icon), escape(i.name))
+        return mark_safe(
+            '<a href="./ci/view/%s"> <i class="fugue-icon %s"></i> %s</a>' %
+            (escape(i.id), escape(icon), escape(i.name))
         )
 
     def get_uid(self, i):
@@ -1402,8 +1394,10 @@ class Search(BaseCMDBView):
         return dc
 
     def get_owners(self, i, filter):
-        owners = ', '.join("%s %s" % (b.owner.first_name, b.owner.last_name)
-            for b in i.ciownership_set.filter(type=filter)),
+        owners = ', '.join(
+            "%s %s" % (b.owner.first_name, b.owner.last_name)
+            for b in i.ciownership_set.filter(type=filter)
+        ),
         return owners[0]
 
     def get_bl(self, i, relations):
@@ -1451,10 +1445,9 @@ class Search(BaseCMDBView):
         return mark_safe(services)
 
     def get_operations(self, i):
-        return mark_safe('<a href="./ci/edit/%s">Edit</a> | '
-                '<a href="./ci/view/%s">View</a>') % (
-                    escape(i.id), escape(i.id)
-                )
+        return mark_safe(
+            '<a href="./ci/edit/%s">Edit</a> | <a href="./ci/view/%s">View</a>'
+        ) % (escape(i.id), escape(i.id))
 
     def get(self, *args, **kwargs):
         values = self.request.GET

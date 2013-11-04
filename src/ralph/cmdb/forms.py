@@ -17,7 +17,7 @@ from ralph.cmdb import models
 from ralph.cmdb import models as db
 from ralph.cmdb.models import CIType
 from ralph.cmdb.models_ci import (
-    CIOwner, CIAttribute, CI_ATTRIBUTE_TYPES, CIAttributeValue
+    CIAttribute, CI_ATTRIBUTE_TYPES, CIAttributeValue
 )
 from ralph.ui.widgets import (
     ReadOnlyWidget,
@@ -118,7 +118,7 @@ class CIEditForm(DependencyForm, forms.ModelForm):
                 field_name, 'type',
                 list(attribute.ci_types.all()), SHOW
             ))
-    
+
     def __init__(self, *args, **kwargs):
         super(CIEditForm, self).__init__(*args, **kwargs)
         self._add_customattribute_fields()
@@ -130,8 +130,9 @@ class CIEditForm(DependencyForm, forms.ModelForm):
                 self.instance.business_owners
             attribute_values = CIAttributeValue.objects.filter(
                 ci=self.instance)
-            attribute_values = dict (
-                ((av.attribute.name, av) for av in attribute_values))
+            attribute_values = dict(
+                ((av.attribute.name, av) for av in attribute_values)
+            )
             for attribute in CIAttribute.objects.all():
                 attribute_value = attribute_values.get(attribute.name)
                 if attribute_value is not None:
@@ -219,16 +220,16 @@ class CIRelationEditForm(forms.ModelForm):
 
     parent = make_ajax_field(
         models.CIRelation,
-         'parent',
-         ('ralph.cmdb.models', 'CILookup'),
-         help_text=None,
+        'parent',
+        ('ralph.cmdb.models', 'CILookup'),
+        help_text=None,
     )
     child = make_ajax_field(
         models.CIRelation,
-         'child',
-         ('ralph.cmdb.models', 'CILookup'),
-         help_text=None,
-     )
+        'child',
+        ('ralph.cmdb.models', 'CILookup'),
+        help_text=None,
+    )
 
     def __init__(self, *args, **kwargs):
         super(CIRelationEditForm, self).__init__(*args, **kwargs)

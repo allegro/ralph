@@ -486,6 +486,7 @@ class CIOwnership(TimeTrackable):
             self.owner, self.get_type_display(), self.ci,
         )
 
+
 class CIOwnershipDescriptor(object):
     """Descriptor simplifying the access to CI owners."""
 
@@ -506,8 +507,10 @@ class CIOwnershipDescriptor(object):
     def __del__(self, inst):
         CIOwnership.objects.filter(ci=inst, type=self.type).delete()
 
+
 CI.business_owners = CIOwnershipDescriptor(CIOwnershipType.business.id)
 CI.technical_owners = CIOwnershipDescriptor(CIOwnershipType.technical.id)
+
 
 class CIOwnershipDescriptor(object):
     """Descriptor simplifying the access to CI owners."""
