@@ -479,7 +479,7 @@ class CIOwnership(TimeTrackable):
 
     def __unicode__(self):
         return '%s is %s of %s ' % (
-            self.owner, self.get_type_display(), self.ci
+            self.owner, self.get_type_display(), self.ci,
         )
 
 
