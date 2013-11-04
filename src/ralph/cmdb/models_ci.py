@@ -284,18 +284,19 @@ class CI(TimeTrackable):
     # not required, since auto-save
     name = models.CharField(max_length=256, verbose_name=_("CI name"))
     business_service = models.BooleanField(
-        verbose_name=_("Business service"), default=False
+        verbose_name=_("Business service"), default=False,
     )
     technical_service = models.BooleanField(
-        verbose_name=_("Technical service"), default=True
+        verbose_name=_("Technical service"), default=True,
     )
     pci_scope = models.BooleanField(default=False)
     layers = models.ManyToManyField(
-        CILayer, verbose_name=_("layers containing given CI")
+        CILayer, verbose_name=_("layers containing given CI"),
     )
     barcode = models.CharField(
         verbose_name=_("barcode"), max_length=255, unique=True, null=True,
-        default=None)
+        default=None,
+    )
     content_type = models.ForeignKey(
         ContentType, verbose_name=_("content type"), null=True, blank=True,
     )
@@ -307,11 +308,11 @@ class CI(TimeTrackable):
     content_object = generic.GenericForeignKey('content_type', 'object_id')
     state = models.IntegerField(
         max_length=11, choices=CI_STATE_TYPES(),
-        default=CI_STATE_TYPES.INACTIVE.id, verbose_name=_("state")
+        default=CI_STATE_TYPES.INACTIVE.id, verbose_name=_("state"),
     )
     status = models.IntegerField(
         max_length=11, choices=CI_STATUS_TYPES(),
-        default=CI_STATUS_TYPES.REFERENCE.id, verbose_name=_("status")
+        default=CI_STATUS_TYPES.REFERENCE.id, verbose_name=_("status"),
     )
     type = models.ForeignKey(CIType)
     zabbix_id = models.CharField(
@@ -324,7 +325,7 @@ class CI(TimeTrackable):
     added_manually = models.BooleanField(default=False)
     owners = models.ManyToManyField(
         'CIOwner', through='CIOwnership',
-        verbose_name=_("configuration item owners")
+        verbose_name=_("configuration item owners"),
     )
 
     class Meta:
@@ -419,20 +420,21 @@ class CIAttributeValue(TimeTrackable):
     data according to type used """
     value_integer = models.ForeignKey(
         CIValueInteger, null=True, blank=True,
-        verbose_name=_("integer value ")
+        verbose_name=_("integer value "),
     )
     value_string = models.ForeignKey(
-        CIValueString, null=True, blank=True, verbose_name=_("string value")
+        CIValueString, null=True, blank=True, verbose_name=_("string value"),
     )
     value_date = models.ForeignKey(
-        CIValueDate, null=True, blank=True, verbose_name=_("date value")
+        CIValueDate, null=True, blank=True, verbose_name=_("date value"),
     )
     value_float = models.ForeignKey(
         CIValueFloat, null=True, blank=True, verbose_name=_("float value")
     )
 
     value_choice = models.ForeignKey(
-        CIValueChoice, null=True, blank=True, verbose_name=_("choice value"))
+        CIValueChoice, null=True, blank=True, verbose_name=_("choice value"),
+    )
 
     TYPE_FIELDS_VALTYPES = {
         CI_ATTRIBUTE_TYPES.INTEGER.id: ('value_integer', CIValueInteger),
@@ -472,7 +474,8 @@ class CIOwnership(TimeTrackable):
     owner = models.ForeignKey('CIOwner')
     type = models.PositiveIntegerField(
         verbose_name=_("type of ownership"), choices=CIOwnershipType(),
-        default=CIOwnershipType.technical.id)
+        default=CIOwnershipType.technical.id,
+    )
 
     def __unicode__(self):
         return '%s is %s of %s ' % (
