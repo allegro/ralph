@@ -41,7 +41,6 @@ from ralph.cmdb.forms import (
     CIRelationEditForm,
     SearchImpactForm,
 )
-from ralph.cmdb.customfields import EditAttributeFormFactory
 from ralph.cmdb.models_ci import (
     CIOwner,
     CIOwnership,
