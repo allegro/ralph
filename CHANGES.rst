@@ -1,6 +1,14 @@
 Change Log
 ----------
 
+1.2.8
+~~~~~
+Released on November 04, 2013
+
+This is hotfix release - fixes broken dependency.
+
+* Fixed django-bob dependecy.
+
 1.2.7
 ~~~~~
 Released on October 31, 2013
