@@ -334,7 +334,8 @@ class BaseMixin(object):
                     fugue_icon='fugue-baggage-cart-box',
                     href=self.tab_href('asset')),
             ])
-        if has_perm(Perm.edit_device_info_generic):
+        if ('ralph.scan' in settings.INSTALLED_APPS and
+                has_perm(Perm.edit_device_info_generic)):
             tab_items.extend([
                 MenuItem('Scan', name='scan', fugue_icon='fugue-flashlight',
                          href=self.tab_href('scan')),
