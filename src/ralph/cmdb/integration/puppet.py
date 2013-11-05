@@ -9,6 +9,8 @@ from __future__ import unicode_literals
 import logging
 import re
 
+from restkit.errors import Unauthorized
+
 from ralph.business.models import Venture
 from ralph.util import plugin
 from ralph.cmdb.integration.lib.fisheye import Fisheye
@@ -138,7 +140,11 @@ class PuppetGitImporter(BaseImporter):
             ch.save()
 
     def import_git(self):
-        ret = self.fisheye.get_changes()
+        try:
+            ret = self.fisheye.get_changes()
+        except Unauthorized as e:
+            logger.warning(str(e))
+            return
         for changeset in ret.getchildren():
             if not self.is_imported(changeset):
                 self.import_changeset(changeset)
