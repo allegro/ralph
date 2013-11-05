@@ -203,7 +203,7 @@ def get_disk_shares(ssh):
             break
         if 'dm multipath kernel driver not loaded' in line.lower():
             break
-        if line.startswith((r'\_', r'[', r'`-', r'|')):
+        if line.startswith((r'\_', r'\[', r'`-', r'|')):
             continue
         if '=' in line:
             continue
@@ -285,6 +285,8 @@ def handle_smartctl(dev, disks, priority=0):
 
 
 def _handle_inquiry_data(raw, controller, disk):
+    if not raw:
+        return None, None, None
     for regex in INQUIRY_REGEXES:
         m = regex.match(raw)
         if m:
