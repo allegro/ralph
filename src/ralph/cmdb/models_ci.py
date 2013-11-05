@@ -450,7 +450,10 @@ class CIAttributeValue(TimeTrackable):
         value_field, _ = self.TYPE_FIELDS_VALTYPES[
             self.attribute.attribute_type
         ]
-        return getattr(self, value_field).value
+        value_object = getattr(self, value_field)
+        if value_object is None:
+            return
+        return value_object.value
 
     @value.setter
     def value(self, value):
@@ -460,6 +463,7 @@ class CIAttributeValue(TimeTrackable):
         val = ValueType(value=value)
         val.save()
         setattr(self, value_field, val)
+        self.save()
 
 
 class CIOwnershipType(Choices):
@@ -481,6 +485,31 @@ class CIOwnership(TimeTrackable):
         return '%s is %s of %s ' % (
             self.owner, self.get_type_display(), self.ci,
         )
+
+
+class CIOwnershipDescriptor(object):
+    """Descriptor simplifying the access to CI owners."""
+
+    def __init__(self, type):
+        self.type = type
+
+    def __get__(self, inst, cls):
+        if inst is None:
+            return self
+        return inst.owners.filter(ciownership__type=self.type)
+
+    def __set__(self, inst, owners):
+        self.__delete__(inst)
+        for owner in owners:
+            own = CIOwnership(ci=inst, owner=owner, type=self.type)
+            own.save()
+
+    def __delete__(self, inst):
+        CIOwnership.objects.filter(ci=inst, type=self.type).delete()
+
+
+CI.business_owners = CIOwnershipDescriptor(CIOwnershipType.business.id)
+CI.technical_owners = CIOwnershipDescriptor(CIOwnershipType.technical.id)
 
 
 class CIOwner(TimeTrackable, WithConcurrentGetOrCreate):

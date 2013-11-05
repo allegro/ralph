@@ -41,15 +41,7 @@ from ralph.cmdb.forms import (
     CIRelationEditForm,
     SearchImpactForm,
 )
-from ralph.cmdb.customfields import EditAttributeFormFactory
-from ralph.cmdb.models_ci import (
-    CIOwner,
-    CIOwnership,
-    CILayer,
-    CI_TYPES,
-    CI,
-    CIRelation,
-)
+from ralph.cmdb.models_ci import CILayer, CI_TYPES, CI, CIRelation
 import ralph.cmdb.models as db
 from ralph.cmdb.graphs import ImpactCalculator
 from ralph.ui.views.common import Base
@@ -402,26 +394,10 @@ class Add(BaseCMDBView):
                 if not model.content_object:
                     model.uid = "%s-%s" % ('mm', model.id)
                     model.save(user=self.request.user)
-                model.owners.clear()
-                model.layers.clear()
-                layers = self.form.data.getlist('base-layers')
-                for layer in layers:
-                    model.layers.add(CILayer.objects.get(pk=int(layer[0])))
-
-                owners_t = self.form.data.getlist('base-technical_owners')
-                for owner in owners_t:
-                    own = CIOwnership(ci=model,
-                                      owner=CIOwner.objects.get(pk=owner[0]),
-                                      type=1,)
-                    own.save()
-                owners_b = self.form.data.getlist('base-business_owners')
-                for owner in owners_b:
-                    own = CIOwnership(ci=model,
-                                      owner=CIOwner.objects.get(pk=owner[0]),
-                                      type=2,)
-                    own.save()
                 messages.success(self.request, _("Changes saved."))
-                return HttpResponseRedirect('/cmdb/ci/edit/' + unicode(model.id))
+                return HttpResponseRedirect(
+                    '/cmdb/ci/edit/' + unicode(model.id),
+                )
             else:
                 messages.error(self.request, _("Correct the errors."))
 
@@ -623,7 +599,6 @@ class MainCIEdit(BaseCIDetails):
     template_name = 'cmdb/ci_edit.html'
     active_tab = 'main'
     Form = CIEditForm
-    form_attributes_options = dict(label_suffix='', prefix='attr')
     form_options = dict(label_suffix='', prefix='base')
 
     def initialize_vars(self):
@@ -639,7 +614,6 @@ class MainCIEdit(BaseCIDetails):
             'service_name': self.service_name,
             'editable': True,
             'form': self.form,
-            'form_attributes': self.form_attributes,
         })
         return ret
 
@@ -655,8 +629,10 @@ class MainCIEdit(BaseCIDetails):
             return HttpResponseRedirect('/cmdb/ci/jira_ci_unknown')
         if ci_id:
             self.ci = get_object_or_404(db.CI, id=ci_id)
-            if (self.ci.content_object and
-                self.ci.content_type.name == 'device'):
+            if (
+                self.ci.content_object and
+                self.ci.content_type.name == 'device'
+            ):
                 self.show_in_ralph = True
                 self.ralph_ci_link = "/ui/search/info/%d" % (
                     self.ci.content_object.id
@@ -664,12 +640,6 @@ class MainCIEdit(BaseCIDetails):
             self.service_name = self.get_first_parent_venture_name(ci_id)
             self.form_options['instance'] = self.ci
             self.form_options['initial'] = self.form_initial(self.ci)
-            self.form_attributes_options['initial'] = self.custom_form_initial(
-                self.ci,
-            )
-            self.form_attributes = EditAttributeFormFactory(
-                ci=self.ci,
-            ).factory(**self.form_attributes_options)
         self.form = self.Form(**self.form_options)
         return super(MainCIEdit, self).get(*args, **kwargs)
 
@@ -683,40 +653,10 @@ class MainCIEdit(BaseCIDetails):
             self.form = self.Form(
                 self.request.POST, **self.form_options
             )
-            self.form_attributes = EditAttributeFormFactory(
-                ci=self.ci).factory(
-                    self.request.POST,
-                    **self.form_attributes_options
-                )
-            if self.form.is_valid() and self.form_attributes.is_valid():
+            if self.form.is_valid():
                 model = self.form.save(commit=False)
                 model.id = self.ci.id
-                model.owners.clear()
-                model.layers.clear()
-                layers = self.form_attributes.data.getlist('base-layers')
-                for layer in layers:
-                    model.layers.add(CILayer.objects.get(pk=int(layer)))
-                owners_t = self.form_attributes.data.getlist(
-                    'base-technical_owners'
-                )
-                for owner in owners_t:
-                    own = CIOwnership(
-                        ci=model,
-                        owner=CIOwner.objects.get(pk=owner),
-                        type=1,
-                    )
-                    own.save()
-                owners_b = self.form_attributes.data.getlist(
-                    'base-business_owners'
-                )
-                for owner in owners_b:
-                    own = CIOwnership(
-                        ci=model, owner=CIOwner.objects.get(pk=owner),
-                        type=2,)
-                    own.save()
                 model.save(user=self.request.user)
-                self.form_attributes.ci = model
-                self.form_attributes.save()
                 messages.success(self.request, "Changes saved.")
                 return HttpResponseRedirect(self.request.path)
             else:
@@ -728,29 +668,6 @@ class MainCIEdit(BaseCIDetails):
             technical_owner=', '.join(ci.get_technical_owners()),
             ci=self.ci,
         )
-        return data
-
-    def custom_form_initial(self, ci):
-        data = dict()
-        objs = db.CIAttributeValue.objects.filter(ci=ci)
-        for obj in objs:
-            field_type = obj.attribute.attribute_type
-            if field_type == db.CI_ATTRIBUTE_TYPES.INTEGER.id:
-                field_type = 'integer'
-                value = obj.value_integer.value
-            elif field_type == db.CI_ATTRIBUTE_TYPES.STRING.id:
-                field_type = 'string'
-                value = obj.value_string.value
-            elif field_type == db.CI_ATTRIBUTE_TYPES.FLOAT.id:
-                field_type = 'float'
-                value = obj.value_float.value
-            elif field_type == db.CI_ATTRIBUTE_TYPES.DATE.id:
-                field_type = 'date'
-                value = obj.value_date.value
-            elif field_type == db.CI_ATTRIBUTE_TYPES.CHOICE.id:
-                field_type = 'choice'
-                value = obj.value_choice.value
-            data['attribute_%s_%s' % (field_type, obj.attribute_id)] = value
         return data
 
     def get_first_parent_venture_name(self, ci_id):
@@ -1199,9 +1116,6 @@ class CIProblemsEdit(BaseCIDetails, DataTableMixin):
                 filters=add_filter(self.request.GET, ci=self.ci),
             )
         )
-
-
-
         return super(CIProblemsEdit, self).get(*args, **kwargs)
 
 
@@ -1377,8 +1291,8 @@ class Search(BaseCMDBView):
         DEFAULT_COLS = (
             {'label': 'Type', 'name': 'type', 'sortable': 1},
             {'label': 'Layer', 'name': 'layers', 'sortable': 1},
-            {'label': 'Venture', 'name': 'Venture',},
-            {'label': 'Service', 'name': 'Service',},
+            {'label': 'Venture', 'name': 'Venture'},
+            {'label': 'Service', 'name': 'Service'},
             {'label': 'PCI Scope', 'name': 'pci_scope', 'sortable': 1},
         )
         table_header = (
@@ -1391,17 +1305,17 @@ class Search(BaseCMDBView):
             table_header += (
                 {'label': 'Type', 'name': 'type'},
                 {'label': 'Layer', 'name': 'layers', 'sortable': 1},
-                {'label': 'Venture', 'name': 'Venture',},
-                {'label': 'Service', 'name': 'Service',},
+                {'label': 'Venture', 'name': 'Venture'},
+                {'label': 'Service', 'name': 'Service'},
                 {'label': 'PCI Scope', 'name': 'pci_scope', 'sortable': 1},
             )
         elif type_ == CI_TYPES.DEVICE.id:
             table_header += (
                 {'label': 'Parent Device', 'name': 'Parent Device'},
-                {'label': 'Network', 'name': 'Network',},
-                {'label': 'DC', 'name': 'DC',},
-                {'label': 'Venture', 'name': 'Venture',},
-                {'label': 'Service', 'name': 'Service',},
+                {'label': 'Network', 'name': 'Network'},
+                {'label': 'DC', 'name': 'DC'},
+                {'label': 'Venture', 'name': 'Venture'},
+                {'label': 'Service', 'name': 'Service'},
                 {'label': 'PCI Scope', 'name': 'pci_scope', 'sortable': 1},
             )
         elif type_ == CI_TYPES.PROCEDURE.id:
@@ -1417,17 +1331,17 @@ class Search(BaseCMDBView):
         elif type_ == CI_TYPES.VENTUREROLE.id:
             table_header += (
                 {'label': 'Parent venture', 'name': 'Parent venture'},
-                {'label': 'Service', 'name': 'Service',},
+                {'label': 'Service', 'name': 'Service'},
                 {'label': 'Technical Owner', 'name': 'Technical Owner'},
             )
         elif type_ == CI_TYPES.BUSINESSLINE.id:
-            table_header += (
-                {'label': 'Services contained',
-                 'name': 'Services contained',},
-            )
+            table_header += ({
+                'label': 'Services contained',
+                'name': 'Services contained',
+            },)
         elif type_ == CI_TYPES.SERVICE.id:
             table_header += (
-                {'label': 'Contained Venture','name': 'Contained Venture'},
+                {'label': 'Contained Venture', 'name': 'Contained Venture'},
                 {'label': 'Business Line', 'name': 'Business Line'},
                 {'label': 'Technical Owner', 'name': 'Technical Owner'},
                 {'label': 'Business Owner', 'name': 'Business Owner'},
@@ -1438,15 +1352,13 @@ class Search(BaseCMDBView):
             table_header += DEFAULT_COLS
         elif type_ == CI_TYPES.NETWORKTERMINATOR.id:
             table_header += DEFAULT_COLS
-        table_header += (
-            {'label': 'Operations', 'name': 'Operations',},
-        )
+        table_header += ({'label': 'Operations', 'name': 'Operations'},)
         return table_header
 
     def get_name(self, i, icon):
-        return mark_safe('<a href="./ci/view/%s"> <i class="fugue-icon %s">'
-                         '</i> %s</a>' % (
-            escape(i.id), escape(icon), escape(i.name))
+        return mark_safe(
+            '<a href="./ci/view/%s"> <i class="fugue-icon %s"></i> %s</a>' %
+            (escape(i.id), escape(icon), escape(i.name))
         )
 
     def get_uid(self, i):
@@ -1482,8 +1394,10 @@ class Search(BaseCMDBView):
         return dc
 
     def get_owners(self, i, filter):
-        owners = ', '.join("%s %s" % (b.owner.first_name, b.owner.last_name)
-            for b in i.ciownership_set.filter(type=filter)),
+        owners = ', '.join(
+            "%s %s" % (b.owner.first_name, b.owner.last_name)
+            for b in i.ciownership_set.filter(type=filter)
+        ),
         return owners[0]
 
     def get_bl(self, i, relations):
@@ -1531,10 +1445,10 @@ class Search(BaseCMDBView):
         return mark_safe(services)
 
     def get_operations(self, i):
-        return mark_safe('<a href="./ci/edit/%s">Edit</a> | '
-                '<a href="./ci/view/%s">View</a>') % (
-                    escape(i.id), escape(i.id)
-                )
+        return mark_safe(
+            '<a href="./ci/edit/%s">Edit</a> | '
+            '<a href="./ci/view/%s">View</a>',
+        ) % (escape(i.id), escape(i.id))
 
     def get(self, *args, **kwargs):
         values = self.request.GET
