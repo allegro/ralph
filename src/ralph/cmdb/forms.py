@@ -17,7 +17,7 @@ from ralph.cmdb import models
 from ralph.cmdb import models as db
 from ralph.cmdb.models import CIType
 from ralph.cmdb.models_ci import (
-    CIAttribute, CI_ATTRIBUTE_TYPES, CIAttributeValue
+    CIAttribute, CI_ATTRIBUTE_TYPES, CIAttributeValue,
 )
 from ralph.ui.widgets import (
     ReadOnlyWidget,
@@ -60,7 +60,6 @@ class CIEditForm(DependencyForm, forms.ModelForm):
         CI_ATTRIBUTE_TYPES.DATE.id: forms.DateField,
         CI_ATTRIBUTE_TYPES.FLOAT.id: forms.FloatField,
         CI_ATTRIBUTE_TYPES.CHOICE.id: forms.ChoiceField,
-
     }
 
     class Meta:
@@ -115,8 +114,10 @@ class CIEditForm(DependencyForm, forms.ModelForm):
                 ]
             self.fields[field_name] = FieldType(**kwargs)
             self.dependencies.append(Dependency(
-                field_name, 'type',
-                list(attribute.ci_types.all()), SHOW
+                field_name,
+                'type',
+                list(attribute.ci_types.all()),
+                SHOW,
             ))
 
     def __init__(self, *args, **kwargs):
@@ -129,7 +130,8 @@ class CIEditForm(DependencyForm, forms.ModelForm):
             self['business_owners'].field.initial =\
                 self.instance.business_owners
             attribute_values = CIAttributeValue.objects.filter(
-                ci=self.instance)
+                ci=self.instance,
+            )
             attribute_values = dict(
                 ((av.attribute.name, av) for av in attribute_values)
             )
@@ -137,7 +139,8 @@ class CIEditForm(DependencyForm, forms.ModelForm):
                 attribute_value = attribute_values.get(attribute.name)
                 if attribute_value is not None:
                     field_name = self._get_custom_attribute_field_name(
-                        attribute)
+                        attribute,
+                    )
                     self[field_name].field.initial = attribute_value.value
 
     def save(self, *args, **kwargs):
@@ -150,7 +153,9 @@ class CIEditForm(DependencyForm, forms.ModelForm):
             value = self.cleaned_data.get(attribute_name)
             if value:
                 attribute_value = CIAttributeValue(
-                    ci=instance, attribute=attribute)
+                    ci=instance,
+                    attribute=attribute,
+                )
                 attribute_value.save()
                 attribute_value.value = value
         return instance

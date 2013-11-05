@@ -396,7 +396,7 @@ class Add(BaseCMDBView):
                     model.save(user=self.request.user)
                 messages.success(self.request, _("Changes saved."))
                 return HttpResponseRedirect(
-                    '/cmdb/ci/edit/' + unicode(model.id)
+                    '/cmdb/ci/edit/' + unicode(model.id),
                 )
             else:
                 messages.error(self.request, _("Correct the errors."))
@@ -1446,7 +1446,8 @@ class Search(BaseCMDBView):
 
     def get_operations(self, i):
         return mark_safe(
-            '<a href="./ci/edit/%s">Edit</a> | <a href="./ci/view/%s">View</a>'
+            '<a href="./ci/edit/%s">Edit</a> | '
+            '<a href="./ci/view/%s">View</a>',
         ) % (escape(i.id), escape(i.id))
 
     def get(self, *args, **kwargs):
