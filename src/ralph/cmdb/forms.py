@@ -105,7 +105,8 @@ class CIEditForm(DependencyForm, forms.ModelForm):
             field_name = self._get_custom_attribute_field_name(attribute)
             FieldType = self.CUSTOM_ATTRIBUTE_FIELDS[attribute.attribute_type]
             kwargs = {
-                'label': attribute.name, 'required': False
+                'label': attribute.name,
+                'required': False,
             }
             if attribute.attribute_type == CI_ATTRIBUTE_TYPES.CHOICE:
                 kwargs['choices'] = [
