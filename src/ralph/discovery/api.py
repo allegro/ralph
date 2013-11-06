@@ -95,7 +95,10 @@ class IPAddressResource(MResource):
     def dehydrate(self, bundle):
         if not self.fields.get('network'):
             return bundle
-        network = self.fields['network'].fk_resource.instance
+        try:
+            network = self.fields['network'].fk_resource.instance
+        except AttributeError as e:
+            return bundle
         bundle.data['network_details'] = {
             'name': network.name if network else '',
             'address': network.address if network else '',
