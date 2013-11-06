@@ -13,12 +13,15 @@ from __future__ import unicode_literals
 # Monkeypatch Tastypie
 # fix in https://github.com/toastdriven/django-tastypie/pull/863
 from ralph.cmdb.monkey import method_check
+import tastypie
 from tastypie.resources import Resource
 Resource.method_check = method_check
 
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from tastypie.authentication import ApiKeyAuthentication
 from tastypie.constants import ALL, ALL_WITH_RELATIONS
+from tastypie.exceptions import BadRequest
 from tastypie.fields import ForeignKey as TastyForeignKey
 from tastypie.resources import ModelResource as MResource
 from tastypie.throttle import CacheThrottle
@@ -159,6 +162,57 @@ class CIRelationResource(MResource):
         bundle.data['parent'] = cirelation.parent.id
         bundle.data['child'] = cirelation.child.id
         return bundle
+ 
+
+class OwnershipField(tastypie.fields.ListField):
+    """A field representing a single type of owner relationship."""
+
+    def __init__(self, owner_type, *args, **kwargs):
+        # Choices have broken deepcopy logic, so we can't store them
+        self.owner_type = owner_type.id
+        self.owner_type_name = owner_type.name
+        super(OwnershipField, self).__init__(*args, **kwargs)
+        self.attribute = 'ciownership'
+
+    def dehydrate(self, bundle):
+        owners = CIOwner.objects.filter(
+            ciownership__type=self.owner_type,
+            ciownership__ci=bundle.obj,
+        )
+        result = []
+        for owner in owners:
+            result.append(
+                {
+                    'id': owner.id,
+                    'username': get_login_from_owner_name(owner),
+                }
+            )
+        return result
+
+    def get_owner(self, data):
+        """Find and owner from data."""
+        if 'id' in data:
+            return CIOwner.objects.get(id=data['id'])
+        if 'username' in data:
+            first_name, last_name = data['username'].split('.')
+            return CIOwner.objects.get(
+                first_name=first_name, last_name=last_name,
+            )
+
+    @property
+    def attribute_name(self):
+        return '{0}_owners'.format(self.owner_type_name)
+
+
+    def hydrate(self, bundle):
+        ci = bundle.obj
+        owners_data = bundle.data[self.attribute_name]
+        try:
+            owners = [self.get_owner(data) for data in owners_data]
+        except (ObjectDoesNotExist, MultipleObjectsReturned) as e:
+            raise BadRequest()
+        setattr(ci, self.attribute_name, owners)
+        return bundle
 
     def hydrate(self, bundle):
         # TODO - make some sanity check on type
@@ -171,6 +225,9 @@ class CIRelationResource(MResource):
         return bundle
 
 class CIResource(MResource):
+
+    business_owners = OwnershipField(CIOwnershipType.business)
+    technical_owners = OwnershipField(CIOwnershipType.technical)
     class Meta:
         queryset = CI.objects.all()
         authentication = ApiKeyAuthentication()
@@ -179,7 +236,7 @@ class CIResource(MResource):
                 Perm.read_configuration_item_info_generic,
             ]
         )
-        list_allowed_methods = ['get', 'post']
+        list_allowed_methods = ['get', 'post', 'put', 'patch']
         resource_name = 'ci'
         filtering = {
             'added_manually': ALL,
@@ -212,17 +269,6 @@ class CIResource(MResource):
     def dehydrate(self, bundle):
         ci = CI.objects.get(uid=bundle.data.get('uid'))
         bundle.data['type'] = {'name': ci.type.name, 'id': ci.type_id}
-        for owner_type in (CIOwnershipType.technical,
-                           CIOwnershipType.business):
-            owners = CIOwner.objects.filter(
-                ciownership__type=owner_type,
-                ci=ci,
-            )
-            bundle.data["{}_owners".format(owner_type.name)] = []
-            for technical_owner in owners:
-                bundle.data["{}_owners".format(owner_type.name)].append(
-                    {'username': get_login_from_owner_name(technical_owner)}
-                )
         bundle.data['layers'] = []
         for layer in ci.layers.all():
             bundle.data['layers'].append({'name': layer.name, 'id': layer.id})
