@@ -1,5 +1,15 @@
 Change Log
 ----------
+1.2.9
+~~~~~
+Released on November 06, 2013
+
+This is semi-final :) hotfix release. 
+
+* fixed API problem.
+
+* fixed incompatible inquiry problem.
+
 
 1.2.8
 ~~~~~
