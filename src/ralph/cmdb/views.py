@@ -132,6 +132,7 @@ class BaseCMDBView(Base):
             ('/cmdb/graphs', 'Impact report', 'fugue-dashboard'),
             ('/cmdb/changes/timeline', 'Timeline View', 'fugue-dashboard'),
             ('/admin/cmdb', 'Admin', 'fugue-toolbox'),
+            ('/cmdb/cleanup', 'Clean up', 'fugue-broom'),
         )
         layers = (
             ('/cmdb/search', 'All Cis (all layers)', 'fugue-magnifier'),
@@ -1674,3 +1675,15 @@ class Graphs(BaseCMDBView):
                 ))
 
         return super(BaseCMDBView, self).get(*args, **kwargs)
+
+
+class Cleanup(BaseCMDBView):
+    """The view containing various data useful for clean up tasks."""
+
+    template_name = 'cmdb/cleanup.html'
+
+    def get_context_data(self, *args, **kwargs):
+        ret = super(Cleanup, self).get_context_data()
+        ret['duplicates'] = CI.get_duplicate_names()
+        return ret
+        
