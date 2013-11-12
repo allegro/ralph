@@ -21,11 +21,20 @@
         {% endfor %}
     </ul>
 </div>
-<div class="form-actions">
-    <a href="../{{ address }}/" class="btn">
-        {% icon 'fugue-arrow-circle-double' %}&nbsp;Rescan
-    </a>
-</div>
+
+<form method="POST" class="form">
+    {% csrf_token %}
+    <div class="form-actions">
+        <a href="../../{{ address }}/" class="btn btn-small">
+            {% icon 'fugue-arrow-circle-double' %}&nbsp;Rescan
+        </a>
+        {% if job.meta.changed %}
+            <button type="submit" value="no-changes" class="btn btn-small" name="no-changes">
+                {% icon 'fugue-flashlight--exclamation' %}&nbsp;No changes
+            </button>
+        {% endif %}
+    </div>
+</form>
 {% endif %}
 {% endblock %}
 
@@ -52,10 +61,6 @@
                 ></div>
                 {% endif %}
             </div>
-        </div>
-    {% else %}
-        <div class="alert alert-success">
-            <p>Scanning finished.</p>
         </div>
     {% endif %}
     {% if job.is_failed %}
