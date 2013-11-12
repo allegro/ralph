@@ -1,0 +1,19 @@
+{% extends 'cmdb/base.html' %}
+{% load reports %}
+{% load cmdb %}
+
+{% block content %}
+<h1>Duplicate CI names</h1>
+<table class="table table-striped table-bordered table-condensed ">
+    <thead>
+        <th>Name</th><th>CIs</th>
+    </thead>
+    {% for dup in duplicates %}
+    <tr>
+        <td>{{ dup.0 }}</td><td>{% links dup.1 %}</td>
+    </tr>
+    {% endfor %}
+</table>
+<h1>CIs without relations</h1>
+    {% cmdb_table header orphans_table url_query %} 
+{% endblock %}
