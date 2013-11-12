@@ -243,7 +243,9 @@ class CMDBApiTest(TestCase):
         response = self.client.get(path=path, data=self.data, format='json')
         json_string = response.content
         json_data = json.loads(json_string)
-        self.assertEqual(json_data['Attribute 1'], 10)
+        self.assertListEqual(json_data['attributes'], [
+            {'name': 'Attribute 1', 'value': 10}
+        ])
 
     def test_relations(self):
         path = "/api/v0.9/cirelation/"
