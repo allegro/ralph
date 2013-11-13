@@ -1446,8 +1446,11 @@ class Scan(BaseMixin, TemplateView):
             messages.error(self.reqest, "You have to select some plugins.")
             return self.get(*args, **kwargs)
         address = self.kwargs.get('address')
+        ip_address, created = IPAddress.concurrent_get_or_create(
+            address=address,
+        )
         try:
-            job = scan_address(address, plugins)
+            job = scan_address(ip_address, plugins)
         except ScanError as e:
             messages.error(self.request, unicode(e))
             return self.get(*args, **kwargs)

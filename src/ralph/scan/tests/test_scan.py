@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 
 from django.test import TestCase
 
+from ralph.discovery.models import IPAddress
 from ralph.scan.manual import (
     _get_cleaned_results,
     _get_ip_addresses_from_results,
@@ -15,6 +16,11 @@ from ralph.scan.manual import (
 
 
 class TestScan(TestCase):
+    def setUp(self):
+        self.ip_2, _ = IPAddress.concurrent_get_or_create(address='127.0.0.2')
+        self.ip_3, _ = IPAddress.concurrent_get_or_create(address='127.0.0.3')
+        self.ip_5, _ = IPAddress.concurrent_get_or_create(address='127.0.0.5')
+
     def test_get_ip_addresses_from_results(self):
         ip_addresses = _get_ip_addresses_from_results({
             'plugin_1': {
@@ -35,9 +41,9 @@ class TestScan(TestCase):
         self.assertEqual(
             ip_addresses,
             [
-                '127.0.0.5',
-                '127.0.0.3',
-                '127.0.0.2',
+                self.ip_5,
+                self.ip_3,
+                self.ip_2,
             ],
         )
 

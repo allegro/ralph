@@ -35,14 +35,14 @@ def _split_into_groups(iterable, group_size):
 
 
 def autoscan_data_center(data_center):
-    """Queues a scan of all scannable networks in the data center."""
+    """Queues a pre-scan of all scannable networks in the data center."""
 
     for network in data_center.network_set.exclude(queue=None):
         autoscan_network(network)
 
 
 def autoscan_network(network):
-    """Queues a scan of a whole network on the right worker."""
+    """Queues a pre-scan of a whole network on the right worker."""
 
     if not network.queue:
         raise NoQueueError(
