@@ -22,9 +22,7 @@
     </ul>
 </div>
 <div class="form-actions">
-    <a href="../{{ address }}/" class="btn">
-        {% icon 'fugue-arrow-circle-double' %}&nbsp;Rescan
-    </a>
+    <a href="../{{ address }}/" class="btn">{% icon 'fugue-arrow-circle-double' %}&nbsp;Rescan</a>
 </div>
 {% endif %}
 {% endblock %}
@@ -74,7 +72,7 @@
     </div>
     {% if job.is_finished %}
         <ul class="nav nav-tabs">
-            {%for device, form in forms %}
+            {% for device, form in forms %}
             <li {% if device_id == device.id|default:'new' %}class="active"{% endif %}>
                 <a
                     href="#device-{{ device.id|default:'new' }}"
@@ -90,9 +88,9 @@
             {% endfor %}
         </ul>
         <div class="tab-content">
-            {%for device, form in forms %}
+            {% for device, form in forms %}
             <div
-                class="tab-pane{%if device_id == device.id|default:'new' %} active{% endif %}"
+                class="tab-pane{% if device_id == device.id|default:'new' %} active{% endif %}"
                 id="device-{{ device.id|default:'new' }}"
             >
                 <form method="POST" class="form form-horizontal">
@@ -108,21 +106,23 @@
                         "
                     >
                         <label class="control-label">{{ f.label }}</label>
-                        <div class="controls">
+                        <div class="controls" data-role="controls_wrapper">
                             {{ f }}
-                            <label class="radio">
-                                <input
-                                    type="radio"
-                                    name="{{ f.name }}"
-                                    value="custom"
-                                    {% if f.value == 'custom' %}checked="on"{% endif %}
-                                > Custom:
-                            </label>
-                            <div class="custom-control">
-                                {{ form|getfield:f.field.subfield_name }}
-                                {% for error in form|getfielderrors:f.field.subfield_name %}
-                                <div class="help-block">{{ error }}</div>
-                                {% endfor %}
+                            <div class="custom-control-wrapper"{% if f.field.widget.diff and not f.field.widget.open_advanced_mode %} style="display: none;"{% endif %} data-role="custom_control_wrapper">
+                                <label class="radio">
+                                    <input
+                                        type="radio"
+                                        name="{{ f.name }}"
+                                        value="custom"
+                                        {% if f.value == 'custom' %}checked="on"{% endif %}
+                                    > Custom:
+                                </label>
+                                <div class="custom-control">
+                                    {{ form|getfield:f.field.subfield_name }}
+                                    {% for error in form|getfielderrors:f.field.subfield_name %}
+                                    <div class="help-block">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
                             </div>
                             {% for error in f.errors %}
                             <div class="help-block">{{ error }}</div>
@@ -152,3 +152,9 @@
     {% endif %}
 {% endif %}
 {% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+    <script src="{{ STATIC_URL }}scan.js"></script>
+{% endblock scripts %}
+

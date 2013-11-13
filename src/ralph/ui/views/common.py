@@ -31,11 +31,14 @@ from ralph.scan.errors import Error as ScanError
 from ralph.scan.manual import scan_address
 from ralph.scan.forms import DiffForm
 from ralph.scan.data import (
+    append_merged_proposition,
     device_from_data,
+    diff_results,
     find_devices,
     get_device_data,
     merge_data,
     set_device_data,
+    sort_results,
 )
 from ralph.business.models import (
     RoleProperty,
@@ -1475,7 +1478,7 @@ class ScanStatus(BaseMixin, TemplateView):
         try:
             return rq.job.Job.fetch(job_id, django_rq.get_connection())
         except rq.exceptions.NoSuchJobError:
-            return None
+            return
 
     def get_forms(self, result, device_id=None, post=None):
         forms = []
@@ -1489,15 +1492,24 @@ class ScanStatus(BaseMixin, TemplateView):
                 },
                 only_multiple=True,
             )
+            append_merged_proposition(data, device)
+            sort_results(data)
+            diff = diff_results(data)
             if 'ralph_assets' in settings.INSTALLED_APPS:
                 if not 'asset' in data and not device_data['asset']:
                     data['asset'] = {
                         (u'database',): device_data['asset'],
                     }
             if post and device.id == device_id:
-                form = DiffForm(data, post, default='database')
+                form = DiffForm(
+                    data, post, default='database', csv_default='merged',
+                    diff=diff,
+                )
             else:
-                form = DiffForm(data, default='database')
+                form = DiffForm(
+                    data, default='database', csv_default='merged',
+                    diff=diff,
+                )
             forms.append((device, form))
         data = merge_data(result)
         # Add required fields.
@@ -1605,3 +1617,4 @@ class ScanStatus(BaseMixin, TemplateView):
                 for error in form.non_field_errors():
                     messages.error(self.request, error)
         return self.get(*args, **kwargs)
+
