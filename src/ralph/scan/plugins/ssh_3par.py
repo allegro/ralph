@@ -121,15 +121,10 @@ def scan_address(ip_address, **kwargs):
             'configuration file.',
         )
     else:
-        try:
-            device_info = _ssh_3par(ip_address, user, password)
-        except ConnectionError as e:
-            result['status'] = 'error'
-            messages.append(unicode(e))
-        else:
-            result.update({
-                'status': 'success',
-                'device': device_info,
-            })
+        device_info = _ssh_3par(ip_address, user, password)
+        result.update({
+            'status': 'success',
+            'device': device_info,
+        })
     return device_info
 
