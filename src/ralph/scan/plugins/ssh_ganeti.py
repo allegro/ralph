@@ -20,7 +20,7 @@ from lck.django.common.models import MACAddressField
 from django.db.models import Q
 
 from ralph.util import network
-from ralph.discovery.models import DeviceType
+from ralph.discovery.models import DeviceType, Device
 from ralph.scan.errors import NotConfiguredError, NoMatchError
 from ralph.scan.plugins import get_base_result_template
 
@@ -92,7 +92,8 @@ def run_ssh_ganeti(ip):
 
 
 def scan_address(ip_address, **kwargs):
-    if 'nx-os' in kwargs.get('snmp_name', '').lower():
+    snmp_name = kwargs.get('snmp_name', '') or ''
+    if 'nx-os' in snmp_name.lower():
         raise NoMatchError("Incompatible nexus found")
     device = run_ssh_ganeti(ip_address)
     ret = {
@@ -102,3 +103,4 @@ def scan_address(ip_address, **kwargs):
     tpl = get_base_result_template('ssh_ganeti')
     tpl.update(ret)
     return tpl
+

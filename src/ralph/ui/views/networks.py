@@ -5,12 +5,17 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import collections
+import datetime
+
+import django_rq
+import rq
 
 from bob.menu import MenuItem
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
 from django.http import HttpResponseRedirect
+from django.utils import timezone
 
 from ralph.account.models import Perm
 from ralph.discovery.models import ReadOnlyDevice, Network, IPAddress
@@ -274,6 +279,28 @@ class NetworksAutoscan(SidebarNetworks, BaseMixin, BaseDeviceList):
             },
         )
 
+    def append_scan_summary_info(self, ip_addresses):
+        if not ip_addresses:
+            return
+        delta = timezone.now() - datetime.timedelta(days=1)
+        for ip_address in ip_addresses:
+            if (
+                ip_address.scan_summary and
+                ip_address.scan_summary.modified > delta
+            ):
+                try:
+                    job = rq.job.Job.fetch(
+                        ip_address.scan_summary.job_id,
+                        django_rq.get_connection(),
+                    )
+                except rq.exceptions.NoSuchJobError:
+                    continue
+                else:
+                    ip_address.scan_summary.changed = job.meta.get(
+                        'changed',
+                        False,
+                    )
+
     def get_context_data(self, **kwargs):
         ret = super(NetworksAutoscan, self).get_context_data(**kwargs)
         status_menu_items = [
@@ -303,6 +330,7 @@ class NetworksAutoscan(SidebarNetworks, BaseMixin, BaseDeviceList):
                 href=self.tab_href('autoscan', 'all'),
             ),
         ]
+        self.append_scan_summary_info(ret['object_list'])
         ret.update({
             'status_menu_items': status_menu_items,
             'status_selected': self.status,

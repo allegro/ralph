@@ -8,34 +8,27 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from optparse import make_option
 import textwrap
 
+from optparse import make_option
+
 import ipaddr
+
 from django.core.management.base import BaseCommand
 
+from ralph.discovery.models import DiscoveryQueue, DataCenter, Network
 from ralph.scan.autoscan import (
     autoscan_address,
     autoscan_data_center,
     autoscan_network,
 )
 from ralph.scan.errors import Error
-from ralph.discovery.models import DiscoveryQueue, DataCenter, Network
-
-
-def find_network(network_spec):
-    try:
-        address = str(ipaddr.IPNetwork(network_spec))
-    except ValueError:
-        network = Network.objects.get(name=network_spec)
-    else:
-        network = Network.objects.get(address=address)
-    return network
+from ralph.scan.util import find_network
 
 
 class Command(BaseCommand):
     """
-    Runs an automatic scan of an address, a network of addresses or all
+    Runs an automatic pre-scan of an address, a network of addresses or all
     networks in a data center.
     """
 
@@ -66,7 +59,6 @@ class Command(BaseCommand):
             help='Scan all networks that use the specified worker queues.',
         ),
     )
-
     requires_model_validation = False
 
     def handle(self, *args, **kwargs):
@@ -75,7 +67,9 @@ class Command(BaseCommand):
             kwargs['data_center'],
             kwargs['queue']
         ]) > 1:
-            raise SystemExit("You can't mix networks, data centers and queues.")
+            raise SystemExit(
+                "You can't mix networks, data centers and queues.",
+            )
         if not args:
             raise SystemExit("Please specify the addresses to scan.")
         if kwargs['network']:

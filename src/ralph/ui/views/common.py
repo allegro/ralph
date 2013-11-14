@@ -15,6 +15,7 @@ from django.core.paginator import Paginator
 from django.db import models as db
 from django.http import HttpResponseRedirect, HttpResponseForbidden, Http404
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import (
     DetailView,
@@ -40,6 +41,7 @@ from ralph.scan.data import (
     set_device_data,
     sort_results,
 )
+from ralph.scan.models import ScanSummary
 from ralph.business.models import (
     RoleProperty,
     RolePropertyValue,
@@ -530,6 +532,24 @@ class Info(DeviceUpdateView):
             for plugin in deployment_plugins
         ]
 
+    def get_changed_addresses(self):
+        delta = timezone.now() - datetime.timedelta(days=1)
+        result = []
+        for ip_address in self.object.ipaddress.filter(
+            scan_summary__modified__gt=delta,
+        ):
+            try:
+                job = rq.job.Job.fetch(
+                    ip_address.scan_summary.job_id,
+                    django_rq.get_connection(),
+                )
+            except rq.exceptions.NoSuchJobError:
+                continue
+            else:
+                if job.meta.get('changed', False):
+                    result.append(ip_address)
+        return result
+
     def get_context_data(self, **kwargs):
         ret = super(Info, self).get_context_data(**kwargs)
         if self.object:
@@ -547,6 +567,7 @@ class Info(DeviceUpdateView):
             'dt': DeviceType,
             'deployment_status': deployment_status,
             'plugins': plugins,
+            'changed_addresses': self.get_changed_addresses(),
         })
         return ret
 
@@ -1428,15 +1449,18 @@ class Scan(BaseMixin, TemplateView):
     def post(self, *args, **kwargs):
         plugins = self.request.POST.getlist('plugins')
         if not plugins:
-            messages.error(self.request, "You have to select some plugins.")
+            messages.error(self.reqest, "You have to select some plugins.")
             return self.get(*args, **kwargs)
         address = self.kwargs.get('address')
+        ip_address, created = IPAddress.concurrent_get_or_create(
+            address=address,
+        )
         try:
-            job = scan_address(address, plugins)
+            job = scan_address(ip_address, plugins)
         except ScanError as e:
             messages.error(self.request, unicode(e))
             return self.get(*args, **kwargs)
-        return HttpResponseRedirect(reverse('scan', args=(job.id,)))
+        return HttpResponseRedirect(reverse('scan_results', args=(job.id,)))
 
     def get_context_data(self, **kwargs):
         ret = super(Scan, self).get_context_data(**kwargs)
@@ -1472,9 +1496,26 @@ class ScanStatus(BaseMixin, TemplateView):
         self.forms = []
         self.job = None
         self.device_id = None
+        self.ip_address = None
+
+    def set_ip_address(self):
+        address = self.kwargs.get('address')
+        if not address:
+            return
+        try:
+            self.ip_address = IPAddress.objects.get(address=address)
+        except IPAddress.DoesNotExist:
+            return
+
+    def get_job_id_from_address(self):
+        self.set_ip_address()
+        if self.ip_address and self.ip_address.scan_summary:
+            return self.ip_address.scan_summary.job_id
 
     def get_job(self):
         job_id = self.kwargs.get('job_id')
+        if not job_id:
+            job_id = self.get_job_id_from_address()
         try:
             return rq.job.Job.fetch(job_id, django_rq.get_connection())
         except rq.exceptions.NoSuchJobError:
@@ -1517,10 +1558,6 @@ class ScanStatus(BaseMixin, TemplateView):
         data['type'] = data.get('type', {})
         data['mac_addresses'] = data.get('mac_addresses', {})
         data['serial_number'] = data.get('serial_number', {})
-        if 'ralph_assets' in settings.INSTALLED_APPS:
-            data['asset'] = {
-                (u'database',): device_data['asset'],
-            }
         if post and device_id == 'new':
             form = DiffForm(data, post, default='custom')
         else:
@@ -1538,7 +1575,7 @@ class ScanStatus(BaseMixin, TemplateView):
                 "This scan has timed out. Please run it again.",
             )
         else:
-            address, plugins = self.job.args
+            ip_address, plugins = self.job.args
             icons = {
                 'success': 'fugue-puzzle',
                 'error': 'fugue-cross-button',
@@ -1551,7 +1588,7 @@ class ScanStatus(BaseMixin, TemplateView):
                 'warning': 'warning',
             }
             ret.update({
-                'address': address,
+                'address': ip_address.address,
                 'plugins': plugins,
                 'status': [
                     (
@@ -1577,44 +1614,106 @@ class ScanStatus(BaseMixin, TemplateView):
                 ret['device_id'] = self.device_id
         return ret
 
+    def get(self, *args, **kwargs):
+        self.job = self.get_job()
+        if self.job.is_finished and not self.ip_address:
+            try:
+                scan_summary = ScanSummary.objects.get(job_id=self.job.id)
+            except ScanSummary.DoesNotExist:
+                pass
+            else:
+                try:
+                    self.ip_address = scan_summary.ipaddress_set.all()[0]
+                except IndexError:
+                    pass
+                else:
+                    return HttpResponseRedirect(
+                        reverse(
+                            'scan_results',
+                            args=(self.ip_address.address,),
+                        ),
+                    )
+        return super(ScanStatus, self).get(*args, **kwargs)
+
+    def mark_scan_as_nochanges(self, job):
+        try:
+            scan_summary = ScanSummary.objects.get(job_id=job.id)
+        except ScanSummary.DoesNotExist:
+            return
+        else:
+            scan_summary.false_possitive_checksum = job.meta.get(
+                'results_checksum',
+            )
+            scan_summary.save()
+            job.meta['changed'] = False
+            job.save()
+
+    def update_scan_summary(self, job):
+        try:
+            scan_summary = ScanSummary.objects.get(job_id=job.id)
+        except ScanSummary.DoesNotExist:
+            return
+        else:
+            scan_summary.previous_checksum = job.meta.get(
+                'results_checksum',
+            )
+            scan_summary.false_possitive_checksum = None
+            scan_summary.save()
+            job.meta['changed'] = False
+            job.save()
+
     def post(self, *args, **kwargs):
         self.device_id = self.request.POST.get('save')
-        try:
-            self.device_id = int(self.device_id)
-        except ValueError:
-            pass
+        if self.device_id:
+            try:
+                self.device_id = int(self.device_id)
+            except ValueError:
+                pass
         if not self.job:
             self.job = self.get_job()
         if self.job:
-            self.forms = self.get_forms(
-                self.job.result,
-                self.device_id,
-                self.request.POST,
-            )
-            for device, form in self.forms:
-                if form.is_bound:
-                    break
-            else:
-                form = None
-            if form and form.is_valid():
-                data = {
-                    field_name: form.get_value(field_name)
-                    for field_name in form.result
-                }
-                try:
-                    if device is None:
-                        device = device_from_data(data)
-                    else:
-                        set_device_data(device, data)
-                        device.save()
-                except ValueError as e:
-                    messages.error(self.request, e)
+            if self.device_id:
+                self.forms = self.get_forms(
+                    self.job.result,
+                    self.device_id,
+                    self.request.POST,
+                )
+                for device, form in self.forms:
+                    if form.is_bound:
+                        break
                 else:
-                    messages.success(self.request, "Device %s saved." % device)
-                    return HttpResponseRedirect(self.request.path)
-            else:
-                messages.error(self.request, "Errors in the form.")
-                for error in form.non_field_errors():
-                    messages.error(self.request, error)
+                    form = None
+                if form and form.is_valid():
+                    data = {
+                        field_name: form.get_value(field_name)
+                        for field_name in form.result
+                    }
+                    try:
+                        if device is None:
+                            device = device_from_data(data)
+                        else:
+                            set_device_data(device, data)
+                            device.save()
+                    except ValueError as e:
+                        messages.error(self.request, e)
+                    else:
+                        self.update_scan_summary(self.job)
+                        messages.success(
+                            self.request,
+                            "Device %s saved." % device,
+                        )
+                        return HttpResponseRedirect(self.request.path)
+                else:
+                    messages.error(self.request, "Errors in the form.")
+                    for error in form.non_field_errors():
+                        messages.error(self.request, error)
+            elif self.request.POST.get('no-changes') == 'no-changes':
+                self.mark_scan_as_nochanges(self.job)
+                messages.success(
+                    self.request,
+                    "Detected change in this scan was marked as false "
+                    "possitive.",
+                )
+                return HttpResponseRedirect(self.request.path)
         return self.get(*args, **kwargs)
 

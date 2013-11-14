@@ -13,18 +13,29 @@
 {% endblock %}
 
 {% block sidebar %}
-{% if status %}
-<div class="well">
-    <ul class="unstyled">
-        {% for name, bar, icon in status %}
-        <li style="white-space:nowrap">{% icon icon %}&nbsp;{{ name }}</li>
-        {% endfor %}
-    </ul>
-</div>
-<div class="form-actions">
-    <a href="../{{ address }}/" class="btn">{% icon 'fugue-arrow-circle-double' %}&nbsp;Rescan</a>
-</div>
-{% endif %}
+    {% if status %}
+        <div class="well">
+            <ul class="unstyled">
+                {% for name, bar, icon in status %}
+                <li style="white-space:nowrap">{% icon icon %}&nbsp;{{ name }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <form method="POST" class="form">
+            {% csrf_token %}
+            <div class="form-actions">
+                <a href="../../{{ address }}/" class="btn btn-small">
+                    {% icon 'fugue-arrow-circle-double' %}&nbsp;Rescan
+                </a>
+                {% if job.meta.changed %}
+                    <button type="submit" value="no-changes" class="btn btn-small" name="no-changes">
+                        {% icon 'fugue-flashlight--exclamation' %}&nbsp;No changes
+                    </button>
+                {% endif %}
+            </div>
+        </form>
+    {% endif %}
 {% endblock %}
 
 {% block contentarea %}
@@ -50,10 +61,6 @@
                 ></div>
                 {% endif %}
             </div>
-        </div>
-    {% else %}
-        <div class="alert alert-success">
-            <p>Scanning finished.</p>
         </div>
     {% endif %}
     {% if job.is_failed %}
