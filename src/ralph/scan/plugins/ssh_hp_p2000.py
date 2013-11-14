@@ -16,7 +16,6 @@ from ralph.discovery.hardware import normalize_wwn
 from ralph.util import network
 from ralph.scan.errors import (
     SSHConsoleError,
-    Error,
     NoMatchError,
     ConnectionError,
 )
@@ -188,9 +187,10 @@ def _run_ssh_p2000(ip):
 
 
 def scan_address(ip_address, **kwargs):
-    if 'nx-os' in kwargs.get('snmp_name', '').lower():
+    snmp_name = kwargs.get('snmp_name', '') or ''
+    if 'nx-os' in snmp_name.lower():
         raise NoMatchError("Incompatible Nexus found.")
-    if 'StorageWorks' not in kwargs.get('snmp_name'):
+    if 'StorageWorks' not in snmp_name:
         raise NoMatchError("No match")
     if not network.check_tcp_port(ip_address, 22):
         raise ConnectionError("Port 22 closed.")

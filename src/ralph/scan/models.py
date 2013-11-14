@@ -18,4 +18,6 @@ class ScanSummary(db.Model, WithConcurrentGetOrCreate):
         null=True,
         max_length=32,
     )
+    created = db.DateTimeField(auto_now=False, auto_now_add=True)
+    modified = db.DateTimeField(auto_now=True, auto_now_add=True)
 

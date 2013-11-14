@@ -174,7 +174,7 @@ def _ssh_linux(ssh, ip_address, messages=[]):
 def scan_address(ip_address, **kwargs):
     messages = []
     result = get_base_result_template('ssh_linux', messages)
-    snmp_name = kwargs.get('snmp_name', '')
+    snmp_name = kwargs.get('snmp_name', '') or ''
     if not snmp_name:
         raise NoMatchError("No snmp found")
     snmp_name = snmp_name.lower()

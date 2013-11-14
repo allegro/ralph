@@ -5,6 +5,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import collections
+import datetime
 
 import django_rq
 import rq
@@ -14,6 +15,7 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
 from django.http import HttpResponseRedirect
+from django.utils import timezone
 
 from ralph.account.models import Perm
 from ralph.discovery.models import ReadOnlyDevice, Network, IPAddress
@@ -280,8 +282,12 @@ class NetworksAutoscan(SidebarNetworks, BaseMixin, BaseDeviceList):
     def append_scan_summary_info(self, ip_addresses):
         if not ip_addresses:
             return
+        delta = timezone.now() - datetime.timedelta(days=1)
         for ip_address in ip_addresses:
-            if ip_address.scan_summary:
+            if (
+                ip_address.scan_summary and
+                ip_address.scan_summary.modified > delta
+            ):
                 try:
                     job = rq.job.Job.fetch(
                         ip_address.scan_summary.job_id,

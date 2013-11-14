@@ -11,12 +11,13 @@ import re
 import django_rq
 import rq
 
-from urllib import quote
 from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.db.models import Q
 from django.http import HttpResponseRedirect
+from django.utils import timezone
 from powerdns.models import Record
+from urllib import quote
 
 from ralph.account.models import Perm
 from ralph.discovery.models import ReadOnlyDevice, Device, ComponentModel
@@ -31,8 +32,8 @@ from ralph.ui.views.common import (
     History,
     Info,
     Prices,
-    Software,
     Scan,
+    Software,
 )
 from ralph.ui.views.devices import BaseDeviceList
 from ralph.ui.views.reports import Reports, ReportDeviceList
@@ -103,8 +104,9 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
         self.query = None
 
     def _get_changed_devices_ids(self):
+        delta = timezone.now() - datetime.timedelta(days=1)
         ids = set()
-        for scan_summary in ScanSummary.objects.all():
+        for scan_summary in ScanSummary.objects.filter(modified__gt=delta):
             try:
                 job = rq.job.Job.fetch(
                     scan_summary.job_id,
@@ -443,8 +445,7 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                     )
             if data['with_changes']:
                 changed_devices_ids = self._get_changed_devices_ids()
-                if changed_devices_ids:
-                    self.query = self.query.filter(id__in=changed_devices_ids)
+                self.query = self.query.filter(id__in=changed_devices_ids)
         profile = self.request.user.get_profile()
         if not profile.has_perm(Perm.read_dc_structure):
             self.query = profile.filter_by_perm(self.query,

@@ -14,6 +14,8 @@ class Migration(SchemaMigration):
             ('job_id', self.gf('django.db.models.fields.CharField')(unique=True, max_length=36)),
             ('previous_checksum', self.gf('django.db.models.fields.CharField')(max_length=32)),
             ('false_possitive_checksum', self.gf('django.db.models.fields.CharField')(max_length=32, null=True, blank=True)),
+            ('created', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('modified', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, auto_now_add=True, blank=True)),
         ))
         db.send_create_signal('scan', ['ScanSummary'])
 
@@ -26,9 +28,11 @@ class Migration(SchemaMigration):
     models = {
         'scan.scansummary': {
             'Meta': {'object_name': 'ScanSummary'},
+            'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'false_possitive_checksum': ('django.db.models.fields.CharField', [], {'max_length': '32', 'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'job_id': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '36'}),
+            'modified': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'auto_now_add': 'True', 'blank': 'True'}),
             'previous_checksum': ('django.db.models.fields.CharField', [], {'max_length': '32'})
         }
     }

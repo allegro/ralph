@@ -15,6 +15,7 @@ from django.core.paginator import Paginator
 from django.db import models as db
 from django.http import HttpResponseRedirect, HttpResponseForbidden, Http404
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import (
     DetailView,
@@ -529,19 +530,21 @@ class Info(DeviceUpdateView):
         ]
 
     def get_changed_addresses(self):
+        delta = timezone.now() - datetime.timedelta(days=1)
         result = []
-        for ip_address in self.object.ipaddress.all():
-            if ip_address.scan_summary:
-                try:
-                    job = rq.job.Job.fetch(
-                        ip_address.scan_summary.job_id,
-                        django_rq.get_connection(),
-                    )
-                except rq.exceptions.NoSuchJobError:
-                    continue
-                else:
-                    if job.meta.get('changed', False):
-                        result.append(ip_address)
+        for ip_address in self.object.ipaddress.filter(
+            scan_summary__modified__gt=delta,
+        ):
+            try:
+                job = rq.job.Job.fetch(
+                    ip_address.scan_summary.job_id,
+                    django_rq.get_connection(),
+                )
+            except rq.exceptions.NoSuchJobError:
+                continue
+            else:
+                if job.meta.get('changed', False):
+                    result.append(ip_address)
         return result
 
     def get_context_data(self, **kwargs):
@@ -1560,7 +1563,7 @@ class ScanStatus(BaseMixin, TemplateView):
                 "This scan has timed out. Please run it again.",
             )
         else:
-            address, plugins = self.job.args
+            ip_address, plugins = self.job.args
             icons = {
                 'success': 'fugue-puzzle',
                 'error': 'fugue-cross-button',
@@ -1573,7 +1576,7 @@ class ScanStatus(BaseMixin, TemplateView):
                 'warning': 'warning',
             }
             ret.update({
-                'address': address,
+                'address': ip_address.address,
                 'plugins': plugins,
                 'status': [
                     (

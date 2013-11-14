@@ -65,7 +65,6 @@ def get_disks(ssh):
     device = None
     type_ = None
     device = None
-    size = None
     uuid = None
     for line in stdout:
         if not line.strip():
@@ -206,9 +205,10 @@ def run_ssh_xen(ipaddr):
 def scan_address(ip, **kwargs):
     if XEN_USER is None:
         raise NotConfiguredError("Xen credentials not set.")
-    if 'nx-os' in kwargs.get('snmp_name', '').lower():
+    snmp_name = kwargs.get('snmp_name', '') or ''
+    if 'nx-os' in snmp_name.lower():
         raise NoMatchError("Incompatible Nexus found.")
-    if 'xen' not in kwargs.get('snmp_name', ''):
+    if 'xen' not in snmp_name:
         raise NoMatchError("XEN not found.")
     device = run_ssh_xen(ip)
     ret = {
@@ -218,3 +218,4 @@ def scan_address(ip, **kwargs):
     tpl = get_base_result_template('ssh_xen')
     tpl.update(ret)
     return tpl
+
