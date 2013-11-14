@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
 
+"""
+Pre-scan all IP addresses from specified networks or data centers. This scan
+check that IP address is available. It's also sets some additional data,
+like a SNMP name, SNMP community and SNMP version.
+"""
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -126,3 +132,4 @@ def _autoscan_address(address):
             ipaddress.snmp_version = None
             ipaddress.dead_ping_count += 1
             ipaddress.save(update_last_seen=False)
+

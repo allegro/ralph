@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 """
-Translating between the device database model and the scan data.
+Translating between the device database model and the scan data. Also making
+diff between data from DB and merged results from all plugins.
 """
 
 from __future__ import absolute_import

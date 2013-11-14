@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 
+"""
+Forms and widgets to act with Scan results.
+"""
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
 import itertools
-import operator
 
 from ajax_select.fields import AutoCompleteSelectField
 from django import forms

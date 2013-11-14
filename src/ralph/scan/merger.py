@@ -1,5 +1,22 @@
 # -*- coding: utf-8 -*-
 
+"""
+Scan results merger.
+
+It's merge results from all available plugins with data stored in database.
+The main idea of this merger is to use all possible unique keys for merged
+component. It's similar to DB `unique` and `unique together` keys.
+E.g.:
+1. For disks will be:
+    - serial_number
+    - device, mount_point
+2. For fibrechannel cards will be:
+    - device, physical_id
+
+The same idea is used when we try make diff.
+
+"""
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -56,6 +73,16 @@ def _find_data(rows, lookup):
 
 
 def merge(component, data, unique_fields, db_plugin_name='database'):
+    """
+    Merge data for component based on unique fields set.
+
+    :param component: component with we act
+    :param data: results from plugins
+    :param unique_fields: set of unique or unique_together fields for component
+    :param db_plugin_name: name of plugin which includes data from the
+                           database
+    """
+
     usefull_data = {}
     for plugin, plugin_results in data.iteritems():
         for row in plugin_results:

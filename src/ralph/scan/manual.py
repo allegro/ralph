@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
 
+"""
+Scan all exists and not dead IP addresses from specified networks or data
+centers. This Scan try to extract all possible data from all available
+plugins. Also calculate checksum from plugins resutls. This checksum is
+usefull to detect possible changes on devices.
+"""
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -66,7 +73,7 @@ def scan_network(network, plugins):
 
     for address in network.network.iterhosts():
         try:
-            # scan only exists and not dead ip addresses
+            # scan only exists and not dead IP addresses
             ip_address = IPAddress.objects.get(
                 address=address,
                 dead_ping_count__lte=2,
