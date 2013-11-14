@@ -4,9 +4,12 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import datetime
 import ipaddr
 import re
-import datetime
+
+import django_rq
+import rq
 
 from urllib import quote
 from django.contrib import messages
@@ -17,6 +20,7 @@ from powerdns.models import Record
 
 from ralph.account.models import Perm
 from ralph.discovery.models import ReadOnlyDevice, Device, ComponentModel
+from ralph.scan.models import ScanSummary
 from ralph.ui.forms.search import SearchForm
 from ralph.ui.views.common import (
     Addresses,
@@ -97,6 +101,26 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
     def __init__(self, *args, **kwargs):
         super(SearchDeviceList, self).__init__(*args, **kwargs)
         self.query = None
+
+    def _get_changed_devices_ids(self):
+        ids = set()
+        for scan_summary in ScanSummary.objects.all():
+            try:
+                job = rq.job.Job.fetch(
+                    scan_summary.job_id,
+                    django_rq.get_connection(),
+                )
+            except rq.exceptions.NoSuchJobError:
+                continue
+            else:
+                if job.meta.get('changed', False):
+                    for device_id in scan_summary.ipaddress_set.values_list(
+                        'device__id',
+                        flat=True,
+                    ):
+                        if device_id:
+                            ids.add(device_id)
+        return sorted(list(ids))
 
     def user_allowed(self):
         return True
@@ -417,6 +441,10 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                         support_expiration_date__lte=
                             data['support_expiration_date_end']
                     )
+            if data['with_changes']:
+                changed_devices_ids = self._get_changed_devices_ids()
+                if changed_devices_ids:
+                    self.query = self.query.filter(id__in=changed_devices_ids)
         profile = self.request.user.get_profile()
         if not profile.has_perm(Perm.read_dc_structure):
             self.query = profile.filter_by_perm(self.query,
