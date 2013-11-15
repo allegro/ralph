@@ -14,6 +14,148 @@ E.g.:
     - device, physical_id
 
 The same idea is used when we try to make a diff.
+
+Sample:
+=======
+
+Plugins result:
+{
+    'database': [
+        {
+            'serial_number': 'sn1',
+            'param_1': 'value 1 0',
+            'param_db': 'only in db',
+        },
+        {
+            'serial_number': 'sn5',
+            'param_1': 'value 1 0',
+            'param_2': 'value 2 0',
+        },
+    ],
+    'plugin_1': [
+        {
+            'serial_number': 'sn1',
+            'param_1': 'value 1 1',
+            'param_2': 'value 2 1',
+        },
+        {
+            'device': 'dev_1',
+            'index': '1',
+            'param_1': 'value 1 1',
+            'param_2': 'value 2 1',
+        },
+        {
+            'device': 'dev_1',
+            'index': '2',
+            'param_1': 'value 1 1',
+            'param_2': 'value 2 1',
+        },
+        {
+            'serial_number': 'sn4',
+            'device': 'dev_1',
+            'index': '3',
+            'param_1': 'value 1 1',
+            'param_2': 'value 2 1',
+        },
+    ],
+    'plugin_2': [
+        {
+            'serial_number': 'sn1',
+            'param_1': 'value 1 2',
+            'param_2': 'value 2 2',
+        },
+        {
+            'serial_number': 'sn2',
+            'param_1': 'value 1 2',
+            'param_2': 'value 2 2',
+        },
+        {
+            'serial_number': 'sn3',
+            'param_1': 'value 1 2',
+            'param_2': 'value 2 2',
+        },
+        {
+            'serial_number': 'sn4',
+            'param_1': 'value 1 2',
+            'param_2': 'value 2 2',
+            'param_3': 'value 3 2',
+        },
+    ],
+    'plugin_3': [
+        {
+            'serial_number': 'sn1',
+            'param_1': 'value 1 3',
+            'param_2': 'value 2 3',
+        },
+        {
+            'param_1': 'value 1 3 1',
+            'param_2': 'value 2 3 1',
+        },
+        {
+            'serial_number': 'sn3',
+            'param_1': 'value 1 3',
+            'param_2': 'value 2 3',
+        },
+        {
+            'device': 'dev_1',
+            'index': '1',
+            'param_1': 'value 1 3',
+            'param_2': 'value 2 3',
+            'param_3': 'value 3 3',
+        },
+    ],
+}
+
+Plugins rank:
+plugin_2, plugin_3, plugin_1 (the best)
+
+Unique fields:
+('serial_number',) and ('device', 'index')
+
+Merge:
+[
+    {
+        'param_1': 'value 1 1',    # from plugin 1
+        'param_2': 'value 2 1',    # from plugin 1
+        'param_db': 'only in db',  # db complete not exists fields
+                                   # mathed by sn
+        'serial_number': 'sn1',    # matching field
+    },
+    {
+        'param_1': 'value 1 2',    # from plugin_2, no other propositions
+        'param_2': 'value 2 2',    # from plugin_2, no other propositions
+        'serial_number': 'sn2',    # matching field
+    },
+    {
+        'param_1': 'value 1 3',    # from plugin_3, overwrite plugin_2
+        'param_2': 'value 2 3',    # from plugin_3, overwrite plugin_2
+        'serial_number': 'sn3',    # matching field
+    },
+    {
+        'device': 'dev_1',         # matching field (with index)
+        'index': '3',              # matching field (with device)
+        'param_1': 'value 1 1',    # from plugin_1
+                                   # matched by (device, index), serial_number
+        'param_2': 'value 2 1',    # from plugin_1
+                                   # matched by (device, index), serial_number
+        'param_3': 'value 3 2',    # from plugin_2, matched by serial_number
+        'serial_number': 'sn4',    # matching field
+    },
+    {
+        'device': 'dev_1',         # matching field (with index)
+        'index': '1',              # matching field (with device)
+        'param_1': 'value 1 1',    # from plugin_1, overwrite plugin_3
+        'param_2': 'value 2 1',    # from plugin_1, overwrite plugin_3
+        'param_3': 'value 3 3',    # from plugin_3
+    },
+    {
+        'device': 'dev_1',         # matching field (with index)
+        'index': '2',              # matching field (with device)
+        'param_1': 'value 1 1',    # from plugin_1
+        'param_2': 'value 2 1',    # from plugin_1
+    },
+]
+
 """
 
 from __future__ import absolute_import
