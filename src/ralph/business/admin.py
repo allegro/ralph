@@ -222,7 +222,7 @@ class VentureAdmin(ModelAdmin):
     }
 
     def get_form(self, request, obj=None):
-        if obj.verified:
+        if obj and obj.verified:
             return VentureAdminVerifiedForm
         return VentureAdminForm
 
