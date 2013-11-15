@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
 """
-Translating between the device database model and the scan data.
+Translating between the device database model and the scan data. Also making
+diff between data from DB and merged results from all plugins.
 """
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
-
 
 from django.db import models as db
 from django.conf import settings
@@ -35,6 +35,21 @@ from ralph.discovery.models_device import (
     DeviceType,
     DeviceModel,
 )
+from ralph.scan.merger import merge as merge_component
+
+
+# For every fields here merger tries join data using this pairs of keys.
+UNIQUE_FIELDS_FOR_MERGER = {
+    'disks': [('serial_number',), ('device', 'mount_point')],
+    'processors': [('device', 'index')],
+    'memory': [('device', 'index')],
+    'fibrechannel_cards': [('physical_id', 'device')],
+    'parts': [('serial_number',)],
+    'disk_exports': [('serial_number',)],
+    'disk_shares': [('device', 'share')],
+    'installed_software': [('device', 'path')],
+}
+SCAN_SAVE_PRIORITY = 100
 
 
 def _update_addresses(device, address_data, is_management=False):
@@ -64,6 +79,57 @@ def _update_addresses(device, address_data, is_management=False):
         ipaddress.save(update_last_seen=False)
 
 
+def _get_or_create_model_for_component(
+    model_type,
+    component_data,
+    field_map,
+    forbidden_model_fields=set(),
+):
+    """
+    For concrete component type try to save or reuse instance of
+    Component using field_map and list of fields to save.
+    Field_map maps from component fields to database fields. Some of the
+    fields are forbidden to save for given component type, for example field
+    name is forbidden in Storage Component.
+
+    :param model_type: If provided, a 'model' field will be added
+    :param component_data: list of dicts describing the components
+    :param field_map: mapping from database fields to component_data keys
+    :param forbidden_model_fields: If provided, model will be created
+                                   without those fields
+    """
+    model_fields = {
+        field: component_data[field_map[field]]
+        for field in field_map
+        if all((
+            component_data.get(field_map[field]),
+            field != 'type',
+            field not in forbidden_model_fields,
+        ))
+    }
+    if all((
+        'model_name' in component_data,
+        'name' not in forbidden_model_fields,
+    )):
+        model_fields['name'] = component_data['model_name']
+    if model_type == ComponentType.software:
+        path = model_fields.get('path')
+        family = model_fields.get('family')
+        if path and not family:
+            model_fields['family'] = path
+    model, created = ComponentModel.create(
+        model_type,
+        SCAN_SAVE_PRIORITY,
+        **model_fields)
+    if not created:
+        for field, value in model_fields.items():
+            if field in forbidden_model_fields:
+                continue
+            setattr(model, field, value)
+        model.save(priority=SCAN_SAVE_PRIORITY)
+    return model
+
+
 def _update_component_data(
     device,
     component_data,
@@ -91,6 +157,7 @@ def _update_component_data(
 
     component_ids = []
     for index, data in enumerate(component_data):
+        model = None
         data['device'] = device
         data['index'] = index
         for group in unique_fields:
@@ -111,31 +178,18 @@ def _update_component_data(
             # No matching component found, create a new one
             if model_type is not None or 'type' in data:
                 # If model_type is provided, create the model
-                model = None
                 if model_type is None:
                     try:
                         model_type = ComponentType.from_name(data['type'])
                     except ValueError:
                         model_type = None
                 if model_type is not None:
-                    model_fields = {
-                        field: data[field_map[field]]
-                        for field in field_map
-                        if all((
-                            data.get(field_map[field]),
-                            field != 'type',
-                            field not in forbidden_model_fields,
-                        ))
-                    }
-                    if all((
-                        'model_name' in data,
-                        'name' not in forbidden_model_fields,
-                    )):
-                        model_fields['name'] = data['model_name']
-                    model, created = ComponentModel.create(
+                    model = _get_or_create_model_for_component(
                         model_type,
-                        0,
-                        **model_fields)
+                        data,
+                        field_map,
+                        forbidden_model_fields,
+                    )
                 if model is None:
                     raise ValueError('Unknown model')
                 component = Component(model=model)
@@ -145,7 +199,20 @@ def _update_component_data(
         for field, key in field_map.iteritems():
             if key in data:
                 setattr(component, field, data[key])
-        component.save(priority=100)
+        if model_type is not None and model is None:
+            try:
+                model = _get_or_create_model_for_component(
+                    model_type,
+                    data,
+                    field_map,
+                    forbidden_model_fields,
+                )
+            except AssertionError:
+                pass
+            else:
+                if model:
+                    component.model = model
+        component.save(priority=SCAN_SAVE_PRIORITY)
         component_ids.append(component.id)
     # Delete the components that are no longer current
     for component in Component.objects.filter(
@@ -182,7 +249,7 @@ def get_device_data(device):
     if device.model is not None:
         data['model_name'] = device.model.name
         if device.model.type != DeviceType.unknown:
-            data['type'] = DeviceType.from_id(device.model.type).name
+            data['type'] = DeviceType.from_id(device.model.type).raw
     if device.sn is not None:
         data['serial_number'] = device.sn
     if device.chassis_position:
@@ -418,9 +485,7 @@ def set_device_data(device, data):
                 'mac': 'mac',
                 'device': 'device',
             },
-            [
-                ('mac',),
-            ],
+            [('mac',)],
             None,
         )
     if 'management_ip_addresses' in data:
@@ -650,4 +715,39 @@ def find_devices(result):
         db.Q(sn__in=serials) |
         db.Q(ethernet__mac__in=macs)
     ).distinct()
+
+
+def append_merged_proposition(data, device):
+    """
+    Add `merged data` proposition to other Scan results.
+
+    :param data: results from scan plugins
+    :param device: device object connected with plugins results
+    """
+
+    for component, results in data.iteritems():
+        if component not in UNIQUE_FIELDS_FOR_MERGER:
+            continue
+        # sanitize data...
+        data_to_merge = {}
+        for (plugin_name,), plugin_data in results.iteritems():
+            data_to_merge[plugin_name] = []
+            for index, row in enumerate(plugin_data):
+                row.update({
+                    'device': device.pk,
+                    'index': index,
+                })
+                for key, value in row.items():
+                    if value is None:
+                        del row[key]
+                data_to_merge[plugin_name].append(row)
+        merged = merge_component(
+            component,
+            data_to_merge,
+            UNIQUE_FIELDS_FOR_MERGER[component],
+        )
+        if merged:
+            for row in merged:
+                del row['device']
+            data[component][('merged',)] = merged
 

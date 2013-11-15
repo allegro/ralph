@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 
+"""
+Set of usefull functions to retrieve data from Puppet facts.
+"""
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -51,6 +55,10 @@ SEPARATE_VERSION = re.compile('[~|+|\-]')
 
 
 def handle_facts(facts, is_virtual=False):
+    """
+    Handle all facts and return standardized device info.
+    """
+
     results = {}
     if is_virtual:
         results['model_name'] = " ".join(
@@ -419,7 +427,7 @@ def handle_facts_megaraid(facts):
                 controller_handle,
                 disk_handle,
             )
-        except ValueError as e:
+        except ValueError:
             logger.warning("Unable to parse disk {}".format(disk))
             continue
         disk['vendor'], disk['product'], disk['serial_number'] = disc_data
@@ -566,3 +574,4 @@ def handle_facts_packages(facts):
             'model_name': package_name,
         })
     return packages
+

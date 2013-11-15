@@ -183,6 +183,10 @@ class SearchForm(forms.Form):
         widget=forms.CheckboxInput(attrs={
             'data-collapsed': True,
         }))
+    with_changes = forms.BooleanField(
+        required=False,
+        label="Only with Scan changes",
+    )
     deleted = forms.BooleanField(required=False, label="Include deleted")
 
     def clean_purchase_date_end(self):
