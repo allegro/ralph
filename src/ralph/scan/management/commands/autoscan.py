@@ -36,27 +36,29 @@ class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option(
             '-n',
-            '--network',
+            '--networks',
             dest='network',
             action='store_true',
             default=False,
-            help='Scan the specified networks.',
+            help='Scan the specified networks (space delimited).',
         ),
         make_option(
             '-c',
-            '--data-center',
+            '--data-centers',
             dest='data_center',
             action='store_true',
             default=False,
-            help='Scan all networks in the specified data centers.',
+            help='Scan all networks in the specified data centers (space '
+                 'delimited).',
         ),
         make_option(
             '-q',
-            '--queue',
+            '--queues',
             dest='queue',
             action='store_true',
             default=False,
-            help='Scan all networks that use the specified worker queues.',
+            help='Scan all networks that use the specified worker queues ('
+                 'space delimited).',
         ),
     )
     requires_model_validation = False

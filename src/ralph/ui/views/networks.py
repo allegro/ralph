@@ -11,6 +11,7 @@ import django_rq
 import rq
 
 from bob.menu import MenuItem
+from django.conf import settings
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
@@ -255,7 +256,7 @@ class NetworksAutoscan(SidebarNetworks, BaseMixin, BaseDeviceList):
             query = query.filter(is_buried=False)
         elif self.status == 'dead':
             query = query.filter(
-                dead_ping_count__gt=2,
+                dead_ping_count__gt=settings.DEAD_PING_COUNT,
                 device__isnull=False,
             ).exclude(
                 device__deleted=True,

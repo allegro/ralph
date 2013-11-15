@@ -108,7 +108,12 @@ class WidgetTable(forms.MultiWidget):
 
 
 class DiffSelect(forms.Select):
-    """A widget for selecting one of the values of a diff."""
+    """
+    A widget used to:
+    - display diff of results
+    - select one of the possible scan choices (also DB)
+    - display change summary
+    """
 
     def __init__(self, diff=None, default_value=None, *args, **kwargs):
         self.diff = diff

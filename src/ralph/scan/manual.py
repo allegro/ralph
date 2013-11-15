@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 """
-Scan all exists and not dead IP addresses from specified networks or data
-centers. This Scan try to extract all possible data from all available
-plugins. Also calculate checksum from plugins resutls. This checksum is
+Scan all existing and not dead IP addresses from specified networks or data
+centers. This Scan tries to extract all possible data from all available
+plugins. It also calculates checksum from plugins results. This checksum is
 usefull to detect possible changes on devices.
 """
 
@@ -19,7 +19,6 @@ import json
 import logging
 
 import django_rq
-import os.path
 import rq
 
 from django.conf import settings
@@ -69,14 +68,14 @@ def scan_address(ip_address, plugins, network=None):
 
 
 def scan_network(network, plugins):
-    """Queue scan of a whole nerwork on the right worker."""
+    """Queue scan of a entire network on the right worker."""
 
     for address in network.network.iterhosts():
         try:
             # scan only exists and not dead IP addresses
             ip_address = IPAddress.objects.get(
                 address=address,
-                dead_ping_count__lte=2,
+                dead_ping_count__lte=settings.DEAD_PING_COUNT,
             )
         except IPAddress.DoesNotExist:
             continue
@@ -138,6 +137,11 @@ def _run_plugins(address, plugins, job, **kwargs):
 
 
 def _get_ip_addresses_from_results(results):
+    """
+    Returns list of IPAddress instances that are matched from inside scan
+    results source addresses.
+    """
+
     ip_addresses = set()
     for plugin_name, plugin_results in results.iteritems():
         # Only system ip addresses. This function will be used only with API
@@ -166,6 +170,11 @@ def _get_results_checksum(data):
 
 
 def _scan_postprocessing(results, job, ip_address=None):
+    """
+    Postprocessing is an act of calculation checksums on scan results, and
+    maintenance RQ jobs.
+    """
+
     # calculate new checksum
     cleaned_results = _get_cleaned_results(results)
     checksum = _get_results_checksum(cleaned_results)
@@ -213,6 +222,10 @@ def _scan_postprocessing(results, job, ip_address=None):
 
 
 def _scan_address(ip_address=None, plugins=None, results=None, **kwargs):
+    """
+    The function that is actually running on the worker.
+    """
+
     job = rq.get_current_job()
     available_plugins = getattr(settings, 'SCAN_PLUGINS', {}).keys()
     if not plugins:
@@ -227,18 +240,4 @@ def _scan_address(ip_address=None, plugins=None, results=None, **kwargs):
     if run_postprocessing:
         _scan_postprocessing(results, job, ip_address)
     return results
-
-
-def _log_results(address, results):
-    """If logging is configured, logs the results of the scan."""
-
-    if SCAN_LOG_DIRECTORY is None:
-        return
-    filename = '%s_%s.json' % (
-        address,
-        datetime.datetime.now().strftime("%Y-%m-%d_%H:%M"),
-    )
-    filepath = os.path.join(SCAN_LOG_DIRECTORY, filename)
-    with open(filepath, 'w') as f:
-        json.dump(results, f)
 

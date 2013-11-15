@@ -8,10 +8,10 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import pprint
+import sys
 import textwrap
 import time
-import sys
-import json
 
 from optparse import make_option
 
@@ -58,27 +58,29 @@ class Command(BaseCommand):
         ),
         make_option(
             '-n',
-            '--network',
+            '--networks',
             dest='network',
             action='store_true',
             default=False,
-            help='Scan the specified networks.',
+            help='Scan the specified networks (space delimited).',
         ),
         make_option(
             '-c',
-            '--data-center',
+            '--data-centers',
             dest='data_center',
             action='store_true',
             default=False,
-            help='Scan all networks in the specified data centers.',
+            help='Scan all networks in the specified data centers (space '
+                 'delimited).',
         ),
         make_option(
             '-q',
-            '--queue',
+            '--queues',
             dest='queue',
             action='store_true',
             default=False,
-            help='Scan all networks that use the specified worker queues.',
+            help='Scan all networks that use the specified worker queues ('
+                 'space delimited).',
         ),
     )
     requires_model_validation = False
@@ -134,7 +136,7 @@ class Command(BaseCommand):
                         scan_network(network, plugins)
         else:
             try:
-                addresses = [str(ipaddr.IPAddress(ip)) for ip in args]
+                addresses = [unicode(ipaddr.IPAddress(ip)) for ip in args]
             except ValueError as e:
                 raise SystemExit(e)
             else:
@@ -157,5 +159,5 @@ class Command(BaseCommand):
                             raise SystemExit(job.exc_info)
                         time.sleep(5)
                     last_message = print_job_messages(job, last_message)
-                    print(json.dumps(job.result))
+                    pprint.pprint(job.result)
 

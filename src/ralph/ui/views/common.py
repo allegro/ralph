@@ -34,13 +34,12 @@ from ralph.scan.forms import DiffForm
 from ralph.scan.data import (
     append_merged_proposition,
     device_from_data,
-    diff_results,
     find_devices,
     get_device_data,
     merge_data,
     set_device_data,
-    sort_results,
 )
+from ralph.scan.diff import diff_results, sort_results
 from ralph.scan.models import ScanSummary
 from ralph.business.models import (
     RoleProperty,

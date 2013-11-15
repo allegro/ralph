@@ -30,22 +30,22 @@
                         {% for header in diff.meta.headers %}<th>{{ header }}</th>{% endfor %}
                     </tr></thead>
                     <tbody>{% for row in diff.diff %}
-                        <tr class="{% if row.0 == "?" %}warning{% elif row.0 == "+" %}success{% elif row.0 == "-" %}error{% endif %}">
-                            <td{% if row.0 == "?" %} rowspan="2"{% endif %} style="vertical-align: middle;">{% if row.0 == "?" %}M{% else %}{{ row.0 }}{% endif %}</td>
+                        <tr class="{% if row.status == "?" %}warning{% elif row.status == "+" %}success{% elif row.status == "-" %}error{% endif %}">
+                            <td{% if row.status == "?" %} rowspan="2"{% endif %} style="vertical-align: middle;">{% if row.status == "?" %}M{% else %}{{ row.status }}{% endif %}</td>
                             {% for header in diff.meta.headers %}
-                                {% if row.0 == "?" %}
-                                    {% with row_diff=row.2|getvalue:header %}
-                                        <td class="{% if row_diff.0 != "" %}diff-prev{% endif %}"><span>{{ row_diff.1|default:"&nbsp;" }}</span></td>
+                                {% if row.status == "?" %}
+                                    {% with row_diff=row.dict_diff|getvalue:header %}
+                                        <td class="{% if row_diff.status != "" %}diff-prev{% endif %}"><span>{{ row_diff.left_value|default:"&nbsp;" }}</span></td>
                                     {% endwith %}
                                 {% else %}
-                                    <td>{{ row.1|getvalue:header|default:"&nbsp;" }}</td>
+                                    <td>{{ row.items|getvalue:header|default:"&nbsp;" }}</td>
                                 {% endif %}
                             {% endfor %}
-                            {% if row.0 == "?" %}
+                            {% if row.status == "?" %}
                                 </tr><tr class="warning">
                                 {% for header in diff.meta.headers %}
-                                    {% with row_diff=row.2|getvalue:header %}
-                                        <td class="{% if row_diff.0 != "" %}diff-next{% endif %}"><span>{{ row_diff.2|default:"&nbsp;" }}</span></td>
+                                    {% with row_diff=row.dict_diff|getvalue:header %}
+                                        <td class="{% if row_diff.status != "" %}diff-next{% endif %}"><span>{{ row_diff.right_value|default:"&nbsp;" }}</span></td>
                                     {% endwith %}
                                 {% endfor %}
                             {% endif %}

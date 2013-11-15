@@ -3,7 +3,7 @@
 """
 Scan results merger.
 
-It's merge results from all available plugins with data stored in database.
+It merges results from all available plugins with data stored in the database.
 The main idea of this merger is to use all possible unique keys for merged
 component. It's similar to DB `unique` and `unique together` keys.
 E.g.:
@@ -13,8 +13,7 @@ E.g.:
 2. For fibrechannel cards will be:
     - device, physical_id
 
-The same idea is used when we try make diff.
-
+The same idea is used when we try to make a diff.
 """
 
 from __future__ import absolute_import
@@ -30,12 +29,12 @@ from django.conf import settings
 logger = logging.getLogger("SCAN")
 
 
-def _get_results_quality(plugin, component):
+def _get_results_priority(plugin, component):
     try:
-        return settings.SCAN_PLUGINS[plugin]['results_quality'][component]
+        return settings.SCAN_PLUGINS[plugin]['results_priority'][component]
     except KeyError:
         logger.warning(
-            "Result quality for plugin '%s' and component '%s' not found." % (
+            "Result priority for plugin '%s' and component '%s' not found." % (
                 plugin,
                 component,
             ),
@@ -49,10 +48,10 @@ def _get_ranked_plugins_list(plugins, component):
             [
                 {
                     'plugin': plugin,
-                    'quality': _get_results_quality(plugin, component),
+                    'priority': _get_results_priority(plugin, component),
                 } for plugin in plugins
             ],
-            key=lambda k: k['quality'],
+            key=lambda k: k['priority'],
         )
     ]
 
@@ -83,6 +82,67 @@ def merge(component, data, unique_fields, db_plugin_name='database'):
                            database
     """
 
+    # First we are creating data structure which contains only dicts (rows)
+    # that have keys from unique_fields param.
+    # We store this data in tricky way. We want easy find dict by
+    # unique_fields - this is the main idea.
+    # E.g.:
+    # Input:
+    # unique_fiels = [('serial_number',), ('device', 'mount_point')]
+    # data = {
+    #     'disks': [
+    #         {
+    #             'serial_number': 'sn 1',
+    #             'param_1': 'value 1',
+    #         },
+    #         {
+    #             'device': '100',
+    #             'param_2': 'value 2',
+    #         },
+    #         {
+    #             'device': '101',
+    #             'mount_point': '/dev/sda',
+    #             'param_1': 'value 1',
+    #         },
+    #         {
+    #             'device': '102',
+    #             'mount_point': '/dev/sdb',
+    #             'serial_number': 'sn 2',
+    #             'param_2': 'value 2',
+    #         },
+    #     ],
+    # }
+    #
+    # Output:
+    # usefull_data == {
+    #     'disks': {
+    #         ('serial_number',): [
+    #             {
+    #                 'serial_number': 'sn 1',
+    #                 'param_1': 'value 1',
+    #             },
+    #             {
+    #                 'device': '102',
+    #                 'mount_point': '/dev/sdb',
+    #                 'serial_number': 'sn 2',
+    #                 'param_2': 'value 2',
+    #             },
+    #         ],
+    #         ('device', 'mount_point'): [
+    #             {
+    #                 'device': '101',
+    #                 'mount_point': '/dev/sda',
+    #                 'param_1': 'value 1',
+    #             },
+    #             {
+    #                 'device': '102',
+    #                 'mount_pount': '/dev/sdb',
+    #                 'serial_number': 'sn 2',
+    #                 'param_2': 'value 2',
+    #             },
+    #         ]
+    #     },
+    # }
     usefull_data = {}
     for plugin, plugin_results in data.iteritems():
         for row in plugin_results:
@@ -97,24 +157,29 @@ def merge(component, data, unique_fields, db_plugin_name='database'):
                     if unique_group not in usefull_data[plugin]:
                         usefull_data[plugin][unique_group] = []
                     usefull_data[plugin][unique_group].append(row)
-    plugins = usefull_data.keys()
+    plugins = usefull_data.keys()  # use only usefull plugins
     try:
         plugins.remove(db_plugin_name)
     except ValueError:
         pass
-    ranked_plugins = _get_ranked_plugins_list(plugins, component)
+    ranked_plugins = _get_ranked_plugins_list(plugins, component)  # rank it
     if db_plugin_name in data:
-        ranked_plugins.append(db_plugin_name)
+        ranked_plugins.append(db_plugin_name)  # add db plugin on the end
     merged_data = []
     for plugin in ranked_plugins:
-        groups = usefull_data.get(plugin, {}).keys()
+        groups = usefull_data.get(plugin, {}).keys()  # get only usefull groups
+                                                      # of unique fields for
+                                                      # plugin
         for unique_group in groups:
             for new_row in usefull_data[plugin][unique_group]:
                 lookup = {}
                 for field in unique_group:
                     lookup[field] = new_row[field]
+                # find previous version of this dict (row) by current lookup
                 current_row = _find_data(merged_data, lookup)
                 if current_row:
+                    # now we should update it or complete values that are
+                    # only in the database
                     if plugin == db_plugin_name:
                         for field, value in new_row.iteritems():
                             if not current_row.get(field):
@@ -122,6 +187,9 @@ def merge(component, data, unique_fields, db_plugin_name='database'):
                     else:
                         current_row.update(new_row)
                 else:
+                    # in this case dict could be in merged_data - but current
+                    # lookup can't find it - we must try other
+                    # possible lookups
                     exists_in_results = False
                     for alternative_group in set(groups) - set([unique_group]):
                         lookup = {}
@@ -132,9 +200,11 @@ def merge(component, data, unique_fields, db_plugin_name='database'):
                                 continue
                         if len(lookup.keys()) == len(alternative_group):
                             if _find_data(merged_data, lookup):
+                                # exists - ignore it...
                                 exists_in_results = True
                                 break
                     if not exists_in_results and plugin != db_plugin_name:
+                        # we can add it
                         merged_data.append(new_row.copy())
     return merged_data
 

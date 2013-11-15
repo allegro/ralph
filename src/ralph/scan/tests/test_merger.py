@@ -12,25 +12,25 @@ from django.test import TestCase
 from ralph.scan.merger import (
     _find_data,
     _get_ranked_plugins_list,
-    _get_results_quality,
+    _get_results_priority,
     merge,
 )
 
 
 class UtilsTest(TestCase):
-    def test_get_results_quality(self):
+    def test_get_results_priority(self):
         self.assertEqual(
-            _get_results_quality('foo/boo/foo', 'memory'), 1,
+            _get_results_priority('foo/boo/foo', 'memory'), 1,
         )
         self.assertEqual(
-            _get_results_quality('ralph.scan.plugins.puppet', 'disks'), 51,
+            _get_results_priority('ralph.scan.plugins.puppet', 'disks'), 51,
         )
 
     def test_get_ranked_plugins_list(self):
         with mock.patch(
-            'ralph.scan.merger._get_results_quality',
-        ) as mock_get_results_quality:
-            mock_get_results_quality.side_effect = [50, 25, 75]
+            'ralph.scan.merger._get_results_priority',
+        ) as mock_get_results_priority:
+            mock_get_results_priority.side_effect = [50, 25, 75]
             self.assertEqual(
                 _get_ranked_plugins_list(['test1', 'test2', 'test3'], 'foo'),
                 ['test2', 'test1', 'test3'],

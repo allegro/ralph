@@ -1,7 +1,7 @@
 require(['jquery'], function ($) {
     'use strict';
 
-    function ScanResultsForm() {}
+    var ScanResultsForm = function () {};
 
     ScanResultsForm.prototype.handleShowDiffButtons = function () {
         $('[data-role="show_diff_btn"]').click(function () {

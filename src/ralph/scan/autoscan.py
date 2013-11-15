@@ -2,7 +2,7 @@
 
 """
 Pre-scan all IP addresses from specified networks or data centers. This scan
-check that IP address is available. It's also sets some additional data,
+checks that IP address is available. It also sets some additional data,
 like a SNMP name, SNMP community and SNMP version.
 """
 

@@ -352,6 +352,7 @@ AUTOCI_SKIP_MSG = 'AUTOCI is disabled'
 HAMSTER_API_URL = ""
 SCALEME_API_URL = ""
 DEFAULT_SOA_RECORD_CONTENT = ''
+DEAD_PING_COUNT = 2
 # </template>
 
 #
@@ -392,7 +393,7 @@ SCAN_PLUGINS = {
     'ralph.scan.plugins.snmp_macs': {
         'communities': SNMP_PLUGIN_COMMUNITIES,
         'snmp_v3_auth': (SNMP_V3_USER, SNMP_V3_AUTH_KEY, SNMP_V3_PRIV_KEY),
-        'results_quality': {
+        'results_priority': {
             'mac_addresses': 50,
             'type': 25,
             'model_name': 15,
@@ -401,7 +402,7 @@ SCAN_PLUGINS = {
     'ralph.scan.plugins.snmp_f5': {
         'communities': SNMP_PLUGIN_COMMUNITIES,
         'snmp_v3_auth': (SNMP_V3_USER, SNMP_V3_AUTH_KEY, SNMP_V3_PRIV_KEY),
-        'results_quality': {
+        'results_priority': {
             'type': 55,
             'model_name': 55,
             'serial_number': 20,
@@ -410,7 +411,7 @@ SCAN_PLUGINS = {
     'ralph.scan.plugins.idrac': {
         'user': IDRAC_USER,
         'password': IDRAC_PASSWORD,
-        'results_quality': {
+        'results_priority': {
             'model_name': 53,
             'serial_number': 53,
             'management_ip_addresses': 53,
@@ -425,7 +426,7 @@ SCAN_PLUGINS = {
             (SSH_USER or 'root', SSH_PASSWORD),
             (XEN_USER, XEN_PASSWORD),
         ],
-        'results_quality': {
+        'results_priority': {
             'model_name': 15,
             'serial_number': 10,
             'mac_addresses': 15,
@@ -444,7 +445,7 @@ SCAN_PLUGINS = {
     'ralph.scan.plugins.puppet': {
         'puppet_api_url': PUPPET_API_URL,
         'puppet_db_url': PUPPET_DB_URL,
-        'results_quality': {
+        'results_priority': {
             'type': 51,
             'model_name': 51,
             'mac_addresses': 51,
@@ -457,7 +458,7 @@ SCAN_PLUGINS = {
         },
     },
     'ralph.scan.plugins.hp_oa': {
-        'results_quality': {
+        'results_priority': {
             'type': 5,
             'serial_number': 5,
             'model_name': 5,
@@ -470,7 +471,7 @@ SCAN_PLUGINS = {
     'ralph.scan.plugins.ipmi': {
         'user': IPMI_USER,
         'password': IPMI_PASSWORD,
-        'results_quality': {
+        'results_priority': {
             'serial_number': 52,
             'type': 52,
             'model_name': 52,
@@ -483,7 +484,7 @@ SCAN_PLUGINS = {
     'ralph.scan.plugins.http_supermicro': {
         'user': IPMI_USER,
         'password': IPMI_PASSWORD,
-        'results_quality': {
+        'results_priority': {
             'management_ip_addresses': 10,
             'mac_addresses': 3,
         },
@@ -491,7 +492,7 @@ SCAN_PLUGINS = {
     'ralph.scan.plugins.ssh_ibm_bladecenter': {
         'ssh_ibm_user': SSH_IBM_USER,
         'ssh_ibm_password': SSH_IBM_PASSWORD,
-        'results_quality': {
+        'results_priority': {
             'management_ip_addresses': 50,
             'mac_addresses': 50,
             'chassis_position': 50,
@@ -504,14 +505,14 @@ SCAN_PLUGINS = {
         },
     },
     'ralph.scan.plugins.dns_hostname': {
-        'results_quality': {
+        'results_priority': {
             'hostname': 60,
         },
     },
     'ralph.scan.plugins.ilo_hp': {
         'user': ILO_USER,
         'password': ILO_PASSWORD,
-        'results_quality': {
+        'results_priority': {
             'management_ip_addresses': 4,
             'mac_addresses': 4,
             'processors': 4,
@@ -521,7 +522,7 @@ SCAN_PLUGINS = {
     'ralph.scan.plugins.ssh_cisco_asa': {
         'ssh_user': SSH_SSG_USER,
         'ssh_pass': SSH_SSG_PASSWORD,
-        'results_quality': {
+        'results_priority': {
             'model_name': 7,
             'type': 7,
             'serial_number': 7,
@@ -535,7 +536,7 @@ SCAN_PLUGINS = {
     'ralph.scan.plugins.ssh_cisco_catalyst': {
         'ssh_user': SSH_SSG_USER,
         'ssh_pass': SSH_SSG_PASSWORD,
-        'results_quality': {
+        'results_priority': {
             'hostname': 7,
             'model_name': 7,
             'type': 7,
@@ -548,7 +549,7 @@ SCAN_PLUGINS = {
     'ralph.scan.plugins.ssh_proxmox': {
         'user': SSH_USER or 'root',
         'password': SSH_PASSWORD,
-        'results_quality': {
+        'results_priority': {
             'processors': 10,
             'disks': 10,
             'disk_shares': 10,
@@ -564,7 +565,7 @@ SCAN_PLUGINS = {
     'ralph.scan.plugins.ssh_3par': {
         'user': SSH_3PAR_USER,
         'password': SSH_3PAR_PASSWORD,
-        'results_quality': {
+        'results_priority': {
             'type': 15,
             'model_name': 15,
             'hostname': 15,
@@ -576,7 +577,7 @@ SCAN_PLUGINS = {
     'ralph.scan.plugins.ssh_ssg': {
         'user': SSH_SSG_USER,
         'password': SSH_SSG_PASSWORD,
-        'results_quality': {
+        'results_priority': {
             'type': 5,
             'model_name': 5,
             'mac_addresses': 5,
@@ -589,7 +590,7 @@ SCAN_PLUGINS = {
     'ralph.scan.plugins.ssh_ganeti': {
         'ssh_user': SSH_USER,
         'ssh_password': SSH_PASSWORD,
-        'results_quality': {
+        'results_priority': {
             'hostname': 50,
             'type': 50,
             'mac_addresses': 50,
@@ -599,7 +600,7 @@ SCAN_PLUGINS = {
     'ralph.scan.plugins.ssh_xen': {
         'xen_user': XEN_USER,
         'xen_password': XEN_PASSWORD,
-        'results_quality': {
+        'results_priority': {
             'mac_addresses': 20,
             'serial_number': 20,
             'hostname': 20,
@@ -613,7 +614,7 @@ SCAN_PLUGINS = {
         'aix_user': AIX_USER,
         'aix_password': AIX_PASSWORD,
         'aix_key': AIX_KEY,
-        'results_quality': {
+        'results_priority': {
             'mac_addresses': 10,
             'model_name': 10,
             'system_ip_addresses': 10,
@@ -628,7 +629,7 @@ SCAN_PLUGINS = {
     'ralph.scan.plugins.ssh_onstor': {
         'user': SSH_ONSTOR_USER,
         'password': SSH_ONSTOR_PASSWORD,
-        'results_quality': {
+        'results_priority': {
             'model_name': 5,
             'serial_number': 5,
             'mac_addresses': 5,
@@ -639,7 +640,7 @@ SCAN_PLUGINS = {
     'ralph.scan.plugins.http_ibm_system_x': {
         'user': IBM_SYSTEM_X_USER,
         'password': IBM_SYSTEM_X_PASSWORD,
-        'results_quality': {
+        'results_priority': {
             'type': 5,
             'model_name': 5,
             'serial_number': 5,
@@ -652,7 +653,7 @@ SCAN_PLUGINS = {
     'ralph.scan.plugins.ssh_hp_p2000': {
         'ssh_user': SSH_P2000_USER,
         'ssh_password': SSH_P2000_PASSWORD,
-        'results_quality': {
+        'results_priority': {
             'management_ip_addresses': 6,
             'hostname': 6,
             'model_name': 6,
@@ -664,7 +665,7 @@ SCAN_PLUGINS = {
     'ralph.scan.plugins.ssh_hp_msa': {
         'user': SSH_MSA_USER,
         'password': SSH_MSA_PASSWORD,
-        'results_quality': {
+        'results_priority': {
             'type': 5,
             'model_name': 5,
             'serial_number': 5,
@@ -674,7 +675,7 @@ SCAN_PLUGINS = {
         },
     },
     'ralph.scan.plugins.software': {
-        'results_quality': {
+        'results_priority': {
             'software': 10,
         },
     },
