@@ -224,9 +224,9 @@ def merge(component, data, unique_fields, db_plugin_name='database'):
                            database
     """
 
-    # First we are creating data structure which contains only dicts (rows)
+    # First we create data structure which contains only dicts (rows)
     # that have keys from unique_fields param.
-    # We store this data in tricky way. We want easy find dict by
+    # We store this data in tricky way. We want to find easily the dict using
     # unique_fields - this is the main idea.
     # E.g.:
     # Input:

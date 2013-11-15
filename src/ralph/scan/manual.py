@@ -207,12 +207,12 @@ def _scan_postprocessing(results, job, ip_address=None):
     # calculate new status
     if all((
         checksum != scan_summary.previous_checksum,
-        checksum != scan_summary.false_possitive_checksum,
+        checksum != scan_summary.false_positive_checksum,
     )):
         job.meta['changed'] = True
     else:
         job.meta['changed'] = False
-        scan_summary.false_possitive_checksum = None
+        scan_summary.false_positive_checksum = None
     job.save()
     scan_summary.save()
     ip_address.save()

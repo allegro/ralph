@@ -637,7 +637,7 @@ class Migration(SchemaMigration):
         'scan.scansummary': {
             'Meta': {'object_name': 'ScanSummary'},
             'change': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_index': 'True'}),
-            'false_possitive_checksum': ('django.db.models.fields.CharField', [], {'max_length': '32', 'unique': 'True', 'null': 'True', 'blank': 'True'}),
+            'false_positive_checksum': ('django.db.models.fields.CharField', [], {'max_length': '32', 'unique': 'True', 'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'job_id': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '36'}),
             'previous_checksum': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '32'})

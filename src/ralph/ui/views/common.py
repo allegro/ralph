@@ -1640,7 +1640,7 @@ class ScanStatus(BaseMixin, TemplateView):
         except ScanSummary.DoesNotExist:
             return
         else:
-            scan_summary.false_possitive_checksum = job.meta.get(
+            scan_summary.false_positive_checksum = job.meta.get(
                 'results_checksum',
             )
             scan_summary.save()
@@ -1656,7 +1656,7 @@ class ScanStatus(BaseMixin, TemplateView):
             scan_summary.previous_checksum = job.meta.get(
                 'results_checksum',
             )
-            scan_summary.false_possitive_checksum = None
+            scan_summary.false_positive_checksum = None
             scan_summary.save()
             job.meta['changed'] = False
             job.save()

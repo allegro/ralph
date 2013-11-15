@@ -19,7 +19,7 @@ class ScanSummary(db.Model, WithConcurrentGetOrCreate):
 
     job_id = db.CharField(unique=True, max_length=36)
     previous_checksum = db.CharField(max_length=32)
-    false_possitive_checksum = db.CharField(
+    false_positive_checksum = db.CharField(
         blank=True,
         null=True,
         max_length=32,
