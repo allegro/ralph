@@ -1,17 +1,21 @@
 # -*- coding: utf-8 -*-
 
+"""
+Forms and widgets to act with Scan results.
+"""
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import operator
 import itertools
 
-from django import forms
-from django.utils.safestring import mark_safe
-from django.utils.html import escape, conditional_escape
 from ajax_select.fields import AutoCompleteSelectField
+from django import forms
+from django.template.loader import render_to_string
+from django.utils.html import escape
+from django.utils.safestring import mark_safe
 
 from ralph.discovery.models import DeviceType
 
@@ -104,25 +108,34 @@ class WidgetTable(forms.MultiWidget):
 
 
 class DiffSelect(forms.Select):
-    """A widget for selecting one of the values of a diff."""
+    """
+    A widget used to:
+    - display diff of results
+    - select one of the possible scan choices (also DB)
+    - display change summary
+    """
+
+    def __init__(self, diff=None, default_value=None, *args, **kwargs):
+        self.diff = diff
+        self.default_value = default_value
+        self.open_advanced_mode = False
+        super(DiffSelect, self).__init__(*args, **kwargs)
+
 
     def render(self, name, value, attrs=None, choices=()):
         if value is None:
             value = ''
-        output = []
-        for option, label in self.choices:
-            if option == 'custom':
-                continue
-            output.append('<label class="radio">')
-            if value == option or value in option.split(', '):
-                html_input = '<input type="radio" name="%s" value="%s" checked="on">'
-            else:
-                html_input = '<input type="radio" name="%s" value="%s">'
-            output.append(html_input % (escape(name), escape(option)))
-            output.append(conditional_escape(label))
-            output.append('<br>(from <i>%s</i>)' % escape(option))
-            output.append('</label>')
-        return mark_safe('\n'.join(output))
+        self.open_advanced_mode = self.default_value != value
+        return render_to_string(
+            'scan/widgets/diff_select.html',
+            {
+                'choices': self.choices,
+                'name': name,
+                'value': value,
+                'diff': self.diff,
+                'open_advanced_mode': self.open_advanced_mode,
+            },
+        )
 
 
 class DefaultInfo(object):
@@ -201,7 +214,7 @@ class DictListInfo(ListInfo):
                 keyset |= set(d)
             self.headers = sorted(keyset)
         output = [
-                '<table class="table table-condensed table-bordered" style="width:auto; display:inline-block;vertical-align: top;">',
+            '<table class="table table-condensed table-bordered" style="width:auto; display:inline-block;vertical-align: top;">',
             '<tr>',
             '<th>#</th>',
             ''.join(
@@ -319,10 +332,9 @@ class DiffForm(forms.Form):
     }
 
     def __init__(self, data, *args, **kwargs):
-        try:
-            default = kwargs.pop('default')
-        except KeyError:
-            default = 'custom'
+        diff = kwargs.pop('diff', None)
+        default = kwargs.pop('default', 'custom')
+        csv_default = kwargs.pop('csv_default', 'custom')
         super(DiffForm, self).__init__(*args, **kwargs)
         self.result = data
         for field_name, values in sorted(data.iteritems()):
@@ -332,12 +344,19 @@ class DiffForm(forms.Form):
                 for (sources, value) in values.iteritems()
             ]
             choices.append(('custom', ''))
+            if isinstance(info, CSVInfo):
+                default_value = csv_default
+            else:
+                default_value = default
             field = forms.ChoiceField(
                 label=field_name.replace('_', ' ').title(),
                 choices=choices,
-                widget=DiffSelect,
+                widget=DiffSelect(
+                    diff=diff.get(field_name) if diff else None,
+                    default_value=default_value,
+                ),
             )
-            field.initial = default
+            field.initial = default_value
             self.fields[field_name] = field
             subfield = info.Field(widget=info.Widget, required=False)
             field.subfield_name = '%s-custom' % field_name
