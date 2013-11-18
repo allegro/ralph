@@ -175,11 +175,6 @@ def _scan_postprocessing(results, job, ip_address=None):
     maintenance RQ jobs.
     """
 
-    # calculate new checksum
-    cleaned_results = _get_cleaned_results(results)
-    checksum = _get_results_checksum(cleaned_results)
-    job.meta['results_checksum'] = checksum
-    job.save()
     # get connected ip_address
     if not ip_address:
         ip_addresses = _get_ip_addresses_from_results(results)
@@ -204,6 +199,17 @@ def _scan_postprocessing(results, job, ip_address=None):
             job_id=job.id,
         )
         ip_address.scan_summary = scan_summary
+    # update exists resutls data
+    if old_job and old_job.results:
+        updated_results = old_job.results
+        for plugin_name, plugin_results in results.iteritems():
+            updated_results[plugin_name] = plugin_results
+        results.update(updated_results)
+    # calculate new checksum
+    cleaned_results = _get_cleaned_results(results)
+    checksum = _get_results_checksum(cleaned_results)
+    job.meta['results_checksum'] = checksum
+    job.save()
     # calculate new status
     if all((
         checksum != scan_summary.previous_checksum,
