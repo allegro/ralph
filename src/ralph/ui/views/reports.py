@@ -10,7 +10,7 @@ import datetime
 
 from django.conf import settings
 from django.contrib import messages
-from django.core.cache import DEFAULT_CACHE_ALIAS, get_cache
+from django.core.cache import get_cache
 from django.db import models as db
 from django.db.models import Q
 from django.http import HttpResponseRedirect
@@ -616,8 +616,10 @@ class ReportVentures(SidebarReports, AsyncReportMixin, Base):
         else:
             self.ventures = Venture.objects.none()
             self.venture_data = []
-        if (self.request.GET.get('export') == 'csv' and
-            self.venture_data is not None):
+        if (
+            self.request.GET.get('export') == 'csv' and
+            self.venture_data is not None
+        ):
             return make_csv_response(
                 data=self.export_csv(self.venture_data, self.extra_types),
                 filename='ReportVentures.csv',
@@ -885,8 +887,11 @@ class ReportDevices(SidebarReports, Base):
                 csv_conf = {
                     'title': 'All devices (active and deleted)',
                     'name': 'report_all_devices',
-                    'url': '?show_all_devices=on&show_all_deleted_devices=on&export=csv',
-                    }
+                    'url': (
+                        '?show_all_devices=on&'
+                        'show_all_deleted_devices=on&export=csv'
+                    ),
+                }
             elif all_devices:
                 show_devices = Device.objects.all()
                 csv_conf = {
