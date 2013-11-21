@@ -656,7 +656,7 @@ def _report_services_data_provider():
         invalid_relations.append(child)
     services_without_venture = []
     for service in services:
-        if CIRelation.objects.filter(
+        if not CIRelation.objects.filter(
             parent=service,
             type=CI_RELATION_TYPES.CONTAINS,
             child__type=CI_TYPES.VENTURE
