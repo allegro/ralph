@@ -223,3 +223,8 @@ img.waiting
     background-color: #dff0d8;
 }
 
+.scan-select-plugins .control-group label {
+    width: 260px;
+    margin-right: 10px;
+}
+

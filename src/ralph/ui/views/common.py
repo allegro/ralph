@@ -1449,7 +1449,7 @@ class Scan(BaseMixin, TemplateView):
     def post(self, *args, **kwargs):
         plugins = self.request.POST.getlist('plugins')
         if not plugins:
-            messages.error(self.reqest, "You have to select some plugins.")
+            messages.error(self.request, "You have to select some plugins.")
             return self.get(*args, **kwargs)
         address = self.kwargs.get('address')
         ip_address, created = IPAddress.concurrent_get_or_create(
@@ -1576,11 +1576,15 @@ class ScanStatus(BaseMixin, TemplateView):
                 "This scan has timed out. Please run it again.",
             )
         else:
+            plugins = []
             if self.job.args:
                 self.ip_address = self.job.args[0]
+                if self.job.result is None:
+                    plugins = self.job.args[1]
             else:
                 self.set_ip_address()
-            plugins = self.job.result.keys()
+            if self.job.result:
+                plugins = self.job.result.keys()
             icons = {
                 'success': 'fugue-puzzle',
                 'error': 'fugue-cross-button',

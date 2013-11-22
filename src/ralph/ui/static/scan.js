@@ -45,8 +45,39 @@ require(['jquery'], function ($) {
         this.handleShowAdvancedModeButtons();
     };
 
+    var ScanSelectPluginsForm = function () {};
+
+    ScanSelectPluginsForm.prototype.handleSelectAllButton = function () {
+        var formContainer = $('[data-role="select-plugins-form"]');
+
+        var selectAll = function() {
+            $(formContainer).find(':checkbox').each(function() {
+                this.checked = true;
+            });
+        };
+
+        var unselectAll = function () {
+            $(formContainer).find(':checkbox').each(function() {
+                this.checked = false;
+            });
+        };
+
+        $('[data-role="select-all-btn"]').click(function () {
+            if ($(this).hasClass('active')) {
+                unselectAll();
+            } else {
+                selectAll();
+            }
+        });
+    };
+
+    ScanSelectPluginsForm.prototype.run = function () {
+        this.handleSelectAllButton();
+    };
+
     $(document).ready(function () {
         (new ScanResultsForm()).run();
+        (new ScanSelectPluginsForm()).run();
     });
 });
 
