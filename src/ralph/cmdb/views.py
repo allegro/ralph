@@ -239,7 +239,7 @@ def _get_pages(paginator, page):
 
 def get_error_title(form):
     return ', '.join(
-        form.errors['__all__'],
+        form.errors.get('__all__', []),
     ) or 'Correct the errors.' if form.errors else ''
 
 

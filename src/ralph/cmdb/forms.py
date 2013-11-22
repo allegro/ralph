@@ -173,12 +173,14 @@ class CIRelationEditForm(forms.ModelForm):
          'parent',
          ('ralph.cmdb.models', 'CILookup'),
          help_text=None,
+         required=True,
     )
     child = make_ajax_field(
         models.CIRelation,
          'child',
          ('ralph.cmdb.models', 'CILookup'),
          help_text=None,
+         required=True,
      )
 
     def __init__(self, *args, **kwargs):
