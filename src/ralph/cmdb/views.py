@@ -1693,7 +1693,5 @@ class Cleanup(Search):
         ret['header'] = self.get_table_header(None, 0)
         orphans = CI.objects.filter(parent=None, child=None)
         ret['orphans_table'] = [self.get_table_body(orphans, None)]
-        # unowned = CI.objects.filter(owners=None)
-        # ret['unowned_table'] = [self.get_table_body(unowned, None)]
         return ret
         
