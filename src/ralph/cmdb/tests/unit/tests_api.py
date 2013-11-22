@@ -24,7 +24,10 @@ from ralph.cmdb.models import (
     CIChangeCMDBHistory,
     CIChange,
     CILayer,
+    CIAttribute,
+    CIAttributeValue,
     CI_RELATION_TYPES,
+    CI_ATTRIBUTE_TYPES,
 )
 from ralph.cmdb.models_ci import (
     CIOwnershipType,
@@ -47,6 +50,7 @@ class CMDBApiTest(TestCase):
         self.create_owners()
         self.create_cis()
         self.create_ownerships()
+        self.create_attributes()
         self.create_relations()
         self.data = {
             'format': 'json',
@@ -132,12 +136,27 @@ class CMDBApiTest(TestCase):
         )
         self.relation2.save()
 
+    def create_attributes(self):
+        self.attribute1 = CIAttribute(
+            name='Attribute 1', attribute_type=CI_ATTRIBUTE_TYPES.INTEGER,
+            choices='',
+        )
+        self.attribute1.save()
+        self.attribute1.ci_types.add(self.types[0]),
+        self.attribute_value1 = CIAttributeValue(
+            ci=self.ci1, attribute=self.attribute1,
+        )
+        self.attribute_value1.value = 10
+        self.attribute_value1.save()
+
     def test_layers(self):
         path = "/api/v0.9/cilayers/"
         response = self.client.get(path=path, data=self.data, format='json')
         json_string = response.content
         json_data = json.loads(json_string)
-        resource_uris = [ci_layer['resource_uri'] for ci_layer in json_data['objects']]
+        resource_uris = [
+            ci_layer['resource_uri'] for ci_layer in json_data['objects']
+        ]
 
         response = self.client.get(
             path=resource_uris[0], data=self.data, format='json',
@@ -158,8 +177,9 @@ class CMDBApiTest(TestCase):
         response = self.client.get(path=path, data=self.data, format='json')
         json_string = response.content
         json_data = json.loads(json_string)
-        resource_uris = [ci_type['resource_uri'] for ci_type in json_data['objects']]
-
+        resource_uris = [
+            ci_type['resource_uri'] for ci_type in json_data['objects']
+        ]
         response = self.client.get(
             path=resource_uris[0], data=self.data, format='json',
         )
@@ -218,12 +238,23 @@ class CMDBApiTest(TestCase):
             '{}.{}'.format(self.owner2.first_name, self.owner2.last_name)
         )
 
+    def test_get_attribute(self):
+        path = "/api/v0.9/ci/{0}/".format(self.ci1.id)
+        response = self.client.get(path=path, data=self.data, format='json')
+        json_string = response.content
+        json_data = json.loads(json_string)
+        self.assertListEqual(json_data['attributes'], [
+            {'name': 'Attribute 1', 'value': 10}
+        ])
+
     def test_relations(self):
         path = "/api/v0.9/cirelation/"
         response = self.client.get(path=path, data=self.data, format='json')
         json_string = response.content
         json_data = json.loads(json_string)
-        resource_uris = [ci_relation['resource_uri'] for ci_relation in json_data['objects']]
+        resource_uris = [
+            ci_relation['resource_uri'] for ci_relation in json_data['objects']
+        ]
 
         response = self.client.get(
             path=resource_uris[0], data=self.data, format='json',
@@ -435,7 +466,6 @@ class AccessToCMDBApiTest(TestCase):
         }
         cache.delete("api_user_accesses")
 
-
     def get_response(self, resource):
         path = "/api/v0.9/%s/" % resource
         response = self.client.get(
@@ -452,7 +482,7 @@ class AccessToCMDBApiTest(TestCase):
 
     def test_businessline_resource(self):
         resource = 'businessline'
-        perms = [Perm.read_configuration_item_info_generic,]
+        perms = [Perm.read_configuration_item_info_generic]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)
@@ -468,7 +498,7 @@ class AccessToCMDBApiTest(TestCase):
 
     def test_service_resource(self):
         resource = 'service'
-        perms = [Perm.read_configuration_item_info_generic,]
+        perms = [Perm.read_configuration_item_info_generic]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)
@@ -484,7 +514,7 @@ class AccessToCMDBApiTest(TestCase):
 
     def test_cirelation_resource(self):
         resource = 'cirelation'
-        perms = [Perm.read_configuration_item_info_generic,]
+        perms = [Perm.read_configuration_item_info_generic]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)
@@ -500,7 +530,7 @@ class AccessToCMDBApiTest(TestCase):
 
     def test_ci_resource(self):
         resource = 'ci'
-        perms = [Perm.read_configuration_item_info_generic,]
+        perms = [Perm.read_configuration_item_info_generic]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)
@@ -516,7 +546,7 @@ class AccessToCMDBApiTest(TestCase):
 
     def test_cilayers_resource(self):
         resource = 'cilayers'
-        perms = [Perm.read_configuration_item_info_generic,]
+        perms = [Perm.read_configuration_item_info_generic]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)
@@ -532,7 +562,7 @@ class AccessToCMDBApiTest(TestCase):
 
     def test_cichange_resource(self):
         resource = 'cichange'
-        perms = [Perm.read_configuration_item_info_generic,]
+        perms = [Perm.read_configuration_item_info_generic]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)
@@ -548,7 +578,7 @@ class AccessToCMDBApiTest(TestCase):
 
     def test_cichangezabbixtrigger_resource(self):
         resource = 'cichangezabbixtrigger'
-        perms = [Perm.read_configuration_item_info_generic,]
+        perms = [Perm.read_configuration_item_info_generic]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)
@@ -564,7 +594,7 @@ class AccessToCMDBApiTest(TestCase):
 
     def test_cichangegit_resource(self):
         resource = 'cichangegit'
-        perms = [Perm.read_configuration_item_info_git,]
+        perms = [Perm.read_configuration_item_info_git]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)
@@ -580,7 +610,7 @@ class AccessToCMDBApiTest(TestCase):
 
     def test_cichangepuppet_resource(self):
         resource = 'cichangepuppet'
-        perms = [Perm.read_configuration_item_info_puppet,]
+        perms = [Perm.read_configuration_item_info_puppet]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)
@@ -596,7 +626,7 @@ class AccessToCMDBApiTest(TestCase):
 
     def test_cichangecmdbhistory_resource(self):
         resource = 'cichangecmdbhistory'
-        perms = [Perm.read_configuration_item_info_generic,]
+        perms = [Perm.read_configuration_item_info_generic]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)
@@ -612,7 +642,7 @@ class AccessToCMDBApiTest(TestCase):
 
     def test_citypes_resource(self):
         resource = 'citypes'
-        perms = [Perm.read_configuration_item_info_generic,]
+        perms = [Perm.read_configuration_item_info_generic]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)
@@ -628,7 +658,7 @@ class AccessToCMDBApiTest(TestCase):
 
     def test_ciowners_resource(self):
         resource = 'ciowners'
-        perms = [Perm.read_configuration_item_info_generic,]
+        perms = [Perm.read_configuration_item_info_generic]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)

@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
 
+"""
+Pre-scan all IP addresses from specified networks or data centers. This scan
+checks that IP address is available. It also sets some additional data,
+like a SNMP name, SNMP community and SNMP version.
+"""
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -35,14 +41,14 @@ def _split_into_groups(iterable, group_size):
 
 
 def autoscan_data_center(data_center):
-    """Queues a scan of all scannable networks in the data center."""
+    """Queues a pre-scan of all scannable networks in the data center."""
 
     for network in data_center.network_set.exclude(queue=None):
         autoscan_network(network)
 
 
 def autoscan_network(network):
-    """Queues a scan of a whole network on the right worker."""
+    """Queues a pre-scan of a whole network on the right worker."""
 
     if not network.queue:
         raise NoQueueError(
@@ -126,3 +132,4 @@ def _autoscan_address(address):
             ipaddress.snmp_version = None
             ipaddress.dead_ping_count += 1
             ipaddress.save(update_last_seen=False)
+

@@ -12,6 +12,7 @@ from django.conf import settings
 from ralph.discovery.hardware import get_disk_shares
 from ralph.scan.plugins import get_base_result_template
 from ralph.util import network, parse
+from ralph.scan.errors import NoMatchError
 
 
 SETTINGS = settings.SCAN_PLUGINS.get(__name__, {})
@@ -173,7 +174,10 @@ def _ssh_linux(ssh, ip_address, messages=[]):
 def scan_address(ip_address, **kwargs):
     messages = []
     result = get_base_result_template('ssh_linux', messages)
-    snmp_name = kwargs.get('snmp_name', '').lower()
+    snmp_name = kwargs.get('snmp_name', '') or ''
+    if not snmp_name:
+        raise NoMatchError("No snmp found")
+    snmp_name = snmp_name.lower()
     if 'nx-os' in snmp_name:
         messages.append('Incompatible Nexus found.')
         result['status'] = 'error'

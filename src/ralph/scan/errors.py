@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 
+"""
+Common errors for whole Scan application.
+"""
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -37,5 +41,11 @@ class NoLanError(Error):
 class SSHConsoleError(Error):
     """SSH console error."""
 
+
 class TreeError(Error):
     """xml tree error"""
+
+
+class DeviceError(Error):
+    """somethings wrong with device"""
+

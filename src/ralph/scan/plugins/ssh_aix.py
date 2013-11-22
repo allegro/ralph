@@ -12,7 +12,7 @@ from django.conf import settings
 
 from ralph.util import network
 from ralph.discovery import guessmodel
-from ralph.scan.errors import Error, NotConfiguredError, NoMatchError
+from ralph.scan.errors import NotConfiguredError, NoMatchError
 from ralph.scan.plugins import get_base_result_template
 
 
@@ -89,7 +89,7 @@ def run_ssh_aix(ip):
     finally:
         ssh.close()
     device['model_name'] = '%s AIX' % MODELS.get(machine_model, machine_model)
-    device['ip_addresses'] = [ip]
+    device['system_ip_addresses'] = [ip]
     wwns = []
     sns = []
     stors = []
@@ -122,15 +122,15 @@ def run_ssh_aix(ip):
 
 
 def scan_address(ip, **kwargs):
-    if 'nx-os' in kwargs.get('snmp_name', '').lower():
+    snmp_name = kwargs.get('snmp_name', '') or ''
+    if 'nx-os' in snmp_name.lower():
         raise NoMatchError("Incompatible Nexus found.")
+    if snmp_name and not snmp_name.startswith('IBM PowerPC'):
+        raise NoMatchError("No match")
     if AIX_USER is None:
-        raise NotConfiguredError("No credentials set up")
+        raise NotConfiguredError("No credentials set up.")
     kwargs['guessmodel'] = gvendor, gmodel = guessmodel.guessmodel(**kwargs)
     if gvendor != 'IBM':
-        raise NoMatchError("No match")
-    snmp_name = kwargs.get('snmp_name', '')
-    if snmp_name and not snmp_name.startswith('IBM PowerPC'):
         raise NoMatchError("No match")
     device = run_ssh_aix(ip)
     ret = {
@@ -140,3 +140,4 @@ def scan_address(ip, **kwargs):
     tpl = get_base_result_template('ssh_cisco_catalyst')
     tpl.update(ret)
     return tpl
+
