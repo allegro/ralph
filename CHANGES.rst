@@ -1,5 +1,10 @@
 Change Log
 ----------
+HEAD
+~~~~~
+
+* Custom fields defaults (from vernture_role) now appears correctly in API
+
 1.2.9
 ~~~~~
 Released on November 06, 2013
