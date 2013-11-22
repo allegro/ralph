@@ -25,6 +25,7 @@ namespace DonPedro.Detectors
 			
 			string[] lines = Regex.Split(fcinfoResult, "\r\n");
 			FibreChannelDTOResponse card = null;
+			string modelName = "";
 			for (int i = 0; i < lines.Length; i++)
 			{
 				string line = lines[i].Trim();
@@ -34,7 +35,6 @@ namespace DonPedro.Detectors
 				}
 
 				string[] lineParts = line.Split(':');
-				
 				if (lineParts.Length != 2)
 				{
 					continue;
@@ -44,6 +44,10 @@ namespace DonPedro.Detectors
 				{
 					if (card != null)
 					{
+						if (modelName.Length > 0)
+						{
+							card.ModelName = modelName;
+						}
 						fc.Add(card);
 					}
 					card = new FibreChannelDTOResponse();
@@ -59,13 +63,24 @@ namespace DonPedro.Detectors
 							card.Label = lineParts[1].Trim();
 							break;
 						case "model":
-							card.Model = lineParts[1].Trim();
-							break;
-						case "sernum":
-							card.Sn = lineParts[1].Trim();
+							if (modelName.Length > 0) 
+							{
+								modelName = " " + lineParts[1].Trim();
+							} 
+							else 
+							{
+								modelName = lineParts[1].Trim();
+							}
 							break;
 						case "manfac":
-							card.Manufacturer = lineParts[1].Trim();
+							if (modelName.Length > 0) 
+							{
+								modelName = lineParts[1].Trim() + " " + modelName;
+							}
+							else
+							{
+								modelName = lineParts[1].Trim();
+							}
 							break;
 					}
 				}

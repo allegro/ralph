@@ -47,6 +47,7 @@ namespace DonPedro
 				try
 				{
 					apiClient.Post(ReportURL + "/?username=" + ApiUser + "&api_key=" + ApiKey, jsonData);
+					return;
 				}
 				catch (System.Net.WebException e)
 				{

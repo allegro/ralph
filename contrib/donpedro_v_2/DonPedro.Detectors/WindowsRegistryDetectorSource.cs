@@ -28,11 +28,13 @@ namespace DonPedro.Detectors
 			foreach (SoftwareDTOResponse application in newList)
 			{
 				SoftwareDTOResponse result = software.Find(
-					delegate (SoftwareDTOResponse item) {
+					delegate (SoftwareDTOResponse item) 
+					{
 						return item.Label == application.Label && item.Version == application.Version;
 					}
 				);
-				if (result != null) {
+				if (result != null) 
+				{
 					continue;
 				}
 				software.Add(application);
@@ -73,8 +75,13 @@ namespace DonPedro.Detectors
 						{
 							SoftwareDTOResponse application = new SoftwareDTOResponse();
 							application.Label = sk.GetValue("DisplayName").ToString();
-							application.Vendor = sk.GetValue("Publisher").ToString();
+							application.ModelName = application.Label;
 							application.Version = sk.GetValue("DisplayVersion").ToString();
+							application.Path = sk.GetValue("Publisher").ToString() +
+											   " - " +
+											   application.Label +
+											   " - " +
+											   application.Version;
 							
 							software.Add(application);
 						}

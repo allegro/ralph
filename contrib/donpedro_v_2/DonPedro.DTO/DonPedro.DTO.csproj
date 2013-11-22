@@ -58,8 +58,9 @@
     <Compile Include="BaseDTOResponse.cs" />
     <Compile Include="DeviceDTOResponse.cs" />
     <Compile Include="DiskShareMountDTOResponse.cs" />
+    <Compile Include="IPAddressDTOResponse.cs" />
     <Compile Include="SoftwareDTOResponse.cs" />
-    <Compile Include="EthernetDTOResponse.cs" />
+    <Compile Include="MacAddressDTOResponse.cs" />
     <Compile Include="FibreChannelDTOResponse.cs" />
     <Compile Include="MemoryDTOResponse.cs" />
     <Compile Include="OperatingSystemDTOResponse.cs" />

@@ -1,30 +1,52 @@
 ﻿using System;
 using System.Collections;
+using System.Text.RegularExpressions;
 
 namespace DonPedro.DTO
 {
 	public abstract class BaseDTOResponse
 	{
-		public string Label { get; set; }
-
+		public static string AppendUnderscore(Match m) {
+			return "_" + m.ToString();
+		}
+		
 		public string ToJSON()
 		{
 			ArrayList parts = new ArrayList();
+			int propertiesCount = this.GetType().GetProperties().Length;
+			string propertyValue;
 
 			foreach (var property in this.GetType().GetProperties())
 			{
-				try
-				{
-					parts.Add(
-						string.Format(
-							"\"{0}\":\"{1}\"", 
-							property.Name.ToLower(),
-							property.GetValue(this, null).ToString().Replace("\"", "\\\"").Replace(@"\", @"\\")
-						)
-					);
-				}
-				catch (NullReferenceException)
-				{
+				propertyValue = property.GetValue(
+					this, null
+				).ToString().Replace(
+					"\"", "\\\""
+				).Replace(
+					@"\", @"\\"
+				);
+				
+				if (propertyValue.Length > 0) {
+					if (propertiesCount == 1)
+					{
+						return "\"" + propertyValue + "\"";
+					}
+					
+					try
+					{
+						parts.Add(
+							string.Format(
+								"\"{0}\":\"{1}\"", 
+								Regex.Replace(
+									property.Name,
+									@"\B[A-Z]",
+									new MatchEvaluator(BaseDTOResponse.AppendUnderscore)
+								).ToLower().Trim(),
+								propertyValue
+							)
+						);
+					}
+					catch (NullReferenceException) {}
 				}
 			}
 

@@ -62,8 +62,6 @@ namespace DonPedro.Detectors
 					chip.Label = GetValueAsString(obj, "Name");
 					chip.Index = GetValueAsString(obj, "DeviceLocator");
 					chip.Speed = GetValueAsString(obj, "Speed");
-					chip.Sn = GetValueAsString(obj, "SerialNumber");
-					chip.Caption = GetValueAsString(obj, "Caption");
 					try
 					{
 						chip.Size = ConvertSizeToMiB(
@@ -122,10 +120,9 @@ namespace DonPedro.Detectors
 				
 				foreach (ManagementObject obj in searcher.Get())
 				{
-					os.Label = GetValueAsString(obj, "Caption");
 					try
 					{
-						os.Memory = ConvertSizeToMiB(Int64.Parse(obj["TotalVisibleMemorySize"].ToString()), SizeUnits.KB).ToString();
+						os.SystemMemory = ConvertSizeToMiB(Int64.Parse(obj["TotalVisibleMemorySize"].ToString()), SizeUnits.KB).ToString();
 					}
 					catch (Exception e)
 					{
@@ -148,7 +145,7 @@ namespace DonPedro.Detectors
 					totalCoresCount += coresCount;
 				}
 			}
-			os.CoresCount = totalCoresCount.ToString();
+			os.SystemCoresCount = totalCoresCount.ToString();
 			
 			Int64 totalDisksSize = 0;
 			foreach (StorageDTOResponse storage in GetStorageInfo())
@@ -159,7 +156,7 @@ namespace DonPedro.Detectors
 					totalDisksSize += storageSize;
 				}
 			}
-			os.Storage = totalDisksSize.ToString();
+			os.SystemStorage = totalDisksSize.ToString();
 
 			return os;
 		}
@@ -242,7 +239,7 @@ namespace DonPedro.Detectors
 							{
 								Logger.Instance.LogError(e.ToString());
 							}
-							disk.Sn = sn;
+							disk.SerialNumber = sn;
 							
 							storage.Add(disk);
 						}
@@ -257,14 +254,49 @@ namespace DonPedro.Detectors
 			return storage;
 		}
 		
-		public List<EthernetDTOResponse> GetEthernetInfo()
+		public List<MacAddressDTOResponse> GetMacAddressInfo()
 		{
-			List<EthernetDTOResponse> ethetnets = new List<EthernetDTOResponse>();
+			List<MacAddressDTOResponse> macAddresses = new List<MacAddressDTOResponse>();
 
 			try
 			{
 				SelectQuery query = new SelectQuery(
-					@"select Name,  MACAddress, Speed, Index 
+					@"select MACAddress 
+					  from Win32_NetworkAdapter 
+					  where MACAddress<>null"
+				);
+				ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
+				
+				foreach (ManagementObject obj in searcher.Get())
+				{
+					string mac = GetValueAsString(obj, "MACAddress");
+					if (Blacklists.IsMacInBlacklist(mac))
+					{
+						continue;
+					}
+
+					MacAddressDTOResponse macAddress = new MacAddressDTOResponse();
+					macAddress.Mac = mac;
+
+					macAddresses.Add(macAddress);
+				}
+			}
+			catch (ManagementException e)
+			{
+				Logger.Instance.LogError(e.ToString());
+			}
+			
+			return macAddresses;
+		}
+		
+		public List<IPAddressDTOResponse> GetIPAddressInfo()
+		{
+			List<IPAddressDTOResponse> ipAddresses = new List<IPAddressDTOResponse>();
+
+			try
+			{
+				SelectQuery query = new SelectQuery(
+					@"select MACAddress, Index 
 					  from Win32_NetworkAdapter 
 					  where MACAddress<>null"
 				);
@@ -278,15 +310,10 @@ namespace DonPedro.Detectors
 						continue;
 					}
 					
-					EthernetDTOResponse eth = new EthernetDTOResponse();
-					eth.Label = GetValueAsString(obj, "Name");
-					eth.Mac = GetValueAsString(obj, "MACAddress");
-					eth.Speed = GetValueAsString(obj, "Speed");
-					
 					try
 					{
 						SelectQuery queryAdapterConf = new SelectQuery(
-							@"select IPAddress,  IPSubnet 
+							@"select IPAddress 
 							  from Win32_NetworkAdapterConfiguration 
 							  where Index='" + GetValueAsString(obj, "Index") + "' and IPEnabled=True"
 						);
@@ -296,10 +323,10 @@ namespace DonPedro.Detectors
 						{
 							try
 							{
-								eth.IPAddress = ((string[]) adapterConf["IPAddress"])[0];
-								eth.IPSubnet = ((string[]) adapterConf["IPSubnet"])[0];
+								IPAddressDTOResponse ipAddress = new IPAddressDTOResponse();
+								ipAddress.IPAddress = ((string[]) adapterConf["IPAddress"])[0];
 								
-								ethetnets.Add(eth);
+								ipAddresses.Add(ipAddress);
 							}
 							catch (ManagementException e)
 							{
@@ -324,7 +351,7 @@ namespace DonPedro.Detectors
 				Logger.Instance.LogError(e.ToString());
 			}
 			
-			return ethetnets;
+			return ipAddresses;
 		}
 		
 		public List<FibreChannelDTOResponse> GetFibreChannelInfo()
@@ -346,6 +373,7 @@ namespace DonPedro.Detectors
 					card.Label = GetValueAsString(obj, "Caption");
 					string[] deviveIDParts = GetValueAsString(obj, "DeviceID").Split('&');
 					card.PhysicalId = deviveIDParts[deviveIDParts.Length - 1];
+					card.ModelName = card.Label;
 					
 					fc.Add(card);
 				}
@@ -383,7 +411,7 @@ namespace DonPedro.Detectors
 					{
 						DiskShareMountDTOResponse share = new DiskShareMountDTOResponse();
 						share.Volume = GetValueAsString(obj, "Model");
-						share.Sn = GetValueAsString(snObj, "SerialNumber");
+						share.SerialNumber = GetValueAsString(snObj, "SerialNumber");
 						
 						mounts.Add(share);
 						
@@ -415,8 +443,13 @@ namespace DonPedro.Detectors
 				{
 				    SoftwareDTOResponse soft = new SoftwareDTOResponse();
 				    soft.Label = GetValueAsString(obj, "Name");
-				    soft.Vendor = GetValueAsString(obj, "Vendor");
 				    soft.Version = GetValueAsString(obj, "Version");
+				    soft.Path = GetValueAsString(obj, "Vendor") +
+				    			" - " +
+				    			soft.Label +
+				    			" - " +
+				    			GetValueAsString(obj, "Version");
+				    soft.ModelName = soft.Label;
 				    
 				    software.Add(soft);
 				}
@@ -439,11 +472,12 @@ namespace DonPedro.Detectors
 				
 				foreach (ManagementObject obj in mc.GetInstances())
 				{
-					device.Label = GetValueAsString(obj, "Name");
-					device.Sn = GetValueAsString(obj, "IdentifyingNumber");
-					device.Caption = GetValueAsString(obj, "Caption");
-					device.Vendor = GetValueAsString(obj, "Vendor");
-					device.Version = GetValueAsString(obj, "Version");
+					device.ModelName = GetValueAsString(obj, "Vendor") + 
+						               " " + 
+						               GetValueAsString(obj, "Name") +
+						               " " +
+						               GetValueAsString(obj, "Version");
+					device.SerialNumber = GetValueAsString(obj, "IdentifyingNumber");
 					
 					break;
 				}
@@ -540,14 +574,12 @@ namespace DonPedro.Detectors
 				SelectQuery query = new SelectQuery(
 					@"select 
 						Name, 
-						Description, 
 						DeviceID, 
 						MaxClockSpeed, 
 						NumberOfCores, 
 						NumberOfLogicalProcessors, 
 						Caption, 
 						Manufacturer, 
-						Version,
 						DataWidth
 					  from Win32_Processor"
 				);
@@ -558,27 +590,18 @@ namespace DonPedro.Detectors
 					ProcessorDTOResponse processor = new ProcessorDTOResponse();
 					if (vendor.IndexOf("xen") > -1 || vendor.IndexOf("vmware") > -1 || vendor.IndexOf("bochs") > -1)
 					{
-						processor.Label = "Virtual " + GetValueAsString(obj, "Name");	
+						processor.Label = "Virtual " + GetValueAsString(obj, "Name");
+						processor.Family = "Virtual " + GetValueAsString(obj, "Caption");
 					}
 					else
 					{
-						processor.Label = GetValueAsString(obj, "Name");	
+						processor.Label = GetValueAsString(obj, "Name");
+						processor.Family = GetValueAsString(obj, "Caption");
 					}
 					processor.Speed = GetValueAsString(obj, "MaxClockSpeed");
 					processor.Cores = GetValueAsString(obj, "NumberOfCores");
 					processor.Index = GetValueAsString(obj, "DeviceID");
-					processor.Description = GetValueAsString(obj, "Description");
-					processor.NumberOfLogicalProcessors = GetValueAsString(obj, "NumberOfLogicalProcessors");
-					processor.Caption = GetValueAsString(obj, "Caption");
-					processor.Manufacturer = GetValueAsString(obj, "Manufacturer");
-					processor.Version = GetValueAsString(obj, "Version");
-					if (GetValueAsString(obj, "DataWidth") == "64") {
-						processor.Is64Bit = "true";
-					}
-					else
-					{
-						processor.Is64Bit = "false";
-					}
+					processor.ModelName = processor.Label + " " + processor.Speed + "Mhz";
 					
 					processors.Add(processor);
 				}
@@ -601,13 +624,11 @@ namespace DonPedro.Detectors
 			{
 				SelectQuery query = new SelectQuery(
 					@"select 
-						Name, 
-						Description, 
+						Name,  
 						DeviceID, 
 						MaxClockSpeed, 
 						Caption, 
 						Manufacturer, 
-						Version,
 						DataWidth,
 						SocketDesignation
 					  from Win32_Processor"
@@ -627,25 +648,17 @@ namespace DonPedro.Detectors
 					ProcessorDTOResponse processor = new ProcessorDTOResponse();
 					if (vendor.IndexOf("xen") > -1 || vendor.IndexOf("vmware") > -1 || vendor.IndexOf("bochs") > -1)
 					{
-						processor.Label = "Virtual " + GetValueAsString(obj, "Name");	
+						processor.Label = "Virtual " + GetValueAsString(obj, "Name");
+						processor.Family = "Virtual " + GetValueAsString(obj, "Caption");
 					}
 					else
 					{
-						processor.Label = GetValueAsString(obj, "Name");	
+						processor.Label = GetValueAsString(obj, "Name");
+						processor.Family = GetValueAsString(obj, "Caption");
 					}
 					processor.Speed = GetValueAsString(obj, "MaxClockSpeed");
 					processor.Index = GetValueAsString(obj, "DeviceID");
-					processor.Description = GetValueAsString(obj, "Description");
-					processor.Caption = GetValueAsString(obj, "Caption");
-					processor.Manufacturer = GetValueAsString(obj, "Manufacturer");
-					processor.Version = GetValueAsString(obj, "Version");
-					if (GetValueAsString(obj, "DataWidth") == "64") {
-						processor.Is64Bit = "true";
-					}
-					else
-					{
-						processor.Is64Bit = "false";
-					}
+					processor.ModelName = processor.Label + " " + processor.Speed + "Mhz";
 					
 					uniqueProcessors.Add(socketDesignation, processor);
 				}
@@ -661,7 +674,6 @@ namespace DonPedro.Detectors
 				foreach (ProcessorDTOResponse cpu in uniqueProcessors.Values)
 				{
 					cpu.Cores = coresCount.ToString();
-					cpu.NumberOfLogicalProcessors = coresCount.ToString();
 					
 					processors.Add(cpu);
 				}

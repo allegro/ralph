@@ -32,8 +32,14 @@ namespace DonPedroOutput
 				PropertiesPrinter.Print(item);
 			}
 			
-			Console.WriteLine("\nDetected ethernets:");
-			foreach(EthernetDTOResponse item in d.GetEthernetInfo())
+			Console.WriteLine("\nDetected IP addresses:");
+			foreach(IPAddressDTOResponse item in d.GetIPAddressInfo())
+			{
+				PropertiesPrinter.Print(item);
+			}
+			
+			Console.WriteLine("\nDetected MAC addresses:");
+			foreach(MacAddressDTOResponse item in d.GetMacAddressInfo())
 			{
 				PropertiesPrinter.Print(item);
 			}
