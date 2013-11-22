@@ -20,10 +20,31 @@ from ralph.scan.merger import (
 class UtilsTest(TestCase):
     def test_get_results_priority(self):
         self.assertEqual(
-            _get_results_priority('foo/boo/foo', 'memory'), 1,
+            _get_results_priority(
+                'foo/boo/foo',
+                'memory',
+                {
+                    'plugin_123': {
+                        'memory': 20,
+                    },
+                },
+            ),
+            1,
         )
         self.assertEqual(
             _get_results_priority('ralph.scan.plugins.puppet', 'disks'), 51,
+        )
+        self.assertEqual(
+            _get_results_priority(
+                'plugin_321',
+                'memory',
+                {
+                    'plugin_321': {
+                        'memory': 33,
+                    },
+                },
+            ),
+            33,
         )
 
     def test_get_ranked_plugins_list(self):

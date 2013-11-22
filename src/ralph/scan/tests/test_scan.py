@@ -24,18 +24,29 @@ class TestScan(TestCase):
     def test_get_ip_addresses_from_results(self):
         ip_addresses = _get_ip_addresses_from_results({
             'plugin_1': {
-                'managemt_ip_addresses': ['127.0.0.1'],
-                'system_ip_addresses': ['127.0.0.2', '127.0.0.3'],
+                'device': {
+                    'managemt_ip_addresses': ['127.0.0.1'],
+                    'system_ip_addresses': ['127.0.0.2', '127.0.0.3'],
+                },
             },
             'plugin_2': {
-                'management_ip_addresses': ['127.0.0.1', '127.0.0.4'],
-                'foo': 'some value',
+                'device': {
+                    'management_ip_addresses': ['127.0.0.1', '127.0.0.4'],
+                    'foo': 'some value',
+                },
             },
             'plugin_3': {
-                'system_ip_addresses': ['127.0.0.5'],
+                'device': {
+                    'system_ip_addresses': ['127.0.0.5'],
+                },
             },
             'plugin_4': {
-                'foo': 'some value',
+                'device': {
+                    'foo': 'some value',
+                },
+            },
+            'plugin_5': {
+                'system_ip_address': ['127.0.0.6'],
             }
         })
         self.assertEqual(

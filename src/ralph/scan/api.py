@@ -60,17 +60,22 @@ class ExternalPluginResource(Resource):
             bundle.data.get('data'),
         ))
         try:
-            return store_device_data(bundle.data.get('data'))
+            bundle.obj = store_device_data({
+                'donpedro': bundle.data.get('data'),
+            })
         except Exception:
             logger.error('An exception occurred (remote IP: %s): %s' % (
                 remote_ip,
                 traceback.format_exc(),
             ))
             raise
+        return bundle
+
+    def detail_uri_kwargs(self, bundle_or_obj):
+        return {}
 
     class Meta:
-        resource_name = 'scan_result'
-        object_class = JobObject
+        resource_name = 'scanresult'
         authentication = ApiKeyAuthentication()
         authorization = DjangoAuthorization()
         filtering = {}
@@ -80,5 +85,5 @@ class ExternalPluginResource(Resource):
             timeframe=API_TIMEFRAME,
             expiration=API_EXPIRATION,
         )
-        allowed_methods = ['put']
+        allowed_methods = ['post']
 

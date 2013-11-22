@@ -36,6 +36,7 @@ from ralph.scan.data import (
     device_from_data,
     find_devices,
     get_device_data,
+    get_external_results_priorities,
     merge_data,
     set_device_data,
 )
@@ -1523,6 +1524,7 @@ class ScanStatus(BaseMixin, TemplateView):
     def get_forms(self, result, device_id=None, post=None):
         forms = []
         devices = find_devices(result)
+        external_priorities = get_external_results_priorities(result)
         for device in devices:
             device_data = get_device_data(device)
             data = merge_data(
@@ -1532,7 +1534,7 @@ class ScanStatus(BaseMixin, TemplateView):
                 },
                 only_multiple=True,
             )
-            append_merged_proposition(data, device)
+            append_merged_proposition(data, device, external_priorities)
             sort_results(data)
             diff = diff_results(data)
             if 'ralph_assets' in settings.INSTALLED_APPS:
@@ -1574,7 +1576,11 @@ class ScanStatus(BaseMixin, TemplateView):
                 "This scan has timed out. Please run it again.",
             )
         else:
-            ip_address, plugins = self.job.args
+            if self.job.args:
+                self.ip_address = self.job.args[0]
+            else:
+                self.set_ip_address()
+            plugins = self.job.result.keys()
             icons = {
                 'success': 'fugue-puzzle',
                 'error': 'fugue-cross-button',
@@ -1587,7 +1593,7 @@ class ScanStatus(BaseMixin, TemplateView):
                 'warning': 'warning',
             }
             ret.update({
-                'address': ip_address.address,
+                'address': self.ip_address.address,
                 'plugins': plugins,
                 'status': [
                     (

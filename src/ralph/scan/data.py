@@ -117,6 +117,8 @@ def _get_or_create_model_for_component(
         family = model_fields.get('family')
         if path and not family:
             model_fields['family'] = path
+    if 'family' in model_fields:
+        model_fields['family'] = model_fields.get('family', '')[:128]
     model, created = ComponentModel.create(
         model_type,
         SCAN_SAVE_PRIORITY,
@@ -717,7 +719,7 @@ def find_devices(result):
     ).distinct()
 
 
-def append_merged_proposition(data, device):
+def append_merged_proposition(data, device, external_priorities={}):
     """
     Add `merged data` proposition to other Scan results.
 
@@ -745,9 +747,25 @@ def append_merged_proposition(data, device):
             component,
             data_to_merge,
             UNIQUE_FIELDS_FOR_MERGER[component],
+            external_priorities,
         )
         if merged:
             for row in merged:
                 del row['device']
             data[component][('merged',)] = merged
+
+
+def get_external_results_priorities(results):
+    """
+    Return additional, external results priorities.
+
+    Results priorities from external plugins (e.g. DonPedro) are coming
+    together with results.
+    """
+
+    priorities = {}
+    for plugin_name, plugin_results in results.iteritems():
+        if 'results_priority' in plugin_results:
+            priorities[plugin_name] = plugin_results['results_priority']
+    return priorities
 

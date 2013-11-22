@@ -171,26 +171,33 @@ from django.conf import settings
 logger = logging.getLogger("SCAN")
 
 
-def _get_results_priority(plugin, component):
+def _get_results_priority(plugin, component, external_priorities={}):
     try:
         return settings.SCAN_PLUGINS[plugin]['results_priority'][component]
     except KeyError:
-        logger.warning(
-            "Result priority for plugin '%s' and component '%s' not found." % (
-                plugin,
-                component,
-            ),
-        )
-        return 1
+        try:
+            return external_priorities[plugin][component]
+        except KeyError:
+            logger.warning(
+                "Result priority for plugin '%s' and component '%s' not found." % (
+                    plugin,
+                    component,
+                ),
+            )
+    return 1
 
 
-def _get_ranked_plugins_list(plugins, component):
+def _get_ranked_plugins_list(plugins, component, external_priorities={}):
     return [
         item['plugin'] for item in sorted(
             [
                 {
                     'plugin': plugin,
-                    'priority': _get_results_priority(plugin, component),
+                    'priority': _get_results_priority(
+                        plugin,
+                        component,
+                        external_priorities,
+                    ),
                 } for plugin in plugins
             ],
             key=lambda k: k['priority'],
@@ -213,13 +220,20 @@ def _find_data(rows, lookup):
             return row
 
 
-def merge(component, data, unique_fields, db_plugin_name='database'):
+def merge(
+    component,
+    data,
+    unique_fields,
+    external_priorities={},
+    db_plugin_name='database',
+):
     """
     Merge data for component based on unique fields set.
 
     :param component: component with we act
     :param data: results from plugins
     :param unique_fields: set of unique or unique_together fields for component
+    :param external_prioriries: additional plugins results priorities
     :param db_plugin_name: name of plugin which includes data from the
                            database
     """
@@ -304,7 +318,11 @@ def merge(component, data, unique_fields, db_plugin_name='database'):
         plugins.remove(db_plugin_name)
     except ValueError:
         pass
-    ranked_plugins = _get_ranked_plugins_list(plugins, component)  # rank it
+    ranked_plugins = _get_ranked_plugins_list(
+        plugins,
+        component,
+        external_priorities,
+    )  # rank it
     if db_plugin_name in data:
         ranked_plugins.append(db_plugin_name)  # add db plugin on the end
     merged_data = []
