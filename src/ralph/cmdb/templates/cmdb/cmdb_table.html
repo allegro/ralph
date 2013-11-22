@@ -1,0 +1,25 @@
+{% load query %}
+
+<table class="table table-striped table-bordered table-condensed ">
+    <thead>
+        <tr>
+        {% spaceless %}
+            {% for td in table_header %}
+                {% include 'cmdb/column-header.html' with sortable=td.sortable label=td.label name=td.name always=1 %}
+            {% endfor %}
+        {% endspaceless %}
+        </tr>
+    </thead>
+    <tbody>
+    {% for rows in table_body %}
+        {% for row in rows %}
+            <tr>
+            {% for td in row %}
+                <td>{{ td.value|safe }}</td>
+            {% endfor %}
+            </tr>
+        {% endfor %}
+    {% endfor %}
+    </tbody>
+</table>
+

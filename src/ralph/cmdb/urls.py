@@ -36,6 +36,7 @@ from ralph.cmdb.views import (
     MainCIView,
     Search,
     ViewUnknown,
+    Cleanup,
 )
 from ralph.cmdb.views_changes import (
     Change,
@@ -74,6 +75,7 @@ urlpatterns = patterns(
     url(r'^ci/view/(?P<ci_id>[a-z]{0,2}-?[0-9]+)/problems/$', login_required(CIProblemsView.as_view()), name='ci_view'),
     url(r'^ci/view/(?P<ci_id>[a-z]{0,2}-?[0-9]+)/incidents/$', login_required(CIIncidentsView.as_view()), name='ci_view'),
     url(r'^ci/view/(?P<ci_id>[a-z]{0,2}-?[0-9]+)/jira_changes/$', login_required(JiraChangesView.as_view()), name='ci_view'),
+    url(r'^cleanup/$', login_required(Cleanup.as_view()), name='cleanup_view'),
 
     (r'^ci/jira_ci_unknown/$', login_required(ViewUnknown.as_view())),
 

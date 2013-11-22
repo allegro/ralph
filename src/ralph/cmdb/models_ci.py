@@ -6,6 +6,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import itertools as it
+
 from dj.choices.fields import ChoiceField
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
@@ -327,6 +329,23 @@ class CI(TimeTrackable):
         'CIOwner', through='CIOwnership',
         verbose_name=_("configuration item owners"),
     )
+
+    @property
+    def url(self):
+        return '/cmdb/ci/view/{0}'.format(self.id)
+
+    @classmethod
+    def get_duplicate_names(cls):
+        dupes =  cls.objects.values('name').distinct().annotate(
+            models.Count('id'),
+        ).filter(id__count__gt=1)
+        cis = cls.objects.filter(
+            name__in=[dupe['name'] for dupe in dupes],
+        ).order_by('name')
+        # If I try to return the groupby itself the groups are empty
+        for name, cis in it.groupby(cis, lambda x: x.name):
+            yield name, list(cis)
+
 
     class Meta:
         unique_together = ('content_type', 'object_id')
