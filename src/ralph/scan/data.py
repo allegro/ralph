@@ -407,6 +407,7 @@ def set_device_data(device, data):
             )
             model.save()
             device.model = model
+            device.save(priority=SCAN_SAVE_PRIORITY)
         else:
             if all((
                 device.model.type != model_type,
@@ -414,6 +415,7 @@ def set_device_data(device, data):
             )):
                 device.model.type = model_type
                 device.model.save()
+                device.save(priority=SCAN_SAVE_PRIORITY)
     if 'disks' in data:
         _update_component_data(
             device,
