@@ -231,14 +231,13 @@ class CIResource(MResource):
     def hydrate(self, bundle):
         # Managing keys
         field_to_class = {'type': CIType}
-        for field in ('type',):
-            if field in bundle.data:
-                hydro_fields = field_to_class[field].objects.filter(pk=bundle.data[field]['id'])
-                if not hydro_fields.count():
-                    hydro_fields = field_to_class[field](name=bundle.data[field]['name'])
-                    hydro_fields.save()
-                else:
-                    setattr(bundle.obj, field, hydro_fields[0])
+        if field in bundle.data:
+            hydro_fields = field_to_class[field].objects.filter(pk=bundle.data[field]['id'])
+            if not hydro_fields.count():
+                hydro_fields = field_to_class[field](name=bundle.data[field]['name'])
+                hydro_fields.save()
+            else:
+                setattr(bundle.obj, field, hydro_fields[0])
         return bundle
 
     def hydrate_m2m(self, bundle):
@@ -246,19 +245,18 @@ class CIResource(MResource):
         classes = {'layers': CILayer, 'owners': CIOwner}
 
         # Usual M2M
-        for field in ('layers',):
-            if field in bundle.data:
-                m2m_objects = []
-                for entry in bundle.data[field]:
-                    m2m_obj = classes[field].objects.filter(pk=entry['id'])
-                    if m2m_obj.count():
-                        m2m_obj = m2m_obj[0]
-                    else:
-                        m2m_obj = classes[field](name=entry['name'])
-                        m2m_obj.save()
-                    m2m_objects.append(m2m_obj)
+        if field in bundle.data:
+            m2m_objects = []
+            for entry in bundle.data[field]:
+                m2m_obj = classes[field].objects.filter(pk=entry['id'])
+                if m2m_obj:
+                    m2m_obj = m2m_obj[0]
+                else:
+                    m2m_obj = classes[field](name=entry['name'])
+                    m2m_obj.save()
+                m2m_objects.append(m2m_obj)
 
-                setattr(bundle.obj, field, m2m_objects)
+            setattr(bundle.obj, field, m2m_objects)
 
         # owners is M2M using Intermediary model
         for field in ('business_owners', 'technical_owners'):
@@ -268,9 +266,9 @@ class CIResource(MResource):
                     if 'id' in entry and entry['id'] and CIOwner.objects.filter(pk=entry['id']).count() == 1:
                         m2m_obj = CIOwner.objects.get(pk=entry['id'])
                     else:
-                        first_name = entry['first_name'] if 'first_name' in entry else ''
-                        last_name = entry['last_name'] if 'last_name' in entry else ''
-                        email = entry['email'] if 'email' in entry else ''
+                        first_name = entry.get('first_name', '')
+                        last_name = entry.get('last_name', '')
+                        email = entry.get('email', '')
                         m2m_obj = CIOwner(first_name=first_name, last_name=last_name, email=email)
                         m2m_obj.save()
                     m2m_objects.append(m2m_obj)
