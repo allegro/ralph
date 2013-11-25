@@ -1,9 +1,16 @@
 Change Log
 ----------
+
 HEAD
 ~~~~~
 
 * Custom fields defaults (from vernture_role) now appears correctly in API
+
+* added Scan module - new DC discovery mechanism
+
+* added API for Scan module
+
+
 
 1.2.9
 ~~~~~
