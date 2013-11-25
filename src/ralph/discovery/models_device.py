@@ -584,6 +584,27 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
             self.saving_plugin = name
         return super(Device, self).save(*args, **kwargs)
 
+    def get_property_set(self):
+        props = dict(
+            [
+                (p.symbol, p.default) for p in \
+                self.venture.roleproperty_set.all()
+            ]
+        )
+        props.update(dict(
+            [
+                (p.symbol, p.default) for p in \
+                self.venture_role.roleproperty_set.all()
+            ]
+        ))
+        props.update(dict(
+            [
+                (p.property.symbol, p.value) for p in \
+                self.rolepropertyvalue_set.all()
+            ]
+        ))
+        return props
+
 
 class ReadOnlyDevice(Device):
     class Meta:

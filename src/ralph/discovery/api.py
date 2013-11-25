@@ -207,6 +207,11 @@ class DeviceResource(MResource):
         full=True,
     )
 
+    def dehydrate(self, bundle):
+        properties = bundle.obj.get_property_set()
+        bundle.data['properties_summary'] = properties
+        return bundle
+
     class Meta:
         excludes = ('save_priorities', 'max_save_priority')
         filtering = {

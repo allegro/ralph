@@ -132,6 +132,7 @@ class BaseCMDBView(Base):
             ('/cmdb/graphs', 'Impact report', 'fugue-dashboard'),
             ('/cmdb/changes/timeline', 'Timeline View', 'fugue-dashboard'),
             ('/admin/cmdb', 'Admin', 'fugue-toolbox'),
+            ('/cmdb/cleanup', 'Clean up', 'fugue-broom'),
         )
         layers = (
             ('/cmdb/search', 'All Cis (all layers)', 'fugue-magnifier'),
@@ -1450,45 +1451,8 @@ class Search(BaseCMDBView):
             '<a href="./ci/view/%s">View</a>',
         ) % (escape(i.id), escape(i.id))
 
-    def get(self, *args, **kwargs):
-        values = self.request.GET
-        cis = db.CI.objects.all()
-        uid = values.get('uid')
-        state = values.get('state')
-        status = values.get('status')
-        type_ = int(values.get('type', 0) or 0)
-        layer = values.get('layer')
-        parent_id = int(values.get('parent', 0) or 0)
-        if values:
-            if uid:
-                cis = cis.filter(Q(name__icontains=uid) | Q(uid=uid))
-            if state:
-                cis = cis.filter(state=state)
-            if status:
-                cis = cis.filter(status=status)
-            if type_:
-                cis = cis.filter(type=type_)
-            if layer:
-                cis = cis.filter(layers=layer)
-            if parent_id:
-                cis = cis.filter(child__parent__id=parent_id)
-        sort = self.request.GET.get('sort', 'name')
-        if sort:
-            cis = cis.order_by(sort)
-        if values.get('top_level'):
-            cis = cis.filter(child__parent=None)
-        page = self.request.GET.get('page') or 1
-        self.page_number = int(page)
-        self.paginator = Paginator(cis, ROWS_PER_PAGE)
-        try:
-            cis = self.paginator.page(page)
-        except PageNotAnInteger:
-            cis = self.paginator.page(1)
-            page = 1
-        except EmptyPage:
-            cis = self.paginator.page(self.paginator.num_pages)
-            page = self.paginator.num_pages
-        self.page = cis
+    def get_table_body(self, cis, type_):
+        """Return data for table body."""
         table_body = []
         relations = CIRelation.objects.all()
         t_owners = 1
@@ -1578,8 +1542,50 @@ class Search(BaseCMDBView):
                 table_body.append(row)
             else:
                 table_body.append(DEFAULT_ROWS)
+        return table_body
+
+
+    def get(self, *args, **kwargs):
+        values = self.request.GET
+        cis = db.CI.objects.all()
+        uid = values.get('uid')
+        state = values.get('state')
+        status = values.get('status')
+        type_ = int(values.get('type', 0) or 0)
+        layer = values.get('layer')
+        parent_id = int(values.get('parent', 0) or 0)
+        if values:
+            if uid:
+                cis = cis.filter(Q(name__icontains=uid) | Q(uid=uid))
+            if state:
+                cis = cis.filter(state=state)
+            if status:
+                cis = cis.filter(status=status)
+            if type_:
+                cis = cis.filter(type=type_)
+            if layer:
+                cis = cis.filter(layers=layer)
+            if parent_id:
+                cis = cis.filter(child__parent__id=parent_id)
+        sort = self.request.GET.get('sort', 'name')
+        if sort:
+            cis = cis.order_by(sort)
+        if values.get('top_level'):
+            cis = cis.filter(child__parent=None)
+        page = self.request.GET.get('page') or 1
+        self.page_number = int(page)
+        self.paginator = Paginator(cis, ROWS_PER_PAGE)
+        try:
+            cis = self.paginator.page(page)
+        except PageNotAnInteger:
+            cis = self.paginator.page(1)
+            page = 1
+        except EmptyPage:
+            cis = self.paginator.page(self.paginator.num_pages)
+            page = self.paginator.num_pages
+        self.page = cis
         self.table_header = self.get_table_header(layer, type_)
-        self.table_body = table_body,
+        self.table_body = self.get_table_body(cis, type_),
         form_options = dict(
             label_suffix='',
             initial=self.form_initial(values),
@@ -1674,3 +1680,18 @@ class Graphs(BaseCMDBView):
                 ))
 
         return super(BaseCMDBView, self).get(*args, **kwargs)
+
+
+class Cleanup(Search):
+    """The view containing various data useful for clean up tasks."""
+
+    template_name = 'cmdb/cleanup.html'
+
+    def get_context_data(self, *args, **kwargs):
+        ret = super(Cleanup, self).get_context_data()
+        ret['duplicates'] = CI.get_duplicate_names()
+        ret['header'] = self.get_table_header(None, 0)
+        orphans = CI.objects.filter(parent=None, child=None)
+        ret['orphans_table'] = [self.get_table_body(orphans, None)]
+        return ret
+        
