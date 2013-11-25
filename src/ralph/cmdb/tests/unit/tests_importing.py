@@ -36,52 +36,16 @@ CURRENT_DIR = settings.CURRENT_DIR
 
 class CIImporterTest(TestCase):
     """Test creating CI's and relations between them from base ralph data types."""
+    fixtures = ['structure_for_import']
+
     def setUp(self):
-        self.top_venture = Venture(name='top_venture')
-        self.top_venture.save()
-
-        self.child_venture = Venture(
-            name='child_venture', parent=self.top_venture)
-        self.child_venture.save()
-
-        self.role = VentureRole(name='role', venture=self.child_venture)
-        self.role.save()
-        self.child_role = VentureRole(
-            name='child_role',
-            venture=self.child_venture,
-            parent=self.role,
-        )
-        self.child_role.save()
-        dm = self.add_model('DC model sample', DeviceType.data_center)
-        self.dc = Device.create(sn='sn1', model=dm)
-        self.dc.name = 'dc'
-        self.dc.save()
-        dm = self.add_model('Rack model sample', DeviceType.rack_server)
-        self.rack = Device.create(
-            venture=self.child_venture,
-            sn='sn2',
-            model=dm,
-        )
-        self.rack.parent = self.dc
-        self.rack.name = 'rack'
-        self.rack.save()
-        dm = self.add_model('Blade model sample', DeviceType.blade_server)
-        self.blade = Device.create(
-            venture=self.child_venture,
-            sn='sn3',
-            model=dm,
-        )
-        self.blade.name = 'blade'
-        self.blade.venture_role = self.child_role
-        self.blade.parent = self.rack
-        self.blade.save()
-
-    def add_model(self, name, device_type):
-        dm = DeviceModel()
-        dm.model_type = device_type
-        dm.name = name
-        dm.save()
-        return dm
+        self.top_venture = Venture.objects.get(pk=1)
+        self.child_venture = Venture.objects.get(pk=2)
+        self.role = VentureRole.objects.get(pk=1)
+        self.child_role = VentureRole.objects.get(pk=2)
+        self.dc = Device.objects.get(pk=1)
+        self.rack = Device.objects.get(pk=2)
+        self.blade = Device.objects.get(pk=3)
 
     def test_import_devices(self):
         """
@@ -145,7 +109,7 @@ class CIImporterTest(TestCase):
                 parent=ci_dc, child=ci_rack,
                 type=CI_RELATION_TYPES.CONTAINS.id)
         except CIRelation.DoesNotExist:
-            self.fail('Cant find relation %s %s %s' % (ci_dc, ci_rack))
+            self.fail('Cant find relation %s %s' % (ci_dc, ci_rack))
             # Blade should be inside Rack
         CIRelation.objects.get(
             parent=ci_rack,
