@@ -5,6 +5,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from unittest import skipIf
+import itertools as it
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -39,6 +40,11 @@ class CIImporterTest(TestCase):
     fixtures = ['structure_for_import']
 
     def setUp(self):
+        self.objs = it.chain(
+            Device.objects.all(),
+            Venture.objects.all(),
+            VentureRole.objects.all(),
+        )
         self.top_venture = Venture.objects.get(pk=1)
         self.child_venture = Venture.objects.get(pk=2)
         self.role = VentureRole.objects.get(pk=1)
@@ -64,26 +70,12 @@ class CIImporterTest(TestCase):
                             <----rack
                                 <----blade
         """
-        # ventures and roles
-        objs = [self.top_venture, self.child_venture, self.role,
-                self.child_role]
-        for o in objs:
+        # Import all
+        for o in self.objs:
             ct = ContentType.objects.get_for_model(o)
             CIImporter().import_all_ci([ct], asset_id=o.id)
-        for o in objs:
-            ct = ContentType.objects.get_for_model(o)
             CIImporter().import_relations(ct, asset_id=o.id)
 
-        # devices
-        objs = [self.dc, self.rack, self.blade]
-        # create ci
-        for o in objs:
-            ct = ContentType.objects.get_for_model(o)
-            CIImporter().import_all_ci([ct], asset_id=o.id)
-            # create relations
-        for o in objs:
-            ct = ContentType.objects.get_for_model(o)
-            CIImporter().import_relations(ct, asset_id=o.id)
 
         # All ci should be in Hardware layer
         ci_dc = CI.objects.get(name='dc')
@@ -98,7 +90,7 @@ class CIImporterTest(TestCase):
         # Reimport of relations should not raise Exception,
         # and should not change relations count
         cis = []
-        for o in objs:
+        for o in self.objs:
             ct = ContentType.objects.get_for_model(o)
             cis.extend(
                 CIImporter().import_all_ci([ct], asset_id=o.id),
