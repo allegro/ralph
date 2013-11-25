@@ -62,7 +62,7 @@
                 <label class="radio">
                     <input type="radio" name="{{ name }}" value="{{ option }}" {% if value == option or value in option %}checked="on"{% endif %}>
                     {{ label }}<br>
-                    (from <i>{{ option }}</i>)
+                    <i>({% if option == 'database' %}previous value{% else %}{{ option }}{% endif %})</i>
                 </label>
             {% endif %}
         {% endfor %}
