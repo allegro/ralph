@@ -71,3 +71,28 @@
         name: blade
         venture_role: 2
         parent: 2
+
+-
+    model: business.businessline
+    pk: 1
+    fields:
+        name: 'INT-1'
+-
+    model: business.businessline
+    pk: 2
+    fields:
+        name: 'INT-2'
+-
+    model: business.service
+    pk: 1
+    fields:
+        name: 'Service 1'
+        business_line: INT-1
+        external_key: INT-1
+
+-
+    model: business.service
+    pk: 2
+    fields:
+        name: 'Service 2'
+        external_key: INT-2

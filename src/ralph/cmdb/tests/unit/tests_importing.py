@@ -5,7 +5,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from unittest import skipIf
-import itertools as it
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -36,22 +35,18 @@ CURRENT_DIR = settings.CURRENT_DIR
 
 
 class CIImporterTest(TestCase):
-    """Test creating CI's and relations between them from base ralph data types."""
-    fixtures = ['structure_for_import']
+    """Test creating CI's and relations between them
+    from base ralph data types."""
+    fixtures = ['invalid_cis', 'structure_for_import']
 
     def setUp(self):
-        self.objs = it.chain(
-            Device.objects.all(),
-            Venture.objects.all(),
-            VentureRole.objects.all(),
+        self.objs = (
+            list(Device.objects.all()) +
+            list(Venture.objects.all()) +
+            list(VentureRole.objects.all()) +
+            list(Service.objects.all()) +
+            list(BusinessLine.objects.all())
         )
-        self.top_venture = Venture.objects.get(pk=1)
-        self.child_venture = Venture.objects.get(pk=2)
-        self.role = VentureRole.objects.get(pk=1)
-        self.child_role = VentureRole.objects.get(pk=2)
-        self.dc = Device.objects.get(pk=1)
-        self.rack = Device.objects.get(pk=2)
-        self.blade = Device.objects.get(pk=3)
 
     def test_import_devices(self):
         """
@@ -76,13 +71,16 @@ class CIImporterTest(TestCase):
             CIImporter().import_all_ci([ct], asset_id=o.id)
             CIImporter().import_relations(ct, asset_id=o.id)
 
-
         # All ci should be in Hardware layer
         ci_dc = CI.objects.get(name='dc')
         ci_rack = CI.objects.get(name='rack')
         ci_blade = CI.objects.get(name='blade')
+        ci_top_venture = CI.objects.get(name='top_venture')
         ci_venture = CI.objects.get(name='child_venture')
         ci_role = CI.objects.get(name='child_role')
+        ci_service1 = CI.objects.get(name='Service 1')
+        ci_bline1 = CI.objects.get(name='INT-1')
+        ci_bline2 = CI.objects.get(name='INT-2')
 
         self.assertEqual(ci_dc.layers.select_related()[0].name, 'Hardware')
         self.assertEqual(ci_rack.layers.select_related()[0].name, 'Hardware')
@@ -122,7 +120,12 @@ class CIImporterTest(TestCase):
         )
         # dc is *not* bound to venture
         self.assertEqual(
-            set([(rel.parent.name, rel.child.name, rel.type) for rel in venture_rels]),
+            set(
+                [
+                    (rel.parent.name, rel.child.name, rel.type)
+                    for rel in venture_rels
+                ]
+            ),
             set([(u'child_venture', u'rack', 1),
                  (u'child_venture', u'blade', 1)])
         )
@@ -133,19 +136,44 @@ class CIImporterTest(TestCase):
         )
         # only bottom level device has role, so one relation is made
         self.assertEqual(
-            set([(rel.parent.name, rel.child.name, rel.type) for rel in role_rels]),
+            set(
+                [
+                    (rel.parent.name, rel.child.name, rel.type)
+                    for rel in role_rels
+                ]
+            ),
             set([(u'child_role', u'blade', 3)]),
         )
+        # Service 1 should be in BusinessLine 1
+        service_rels = CIRelation.objects.filter(
+            child=ci_service1,
+            parent__in={ci_bline1, ci_bline2},
+            type=CI_RELATION_TYPES.CONTAINS.id,
+        )
+        self.assertSetEqual(
+            set(
+                [
+                    (rel.parent.name, rel.child.name, rel.type)
+                    for rel in service_rels
+                ]
+            ),
+            {('INT-1', 'Service 1', 1)},
+        )
+        # child_venture should be in parent_venture
+        venture_rel = CIRelation.objects.get(
+            parent=ci_top_venture,
+            child=ci_venture,
+        )
+        self.assertEqual(venture_rel.type, CI_RELATION_TYPES.CONTAINS)
         from ralph.cmdb.graphs import ImpactCalculator
         # summarize relations.
-        self.assertEqual(CIRelation.objects.count(), 9)
+        self.assertEqual(CIRelation.objects.count(), 10)
         # calculate impact/spanning tree for CI structure
         root_ci = CI.objects.get(name='rack')
         calc = ImpactCalculator(root_ci)
-        self.assertEqual(
-            calc.find_affected_nodes(root_ci.id),
-            ({2: 6, 5: 6, 6: None, 7: 6}, [6, 7, 2, 5]),
-        )
+        map, nodes = calc.find_affected_nodes(root_ci.id)
+        self.assertEqual(map, {2: 6, 5: 6, 6: None, 7: 6})
+        self.assertSetEqual(set(nodes), {2, 5, 6, 7})
 
 
 class AddOrUpdateCITest(TestCase):
@@ -187,7 +215,7 @@ class AddOrUpdateCITest(TestCase):
             business_line=bl.name,
         )
 
-        # create BusinessLIne and CI
+        # create BusinessLine and CI
         self.business_line = BusinessLine.objects.create(
             name='TestBusinessLine',
         )
@@ -260,7 +288,7 @@ class AutoCIRemoveTest(TestCase):
             business_line=bl.name,
         )
 
-        # create BusinessLIne and CI
+        # create BusinessLine and CI
         self.business_line = BusinessLine.objects.create(
             name='TestBusinessLine',
         )
