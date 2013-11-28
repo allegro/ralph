@@ -24,6 +24,7 @@ from lck.django.choices import Choices
 from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Taggable
 from django.utils.html import escape
+from django.dispatch import receiver
 
 from ralph.discovery.models_component import is_mac_valid, Ethernet
 from ralph.discovery.models_util import LastSeen, SavingUser
@@ -583,6 +584,19 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
                 name = filename
             self.saving_plugin = name
         return super(Device, self).save(*args, **kwargs)
+
+@receiver(
+    db.signals.post_delete, sender=Device,
+    dispatch_uid='discovery.device.post_delete'
+)
+def device_post_delete(sender, instance, **kwargs):
+    try:
+        from ralph_assets.models import DeviceInfo
+    except ImportError:
+        return # Assets not installed
+    for deviceinfo in DeviceInfo.objects.filter(ralph_device_id=instance.id):
+        deviceinfo.ralph_device_id = None
+        deviceinfo.save()
 
 
 class ReadOnlyDevice(Device):
