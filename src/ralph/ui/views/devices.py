@@ -8,6 +8,7 @@ import cStringIO as StringIO
 import datetime
 
 from bob import csvutil
+from rq import get_current_job
 
 from django.contrib import messages
 from django.core.paginator import InvalidPage
@@ -18,6 +19,7 @@ from django.views.generic import ListView
 
 from ralph.account.models import Perm
 from ralph.discovery.models_device import DeviceType
+from ralph.util.reports import set_progress
 
 
 PAGE_SIZE = 25
@@ -94,9 +96,14 @@ class BaseDeviceList(ListView):
         self.venture = None
         self.sort = None
 
-    def export_csv(self, query=None):
-        if query is None:
-            query = self.get_queryset()
+    def get_result(self, request, *args, **kwargs):
+        if not self.user_allowed():
+            messages.error(
+                self.request,
+                _("You don't have permission to view this.")
+            )
+            return HttpResponseRedirect('..')
+        query = self.get_queryset()
         rows = [
             ['Id', 'Name', 'Venture', 'Role', 'Model', 'Data Center', 'Rack',
              'Position', 'Barcode', 'SN', 'Margin', 'Deprecation', 'Price',
@@ -104,6 +111,9 @@ class BaseDeviceList(ListView):
              'Last Seen', 'Purchased', 'Warranty Expiration',
              'Support Expiration', 'Support Kind', 'Remarks'],
         ]
+        job = get_current_job()
+        total = query.count()
+        processed = 0
         for dev in query.all():
             show_tabs = set(_get_show_tabs(self.request, None, dev))
             row = [
@@ -138,11 +148,18 @@ class BaseDeviceList(ListView):
                 dev.remarks or '' if 'info' in show_tabs else '',
             ]
             rows.append([unicode(r) for r in row])
+            processed += 1
+            set_progress(job, processed / total)
+        set_progress(job, 1)
+        return rows
+
+    def get_response(self, request, rows):
         f = StringIO.StringIO()
         csvutil.UnicodeWriter(f).writerows(rows)
         response = HttpResponse(f.getvalue(), content_type="application/csv")
         response['Content-Disposition'] = 'attachment; filename=ralph.csv'
         return response
+
 
     def user_allowed(self):
         return False
@@ -155,8 +172,6 @@ class BaseDeviceList(ListView):
             )
             return HttpResponseRedirect('..')
         export = self.request.GET.get('export')
-        if export == 'csv':
-            return self.export_csv()
         return super(BaseDeviceList, self).get(*args, **kwargs)
 
     def sort_queryset(self, queryset, columns=DEVICE_SORT_COLUMNS, sort=None):

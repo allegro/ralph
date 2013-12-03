@@ -2,6 +2,19 @@
 {% load url from future %}
 {% load icons %}
 {% load bob %}
+{% block scripts %}
+    {{ block.super }}
+    <script type="text/javascript">
+        require(['reports'], function(reports) {
+            reports.setup({
+                trigger: $('.pagination').find('a').last(),
+                progressBar: '#async-progress',
+                etaEl: '#eta'
+            });
+        });
+    </script>
+
+{% endblock %}
 
 {% block contentarea %}
 <form 
@@ -58,6 +71,10 @@
     </tbody>
 </table>
 {% pagination page_obj url_query=url_query show_all=1 show_csv=1 fugue_icons=1 %}
+<div id="eta"></div>
+<div class="progress" id="async-progress">
+    <div class="bar"></div>
+</div>
 {% if show_bulk %}
 <div class="form-actions bulk-edit">
     {% csrf_token %}

@@ -23,6 +23,7 @@ from ralph.account.models import Perm
 from ralph.discovery.models import ReadOnlyDevice, Device, ComponentModel
 from ralph.scan.models import ScanSummary
 from ralph.ui.forms.search import SearchForm
+from ralph.util.reports import Report
 from ralph.ui.views.common import (
     Addresses,
     Asset,
@@ -98,7 +99,7 @@ class Search(SidebarSearch, BaseMixin):
     pass
 
 
-class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
+class SearchDeviceList(Report, SidebarSearch, BaseMixin, BaseDeviceList):
     def __init__(self, *args, **kwargs):
         super(SearchDeviceList, self).__init__(*args, **kwargs)
         self.query = None
@@ -486,6 +487,7 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
 
 class SearchInfo(Search, Info):
     pass
+
 
 
 class SearchAddresses(Search, Addresses):
