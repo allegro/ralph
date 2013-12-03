@@ -40,14 +40,15 @@ def get_progress(job):
     """Returns job progress in percent"""
     return int(job.meta['progress'] * 100)
 
+
 def get_eta(job):
     """Returns job ETA in seconds"""
     if not job.meta['progress'] or not job.meta['start_progress']:
         return None
     velocity = job.meta['progress'] / (
-            datetime.datetime.now() - job.meta['start_progress']
+        datetime.datetime.now() - job.meta['start_progress']
     ).total_seconds()
-    return  (1.0 - job.meta['progress']) / velocity
+    return (1.0 - job.meta['progress']) / velocity
 
 
 def get_result(request):
@@ -67,15 +68,15 @@ def set_progress(job, progress):
     """Set the progress of a job and save. If job is None - do nothing"""
     if job:
         job.meta['progress'] = progress
-        if not job.meta['start_progress']:                              
-            job.meta['start_progress'] = datetime.datetime.now()        
-        job.save()   
+        if not job.meta['start_progress']:
+            job.meta['start_progress'] = datetime.datetime.now()
+        job.save()
 
 
 # This is removed as top-level function so rq can find it
 def enqueue(view, request):
     return view.queue.enqueue(get_result, PicklableRequest(request))
-    
+
 
 class Report(View):
     """Base class for asynchronous reports. It works as a view."""
@@ -83,7 +84,6 @@ class Report(View):
 
     def is_async(self, request, *args, **kwargs):
         return 'export' in request.GET
-
 
     def __init__(self, **kwargs):
         self.connection = django_rq.get_connection(self.QUEUE_NAME)

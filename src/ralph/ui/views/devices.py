@@ -79,7 +79,9 @@ class BaseDeviceList(Report, ListView):
     details_columns = {
         'info': ['venture', 'model', 'position', 'remarks'],
         'components': ['model', 'barcode', 'sn'],
-        'prices': ['venture', 'margin', 'deprecation', 'price', 'cost', 'deprecation'],
+        'prices': [
+            'venture', 'margin', 'deprecation', 'price', 'cost', 'deprecation'
+        ],
         'addresses': ['ips', 'management'],
         'costs': ['venture', 'cost', 'deprecation'],
         'history': ['created', 'lastseen'],
@@ -120,8 +122,10 @@ class BaseDeviceList(Report, ListView):
             row = [
                 str(dev.id),
                 dev.name or '' if 'info' in show_tabs else '',
-                dev.venture.symbol if
-                    dev.venture and 'info' in show_tabs else '',
+                (
+                    dev.venture.symbol if
+                    dev.venture and 'info' in show_tabs else ''
+                ),
                 (dev.venture_role.full_name if dev.venture_role and
                     'info' in show_tabs else ''),
                 dev.get_model_name() or '' if 'info' in show_tabs else '',
@@ -135,16 +139,21 @@ class BaseDeviceList(Report, ListView):
                     'prices' in show_tabs else ''),
                 str(dev.cached_price) if 'prices' in show_tabs else '',
                 str(dev.cached_cost) if 'costs' in show_tabs else '',
-                ' '.join(ip.address for ip in dev.ipaddress_set.all()
-                    ) if 'info' in show_tabs else '',
+                ' '.join(
+                    ip.address for ip in dev.ipaddress_set.all()
+                ) if 'info' in show_tabs else '',
                 dev.management or '' if 'info' in show_tabs else '',
                 dev.created or '' if 'history' in show_tabs else '',
                 dev.last_seen or '' if 'history' in show_tabs else '',
                 dev.purchase_date or '' if 'purchase' in show_tabs else '',
-                dev.warranty_expiration_date or
-                    '' if 'purchase' in show_tabs else '',
-                dev.support_expiration_date or '' if
-                    'purchase' in show_tabs else '',
+                (
+                    dev.warranty_expiration_date or
+                    '' if 'purchase' in show_tabs else ''
+                ),
+                (
+                    dev.support_expiration_date or '' if
+                    'purchase' in show_tabs else ''
+                ),
                 dev.support_kind or '' if 'purchase' in show_tabs else '',
                 dev.remarks or '' if 'info' in show_tabs else '',
             ]
@@ -161,7 +170,6 @@ class BaseDeviceList(Report, ListView):
         response['Content-Disposition'] = 'attachment; filename=ralph.csv'
         return response
 
-
     def user_allowed(self):
         return False
 
@@ -172,7 +180,6 @@ class BaseDeviceList(Report, ListView):
                 _("You don't have permission to view this.")
             )
             return HttpResponseRedirect('..')
-        export = self.request.GET.get('export')
         return super(BaseDeviceList, self).get(*args, **kwargs)
 
     def sort_queryset(self, queryset, columns=DEVICE_SORT_COLUMNS, sort=None):
