@@ -99,7 +99,7 @@ class Search(SidebarSearch, BaseMixin):
     pass
 
 
-class SearchDeviceList(Report, SidebarSearch, BaseMixin, BaseDeviceList):
+class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
     def __init__(self, *args, **kwargs):
         super(SearchDeviceList, self).__init__(*args, **kwargs)
         self.query = None

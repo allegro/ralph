@@ -19,7 +19,7 @@ from django.views.generic import ListView
 
 from ralph.account.models import Perm
 from ralph.discovery.models_device import DeviceType
-from ralph.util.reports import set_progress
+from ralph.util.reports import set_progress, Report
 
 
 PAGE_SIZE = 25
@@ -73,7 +73,7 @@ def _get_show_tabs(request, venture, device):
     return tabs
 
 
-class BaseDeviceList(ListView):
+class BaseDeviceList(Report, ListView):
     template_name = 'ui/device_list.html'
     paginate_by = PAGE_SIZE
     details_columns = {
@@ -97,6 +97,7 @@ class BaseDeviceList(ListView):
         self.sort = None
 
     def get_result(self, request, *args, **kwargs):
+        self.kwargs = kwargs
         if not self.user_allowed():
             messages.error(
                 self.request,
