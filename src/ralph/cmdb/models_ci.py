@@ -179,6 +179,8 @@ class CIRelation(TimeTrackable, WithConcurrentGetOrCreate):
         )
 
     def clean(self):
+        if not (self.parent_id and self.child_id):
+            return
         validation_msg = 'CI can not have relation with himself'
         if self.parent == self.child:
             raise ValidationError(validation_msg)
