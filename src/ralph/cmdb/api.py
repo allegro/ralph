@@ -37,7 +37,7 @@ from ralph.cmdb.models import (
     CIRelation,
 )
 from ralph.cmdb import models as db
-from ralph.cmdb.models_ci import CIOwner, CIOwnershipType
+from ralph.cmdb.models_ci import CIOwner, CIOwnershipType, CIOwnership
 from ralph.cmdb.models_audits import get_login_from_owner_name
 
 THROTTLE_AT = settings.API_THROTTLING['throttle_at']
@@ -146,7 +146,7 @@ class CIRelationResource(MResource):
             'type': ALL,
         }
         excludes = ('cache_version', )
-        list_allowed_methods = ['get']
+        list_allowed_methods = ['get', 'post']
         resource_name = 'cirelation'
         throttle = CacheThrottle(
             throttle_at=THROTTLE_AT,
@@ -160,6 +160,15 @@ class CIRelationResource(MResource):
         bundle.data['child'] = cirelation.child.id
         return bundle
 
+    def hydrate(self, bundle):
+        # TODO - make some sanity check on type
+        field_to_class = {'parent': CI, 'child': CI}
+        for field in ('parent', 'child'):
+            if field in bundle.data:
+                hydro_fields = field_to_class[field].objects.filter(pk=bundle.data[field])
+                if hydro_fields.count():
+                    setattr(bundle.obj, field, hydro_fields[0])
+        return bundle
 
 class CIResource(MResource):
     class Meta:
@@ -170,7 +179,7 @@ class CIResource(MResource):
                 Perm.read_configuration_item_info_generic,
             ]
         )
-        list_allowed_methods = ['get']
+        list_allowed_methods = ['get', 'post']
         resource_name = 'ci'
         filtering = {
             'added_manually': ALL,
@@ -217,6 +226,57 @@ class CIResource(MResource):
         bundle.data['layers'] = []
         for layer in ci.layers.all():
             bundle.data['layers'].append({'name': layer.name, 'id': layer.id})
+        return bundle
+
+    def hydrate(self, bundle):
+        # Managing keys
+        field_to_class = {'type': CIType}
+        if field in bundle.data:
+            hydro_fields = field_to_class[field].objects.filter(pk=bundle.data[field]['id'])
+            if not hydro_fields.count():
+                hydro_fields = field_to_class[field](name=bundle.data[field]['name'])
+                hydro_fields.save()
+            else:
+                setattr(bundle.obj, field, hydro_fields[0])
+        return bundle
+
+    def hydrate_m2m(self, bundle):
+        # Managing m2m
+        classes = {'layers': CILayer, 'owners': CIOwner}
+
+        # Usual M2M
+        if field in bundle.data:
+            m2m_objects = []
+            for entry in bundle.data[field]:
+                m2m_obj = classes[field].objects.filter(pk=entry['id'])
+                if m2m_obj:
+                    m2m_obj = m2m_obj[0]
+                else:
+                    m2m_obj = classes[field](name=entry['name'])
+                    m2m_obj.save()
+                m2m_objects.append(m2m_obj)
+
+            setattr(bundle.obj, field, m2m_objects)
+
+        # owners is M2M using Intermediary model
+        for field in ('business_owners', 'technical_owners'):
+            m2m_objects = []
+            if field in bundle.data:
+                for entry in bundle.data[field]:
+                    if 'id' in entry and entry['id'] and CIOwner.objects.filter(pk=entry['id']).count() == 1:
+                        m2m_obj = CIOwner.objects.get(pk=entry['id'])
+                    else:
+                        first_name = entry.get('first_name', '')
+                        last_name = entry.get('last_name', '')
+                        email = entry.get('email', '')
+                        m2m_obj = CIOwner(first_name=first_name, last_name=last_name, email=email)
+                        m2m_obj.save()
+                    m2m_objects.append(m2m_obj)
+
+            for m2m_obj in m2m_objects:
+                owner_type = getattr(CIOwnershipType, field.replace("_owners", ""), "business")
+                ownership = CIOwnership(ci=bundle.obj, owner=m2m_obj, type=owner_type)
+                ownership.save()
         return bundle
 
 
