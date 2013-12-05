@@ -295,7 +295,7 @@ class CI(TimeTrackable):
     )
     pci_scope = models.BooleanField(default=False)
     layers = models.ManyToManyField(
-        CILayer, verbose_name=_("layers containing given CI"),
+        CILayer, verbose_name=_("layers containing given CI")
     )
     barcode = models.CharField(
         verbose_name=_("barcode"), max_length=255, unique=True, null=True,

@@ -22,6 +22,7 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from tastypie.authentication import ApiKeyAuthentication
 from tastypie.constants import ALL, ALL_WITH_RELATIONS
 from tastypie.exceptions import BadRequest
+from tastypie import fields
 from tastypie.fields import ForeignKey as TastyForeignKey
 from tastypie.resources import ModelResource as MResource
 from tastypie.throttle import CacheThrottle
@@ -226,8 +227,15 @@ class OwnershipField(tastypie.fields.ListField):
 
 class CIResource(MResource):
 
-    business_owners = OwnershipField(CIOwnershipType.business)
-    technical_owners = OwnershipField(CIOwnershipType.technical)
+    business_owners = fields.ManyToManyField(
+        'ralph.cmdb.api.CIOwnersResource', 'business_owners', full=True
+    )
+    technical_owners = fields.ManyToManyField(
+        'ralph.cmdb.api.CIOwnersResource', 'technical_owners', full=True
+    )
+    layers = fields.ManyToManyField('ralph.cmdb.api.CILayersResource', 'layers')
+    # ownerships = fields.OneToManyField()
+    type = TastyForeignKey('ralph.cmdb.api.CITypesResource', 'type')
     class Meta:
         queryset = CI.objects.all()
         authentication = ApiKeyAuthentication()
@@ -268,10 +276,8 @@ class CIResource(MResource):
 
     def dehydrate(self, bundle):
         ci = CI.objects.get(uid=bundle.data.get('uid'))
-        bundle.data['type'] = {'name': ci.type.name, 'id': ci.type_id}
-        bundle.data['layers'] = []
-        for layer in ci.layers.all():
-            bundle.data['layers'].append({'name': layer.name, 'id': layer.id})
+        # for layer in ci.layers.all():
+        #     bundle.data['layers'].append({'name': layer.name, 'id': layer.id})
         bundle.data['attributes'] = []
         for attribute_value in ci.ciattributevalue_set.all():
             bundle.data['attributes'].append({
@@ -280,56 +286,45 @@ class CIResource(MResource):
             })
         return bundle
 
-    def hydrate(self, bundle):
-        # Managing keys
-        field_to_class = {'type': CIType}
-        if field in bundle.data:
-            hydro_fields = field_to_class[field].objects.filter(pk=bundle.data[field]['id'])
-            if not hydro_fields.count():
-                hydro_fields = field_to_class[field](name=bundle.data[field]['name'])
-                hydro_fields.save()
-            else:
-                setattr(bundle.obj, field, hydro_fields[0])
-        return bundle
 
-    def hydrate_m2m(self, bundle):
-        # Managing m2m
-        classes = {'layers': CILayer, 'owners': CIOwner}
+    # def hydrate_m2m(self, bundle):
+    #     # Managing m2m
+    #     classes = {'layers': CILayer, 'owners': CIOwner}
 
-        # Usual M2M
-        if field in bundle.data:
-            m2m_objects = []
-            for entry in bundle.data[field]:
-                m2m_obj = classes[field].objects.filter(pk=entry['id'])
-                if m2m_obj:
-                    m2m_obj = m2m_obj[0]
-                else:
-                    m2m_obj = classes[field](name=entry['name'])
-                    m2m_obj.save()
-                m2m_objects.append(m2m_obj)
+    #     # Usual M2M
+    #     if field in bundle.data:
+    #         m2m_objects = []
+    #         for entry in bundle.data[field]:
+    #             m2m_obj = classes[field].objects.filter(pk=entry['id'])
+    #             if m2m_obj:
+    #                 m2m_obj = m2m_obj[0]
+    #             else:
+    #                 m2m_obj = classes[field](name=entry['name'])
+    #                 m2m_obj.save()
+    #             m2m_objects.append(m2m_obj)
 
-            setattr(bundle.obj, field, m2m_objects)
+    #         setattr(bundle.obj, field, m2m_objects)
 
-        # owners is M2M using Intermediary model
-        for field in ('business_owners', 'technical_owners'):
-            m2m_objects = []
-            if field in bundle.data:
-                for entry in bundle.data[field]:
-                    if 'id' in entry and entry['id'] and CIOwner.objects.filter(pk=entry['id']).count() == 1:
-                        m2m_obj = CIOwner.objects.get(pk=entry['id'])
-                    else:
-                        first_name = entry.get('first_name', '')
-                        last_name = entry.get('last_name', '')
-                        email = entry.get('email', '')
-                        m2m_obj = CIOwner(first_name=first_name, last_name=last_name, email=email)
-                        m2m_obj.save()
-                    m2m_objects.append(m2m_obj)
+    #     # owners is M2M using Intermediary model
+    #     for field in ('business_owners', 'technical_owners'):
+    #         m2m_objects = []
+    #         if field in bundle.data:
+    #             for entry in bundle.data[field]:
+    #                 if 'id' in entry and entry['id'] and CIOwner.objects.filter(pk=entry['id']).count() == 1:
+    #                     m2m_obj = CIOwner.objects.get(pk=entry['id'])
+    #                 else:
+    #                     first_name = entry.get('first_name', '')
+    #                     last_name = entry.get('last_name', '')
+    #                     email = entry.get('email', '')
+    #                     m2m_obj = CIOwner(first_name=first_name, last_name=last_name, email=email)
+    #                     m2m_obj.save()
+    #                 m2m_objects.append(m2m_obj)
 
-            for m2m_obj in m2m_objects:
-                owner_type = getattr(CIOwnershipType, field.replace("_owners", ""), "business")
-                ownership = CIOwnership(ci=bundle.obj, owner=m2m_obj, type=owner_type)
-                ownership.save()
-        return bundle
+    #         for m2m_obj in m2m_objects:
+    #             owner_type = getattr(CIOwnershipType, field.replace("_owners", ""), "business")
+    #             ownership = CIOwnership(ci=bundle.obj, owner=m2m_obj, type=owner_type)
+    #             ownership.save()
+    #     return bundle
 
 
 class CILayersResource(MResource):
