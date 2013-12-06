@@ -39,6 +39,8 @@ from ralph.cmdb.models import (
     CIChangeZabbixTrigger,
     CILayer,
     CIRelation,
+    CIAttribute,
+    CIAttributeValue,
 )
 from ralph.cmdb import models as db
 from ralph.cmdb.models_ci import CIOwner, CIOwnershipType, CIOwnership
@@ -209,9 +211,43 @@ class OwnershipField(tastypie.fields.RelatedField):
         # setattr(ci, self.attribute, [owner.obj for owner in owners])
         return owners
 
+class AttributesField(tastypie.fields.ApiField):
+    """The field that works on custom attributes of a CI."""
+
+    def __init__(self, *args, **kwargs):
+        super(AttributesField, self).__init__(*args, **kwargs)
+        self.attribute = 'attributes'
+
+    def dehydrate(self, bundle):
+        ci = bundle.obj
+        bundle.data['attributes'] = []
+        result = []
+        for attribute_value in ci.ciattributevalue_set.all():
+            result.append({
+                'name': attribute_value.attribute.name,
+                'value': attribute_value.value,
+            })
+        return result
+
+    def hydrate(self, bundle):
+        ci = bundle.obj
+        CIAttributeValue.objects.filter(ci=ci).delete()
+        for attr_data in bundle.data[self.attribute]:
+            attribute = CIAttribute.objects.get(name=attr_data['name'])
+            attribute_value = CIAttributeValue(
+                ci=ci,
+                attribute=attribute,
+            )
+            attribute_value.save()
+            attribute_value.value = attr_data['value']
+
+        
+
+
 
 class CIResource(MResource):
 
+    attributes = AttributesField()
     business_owners = OwnershipField(CIOwnershipType.business, full=True)
     technical_owners = OwnershipField(CIOwnershipType.technical, full=True)
     layers = fields.ManyToManyField('ralph.cmdb.api.CILayersResource', 'layers')
@@ -224,9 +260,10 @@ class CIResource(MResource):
                 Perm.read_configuration_item_info_generic,
             ]
         )
-        list_allowed_methods = ['get', 'post', 'put', 'patch']
+        list_allowed_methods = ['get', 'post', 'put', 'patch', 'delete']
         resource_name = 'ci'
         filtering = {
+            'attributes': ALL,
             'added_manually': ALL,
             'barcode': ('startswith', 'exact',),
             'business_service': ALL,
@@ -253,18 +290,6 @@ class CIResource(MResource):
             timeframe=TIMEFRAME,
             expiration=EXPIRATION,
         )
-
-    def dehydrate(self, bundle):
-        ci = CI.objects.get(uid=bundle.data.get('uid'))
-        # for layer in ci.layers.all():
-        #     bundle.data['layers'].append({'name': layer.name, 'id': layer.id})
-        bundle.data['attributes'] = []
-        for attribute_value in ci.ciattributevalue_set.all():
-            bundle.data['attributes'].append({
-                'name': attribute_value.attribute.name,
-                'value': attribute_value.value,
-            })
-        return bundle
 
 
 class CILayersResource(MResource):
