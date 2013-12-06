@@ -181,13 +181,16 @@ class OwnershipField(tastypie.fields.RelatedField):
         super(OwnershipField, self).__init__(*args, **kwargs)
 
     def dehydrate(self, bundle):
+        
         owners = CIOwner.objects.filter(
             ciownership__type=self.owner_type,
             ciownership__ci=bundle.obj,
         )
         result = []
         for owner in owners:
-            result.append(self.dehydrate_related(bundle, owner))
+            result.append(self.dehydrate_related(
+                bundle, self.get_related_resource(owner)
+            ))
         return result
 
     def get_attribute_name(self):
@@ -262,46 +265,6 @@ class CIResource(MResource):
                 'value': attribute_value.value,
             })
         return bundle
-
-
-    # def hydrate_m2m(self, bundle):
-    #     # Managing m2m
-    #     classes = {'layers': CILayer, 'owners': CIOwner}
-
-    #     # Usual M2M
-    #     if field in bundle.data:
-    #         m2m_objects = []
-    #         for entry in bundle.data[field]:
-    #             m2m_obj = classes[field].objects.filter(pk=entry['id'])
-    #             if m2m_obj:
-    #                 m2m_obj = m2m_obj[0]
-    #             else:
-    #                 m2m_obj = classes[field](name=entry['name'])
-    #                 m2m_obj.save()
-    #             m2m_objects.append(m2m_obj)
-
-    #         setattr(bundle.obj, field, m2m_objects)
-
-    #     # owners is M2M using Intermediary model
-    #     for field in ('business_owners', 'technical_owners'):
-    #         m2m_objects = []
-    #         if field in bundle.data:
-    #             for entry in bundle.data[field]:
-    #                 if 'id' in entry and entry['id'] and CIOwner.objects.filter(pk=entry['id']).count() == 1:
-    #                     m2m_obj = CIOwner.objects.get(pk=entry['id'])
-    #                 else:
-    #                     first_name = entry.get('first_name', '')
-    #                     last_name = entry.get('last_name', '')
-    #                     email = entry.get('email', '')
-    #                     m2m_obj = CIOwner(first_name=first_name, last_name=last_name, email=email)
-    #                     m2m_obj.save()
-    #                 m2m_objects.append(m2m_obj)
-
-    #         for m2m_obj in m2m_objects:
-    #             owner_type = getattr(CIOwnershipType, field.replace("_owners", ""), "business")
-    #             ownership = CIOwnership(ci=bundle.obj, owner=m2m_obj, type=owner_type)
-    #             ownership.save()
-    #     return bundle
 
 
 class CILayersResource(MResource):
