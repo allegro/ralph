@@ -214,12 +214,12 @@ class CMDBApiTest(TestCase):
         self.assertEqual(json_data['type']['name'], self.ci1.type.name)
         self.assertEqual(json_data['uid'], self.ci1.uid)
         self.assertEqual(
-            json_data['technical_owners'][0]['username'],
-            '{}.{}'.format(self.owner1.first_name, self.owner1.last_name)
+            json_data['technical_owners'][0]['first_name'],
+            self.owner1.first_name,
         )
         self.assertEqual(
-            json_data['business_owners'][0]['username'],
-            '{}.{}'.format(self.owner2.first_name, self.owner2.last_name)
+            json_data['business_owners'][0]['first_name'],
+            self.owner2.first_name,
         )
 
         response = self.client.get(
@@ -234,8 +234,8 @@ class CMDBApiTest(TestCase):
         self.assertEqual(json_data['uid'], self.ci2.uid)
         self.assertFalse(json_data['technical_owners'])
         self.assertEqual(
-            json_data['business_owners'][0]['username'],
-            '{}.{}'.format(self.owner2.first_name, self.owner2.last_name)
+            json_data['business_owners'][0]['first_name'],
+            self.owner2.first_name,
         )
 
     def test_get_attribute(self):
@@ -426,28 +426,28 @@ class CIApiTest(TestCase):
             1,
         )
 
-    def test_ci_change_cmdbhistory_registration(self):
-        request = HttpRequest()
-        request.user = self.user
-        cmdb_bundle = Bundle(data=self.post_data_cmdb_change, request=request)
-        cmdb_resource = CIChangeCMDBHistoryResource()
-        cmdb_resource.obj_create(bundle=cmdb_bundle)
+    # def test_ci_change_cmdbhistory_registration(self):
+    #     request = HttpRequest()
+    #     request.user = self.user
+    #     cmdb_bundle = Bundle(data=self.post_data_cmdb_change, request=request)
+    #     cmdb_resource = CIChangeCMDBHistoryResource()
+    #     cmdb_resource.obj_create(bundle=cmdb_bundle)
 
-        cmdb_change = None
-        try:
-            cmdb_change = CIChangeCMDBHistory.objects.get(
-                ci_id=self.ci.id, old_value=self.cmdb_old_value,
-                new_value=self.cmdb_new_value)
-        except CIChangeCMDBHistory.DoesNotExist:
-            pass
-        self.assertNotEqual(cmdb_change, None)
-        self.assertEqual(
-            CIChange.objects.filter(
-                object_id=cmdb_change.id,
-                type=chdb.CI_CHANGE_TYPES.CI.id
-            ).count(),
-            1,
-        )
+    #     cmdb_change = None
+    #     try:
+    #         cmdb_change = CIChangeCMDBHistory.objects.get(
+    #             ci_id=self.ci.id, old_value=self.cmdb_old_value,
+    #             new_value=self.cmdb_new_value)
+    #     except CIChangeCMDBHistory.DoesNotExist:
+    #         pass
+    #     self.assertNotEqual(cmdb_change, None)
+    #     self.assertEqual(
+    #         CIChange.objects.filter(
+    #             object_id=cmdb_change.id,
+    #             type=chdb.CI_CHANGE_TYPES.CI.id
+    #         ).count(),
+    #         1,
+    #     )
 
 
 class AccessToCMDBApiTest(TestCase):

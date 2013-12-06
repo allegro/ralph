@@ -241,17 +241,18 @@ class AttributesField(tastypie.fields.ApiField):
             attribute_value.save()
             attribute_value.value = attr_data['value']
 
-        
-
-
 
 class CIResource(MResource):
 
     attributes = AttributesField()
     business_owners = OwnershipField(CIOwnershipType.business, full=True)
     technical_owners = OwnershipField(CIOwnershipType.technical, full=True)
-    layers = fields.ManyToManyField('ralph.cmdb.api.CILayersResource', 'layers')
-    type = TastyForeignKey('ralph.cmdb.api.CITypesResource', 'type')
+    layers = fields.ManyToManyField(
+        'ralph.cmdb.api.CILayersResource', 'layers', full=True
+    )
+    type = TastyForeignKey(
+        'ralph.cmdb.api.CITypesResource', 'type', full=True
+    )
     class Meta:
         queryset = CI.objects.all()
         authentication = ApiKeyAuthentication()
