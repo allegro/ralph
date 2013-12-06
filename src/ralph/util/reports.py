@@ -103,7 +103,15 @@ class Report(View):
         else:
             job = rq.job.Job.fetch(jobid, connection=self.connection)
             result = job.result
-            if request.GET.get('_report_finish'):
+            if job.exc_info is not None:
+                json_result = json.dumps({
+                    'jobid': jobid,
+                    'progress': 1,
+                    'eta': {'hours': 0, 'minutes': 0, 'seconds': 0},
+                    'finished': True,
+                    'failed': True,
+                })
+            elif request.GET.get('_report_finish'):
                 if result is None:
                     # Shouldn't happen if browser side is OK
                     return HttpResponseBadRequest()
@@ -111,20 +119,22 @@ class Report(View):
                     return self.get_response(request, result)
             else:
                 if result is None:
-                    result = json.dumps({
+                    json_result = json.dumps({
                         'jobid': jobid,
                         'progress': get_progress(job),
                         'eta': get_eta(job),
                         'finished': False,
+                        'failed': False,
                     })
                 else:
-                    result = json.dumps({
+                    json_result = json.dumps({
                         'jobid': jobid,
                         'progress': 100,
                         'eta': {'hours': 0, 'minutes': 0, 'seconds': 0},
                         'finished': True,
+                        'failed': False,
                     })
-            return HttpResponse(result, content_type='application/json')
+            return HttpResponse(json_result, content_type='application/json')
 
     def get(self, request, *args, **kwargs):
         """Perform the GET request."""

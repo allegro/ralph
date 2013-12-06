@@ -3,8 +3,8 @@
 /* The browser side of the functionality implemented in util/reports.py */
 
 define([
-    'jquery', 'moment', 'mustache', 'deparam'
-], function ($, moment, Mustache, deparam) {
+    'jquery', 'moment', 'mustache', 'deparam', 'bootbox'
+], function ($, moment, Mustache, deparam, bootbox) {
     'use strict';
 
     function AsyncLoader(settings) {
@@ -78,6 +78,14 @@ define([
 
     AsyncLoader.prototype.handleUpdate = function (result) {
         var data;
+        if (result.failed) {
+            clearInterval(this.longIntervalHandle);
+            clearInterval(this.shortIntervalHandle);
+            $(this.etaEl).html('')
+            $(this.progressBar).hide();
+            bootbox.alert('Wygenerowanie wyniku nie powiodło się!');
+            return;
+        }
         if (result.progress) {
             $(this.progressBar).removeClass('progress-striped active');
             $(this.progressBar).children('.bar').css(
