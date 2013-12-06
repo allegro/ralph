@@ -165,15 +165,20 @@ class CIRelationResource(MResource):
         return bundle
  
 
-class OwnershipField(tastypie.fields.ListField):
+class OwnershipField(tastypie.fields.RelatedField):
     """A field representing a single type of owner relationship."""
 
-    def __init__(self, owner_type, *args, **kwargs):
+    is_m2m = True
+
+    def __init__(self, owner_type, **kwargs):
         # Choices have broken deepcopy logic, so we can't store them
         self.owner_type = owner_type.id
         self.owner_type_name = owner_type.name
+        args = (
+            'ralph.cmdb.api.CIOwnersResource',
+            self.get_attribute_name(),
+        )
         super(OwnershipField, self).__init__(*args, **kwargs)
-        self.attribute = 'ciownership'
 
     def dehydrate(self, bundle):
         owners = CIOwner.objects.filter(
@@ -182,59 +187,31 @@ class OwnershipField(tastypie.fields.ListField):
         )
         result = []
         for owner in owners:
-            result.append(
-                {
-                    'id': owner.id,
-                    'username': get_login_from_owner_name(owner),
-                }
-            )
+            result.append(self.dehydrate_related(bundle, owner))
         return result
 
-    def get_owner(self, data):
-        """Find and owner from data."""
-        if 'id' in data:
-            return CIOwner.objects.get(id=data['id'])
-        if 'username' in data:
-            first_name, last_name = data['username'].split('.')
-            return CIOwner.objects.get(
-                first_name=first_name, last_name=last_name,
-            )
-
-    @property
-    def attribute_name(self):
+    def get_attribute_name(self):
         return '{0}_owners'.format(self.owner_type_name)
 
 
     def hydrate(self, bundle):
-        ci = bundle.obj
-        owners_data = bundle.data[self.attribute_name]
-        try:
-            owners = [self.get_owner(data) for data in owners_data]
-        except (ObjectDoesNotExist, MultipleObjectsReturned) as e:
-            raise BadRequest()
-        setattr(ci, self.attribute_name, owners)
-        return bundle
+        pass
 
-    def hydrate(self, bundle):
-        # TODO - make some sanity check on type
-        field_to_class = {'parent': CI, 'child': CI}
-        for field in ('parent', 'child'):
-            if field in bundle.data:
-                hydro_fields = field_to_class[field].objects.filter(pk=bundle.data[field])
-                if hydro_fields.count():
-                    setattr(bundle.obj, field, hydro_fields[0])
-        return bundle
+    def hydrate_m2m(self, bundle):
+        ci = bundle.obj
+        owners_data = bundle.data[self.attribute]
+        owners = [
+            self.build_related_resource(data) for data in owners_data
+        ]
+        # setattr(ci, self.attribute, [owner.obj for owner in owners])
+        return owners
+
 
 class CIResource(MResource):
 
-    business_owners = fields.ManyToManyField(
-        'ralph.cmdb.api.CIOwnersResource', 'business_owners', full=True
-    )
-    technical_owners = fields.ManyToManyField(
-        'ralph.cmdb.api.CIOwnersResource', 'technical_owners', full=True
-    )
+    business_owners = OwnershipField(CIOwnershipType.business, full=True)
+    technical_owners = OwnershipField(CIOwnershipType.technical, full=True)
     layers = fields.ManyToManyField('ralph.cmdb.api.CILayersResource', 'layers')
-    # ownerships = fields.OneToManyField()
     type = TastyForeignKey('ralph.cmdb.api.CITypesResource', 'type')
     class Meta:
         queryset = CI.objects.all()

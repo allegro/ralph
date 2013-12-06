@@ -507,26 +507,47 @@ class CIOwnership(TimeTrackable):
             self.owner, self.get_type_display(), self.ci,
         )
 
+class CIOwnershipManager(models.Manager):
+    """The manager of owners."""
+
+    def __init__(self, descriptor, inst):
+        self.descriptor = descriptor
+        self.own_type = self.descriptor.own_type
+        self.inst = inst
+
+    def get_query_set(self):
+        return self.inst.owners.filter(ciownership__type=self.own_type)
+
+    def clear(self):
+        self.descriptor.__delete__(self.inst)
+
+    def add(self, *owners):
+        self.descriptor._add(self.inst, owners)
+
+
 
 class CIOwnershipDescriptor(object):
     """Descriptor simplifying the access to CI owners."""
 
-    def __init__(self, type):
-        self.type = type
+    def __init__(self, own_type):
+        self.own_type = own_type
 
     def __get__(self, inst, cls):
         if inst is None:
             return self
-        return inst.owners.filter(ciownership__type=self.type)
+        return CIOwnershipManager(self, inst)
+
+    def _add(self, inst, owners):
+        for owner in owners:
+            own = CIOwnership(ci=inst, owner=owner, type=self.own_type)
+            own.save()
 
     def __set__(self, inst, owners):
         self.__delete__(inst)
-        for owner in owners:
-            own = CIOwnership(ci=inst, owner=owner, type=self.type)
-            own.save()
+        self._add(inst, owners)
 
     def __delete__(self, inst):
-        CIOwnership.objects.filter(ci=inst, type=self.type).delete()
+        CIOwnership.objects.filter(ci=inst, type=self.own_type).delete()
 
 
 CI.business_owners = CIOwnershipDescriptor(CIOwnershipType.business.id)

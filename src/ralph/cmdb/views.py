@@ -640,7 +640,7 @@ class MainCIEdit(BaseCIDetails):
                 )
             self.service_name = self.get_first_parent_venture_name(ci_id)
             self.form_options['instance'] = self.ci
-            self.form_options['initial'] = self.form_initial(self.ci)
+            # self.form_options['initial'] = self.form_initial(self.ci)
         self.form = self.Form(**self.form_options)
         return super(MainCIEdit, self).get(*args, **kwargs)
 
@@ -664,12 +664,12 @@ class MainCIEdit(BaseCIDetails):
                 messages.error(self.request, "Correct the errors.")
         return super(MainCIEdit, self).get(*args, **kwargs)
 
-    def form_initial(self, ci):
-        data = dict(
-            technical_owner=', '.join(ci.get_technical_owners()),
-            ci=self.ci,
-        )
-        return data
+    # def form_initial(self, ci):
+    #     data = dict(
+    #         technical_owner=', '.join(ci.get_technical_owners()),
+    #         ci=self.ci,
+    #     )
+    #     return data
 
     def get_first_parent_venture_name(self, ci_id):
         cis = db.CI.objects.filter(
