@@ -90,6 +90,13 @@ def _create_or_update_relation(parent, child, relation_type):
 
 
 def _replace_relations(obj, ci, side, field, other_ct, relation_type):
+    """A generic function replacing relations.
+    :param obj: an object from ralph
+    :param ci: a CI that reflects the object
+    :param side: whether it should be a child or parent of relation
+    :param other_ct: the content-type from other side
+    :relateion_type: the type of CIRelations
+    """
     used_relations = set()
     if getattr(obj, field):
         try:
