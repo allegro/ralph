@@ -7,7 +7,6 @@ from __future__ import unicode_literals
 import json
 import random
 import urllib
-from urlparse import urlparse
 
 from django.conf import settings
 from django.core.cache import cache
@@ -263,7 +262,7 @@ class CMDBApiTest(TestCase):
                 }, {
                     'name': 'Documentation Link',
                     'value': 'http://www.gutenberg.org/files/27827/'
-                        '27827-h/27827-h.htm',
+                    '27827-h/27827-h.htm',
                 },
             ],
         })
@@ -310,11 +309,11 @@ class CMDBApiTest(TestCase):
                 }, {
                     'name': 'Documentation Link',
                     'value': 'http://www.gutenberg.org/files/27827/'
-                        '27827-h/27827-h.htm',
+                    '27827-h/27827-h.htm',
                 },
             ],
         })
-        resp = self.client.put(
+        self.client.put(
             '/api/v0.9/ci/{0}/?{1}'.format(
                 self.ci1.id,
                 urllib.urlencode(self.data),
@@ -354,11 +353,11 @@ class CMDBApiTest(TestCase):
                 }, {
                     'name': 'Documentation Link',
                     'value': 'http://www.gutenberg.org/files/27827/'
-                        '27827-h/27827-h.htm',
+                    '27827-h/27827-h.htm',
                 },
             ],
         })
-        resp = self.client.request(**{
+        self.client.request(**{
             'CONTENT_LENGTH': len(ci_data),
             'CONTENT_TYPE': 'application/json',
             'PATH_INFO': '/api/v0.9/ci/{0}/'.format(self.ci1.id),
@@ -366,8 +365,6 @@ class CMDBApiTest(TestCase):
             'QUERY_STRING': urllib.urlencode(self.data),
             'wsgi.input': FakePayload(ci_data),
         })
-        
-        
         self.assertEqual(CI.objects.count(), ci_count_before)
         edited = CI.objects.get(pk=self.ci1.id)
         self.assertEqual(edited.name, 'ciname1')

@@ -18,10 +18,8 @@ from tastypie.resources import Resource
 Resource.method_check = method_check
 
 from django.conf import settings
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from tastypie.authentication import ApiKeyAuthentication
 from tastypie.constants import ALL, ALL_WITH_RELATIONS
-from tastypie.exceptions import BadRequest
 from tastypie import fields
 from tastypie.fields import ForeignKey as TastyForeignKey
 from tastypie.resources import ModelResource as MResource
@@ -43,8 +41,8 @@ from ralph.cmdb.models import (
     CIAttributeValue,
 )
 from ralph.cmdb import models as db
-from ralph.cmdb.models_ci import CIOwner, CIOwnershipType, CIOwnership
-from ralph.cmdb.models_audits import get_login_from_owner_name
+from ralph.cmdb.models_ci import CIOwner, CIOwnershipType
+
 
 THROTTLE_AT = settings.API_THROTTLING['throttle_at']
 TIMEFRAME = settings.API_THROTTLING['timeframe']
@@ -165,7 +163,7 @@ class CIRelationResource(MResource):
         bundle.data['parent'] = cirelation.parent.id
         bundle.data['child'] = cirelation.child.id
         return bundle
- 
+
 
 class OwnershipField(tastypie.fields.RelatedField):
     """A field representing a single type of owner relationship."""
@@ -183,7 +181,6 @@ class OwnershipField(tastypie.fields.RelatedField):
         super(OwnershipField, self).__init__(*args, **kwargs)
 
     def dehydrate(self, bundle):
-        
         owners = CIOwner.objects.filter(
             ciownership__type=self.owner_type,
             ciownership__ci=bundle.obj,
@@ -198,17 +195,16 @@ class OwnershipField(tastypie.fields.RelatedField):
     def get_attribute_name(self):
         return '{0}_owners'.format(self.owner_type_name)
 
-
     def hydrate(self, bundle):
         pass
 
     def hydrate_m2m(self, bundle):
-        ci = bundle.obj
         owners_data = bundle.data[self.attribute]
         owners = [
             self.build_related_resource(data) for data in owners_data
         ]
         return owners
+
 
 class AttributesField(tastypie.fields.ApiField):
     """The field that works on custom attributes of a CI."""
@@ -258,6 +254,7 @@ class CIResource(MResource):
     type = TastyForeignKey(
         'ralph.cmdb.api.CITypesResource', 'type', full=True
     )
+
     class Meta:
         queryset = CI.objects.all()
         authentication = ApiKeyAuthentication()

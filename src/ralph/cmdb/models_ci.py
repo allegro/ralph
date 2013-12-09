@@ -338,7 +338,7 @@ class CI(TimeTrackable):
 
     @classmethod
     def get_duplicate_names(cls):
-        dupes =  cls.objects.values('name').distinct().annotate(
+        dupes = cls.objects.values('name').distinct().annotate(
             models.Count('id'),
         ).filter(id__count__gt=1)
         cis = cls.objects.filter(
@@ -347,7 +347,6 @@ class CI(TimeTrackable):
         # If I try to return the groupby itself the groups are empty
         for name, cis in it.groupby(cis, lambda x: x.name):
             yield name, list(cis)
-
 
     class Meta:
         unique_together = ('content_type', 'object_id')
@@ -507,6 +506,7 @@ class CIOwnership(TimeTrackable):
             self.owner, self.get_type_display(), self.ci,
         )
 
+
 class CIOwnershipManager(models.Manager):
     """The manager of owners."""
 
@@ -523,7 +523,6 @@ class CIOwnershipManager(models.Manager):
 
     def add(self, *owners):
         self.descriptor._add(self.inst, owners)
-
 
 
 class CIOwnershipDescriptor(object):

@@ -1544,7 +1544,6 @@ class Search(BaseCMDBView):
                 table_body.append(DEFAULT_ROWS)
         return table_body
 
-
     def get(self, *args, **kwargs):
         values = self.request.GET
         cis = db.CI.objects.all()
@@ -1694,4 +1693,3 @@ class Cleanup(Search):
         orphans = CI.objects.filter(parent=None, child=None)
         ret['orphans_table'] = [self.get_table_body(orphans, None)]
         return ret
-        
