@@ -206,13 +206,13 @@ class OwnershipField(tastypie.fields.RelatedField):
         return owners
 
 
-class AttributesField(tastypie.fields.ApiField):
+class CustomAttributesField(tastypie.fields.ApiField):
     """The field that works on custom attributes of a CI."""
 
     is_m2m = True
 
     def __init__(self, *args, **kwargs):
-        super(AttributesField, self).__init__(*args, **kwargs)
+        super(CustomAttributesField, self).__init__(*args, **kwargs)
         self.attribute = 'ciattributevalue_set'
 
     def dehydrate(self, bundle):
@@ -245,7 +245,7 @@ class AttributesField(tastypie.fields.ApiField):
 
 class CIResource(MResource):
 
-    attributes = AttributesField()
+    attributes = CustomAttributesField()
     business_owners = OwnershipField(CIOwnershipType.business, full=True)
     technical_owners = OwnershipField(CIOwnershipType.technical, full=True)
     layers = fields.ManyToManyField(
