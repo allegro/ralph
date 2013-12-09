@@ -7,11 +7,13 @@ from __future__ import unicode_literals
 import json
 import random
 import urllib
+from urlparse import urlparse
 
 from django.conf import settings
 from django.core.cache import cache
 from django.http import HttpRequest
 from django.test import TestCase
+from django.test.client import FakePayload
 from tastypie.bundle import Bundle
 
 from ralph.account. models import BoundPerm, Profile, Perm
@@ -323,6 +325,53 @@ class CMDBApiTest(TestCase):
         self.assertEqual(CI.objects.count(), ci_count_before)
         edited = CI.objects.get(pk=self.ci1.id)
         self.assertEqual(edited.name, 'ciname from api 1')
+        self.assertSetEqual(
+            set(edited.business_owners.all()),
+            {self.owner1},
+        )
+        self.assertSetEqual(
+            set(av.value for av in edited.ciattributevalue_set.all()),
+            {
+                0.7,
+                'http://www.gutenberg.org/files/27827/27827-h/27827-h.htm',
+            },
+        )
+
+    def test_patch(self):
+        """PATCH should edit some attributes."""
+        ci_count_before = CI.objects.count()
+        ci_data = json.dumps({
+            'business_owners': [
+                '/api/v0.9/ciowners/{0}/'.format(self.owner1.id)
+            ],
+            'technical_owners': [
+                '/api/v0.9/ciowners/{0}/'.format(self.owner2.id)
+            ],
+            'attributes': [
+                {
+                    'name': 'SLA value',
+                    'value': 0.7,
+                }, {
+                    'name': 'Documentation Link',
+                    'value': 'http://www.gutenberg.org/files/27827/'
+                        '27827-h/27827-h.htm',
+                },
+            ],
+        })
+        resp = self.client.request(**{
+            'CONTENT_LENGTH': len(ci_data),
+            'CONTENT_TYPE': 'application/json',
+            'PATH_INFO': '/api/v0.9/ci/{0}/'.format(self.ci1.id),
+            'REQUEST_METHOD': 'PATCH',
+            'QUERY_STRING': urllib.urlencode(self.data),
+            'wsgi.input': FakePayload(ci_data),
+        })
+        
+        
+        self.assertEqual(CI.objects.count(), ci_count_before)
+        edited = CI.objects.get(pk=self.ci1.id)
+        self.assertEqual(edited.name, 'ciname1')
+        self.assertEqual(edited.uid, 'uid-ci1')
         self.assertSetEqual(
             set(edited.business_owners.all()),
             {self.owner1},

@@ -208,7 +208,6 @@ class OwnershipField(tastypie.fields.RelatedField):
         owners = [
             self.build_related_resource(data) for data in owners_data
         ]
-        # setattr(ci, self.attribute, [owner.obj for owner in owners])
         return owners
 
 class AttributesField(tastypie.fields.ApiField):
