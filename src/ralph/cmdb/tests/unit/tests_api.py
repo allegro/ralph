@@ -286,9 +286,54 @@ class CMDBApiTest(TestCase):
             },
         )
 
-        
-        
-        ci = CI.objects
+    def test_put_ci(self):
+        """PUT should edit existing CI"""
+        ci_count_before = CI.objects.count()
+        ci_data = json.dumps({
+            'uid': 'uid-ci-api-1',
+            'type': '/api/v0.9/citypes/{0}/'.format(self.types[0].id),
+            'barcode': 'barcodeapi1',
+            'name': 'ciname from api 1',
+            'layers': ['/api/v0.9/cilayers/5/'],
+            'business_owners': [
+                '/api/v0.9/ciowners/{0}/'.format(self.owner1.id)
+            ],
+            'technical_owners': [
+                '/api/v0.9/ciowners/{0}/'.format(self.owner2.id)
+            ],
+            'attributes': [
+                {
+                    'name': 'SLA value',
+                    'value': 0.7,
+                }, {
+                    'name': 'Documentation Link',
+                    'value': 'http://www.gutenberg.org/files/27827/'
+                        '27827-h/27827-h.htm',
+                },
+            ],
+        })
+        resp = self.client.put(
+            '/api/v0.9/ci/{0}/?{1}'.format(
+                self.ci1.id,
+                urllib.urlencode(self.data),
+            ),
+            ci_data,
+            content_type='application/json'
+        )
+        self.assertEqual(CI.objects.count(), ci_count_before)
+        edited = CI.objects.get(pk=self.ci1.id)
+        self.assertEqual(edited.name, 'ciname from api 1')
+        self.assertSetEqual(
+            set(edited.business_owners.all()),
+            {self.owner1},
+        )
+        self.assertSetEqual(
+            set(av.value for av in edited.ciattributevalue_set.all()),
+            {
+                0.7,
+                'http://www.gutenberg.org/files/27827/27827-h/27827-h.htm',
+            },
+        )
 
     def test_get_attribute(self):
         path = "/api/v0.9/ci/{0}/".format(self.ci1.id)
