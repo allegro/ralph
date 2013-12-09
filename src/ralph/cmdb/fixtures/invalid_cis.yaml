@@ -1,0 +1,100 @@
+%YAML 1.2
+---
+# The CIRelations here *don't* match the structure from
+# structure_for_import.yaml They are meant to be removed by the import
+
+
+-
+    model: cmdb.ci
+    pk: 1
+    fields:
+        content_type: [business, venture]
+        object_id: 1
+        type: 4
+        uid: bv-1
+-
+    model: cmdb.ci
+    pk: 2
+    fields:
+        content_type: [business, venture]
+        object_id: 2
+        type: 4
+        uid: bv-2
+-
+    model: cmdb.ci
+    pk: 3
+    fields:
+        content_type: [business, venturerole]
+        object_id: 1
+        type: 5
+        uid: br-1
+-
+    model: cmdb.ci
+    pk: 4
+    fields:
+        content_type: [business, venturerole]
+        object_id: 2
+        type: 5
+        uid: br-2
+-
+    model: cmdb.ci
+    pk: 5
+    fields:
+        content_type: [discovery, device]
+        object_id: 1
+        type: 2
+        uid: dd-1
+        layers: [5]
+-
+    model: cmdb.ci
+    pk: 6
+    fields:
+        content_type: [discovery, device]
+        object_id: 2
+        type: 2
+        uid: dd-2
+        layers: [5]
+-
+    model: cmdb.ci
+    pk: 7
+    fields:
+        content_type: [discovery, device]
+        object_id: 3
+        type: 2
+        uid: dd-3
+        layers: [5]
+-
+    model: cmdb.ci
+    pk: 8
+    fields:
+        content_type: [business, service]
+        object_id: 1
+        type: 7
+        uid: bs-1
+
+-
+    model: cmdb.ci
+    pk: 9
+    fields:
+        content_type: [business, businessline]
+        object_id: 2
+        type: 6
+        uid: bl-2
+
+# Binding dc to a venture
+-
+    model: cmdb.cirelation
+    pk: 1
+    fields:
+        parent: 2
+        child: 5
+        type: 1
+
+# Binding service to business line
+-
+    model: cmdb.cirelation
+    pk: 2
+    fields:
+        parent: 9
+        child: 8
+        type: 1
