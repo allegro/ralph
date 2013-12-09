@@ -274,9 +274,9 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                             '<': '__lt',
                             '<=': '__lte',
                         }
-                        soft_q = Q(
-                            **{'software__version' + operators[operator]: version}
-                        )
+                        soft_q = Q(**{
+                            'software__version' + operators[operator]: version
+                        })
                         self.query = self.query.filter(
                             (Q(software__label__icontains=name) & soft_q) |
                             (Q(software__model__name__icontains=name) &
@@ -415,41 +415,49 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                     )
                 else:
                     self.query = self.query.filter(
-                        deprecation_kind__id__exact=data['deprecation_kind'][0],
+                        deprecation_kind__id__exact=data[
+                            'deprecation_kind'
+                        ][0],
                     )
             if data['no_warranty_expiration_date']:
                 self.query = self.query.filter(warranty_expiration_date=None)
             else:
                 if data['warranty_expiration_date_start']:
                     self.query = self.query.filter(
-                        warranty_expiration_date__gte=
-                            data['warranty_expiration_date_start']
+                        warranty_expiration_date__gte=data[
+                            'warranty_expiration_date_start'
+                        ]
                     )
                 if data['warranty_expiration_date_end']:
                     self.query = self.query.filter(
-                        warranty_expiration_date__lte=
-                            data['warranty_expiration_date_end']
+                        warranty_expiration_date__lte=data[
+                            'warranty_expiration_date_end'
+                        ]
                     )
             if data['no_support_expiration_date']:
                 self.query = self.query.filter(support_expiration_date=None)
             else:
                 if data['support_expiration_date_start']:
                     self.query = self.query.filter(
-                        support_expiration_date__gte=
-                            data['support_expiration_date_start']
+                        support_expiration_date__gte=data[
+                            'support_expiration_date_start'
+                        ]
                     )
                 if data['support_expiration_date_end']:
                     self.query = self.query.filter(
-                        support_expiration_date__lte=
-                            data['support_expiration_date_end']
+                        support_expiration_date__lte=data[
+                            'support_expiration_date_end'
+                        ]
                     )
             if data['with_changes']:
                 changed_devices_ids = self._get_changed_devices_ids()
                 self.query = self.query.filter(id__in=changed_devices_ids)
         profile = self.request.user.get_profile()
         if not profile.has_perm(Perm.read_dc_structure):
-            self.query = profile.filter_by_perm(self.query,
-                Perm.list_devices_generic)
+            self.query = profile.filter_by_perm(
+                self.query,
+                Perm.list_devices_generic
+            )
         self.query = super(SearchDeviceList, self).get_queryset(self.query)
         self.query = self.query.distinct()
         return self.query

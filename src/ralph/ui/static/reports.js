@@ -2,7 +2,9 @@
 /*global define: false */
 /* The browser side of the functionality implemented in util/reports.py */
 
-define(['jquery', 'moment', 'mustache'], function ($, moment, Mustache) {
+define([
+    'jquery', 'moment', 'mustache', 'deparam', 'bootbox'
+], function ($, moment, Mustache, deparam, bootbox) {
     'use strict';
 
     function AsyncLoader(settings) {
@@ -13,9 +15,15 @@ define(['jquery', 'moment', 'mustache'], function ($, moment, Mustache) {
         this.setUndefinedBar();
     }
 
-    AsyncLoader.prototype.start = function () {
+    AsyncLoader.prototype.start = function (ev) {
+        var url, bits;
+        url = this.url || ev.target.href;
+        bits = url.split('?', 2);
+        this.url = bits[0];
+        this.data = deparam(bits[1]);
         $.ajax({
             url: this.url,
+            data: this.data,
             success: this.handleInitialReq,
             context: this
         });
@@ -27,13 +35,14 @@ define(['jquery', 'moment', 'mustache'], function ($, moment, Mustache) {
     };
 
     AsyncLoader.prototype.handleInitialReq = function (result) {
-        var that;
+        var that, data;
         that = this;
         this.jobid = result.jobid;
+        data = $.extend({'_report_jobid': that.jobid}, this.data);
         this.longIntervalHandle = window.setInterval(function () {
             $.ajax({
                 url: that.url,
-                data: {'_report_jobid': that.jobid},
+                data: data,
                 success: that.handleUpdate,
                 context: that
             });
@@ -68,6 +77,15 @@ define(['jquery', 'moment', 'mustache'], function ($, moment, Mustache) {
     };
 
     AsyncLoader.prototype.handleUpdate = function (result) {
+        var data;
+        if (result.failed) {
+            clearInterval(this.longIntervalHandle);
+            clearInterval(this.shortIntervalHandle);
+            $(this.etaEl).html('')
+            $(this.progressBar).hide();
+            bootbox.alert('Wygenerowanie wyniku nie powiodło się!');
+            return;
+        }
         if (result.progress) {
             $(this.progressBar).removeClass('progress-striped active');
             $(this.progressBar).children('.bar').css(
@@ -83,16 +101,18 @@ define(['jquery', 'moment', 'mustache'], function ($, moment, Mustache) {
             clearInterval(this.shortIntervalHandle);
             $(this.progressBar).hide();
             $(this.etaEl).html('');
-            window.location = this.url + '?' + $.param(
-                {'_report_jobid': this.jobid, '_report_finish': true}
-            );
+            data = $.param($.extend(
+                {'_report_jobid': this.jobid, '_report_finish': true},
+                this.data
+            ));
+            window.location = this.url + '?' + data;
         }
     };
 
     function setup(settings) {
         $(settings.progressBar).hide();
         $(settings.trigger).click(function (ev) {
-            new AsyncLoader(settings).start();
+            new AsyncLoader(settings).start(ev);
             return false;
         });
     }
