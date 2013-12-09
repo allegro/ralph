@@ -80,7 +80,7 @@ class BaseDeviceList(Report, ListView):
         'info': ['venture', 'model', 'position', 'remarks'],
         'components': ['model', 'barcode', 'sn'],
         'prices': [
-            'venture', 'margin', 'deprecation', 'price', 'cost', 'deprecation'
+            'venture', 'margin', 'deprecation', 'price', 'cost', 'deprecation',
         ],
         'addresses': ['ips', 'management'],
         'costs': ['venture', 'cost', 'deprecation'],
@@ -103,7 +103,7 @@ class BaseDeviceList(Report, ListView):
         if not self.user_allowed():
             messages.error(
                 self.request,
-                _("You don't have permission to view this.")
+                _("You don't have permission to view this."),
             )
             return HttpResponseRedirect('..')
         query = self.get_queryset()
