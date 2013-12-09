@@ -214,9 +214,11 @@ class OwnershipField(tastypie.fields.RelatedField):
 class AttributesField(tastypie.fields.ApiField):
     """The field that works on custom attributes of a CI."""
 
+    is_m2m = True
+
     def __init__(self, *args, **kwargs):
         super(AttributesField, self).__init__(*args, **kwargs)
-        self.attribute = 'attributes'
+        self.attribute = 'ciattributevalue_set'
 
     def dehydrate(self, bundle):
         ci = bundle.obj
@@ -229,10 +231,10 @@ class AttributesField(tastypie.fields.ApiField):
             })
         return result
 
-    def hydrate(self, bundle):
+    def hydrate_m2m(self, bundle):
         ci = bundle.obj
         CIAttributeValue.objects.filter(ci=ci).delete()
-        for attr_data in bundle.data[self.attribute]:
+        for attr_data in bundle.data.get('attributes', []):
             attribute = CIAttribute.objects.get(name=attr_data['name'])
             attribute_value = CIAttributeValue(
                 ci=ci,
@@ -240,6 +242,10 @@ class AttributesField(tastypie.fields.ApiField):
             )
             attribute_value.save()
             attribute_value.value = attr_data['value']
+        return []
+
+    def hydrate(self, bundle):
+        pass
 
 
 class CIResource(MResource):

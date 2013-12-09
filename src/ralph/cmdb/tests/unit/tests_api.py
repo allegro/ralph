@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 
 import json
 import random
+import urllib
 
 from django.conf import settings
 from django.core.cache import cache
@@ -237,6 +238,57 @@ class CMDBApiTest(TestCase):
             json_data['business_owners'][0]['first_name'],
             self.owner2.first_name,
         )
+
+    def test_post_ci(self):
+        """POST to ci collection should create a new CI"""
+        ci_count_before = CI.objects.count()
+        ci_data = json.dumps({
+            'uid': 'uid-ci-api-1',
+            'type': '/api/v0.9/citypes/{0}/'.format(self.types[0].id),
+            'barcode': 'barcodeapi1',
+            'name': 'ciname from api 1',
+            'layers': ['/api/v0.9/cilayers/5/'],
+            'business_owners': [
+                '/api/v0.9/ciowners/{0}/'.format(self.owner1.id)
+            ],
+            'technical_owners': [
+                '/api/v0.9/ciowners/{0}/'.format(self.owner2.id)
+            ],
+            'attributes': [
+                {
+                    'name': 'SLA value',
+                    'value': 0.7,
+                }, {
+                    'name': 'Documentation Link',
+                    'value': 'http://www.gutenberg.org/files/27827/'
+                        '27827-h/27827-h.htm',
+                },
+            ],
+        })
+        resp = self.client.post(
+            '/api/v0.9/ci/?' + urllib.urlencode(self.data),
+            ci_data,
+            content_type='application/json'
+        )
+        self.assertEqual(CI.objects.count(), ci_count_before + 1)
+        created_id = int(resp['Location'].split('/')[-2])
+        created = CI.objects.get(pk=created_id)
+        self.assertEqual(created.name, 'ciname from api 1')
+        self.assertSetEqual(
+            set(created.business_owners.all()),
+            {self.owner1},
+        )
+        self.assertSetEqual(
+            set(av.value for av in created.ciattributevalue_set.all()),
+            {
+                0.7,
+                'http://www.gutenberg.org/files/27827/27827-h/27827-h.htm',
+            },
+        )
+
+        
+        
+        ci = CI.objects
 
     def test_get_attribute(self):
         path = "/api/v0.9/ci/{0}/".format(self.ci1.id)
