@@ -664,13 +664,6 @@ class MainCIEdit(BaseCIDetails):
                 messages.error(self.request, "Correct the errors.")
         return super(MainCIEdit, self).get(*args, **kwargs)
 
-    # def form_initial(self, ci):
-    #     data = dict(
-    #         technical_owner=', '.join(ci.get_technical_owners()),
-    #         ci=self.ci,
-    #     )
-    #     return data
-
     def get_first_parent_venture_name(self, ci_id):
         cis = db.CI.objects.filter(
             relations__parent__child=ci_id,

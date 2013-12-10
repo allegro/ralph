@@ -508,7 +508,8 @@ class CIOwnership(TimeTrackable):
 
 
 class CIOwnershipManager(models.Manager):
-    """The manager of owners."""
+    """The manager of owners. The django manager interface is required by
+    tastypie to correctly handle m2m relations."""
 
     def __init__(self, descriptor, inst):
         self.descriptor = descriptor
