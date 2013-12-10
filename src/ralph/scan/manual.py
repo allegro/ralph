@@ -50,7 +50,7 @@ def scan_address(ip_address, plugins, network=None):
         )
     queue = django_rq.get_queue(network.queue.name)
     job = queue.enqueue_call(
-        func=_scan_address,
+        func=scan_address_job,
         args=(
             ip_address,
             plugins,
@@ -254,7 +254,7 @@ def _scan_postprocessing(results, job, ip_address=None):
         rq.cancel_job(old_job.id, django_rq.get_connection())
 
 
-def _scan_address(ip_address=None, plugins=None, results=None, **kwargs):
+def scan_address_job(ip_address=None, plugins=None, results=None, **kwargs):
     """
     The function that is actually running on the worker.
     """

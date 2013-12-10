@@ -19,7 +19,7 @@ from tastypie.cache import SimpleCache
 from tastypie.resources import Resource
 from tastypie.throttle import CacheThrottle
 
-from ralph.scan.manual import _scan_address
+from ralph.scan.manual import scan_address_job
 
 
 API_THROTTLE_AT = settings.API_THROTTLING['throttle_at']
@@ -40,7 +40,7 @@ def JobObject(object):
 def store_device_data(data):
     queue = django_rq.get_queue()
     job = queue.enqueue_call(
-        func=_scan_address,
+        func=scan_address_job,
         kwargs={
             'results': data,
         },
@@ -64,7 +64,7 @@ class ExternalPluginResource(Resource):
                 'donpedro': bundle.data.get('data'),
             })
         except Exception:
-            logger.error('An exception occurred (remote IP: %s): %s' % (
+            logger.exception('An exception occurred (remote IP: %s): %s' % (
                 remote_ip,
                 traceback.format_exc(),
             ))

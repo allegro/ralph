@@ -83,8 +83,7 @@ for r in (DeploymentResource,):
     v09_api.register(r())
 
 # scan API
-for r in (ExternalPluginResource,):
-    v09_api.register(r())
+v09_api.register(ExternalPluginResource())
 
 urlpatterns = patterns(
     '',
