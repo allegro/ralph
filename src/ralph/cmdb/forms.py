@@ -127,9 +127,9 @@ class CIEditForm(DependencyForm, forms.ModelForm):
         if len(self.initial):
             technical_owners, bussines_owners = [], []
             self['technical_owners'].field.initial =\
-                self.instance.technical_owners
+                self.instance.technical_owners.all()
             self['business_owners'].field.initial =\
-                self.instance.business_owners
+                self.instance.business_owners.all()
             attribute_values = CIAttributeValue.objects.filter(
                 ci=self.instance,
             )
@@ -149,10 +149,15 @@ class CIEditForm(DependencyForm, forms.ModelForm):
         instance.owners.clear()
         instance.business_owners = self.cleaned_data['business_owners']
         instance.technical_owners = self.cleaned_data['technical_owners']
+
         for attribute in CIAttribute.objects.all():
             attribute_name = self._get_custom_attribute_field_name(attribute)
             value = self.cleaned_data.get(attribute_name)
             if value:
+                CIAttributeValue.objects.filter(
+                    ci=instance,
+                    attribute=attribute,
+                ).delete()
                 attribute_value = CIAttributeValue(
                     ci=instance,
                     attribute=attribute,

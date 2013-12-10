@@ -295,7 +295,7 @@ class CI(TimeTrackable):
     )
     pci_scope = models.BooleanField(default=False)
     layers = models.ManyToManyField(
-        CILayer, verbose_name=_("layers containing given CI"),
+        CILayer, verbose_name=_("layers containing given CI")
     )
     barcode = models.CharField(
         verbose_name=_("barcode"), max_length=255, unique=True, null=True,
@@ -338,7 +338,7 @@ class CI(TimeTrackable):
 
     @classmethod
     def get_duplicate_names(cls):
-        dupes =  cls.objects.values('name').distinct().annotate(
+        dupes = cls.objects.values('name').distinct().annotate(
             models.Count('id'),
         ).filter(id__count__gt=1)
         cis = cls.objects.filter(
@@ -347,7 +347,6 @@ class CI(TimeTrackable):
         # If I try to return the groupby itself the groups are empty
         for name, cis in it.groupby(cis, lambda x: x.name):
             yield name, list(cis)
-
 
     class Meta:
         unique_together = ('content_type', 'object_id')
@@ -508,25 +507,47 @@ class CIOwnership(TimeTrackable):
         )
 
 
+class CIOwnershipManager(models.Manager):
+    """The manager of owners. The django manager interface is required by
+    tastypie to correctly handle m2m relations."""
+
+    def __init__(self, descriptor, inst):
+        self.descriptor = descriptor
+        self.own_type = self.descriptor.own_type
+        self.inst = inst
+
+    def get_query_set(self):
+        return self.inst.owners.filter(ciownership__type=self.own_type)
+
+    def clear(self):
+        self.descriptor.__delete__(self.inst)
+
+    def add(self, *owners):
+        self.descriptor._add(self.inst, owners)
+
+
 class CIOwnershipDescriptor(object):
     """Descriptor simplifying the access to CI owners."""
 
-    def __init__(self, type):
-        self.type = type
+    def __init__(self, own_type):
+        self.own_type = own_type
 
     def __get__(self, inst, cls):
         if inst is None:
             return self
-        return inst.owners.filter(ciownership__type=self.type)
+        return CIOwnershipManager(self, inst)
+
+    def _add(self, inst, owners):
+        for owner in owners:
+            own = CIOwnership(ci=inst, owner=owner, type=self.own_type)
+            own.save()
 
     def __set__(self, inst, owners):
         self.__delete__(inst)
-        for owner in owners:
-            own = CIOwnership(ci=inst, owner=owner, type=self.type)
-            own.save()
+        self._add(inst, owners)
 
     def __delete__(self, inst):
-        CIOwnership.objects.filter(ci=inst, type=self.type).delete()
+        CIOwnership.objects.filter(ci=inst, type=self.own_type).delete()
 
 
 CI.business_owners = CIOwnershipDescriptor(CIOwnershipType.business.id)

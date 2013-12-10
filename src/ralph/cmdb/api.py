@@ -13,12 +13,14 @@ from __future__ import unicode_literals
 # Monkeypatch Tastypie
 # fix in https://github.com/toastdriven/django-tastypie/pull/863
 from ralph.cmdb.monkey import method_check
+import tastypie
 from tastypie.resources import Resource
 Resource.method_check = method_check
 
 from django.conf import settings
 from tastypie.authentication import ApiKeyAuthentication
 from tastypie.constants import ALL, ALL_WITH_RELATIONS
+from tastypie import fields
 from tastypie.fields import ForeignKey as TastyForeignKey
 from tastypie.resources import ModelResource as MResource
 from tastypie.throttle import CacheThrottle
@@ -35,10 +37,12 @@ from ralph.cmdb.models import (
     CIChangeZabbixTrigger,
     CILayer,
     CIRelation,
+    CIAttribute,
+    CIAttributeValue,
 )
 from ralph.cmdb import models as db
-from ralph.cmdb.models_ci import CIOwner, CIOwnershipType, CIOwnership
-from ralph.cmdb.models_audits import get_login_from_owner_name
+from ralph.cmdb.models_ci import CIOwner, CIOwnershipType
+
 
 THROTTLE_AT = settings.API_THROTTLING['throttle_at']
 TIMEFRAME = settings.API_THROTTLING['timeframe']
@@ -160,17 +164,97 @@ class CIRelationResource(MResource):
         bundle.data['child'] = cirelation.child.id
         return bundle
 
+
+class OwnershipField(tastypie.fields.RelatedField):
+    """A field representing a single type of owner relationship."""
+
+    is_m2m = True
+
+    def __init__(self, owner_type, **kwargs):
+        # Choices have broken deepcopy logic, so we can't store them
+        self.owner_type = owner_type.id
+        self.owner_type_name = owner_type.name
+        args = (
+            'ralph.cmdb.api.CIOwnersResource',
+            self.get_attribute_name(),
+        )
+        super(OwnershipField, self).__init__(*args, **kwargs)
+
+    def dehydrate(self, bundle):
+        owners = CIOwner.objects.filter(
+            ciownership__type=self.owner_type,
+            ciownership__ci=bundle.obj,
+        )
+        result = []
+        for owner in owners:
+            result.append(self.dehydrate_related(
+                bundle, self.get_related_resource(owner)
+            ))
+        return result
+
+    def get_attribute_name(self):
+        return '{0}_owners'.format(self.owner_type_name)
+
     def hydrate(self, bundle):
-        # TODO - make some sanity check on type
-        field_to_class = {'parent': CI, 'child': CI}
-        for field in ('parent', 'child'):
-            if field in bundle.data:
-                hydro_fields = field_to_class[field].objects.filter(pk=bundle.data[field])
-                if hydro_fields.count():
-                    setattr(bundle.obj, field, hydro_fields[0])
-        return bundle
+        pass
+
+    def hydrate_m2m(self, bundle):
+        owners_data = bundle.data[self.attribute]
+        owners = [
+            self.build_related_resource(data) for data in owners_data
+        ]
+        return owners
+
+
+class CustomAttributesField(tastypie.fields.ApiField):
+    """The field that works on custom attributes of a CI."""
+
+    is_m2m = True
+
+    def __init__(self, *args, **kwargs):
+        super(CustomAttributesField, self).__init__(*args, **kwargs)
+        self.attribute = 'ciattributevalue_set'
+
+    def dehydrate(self, bundle):
+        ci = bundle.obj
+        bundle.data['attributes'] = []
+        result = []
+        for attribute_value in ci.ciattributevalue_set.all():
+            result.append({
+                'name': attribute_value.attribute.name,
+                'value': attribute_value.value,
+            })
+        return result
+
+    def hydrate_m2m(self, bundle):
+        ci = bundle.obj
+        CIAttributeValue.objects.filter(ci=ci).delete()
+        for attr_data in bundle.data.get('attributes', []):
+            attribute = CIAttribute.objects.get(name=attr_data['name'])
+            attribute_value = CIAttributeValue(
+                ci=ci,
+                attribute=attribute,
+            )
+            attribute_value.save()
+            attribute_value.value = attr_data['value']
+        return []
+
+    def hydrate(self, bundle):
+        pass
+
 
 class CIResource(MResource):
+
+    attributes = CustomAttributesField()
+    business_owners = OwnershipField(CIOwnershipType.business, full=True)
+    technical_owners = OwnershipField(CIOwnershipType.technical, full=True)
+    layers = fields.ManyToManyField(
+        'ralph.cmdb.api.CILayersResource', 'layers', full=True
+    )
+    type = TastyForeignKey(
+        'ralph.cmdb.api.CITypesResource', 'type', full=True
+    )
+
     class Meta:
         queryset = CI.objects.all()
         authentication = ApiKeyAuthentication()
@@ -179,9 +263,10 @@ class CIResource(MResource):
                 Perm.read_configuration_item_info_generic,
             ]
         )
-        list_allowed_methods = ['get', 'post']
+        list_allowed_methods = ['get', 'post', 'put', 'patch', 'delete']
         resource_name = 'ci'
         filtering = {
+            'attributes': ALL,
             'added_manually': ALL,
             'barcode': ('startswith', 'exact',),
             'business_service': ALL,
@@ -208,82 +293,6 @@ class CIResource(MResource):
             timeframe=TIMEFRAME,
             expiration=EXPIRATION,
         )
-
-    def dehydrate(self, bundle):
-        ci = CI.objects.get(uid=bundle.data.get('uid'))
-        bundle.data['type'] = {'name': ci.type.name, 'id': ci.type_id}
-        for owner_type in (CIOwnershipType.technical,
-                           CIOwnershipType.business):
-            owners = CIOwner.objects.filter(
-                ciownership__type=owner_type,
-                ci=ci,
-            )
-            bundle.data["{}_owners".format(owner_type.name)] = []
-            for technical_owner in owners:
-                bundle.data["{}_owners".format(owner_type.name)].append(
-                    {'username': get_login_from_owner_name(technical_owner)}
-                )
-        bundle.data['layers'] = []
-        for layer in ci.layers.all():
-            bundle.data['layers'].append({'name': layer.name, 'id': layer.id})
-        bundle.data['attributes'] = []
-        for attribute_value in ci.ciattributevalue_set.all():
-            bundle.data['attributes'].append({
-                'name': attribute_value.attribute.name,
-                'value': attribute_value.value,
-            })
-        return bundle
-
-    def hydrate(self, bundle):
-        # Managing keys
-        field_to_class = {'type': CIType}
-        if field in bundle.data:
-            hydro_fields = field_to_class[field].objects.filter(pk=bundle.data[field]['id'])
-            if not hydro_fields.count():
-                hydro_fields = field_to_class[field](name=bundle.data[field]['name'])
-                hydro_fields.save()
-            else:
-                setattr(bundle.obj, field, hydro_fields[0])
-        return bundle
-
-    def hydrate_m2m(self, bundle):
-        # Managing m2m
-        classes = {'layers': CILayer, 'owners': CIOwner}
-
-        # Usual M2M
-        if field in bundle.data:
-            m2m_objects = []
-            for entry in bundle.data[field]:
-                m2m_obj = classes[field].objects.filter(pk=entry['id'])
-                if m2m_obj:
-                    m2m_obj = m2m_obj[0]
-                else:
-                    m2m_obj = classes[field](name=entry['name'])
-                    m2m_obj.save()
-                m2m_objects.append(m2m_obj)
-
-            setattr(bundle.obj, field, m2m_objects)
-
-        # owners is M2M using Intermediary model
-        for field in ('business_owners', 'technical_owners'):
-            m2m_objects = []
-            if field in bundle.data:
-                for entry in bundle.data[field]:
-                    if 'id' in entry and entry['id'] and CIOwner.objects.filter(pk=entry['id']).count() == 1:
-                        m2m_obj = CIOwner.objects.get(pk=entry['id'])
-                    else:
-                        first_name = entry.get('first_name', '')
-                        last_name = entry.get('last_name', '')
-                        email = entry.get('email', '')
-                        m2m_obj = CIOwner(first_name=first_name, last_name=last_name, email=email)
-                        m2m_obj.save()
-                    m2m_objects.append(m2m_obj)
-
-            for m2m_obj in m2m_objects:
-                owner_type = getattr(CIOwnershipType, field.replace("_owners", ""), "business")
-                ownership = CIOwnership(ci=bundle.obj, owner=m2m_obj, type=owner_type)
-                ownership.save()
-        return bundle
 
 
 class CILayersResource(MResource):

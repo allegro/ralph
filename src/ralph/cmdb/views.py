@@ -640,7 +640,7 @@ class MainCIEdit(BaseCIDetails):
                 )
             self.service_name = self.get_first_parent_venture_name(ci_id)
             self.form_options['instance'] = self.ci
-            self.form_options['initial'] = self.form_initial(self.ci)
+            # self.form_options['initial'] = self.form_initial(self.ci)
         self.form = self.Form(**self.form_options)
         return super(MainCIEdit, self).get(*args, **kwargs)
 
@@ -663,13 +663,6 @@ class MainCIEdit(BaseCIDetails):
             else:
                 messages.error(self.request, "Correct the errors.")
         return super(MainCIEdit, self).get(*args, **kwargs)
-
-    def form_initial(self, ci):
-        data = dict(
-            technical_owner=', '.join(ci.get_technical_owners()),
-            ci=self.ci,
-        )
-        return data
 
     def get_first_parent_venture_name(self, ci_id):
         cis = db.CI.objects.filter(
@@ -1544,7 +1537,6 @@ class Search(BaseCMDBView):
                 table_body.append(DEFAULT_ROWS)
         return table_body
 
-
     def get(self, *args, **kwargs):
         values = self.request.GET
         cis = db.CI.objects.all()
@@ -1694,4 +1686,3 @@ class Cleanup(Search):
         orphans = CI.objects.filter(parent=None, child=None)
         ret['orphans_table'] = [self.get_table_body(orphans, None)]
         return ret
-        
