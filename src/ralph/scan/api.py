@@ -9,7 +9,6 @@ import logging
 import traceback
 
 import django_rq
-
 from django.conf import settings
 from lck.django.common import remote_addr
 from tastypie import fields
@@ -38,6 +37,11 @@ def JobObject(object):
 
 
 def store_device_data(data):
+    """
+    Queues function that append data from external plugin to data from other
+    sources.
+    """
+
     queue = django_rq.get_queue()
     job = queue.enqueue_call(
         func=scan_address_job,

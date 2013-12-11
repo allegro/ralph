@@ -233,7 +233,7 @@ def merge(
     :param component: component with we act
     :param data: results from plugins
     :param unique_fields: set of unique or unique_together fields for component
-    :param external_prioriries: additional plugins results priorities
+    :param external_priorities: additional plugins results priorities
     :param db_plugin_name: name of plugin which includes data from the
                            database
     """

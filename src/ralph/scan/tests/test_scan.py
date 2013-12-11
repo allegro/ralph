@@ -25,7 +25,7 @@ class TestScan(TestCase):
         ip_addresses = _get_ip_addresses_from_results({
             'plugin_1': {
                 'device': {
-                    'managemt_ip_addresses': ['127.0.0.1'],
+                    'management_ip_addresses': ['127.0.0.1'],
                     'system_ip_addresses': ['127.0.0.2', '127.0.0.3'],
                 },
             },

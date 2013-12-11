@@ -51,15 +51,11 @@ require(['jquery'], function ($) {
         var formContainer = $('[data-role="select-plugins-form"]');
 
         var selectAll = function() {
-            $(formContainer).find(':checkbox').each(function() {
-                this.checked = true;
-            });
+            $(formContainer).find(':checkbox').prop('checked', true);
         };
 
         var unselectAll = function () {
-            $(formContainer).find(':checkbox').each(function() {
-                this.checked = false;
-            });
+            $(formContainer).find(':checkbox').prop('checked', false);
         };
 
         $('[data-role="select-all-btn"]').click(function () {

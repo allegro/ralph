@@ -221,7 +221,7 @@ def _scan_postprocessing(results, job, ip_address=None):
             job_id=job.id,
         )
         ip_address.scan_summary = scan_summary
-    # update exists resutls data
+    # update exists results data
     if old_job:
         updated_results = old_job.result
         for plugin_name, plugin_results in results.iteritems():

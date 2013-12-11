@@ -151,7 +151,7 @@
     {% endif %}
     <div class="alert alert-info">
         <strong>Logs:</strong>
-        {% for addr, name, kind,  message in job.meta.messages %}
+        {% for addr, name, kind, message in job.meta.messages %}
         <div class="text-{{ kind }}">
             <strong>{{ name }}</strong>: {{ message }}
         </div>
