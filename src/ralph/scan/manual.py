@@ -50,7 +50,7 @@ def scan_address(ip_address, plugins, network=None):
         )
     queue = django_rq.get_queue(network.queue.name)
     job = queue.enqueue_call(
-        func=_scan_address,
+        func=scan_address_job,
         args=(
             ip_address,
             plugins,
@@ -146,7 +146,10 @@ def _get_ip_addresses_from_results(results):
     for plugin_name, plugin_results in results.iteritems():
         # Only system ip addresses. This function will be used only with API
         # and only system ip addresses will be possible.
-        ip_addresses |= set(plugin_results.get('system_ip_addresses', []))
+        device = plugin_results.get('device')
+        if not device:
+            continue
+        ip_addresses |= set(device.get('system_ip_addresses', []))
     result = []
     for address in ip_addresses:
         ip_address, created = IPAddress.concurrent_get_or_create(
@@ -175,11 +178,15 @@ def _scan_postprocessing(results, job, ip_address=None):
     maintenance RQ jobs.
     """
 
-    # calculate new checksum
-    cleaned_results = _get_cleaned_results(results)
-    checksum = _get_results_checksum(cleaned_results)
-    job.meta['results_checksum'] = checksum
-    job.save()
+    if any((
+        'messages' not in job.meta,
+        'finished' not in job.meta,
+        'status' not in job.meta,
+    )):
+        job.meta['messages'] = []
+        job.meta['finished'] = []
+        job.meta['status'] = {}
+        job.save()
     # get connected ip_address
     if not ip_address:
         ip_addresses = _get_ip_addresses_from_results(results)
@@ -198,12 +205,38 @@ def _scan_postprocessing(results, job, ip_address=None):
             )
         except rq.exceptions.NoSuchJobError:
             pass
+        else:
+            if 'messages' in old_job.meta and not job.meta['messages']:
+                job.meta['messages'] = old_job.meta['messages']
+            for plugin in old_job.meta.get('finished', []):
+                if plugin not in job.meta['finished']:
+                    job.meta['finished'].append(plugin)
+            for plugin, status in old_job.meta.get('status', {}).iteritems():
+                if plugin not in job.meta['status']:
+                    job.meta['status'][plugin] = status
+            job.save()
         scan_summary.job_id = job.id
     else:
         scan_summary, created = ScanSummary.concurrent_get_or_create(
             job_id=job.id,
         )
         ip_address.scan_summary = scan_summary
+    # update exists results data
+    if old_job:
+        updated_results = old_job.result
+        for plugin_name, plugin_results in results.iteritems():
+            updated_results[plugin_name] = plugin_results
+            if plugin_name not in job.meta['finished']:
+                job.meta['finished'].append(plugin_name)
+            if plugin_name not in job.meta['status']:
+                job.meta['status'][plugin_name] = plugin_results['status']
+        job.save()
+        results.update(updated_results)
+    # calculate new checksum
+    cleaned_results = _get_cleaned_results(results)
+    checksum = _get_results_checksum(cleaned_results)
+    job.meta['results_checksum'] = checksum
+    job.save()
     # calculate new status
     if all((
         checksum != scan_summary.previous_checksum,
@@ -221,7 +254,7 @@ def _scan_postprocessing(results, job, ip_address=None):
         rq.cancel_job(old_job.id, django_rq.get_connection())
 
 
-def _scan_address(ip_address=None, plugins=None, results=None, **kwargs):
+def scan_address_job(ip_address=None, plugins=None, results=None, **kwargs):
     """
     The function that is actually running on the worker.
     """
@@ -232,11 +265,7 @@ def _scan_address(ip_address=None, plugins=None, results=None, **kwargs):
         plugins = available_plugins
     run_postprocessing = not (set(available_plugins) - set(plugins))
     if ip_address and plugins:
-        new_results = _run_plugins(ip_address.address, plugins, job, **kwargs)
-        if not results:
-            results = {}
-        for plugin_name, plugin_results in new_results.iteritems():
-            results[plugin_name] = plugin_results
+        results = _run_plugins(ip_address.address, plugins, job, **kwargs)
     if run_postprocessing:
         _scan_postprocessing(results, job, ip_address)
     return results

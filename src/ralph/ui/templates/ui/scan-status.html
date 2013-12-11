@@ -69,14 +69,6 @@
         <pre>{{ job.exc_info }}</pre>
     </div>
     {% endif %}
-    <div class="alert alert-info">
-        <strong>Logs:</strong>
-        {% for addr, name, kind,  message in job.meta.messages %}
-        <div class="text-{{ kind }}">
-            <strong>{{ name }}</strong>: {{ message }}
-        </div>
-        {% endfor %}
-    </div>
     {% if job.is_finished %}
         <ul class="nav nav-tabs">
             {% for device, form in forms %}
@@ -157,6 +149,14 @@
             {% endfor %}
         </div>
     {% endif %}
+    <div class="alert alert-info">
+        <strong>Logs:</strong>
+        {% for addr, name, kind, message in job.meta.messages %}
+        <div class="text-{{ kind }}">
+            <strong>{{ name }}</strong>: {{ message }}
+        </div>
+        {% endfor %}
+    </div>
 {% endif %}
 {% endblock %}
 

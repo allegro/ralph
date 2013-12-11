@@ -44,6 +44,7 @@ from ralph.cmdb.api import (
     ServiceResource,
 )
 from ralph.discovery.api_donpedro import WindowsDeviceResource
+from ralph.scan.api import ExternalPluginResource
 from ralph.ui.views.common import VhostRedirectView
 
 from django.conf import settings
@@ -80,6 +81,9 @@ for r in (BusinessLineResource, ServiceResource, CIResource,
 # deployment API
 for r in (DeploymentResource,):
     v09_api.register(r())
+
+# scan API
+v09_api.register(ExternalPluginResource())
 
 urlpatterns = patterns(
     '',

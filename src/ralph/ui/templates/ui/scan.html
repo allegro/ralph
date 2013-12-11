@@ -17,12 +17,15 @@
         </ul>
     </div>
 {% else %}
-<div class="row-fluid"><div class="span6">
-    <form method="post" class="form form-horizontal">
+<div class="row-fluid"><div class="span6 scan-select-plugins">
+    <form method="post" class="form form-horizontal" data-role="select-plugins-form">
         {% csrf_token %}
         <fieldset>
             <legend>Scanning {{ address }}</legend>
-            <p>Select the plugins to run:</p>
+            <p>
+                Select the plugins to run:
+                <button style="float: right;" type="button" class="btn" data-toggle="button" data-role="select-all-btn">Select all</button>
+            </p>
             {% for plugin_name, plugin_settings in plugins.iteritems %}
             <div class="control-group">
                 <label class="control-label">{{ plugin_settings.name|default:plugin_name }}</label>
@@ -78,3 +81,9 @@
 </div></div>
 {% endif %}
 {% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+    <script src="{{ STATIC_URL }}scan.js"></script>
+{% endblock scripts %}
+
