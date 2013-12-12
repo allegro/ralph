@@ -16,12 +16,14 @@ from __future__ import unicode_literals
 
 from datetime import datetime, timedelta, date
 import re
+from StringIO import StringIO
 import textwrap
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.test import TestCase
+import mock
 from tastypie.models import ApiKey
 from unittest import skip
 
@@ -45,6 +47,7 @@ from ralph.discovery.models import (
 )
 from ralph.util import pricing
 from ralph.util.pricing import get_device_raw_price
+from ralph.util.jira import iter_issues
 
 
 EXISTING_DOMAIN = settings.SANITY_CHECK_PING_ADDRESS
@@ -374,3 +377,68 @@ class UncompressBase64DataTest(TestCase):
         encoded = base64.b64encode(raw)
         compressed = zlib.compress(encoded)
         self.assertEqual(uncompress_base64_data(compressed), encoded)
+
+
+class TestJiraIter(TestCase):
+    """Test jira issue iterator."""
+
+    side_effect = [StringIO(value) for value in [
+        """{
+            "startAt": 0,
+            "maxResults": 5,
+            "total": 13,
+            "issues": [
+                {
+                    "id": 1
+                }, {
+                    "id": 2
+                }, {
+                    "id": 3
+                }, {
+                    "id": 4
+                }, {
+                    "id": 5
+                }
+            ]
+        }""",
+        """{
+            "startAt": 5,
+            "maxResults": 5,
+            "total": 13,
+            "issues": [
+                {
+                    "id": 6
+                }, {
+                    "id": 7
+                }, {
+                    "id": 8
+                }, {
+                    "id": 9
+                }, {
+                    "id": 10
+                }
+            ]
+        }""",
+        """{
+            "startAt": 10,
+            "maxResults": 5,
+            "total": 13,
+            "issues": [
+                {
+                    "id": 11
+                }, {
+                    "id": 12
+                }, {
+                    "id": 13
+                }
+            ]
+        }""",
+    ]]
+
+    urlopen_mock = mock.Mock(side_effect=side_effect)
+
+    @mock.patch('urllib.urlopen', urlopen_mock)
+    def test_issues(self):
+        issues = list(iter_issues('http://example.com', {}))
+        self.assertEqual(len(issues), 13)
+        self.urlopen_mock.assert_called_with('http://example.com?startAt=10')
