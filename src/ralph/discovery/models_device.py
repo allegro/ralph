@@ -587,18 +587,21 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
         return super(Device, self).save(*args, **kwargs)
 
     def get_property_set(self):
-        props = dict(
-            [
-                (p.symbol, p.default) for p in \
-                self.venture.roleproperty_set.all()
-            ]
-        )
-        props.update(dict(
-            [
-                (p.symbol, p.default) for p in \
-                self.venture_role.roleproperty_set.all()
-            ]
-        ))
+        props = {}
+        if self.venture:
+            props.update(dict(
+                [
+                    (p.symbol, p.default) for p in \
+                    self.venture.roleproperty_set.all()
+                ]
+            ))
+        if self.venture_role:
+            props.update(dict(
+                [
+                    (p.symbol, p.default) for p in \
+                    self.venture_role.roleproperty_set.all()
+                ]
+            ))
         props.update(dict(
             [
                 (p.property.symbol, p.value) for p in \
@@ -606,7 +609,7 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
             ]
         ))
         return props
-    
+
 
 @receiver(
     db.signals.post_delete, sender=Device,
@@ -623,7 +626,7 @@ def device_post_delete(sender, instance, **kwargs):
             deviceinfo.save()
     except DatabaseError: # In tests the ralph_assets is installed, but db
         pass              # is not migrated
-        
+
 
 
 class ReadOnlyDevice(Device):
