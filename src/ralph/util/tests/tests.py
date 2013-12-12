@@ -379,7 +379,6 @@ class UncompressBase64DataTest(TestCase):
         self.assertEqual(uncompress_base64_data(compressed), encoded)
 
 
-
 class TestJiraIter(TestCase):
     """Test jira issue iterator."""
 
@@ -431,7 +430,7 @@ class TestJiraIter(TestCase):
                     "id": 12
                 }, {
                     "id": 13
-                } 
+                }
             ]
         }""",
     ]]
