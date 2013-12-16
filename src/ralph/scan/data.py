@@ -732,9 +732,13 @@ def append_merged_proposition(data, device, external_priorities={}):
             continue
         # sanitize data...
         data_to_merge = {}
-        for (plugin_name,), plugin_data in results.iteritems():
+        for sources, plugins_data in results.iteritems():
+            if 'database' in sources:
+                plugin_name = 'database'
+            else:
+                plugin_name = sources[0]
             data_to_merge[plugin_name] = []
-            for index, row in enumerate(plugin_data):
+            for index, row in enumerate(plugins_data):
                 row.update({
                     'device': device.pk,
                     'index': index,

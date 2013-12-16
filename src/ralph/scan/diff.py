@@ -30,7 +30,7 @@ def sort_results(data, ignored_fields=set(['device'])):
     for component, results in data.iteritems():
         if component not in UNIQUE_FIELDS_FOR_MERGER:
             continue
-        for (plugin_name,), plugin_data in results.iteritems():
+        for sources, plugins_data in results.iteritems():
             keynames = set()
             for fields_group in UNIQUE_FIELDS_FOR_MERGER[component]:
                 for field in fields_group:
@@ -39,10 +39,10 @@ def sort_results(data, ignored_fields=set(['device'])):
                     keynames.add(field)
             if keynames:
                 plugin_data = sorted(
-                    plugin_data,
+                    plugins_data,
                     key=_sort_dict_by_multiple_fields_values(keynames),
                 )
-            data[component][(plugin_name,)] = plugin_data
+            data[component][sources] = plugin_data
 
 
 def _get_matched_row(rows, lookup):
@@ -132,6 +132,18 @@ def _compare_strings(*args):
     return True
 
 
+def _find_database_key(results):
+    """
+    The same data from different plugins are connected together in rusults
+    under the same key. This key is just a tuple (e.q. (database, puppet)).
+    This function returns tuple which contains "database" element.
+    """
+
+    for sources in results.iterkeys():
+        if 'database' in sources:
+            return sources
+
+
 def diff_results(data, ignored_fields=set(['device'])):
     """
     Make diff from Scan results.
@@ -139,12 +151,13 @@ def diff_results(data, ignored_fields=set(['device'])):
 
     diffs = {}
     for component, results in data.iteritems():
+        db_results_key = _find_database_key(results)
         diff_result = {
             'is_equal': False,
             'meta': {},
         }
         if component not in UNIQUE_FIELDS_FOR_MERGER:
-            if isinstance(results[('database',)], list):
+            if isinstance(results[db_results_key], list):
                 diff_result.update({
                     'is_equal': _compare_lists(*tuple(results.values())),
                     'type': 'lists',
@@ -159,7 +172,7 @@ def diff_results(data, ignored_fields=set(['device'])):
                 'type': 'dicts',
                 'diff': [],
             })
-            database = results.get(('database',), [])
+            database = results.get(db_results_key, [])
             merged = results.get(('merged',), [])
             database_parsed_rows = set()
             merged_parsed_rows = set()
