@@ -341,10 +341,7 @@ class DiffForm(forms.Form):
             info = self.field_info.get(field_name, DefaultInfo())
             choices = [
                 (
-                    ', '.join([
-                        'previous value' if plugin == 'database' else plugin
-                        for plugin in sorted(sources)
-                    ]),
+                    ', '.join(sorted(sources)),
                     info.display(value),
                 ) for (sources, value) in values.iteritems()
             ]
