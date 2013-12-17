@@ -22,4 +22,9 @@ class DiffTest(TestCase):
             ('some.other.plugin.name', 'database'): 321,
         })
         self.assertEqual(db_key, ('some.other.plugin.name', 'database'))
+        db_key = _find_database_key({
+            ('some.plugin_name',): 321,
+            ('some.other.plugin.name', 'db'): 321,
+        })
+        self.assertIsNone(db_key)
 
