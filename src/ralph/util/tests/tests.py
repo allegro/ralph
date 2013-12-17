@@ -16,7 +16,6 @@ from __future__ import unicode_literals
 
 from datetime import datetime, timedelta, date
 import re
-from StringIO import StringIO
 import textwrap
 
 from django.conf import settings
@@ -47,7 +46,7 @@ from ralph.discovery.models import (
 )
 from ralph.util import pricing
 from ralph.util.pricing import get_device_raw_price
-from ralph.util.jira import iter_issues
+from ralph.util.jira import IssueSearch
 
 
 EXISTING_DOMAIN = settings.SANITY_CHECK_PING_ADDRESS
@@ -379,10 +378,20 @@ class UncompressBase64DataTest(TestCase):
         self.assertEqual(uncompress_base64_data(compressed), encoded)
 
 
+class _MockRequest(object):
+    """Mock the restkit request object."""
+
+    def __init__(self, value):
+        self.value = value
+
+    def body_string(self):
+        return self.value
+
+
 class TestJiraIter(TestCase):
     """Test jira issue iterator."""
 
-    side_effect = [StringIO(value) for value in [
+    side_effect = [_MockRequest(value) for value in [
         """{
             "startAt": 0,
             "maxResults": 5,
@@ -435,10 +444,14 @@ class TestJiraIter(TestCase):
         }""",
     ]]
 
-    urlopen_mock = mock.Mock(side_effect=side_effect)
+    request_mock = mock.Mock(side_effect=side_effect)
 
-    @mock.patch('urllib.urlopen', urlopen_mock)
+    @mock.patch('restkit.Resource.request', request_mock)
     def test_issues(self):
-        issues = list(iter_issues('http://example.com', {}))
+        issues = list(IssueSearch('http://example.com', {}))
         self.assertEqual(len(issues), 13)
-        self.urlopen_mock.assert_called_with('http://example.com?startAt=10')
+        self.request_mock.assert_called_with(
+            'GET',
+            path='/rest/api/2/search/',
+            startAt=10,
+        )
