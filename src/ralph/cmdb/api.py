@@ -121,7 +121,7 @@ class ServiceResource(MResource):
             expiration=EXPIRATION,
         )
 
-    def dehydrate(self, bundle):
+    def dehydrate(self, bundle, **kwargs):
         # CMDB base info completed with content_object info
         attrs = ('external_key', 'location', 'state',
                  'it_person', 'it_person_mail', 'business_person',
@@ -158,7 +158,7 @@ class CIRelationResource(MResource):
             expiration=EXPIRATION,
         )
 
-    def dehydrate(self, bundle):
+    def dehydrate(self, bundle, **kwargs):
         cirelation = CIRelation.objects.get(pk=bundle.data.get('id'))
         bundle.data['parent'] = cirelation.parent.id
         bundle.data['child'] = cirelation.child.id
@@ -180,7 +180,7 @@ class OwnershipField(tastypie.fields.RelatedField):
         )
         super(OwnershipField, self).__init__(*args, **kwargs)
 
-    def dehydrate(self, bundle):
+    def dehydrate(self, bundle, **kwargs):
         owners = CIOwner.objects.filter(
             ciownership__type=self.owner_type,
             ciownership__ci=bundle.obj,
@@ -215,7 +215,7 @@ class CustomAttributesField(tastypie.fields.ApiField):
         super(CustomAttributesField, self).__init__(*args, **kwargs)
         self.attribute = 'ciattributevalue_set'
 
-    def dehydrate(self, bundle):
+    def dehydrate(self, bundle, **kwargs):
         ci = bundle.obj
         bundle.data['attributes'] = []
         result = []
@@ -263,7 +263,9 @@ class CIResource(MResource):
                 Perm.read_configuration_item_info_generic,
             ]
         )
-        list_allowed_methods = ['get', 'post', 'put', 'patch', 'delete']
+        list_allowed_methods = [
+            'get', 'post', 'put', 'patch', 'delete', 'head',
+        ]
         resource_name = 'ci'
         filtering = {
             'attributes': ALL,
