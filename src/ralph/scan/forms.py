@@ -340,8 +340,10 @@ class DiffForm(forms.Form):
         for field_name, values in sorted(data.iteritems()):
             info = self.field_info.get(field_name, DefaultInfo())
             choices = [
-                (', '.join(sorted(sources)), info.display(value))
-                for (sources, value) in values.iteritems()
+                (
+                    ', '.join(sorted(sources)),
+                    info.display(value),
+                ) for (sources, value) in values.iteritems()
             ]
             choices.append(('custom', ''))
             if isinstance(info, CSVInfo):

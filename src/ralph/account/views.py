@@ -27,7 +27,11 @@ class BaseUser(Base):
                         reverse('user_home_page', args=[]),
                         _('Home Page'),
                         'fugue-home'
-                    ),
+                    ), (
+                        reverse('user_api_key', args=[]),
+                        _('API Key'),
+                        'fugue-key'
+                    ), 
                 )
                 sidebar_items = (
                     [MenuHeader('Preferences')] +
@@ -37,6 +41,7 @@ class BaseUser(Base):
                         href=preference[0]
                     ) for preference in preferences]
                 )
+                
                 return sidebar_items
 
     def get_context_data(self, *args, **kwargs):
@@ -44,6 +49,16 @@ class BaseUser(Base):
         ret.update({
             'sidebar_items': self.get_sidebar_items(),
         })
+        return ret
+
+
+class ApiKey(BaseUser):
+    template_name = 'api_key.html'
+
+
+    def get_context_data(self, *args, **kwargs):
+        ret = super(ApiKey, self).get_context_data(*args, **kwargs)
+        ret['api_key'] = self.request.user.api_key.key
         return ret
 
 
