@@ -6,14 +6,18 @@ from __future__ import unicode_literals
 
 import ipaddr
 
-from django import forms
 from bob.forms import AutocompleteWidget
-from powerdns.models import Record
+from django import forms
 from lck.django.common.models import MACAddressField
+from powerdns.models import Record
 
 from ralph.discovery.models import IPAddress
 from ralph.dnsedit.models import DHCPEntry
-from ralph.dnsedit.util import is_valid_hostname, get_domain, get_revdns_records
+from ralph.dnsedit.util import (
+    get_domain,
+    get_revdns_records,
+    is_valid_hostname,
+)
 
 
 def validate_domain_name(name):
