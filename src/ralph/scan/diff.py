@@ -134,7 +134,7 @@ def _compare_strings(*args):
 
 def _find_database_key(results):
     """
-    The same data from different plugins are connected together in rusults
+    The same data from different plugins are connected together in results
     under the same key. This key is just a tuple (e.q. (database, puppet)).
     This function returns tuple which contains "database" element.
     """
