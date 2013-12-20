@@ -18,7 +18,7 @@ This documentation
    deployment
    dns
    dhcp
-   cmdb
+   cmdb/index
    api
    faq
    changes

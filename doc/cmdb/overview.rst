@@ -1,7 +1,7 @@
 .. _cmdb:
 
-CMDB
-====
+Overview
+========
 
 Ralph provides an early (experimental) version of Configuration Management
 Database module.
