@@ -112,7 +112,7 @@ urlpatterns = patterns(
     '(?P<month>[0-9]+)/(?P<report_type>\w+)$',
         login_required(DashboardDetails.as_view())),
     (r'^changes/reports$', login_required(Reports.as_view())),
-    (r'^graphs$', login_required(Graphs.as_view())),
+    url(r'^graphs$', login_required(Graphs.as_view()), name='ci_graphs'),
 
     url(r'^archive/assets/$', login_required(ArchivedAssetsChanges.as_view()), name='archive'),
     url(r'^archive/zabbix/$', login_required(ArchivedZabbixTriggers.as_view()), name='archive'),
