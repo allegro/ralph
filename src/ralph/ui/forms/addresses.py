@@ -78,7 +78,6 @@ class DNSRecordForm(forms.ModelForm):
         self.fields['name'].widget.choices = [(n, n) for n in self.hostnames]
         self.fields['content'].widget.choices = [(ip, ip) for ip in self.ips]
 
-
     def clean_name(self):
         name = self.cleaned_data['name']
         return validate_domain_name(name)
@@ -136,6 +135,24 @@ class DNSFormSetBase(forms.models.BaseModelFormSet):
         kwargs['limit_types'] = self.limit_types
         kwargs['ips'] = self.ips
         return super(DNSFormSetBase, self)._construct_form(i, **kwargs)
+
+    def clean(self):
+        if any(self.errors):
+            return
+        a_records_count = 0
+        ptr_records_count = 0
+        for form in self.forms:
+            cleaned_data = getattr(form, 'cleaned_data')
+            if not cleaned_data:
+                continue
+            if cleaned_data.get('type') == 'A':
+                a_records_count += 1
+                if cleaned_data.get('ptr', False):
+                    ptr_records_count += 1
+        if a_records_count > 0 and ptr_records_count == 0:
+            raise forms.ValidationError(
+                "Minimum one PTR record is required.",
+            )
 
 
 DNSFormSet = forms.models.modelformset_factory(

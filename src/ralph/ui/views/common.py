@@ -856,6 +856,9 @@ class Addresses(DeviceDetailView):
                 return HttpResponseRedirect(self.request.path)
             else:
                 messages.error(self.request, "Errors in the DNS form.")
+                for error in self.dns_formset.non_form_errors():
+                    messages.error(self.request, error)
+
         elif 'dhcp' in self.request.POST:
             dhcp_records = self.get_dhcp()
             macs = {e.mac for e in self.object.ethernet_set.all()}
