@@ -409,7 +409,9 @@ def _report_ventures_get_totals(start, end, query, extra_types):
                 DeviceType.rack,
                 DeviceType.management,
             ),
-        ),
+        ).exclude(                 
+            device_id__isnull=True 
+        ),                         
         start,
         end,
     )
