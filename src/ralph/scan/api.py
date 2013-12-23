@@ -15,6 +15,7 @@ from tastypie import fields
 from tastypie.authentication import ApiKeyAuthentication
 from tastypie.authorization import DjangoAuthorization
 from tastypie.cache import SimpleCache
+from tastypie.bundle import Bundle
 from tastypie.resources import Resource
 from tastypie.throttle import CacheThrottle
 
@@ -29,7 +30,7 @@ API_EXPIRATION = settings.API_THROTTLING['expiration']
 logger = logging.getLogger(__name__)
 
 
-def JobObject(object):
+class JobObject(object):
     __slots__ = ['job_id']
 
     def __init__(self, job_id=None):
@@ -76,10 +77,16 @@ class ExternalPluginResource(Resource):
         return bundle
 
     def detail_uri_kwargs(self, bundle_or_obj):
-        return {}
+        kwargs = {}
+        if isinstance(bundle_or_obj, Bundle):
+            kwargs['pk'] = bundle_or_obj.obj.job_id
+        else:
+            kwargs['pk'] = bundle_or_obj.job_id
+        return kwargs
 
     class Meta:
         resource_name = 'scanresult'
+        object_class = JobObject
         authentication = ApiKeyAuthentication()
         authorization = DjangoAuthorization()
         filtering = {}

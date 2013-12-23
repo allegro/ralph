@@ -1,4 +1,5 @@
 {% load getvalue from formats %}
+{% load split from formats %}
 
 <div class="diff-select-widget" id="{{ name }}__diff_select_widget" data-role="diff_select_widget">
     {% if diff %}
@@ -62,7 +63,12 @@
                 <label class="radio">
                     <input type="radio" name="{{ name }}" value="{{ option }}" {% if value == option or value in option %}checked="on"{% endif %}>
                     {{ label }}<br>
-                    <i>({% if option == 'database' %}previous value{% else %}{{ option }}{% endif %})</i>
+                    <i>({% with option|split:", " as sources %}
+                        {% for source in sources %}
+                            {% if source == 'database' %}previous value{% else %}{{ source }}{% endif %}
+                            {% if not forloop.last %},&nbsp;{% endif %}
+                        {% endfor %}
+                    {% endwith %})</i>
                 </label>
             {% endif %}
         {% endfor %}

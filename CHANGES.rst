@@ -4,11 +4,15 @@ Change Log
 HEAD
 ~~~~~
 
-* Custom fields defaults (from venture_role) now appears correctly in API
-
 * added Scan module - new DC discovery mechanism
 
+* custom fields defaults (from venture_role) now appears correctly in the API
+
 * added API for Scan module
+
+* CMDB Api documentation refactored
+
+* Tastypie API fixed
 
 
 
