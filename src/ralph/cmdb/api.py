@@ -247,18 +247,16 @@ class LinkField(tastypie.fields.ApiField):
     """The field that provides some link based on the id of the resource."""
 
     readonly = True
-    attribute = 'id'
 
     def __init__(self, view, as_qs, *args, **kwargs):
         self.view = view
         
         super(LinkField, self).__init__(*args, **kwargs)
-        self.attribute = type(self).attribute
         self.as_qs = as_qs
 
     def dehydrate(self, bundle, **kwargs):
 
-        value = getattr(bundle.obj, self.attribute)
+        value = getattr(bundle.obj, 'id')
         if self.as_qs:
             return bundle.request.build_absolute_uri(
                 reverse(self.view) + '?ci={0}'.format(value)
