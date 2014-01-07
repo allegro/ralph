@@ -9,7 +9,7 @@ import ipaddr
 from bob.forms import AutocompleteWidget
 from django import forms
 from lck.django.common.models import MACAddressField
-from powerdns.models import Record
+from powerdns.models import Domain, Record
 
 from ralph.discovery.models import IPAddress
 from ralph.dnsedit.models import DHCPEntry
@@ -116,10 +116,23 @@ class DNSRecordForm(forms.ModelForm):
     def clean(self):
         type = self.cleaned_data.get('type', '')
         name = self.cleaned_data.get('name', '')
+        ptr = self.cleaned_data.get('ptr', False)
         if type != 'CNAME' and name not in self.hostnames:
             self._errors.setdefault('name', []).append(
                 "Invalid hostname for this device."
             )
+        if ptr:
+            content = self.cleaned_data.get('content', '')
+            domain_name = '%s.in-addr.arpa' % '.'.join(
+                list(reversed(content.split('.')))[1:],
+            )
+            if not Domain.objects.filter(name=domain_name).exists():
+                raise forms.ValidationError(
+                    'Domain %s for %s PTR record not found.' % (
+                        domain_name,
+                        name,
+                    ),
+                )
         return self.cleaned_data
 
 

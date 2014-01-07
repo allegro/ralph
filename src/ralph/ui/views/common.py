@@ -856,6 +856,9 @@ class Addresses(DeviceDetailView):
                 return HttpResponseRedirect(self.request.path)
             else:
                 messages.error(self.request, "Errors in the DNS form.")
+                for form_errors in self.dns_formset.errors:
+                    for error in form_errors.get('__all__', []):
+                        messages.error(self.request, error)
                 for error in self.dns_formset.non_form_errors():
                     messages.error(self.request, error)
 
