@@ -129,7 +129,7 @@ $(function ($) {
                 $form.find('button, input').removeClass('disabled').attr('disabled', null);
                 $button.find('i').removeClass('loading');
                 $console.removeClass('loading');
-            
+
                 clearInterval(interval);
                 $console.val(request.responseText).removeClass('loading');
             }
@@ -166,7 +166,11 @@ $(function ($) {
     $('select#id_venture').change(venture_changed);
     $('select#id_venture').each(venture_changed);
 
-    $('.datepicker').datepicker({format: 'yyyy-mm-dd', autoclose: true}).click(function(){
+    /*
+        Custom datepicker - need to use input.datepicker - bootstrap
+        automatically add div with datepicker class.
+    */
+    $('input.datepicker').datepicker({format: 'yyyy-mm-dd', autoclose: true}).click(function(){
         $("input.datepicker[name!='" + $(this).attr('name') + "']").datepicker('hide');
     });
 
@@ -210,7 +214,7 @@ $(function ($) {
     var calendar_tmpl = '<div class="btn-toolbar">' +
             '<div class="btn-group years" data-toggle="buttons-radio">' +
             '{{#years}}' +
-            '<a href="#" class="btn {{css_class}}" data-value="{{value}}">' + 
+            '<a href="#" class="btn {{css_class}}" data-value="{{value}}">' +
             '{{label}}</a>' +
             '{{/years}}' +
             '</div>' +
