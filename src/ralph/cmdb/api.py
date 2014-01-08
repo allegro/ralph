@@ -18,6 +18,7 @@ from tastypie.resources import Resource
 Resource.method_check = method_check
 
 from django.conf import settings
+from django.core.urlresolvers import reverse
 from tastypie.authentication import ApiKeyAuthentication
 from tastypie.constants import ALL, ALL_WITH_RELATIONS
 from tastypie import fields
@@ -242,9 +243,33 @@ class CustomAttributesField(tastypie.fields.ApiField):
     def hydrate(self, bundle):
         pass
 
+class LinkField(tastypie.fields.ApiField):
+    """The field that provides some link based on the id of the resource."""
+
+    readonly = True
+
+    def __init__(self, view, as_qs, *args, **kwargs):
+        self.view = view
+        
+        super(LinkField, self).__init__(*args, **kwargs)
+        self.as_qs = as_qs
+
+    def dehydrate(self, bundle, **kwargs):
+        value = getattr(bundle.obj, 'id')
+        if self.as_qs:
+            return bundle.request.build_absolute_uri(
+                reverse(self.view) + '?ci={0}'.format(value)
+            )
+        else:
+            return bundle.request.build_absolute_uri(
+                reverse(self.view, kwargs={'ci_id': value})
+            )
+
 
 class CIResource(MResource):
 
+    ci_link = LinkField(view='ci_view_main', as_qs=False)
+    impact_link = LinkField(view='ci_graphs', as_qs=True)
     attributes = CustomAttributesField()
     business_owners = OwnershipField(CIOwnershipType.business, full=True)
     technical_owners = OwnershipField(CIOwnershipType.technical, full=True)

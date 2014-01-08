@@ -573,6 +573,9 @@ class CIApiTest(TestCase):
         request = HttpRequest()
         request.path = self.post_data_cmdb_change['ci']
         request.user = self.user
+        request.META['SERVER_NAME'] = 'testserver'
+        request.META['SERVER_PORT'] = 80
+        
         cmdb_bundle = Bundle(data=self.post_data_cmdb_change, request=request)
         cmdb_resource = CIChangeCMDBHistoryResource()
         cmdb_resource.obj_create(bundle=cmdb_bundle)
