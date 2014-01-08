@@ -255,7 +255,6 @@ class LinkField(tastypie.fields.ApiField):
         self.as_qs = as_qs
 
     def dehydrate(self, bundle, **kwargs):
-
         value = getattr(bundle.obj, 'id')
         if self.as_qs:
             return bundle.request.build_absolute_uri(
