@@ -93,11 +93,22 @@ class AbstractNetwork(db.Model):
             "to any device, because they are not unique."
         ),
     )
+    dhcp_broadcast = db.BooleanField(
+        _("Broadcast in DHCP configuration"),
+        default=False,
+        db_index=True,
+    )
     dhcp_config = db.TextField(
-        _("DHCP configuration"), blank=True, default='',
+        _("DHCP additional configuration"),
+        blank=True,
+        default='',
     )
     last_scan = db.DateTimeField(
-        _("last scan"), null=True, blank=True, default=None,
+        _("last scan"),
+        null=True,
+        blank=True,
+        default=None,
+        editable=False,
     )
 
     class Meta:
