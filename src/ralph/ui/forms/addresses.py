@@ -11,7 +11,7 @@ from django import forms
 from lck.django.common.models import MACAddressField
 from powerdns.models import Domain, Record
 
-from ralph.discovery.models import IPAddress
+from ralph.discovery.models import Ethernet, IPAddress
 from ralph.dnsedit.models import DHCPEntry
 from ralph.dnsedit.util import (
     get_domain,
@@ -217,17 +217,35 @@ class DHCPEntryForm(forms.ModelForm):
 
 
 class DHCPFormSetBase(forms.models.BaseModelFormSet):
-    def __init__(self, records, macs, ips, *args, **kwargs):
+    def __init__(self, records, macs, ips, device, *args, **kwargs):
         kwargs['queryset'] = records.all()
         self.records = list(records)
         self.macs = set(macs) - {r.mac for r in self.records}
         self.ips = set(ips) - {r.ip for r in self.records}
+        self.device = device
         super(DHCPFormSetBase, self).__init__(*args, **kwargs)
 
     def add_fields(self, form, index):
         form.fields['mac'].widget.choices = [(m, m) for m in self.macs]
         form.fields['ip'].widget.choices = [(ip, ip) for ip in self.ips]
         return super(DHCPFormSetBase, self).add_fields(form, index)
+
+    def clean(self):
+        if any(self.errors):
+            return
+        for form in self.forms:
+            cleaned_data = getattr(form, 'cleaned_data')
+            if not cleaned_data:
+                continue
+            mac_address = cleaned_data.get('mac')
+            if Ethernet.objects.exclude(
+                device=self.device,
+            ).filter(
+                mac=MACAddressField.normalize(mac_address),
+            ).exists():
+                raise forms.ValidationError(
+                    "%s is assigned to another device." % mac_address,
+                )
 
 
 DHCPFormSet = forms.models.modelformset_factory(

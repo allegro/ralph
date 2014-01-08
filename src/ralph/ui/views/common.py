@@ -27,6 +27,8 @@ from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Language, TagStem
 from bob.menu import MenuItem
 from powerdns.models import Record
+
+from ralph.discovery.models_component import Ethernet, EthernetSpeed
 from ralph.discovery.models_device import DeprecationKind, MarginKind
 from ralph.scan.errors import Error as ScanError
 from ralph.scan.manual import scan_address
@@ -870,15 +872,26 @@ class Addresses(DeviceDetailView):
                 dhcp_records,
                 macs,
                 ips,
+                self.object,
                 self.request.POST,
                 prefix='dhcp',
             )
             if self.dhcp_formset.is_valid():
-                self.dhcp_formset.save()
+                instances = self.dhcp_formset.save(commit=False)
+                for instance in instances:
+                    if not Ethernet.objects.filter(mac=instance.mac).exists():
+                        Ethernet.objects.create(
+                            device=self.object,
+                            label=u'Ethernet',
+                            mac=instance.mac,
+                        )
+                    instance.save()
                 messages.success(self.request, "DHCP records updated.")
                 return HttpResponseRedirect(self.request.path)
             else:
                 messages.error(self.request, "Errors in the DHCP form.")
+                for error in self.dhcp_formset.non_form_errors():
+                    messages.error(self.request, error)
         elif 'ip' in self.request.POST:
             self.ip_formset = IPAddressFormSet(
                 self.request.POST,
@@ -921,6 +934,7 @@ class Addresses(DeviceDetailView):
                 dhcp_records,
                 macs,
                 ips,
+                self.object,
                 prefix='dhcp',
             )
         if self.ip_formset is None:
