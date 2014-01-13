@@ -131,6 +131,7 @@ def generate_dhcp_config_head(server_address=None, dc=None):
             ).values_list('dhcp_config', flat=True)[0]
         except IndexError:
             pass
+    last_modified_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     networks_filter = (
         Q(dhcp_broadcast=True),
         Q(gateway__isnull=False),
@@ -143,12 +144,26 @@ def generate_dhcp_config_head(server_address=None, dc=None):
     else:
         networks = Network.objects.filter(*networks_filter)
         dns_servers = DNSServer.objects.values_list('ip_address', flat=True)
-    networks = networks.select_related('domain')
+    for modified in networks.values_list(
+        'modified', flat=True,
+    ).order_by('-modified')[:1]:
+        last_modified_date = modified.strftime('%Y-%m-%d %H:%M:%S')
+        break
+    networks = networks.order_by('name').select_related('domain')
+    for modified in DHCPEntry.objects.values_list(
+        'modified', flat=True,
+    ).order_by('-modified')[:1]:
+        last_modified_date = max(
+            last_modified_date,
+            modified.strftime('%Y-%m-%d %H:%M:%S'),
+        )
+        break
     template = loader.get_template('dnsedit/dhcp_head.conf')
     context = Context({
         'dhcp_server_config': dhcp_server_config,
         'dns_servers': ','.join(dns_servers),
-        'networks': _generate_networks_configs(networks)
+        'networks': _generate_networks_configs(networks),
+        'last_modified_date': last_modified_date,
     })
     return template.render(context)
 
