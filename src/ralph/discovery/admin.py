@@ -82,10 +82,15 @@ class NetworkAdmin(ModelAdmin):
     terms.short_description = _("network terminators")
     list_display = ('name', 'vlan', 'address', 'gateway', terms,
                     'data_center', 'kind', 'queue')
-    list_filter = ('data_center', 'terminators', 'queue', 'kind')
+    list_filter = (
+        'data_center', 'terminators', 'queue', 'kind', 'dhcp_broadcast',
+    )
     list_per_page = 250
     radio_fields = {'data_center': admin.HORIZONTAL, 'kind': admin.HORIZONTAL}
     search_fields = ('name', 'address', 'vlan')
+    related_search_fields = {
+        'domain': ['^name'],
+    }
     filter_horizontal = ('terminators', 'racks')
     save_on_top = True
     form = NetworkAdminForm

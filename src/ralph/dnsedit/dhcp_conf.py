@@ -7,11 +7,13 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import datetime
-from django.template import loader, Context
 
 import ipaddr
 
-from ralph.dnsedit.models import DHCPEntry, DHCPServer
+from django.template import loader, Context
+from django.db.models import Q
+
+from ralph.dnsedit.models import DHCPEntry, DHCPServer, DNSServer
 from ralph.discovery.models import Network
 from ralph.deployment.models import Deployment
 from ralph.dnsedit.util import get_revdns_records
@@ -105,4 +107,48 @@ def generate_dhcp_config(dc=None, server_address=None, with_networks=False):
         'last_modified_date': last_modified_date,
     })
     return template.render(c)
+
+
+def _generate_networks_configs(networks):
+    for network in networks:
+        ip_network = ipaddr.IPNetwork(network.address)
+        yield (
+            network.name,
+            unicode(ip_network.network),
+            unicode(ip_network.netmask),
+            network.gateway,
+            network.domain.name,
+            network.dhcp_config,
+        )
+
+
+def generate_dhcp_config_head(server_address=None, dc=None):
+    dhcp_server_config = None
+    if server_address:
+        try:
+            dhcp_server_config = DHCPServer.objects.filter(
+                ip=server_address,
+            ).values_list('dhcp_config', flat=True)[0]
+        except IndexError:
+            pass
+    networks_filter = (
+        Q(dhcp_broadcast=True),
+        Q(gateway__isnull=False),
+        ~Q(gateway__exact=''),
+        Q(domain__isnull=False),
+    )
+    if dc:
+        networks = dc.network_set.filter(*networks_filter)
+        dns_servers = dc.dnsserver_set.values_list('ip_address', flat=True)
+    else:
+        networks = Network.objects.filter(*networks_filter)
+        dns_servers = DNSServer.objects.values_list('ip_address', flat=True)
+    networks = networks.select_related('domain')
+    template = loader.get_template('dnsedit/dhcp_head.conf')
+    context = Context({
+        'dhcp_server_config': dhcp_server_config,
+        'dns_servers': ','.join(dns_servers),
+        'networks': _generate_networks_configs(networks)
+    })
+    return template.render(context)
 

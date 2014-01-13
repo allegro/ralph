@@ -63,6 +63,13 @@ class AbstractNetwork(db.Model):
         _("VLAN number"), null=True, blank=True, default=None,
     )
     data_center = db.ForeignKey("DataCenter", verbose_name=_("data center"))
+    domain = db.ForeignKey(
+        'powerdns.Domain',
+        verbose_name=_('domain'),
+        blank=True,
+        null=True,
+        on_delete=db.SET_NULL,
+    )
     min_ip = db.PositiveIntegerField(
         _("smallest IP number"), null=True, blank=True, default=None,
     )

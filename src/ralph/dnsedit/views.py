@@ -12,7 +12,10 @@ from django.shortcuts import get_object_or_404
 
 from ralph.discovery.models import DataCenter
 from ralph.dnsedit.models import DHCPServer
-from ralph.dnsedit.dhcp_conf import generate_dhcp_config
+from ralph.dnsedit.dhcp_conf import (
+    generate_dhcp_config,
+    generate_dhcp_config_head,
+)
 from ralph.ui.views.common import Base
 from ralph.util import api
 
@@ -52,3 +55,23 @@ def dhcp_config(request):
         ),
         content_type="text/plain",
     )
+
+
+def dhcp_config_head(request):
+    if not api.is_authenticated(request):
+        return HttpResponseForbidden('API key required.')
+    dc = None
+    if 'dc' in request.GET:
+        try:
+            dc = DataCenter.objects.get(name__iexact=request.GET['dc'])
+        except DataCenter.DoesNotExist:
+            pass
+    server_address = remote_addr(request)
+    return HttpResponse(
+        generate_dhcp_config_head(
+            server_address=server_address,
+            dc=dc,
+        ),
+        content_type='text/plain',
+    )
+

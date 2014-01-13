@@ -40,6 +40,31 @@ class DHCPServer(db.Model):
     last_synchronized = db.DateTimeField(null=True)
     dhcp_config = db.TextField(blank=True, default='')
 
+    class Meta:
+        verbose_name = _('DHCP Server')
+        verbose_name_plural = _('DHCP Servers')
+
+
+class DNSServer(db.Model):
+    ip_address = db.IPAddressField(
+        verbose_name=_('IP address'),
+        unique=True,
+    )
+    data_center = db.ForeignKey(
+        'discovery.DataCenter',
+        verbose_name=_('data center'),
+        null=True,
+        blank=True,
+        on_delete=db.SET_NULL,
+    )
+
+    class Meta:
+        verbose_name = _('DNS Server')
+        verbose_name_plural = _('DNS Servers')
+
+    def __unicode__(self):
+        return "DNS Server (%s)" % self.ip_address
+
 
 class DNSHistory(db.Model):
     date = db.DateTimeField(verbose_name=_("date"),
