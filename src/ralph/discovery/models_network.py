@@ -126,6 +126,38 @@ class AbstractNetwork(db.Model):
             ip in ipaddr.IPNetwork('192.168.0.0/16')
         )
 
+    def get_subnetworks(self):
+        """
+        This method gets list of L3 subnetworks which are this object contains.
+        Only first level of children networks are returned.
+        """
+        networks = Network.objects.filter(
+            data_center=self.data_center,
+            min_ip__gte=self.min_ip,
+        ).exclude(
+            id=self.id,
+        )
+        subnets = []
+        for n in networks:
+            ip = ipaddr.IPNetwork(n.address)
+            if ip in ipaddr.IPNetwork(self.address):
+                subnets.append(n)
+        subnets = sorted(subnets, key=lambda net: net.get_netmask())
+        for net in range(len(subnets)):
+            try:
+                netw = subnets[net]
+                net_address = ipaddr.IPNetwork(netw.address)
+                for i in range(len(subnets))[net + 1:]:
+                    sub_addr = ipaddr.IPNetwork(subnets[i].address)
+                    if sub_addr in net_address:
+                        subnets.pop(i)
+            except IndexError:
+                break
+        return subnets
+
+    def get_next_free_subnet(self):
+        pass
+
     @classmethod
     def from_ip(cls, ip):
         """Find the smallest network containing that IP."""
@@ -161,6 +193,7 @@ class AbstractNetwork(db.Model):
         except ValueError:
             raise ValidationError(_("The address value specified is not a "
                                     "valid network."))
+
 
 class Network(Named, AbstractNetwork, TimeTrackable,
               WithConcurrentGetOrCreate):
@@ -245,7 +278,7 @@ class IPAddress(LastSeen, TimeTrackable, WithConcurrentGetOrCreate):
         default=None, on_delete=db.SET_NULL,
     )
     http_family = db.TextField(
-        _('family from HTTP'),  null=True, blank=True, default=None,
+        _('family from HTTP'), null=True, blank=True, default=None,
         max_length=64,
     )
     is_management = db.BooleanField(
@@ -263,7 +296,7 @@ class IPAddress(LastSeen, TimeTrackable, WithConcurrentGetOrCreate):
         Network, verbose_name=_("network"), null=True, blank=True,
         default=None,
     )
-    last_plugins = db.TextField(_("last plugins"),  blank=True)
+    last_plugins = db.TextField(_("last plugins"), blank=True)
     dead_ping_count = db.IntegerField(_("dead ping count"), default=0)
     is_buried = db.BooleanField(_("Buried from autoscan"), default=False)
     scan_summary = db.ForeignKey(
