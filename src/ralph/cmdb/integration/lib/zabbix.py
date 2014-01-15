@@ -9,26 +9,27 @@ logger = logging.getLogger(__name__)
 
 connection = False
 
+
 def initiate_connection():
     global connection
     logger.error('Initiating connection')
-    login=settings.ZABBIX_USER
-    passwd=settings.ZABBIX_PASSWORD
-    connection = ZabbixAPI(server=settings.ZABBIX_URL,
-            log_level=0,
-    )
+    login = settings.ZABBIX_USER
+    passwd = settings.ZABBIX_PASSWORD
+    connection = ZabbixAPI(server=settings.ZABBIX_URL)
     connection.login(login, passwd)
+
 
 def get_all_hosts():
     if not connection:
         initiate_connection()
     return connection.host.get(select_profile='extend', output='extend')
 
+
 def get_current_triggers():
     if not connection:
         initiate_connection()
     # status=0 -> STATUS_PROBLEM
-    return [ x for x in connection.trigger.get(
+    return [x for x in connection.trigger.get(
         output='extend',
         expandData='host',
         monitored='true',
@@ -38,6 +39,7 @@ def get_current_triggers():
         status=0,
         only_true='true',
     )]
+
 
 def get_all_triggers(host=None):
     # status=0 -> STATUS_PROBLEM
@@ -54,6 +56,4 @@ def get_all_triggers(host=None):
     )
     if host:
         params.update(dict(hostids=[host]))
-    return [ x for x in connection.trigger.get(**params)]
-
-
+    return [x for x in connection.trigger.get(**params)]
