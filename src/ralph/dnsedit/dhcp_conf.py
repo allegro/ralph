@@ -12,98 +12,132 @@ import ipaddr
 
 from django.template import loader, Context
 from django.db.models import Q
+from powerdns.models import Record
 
 from ralph.dnsedit.models import DHCPEntry, DHCPServer, DNSServer
-from ralph.discovery.models import Network
+from ralph.discovery.models import Network, Ethernet, IPAddress
 from ralph.deployment.models import Deployment
-from ralph.dnsedit.util import get_revdns_records
 
 
-def _get_first_rev(ips):
-    for ip in ips:
-        for rev in get_revdns_records(ip):
-            return rev.content
-    return ips[0] if ips else ''
-
-
-def _generate_networks(networks):
-    for network in networks.exclude(dhcp_config=''):
-        net = ipaddr.IPNetwork(network.address)
-        yield (
-            network.name,
-            str(net.network),
-            str(net.netmask),
-            network.dhcp_config,
-        )
-
-
-def _generate_entries(filter_ips, dc):
-    for macaddr, in DHCPEntry.objects.values_list('mac').distinct():
-        ips = list(filter_ips(
-            ip for (ip,) in
-            DHCPEntry.objects.filter(mac=macaddr).values_list('ip')
-        ))
-        if not ips:
+def _generate_entries_configs(
+    dc=None,
+    possible_ip_numbers=set(),
+    ptr_records={},
+    deployed_macs=set(),
+):
+    parsed = set()
+    for ip_address, mac, ip_number in DHCPEntry.objects.values_list(
+        'ip', 'mac', 'number',
+    ):
+        if any((
+            ip_number not in possible_ip_numbers,
+            ip_address in parsed,
+        )):
             continue
-        if Deployment.objects.filter(mac=macaddr).exists():
-            data_center = dc
-            if not data_center:
-                for net in Network.all_from_ip(ips[0]):
-                    data_center = net.data_center
-                    if data_center:
+        ptr_name = '.'.join(reversed(ip_address.split('.'))) + '.in-addr.arpa'
+        name = ptr_records.get(ptr_name)
+        if name is None:
+            try:
+                eth = Ethernet.objects.get(mac=mac)
+            except Ethernet.DoesNotExist:
+                continue
+            else:
+                try:
+                    name = IPAddress.objects.get(
+                        number=ip_number,
+                        device_id=eth.device.id,
+                    ).hostname
+                except IPAddress.DoesNotExist:
+                    continue
+                else:
+                    if not name:
+                        continue
+        next_server = ''
+        if mac in deployed_macs:
+            if dc and dc.next_server:
+                next_server = dc.next_server
+            else:
+                for dc_next_server in Network.objects.filter(
+                    min_ip__lte=ip_number,
+                    max_ip__gte=ip_number,
+                    data_center__isnull=False,
+                ).values_list(
+                    'data_center__next_server',
+                    flat=True,
+                ).order_by('-min_ip', 'max_ip'):
+                    if dc_next_server:
+                        next_server = dc_next_server
                         break
-            if data_center:
-                next_server = data_center.next_server
-        else:
-            next_server = ''
-        name = _get_first_rev(ips)
-        address = ', '.join(ips)
-        mac = ':'.join('%s%s' % c for c in zip(macaddr[::2],
-                                                macaddr[1::2])).upper()
-        yield name, address, mac, next_server
+        parsed.add(ip_address)
+        mac = ':'.join('%s%s' % chunk for chunk in zip(mac[::2], mac[1::2]))
+        yield name, ip_address, mac, next_server
 
 
-def generate_dhcp_config(dc=None, server_address=None, with_networks=False):
-    """Generate host DHCP configuration. If `dc` is provided, only yield hosts
+def generate_dhcp_config(server_address, dc=None):
+    """
+    Generate host DHCP configuration. If `dc` is provided, only yield hosts
     with addresses from networks of the specified DC.
 
     If given, `dc` must be of type DataCenter.
     """
-    server = None
-    if server_address:
-        try:
-            server = DHCPServer.objects.get(ip=server_address)
-        except DHCPServer.DoesNotExist:
-            pass
-    template = loader.get_template('dnsedit/dhcp.conf')
-    last_modified_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    for last in DHCPEntry.objects.order_by('-modified')[:1]:
-        last_modified_date = last.modified.strftime('%Y-%m-%d %H:%M:%S')
-        break
-    if dc:
-        networks = dc.network_set.all()
-        nets = {ipaddr.IPNetwork(network.address) for network in networks}
-        def filter_ips(ips):
-            for ip in ips:
-                ip_address = ipaddr.IPAddress(ip)
-                for net in nets:
-                    if ip_address in net:
-                        yield ip
-                        break
+
+    try:
+        dhcp_server = DHCPServer.objects.get(ip=server_address)
+    except DHCPServer.DoesNotExist:
+        dhcp_server = None
+        last_modified_date = datetime.datetime.now().strftime(
+            '%Y-%m-%d %H:%M:%S',
+        )
     else:
-        networks = Network.objects.all()
-        def filter_ips(ips):
-            return ips
-    for last in networks.exclude(dhcp_config='').order_by('-modified')[:1]:
+        last_modified_date = dhcp_server.modified.strftime('%Y-%m-%d %H:%M:%S')
+    networks_filter = (
+        Q(dhcp_broadcast=True),
+        Q(gateway__isnull=False),
+        ~Q(gateway__exact=''),
+        Q(domain__isnull=False),
+    )
+    if dc:
+        networks = dc.network_set.filter(*networks_filter)
+    else:
+        networks = Network.objects.filter(*networks_filter)
+    for modified in networks.values_list(
+        'modified', flat=True,
+    ).order_by('-modified')[:1]:
+        if dhcp_server:
+            last_modified_date = max(
+                last_modified_date,
+                modified.strftime('%Y-%m-%d %H:%M:%S'),
+            )
+        else:
+            last_modified_date = modified.strftime('%Y-%m-%d %H:%M:%S')
+        break
+    possible_ip_numbers = set()
+    for min_ip, max_ip in networks.values_list('min_ip', 'max_ip'):
+        for ip_number in xrange(min_ip, max_ip + 1):
+            possible_ip_numbers.add(ip_number)
+    ptr_records = {}
+    for name, content in Record.objects.filter(type='PTR').values_list(
+        'name', 'content',
+    ):
+        ptr_records[name] = content
+    deployed_macs = Deployment.objects.values_list('mac', flat=True)
+    for modified in DHCPEntry.objects.values_list(
+        'modified',
+        flat=True,
+    ).order_by('-modified')[:1]:
         last_modified_date = max(
             last_modified_date,
-            last.modified.strftime('%Y-%m-%d %H:%M:%S'),
+            modified.strftime('%Y-%m-%d %H:%M:%S'),
         )
         break
+    template = loader.get_template('dnsedit/dhcp.conf')
     c = Context({
-        'server_config': server.dhcp_config if server else '',
-        'networks': _generate_networks(networks) if with_networks else [],
-        'entries': _generate_entries(filter_ips, dc),
+        'entries': _generate_entries_configs(
+            dc=dc,
+            possible_ip_numbers=possible_ip_numbers,
+            ptr_records=ptr_records,
+            deployed_macs=deployed_macs,
+        ),
         'last_modified_date': last_modified_date,
     })
     return template.render(c)
@@ -122,16 +156,16 @@ def _generate_networks_configs(networks):
         )
 
 
-def generate_dhcp_config_head(server_address=None, dc=None):
-    dhcp_server_config = None
-    if server_address:
-        try:
-            dhcp_server_config = DHCPServer.objects.filter(
-                ip=server_address,
-            ).values_list('dhcp_config', flat=True)[0]
-        except IndexError:
-            pass
-    last_modified_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+def generate_dhcp_config_head(server_address, dc=None):
+    try:
+        dhcp_server = DHCPServer.objects.get(ip=server_address)
+    except DHCPServer.DoesNotExist:
+        dhcp_server = None
+        last_modified_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        dhcp_server_config = None
+    else:
+        last_modified_date = dhcp_server.modified.strftime('%Y-%m-%d %H:%M:%S')
+        dhcp_server_config = dhcp_server.dhcp_config
     networks_filter = (
         Q(dhcp_broadcast=True),
         Q(gateway__isnull=False),
@@ -147,7 +181,13 @@ def generate_dhcp_config_head(server_address=None, dc=None):
     for modified in networks.values_list(
         'modified', flat=True,
     ).order_by('-modified')[:1]:
-        last_modified_date = modified.strftime('%Y-%m-%d %H:%M:%S')
+        if dhcp_server:
+            last_modified_date = max(
+                last_modified_date,
+                modified.strftime('%Y-%m-%d %H:%M:%S'),
+            )
+        else:
+            last_modified_date = modified.strftime('%Y-%m-%d %H:%M:%S')
         break
     networks = networks.order_by('name').select_related('domain')
     for modified in DHCPEntry.objects.values_list(

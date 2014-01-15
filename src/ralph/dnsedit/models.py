@@ -35,7 +35,7 @@ class DHCPEntry(TimeTrackable):
         super(DHCPEntry, self).save(*args, **kwargs)
 
 
-class DHCPServer(db.Model):
+class DHCPServer(TimeTrackable):
     ip = db.IPAddressField(verbose_name=_("IP address"), unique=True)
     last_synchronized = db.DateTimeField(null=True)
     dhcp_config = db.TextField(blank=True, default='')
