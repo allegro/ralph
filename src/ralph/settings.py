@@ -142,6 +142,21 @@ LOGGING = {
             'propagate': True,
             'level': 'DEBUG',
         },
+        'ralph_assets': {
+            'handlers': ['file'],
+            'propagate': True,
+            'level': 'DEBUG',
+        },
+        'ralph_pricing': {
+            'handlers': ['file'],
+            'propagate': True,
+            'level': 'DEBUG',
+        },
+        'ralph_pricing.plugins': {
+            'handlers': ['file', 'console'],
+            'propagate': True,
+            'level': 'DEBUG',
+        },
         'critical_only': {
             'handlers': ['file', 'mail_admins'],
             'level': 'CRITICAL',
