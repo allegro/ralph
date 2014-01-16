@@ -129,7 +129,7 @@ $(function ($) {
                 $form.find('button, input').removeClass('disabled').attr('disabled', null);
                 $button.find('i').removeClass('loading');
                 $console.removeClass('loading');
-            
+
                 clearInterval(interval);
                 $console.val(request.responseText).removeClass('loading');
             }
@@ -166,7 +166,11 @@ $(function ($) {
     $('select#id_venture').change(venture_changed);
     $('select#id_venture').each(venture_changed);
 
-    $('.datepicker').datepicker({format: 'yyyy-mm-dd', autoclose: true}).click(function(){
+    /*
+        Custom datepicker - need to use input.datepicker - bootstrap
+        automatically add div with datepicker class.
+    */
+    $('input.datepicker').datepicker({format: 'yyyy-mm-dd', autoclose: true}).click(function(){
         $("input.datepicker[name!='" + $(this).attr('name') + "']").datepicker('hide');
     });
 
@@ -210,7 +214,7 @@ $(function ($) {
     var calendar_tmpl = '<div class="btn-toolbar">' +
             '<div class="btn-group years" data-toggle="buttons-radio">' +
             '{{#years}}' +
-            '<a href="#" class="btn {{css_class}}" data-value="{{value}}">' + 
+            '<a href="#" class="btn {{css_class}}" data-value="{{value}}">' +
             '{{label}}</a>' +
             '{{/years}}' +
             '</div>' +
@@ -228,31 +232,32 @@ $(function ($) {
         var $end = $form.find('input[name="end"]');
         require(['mustache'], function (Mustache) {
             $form.prepend(Mustache.render(calendar_tmpl, calendar));
-        });
-        $form.find('.years a').click(function (e) {
-            var $this = $(this);
-            var start_date = parseDate($start.val());
-            start_date.setUTCFullYear($this.data('value'));
-            $start.val(formatDate(start_date));
-            if ($end) {
-                var end_date = parseDate($end.val());
-                end_date.setUTCFullYear($this.data('value'));
-                $end.val(formatDate(end_date));
-            };
-        });
-        $form.find('.months a').click(function (e) {
-            var $this = $(this);
 
-            var date = parseDate($start.val());
-            date.setUTCMonth($this.data('value') - 1);
-            date.setUTCDate(1);
-            $start.val(formatDate(date));
+            $form.find('.years a').click(function (e) {
+                var $this = $(this);
+                var start_date = parseDate($start.val());
+                start_date.setUTCFullYear($this.data('value'));
+                $start.val(formatDate(start_date));
+                if ($end) {
+                    var end_date = parseDate($end.val());
+                    end_date.setUTCFullYear($this.data('value'));
+                    $end.val(formatDate(end_date));
+                };
+            });
+            $form.find('.months a').click(function (e) {
+                var $this = $(this);
 
-            if ($end) {
-                date.setUTCMonth($this.data('value'));
-                date.setUTCDate(0);
-                $end.val(formatDate(date));
-            };
+                var date = parseDate($start.val());
+                date.setUTCMonth($this.data('value') - 1);
+                date.setUTCDate(1);
+                $start.val(formatDate(date));
+
+                if ($end) {
+                    date.setUTCMonth($this.data('value'));
+                    date.setUTCDate(0);
+                    $end.val(formatDate(date));
+                };
+            });
         });
     });
     $('form.search-form').submit(function () {

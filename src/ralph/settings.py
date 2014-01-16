@@ -142,6 +142,21 @@ LOGGING = {
             'propagate': True,
             'level': 'DEBUG',
         },
+        'ralph_assets': {
+            'handlers': ['file'],
+            'propagate': True,
+            'level': 'DEBUG',
+        },
+        'ralph_pricing': {
+            'handlers': ['file'],
+            'propagate': True,
+            'level': 'DEBUG',
+        },
+        'ralph_pricing.plugins': {
+            'handlers': ['file', 'console'],
+            'propagate': True,
+            'level': 'DEBUG',
+        },
         'critical_only': {
             'handlers': ['file', 'mail_admins'],
             'level': 'CRITICAL',
@@ -353,6 +368,9 @@ HAMSTER_API_URL = ""
 SCALEME_API_URL = ""
 DEFAULT_SOA_RECORD_CONTENT = ''
 DEAD_PING_COUNT = 2
+
+# assets settings
+DEFAULT_DEPRECATION_RATE = 25
 # </template>
 
 #
