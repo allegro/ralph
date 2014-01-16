@@ -1,6 +1,15 @@
 Change Log
 ----------
 
+* added additional validation for DNS form (one PTR is required now)
+
+* added additional validation for DHCP form
+
+* dhcp config - fixes for networks and entries
+ 
+* dhcp config - optimizations
+
+
 2.0.0-rc1
 ~~~~~~~~~
 
