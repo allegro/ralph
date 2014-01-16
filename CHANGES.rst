@@ -9,6 +9,8 @@ Change Log
  
 * dhcp config - optimizations
 
+* ralph_dhcp_agent - update
+
 
 2.0.0-rc1
 ~~~~~~~~~
