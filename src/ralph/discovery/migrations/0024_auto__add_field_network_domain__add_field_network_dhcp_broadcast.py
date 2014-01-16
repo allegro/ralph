@@ -10,13 +10,21 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         # Adding field 'Network.domain'
         db.add_column('discovery_network', 'domain',
-                      self.gf('django.db.models.fields.related.ForeignKey')(to=orm['powerdns.Domain'], null=True, on_delete=models.SET_NULL, blank=True),
+                      self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True),
+                      keep_default=False)
+
+        # Adding field 'Network.dhcp_broadcast'
+        db.add_column('discovery_network', 'dhcp_broadcast',
+                      self.gf('django.db.models.fields.BooleanField')(default=False, db_index=True),
                       keep_default=False)
 
 
     def backwards(self, orm):
         # Deleting field 'Network.domain'
-        db.delete_column('discovery_network', 'domain_id')
+        db.delete_column('discovery_network', 'domain')
+
+        # Deleting field 'Network.dhcp_broadcast'
+        db.delete_column('discovery_network', 'dhcp_broadcast')
 
 
     models = {
@@ -506,7 +514,7 @@ class Migration(SchemaMigration):
             'data_center': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['discovery.DataCenter']"}),
             'dhcp_broadcast': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_index': 'True'}),
             'dhcp_config': ('django.db.models.fields.TextField', [], {'default': "u''", 'blank': 'True'}),
-            'domain': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['powerdns.Domain']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
+            'domain': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
             'gateway': ('django.db.models.fields.IPAddressField', [], {'default': 'None', 'max_length': '15', 'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'ignore_addresses': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
@@ -635,19 +643,6 @@ class Migration(SchemaMigration):
             'save_priorities': ('django.db.models.fields.TextField', [], {'default': "u''"}),
             'size': ('django.db.models.fields.PositiveIntegerField', [], {'null': 'True', 'blank': 'True'}),
             'sn': ('django.db.models.fields.CharField', [], {'default': 'None', 'max_length': '255', 'unique': 'True', 'null': 'True', 'blank': 'True'})
-        },
-        'powerdns.domain': {
-            'Meta': {'object_name': 'Domain', 'db_table': "u'domains'"},
-            'account': ('django.db.models.fields.CharField', [], {'max_length': '40', 'null': 'True', 'blank': 'True'}),
-            'cache_version': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
-            'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'last_check': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
-            'master': ('django.db.models.fields.CharField', [], {'max_length': '128', 'null': 'True', 'blank': 'True'}),
-            'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'}),
-            'notified_serial': ('django.db.models.fields.PositiveIntegerField', [], {'null': 'True', 'blank': 'True'}),
-            'type': ('django.db.models.fields.CharField', [], {'max_length': '6', 'null': 'True', 'blank': 'True'})
         },
         'scan.scansummary': {
             'Meta': {'object_name': 'ScanSummary'},

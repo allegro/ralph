@@ -8,11 +8,12 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import ipaddr
+
 from django.core.exceptions import ValidationError
 from django.db import models as db
 from django.db import IntegrityError
 from django.utils.translation import ugettext_lazy as _
-import ipaddr
 from lck.django.common.models import (
     TimeTrackable, Named, WithConcurrentGetOrCreate, SavePrioritized,
 )
@@ -63,12 +64,11 @@ class AbstractNetwork(db.Model):
         _("VLAN number"), null=True, blank=True, default=None,
     )
     data_center = db.ForeignKey("DataCenter", verbose_name=_("data center"))
-    domain = db.ForeignKey(
-        'powerdns.Domain',
-        verbose_name=_('domain'),
+    domain = db.CharField(
+        _('domain'),
+        max_length=255,
         blank=True,
         null=True,
-        on_delete=db.SET_NULL,
     )
     min_ip = db.PositiveIntegerField(
         _("smallest IP number"), null=True, blank=True, default=None,

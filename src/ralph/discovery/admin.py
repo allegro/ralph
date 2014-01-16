@@ -14,11 +14,12 @@ from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 import ipaddr
 from lck.django.common.admin import (
-    ModelAdmin, ForeignKeyAutocompleteTabularInline
+    ForeignKeyAutocompleteTabularInline,
+    ModelAdmin,
 )
 from django.core.exceptions import ValidationError
 from django.contrib import messages
-
+from powerdns.models import Domain
 
 from ralph.discovery import models as m
 from ralph.business.admin import RolePropertyValueInline
@@ -53,9 +54,24 @@ def copy_network(modeladmin, request, queryset):
 copy_network.short_description = "Copy network"
 
 
+def _domains_choices():
+    yield '', ''
+    for domain in Domain.objects.filter(type='MASTER').values_list(
+        'name', flat=True,
+    ):
+        yield domain, domain
+
+
 class NetworkAdminForm(forms.ModelForm):
     class Meta:
         model = m.Network
+
+    def __init__(self, *args, **kwargs):
+        super(NetworkAdminForm, self).__init__(*args, **kwargs)
+        self.fields['domain'] = forms.ChoiceField(
+            required=False,
+            choices=_domains_choices(),
+        )
 
     def clean_address(self):
         address = self.cleaned_data['address'].strip()
@@ -88,9 +104,6 @@ class NetworkAdmin(ModelAdmin):
     list_per_page = 250
     radio_fields = {'data_center': admin.HORIZONTAL, 'kind': admin.HORIZONTAL}
     search_fields = ('name', 'address', 'vlan')
-    related_search_fields = {
-        'domain': ['^name'],
-    }
     filter_horizontal = ('terminators', 'racks')
     save_on_top = True
     form = NetworkAdminForm

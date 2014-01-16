@@ -95,6 +95,7 @@ def generate_dhcp_config(server_address, dc=None):
         Q(gateway__isnull=False),
         ~Q(gateway__exact=''),
         Q(domain__isnull=False),
+        ~Q(domain__exact=''),
     )
     if dc:
         networks = dc.network_set.filter(*networks_filter)
@@ -151,7 +152,7 @@ def _generate_networks_configs(networks):
             unicode(ip_network.network),
             unicode(ip_network.netmask),
             network.gateway,
-            network.domain.name,
+            network.domain,
             network.dhcp_config,
         )
 
@@ -171,6 +172,7 @@ def generate_dhcp_config_head(server_address, dc=None):
         Q(gateway__isnull=False),
         ~Q(gateway__exact=''),
         Q(domain__isnull=False),
+        ~Q(domain__exact=''),
     )
     if dc:
         networks = dc.network_set.filter(*networks_filter)
@@ -189,7 +191,7 @@ def generate_dhcp_config_head(server_address, dc=None):
         else:
             last_modified_date = modified.strftime('%Y-%m-%d %H:%M:%S')
         break
-    networks = networks.order_by('name').select_related('domain')
+    networks = networks.order_by('name')
     for modified in DHCPEntry.objects.values_list(
         'modified', flat=True,
     ).order_by('-modified')[:1]:
