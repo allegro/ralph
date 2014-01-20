@@ -1,5 +1,8 @@
+"""Ralph extension for DjangoPluggableApp."""
+
 import abc
 import pluggableapp
+
 
 class RalphModule(pluggableapp.PluggableApp):
     """A pluggable application that depends of ralph and is accessible from
@@ -10,7 +13,7 @@ class RalphModule(pluggableapp.PluggableApp):
     @abc.abstractproperty
     def url_prefix(self):
         """The first part of paths for this application."""
-        
+
     @abc.abstractproperty
     def module_name(self):
         """The name of the module for this application."""

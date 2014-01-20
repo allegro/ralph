@@ -74,8 +74,9 @@ for r in (IPAddressResource, NetworksResource, ModelGroupResource,
 # CMDB API
 for r in (BusinessLineResource, ServiceResource, CIResource,
           CIRelationResource, CIChangeResource, CIChangeGitResource,
-          CIOwnersResource, CIChangePuppetResource, CIChangeZabbixTriggerResource,
-          CIChangeCMDBHistoryResource, CITypesResource, CILayersResource):
+          CIOwnersResource, CIChangePuppetResource,
+          CIChangeZabbixTriggerResource, CIChangeCMDBHistoryResource,
+          CITypesResource, CILayersResource):
     v09_api.register(r())
 
 # deployment API
@@ -99,7 +100,7 @@ urlpatterns = patterns(
      {'document_root': settings.MEDIA_ROOT, 'show_indexes': True}),
     url(r'^login/', 'django.contrib.auth.views.login',
         {'template_name': 'admin/login.html'}),
-    url(r'^logout/', 'django.contrib.auth.views.logout'),  # {'template_name': 'admin/logout.html'}),
+    url(r'^logout/', 'django.contrib.auth.views.logout'),
     url(r'^ventures/(?P<venture_id>.+)/$',
         'ralph.business.views.show_ventures',
         name='business-show-venture'),
