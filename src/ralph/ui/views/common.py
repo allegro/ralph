@@ -26,9 +26,11 @@ from django.views.generic import (
 from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Language, TagStem
 from bob.menu import MenuItem
+import pluggableapp
 from powerdns.models import Record
 
 from ralph.discovery.models_component import Ethernet, EthernetSpeed
+from ralph.app import RalphModule
 from ralph.discovery.models_device import DeprecationKind, MarginKind
 from ralph.scan.errors import Error as ScanError
 from ralph.scan.manual import scan_address
@@ -326,22 +328,22 @@ class BaseMixin(object):
             mainmenu_items.append(
                 MenuItem('Catalog', fugue_icon='fugue-paper-bag',
                          view_name='catalog'))
+
         if ('ralph.cmdb' in settings.INSTALLED_APPS and
                 has_perm(Perm.read_configuration_item_info_generic)):
             mainmenu_items.append(
                 MenuItem('CMDB', fugue_icon='fugue-thermometer',
                          href='/cmdb/changes/timeline')
             )
-        if ('ralph_assets' in settings.INSTALLED_APPS):
-            mainmenu_items.append(
-                MenuItem('Assets', fugue_icon='fugue-box-label',
-                         href='/assets')
-            )
-        if ('ralph_pricing' in settings.INSTALLED_APPS):
-            mainmenu_items.append(
-                MenuItem('Pricing', fugue_icon='fugue-money-coin',
-                         href='/pricing')
-            )
+
+        for app in pluggableapp.app_dict.values():
+            if isinstance (app, RalphModule):
+                mainmenu_items.append(MenuItem(
+                    app.disp_name,
+                    fugue_icon=app.icon,
+                    href='/{}'.format(app.url_prefix)
+                ))
+            
 
         if settings.BUGTRACKER_URL:
             mainmenu_items.append(

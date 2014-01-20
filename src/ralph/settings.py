@@ -18,6 +18,7 @@ execfile(namespace_package_support)
 #
 # common stuff for each install
 #
+
 SITE_ID = 1
 USE_I18N = True
 USE_L10N = True  # FIXME: breaks contents of localized date fields on form reload
@@ -139,21 +140,6 @@ LOGGING = {
         },
         'ralph': {
             'handlers': ['file'],
-            'propagate': True,
-            'level': 'DEBUG',
-        },
-        'ralph_assets': {
-            'handlers': ['file'],
-            'propagate': True,
-            'level': 'DEBUG',
-        },
-        'ralph_pricing': {
-            'handlers': ['file'],
-            'propagate': True,
-            'level': 'DEBUG',
-        },
-        'ralph_pricing.plugins': {
-            'handlers': ['file', 'console'],
             'propagate': True,
             'level': 'DEBUG',
         },
@@ -397,6 +383,9 @@ for cfg_loc in [local_settings,
     if os.path.exists(cfg_loc):
         execfile(cfg_loc)
         break
+
+import pluggableapp
+pluggableapp.initialize(locals())
 
 MEDIA_ROOT = os.path.expanduser(MEDIA_ROOT)
 STATIC_ROOT = os.path.expanduser(STATIC_ROOT)

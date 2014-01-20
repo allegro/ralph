@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.conf.urls.defaults import patterns, include, url
 from django.views.generic import RedirectView
+import pluggableapp
 from tastypie.api import Api
 from ralph.business.api import (
     DepartmentResource,
@@ -54,7 +55,6 @@ from ajax_select import urls as ajax_select_urls
 admin.autodiscover()
 
 v09_api = Api(api_name='v0.9')
-OPTIONAL_APPS = ['ralph_assets', 'ralph_pricing', 'ralph_assets_imports']
 # business API
 for r in (VentureResource, VentureLightResource, RoleResource,
           RoleLightResource, DepartmentResource, RolePropertyTypeResource,
@@ -138,7 +138,4 @@ urlpatterns = patterns(
 
 )
 
-for app in settings.INSTALLED_APPS:
-    if app in OPTIONAL_APPS:
-        app_urls = url(r'^{}/'.format(app[6:]), include('{}.urls'.format(app)))
-        urlpatterns.append(app_urls)
+urlpatterns += pluggableapp.patterns()
