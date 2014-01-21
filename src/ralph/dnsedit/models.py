@@ -50,12 +50,10 @@ class DNSServer(db.Model):
         verbose_name=_('IP address'),
         unique=True,
     )
-    data_center = db.ForeignKey(
-        'discovery.DataCenter',
-        verbose_name=_('data center'),
-        null=True,
-        blank=True,
-        on_delete=db.SET_NULL,
+    is_default = db.BooleanField(
+        verbose_name=_('is default'),
+        db_index=True,
+        default=False,
     )
 
     class Meta:

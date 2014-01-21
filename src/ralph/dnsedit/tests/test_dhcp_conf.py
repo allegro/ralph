@@ -8,7 +8,7 @@ from __future__ import unicode_literals
 from django.test import TestCase
 from powerdns.models import Domain, Record
 
-from ralph.dnsedit.models import DHCPEntry, DHCPServer
+from ralph.dnsedit.models import DHCPEntry, DHCPServer, DNSServer
 from ralph.dnsedit.dhcp_conf import (
     generate_dhcp_config,
     generate_dhcp_config_head,
@@ -33,8 +33,9 @@ class DHCPConfTest(TestCase):
         self.dc1 = DataCenter.objects.create(
             name='dc1',
             next_server='10.20.30.40',
+            domain='dc1',
         )
-        self.dc2 = DataCenter.objects.create(name='dc2')
+        self.dc2 = DataCenter.objects.create(name='dc2', domain='dc2')
         self.domain1 = Domain.objects.create(
             name='dc1.local',
             type='MASTER',
@@ -47,7 +48,6 @@ class DHCPConfTest(TestCase):
             name='net1.dc1',
             address='127.0.0.0/24',
             data_center=self.dc1,
-            domain='dc1.local',
             dhcp_broadcast=True,
             gateway='127.0.0.255',
         )
@@ -55,10 +55,27 @@ class DHCPConfTest(TestCase):
             name='net1.dc2',
             address='10.20.1.0/24',
             data_center=self.dc2,
-            domain='dc2.local',
             dhcp_broadcast=True,
             gateway='10.20.1.255',
         )
+        DNSServer.objects.create(
+            ip_address='10.20.30.1',
+            is_default=True,
+        )
+        DNSServer.objects.create(
+            ip_address='10.20.30.2',
+            is_default=True,
+        )
+        self.custom_dns_1 = DNSServer.objects.create(
+            ip_address='10.20.30.3',
+            is_default=False,
+        )
+        self.custom_dns_2 = DNSServer.objects.create(
+            ip_address='10.20.30.4',
+            is_default=False,
+        )
+        self.network2.custom_dns_servers.add(self.custom_dns_1)
+        self.network2.custom_dns_servers.add(self.custom_dns_2)
 
     def test_basic_entry(self):
         DHCPEntry.objects.create(ip='127.0.0.1', mac='deadbeefcafe')
@@ -179,8 +196,8 @@ class DHCPConfTest(TestCase):
             """shared-network "net1.dc1" {
     subnet 127.0.0.0 netmask 255.255.255.0 {
         option routers 127.0.0.255;
-        option domain-name "dc1.local";
-        option domain-name-servers ;
+        option domain-name "dc1";
+        option domain-name-servers 10.20.30.1,10.20.30.2;
         deny unknown-clients;
     }
 }
@@ -188,8 +205,8 @@ class DHCPConfTest(TestCase):
 shared-network "net1.dc2" {
     subnet 10.20.1.0 netmask 255.255.255.0 {
         option routers 10.20.1.255;
-        option domain-name "dc2.local";
-        option domain-name-servers ;
+        option domain-name "dc2";
+        option domain-name-servers 10.20.30.3,10.20.30.4;
         deny unknown-clients;
     }
 }"""
@@ -206,8 +223,8 @@ shared-network "net1.dc2" {
             """shared-network "net1.dc2" {
     subnet 10.20.1.0 netmask 255.255.255.0 {
         option routers 10.20.1.255;
-        option domain-name "dc2.local";
-        option domain-name-servers ;
+        option domain-name "dc2";
+        option domain-name-servers 10.20.30.3,10.20.30.4;
         deny unknown-clients;
 SAMPLE ADDITIONAL CONFIG
     }
@@ -230,8 +247,8 @@ SAMPLE ADDITIONAL CONFIG
 shared-network "net1.dc1" {
     subnet 127.0.0.0 netmask 255.255.255.0 {
         option routers 127.0.0.255;
-        option domain-name "dc1.local";
-        option domain-name-servers ;
+        option domain-name "dc1";
+        option domain-name-servers 10.20.30.1,10.20.30.2;
         deny unknown-clients;
     }
 }
@@ -239,8 +256,8 @@ shared-network "net1.dc1" {
 shared-network "net1.dc2" {
     subnet 10.20.1.0 netmask 255.255.255.0 {
         option routers 10.20.1.255;
-        option domain-name "dc2.local";
-        option domain-name-servers ;
+        option domain-name "dc2";
+        option domain-name-servers 10.20.30.3,10.20.30.4;
         deny unknown-clients;
     }
 }"""
@@ -255,8 +272,26 @@ shared-network "net1.dc2" {
             """shared-network "net1.dc2" {
     subnet 10.20.1.0 netmask 255.255.255.0 {
         option routers 10.20.1.255;
-        option domain-name "dc2.local";
-        option domain-name-servers ;
+        option domain-name "dc2";
+        option domain-name-servers 10.20.30.3,10.20.30.4;
+        deny unknown-clients;
+    }
+}"""
+        )
+
+    def test_no_domain_networks_configs(self):
+        self.dc2.domain = None
+        self.dc2.save()
+        config = _sanitize_dhcp_config(
+            generate_dhcp_config_head(server_address='127.0.1.1'),
+        )
+        self.assertEqual(
+            config,
+            """shared-network "net1.dc1" {
+    subnet 127.0.0.0 netmask 255.255.255.0 {
+        option routers 127.0.0.255;
+        option domain-name "dc1";
+        option domain-name-servers 10.20.30.1,10.20.30.2;
         deny unknown-clients;
     }
 }"""

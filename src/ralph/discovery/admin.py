@@ -28,6 +28,7 @@ from ralph.business.admin import RolePropertyValueInline
 SAVE_PRIORITY = 200
 HOSTS_NAMING_TEMPLATE_REGEX = re.compile(r'<[0-9]+,[0-9]+>.*\.[a-zA-Z0-9]+')
 
+
 def copy_network(modeladmin, request, queryset):
     for net in queryset:
         name = 'Copy of %s' % net.name
@@ -54,24 +55,13 @@ def copy_network(modeladmin, request, queryset):
 copy_network.short_description = "Copy network"
 
 
-def _domains_choices():
-    yield '', ''
-    for domain in Domain.objects.filter(type='MASTER').values_list(
-        'name', flat=True,
-    ):
-        yield domain, domain
-
-
 class NetworkAdminForm(forms.ModelForm):
     class Meta:
         model = m.Network
 
     def __init__(self, *args, **kwargs):
         super(NetworkAdminForm, self).__init__(*args, **kwargs)
-        self.fields['domain'] = forms.ChoiceField(
-            required=False,
-            choices=_domains_choices(),
-        )
+        self.fields['gateway'].required = True
 
     def clean_address(self):
         address = self.cleaned_data['address'].strip()
@@ -104,7 +94,7 @@ class NetworkAdmin(ModelAdmin):
     list_per_page = 250
     radio_fields = {'data_center': admin.HORIZONTAL, 'kind': admin.HORIZONTAL}
     search_fields = ('name', 'address', 'vlan')
-    filter_horizontal = ('terminators', 'racks')
+    filter_horizontal = ('terminators', 'racks', 'custom_dns_servers')
     save_on_top = True
     form = NetworkAdminForm
     actions = [copy_network]
@@ -146,7 +136,7 @@ class DataCenterAdminForm(forms.ModelForm):
 
 
 class DataCenterAdmin(ModelAdmin):
-    list_display = ('name', 'hosts_naming_template')
+    list_display = ('name', 'hosts_naming_template', 'domain')
     search_fields = ('name',)
     form = DataCenterAdminForm
 

@@ -70,7 +70,7 @@ def _generate_entries_configs(
                         break
         parsed.add(ip_address)
         mac = ':'.join('%s%s' % chunk for chunk in zip(mac[::2], mac[1::2]))
-        yield name, ip_address, mac, next_server
+        yield name.strip(), ip_address, mac, next_server
 
 
 def generate_dhcp_config(server_address, dc=None):
@@ -94,8 +94,9 @@ def generate_dhcp_config(server_address, dc=None):
         Q(dhcp_broadcast=True),
         Q(gateway__isnull=False),
         ~Q(gateway__exact=''),
-        Q(domain__isnull=False),
-        ~Q(domain__exact=''),
+        ~Q(data_center=False),
+        Q(data_center__domain__isnull=False),
+        ~Q(data_center__domain__exact=''),
     )
     if dc:
         networks = dc.network_set.filter(*networks_filter)
@@ -144,16 +145,19 @@ def generate_dhcp_config(server_address, dc=None):
     return template.render(c)
 
 
-def _generate_networks_configs(networks):
-    for network in networks:
-        ip_network = ipaddr.IPNetwork(network.address)
+def _generate_networks_configs(networks, custom_dns_servers):
+    for network_id, name, address, gateway, domain, dhcp_config in networks:
+        ip_network = ipaddr.IPNetwork(address)
         yield (
-            network.name,
+            name.strip(),
             unicode(ip_network.network),
             unicode(ip_network.netmask),
-            network.gateway,
-            network.domain,
-            network.dhcp_config,
+            gateway,
+            domain,
+            dhcp_config,
+            ','.join(
+                custom_dns_servers[network_id],
+            ) if network_id in custom_dns_servers else '',
         )
 
 
@@ -162,7 +166,9 @@ def generate_dhcp_config_head(server_address, dc=None):
         dhcp_server = DHCPServer.objects.get(ip=server_address)
     except DHCPServer.DoesNotExist:
         dhcp_server = None
-        last_modified_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        last_modified_date = datetime.datetime.now().strftime(
+            '%Y-%m-%d %H:%M:%S',
+        )
         dhcp_server_config = None
     else:
         last_modified_date = dhcp_server.modified.strftime('%Y-%m-%d %H:%M:%S')
@@ -171,15 +177,14 @@ def generate_dhcp_config_head(server_address, dc=None):
         Q(dhcp_broadcast=True),
         Q(gateway__isnull=False),
         ~Q(gateway__exact=''),
-        Q(domain__isnull=False),
-        ~Q(domain__exact=''),
+        ~Q(data_center=False),
+        Q(data_center__domain__isnull=False),
+        ~Q(data_center__domain__exact=''),
     )
     if dc:
         networks = dc.network_set.filter(*networks_filter)
-        dns_servers = dc.dnsserver_set.values_list('ip_address', flat=True)
     else:
         networks = Network.objects.filter(*networks_filter)
-        dns_servers = DNSServer.objects.values_list('ip_address', flat=True)
     for modified in networks.values_list(
         'modified', flat=True,
     ).order_by('-modified')[:1]:
@@ -191,7 +196,10 @@ def generate_dhcp_config_head(server_address, dc=None):
         else:
             last_modified_date = modified.strftime('%Y-%m-%d %H:%M:%S')
         break
-    networks = networks.order_by('name')
+    networks = networks.values_list(
+        'id', 'name', 'address', 'gateway', 'data_center__domain',
+        'dhcp_config',
+    ).order_by('name')
     for modified in DHCPEntry.objects.values_list(
         'modified', flat=True,
     ).order_by('-modified')[:1]:
@@ -201,10 +209,23 @@ def generate_dhcp_config_head(server_address, dc=None):
         )
         break
     template = loader.get_template('dnsedit/dhcp_head.conf')
+    default_dns_servers = DNSServer.objects.filter(
+        is_default=True,
+    ).values_list('ip_address', flat=True).order_by('id')
+    # make some usefull cache...
+    custom_dns_servers = {}
+    for dns_server_ip, network_id in DNSServer.objects.values_list(
+        'ip_address', 'network__id',
+    ):
+        if not network_id:
+            continue
+        if network_id not in custom_dns_servers:
+            custom_dns_servers[network_id] = set()
+        custom_dns_servers[network_id].add(dns_server_ip)
     context = Context({
         'dhcp_server_config': dhcp_server_config,
-        'dns_servers': ','.join(dns_servers),
-        'networks': _generate_networks_configs(networks),
+        'dns_servers': ','.join(default_dns_servers),
+        'networks': _generate_networks_configs(networks, custom_dns_servers),
         'last_modified_date': last_modified_date,
     })
     return template.render(context)

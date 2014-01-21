@@ -64,12 +64,6 @@ class AbstractNetwork(db.Model):
         _("VLAN number"), null=True, blank=True, default=None,
     )
     data_center = db.ForeignKey("DataCenter", verbose_name=_("data center"))
-    domain = db.CharField(
-        _('domain'),
-        max_length=255,
-        blank=True,
-        null=True,
-    )
     min_ip = db.PositiveIntegerField(
         _("smallest IP number"), null=True, blank=True, default=None,
     )
@@ -99,6 +93,12 @@ class AbstractNetwork(db.Model):
             "Addresses from this network should never be assigned "
             "to any device, because they are not unique."
         ),
+    )
+    custom_dns_servers = db.ManyToManyField(
+        'dnsedit.DNSServer',
+        verbose_name=_('custom DNS servers'),
+        null=True,
+        blank=True,
     )
     dhcp_broadcast = db.BooleanField(
         _("Broadcast in DHCP configuration"),
@@ -211,6 +211,12 @@ class DataCenter(Named):
         blank=True,
         default='',
         help_text=_("The address for a TFTP server for DHCP."),
+    )
+    domain = db.CharField(
+        _('domain'),
+        max_length=255,
+        blank=True,
+        null=True,
     )
 
     class Meta:

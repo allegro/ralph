@@ -45,9 +45,9 @@ admin.site.register(DNSHistory, DNSHistoryAdmin)
 
 
 class DNSServerAdmin(ModelAdmin):
-    list_display = ('ip_address', 'data_center')
+    list_display = ('ip_address', 'is_default')
     search_fields = ('ip_address',)
-    list_filter = ('data_center',)
+    list_filter = ('is_default',)
     save_on_top = True
 
 admin.site.register(DNSServer, DNSServerAdmin)
