@@ -125,6 +125,8 @@ def _run_plugins(address, plugins, job, **kwargs):
         else:
             try:
                 result = module.scan_address(address, **kwargs)
+            except rq.timeouts.JobTimeoutException as e:
+                raise e
             except Exception as e:
                 name = plugin_name.split(".")[-1]
                 msg = "Exception occured in plugin {} and address {}".format(
