@@ -1,8 +1,8 @@
 Change Log
 ----------
 
-HEAD
-~~~~~
+2.0.0-rc1
+~~~~~~~~~
 
 * added Scan module - new DC discovery mechanism
 

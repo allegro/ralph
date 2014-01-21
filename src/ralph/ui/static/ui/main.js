@@ -232,31 +232,32 @@ $(function ($) {
         var $end = $form.find('input[name="end"]');
         require(['mustache'], function (Mustache) {
             $form.prepend(Mustache.render(calendar_tmpl, calendar));
-        });
-        $form.find('.years a').click(function (e) {
-            var $this = $(this);
-            var start_date = parseDate($start.val());
-            start_date.setUTCFullYear($this.data('value'));
-            $start.val(formatDate(start_date));
-            if ($end) {
-                var end_date = parseDate($end.val());
-                end_date.setUTCFullYear($this.data('value'));
-                $end.val(formatDate(end_date));
-            };
-        });
-        $form.find('.months a').click(function (e) {
-            var $this = $(this);
 
-            var date = parseDate($start.val());
-            date.setUTCMonth($this.data('value') - 1);
-            date.setUTCDate(1);
-            $start.val(formatDate(date));
+            $form.find('.years a').click(function (e) {
+                var $this = $(this);
+                var start_date = parseDate($start.val());
+                start_date.setUTCFullYear($this.data('value'));
+                $start.val(formatDate(start_date));
+                if ($end) {
+                    var end_date = parseDate($end.val());
+                    end_date.setUTCFullYear($this.data('value'));
+                    $end.val(formatDate(end_date));
+                };
+            });
+            $form.find('.months a').click(function (e) {
+                var $this = $(this);
 
-            if ($end) {
-                date.setUTCMonth($this.data('value'));
-                date.setUTCDate(0);
-                $end.val(formatDate(date));
-            };
+                var date = parseDate($start.val());
+                date.setUTCMonth($this.data('value') - 1);
+                date.setUTCDate(1);
+                $start.val(formatDate(date));
+
+                if ($end) {
+                    date.setUTCMonth($this.data('value'));
+                    date.setUTCDate(0);
+                    $end.val(formatDate(date));
+                };
+            });
         });
     });
     $('form.search-form').submit(function () {
