@@ -16,6 +16,7 @@ from ralph.discovery.models import (
     DeviceType,
     SERIAL_BLACKLIST,
 )
+from ralph.scan.errors import Error, AuthError, NoMatchError
 from ralph.scan.plugins import get_base_result_template
 from ralph.util import parse
 
@@ -25,14 +26,6 @@ CPU_SPEED_REGEX = re.compile(r'(\d+\.\d+)GHZ')
 MEM_SPEED_REGEX = re.compile(r'(\d+)GB')
 REMOVE_ID_REGEX = re.compile(r'\s*[(][^)]*[)]')
 SETTINGS = settings.SCAN_PLUGINS.get(__name__, {})
-
-
-class Error(Exception):
-    pass
-
-
-class AuthError(Error):
-    pass
 
 
 class IPMITool(object):
@@ -192,6 +185,11 @@ def _ipmi(ipmitool):
 
 
 def scan_address(ip_address, **kwargs):
+    http_family = kwargs.get('http_family', '')
+    if http_family not in (
+        'Sun', 'Thomas-Krenn', 'Oracle-ILOM-Web-Server', 'IBM System X',
+    ):
+        raise NoMatchError('It is not compatible device fot this plugin.')
     user = SETTINGS.get('user')
     password = SETTINGS.get('password')
     messages = []
