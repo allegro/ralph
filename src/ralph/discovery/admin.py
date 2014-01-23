@@ -59,10 +59,6 @@ class NetworkAdminForm(forms.ModelForm):
     class Meta:
         model = m.Network
 
-    def __init__(self, *args, **kwargs):
-        super(NetworkAdminForm, self).__init__(*args, **kwargs)
-        self.fields['gateway'].required = True
-
     def clean_address(self):
         address = self.cleaned_data['address'].strip()
         if not re.search(r'/[0-9]{1,2}$', address):

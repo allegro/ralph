@@ -12,6 +12,8 @@ import subprocess
 import sys
 import urllib2
 
+from urllib import urlencode
+
 
 def all(iterable):
     """The built-in was unavailable no Python 2.4."""
@@ -43,11 +45,13 @@ class SimpleDHCPManager(object):
         return False
 
     def _get_configuration(self):
-        url = "%s/dhcp-config%s/?username=%s&api_key=%s" % (
+        url = "{}/dhcp-config{}/?{}".format(
             self.api_url,
             '-head' if self.mode == 'NETWORKS' else '',
-            self.api_username,
-            self.api_key,
+            urlencode({
+                'username': self.api_username,
+                'api_key': self.api_key,
+            })
         )
         if self.dc:
             url += '&dc=' + self.dc

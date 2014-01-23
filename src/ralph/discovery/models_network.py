@@ -40,7 +40,7 @@ class AbstractNetwork(db.Model):
         max_length=len("xxx.xxx.xxx.xxx/xx"), unique=True,
     )
     gateway = db.IPAddressField(
-        _("gateway address"), help_text=_("Presented as string."), blank=True,
+        _("gateway address"), help_text=_("Presented as string."), blank=False,
         null=True, default=None,
     )
     reserved = db.PositiveIntegerField(

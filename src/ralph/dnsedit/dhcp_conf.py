@@ -197,7 +197,11 @@ def generate_dhcp_config_head(server_address, dc=None):
             last_modified_date = modified.strftime('%Y-%m-%d %H:%M:%S')
         break
     networks = networks.values_list(
-        'id', 'name', 'address', 'gateway', 'data_center__domain',
+        'id',
+        'name',
+        'address',
+        'gateway',
+        'data_center__domain',
         'dhcp_config',
     ).order_by('name')
     for modified in DHCPEntry.objects.values_list(
