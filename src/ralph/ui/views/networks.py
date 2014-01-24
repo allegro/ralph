@@ -4,7 +4,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import collections
 import datetime
 
 import django_rq
@@ -18,17 +17,19 @@ from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.utils import timezone
 
+
 from ralph.account.models import Perm
 from ralph.discovery.models import ReadOnlyDevice, Network, IPAddress
 from ralph.ui.forms import NetworksFilterForm
+from ralph.ui.forms.network import NetworkForm
 from ralph.ui.views.common import (
     Addresses,
     Asset,
     BaseMixin,
     Components,
     Costs,
-    History,
     Info,
+    History,
     Prices,
     Software,
     Scan,
@@ -39,22 +40,24 @@ from ralph.util import presentation
 from ralph.scan import autoscan
 
 
-def network_tree_menu(networks, details, children, show_ip=False, status=''):
+def network_tree_menu(networks, details, show_ip=False, status=''):
     icon = presentation.get_network_icon
     items = []
     for n in networks:
         items.append(MenuItem(
-            n.address if show_ip else n.name,
-            fugue_icon=icon(n),
+            "{} ({})".format(
+                n['network'].name, n['network'].address,
+            ),
+            fugue_icon=icon(n['network']),
             view_name='networks',
-            indent=' ',
-            name=n.name,
-            view_args=[n.name, details, status],
-            subitems = network_tree_menu(
-                children[n.id], details, children, show_ip, status
+            indent='  ',
+            name=n['network'].name,
+            view_args=[n['network'].name, details, status],
+            subitems=network_tree_menu(
+                n['subnetworks'], details, show_ip, status,
             ),
             collapsible=True,
-            collapsed=not getattr(n, 'expanded', False),
+            collapsed=not getattr(n['network'], 'expanded', False),
         ))
     return items
 
@@ -83,44 +86,22 @@ class SidebarNetworks(object):
         has_perm = profile.has_perm
         self.set_network()
         networks = Network.objects.all()
-        contains =  self.request.GET.get('contains')
+        contains = self.request.GET.get('contains')
         if contains:
             networks = networks.filter(
-                    Q(name__contains=contains) |
-                    Q(address__contains=contains)
-                )
-        self.networks = list(networks.order_by('min_ip', '-max_ip'))
-        stack = []
-        children = collections.defaultdict(list)
-        for network in self.networks:
-            network.parent = None
-            while stack:
-                if network in stack[-1]:
-                    network.parent = stack[-1]
-                    children[stack[-1].id].append(network)
-                    break
-                else:
-                    stack.pop()
-            if network.parent:
-                network.depth = network.parent.depth + 1
-            else:
-                network.depth = 0
-            network.indent = ' ' * network.depth
-            stack.append(network)
-            if network == self.network:
-                parent = getattr(network, 'parent', None)
-                while parent:
-                    parent.expanded = True
-                    parent = getattr(parent, 'parent', None)
-        sidebar_items = [MenuItem(fugue_icon='fugue-prohibition',
-                                  label="None", name='',
-                                  view_name='networks',
-                                  view_args=['-', ret['details'], self.status])]
+                Q(name__contains=contains) | Q(address__contains=contains)
+            )
+        self.networks = Network.prepare_network_tree(qs=networks)
+        sidebar_items = [
+            MenuItem(fugue_icon='fugue-prohibition',
+                     label="None", name='',
+                     view_name='networks',
+                     view_args=['-', ret['details'], self.status]),
+        ]
         sidebar_items.extend(
             network_tree_menu(
-                [n for n in self.networks if n.parent is None],
+                self.networks,
                 ret['details'],
-                children,
                 show_ip=self.request.GET.get('show_ip'),
                 status=self.status,
             ),
@@ -139,12 +120,28 @@ class SidebarNetworks(object):
             'subsection': self.network.name if self.network else self.network,
             'searchform': NetworksFilterForm(self.request.GET),
             'searchform_filter': True,
+            'sidebar_alternative_span': 'span3',
+            'content_alternative_span': 'span9',
         })
         return ret
 
 
 class Networks(SidebarNetworks, BaseMixin):
-    pass
+    def get_context_data(self, **kwargs):
+        ret = super(BaseMixin, self).get_context_data(**kwargs)
+        tab_menu = [
+            MenuItem('Info', fugue_icon='fugue-wooden-box',
+                     href=self.tab_href('info')),
+        ]
+        show_tabs = [
+            'info',
+        ]
+        context = {
+            'show_tabs': show_tabs,
+            'tab_items': tab_menu,
+        }
+        ret.update(context)
+        return ret
 
 
 class NetworksDeviceList(SidebarNetworks, BaseMixin, BaseDeviceList):
@@ -271,7 +268,7 @@ class NetworksAutoscan(SidebarNetworks, BaseMixin, BaseDeviceList):
         return self.sort_queryset(
             query,
             columns={
-                'address':  ('number',),
+                'address': ('number',),
                 'hostname': ('hostname',),
                 'last_seen': ('last_seen',),
                 'device': ('device__model__name',),

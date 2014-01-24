@@ -31,10 +31,10 @@
         {% endblock %}
     </div></div>
     {%   endif %}
-    <div class="row-fluid main-body"><div class="span2">
+    <div class="row-fluid main-body"><div class="{% if sidebar_alternative_span %} {{ sidebar_alternative_span }} {% else %}span2{% endif %}">
         {% block sidebar %}
         {% endblock %}
-    </div><div class="span10">
+    </div><div class="{% if content_alternative_span %} {{ content_alternative_span }} {% else %}span10{% endif %}">
         {% block breadcrumbs %}{% endblock %}
         {% block tabs %}{% endblock %}
         <div class="row-fluid">

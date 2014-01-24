@@ -126,17 +126,19 @@ class AbstractNetwork(db.Model):
             ip in ipaddr.IPNetwork('192.168.0.0/16')
         )
 
-    def get_subnetworks(self):
+    def get_subnetworks(self, networks=None):
         """
         This method gets list of L3 subnetworks which are this object contains.
         Only first level of children networks are returned.
         """
-        networks = Network.objects.filter(
-            data_center=self.data_center,
-            min_ip__gte=self.min_ip,
-        ).exclude(
-            id=self.id,
-        )
+        if not networks:
+            networks = Network.objects.filter(
+                data_center=self.data_center,
+                min_ip__gte=self.min_ip,
+                max_ip__lte=self.max_ip,
+            ).exclude(
+                id=self.id,
+            )
         subnets = []
         for n in networks:
             ip = ipaddr.IPNetwork(n.address)
@@ -178,6 +180,47 @@ class AbstractNetwork(db.Model):
     @property
     def network(self):
         return ipaddr.IPNetwork(self.address)
+
+    @classmethod
+    def prepare_network_tree(cls, qs=None):
+        if not qs:
+            qs = cls.objects.all()
+        tree = []
+        all_networks = [
+            (net.max_ip, net.min_ip, net)
+            for net in qs.order_by("min_ip", "-max_ip")
+        ]
+
+        def get_subnetworks_qs(network):
+            for net in all_networks:
+                if net[0] == network.max_ip and net[1] == network.min_ip:
+                    continue
+                if net[0] <= network.max_ip and net[1] >= network.min_ip:
+                    yield net[2]
+
+        def recursive_tree(network):
+            subs = []
+            sub_qs = get_subnetworks_qs(network)
+            subnetworks = network.get_subnetworks(networks=sub_qs)
+            for sub in subnetworks:
+                subs.append({
+                    'network': sub,
+                    'subnetworks': recursive_tree(sub)
+                })
+            for i, net in enumerate(all_networks):
+                if net[0] == network.max_ip and net[1] == network.min_ip:
+                    all_networks.pop(i)
+                    break
+            return subs
+        while True:
+            try:
+                tree.append({
+                    'network': all_networks[0][2],
+                    'subnetworks': recursive_tree(all_networks[0][2])
+                })
+            except IndexError:
+                break
+        return tree
 
     def get_netmask(self):
         try:
