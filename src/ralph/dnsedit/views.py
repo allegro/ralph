@@ -41,10 +41,11 @@ def dhcp_synch(request):
 def dhcp_config(request):
     if not api.is_authenticated(request):
         return HttpResponseForbidden('API key required.')
+    dc_name = request.GET.get('dc', '')
     dc = None
-    if request.GET.get('dc'):
+    if dc_name:
         try:
-            dc = DataCenter.objects.get(name__iexact=request.GET['dc'])
+            dc = DataCenter.objects.get(name__iexact=dc_name)
         except DataCenter.DoesNotExist:
             pass
     server_address = remote_addr(request)
@@ -60,10 +61,11 @@ def dhcp_config(request):
 def dhcp_config_head(request):
     if not api.is_authenticated(request):
         return HttpResponseForbidden('API key required.')
+    dc_name = request.GET.get('dc', '')
     dc = None
-    if 'dc' in request.GET:
+    if dc_name:
         try:
-            dc = DataCenter.objects.get(name__iexact=request.GET['dc'])
+            dc = DataCenter.objects.get(name__iexact=dc_name)
         except DataCenter.DoesNotExist:
             pass
     server_address = remote_addr(request)

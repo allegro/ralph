@@ -51,9 +51,11 @@ def _generate_entries_configs(
                     continue
                 else:
                     if not name:
+                        # hostname could be empty, so skip it...
                         continue
         next_server = ''
         if mac in deployed_macs:
+            # server with ePXE image address
             if dc and dc.next_server:
                 next_server = dc.next_server
             else:
@@ -69,6 +71,7 @@ def _generate_entries_configs(
                         next_server = dc_next_server
                         break
         parsed.add(ip_address)
+        # 112233445566 -> 11:22:33:44:55:66
         mac = ':'.join('%s%s' % chunk for chunk in zip(mac[::2], mac[1::2]))
         yield name.strip(), ip_address, mac, next_server
 

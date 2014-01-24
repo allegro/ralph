@@ -154,7 +154,7 @@ def _get_cmd_options():
         '--mode',
         type='choice',
         choices=['entries', 'networks'],
-        help='Choose what part of config do you want upgrade.',
+        help='Choose what part of config you want to upgrade.',
     )
     opts_parser.add_option('-l', '--log-path', help='Path to log file. '
         '[Default: STDOUT]', default='STDOUT')
@@ -196,10 +196,11 @@ def _setup_logging(filename, verbose):
 
 if __name__ == "__main__":
     opts = _get_cmd_options()
-    if not all(opts[k] for k in 'api_url api_username api_key mode'.split()):
+    require = ['api_url', 'api_username', 'api_key', 'mode']
+    if not all(opts[k] for k in require):
         sys.stderr.write(
-            'error: --api-url, --api-username, --mode and --api-key options '
-            'are required.\n',
+            'ERROR: %s '
+            'are required.\n' % ', '.join(['--%s' % opt for opt in require]),
         )
         sys.exit(2)
     lockfile = '/tmp/%s.lock' % os.path.split(sys.argv[0])[1]

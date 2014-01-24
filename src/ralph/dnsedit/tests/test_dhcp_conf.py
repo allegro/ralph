@@ -101,7 +101,7 @@ class DHCPConfTest(TestCase):
             'host sample1.dc1 { fixed-address 127.0.0.1; '
             'hardware ethernet DE:AD:BE:EF:CA:FE; }',
         )
-        # dhcp broadcast is disable
+        # dhcp broadcast is disabled
         self.network1.dhcp_broadcast = False
         self.network1.save()
         config = _sanitize_dhcp_config(
