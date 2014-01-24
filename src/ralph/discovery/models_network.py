@@ -8,11 +8,12 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import ipaddr
+
 from django.core.exceptions import ValidationError
 from django.db import models as db
 from django.db import IntegrityError
 from django.utils.translation import ugettext_lazy as _
-import ipaddr
 from lck.django.common.models import (
     TimeTrackable, Named, WithConcurrentGetOrCreate, SavePrioritized,
 )
@@ -39,7 +40,7 @@ class AbstractNetwork(db.Model):
         max_length=len("xxx.xxx.xxx.xxx/xx"), unique=True,
     )
     gateway = db.IPAddressField(
-        _("gateway address"), help_text=_("Presented as string."), blank=True,
+        _("gateway address"), help_text=_("Presented as string."), blank=False,
         null=True, default=None,
     )
     reserved = db.PositiveIntegerField(
@@ -93,11 +94,28 @@ class AbstractNetwork(db.Model):
             "to any device, because they are not unique."
         ),
     )
+    custom_dns_servers = db.ManyToManyField(
+        'dnsedit.DNSServer',
+        verbose_name=_('custom DNS servers'),
+        null=True,
+        blank=True,
+    )
+    dhcp_broadcast = db.BooleanField(
+        _("Broadcast in DHCP configuration"),
+        default=False,
+        db_index=True,
+    )
     dhcp_config = db.TextField(
-        _("DHCP configuration"), blank=True, default='',
+        _("DHCP additional configuration"),
+        blank=True,
+        default='',
     )
     last_scan = db.DateTimeField(
-        _("last scan"), null=True, blank=True, default=None,
+        _("last scan"),
+        null=True,
+        blank=True,
+        default=None,
+        editable=False,
     )
 
     class Meta:
@@ -193,6 +211,12 @@ class DataCenter(Named):
         blank=True,
         default='',
         help_text=_("The address for a TFTP server for DHCP."),
+    )
+    domain = db.CharField(
+        _('domain'),
+        max_length=255,
+        blank=True,
+        null=True,
     )
 
     class Meta:

@@ -6,14 +6,18 @@ from __future__ import unicode_literals
 
 import ipaddr
 
-from django import forms
 from bob.forms import AutocompleteWidget
-from powerdns.models import Record
+from django import forms
 from lck.django.common.models import MACAddressField
+from powerdns.models import Domain, Record
 
-from ralph.discovery.models import IPAddress
+from ralph.discovery.models import Ethernet, IPAddress
 from ralph.dnsedit.models import DHCPEntry
-from ralph.dnsedit.util import is_valid_hostname, get_domain, get_revdns_records
+from ralph.dnsedit.util import (
+    get_domain,
+    get_revdns_records,
+    is_valid_hostname,
+)
 
 
 def validate_domain_name(name):
@@ -74,7 +78,6 @@ class DNSRecordForm(forms.ModelForm):
         self.fields['name'].widget.choices = [(n, n) for n in self.hostnames]
         self.fields['content'].widget.choices = [(ip, ip) for ip in self.ips]
 
-
     def clean_name(self):
         name = self.cleaned_data['name']
         return validate_domain_name(name)
@@ -113,10 +116,23 @@ class DNSRecordForm(forms.ModelForm):
     def clean(self):
         type = self.cleaned_data.get('type', '')
         name = self.cleaned_data.get('name', '')
+        ptr = self.cleaned_data.get('ptr', False)
         if type != 'CNAME' and name not in self.hostnames:
             self._errors.setdefault('name', []).append(
                 "Invalid hostname for this device."
             )
+        if ptr:
+            content = self.cleaned_data.get('content', '')
+            domain_name = '%s.in-addr.arpa' % '.'.join(
+                list(reversed(content.split('.')))[1:],
+            )
+            if not Domain.objects.filter(name=domain_name).exists():
+                raise forms.ValidationError(
+                    'Domain %s for %s PTR record not found.' % (
+                        domain_name,
+                        name,
+                    ),
+                )
         return self.cleaned_data
 
 
@@ -132,6 +148,24 @@ class DNSFormSetBase(forms.models.BaseModelFormSet):
         kwargs['limit_types'] = self.limit_types
         kwargs['ips'] = self.ips
         return super(DNSFormSetBase, self)._construct_form(i, **kwargs)
+
+    def clean(self):
+        if any(self.errors):
+            return
+        a_records_count = 0
+        ptr_records_count = 0
+        for form in self.forms:
+            cleaned_data = getattr(form, 'cleaned_data')
+            if not cleaned_data:
+                continue
+            if cleaned_data.get('type') == 'A':
+                a_records_count += 1
+                if cleaned_data.get('ptr', False):
+                    ptr_records_count += 1
+        if a_records_count > 0 and ptr_records_count == 0:
+            raise forms.ValidationError(
+                "Minimum one PTR record is required.",
+            )
 
 
 DNSFormSet = forms.models.modelformset_factory(
@@ -183,17 +217,35 @@ class DHCPEntryForm(forms.ModelForm):
 
 
 class DHCPFormSetBase(forms.models.BaseModelFormSet):
-    def __init__(self, records, macs, ips, *args, **kwargs):
+    def __init__(self, records, macs, ips, device, *args, **kwargs):
         kwargs['queryset'] = records.all()
         self.records = list(records)
         self.macs = set(macs) - {r.mac for r in self.records}
         self.ips = set(ips) - {r.ip for r in self.records}
+        self.device = device
         super(DHCPFormSetBase, self).__init__(*args, **kwargs)
 
     def add_fields(self, form, index):
         form.fields['mac'].widget.choices = [(m, m) for m in self.macs]
         form.fields['ip'].widget.choices = [(ip, ip) for ip in self.ips]
         return super(DHCPFormSetBase, self).add_fields(form, index)
+
+    def clean(self):
+        if any(self.errors):
+            return
+        for form in self.forms:
+            cleaned_data = getattr(form, 'cleaned_data')
+            if not cleaned_data:
+                continue
+            mac_address = cleaned_data.get('mac')
+            if Ethernet.objects.exclude(
+                device=self.device,
+            ).filter(
+                mac=MACAddressField.normalize(mac_address),
+            ).exists():
+                raise forms.ValidationError(
+                    "%s is assigned to another device." % mac_address,
+                )
 
 
 DHCPFormSet = forms.models.modelformset_factory(
