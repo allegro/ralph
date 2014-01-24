@@ -208,3 +208,15 @@ def devices_history(start_date, end_date):
                 data['physical_cores'] = cost.cores
 
             yield data
+
+
+def get_device_by_name(device_name):
+    """Returns device information by device name"""
+    devices = Device.objects.filter(name=device_name)
+    if devices:
+        device = devices[0]
+        return {
+            'device_id': device.id,
+            'venture_id': device.venture.id if device.venture else None,
+        }
+    return {}

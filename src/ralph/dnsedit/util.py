@@ -248,3 +248,4 @@ def update_txt_records(device):
                 device.venture_role.full_name if device.venture_role else '')
         set_txt_record(record.domain, name, 'MODEL', get_model(device))
         set_txt_record(record.domain, name, 'LOCATION', get_location(device))
+

@@ -12,7 +12,10 @@ from django.shortcuts import get_object_or_404
 
 from ralph.discovery.models import DataCenter
 from ralph.dnsedit.models import DHCPServer
-from ralph.dnsedit.dhcp_conf import generate_dhcp_config
+from ralph.dnsedit.dhcp_conf import (
+    generate_dhcp_config,
+    generate_dhcp_config_head,
+)
 from ralph.ui.views.common import Base
 from ralph.util import api
 
@@ -38,17 +41,39 @@ def dhcp_synch(request):
 def dhcp_config(request):
     if not api.is_authenticated(request):
         return HttpResponseForbidden('API key required.')
-    if request.GET.get('dc'):
-        dc = DataCenter.objects.get(name__iexact=request.GET['dc'])
-    else:
-        dc = None
-    with_networks = bool(request.GET.get('with_networks', False))
-    address = remote_addr(request)
+    dc_name = request.GET.get('dc', '')
+    dc = None
+    if dc_name:
+        try:
+            dc = DataCenter.objects.get(name__iexact=dc_name)
+        except DataCenter.DoesNotExist:
+            pass
+    server_address = remote_addr(request)
     return HttpResponse(
         generate_dhcp_config(
+            server_address=server_address,
             dc=dc,
-            server_address=address,
-            with_networks=with_networks,
         ),
         content_type="text/plain",
     )
+
+
+def dhcp_config_head(request):
+    if not api.is_authenticated(request):
+        return HttpResponseForbidden('API key required.')
+    dc_name = request.GET.get('dc', '')
+    dc = None
+    if dc_name:
+        try:
+            dc = DataCenter.objects.get(name__iexact=dc_name)
+        except DataCenter.DoesNotExist:
+            pass
+    server_address = remote_addr(request)
+    return HttpResponse(
+        generate_dhcp_config_head(
+            server_address=server_address,
+            dc=dc,
+        ),
+        content_type='text/plain',
+    )
+
