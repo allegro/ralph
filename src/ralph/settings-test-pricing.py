@@ -12,6 +12,5 @@ DATABASES = {
         'OPTIONS': {},
     }
 }
-if not 'ralph_assets' in INSTALLED_APPS:
-    INSTALLED_APPS.append('ralph_assets')
-INSTALLED_APPS.append('ralph_pricing')
+
+PLUGGABLE_APPS = ['assets', 'scrooge']
