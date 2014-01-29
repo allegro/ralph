@@ -18,9 +18,6 @@ from ralph.cmdb.integration.lib.jira import Jira
 from ralph.cmdb.integration.util import strip_timezone
 from ralph.cmdb import models as db
 
-# hook git plugins
-from ralph.cmdb.integration.puppet import PuppetGitImporter
-from ralph.cmdb.integration.ralph import AssetChangeImporter
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +37,7 @@ class ZabbixImporter(BaseImporter):
             ci = self.get_ci_by_name(h.get('host'))
             if not ci:
                 continue
-            ci.zabbix_id=h.get('hostid')
+            ci.zabbix_id = h.get('hostid')
             ci.save()
         logger.debug('Finshed')
 
@@ -61,7 +58,8 @@ class ZabbixImporter(BaseImporter):
         triggers = zabbix.get_all_triggers()
         for h in triggers:
             existing = db.CIChangeZabbixTrigger.objects.filter(
-                    trigger_id=h.get('triggerid')).all()
+                trigger_id=h.get('triggerid')
+            ).all()
             if not existing:
                 logger.debug('Integrate %s' % h.get('triggerid'))
                 c = db.CIChange()
@@ -71,7 +69,9 @@ class ZabbixImporter(BaseImporter):
                 ch = db.CIChangeZabbixTrigger()
             else:
                 ch = existing[0]
-                c = db.CIChange.objects.get(type=db.CI_CHANGE_TYPES.ZABBIX_TRIGGER.id,object_id=ch.id)
+                c = db.CIChange.objects.get(
+                    type=db.CI_CHANGE_TYPES.ZABBIX_TRIGGER.id, object_id=ch.id
+                )
             ch.ci = self.get_ci_by_name(h.get('host'))
             ch.trigger_id = h.get('triggerid')
             ch.host = h.get('host')
@@ -80,12 +80,15 @@ class ZabbixImporter(BaseImporter):
             ch.priority = h.get('priority')
             ch.description = h.get('description')
             ch.lastchange = datetime.datetime.fromtimestamp(
-                    float(h.get('lastchange')))
+                float(h.get('lastchange'))
+            )
             ch.comments = h.get('comments')
             ch.save()
             c.content_object = ch
             c.ci = ch.ci
-            c.time = datetime.datetime.fromtimestamp(float(h.get('lastchange')))
+            c.time = datetime.datetime.fromtimestamp(
+                float(h.get('lastchange'))
+            )
             c.message = ch.description
             c.save()
 
@@ -123,7 +126,10 @@ class JiraEventsImporter(BaseImporter):
         try:
             ci_obj = db.CI.objects.get(uid=issue.get('ci'))
         except:
-            logger.error('Issue : %s Can''t find ci: %s' % (issue.get('key'),issue.get('ci')))
+            logger.error(
+                'Issue : %s Can''t find ci: %s' %
+                (issue.get('key'), issue.get('ci'))
+            )
             ci_obj = None
         obj = classtype.objects.filter(jira_id=issue.get('key')).all()[:1]
         prob = obj[0] if obj else classtype()
@@ -148,7 +154,7 @@ class JiraEventsImporter(BaseImporter):
         type = settings.ISSUETRACKERS['default']['PROBLEMS']['ISSUETYPE']
         issues = self.fetch_all(type, cutoff_date)
         for issue in issues:
-            self.import_obj(issue,db.CIProblem)
+            self.import_obj(issue, db.CIProblem)
 
     def import_incident(self, cutoff_date=None):
         type = settings.ISSUETRACKERS['default']['INCIDENTS']['ISSUETYPE']
@@ -164,15 +170,18 @@ class JiraEventsImporter(BaseImporter):
 
     def fetch_all(self, type, cutoff_date=None):
         ci_fieldname = settings.ISSUETRACKERS['default']['CI_FIELD_NAME']
-        analysis = settings.ISSUETRACKERS['default']['IMPACT_ANALYSIS_FIELD_NAME']
-        problems_field = settings.ISSUETRACKERS['default']['PROBLEMS_FIELD_NAME']
+        analysis = settings.ISSUETRACKERS['default'][
+            'IMPACT_ANALYSIS_FIELD_NAME'
+        ]
+        problems_field = settings.ISSUETRACKERS['default'][
+            'PROBLEMS_FIELD_NAME'
+        ]
         jql = ('type={}'.format(type))
         if cutoff_date is not None:
             jql += " AND status CHANGED AFTER '{}'".format(
                 cutoff_date.strftime('%Y/%m/%d %H:%m')
             )
         params = dict(jql=jql)
-        items_list = []
         offset = 0
         total = None
         while offset != total:
