@@ -6,7 +6,7 @@ from ralph.ui.views.reports import _report_services_data_provider
 
 class TestServices(TestCase):
     """Test for services reports."""
-    
+
     fixtures = ['services_rel']
 
     def setUp(self):

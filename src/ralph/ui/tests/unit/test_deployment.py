@@ -66,7 +66,12 @@ class BulkDeploymentTest(TestCase):
             _validate_network_name('wroom', 0)
         dc = DataCenter(name='dc')
         dc.save()
-        Network(name='wroom', address='127.0.0.1/24', data_center=dc).save()
+        Network(
+            name='wroom',
+            address='127.0.0.1/24',
+            data_center=dc,
+            gateway='127.0.0.254',
+        ).save()
         _validate_network_name('wroom', 0)
 
     def test_validate_venture_and_role(self):
@@ -183,7 +188,8 @@ class BulkDeploymentTest(TestCase):
         net = Network(
             name='wroom',
             address='127.0.0.1/24',
-            data_center=dc
+            data_center=dc,
+            gateway='127.0.0.254',
         )
         net.save()
         _validate_ip_address('127.0.0.1', net, [], 0)
