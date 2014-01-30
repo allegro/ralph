@@ -197,6 +197,7 @@ class AddOrUpdateCITest(TestCase):
             name='TestNetwork',
             address='192.168.56.1',
             data_center=dc,
+            gateway='192.168.56.254',
         )
 
         # create Device and CI
@@ -267,6 +268,7 @@ class AutoCIRemoveTest(TestCase):
             name='TestNetwork',
             address='192.168.56.1',
             data_center=dc,
+            gateway='192.168.56.254',
         )
 
         # create Device and CI

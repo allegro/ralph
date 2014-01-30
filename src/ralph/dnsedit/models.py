@@ -35,10 +35,33 @@ class DHCPEntry(TimeTrackable):
         super(DHCPEntry, self).save(*args, **kwargs)
 
 
-class DHCPServer(db.Model):
+class DHCPServer(TimeTrackable):
     ip = db.IPAddressField(verbose_name=_("IP address"), unique=True)
     last_synchronized = db.DateTimeField(null=True)
     dhcp_config = db.TextField(blank=True, default='')
+
+    class Meta:
+        verbose_name = _('DHCP Server')
+        verbose_name_plural = _('DHCP Servers')
+
+
+class DNSServer(db.Model):
+    ip_address = db.IPAddressField(
+        verbose_name=_('IP address'),
+        unique=True,
+    )
+    is_default = db.BooleanField(
+        verbose_name=_('is default'),
+        db_index=True,
+        default=False,
+    )
+
+    class Meta:
+        verbose_name = _('DNS Server')
+        verbose_name_plural = _('DNS Servers')
+
+    def __unicode__(self):
+        return "DNS Server (%s)" % self.ip_address
 
 
 class DNSHistory(db.Model):

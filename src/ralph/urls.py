@@ -116,6 +116,7 @@ urlpatterns = patterns(
     url(r'^dns/', include('ralph.dnsedit.urls')),
     url(r'^dhcp-synch/', 'ralph.dnsedit.views.dhcp_synch'),
     url(r'^dhcp-config/', 'ralph.dnsedit.views.dhcp_config'),
+    url(r'^dhcp-config-head/', 'ralph.dnsedit.views.dhcp_config_head'),
     url(r'^cmdb/', include('ralph.cmdb.urls')),
     url(r'^api/', include(v09_api.urls)),
     url(r'^admin/', include(admin.site.urls)),

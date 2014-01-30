@@ -14,11 +14,12 @@ from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 import ipaddr
 from lck.django.common.admin import (
-    ModelAdmin, ForeignKeyAutocompleteTabularInline
+    ForeignKeyAutocompleteTabularInline,
+    ModelAdmin,
 )
 from django.core.exceptions import ValidationError
 from django.contrib import messages
-
+from powerdns.models import Domain
 
 from ralph.discovery import models as m
 from ralph.business.admin import RolePropertyValueInline
@@ -26,6 +27,7 @@ from ralph.business.admin import RolePropertyValueInline
 
 SAVE_PRIORITY = 200
 HOSTS_NAMING_TEMPLATE_REGEX = re.compile(r'<[0-9]+,[0-9]+>.*\.[a-zA-Z0-9]+')
+
 
 def copy_network(modeladmin, request, queryset):
     for net in queryset:
@@ -82,11 +84,13 @@ class NetworkAdmin(ModelAdmin):
     terms.short_description = _("network terminators")
     list_display = ('name', 'vlan', 'address', 'gateway', terms,
                     'data_center', 'kind', 'queue')
-    list_filter = ('data_center', 'terminators', 'queue', 'kind')
+    list_filter = (
+        'data_center', 'terminators', 'queue', 'kind', 'dhcp_broadcast',
+    )
     list_per_page = 250
     radio_fields = {'data_center': admin.HORIZONTAL, 'kind': admin.HORIZONTAL}
     search_fields = ('name', 'address', 'vlan')
-    filter_horizontal = ('terminators', 'racks')
+    filter_horizontal = ('terminators', 'racks', 'custom_dns_servers')
     save_on_top = True
     form = NetworkAdminForm
     actions = [copy_network]
@@ -128,7 +132,7 @@ class DataCenterAdminForm(forms.ModelForm):
 
 
 class DataCenterAdmin(ModelAdmin):
-    list_display = ('name', 'hosts_naming_template')
+    list_display = ('name', 'hosts_naming_template', 'domain')
     search_fields = ('name',)
     form = DataCenterAdminForm
 
