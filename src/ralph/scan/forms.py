@@ -350,6 +350,13 @@ class DiffForm(forms.Form):
                 default_value = csv_default
             else:
                 default_value = default
+            default_in_choices = False
+            for plugin_name, value in choices:
+                if default_value in plugin_name:
+                    default_in_choices = True
+                    break
+            if not default_in_choices:
+                default_value = 'database'
             field = forms.ChoiceField(
                 label=field_name.replace('_', ' ').title(),
                 choices=choices,

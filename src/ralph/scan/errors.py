@@ -23,7 +23,7 @@ class NoQueueError(Error):
 
 
 class NotConfiguredError(Error):
-    """Somethings not configured"""
+    """Somethings not configured."""
 
 
 class NoMatchError(Error):
@@ -43,9 +43,21 @@ class SSHConsoleError(Error):
 
 
 class TreeError(Error):
-    """xml tree error"""
+    """XML tree error."""
 
 
 class DeviceError(Error):
-    """somethings wrong with device"""
+    """Somethings wrong with device."""
+
+
+class ConsoleError(Error):
+    """Unexpected system prompt error."""
+
+
+class IncompatibleAnswerError(Error):
+    pass
+
+
+class UncompleteAnswerError(Error):
+    pass
 

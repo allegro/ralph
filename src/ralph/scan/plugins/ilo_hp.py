@@ -9,6 +9,7 @@ from django.conf import settings
 
 from ralph.discovery import hp_ilo
 from ralph.discovery.models import DeviceType, ComponentType
+from ralph.scan.errors import NoMatchError
 from ralph.scan.plugins import get_base_result_template
 
 
@@ -82,6 +83,8 @@ def _ilo_hp(ip_address, user, password):
 
 
 def scan_address(ip_address, **kwargs):
+    if kwargs.get('http_family', '') not in ('Unspecified', 'RomPager', 'HP'):
+        raise NoMatchError('It is not HP.')
     user = SETTINGS.get('user')
     password = SETTINGS.get('password')
     messages = []

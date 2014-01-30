@@ -568,6 +568,8 @@ def set_device_data(device, data):
                 share['address'] = IPAddress.objects.get(
                     address=share['address'],
                 )
+            elif 'address' in share:
+                del share['address']
         _update_component_data(
             device,
             data['disk_shares'],
@@ -653,7 +655,11 @@ def device_from_data(data):
     sn = data.get('serial_number')
     ethernets = [('', mac, None) for mac in data.get('mac_addresses', [])]
     model_name = data.get('model_name')
-    model_type = DeviceType.from_name(data.get('type', 'unknown').lower())
+    model_type = DeviceType.from_name(
+        '_'.join(
+            data.get('type', 'unknown',).split(),
+        ).lower(),
+    )
     device = Device.create(
         sn=sn,
         ethernets=ethernets,

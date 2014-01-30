@@ -136,15 +136,12 @@ class Command(BaseCommand):
                         scan_network(network, plugins)
         else:
             try:
-                addresses = [unicode(ipaddr.IPAddress(ip)) for ip in args]
+                ip_addresses = [unicode(ipaddr.IPAddress(ip)) for ip in args]
             except ValueError as e:
                 raise SystemExit(e)
             else:
                 last_message = 0
-                for address in addresses:
-                    ip_address, created = IPAddress.concurrent_get_or_create(
-                        address=address,
-                    )
+                for ip_address in ip_addresses:
                     job = scan_address(ip_address, plugins)
                     while not job.is_finished:
                         job.refresh()
