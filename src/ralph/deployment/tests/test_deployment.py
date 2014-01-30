@@ -138,21 +138,24 @@ class DeploymentUtilTest(TestCase):
             name='net1',
             address='127.0.1.0/24',
             data_center=self.dc_temp1,
-            reserved=1
+            reserved=1,
+            gateway='127.0.0.254',
         )
         net1.terminators.add(terminator)
         net1.save()
         net2 = Network.objects.create(
             name='net2',
             address='127.0.0.0/24',
-            data_center=self.dc_temp1
+            data_center=self.dc_temp1,
+            gateway='127.0.0.254',
         )
         net2.terminators.add(terminator)
         net2.save()
         net3 = Network.objects.create(
             name='net3',
             address='192.168.0.1/28',
-            data_center=self.dc_temp1
+            data_center=self.dc_temp1,
+            gateway='127.0.0.254',
         )
         net3.terminators.add(terminator)
         net3.reserved = 1
