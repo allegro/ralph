@@ -1,0 +1,26 @@
+{% extends "ui/network_sidebar.html" %}
+{% load url from future %}
+{% load icons %}
+{% load formats %}
+
+{% block content %}
+
+<div class="row-fluid">
+<div class="span6">
+<table class="table table-striped table-bordered details-info-owners">
+    <tbody>
+        {% for segment in ip_usage %}
+        <tr class="{% if segment.2 %}
+            {% if segment.2 == 1 %}error{% else %}warning{% endif %}
+        {% else %}success{% endif %}">
+            <td>{{ segment.0 }} - {{ segment.1 }}</td>
+            <td>{% if segment.2 %}
+            {% if segment.2 == 1 %}addresses ({{ segment.3 }}){% else %}{{ segment.2 }}{% endif %}
+        {% else %}free ({{ segment.3 }}) next free network: {{ segment.0 }}/{{ segment.3|max_netmask }}{% endif %}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+</div>
+{% endblock content %}
