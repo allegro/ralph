@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 
 from django.test import TestCase
 from django.conf import settings
-from mock import Mock, patch, MagicMock
+from mock import patch, MagicMock
 
 settings.SCAN_PLUGINS.update({
     'ralph.scan.plugins.ssh_cisco_catalyst': {
@@ -90,7 +90,10 @@ class TestCiscoCatalyst(TestCase):
                 ],
             },
         }
-        ret = ssh_cisco_catalyst.scan_address(ip)
+        ret = ssh_cisco_catalyst.scan_address(
+            ip,
+            http_family='Cisco',
+        )
         correct_ret['date'] = ret['date']  # assuming datetime is working.
         self.assertEqual(ret, correct_ret)
         network_mock.assertCalledWith(ip)
