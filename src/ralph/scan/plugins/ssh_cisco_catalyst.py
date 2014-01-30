@@ -47,7 +47,7 @@ class CiscoSSHClient(paramiko.SSHClient):
         self._cisco_chan = self._transport.open_session()
         self._cisco_chan.invoke_shell()
         self._cisco_chan.sendall('\r\n')
-        self._asa_chan.settimeout(15.0)
+        self._cisco_chan.settimeout(15.0)
         time.sleep(4)
         try:
             chunk = self._cisco_chan.recv(1024)
