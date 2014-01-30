@@ -11,6 +11,7 @@ from __future__ import unicode_literals
 from django.core.exceptions import ValidationError
 from django.db import models as db
 from django.db import IntegrityError
+from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 import ipaddr
 from lck.django.common.models import (
@@ -138,24 +139,21 @@ class AbstractNetwork(db.Model):
                 max_ip__lte=self.max_ip,
             ).exclude(
                 id=self.id,
-            )
-        subnets = []
-        for n in networks:
-            ip = ipaddr.IPNetwork(n.address)
-            if ip in ipaddr.IPNetwork(self.address):
-                subnets.append(n)
-        subnets = sorted(subnets, key=lambda net: net.get_netmask())
+            ).order_by('-min_ip', 'max_ip')
+        subnets = sorted(list(networks), key=lambda net: net.get_netmask())
+        new_subnets = list(subnets)
         for net in range(len(subnets)):
             try:
                 netw = subnets[net]
                 net_address = ipaddr.IPNetwork(netw.address)
-                for i in range(len(subnets))[net + 1:]:
+                for i in range(len(subnets)):
                     sub_addr = ipaddr.IPNetwork(subnets[i].address)
-                    if sub_addr in net_address:
-                        subnets.pop(i)
+                    if sub_addr != net_address and sub_addr in net_address:
+                        new_subnets.remove(subnets[i])
             except IndexError:
-                break
-        return subnets
+                continue
+        new_subnets = sorted(new_subnets, key=lambda net: net.min_ip)
+        return new_subnets
 
     def get_next_free_subnet(self):
         pass
@@ -222,6 +220,81 @@ class AbstractNetwork(db.Model):
                 break
         return tree
 
+    def get_total_ips(self):
+        return self.max_ip - self.min_ip
+
+    def get_subaddresses(self):
+        subnetworks = self.get_subnetworks()
+        addresses = list(IPAddress.objects.filter(
+            number__gte=self.min_ip,
+            number__lte=self.max_ip,
+        ).order_by("number"))
+        new_addresses = list(addresses)
+        for addr in addresses:
+            for subnet in subnetworks:
+                if addr in subnet and addr in new_addresses:
+                    new_addresses.remove(addr)
+        return new_addresses
+
+    def get_free_ips(self):
+        subnetworks = self.get_subnetworks()
+        total_ips = self.get_total_ips()
+        for subnet in subnetworks:
+            total_ips -= subnet.get_total_ips()
+        addresses = self.get_subaddresses()
+        total_ips -= len(addresses)
+        total_ips -= self.reserved_top_margin + self.reserved
+        return total_ips
+
+    def get_ip_usage_range(self):
+        contained = []
+        contained.extend(self.get_subnetworks())
+        contained.extend(self.get_subaddresses())
+
+        def sorting_key(obj):
+            if isinstance(obj, Network):
+                return obj.min_ip
+            elif isinstance(obj, IPAddress):
+                return obj.number
+            else:
+                raise TypeError("Type not supported")
+
+        return sorted(contained, key=sorting_key)
+
+    def get_ip_usage_aggegated(self):
+        address_range = self.get_ip_usage_range()
+        preparsed = []
+        ip_range = []
+        for addr in address_range:
+            if isinstance(addr, IPAddress):
+                if ip_range and not addr.number - 1 in ip_range:
+                    preparsed.append((ip_range[0], ip_range[-1], 1))
+                    ip_range = []
+                ip_range.append(addr.number)
+            else:
+                if ip_range:
+                    preparsed.append((ip_range[0], ip_range[-1], 1))
+                    ip_range = []
+                preparsed.append((addr.min_ip, addr.max_ip, addr))
+        f = lambda a: (
+            str(ipaddr.IPAddress(a[0])),
+            str(ipaddr.IPAddress(a[1])),
+            a[2],
+            a[1] - a[0] + 1,
+        )
+        min_ip = self.min_ip
+        parsed = []
+        for i, par in enumerate(preparsed):
+            if par[0] != min_ip:
+                parsed.append(f((min_ip, par[0] - 1, 0)))
+            parsed.append(f(par))
+            min_ip = par[1] + 1
+        if preparsed and preparsed[-1][1] < self.max_ip:
+            parsed.append(f((preparsed[-1][1] + 1, self.max_ip, 0)))
+        if not preparsed:
+            parsed.append(f((self.min_ip, self.max_ip, 0)))
+        return parsed
+
     def get_netmask(self):
         try:
             mask = self.address.split("/")[1]
@@ -247,6 +320,10 @@ class Network(Named, AbstractNetwork, TimeTrackable,
 
     def __unicode__(self):
         return "{} ({})".format(self.name, self.address)
+
+    def get_absolute_url(self):
+        args = [self.name, 'info']
+        return reverse("networks", args=args)
 
 
 class NetworkTerminator(Named):

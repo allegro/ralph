@@ -16,28 +16,29 @@ from django.shortcuts import get_object_or_404
 from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.utils import timezone
-
+from django.core.urlresolvers import reverse
+from django.views.generic import (
+    UpdateView,
+    TemplateView,
+)
 
 from ralph.account.models import Perm
-from ralph.discovery.models import ReadOnlyDevice, Network, IPAddress
-from ralph.ui.forms import NetworksFilterForm
-from ralph.ui.forms.network import NetworkForm
+from ralph.discovery.models import Network, IPAddress
+from ralph.ui.forms.network import NetworkForm, NetworksFilterForm
 from ralph.ui.views.common import (
-    Addresses,
     Asset,
     BaseMixin,
     Components,
     Costs,
-    Info,
     History,
     Prices,
     Software,
     Scan,
 )
-from ralph.ui.views.devices import BaseDeviceList
 from ralph.ui.views.reports import Reports, ReportDeviceList
 from ralph.util import presentation
 from ralph.scan import autoscan
+from ralph.deployment.util import get_first_free_ip
 
 
 def network_tree_menu(networks, details, show_ip=False, status=''):
@@ -71,6 +72,8 @@ class SidebarNetworks(object):
         self.status = ''
 
     def set_network(self):
+        if self.network:
+            return self.network
         network_symbol = self.kwargs.get('network')
         if network_symbol == '-':
             self.network = ''
@@ -79,25 +82,38 @@ class SidebarNetworks(object):
                                              name__iexact=network_symbol)
         else:
             self.network = None
+        return self.network
 
     def get_context_data(self, **kwargs):
         ret = super(SidebarNetworks, self).get_context_data(**kwargs)
-        profile = self.request.user.get_profile()
-        has_perm = profile.has_perm
         self.set_network()
-        networks = Network.objects.all()
+        networks = Network.objects.all().select_related("kind__icon")
         contains = self.request.GET.get('contains')
         if contains:
-            networks = networks.filter(
+            networks_filtered = Network.objects.filter(
                 Q(name__contains=contains) | Q(address__contains=contains)
             )
+            minimax = [(n.min_ip, n.max_ip) for n in networks_filtered]
+            ids = []
+            for mini, maxi in minimax:
+                ids.extend(
+                    map(
+                        lambda net: net['id'],
+                        Network.objects.filter(
+                            min_ip__gte=mini,
+                            max_ip__lte=maxi,
+                        ).values('id')
+                    )
+                )
+            networks = networks.filter(id__in=ids)
+        network_kind = self.request.GET.get('kind')
+        if network_kind:
+            networks = networks.filter(
+                kind__id=int(network_kind),
+            )
+        networks = networks.order_by('-min_ip', 'max_ip')
         self.networks = Network.prepare_network_tree(qs=networks)
-        sidebar_items = [
-            MenuItem(fugue_icon='fugue-prohibition',
-                     label="None", name='',
-                     view_name='networks',
-                     view_args=['-', ret['details'], self.status]),
-        ]
+        sidebar_items = []
         sidebar_items.extend(
             network_tree_menu(
                 self.networks,
@@ -106,11 +122,6 @@ class SidebarNetworks(object):
                 status=self.status,
             ),
         )
-        if has_perm(Perm.edit_device_info_generic) and not self.object:
-            ret['tab_items'].extend([
-                MenuItem('Autoscan', fugue_icon='fugue-radar',
-                         href=self.tab_href('autoscan', 'new')),
-            ])
 
         ret.update({
             'sidebar_items': sidebar_items,
@@ -126,96 +137,108 @@ class SidebarNetworks(object):
         return ret
 
 
-class Networks(SidebarNetworks, BaseMixin):
+class NetworksMixin(SidebarNetworks, BaseMixin):
+    def tab_href(self, name, obj=''):
+        args = [self.kwargs.get('network'), name]
+        return '%s?%s' % (
+            reverse("networks", args=args),
+            self.request.GET.urlencode(),
+        )
+
+    def get_tab_items(self):
+        return []
+
     def get_context_data(self, **kwargs):
-        ret = super(BaseMixin, self).get_context_data(**kwargs)
+        ret = super(NetworksMixin, self).get_context_data(**kwargs)
         tab_menu = [
             MenuItem('Info', fugue_icon='fugue-wooden-box',
                      href=self.tab_href('info')),
+            MenuItem('Addresses', fugue_icon='fugue-network-ip',
+                     href=self.tab_href('addresses')),
         ]
         show_tabs = [
             'info',
+            'addresses',
         ]
         context = {
             'show_tabs': show_tabs,
             'tab_items': tab_menu,
         }
+        context['network'] = self.set_network()
         ret.update(context)
         return ret
 
 
-class NetworksDeviceList(SidebarNetworks, BaseMixin, BaseDeviceList):
+class NetworksDeviceList(NetworksMixin, TemplateView):
+
+    template_name = "ui/network_list.html"
 
     def user_allowed(self):
         has_perm = self.request.user.get_profile().has_perm
         return has_perm(Perm.read_network_structure)
 
-    def get_queryset(self):
-        self.set_network()
-        if self.network is None:
-            return ReadOnlyDevice.objects.none()
-        if self.network == '':
-            return ReadOnlyDevice.objects.filter(
-                ipaddress=None
-            ).order_by(
-                'dc', 'rack', 'model__type', 'position'
-            )
-        addresses = IPAddress.objects.filter(
-                number__gte=self.network.min_ip,
-                number__lte=self.network.max_ip,
-            )
-        queryset = ReadOnlyDevice.objects.filter(
-                ipaddress__in=addresses
-            ).order_by(
-                'dc', 'rack', 'model__type', 'position'
-            )
-        return super(NetworksDeviceList, self).get_queryset(queryset)
+
+class NetworksInfo(NetworksMixin, UpdateView):
+    model = Network
+    slug_field = 'name'
+    slug_url_kwarg = 'network'
+    template_name = "ui/network_info.html"
+    form_class = NetworkForm
+
+    def get_property_form(self):
+        return None
 
     def get_context_data(self, **kwargs):
-        ret = super(NetworksDeviceList, self).get_context_data(**kwargs)
-        ret.update({
-            'subsection': self.network.name if self.network else self.network,
-        })
+        ret = super(NetworksInfo, self).get_context_data(**kwargs)
+        next_free_ip = get_first_free_ip(self.network.name)
+        ret['next_free_ip'] = next_free_ip
+        ret['editable'] = True
+        return ret
+
+    def get_object(self):
+        self.set_network()
+        return self.network
+
+
+class NetworksComponents(NetworksMixin, Components):
+    pass
+
+
+class NetworksSoftware(NetworksMixin, Software):
+    pass
+
+
+class NetworksPrices(NetworksMixin, Prices):
+    pass
+
+
+class NetworksAddresses(NetworksMixin, TemplateView):
+    template_name = "ui/network_addresses.html"
+
+    def get_context_data(self, **kwargs):
+        ret = super(NetworksAddresses, self).get_context_data(**kwargs)
+        aggr = self.network.get_ip_usage_aggegated()
+        ret['ip_usage'] = aggr
         return ret
 
 
-class NetworksInfo(Networks, Info):
+class NetworksCosts(NetworksMixin, Costs):
     pass
 
 
-class NetworksComponents(Networks, Components):
+class NetworksHistory(NetworksMixin, History):
     pass
 
 
-class NetworksSoftware(Networks, Software):
+class NetworksAsset(NetworksMixin, Asset):
     pass
 
 
-class NetworksPrices(Networks, Prices):
+class NetworksReports(NetworksMixin, Reports):
     pass
 
 
-class NetworksAddresses(Networks, Addresses):
-    pass
-
-
-class NetworksCosts(Networks, Costs):
-    pass
-
-
-class NetworksHistory(Networks, History):
-    pass
-
-
-class NetworksAsset(Networks, Asset):
-    pass
-
-
-class NetworksReports(Networks, Reports):
-    pass
-
-
-class NetworksScan(Networks, Scan):
+class NetworksScan(NetworksMixin, Scan):
     pass
 
 
@@ -223,7 +246,7 @@ class ReportNetworksDeviceList(ReportDeviceList, NetworksDeviceList):
     pass
 
 
-class NetworksAutoscan(SidebarNetworks, BaseMixin, BaseDeviceList):
+class NetworksAutoscan(NetworksDeviceList):
     template_name = 'ui/address_list.html'
     section = 'networks'
 
