@@ -19,7 +19,6 @@ from lck.django.common.admin import (
 )
 from django.core.exceptions import ValidationError
 from django.contrib import messages
-from powerdns.models import Domain
 
 from ralph.discovery import models as m
 from ralph.business.admin import RolePropertyValueInline
@@ -76,6 +75,16 @@ class NetworkAdminForm(forms.ModelForm):
             )
             raise forms.ValidationError(msg)
         return address
+
+    def clean(self):
+        cleaned_data = super(NetworkAdminForm, self).clean()
+        if cleaned_data.get('dhcp_broadcast', False):
+            if not cleaned_data.get('gateway'):
+                raise forms.ValidationError(_(
+                    "To broadcast this network in DHCP config you must also "
+                    "complete the `Gateway` field.",
+                ))
+        return cleaned_data
 
 
 class NetworkAdmin(ModelAdmin):
