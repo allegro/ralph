@@ -32,6 +32,7 @@ def get_ventures():
             'profit_center': venture.profit_center.name if
             venture.profit_center else "",
             'show_in_ralph': venture.show_in_ralph,
+            'is_service': venture.is_service,
         }
 
 
