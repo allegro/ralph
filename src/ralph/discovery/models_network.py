@@ -156,7 +156,7 @@ class AbstractNetwork(db.Model):
                 min_ip__gte=self.min_ip,
                 max_ip__lte=self.max_ip,
             ).exclude(
-                id=self.id,
+                pk=self.id,
             ).order_by('-min_ip', 'max_ip')
         subnets = sorted(list(networks), key=lambda net: net.get_netmask())
         new_subnets = list(subnets)
