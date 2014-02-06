@@ -147,7 +147,7 @@ class AbstractNetwork(db.Model):
 
     def get_subnetworks(self, networks=None):
         """
-        This method gets list of L3 subnetworks which are this object contains.
+        Return list of all L3 subnetworks this network contains.
         Only first level of children networks are returned.
         """
         if not networks:
@@ -160,21 +160,14 @@ class AbstractNetwork(db.Model):
             ).order_by('-min_ip', 'max_ip')
         subnets = sorted(list(networks), key=lambda net: net.get_netmask())
         new_subnets = list(subnets)
-        for net in range(len(subnets)):
-            try:
-                netw = subnets[net]
-                net_address = ipaddr.IPNetwork(netw.address)
-                for i in range(len(subnets)):
-                    sub_addr = ipaddr.IPNetwork(subnets[i].address)
-                    if sub_addr != net_address and sub_addr in net_address:
-                        new_subnets.remove(subnets[i])
-            except IndexError:
-                continue
+        for net, netw in enumerate(subnets):
+            net_address = ipaddr.IPNetwork(netw.address)
+            for i, sub in enumerate(subnets):
+                sub_addr = ipaddr.IPNetwork(sub.address)
+                if sub_addr != net_address and sub_addr in net_address:
+                    new_subnets.remove(sub)
         new_subnets = sorted(new_subnets, key=lambda net: net.min_ip)
         return new_subnets
-
-    def get_next_free_subnet(self):
-        pass
 
     @classmethod
     def from_ip(cls, ip):
@@ -198,7 +191,10 @@ class AbstractNetwork(db.Model):
         return ipaddr.IPNetwork(self.address)
 
     @classmethod
-    def prepare_network_tree(cls, qs=None):
+    def get_network_tree(cls, qs=None):
+        """
+        Returns tree of networks based on L3 containment.
+        """
         if not qs:
             qs = cls.objects.all()
         tree = []
@@ -218,16 +214,18 @@ class AbstractNetwork(db.Model):
             subs = []
             sub_qs = get_subnetworks_qs(network)
             subnetworks = network.get_subnetworks(networks=sub_qs)
-            for sub in subnetworks:
-                subs.append({
+            subs = [
+                {
                     'network': sub,
                     'subnetworks': recursive_tree(sub)
-                })
+                } for sub in subnetworks
+            ]
             for i, net in enumerate(all_networks):
                 if net[0] == network.max_ip and net[1] == network.min_ip:
                     all_networks.pop(i)
                     break
             return subs
+
         while True:
             try:
                 tree.append({
@@ -235,10 +233,15 @@ class AbstractNetwork(db.Model):
                     'subnetworks': recursive_tree(all_networks[0][2])
                 })
             except IndexError:
+                # recursive tree uses pop, so at some point all_networks[0]
+                # will rise IndexError, therefore algorithm is finished
                 break
         return tree
 
     def get_total_ips(self):
+        """
+        Get total amount of addresses in this network.
+        """
         return self.max_ip - self.min_ip
 
     def get_subaddresses(self):
@@ -255,6 +258,9 @@ class AbstractNetwork(db.Model):
         return new_addresses
 
     def get_free_ips(self):
+        """
+        Get number of free addresses in network.
+        """
         subnetworks = self.get_subnetworks()
         total_ips = self.get_total_ips()
         for subnet in subnetworks:
@@ -265,6 +271,10 @@ class AbstractNetwork(db.Model):
         return total_ips
 
     def get_ip_usage_range(self):
+        """
+        Returns list of entities this network contains (addresses and subnets)
+        ordered by its address or address range.
+        """
         contained = []
         contained.extend(self.get_subnetworks())
         contained.extend(self.get_subaddresses())
@@ -280,36 +290,50 @@ class AbstractNetwork(db.Model):
         return sorted(contained, key=sorting_key)
 
     def get_ip_usage_aggegated(self):
+        """
+        Aggregates network usage range - combines neighboring addresses to
+        a single entitiy and appends blocks of free addressations.
+        """
         address_range = self.get_ip_usage_range()
-        preparsed = []
+        ranges_and_networks = []
         ip_range = []
         for addr in address_range:
             if isinstance(addr, IPAddress):
                 if ip_range and not addr.number - 1 in ip_range:
-                    preparsed.append((ip_range[0], ip_range[-1], 1))
+                    ranges_and_networks.append((ip_range[0], ip_range[-1], 1))
                     ip_range = []
                 ip_range.append(addr.number)
             else:
                 if ip_range:
-                    preparsed.append((ip_range[0], ip_range[-1], 1))
+                    ranges_and_networks.append((ip_range[0], ip_range[-1], 1))
                     ip_range = []
-                preparsed.append((addr.min_ip, addr.max_ip, addr))
-        f = lambda a: (
-            str(ipaddr.IPAddress(a[0])),
-            str(ipaddr.IPAddress(a[1])),
-            a[2],
-            a[1] - a[0] + 1,
-        )
+                ranges_and_networks.append((addr.min_ip, addr.max_ip, addr))
+
+        def f(a):
+            if a[2] == 0:
+                range_type = "free"
+            elif a[2] == 1:
+                range_type = "addr"
+            else:
+                range_type = a[2]
+            return {
+                'range_start': str(ipaddr.IPAddress(a[0])),
+                'range_end': str(ipaddr.IPAddress(a[1])),
+                'type': range_type,
+                'amount': a[1] - a[0] + 1,
+            }
+
         min_ip = self.min_ip
         parsed = []
-        for i, par in enumerate(preparsed):
-            if par[0] != min_ip:
-                parsed.append(f((min_ip, par[0] - 1, 0)))
-            parsed.append(f(par))
-            min_ip = par[1] + 1
-        if preparsed and preparsed[-1][1] < self.max_ip:
-            parsed.append(f((preparsed[-1][1] + 1, self.max_ip, 0)))
-        if not preparsed:
+        for i, range_or_net in enumerate(ranges_and_networks):
+            if range_or_net[0] != min_ip:
+                parsed.append(f((min_ip, range_or_net[0] - 1, 0)))
+            parsed.append(f(range_or_net))
+            min_ip = range_or_net[1] + 1
+        if ranges_and_networks and ranges_and_networks[-1][1] < self.max_ip:
+            parsed.append(f((ranges_and_networks[-1][1] + 1, self.max_ip, 0)))
+        if not ranges_and_networks:
+            # this network is empty, lets append big, free block
             parsed.append(f((self.min_ip, self.max_ip, 0)))
         return parsed
 

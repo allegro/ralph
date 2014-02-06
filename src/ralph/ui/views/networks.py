@@ -21,6 +21,7 @@ from django.views.generic import (
     UpdateView,
     TemplateView,
 )
+from lck.cache import memoize
 
 from ralph.account.models import Perm
 from ralph.discovery.models import Network, IPAddress
@@ -41,9 +42,17 @@ from ralph.scan import autoscan
 from ralph.deployment.util import get_first_free_ip
 
 
-def network_tree_menu(networks, details, show_ip=False, status=''):
+@memoize
+def network_tree_menu(networks, details, get_params, show_ip=False, status=''):
     icon = presentation.get_network_icon
     items = []
+
+    def get_href(view_args):
+        url = reverse("networks", args=view_args)
+        return '%s?%s' % (
+            url,
+            get_params,
+        )
     for n in networks:
         items.append(MenuItem(
             "{} ({})".format(
@@ -52,10 +61,10 @@ def network_tree_menu(networks, details, show_ip=False, status=''):
             fugue_icon=icon(n['network']),
             view_name='networks',
             indent='  ',
+            href=get_href(view_args=[n['network'].name, details, status]),
             name=n['network'].name,
-            view_args=[n['network'].name, details, status],
             subitems=network_tree_menu(
-                n['subnetworks'], details, show_ip, status,
+                n['subnetworks'], details, get_params, show_ip, status,
             ),
             collapsible=True,
             collapsed=not getattr(n['network'], 'expanded', False),
@@ -112,14 +121,14 @@ class SidebarNetworks(object):
                 kind__id=int(network_kind),
             )
         networks = networks.order_by('-min_ip', 'max_ip')
-        self.networks = Network.prepare_network_tree(qs=networks)
+        self.networks = Network.get_network_tree(qs=networks)
         sidebar_items = []
         sidebar_items.extend(
             network_tree_menu(
                 self.networks,
                 ret['details'],
-                show_ip=self.request.GET.get('show_ip'),
                 status=self.status,
+                get_params=self.request.GET.urlencode(),
             ),
         )
 
@@ -182,7 +191,7 @@ class NetworksInfo(NetworksMixin, UpdateView):
     model = Network
     slug_field = 'name'
     slug_url_kwarg = 'network'
-    template_name = "ui/network_info.html"
+    template_name = 'ui/network_info.html'
     form_class = NetworkForm
 
     def get_property_form(self):
@@ -217,8 +226,8 @@ class NetworksAddresses(NetworksMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         ret = super(NetworksAddresses, self).get_context_data(**kwargs)
-        aggr = self.network.get_ip_usage_aggegated()
-        ret['ip_usage'] = aggr
+        aggregated = self.network.get_ip_usage_aggegated()
+        ret['ip_usage'] = aggregated
         return ret
 
 

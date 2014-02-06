@@ -69,25 +69,51 @@ class ModelsNetworkTest(TestCase):
 
     def test_get_address_summary(self):
         ret = self.net3.get_total_ips()
-        self.assertEqual(ret, 32767)
+        self.assertEquals(ret, 32767)
         ret = self.net3.get_free_ips()
-        self.assertEqual(ret, 32500)
+        self.assertEquals(ret, 32500)
         ret = self.net3.get_ip_usage_range()
         correct_range = [self.ip1, self.ip3, self.net4]
-        self.assertEqual(ret, correct_range)
+        self.assertEquals(ret, correct_range)
 
     def test_get_ip_usage_aggegated(self):
         ret = self.net3.get_ip_usage_aggegated()
-        self.assertEqual(ret, [
-            ("192.168.128.0", "192.168.128.9", 0, 10),
-            ("192.168.128.10", "192.168.128.11", 1, 2),
-            ("192.168.128.12", "192.168.132.255", 0, 1268),
-            ("192.168.133.0", "192.168.133.255", self.net4, 256),
-            ("192.168.134.0", "192.168.255.255", 0, 31232),
-        ])
+        correct = [
+            {
+                'amount': 10,
+                'range_end': '192.168.128.9',
+                'range_start': '192.168.128.0',
+                'type': 'free',
+            },
+            {
+                'amount': 2,
+                'range_end': '192.168.128.11',
+                'range_start': '192.168.128.10',
+                'type': 'addr',
+            },
+            {
+                'amount': 1268,
+                'range_end': '192.168.132.255',
+                'range_start': '192.168.128.12',
+                'type': 'free',
+            },
+            {
+                'amount': 256,
+                'range_end': '192.168.133.255',
+                'range_start': '192.168.133.0',
+                'type': self.net4,
+            },
+            {
+                'amount': 31232,
+                'range_end': '192.168.255.255',
+                'range_start': '192.168.134.0',
+                'type': 'free',
+            },
+        ]
+        self.assertEquals(ret, correct)
 
-    def test_prepare_network_tree(self):
-        res = Network.prepare_network_tree()
+    def test_get_network_tree(self):
+        res = Network.get_network_tree()
         correct = [
             {
                 'network': self.net1,
@@ -112,4 +138,4 @@ class ModelsNetworkTest(TestCase):
                 'subnetworks': [],
             }
         ]
-        self.assertEqual(res, correct)
+        self.assertEquals(res, correct)
