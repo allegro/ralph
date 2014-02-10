@@ -91,7 +91,10 @@ def check_tcp_port(ip, port, timeout=1):
     return result == 0
 
 
-def connect_ssh(ip, username, password=None, client=paramiko.SSHClient, key=None):
+def connect_ssh(
+    ip, username, password=None, client=paramiko.SSHClient,
+    key=None, timeout=15.0,
+):
     ssh = client()
     ssh.set_log_channel('critical_only')
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -101,7 +104,10 @@ def connect_ssh(ip, username, password=None, client=paramiko.SSHClient, key=None
     else:
         pkey = None
     try:
-        ssh.connect(ip, username=username, password=password, pkey=pkey)
+        ssh.connect(
+            ip, username=username, password=password, pkey=pkey,
+            timeout=timeout,
+        )
     except (paramiko.AuthenticationException, EOFError) as e:
         raise AuthError(str(e))
     return ssh

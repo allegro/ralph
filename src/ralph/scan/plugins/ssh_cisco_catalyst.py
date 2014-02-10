@@ -7,39 +7,36 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import paramiko
+import socket
 import time
 
 from django.conf import settings
 
-from ralph.util import network
-from ralph.discovery.models import DeviceType
 from ralph.discovery.cisco import cisco_component, cisco_inventory
+from ralph.discovery.models import DeviceType
+from ralph.scan.errors import (
+    AuthError,
+    ConnectionError,
+    ConsoleError,
+    NoMatchError,
+    NotConfiguredError,
+)
 from ralph.scan.plugins import get_base_result_template
-
-
-class Error(Exception):
-    pass
-
-
-class ConsoleError(Error):
-    pass
-
-
-class NotConfiguredError(Error):
-    pass
+from ralph.util import network
 
 
 SETTINGS = settings.SCAN_PLUGINS.get(__name__, {})
 SSH_USER, SSH_PASSWORD = SETTINGS['ssh_user'], SETTINGS['ssh_pass']
 
+
 if not SSH_USER or not SSH_PASSWORD:
     raise NotConfiguredError(
-        "ssh not configured in plugin {}".format(__name__),
+        "SSH not configured in plugin {}.".format(__name__),
     )
 
 
 class CiscoSSHClient(paramiko.SSHClient):
-    """SSHClient modified for Cisco's broken ssh console."""
+    """SSHClient modified for Cisco's broken SSH console."""
 
     def __init__(self, *args, **kwargs):
         super(CiscoSSHClient, self).__init__(*args, **kwargs)
@@ -50,13 +47,19 @@ class CiscoSSHClient(paramiko.SSHClient):
         self._cisco_chan = self._transport.open_session()
         self._cisco_chan.invoke_shell()
         self._cisco_chan.sendall('\r\n')
+        self._cisco_chan.settimeout(15.0)
         time.sleep(4)
-        chunk = self._cisco_chan.recv(1024)
-        if not chunk.endswith(('#', '>')):
-            raise ConsoleError('Expected system prompt, got %r.' % chunk)
+        try:
+            chunk = self._cisco_chan.recv(1024)
+        except socket.timeout:
+            raise AuthError('Authentication failed.')
+        else:
+            if not chunk.endswith(('#', '>')):
+                raise ConsoleError('Expected system prompt, got %r.' % chunk)
 
     def cisco_command(self, command):
-        # XXX Work around random characters appearing at the beginning of the command.
+        # XXX Work around random characters appearing at the beginning of the
+        # command.
         self._cisco_chan.sendall('\b')
         time.sleep(0.125)
         self._cisco_chan.sendall(command)
@@ -79,11 +82,18 @@ class CiscoSSHClient(paramiko.SSHClient):
 
 
 def _connect_ssh(ip):
-    return network.connect_ssh(ip, SSH_USER, SSH_PASSWORD, client=CiscoSSHClient)
+    if not network.check_tcp_port(ip, 22):
+        raise ConnectionError('Port 22 closed.')
+    return network.connect_ssh(
+        ip, SSH_USER, SSH_PASSWORD, client=CiscoSSHClient,
+    )
 
 
 def scan_address(ip_address, **kwargs):
-    status = 'success'
+    if 'nx-os' in kwargs.get('snmp_name', '').lower():
+        raise NoMatchError('Incompatible Nexus found.')
+    if kwargs.get('http_family') not in ('Unspecified', 'Cisco'):
+        raise NoMatchError('It is not Cisco.')
     ssh = _connect_ssh(ip_address)
     try:
         mac = '\n'.join(ssh.cisco_command(
@@ -92,39 +102,31 @@ def scan_address(ip_address, **kwargs):
         raw = '\n'.join(ssh.cisco_command("show inventory"))
     finally:
         ssh.close()
-
     mac = mac.strip()
     if mac.startswith("Base ethernet MAC Address") and ':' in mac:
         mac = mac.split(':', 1)[1].strip().replace(":", "")
-    else:
-        ethernets = None
     inventory = list(cisco_inventory(raw))
-    serials = [inv['sn'] for inv in inventory]
     dev_inv = inventory[0]
     model_name='Cisco Catalyst %s' % dev_inv['pid']
     sn = dev_inv['sn']
     model_type=DeviceType.switch
-    device = {
-        'hostname': network.hostname(ip_address),
-        'model_name': model_name,
-        'type': str(model_type),
-        'serial_number': sn,
-        'mac_adresses': [mac, ],
-        'management_ip_addresses': [ip_address, ],
-    }
     parts = inventory[1:]
-    device['parts'] = []
-    for p in parts:
-        part = {
-            'serial_number': p['sn'],
-            'name': p['name'],
-            'label': p['descr'],
-        }
-        device['parts'].append(part)
-    ret = {
-        'status': status,
-        'device': device,
-    }
-    tpl = get_base_result_template('ssh_cisco_catalyst')
-    tpl.update(ret)
-    return tpl
+    result = get_base_result_template('ssh_cisco_catalyst')
+    result.update({
+        'status': 'success',
+        'device': {
+            'hostname': network.hostname(ip_address),
+            'model_name': model_name,
+            'type': unicode(model_type),
+            'serial_number': sn,
+            'mac_adresses': [mac],
+            'management_ip_addresses': [ip_address],
+            'parts': [{
+                'serial_number': part['sn'],
+                'name': part['name'],
+                'label': part['descr'],
+            } for part in parts],
+        },
+    })
+    return result
+

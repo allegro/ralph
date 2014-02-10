@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 
 from django.test import TestCase
 from django.conf import settings
-from mock import Mock, patch, MagicMock
+from mock import patch, MagicMock
 
 settings.SCAN_PLUGINS.update({
     'ralph.scan.plugins.ssh_cisco_asa': {
@@ -98,11 +98,11 @@ class TestCiscoASA(TestCase):
                 }],
             },
         }
-        ret = ssh_cisco_asa.scan_address(ip)
+        ret = ssh_cisco_asa.scan_address(ip, snmp_name='Cisco Software:UCOS')
         correct_ret['date'] = ret['date']  # assuming datetime is working.
         self.assertEqual(ret, correct_ret)
         command_mock.assert_any_call(
             "show version | grep (^Hardware|Boot microcode|^Serial|address is)",
         )
-        command_mock.assert_any_call("show inventory")
-        self.assertEqual(command_mock.call_count, 2)
+        self.assertEqual(command_mock.call_count, 1)
+
