@@ -81,7 +81,7 @@ def _get_parent_device(data):
     encl_sn = unicode(data['INFRA2']['ENCL_SN']).strip()
     if not (rack_name and encl_name and encl_sn):
         raise IncompleteAnswerError(
-            'Received an uncomplete answer (required values: RACK, PN '
+            'Received an incomplete answer (required values: RACK, PN '
             'and ENCL_SN).',
         )
     if not encl_name.startswith('HP'):

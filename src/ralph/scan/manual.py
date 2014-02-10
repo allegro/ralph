@@ -49,7 +49,9 @@ def scan_address(ip_address, plugins, queue_name=None):
             else:
                 raise NoQueueError(
                     "The IP address {0} has no discovery queue. "
-                    "Check network settings.".format(ip_address),
+                    "Set the queue in the networks admin panel.".format(
+                        ip_address,
+                    ),
                 )
     queue = django_rq.get_queue(queue_name)
     job = queue.enqueue_call(
