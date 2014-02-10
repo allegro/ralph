@@ -11,6 +11,7 @@ import re
 from ralph.business.models import Venture, VentureExtraCost
 from ralph.discovery.models import Device, DeviceType, DiskShareMount
 
+from django.conf import settings
 from django.db import models as db
 
 DEVICE_REPR_RE = re.compile(r'^(?P<name>.*)[(](?P<id>\d+)[)]$')
@@ -86,8 +87,13 @@ def get_physical_cores():
 
 def get_virtual_usages():
     """Yields dicts reporting the number of virtual cores, memory and disk."""
-
-    for device in Device.objects.filter(model__type=DeviceType.virtual_server):
+    devices = Device.objects.filter(
+        model__type=DeviceType.virtual_server,
+        parent__venture=Venture.objects.get(
+            name=settings.VENTURE_FOR_VIRTUAL_USAGES_API
+        ),
+    )
+    for device in devices:
         cores = device.get_core_count()
         memory = device.memory_set.aggregate(db.Sum('size'))['size__sum']
         disk = device.storage_set.aggregate(db.Sum('size'))['size__sum']

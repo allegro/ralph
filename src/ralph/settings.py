@@ -224,6 +224,7 @@ SERVER_EMAIL = DEFAULT_FROM_EMAIL
 TIME_ZONE = 'Europe/Warsaw'
 LANGUAGE_CODE = 'en-us'
 CURRENCY = 'PLN'
+VENTURE_FOR_VIRTUAL_USAGES_API = 'Systemy wirtualne'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
