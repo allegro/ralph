@@ -152,7 +152,7 @@ def diff_results(data, ignored_fields=set(['device'])):
     diffs = {}
     for component, results in data.iteritems():
         if component == 'subdevices':
-            continue
+            continue  # skipped because this is not component...
         db_results_key = _find_database_key(results)
         diff_result = {
             'is_equal': False,

@@ -47,7 +47,7 @@ class TreeError(Error):
 
 
 class DeviceError(Error):
-    """Somethings wrong with device."""
+    """Somethings is wrong with the device."""
 
 
 class ConsoleError(Error):
@@ -58,6 +58,6 @@ class IncompatibleAnswerError(Error):
     pass
 
 
-class UncompleteAnswerError(Error):
+class IncompleteAnswerError(Error):
     pass
 

@@ -189,7 +189,7 @@ def scan_address(ip_address, **kwargs):
     if http_family not in (
         'Sun', 'Thomas-Krenn', 'Oracle-ILOM-Web-Server', 'IBM System X',
     ):
-        raise NoMatchError('It is not compatible device fot this plugin.')
+        raise NoMatchError('It is not compatible device for this plugin.')
     user = SETTINGS.get('user')
     password = SETTINGS.get('password')
     messages = []
