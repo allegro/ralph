@@ -107,7 +107,7 @@ class Venture(Named, PrebootMixin, HasSymbolBasedPath, TimeTrackable):
         default=False,
     )
     is_service = db.BooleanField(
-        verbose_name=_("is a service"),
+        verbose_name=_("Venture is a Service"),
         default=False,
     )
     is_infrastructure = db.BooleanField(
