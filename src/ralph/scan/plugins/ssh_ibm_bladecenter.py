@@ -21,7 +21,9 @@ from ralph.discovery.models import (
     SERIAL_BLACKLIST,
 )
 from ralph.scan.plugins import get_base_result_template
-from ralph.scan.errors import Error, TreeError, DeviceError, ConsoleError
+from ralph.scan.errors import (
+    TreeError, DeviceError, ConsoleError, NoMatchError, ConnectionError,
+)
 
 
 class Counts(object):
@@ -369,8 +371,8 @@ def _prepare_devices(ssh, ip, dev_path, dev_id, components, parent=None,
     pairs = parse.pairs(lines=lines)
     try:
         dev = add_func(ip, pairs, parent, raw, counts, dev_id)
-    except DeviceError as e:
-        return None
+    except DeviceError:
+        return
     for dev_info, components in components.iteritems():
         if counts is None:
             counts = Counts()
@@ -403,6 +405,14 @@ def _blade_scan(ip_address):
 
 
 def scan_address(ip_address, **kwargs):
+    if 'nx-os' in kwargs.get('snmp_name', '').lower():
+        raise NoMatchError('Incompatible Nexus found.')
+    if kwargs.get('http_family', '') not in ('IBM', 'Unspecified'):
+        raise NoMatchError('It is not IBM.')
+    if not kwargs.get('snmp_name', 'IBM').startswith('IBM'):
+        raise NoMatchError('It is not IBM.')
+    if not network.check_tcp_port(ip_address, 22):
+        raise ConnectionError('Port 22 closed on an IBM BladeServer.')
     messages = []
     result = get_base_result_template('ssh_ibm_bladecenter', messages)
     device = _blade_scan(ip_address)
@@ -411,3 +421,4 @@ def scan_address(ip_address, **kwargs):
     result['device'] = device
     result['status'] = 'success'
     return result
+

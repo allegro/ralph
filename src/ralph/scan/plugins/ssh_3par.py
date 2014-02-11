@@ -110,6 +110,10 @@ def _ssh_3par(ip_address, user, password):
 
 
 def scan_address(ip_address, **kwargs):
+    if kwargs.get('http_family', '') not in ('Unspecified',):
+        raise NoMatchError('It is not 3PAR.')
+    if not kwargs.get('snmp_name', '').startswith('3PAR'):
+        raise NoMatchError('It is not 3PAR.')
     user = SETTINGS.get('user')
     password = SETTINGS.get('password')
     messages = []
