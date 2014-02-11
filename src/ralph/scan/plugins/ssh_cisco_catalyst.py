@@ -90,13 +90,17 @@ def scan_address(ip_address, **kwargs):
             "show version | include Base ethernet MAC Address",
         ))
         raw = '\n'.join(ssh.cisco_command("show inventory"))
+        from IPython import embed; embed()
     finally:
         ssh.close()
 
-    mac = mac.strip()
-    if mac.startswith("Base ethernet MAC Address") and ':' in mac:
-        mac = mac.split(':', 1)[1].strip().replace(":", "")
-    else:
+    macs_raw = mac.strip().split("\r\n")
+    macs = []
+    for mac in macs_raw:
+        if mac.startswith("Base ethernet MAC Address") and ':' in mac:
+            mac = mac.split(':', 1)[1].strip().replace(":", "")
+            macs.append(mac)
+    if not macs:
         ethernets = None
     inventory = list(cisco_inventory(raw))
     serials = [inv['sn'] for inv in inventory]
@@ -109,7 +113,7 @@ def scan_address(ip_address, **kwargs):
         'model_name': model_name,
         'type': str(model_type),
         'serial_number': sn,
-        'mac_adresses': [mac, ],
+        'mac_adresses': macs,
         'management_ip_addresses': [ip_address, ],
     }
     parts = inventory[1:]
