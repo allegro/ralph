@@ -1483,10 +1483,7 @@ class Scan(BaseMixin, TemplateView):
         if not plugins:
             messages.error(self.request, "You have to select some plugins.")
             return self.get(*args, **kwargs)
-        address = self.kwargs.get('address')
-        ip_address, created = IPAddress.concurrent_get_or_create(
-            address=address,
-        )
+        ip_address = self.kwargs.get('address')
         try:
             job = scan_address(ip_address, plugins)
         except ScanError as e:
@@ -1534,10 +1531,9 @@ class ScanStatus(BaseMixin, TemplateView):
         address = self.kwargs.get('address')
         if not address:
             return
-        try:
-            self.ip_address = IPAddress.objects.get(address=address)
-        except IPAddress.DoesNotExist:
-            return
+        self.ip_address, created = IPAddress.concurrent_get_or_create(
+            address=address,
+        )
 
     def get_job_id_from_address(self):
         self.set_ip_address()
@@ -1610,7 +1606,12 @@ class ScanStatus(BaseMixin, TemplateView):
         else:
             plugins = []
             if self.job.args:
-                self.ip_address = self.job.args[0]
+                try:
+                    self.ip_address = IPAddress.objects.get(
+                        address=self.job.args[0],
+                    )
+                except IPAddress.DoesNotExist:
+                    self.set_ip_address()
                 if self.job.result is None:
                     plugins = self.job.args[1]
             else:

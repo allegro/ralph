@@ -30,64 +30,81 @@ from ralph.scan.models import ScanSummary
 
 
 logger = logging.getLogger("SCAN")
-SCAN_LOG_DIRECTORY = getattr(settings, 'SCAN_LOG_DIRECTORY', None)
 
 
-def scan_address(ip_address, plugins, network=None):
+def scan_address(ip_address, plugins, queue_name=None):
     """Queue scan on the specified address."""
 
-    if not network:
+    if not queue_name:
         try:
-            network = Network.from_ip(ip_address.address)
+            network = Network.from_ip(ip_address)
         except IndexError:
             raise NoQueueError(
                 "Address {0} doesn't belong to any configured "
-                "network.".format(ip_address.address),
+                "network.".format(ip_address),
             )
-    if not network.queue:
-        raise NoQueueError(
-            "The network {0} has no discovery queue.".format(network),
-        )
-    queue = django_rq.get_queue(network.queue.name)
+        else:
+            if network.queue:
+                queue_name = network.queue.name
+            else:
+                raise NoQueueError(
+                    "The IP address {0} has no discovery queue. "
+                    "Set the queue in the networks admin panel.".format(
+                        ip_address,
+                    ),
+                )
+    queue = django_rq.get_queue(queue_name)
     job = queue.enqueue_call(
         func=scan_address_job,
         args=(
             ip_address,
             plugins,
         ),
-        kwargs={
-            'snmp_community': ip_address.snmp_community,
-            'snmp_version': ip_address.snmp_version,
-            'http_family': ip_address.http_family,
-            'snmp_name': ip_address.snmp_name,
-        },
         timeout=300,
         result_ttl=86400,
     )
     return job
 
 
+def scan_ip_addresses_range(
+    min_ip_number, max_ip_number, plugins, queue_name=None,
+):
+    """Queue scan of a IP addresses (in numeric representation) range."""
+
+    for ip_address in IPAddress.objects.filter(
+        number__gte=min_ip_number,
+        number__lte=max_ip_number,
+        dead_ping_count__lte=settings.DEAD_PING_COUNT,
+        is_buried=False,
+    ).values_list('address', flat=True):
+        scan_address(ip_address, plugins, queue_name)
+
+
 def scan_network(network, plugins):
     """Queue scan of a entire network on the right worker."""
 
-    for address in network.network.iterhosts():
-        try:
-            # scan only exists and not dead IP addresses
-            ip_address = IPAddress.objects.get(
-                address=address,
-                dead_ping_count__lte=settings.DEAD_PING_COUNT,
-            )
-        except IPAddress.DoesNotExist:
-            continue
-        else:
-            scan_address(ip_address, plugins, network)
+    scan_ip_addresses_range(
+        network.min_ip,
+        network.max_ip,
+        plugins,
+        queue_name=network.queue.name if network.queue else '',
+    )
 
 
 def scan_data_center(data_center, plugins):
     """Queue scan of all scannable networks in the data center."""
 
-    for network in data_center.network_set.exclude(queue=None):
-        scan_network(network, plugins)
+    for min_ip_num, max_ip_num, queue_name in data_center.network_set.exclude(
+        queue=None,
+    ).values_list(
+        'min_ip', 'max_ip', 'queue__name',
+    ):
+        scan_ip_addresses_range(
+            min_ip_num,
+            max_ip_num,
+            plugins,
+            queue_name=queue_name if queue_name else '',
+        )
 
 
 def _run_plugins(address, plugins, job, **kwargs):
@@ -110,6 +127,8 @@ def _run_plugins(address, plugins, job, **kwargs):
         else:
             try:
                 result = module.scan_address(address, **kwargs)
+            except rq.timeouts.JobTimeoutException as e:
+                raise e
             except Exception as e:
                 name = plugin_name.split(".")[-1]
                 msg = "Exception occured in plugin {} and address {}".format(
@@ -188,7 +207,11 @@ def _scan_postprocessing(results, job, ip_address=None):
         job.meta['status'] = {}
         job.save()
     # get connected ip_address
-    if not ip_address:
+    if ip_address:
+        ip_address, created = IPAddress.concurrent_get_or_create(
+            address=ip_address,
+        )
+    else:
         ip_addresses = _get_ip_addresses_from_results(results)
         try:
             ip_address = ip_addresses[0]
@@ -265,7 +288,17 @@ def scan_address_job(ip_address=None, plugins=None, results=None, **kwargs):
         plugins = available_plugins
     run_postprocessing = not (set(available_plugins) - set(plugins))
     if ip_address and plugins:
-        results = _run_plugins(ip_address.address, plugins, job, **kwargs)
+        if not kwargs:
+            ip, created = IPAddress.concurrent_get_or_create(
+                address=ip_address,
+            )
+            kwargs = {
+                'snmp_community': ip.snmp_community,
+                'snmp_version': ip.snmp_version,
+                'http_family': ip.http_family,
+                'snmp_name': ip.snmp_name,
+            }
+        results = _run_plugins(ip_address, plugins, job, **kwargs)
     if run_postprocessing:
         _scan_postprocessing(results, job, ip_address)
     return results

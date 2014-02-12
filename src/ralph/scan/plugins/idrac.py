@@ -13,6 +13,7 @@ import requests
 from django.conf import settings
 from xml.etree import cElementTree as ET
 
+from ralph.scan.errors import Error, NoMatchError
 from ralph.scan.plugins import get_base_result_template
 
 
@@ -49,10 +50,6 @@ SOAP_ENUM_WSMAN_TEMPLATE = '''<?xml version="1.0"?>
 '''
 
 FC_INFO_EXPRESSION = re.compile(r'([0-9]+)-[0-9]+')
-
-
-class Error(Exception):
-    pass
 
 
 def _send_soap(post_url, login, password, message):
@@ -314,6 +311,9 @@ def idrac_device_info(idrac_manager):
 
 
 def scan_address(ip_address, **kwargs):
+    http_family = kwargs.get('http_family')
+    if http_family not in ('Dell', ):
+        raise NoMatchError('It is not Dell.')
     user = SETTINGS.get('user')
     password = SETTINGS.get('password')
     messages = []

@@ -16,6 +16,11 @@ from lck.xml import etree_to_dict
 from lxml import etree as ET
 
 from ralph.discovery.models import DeviceType, SERIAL_BLACKLIST
+from ralph.scan.errors import (
+    IncompatibleAnswerError,
+    IncompleteAnswerError,
+    NoMatchError,
+)
 from ralph.scan.plugins import get_base_result_template
 from ralph.util import network
 
@@ -24,12 +29,6 @@ class Error(Exception):
     pass
 
 
-class IncompatibleAnswerError(Error):
-    pass
-
-
-class UncompleteAnswerError(Error):
-    pass
 
 
 def _nullify(value):
@@ -81,8 +80,8 @@ def _get_parent_device(data):
     encl_name = unicode(data['INFRA2']['PN']).strip()
     encl_sn = unicode(data['INFRA2']['ENCL_SN']).strip()
     if not (rack_name and encl_name and encl_sn):
-        raise UncompleteAnswerError(
-            'Received an uncomplete answer (required values: RACK, PN '
+        raise IncompleteAnswerError(
+            'Received an incomplete answer (required values: RACK, PN '
             'and ENCL_SN).',
         )
     if not encl_name.startswith('HP'):
@@ -196,11 +195,16 @@ def _hp_oa(ip_address):
 
 
 def scan_address(ip_address, **kwargs):
+    snmp_name = kwargs.get('snmp_name', '').lower()
+    if snmp_name and "onboard administrator" not in snmp_name:
+        raise NoMatchError('It is not HP OA.')
+    if kwargs.get('http_family', '') not in ('Unspecified', 'RomPager', 'HP'):
+        raise NoMatchError('It is not HP OA.')
     messages = []
     result = get_base_result_template('hp_oa', messages)
     try:
         device_info = _hp_oa(ip_address)
-    except (IncompatibleAnswerError, UncompleteAnswerError) as e:
+    except (IncompatibleAnswerError, IncompleteAnswerError) as e:
         messages.append(unicode(e))
         result['status'] = 'error'
     else:
