@@ -1,0 +1,48 @@
+{% extends "ui/network_sidebar.html" %}
+{% load url from future %}
+{% load icons %}
+{% load formats %}
+
+{% block content %}
+
+<div class="row-fluid">
+<div class="span6">
+<table class="table table-striped table-bordered details-info-owners">
+    <thead>
+        <th>address range</th>
+        <th>type</th>
+        <th>subnetwork</th>
+        <th>no° IPs</th>
+    </thead>
+    <tbody>
+        {% for segment in ip_usage %}
+        <tr class="{% if segment.type == 'addr' %}
+            error
+        {% elif segment.type == 'free' %}
+            success
+        {% else %}warning{% endif %}">
+            <td>{{ segment.range_start }} - {{ segment.range_end }}</td>
+            <td>
+            {% if segment.type == 'addr' %}
+                addresses
+            {% elif segment.type == 'free' %}
+                free
+            {% else %}{{ segment.type.name }}{% endif %}
+            </td>
+            <td>
+                {% if segment.type == 'addr' %}
+                    -
+                {% elif segment.type == 'free' %}
+                    {{ segment.range_start }}/{{ segment.amount|max_netmask }}
+                {% else %}{{ segment.type.address }}{% endif %}
+            </td>
+            <td>
+                {{ segment.amount }}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+</div>
+{% endblock content %}

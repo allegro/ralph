@@ -129,4 +129,3 @@ def scan_address(ip_address, **kwargs):
         },
     })
     return result
-

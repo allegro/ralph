@@ -1,0 +1,21 @@
+{% extends 'ui/base-form.html' %}
+
+{% load url from future %}
+{% load icons %}
+
+
+{% block formbuttons %}
+<div class="control-group {% if form.save_comment.errors %}error{% endif %}">
+    <div class="input-append">{{ form.save_comment }}<button
+        class="btn btn-primary"
+        type="submit"
+        name="devicesave">{% icon 'fugue-tick' %}&nbsp;Save
+    </button>
+    </div>
+    {% for e in form.save_comment.errors %}
+        <div class="help-block error-text">{{ e }}</div>
+    {% empty %}
+        <div class="help-block">{{ form.save_comment.help_text }}</div>
+    {% endfor %}
+</div>
+{% endblock %}

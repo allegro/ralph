@@ -59,17 +59,6 @@ class VentureFilterForm(forms.Form):
     )
 
 
-class NetworksFilterForm(forms.Form):
-    show_ip = forms.BooleanField(
-        required=False,
-        label="Show as addresses",
-    )
-    contains = forms.CharField(
-        required=False, label="Contains",
-        widget=forms.TextInput(attrs={'class': 'span12'}),
-    )
-
-
 class RolePropertyForm(forms.ModelForm):
     class Meta:
         model = RoleProperty
