@@ -21,6 +21,7 @@ from ralph.cmdb.models import (
     CI,
     CIRelation,
     CI_RELATION_TYPES,
+    CI_STATE_TYPES,
 )
 from ralph.discovery.models import (
     Device,
@@ -41,7 +42,7 @@ class CIImporterTest(TestCase):
 
     def setUp(self):
         self.objs = (
-            list(Device.objects.all()) +
+            list(Device.admin_objects.all()) +
             list(Venture.objects.all()) +
             list(VentureRole.objects.all()) +
             list(Service.objects.all()) +
@@ -75,6 +76,7 @@ class CIImporterTest(TestCase):
         ci_dc = CI.objects.get(name='dc')
         ci_rack = CI.objects.get(name='rack')
         ci_blade = CI.objects.get(name='blade')
+        ci_deleted = CI.objects.get(name='deleted blade')
         ci_top_venture = CI.objects.get(name='top_venture')
         ci_venture = CI.objects.get(name='child_venture')
         ci_role = CI.objects.get(name='child_role')
@@ -85,6 +87,12 @@ class CIImporterTest(TestCase):
         self.assertEqual(ci_dc.layers.select_related()[0].name, 'Hardware')
         self.assertEqual(ci_rack.layers.select_related()[0].name, 'Hardware')
         self.assertEqual(ci_blade.layers.select_related()[0].name, 'Hardware')
+
+        # All cis except soft-deleted devices should be active
+        self.assertEqual(ci_dc.state, CI_STATE_TYPES.ACTIVE)
+        self.assertEqual(ci_blade.state, CI_STATE_TYPES.ACTIVE)
+        self.assertEqual(ci_deleted.state, CI_STATE_TYPES.INACTIVE)
+
         # Reimport of relations should not raise Exception,
         # and should not change relations count
         cis = []
@@ -167,13 +175,13 @@ class CIImporterTest(TestCase):
         self.assertEqual(venture_rel.type, CI_RELATION_TYPES.CONTAINS)
         from ralph.cmdb.graphs import ImpactCalculator
         # summarize relations.
-        self.assertEqual(CIRelation.objects.count(), 10)
+        self.assertEqual(CIRelation.objects.count(), 13)
         # calculate impact/spanning tree for CI structure
         root_ci = CI.objects.get(name='rack')
         calc = ImpactCalculator(root_ci)
         map, nodes = calc.find_affected_nodes(root_ci.id)
-        self.assertEqual(map, {2: 6, 5: 6, 6: None, 7: 6})
-        self.assertSetEqual(set(nodes), {2, 5, 6, 7})
+        self.assertEqual(map, {2: 6, 5: 6, 6: None, 7: 6, 10: 6})
+        self.assertSetEqual(set(nodes), {2, 5, 6, 7, 10})
 
 
 class AddOrUpdateCITest(TestCase):
