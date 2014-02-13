@@ -18,8 +18,12 @@ from ralph.cmdb.integration.lib.jira import Jira
 from ralph.cmdb.integration.util import strip_timezone
 from ralph.cmdb import models as db
 
+# hook git plugins. Screw flake8. Do not delete
+from ralph.cmdb.integration.puppet import PuppetGitImporter
+from ralph.cmdb.integration.ralph import AssetChangeImporter
 
 logger = logging.getLogger(__name__)
+
 
 
 class ZabbixImporter(BaseImporter):
