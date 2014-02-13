@@ -25,7 +25,6 @@ from ralph.cmdb.integration.ralph import AssetChangeImporter
 logger = logging.getLogger(__name__)
 
 
-
 class ZabbixImporter(BaseImporter):
     """
     Zabbix importer
