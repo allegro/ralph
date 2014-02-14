@@ -1,0 +1,71 @@
+{% extends "ui/base-devices.html" %}
+{% load url from future %}
+{% load icons %}
+{% load formats %}
+{% load bob %}
+
+
+{% block sidebar %}
+    {% if searchform %}    
+        <form class="form search-form well well-small"
+        {% if not searchform_filter %}action="{% url 'search' details '' %}"{% endif %} >
+        {% for f in searchform %}
+            {% if 'data-collapsed' not in f.field.widget.attrs %}
+                <div class="control-group {{ f.css_classes }} {% if f.errors %}error{% endif %}">
+                {{ f.label_tag }}
+                {{ f }}
+                {%  for e in f.errors %}
+                    <div class="help-block">{{ e }}</div>
+                    {%  empty %}
+                    {%   if f.help_text %}
+                        <div class="help-block">{{ f.help_text }}</div>
+                    {%   endif %}
+                {%  endfor %}
+                </div>
+            {% endif %}
+        {% endfor %}
+        {% if not searchform_filter %}
+            <div class="control-group">
+            {% spaceless %}
+            <a href="#form-collapsed" data-toggle="collapse" class="btn" style="width:80%">
+                {% icon 'fugue-ui-accordion' %}&nbsp;More&hellip;
+            </a>
+            {% endspaceless %}
+            </div>
+            <div class="collapse" id="form-collapsed">
+            {% for f in searchform %}
+                {% if 'data-collapsed' in f.field.widget.attrs %}
+                    <div class="control-group {{ f.css_classes }} {% if f.errors %}error{% endif %}">
+                    {{ f.label_tag }}
+                    {{ f }}
+                    {%  for e in f.errors %}
+                        <div class="help-block">{{ e }}</div>
+                        {%  empty %}
+                        {%   if f.help_text %}
+                            <div class="help-block">{{ f.help_text }}</div>
+                        {%   endif %}
+                    {%  endfor %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+            </div>
+        {% endif %}
+
+        {% if searchform_filter %}
+            <button type="submit" class="btn btn-primary">
+                {% icon 'fugue-funnel' %}&nbsp;Filter
+            </button>
+            {% else %}
+            <button type="submit" class="btn btn-primary">
+                {% icon 'fugue-magnifier' %}&nbsp;Search
+            </button>
+            {% endif %}
+            </form>
+        {% endif %}
+
+
+    {% if sidebar_items %}    
+        {% sidebar_menu sidebar_items sidebar_selected %}
+    {% endif %}
+
+{% endblock %}

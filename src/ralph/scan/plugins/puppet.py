@@ -146,7 +146,6 @@ class PuppetDBProvider(PuppetBaseProvider):
                     )
         return facts
 
-
     def _get_facts_by_hostnames(self, hostnames):
         facts = None
         for hostname in hostnames:
@@ -307,4 +306,3 @@ def scan_address(ip_address, **kwargs):
             'device': device_info,
         })
     return result
-

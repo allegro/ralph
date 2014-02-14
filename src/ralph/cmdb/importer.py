@@ -146,6 +146,14 @@ class CIImporter(object):
         ci.name = '%s' % asset.name or unicode(asset)
         if 'barcode' in asset.__dict__.keys():
             ci.barcode = asset.barcode
+        if isinstance(asset, db.Device):
+            active = not asset.deleted
+        else:
+            active = True
+        ci.state = (
+            cdb.CI_STATE_TYPES.ACTIVE if active
+            else cdb.CI_STATE_TYPES.INACTIVE
+        )
         ci.save()
         return ci
 
@@ -164,11 +172,15 @@ class CIImporter(object):
                 % asset_content_type.app_label + '.' + asset_content_type.model
             )
         uid_prefix = prefix[0].prefix
+        if issubclass(asset_class, db.Device):
+            attr = 'admin_objects'
+        else:
+            attr = 'objects'
         if asset_id:
-            all_devices = asset_class.objects.filter(
+            all_devices = getattr(asset_class, attr).filter(
                 id=asset_id).order_by('id').all()
         else:
-            all_devices = asset_class.objects.order_by('id').all()
+            all_devices = getattr(asset_class, attr).order_by('id').all()
         for d in all_devices:
             ret.append(self.store_asset(d, _type, layers, uid_prefix))
         logger.info('Finished.')

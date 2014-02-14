@@ -3,8 +3,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import textwrap
+import datetime
 import logging
+import textwrap
 
 from django.core.management.base import BaseCommand
 from ralph.util import plugin
@@ -44,16 +45,30 @@ class Command(BaseCommand):
             help="Runs on remote worker",
             default=False
         ))
+        self.option_list.append(make_option(
+            '-d',
+            '--days',
+            dest="days",
+            type=int,
+            help="Number of days from now back to be checked",
+            default=None
+        ))
 
     def handle(self, *args, **options):
         specified_option = False
         interactive = not options['remote']
+        cutoff_date = (
+            options['days'] and
+            datetime.datetime.now() - datetime.timedelta(days=options['days'])
+        )
         for chain_name in get_cmdb_plugins():
             if not options.get(chain_name):
                 continue
             logger.debug('Executing %s chain .' % chain_name)
             run_chain(
-                {'queue': chain_name}, chain_name, interactive=interactive,
+                {'queue': chain_name, 'cutoff_date': cutoff_date},
+                chain_name,
+                interactive=interactive,
             )
             logger.debug('Finished executing %s chain.' % chain_name)
             specified_option = True
