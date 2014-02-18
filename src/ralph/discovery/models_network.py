@@ -9,6 +9,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import ipaddr
+import urllib
 
 from django.core.exceptions import ValidationError
 from django.db import models as db
@@ -364,7 +365,7 @@ class Network(Named, AbstractNetwork, TimeTrackable,
         return "{} ({})".format(self.name, self.address)
 
     def get_absolute_url(self):
-        args = [self.name, 'info']
+        args = [urllib.quote(self.name.encode('utf-8'), ''), 'info']
         return reverse("networks", args=args)
 
 
