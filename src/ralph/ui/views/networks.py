@@ -49,7 +49,10 @@ def network_tree_menu(networks, details, get_params, show_ip=False, status=''):
     items = []
 
     def get_href(view_args):
-        view_args = map(lambda arg: urllib.quote(arg, ''), view_args)
+        view_args = map(
+            lambda arg: urllib.quote(arg.encode('utf-8'), ''),
+            view_args,
+        )
         url = reverse("networks", args=view_args)
         return '%s?%s' % (
             url,

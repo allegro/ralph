@@ -365,7 +365,7 @@ class Network(Named, AbstractNetwork, TimeTrackable,
         return "{} ({})".format(self.name, self.address)
 
     def get_absolute_url(self):
-        args = [urllib.quote(self.name, ''), 'info']
+        args = [urllib.quote(self.name.encode('utf-8'), ''), 'info']
         return reverse("networks", args=args)
 
 
