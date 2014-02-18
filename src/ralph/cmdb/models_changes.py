@@ -55,11 +55,11 @@ class AbstractBaseCIChange(TimeTrackable):
 
 
 class AbstractCIChangeZabbixTrigger(AbstractBaseCIChange):
-    trigger_id = models.IntegerField(max_length=11)
+    trigger_id = models.BigIntegerField()
     host = models.CharField(max_length=255)
-    host_id = models.IntegerField(max_length=11)
-    status = models.IntegerField(max_length=11)
-    priority = models.IntegerField(max_length=11)
+    host_id = models.BigIntegerField()
+    status = models.IntegerField()
+    priority = models.IntegerField()
     description = models.CharField(max_length=1024)
     lastchange = models.CharField(max_length=1024)
     comments = models.CharField(max_length=1024)
