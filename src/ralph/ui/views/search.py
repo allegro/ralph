@@ -17,7 +17,6 @@ from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.utils import timezone
 from powerdns.models import Record
-from urllib import quote
 
 from ralph.account.models import Perm
 from ralph.discovery.models import ReadOnlyDevice, Device, ComponentModel
@@ -140,7 +139,7 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
             else:
                 self.query = Device.objects.all()
             if data['name']:
-                name = quote(data['name'].strip())
+                name = data['name'].strip()
                 names = set(n.strip('.') for (n,) in Record.objects.filter(
                     type='CNAME'
                 ).filter(
