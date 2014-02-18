@@ -313,7 +313,7 @@ class DeviceAdmin(ModelAdmin):
         'venture': ['^name'],
         'venture_role': ['^name'],
         'management': ['^address', '^hostname'],
-        'model': ['^name', '^type__name'],
+        'model': ['^name', ],
     }
 
     def save_model(self, request, obj, form, change):
