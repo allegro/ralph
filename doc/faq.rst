@@ -66,15 +66,6 @@ restart is necessary, use the ``service gunicorn force-restart`` command.
 If you happen to have a script like this for another operating system, contact
 us so to include it here.
 
-Celery
-------
-
-Can I start Celery using the traditional start-stop-daemon?
-
-Sure, here is the ``init.d`` recipe for Debian/Ubuntu: `/etc/init.d/celeryd
-<_static/celeryd>`_. Put your project-specific configuration in
-`/etc/default/celeryd <_static/celeryd-default>`_.
-
 MySQL
 -----
 
