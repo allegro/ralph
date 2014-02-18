@@ -140,7 +140,7 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
             else:
                 self.query = Device.objects.all()
             if data['name']:
-                name = quote(data['name'].strip())
+                name = quote(data['name'].encode('utf-8').strip())
                 names = set(n.strip('.') for (n,) in Record.objects.filter(
                     type='CNAME'
                 ).filter(
