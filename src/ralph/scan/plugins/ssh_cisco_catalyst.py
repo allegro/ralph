@@ -89,6 +89,10 @@ def _connect_ssh(ip):
     )
 
 
+def get_subswitches(switch_version):
+    pass
+
+
 def scan_address(ip_address, **kwargs):
     if 'nx-os' in kwargs.get('snmp_name', '').lower():
         raise NoMatchError('Incompatible Nexus found.')
@@ -107,9 +111,9 @@ def scan_address(ip_address, **kwargs):
         mac = mac.split(':', 1)[1].strip().replace(":", "")
     inventory = list(cisco_inventory(raw))
     dev_inv = inventory[0]
-    model_name='Cisco Catalyst %s' % dev_inv['pid']
+    model_name = 'Cisco Catalyst %s' % dev_inv['pid']
     sn = dev_inv['sn']
-    model_type=DeviceType.switch
+    model_type = DeviceType.switch
     parts = inventory[1:]
     result = get_base_result_template('ssh_cisco_catalyst')
     result.update({
