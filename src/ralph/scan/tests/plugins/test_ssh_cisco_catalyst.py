@@ -20,91 +20,7 @@ from ralph.scan import plugins
 from ralph.scan.plugins import ssh_cisco_catalyst
 
 
-def ssh_catalyst_mock(command):
-    mac_res = [
-        u'Base ethernet MAC Address       : AB:12:BC:23:55:56\r',
-    ]
-    raw_res = [
-        u'NAME: "1", DESCR: "SOME_CATA_MODEL"\r',
-        u'PID: SOME_CATA_MODEL  , VID: V04  , SN: SOME-SN\r',
-        u'\r',
-        u'NAME: "GigabitEthernet0/45", DESCR: "1000BaseSX SFP"\r',
-        u'PID: Unspecified       , VID:      , SN: eth-sn1        \r',
-        u'\r',
-        u'NAME: "GigabitEthernet0/46", DESCR: "1000BaseSX SFP"\r',
-        u'PID: Unspecified       , VID:      , SN: eth-sn2        \r',
-        u'\r',
-        u'\r',
-    ]
-    if command == 'show version | include Base ethernet MAC Address':
-        return mac_res
-    elif command == 'show inventory':
-        return raw_res
-    else:
-        raise AssertionError("Wrong command")
-
-
-class TestCiscoCatalyst(TestCase):
-    def setUp(self):
-        self.maxDiff = None
-        tpl_mock = patch.object(plugins, 'get_base_result_template')
-        tpl_mock.return_value = {
-            'status': 'unknown',
-            'date': '2013-09-20 11:48:33',
-            'plugin': 'ssh_cisco_catalyst',
-            'messages': [],
-        }
-
-    @patch.object(network, 'hostname')
-    @patch.object(ssh_cisco_catalyst, '_connect_ssh')
-    def test_scan(self, connect_mock, network_mock):
-        cata_ssh_mock = MagicMock()
-        command_mock = MagicMock()
-        cata_ssh_mock.cisco_command = command_mock
-        command_mock.side_effect = ssh_catalyst_mock
-        connect_mock.return_value = cata_ssh_mock
-        ip = '11.11.11.11'
-        network_mock.return_value = 'cata1'
-        correct_ret = {
-            'status': 'success',
-            'plugin': 'ssh_cisco_catalyst',
-            'messages': [],
-            'device': {
-                'hostname': 'cata1',
-                'model_name': 'Cisco Catalyst SOME_CATA_MODEL',
-                'type': u'switch',
-                'serial_number': 'SOME-SN',
-                'mac_adresses': ['AB12BC235556', ],
-                'management_ip_addresses': [ip, ],
-                'parts': [
-                    {
-                        'serial_number': 'eth-sn1',
-                        'name': 'GigabitEthernet0/45',
-                        'label': '1000BaseSX SFP',
-                    },
-                    {
-                        'serial_number': 'eth-sn2',
-                        'name': 'GigabitEthernet0/46',
-                        'label': '1000BaseSX SFP',
-                    },
-                ],
-            },
-        }
-        ret = ssh_cisco_catalyst.scan_address(
-            ip,
-            http_family='Cisco',
-        )
-        correct_ret['date'] = ret['date']  # assuming datetime is working.
-        self.assertEqual(ret, correct_ret)
-        network_mock.assertCalledWith(ip)
-        command_mock.assert_any_call(
-            "show version | include Base ethernet MAC Address",
-        )
-        command_mock.assert_any_call("show inventory")
-        self.assertEqual(command_mock.call_count, 2)
-
-    def test_get_subswitches(self):
-        get_ss_args = [
+show_version_ret = [
             u'Cisco IOS Software, C3750E Software (C3750E-UNIVERSALK9-M), Version 12.2(58)SE2, RELEASE SOFTWARE (fc1)\r',
             u'Technical Support: http://www.cisco.com/techsupport\r',
             u'Copyright (c) 1986-2011 by Cisco Systems, Inc.\r',
@@ -195,10 +111,120 @@ class TestCiscoCatalyst(TestCase):
             u'\r',
             u'rack103-sw3#\r'
         ]
+
+
+def ssh_catalyst_mock(command):
+    mac_res = [
+        u'Base ethernet MAC Address       : AB:12:BC:23:55:56\r',
+    ]
+    raw_res = [
+        u'NAME: "1", DESCR: "SOME_CATA_MODEL"\r',
+        u'PID: SOME_CATA_MODEL  , VID: V04  , SN: SOME-SN\r',
+        u'\r',
+        u'NAME: "GigabitEthernet0/45", DESCR: "1000BaseSX SFP"\r',
+        u'PID: Unspecified       , VID:      , SN: eth-sn1        \r',
+        u'\r',
+        u'NAME: "GigabitEthernet0/46", DESCR: "1000BaseSX SFP"\r',
+        u'PID: Unspecified       , VID:      , SN: eth-sn2        \r',
+        u'\r',
+        u'\r',
+    ]
+    if command == 'show version | include Base ethernet MAC Address':
+        return mac_res
+    elif command == 'show inventory':
+        return raw_res
+    elif command == 'show version':
+        return show_version_ret
+    else:
+        raise AssertionError("Wrong command")
+
+
+class TestCiscoCatalyst(TestCase):
+    def setUp(self):
+        self.maxDiff = None
+        tpl_mock = patch.object(plugins, 'get_base_result_template')
+        tpl_mock.return_value = {
+            'status': 'unknown',
+            'date': '2013-09-20 11:48:33',
+            'plugin': 'ssh_cisco_catalyst',
+            'messages': [],
+        }
+
+    @patch.object(network, 'hostname')
+    @patch.object(ssh_cisco_catalyst, '_connect_ssh')
+    def test_scan(self, connect_mock, network_mock):
+        cata_ssh_mock = MagicMock()
+        command_mock = MagicMock()
+        cata_ssh_mock.cisco_command = command_mock
+        command_mock.side_effect = ssh_catalyst_mock
+        connect_mock.return_value = cata_ssh_mock
+        ip = '11.11.11.11'
+        network_mock.return_value = 'cata1'
+        correct_ret = {
+            'status': 'success',
+            'plugin': 'ssh_cisco_catalyst',
+            'messages': [],
+            'device': {
+                'hostname': 'cata1',
+                'model_name': 'Cisco Catalyst SOME_CATA_MODEL',
+                'type': u'Switch stack',
+                'serial_number': 'SOME-SN',
+                'mac_adresses': ['AB12BC235556', ],
+                'management_ip_addresses': [ip, ],
+                'subdevices': [
+                    {
+                        'serial_number': 'FDO1606V02H',
+                        'mac_addresses': ['442B03940C80'],
+                        'model_name': 'WS-C3750X-24',
+                        'installed_software': [
+                            {
+                                'version': '12.2(58)SE2',
+                            }
+                        ]
+                    },
+                    {
+                        'serial_number': 'FDO1547V1SY',
+                        'mac_addresses': ['28940FD82B80'],
+                        'model_name': 'WS-C3750X-24',
+                        'installed_software': [
+                            {
+                                'version': '12.2(58)SE2',
+                            }
+                        ]
+                    }
+                ],
+                'parts': [
+                    {
+                        'serial_number': 'eth-sn1',
+                        'name': 'GigabitEthernet0/45',
+                        'label': '1000BaseSX SFP',
+                    },
+                    {
+                        'serial_number': 'eth-sn2',
+                        'name': 'GigabitEthernet0/46',
+                        'label': '1000BaseSX SFP',
+                    },
+                ],
+            },
+        }
+        ret = ssh_cisco_catalyst.scan_address(
+            ip,
+            http_family='Cisco',
+        )
+        correct_ret['date'] = ret['date']  # assuming datetime is working.
+        self.assertEqual(ret, correct_ret)
+        network_mock.assertCalledWith(ip)
+        command_mock.assert_any_call(
+            "show version | include Base ethernet MAC Address",
+        )
+        command_mock.assert_any_call("show inventory")
+        self.assertEqual(command_mock.call_count, 3)
+
+    def test_get_subswitches(self):
         correct_ret = [
             {
                 'serial_number': 'FDO1606V02H',
-                'mac_addresses': ['44:2B:03:94:0C:80'],
+                'mac_addresses': ['442B03940C80'],
                 'model_name': 'WS-C3750X-24',
                 'installed_software': [
                     {
@@ -208,7 +234,7 @@ class TestCiscoCatalyst(TestCase):
             },
             {
                 'serial_number': 'FDO1547V1SY',
-                'mac_addresses': ['28:94:0F:D8:2B:80'],
+                'mac_addresses': ['28940FD82B80'],
                 'model_name': 'WS-C3750X-24',
                 'installed_software': [
                     {
@@ -218,6 +244,6 @@ class TestCiscoCatalyst(TestCase):
             }
         ]
         self.assertEquals(
-            ssh_cisco_catalyst.get_subswitches(get_ss_args),
+            ssh_cisco_catalyst.get_subswitches(show_version_ret),
             correct_ret,
         )

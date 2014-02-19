@@ -7,6 +7,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import paramiko
+import re
 import socket
 import time
 
@@ -90,7 +91,50 @@ def _connect_ssh(ip):
 
 
 def get_subswitches(switch_version):
-    pass
+    base_mac_addresses = [
+        "".join(re.findall('[0-9A-F]{2}', line[25:]))
+        for line in switch_version
+        if 'Base ethernet MAC Address' in line
+    ]
+    serial_numbers = [
+        "".join(re.findall('[0-9A-Z]+', line[33:]))
+        for line in switch_version
+        if 'System serial number' in line
+    ]
+    num_switches = len(base_mac_addresses)
+    software_versions = None
+    model_names = None
+    for i, line in enumerate(switch_version):
+        if re.match("Switch\W+Ports\W+Model", line):
+            model_names = [
+                re.split("\s+", line)[3]
+                for line in switch_version[i + 2:i + 2 + num_switches]
+            ]
+            software_versions = [
+                re.split("\s+", line)[4]
+                for line in switch_version[i + 2:i + 2 + num_switches]
+            ]
+    zippd = zip(
+        serial_numbers,
+        base_mac_addresses,
+        model_names,
+        software_versions,
+    )
+    subswitches = []
+    for subs in zippd:
+        subswitches.append(
+            {
+                'serial_number': subs[0],
+                'mac_addresses': [subs[1]],
+                'model_name': subs[2],
+                'installed_software': [
+                    {
+                        'version': subs[3],
+                    }
+                ]
+            }
+        )
+    return subswitches
 
 
 def scan_address(ip_address, **kwargs):
@@ -104,6 +148,7 @@ def scan_address(ip_address, **kwargs):
             "show version | include Base ethernet MAC Address",
         ))
         raw = '\n'.join(ssh.cisco_command("show inventory"))
+        subswitches = get_subswitches(ssh.cisco_command("show version"))
     finally:
         ssh.close()
     mac = mac.strip()
@@ -113,7 +158,10 @@ def scan_address(ip_address, **kwargs):
     dev_inv = inventory[0]
     model_name = 'Cisco Catalyst %s' % dev_inv['pid']
     sn = dev_inv['sn']
-    model_type = DeviceType.switch
+    if subswitches:
+        model_type = DeviceType.switch_stack
+    else:
+        model_type = DeviceType.switch
     parts = inventory[1:]
     result = get_base_result_template('ssh_cisco_catalyst')
     result.update({
@@ -125,6 +173,7 @@ def scan_address(ip_address, **kwargs):
             'serial_number': sn,
             'mac_adresses': [mac],
             'management_ip_addresses': [ip_address],
+            'subdevices': subswitches,
             'parts': [{
                 'serial_number': part['sn'],
                 'name': part['name'],
