@@ -1,16 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from django.db.models import Q
-from bob.data_table import DataTableMixin, DataTableColumn
+from bob.data_table import DataTableColumn
+
 from ralph.cmdb.models import CI
 
+
 def report_filters(cls, order, filters=None):
-    q = Q()
     if filters:
         filters_list = filters.pop()
         return cls.objects.filter(**dict(filters_list)).order_by(order)
@@ -51,17 +52,17 @@ def add_filter(request, ci=None):
         )
     if request.get('start_planned_start') and request.get('end_planned_start'):
         filters.append(
-            {'planned_start_date_lte': request.get('start_planned_start')}
+            {'planned_start_date__lte': request.get('start_planned_start')}
         )
         filters.append(
-            {'planned_start_date_gte': request.get('end_planned_start')}
+            {'planned_start_date__gte': request.get('end_planned_start')}
         )
     if request.get('start_planned_end') and request.get('end_planned_end'):
         filters.append(
-            {'planned_end_date_lte': request.get('start_planned_end')}
+            {'planned_end_date__lte': request.get('start_planned_end')}
         )
         filters.append(
-            {'planned_end_date_gte': request.get('start_planned_end')}
+            {'planned_end_date__gte': request.get('start_planned_end')}
         )
     return filters
 
