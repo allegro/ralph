@@ -26,9 +26,11 @@ from django.views.generic import (
 from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Language, TagStem
 from bob.menu import MenuItem
+import pluggableapp
 from powerdns.models import Record
 
 from ralph.discovery.models_component import Ethernet, EthernetSpeed
+from ralph.app import RalphModule
 from ralph.discovery.models_device import DeprecationKind, MarginKind
 from ralph.scan.errors import Error as ScanError
 from ralph.scan.manual import scan_address
@@ -173,9 +175,11 @@ def _get_details(dev, purchase_only=False, with_price=False,
                 detail['price'] = None
         if with_price and not detail['price']:
             continue
-        if (detail['group'] != 'dev' and 'size' not in detail and
-                detail.get('model')
-            ):
+        if (
+            detail['group'] != 'dev' and
+            'size' not in detail and
+            detail.get('model')
+        ):
             detail['size'] = detail['model'].size
         if not detail.get('model'):
             detail['model'] = detail.get('model_name', '')
@@ -326,22 +330,21 @@ class BaseMixin(object):
             mainmenu_items.append(
                 MenuItem('Catalog', fugue_icon='fugue-paper-bag',
                          view_name='catalog'))
+
         if ('ralph.cmdb' in settings.INSTALLED_APPS and
                 has_perm(Perm.read_configuration_item_info_generic)):
             mainmenu_items.append(
                 MenuItem('CMDB', fugue_icon='fugue-thermometer',
                          href='/cmdb/changes/timeline')
             )
-        if ('ralph_assets' in settings.INSTALLED_APPS):
-            mainmenu_items.append(
-                MenuItem('Assets', fugue_icon='fugue-box-label',
-                         href='/assets')
-            )
-        if ('ralph_pricing' in settings.INSTALLED_APPS):
-            mainmenu_items.append(
-                MenuItem('Pricing', fugue_icon='fugue-money-coin',
-                         href='/pricing')
-            )
+
+        for app in pluggableapp.app_dict.values():
+            if isinstance(app, RalphModule):
+                mainmenu_items.append(MenuItem(
+                    app.disp_name,
+                    fugue_icon=app.icon,
+                    href='/{}'.format(app.url_prefix)
+                ))
 
         if settings.BUGTRACKER_URL:
             mainmenu_items.append(
@@ -390,6 +393,90 @@ class BaseMixin(object):
             )
         )
         tab_items = self.get_tab_items()
+        venture = (
+            self.venture if self.venture and self.venture != '*' else None
+        ) or (
+            self.object.venture if self.object else None
+        )
+
+        if has_perm(Perm.read_device_info_generic, venture):
+            tab_items.extend([
+                MenuItem('Info', fugue_icon='fugue-wooden-box',
+                         href=self.tab_href('info')),
+                MenuItem('Components', fugue_icon='fugue-box',
+                         href=self.tab_href('components')),
+                MenuItem('Software', fugue_icon='fugue-disc',
+                         href=self.tab_href('software')),
+                MenuItem('Addresses', fugue_icon='fugue-network-ip',
+                         href=self.tab_href('addresses')),
+            ])
+        if has_perm(Perm.edit_device_info_financial, venture):
+            tab_items.extend([
+                MenuItem('Prices', fugue_icon='fugue-money-coin',
+                         href=self.tab_href('prices')),
+            ])
+        if has_perm(Perm.read_device_info_financial, venture):
+            tab_items.extend([
+                MenuItem('Costs', fugue_icon='fugue-wallet',
+                         href=self.tab_href('costs')),
+            ])
+        if has_perm(Perm.read_device_info_history, venture):
+            tab_items.extend([
+                MenuItem('History', fugue_icon='fugue-hourglass',
+                         href=self.tab_href('history')),
+            ])
+        if all((
+            'ralph_assets' in settings.INSTALLED_APPS,
+            has_perm(Perm.read_device_info_support, venture),
+        )):
+            tab_items.extend([
+                MenuItem(
+                    'Asset',
+                    fugue_icon='fugue-baggage-cart-box',
+                    href=self.tab_href('asset')),
+            ])
+        if ('ralph.scan' in settings.INSTALLED_APPS and
+                has_perm(Perm.edit_device_info_generic) and
+                self.kwargs.get('device')):
+            tab_items.extend([
+                MenuItem(
+                    'Scan',
+                    name='scan',
+                    fugue_icon='fugue-flashlight',
+                    href=self.tab_href('scan'),
+                ),
+            ])
+        if ('ralph.cmdb' in settings.INSTALLED_APPS and
+                has_perm(Perm.read_configuration_item_info_generic)):
+            ci = ''
+            device_id = self.kwargs.get('device')
+            if device_id:
+                deleted = False
+                if self.request.GET.get('deleted', '').lower() == 'on':
+                    deleted = True
+                try:
+                    if deleted:
+                        device = Device.admin_objects.get(pk=device_id)
+                    else:
+                        device = Device.objects.get(pk=device_id)
+                    ci = CI.get_by_content_object(device)
+                except Device.DoesNotExist:
+                    pass
+            if ci:
+                tab_items.extend([
+                    MenuItem('CMDB', fugue_icon='fugue-thermometer',
+                             href='/cmdb/ci/view/%s' % ci.id),
+                    ])
+        if has_perm(Perm.read_device_info_reports, venture):
+            tab_items.extend([
+                MenuItem('Reports', fugue_icon='fugue-reports-stack',
+                         href=self.tab_href('reports')),
+            ])
+        if details == 'bulkedit':
+            tab_items.extend([
+                MenuItem('Bulk edit', fugue_icon='fugue-pencil-field',
+                         name='bulkedit'),
+            ])
         ret.update({
             'section': self.section,
             'details': details,
@@ -1034,7 +1121,9 @@ class History(DeviceDetailView):
     def get_context_data(self, **kwargs):
         query_variable_name = 'history_page'
         ret = super(History, self).get_context_data(**kwargs)
-        history = self.object.historychange_set.exclude(field_name='snmp_community').order_by('-date')
+        history = self.object.historychange_set.exclude(
+            field_name='snmp_community'
+        ).order_by('-date')
         show_all = bool(self.request.GET.get('all', ''))
         if not show_all:
             history = history.exclude(user=None)
@@ -1109,8 +1198,7 @@ class Asset(BaseMixin, TemplateView):
             self.asset = get_asset(self.object.id)
             self.form = ChooseAssetForm(
                 initial={
-                    'asset': self.asset['asset_id']
-                        if self.asset else None,
+                    'asset': self.asset['asset_id'] if self.asset else None,
                 },
                 device_id=self.object.id,
             )
@@ -1403,8 +1491,10 @@ class BulkEdit(BaseMixin, TemplateView):
             if not self.edit_fields:
                 messages.error(self.request, 'Mark changed fields')
             elif self.form.is_valid and self.form.data['save_comment']:
-                self.form.fields = [f for f in self.form.fields
-                        if not f in self.edit_fields or f != 'save_comment']
+                self.form.fields = [
+                    f for f in self.form.fields
+                    if not f in self.edit_fields or f != 'save_comment'
+                ]
                 bulk_update(
                     self.devices,
                     self.edit_fields,
@@ -1758,4 +1848,3 @@ class ScanStatus(BaseMixin, TemplateView):
                 )
                 return HttpResponseRedirect(self.request.path)
         return self.get(*args, **kwargs)
-

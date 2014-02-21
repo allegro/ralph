@@ -18,9 +18,10 @@ execfile(namespace_package_support)
 #
 # common stuff for each install
 #
+
 SITE_ID = 1
 USE_I18N = True
-USE_L10N = True  # FIXME: breaks contents of localized date fields on form reload
+USE_L10N = True  # FIXME: breaks contents of l7d date fields on form reload
 MEDIA_URL = '/u/'
 STATIC_URL = '/static/'
 STATICFILES_DIRS = (
@@ -125,7 +126,9 @@ LOGGING = {
     'formatters': {
         'verbose': {
             'datefmt': '%H:%M:%S',
-            'format': '%(asctime)08s,%(msecs)03d %(levelname)-7s [%(processName)s %(process)d] %(module)s - %(message)s',
+            'format': (
+                '%(asctime)08s,%(msecs)03d %(levelname)-7s [%(processName)s'
+                ' %(process)d] %(module)s - %(message)s'),
         },
         'simple': {
             'format': '%(levelname)s %(message)s',
@@ -139,21 +142,6 @@ LOGGING = {
         },
         'ralph': {
             'handlers': ['file'],
-            'propagate': True,
-            'level': 'DEBUG',
-        },
-        'ralph_assets': {
-            'handlers': ['file'],
-            'propagate': True,
-            'level': 'DEBUG',
-        },
-        'ralph_pricing': {
-            'handlers': ['file'],
-            'propagate': True,
-            'level': 'DEBUG',
-        },
-        'ralph_pricing.plugins': {
-            'handlers': ['file', 'console'],
             'propagate': True,
             'level': 'DEBUG',
         },
@@ -183,8 +171,8 @@ SANITY_CHECK_PING_ADDRESS = 'www.allegro.pl'
 SANITY_CHECK_IP2HOST_IP = '8.8.8.8'
 SANITY_CHECK_IP2HOST_HOSTNAME_REGEX = r'.*google.*'
 
-SINGLE_DISCOVERY_TIMEOUT = 43200 # 12 hours
-NETWORK_TASK_DELEGATION_TIMEOUT = 7200 # 2 hours
+SINGLE_DISCOVERY_TIMEOUT = 43200    # 12 hours
+NETWORK_TASK_DELEGATION_TIMEOUT = 7200  # 2 hours
 # django.contrib.messages settings
 MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
 # activity middleware settings
@@ -238,13 +226,13 @@ DATABASES = {
     },
 }
 CACHES = dict(
-    default = dict(
-        BACKEND = 'django.core.cache.backends.locmem.LocMemCache',
-        LOCATION = '',
-        TIMEOUT = 300,
-        OPTIONS = dict(
+    default=dict(
+        BACKEND='django.core.cache.backends.locmem.LocMemCache',
+        LOCATION='',
+        TIMEOUT=300,
+        OPTIONS=dict(
         ),
-        KEY_PREFIX = 'RALPH_',
+        KEY_PREFIX='RALPH_',
     )
 )
 LOGGING['handlers']['file']['filename'] = CURRENT_DIR + 'runtime.log'
@@ -369,9 +357,6 @@ HAMSTER_API_URL = ""
 SCALEME_API_URL = ""
 DEFAULT_SOA_RECORD_CONTENT = ''
 DEAD_PING_COUNT = 2
-
-# assets settings
-DEFAULT_DEPRECATION_RATE = 25
 # </template>
 
 #
@@ -387,8 +372,9 @@ elif SETTINGS_PATH_MODE == 'nested':
     local_settings = '%s%s%s.py' % (SETTINGS_PATH_PREFIX, os.sep,
                                     local_profile)
 else:
-    raise ValueError, ("Unsupported settings path mode '%s'"
-                       "" % SETTINGS_PATH_MODE)
+    raise ValueError(
+        "Unsupported settings path mode '%s'" % SETTINGS_PATH_MODE
+    )
 
 for cfg_loc in [local_settings,
                 '{}/settings'.format(ralph_settings_path),
@@ -397,6 +383,9 @@ for cfg_loc in [local_settings,
     if os.path.exists(cfg_loc):
         execfile(cfg_loc)
         break
+
+import pluggableapp
+pluggableapp.initialize(locals())
 
 MEDIA_ROOT = os.path.expanduser(MEDIA_ROOT)
 STATIC_ROOT = os.path.expanduser(STATIC_ROOT)
@@ -699,4 +688,3 @@ SCAN_PLUGINS = {
         },
     },
 }
-
