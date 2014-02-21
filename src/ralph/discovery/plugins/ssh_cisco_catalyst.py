@@ -37,7 +37,10 @@ class CiscoSSHClient(paramiko.SSHClient):
         super(CiscoSSHClient, self).__init__(*args, **kwargs)
         self.set_log_channel('critical_only')
 
-    def _auth(self, username, password, pkey, key_filenames, allow_agent, look_for_keys):
+    def _auth(
+        self, username, password, pkey, key_filenames, allow_agent,
+        look_for_keys,
+    ):
         self._transport.auth_password(username, password)
         self._cisco_chan = self._transport.open_session()
         self._cisco_chan.invoke_shell()
@@ -48,7 +51,8 @@ class CiscoSSHClient(paramiko.SSHClient):
             raise ConsoleError('Expected system prompt, got %r.' % chunk)
 
     def cisco_command(self, command):
-        # XXX Work around random characters appearing at the beginning of the command.
+        # XXX Work around random characters appearing at the beginning of
+        # the command.
         self._cisco_chan.sendall('\b')
         time.sleep(0.125)
         self._cisco_chan.sendall(command)
@@ -69,8 +73,11 @@ class CiscoSSHClient(paramiko.SSHClient):
             if buffer[-1].endswith(('#', '>')):
                 return buffer[1:-1]
 
+
 def _connect_ssh(ip):
-    return network.connect_ssh(ip, SSH_USER, SSH_PASSWORD, client=CiscoSSHClient)
+    return network.connect_ssh(
+        ip, SSH_USER, SSH_PASSWORD, client=CiscoSSHClient,
+    )
 
 
 @nested_commit_on_success
@@ -110,7 +117,7 @@ def _run_ssh_catalyst(ip):
         )
     except Device.DoesNotExist:
         sn = dev_inv['sn']
-        model_name='Cisco %s' % dev_inv['pid']
+        model_name = 'Cisco %s' % dev_inv['pid']
     else:
         # This is a stacked device, use the base device for it
         sn = dev.sn
@@ -123,10 +130,8 @@ def _run_ssh_catalyst(ip):
         name=dev_inv['descr'][:255],
     )
     dev.save(update_last_seen=True)
-
     for inv in inventory:
-        cisco_component(dev, inv)
-
+        cisco_component(dev, inv, ip)
     ip_address, created = IPAddress.concurrent_get_or_create(address=str(ip))
     if created:
         ip_address.hostname = network.hostname(ip_address.address)
@@ -135,7 +140,10 @@ def _run_ssh_catalyst(ip):
     ip_address.save(update_last_seen=True)
     return dev.name
 
-@plugin.register(chain='discovery', requires=['ping', 'http', 'snmp'], priority=50)
+
+@plugin.register(
+    chain='discovery', requires=['ping', 'http', 'snmp'], priority=50,
+)
 def ssh_catalyst(**kwargs):
     if SSH_USER is None or SSH_PASSWORD is None:
         return False, 'no credentials.', kwargs
@@ -155,4 +163,3 @@ def ssh_catalyst(**kwargs):
     except Error as e:
         return False, str(e), kwargs
     return True, name, kwargs
-
