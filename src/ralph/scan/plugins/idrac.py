@@ -201,23 +201,25 @@ def _get_memory(idrac_manager):
         XMLNS_WSMAN,
         xmlns_n1,
     )
-    return [{
-        'label': '{} {}'.format(
-            record.find(
-                "{}{}".format(xmlns_n1, 'Manufacturer'),
+    return [
+        {
+            'label': '{} {}'.format(
+                record.find(
+                    "{}{}".format(xmlns_n1, 'Manufacturer'),
+                ).text.strip(),
+                record.find(
+                    "{}{}".format(xmlns_n1, 'Model'),
+                ).text.strip(),
+            ),
+            'size': record.find(
+                "{}{}".format(xmlns_n1, 'Size'),
             ).text.strip(),
-            record.find(
-                "{}{}".format(xmlns_n1, 'Model'),
+            'speed': record.find(
+                "{}{}".format(xmlns_n1, 'Speed'),
             ).text.strip(),
-        ),
-        'size': record.find(
-            "{}{}".format(xmlns_n1, 'Size'),
-        ).text.strip(),
-        'speed': record.find(
-            "{}{}".format(xmlns_n1, 'Speed'),
-        ).text.strip(),
-        'index': index,
-    } for index, record in enumerate(tree.findall(q), start=1)]
+            'index': index,
+        } for index, record in enumerate(tree.findall(q), start=1)
+    ]
 
 
 def _get_disks(idrac_manager):
@@ -276,7 +278,7 @@ def _get_fibrechannel_cards(idrac_manager):
         if 'fibre channel' not in label.lower():
             continue
         match = FC_INFO_EXPRESSION.search(
-             record.find(
+            record.find(
                 "{}{}".format(xmlns_n1, "FQDD"),
             ).text,
         )
@@ -311,8 +313,8 @@ def idrac_device_info(idrac_manager):
 
 
 def scan_address(ip_address, **kwargs):
-    http_family = kwargs.get('http_family')
-    if http_family not in ('Dell', ):
+    http_family = kwargs.get('http_family', '').strip()
+    if http_family and http_family.lower() not in ('dell', 'embedthis-http'):
         raise NoMatchError('It is not Dell.')
     user = SETTINGS.get('user')
     password = SETTINGS.get('password')
@@ -335,4 +337,3 @@ def scan_address(ip_address, **kwargs):
                 'device': device_info,
             })
     return result
-
