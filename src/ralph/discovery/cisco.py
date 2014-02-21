@@ -92,4 +92,6 @@ def cisco_component(dev, inv, ip_address=None):
             ip=ip_address,
         ).save()
         comp = None
+    else:
+        comp = None
     return comp
