@@ -16,9 +16,14 @@ from ralph.discovery.models import (
 )
 from ralph.discovery.models_history import DiscoveryWarning
 
+
 INVENTORY_RE = re.compile(
-r"""(NAME|Name):\s*(?P<name>"[^"]*"|\S*)\s*,\s*DESCR:\s*(?P<descr>"[^"]*"|\S*)\s*
-PID:\s*(?P<pid>"[^"]*"|\S*)\s*,\s*VID:\s*(?P<vid>"[^"]*"|\S*)\s*,\s*SN:\s*(?P<sn>"[^"]*"|\S*)\s*""", re.U|re.M)
+    r'(NAME|Name):\s*(?P<name>"[^"]*"|\S*)\s*,\s*DESCR:\s*'
+    r'(?P<descr>"[^"]*"|\S*)\s*PID:\s*(?P<pid>"[^"]*"|\S*)\s*,\s*'
+    r'VID:\s*(?P<vid>"[^"]*"|\S*)\s*,\s*SN:\s*(?P<sn>"[^"]*"|\S*)\s*',
+    re.U | re.M,
+)
+
 
 def cisco_inventory(raw):
     for match in INVENTORY_RE.finditer(raw):
@@ -29,14 +34,17 @@ def cisco_inventory(raw):
         d['name'] = d['name'].strip('"')
         yield d
 
+
 def cisco_type(pid):
     comp_type = ComponentType.unknown
-    if (pid.startswith('WS-X') or
+    if (
+        pid.startswith('WS-X') or
         pid.startswith('WS-SUP') or
         pid.startswith('WS-C') or
         pid.startswith('RSP720') or
         pid.startswith('CISCO') or
-        pid.startswith('WS-SVC')):
+        pid.startswith('WS-SVC')
+    ):
         comp_type = ComponentType.management
     elif pid.startswith('WS-F') or pid.startswith('7600-'):
         comp_type = ComponentType.expansion
@@ -51,7 +59,8 @@ def cisco_type(pid):
         comp_type = ComponentType.cooling
     return comp_type
 
-def cisco_component(dev, inv):
+
+def cisco_component(dev, inv, ip_address=None):
     comp_type = cisco_type(inv['pid'])
     name = inv['descr']
     if not name.lower().startswith('cisco'):
@@ -72,7 +81,7 @@ def cisco_component(dev, inv):
         comp.model = model
         comp.label = inv['name'][:255]
         comp.save()
-    else:
+    elif ip_address:
         DiscoveryWarning(
             message="GenericComponent(id={}) belongs to Device(id={})".format(
                 comp.id,
@@ -80,7 +89,7 @@ def cisco_component(dev, inv):
             ),
             plugin=__name__,
             device=dev,
+            ip=ip_address,
         ).save()
         comp = None
     return comp
-
