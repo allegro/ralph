@@ -297,6 +297,8 @@ IDRAC_PASSWORD = None
 OPENSTACK_EXTRA_QUERIES = []
 FISHEYE_URL = ""
 FISHEYE_PROJECT_NAME = ""
+VMWARE_USER = None
+VMWARE_PASSWORD = None
 
 ISSUETRACKERS = {
     'default': {
@@ -685,6 +687,12 @@ SCAN_PLUGINS = {
     'ralph.scan.plugins.software': {
         'results_priority': {
             'software': 10,
+        },
+    },
+    'ralph.scan.plugins.vmware': {
+        'user': VMWARE_USER,
+        'password': VMWARE_PASSWORD,
+        'results_priority': {
         },
     },
 }
