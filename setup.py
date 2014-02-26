@@ -70,6 +70,7 @@ setup (
         'xlwt==0.7.4',
         'django-discover-runner>=0.4',
         'Pillow==2.0.0',
+        'raven==4.0.4'
     ],
     entry_points={
         'console_scripts': [
