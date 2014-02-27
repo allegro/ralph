@@ -110,7 +110,7 @@ class AbstractNetwork(db.Model):
     )
     environment = db.ForeignKey(
         "Environment",
-        verbose_name=_("data center"),
+        verbose_name=_("environment"),
         null=True,
         blank=True,
     )

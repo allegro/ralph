@@ -92,12 +92,16 @@ class NetworkAdmin(ModelAdmin):
         return ", ".join([n.name for n in self.terminators.order_by('name')])
     terms.short_description = _("network terminators")
     list_display = ('name', 'vlan', 'address', 'gateway', terms,
-                    'data_center', 'kind', 'queue')
+                    'data_center', 'environment', 'kind')
     list_filter = (
-        'data_center', 'terminators', 'queue', 'kind', 'dhcp_broadcast',
+        'data_center', 'terminators', 'environment', 'kind', 'dhcp_broadcast',
     )
     list_per_page = 250
-    radio_fields = {'data_center': admin.HORIZONTAL, 'kind': admin.HORIZONTAL}
+    radio_fields = {
+        'data_center': admin.HORIZONTAL,
+        'environment': admin.HORIZONTAL,
+        'kind': admin.HORIZONTAL,
+    }
     search_fields = ('name', 'address', 'vlan')
     filter_horizontal = ('terminators', 'racks', 'custom_dns_servers')
     save_on_top = True
@@ -386,16 +390,22 @@ class MarginKindAdmin(ModelAdmin):
 admin.site.register(m.MarginKind, MarginKindAdmin)
 
 
-class LoadBalancerMemberInline(admin.TabularInline):
-    model = m.LoadBalancerMember
-    exclude = ('created', 'modified')
-    extra = 0
-
-
 class LoadBalancerVirtualServerAdmin(ModelAdmin):
-    inlines = [LoadBalancerMemberInline]
-admin.site.register(m.LoadBalancerVirtualServer,
-                    LoadBalancerVirtualServerAdmin)
+    pass
+
+admin.site.register(
+    m.LoadBalancerVirtualServer,
+    LoadBalancerVirtualServerAdmin,
+)
+
+
+class LoadBalancerMemberAdmin(ModelAdmin):
+    pass
+
+admin.site.register(
+    m.LoadBalancerMember,
+    LoadBalancerMemberAdmin,
+)
 
 
 class ComponentModelInline(admin.TabularInline):
