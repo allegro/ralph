@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Pre-scan all IP addresses from specified networks or data centers. This scan
+Pre-scan all IP addresses from specified networks or environments. This scan
 checks that IP address is available. It also sets some additional data,
 like a SNMP name, SNMP community and SNMP version.
 """
@@ -34,32 +34,40 @@ def _split_into_groups(iterable, group_size):
     [[0, 1, 2], [3, 4, 5], [6, 7, 8], [9]]
     """
     for g, group in itertools.groupby(
-            enumerate(iterable),
-            lambda items: items[0] // group_size
-        ):
+        enumerate(iterable),
+        lambda items: items[0] // group_size
+    ):
         yield [item for (i, item) in group]
 
 
-def autoscan_data_center(data_center):
-    """Queues a pre-scan of all scannable networks in the data center."""
+def autoscan_environment(environment):
+    """Queues a pre-scan of all scannable networks in the environment."""
 
-    for network in data_center.network_set.exclude(queue=None):
-        autoscan_network(network)
+    if not environment.queue:
+        raise NoQueueError(
+            "No discovery queue defined for environment {0}.".format(
+                environment,
+            ),
+        )
+    for network in environment.network_set.all():
+        autoscan_network(network, environment.queue.name)
 
 
-def autoscan_network(network):
+def autoscan_network(network, queue_name=None):
     """Queues a pre-scan of a whole network on the right worker."""
 
-    if not network.queue:
-        raise NoQueueError(
-            "No discovery queue defined for network {0}.".format(network),
-        )
-    queue_name = network.queue.name
+    if not queue_name:
+        if not network.environment or not network.environment.queue:
+            raise NoQueueError(
+                "No discovery queue defined for network "
+                "environment {0}.".format(network),
+            )
+        queue_name = network.environment.queue.name
     queue = django_rq.get_queue(queue_name)
     for group in _split_into_groups(
-            network.network.iterhosts(),
-            ADDRESS_GROUP_SIZE,
-        ):
+        network.network.iterhosts(),
+        ADDRESS_GROUP_SIZE,
+    ):
         queue.enqueue_call(
             func=_autoscan_group,
             args=(group,),
@@ -80,11 +88,13 @@ def autoscan_address(address):
             "Address {0} doesn't belong to any configured "
             "network.".format(address),
         )
-    if not network.queue:
+    if not network.environment or not network.environment.queue:
         raise NoQueueError(
-            "The network {0} has no discovery queue.".format(network),
+            "The network environment {0} has no discovery queue.".format(
+                network,
+            ),
         )
-    queue_name = network.queue.name
+    queue_name = network.environment.queue.name
     queue = django_rq.get_queue(queue_name)
     queue.enqueue_call(
         func=_autoscan_group,
@@ -132,4 +142,3 @@ def _autoscan_address(address):
             ipaddress.snmp_version = None
             ipaddress.dead_ping_count += 1
             ipaddress.save(update_last_seen=False)
-
