@@ -69,7 +69,7 @@ and write proper part of data.
 
 There are default groups defined:
 
-* assets-buyer - user can view and modify financial data,
+* assets-buyer - user can view and modify assets financial data,
 * assets-helper - user can modify assets assignee and localization,
 * assets-staff - user has permission to manage assets data in administrator
   panel.
