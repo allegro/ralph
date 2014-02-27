@@ -26,9 +26,11 @@ from django.views.generic import (
 from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Language, TagStem
 from bob.menu import MenuItem
+import pluggableapp
 from powerdns.models import Record
 
-from ralph.discovery.models_component import Ethernet, EthernetSpeed
+from ralph.discovery.models_component import Ethernet
+from ralph.app import RalphModule
 from ralph.discovery.models_device import DeprecationKind, MarginKind
 from ralph.scan.errors import Error as ScanError
 from ralph.scan.manual import scan_address
@@ -173,9 +175,11 @@ def _get_details(dev, purchase_only=False, with_price=False,
                 detail['price'] = None
         if with_price and not detail['price']:
             continue
-        if (detail['group'] != 'dev' and 'size' not in detail and
-                detail.get('model')
-            ):
+        if (
+            detail['group'] != 'dev' and
+            'size' not in detail and
+            detail.get('model')
+        ):
             detail['size'] = detail['model'].size
         if not detail.get('model'):
             detail['model'] = detail.get('model_name', '')
@@ -215,10 +219,10 @@ class BaseMixin(object):
         has_perm = profile.has_perm
         tab_items = []
         venture = (
-                self.venture if self.venture and self.venture != '*' else None
-            ) or (
-                self.object.venture if self.object else None
-            )
+            self.venture if self.venture and self.venture != '*' else None
+        ) or (
+            self.object.venture if self.object else None
+        )
 
         if has_perm(Perm.read_device_info_generic, venture):
             tab_items.extend([
@@ -285,9 +289,11 @@ class BaseMixin(object):
                     pass
             if ci:
                 tab_items.extend([
-                    MenuItem('CMDB', fugue_icon='fugue-thermometer',
-                             href='/cmdb/ci/view/%s' % ci.id),
-                    ])
+                    MenuItem(
+                        'CMDB', fugue_icon='fugue-thermometer',
+                        href='/cmdb/ci/view/%s' % ci.id
+                    ),
+                ])
         if has_perm(Perm.read_device_info_reports, venture):
             tab_items.extend([
                 MenuItem('Reports', fugue_icon='fugue-reports-stack',
@@ -326,22 +332,21 @@ class BaseMixin(object):
             mainmenu_items.append(
                 MenuItem('Catalog', fugue_icon='fugue-paper-bag',
                          view_name='catalog'))
+
         if ('ralph.cmdb' in settings.INSTALLED_APPS and
                 has_perm(Perm.read_configuration_item_info_generic)):
             mainmenu_items.append(
                 MenuItem('CMDB', fugue_icon='fugue-thermometer',
                          href='/cmdb/changes/timeline')
             )
-        if ('ralph_assets' in settings.INSTALLED_APPS):
-            mainmenu_items.append(
-                MenuItem('Assets', fugue_icon='fugue-box-label',
-                         href='/assets')
-            )
-        if ('ralph_pricing' in settings.INSTALLED_APPS):
-            mainmenu_items.append(
-                MenuItem('Pricing', fugue_icon='fugue-money-coin',
-                         href='/pricing')
-            )
+
+        for app in pluggableapp.app_dict.values():
+            if isinstance(app, RalphModule):
+                mainmenu_items.append(MenuItem(
+                    app.disp_name,
+                    fugue_icon=app.icon,
+                    href='/{}'.format(app.url_prefix)
+                ))
 
         if settings.BUGTRACKER_URL:
             mainmenu_items.append(
@@ -596,7 +601,7 @@ class Info(DeviceUpdateView):
                 p = device.venture_role.roleproperty_set.get(symbol=symbol)
             except RoleProperty.DoesNotExist:
                 p = device.venture.roleproperty_set.get(symbol=symbol)
-            if value != p.default and not {value,  p.default} == {None, ''}:
+            if value != p.default and not {value, p.default} == {None, ''}:
                 pv, created = RolePropertyValue.concurrent_get_or_create(
                     property=p,
                     device=device,
@@ -702,7 +707,7 @@ class Addresses(DeviceDetailView):
         ips = set(ip.address for ip in self.object.ipaddress_set.all())
         names = set(ip.hostname for ip in self.object.ipaddress_set.all()
                     if ip.hostname)
-        dotnames = set(name+'.' for name in names)
+        dotnames = set(name + '.' for name in names)
         revnames = set('.'.join(reversed(ip.split('.'))) + '.in-addr.arpa'
                        for ip in ips)
         starrevnames = set()
@@ -712,10 +717,10 @@ class Addresses(DeviceDetailView):
                 parts.pop(0)
                 starrevnames.add('.'.join(['*'] + parts))
         for entry in Record.objects.filter(
-                db.Q(content__in=ips) |
-                db.Q(name__in=names) |
-                db.Q(content__in=names | dotnames)
-                ).distinct():
+            db.Q(content__in=ips) |
+            db.Q(name__in=names) |
+            db.Q(content__in=names | dotnames)
+        ).distinct():
             names.add(entry.name)
             if entry.type == 'A':
                 ips.add(entry.content)
@@ -1034,7 +1039,9 @@ class History(DeviceDetailView):
     def get_context_data(self, **kwargs):
         query_variable_name = 'history_page'
         ret = super(History, self).get_context_data(**kwargs)
-        history = self.object.historychange_set.exclude(field_name='snmp_community').order_by('-date')
+        history = self.object.historychange_set.exclude(
+            field_name='snmp_community'
+        ).order_by('-date')
         show_all = bool(self.request.GET.get('all', ''))
         if not show_all:
             history = history.exclude(user=None)
@@ -1109,8 +1116,7 @@ class Asset(BaseMixin, TemplateView):
             self.asset = get_asset(self.object.id)
             self.form = ChooseAssetForm(
                 initial={
-                    'asset': self.asset['asset_id']
-                        if self.asset else None,
+                    'asset': self.asset['asset_id'] if self.asset else None,
                 },
                 device_id=self.object.id,
             )
@@ -1403,15 +1409,17 @@ class BulkEdit(BaseMixin, TemplateView):
             if not self.edit_fields:
                 messages.error(self.request, 'Mark changed fields')
             elif self.form.is_valid and self.form.data['save_comment']:
-                self.form.fields = [f for f in self.form.fields
-                        if not f in self.edit_fields or f != 'save_comment']
+                self.form.fields = [
+                    f for f in self.form.fields
+                    if not f in self.edit_fields or f != 'save_comment'
+                ]
                 bulk_update(
                     self.devices,
                     self.edit_fields,
                     self.form.data,
                     self.request.user
                 )
-                return HttpResponseRedirect(self.request.path+'../info/')
+                return HttpResponseRedirect(self.request.path + '../info/')
             else:
                 messages.error(self.request, 'Correct the errors.')
         elif 'bulk' in self.request.POST:
@@ -1758,4 +1766,3 @@ class ScanStatus(BaseMixin, TemplateView):
                 )
                 return HttpResponseRedirect(self.request.path)
         return self.get(*args, **kwargs)
-

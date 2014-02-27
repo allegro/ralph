@@ -23,9 +23,7 @@ from lck.django.common.models import (Named, WithConcurrentGetOrCreate,
 from lck.django.choices import Choices
 from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Taggable
-from django.db.utils import DatabaseError
 from django.utils.html import escape
-from django.dispatch import receiver
 
 from ralph.discovery.models_component import is_mac_valid, Ethernet
 from ralph.discovery.models_util import LastSeen, SavingUser
@@ -37,17 +35,24 @@ BLADE_SERVERS = [
     r'^HP ProLiant BL',
 ]
 
+
 BLADE_SERVERS_RE = re.compile('|'.join(('(%s)' % r) for r in BLADE_SERVERS))
+
 
 SERIAL_BLACKLIST = set([
     None, '', 'Not Available', 'XxXxXxX', '-----', '[Unknown]', '0000000000',
     'Not Specified', 'YK10CD', '1234567890', 'None', 'To Be Filled By O.E.M.',
 ])
 
-DISK_VENDOR_BLACKLIST = set(['lsi', 'lsilogic', 'vmware', '3pardata'])
+DISK_VENDOR_BLACKLIST = set([
+    'lsi', 'lsilogic', 'vmware', '3pardata',
+])
+
+
 DISK_PRODUCT_BLACKLIST = set([
-    'mr9261-8i', '9750-4i', 'msa2324fc', 'logical volume', 'virtualdisk',
-    'virtual-disk', 'multi-flex', '1815      fastt', 'comstar',
+    'mr9261-8i', '9750-4i', 'msa2324fc',
+    'logical volume', 'virtualdisk', 'virtual-disk', 'multi-flex',
+    '1815      fastt', 'comstar',
 ])
 
 
@@ -180,7 +185,7 @@ class DeviceModel(SavePrioritized, WithConcurrentGetOrCreate, SavingUser):
     chassis_size = db.PositiveIntegerField(
         verbose_name=_("chassis size"),
         null=True,
-        blank=True
+        blank=True,
     )
 
     class Meta:
@@ -212,7 +217,9 @@ class UptimeSupport(db.Model):
     None, timedelta and int values on set."""
 
     uptime_seconds = db.PositiveIntegerField(
-        verbose_name=_("uptime in seconds"), default=0)
+        verbose_name=_("uptime in seconds"),
+        default=0,
+    )
     uptime_timestamp = db.DateTimeField(
         verbose_name=_("uptime timestamp"),
         null=True,
@@ -260,12 +267,17 @@ class UptimeSupport(db.Model):
 
 
 class Device(
-    LastSeen, Taggable.NoDefaultTags, SavePrioritized,
-    WithConcurrentGetOrCreate, UptimeSupport, SoftDeletable, SavingUser
+    LastSeen,
+    Taggable.NoDefaultTags,
+    SavePrioritized,
+    WithConcurrentGetOrCreate,
+    UptimeSupport,
+    SoftDeletable,
+    SavingUser,
 ):
     name = db.CharField(
         verbose_name=_("name"),
-        max_length=255,
+        max_length=255
     )
     name2 = db.CharField(
         verbose_name=_("extra name"),
@@ -654,9 +666,9 @@ class Device(
         return 'unknown'
 
     def find_management(self):
-        for ipaddr in self.ipaddress_set.filter(
-            is_management=True
-        ).order_by('-address'):
+        for ipaddr in self.ipaddress_set.filter(is_management=True).order_by(
+            '-address'
+        ):
             return ipaddr
         if self.management:
             return self.management
@@ -783,25 +795,6 @@ class Device(
             ]
         ))
         return props
-
-
-@receiver(
-    db.signals.post_delete, sender=Device,
-    dispatch_uid='discovery.device.post_delete'
-)
-def device_post_delete(sender, instance, **kwargs):
-    try:
-        from ralph_assets.models import DeviceInfo
-    except ImportError:
-        return  # Assets not installed
-    try:
-        for deviceinfo in DeviceInfo.objects.filter(
-            ralph_device_id=instance.id
-        ):
-            deviceinfo.ralph_device_id = None
-            deviceinfo.save()
-    except DatabaseError:  # In tests the ralph_assets is installed, but db
-        pass               # is not migrated
 
 
 class ReadOnlyDevice(Device):

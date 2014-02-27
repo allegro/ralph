@@ -10,6 +10,7 @@ This documentation
    installation
    upgrade
    configuration
+   optional_modules
    permissions
    browser
    catalog
