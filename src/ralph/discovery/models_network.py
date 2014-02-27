@@ -24,6 +24,43 @@ from ralph.util import network
 from ralph.discovery.models_util import LastSeen
 
 
+class Environment(Named):
+    data_center = db.ForeignKey("DataCenter", verbose_name=_("data center"))
+    queue = db.ForeignKey(
+        "DiscoveryQueue",
+        verbose_name=_("discovery queue"),
+        null=True,
+        blank=True,
+        on_delete=db.SET_NULL,
+    )
+    hosts_naming_template = db.CharField(
+        max_length=30,
+        default="h<10000,19999>.dc",
+        help_text=_(
+            "E.g. h<200,299>.dc|h<400,499>.dc will produce: h200.dc "
+            "h201.dc ... h299.dc h400.dc h401.dc"
+        ),
+    )
+    next_server = db.CharField(
+        max_length=32,
+        blank=True,
+        default='',
+        help_text=_("The address for a TFTP server for DHCP."),
+    )
+    domain = db.CharField(
+        _('domain'),
+        max_length=255,
+        blank=True,
+        null=True,
+    )
+
+    def __unicode__(self):
+        return "%s environment" % self.name
+
+    class Meta:
+        ordering = ('name',)
+
+
 class NetworkKind(Named):
     icon = db.CharField(
         _("icon"), max_length=32, null=True, blank=True, default=None,
@@ -65,12 +102,25 @@ class AbstractNetwork(db.Model):
     vlan = db.PositiveIntegerField(
         _("VLAN number"), null=True, blank=True, default=None,
     )
-    data_center = db.ForeignKey("DataCenter", verbose_name=_("data center"))
+    data_center = db.ForeignKey(
+        "DataCenter",
+        verbose_name=_("data center"),
+        null=True,
+        blank=True,
+    )
+    environment = db.ForeignKey(
+        "Environment",
+        verbose_name=_("data center"),
+        null=True,
+        blank=True,
+    )
     min_ip = db.PositiveIntegerField(
         _("smallest IP number"), null=True, blank=True, default=None,
+        editable=False,
     )
     max_ip = db.PositiveIntegerField(
         _("largest IP number"), null=True, blank=True, default=None,
+        editable=False,
     )
     kind = db.ForeignKey(
         NetworkKind, verbose_name=_("network kind"), on_delete=db.SET_NULL,
@@ -377,25 +427,8 @@ class NetworkTerminator(Named):
 
 
 class DataCenter(Named):
-    hosts_naming_template = db.CharField(
-        max_length=30, default="h<10000,19999>.dc",
-        help_text=_(
-            "E.g. h<200,299>.dc|h<400,499>.dc will produce: h200.dc "
-            "h201.dc ... h299.dc h400.dc h401.dc"
-        )
-    )
-    next_server = db.CharField(
-        max_length=32,
-        blank=True,
-        default='',
-        help_text=_("The address for a TFTP server for DHCP."),
-    )
-    domain = db.CharField(
-        _('domain'),
-        max_length=255,
-        blank=True,
-        null=True,
-    )
+    def __unicode__(self):
+        return self.name
 
     class Meta:
         verbose_name = _("data center")

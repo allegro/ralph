@@ -66,7 +66,7 @@ class NetworkAdminForm(forms.ModelForm):
             net = ipaddr.IPNetwork(address)
         except ValueError:
             raise forms.ValidationError(_("It's not a valid network address."))
-        given_network_addr = net.compressed.split('/',1)[0]
+        given_network_addr = net.compressed.split('/', 1)[0]
         real_network_addr = net.network.compressed
         if given_network_addr != real_network_addr:
             msg = "{} is invalid network address, valid network is {}".format(
@@ -146,6 +146,43 @@ class DataCenterAdmin(ModelAdmin):
     form = DataCenterAdminForm
 
 admin.site.register(m.DataCenter, DataCenterAdmin)
+
+
+class EnvironmentAdminForm(forms.ModelForm):
+    class Meta:
+        model = m.Environment
+
+    def clean_hosts_naming_template(self):
+        template = self.cleaned_data['hosts_naming_template']
+        if re.search("[^a-z0-9<>,\.|-]", template):
+            raise forms.ValidationError(
+                _("Please remove disallowed characters."),
+            )
+        for part in template.split("|"):
+            if not HOSTS_NAMING_TEMPLATE_REGEX.search(part):
+                raise forms.ValidationError(
+                    _(
+                        "Incorrect template structure. Please see example "
+                        "below.",
+                    ),
+                )
+        return template
+
+
+class EnvironmentAdmin(ModelAdmin):
+    list_display = (
+        'name',
+        'data_center',
+        'queue',
+        'domain',
+        'hosts_naming_template',
+        'next_server'
+    )
+    search_fields = ('name',)
+    form = EnvironmentAdminForm
+    list_filter = ('data_center', 'queue')
+
+admin.site.register(m.Environment, EnvironmentAdmin)
 
 
 class DiscoveryQueueAdmin(ModelAdmin):
@@ -462,4 +499,3 @@ class DiscoveryWarningAdmin(ModelAdmin):
     search_fields = ('plugin', 'ip', 'message')
 
 admin.site.register(m.DiscoveryWarning, DiscoveryWarningAdmin)
-
