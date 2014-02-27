@@ -171,7 +171,9 @@ def _find_hostname(network, reserved_hostnames, device=None, ip=None):
         else:
             if ipaddress.hostname:
                 return ipaddress.hostname
-    hostname = get_next_free_hostname(network.data_center, reserved_hostnames)
+    if not network.environment:
+        return ""
+    hostname = get_next_free_hostname(network.environment, reserved_hostnames)
     if hostname:
         reserved_hostnames.append(hostname)
     return hostname or ""
