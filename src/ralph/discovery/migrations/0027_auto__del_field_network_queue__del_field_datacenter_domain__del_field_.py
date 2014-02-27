@@ -8,6 +8,9 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
+        # Deleting field 'Network.queue'
+        db.delete_column('discovery_network', 'queue_id')
+
         # Deleting field 'DataCenter.domain'
         db.delete_column('discovery_datacenter', 'domain')
 
@@ -19,6 +22,11 @@ class Migration(SchemaMigration):
 
 
     def backwards(self, orm):
+        # Adding field 'Network.queue'
+        db.add_column('discovery_network', 'queue',
+                      self.gf('django.db.models.fields.related.ForeignKey')(default=None, to=orm['discovery.DiscoveryQueue'], null=True, on_delete=models.SET_NULL, blank=True),
+                      keep_default=False)
+
         # Adding field 'DataCenter.domain'
         db.add_column('discovery_datacenter', 'domain',
                       self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True),
@@ -541,7 +549,6 @@ class Migration(SchemaMigration):
             'min_ip': ('django.db.models.fields.PositiveIntegerField', [], {'default': 'None', 'null': 'True', 'blank': 'True'}),
             'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '75', 'db_index': 'True'}),
-            'queue': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': "orm['discovery.DiscoveryQueue']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
             'racks': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['discovery.Device']", 'symmetrical': 'False'}),
             'remarks': ('django.db.models.fields.TextField', [], {'default': "u''", 'blank': 'True'}),
             'reserved': ('django.db.models.fields.PositiveIntegerField', [], {'default': '10'}),

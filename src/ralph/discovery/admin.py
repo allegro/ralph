@@ -121,29 +121,9 @@ class NetworkTerminatorAdmin(ModelAdmin):
 admin.site.register(m.NetworkTerminator, NetworkTerminatorAdmin)
 
 
-class DataCenterAdminForm(forms.ModelForm):
-    class Meta:
-        model = m.DataCenter
-
-    def clean_hosts_naming_template(self):
-        template = self.cleaned_data['hosts_naming_template']
-        if re.search("[^a-z0-9<>,\.|-]", template):
-            raise forms.ValidationError(
-                _("Please remove disallowed characters.")
-            )
-        for part in template.split("|"):
-            if not HOSTS_NAMING_TEMPLATE_REGEX.search(part):
-                raise forms.ValidationError(
-                    _("Incorrect template structure. Please see example "
-                      "below.")
-                )
-        return template
-
-
 class DataCenterAdmin(ModelAdmin):
-    list_display = ('name', 'hosts_naming_template', 'domain')
+    list_display = ('name',)
     search_fields = ('name',)
-    form = DataCenterAdminForm
 
 admin.site.register(m.DataCenter, DataCenterAdmin)
 

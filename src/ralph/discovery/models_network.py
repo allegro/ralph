@@ -126,10 +126,6 @@ class AbstractNetwork(db.Model):
         NetworkKind, verbose_name=_("network kind"), on_delete=db.SET_NULL,
         null=True, blank=True, default=None,
     )
-    queue = db.ForeignKey(
-        "DiscoveryQueue", verbose_name=_("discovery queue"), null=True,
-        blank=True, default=None, on_delete=db.SET_NULL,
-    )
     racks = db.ManyToManyField(
         'discovery.Device', verbose_name=_("racks"),
         # We can't import DeviceType in here, so we use an integer.
