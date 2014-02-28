@@ -16,6 +16,7 @@ from ralph.dnsedit.dhcp_conf import (
 from ralph.discovery.models import (
     DataCenter,
     Device,
+    Environment,
     Ethernet,
     IPAddress,
     Network,
@@ -30,12 +31,19 @@ def _sanitize_dhcp_config(config):
 
 class DHCPConfTest(TestCase):
     def setUp(self):
-        self.dc1 = DataCenter.objects.create(
+        self.dc1 = DataCenter.objects.create(name='dc1')
+        self.dc2 = DataCenter.objects.create(name='dc2')
+        self.env1 = Environment(
             name='dc1',
+            data_center=self.dc1,
             next_server='10.20.30.40',
             domain='dc1',
         )
-        self.dc2 = DataCenter.objects.create(name='dc2', domain='dc2')
+        self.env2 = Environment(
+            name='dc2',
+            data_center=self.dc2,
+            domain='dc2',
+        )
         self.domain1 = Domain.objects.create(
             name='dc1.local',
             type='MASTER',
@@ -50,6 +58,7 @@ class DHCPConfTest(TestCase):
             data_center=self.dc1,
             dhcp_broadcast=True,
             gateway='127.0.0.255',
+            environment=self.env1,
         )
         self.network2 = Network.objects.create(
             name='net1.dc2',
@@ -57,6 +66,7 @@ class DHCPConfTest(TestCase):
             data_center=self.dc2,
             dhcp_broadcast=True,
             gateway='10.20.1.255',
+            environment=self.env2,
         )
         DNSServer.objects.create(
             ip_address='10.20.30.1',
@@ -109,7 +119,7 @@ class DHCPConfTest(TestCase):
         )
         self.assertEqual(config, '')
 
-    def test_dc_entry(self):
+    def test_env_entry(self):
         DHCPEntry.objects.create(ip='127.0.0.1', mac='deadbeefcafe')
         Record.objects.create(
             name='1.0.0.127.in-addr.arpa',
@@ -135,7 +145,7 @@ class DHCPConfTest(TestCase):
             'hardware ethernet DE:AD:BE:EF:CA:F1; }',
         )
         config = _sanitize_dhcp_config(
-            generate_dhcp_config(server_address='127.0.1.1', dc=self.dc2),
+            generate_dhcp_config(server_address='127.0.1.1', env=self.env2),
         )
         self.assertEqual(
             config,
@@ -263,9 +273,12 @@ shared-network "net1.dc2" {
 }"""
         )
 
-    def test_dc_networks_configs(self):
+    def test_env_networks_configs(self):
         config = _sanitize_dhcp_config(
-            generate_dhcp_config_head(server_address='127.0.1.1', dc=self.dc2),
+            generate_dhcp_config_head(
+                server_address='127.0.1.1',
+                env=self.env2,
+            ),
         )
         self.assertEqual(
             config,
@@ -296,4 +309,3 @@ shared-network "net1.dc2" {
     }
 }"""
         )
-
