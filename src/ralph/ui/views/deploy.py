@@ -62,10 +62,31 @@ class Deployment(BaseMixin, CreateView):
                 "{} - is not verified, you cannot "
                 "deploy this device".format(self.device),
             )
+        next_hostname = None
+        first_free_ip_addresses = []
+        rack = self.device.find_rack()
+        if rack:
+            networks = rack.network_set.filter(
+                environment__isnull=False,
+            ).order_by('name')
+            for network in networks:
+                next_hostname = get_next_free_hostname(network.environment)
+                if next_hostname:
+                    break
+            for network in networks:
+                first_free_ip = get_first_free_ip(network.name)
+                if first_free_ip:
+                    first_free_ip_addresses.append({
+                        'network_name': network.name,
+                        'first_free_ip': first_free_ip,
+                    })
         return {
             'form': kwargs['form'],
-            'device': self.device
+            'device': self.device,
+            'next_hostname': next_hostname,
+            'first_free_ip_addresses': first_free_ip_addresses,
         }
+
 
 class PrepareMassDeployment(Base):
     template_name = 'ui/mass_deploy.html'
@@ -255,8 +276,8 @@ class MassDeployment(Base):
                 if device.ipaddress_set.exists():
                     self.actions.append((
                         'info',
-                        "All DNS entries for IP addresses [%s] will be deleted." %
-                        ', '.join(
+                        "All DNS entries for IP addresses [%s] will be "
+                        "deleted." % ', '.join(
                             ip.address for ip in device.ipaddress_set.all()
                         ),
                     ))
@@ -340,4 +361,3 @@ class MassDeployment(Base):
             return HttpResponseRedirect('/')
         messages.error(self.request, "Please correct the errors.")
         return super(MassDeployment, self).get(*args, **kwargs)
-
