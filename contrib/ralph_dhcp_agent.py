@@ -26,7 +26,7 @@ def all(iterable):
 class SimpleDHCPManager(object):
     def __init__(
         self, api_url, api_username, api_key, mode, dhcp_config, restart,
-        logger, dc, **kwargs
+        logger, env, **kwargs
     ):
         self.api_url = api_url.rstrip('/')
         self.api_username = api_username
@@ -35,7 +35,7 @@ class SimpleDHCPManager(object):
         self.dhcp_config_path = dhcp_config
         self.dhcp_service_name = restart
         self.logger = logger
-        self.dc = dc
+        self.env = env
 
     def update_configuration(self):
         config = self._get_configuration()
@@ -53,8 +53,8 @@ class SimpleDHCPManager(object):
                 'api_key': self.api_key,
             })
         )
-        if self.dc:
-            url += '&dc=' + self.dc
+        if self.env:
+            url += '&env=' + self.env
         req = urllib2.Request(url)
         try:
             resp = urllib2.urlopen(req)
