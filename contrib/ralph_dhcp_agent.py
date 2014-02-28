@@ -25,29 +25,39 @@ def all(iterable):
 
 class SimpleDHCPManager(object):
     def __init__(
-        self, api_url, api_username, api_key, mode, dhcp_config, restart,
-        logger, env, **kwargs
+        self, api_url, api_username, api_key, mode, dhcp_config_entries,
+        dhcp_config_networks, restart, logger, env, **kwargs
     ):
         self.api_url = api_url.rstrip('/')
         self.api_username = api_username
         self.api_key = api_key
         self.mode = mode.upper()
-        self.dhcp_config_path = dhcp_config
+        self.dhcp_entries_config_path = dhcp_config_entries
+        self.dhcp_networks_config_path = dhcp_config_networks
         self.dhcp_service_name = restart
         self.logger = logger
         self.env = env
 
     def update_configuration(self):
-        config = self._get_configuration()
-        if self._configuration_is_valid(config):
-            if self._set_new_configuration(config):
-                return self._send_confirm()
-        return False
+        tasks = []
+        if self.mode == 'ALL' or self.mode == 'NETWORKS':
+            tasks.append('NETWORKS')
+        if self.mode == 'ALL' or self.mode == 'ENTRIES':
+            tasks.append('ENTRIES')
+        for task in tasks:
+            config = self._get_configuration(task)
+            if not self._configuration_is_valid(config):
+                return False
+            if not self._set_new_configuration(config, task):
+                return False
+        if not self._restart_dhcp_server():
+            return False
+        return self._send_confirm()
 
-    def _get_configuration(self):
+    def _get_configuration(self, mode):
         url = "{}/dhcp-config{}/?{}".format(
             self.api_url,
-            '-head' if self.mode == 'NETWORKS' else '',
+            '-head' if mode == 'NETWORKS' else '',
             urlencode({
                 'username': self.api_username,
                 'api_key': self.api_key,
@@ -98,21 +108,26 @@ class SimpleDHCPManager(object):
             )
         return restart_successful
 
-    def _set_new_configuration(self, config):
+    def _set_new_configuration(self, config, mode):
+        config_path = getattr(
+            self,
+            'dhcp_%s_config_path' % mode.lower(),
+            False,
+        )
         try:
-            if self.dhcp_config_path:
-                f = open(self.dhcp_config_path, 'w')
+            if config_path:
+                f = open(config_path, 'w')
                 try:
                     f.write(config)
                 finally:
                     f.close()
                 self.logger.info(
-                    'Configuration written to %s' % self.dhcp_config_path,
+                    'Configuration written to %s' % config_path,
                 )
             else:
                 sys.stdout.write(config)
                 self.logger.info('Configuration written to stdout.')
-            return self._restart_dhcp_server()
+            return True
         except IOError, e:
             self.logger.error(
                 'Could not write new DHCP configuration. Error '
@@ -153,8 +168,9 @@ def _get_cmd_options():
         '-m',
         '--mode',
         type='choice',
-        choices=['entries', 'networks'],
-        help='Choose what part of config you want to upgrade.',
+        choices=['all', 'entries', 'networks'],
+        default='all',
+        help='Choose what part of config you want to upgrade. [Default: all]',
     )
     opts_parser.add_option(
         '-l',
@@ -164,13 +180,18 @@ def _get_cmd_options():
     )
     opts_parser.add_option(
         '-c',
-        '--dhcp-config',
-        help='Path to the DHCP configuration file.',
+        '--dhcp-config-entries',
+        help='Path to the DHCP entries configuration file.',
     )
     opts_parser.add_option(
-        '-d',
-        '--dc',
-        help='Only get config for the specified data center.',
+        '-n',
+        '--dhcp-config-networks',
+        help='Path to the DHCP networks configuration file.',
+    )
+    opts_parser.add_option(
+        '-e',
+        '--env',
+        help='Only get config for the specified environment.',
     )
     opts_parser.add_option(
         '-r',
