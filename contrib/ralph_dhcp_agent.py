@@ -136,8 +136,8 @@ class SimpleDHCPManager(object):
         return True
 
     def _get_time_from_config(self, config_part):
-        regex = r'#.+at ([0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2})'
-        m = re.match(regex, config_part)
+        reg = r'#.+at ([0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2})'
+        m = re.match(reg, config_part)
         if m:
             return m.group(1)
 
@@ -156,16 +156,34 @@ def _get_cmd_options():
         choices=['entries', 'networks'],
         help='Choose what part of config you want to upgrade.',
     )
-    opts_parser.add_option('-l', '--log-path', help='Path to log file. '
-        '[Default: STDOUT]', default='STDOUT')
-    opts_parser.add_option('-c', '--dhcp-config', help='Path to the DHCP '
-        'configuration file.')
-    opts_parser.add_option('-d', '--dc', help='Only get config for the '
-        'specified data center.')
-    opts_parser.add_option('-r', '--restart', help='Name of the service to '
-        'restart.')
-    opts_parser.add_option('-v', '--verbose', help='Increase verbosity.',
-        action="store_true", default=False)
+    opts_parser.add_option(
+        '-l',
+        '--log-path',
+        help='Path to log file. [Default: STDOUT]',
+        default='STDOUT',
+    )
+    opts_parser.add_option(
+        '-c',
+        '--dhcp-config',
+        help='Path to the DHCP configuration file.',
+    )
+    opts_parser.add_option(
+        '-d',
+        '--dc',
+        help='Only get config for the specified data center.',
+    )
+    opts_parser.add_option(
+        '-r',
+        '--restart',
+        help='Name of the service to restart.',
+    )
+    opts_parser.add_option(
+        '-v',
+        '--verbose',
+        help='Increase verbosity.',
+        action="store_true",
+        default=False,
+    )
     opts = opts_parser.parse_args()[0]
     result = vars(opts)
     result['logger'] = _setup_logging(opts.log_path, opts.verbose)
@@ -173,7 +191,7 @@ def _get_cmd_options():
 
 
 def _setup_logging(filename, verbose):
-    log_size = 20 # MB
+    log_size = 20  # MB
     logger = logging.getLogger("RalphDHCPAgent")
     if verbose:
         logger.setLevel(logging.INFO)
@@ -218,4 +236,3 @@ if __name__ == "__main__":
     sdm = SimpleDHCPManager(**opts)
     if not sdm.update_configuration():
         sys.exit(1)
-
