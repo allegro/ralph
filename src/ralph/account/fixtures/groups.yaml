@@ -1,0 +1,40 @@
+- model: auth.group
+  pk: null
+  fields:
+    name: assets-staff
+    permissions:
+        - [add_asset, ralph_assets, asset]
+        - [change_asset, ralph_assets, asset]
+        - [delete_asset, ralph_assets, asset]
+        - [add_assetcategory, ralph_assets, assetcategory]
+        - [change_assetcategory, ralph_assets, assetcategory]
+        - [delete_assetcategory, ralph_assets, assetcategory]
+        - [add_assethistorychange, ralph_assets, assethistorychange]
+        - [change_assethistorychange, ralph_assets, assethistorychange]
+        - [delete_assethistorychange, ralph_assets, assethistorychange]
+        - [add_assetmanufacturer, ralph_assets, assetmanufacturer]
+        - [change_assetmanufacturer, ralph_assets, assetmanufacturer]
+        - [delete_assetmanufacturer, ralph_assets, assetmanufacturer]
+        - [add_assetmodel, ralph_assets, assetmodel]
+        - [change_assetmodel, ralph_assets, assetmodel]
+        - [delete_assetmodel, ralph_assets, assetmodel]
+        - [add_deviceinfo, ralph_assets, deviceinfo]
+        - [change_deviceinfo, ralph_assets, deviceinfo]
+        - [delete_deviceinfo, ralph_assets, deviceinfo]
+        - [add_officeinfo, ralph_assets, officeinfo]
+        - [change_officeinfo, ralph_assets, officeinfo]
+        - [delete_officeinfo, ralph_assets, officeinfo]
+        - [add_partinfo, ralph_assets, partinfo]
+        - [change_partinfo, ralph_assets, partinfo]
+        - [delete_partinfo, ralph_assets, partinfo]
+        - [add_warehouse, ralph_assets, warehouse]
+        - [change_warehouse, ralph_assets, warehouse]
+        - [delete_warehouse, ralph_assets, warehouse]
+- model: auth.group
+  pk: null
+  fields:
+    name: assets-buyer
+- model: auth.group
+  pk: null
+  fields:
+    name: assets-helper

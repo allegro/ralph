@@ -48,7 +48,7 @@ class AvailableHomePage(Choices):
 class Perm(Choices):
     _ = Choices.Choice
 
-    GLOBAL = Choices.Group(0) << {'per_venture': False}
+    GLOBAL = Choices.Group(0).extra(per_venture=False)
     read_dc_structure = _("read data center structure")
     edit_ventures_roles = _("edit ventures and roles")
     create_devices = _("create devices")
