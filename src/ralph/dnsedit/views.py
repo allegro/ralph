@@ -6,11 +6,15 @@ from __future__ import unicode_literals
 
 import datetime
 
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import (
+    HttpResponse,
+    HttpResponseForbidden,
+    HttpResponseNotFound,
+)
 from lck.django.common import remote_addr
 from django.shortcuts import get_object_or_404
 
-from ralph.discovery.models import DataCenter
+from ralph.discovery.models import Environment
 from ralph.dnsedit.models import DHCPServer
 from ralph.dnsedit.dhcp_conf import (
     generate_dhcp_config,
@@ -41,18 +45,20 @@ def dhcp_synch(request):
 def dhcp_config(request):
     if not api.is_authenticated(request):
         return HttpResponseForbidden('API key required.')
-    dc_name = request.GET.get('dc', '')
-    dc = None
-    if dc_name:
+    env_name = request.GET.get('env', '')
+    env = None
+    if env_name:
         try:
-            dc = DataCenter.objects.get(name__iexact=dc_name)
-        except DataCenter.DoesNotExist:
-            pass
+            env = Environment.objects.get(name__iexact=env_name)
+        except Environment.DoesNotExist:
+            return HttpResponseNotFound(
+                "Environment `%s` does not exist." % env_name
+            )
     server_address = remote_addr(request)
     return HttpResponse(
         generate_dhcp_config(
             server_address=server_address,
-            dc=dc,
+            env=env,
         ),
         content_type="text/plain",
     )
@@ -61,19 +67,20 @@ def dhcp_config(request):
 def dhcp_config_head(request):
     if not api.is_authenticated(request):
         return HttpResponseForbidden('API key required.')
-    dc_name = request.GET.get('dc', '')
-    dc = None
-    if dc_name:
+    env_name = request.GET.get('env', '')
+    env = None
+    if env_name:
         try:
-            dc = DataCenter.objects.get(name__iexact=dc_name)
-        except DataCenter.DoesNotExist:
-            pass
+            env = Environment.objects.get(name__iexact=env_name)
+        except Environment.DoesNotExist:
+            return HttpResponseNotFound(
+                "Environment `%s` does not exist." % env_name
+            )
     server_address = remote_addr(request)
     return HttpResponse(
         generate_dhcp_config_head(
             server_address=server_address,
-            dc=dc,
+            env=env,
         ),
         content_type='text/plain',
     )
-
