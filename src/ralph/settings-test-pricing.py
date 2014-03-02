@@ -14,3 +14,5 @@ DATABASES = {
 }
 
 PLUGGABLE_APPS = ['assets', 'scrooge']
+
+SOUTH_TESTS_MIGRATE = False
