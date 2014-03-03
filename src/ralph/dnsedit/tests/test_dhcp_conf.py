@@ -33,13 +33,13 @@ class DHCPConfTest(TestCase):
     def setUp(self):
         self.dc1 = DataCenter.objects.create(name='dc1')
         self.dc2 = DataCenter.objects.create(name='dc2')
-        self.env1 = Environment(
+        self.env1 = Environment.objects.create(
             name='dc1',
             data_center=self.dc1,
             next_server='10.20.30.40',
             domain='dc1',
         )
-        self.env2 = Environment(
+        self.env2 = Environment.objects.create(
             name='dc2',
             data_center=self.dc2,
             domain='dc2',
@@ -293,8 +293,8 @@ shared-network "net1.dc2" {
         )
 
     def test_no_domain_networks_configs(self):
-        self.dc2.domain = None
-        self.dc2.save()
+        self.env2.domain = None
+        self.env2.save()
         config = _sanitize_dhcp_config(
             generate_dhcp_config_head(server_address='127.0.1.1'),
         )
