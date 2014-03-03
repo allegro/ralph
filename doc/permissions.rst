@@ -57,12 +57,34 @@ List of bound permissions
 .. [#1] Results are filtered per ventures and roles the user has access to.
 .. [#2] EDIT = CREATE, UPDATE and DELETE
 
+.. _groups:
+
 Groups
 ------
 
-Instead of giving permissions to every user separately, you can instead create
-a group with a specific set of permissions, and add those users to this group.
-The groups are also edited in the admin interface.
+Instead of giving permissions to every user separately, ralph use group-based
+permissions. Each group defined below represents role with defined set
+of permissions. You can add users to these groups to give them access to read
+and write proper part of data.
+
+There are default groups defined:
+
+* assets-buyer - user can view and modify assets financial data,
+* assets-helper - user can modify assets assignee and localization,
+* assets-staff - user has permission to manage assets data in administrator
+  panel.
+
+If you want to integrate Ralph with ldap, you will see these three metagroups
+usefull:
+
+* superuser,
+* staff,
+* active.
+
+These groups are translated into ``is_GROUPNAME`` user's flags defined
+in `django <https://docs.djangoproject.com/en/1.4/topics/auth/#django.contrib.auth.models.User.is_staff>`_.
+Be careful of defining groups with that names, because users will be
+added to them automatically after login through ldap.
 
 :index:`API Access`
 -------------------
