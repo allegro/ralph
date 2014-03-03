@@ -693,6 +693,15 @@ SCAN_PLUGINS = {
         'user': VMWARE_USER,
         'password': VMWARE_PASSWORD,
         'results_priority': {
+            'type': 1,
+            'system_ip_addresses': 50,
+            'subdevices': 50,
+            'mac_addresses': 50,
+            'hostname': 50,
+            'memory': 50,
+            'processors': 50,
+            'disks': 50,
+            'system_label': 50,
         },
     },
 }
