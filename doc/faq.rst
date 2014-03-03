@@ -24,10 +24,9 @@ Yes. You will need to install ``django-auth-ldap`` and ``python-ldap`` using
   }
 
 You will need to configure the LDAP connection as well as mapping remote users
-to local ones. For details consult `the official django-auth-ldap documentation
-<http://packages.python.org/django-auth-ldap/>`_. For example, connecting to an
-Active Directory service might look like this (users need to be in ``_gr_ralph``
-to log in, ``_gr_ralph_admin`` gives superuser privileges)::
+and groups to local ones. For details consult `the official django-auth-ldap
+documentation <http://packages.python.org/django-auth-ldap/>`_. For example,
+connecting to an Active Directory service might look like this::
 
   import ldap
   from django_auth_ldap.config import LDAPSearch, GroupOfNamesType
@@ -38,19 +37,35 @@ to log in, ``_gr_ralph_admin`` gives superuser privileges)::
       ldap.SCOPE_SUBTREE, '(&(objectClass=*)(sAMAccountName=%(user)s))')
   AUTH_LDAP_USER_ATTR_MAP = {"first_name": "givenName", "last_name": "sn",
       "email": "mail"}
+
+Ralph provides ldap groups to django groups mapping. All what you need to
+do are:
+
+ * import custom ``MappedNestedGroupOfNamesType``,
+ * set up group mirroring,
+ * declare mapping.
+
+::
+
+  from ralph.account.ldap import MappedNestedGroupOfNamesType
+  AUTH_LDAP_GROUP_MAPPING = {
+    "_gr_ralph": "active",
+    "_gr_ralph_assets_buyer": "assets-buyer",
+    "_gr_ralph_assets_helper": "assets-helper",
+    "_gr_ralph_assets_staff": "assets-staff",
+    "_gr_ralph_admin": "superuser",
+    "_gr_ralph_staff": "staff",
+  }
+  AUTH_LDAP_MIRROR_GROUPS = True
+  AUTH_LDAP_GROUP_TYPE = MappedNestedGroupOfNamesType(name_attr="cn")
   AUTH_LDAP_GROUP_SEARCH = LDAPSearch("DC=organization,DC=internal",
       ldap.SCOPE_SUBTREE, '(objectClass=group)')
-  AUTH_LDAP_GROUP_TYPE = GroupOfNamesType(name_attr="cn")
-  AUTH_LDAP_REQUIRE_GROUP = "CN=_gr_ralph,OU=Other Resources,"\
-      "OU=Users-Restricted,DC=organization,DC=internal"
-  AUTH_LDAP_USER_FLAGS_BY_GROUP = {
-      "is_active": AUTH_LDAP_REQUIRE_GROUP,
-      "is_staff": AUTH_LDAP_REQUIRE_GROUP,
-      "is_superuser": "CN=_gr_ralph_admin,OU=Other Resources,"\
-                      "OU=Allegro-Restricted,DC=organization,"\
-                      "DC=internal"
-  }
-  AUTH_LDAP_ALWAYS_UPDATE_USER = False
+
+If you want to define ldap groups with names identical to ralph roles, you
+shouldn't declare mapping ``AUTH_LDAP_GROUP_MAPPING``. Some groups have
+special meanings. For example users need to be in ``active`` to log in,
+``superuser`` gives superuser privileges. You can read more info
+in :ref:`groups`.
 
 Gunicorn
 --------
@@ -118,20 +133,20 @@ My worker leaves too many connections to the database open.
 See above.
 
 
-Rabbit
-------
+RQ workers
+----------
 
 How to check how many tasks are waiting on the queue?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-On the server where Rabbit is running, do::
+Just install rq-dashboard to control RQ queues::
 
-  $ sudo rabbitmqctl list_queues -p /ralph
+  $ pip install rq-dashboard
 
-This is most useful if you combine it with ``watch`` so it updates on its own
-every 2 seconds::
+To use it, just run ``rq-dashboard`` from commandline, and fire up browser on port 9181::
 
-  $ sudo watch rabbitmqctl list_queues -p /ralph
+  $ rq-dashboard
+  Running on http://0.0.0.0:9181/
 
 TCP/IP
 ------

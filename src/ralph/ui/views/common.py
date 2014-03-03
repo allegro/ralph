@@ -29,7 +29,7 @@ from bob.menu import MenuItem
 import pluggableapp
 from powerdns.models import Record
 
-from ralph.discovery.models_component import Ethernet, EthernetSpeed
+from ralph.discovery.models_component import Ethernet
 from ralph.app import RalphModule
 from ralph.discovery.models_device import DeprecationKind, MarginKind
 from ralph.scan.errors import Error as ScanError
@@ -219,10 +219,10 @@ class BaseMixin(object):
         has_perm = profile.has_perm
         tab_items = []
         venture = (
-                self.venture if self.venture and self.venture != '*' else None
-            ) or (
-                self.object.venture if self.object else None
-            )
+            self.venture if self.venture and self.venture != '*' else None
+        ) or (
+            self.object.venture if self.object else None
+        )
 
         if has_perm(Perm.read_device_info_generic, venture):
             tab_items.extend([
@@ -289,9 +289,11 @@ class BaseMixin(object):
                     pass
             if ci:
                 tab_items.extend([
-                    MenuItem('CMDB', fugue_icon='fugue-thermometer',
-                             href='/cmdb/ci/view/%s' % ci.id),
-                    ])
+                    MenuItem(
+                        'CMDB', fugue_icon='fugue-thermometer',
+                        href='/cmdb/ci/view/%s' % ci.id
+                    ),
+                ])
         if has_perm(Perm.read_device_info_reports, venture):
             tab_items.extend([
                 MenuItem('Reports', fugue_icon='fugue-reports-stack',
@@ -393,90 +395,6 @@ class BaseMixin(object):
             )
         )
         tab_items = self.get_tab_items()
-        venture = (
-            self.venture if self.venture and self.venture != '*' else None
-        ) or (
-            self.object.venture if self.object else None
-        )
-
-        if has_perm(Perm.read_device_info_generic, venture):
-            tab_items.extend([
-                MenuItem('Info', fugue_icon='fugue-wooden-box',
-                         href=self.tab_href('info')),
-                MenuItem('Components', fugue_icon='fugue-box',
-                         href=self.tab_href('components')),
-                MenuItem('Software', fugue_icon='fugue-disc',
-                         href=self.tab_href('software')),
-                MenuItem('Addresses', fugue_icon='fugue-network-ip',
-                         href=self.tab_href('addresses')),
-            ])
-        if has_perm(Perm.edit_device_info_financial, venture):
-            tab_items.extend([
-                MenuItem('Prices', fugue_icon='fugue-money-coin',
-                         href=self.tab_href('prices')),
-            ])
-        if has_perm(Perm.read_device_info_financial, venture):
-            tab_items.extend([
-                MenuItem('Costs', fugue_icon='fugue-wallet',
-                         href=self.tab_href('costs')),
-            ])
-        if has_perm(Perm.read_device_info_history, venture):
-            tab_items.extend([
-                MenuItem('History', fugue_icon='fugue-hourglass',
-                         href=self.tab_href('history')),
-            ])
-        if all((
-            'ralph_assets' in settings.INSTALLED_APPS,
-            has_perm(Perm.read_device_info_support, venture),
-        )):
-            tab_items.extend([
-                MenuItem(
-                    'Asset',
-                    fugue_icon='fugue-baggage-cart-box',
-                    href=self.tab_href('asset')),
-            ])
-        if ('ralph.scan' in settings.INSTALLED_APPS and
-                has_perm(Perm.edit_device_info_generic) and
-                self.kwargs.get('device')):
-            tab_items.extend([
-                MenuItem(
-                    'Scan',
-                    name='scan',
-                    fugue_icon='fugue-flashlight',
-                    href=self.tab_href('scan'),
-                ),
-            ])
-        if ('ralph.cmdb' in settings.INSTALLED_APPS and
-                has_perm(Perm.read_configuration_item_info_generic)):
-            ci = ''
-            device_id = self.kwargs.get('device')
-            if device_id:
-                deleted = False
-                if self.request.GET.get('deleted', '').lower() == 'on':
-                    deleted = True
-                try:
-                    if deleted:
-                        device = Device.admin_objects.get(pk=device_id)
-                    else:
-                        device = Device.objects.get(pk=device_id)
-                    ci = CI.get_by_content_object(device)
-                except Device.DoesNotExist:
-                    pass
-            if ci:
-                tab_items.extend([
-                    MenuItem('CMDB', fugue_icon='fugue-thermometer',
-                             href='/cmdb/ci/view/%s' % ci.id),
-                    ])
-        if has_perm(Perm.read_device_info_reports, venture):
-            tab_items.extend([
-                MenuItem('Reports', fugue_icon='fugue-reports-stack',
-                         href=self.tab_href('reports')),
-            ])
-        if details == 'bulkedit':
-            tab_items.extend([
-                MenuItem('Bulk edit', fugue_icon='fugue-pencil-field',
-                         name='bulkedit'),
-            ])
         ret.update({
             'section': self.section,
             'details': details,
@@ -683,7 +601,7 @@ class Info(DeviceUpdateView):
                 p = device.venture_role.roleproperty_set.get(symbol=symbol)
             except RoleProperty.DoesNotExist:
                 p = device.venture.roleproperty_set.get(symbol=symbol)
-            if value != p.default and not {value,  p.default} == {None, ''}:
+            if value != p.default and not {value, p.default} == {None, ''}:
                 pv, created = RolePropertyValue.concurrent_get_or_create(
                     property=p,
                     device=device,
@@ -789,7 +707,7 @@ class Addresses(DeviceDetailView):
         ips = set(ip.address for ip in self.object.ipaddress_set.all())
         names = set(ip.hostname for ip in self.object.ipaddress_set.all()
                     if ip.hostname)
-        dotnames = set(name+'.' for name in names)
+        dotnames = set(name + '.' for name in names)
         revnames = set('.'.join(reversed(ip.split('.'))) + '.in-addr.arpa'
                        for ip in ips)
         starrevnames = set()
@@ -799,10 +717,10 @@ class Addresses(DeviceDetailView):
                 parts.pop(0)
                 starrevnames.add('.'.join(['*'] + parts))
         for entry in Record.objects.filter(
-                db.Q(content__in=ips) |
-                db.Q(name__in=names) |
-                db.Q(content__in=names | dotnames)
-                ).distinct():
+            db.Q(content__in=ips) |
+            db.Q(name__in=names) |
+            db.Q(content__in=names | dotnames)
+        ).distinct():
             names.add(entry.name)
             if entry.type == 'A':
                 ips.add(entry.content)
@@ -1501,7 +1419,7 @@ class BulkEdit(BaseMixin, TemplateView):
                     self.form.data,
                     self.request.user
                 )
-                return HttpResponseRedirect(self.request.path+'../info/')
+                return HttpResponseRedirect(self.request.path + '../info/')
             else:
                 messages.error(self.request, 'Correct the errors.')
         elif 'bulk' in self.request.POST:
