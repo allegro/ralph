@@ -91,6 +91,12 @@ def scan_address(ip_address, **kwargs):
             result['status'] = 'error'
             messages.append(unicode(e))
         else:
+            if 'vcenter' in server_conn.get_server_type().lower():
+                raise NoMatchError(
+                    "It is `VMware vCenter Server`. To save real "
+                    "hypervisor - VM connecion you should scan only "
+                    "VMware ESXi servers.",
+                )
             try:
                 device_info = _vmware(server_conn, ip_address)
             finally:
