@@ -330,7 +330,9 @@ class DeviceInfoForm(DeviceForm):
                 reverse=True,
             )
             for network in rack_networks:
-                next_hostname = get_next_free_hostname(network.data_center)
+                if not network.environment:
+                    continue
+                next_hostname = get_next_free_hostname(network.environment)
                 if next_hostname:
                     help_text = 'Next available hostname in this DC: %s' % (
                         next_hostname
@@ -423,8 +425,12 @@ class PropertyForm(forms.Form):
             elif p.type.symbol == 'INTEGER':
                 field = forms.IntegerField(label=p.symbol, required=False)
             else:
-                choices = [('', '------')] + [
-                    (tv.value, tv.value) for tv in p.type.rolepropertytypevalue_set.all()
+                choices = [
+                    ('', '------'),
+                ] + [
+                    (
+                        tv.value, tv.value,
+                    ) for tv in p.type.rolepropertytypevalue_set.all()
                 ]
                 field = forms.ChoiceField(
                     label=p.symbol,

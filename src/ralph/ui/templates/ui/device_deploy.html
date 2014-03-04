@@ -4,39 +4,47 @@
 {% load icons %}
 
 {% block contentarea %}
-<div class="span6">
-    <h4>Deploy device - {{ device }}</h4>
-<form class="form form-horizontal device-deploy-form" method="POST">
-    <div class="well">
-    {% csrf_token %}
-    {% for f in form.visible_fields %}
-    <div class="control-group {{ f.css_classes }}
-        {% if f.errors %}error{% endif %}
-    ">
-        <label class="control-label {% if f.field.required %}required{% endif %}"
-            >{{ f.label }}</label>
-        <div class="controls">
-            {{ f }}
-            {% for e in f.errors %}
-                <span class="help-inline">{{ e }}</span>
-            {% empty %}
-            {%  if f.help_text %}
-                <span class="help-inline">{{ f.help_text }}</span>
-            {%  endif %}
-            {% endfor %}
-        </div>
-    </div>
-    {% endfor %}
-    </div>
-    {% if device.verified %}
-        <div class="form-actions">
-            <div class="control-group" style="white-space:nowrap">
-                <button class="btn btn-primary" type="submit" name="deploy">
-                        {% icon 'fugue-wand-hat' %}&nbsp;Deploy
-                </button>
+<div class="row">
+    <div class="span6 offset2">
+        <h4>Deploy device - {{ device }}</h4>
+        {% if next_hostname %}
+            <div class="alert alert-info">Next available hostname in this DC: {{ next_hostname }}</div>
+        {% endif %}
+        {% for item in first_free_ip_addresses %}
+            <div class="alert alert-info">First free IP for network {{ item.network_name }}: {{ item.first_free_ip }}</div>
+        {% endfor %}
+        <form class="form form-horizontal device-deploy-form" method="POST">
+            <div class="well">
+            {% csrf_token %}
+            {% for f in form.visible_fields %}
+            <div class="control-group {{ f.css_classes }}
+                {% if f.errors %}error{% endif %}
+            ">
+                <label class="control-label {% if f.field.required %}required{% endif %}"
+                    >{{ f.label }}</label>
+                <div class="controls">
+                    {{ f }}
+                    {% for e in f.errors %}
+                        <span class="help-inline">{{ e }}</span>
+                    {% empty %}
+                        {%  if f.help_text %}
+                            <span class="help-inline">{{ f.help_text }}</span>
+                        {%  endif %}
+                    {% endfor %}
+                </div>
             </div>
-        </div>
-    {% endif %}
-</form>
+            {% endfor %}
+            </div>
+            {% if device.verified %}
+                <div class="form-actions">
+                    <div class="control-group" style="white-space:nowrap">
+                        <button class="btn btn-primary" type="submit" name="deploy">
+                                {% icon 'fugue-wand-hat' %}&nbsp;Deploy
+                        </button>
+                    </div>
+                </div>
+            {% endif %}
+        </form>
+    </div>
 </div>
 {% endblock %}
