@@ -14,7 +14,7 @@ from ralph.discovery.models import Environment
 
 class Command(BaseCommand):
     args = '<environment name>'
-    help = 'Return next host name for specified environment.'
+    help = 'Return next hostname for specified environment.'
 
     def handle(self, dc_name=None, *args, **options):
         if not dc_name:

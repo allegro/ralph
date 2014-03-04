@@ -62,6 +62,8 @@ class Deployment(BaseMixin, CreateView):
                 "{} - is not verified, you cannot "
                 "deploy this device".format(self.device),
             )
+        # find next available hostname and first free IP address for all
+        # networks in which deployed machine is...
         next_hostname = None
         first_free_ip_addresses = []
         rack = self.device.find_rack()

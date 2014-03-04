@@ -27,9 +27,9 @@
                     {% for e in f.errors %}
                         <span class="help-inline">{{ e }}</span>
                     {% empty %}
-                    {%  if f.help_text %}
-                        <span class="help-inline">{{ f.help_text }}</span>
-                    {%  endif %}
+                        {%  if f.help_text %}
+                            <span class="help-inline">{{ f.help_text }}</span>
+                        {%  endif %}
                     {% endfor %}
                 </div>
             </div>
