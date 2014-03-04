@@ -92,28 +92,25 @@ class Command(BaseCommand):
             raise SystemExit("Please specify the addresses to scan.")
         if kwargs['network']:
             try:
-                networks = [
+                for network in [
                     find_network(network_spec) for network_spec in args
-                ]
-                for network in networks:
+                ]:
                     autoscan_network(network)
             except (Error, Network.DoesNotExist) as e:
                 raise SystemExit(e)
         elif kwargs['environment']:
             try:
-                environments = [
+                for environment in [
                     Environment.objects.get(name=name) for name in args
-                ]
-                for environment in environments:
+                ]:
                     autoscan_environment(environment)
             except (Error, Environment.DoesNotExist) as e:
                 raise SystemExit(e)
         elif kwargs['data_center']:
             try:
-                data_centers = [
+                for data_center in [
                     DataCenter.objects.get(name=name) for name in args
-                ]
-                for data_center in data_centers:
+                ]:
                     for environment in data_center.environment_set.filter(
                         queue__isnull=False,
                     ):
@@ -122,10 +119,9 @@ class Command(BaseCommand):
                 raise SystemExit(e)
         elif kwargs['queue']:
             try:
-                queues = [
+                for queue in [
                     DiscoveryQueue.objects.get(name=name) for name in args
-                ]
-                for queue in queues:
+                ]:
                     for environment in queue.environment_set.all():
                         autoscan_environment(environment)
             except (Error, DiscoveryQueue.DoesNotExist) as e:

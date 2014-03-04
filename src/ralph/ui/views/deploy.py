@@ -194,6 +194,9 @@ def _find_hostname(network, reserved_hostnames, device=None, ip=None):
         else:
             if ipaddress.hostname:
                 return ipaddress.hostname
+    # if our network does not have defined environment we couldn't propose
+    # any hostname because we don't have the naming template - in this case
+    # administrator should manually put hostname...
     if not network.environment:
         return ""
     hostname = get_next_free_hostname(network.environment, reserved_hostnames)

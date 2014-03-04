@@ -117,48 +117,40 @@ class Command(BaseCommand):
             plugins = filter(lambda plug: plug in new_plugins, plugins)
         if kwargs['network']:
             try:
-                networks = [
+                for network in [
                     find_network(network_spec) for network_spec in args
-                ]
+                ]:
+                    scan_network(network, plugins)
             except (Error, Network.DoesNotExist) as e:
                 raise SystemExit(e)
-            else:
-                for network in networks:
-                    scan_network(network, plugins)
         elif kwargs['environment']:
             try:
-                environments = [
+                for environment in [
                     Environment.objects.get(name=name) for name in args
-                ]
+                ]:
+                    scan_environment(environment, plugins)
             except (Error, Environment.DoesNotExist) as e:
                 raise SystemExit(e)
-            else:
-                for environment in environments:
-                    scan_environment(environment, plugins)
         elif kwargs['data_center']:
             try:
-                data_centers = [
+                for data_center in [
                     DataCenter.objects.get(name=name) for name in args
-                ]
-            except (Error, DataCenter.DoesNotExist) as e:
-                raise SystemExit(e)
-            else:
-                for data_center in data_centers:
+                ]:
                     for environment in data_center.environment_set.filter(
                         queue__isnull=False,
                     ):
                         scan_environment(environment, plugins)
+            except (Error, DataCenter.DoesNotExist) as e:
+                raise SystemExit(e)
         elif kwargs['queue']:
             try:
-                queues = [
+                for queue in [
                     DiscoveryQueue.objects.get(name=name) for name in args
-                ]
-            except (Error, DiscoveryQueue.DoesNotExist) as e:
-                raise SystemExit(e)
-            else:
-                for queue in queues:
+                ]:
                     for environment in queue.environment_set.all():
                         scan_environment(environment, plugins)
+            except (Error, DiscoveryQueue.DoesNotExist) as e:
+                raise SystemExit(e)
         else:
             try:
                 ip_addresses = [unicode(ipaddr.IPAddress(ip)) for ip in args]
