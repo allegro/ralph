@@ -9,8 +9,16 @@ from lck.django.common.models import MACAddressField
 from powerdns.models import Domain, Record
 
 from ralph.discovery.models import (
-    Device, DeviceType, DeviceModel, DataCenter, EthernetSpeed, Network,
-    NetworkTerminator, IPAddress, Ethernet,
+    DataCenter,
+    Device,
+    DeviceModel,
+    DeviceType,
+    Environment,
+    Ethernet,
+    EthernetSpeed,
+    IPAddress,
+    Network,
+    NetworkTerminator,
 )
 from ralph.business.models import Venture, VentureRole
 from ralph.deployment.models import Deployment, ArchivedDeployment
@@ -105,11 +113,19 @@ class DeploymentUtilTest(TestCase):
         # create data centers
         self.dc_temp1 = DataCenter.objects.create(
             name='temp1',
-            hosts_naming_template='h<100,199>.temp1|h<300,399>.temp1'
         )
         self.dc_temp2 = DataCenter.objects.create(
             name='temp2',
-            hosts_naming_template='h<200,299>.temp2'
+        )
+        self.env_temp1 = Environment.objects.create(
+            name='temp1',
+            hosts_naming_template='h<100,199>.temp1|h<300,399>.temp1',
+            data_center=self.dc_temp1,
+        )
+        self.env_temp2 = Environment.objects.create(
+            name='temp2',
+            hosts_naming_template='h<200,299>.temp2',
+            data_center=self.dc_temp2,
         )
         # create domains
         self.domain_temp1 = Domain.objects.create(name='temp1')
@@ -140,6 +156,7 @@ class DeploymentUtilTest(TestCase):
             data_center=self.dc_temp1,
             reserved=1,
             gateway='127.0.0.254',
+            environment=self.env_temp1,
         )
         net1.terminators.add(terminator)
         net1.save()
@@ -148,6 +165,7 @@ class DeploymentUtilTest(TestCase):
             address='127.0.0.0/24',
             data_center=self.dc_temp1,
             gateway='127.0.0.254',
+            environment=self.env_temp1,
         )
         net2.terminators.add(terminator)
         net2.save()
@@ -156,6 +174,7 @@ class DeploymentUtilTest(TestCase):
             address='192.168.0.1/28',
             data_center=self.dc_temp1,
             gateway='127.0.0.254',
+            environment=self.env_temp1,
         )
         net3.terminators.add(terminator)
         net3.reserved = 1
@@ -163,9 +182,9 @@ class DeploymentUtilTest(TestCase):
         net3.save()
 
     def test_get_nexthostname(self):
-        name = get_next_free_hostname(self.dc_temp1)
+        name = get_next_free_hostname(self.env_temp1)
         self.assertEqual(name, 'h100.temp1')
-        name = get_next_free_hostname(self.dc_temp2)
+        name = get_next_free_hostname(self.env_temp2)
         self.assertEqual(name, 'h200.temp2')
 
         Record.objects.create(
@@ -174,7 +193,7 @@ class DeploymentUtilTest(TestCase):
             content='127.0.1.2',
             type='A',
         )
-        name = get_next_free_hostname(self.dc_temp1)
+        name = get_next_free_hostname(self.env_temp1)
         self.assertEqual(name, 'h104.temp1')
         Record.objects.create(
             domain=self.domain_temp1,
@@ -182,7 +201,7 @@ class DeploymentUtilTest(TestCase):
             content='127.0.1.3',
             type='A',
         )
-        name = get_next_free_hostname(self.dc_temp1)
+        name = get_next_free_hostname(self.env_temp1)
         self.assertEqual(name, 'h300.temp1')
 
         dev = Device.create(
@@ -198,11 +217,11 @@ class DeploymentUtilTest(TestCase):
             content='h301.temp1',
             type='PTR',
         )
-        name = get_next_free_hostname(self.dc_temp1)
+        name = get_next_free_hostname(self.env_temp1)
         self.assertEqual(name, 'h302.temp1')
 
         name = get_next_free_hostname(
-            self.dc_temp2, ['h200.temp2', 'h201.temp2'],
+            self.env_temp2, ['h200.temp2', 'h201.temp2'],
         )
         self.assertEqual(name, 'h203.temp2')
 

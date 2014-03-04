@@ -20,6 +20,8 @@ New features:
 
 * Updated ralph_dhcp_agent.
 
+* Environments - place where you can configure discovery queue or hosts naming temeplate.
+
 * CORE: Reworked Dependency Injection of Ralph submodules thanks to DjangoPluggableApp, giving more power and DRY-ness.
 
 * LDAP group mapping allows you to more specific permissions setting directly via LDAP.
@@ -63,7 +65,7 @@ New features:
 ~~~~~
 Released on November 06, 2013
 
-This is semi-final :) hotfix release. 
+This is semi-final :) hotfix release.
 
 * Fixed API problem.
 

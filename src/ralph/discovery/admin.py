@@ -66,7 +66,7 @@ class NetworkAdminForm(forms.ModelForm):
             net = ipaddr.IPNetwork(address)
         except ValueError:
             raise forms.ValidationError(_("It's not a valid network address."))
-        given_network_addr = net.compressed.split('/',1)[0]
+        given_network_addr = net.compressed.split('/', 1)[0]
         real_network_addr = net.network.compressed
         if given_network_addr != real_network_addr:
             msg = "{} is invalid network address, valid network is {}".format(
@@ -92,12 +92,16 @@ class NetworkAdmin(ModelAdmin):
         return ", ".join([n.name for n in self.terminators.order_by('name')])
     terms.short_description = _("network terminators")
     list_display = ('name', 'vlan', 'address', 'gateway', terms,
-                    'data_center', 'kind', 'queue')
+                    'data_center', 'environment', 'kind')
     list_filter = (
-        'data_center', 'terminators', 'queue', 'kind', 'dhcp_broadcast',
+        'data_center', 'terminators', 'environment', 'kind', 'dhcp_broadcast',
     )
     list_per_page = 250
-    radio_fields = {'data_center': admin.HORIZONTAL, 'kind': admin.HORIZONTAL}
+    radio_fields = {
+        'data_center': admin.HORIZONTAL,
+        'environment': admin.HORIZONTAL,
+        'kind': admin.HORIZONTAL,
+    }
     search_fields = ('name', 'address', 'vlan')
     filter_horizontal = ('terminators', 'racks', 'custom_dns_servers')
     save_on_top = True
@@ -121,31 +125,48 @@ class NetworkTerminatorAdmin(ModelAdmin):
 admin.site.register(m.NetworkTerminator, NetworkTerminatorAdmin)
 
 
-class DataCenterAdminForm(forms.ModelForm):
+class DataCenterAdmin(ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)
+
+admin.site.register(m.DataCenter, DataCenterAdmin)
+
+
+class EnvironmentAdminForm(forms.ModelForm):
     class Meta:
-        model = m.DataCenter
+        model = m.Environment
 
     def clean_hosts_naming_template(self):
         template = self.cleaned_data['hosts_naming_template']
         if re.search("[^a-z0-9<>,\.|-]", template):
             raise forms.ValidationError(
-                _("Please remove disallowed characters.")
+                _("Please remove disallowed characters."),
             )
         for part in template.split("|"):
             if not HOSTS_NAMING_TEMPLATE_REGEX.search(part):
                 raise forms.ValidationError(
-                    _("Incorrect template structure. Please see example "
-                      "below.")
+                    _(
+                        "Incorrect template structure. Please see example "
+                        "below.",
+                    ),
                 )
         return template
 
 
-class DataCenterAdmin(ModelAdmin):
-    list_display = ('name', 'hosts_naming_template', 'domain')
+class EnvironmentAdmin(ModelAdmin):
+    list_display = (
+        'name',
+        'data_center',
+        'queue',
+        'domain',
+        'hosts_naming_template',
+        'next_server'
+    )
     search_fields = ('name',)
-    form = DataCenterAdminForm
+    form = EnvironmentAdminForm
+    list_filter = ('data_center', 'queue')
 
-admin.site.register(m.DataCenter, DataCenterAdmin)
+admin.site.register(m.Environment, EnvironmentAdmin)
 
 
 class DiscoveryQueueAdmin(ModelAdmin):
@@ -369,16 +390,22 @@ class MarginKindAdmin(ModelAdmin):
 admin.site.register(m.MarginKind, MarginKindAdmin)
 
 
-class LoadBalancerMemberInline(admin.TabularInline):
-    model = m.LoadBalancerMember
-    exclude = ('created', 'modified')
-    extra = 0
-
-
 class LoadBalancerVirtualServerAdmin(ModelAdmin):
-    inlines = [LoadBalancerMemberInline]
-admin.site.register(m.LoadBalancerVirtualServer,
-                    LoadBalancerVirtualServerAdmin)
+    pass
+
+admin.site.register(
+    m.LoadBalancerVirtualServer,
+    LoadBalancerVirtualServerAdmin,
+)
+
+
+class LoadBalancerMemberAdmin(ModelAdmin):
+    pass
+
+admin.site.register(
+    m.LoadBalancerMember,
+    LoadBalancerMemberAdmin,
+)
 
 
 class ComponentModelInline(admin.TabularInline):
@@ -462,4 +489,3 @@ class DiscoveryWarningAdmin(ModelAdmin):
     search_fields = ('plugin', 'ip', 'message')
 
 admin.site.register(m.DiscoveryWarning, DiscoveryWarningAdmin)
-

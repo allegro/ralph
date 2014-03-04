@@ -46,10 +46,10 @@ on those servers. You do that with the command::
     (ralph)$ ralph rqworker
 
 It's possible to make some workers only process the addresses from certain
-networks. The network definitions have a ``queue`` parameter which tells to
-which worker queue the discovery requests should be sent. When starting a
-worker you can provide queue names as parameters to specify on which queues
-the workers should listen on.
+environments. The environment definitions have a ``queue`` parameter which
+tells to which worker queue the discovery requests should be sent. When
+starting a worker you can provide queue names as parameters to specify on
+which queues the workers should listen on.
 
 Note that remote discovery will not show you the output of the plugins -- the
 plugins are invoked on the workers, and not on the server where you run the
@@ -65,7 +65,7 @@ Plugin configuration
 Most plugins will require some configuration before they can be succesfully
 used by Ralph. This is usually the login and password that they need to use
 to log into whatever service they use. All that configuration should go to the
-``settings-local.py`` file. 
+``settings-local.py`` file.
 
 .. warning::
     Make sure that the settings file is not readable to users who shouldn't see
@@ -209,7 +209,7 @@ plugin to work correctly, the server needs to have the account configured to
 allow login and executing of the following commands::
 
     sudo xe vif-list params=vm-name-label,MAC
-    sudo xe vm-disk-list vdi-params=sr-uuid,uuid,virtual-size vbd-params=vm-name-label,type,device 
+    sudo xe vm-disk-list vdi-params=sr-uuid,uuid,virtual-size vbd-params=vm-name-label,type,device
     sudo xe sr-list params=uuid,physical-size,type
     sudo xe vm-list params=uuid,name-label,power-state,VCPUs-number,memory-actual
 

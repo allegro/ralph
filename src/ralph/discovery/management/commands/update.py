@@ -34,8 +34,12 @@ class Command(discover.Command):
         if options['queues']:
             for queue in options['queues'].split(','):
                 queue = queue.strip()
-                new_networks.update(n.address for n in Network.objects.filter(
-                    queue__name__iexact=queue))
+                new_networks.update(
+                    n.address
+                    for n in Network.objects.filter(
+                        environment__queue__name__iexact=queue,
+                    )
+                )
         if new_networks:
             args.extend(new_networks)
         if not args:
