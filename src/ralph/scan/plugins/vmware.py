@@ -26,6 +26,7 @@ def _get_vm_info(vm_properties):
         mac_addresses.append(interface['mac_address'])
     return {
         'type': DeviceType.virtual_server.raw,
+        'model_name': 'VMWare Virtual Server',
         'mac_addresses': mac_addresses,
         'system_ip_addresses': ip_addresses,
         'hostname': vm_properties['hostname'],
@@ -45,6 +46,7 @@ def _get_vm_info(vm_properties):
             {
                 'label': disk['device']['label'],
                 'size': int(disk['capacity'] / 1024),
+                'family': 'VMWare Virtual Disk',
             } for disk in vm_properties.get('disks', [])
         ],
         'system_label': vm_properties['guest_full_name'],
