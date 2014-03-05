@@ -12,6 +12,8 @@ from ralph.cmdb.models import CI
 
 
 def report_filters(cls, order, filters=None):
+    if filters is False:
+        return cls.objects.none()
     if filters:
         filters_list = filters.pop()
         return cls.objects.filter(**dict(filters_list)).order_by(order)
@@ -26,8 +28,11 @@ def add_filter(request, ci=None):
         ci_id = CI.objects.select_related('id').filter(
             name=request.get('ci')
         )
-        ci_id = {'ci_id': ci_id[0]} if ci_id else {'ci_id': None}
-        filters.append(ci_id)
+        if ci_id:
+            filters.append({'ci_id': ci_id[0]})
+        else: # CI not found
+            return False
+
     if request.get('assignee'):
         filters.append({'assignee': request.get('assignee')})
     if request.get('jira_id'):
