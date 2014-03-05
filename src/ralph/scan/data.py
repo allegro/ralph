@@ -316,7 +316,7 @@ def get_device_data(device):
             'volume': mount.volume,
         }
         if mount.server:
-            mount_data['server'] =  {
+            mount_data['server'] = {
                 'serial_number': mount.server.sn,
             }
         else:
@@ -349,8 +349,8 @@ def get_device_data(device):
             'mgmt_firmware': part.mgmt_firmware,
             'model_name': part.model.name if part.model else '',
             'type': ComponentType.from_id(
-                    part.model.type,
-                ).raw if part.model else '',
+                part.model.type,
+            ).raw if part.model else '',
         } for part in device.genericcomponent_set.order_by('sn')
     ]
     data['subdevices'] = [
@@ -778,4 +778,3 @@ def get_external_results_priorities(results):
         if 'results_priority' in plugin_results:
             priorities[plugin_name] = plugin_results['results_priority']
     return priorities
-

@@ -15,23 +15,23 @@ sys.path.insert(0, current_dir + os.sep + 'src')
 from ralph import VERSION
 release = ".".join(str(num) for num in VERSION)
 
-setup (
-    name = 'ralph',
-    version = release,
-    author = 'Grupa Allegro Sp. z o.o. and Contributors',
-    author_email = 'it-ralph-dev@allegro.pl',
-    description = "Ralph, the responsible leader of the children in `Lord " \
-                  "of the Flies`.",
-    long_description = long_description,
-    url = 'http://ralph.allegrogroup.com/',
-    keywords = '',
-    platforms = ['any'],
-    license = 'Apache Software License v2.0',
-    packages = find_packages('src'),
-    include_package_data = True,
-    package_dir = {'':'src'},
-    zip_safe = False, # because templates are loaded from file path
-    install_requires = [
+setup(
+    name='ralph',
+    version=release,
+    author='Grupa Allegro Sp. z o.o. and Contributors',
+    author_email='it-ralph-dev@allegro.pl',
+    description="Ralph, the responsible leader of the children in `Lord "
+                "of the Flies`.",
+    long_description=long_description,
+    url='http://ralph.allegrogroup.com/',
+    keywords='',
+    platforms=['any'],
+    license='Apache Software License v2.0',
+    packages=find_packages('src'),
+    include_package_data=True,
+    package_dir={'': 'src'},
+    zip_safe=False,  # because templates are loaded from file path
+    install_requires=[
         'bob-ajax-selects==1.3.1',
         'django-bob==1.5.10',
         'django-powerdns-dnssec==0.9.3',
@@ -70,6 +70,7 @@ setup (
         'xlwt==0.7.4',
         'django-discover-runner>=0.4',
         'Pillow==2.0.0',
+        'pysphere==0.1.8',
     ],
     entry_points={
         'console_scripts': [
@@ -77,7 +78,7 @@ setup (
             'ralph = ralph.__main__:main',
         ],
     },
-    classifiers = [
+    classifiers=[
         'Development Status :: 4 - Beta',
         'Framework :: Django',
         'Intended Audience :: System Administrators',
@@ -90,5 +91,5 @@ setup (
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 2 :: Only',
         'Topic :: Internet :: WWW/HTTP',
-        ]
-    )
+    ]
+)
