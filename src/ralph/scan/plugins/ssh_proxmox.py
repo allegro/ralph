@@ -278,7 +278,7 @@ def _ssh_proxmox(ip_address, user, password):
 
 
 def scan_address(ip_address, **kwargs):
-    if 'nx-os' in kwargs.get('snmp_name', '').lower():
+    if 'nx-os' in (kwargs.get('snmp_name') or '').lower():
         raise NoMatchError('Incompatible Nexus found.')
     if kwargs.get('http_family') not in ('Proxmox',):
         raise NoMatchError('It is not Proxmox.')
@@ -304,4 +304,3 @@ def scan_address(ip_address, **kwargs):
                 'device': device_info,
             })
     return result
-
