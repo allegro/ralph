@@ -17,10 +17,17 @@ class VMWarePluginTest(TestCase):
         self.assertEqual(
             result,
             {
-                u'disks': [{u'label': 'Hard disk 1', u'size': 276480}],
+                u'disks': [
+                    {
+                        u'family': 'VMWare Virtual Disk',
+                        u'label': 'Hard disk 1',
+                        u'size': 276480,
+                    },
+                ],
                 u'hostname': 'app-1.internal',
                 u'mac_addresses': ['00:22:33:cc:bb:aa'],
                 u'memory': [{u'label': u'Virtual RAM', u'size': 194560}],
+                u'model_name': 'VMWare Virtual Server',
                 u'processors': [
                     {
                         u'cores': 1,
