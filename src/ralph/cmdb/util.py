@@ -21,6 +21,14 @@ def report_filters(cls, order, filters=None):
 
 
 def add_filter(request, ci=None):
+    """Creates filters that can be used by report_filters method based on
+    GET params from request.
+
+    :param request: django request object
+    :param ci: the CI to search for (None for all CIs)
+    :return: the filters in a form of a [(field, value)] list of False if
+        nothing should be found
+    """
     filters = []
     if ci:
         filters.append({'ci': ci})
@@ -30,7 +38,7 @@ def add_filter(request, ci=None):
         )
         if ci_id:
             filters.append({'ci_id': ci_id[0]})
-        else: # CI not found
+        else:   # CI not found
             return False
 
     if request.get('assignee'):
