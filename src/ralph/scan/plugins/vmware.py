@@ -71,8 +71,8 @@ def _connect(ip_address, user, password):
 
 
 def scan_address(ip_address, **kwargs):
-    http_family = kwargs.get('http_family', '').strip()
-    if http_family and http_family.lower() not in ('esx',):
+    http_family = kwargs.get('http_family', '')
+    if http_family and http_family.strip().lower() not in ('esx',):
         raise NoMatchError('It is not VMWare.')
     user = SETTINGS.get('user')
     password = SETTINGS.get('password')
