@@ -26,7 +26,7 @@ def add_filter(request, ci=None):
 
     :param request: django request object
     :param ci: the CI to search for (None for all CIs)
-    :return: the filters in a form of a [(field, value)] list of False if
+    :return: the filters in a form of a [(field, value)] list or False if
         nothing should be found
     """
     filters = []
