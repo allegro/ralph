@@ -960,9 +960,11 @@ class Addresses(DeviceDetailView):
         first_free_ip_addresses = []
         rack = self.object.find_rack()
         if rack:
-            networks = rack.network_set.order_by('name')
+            networks = rack.network_set.filter(
+                environment__isnull=False,
+            ).order_by('name')
             for network in networks:
-                next_hostname = get_next_free_hostname(network.data_center)
+                next_hostname = get_next_free_hostname(network.environment)
                 if next_hostname:
                     break
             for network in networks:
@@ -1178,7 +1180,7 @@ class ServerMove(BaseMixin, TemplateView):
             network = Network.objects.get(id=f.cleaned_data['network'])
             ip = get_first_free_ip(network.name, ips)
             ips.add(ip)
-            name = get_next_free_hostname(network.data_center, names)
+            name = get_next_free_hostname(network.environment, names)
             names.add(name)
             yield {
                 'address': f.cleaned_data['address'],

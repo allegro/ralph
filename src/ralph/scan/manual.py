@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 """
-Scan all existing and not dead IP addresses from specified networks or data
-centers. This Scan tries to extract all possible data from all available
-plugins. It also calculates checksum from plugins results. This checksum is
-usefull to detect possible changes on devices.
+Scan all existing and not dead IP addresses from specified networks,
+environments or data centers. This Scan tries to extract all possible data
+from all available plugins. It also calculates checksum from plugins results.
+This checksum is usefull to detect possible changes on devices.
 """
 
 from __future__ import absolute_import
@@ -44,12 +44,12 @@ def scan_address(ip_address, plugins, queue_name=None):
                 "network.".format(ip_address),
             )
         else:
-            if network.queue:
-                queue_name = network.queue.name
+            if network.environment and network.environment.queue:
+                queue_name = network.environment.queue.name
             else:
                 raise NoQueueError(
                     "The IP address {0} has no discovery queue. "
-                    "Set the queue in the networks admin panel.".format(
+                    "Set the queue in the environments admin panel.".format(
                         ip_address,
                     ),
                 )
@@ -80,30 +80,37 @@ def scan_ip_addresses_range(
         scan_address(ip_address, plugins, queue_name)
 
 
-def scan_network(network, plugins):
+def scan_network(network, plugins, queue=None):
     """Queue scan of a entire network on the right worker."""
 
+    if not queue:
+        if network.environment and network.environment.queue:
+            queue = network.environment.queue
     scan_ip_addresses_range(
         network.min_ip,
         network.max_ip,
         plugins,
-        queue_name=network.queue.name if network.queue else '',
+        queue_name=queue.name if queue else None,
     )
 
 
-def scan_data_center(data_center, plugins):
-    """Queue scan of all scannable networks in the data center."""
+def scan_environment(environment, plugins):
+    """Queue scan of all scannable networks in the environment."""
 
-    for min_ip_num, max_ip_num, queue_name in data_center.network_set.exclude(
-        queue=None,
-    ).values_list(
-        'min_ip', 'max_ip', 'queue__name',
+    if not environment.queue:
+        raise NoQueueError(
+            "Evironment {0} does not have configured queue.".format(
+                environment,
+            ),
+        )
+    for min_ip_num, max_ip_num in environment.network_set.values_list(
+        'min_ip', 'max_ip',
     ):
         scan_ip_addresses_range(
             min_ip_num,
             max_ip_num,
             plugins,
-            queue_name=queue_name if queue_name else '',
+            queue_name=environment.queue.name,
         )
 
 
@@ -302,4 +309,3 @@ def scan_address_job(ip_address=None, plugins=None, results=None, **kwargs):
     if run_postprocessing:
         _scan_postprocessing(results, job, ip_address)
     return results
-

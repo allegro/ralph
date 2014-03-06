@@ -3,6 +3,7 @@ python:
   - "2.7"
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install:
-  - pip install . --use-mirrors --allow-all-external --allow-unverified ipaddr --allow-unverified postmarkup --allow-unverified python-graph-core
+  - pip install git+https://github.com/allegro/django-bob
+  - pip install . --use-mirrors --allow-all-external --allow-unverified ipaddr --allow-unverified postmarkup --allow-unverified python-graph-core --allow-unverified pysphere
 # command to run tests, e.g. python setup.py test
 script:  DJANGO_SETTINGS_PROFILE=test-ralph ralph test ralph

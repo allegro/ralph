@@ -156,20 +156,20 @@ My worker leaves too many connections to the database open.
 See above.
 
 
-Rabbit
-------
+RQ workers
+----------
 
 How to check how many tasks are waiting on the queue?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-On the server where Rabbit is running, do::
+Just install rq-dashboard to control RQ queues::
 
-  $ sudo rabbitmqctl list_queues -p /ralph
+  $ pip install rq-dashboard
 
-This is most useful if you combine it with ``watch`` so it updates on its own
-every 2 seconds::
+To use it, just run ``rq-dashboard`` from commandline, and fire up browser on port 9181::
 
-  $ sudo watch rabbitmqctl list_queues -p /ralph
+  $ rq-dashboard
+  Running on http://0.0.0.0:9181/
 
 TCP/IP
 ------

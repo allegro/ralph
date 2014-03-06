@@ -46,12 +46,14 @@ def set_queue(context):
     try:
         queue = context['queue']
     except KeyError:
+        queue = 'default'
         try:
             net = Network.from_ip(context['ip'])
         except KeyError:
-            queue = 'default'
+            pass
         else:
-            queue = net.queue.name if net.queue else 'default'
+            if net.environment and net.environment.queue:
+                queue = net.environment.queue.name
         context['queue'] = queue
 
 
@@ -293,13 +295,15 @@ def discover_address(address, requirements=None, interactive=True, queue=None):
         except IndexError:
             raise NoQueueError(
                 "Address {0} doesn't belong to any configured "
-                "network.".format(address),
+                "environment.".format(address),
             )
-        if not net.queue:
+        if not net.environment or not net.environment.queue:
             raise NoQueueError(
-                "The network {0} has no discovery queue.".format(net),
+                "The network environment {0} has no discovery queue.".format(
+                    net,
+                ),
             )
-        queue = net.queue.name
+        queue = net.environment.queue.name
     run_next_plugin(
         {'ip': address, 'queue': queue},
         ('discovery', 'postprocess'),
@@ -342,11 +346,14 @@ def discover_network(network, plugin_name='ping', requirements=None,
             # a non-existent network.
         net = network.network
         dbnet = network
-    if not dbnet or not dbnet.queue:
+    if not dbnet or not dbnet.environment or not dbnet.environment.queue:
         # Only do discover on networks that have a queue defined.
-        stdout("Skipping network {} -- no queue defined.".format(net))
+        stdout(
+            "Skipping network {} -- no queue defined for this network "
+            "environment.".format(net),
+        )
         return
-    queue_name = dbnet.queue.name
+    queue_name = dbnet.environment.queue.name
     stdout("Scanning network {} started.".format(net))
     if update_existing:
         ip_address_queryset = IPAddress.objects.filter(
@@ -369,7 +376,10 @@ def discover_all(interactive=False, update_existing=False, outputs=None):
         stdout, stdout_verbose, stderr = outputs
     else:
         stdout = output.get(interactive)
-    nets = Network.objects.exclude(queue=None).exclude(queue__name='')
+    nets = Network.objects.filter(
+        environment__isnull=False,
+        environment__queue__isnull=False,
+    )
     for net in nets:
         if interactive:
             discover_network(

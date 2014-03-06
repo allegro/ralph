@@ -21,6 +21,7 @@ FAMILIES = {
     '': 'Unspecified',
 }
 
+
 class HTTPRedirectHandler(urllib2.HTTPRedirectHandler):
     def http_error_302(self, req, fp, code, msg, headers):
         return urllib2.HTTPRedirectHandler.http_error_302(self, req, fp,
@@ -43,11 +44,13 @@ def get_http_info(ip):
             response = e
         except (urllib2.URLError, httplib.BadStatusLine, httplib.InvalidURL):
             return {}, ''
+
     def closer():
         try:
             response.close()
         except:
             pass
+
     threading.Timer(5, closer).start()
     try:
         document = response.read().decode('utf-8', 'ignore')
@@ -58,6 +61,7 @@ def get_http_info(ip):
             pass
     headers = response.headers
     return headers, document
+
 
 def guess_family(headers, document):
     server = headers.get('Server', '')
@@ -72,13 +76,19 @@ def guess_family(headers, document):
             family = 'Proxmox'
         elif 'Cisco Systems, Inc. All rights' in document:
             family = 'Cisco'
-        elif '<title>BIG-IP' in document or 'mailto:support@f5.com' in document:
+        elif any((
+            '<title>BIG-IP' in document,
+            'mailto:support@f5.com' in document,
+        )):
             family = 'F5'
         elif 'APC Management Web Server' in document:
             family = 'APC'
         elif 'Hewlett-Packard Development Company' in document:
             family = 'HP'
-        elif 'Welcome to VMware ESX Server' in document:
+        elif any((
+            'Welcome to VMware ESX Server' in document,
+            'VMware ESXi' in document,
+        )):
             family = 'ESX'
     elif family in ('lighttpd',):
         if 'Modular Server Control' in document:
@@ -100,4 +110,3 @@ def get_http_family(ip):
     headers, document = get_http_info(ip)
     family = guess_family(headers, document)
     return family
-

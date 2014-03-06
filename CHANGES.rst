@@ -1,41 +1,75 @@
 Change Log
 ----------
 
-* added additional validation for DNS form (one PTR is required now)
+2.0.0-rc2
+~~~~~~~~~
 
-* added additional validation for DHCP form
+New features:
 
-* dhcp config - fixes for networks and entries
- 
-* dhcp config - optimizations
+* SCAN: Much more stable Scan module with better performance.
 
-* ralph_dhcp_agent - update
+* NETWORKS: Completely new Network panel which allows you to manage IP addresses and netmasks easily.
+
+* DNS: Added additional validation for DNS form (one PTR is required now).
+
+* DHCP: Added additional validation for DHCP form.
+
+* DHCP config - fixes for networks and entries.
+
+* DHCP config - speed optimizations.
+
+* Updated ralph_dhcp_agent.
+
+* Environments - place where you can configure discovery queue or hosts naming temeplate.
+
+* CORE: Reworked Dependency Injection of Ralph submodules thanks to DjangoPluggableApp, giving more power and DRY-ness.
+
+* LDAP group mapping allows you to more specific permissions setting directly via LDAP.
+
+* Cisco / Catalyst plugin now works correctly.
+
+* Discovery: Improved detection of newer Dell machines using IDRAC protocol.
+
+* Fixed bug where gateway was always required.
+
+* CMDB: Fixed compatibility with Zabbix where zabbix_id was out of range (#726)
+
+* CMDB: Fixed filtering Incidents/Problems using start date, end date.
+
+* CMDB: API: Added impact links to the CI's.
+
+* CMDB: Improved CMDB API documentation.
+
+* CMDB: Fixed Jira<->CMDB integration where only first 1000 issues were imported.
+
+* CMDB: Fixed CMDB bugs where customfields where not visible correctly.
+
+* CMDB: Allowed CMDB to register own CITypes via Admin Panel.
 
 
 2.0.0-rc1
 ~~~~~~~~~
 
-* added Scan module - new DC discovery mechanism
+* Added completely new Scan module - new DC discovery mechanism which allows you to better maintain periodic scans, and much easier to write new discovery plugins using JSON API.
 
-* custom fields defaults (from venture_role) now appears correctly in the API
+* Custom fields defaults (from venture_role) now appears correctly in the API.
 
-* added API for Scan module
+* Added API for Scan module.
 
-* CMDB Api documentation refactored
+* CMDB Api documentation refactored.
 
-* Tastypie API fixed
-
+* Tastypie API fixed.
 
 
 1.2.9
 ~~~~~
 Released on November 06, 2013
 
-This is semi-final :) hotfix release. 
+This is semi-final :) hotfix release.
 
-* fixed API problem.
+* Fixed API problem.
 
-* fixed incompatible inquiry problem.
+* Fixed incompatible inquiry problem.
 
 
 1.2.8
