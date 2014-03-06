@@ -611,13 +611,13 @@ SCAN_PLUGINS = {
         'xen_user': XEN_USER,
         'xen_password': XEN_PASSWORD,
         'results_priority': {
-            'mac_addresses': 20,
-            'serial_number': 20,
+            'mac_addresses': 50,
+            'serial_number': 50,
             'hostname': 20,
-            'processors': 20,
-            'memory': 20,
+            'processors': 50,
+            'memory': 50,
             'disk_shares': 20,
-            'disks': 20,
+            'disks': 40,
         },
     },
     'ralph.scan.plugins.ssh_aix': {

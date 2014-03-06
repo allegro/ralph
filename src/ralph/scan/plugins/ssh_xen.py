@@ -11,18 +11,25 @@ import collections
 from django.conf import settings
 from django.utils.encoding import force_unicode
 
-from ralph.util import network, parse
-from ralph.discovery import hardware
+from ralph.util import parse
+from ralph.util.network import check_tcp_port, connect_ssh
+from ralph.discovery.hardware import get_disk_shares
+from ralph.discovery.models import DeviceType
 from ralph.scan.plugins import get_base_result_template
-from ralph.scan.errors import NotConfiguredError, NoMatchError
+from ralph.scan.errors import (
+    ConnectionError,
+    Error,
+    NoMatchError,
+)
 
 
 SETTINGS = settings.SCAN_PLUGINS.get(__name__, {})
-XEN_USER, XEN_PASSWORD = SETTINGS['xen_user'], SETTINGS['xen_password']
 
 
-def _connect_ssh(ip):
-    return network.connect_ssh(ip, XEN_USER, XEN_PASSWORD)
+def _connect_ssh(ip_address, user, password):
+    if not check_tcp_port(ip_address, 22):
+        raise ConnectionError('Port 22 closed on a XEN server.')
+    return connect_ssh(ip_address, user, password)
 
 
 def _ssh_lines(ssh, command):
@@ -31,13 +38,81 @@ def _ssh_lines(ssh, command):
         yield line
 
 
-def get_macs(ssh):
+def _sanitize_line(line):
+    line = force_unicode(line, errors='ignore').strip()
+    line = line.replace(
+        '( RO)', '',
+    ).replace(
+        '( RW)', '',
+    ).replace(
+        '(MRO)', '',
+    )
+    return line
+
+
+def _get_current_host_uuid(ssh, ip_address):
+    uuid = ''
+    match = False
+    for line in _ssh_lines(
+        ssh,
+        'sudo xe host-list params=address,name-label,uuid',
+    ):
+        parts = _sanitize_line(line).split(':')
+        try:
+            param_name, param_value = parts[0].strip(), parts[1].strip()
+        except IndexError:
+            continue
+        if param_name == 'uuid':
+            uuid = param_value
+            continue
+        if param_name == 'address' and param_value == ip_address:
+            match = True
+            break
+    return uuid if match else None
+
+
+def _get_running_vms(ssh, uuid):
+    stdin, stdout, stderr = ssh.exec_command(
+        'sudo xe vm-list resident-on={} '
+        'params=uuid,name-label,power-state,VCPUs-number,memory-actual'.format(
+            uuid,
+        )
+    )
+    data = stdout.read()
+    vms = set()
+    for vm_data in data.split('\n\n'):
+        info = parse.pairs(lines=[
+            line.replace('( RO)', '')
+                .replace('( RW)', '')
+                .replace('(MRO)', '').strip()
+            for line in vm_data.splitlines()])
+        if not info:
+            continue
+        label = info['name-label']
+        if (
+            label.startswith('Transfer VM for') or
+            label.startswith('Control domain on host:')
+        ):
+            # Skip the helper virtual machines
+            continue
+        power = info['power-state']
+        if power not in {'running'}:
+            # Only include the running virtual machines
+            continue
+        cores = int(info['VCPUs-number'])
+        memory = int(int(info['memory-actual']) / 1024 / 1024)
+        uuid = info['uuid']
+        vms.add((label, uuid, cores, memory))
+    return vms
+
+
+def _get_macs(ssh):
     """Get a dict of sets of macs of all the virtual machines."""
 
     macs = collections.defaultdict(set)
     label = ''
     for line in _ssh_lines(ssh, 'sudo xe vif-list params=vm-name-label,MAC'):
-        line = force_unicode(line, errors='ignore').strip()
+        line = _sanitize_line(line)
         if not line:
             continue
         if line.startswith('vm-name-label'):
@@ -50,7 +125,7 @@ def get_macs(ssh):
     return macs
 
 
-def get_disks(ssh):
+def _get_disks(ssh):
     """Get a dict of lists of disks of virtual machines."""
 
     stdin, stdout, stderr = ssh.exec_command(
@@ -82,80 +157,29 @@ def get_disks(ssh):
             uuid = value
         elif key.startswith('virtual-size '):
             if type_ in {'Disk'}:
-                disks[vm].append((uuid, sr_uuid, int(int(value)/1024/1024),
-                                  device))
+                disks[vm].append(
+                    (uuid, sr_uuid, int(int(value) / 1024 / 1024), device),
+                )
     return disks
 
 
-def get_srs(ssh):
-    """Get a dict of disk SRs on the hypervisor."""
-
-    stdin, stdout, stderr = ssh.exec_command(
-        'sudo xe sr-list '
-        'params=uuid,physical-size,type'
-    )
-    srs = {}
-    size = None
-    uuid = None
-    for line in stdout:
-        if not line.strip():
-            continue
-        key, value = (x.strip() for x in line.split(':', 1))
-        if key.startswith('uuid '):
-            uuid = value
-        elif key.startswith('physical-size '):
-            size = int(int(value)/1024/1024)
-        elif key.startswith('type '):
-            if value in {'lvm'} and size > 0:
-                srs[uuid] = size
-    return srs
-
-
-def get_running_vms(ssh):
-    """Get a set of virtual machines running on the host."""
-
-    stdin, stdout, stderr = ssh.exec_command(
-        'sudo xe vm-list '
-        'params=uuid,name-label,power-state,VCPUs-number,memory-actual'
-    )
-    data = stdout.read()
-    vms = set()
-    for vm_data in data.split('\n\n'):
-        info = parse.pairs(lines=[
-            line.replace('( RO)', '')
-                .replace('( RW)', '')
-                .replace('(MRO)', '').strip()
-            for line in vm_data.splitlines()])
-        if not info:
-            continue
-        label = info['name-label']
-        if (
-            label.startswith('Transfer VM for') or
-            label.startswith('Control domain on host:')
-        ):
-            # Skip the helper virtual machines
-            continue
-        power = info['power-state']
-        if power not in {'running'}:
-            # Only include the running virtual machines
-            continue
-        cores = int(info['VCPUs-number'])
-        memory = int(int(info['memory-actual'])/1024/1024)
-        uuid = info['uuid']
-        vms.add((label, uuid, cores, memory))
-    return vms
-
-
-def run_ssh_xen(ipaddr):
-    ssh = _connect_ssh(ipaddr)
+def _ssh_xen(ip_address, user, password):
+    ssh = _connect_ssh(ip_address, user, password)
     try:
-        vms = get_running_vms(ssh)
-        macs = get_macs(ssh)
-        disks = get_disks(ssh)
-        shares = hardware.get_disk_shares(ssh)
+        uuid = _get_current_host_uuid(ssh, ip_address)
+        if not uuid:
+            raise Error('Could not find this host UUID.')
+        vms = _get_running_vms(ssh, uuid)
+        macs = _get_macs(ssh)
+        disks = _get_disks(ssh)
+        shares = get_disk_shares(ssh)
     finally:
         ssh.close()
-    dev = {'subdevices': []}
+    device_info = {
+        'subdevices': [],
+        'type': DeviceType.unknown.raw,
+        'system_ip_addresses': [ip_address],
+    }
     for vm_name, vm_uuid, vm_cores, vm_memory in vms:
         vm_device = {}
         vm_device['mac_addresses'] = [
@@ -168,7 +192,9 @@ def run_ssh_xen(ipaddr):
                 'family': 'XEN Virtual',
                 'name': 'XEN Virtual CPU',
                 'label': 'CPU %d' % i,
-                'model_name': 1,  # This would be set up in Compontent.create()
+                'model_name': 'XEN Virtual',
+                'cores': 1,
+                'index': i,
             } for i in xrange(vm_cores)
         ]
         vm_device['memory'] = [
@@ -198,24 +224,35 @@ def run_ssh_xen(ipaddr):
                 if not 'disks' in vm_device:
                     vm_device['disks'] = []
                 vm_device['disks'].append(storage)
-        dev['subdevices'].append(vm_device)
-    return dev
+        device_info['subdevices'].append(vm_device)
+    return device_info
 
 
-def scan_address(ip, **kwargs):
-    if XEN_USER is None:
-        raise NotConfiguredError("Xen credentials not set.")
+def scan_address(ip_address, **kwargs):
     snmp_name = kwargs.get('snmp_name', '') or ''
     if 'nx-os' in snmp_name.lower():
         raise NoMatchError("Incompatible Nexus found.")
     if 'xen' not in snmp_name:
         raise NoMatchError("XEN not found.")
-    device = run_ssh_xen(ip)
-    ret = {
-        'status': 'success',
-        'device': device,
-    }
-    tpl = get_base_result_template('ssh_xen')
-    tpl.update(ret)
-    return tpl
-
+    user = SETTINGS.get('xen_user')
+    password = SETTINGS.get('xen_password')
+    messages = []
+    result = get_base_result_template('ssh_xen', messages)
+    if not user or not password:
+        result['status'] = 'error'
+        messages.append(
+            'Not configured. Set XEN_USER and XEN_PASSWORD in your '
+            'configuration file.',
+        )
+    else:
+        try:
+            device_info = _ssh_xen(ip_address, user, password)
+        except (Error, ConnectionError) as e:
+            result['status'] = 'error'
+            messages.append(unicode(e))
+        else:
+            result.update({
+                'status': 'success',
+                'device': device_info,
+            })
+    return result
