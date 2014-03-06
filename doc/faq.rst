@@ -33,39 +33,62 @@ connecting to an Active Directory service might look like this::
   AUTH_LDAP_SERVER_URI = "ldap://activedirectory.domain:389"
   AUTH_LDAP_BIND_DN = "secret"
   AUTH_LDAP_BIND_PASSWORD = "secret"
-  AUTH_LDAP_USER_SEARCH = LDAPSearch("DC=organization,DC=internal",
-      ldap.SCOPE_SUBTREE, '(&(objectClass=*)(sAMAccountName=%(user)s))')
+  AUTH_LDAP_PROTOCOL_VERSION = 3
+  AUTH_LDAP_USER_SEARCH_BASE = "DC=allegrogroup,DC=internal"
+  AUTH_LDAP_USER_SEARCH_FILTER = '(&(objectClass=*)({0}=%(user)s))'.format(
+    AUTH_LDAP_USER_USERNAME_ATTR)
+  AUTH_LDAP_USER_SEARCH = LDAPSearch(AUTH_LDAP_USER_SEARCH_BASE,
+    ldap.SCOPE_SUBTREE, AUTH_LDAP_USER_SEARCH_FILTER)
   AUTH_LDAP_USER_ATTR_MAP = {"first_name": "givenName", "last_name": "sn",
       "email": "mail"}
+  AUTH_LDAP_PROFILE_ATTR_MAP = {
+      "company": "company",
+      "manager": "manager",
+      "department": "department",
+      "employee_id": "employeeID",
+}
+
+Manager is special field and is treated as reference to another user,
+for example "CN=John Smith,OU=TOR,OU=Corp-Users,DC=mydomain,DC=internal"
+is mapped to "John Smith" text.
 
 Ralph provides ldap groups to django groups mapping. All what you need to
 do are:
 
- * import custom ``MappedNestedGroupOfNamesType``,
+ * import custom ``MappedGroupOfNamesType``,
  * set up group mirroring,
  * declare mapping.
 
 ::
 
-  from ralph.account.ldap import MappedNestedGroupOfNamesType
+  from ralph.account.ldap import MappedGroupOfNamesType
   AUTH_LDAP_GROUP_MAPPING = {
-    "_gr_ralph": "active",
-    "_gr_ralph_assets_buyer": "assets-buyer",
-    "_gr_ralph_assets_helper": "assets-helper",
-    "_gr_ralph_assets_staff": "assets-staff",
-    "_gr_ralph_admin": "superuser",
-    "_gr_ralph_staff": "staff",
+    'CN=_gr_ralph,OU=Other,DC=mygroups,DC=domain': "active",
+    'CN=_gr_ralph_assets_buyer,OU=Other,DC=mygroups,DC=domain': "assets-buyer",
+    'CN=_gr_ralph_assets_helper,OU=Other,DC=mygroups,DC=domain': "assets-helper",
+    'CN=_gr_ralph_assets_staff,OU=Other,DC=mygroups,DC=domain': "assets-staff",
+    'CN=_gr_ralph_admin,OU=Other,DC=mygroups,DC=domain': "superuser",
+    'CN=_gr_ralph_staff,OU=Other,DC=mygroups,DC=domain': "staff",
   }
   AUTH_LDAP_MIRROR_GROUPS = True
-  AUTH_LDAP_GROUP_TYPE = MappedNestedGroupOfNamesType(name_attr="cn")
+  AUTH_LDAP_GROUP_TYPE = MappedGroupOfNamesType(name_attr="cn")
   AUTH_LDAP_GROUP_SEARCH = LDAPSearch("DC=organization,DC=internal",
       ldap.SCOPE_SUBTREE, '(objectClass=group)')
 
 If you want to define ldap groups with names identical to ralph roles, you
-shouldn't declare mapping ``AUTH_LDAP_GROUP_MAPPING``. Some groups have
+shouldn't declare mapping ``AUTH_LDAP_GROUP_MAPPING``. If there are any one
+mapping defined another groups will be filtered. Some groups have
 special meanings. For example users need to be in ``active`` to log in,
 ``superuser`` gives superuser privileges. You can read more info
 in :ref:`groups`.
+
+You can define users filter, if you don't want to import all users to ralph::
+
+AUTH_LDAP_USER_FILTER = '(|(memberOf=CN=_gr_ralph_group1,OU=something,'\
+    'DC=mygroup,DC=domain)(memberOf=CN=_gr_ralph_group2,OU=something else,'\
+    'DC=allegrogroup,DC=internal))'
+
+
 
 Gunicorn
 --------
