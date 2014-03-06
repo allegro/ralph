@@ -181,7 +181,9 @@ def _ssh_xen(ip_address, user, password):
         'system_ip_addresses': [ip_address],
     }
     for vm_name, vm_uuid, vm_cores, vm_memory in vms:
-        vm_device = {}
+        vm_device = {
+            'model_name': 'XEN Virtual Server',
+        }
         vm_device['mac_addresses'] = [
             mac for i, mac in enumerate(macs.get(vm_name, []))
         ]
@@ -218,9 +220,11 @@ def _ssh_xen(ip_address, user, password):
                     vm_device['disk_shares'] = []
                 vm_device['disk_shares'].append(share)
             else:
-                storage = {}
-                storage['size'] = size
-                storage['label'] = device
+                storage = {
+                    'size': size,
+                    'label': device,
+                    'family': 'XEN Virtual Disk',
+                }
                 if not 'disks' in vm_device:
                     vm_device['disks'] = []
                 vm_device['disks'].append(storage)

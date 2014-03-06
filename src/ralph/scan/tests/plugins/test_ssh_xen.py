@@ -158,8 +158,16 @@ class SSHXenPluginTest(TestCase):
                     'subdevices': [
                         {
                             'disks': [
-                                {'label': 'hda', 'size': 24576},
-                                {'label': 'hda', 'size': 24576},
+                                {
+                                    'family': 'XEN Virtual Disk',
+                                    'label': 'hda',
+                                    'size': 24576,
+                                },
+                                {
+                                    'family': 'XEN Virtual Disk',
+                                    'label': 'hda',
+                                    'size': 24576,
+                                },
                             ],
                             'hostname': 'app-1',
                             'mac_addresses': [
@@ -173,6 +181,7 @@ class SSHXenPluginTest(TestCase):
                                     'size': 4095,
                                 },
                             ],
+                            'model_name': 'XEN Virtual Server',
                             'processors': [
                                 {
                                     'cores': 1,
@@ -203,6 +212,7 @@ class SSHXenPluginTest(TestCase):
                                     'size': 2047,
                                 },
                             ],
+                            'model_name': 'XEN Virtual Server',
                             'processors': [
                                 {
                                     'cores': 1,
@@ -233,6 +243,7 @@ class SSHXenPluginTest(TestCase):
                                     'size': 2047,
                                 },
                             ],
+                            'model_name': 'XEN Virtual Server',
                             'processors': [
                                 {
                                     'cores': 1,
@@ -263,6 +274,7 @@ class SSHXenPluginTest(TestCase):
                                     'size': 16383,
                                 },
                             ],
+                            'model_name': 'XEN Virtual Server',
                             'processors': [
                                 {
                                     'cores': 1,
@@ -341,6 +353,7 @@ class SSHXenPluginTest(TestCase):
                                     'size': 2048,
                                 },
                             ],
+                            'model_name': 'XEN Virtual Server',
                             'processors': [
                                 {
                                     'cores': 1,
@@ -362,7 +375,13 @@ class SSHXenPluginTest(TestCase):
                             'serial_number': 'vm-sample-uuid-5',
                         },
                         {
-                            'disks': [{'label': 'hda', 'size': 51200}],
+                            'disks': [
+                                {
+                                    'family': 'XEN Virtual Disk',
+                                    'label': 'hda',
+                                    'size': 51200,
+                                },
+                            ],
                             'hostname': 'app-4',
                             'mac_addresses': ['11:22:33:44:55:05'],
                             'memory': [
@@ -372,6 +391,7 @@ class SSHXenPluginTest(TestCase):
                                     'size': 8191,
                                 },
                             ],
+                            'model_name': 'XEN Virtual Server',
                             'processors': [
                                 {
                                     'cores': 1,
