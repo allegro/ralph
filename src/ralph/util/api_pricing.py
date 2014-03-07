@@ -84,13 +84,13 @@ def get_physical_cores():
         }
 
 
-def get_virtual_usages(venture_name):
+def get_virtual_usages(parent_venture_name=None):
     """Yields dicts reporting the number of virtual cores, memory and disk."""
     devices = Device.objects.filter(model__type=DeviceType.virtual_server)
-    if venture_name:
+    if parent_venture_name:
         devices = devices.filter(
             parent__venture=Venture.objects.get(
-                name=venture_name,
+                name=parent_venture_name,
             ),
         )
     for device in devices:
