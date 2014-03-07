@@ -8,6 +8,11 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
+        # Adding field 'Profile.company'
+        db.add_column('account_profile', 'company',
+                      self.gf('django.db.models.fields.CharField')(default='', max_length=64, blank=True),
+                      keep_default=False)
+
         # Adding field 'Profile.employee_id'
         db.add_column('account_profile', 'employee_id',
                       self.gf('django.db.models.fields.CharField')(default='', max_length=64, blank=True),
@@ -30,14 +35,14 @@ class Migration(SchemaMigration):
 
         # Adding field 'Profile.manager'
         db.add_column('account_profile', 'manager',
-                      self.gf('django.db.models.fields.CharField')(default='', max_length=64, blank=True),
+                      self.gf('django.db.models.fields.CharField')(default='', max_length=1024, blank=True),
                       keep_default=False)
 
 
-        # Changing field 'Profile.company'
-        db.alter_column('account_profile', 'company', self.gf('django.db.models.fields.CharField')(max_length=64))
-
     def backwards(self, orm):
+        # Deleting field 'Profile.company'
+        db.delete_column('account_profile', 'company')
+
         # Deleting field 'Profile.employee_id'
         db.delete_column('account_profile', 'employee_id')
 
@@ -53,9 +58,6 @@ class Migration(SchemaMigration):
         # Deleting field 'Profile.manager'
         db.delete_column('account_profile', 'manager')
 
-
-        # Changing field 'Profile.company'
-        db.alter_column('account_profile', 'company', self.gf('django.db.models.fields.CharField')(max_length=30))
 
     models = {
         'account.boundperm': {
@@ -86,7 +88,7 @@ class Migration(SchemaMigration):
             'home_page': (u'dj.choices.fields.ChoiceField', [], {'unique': 'False', 'primary_key': 'False', 'db_column': 'None', 'blank': 'False', u'default': '1', 'null': 'False', '_in_south': 'True', 'db_index': 'False'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'last_active': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True', 'blank': 'True'}),
-            'manager': ('django.db.models.fields.CharField', [], {'max_length': '64', 'blank': 'True'}),
+            'manager': ('django.db.models.fields.CharField', [], {'max_length': '1024', 'blank': 'True'}),
             'nick': ('django.db.models.fields.CharField', [], {'default': "u''", 'max_length': '30', 'blank': 'True'}),
             'profit_center': ('django.db.models.fields.CharField', [], {'max_length': '1024', 'blank': 'True'}),
             'time_zone': ('django.db.models.fields.FloatField', [], {'default': '1.0'}),
@@ -198,11 +200,8 @@ class Migration(SchemaMigration):
         },
         'discovery.datacenter': {
             'Meta': {'ordering': "(u'name',)", 'object_name': 'DataCenter'},
-            'domain': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
-            'hosts_naming_template': ('django.db.models.fields.CharField', [], {'default': "u'h<10000,19999>.dc'", 'max_length': '30'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '75', 'db_index': 'True'}),
-            'next_server': ('django.db.models.fields.CharField', [], {'default': "u''", 'max_length': '32', 'blank': 'True'})
+            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '75', 'db_index': 'True'})
         },
         'discovery.marginkind': {
             'Meta': {'object_name': 'MarginKind'},
