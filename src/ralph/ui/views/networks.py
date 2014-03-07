@@ -169,10 +169,13 @@ class NetworksMixin(SidebarNetworks, BaseMixin):
                      href=self.tab_href('info')),
             MenuItem('Addresses', fugue_icon='fugue-network-ip',
                      href=self.tab_href('addresses')),
+            MenuItem('Scan', fugue_icon='fugue-flashlight',
+                     href=self.tab_href('autoscan')),
         ]
         show_tabs = [
             'info',
             'addresses',
+            'autoscan',
         ]
         context = {
             'show_tabs': show_tabs,
@@ -260,7 +263,7 @@ class ReportNetworksDeviceList(ReportDeviceList, NetworksDeviceList):
     pass
 
 
-class NetworksAutoscan(NetworksDeviceList):
+class NetworksAutoscan(NetworksDeviceList, NetworksMixin):
     template_name = 'ui/address_list.html'
     section = 'networks'
 
@@ -365,7 +368,7 @@ class NetworksAutoscan(NetworksDeviceList):
                 href=self.tab_href('autoscan', 'all'),
             ),
         ]
-        self.append_scan_summary_info(ret['object_list'])
+        self.append_scan_summary_info(ret['network'].ipaddress_set.all())
         ret.update({
             'status_menu_items': status_menu_items,
             'status_selected': self.status,
