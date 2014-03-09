@@ -61,7 +61,9 @@ def _get_current_host_uuid(ssh, ip_address):
         try:
             param_name, param_value = parts[0].strip(), parts[1].strip()
         except IndexError:
-            continue
+            continue  # this line is not interesting for us...
+                      # we search something like this here:
+                      # some text : some text
         if param_name == 'uuid':
             uuid = param_value
             continue
@@ -90,8 +92,8 @@ def _get_running_vms(ssh, uuid):
             continue
         label = info['name-label']
         if (
-            label.startswith('Transfer VM for') or
-            label.startswith('Control domain on host:')
+            label.lower().startswith('Transfer VM for') or
+            label.lower().startswith('Control domain on host:')
         ):
             # Skip the helper virtual machines
             continue
