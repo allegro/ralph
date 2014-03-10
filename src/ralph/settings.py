@@ -299,6 +299,8 @@ FISHEYE_URL = ""
 FISHEYE_PROJECT_NAME = ""
 VMWARE_USER = None
 VMWARE_PASSWORD = None
+JUNIPER_USER = None
+JUNIPER_PASSWORD = None
 
 ISSUETRACKERS = {
     'default': {
@@ -703,5 +705,10 @@ SCAN_PLUGINS = {
             'disks': 50,
             'system_label': 50,
         },
+    },
+    'ralph.scan.plugins.ssh_juniper': {
+        'user': SSH_SSG_USER,
+        'password': SSH_SSG_PASSWORD,
+        'results_priority': {},
     },
 }
