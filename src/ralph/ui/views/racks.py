@@ -254,7 +254,7 @@ class RacksDeviceList(SidebarRacks, BaseMixin, BaseDeviceList):
         profile = self.request.user.get_profile()
         has_perm = profile.has_perm
         tab_items = ret['tab_items']
-        if not ret['subsection']:
+        if ret['subsection']:
             tab_items.append(
                 MenuItem(
                     'Rack',
@@ -460,7 +460,7 @@ class RacksAddDevice(Racks, DeviceCreateView):
         tab_items = ret['tab_items']
         ret['template_menu_items'] = TEMPLATE_MENU_ITEMS
         ret['template_selected'] = 'device'
-        if not ret['subsection']:
+        if ret['subsection']:
             tab_items.append(
                 MenuItem(
                     'Rack',
