@@ -71,7 +71,17 @@
         name: blade
         venture_role: 2
         parent: 2
-
+-
+    model: discovery.device
+    pk: 4
+    fields:
+        venture: 2
+        sn: sn4
+        model: 3
+        name: deleted blade
+        venture_role: 2
+        parent: 2
+        deleted: true
 -
     model: business.businessline
     pk: 1

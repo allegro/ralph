@@ -10,7 +10,6 @@ import datetime
 import re
 from urlparse import urljoin
 
-
 from bob.data_table import DataTableMixin
 from bob.menu import MenuItem, MenuHeader
 
@@ -41,7 +40,7 @@ from ralph.cmdb.forms import (
     CIRelationEditForm,
     SearchImpactForm,
 )
-from ralph.cmdb.models_ci import CILayer, CI_TYPES, CI, CIRelation
+from ralph.cmdb.models_ci import CILayer, CI_TYPES, CI, CIRelation, CIType
 import ralph.cmdb.models as db
 from ralph.cmdb.graphs import ImpactCalculator
 from ralph.ui.views.common import Base
@@ -50,12 +49,10 @@ from ralph.util.presentation import (
     get_venture_icon,
     get_network_icon,
 )
-
 from ralph.cmdb.forms import (
     ReportFilters,
     ReportFiltersDateRange,
 )
-
 from ralph.cmdb.util import report_filters, add_filter, table_colums
 
 JIRA_URL = urljoin(settings.ISSUETRACKERS['default']['URL'], 'browse')
@@ -1256,8 +1253,8 @@ class Search(BaseCMDBView):
         if layer:
             subsection += '%s - ' % CILayer.objects.get(id=layer)
         elif type:
-            type = CI_TYPES.NameFromID(int(type))
-            subsection += '%s - ' % CI_TYPES.DescFromName(type)
+            type = CIType.objects.get(pk=type)
+            subsection += '%s - ' % type.name
         subsection += 'Search'
         if layer is None:
             sidebar_selected = 'all-cis'

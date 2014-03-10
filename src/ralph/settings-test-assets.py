@@ -13,4 +13,6 @@ DATABASES = {
     }
 }
 
-INSTALLED_APPS.append('ralph_assets')
+PLUGGABLE_APPS = ['assets']
+
+SOUTH_TESTS_MIGRATE = False

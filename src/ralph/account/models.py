@@ -48,7 +48,7 @@ class AvailableHomePage(Choices):
 class Perm(Choices):
     _ = Choices.Choice
 
-    GLOBAL = Choices.Group(0) << {'per_venture': False}
+    GLOBAL = Choices.Group(0).extra(per_venture=False)
     read_dc_structure = _("read data center structure")
     edit_ventures_roles = _("edit ventures and roles")
     create_devices = _("create devices")
@@ -93,6 +93,14 @@ class Profile(BasicInfo, ActivationSupport, GravatarSupport,
         choices=AvailableHomePage,
         default=AvailableHomePage.default,
     )
+
+    # TODO: define fields below and add AUTH_LDAP_PROFILE_ATTR_MAP mappings
+    company = db.CharField(max_length=64, blank=True)
+    employee_id = db.CharField(max_length=64, blank=True)
+    profit_center = db.CharField(max_length=1024, blank=True)
+    cost_center = db.CharField(max_length=1024, blank=True)
+    department = db.CharField(max_length=64, blank=True)
+    manager = db.CharField(max_length=1024, blank=True)
 
     def __unicode__(self):
         return self.nick

@@ -14,7 +14,7 @@ register = template.Library()
 def currency(number, precision=0):
     try:
         return ('{:,.%df} {}' % precision).format(
-                number, settings.CURRENCY).replace(',', ' ')
+            number, settings.CURRENCY).replace(',', ' ')
     except ValueError:
         return number or ''
 
@@ -65,3 +65,7 @@ def getvalue(d, key_name):
 def split(s, sep=None):
     return s.split(sep)
 
+
+@register.filter
+def max_netmask(num):
+    return 32 - (len(bin(num)[2:]) - 1)

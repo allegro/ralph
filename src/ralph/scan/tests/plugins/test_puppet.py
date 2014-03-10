@@ -5,6 +5,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import mock
+
 from django.test import TestCase
 
 from ralph.discovery.models import Device, DeviceType, IPAddress
@@ -12,6 +14,7 @@ from ralph.scan.plugins.puppet import (
     _get_ip_addresses_hostnames_sets,
     _is_host_virtual,
     _merge_disks_results,
+    network,
 )
 
 
@@ -32,7 +35,6 @@ class PuppetPluginTest(TestCase):
             device=device,
         )
 
-
     def test_is_host_virtual(self):
         self.assertFalse(_is_host_virtual({
             'virtual': 'physical',
@@ -47,7 +49,6 @@ class PuppetPluginTest(TestCase):
         self.assertTrue(_is_host_virtual({
             'virtual': 'xen',
         }))
-
 
     def test_merge_disks_results(self):
         self.assertEqual(
@@ -96,11 +97,11 @@ class PuppetPluginTest(TestCase):
                     'size': 100001,
                 },
                 {
-                        'size': 100000,
-                        'label': 'Hitachi',
-                        'mount_point': '/mnt/d2',
-                        'family': 'Hitachi',
-                        'serial_number': 'qwe123_2',
+                    'size': 100000,
+                    'label': 'Hitachi',
+                    'mount_point': '/mnt/d2',
+                    'family': 'Hitachi',
+                    'serial_number': 'qwe123_2',
                 },
                 {
                     'family': 'Hitachi',
@@ -116,13 +117,15 @@ class PuppetPluginTest(TestCase):
             ],
         )
 
-    def test_get_ip_addresses_hostnames_sets(self):
+    @mock.patch.object(network, "hostname")
+    def test_get_ip_addresses_hostnames_sets(self, hostname_mock):
+        hostname_mock.return_value = None
         self.assertEqual(
             _get_ip_addresses_hostnames_sets('10.123.22.11'),
             ({'10.123.22.11'}, set()),
         )
+        hostname_mock.return_value = 'localhost'
         self.assertEqual(
             _get_ip_addresses_hostnames_sets('127.0.0.1'),
             ({'127.0.0.1', '127.0.0.2'}, {'localhost'}),
         )
-

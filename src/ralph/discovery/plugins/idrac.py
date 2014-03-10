@@ -328,7 +328,7 @@ def _save_cpu(dev, data):
             speed=cpu['speed'],
             family=cpu['family'],
             cores=cpu['cores_count'],
-            name = cpu['model'],
+            name=cpu['model'],
             priority=SAVE_PRIORITY,
         )
         processor, _ = Processor.concurrent_get_or_create(
@@ -444,8 +444,7 @@ def idrac(**kwargs):
         return False, "not configured", kwargs
     ip = str(kwargs['ip'])
     http_family = kwargs.get('http_family')
-    if http_family not in ('Dell', ):
+    if http_family.lower() not in ('dell', 'embedthis-http'):
         return False, 'no match', kwargs
     name = run_idrac(ip)
     return True, name, kwargs
-

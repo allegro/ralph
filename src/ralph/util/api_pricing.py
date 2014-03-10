@@ -84,10 +84,16 @@ def get_physical_cores():
         }
 
 
-def get_virtual_usages():
+def get_virtual_usages(parent_venture_name=None):
     """Yields dicts reporting the number of virtual cores, memory and disk."""
-
-    for device in Device.objects.filter(model__type=DeviceType.virtual_server):
+    devices = Device.objects.filter(model__type=DeviceType.virtual_server)
+    if parent_venture_name:
+        devices = devices.filter(
+            parent__venture=Venture.objects.get(
+                name=parent_venture_name,
+            ),
+        )
+    for device in devices:
         cores = device.get_core_count()
         memory = device.memory_set.aggregate(db.Sum('size'))['size__sum']
         disk = device.storage_set.aggregate(db.Sum('size'))['size__sum']

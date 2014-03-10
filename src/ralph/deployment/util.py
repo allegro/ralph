@@ -27,6 +27,7 @@ from ralph.dnsedit.models import DHCPEntry
 from ralph.util import Eth
 from django import forms
 
+
 def _get_next_hostname_number(hostname, template, iteration_definition,
                               min_number, number_len):
     name_match = re.search(
@@ -39,11 +40,11 @@ def _get_next_hostname_number(hostname, template, iteration_definition,
     return int(name_match.group(1)) + 1
 
 
-def get_next_free_hostname(dc, reserved_hostnames=[]):
+def get_next_free_hostname(environment, reserved_hostnames=[]):
     hostnames_in_deployments = Deployment.objects.filter().values_list(
         'hostname', flat=True
     ).order_by('hostname')
-    templates = dc.hosts_naming_template.split("|")
+    templates = environment.hosts_naming_template.split("|")
     for template in templates:
         match = re.search('<([0-9]+),([0-9]+)>', template)
         if not match:
@@ -264,6 +265,7 @@ def create_deployments(data, user, mass_deployment):
             venture_role=item['venture_role'],
             mass_deployment=mass_deployment,
         )
+
 
 def clean_hostname(hostname):
     hostname = hostname.strip().lower()

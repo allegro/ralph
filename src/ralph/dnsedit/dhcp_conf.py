@@ -20,7 +20,7 @@ from ralph.deployment.models import Deployment
 
 
 def _generate_entries_configs(
-    dc=None,
+    env=None,
     possible_ip_numbers=set(),
     ptr_records={},
     deployed_macs=set(),
@@ -56,19 +56,19 @@ def _generate_entries_configs(
         next_server = ''
         if mac in deployed_macs:
             # server with ePXE image address
-            if dc and dc.next_server:
-                next_server = dc.next_server
+            if env and env.next_server:
+                next_server = env.next_server
             else:
-                for dc_next_server in Network.objects.filter(
+                for env_next_server in Network.objects.filter(
                     min_ip__lte=ip_number,
                     max_ip__gte=ip_number,
-                    data_center__isnull=False,
+                    environment__isnull=False,
                 ).values_list(
-                    'data_center__next_server',
+                    'environment__next_server',
                     flat=True,
                 ).order_by('-min_ip', 'max_ip'):
-                    if dc_next_server:
-                        next_server = dc_next_server
+                    if env_next_server:
+                        next_server = env_next_server
                         break
         parsed.add(ip_address)
         # 112233445566 -> 11:22:33:44:55:66
@@ -76,12 +76,12 @@ def _generate_entries_configs(
         yield name.strip(), ip_address, mac, next_server
 
 
-def generate_dhcp_config(server_address, dc=None):
+def generate_dhcp_config(server_address, env=None):
     """
-    Generate host DHCP configuration. If `dc` is provided, only yield hosts
-    with addresses from networks of the specified DC.
+    Generate host DHCP configuration. If `env` is provided, only yield hosts
+    with addresses from networks of the specified environment.
 
-    If given, `dc` must be of type DataCenter.
+    If given, `env` must be of type Environment.
     """
 
     try:
@@ -97,12 +97,12 @@ def generate_dhcp_config(server_address, dc=None):
         Q(dhcp_broadcast=True),
         Q(gateway__isnull=False),
         ~Q(gateway__exact=''),
-        ~Q(data_center=False),
-        Q(data_center__domain__isnull=False),
-        ~Q(data_center__domain__exact=''),
+        ~Q(environment=False),
+        Q(environment__domain__isnull=False),
+        ~Q(environment__domain__exact=''),
     )
-    if dc:
-        networks = dc.network_set.filter(*networks_filter)
+    if env:
+        networks = env.network_set.filter(*networks_filter)
     else:
         networks = Network.objects.filter(*networks_filter)
     for modified in networks.values_list(
@@ -138,7 +138,7 @@ def generate_dhcp_config(server_address, dc=None):
     template = loader.get_template('dnsedit/dhcp.conf')
     c = Context({
         'entries': _generate_entries_configs(
-            dc=dc,
+            env=env,
             possible_ip_numbers=possible_ip_numbers,
             ptr_records=ptr_records,
             deployed_macs=deployed_macs,
@@ -164,7 +164,7 @@ def _generate_networks_configs(networks, custom_dns_servers):
         )
 
 
-def generate_dhcp_config_head(server_address, dc=None):
+def generate_dhcp_config_head(server_address, env=None):
     try:
         dhcp_server = DHCPServer.objects.get(ip=server_address)
     except DHCPServer.DoesNotExist:
@@ -180,12 +180,12 @@ def generate_dhcp_config_head(server_address, dc=None):
         Q(dhcp_broadcast=True),
         Q(gateway__isnull=False),
         ~Q(gateway__exact=''),
-        ~Q(data_center=False),
-        Q(data_center__domain__isnull=False),
-        ~Q(data_center__domain__exact=''),
+        ~Q(environment=False),
+        Q(environment__domain__isnull=False),
+        ~Q(environment__domain__exact=''),
     )
-    if dc:
-        networks = dc.network_set.filter(*networks_filter)
+    if env:
+        networks = env.network_set.filter(*networks_filter)
     else:
         networks = Network.objects.filter(*networks_filter)
     for modified in networks.values_list(
@@ -204,7 +204,7 @@ def generate_dhcp_config_head(server_address, dc=None):
         'name',
         'address',
         'gateway',
-        'data_center__domain',
+        'environment__domain',
         'dhcp_config',
     ).order_by('name')
     for modified in DHCPEntry.objects.values_list(
@@ -236,4 +236,3 @@ def generate_dhcp_config_head(server_address, dc=None):
         'last_modified_date': last_modified_date,
     })
     return template.render(context)
-

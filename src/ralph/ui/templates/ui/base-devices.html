@@ -5,11 +5,11 @@
 {% load bob %}
 
 {% block sidebar %}
-{% if sidebar_items %}    
+{% if sidebar_items %}
 {% sidebar_menu sidebar_items sidebar_selected %}
 {% endif %}
 
-{% if searchform %}    
+{% if searchform %}
 <form class="form search-form well well-small"
 {% if not searchform_filter %}action="{% url 'search' details '' %}"{% endif %} >
 {% for f in searchform %}
@@ -70,10 +70,10 @@
 
 {% block titlesubsection %}{% if subsection %}
 {%   if details %}
-{{ details.title }} - 
+{{ details.title }} -
 {%   endif %}
 {%   if device %}
-{{ device.name }} - 
+{{ device.name }} -
 {%   endif %}
 {{ subsection.title }} -
 {% endif %}{% endblock %}

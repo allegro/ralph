@@ -1,16 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from django.db.models import Q
-from bob.data_table import DataTableMixin, DataTableColumn
+from bob.data_table import DataTableColumn
+
 from ralph.cmdb.models import CI
 
+
 def report_filters(cls, order, filters=None):
-    q = Q()
+    if filters is False:
+        return cls.objects.none()
     if filters:
         filters_list = filters.pop()
         return cls.objects.filter(**dict(filters_list)).order_by(order)
@@ -18,6 +21,14 @@ def report_filters(cls, order, filters=None):
 
 
 def add_filter(request, ci=None):
+    """Creates filters that can be used by report_filters method based on
+    GET params from request.
+
+    :param request: django request object
+    :param ci: the CI to search for (None for all CIs)
+    :return: the filters in a form of a [(field, value)] list or False if
+        nothing should be found
+    """
     filters = []
     if ci:
         filters.append({'ci': ci})
@@ -25,8 +36,11 @@ def add_filter(request, ci=None):
         ci_id = CI.objects.select_related('id').filter(
             name=request.get('ci')
         )
-        ci_id = {'ci_id': ci_id[0]} if ci_id else {'ci_id': None}
-        filters.append(ci_id)
+        if ci_id:
+            filters.append({'ci_id': ci_id[0]})
+        else:   # CI not found
+            return False
+
     if request.get('assignee'):
         filters.append({'assignee': request.get('assignee')})
     if request.get('jira_id'):
@@ -51,17 +65,17 @@ def add_filter(request, ci=None):
         )
     if request.get('start_planned_start') and request.get('end_planned_start'):
         filters.append(
-            {'planned_start_date_lte': request.get('start_planned_start')}
+            {'planned_start_date__lte': request.get('start_planned_start')}
         )
         filters.append(
-            {'planned_start_date_gte': request.get('end_planned_start')}
+            {'planned_start_date__gte': request.get('end_planned_start')}
         )
     if request.get('start_planned_end') and request.get('end_planned_end'):
         filters.append(
-            {'planned_end_date_lte': request.get('start_planned_end')}
+            {'planned_end_date__lte': request.get('start_planned_end')}
         )
         filters.append(
-            {'planned_end_date_gte': request.get('start_planned_end')}
+            {'planned_end_date__gte': request.get('start_planned_end')}
         )
     return filters
 

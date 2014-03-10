@@ -27,6 +27,7 @@ from ralph.discovery.models_device import (
 from ralph.discovery.models_network import (
     DataCenter,
     DiscoveryQueue,
+    Environment,
     IPAddress,
     IPAlias,
     Network,
@@ -57,7 +58,7 @@ from ralph.discovery.models_history import (
     HistoryChange,
     HistoryCost,
 )
-from ralph.discovery.models_pricing import  (
+from ralph.discovery.models_pricing import (
     PricingAggregate,
     PricingGroup,
     PricingFormula,
@@ -68,6 +69,7 @@ from ralph.discovery.models_pricing import  (
 __all__ = [
     'DataCenter',
     'DiscoveryQueue',
+    'Environment',
     'IPAddress',
     'IPAlias',
     'MAC_PREFIX_BLACKLIST',

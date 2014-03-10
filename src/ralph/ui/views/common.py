@@ -26,9 +26,11 @@ from django.views.generic import (
 from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Language, TagStem
 from bob.menu import MenuItem
+import pluggableapp
 from powerdns.models import Record
 
-from ralph.discovery.models_component import Ethernet, EthernetSpeed
+from ralph.discovery.models_component import Ethernet
+from ralph.app import RalphModule
 from ralph.discovery.models_device import DeprecationKind, MarginKind
 from ralph.scan.errors import Error as ScanError
 from ralph.scan.manual import scan_address
@@ -173,9 +175,11 @@ def _get_details(dev, purchase_only=False, with_price=False,
                 detail['price'] = None
         if with_price and not detail['price']:
             continue
-        if (detail['group'] != 'dev' and 'size' not in detail and
-                detail.get('model')
-            ):
+        if (
+            detail['group'] != 'dev' and
+            'size' not in detail and
+            detail.get('model')
+        ):
             detail['size'] = detail['model'].size
         if not detail.get('model'):
             detail['model'] = detail.get('model_name', '')
@@ -209,101 +213,16 @@ class BaseMixin(object):
             self.request.GET.urlencode(),
         )
 
-    def get_context_data(self, **kwargs):
-        ret = super(BaseMixin, self).get_context_data(**kwargs)
+    def get_tab_items(self):
         details = self.kwargs.get('details', 'info')
         profile = self.request.user.get_profile()
         has_perm = profile.has_perm
-        footer_items = []
-        mainmenu_items = [
-            MenuItem('Ventures', fugue_icon='fugue-store',
-                     view_name='ventures')
-        ]
-        if has_perm(Perm.read_dc_structure):
-            mainmenu_items.append(
-                MenuItem('Racks', fugue_icon='fugue-building',
-                         view_name='racks'))
-        if has_perm(Perm.read_network_structure):
-            mainmenu_items.append(
-                MenuItem('Networks', fugue_icon='fugue-weather-clouds',
-                         view_name='networks'))
-        if has_perm(Perm.read_device_info_reports):
-            mainmenu_items.append(
-                MenuItem('Reports', fugue_icon='fugue-report',
-                         view_name='reports'))
-        if has_perm(Perm.edit_device_info_financial):
-            mainmenu_items.append(
-                MenuItem('Catalog', fugue_icon='fugue-paper-bag',
-                         view_name='catalog'))
-        if ('ralph.cmdb' in settings.INSTALLED_APPS and
-                has_perm(Perm.read_configuration_item_info_generic)):
-            mainmenu_items.append(
-                MenuItem('CMDB', fugue_icon='fugue-thermometer',
-                         href='/cmdb/changes/timeline')
-            )
-        if ('ralph_assets' in settings.INSTALLED_APPS):
-            mainmenu_items.append(
-                MenuItem('Assets', fugue_icon='fugue-box-label',
-                         href='/assets')
-            )
-        if ('ralph_pricing' in settings.INSTALLED_APPS):
-            mainmenu_items.append(
-                MenuItem('Pricing', fugue_icon='fugue-money-coin',
-                         href='/pricing')
-            )
-
-        if settings.BUGTRACKER_URL:
-            mainmenu_items.append(
-                MenuItem(
-                    'Report a bug', fugue_icon='fugue-bug', pull_right=True,
-                    href=settings.BUGTRACKER_URL)
-            )
-        footer_items.append(
-            MenuItem(
-                "Version %s" % '.'.join((str(part) for part in VERSION)),
-                fugue_icon='fugue-document-number',
-                href=CHANGELOG_URL,
-            )
-        )
-        if self.request.user.is_staff:
-            footer_items.append(
-                MenuItem('Admin', fugue_icon='fugue-toolbox', href='/admin'))
-        footer_items.append(
-            MenuItem(
-                '%s (preference)' % self.request.user,
-                fugue_icon='fugue-user',
-                view_name='preference',
-                view_args=[details or 'info', ''],
-                pull_right=True,
-                href=reverse('user_preference', args=[]),
-            )
-        )
-        footer_items.append(
-            MenuItem(
-                'logout',
-                fugue_icon='fugue-door-open-out',
-                view_name='logout',
-                view_args=[details or 'info', ''],
-                pull_right=True,
-                href=settings.LOGOUT_URL,
-            )
-        )
-        mainmenu_items.append(
-            MenuItem(
-                'Advanced search',
-                name='search',
-                fugue_icon='fugue-magnifier',
-                view_args=[details or 'info', ''],
-                view_name='search',
-                pull_right=True,
-            )
-        )
         tab_items = []
         venture = (
-                self.venture if self.venture and self.venture != '*' else None
-            ) or (
-                self.object.venture if self.object else None
-            )
+            self.venture if self.venture and self.venture != '*' else None
+        ) or (
+            self.object.venture if self.object else None
+        )
 
         if has_perm(Perm.read_device_info_generic, venture):
             tab_items.extend([
@@ -370,9 +289,11 @@ class BaseMixin(object):
                     pass
             if ci:
                 tab_items.extend([
-                    MenuItem('CMDB', fugue_icon='fugue-thermometer',
-                             href='/cmdb/ci/view/%s' % ci.id),
-                    ])
+                    MenuItem(
+                        'CMDB', fugue_icon='fugue-thermometer',
+                        href='/cmdb/ci/view/%s' % ci.id
+                    ),
+                ])
         if has_perm(Perm.read_device_info_reports, venture):
             tab_items.extend([
                 MenuItem('Reports', fugue_icon='fugue-reports-stack',
@@ -383,6 +304,97 @@ class BaseMixin(object):
                 MenuItem('Bulk edit', fugue_icon='fugue-pencil-field',
                          name='bulkedit'),
             ])
+        return tab_items
+
+    def get_context_data(self, **kwargs):
+        ret = super(BaseMixin, self).get_context_data(**kwargs)
+        details = self.kwargs.get('details', 'info')
+        profile = self.request.user.get_profile()
+        has_perm = profile.has_perm
+        footer_items = []
+        mainmenu_items = [
+            MenuItem('Ventures', fugue_icon='fugue-store',
+                     view_name='ventures')
+        ]
+        if has_perm(Perm.read_dc_structure):
+            mainmenu_items.append(
+                MenuItem('Racks', fugue_icon='fugue-building',
+                         view_name='racks'))
+        if has_perm(Perm.read_network_structure):
+            mainmenu_items.append(
+                MenuItem('Networks', fugue_icon='fugue-weather-clouds',
+                         view_name='networks'))
+        if has_perm(Perm.read_device_info_reports):
+            mainmenu_items.append(
+                MenuItem('Reports', fugue_icon='fugue-report',
+                         view_name='reports'))
+        if has_perm(Perm.edit_device_info_financial):
+            mainmenu_items.append(
+                MenuItem('Catalog', fugue_icon='fugue-paper-bag',
+                         view_name='catalog'))
+
+        if ('ralph.cmdb' in settings.INSTALLED_APPS and
+                has_perm(Perm.read_configuration_item_info_generic)):
+            mainmenu_items.append(
+                MenuItem('CMDB', fugue_icon='fugue-thermometer',
+                         href='/cmdb/changes/timeline')
+            )
+
+        for app in pluggableapp.app_dict.values():
+            if isinstance(app, RalphModule):
+                mainmenu_items.append(MenuItem(
+                    app.disp_name,
+                    fugue_icon=app.icon,
+                    href='/{}'.format(app.url_prefix)
+                ))
+
+        if settings.BUGTRACKER_URL:
+            mainmenu_items.append(
+                MenuItem(
+                    'Report a bug', fugue_icon='fugue-bug', pull_right=True,
+                    href=settings.BUGTRACKER_URL)
+            )
+        footer_items.append(
+            MenuItem(
+                "Version %s" % '.'.join((str(part) for part in VERSION)),
+                fugue_icon='fugue-document-number',
+                href=CHANGELOG_URL,
+            )
+        )
+        if self.request.user.is_staff:
+            footer_items.append(
+                MenuItem('Admin', fugue_icon='fugue-toolbox', href='/admin'))
+        footer_items.append(
+            MenuItem(
+                '%s (preference)' % self.request.user,
+                fugue_icon='fugue-user',
+                view_name='preference',
+                view_args=[details or 'info', ''],
+                pull_right=True,
+                href=reverse('user_preference', args=[]),
+            )
+        )
+        footer_items.append(
+            MenuItem(
+                'logout',
+                fugue_icon='fugue-door-open-out',
+                view_name='logout',
+                view_args=[details or 'info', ''],
+                pull_right=True,
+                href=settings.LOGOUT_URL,
+            )
+        )
+        mainmenu_items.append(
+            MenuItem(
+                'Advanced search',
+                name='search',
+                fugue_icon='fugue-magnifier',
+                view_args=[details or 'info', ''],
+                view_name='search',
+                pull_right=True,
+            )
+        )
+        tab_items = self.get_tab_items()
         ret.update({
             'section': self.section,
             'details': details,
@@ -589,7 +601,7 @@ class Info(DeviceUpdateView):
                 p = device.venture_role.roleproperty_set.get(symbol=symbol)
             except RoleProperty.DoesNotExist:
                 p = device.venture.roleproperty_set.get(symbol=symbol)
-            if value != p.default and not {value,  p.default} == {None, ''}:
+            if value != p.default and not {value, p.default} == {None, ''}:
                 pv, created = RolePropertyValue.concurrent_get_or_create(
                     property=p,
                     device=device,
@@ -695,7 +707,7 @@ class Addresses(DeviceDetailView):
         ips = set(ip.address for ip in self.object.ipaddress_set.all())
         names = set(ip.hostname for ip in self.object.ipaddress_set.all()
                     if ip.hostname)
-        dotnames = set(name+'.' for name in names)
+        dotnames = set(name + '.' for name in names)
         revnames = set('.'.join(reversed(ip.split('.'))) + '.in-addr.arpa'
                        for ip in ips)
         starrevnames = set()
@@ -705,10 +717,10 @@ class Addresses(DeviceDetailView):
                 parts.pop(0)
                 starrevnames.add('.'.join(['*'] + parts))
         for entry in Record.objects.filter(
-                db.Q(content__in=ips) |
-                db.Q(name__in=names) |
-                db.Q(content__in=names | dotnames)
-                ).distinct():
+            db.Q(content__in=ips) |
+            db.Q(name__in=names) |
+            db.Q(content__in=names | dotnames)
+        ).distinct():
             names.add(entry.name)
             if entry.type == 'A':
                 ips.add(entry.content)
@@ -948,9 +960,11 @@ class Addresses(DeviceDetailView):
         first_free_ip_addresses = []
         rack = self.object.find_rack()
         if rack:
-            networks = rack.network_set.order_by('name')
+            networks = rack.network_set.filter(
+                environment__isnull=False,
+            ).order_by('name')
             for network in networks:
-                next_hostname = get_next_free_hostname(network.data_center)
+                next_hostname = get_next_free_hostname(network.environment)
                 if next_hostname:
                     break
             for network in networks:
@@ -1027,7 +1041,9 @@ class History(DeviceDetailView):
     def get_context_data(self, **kwargs):
         query_variable_name = 'history_page'
         ret = super(History, self).get_context_data(**kwargs)
-        history = self.object.historychange_set.exclude(field_name='snmp_community').order_by('-date')
+        history = self.object.historychange_set.exclude(
+            field_name='snmp_community'
+        ).order_by('-date')
         show_all = bool(self.request.GET.get('all', ''))
         if not show_all:
             history = history.exclude(user=None)
@@ -1102,8 +1118,7 @@ class Asset(BaseMixin, TemplateView):
             self.asset = get_asset(self.object.id)
             self.form = ChooseAssetForm(
                 initial={
-                    'asset': self.asset['asset_id']
-                        if self.asset else None,
+                    'asset': self.asset['asset_id'] if self.asset else None,
                 },
                 device_id=self.object.id,
             )
@@ -1165,7 +1180,7 @@ class ServerMove(BaseMixin, TemplateView):
             network = Network.objects.get(id=f.cleaned_data['network'])
             ip = get_first_free_ip(network.name, ips)
             ips.add(ip)
-            name = get_next_free_hostname(network.data_center, names)
+            name = get_next_free_hostname(network.environment, names)
             names.add(name)
             yield {
                 'address': f.cleaned_data['address'],
@@ -1396,15 +1411,17 @@ class BulkEdit(BaseMixin, TemplateView):
             if not self.edit_fields:
                 messages.error(self.request, 'Mark changed fields')
             elif self.form.is_valid and self.form.data['save_comment']:
-                self.form.fields = [f for f in self.form.fields
-                        if not f in self.edit_fields or f != 'save_comment']
+                self.form.fields = [
+                    f for f in self.form.fields
+                    if not f in self.edit_fields or f != 'save_comment'
+                ]
                 bulk_update(
                     self.devices,
                     self.edit_fields,
                     self.form.data,
                     self.request.user
                 )
-                return HttpResponseRedirect(self.request.path+'../info/')
+                return HttpResponseRedirect(self.request.path + '../info/')
             else:
                 messages.error(self.request, 'Correct the errors.')
         elif 'bulk' in self.request.POST:
@@ -1751,4 +1768,3 @@ class ScanStatus(BaseMixin, TemplateView):
                 )
                 return HttpResponseRedirect(self.request.path)
         return self.get(*args, **kwargs)
-
