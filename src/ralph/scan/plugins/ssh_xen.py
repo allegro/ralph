@@ -12,7 +12,7 @@ from django.conf import settings
 from django.utils.encoding import force_unicode
 
 from ralph.util import parse
-from ralph.util.network import check_tcp_port, connect_ssh
+from ralph.util.network import check_tcp_port, connect_ssh, AuthError
 from ralph.discovery.hardware import get_disk_shares
 from ralph.discovery.models import DeviceType
 from ralph.scan.plugins import get_base_result_template
@@ -30,6 +30,13 @@ def _connect_ssh(ip_address, user, password):
     if not check_tcp_port(ip_address, 22):
         raise ConnectionError('Port 22 closed on a XEN server.')
     return connect_ssh(ip_address, user, password)
+
+
+def _enable_sudo_mode(ssh):
+    stdin, stdout, stderr = ssh.exec_command('xe host-list')
+    if stdout.read():
+        return False
+    return True
 
 
 def _ssh_lines(ssh, command):
@@ -50,12 +57,14 @@ def _sanitize_line(line):
     return line
 
 
-def _get_current_host_uuid(ssh, ip_address):
+def _get_current_host_uuid(ssh, ip_address, sudo_mode=False):
     uuid = ''
     match = False
     for line in _ssh_lines(
         ssh,
-        'sudo xe host-list params=address,name-label,uuid',
+        '{}xe host-list params=address,name-label,uuid'.format(
+            'sudo ' if sudo_mode else '',
+        ),
     ):
         parts = _sanitize_line(line).split(':')
         try:
@@ -73,10 +82,11 @@ def _get_current_host_uuid(ssh, ip_address):
     return uuid if match else None
 
 
-def _get_running_vms(ssh, uuid):
+def _get_running_vms(ssh, uuid, sudo_mode=False):
     stdin, stdout, stderr = ssh.exec_command(
-        'sudo xe vm-list resident-on={} '
+        '{}xe vm-list resident-on={} '
         'params=uuid,name-label,power-state,VCPUs-number,memory-actual'.format(
+            'sudo ' if sudo_mode else '',
             uuid,
         )
     )
@@ -108,12 +118,17 @@ def _get_running_vms(ssh, uuid):
     return vms
 
 
-def _get_macs(ssh):
+def _get_macs(ssh, sudo_mode=False):
     """Get a dict of sets of macs of all the virtual machines."""
 
     macs = collections.defaultdict(set)
     label = ''
-    for line in _ssh_lines(ssh, 'sudo xe vif-list params=vm-name-label,MAC'):
+    for line in _ssh_lines(
+        ssh,
+        '{}xe vif-list params=vm-name-label,MAC'.format(
+            'sudo ' if sudo_mode else '',
+        ),
+    ):
         line = _sanitize_line(line)
         if not line:
             continue
@@ -127,14 +142,14 @@ def _get_macs(ssh):
     return macs
 
 
-def _get_disks(ssh):
+def _get_disks(ssh, sudo_mode=False):
     """Get a dict of lists of disks of virtual machines."""
 
     stdin, stdout, stderr = ssh.exec_command(
-        'sudo xe vm-disk-list '
+        '{}xe vm-disk-list '
         'vdi-params=sr-uuid,uuid,virtual-size '
         'vbd-params=vm-name-label,type,device '
-        '--multiple'
+        '--multiple'.format('sudo ' if sudo_mode else '')
     )
     disks = collections.defaultdict(list)
     vm = None
@@ -165,18 +180,15 @@ def _get_disks(ssh):
     return disks
 
 
-def _ssh_xen(ip_address, user, password):
-    ssh = _connect_ssh(ip_address, user, password)
-    try:
-        uuid = _get_current_host_uuid(ssh, ip_address)
-        if not uuid:
-            raise Error('Could not find this host UUID.')
-        vms = _get_running_vms(ssh, uuid)
-        macs = _get_macs(ssh)
-        disks = _get_disks(ssh)
-        shares = get_disk_shares(ssh)
-    finally:
-        ssh.close()
+def _ssh_xen(ssh, ip_address):
+    sudo_mode = _enable_sudo_mode(ssh)
+    uuid = _get_current_host_uuid(ssh, ip_address, sudo_mode)
+    if not uuid:
+        raise Error('Could not find this host UUID.')
+    vms = _get_running_vms(ssh, uuid, sudo_mode)
+    macs = _get_macs(ssh, sudo_mode)
+    disks = _get_disks(ssh, sudo_mode)
+    shares = get_disk_shares(ssh)
     device_info = {
         'subdevices': [],
         'type': DeviceType.unknown.raw,
@@ -240,25 +252,38 @@ def scan_address(ip_address, **kwargs):
         raise NoMatchError("Incompatible Nexus found.")
     if 'xen' not in snmp_name:
         raise NoMatchError("XEN not found.")
-    user = SETTINGS.get('xen_user')
-    password = SETTINGS.get('xen_password')
+    auths = SETTINGS.get('xen_auths')
     messages = []
     result = get_base_result_template('ssh_xen', messages)
-    if not user or not password:
+    if not auths:
         result['status'] = 'error'
         messages.append(
-            'Not configured. Set XEN_USER and XEN_PASSWORD in your '
-            'configuration file.',
+            'Not configured. Set XEN_AUTHS in your configuration file.',
         )
     else:
-        try:
-            device_info = _ssh_xen(ip_address, user, password)
-        except (Error, ConnectionError) as e:
+        for user, password in auths:
+            if user is None or password is None:
+                continue
+            try:
+                ssh = _connect_ssh(ip_address, user, password)
+            except AuthError:
+                continue
+            else:
+                break
+        if not ssh:
             result['status'] = 'error'
-            messages.append(unicode(e))
+            messages.append('Authorization failed.')
         else:
-            result.update({
-                'status': 'success',
-                'device': device_info,
-            })
+            try:
+                device_info = _ssh_xen(ssh, ip_address)
+            except (Error, ConnectionError) as e:
+                result['status'] = 'error'
+                messages.append(unicode(e))
+            else:
+                result.update({
+                    'status': 'success',
+                    'device': device_info,
+                })
+            finally:
+                ssh.close()
     return result

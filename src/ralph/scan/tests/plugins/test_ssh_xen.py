@@ -11,6 +11,7 @@ from django.test import TestCase
 
 from ralph.discovery.tests.util import MockSSH
 from ralph.scan.plugins.ssh_xen import (
+    _enable_sudo_mode,
     _get_current_host_uuid,
     _get_disks,
     _get_macs,
@@ -23,6 +24,7 @@ from ralph.scan.tests.plugins.samples.ssh_xen import (
     GET_DISKS_SAMPLE,
     GET_MACS_SAMPLE,
     GET_RUNNING_VMS_SAMPLE,
+    TEST_SUDO_MODE_SAMPLE,
 )
 
 
@@ -33,18 +35,32 @@ class SSHXenPluginTest(TestCase):
             'ala ma kota',
         )
 
+    def test_enable_sudo_mode(self):
+        ssh = MockSSH([
+            (
+                "xe host-list",
+                "",
+            ),
+            (
+                "xe host-list",
+                TEST_SUDO_MODE_SAMPLE,
+            ),
+        ])
+        self.assertTrue(_enable_sudo_mode(ssh))
+        self.assertFalse(_enable_sudo_mode(ssh))
+
     def test_get_current_host_uuid(self):
         ssh = MockSSH([
             (
-                "sudo xe host-list params=address,name-label,uuid",
+                "xe host-list params=address,name-label,uuid",
                 GET_CURRENT_HOST_UUID_SAMPLE,
             ),
             (
-                "sudo xe host-list params=address,name-label,uuid",
+                "xe host-list params=address,name-label,uuid",
                 GET_CURRENT_HOST_UUID_SAMPLE,
             ),
             (
-                "sudo xe host-list params=address,name-label,uuid",
+                "xe host-list params=address,name-label,uuid",
                 GET_CURRENT_HOST_UUID_SAMPLE,
             ),
         ])
@@ -63,7 +79,7 @@ class SSHXenPluginTest(TestCase):
     def test_get_running_vms(self):
         ssh = MockSSH([
             (
-                "sudo xe vm-list resident-on=sample-uuid-01 params="
+                "xe vm-list resident-on=sample-uuid-01 params="
                 "uuid,name-label,power-state,VCPUs-number,memory-actual",
                 GET_RUNNING_VMS_SAMPLE,
             ),
@@ -85,7 +101,7 @@ class SSHXenPluginTest(TestCase):
     def test_get_macs(self):
         ssh = MockSSH([
             (
-                "sudo xe vif-list params=vm-name-label,MAC",
+                "xe vif-list params=vm-name-label,MAC",
                 GET_MACS_SAMPLE,
             ),
         ])
@@ -105,7 +121,7 @@ class SSHXenPluginTest(TestCase):
     def test_get_disks(self):
         ssh = MockSSH([
             (
-                "sudo xe vm-disk-list vdi-params=sr-uuid,uuid,virtual-size "
+                "xe vm-disk-list vdi-params=sr-uuid,uuid,virtual-size "
                 "vbd-params=vm-name-label,type,device --multiple",
                 GET_DISKS_SAMPLE,
             ),
@@ -123,37 +139,36 @@ class SSHXenPluginTest(TestCase):
 
     def test_ssh_xen(self):
         with mock.patch(
-            'ralph.scan.plugins.ssh_xen.check_tcp_port',
-        ) as check_port, mock.patch(
-            'ralph.scan.plugins.ssh_xen.connect_ssh',
-        ) as ssh, mock.patch(
             'ralph.scan.plugins.ssh_xen.get_disk_shares',
         ) as get_disk_shares:
-            check_port.return_value = True
             get_disk_shares.return_value = {}
-            ssh.side_effect = MockSSH([
+            ssh = MockSSH([
                 (
-                    "sudo xe host-list params=address,name-label,uuid",
+                    "xe host-list",
+                    TEST_SUDO_MODE_SAMPLE,
+                ),
+                (
+                    "xe host-list params=address,name-label,uuid",
                     GET_CURRENT_HOST_UUID_SAMPLE,
                 ),
                 (
-                    "sudo xe vm-list resident-on=sample-uuid-01 params="
+                    "xe vm-list resident-on=sample-uuid-01 params="
                     "uuid,name-label,power-state,VCPUs-number,memory-actual",
                     GET_RUNNING_VMS_SAMPLE,
                 ),
                 (
-                    "sudo xe vif-list params=vm-name-label,MAC",
+                    "xe vif-list params=vm-name-label,MAC",
                     GET_MACS_SAMPLE,
                 ),
                 (
-                    "sudo xe vm-disk-list vdi-params=sr-uuid,uuid,"
+                    "xe vm-disk-list vdi-params=sr-uuid,uuid,"
                     "virtual-size vbd-params=vm-name-label,type,device "
                     "--multiple",
                     GET_DISKS_SAMPLE,
                 ),
             ])
             self.assertEqual(
-                _ssh_xen('10.10.10.01', 'u1', 'p1'),
+                _ssh_xen(ssh, '10.10.10.01'),
                 {
                     'subdevices': [
                         {

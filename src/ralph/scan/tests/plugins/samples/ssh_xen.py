@@ -1,5 +1,13 @@
 # -*- coding: utf-8 -*-
 
+TEST_SUDO_MODE_SAMPLE = """
+uuid ( RO)          : sample-uuid-02
+    name-label ( RW): test-xen-002
+       address ( RO): 10.10.10.02
+
+...
+"""
+
 GET_CURRENT_HOST_UUID_SAMPLE = """
 uuid ( RO)          : sample-uuid-02
     name-label ( RW): test-xen-002
