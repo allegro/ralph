@@ -169,7 +169,7 @@ class NetworksMixin(SidebarNetworks, BaseMixin):
                      href=self.tab_href('info')),
             MenuItem('Addresses', fugue_icon='fugue-network-ip',
                      href=self.tab_href('addresses')),
-            MenuItem('Scan', fugue_icon='fugue-flashlight',
+            MenuItem('Autoscan', fugue_icon='fugue-radar',
                      href=self.tab_href('autoscan')),
         ]
         show_tabs = [
