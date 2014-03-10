@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 
 from django.conf import settings
 
+from ralph.discovery.models import DeviceType
 from ralph.scan.errors import (
     ConnectionError,
     NoMatchError,
@@ -24,8 +25,69 @@ def _connect_ssh(ip_address, user, password):
     return connect_ssh(ip_address, user, password)
 
 
-def _ssh_juniper(ssh):
-    pass
+def _ssh_lines(ssh, command):
+    stdin, stdout, stderr = ssh.exec_command(command)
+    for line in stdout.readlines():
+        line = line.strip()
+        if not line:
+            continue
+        yield line
+
+
+def _get_switches(ssh):
+    stacked = False
+    switches = []
+    data_reading = False
+    for line in _ssh_lines(ssh, 'show virtual-chassis'):
+        if all((
+            'preprovisioned virtual chassis' in line.lower(),
+            not data_reading,
+        )):
+            stacked = True
+            continue
+        if line.lower().startswith('member id') and not data_reading:
+            data_reading = True
+            continue
+        if data_reading:
+            line = line.replace('FPC ', '')
+            chunks = line.split()
+            try:
+                sn, model, role = chunks[3], chunks[4], chunks[6]
+            except IndexError:
+                continue  # incorrect data or end of switches list...
+            else:
+                switches.append({
+                    'serial_number': sn,
+                    'model': model,
+                    'role': role,
+                })
+    return stacked, switches
+
+
+def _ssh_juniper(ssh, ip_address):
+    stacked, switches = _get_switches(ssh)
+    if stacked:
+        device_type = DeviceType.switch_stack.raw
+    else:
+        device_type = DeviceType.switch.raw
+    device = {
+        'type': device_type,
+        'system_ip_address': [ip_address],
+    }
+    if stacked:
+        subdevices = []
+        for switch in switches:
+            subdevices.append({
+                'type': DeviceType.switch.raw,
+                'model_name': switch['model'],
+                'serial_number': switch['serial_number'],
+            })
+        device['subdevices'] = subdevices
+    elif switches:
+        device['model_name'] = switches[0]['model']
+        device['serial_number'] = switches[0]['serial_number']
+    # TODO: hostname, mac...
+    return device
 
 
 def scan_address(ip_address, **kwargs):
@@ -50,7 +112,7 @@ def scan_address(ip_address, **kwargs):
             messages.append(unicode(e))
         else:
             try:
-                device_info = _ssh_juniper(ssh)
+                device_info = _ssh_juniper(ssh, ip_address)
             finally:
                 ssh.close()
             result.update({
