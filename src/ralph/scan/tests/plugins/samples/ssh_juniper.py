@@ -1,5 +1,19 @@
 # -*- coding: utf-8 -*-
 
+JUNIPER_SHOW_VERSION_SAMPLE = """
+fpc0:
+--------------------------------------------------------------------------
+Hostname: rack01-sw1.dc
+Model: ex4500-40f
+...
+
+fpc1:
+--------------------------------------------------------------------------
+Hostname: rack01-sw1.dc4
+Model: ex4500-40f
+...
+"""
+
 JUNIPER_STACKED_SAMPLE = """
 Preprovisioned Virtual Chassis
 Virtual Chassis ID: aaaa.bbbb.cccc

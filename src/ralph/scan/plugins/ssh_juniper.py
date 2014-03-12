@@ -34,6 +34,16 @@ def _ssh_lines(ssh, command):
         yield line
 
 
+def _get_hostname(ssh):
+    for line in _ssh_lines(ssh, 'show version'):
+        if line.lower().startswith('hostname'):
+            line_chunks = line.split(':')
+            try:
+                return line_chunks[1].strip()
+            except IndexError:
+                pass  # unexpected result... maybe next line will be ok...
+
+
 def _get_switches(ssh):
     stacked = False
     switches = []
@@ -61,6 +71,8 @@ def _get_switches(ssh):
                     'model': model,
                     'role': role,
                 })
+                if not stacked:
+                    break
     return stacked, switches
 
 
@@ -72,21 +84,36 @@ def _ssh_juniper(ssh, ip_address):
         device_type = DeviceType.switch.raw
     device = {
         'type': device_type,
-        'system_ip_address': [ip_address],
+        'management_ip_addresses': [ip_address],
     }
+    hostname = _get_hostname(ssh)
+    if hostname:
+        device['hostname'] = hostname
     if stacked:
         subdevices = []
-        for switch in switches:
-            subdevices.append({
+        hostname_chunks = hostname.split('.', 1)
+        try:
+            hostname_base, hostname_domain = (
+                hostname_chunks[0], hostname_chunks[1],
+            )
+        except IndexError:
+            hostname_base, hostname_domain = None, None
+        for switch, i in zip(switches, xrange(1, len(switches) + 1)):
+            subdevice = {
                 'type': DeviceType.switch.raw,
                 'model_name': switch['model'],
                 'serial_number': switch['serial_number'],
-            })
+            }
+            if hostname_base and hostname_domain:
+                subdevice['hostname'] = '{}-{}.{}'.format(
+                    hostname_base, i, hostname_domain
+                )
+            subdevices.append(subdevice)
         device['subdevices'] = subdevices
+        device['model_name'] = 'Juniper Virtual Chassis Ethernet Switch'
     elif switches:
         device['model_name'] = switches[0]['model']
         device['serial_number'] = switches[0]['serial_number']
-    # TODO: hostname, mac...
     return device
 
 
