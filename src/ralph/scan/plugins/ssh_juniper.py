@@ -44,8 +44,20 @@ def _get_hostname(ssh):
                 pass  # unexpected result... maybe next line will be ok...
 
 
+def _get_mac_addresses(ssh):
+    mac_addresses = []
+    for line in _ssh_lines(ssh, 'show chassis mac-addresses'):
+        line = line.lower()
+        if line.startswith('public base address'):
+            mac_addresses.append(
+                line.replace('public base address', '').strip(),
+            )
+    return mac_addresses
+
+
 def _get_switches(ssh):
     stacked = False
+    chassis_id = ''
     switches = []
     data_reading = False
     for line in _ssh_lines(ssh, 'show virtual-chassis'):
@@ -54,6 +66,15 @@ def _get_switches(ssh):
             not data_reading,
         )):
             stacked = True
+            continue
+        if all((
+            'virtual chassis id' in line.lower(),
+            not data_reading,
+        )):
+            try:
+                chassis_id = line.split(':')[1].strip()
+            except IndexError:
+                pass
             continue
         if line.lower().startswith('member id') and not data_reading:
             data_reading = True
@@ -73,11 +94,11 @@ def _get_switches(ssh):
                 })
                 if not stacked:
                     break
-    return stacked, switches
+    return stacked, chassis_id, switches
 
 
 def _ssh_juniper(ssh, ip_address):
-    stacked, switches = _get_switches(ssh)
+    stacked, chassis_id, switches = _get_switches(ssh)
     if stacked:
         device_type = DeviceType.switch_stack.raw
     else:
@@ -87,6 +108,7 @@ def _ssh_juniper(ssh, ip_address):
         'management_ip_addresses': [ip_address],
     }
     hostname = _get_hostname(ssh)
+    mac_addresses = _get_mac_addresses(ssh)
     if hostname:
         device['hostname'] = hostname
     if stacked:
@@ -103,6 +125,9 @@ def _ssh_juniper(ssh, ip_address):
                 'type': DeviceType.switch.raw,
                 'model_name': switch['model'],
                 'serial_number': switch['serial_number'],
+                'mac_addresses': [
+                    mac_addresses[i - 1]
+                ] if mac_addresses else []
             }
             if hostname_base and hostname_domain:
                 subdevice['hostname'] = '{}-{}.{}'.format(
@@ -111,9 +136,12 @@ def _ssh_juniper(ssh, ip_address):
             subdevices.append(subdevice)
         device['subdevices'] = subdevices
         device['model_name'] = 'Juniper Virtual Chassis Ethernet Switch'
+        device['serial_number'] = chassis_id
     elif switches:
         device['model_name'] = switches[0]['model']
         device['serial_number'] = switches[0]['serial_number']
+        if mac_addresses:
+            device['mac_addresses'] = [mac_addresses[0]]
     return device
 
 

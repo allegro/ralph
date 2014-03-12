@@ -29,7 +29,7 @@ Member ID  Status   Serial No    Model     prio  Role      Mode ID  Interface
 """
 
 JUNIPER_NOT_STACKED_SAMPLE = """
-Virtual Chassis ID: a60f.19fb.b7ea
+Virtual Chassis ID: aaaa.bbbb.dddd
 Virtual Chassis Mode: Enabled
                                            Mstr           Mixed Neighbor List
 Member ID  Status   Serial No    Model     prio  Role      Mode ID  Interface
@@ -38,4 +38,13 @@ Member ID  Status   Serial No    Model     prio  Role      Mode ID  Interface
 Member ID for next new member: 1 (FPC 1)
 
 {master:0}
+"""
+
+JUNIPER_GET_MAC_ADDRESSES_SAMPLE = """
+    FPC 0   MAC address information:
+      Public base address     aa:bb:cc:dd:00:01
+      Public count            64
+    FPC 1   MAC address information:
+      Public base address     aa:bb:cc:dd:00:02
+      Public count            64
 """

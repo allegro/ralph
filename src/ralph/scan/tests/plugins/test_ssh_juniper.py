@@ -10,10 +10,12 @@ from django.test import TestCase
 from ralph.discovery.tests.util import MockSSH
 from ralph.scan.plugins.ssh_juniper import (
     _get_hostname,
+    _get_mac_addresses,
     _get_switches,
     _ssh_juniper,
 )
 from ralph.scan.tests.plugins.samples.ssh_juniper import (
+    JUNIPER_GET_MAC_ADDRESSES_SAMPLE,
     JUNIPER_NOT_STACKED_SAMPLE,
     JUNIPER_SHOW_VERSION_SAMPLE,
     JUNIPER_STACKED_SAMPLE,
@@ -50,6 +52,7 @@ class SSHJuniperPluginTest(TestCase):
             _get_switches(ssh),
             (
                 True,
+                'aaaa.bbbb.cccc',
                 [
                     {
                         'model': 'ex4500-40f',
@@ -80,6 +83,7 @@ class SSHJuniperPluginTest(TestCase):
             _get_switches(ssh),
             (
                 False,
+                'aaaa.bbbb.dddd',
                 [
                     {
                         'model': 'ex4500-40f',
@@ -88,6 +92,18 @@ class SSHJuniperPluginTest(TestCase):
                     },
                 ],
             ),
+        )
+
+    def test_get_mac_addresses(self):
+        ssh = MockSSH([
+            (
+                "show chassis mac-addresses",
+                JUNIPER_GET_MAC_ADDRESSES_SAMPLE,
+            ),
+        ])
+        self.assertEqual(
+            _get_mac_addresses(ssh),
+            ['aa:bb:cc:dd:00:01', 'aa:bb:cc:dd:00:02'],
         )
 
     def test_ssh_juniper_stacked(self):
@@ -100,6 +116,10 @@ class SSHJuniperPluginTest(TestCase):
                 "show version",
                 JUNIPER_SHOW_VERSION_SAMPLE,
             ),
+            (
+                "show chassis mac-addresses",
+                JUNIPER_GET_MAC_ADDRESSES_SAMPLE,
+            ),
         ])
         self.assertEqual(
             _ssh_juniper(ssh, '10.10.10.10'),
@@ -107,15 +127,18 @@ class SSHJuniperPluginTest(TestCase):
                 'hostname': 'rack01-sw1.dc',
                 'management_ip_addresses': ['10.10.10.10'],
                 'model_name': 'Juniper Virtual Chassis Ethernet Switch',
+                'serial_number': 'aaaa.bbbb.cccc',
                 'subdevices': [
                     {
                         'hostname': 'rack01-sw1-1.dc',
+                        'mac_addresses': ['aa:bb:cc:dd:00:01'],
                         'model_name': 'ex4500-40f',
                         'serial_number': 'GX1122334401',
                         'type': 'switch',
                     },
                     {
                         'hostname': 'rack01-sw1-2.dc',
+                        'mac_addresses': ['aa:bb:cc:dd:00:02'],
                         'model_name': 'ex4500-40f',
                         'serial_number': 'GX1122334402',
                         'type': 'switch',
@@ -135,11 +158,16 @@ class SSHJuniperPluginTest(TestCase):
                 "show version",
                 JUNIPER_SHOW_VERSION_SAMPLE,
             ),
+            (
+                "show chassis mac-addresses",
+                JUNIPER_GET_MAC_ADDRESSES_SAMPLE,
+            ),
         ])
         self.assertEqual(
             _ssh_juniper(ssh, '10.10.10.10'),
             {
                 'hostname': 'rack01-sw1.dc',
+                'mac_addresses': ['aa:bb:cc:dd:00:01'],
                 'management_ip_addresses': ['10.10.10.10'],
                 'model_name': 'ex4500-40f',
                 'serial_number': 'GX1122334403',
