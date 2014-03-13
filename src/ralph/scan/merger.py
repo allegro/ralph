@@ -179,7 +179,8 @@ def _get_results_priority(plugin, component, external_priorities={}):
             return external_priorities[plugin][component]
         except KeyError:
             logger.warning(
-                "Result priority for plugin '%s' and component '%s' not found." % (
+                "Result priority for plugin '%s' and component '%s' "
+                "not found." % (
                     plugin,
                     component,
                 ),
@@ -367,4 +368,3 @@ def merge(
                         # we can add it
                         merged_data.append(new_row.copy())
     return merged_data
-

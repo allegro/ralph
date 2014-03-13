@@ -25,6 +25,7 @@ from django.conf import settings
 from django.utils.importlib import import_module
 
 from ralph.discovery.models import IPAddress, Network
+from ralph.scan.automerger import save_job_results
 from ralph.scan.errors import NoQueueError
 from ralph.scan.models import ScanSummary
 
@@ -326,6 +327,5 @@ def scan_address_job(
     if run_postprocessing:
         _scan_postprocessing(results, job, ip_address)
     if automerge:
-        # do something...
-        pass
+        save_job_results(job.id)
     return results
