@@ -46,6 +46,7 @@ from ralph.scan.data import (
 )
 from ralph.scan.diff import diff_results, sort_results
 from ralph.scan.models import ScanSummary
+from ralph.scan.util import update_scan_summary
 from ralph.business.models import (
     RoleProperty,
     RolePropertyValue,
@@ -1700,20 +1701,6 @@ class ScanStatus(BaseMixin, TemplateView):
             job.meta['changed'] = False
             job.save()
 
-    def update_scan_summary(self, job):
-        try:
-            scan_summary = ScanSummary.objects.get(job_id=job.id)
-        except ScanSummary.DoesNotExist:
-            return
-        else:
-            scan_summary.previous_checksum = job.meta.get(
-                'results_checksum',
-            )
-            scan_summary.false_positive_checksum = None
-            scan_summary.save()
-            job.meta['changed'] = False
-            job.save()
-
     def post(self, *args, **kwargs):
         self.device_id = self.request.POST.get('save')
         if self.device_id:
@@ -1749,7 +1736,7 @@ class ScanStatus(BaseMixin, TemplateView):
                     except ValueError as e:
                         messages.error(self.request, e)
                     else:
-                        self.update_scan_summary(self.job)
+                        update_scan_summary(self.job)
                         messages.success(
                             self.request,
                             "Device %s saved." % device,
