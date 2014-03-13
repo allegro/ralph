@@ -71,7 +71,7 @@ def autoscan_network(network, queue_name=None):
         queue.enqueue_call(
             func=_autoscan_group,
             args=(group,),
-            timeout=60,
+            timeout=120,
             result_ttl=0,
         )
     network.last_scan = datetime.datetime.now()

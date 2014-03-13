@@ -29,10 +29,15 @@ from ralph.scan.errors import NoQueueError
 from ralph.scan.models import ScanSummary
 
 
+AUTOMERGE_MODE = getattr(settings, 'SCAN_AUTOMERGE_MODE', True)
+
+
 logger = logging.getLogger("SCAN")
 
 
-def scan_address(ip_address, plugins, queue_name=None):
+def scan_address(
+    ip_address, plugins, queue_name=None, automerge=AUTOMERGE_MODE,
+):
     """Queue scan on the specified address."""
 
     if not queue_name:
@@ -60,6 +65,9 @@ def scan_address(ip_address, plugins, queue_name=None):
             ip_address,
             plugins,
         ),
+        kwargs={
+            'automerge': automerge,
+        },
         timeout=300,
         result_ttl=86400,
     )
@@ -68,6 +76,7 @@ def scan_address(ip_address, plugins, queue_name=None):
 
 def scan_ip_addresses_range(
     min_ip_number, max_ip_number, plugins, queue_name=None,
+    automerge=AUTOMERGE_MODE,
 ):
     """Queue scan of a IP addresses (in numeric representation) range."""
 
@@ -77,10 +86,10 @@ def scan_ip_addresses_range(
         dead_ping_count__lte=settings.DEAD_PING_COUNT,
         is_buried=False,
     ).values_list('address', flat=True):
-        scan_address(ip_address, plugins, queue_name)
+        scan_address(ip_address, plugins, queue_name, automerge)
 
 
-def scan_network(network, plugins, queue=None):
+def scan_network(network, plugins, queue=None, automerge=AUTOMERGE_MODE):
     """Queue scan of a entire network on the right worker."""
 
     if not queue:
@@ -91,10 +100,11 @@ def scan_network(network, plugins, queue=None):
         network.max_ip,
         plugins,
         queue_name=queue.name if queue else None,
+        automerge=automerge,
     )
 
 
-def scan_environment(environment, plugins):
+def scan_environment(environment, plugins, automerge=AUTOMERGE_MODE):
     """Queue scan of all scannable networks in the environment."""
 
     if not environment.queue:
@@ -111,6 +121,7 @@ def scan_environment(environment, plugins):
             max_ip_num,
             plugins,
             queue_name=environment.queue.name,
+            automerge=automerge,
         )
 
 
@@ -284,7 +295,13 @@ def _scan_postprocessing(results, job, ip_address=None):
         rq.cancel_job(old_job.id, django_rq.get_connection())
 
 
-def scan_address_job(ip_address=None, plugins=None, results=None, **kwargs):
+def scan_address_job(
+    ip_address=None,
+    plugins=None,
+    results=None,
+    automerge=AUTOMERGE_MODE,
+    **kwargs
+):
     """
     The function that is actually running on the worker.
     """
@@ -308,4 +325,7 @@ def scan_address_job(ip_address=None, plugins=None, results=None, **kwargs):
         results = _run_plugins(ip_address, plugins, job, **kwargs)
     if run_postprocessing:
         _scan_postprocessing(results, job, ip_address)
+    if automerge:
+        # do something...
+        pass
     return results
