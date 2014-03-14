@@ -1496,7 +1496,7 @@ class Scan(BaseMixin, TemplateView):
             return self.get(*args, **kwargs)
         ip_address = self.kwargs.get('address')
         try:
-            job = scan_address(ip_address, plugins)
+            job = scan_address(ip_address, plugins, automerge=False)
         except ScanError as e:
             messages.error(self.request, unicode(e))
             return self.get(*args, **kwargs)

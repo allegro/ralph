@@ -27,6 +27,9 @@ from ralph.scan.data import (
 from ralph.scan.util import update_scan_summary
 
 
+SAVE_PRIORITY = 150
+
+
 def _get_queue_name():
     if 'scan_automerger' in settings.RQ_QUEUES:
         return 'scan_automerger'
@@ -55,7 +58,7 @@ def _get_best_plugin_for_component(
         return 'merged'
     top_plugin = ''
     top_priority = 0
-    # check standalone plugins
+    # check local plugins
     for plugin in plugins:
         if plugin not in settings.SCAN_PLUGINS:
             continue
@@ -119,7 +122,6 @@ def _save_job_results(job_id, start_ts):
         # nothing to do...
         return
     external_priorities = get_external_results_priorities(job.result)
-
     # first... update devices
     devices = find_devices(job.result)
     used_serial_numbers = set()
@@ -139,9 +141,8 @@ def _save_job_results(job_id, start_ts):
         )
         append_merged_proposition(data, device, external_priorities)
         selected_data = _select_data(data, external_priorities)
-        set_device_data(device, selected_data)
+        set_device_data(device, selected_data, save_priority=SAVE_PRIORITY)
         device.save()
-
     # now... we create new devices from `garbage`
     garbage = {}
     for plugin_name, plugin_result in job.result.items():
@@ -162,12 +163,11 @@ def _save_job_results(job_id, start_ts):
             plugin_result['device'].get('mac_addresses'),
         )):
             garbage[plugin_name] = plugin_result
-
     if garbage:
         data = merge_data(garbage)
         selected_data = _select_data(data, external_priorities)
-        device_from_data(data)
-
+        device_from_data(data, save_priority=SAVE_PRIORITY)
+    # mark this scan results
     update_scan_summary(job)
 
 
