@@ -705,4 +705,9 @@ SCAN_PLUGINS = {
             'system_label': 50,
         },
     },
+    'ralph.scan.plugins.ssh_juniper': {
+        'user': SSH_SSG_USER,
+        'password': SSH_SSG_PASSWORD,
+        'results_priority': {},
+    },
 }
