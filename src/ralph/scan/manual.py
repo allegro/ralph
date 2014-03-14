@@ -326,6 +326,8 @@ def scan_address_job(
         results = _run_plugins(ip_address, plugins, job, **kwargs)
     if run_postprocessing:
         _scan_postprocessing(results, job, ip_address)
-        if automerge and job.meta.get('changed', False):
+        # Run only when automerge mode is enabled and some change was detected.
+        # When `change` state is not available just run it...
+        if automerge and job.meta.get('changed', True):
             save_job_results(job.id)
     return results
