@@ -8,27 +8,35 @@ New features:
 
 * SCAN: Much more stable Scan module with better performance.
 
+* SCAN: New vmware plugin for discovering virtual machines.
+
+* SCAN: Cisco Catalyst and Juniper switches detection with recognizing stacked subswitches added.
+
 * NETWORKS: Completely new Network panel which allows you to manage IP addresses and netmasks easily.
 
 * DNS: Added additional validation for DNS form (one PTR is required now).
 
 * DHCP: Added additional validation for DHCP form.
 
-* DHCP config - fixes for networks and entries.
-
-* DHCP config - speed optimizations.
-
-* Updated ralph_dhcp_agent.
-
 * Environments - place where you can configure discovery queue or hosts naming temeplate.
-
-* CORE: Reworked Dependency Injection of Ralph submodules thanks to DjangoPluggableApp, giving more power and DRY-ness.
 
 * LDAP group mapping allows you to more specific permissions setting directly via LDAP.
 
-* Cisco / Catalyst plugin now works correctly.
+Optimizations:
 
-* Discovery: Improved detection of newer Dell machines using IDRAC protocol.
+* DHCP config - fixes for networks and entries.
+
+* DHCP config - large (10x) speed improvements while generating configs.
+
+* Updated ralph_dhcp_agent.
+
+Core changes:
+
+* CORE: Reworked Dependency Injection of Ralph submodules thanks to DjangoPluggableApp, giving more power and DRY-ness.
+
+* SCAN: Upgraded detection of newer Dell machines using IDRAC protocol.
+
+* SCAN: Fixed xen hypervisor discovery, where virtuals were incorrectly assigned to the master cluster.
 
 * Fixed bug where gateway was always required.
 
@@ -42,7 +50,7 @@ New features:
 
 * CMDB: Fixed Jira<->CMDB integration where only first 1000 issues were imported.
 
-* CMDB: Fixed CMDB bugs where customfields where not visible correctly.
+* CMDB: Fixed CMDB bugs where customfields where not visible correctly on particular CITypes.
 
 * CMDB: Allowed CMDB to register own CITypes via Admin Panel.
 
