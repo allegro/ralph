@@ -20,7 +20,12 @@
     <!-- This special resources are required for django filtered multiselect widget !-->
     <!-- They must load before rendering admin widgets !-->
     <!-- first, load jquery. for django admin widgets use. !-->
-    <script src="{{ STATIC_URL }}jquery-1.7.2.min.js"></script>
+    <script type="text/javascript">//<![CDATA[
+        if (typeof jQuery == 'undefined') {
+            document.write('<script type="text/javascript" src="{{ STATIC_URL }}jquery-1.7.2.min.js"><\/script>');
+        }
+    //]]>
+    </script>
     <!-- isolate jquery moving to own 'namespace' !-->
     <script type="text/javascript" src="/static/admin/js/jquery.init.js"></script>
 
