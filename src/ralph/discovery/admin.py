@@ -12,7 +12,6 @@ import logging
 from django import forms
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
-# import ipaddr
 from lck.django.common.admin import (
     ForeignKeyAutocompleteTabularInline,
     ModelAdmin,
@@ -53,39 +52,6 @@ def copy_network(modeladmin, request, queryset):
             new_net.save()
 
 copy_network.short_description = "Copy network"
-
-
-# class NetworkAdminForm(forms.ModelForm):
-#     class Meta:
-#         model = m.Network
-
-#     def clean_address(self):
-#         address = self.cleaned_data['address'].strip()
-#         if not re.search(r'/[0-9]{1,2}$', address):
-#             raise forms.ValidationError(_("It's not a valid network address."))
-#         try:
-#             net = ipaddr.IPNetwork(address)
-#         except ValueError:
-#             raise forms.ValidationError(_("It's not a valid network address."))
-#         given_network_addr = net.compressed.split('/', 1)[0]
-#         real_network_addr = net.network.compressed
-#         if given_network_addr != real_network_addr:
-#             msg = "{} is invalid network address, valid network is {}".format(
-#                 given_network_addr,
-#                 real_network_addr,
-#             )
-#             raise forms.ValidationError(msg)
-#         return address
-
-#     def clean(self):
-#         cleaned_data = super(NetworkAdminForm, self).clean()
-#         if cleaned_data.get('dhcp_broadcast', False):
-#             if not cleaned_data.get('gateway'):
-#                 raise forms.ValidationError(_(
-#                     "To broadcast this network in DHCP config you must also "
-#                     "complete the `Gateway` field.",
-#                 ))
-#         return cleaned_data
 
 
 class NetworkAdmin(ModelAdmin):
