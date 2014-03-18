@@ -6,7 +6,7 @@ Change Log
 
 New features:
 
-* SCAN: Much more stable Scan module with better performance.
+* SCAN: Much more advanced Scan module with great performance and *real* plugins architecture.
 
 * SCAN: New vmware plugin for discovering virtual machines.
 
