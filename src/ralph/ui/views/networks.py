@@ -189,8 +189,7 @@ class NetworksMixin(SidebarNetworks, BaseMixin):
         return ret
 
 
-class NetworksDeviceList(NetworksMixin, BaseDeviceList):
-
+class NetworksDeviceList(NetworksMixin, TemplateView):
     template_name = "ui/network_list.html"
 
     def user_allowed(self):
@@ -266,7 +265,7 @@ class ReportNetworksDeviceList(ReportDeviceList, NetworksDeviceList):
     pass
 
 
-class NetworksAutoscan(NetworksDeviceList):
+class NetworksAutoscan(NetworksMixin, BaseDeviceList):
     template_name = 'ui/address_list.html'
     section = 'networks'
 
