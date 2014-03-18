@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from south.utils import datetime_utils as datetime
+import datetime
 from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
@@ -19,9 +19,6 @@ class Migration(SchemaMigration):
                       keep_default=False)
 
 
-        # Changing field 'IPAddress.last_plugins'
-        db.alter_column('discovery_ipaddress', 'last_plugins', self.gf('django.db.models.fields.TextField')(null=True))
-
     def backwards(self, orm):
         # Deleting field 'IPAddress.is_public'
         db.delete_column('discovery_ipaddress', 'is_public')
@@ -29,9 +26,6 @@ class Migration(SchemaMigration):
         # Deleting field 'IPAddress.venture'
         db.delete_column('discovery_ipaddress', 'venture_id')
 
-
-        # Changing field 'IPAddress.last_plugins'
-        db.alter_column('discovery_ipaddress', 'last_plugins', self.gf('django.db.models.fields.TextField')(default=''))
 
     models = {
         'account.profile': {
@@ -450,7 +444,7 @@ class Migration(SchemaMigration):
             'is_buried': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'is_management': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'is_public': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'last_plugins': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'last_plugins': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'last_puppet': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True', 'blank': 'True'}),
             'last_seen': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),

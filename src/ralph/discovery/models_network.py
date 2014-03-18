@@ -493,7 +493,7 @@ class IPAddress(LastSeen, TimeTrackable, WithConcurrentGetOrCreate):
         Network, verbose_name=_("network"), null=True, blank=True,
         default=None,
     )
-    last_plugins = db.TextField(_("last plugins"), blank=True, null=True)
+    last_plugins = db.TextField(_("last plugins"), blank=True)
     dead_ping_count = db.IntegerField(_("dead ping count"), default=0)
     is_buried = db.BooleanField(_("Buried from autoscan"), default=False)
     scan_summary = db.ForeignKey(
