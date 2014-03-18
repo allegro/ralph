@@ -493,7 +493,7 @@ class IPAddress(LastSeen, TimeTrackable, WithConcurrentGetOrCreate):
         Network, verbose_name=_("network"), null=True, blank=True,
         default=None,
     )
-    last_plugins = db.TextField(_("last plugins"), blank=True)
+    last_plugins = db.TextField(_("last plugins"), blank=True, null=True)
     dead_ping_count = db.IntegerField(_("dead ping count"), default=0)
     is_buried = db.BooleanField(_("Buried from autoscan"), default=False)
     scan_summary = db.ForeignKey(
@@ -501,6 +501,18 @@ class IPAddress(LastSeen, TimeTrackable, WithConcurrentGetOrCreate):
         on_delete=db.SET_NULL,
         null=True,
         blank=True,
+    )
+    is_public = db.BooleanField(
+        _("This is a public address"),
+        default=False,
+    )
+    venture = db.ForeignKey(
+        'business.Venture',
+        verbose_name=_("venture"),
+        null=True,
+        blank=True,
+        default=None,
+        on_delete=db.SET_NULL,
     )
 
     class Meta:
@@ -524,7 +536,26 @@ class IPAddress(LastSeen, TimeTrackable, WithConcurrentGetOrCreate):
             self.network = None
         if self.network and self.network.ignore_addresses:
             self.device = None
+        self.is_public = self._is_public(self.address)
         super(IPAddress, self).save(*args, **kwargs)
+
+    @classmethod
+    def _is_public(cls, address):
+        """
+        Check if address ip is public or private
+
+        :param string address: IP address
+        :returns boolean: True if IP is public or False if is not 
+        :rtype boolean:
+        """
+        ip_parts = address.split('.')
+        if ip_parts[0] == '10':
+            return False
+        if ip_parts[0] == '192' and ip_parts[1] == '168':
+            return False
+        if ip_parts[0] == '172' and int(ip_parts[1]) in range(16, 31):
+            return False
+        return True
 
     def assert_same_device(self):
         if not self.id or 'device_id' not in self.dirty_fields:
