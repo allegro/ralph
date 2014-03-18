@@ -12,7 +12,7 @@ import logging
 from django import forms
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
-import ipaddr
+# import ipaddr
 from lck.django.common.admin import (
     ForeignKeyAutocompleteTabularInline,
     ModelAdmin,
@@ -22,6 +22,7 @@ from django.contrib import messages
 
 from ralph.discovery import models as m
 from ralph.business.admin import RolePropertyValueInline
+from ralph.ui.forms.network import NetworkForm
 
 
 SAVE_PRIORITY = 200
@@ -54,37 +55,37 @@ def copy_network(modeladmin, request, queryset):
 copy_network.short_description = "Copy network"
 
 
-class NetworkAdminForm(forms.ModelForm):
-    class Meta:
-        model = m.Network
+# class NetworkAdminForm(forms.ModelForm):
+#     class Meta:
+#         model = m.Network
 
-    def clean_address(self):
-        address = self.cleaned_data['address'].strip()
-        if not re.search(r'/[0-9]{1,2}$', address):
-            raise forms.ValidationError(_("It's not a valid network address."))
-        try:
-            net = ipaddr.IPNetwork(address)
-        except ValueError:
-            raise forms.ValidationError(_("It's not a valid network address."))
-        given_network_addr = net.compressed.split('/', 1)[0]
-        real_network_addr = net.network.compressed
-        if given_network_addr != real_network_addr:
-            msg = "{} is invalid network address, valid network is {}".format(
-                given_network_addr,
-                real_network_addr,
-            )
-            raise forms.ValidationError(msg)
-        return address
+#     def clean_address(self):
+#         address = self.cleaned_data['address'].strip()
+#         if not re.search(r'/[0-9]{1,2}$', address):
+#             raise forms.ValidationError(_("It's not a valid network address."))
+#         try:
+#             net = ipaddr.IPNetwork(address)
+#         except ValueError:
+#             raise forms.ValidationError(_("It's not a valid network address."))
+#         given_network_addr = net.compressed.split('/', 1)[0]
+#         real_network_addr = net.network.compressed
+#         if given_network_addr != real_network_addr:
+#             msg = "{} is invalid network address, valid network is {}".format(
+#                 given_network_addr,
+#                 real_network_addr,
+#             )
+#             raise forms.ValidationError(msg)
+#         return address
 
-    def clean(self):
-        cleaned_data = super(NetworkAdminForm, self).clean()
-        if cleaned_data.get('dhcp_broadcast', False):
-            if not cleaned_data.get('gateway'):
-                raise forms.ValidationError(_(
-                    "To broadcast this network in DHCP config you must also "
-                    "complete the `Gateway` field.",
-                ))
-        return cleaned_data
+#     def clean(self):
+#         cleaned_data = super(NetworkAdminForm, self).clean()
+#         if cleaned_data.get('dhcp_broadcast', False):
+#             if not cleaned_data.get('gateway'):
+#                 raise forms.ValidationError(_(
+#                     "To broadcast this network in DHCP config you must also "
+#                     "complete the `Gateway` field.",
+#                 ))
+#         return cleaned_data
 
 
 class NetworkAdmin(ModelAdmin):
@@ -105,7 +106,7 @@ class NetworkAdmin(ModelAdmin):
     search_fields = ('name', 'address', 'vlan')
     filter_horizontal = ('terminators', 'racks', 'custom_dns_servers')
     save_on_top = True
-    form = NetworkAdminForm
+    form = NetworkForm
     actions = [copy_network]
 
 admin.site.register(m.Network, NetworkAdmin)

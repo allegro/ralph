@@ -212,6 +212,8 @@ class NetworksInfo(NetworksMixin, UpdateView):
         next_free_ip = get_first_free_ip(self.network.name)
         ret['next_free_ip'] = next_free_ip
         ret['editable'] = True
+        for error in ret['form'].non_field_errors():
+            messages.error(self.request, error)
         return ret
 
     def get_object(self):
