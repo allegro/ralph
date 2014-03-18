@@ -49,7 +49,7 @@ UNIQUE_FIELDS_FOR_MERGER = {
     'disk_shares': [('device', 'share')],
     'installed_software': [('device', 'path')],
 }
-SCAN_SAVE_PRIORITY = 100
+SAVE_PRIORITY = 199
 
 
 def _update_addresses(device, address_data, is_management=False):
@@ -84,6 +84,7 @@ def _get_or_create_model_for_component(
     component_data,
     field_map,
     forbidden_model_fields=set(),
+    save_priority=SAVE_PRIORITY,
 ):
     """
     For concrete component type try to save or reuse instance of
@@ -97,6 +98,7 @@ def _get_or_create_model_for_component(
     :param field_map: mapping from database fields to component_data keys
     :param forbidden_model_fields: If provided, model will be created
                                    without those fields
+    :param save_priority: Save priority
     """
     model_fields = {
         field: component_data[field_map[field]]
@@ -121,14 +123,14 @@ def _get_or_create_model_for_component(
         model_fields['family'] = model_fields.get('family', '')[:128]
     model, created = ComponentModel.create(
         model_type,
-        SCAN_SAVE_PRIORITY,
+        save_priority,
         **model_fields)
     if not created:
         for field, value in model_fields.items():
             if field in forbidden_model_fields:
                 continue
             setattr(model, field, value)
-        model.save(priority=SCAN_SAVE_PRIORITY)
+        model.save(priority=save_priority)
     return model
 
 
@@ -140,6 +142,7 @@ def _update_component_data(
     unique_fields,
     model_type=None,
     forbidden_model_fields=set(),
+    save_priority=SAVE_PRIORITY,
 ):
     """
     Update components of a device based on the data from scan.
@@ -155,6 +158,7 @@ def _update_component_data(
     :param model_type: If provided, a 'model' field will be added
     :param forbidden_model_fields: If provided, model will be created
                                    without those fields
+    :param save_priority: Save priority
     """
 
     component_ids = []
@@ -191,6 +195,7 @@ def _update_component_data(
                         data,
                         field_map,
                         forbidden_model_fields,
+                        save_priority=save_priority,
                     )
                 if model is None:
                     raise ValueError('Unknown model')
@@ -208,13 +213,14 @@ def _update_component_data(
                     data,
                     field_map,
                     forbidden_model_fields,
+                    save_priority=save_priority,
                 )
             except AssertionError:
                 pass
             else:
                 if model:
                     component.model = model
-        component.save(priority=SCAN_SAVE_PRIORITY)
+        component.save(priority=save_priority)
         component_ids.append(component.id)
     # Delete the components that are no longer current
     for component in Component.objects.filter(
@@ -375,7 +381,7 @@ def get_device_data(device):
     return data
 
 
-def set_device_data(device, data):
+def set_device_data(device, data, save_priority=SAVE_PRIORITY):
     """
     Go through the submitted data, and update the Device object
     in accordance with the meaning of the particular fields.
@@ -413,7 +419,7 @@ def set_device_data(device, data):
                 model_type != ComponentType.unknown,
             )):
                 device.model.type = model_type
-                device.model.save()
+                device.model.save(priority=save_priority)
     if 'disks' in data:
         _update_component_data(
             device,
@@ -435,6 +441,7 @@ def set_device_data(device, data):
             ],
             ComponentType.disk,
             {'name'},
+            save_priority=save_priority,
         )
     if 'processors' in data:
         for index, processor in enumerate(data['processors']):
@@ -456,6 +463,7 @@ def set_device_data(device, data):
                 ('device', 'index'),
             ],
             ComponentType.processor,
+            save_priority=save_priority,
         )
     if 'memory' in data:
         for index, memory in enumerate(data['memory']):
@@ -477,6 +485,7 @@ def set_device_data(device, data):
             ],
             ComponentType.memory,
             {'name'},
+            save_priority=save_priority,
         )
     if 'mac_addresses' in data:
         _update_component_data(
@@ -489,6 +498,7 @@ def set_device_data(device, data):
             },
             [('mac',)],
             None,
+            save_priority=save_priority,
         )
     if 'management_ip_addresses' in data:
         _update_addresses(device, data['management_ip_addresses'], True)
@@ -509,6 +519,7 @@ def set_device_data(device, data):
                 ('physical_id', 'device'),
             ],
             ComponentType.fibre,
+            save_priority=save_priority,
         )
     if 'parts' in data:
         _update_component_data(
@@ -525,6 +536,7 @@ def set_device_data(device, data):
             [
                 ('sn',),
             ],
+            save_priority=save_priority,
         )
     if 'disk_exports' in data:
         _update_component_data(
@@ -545,6 +557,7 @@ def set_device_data(device, data):
                 ('wwn',),
             ],
             ComponentType.share,
+            save_priority=save_priority,
         )
     if 'disk_shares' in data:
         for share in data['disk_shares']:
@@ -586,6 +599,7 @@ def set_device_data(device, data):
             [
                 ('device', 'share'),
             ],
+            save_priority=save_priority,
         )
     if 'installed_software' in data:
         _update_component_data(
@@ -604,6 +618,7 @@ def set_device_data(device, data):
                 ('device', 'path'),
             ],
             ComponentType.software,
+            save_priority=save_priority,
         )
     if (
         'system_label' in data or
@@ -630,24 +645,28 @@ def set_device_data(device, data):
                 ('device',),
             ],
             ComponentType.os,
+            save_priority=save_priority,
         )
     if 'subdevices' in data:
         subdevice_ids = []
         for subdevice_data in data['subdevices']:
-            subdevice = device_from_data(subdevice_data)
+            subdevice = device_from_data(
+                subdevice_data,
+                save_priority=save_priority,
+            )
             subdevice.parent = device
-            subdevice.save()
+            subdevice.save(priority=save_priority)
             subdevice_ids.append(subdevice.id)
         for subdevice in device.child_set.exclude(id__in=subdevice_ids):
             subdevice.parent = None
-            subdevice.save()
+            subdevice.save(priority=save_priority)
     if 'asset' in data and 'ralph_assets' in settings.INSTALLED_APPS:
         from ralph_assets.api_ralph import assign_asset
         if data['asset']:
             assign_asset(device.id, data['asset'].id)
 
 
-def device_from_data(data):
+def device_from_data(data, save_priority=SAVE_PRIORITY):
     """
     Create or find a device based on the provided scan data.
     """
@@ -666,8 +685,8 @@ def device_from_data(data):
         model_name=model_name,
         model_type=model_type,
     )
-    set_device_data(device, data)
-    device.save()
+    set_device_data(device, data, save_priority=save_priority)
+    device.save(priority=save_priority)
     return device
 
 

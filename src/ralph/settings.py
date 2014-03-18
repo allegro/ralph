@@ -262,8 +262,9 @@ SSH_ONSTOR_PASSWORD = None
 AIX_USER = None
 AIX_PASSWORD = None
 AIX_KEY = None
-XEN_USER = None
-XEN_PASSWORD = None
+XEN_USER = None  # for compatibility with old discovery
+XEN_PASSWORD = None  # for compatibility with old discovery
+XEN_AUTHS = ()  # e.g. (('user1', 'pass1'), ('user2', 'pass2'))
 SNMP_PLUGIN_COMMUNITIES = ['public']
 SNMP_V3_USER = None
 SNMP_V3_AUTH_KEY = None
@@ -359,6 +360,7 @@ HAMSTER_API_URL = ""
 SCALEME_API_URL = ""
 DEFAULT_SOA_RECORD_CONTENT = ''
 DEAD_PING_COUNT = 2
+SCAN_AUTOMERGE_MODE = True
 # </template>
 
 #
@@ -608,16 +610,15 @@ SCAN_PLUGINS = {
         },
     },
     'ralph.scan.plugins.ssh_xen': {
-        'xen_user': XEN_USER,
-        'xen_password': XEN_PASSWORD,
+        'xen_auths': XEN_AUTHS,
         'results_priority': {
-            'mac_addresses': 20,
-            'serial_number': 20,
+            'mac_addresses': 50,
+            'serial_number': 50,
             'hostname': 20,
-            'processors': 20,
-            'memory': 20,
+            'processors': 50,
+            'memory': 50,
             'disk_shares': 20,
-            'disks': 20,
+            'disks': 40,
         },
     },
     'ralph.scan.plugins.ssh_aix': {
@@ -703,5 +704,10 @@ SCAN_PLUGINS = {
             'disks': 50,
             'system_label': 50,
         },
+    },
+    'ralph.scan.plugins.ssh_juniper': {
+        'user': SSH_SSG_USER,
+        'password': SSH_SSG_PASSWORD,
+        'results_priority': {},
     },
 }

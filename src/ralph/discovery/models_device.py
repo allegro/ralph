@@ -73,7 +73,7 @@ class DeviceType(Choices):
     firewall = _("firewall")
     smtp_gateway = _("SMTP gateway")
     appliance = _("Appliance")
-    switch_stack = _("Switch stack")
+    switch_stack = _("switch stack")
 
     SERVERS = Choices.Group(200)
     rack_server = _("rack server")
