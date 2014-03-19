@@ -91,6 +91,8 @@ def cores_from_model(model_name):
 def is_mac_valid(eth):
     try:
         mac = MACAddressField.normalize(eth.mac)
+        if not mac:
+            return False
         for black in MAC_PREFIX_BLACKLIST:
             if mac.startswith(black):
                 return False
