@@ -536,26 +536,9 @@ class IPAddress(LastSeen, TimeTrackable, WithConcurrentGetOrCreate):
             self.network = None
         if self.network and self.network.ignore_addresses:
             self.device = None
-        self.is_public = self._is_public(self.address)
+        ip = ipaddr.IPAddress(self.address)
+        self.is_public = not ip.is_private
         super(IPAddress, self).save(*args, **kwargs)
-
-    @classmethod
-    def _is_public(cls, address):
-        """
-        Check if address ip is public or private
-
-        :param string address: IP address
-        :returns boolean: True if IP is public or False if is not 
-        :rtype boolean:
-        """
-        ip_parts = address.split('.')
-        if ip_parts[0] == '10':
-            return False
-        if ip_parts[0] == '192' and ip_parts[1] == '168':
-            return False
-        if ip_parts[0] == '172' and int(ip_parts[1]) in range(16, 31):
-            return False
-        return True
 
     def assert_same_device(self):
         if not self.id or 'device_id' not in self.dirty_fields:
