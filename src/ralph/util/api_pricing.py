@@ -239,4 +239,4 @@ def get_ip_addresses(only_public):
     if only_public:
         ips = ips.filter(is_public=True)
     for ip in ips:
-        yield ip.address
+        yield {ip.address: ip.venture.id if ip.venture else None}
