@@ -708,6 +708,13 @@ SCAN_PLUGINS = {
     'ralph.scan.plugins.ssh_juniper': {
         'user': SSH_SSG_USER,
         'password': SSH_SSG_PASSWORD,
-        'results_priority': {},
+        'results_priority': {
+            'hostname': 20,
+            'management_ip_addresses': 40,
+            'model_name': 40,
+            'serial_number': 40,
+            'mac_addresses': 30,
+            'type': 50,
+        },
     },
 }
