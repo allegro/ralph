@@ -721,4 +721,5 @@ SCAN_PLUGINS = {
 
 SCAN_POSTPROCESS_ENABLED_JOBS = [
     'ralph.scan.postprocess.position',
+    'ralph.scan.postprocess.cache_price',
 ]
