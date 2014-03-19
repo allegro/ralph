@@ -10,10 +10,12 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import django_rq
+import logging
 import rq
 import time
 
 from django.conf import settings
+from django.utils.importlib import import_module
 
 from ralph.scan.data import (
     append_merged_proposition,
@@ -28,6 +30,9 @@ from ralph.scan.util import update_scan_summary
 
 
 SAVE_PRIORITY = 150
+
+
+logger = logging.getLogger("SCAN")
 
 
 def _get_queue_name():
@@ -169,6 +174,14 @@ def _save_job_results(job_id, start_ts):
         device_from_data(data, save_priority=SAVE_PRIORITY)
     # mark this scan results
     update_scan_summary(job)
+    # run postprocess plugins...
+    for plugin_name in getattr(settings, 'SCAN_POSTPROCESS_ENABLED_JOBS', []):
+        try:
+            module = import_module(plugin_name)
+        except ImportError as e:
+            logger.error(unicode(e))
+        else:
+            module.run_job(job.args[0])  # job.args[0] == ip_address...
 
 
 def save_job_results(job_id):
