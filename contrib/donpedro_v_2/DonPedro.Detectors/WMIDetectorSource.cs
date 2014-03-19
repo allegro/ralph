@@ -240,6 +240,7 @@ namespace DonPedro.Detectors
 								Logger.Instance.LogError(e.ToString());
 							}
 							disk.SerialNumber = sn;
+							disk.Family = GetValueAsString(diskDrive, "Model");
 							
 							storage.Add(disk);
 						}

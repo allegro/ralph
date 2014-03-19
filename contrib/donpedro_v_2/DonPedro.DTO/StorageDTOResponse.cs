@@ -9,5 +9,6 @@ namespace DonPedro.DTO
 		public string SerialNumber { get; set; }
 		public string MountPoint { get; set; }
 		public string Size { get; set; }
+		public string Family { get; set; }
 	}
 }
