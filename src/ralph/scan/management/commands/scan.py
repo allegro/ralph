@@ -35,10 +35,20 @@ from ralph.scan.manual import (
 from ralph.scan.util import find_network
 
 
-def print_job_messages(job, last_message):
+def print_job_messages(job, last_message, verbose):
     messages = job.meta.get('messages', [])
     for address, plugin, status, message in messages[last_message:]:
-        print('%s(%s): %s' % (plugin, address, message), file=sys.stderr)
+        if verbose:
+            print('%s %s %s' % (plugin, status, message))
+        else:
+            if status == 'info' and ('Running plugin' in message):
+                print('\nScanning using plugin: %s' % (
+                    plugin.split('.')[-1],
+                    ), file=sys.stderr,
+                    end='',
+                )
+            elif status == 'warning':
+                print(' x', file=sys.stderr, end='')
     return len(messages)
 
 
@@ -91,6 +101,13 @@ class Command(BaseCommand):
             help='Scan all environments that use the specified worker queues ('
                  'space delimited).',
         ),
+        make_option(
+            '-V',
+            '--verbose',
+            dest='verbose',
+            default=False,
+            help='verbose'
+        )
     )
     requires_model_validation = False
 
@@ -109,6 +126,7 @@ class Command(BaseCommand):
         if not args and options_sum == 0:
             raise SystemExit("Please specify the IP address to scan.")
         plugins = getattr(settings, 'SCAN_PLUGINS', {}).keys()
+        verbose = kwargs['verbose']
         if kwargs["plugins"]:
             new_plugins = map(
                 lambda s: 'ralph.scan.plugins.{}'.format(s),
@@ -162,15 +180,17 @@ class Command(BaseCommand):
                     job = scan_address(ip_address, plugins)
                     while not job.is_finished:
                         job.refresh()
-                        print(
-                            'Progress: %d/%d plugins' % (
-                                len(job.meta.get('finished', [])),
-                                len(plugins),
-                            ),
-                        )
-                        last_message = print_job_messages(job, last_message)
+                        last_message = print_job_messages(job, last_message, verbose)
                         if job.is_failed:
                             raise SystemExit(job.exc_info)
-                        time.sleep(5)
-                    last_message = print_job_messages(job, last_message)
-                    pprint.pprint(job.result)
+                        time.sleep(1)
+                    print('\nAll done!')
+                    for plugin_name, job_result in job.result.iteritems():
+                        if job_result.get('status') == 'success':
+                            if not verbose:
+                                print('Success: ', plugin_name)
+                            else:
+                                print('-' * 40)
+                                print('Successful plugin: ' + plugin_name)
+                                print('Result data:')
+                                pprint.pprint(job_result.get('device', ''))
