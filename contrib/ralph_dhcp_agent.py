@@ -65,7 +65,7 @@ class SimpleDHCPManager(object):
             })
         )
         if self.dc:
-            url += '&env=' + self.dc
+            url += '&dc=' + self.dc
         if self.env:
             url += '&env=' + self.env
         req = urllib2.Request(url)
