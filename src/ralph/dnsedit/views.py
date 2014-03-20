@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 
 import datetime
 
+from django.conf import settings
 from django.http import (
     HttpResponse,
     HttpResponseForbidden,
@@ -22,6 +23,11 @@ from ralph.dnsedit.dhcp_conf import (
 )
 from ralph.ui.views.common import Base
 from ralph.util import api
+
+
+DHCP_DISABLE_NETWORKS_VALIDATION = getattr(
+    settings, 'DHCP_DISABLE_NETWORKS_VALIDATION', False,
+)
 
 
 class Index(Base):
@@ -59,6 +65,7 @@ def dhcp_config(request):
         generate_dhcp_config(
             server_address=server_address,
             env=env,
+            disable_networks_validation=DHCP_DISABLE_NETWORKS_VALIDATION,
         ),
         content_type="text/plain",
     )
