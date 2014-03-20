@@ -214,22 +214,14 @@ def generate_dhcp_config_head(server_address, dc=None, env=None):
         Q(dhcp_broadcast=True),
         Q(gateway__isnull=False),
         ~Q(gateway__exact=''),
+        ~Q(environment=False),
+        Q(environment__domain__isnull=False),
+        ~Q(environment__domain__exact=''),
     )
     if env:
-        networks_filter += (
-            ~Q(environment=False),
-            Q(environment__domain__isnull=False),
-            ~Q(environment__domain__exact=''),
-        )
         networks = env.network_set.filter(*networks_filter)
     elif dc:
-        evironments_filter = (
-            Q(domain__isnull=False),
-            ~Q(domain__exact=''),
-        )
-        environments_ids = dc.environment_set.filter(
-            *evironments_filter
-        ).values_list('id', flat=True)
+        environments_ids = dc.environment_set.values_list('id', flat=True)
         networks_filter += (
             Q(environment_id__in=environments_ids),
         )
