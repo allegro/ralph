@@ -46,6 +46,7 @@ connecting to an Active Directory service might look like this::
       "manager": "manager",
       "department": "department",
       "employee_id": "employeeID",
+      "location": "officeName",
 }
 
 Manager is special field and is treated as reference to another user,
@@ -86,7 +87,7 @@ You can define users filter, if you don't want to import all users to ralph::
 
 AUTH_LDAP_USER_FILTER = '(|(memberOf=CN=_gr_ralph_group1,OU=something,'\
     'DC=mygroup,DC=domain)(memberOf=CN=_gr_ralph_group2,OU=something else,'\
-    'DC=allegrogroup,DC=internal))'
+    'DC=mygroups,DC=domain))'
 
 
 
