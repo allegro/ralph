@@ -233,10 +233,7 @@ def get_device_by_name(device_name):
     return {}
 
 
-def get_ip_addresses(only_public):
+def get_ip_addresses(only_public=False):
     """Yileds available IP addresses"""
-    ips = IPAddress.objects.all()
-    if only_public:
-        ips = ips.filter(is_public=True)
-    for ip in ips:
-        yield {ip.address: ip.venture.id if ip.venture else None}
+    ips = IPAddress.objects.filter(is_public=True)
+    return {ip.address: ip.venture.id if ip.venture else None for ip in ips}
