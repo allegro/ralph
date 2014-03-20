@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 
 import datetime
 
+from django.conf import settings
 from django.http import (
     HttpResponse,
     HttpResponseForbidden,
@@ -14,7 +15,7 @@ from django.http import (
 from lck.django.common import remote_addr
 from django.shortcuts import get_object_or_404
 
-from ralph.discovery.models import Environment
+from ralph.discovery.models import DataCenter, Environment
 from ralph.dnsedit.models import DHCPServer
 from ralph.dnsedit.dhcp_conf import (
     generate_dhcp_config,
@@ -22,6 +23,11 @@ from ralph.dnsedit.dhcp_conf import (
 )
 from ralph.ui.views.common import Base
 from ralph.util import api
+
+
+DHCP_DISABLE_NETWORKS_VALIDATION = getattr(
+    settings, 'DHCP_DISABLE_NETWORKS_VALIDATION', False,
+)
 
 
 class Index(Base):
@@ -45,7 +51,18 @@ def dhcp_synch(request):
 def dhcp_config(request):
     if not api.is_authenticated(request):
         return HttpResponseForbidden('API key required.')
+    dc_name = request.GET.get('dc', '')
     env_name = request.GET.get('env', '')
+    if dc_name and env_name:
+        return HttpResponseForbidden('Only DC or ENV mode available.')
+    dc = None
+    if dc_name:
+        try:
+            dc = DataCenter.objects.get(name__iexact=dc_name)
+        except DataCenter.DoesNotExist:
+            return HttpResponseNotFound(
+                "Data Center `%s` does not exist." % dc_name
+            )
     env = None
     if env_name:
         try:
@@ -58,7 +75,9 @@ def dhcp_config(request):
     return HttpResponse(
         generate_dhcp_config(
             server_address=server_address,
+            dc=dc,
             env=env,
+            disable_networks_validation=DHCP_DISABLE_NETWORKS_VALIDATION,
         ),
         content_type="text/plain",
     )
@@ -67,7 +86,18 @@ def dhcp_config(request):
 def dhcp_config_head(request):
     if not api.is_authenticated(request):
         return HttpResponseForbidden('API key required.')
+    dc_name = request.GET.get('dc', '')
     env_name = request.GET.get('env', '')
+    if dc_name and env_name:
+        return HttpResponseForbidden('Only DC or ENV mode available.')
+    dc = None
+    if dc_name:
+        try:
+            dc = DataCenter.objects.get(name__iexact=dc_name)
+        except DataCenter.DoesNotExist:
+            return HttpResponseNotFound(
+                "Data Center `%s` does not exist." % dc_name
+            )
     env = None
     if env_name:
         try:
@@ -80,6 +110,7 @@ def dhcp_config_head(request):
     return HttpResponse(
         generate_dhcp_config_head(
             server_address=server_address,
+            dc=dc,
             env=env,
         ),
         content_type='text/plain',

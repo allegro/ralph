@@ -26,7 +26,7 @@ def all(iterable):
 class SimpleDHCPManager(object):
     def __init__(
         self, api_url, api_username, api_key, mode, dhcp_config_entries,
-        dhcp_config_networks, restart, logger, env, **kwargs
+        dhcp_config_networks, restart, logger, dc, env, **kwargs
     ):
         self.api_url = api_url.rstrip('/')
         self.api_username = api_username
@@ -36,6 +36,7 @@ class SimpleDHCPManager(object):
         self.dhcp_networks_config_path = dhcp_config_networks
         self.dhcp_service_name = restart
         self.logger = logger
+        self.dc = dc
         self.env = env
 
     def update_configuration(self):
@@ -63,6 +64,8 @@ class SimpleDHCPManager(object):
                 'api_key': self.api_key,
             })
         )
+        if self.dc:
+            url += '&dc=' + self.dc
         if self.env:
             url += '&env=' + self.env
         req = urllib2.Request(url)
@@ -194,6 +197,11 @@ def _get_cmd_options():
         help='Only get config for the specified environment.',
     )
     opts_parser.add_option(
+        '-d',
+        '--dc',
+        help='Only get config for the specified data center.',
+    )
+    opts_parser.add_option(
         '-r',
         '--restart',
         help='Name of the service to restart.',
@@ -242,6 +250,10 @@ if __name__ == "__main__":
             'are required.\n' % ', '.join(['--%s' % opt for opt in require]),
         )
         sys.exit(2)
+    if opts['env'] and opts['dc']:
+        sys.stderr.write(
+            'ERROR: Only DC or ENV mode available.',
+        )
     lockfile = '/tmp/%s.lock' % os.path.split(sys.argv[0])[1]
     f = open(lockfile, 'w')
     try:
