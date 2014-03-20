@@ -235,5 +235,5 @@ def get_device_by_name(device_name):
 
 def get_ip_addresses(only_public=False):
     """Yileds available IP addresses"""
-    ips = IPAddress.objects.filter(is_public=True)
+    ips = IPAddress.objects.filter(is_public=only_public)
     return {ip.address: ip.venture.id if ip.venture else None for ip in ips}
