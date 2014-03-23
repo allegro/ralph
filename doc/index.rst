@@ -5,23 +5,20 @@ This documentation
 
 .. toctree::
    :maxdepth: 2
-  
+
    overview
    installation
-   upgrade
    configuration
    optional_modules
-   permissions
+   scan
    browser
-   catalog
-   pricing
-   discovery
    deployment
    dns
    dhcp
    cmdb/index
    api
    faq
+   permissions
    changes
    license
 
