@@ -18,8 +18,9 @@ from django.shortcuts import get_object_or_404
 from ralph.discovery.models import DataCenter, Environment
 from ralph.dnsedit.models import DHCPServer
 from ralph.dnsedit.dhcp_conf import (
-    generate_dhcp_config,
+    generate_dhcp_config_entries,
     generate_dhcp_config_head,
+    generate_dhcp_config_networks,
 )
 from ralph.ui.views.common import Base
 from ralph.util import api
@@ -48,7 +49,7 @@ def dhcp_synch(request):
     return HttpResponse('OK', content_type='text/plain')
 
 
-def dhcp_config(request):
+def dhcp_config_entries(request):
     if not api.is_authenticated(request):
         return HttpResponseForbidden('API key required.')
     dc_name = request.GET.get('dc', '')
@@ -73,7 +74,7 @@ def dhcp_config(request):
             )
     server_address = remote_addr(request)
     return HttpResponse(
-        generate_dhcp_config(
+        generate_dhcp_config_entries(
             server_address=server_address,
             dc=dc,
             env=env,
@@ -83,7 +84,7 @@ def dhcp_config(request):
     )
 
 
-def dhcp_config_head(request):
+def dhcp_config_networks(request):
     if not api.is_authenticated(request):
         return HttpResponseForbidden('API key required.')
     dc_name = request.GET.get('dc', '')
@@ -108,10 +109,25 @@ def dhcp_config_head(request):
             )
     server_address = remote_addr(request)
     return HttpResponse(
-        generate_dhcp_config_head(
+        generate_dhcp_config_networks(
             server_address=server_address,
             dc=dc,
             env=env,
+        ),
+        content_type='text/plain',
+    )
+
+
+def dhcp_config_head(request):
+    if not api.is_authenticated(request):
+        return HttpResponseForbidden('API key required.')
+    server_address = request.GET.get('server')
+    if not server_address:
+        server_address = remote_addr(request)
+    dhcp_server = get_object_or_404(DHCPServer, ip=server_address)
+    return HttpResponse(
+        generate_dhcp_config_head(
+            dhcp_server=dhcp_server,
         ),
         content_type='text/plain',
     )

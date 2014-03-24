@@ -78,7 +78,7 @@ def _generate_entries_configs(
         yield name.strip(), ip_address, mac, next_server
 
 
-def generate_dhcp_config(
+def generate_dhcp_config_entries(
     server_address, dc=None, env=None, disable_networks_validation=False,
 ):
     """
@@ -165,7 +165,7 @@ def generate_dhcp_config(
             modified.strftime('%Y-%m-%d %H:%M:%S'),
         )
         break
-    template = loader.get_template('dnsedit/dhcp.conf')
+    template = loader.get_template('dnsedit/dhcp_entries.conf')
     accept_all_ip_numbers = (
         dc is None and env is None and disable_networks_validation
     )
@@ -198,7 +198,7 @@ def _generate_networks_configs(networks, custom_dns_servers):
         )
 
 
-def generate_dhcp_config_head(server_address, dc=None, env=None):
+def generate_dhcp_config_networks(server_address, dc=None, env=None):
     try:
         dhcp_server = DHCPServer.objects.get(ip=server_address)
     except DHCPServer.DoesNotExist:
@@ -255,7 +255,7 @@ def generate_dhcp_config_head(server_address, dc=None, env=None):
             modified.strftime('%Y-%m-%d %H:%M:%S'),
         )
         break
-    template = loader.get_template('dnsedit/dhcp_head.conf')
+    template = loader.get_template('dnsedit/dhcp_networks.conf')
     default_dns_servers = DNSServer.objects.filter(
         is_default=True,
     ).values_list('ip_address', flat=True).order_by('id')
@@ -274,5 +274,16 @@ def generate_dhcp_config_head(server_address, dc=None, env=None):
         'dns_servers': ','.join(default_dns_servers),
         'networks': _generate_networks_configs(networks, custom_dns_servers),
         'last_modified_date': last_modified_date,
+    })
+    return template.render(context)
+
+
+def generate_dhcp_config_head(dhcp_server):
+    template = loader.get_template('dnsedit/dhcp_head.conf')
+    context = Context({
+        'dhcp_server_config': dhcp_server.dhcp_config,
+        'last_modified_date': dhcp_server.modified.strftime(
+            '%Y-%m-%d %H:%M:%S',
+        ),
     })
     return template.render(context)
