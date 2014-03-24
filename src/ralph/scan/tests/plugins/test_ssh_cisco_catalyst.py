@@ -233,7 +233,8 @@ class TestCiscoCatalyst(TestCase):
                     {
                         'version': '12.2(58)SE2',
                     }
-                ]
+                ],
+                'type': 'switch',
             },
             {
                 'serial_number': 'DDDDDDDDDDD',
@@ -244,7 +245,8 @@ class TestCiscoCatalyst(TestCase):
                     {
                         'version': '12.2(58)SE2',
                     }
-                ]
+                ],
+                'type': 'switch',
             }
         ]
         self.assertEquals(
