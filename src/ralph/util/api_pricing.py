@@ -9,7 +9,12 @@ import datetime
 import re
 
 from ralph.business.models import Venture, VentureExtraCost
-from ralph.discovery.models import Device, DeviceType, DiskShareMount
+from ralph.discovery.models import (
+    Device,
+    DeviceType,
+    DiskShareMount,
+    IPAddress,
+)
 
 from django.db import models as db
 
@@ -226,3 +231,9 @@ def get_device_by_name(device_name):
             'venture_id': device.venture.id if device.venture else None,
         }
     return {}
+
+
+def get_ip_addresses(only_public=False):
+    """Yileds available IP addresses"""
+    ips = IPAddress.objects.filter(is_public=only_public)
+    return {ip.address: ip.venture.id if ip.venture else None for ip in ips}

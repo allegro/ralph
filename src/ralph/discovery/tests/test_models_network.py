@@ -139,3 +139,13 @@ class ModelsNetworkTest(TestCase):
             }
         ]
         self.assertEquals(res, correct)
+
+    def test_ip_is_public_or_no(self):
+        ip_list = [
+            ('92.143.123.123', True),
+            ('10.168.123.123', False),
+        ]
+        for ip, is_public in ip_list:
+            new_ip_address = IPAddress(address=ip)
+            new_ip_address.save()
+            self.assertEquals(new_ip_address.is_public, is_public)

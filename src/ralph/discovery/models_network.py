@@ -502,6 +502,18 @@ class IPAddress(LastSeen, TimeTrackable, WithConcurrentGetOrCreate):
         null=True,
         blank=True,
     )
+    is_public = db.BooleanField(
+        _("This is a public address"),
+        default=False,
+    )
+    venture = db.ForeignKey(
+        'business.Venture',
+        verbose_name=_("venture"),
+        null=True,
+        blank=True,
+        default=None,
+        on_delete=db.SET_NULL,
+    )
 
     class Meta:
         verbose_name = _("IP address")
@@ -524,6 +536,8 @@ class IPAddress(LastSeen, TimeTrackable, WithConcurrentGetOrCreate):
             self.network = None
         if self.network and self.network.ignore_addresses:
             self.device = None
+        ip = ipaddr.IPAddress(self.address)
+        self.is_public = not ip.is_private
         super(IPAddress, self).save(*args, **kwargs)
 
     def assert_same_device(self):
