@@ -329,11 +329,9 @@ class BaseMixin(object):
             mainmenu_items.append(
                 MenuItem('Reports', fugue_icon='fugue-report',
                          view_name='reports'))
-        if has_perm(Perm.edit_device_info_financial):
-            mainmenu_items.append(
-                MenuItem('Catalog', fugue_icon='fugue-paper-bag',
-                         view_name='catalog'))
-
+        mainmenu_items.append(
+                MenuItem('Ralph CLI', fugue_icon='fugue-terminal',
+                         href='#beast'))
         if ('ralph.cmdb' in settings.INSTALLED_APPS and
                 has_perm(Perm.read_configuration_item_info_generic)):
             mainmenu_items.append(
