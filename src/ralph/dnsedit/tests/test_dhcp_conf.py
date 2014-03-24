@@ -288,3 +288,15 @@ SAMPLE ADDITIONAL CONFIG
             config,
             "SAMPLE DHCP CONFIG",
         )
+
+    def test_dhcp_server_empty_config(self):
+        dhcp_server = DHCPServer.objects.create(
+            ip='127.0.1.2',
+        )
+        config = _sanitize_dhcp_config(
+            generate_dhcp_config_head(dhcp_server=dhcp_server),
+        )
+        self.assertEqual(
+            config,
+            "",
+        )
