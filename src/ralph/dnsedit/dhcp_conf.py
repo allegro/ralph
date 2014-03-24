@@ -7,8 +7,8 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import datetime
-
 import ipaddr
+import logging
 
 from django.template import loader, Context
 from django.db.models import Q
@@ -17,6 +17,9 @@ from powerdns.models import Record
 from ralph.dnsedit.models import DHCPEntry, DNSServer
 from ralph.discovery.models import Network, Ethernet, IPAddress
 from ralph.deployment.models import Deployment
+
+
+logger = logging.getLogger("DHCP")
 
 
 def _generate_entries_configs(
@@ -42,6 +45,12 @@ def _generate_entries_configs(
             try:
                 eth = Ethernet.objects.get(mac=mac)
             except Ethernet.DoesNotExist:
+                logger.warning(
+                    'MAC: {}; No PTR record found; No connected device '
+                    'found.'.format(
+                        mac
+                    ),
+                )
                 continue
             else:
                 try:
@@ -50,10 +59,25 @@ def _generate_entries_configs(
                         device_id=eth.device.id,
                     ).hostname
                 except IPAddress.DoesNotExist:
+                    logger.warning(
+                        'MAC: {}; No PTR record found; No connected IP '
+                        'address found. [DeviceID: {}]'.format(
+                            mac, eth.device.id,
+                        ),
+                    )
                     continue
                 else:
                     if not name:
                         # hostname could be empty, so skip it...
+                        logger.warning(
+                            'MAC: {}; No PTR record found; Connected IP '
+                            'address has empty hostname. '
+                            '[IPaddress: {} DeviceID: {}]'.format(
+                                mac,
+                                unicode(ipaddr.IPAddress(ip_number)),
+                                eth.device.id,
+                            ),
+                        )
                         continue
         next_server = ''
         if mac in deployed_macs:
