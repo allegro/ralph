@@ -505,6 +505,7 @@ class IPAddress(LastSeen, TimeTrackable, WithConcurrentGetOrCreate):
     is_public = db.BooleanField(
         _("This is a public address"),
         default=False,
+        editable=False,
     )
     venture = db.ForeignKey(
         'business.Venture',
