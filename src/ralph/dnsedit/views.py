@@ -72,10 +72,8 @@ def dhcp_config_entries(request):
             return HttpResponseNotFound(
                 "Environment `%s` does not exist." % env_name
             )
-    server_address = remote_addr(request)
     return HttpResponse(
         generate_dhcp_config_entries(
-            server_address=server_address,
             dc=dc,
             env=env,
             disable_networks_validation=DHCP_DISABLE_NETWORKS_VALIDATION,
@@ -107,10 +105,8 @@ def dhcp_config_networks(request):
             return HttpResponseNotFound(
                 "Environment `%s` does not exist." % env_name
             )
-    server_address = remote_addr(request)
     return HttpResponse(
         generate_dhcp_config_networks(
-            server_address=server_address,
             dc=dc,
             env=env,
         ),
