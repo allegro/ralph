@@ -332,15 +332,18 @@ class IPAddressAdmin(ModelAdmin):
     ip_address.short_description = _("IP address")
     ip_address.admin_order_field = 'number'
 
-    list_display = (ip_address, 'hostname', 'device', 'snmp_name', 'created',
-                    'modified')
-    list_filter = ('snmp_community',)
+    list_display = (
+        ip_address, 'hostname', 'device', 'snmp_name', 'is_public', 'created',
+        'modified',
+    )
+    list_filter = ('is_public', 'snmp_community')
     list_per_page = 250
     save_on_top = True
     search_fields = ('address', 'hostname', 'number', 'snmp_name')
     related_search_fields = {
         'device': ['^name'],
         'network': ['^name'],
+        'venture': ['^name'],
     }
 
 admin.site.register(m.IPAddress, IPAddressAdmin)
