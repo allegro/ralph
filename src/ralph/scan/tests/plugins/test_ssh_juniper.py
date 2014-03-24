@@ -130,14 +130,14 @@ class SSHJuniperPluginTest(TestCase):
                 'serial_number': 'aaaa.bbbb.cccc',
                 'subdevices': [
                     {
-                        'hostname': 'rack01-sw1-1.dc',
+                        'hostname': 'rack01-sw1-0.dc',
                         'mac_addresses': ['aa:bb:cc:dd:00:01'],
                         'model_name': 'ex4500-40f',
                         'serial_number': 'GX1122334401',
                         'type': 'switch',
                     },
                     {
-                        'hostname': 'rack01-sw1-2.dc',
+                        'hostname': 'rack01-sw1-1.dc',
                         'mac_addresses': ['aa:bb:cc:dd:00:02'],
                         'model_name': 'ex4500-40f',
                         'serial_number': 'GX1122334402',
