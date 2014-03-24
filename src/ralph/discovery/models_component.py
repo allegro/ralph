@@ -404,9 +404,11 @@ class GenericComponent(Component):
         verbose_name_plural = _("generic components")
 
     def __unicode__(self):
-        return "{} ({}): {} {}".format(
-            self.label, self.sn, self.model, self.model.get_type_display(),
-        )
+        if self.model:
+            return "{} ({}): {} {}".format(
+                self.label, self.sn, self.model, self.model.get_type_display(),
+            )
+        return "{} ({})".format(self.label, self.sn)
 
 
 class DiskShare(Component):

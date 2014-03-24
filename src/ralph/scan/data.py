@@ -663,7 +663,12 @@ def set_device_data(device, data, save_priority=SAVE_PRIORITY):
     if 'asset' in data and 'ralph_assets' in settings.INSTALLED_APPS:
         from ralph_assets.api_ralph import assign_asset
         if data['asset']:
-            assign_asset(device.id, data['asset'].id)
+            try:
+                asset_id = data['asset'].id
+            except AttributeError:
+                pass
+            else:
+                assign_asset(device.id, asset_id)
 
 
 def device_from_data(data, save_priority=SAVE_PRIORITY):

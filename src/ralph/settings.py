@@ -478,6 +478,7 @@ SCAN_PLUGINS = {
             'parts': 5,
             'mac_addresses': 5,
             'management_ip_addresses': 5,
+            'subdevices': 5,
         },
     },
     'ralph.scan.plugins.ipmi': {
@@ -514,6 +515,7 @@ SCAN_PLUGINS = {
             'serial_number': 50,
             'model_name': 50,
             'type': 50,
+            'subdevices': 50,
         },
     },
     'ralph.scan.plugins.dns_hostname': {
@@ -556,6 +558,7 @@ SCAN_PLUGINS = {
             'mac_adresses': 7,
             'management_ip_addresses': 7,
             'parts': 7,
+            'subdevices': 20,
         },
     },
     'ralph.scan.plugins.ssh_proxmox': {
@@ -572,6 +575,7 @@ SCAN_PLUGINS = {
             'hostname': 10,
             'installed_software': 60,
             'system_ip_addresses': 10,
+            'subdevices': 50,
         },
     },
     'ralph.scan.plugins.ssh_3par': {
@@ -607,6 +611,7 @@ SCAN_PLUGINS = {
             'type': 50,
             'mac_addresses': 50,
             'management_ip_addresses': 50,
+            'subdevices': 50,
         },
     },
     'ralph.scan.plugins.ssh_xen': {
@@ -619,6 +624,7 @@ SCAN_PLUGINS = {
             'memory': 50,
             'disk_shares': 20,
             'disks': 40,
+            'subdevices': 50,
         },
     },
     'ralph.scan.plugins.ssh_aix': {
@@ -715,6 +721,7 @@ SCAN_PLUGINS = {
             'serial_number': 40,
             'mac_addresses': 30,
             'type': 50,
+            'subdevices': 60,
         },
     },
 }

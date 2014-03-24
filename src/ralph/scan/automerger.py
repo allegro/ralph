@@ -171,7 +171,7 @@ def _save_job_results(job_id, start_ts):
     if garbage:
         data = merge_data(garbage)
         selected_data = _select_data(data, external_priorities)
-        device_from_data(data, save_priority=SAVE_PRIORITY)
+        device_from_data(selected_data, save_priority=SAVE_PRIORITY)
     # mark this scan results
     update_scan_summary(job)
     # run postprocess plugins...

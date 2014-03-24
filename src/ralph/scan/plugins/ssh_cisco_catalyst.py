@@ -145,7 +145,8 @@ def get_subswitches(switch_version, hostname):
                     {
                         'version': subs[3],
                     }
-                ]
+                ],
+                'type': DeviceType.switch.raw,
             }
         )
     return subswitches
