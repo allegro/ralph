@@ -15,7 +15,6 @@ This documentation
    deployment
    dns
    dhcp
-   cmdb/index
    api
    faq
    permissions
