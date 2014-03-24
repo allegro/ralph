@@ -120,13 +120,13 @@ def _ssh_juniper(ssh, ip_address):
             )
         except IndexError:
             hostname_base, hostname_domain = None, None
-        for switch, i in zip(switches, xrange(1, len(switches) + 1)):
+        for switch, i in zip(switches, xrange(0, len(switches))):
             subdevice = {
                 'type': DeviceType.switch.raw,
                 'model_name': switch['model'],
                 'serial_number': switch['serial_number'],
                 'mac_addresses': [
-                    mac_addresses[i - 1]
+                    mac_addresses[i]
                 ] if mac_addresses else []
             }
             if hostname_base and hostname_domain:
