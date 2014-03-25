@@ -233,3 +233,7 @@ img.waiting
     line-height: 26px;
     width: 700px;
 }
+
+.menu-item-search {
+    margin-right: 10px;
+}
