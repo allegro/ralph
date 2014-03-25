@@ -83,7 +83,10 @@ class Command(BaseCommand):
         """Dispatches the request to either direct, interactive execution
         or to asynchronous processing using the queue."""
         if DISCOVERY_DISABLED:
-            print('Discovery was disabled. Use Scan.')
+            print(
+                'Discovery command is deprecated since Ralph 2.0. '
+                'Use ralph scan [arguments] instead.',
+            )
             sys.exit()
         interactive = not options['remote']
         discover = OptionBag()

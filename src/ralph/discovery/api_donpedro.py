@@ -346,7 +346,9 @@ class WindowsDeviceResource(MResource):
     def obj_create(self, bundle, **kwargs):
         if DISCOVERY_DISABLED:
             raise DiscoveryDisabledError(
-                'Discovery was disabled. Update your DonPedro installation.',
+                'Discovery is deprecated since Ralph 2.0. '
+                'Update your DonPedro installation to the version 2.0 or '
+                'higher.',
             )
         ip = remote_addr(bundle.request)
         logger.debug('Got json data: %s' % bundle.data.get('data'))
