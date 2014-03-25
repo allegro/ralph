@@ -13,6 +13,7 @@ from functools import partial
 import sys
 import textwrap
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from ipaddr import IPNetwork
 
@@ -24,6 +25,9 @@ from ralph.discovery.tasks import (
     NoQueueError,
 )
 from ralph.util import network, plugin
+
+
+DISCOVERY_DISABLED = getattr(settings, 'DISCOVERY_DISABLED', False)
 
 
 class OptionBag(object):
@@ -78,6 +82,12 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         """Dispatches the request to either direct, interactive execution
         or to asynchronous processing using the queue."""
+        if DISCOVERY_DISABLED:
+            print(
+                'Discovery command is deprecated since Ralph 2.0. '
+                'Use ralph scan [arguments] instead.',
+            )
+            sys.exit()
         interactive = not options['remote']
         discover = OptionBag()
         discover.all = partial(discover_all, interactive=interactive)
