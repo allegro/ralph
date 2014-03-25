@@ -44,12 +44,21 @@ THROTTLE_AT = settings.API_THROTTLING['throttle_at']
 TIMEFRAME = settings.API_THROTTLING['timeframe']
 EXPIRATION = settings.API_THROTTLING['expiration']
 SAVE_PRIORITY = 51
+DISCOVERY_DISABLED = getattr(settings, 'DISCOVERY_DISABLED', False)
 
 
 logger = logging.getLogger(__name__)
 
 
-class NoRequiredDataError(Exception):
+class Error(Exception):
+    pass
+
+
+class DiscoveryDisabledError(Error):
+    pass
+
+
+class NoRequiredDataError(Error):
     pass
 
 
@@ -335,6 +344,10 @@ def save_device_data(data, remote_ip):
 
 class WindowsDeviceResource(MResource):
     def obj_create(self, bundle, **kwargs):
+        if DISCOVERY_DISABLED:
+            raise DiscoveryDisabledError(
+                'Discovery was disabled. Update your DonPedro installation.',
+            )
         ip = remote_addr(bundle.request)
         logger.debug('Got json data: %s' % bundle.data.get('data'))
         try:
