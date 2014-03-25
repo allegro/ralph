@@ -30,6 +30,10 @@ Optimizations:
 
 * Updated ralph_dhcp_agent.
 
+* New white theme.
+
+* Ralph CLI integrated into the UI. 
+
 Core changes:
 
 * CORE: Reworked Dependency Injection of Ralph submodules thanks to DjangoPluggableApp, giving more power and DRY-ness.
