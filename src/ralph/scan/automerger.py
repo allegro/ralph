@@ -171,7 +171,17 @@ def _save_job_results(job_id, start_ts):
     if garbage:
         data = merge_data(garbage)
         selected_data = _select_data(data, external_priorities)
-        device_from_data(selected_data, save_priority=SAVE_PRIORITY)
+        if all((
+            any((
+                selected_data.get('serial_number'),
+                selected_data.get('mac_addresses', []),
+            )),
+            any((
+                selected_data.get('model_name'),
+                selected_data.get('type'),
+            )),
+        )):
+            device_from_data(selected_data, save_priority=SAVE_PRIORITY)
     # mark this scan results
     update_scan_summary(job)
     # run postprocess plugins...
