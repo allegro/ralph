@@ -31,12 +31,15 @@ SAVE_PRIORITY = 51
 
 
 class PuppetProvider(object):
+
     """Base class for puppet facts providers (api/db)"""
+
     def get_facts(self, ip_set, hostname_set):
         raise NotImplementedError()
 
 
 class PuppetAPIProvider(PuppetProvider):
+
     def get_facts(self, ip_set, hostname_set):
         return self.get_all_facts_by_hostname_set(hostname_set)
 
@@ -67,6 +70,7 @@ class PuppetAPIProvider(PuppetProvider):
 
 
 class PuppetDBProvider(PuppetProvider):
+
     def get_facts(self, ip_set, hostname_set):
         db = connect_db()
         try:
@@ -197,6 +201,7 @@ def parse_wwn(facts, dev):
 
 
 _3WARE_GENERAL_REGEX = re.compile(r'tw_([^_]+_[^_]+)_([^_]+)')
+
 
 @nested_commit_on_success
 def parse_3ware(facts, dev):

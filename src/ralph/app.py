@@ -5,6 +5,7 @@ import pluggableapp
 
 
 class RalphModule(pluggableapp.PluggableApp):
+
     """A pluggable application that depends of ralph and is accessible from
     the ralph main application."""
 

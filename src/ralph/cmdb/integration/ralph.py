@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 class AssetChangeImporter(BaseImporter):
+
     """ Ralph manual changes are registered as changes """
 
     @staticmethod

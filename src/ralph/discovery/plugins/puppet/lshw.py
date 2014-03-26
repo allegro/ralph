@@ -31,4 +31,3 @@ def parse_lshw(data, facts, is_virtual):
     ip_addresses, ethernets_facts = handle_facts_ethernets(facts)
     assign_ips(dev, ip_addresses)
     return dev, dev.model.name
-

@@ -27,6 +27,7 @@ from tastypie.test import ResourceTestCase
 
 
 class DeviceWithPricingResourceTest(ResourceTestCase):
+
     def setUp(self):
         super(DeviceWithPricingResourceTest, self).setUp()
         self.resource = 'devicewithpricing'
@@ -130,6 +131,7 @@ class DeviceWithPricingResourceTest(ResourceTestCase):
 
 
 class AccessToDiscoveyApiTest(TestCase):
+
     def setUp(self):
         self.user = create_user(
             'api_user',
@@ -161,7 +163,7 @@ class AccessToDiscoveyApiTest(TestCase):
 
     def test_ipaddress_resource(self):
         resource = 'ipaddress'
-        perms = [Perm.read_network_structure,]
+        perms = [Perm.read_network_structure, ]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)
@@ -178,7 +180,7 @@ class AccessToDiscoveyApiTest(TestCase):
 
     def test_modelgroup_resource(self):
         resource = 'modelgroup'
-        perms = [Perm.read_dc_structure,]
+        perms = [Perm.read_dc_structure, ]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)
@@ -195,7 +197,7 @@ class AccessToDiscoveyApiTest(TestCase):
 
     def test_model_resource(self):
         resource = 'model'
-        perms = [Perm.read_dc_structure,]
+        perms = [Perm.read_dc_structure, ]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)
@@ -212,7 +214,7 @@ class AccessToDiscoveyApiTest(TestCase):
 
     def test_device_resource(self):
         resource = 'dev'
-        perms = [Perm.read_dc_structure,]
+        perms = [Perm.read_dc_structure, ]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)
@@ -229,7 +231,7 @@ class AccessToDiscoveyApiTest(TestCase):
 
     def test_physicalserver_resource(self):
         resource = 'physicalserver'
-        perms = [Perm.read_dc_structure,]
+        perms = [Perm.read_dc_structure, ]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)
@@ -246,7 +248,7 @@ class AccessToDiscoveyApiTest(TestCase):
 
     def test_rackserver_resource(self):
         resource = 'rackserver'
-        perms = [Perm.read_dc_structure,]
+        perms = [Perm.read_dc_structure, ]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)
@@ -263,7 +265,7 @@ class AccessToDiscoveyApiTest(TestCase):
 
     def test_bladeserver_resource(self):
         resource = 'bladeserver'
-        perms = [Perm.read_dc_structure,]
+        perms = [Perm.read_dc_structure, ]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)
@@ -280,7 +282,7 @@ class AccessToDiscoveyApiTest(TestCase):
 
     def test_virtualserver_resource(self):
         resource = 'virtualserver'
-        perms = [Perm.read_dc_structure,]
+        perms = [Perm.read_dc_structure, ]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)

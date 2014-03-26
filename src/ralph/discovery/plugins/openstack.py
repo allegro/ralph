@@ -14,7 +14,7 @@ from lck.django.common import nested_commit_on_success
 
 from ralph.util import plugin
 from ralph.discovery.models import (Device, DeviceType, GenericComponent,
-    ComponentModel, ComponentType)
+                                    ComponentModel, ComponentType)
 from ralph.discovery.models_history import HistoryCost
 from ralph.discovery.openstack import OpenStack
 
@@ -22,16 +22,18 @@ from ralph.discovery.openstack import OpenStack
 @nested_commit_on_success
 def make_tenant(tenant):
     dev = Device.create(
-            name='OpenStack',
-            model_name = 'OpenStack Tenant',
-            model_type = DeviceType.cloud_server,
-            sn='openstack-%s' % tenant
-        )
+        name='OpenStack',
+        model_name='OpenStack Tenant',
+        model_type=DeviceType.cloud_server,
+        sn='openstack-%s' % tenant
+    )
     dev.save()
     return dev
 
+
 def make_components(tenant, dev, region):
     total_daily_cost = [0]
+
     def make_component(name, symbol, key, multiplier, unit):
         if key not in tenant:
             return
@@ -75,7 +77,7 @@ def openstack(**kwargs):
         return False, 'not configured.', kwargs
     tenants = collections.defaultdict(lambda: collections.defaultdict(dict))
     end = kwargs.get('end') or datetime.datetime.today().replace(
-                hour=0, minute=0, second=0, microsecond=0)
+        hour=0, minute=0, second=0, microsecond=0)
     start = kwargs.get('start') or end - datetime.timedelta(days=1)
     for region in getattr(settings, 'OPENSTACK_REGIONS', ['']):
         stack = OpenStack(
@@ -88,9 +90,9 @@ def openstack(**kwargs):
             tenants[data['tenant_id']][region].update(data)
     for url, query in getattr(settings, 'OPENSTACK_EXTRA_QUERIES', []):
         for data in stack.query(query, url=url,
-                start=start.strftime('%Y-%m-%dT%H:%M:%S'),
-                end=end.strftime('%Y-%m-%dT%H:%M:%S'),
-            ):
+                                start=start.strftime('%Y-%m-%dT%H:%M:%S'),
+                                end=end.strftime('%Y-%m-%dT%H:%M:%S'),
+                                ):
             tenants[data['tenant_id']][url].update(data)
     for tenant_id, regions in tenants.iteritems():
         dev = make_tenant(tenant_id)

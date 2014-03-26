@@ -409,9 +409,9 @@ def _report_ventures_get_totals(start, end, query, extra_types):
                 DeviceType.rack,
                 DeviceType.management,
             ),
-        ).exclude(                 
-            device_id__isnull=True 
-        ),                         
+        ).exclude(
+            device_id__isnull=True
+        ),
         start,
         end,
     )
@@ -900,14 +900,14 @@ class ReportDevices(SidebarReports, Base):
                     'title': 'All active devices',
                     'name': 'report_all_active_devices',
                     'url': '?show_all_devices=on&export=csv',
-                    }
+                }
             elif all_deleted_devices:
                 show_devices = Device.admin_objects.filter(deleted=True)
                 csv_conf = {
                     'title': 'All deleted devices',
                     'name': 'report_deleted_devices',
                     'url': '?show_all_deleted_devices=on&export=csv',
-                    }
+                }
             headers = [
                 'Device', 'Model', 'SN', 'Barcode', 'Auto price', 'Venture',
                 'Role', 'Remarks', 'Verified', 'Deleted',

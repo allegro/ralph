@@ -250,4 +250,3 @@ def diff_results(data, ignored_fields=set(['device'])):
             })
         diffs[component] = diff_result
     return diffs
-

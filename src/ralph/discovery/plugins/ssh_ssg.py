@@ -33,6 +33,7 @@ class ConsoleError(Error):
 
 
 class SSGSSHClient(paramiko.SSHClient):
+
     """SSHClient modified for SSG's broken ssh console."""
 
     def __init__(self, *args, **kwargs):
@@ -78,7 +79,8 @@ class SSGSSHClient(paramiko.SSHClient):
 
 def _connect_ssh(ip):
     return network.connect_ssh(ip, settings.SSH_SSG_USER,
-            settings.SSH_SSG_PASSWORD, client=SSGSSHClient)
+                               settings.SSH_SSG_PASSWORD, client=SSGSSHClient)
+
 
 @nested_commit_on_success
 def run_ssh_ssg(ip):
@@ -104,6 +106,7 @@ def run_ssh_ssg(ip):
     ipaddr.is_management = True
     ipaddr.save()
     return dev.name
+
 
 @plugin.register(chain='discovery', requires=['ping', 'http'])
 def ssh_ssg(**kwargs):

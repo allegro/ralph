@@ -52,6 +52,7 @@ def cisco_asa_ssh_mock(command):
 
 
 class TestCiscoASA(TestCase):
+
     @patch.object(plugins, 'get_base_result_template')
     @patch.object(ssh_cisco_asa, '_connect_ssh')
     def test_scan(self, connect_mock, tpl_mock):
@@ -78,14 +79,14 @@ class TestCiscoASA(TestCase):
                 'type': 'firewall',
                 'serial_number': 'SOME-SN',
                 'mac_adresses': [
-                     u'AB12BC235556',
-                     u'AB12BC235558',
-                     u'DEF113DE4567',
-                     u'DEF113DE4566',
-                     u'DEF113DE5677',
-                     u'DEF113DE5676',
-                     u'DEF113DE6785',
-                     u'DEF113DE6784',
+                    u'AB12BC235556',
+                    u'AB12BC235558',
+                    u'DEF113DE4567',
+                    u'DEF113DE4566',
+                    u'DEF113DE5677',
+                    u'DEF113DE5676',
+                    u'DEF113DE6785',
+                    u'DEF113DE6784',
                 ],
                 'boot_firmware': 'SOME-BOOT-FIRMWARE',
                 'management_ip_addresses': [ip, ],
@@ -106,4 +107,3 @@ class TestCiscoASA(TestCase):
             "show version | grep (^Hardware|Boot microcode|^Serial|address is)",
         )
         self.assertEqual(command_mock.call_count, 1)
-

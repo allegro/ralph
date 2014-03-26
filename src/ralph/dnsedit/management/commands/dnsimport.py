@@ -16,6 +16,7 @@ from powerdns.models import Domain, Record
 
 
 class Command(BaseCommand):
+
     """Import DNS config"""
 
     help = textwrap.dedent(__doc__).strip()
@@ -43,7 +44,7 @@ class Command(BaseCommand):
                     if qtype == 'MX':
                         prio = rdata.preference
                         content = str(rdata.exchange.choose_relativity(
-                                        zone.origin, False))
+                            zone.origin, False))
                     elif qtype == 'TXT':
                         content = b'\n'.join(rdata.strings)
                     elif qtype == 'CNAME':

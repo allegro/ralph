@@ -212,6 +212,7 @@ class DeviceModel(SavePrioritized, WithConcurrentGetOrCreate, SavingUser):
 
 
 class UptimeSupport(db.Model):
+
     """Adds an `uptime` attribute to the model. This attribute is shifted
     by the current time on each get. Returns a timedelta object, accepts
     None, timedelta and int values on set."""
@@ -635,7 +636,7 @@ class Device(
                 try:
                     obj = cls.objects.filter(ethernet__mac=mac).get(**kwargs)
                 except cls.DoesNotExist:
-                    #there is an object with a partial argument match
+                    # there is an object with a partial argument match
                     raise e1
                 created = False
             else:
@@ -798,6 +799,7 @@ class Device(
 
 
 class ReadOnlyDevice(Device):
+
     class Meta:
         proxy = True
 
@@ -809,6 +811,7 @@ class ReadOnlyDevice(Device):
 
 
 class LoadBalancerPool(Named, WithConcurrentGetOrCreate):
+
     class Meta:
         verbose_name = _("load balancer pool")
         verbose_name_plural = _("load balancer pools")

@@ -32,8 +32,10 @@ SAMPLES_MAPPER = {
 
 
 class IdracPluginTest(TestCase):
+
     def setUp(self):
         self.idrac_manager = IDRAC('127.0.0.1', 'test', 'test')
+
         def side_effect(class_name, selector='root/dcim'):
             return ET.XML(getattr(idrac_samples, SAMPLES_MAPPER[class_name]))
         self.idrac_manager.run_command = Mock(side_effect=side_effect)
@@ -213,4 +215,3 @@ class IdracPluginTest(TestCase):
                 },
             ],
         )
-

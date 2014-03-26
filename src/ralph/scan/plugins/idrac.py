@@ -89,6 +89,7 @@ def _send_soap(post_url, login, password, message):
 
 
 class IDRAC(object):
+
     def __init__(self, host, user, password):
         self.host = host
         self.user = user

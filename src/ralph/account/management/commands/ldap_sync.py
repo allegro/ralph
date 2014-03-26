@@ -21,6 +21,7 @@ except ImportError:
 
 
 class Command(BaseCommand):
+
     """Refresh info about users from ldap."""
     help = __doc__
 

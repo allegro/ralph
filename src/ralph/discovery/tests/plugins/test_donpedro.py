@@ -32,6 +32,7 @@ from ralph.discovery.api_donpedro import (
 
 
 class DonPedroPluginTest(TestCase):
+
     def setUp(self):
         ip = '10.10.10.10'
         save_device_data(json.loads(data).get('data'), ip)

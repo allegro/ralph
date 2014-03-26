@@ -33,6 +33,7 @@ DATACENTER = 'dc1'
 
 
 class CIFormsTest(TestCase):
+
     def setUp(self):
         login = 'ralph'
         password = 'ralph'

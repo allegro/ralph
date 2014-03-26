@@ -44,7 +44,7 @@ def print_job_messages(job, last_message, verbose):
             if status == 'info' and ('Running plugin' in message):
                 print('\nScanning using plugin: %s' % (
                     plugin.split('.')[-1],
-                    ), file=sys.stderr,
+                ), file=sys.stderr,
                     end='',
                 )
             elif status == 'warning':
@@ -53,6 +53,7 @@ def print_job_messages(job, last_message, verbose):
 
 
 class Command(BaseCommand):
+
     """
     Runs a manual scan of an address, a network of addresses or all networks
     in an environment or data center.
@@ -180,7 +181,8 @@ class Command(BaseCommand):
                     job = scan_address(ip_address, plugins)
                     while not job.is_finished:
                         job.refresh()
-                        last_message = print_job_messages(job, last_message, verbose)
+                        last_message = print_job_messages(
+                            job, last_message, verbose)
                         if job.is_failed:
                             raise SystemExit(job.exc_info)
                         time.sleep(1)

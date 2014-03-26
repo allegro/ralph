@@ -21,6 +21,7 @@ from ralph.ui.widgets import ReadOnlyPreWidget
 
 
 class GitPathMappingAdminForm(forms.ModelForm):
+
     class Meta:
         model = db.GitPathMapping
 
@@ -63,7 +64,8 @@ class GitPathMappingAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         instance = kwargs.get('instance')
         if instance:
-            self.base_fields['occurences'].initial = self.occurences_list(instance)
+            self.base_fields[
+                'occurences'].initial = self.occurences_list(instance)
         super(GitPathMappingAdminForm, self).__init__(*args, **kwargs)
 
 
@@ -87,6 +89,7 @@ admin.site.register(db.CIOwner, CIOwnerAdmin)
 
 
 class CILayerForm(forms.ModelForm):
+
     class Meta:
         model = db.CILayer
 

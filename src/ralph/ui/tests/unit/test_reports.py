@@ -5,6 +5,7 @@ from ralph.ui.views.reports import _report_services_data_provider
 
 
 class TestServices(TestCase):
+
     """Test for services reports."""
 
     fixtures = ['services_rel']
@@ -22,6 +23,6 @@ class TestServices(TestCase):
             set([
                 report.barcode
                 for report in self.report['services_without_venture']
-            ]),
+                ]),
             {'00002', '00003'},
         )

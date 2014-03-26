@@ -59,6 +59,7 @@ COMPONENT = {
 
 
 class SearchTest(TestCase):
+
     """
     TODO:
     1. when search return more than 1 result
@@ -206,7 +207,7 @@ class SearchTest(TestCase):
         self.strange_device.save()
 
     def test_access_to_device(self):
-        #User has perm to device list and device details
+        # User has perm to device list and device details
         device_list = self.client.get('/ui/search/info/')
         self.assertEqual(device_list.status_code, 200)
         url = '/ui/search/info/%s' % self.device.id
@@ -214,7 +215,7 @@ class SearchTest(TestCase):
         self.assertEqual(device_details.status_code, 200)
 
     def test_name_field_old(self):
-        #Search objects in response.context
+        # Search objects in response.context
         url = '/ui/search/info/%s' % self.device.id
         device_search = self.client.get(url)
         context = device_search.context['object']
@@ -224,11 +225,11 @@ class SearchTest(TestCase):
         url = '/ui/search/info/%s' % self.device.id
         device_search = self.client.get(url)
         context = device_search.context['object']
-        #test ip
+        # test ip
         self.assertEqual(context.name, self.device.name)
         ip = context.ipaddress_set.filter(address=DEVICE['ip']).count()
         self.assertTrue(ip > 0)
-        #test network
+        # test network
         """
         FIXME - i can`t tests network, i need more info !
         """

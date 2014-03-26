@@ -23,6 +23,7 @@ from ralph.scan.plugins import get_base_result_template
 
 
 class HPSSHClient(paramiko.SSHClient):
+
     """SSHClient modified for Cisco's broken ssh console."""
 
     def __init__(self, *args, **kwargs):

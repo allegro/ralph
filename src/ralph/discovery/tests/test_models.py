@@ -15,6 +15,7 @@ from ralph.discovery.models_history import HistoryChange
 
 
 class ModelsTest(TestCase):
+
     def test_device_create_empty(self):
         with self.assertRaises(ValueError):
             Device.create(model_name='xxx', model_type=DeviceType.unknown)
@@ -65,11 +66,14 @@ class ModelsTest(TestCase):
 
 
 class MockDateTime(datetime.datetime):
+
     @classmethod
     def now(cls):
-        return datetime.datetime(2010,10,3,14,53,21)
+        return datetime.datetime(2010, 10, 3, 14, 53, 21)
+
 
 class UptimeSupportTest(TestCase):
+
     @mock.patch('ralph.discovery.models_device.datetime.datetime', MockDateTime)
     def test_uptime(self):
         class Model(UptimeSupport):

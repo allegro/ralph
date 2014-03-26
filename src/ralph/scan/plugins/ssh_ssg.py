@@ -22,6 +22,7 @@ SETTINGS = settings.SCAN_PLUGINS.get(__name__, {})
 
 
 class SSGSSHClient(paramiko.SSHClient):
+
     """SSHClient modified for SSG's broken ssh console."""
 
     def __init__(self, *args, **kwargs):
@@ -122,4 +123,3 @@ def scan_address(ip_address, **kwargs):
                 'device': device_info,
             })
     return result
-

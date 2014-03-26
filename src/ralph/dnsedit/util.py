@@ -28,10 +28,12 @@ class Error(Exception):
 
 
 class RevDNSExists(Error):
+
     """Trying to create a Reverse DNS record for IP that already has one."""
 
 
 class RevDNSNoDomain(Error):
+
     """
     Trying to create a Reverse DNS record for IP that has no in-addr-arpa.
     """

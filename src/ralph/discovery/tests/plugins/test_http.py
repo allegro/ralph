@@ -13,6 +13,7 @@ from ralph.discovery.http import guess_family
 
 
 class HttpPluginTest(TestCase):
+
     def test_guess_family_empty(self):
         family = guess_family({}, '')
         self.assertEqual(family, 'Unspecified')
@@ -28,16 +29,18 @@ class HttpPluginTest(TestCase):
     def test_guess_family_juniper(self):
         test_string = '<title>Log In - Juniper Web Device Manager</title>'
         family = guess_family({'Server': 'Mbedthis-Appweb/2.4.2'},
-                                   test_string)
+                              test_string)
         self.assertEqual(family, 'Juniper')
 
     def test_guess_family_dell(self):
         test_string = 'top.document.location.href = "/sclogin.html?console"'
         family = guess_family({'Server': 'Mbedthis-Appweb/2.4.2'},
-                                   test_string)
+                              test_string)
         self.assertEqual(family, 'Dell')
 
+
 class HttpSupermicroPluginTest(TestCase):
+
     def test_macs(self):
         opener = mock.Mock()
         request_session = mock.Mock()
@@ -101,11 +104,13 @@ class HttpSupermicroPluginTest(TestCase):
 
 
 """
+
         def open_side(request, timeout):
             response = mock.Mock()
             response.readlines.return_value = request.raw.splitlines()
             return response
         opener.open.side_effect = open_side
+
         def request_side(url, *args, **kwargs):
             if url.endswith('WEBSES/create.asp'):
                 return request_session

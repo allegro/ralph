@@ -13,6 +13,7 @@ from ralph.account.models import AvailableHomePage, Profile
 
 
 class UserHomePageForm(ModelForm):
+
     class Meta:
         model = Profile
         fields = (

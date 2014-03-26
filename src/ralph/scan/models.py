@@ -11,6 +11,7 @@ from lck.django.common.models import WithConcurrentGetOrCreate
 
 
 class ScanSummary(db.Model, WithConcurrentGetOrCreate):
+
     """
     For every IP address we prescanned we add scan summary record which holds
     checksum and ignored checksum. When the user press `Ignore change` button
@@ -27,4 +28,3 @@ class ScanSummary(db.Model, WithConcurrentGetOrCreate):
     )
     created = db.DateTimeField(auto_now=False, auto_now_add=True)
     modified = db.DateTimeField(auto_now=True, auto_now_add=True)
-

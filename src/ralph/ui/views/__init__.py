@@ -28,6 +28,7 @@ def typeahead_roles(request):
         'items': roles,
     }
 
+
 @csrf_exempt
 @jsonify
 def unlock_field(request):

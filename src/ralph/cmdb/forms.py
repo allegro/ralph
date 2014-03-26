@@ -168,6 +168,7 @@ class CIEditForm(DependencyForm, forms.ModelForm):
 
 
 class CIViewForm(CIEditForm):
+
     class Meta:
         model = models.CI
         widgets = {
@@ -217,6 +218,7 @@ class CIViewForm(CIEditForm):
 
 
 class CIRelationEditForm(forms.ModelForm):
+
     class Meta:
         model = models.CIRelation
         fields = (

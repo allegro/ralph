@@ -13,6 +13,7 @@ from splunklib.client import connect
 
 
 class Splunk(object):
+
     """Usage:
 
     >>> splunk = Splunk('splunk.host', 'splunk.user', '********')
@@ -38,12 +39,12 @@ u'host': u'hostname2', u'lastReceived': u'Thu 2012-06-07 12:00:34'}, ...]
              'fields - totalMB | sort -MBytes')
 
     def __init__(self, host=settings.SPLUNK_HOST, username=settings.SPLUNK_USER,
-            password=settings.SPLUNK_PASSWORD):
-        self.host = str(host) # sic, unicode fails in the splunk-sdk
+                 password=settings.SPLUNK_PASSWORD):
+        self.host = str(host)  # sic, unicode fails in the splunk-sdk
         self.username = str(username)
         self.password = str(password)
         self.splunk = connect(host=self.host, username=self.username,
-            password=self.password)
+                              password=self.password)
         self.job = None
         self._results = None
 
@@ -73,7 +74,7 @@ u'host': u'hostname2', u'lastReceived': u'Thu 2012-06-07 12:00:34'}, ...]
             if stats['isDone'] == '1':
                 progress = 100.0
                 self._results = self.job.results(output_mode='json',
-                    count=0).read()
+                                                 count=0).read()
                 self.job = None
             else:
                 progress = 99.9
@@ -85,4 +86,3 @@ u'host': u'hostname2', u'lastReceived': u'Thu 2012-06-07 12:00:34'}, ...]
         if not self._results and self.progress < 100.0:
             raise ValueError("Report still in progress.")
         return json.loads(self._results)
-

@@ -330,8 +330,8 @@ class BaseMixin(object):
                 MenuItem('Reports', fugue_icon='fugue-report',
                          view_name='reports'))
         mainmenu_items.append(
-                MenuItem('Ralph CLI', fugue_icon='fugue-terminal',
-                         href='#beast'))
+            MenuItem('Ralph CLI', fugue_icon='fugue-terminal',
+                     href='#beast'))
         if ('ralph.cmdb' in settings.INSTALLED_APPS and
                 has_perm(Perm.read_configuration_item_info_generic)):
             mainmenu_items.append(
@@ -1464,6 +1464,7 @@ class Software(DeviceDetailView):
 
 
 class VhostRedirectView(RedirectView):
+
     def get_redirect_url(self, **kwargs):
         host = self.request.META.get(
             'HTTP_X_FORWARDED_HOST', self.request.META['HTTP_HOST'])

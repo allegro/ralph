@@ -10,7 +10,9 @@ from ralph.ui.tests.global_utils import create_user
 
 from django.test import TestCase
 
+
 class AccessToDeploymentApiTest(TestCase):
+
     def setUp(self):
         self.user = create_user(
             'api_user',
@@ -42,7 +44,7 @@ class AccessToDeploymentApiTest(TestCase):
 
     def test_deployment_resource(self):
         resource = 'deployment'
-        perms = [Perm.read_deployment,]
+        perms = [Perm.read_deployment, ]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)

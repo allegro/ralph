@@ -220,7 +220,7 @@ class Venture(Named, PrebootMixin, HasSymbolBasedPath, TimeTrackable):
             venture_ids.append(venture_id)
             for v_id, in Venture.objects.filter(
                     parent_id=venture_id
-                ).values_list('id'):
+            ).values_list('id'):
                 if v_id in visited:
                     # Make sure we don't do the same device twice.
                     continue
@@ -349,12 +349,12 @@ class VentureRole(Named.NonUnique, PrebootMixin, HasSymbolBasedPath,
     def get_property_types(self, device):
         types = {}
         types.update({
-            p.symbol:p.type.symbol for p in
+            p.symbol: p.type.symbol for p in
             self.venture.roleproperty_set.filter(role=None)
             if p.type
         })
         types.update({
-            p.symbol:p.type.symbol for p in
+            p.symbol: p.type.symbol for p in
             self.roleproperty_set.filter(venture=None)
             if p.type
         })
@@ -421,7 +421,8 @@ class RoleProperty(db.Model):
         blank=True,
         default=None,
     )
-    default = db.TextField(verbose_name=_("default value"), null=True, default=None, blank=True)
+    default = db.TextField(
+        verbose_name=_("default value"), null=True, default=None, blank=True)
 
     class Meta:
         unique_together = [
@@ -514,6 +515,7 @@ class Department(Named):
 
 
 class VentureExtraCostType(Named.NonUnique, TimeTrackable):
+
     class Meta:
         verbose_name = _("venture extra cost type")
         verbose_name_plural = _("venture extra cost types")
@@ -521,6 +523,7 @@ class VentureExtraCostType(Named.NonUnique, TimeTrackable):
 
 
 class VentureExtraCost(TimeTrackable):
+
     class Meta:
         verbose_name = _("venture extra cost")
         verbose_name_plural = _("venture extra costs")
@@ -554,7 +557,8 @@ def cost_post_save(sender, instance, raw, using, **kwargs):
             start = min(datetime.date.today(), instance.expire)
         else:
             start = datetime.datetime.now()
-        HistoryCost.start_span(extra=instance, start=start, end=instance.expire)
+        HistoryCost.start_span(
+            extra=instance, start=start, end=instance.expire)
 
 
 @receiver(
@@ -586,4 +590,3 @@ def role_property_value_pre_delete(sender, instance, using, **kwargs):
         old_value=unicode(instance.value),
         new_value='None',
     )
-

@@ -31,9 +31,11 @@ def _parse_dmidecode(data):
     serial_number = parsed_data['System Information']['Serial Number']
     if 'not specified' not in serial_number.lower():
         result['serial_number'] = serial_number
+
     def exclude(value, exceptions):
         if value not in exceptions:
             return value
+
     def num(value):
         if value is None or value.lower() == 'unknown':
             return None
@@ -81,6 +83,7 @@ def _parse_dmidecode(data):
     if memory:
         result['memory'] = memory
     return result
+
 
 def _get_mac_addresses(ssh):
     """Get the MAC addresses"""
@@ -216,4 +219,3 @@ def scan_address(ip_address, **kwargs):
             'device': device_info,
         })
     return result
-

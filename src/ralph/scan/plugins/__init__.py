@@ -15,4 +15,3 @@ def get_base_result_template(plugin_name, messages=[]):
         'plugin': plugin_name,
         'messages': messages,
     }
-

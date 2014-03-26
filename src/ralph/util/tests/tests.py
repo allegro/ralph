@@ -59,6 +59,7 @@ THROTTLE_AT = settings.API_THROTTLING['throttle_at']
 
 
 class NetworkTest(TestCase):
+
     @skip('uses external resources')
     # @skipIf(sys.platform in ('darwin',), "Ping on MacOS X requires root.")
     def test_ping(self):
@@ -93,6 +94,7 @@ class NetworkTest(TestCase):
 
 
 class PricingTest(TestCase):
+
     def test_rack_server(self):
         dev = Device.create(sn='device', model_type=DeviceType.rack_server,
                             model_name='device')
@@ -219,6 +221,7 @@ class PricingTest(TestCase):
 
 
 class PricingGroupsTest(TestCase):
+
     def test_disk_share(self):
         storage_dev = Device.create(
             sn='device',
@@ -298,6 +301,7 @@ class PricingGroupsTest(TestCase):
 
 
 class ApiTest(TestCase):
+
     def setUp(self):
         cache.delete("api_user_accesses")
 
@@ -337,6 +341,7 @@ class ApiTest(TestCase):
 
 
 class ApiPricingTest(TestCase):
+
     def setUp(self):
         self.venture, created = Venture.objects.get_or_create(
             name="Sample venture",
@@ -372,6 +377,7 @@ class ApiPricingTest(TestCase):
 
 
 class UncompressBase64DataTest(TestCase):
+
     def test_base64_encoded_data(self):
         import base64
         from ralph.util import uncompress_base64_data

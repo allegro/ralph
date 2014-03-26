@@ -45,6 +45,7 @@ CURRENT_DIR = settings.CURRENT_DIR
 
 
 class CMDBApiTest(TestCase):
+
     def setUp(self):
         self.user = create_user('api_user', 'test@mail.local', 'password')
         self.layers = CILayer.objects.all()
@@ -470,6 +471,7 @@ class CMDBApiTest(TestCase):
 
 
 class CIApiTest(TestCase):
+
     def setUp(self):
         self.user = create_user(
             'api_user',
@@ -575,7 +577,7 @@ class CIApiTest(TestCase):
         request.user = self.user
         request.META['SERVER_NAME'] = 'testserver'
         request.META['SERVER_PORT'] = 80
-        
+
         cmdb_bundle = Bundle(data=self.post_data_cmdb_change, request=request)
         cmdb_resource = CIChangeCMDBHistoryResource()
         cmdb_resource.obj_create(bundle=cmdb_bundle)
@@ -598,6 +600,7 @@ class CIApiTest(TestCase):
 
 
 class AccessToCMDBApiTest(TestCase):
+
     def setUp(self):
         self.user = create_user(
             'api_user',

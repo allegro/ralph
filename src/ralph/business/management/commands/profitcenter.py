@@ -20,18 +20,22 @@ class Error(Exception):
 
 
 class IncorrectLengthRowError(Error):
+
     """Trying to unpack row."""
 
 
 class EmptyRecordValueError(Error):
+
     """Trying to create network from empty values."""
 
 
 class VentureDoesNotExistError(Error):
+
     """Trying to get ventures."""
 
 
 class Command(BaseCommand):
+
     """Import Profit Center from csv file, record should be in this format:
     venture id;profit center name;description
     """

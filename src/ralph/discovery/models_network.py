@@ -401,6 +401,7 @@ class AbstractNetwork(db.Model):
 
 class Network(Named, AbstractNetwork, TimeTrackable,
               WithConcurrentGetOrCreate):
+
     class Meta:
         verbose_name = _("network")
         verbose_name_plural = _("networks")
@@ -415,6 +416,7 @@ class Network(Named, AbstractNetwork, TimeTrackable,
 
 
 class NetworkTerminator(Named):
+
     class Meta:
         verbose_name = _("network terminator")
         verbose_name_plural = _("network terminators")
@@ -422,6 +424,7 @@ class NetworkTerminator(Named):
 
 
 class DataCenter(Named):
+
     def __unicode__(self):
         return self.name
 
@@ -432,6 +435,7 @@ class DataCenter(Named):
 
 
 class DiscoveryQueue(Named):
+
     class Meta:
         verbose_name = _("discovery queue")
         verbose_name_plural = _("discovery queues")

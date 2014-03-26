@@ -103,4 +103,3 @@ def scan_address(ip_address, **kwargs):
     tpl = get_base_result_template('ssh_ganeti')
     tpl.update(ret)
     return tpl
-

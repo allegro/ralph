@@ -12,6 +12,7 @@ from ralph.scan.tests.plugins.samples.vmware import VMWARE_SAMPLE
 
 
 class VMWarePluginTest(TestCase):
+
     def test_get_vm_info(self):
         result = _get_vm_info(VMWARE_SAMPLE)
         self.assertEqual(

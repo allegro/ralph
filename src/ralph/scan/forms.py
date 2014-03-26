@@ -21,13 +21,15 @@ from ralph.discovery.models import DeviceType
 
 
 class CSVWidget(forms.Widget):
+
     def __init__(self, headers, attrs=None):
-        self.headers=headers
+        self.headers = headers
         super(CSVWidget, self).__init__(attrs)
 
     def render(self, name, value, attrs=None):
         output = [
-            '<textarea name="%s" rows="10" style="width:90%%; font-family: monospace">' % escape(name),
+            '<textarea name="%s" rows="10" style="width:90%%; font-family: monospace">' % escape(
+                name),
             escape(';'.join(h.rjust(16) for h in self.headers)),
         ]
         for row in value or []:
@@ -57,6 +59,7 @@ class CSVWidget(forms.Widget):
 
 
 class WidgetTable(forms.MultiWidget):
+
     def __init__(self, headers, rows, attrs=None):
         self.rows = rows
         self.headers = headers
@@ -71,7 +74,8 @@ class WidgetTable(forms.MultiWidget):
         for row in value or []:
             for h in self.headers:
                 values.append(row.get(h, ''))
-        values.extend([''] * (self.rows - len(value or [])) * len(self.headers))
+        values.extend(
+            [''] * (self.rows - len(value or [])) * len(self.headers))
         return values
 
     def format_output(self, rendered_widgets):
@@ -108,6 +112,7 @@ class WidgetTable(forms.MultiWidget):
 
 
 class DiffSelect(forms.Select):
+
     """
     A widget used to:
     - display diff of results
@@ -120,7 +125,6 @@ class DiffSelect(forms.Select):
         self.default_value = default_value
         self.open_advanced_mode = False
         super(DiffSelect, self).__init__(*args, **kwargs)
-
 
     def render(self, name, value, attrs=None, choices=()):
         if value is None:
@@ -203,6 +207,7 @@ class CSVInfo(DefaultInfo):
 
 
 class DictListInfo(ListInfo):
+
     def __init__(self, headers, rows):
         self.headers = headers
         self.rows = rows
@@ -254,6 +259,7 @@ class AssetInfo(DefaultInfo):
 
 
 class TypeInfo(DefaultInfo):
+
     def Field(self, *args, **kwargs):
         choices = [
             (t.raw, t.raw.title())
@@ -266,6 +272,7 @@ class TypeInfo(DefaultInfo):
 
 
 class RequiredInfo(DefaultInfo):
+
     def clean(self, value):
         if not value:
             raise ValueError('This field is required.')
@@ -273,6 +280,7 @@ class RequiredInfo(DefaultInfo):
 
 
 class DiffForm(forms.Form):
+
     """Form for selecting the results of a scan."""
 
     field_info = {
@@ -390,4 +398,3 @@ class DiffForm(forms.Form):
             return info.clean(self.cleaned_data[name + '-custom'])
         key = tuple(value.split(', '))
         return self.result[name][key]
-
