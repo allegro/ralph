@@ -1,4 +1,4 @@
-{% extends "ui/base-devices.html" %}
+{% extends "ui/network_sidebar.html" %}
 {% load url from future %}
 {% load icons %}
 {% load bob %}
@@ -7,7 +7,7 @@
   <div class="row-fluid">
     <div class="span10">
       <form method="POST" class="form form-inline">
-        {% if network and not network.queue %}
+        {% if network and not network.environment.queue %}
         <div class="alert alert-warning">
             <a
                 href="/admin/discovery/network/{{ network.id }}"
@@ -16,7 +16,7 @@
                 {% icon 'fugue-toolbox' %}
                 Edit network
             </a>
-            <p>This network has no discovery queue configured.</p>
+            <p>This network environment has no discovery queue configured.</p>
         </div>
         {% else %}
             {% if network %}

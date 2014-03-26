@@ -93,6 +93,7 @@ class TestCiscoASA(TestCase):
                     'size': 12288,
                 }],
                 'processors': [{
+                    'family': 'AMD Opteron',
                     'model_name': 'AMD Opteron',
                     'speed': 2600,
                 }],

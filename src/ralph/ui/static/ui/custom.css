@@ -228,3 +228,12 @@ img.waiting
     margin-right: 10px;
 }
 
+.beast-info-modal {
+    font-size: 14px;
+    line-height: 26px;
+    width: 700px;
+}
+
+.menu-item-search {
+    margin-right: 10px;
+}

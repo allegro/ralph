@@ -94,6 +94,15 @@ class Profile(BasicInfo, ActivationSupport, GravatarSupport,
         default=AvailableHomePage.default,
     )
 
+    # TODO: define fields below and add AUTH_LDAP_PROFILE_ATTR_MAP mappings
+    company = db.CharField(max_length=64, blank=True)
+    employee_id = db.CharField(max_length=64, blank=True)
+    profit_center = db.CharField(max_length=1024, blank=True)
+    cost_center = db.CharField(max_length=1024, blank=True)
+    department = db.CharField(max_length=64, blank=True)
+    manager = db.CharField(max_length=1024, blank=True)
+    location = db.CharField(max_length=128, blank=True)
+
     def __unicode__(self):
         return self.nick
 

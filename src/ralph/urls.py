@@ -52,6 +52,10 @@ from django.conf import settings
 from django.contrib import admin
 from ajax_select import urls as ajax_select_urls
 
+
+DISCOVERY_DISABLED = getattr(settings, 'DISCOVERY_DISABLED', False)
+
+
 admin.autodiscover()
 
 v09_api = Api(api_name='v0.9')
@@ -69,6 +73,8 @@ for r in (IPAddressResource, NetworksResource, ModelGroupResource,
           BladeServerResource, VirtualServerResource, DevResource,
           WindowsDeviceResource, DeviceWithPricingResource,
           NetworkKindsResource):
+    if DISCOVERY_DISABLED and r == WindowsDeviceResource:
+        continue
     v09_api.register(r())
 
 # CMDB API
@@ -116,7 +122,8 @@ urlpatterns = patterns(
     url(r'^ui/', include('ralph.ui.urls')),
     url(r'^dns/', include('ralph.dnsedit.urls')),
     url(r'^dhcp-synch/', 'ralph.dnsedit.views.dhcp_synch'),
-    url(r'^dhcp-config/', 'ralph.dnsedit.views.dhcp_config'),
+    url(r'^dhcp-config-entries/', 'ralph.dnsedit.views.dhcp_config_entries'),
+    url(r'^dhcp-config-networks/', 'ralph.dnsedit.views.dhcp_config_networks'),
     url(r'^dhcp-config-head/', 'ralph.dnsedit.views.dhcp_config_head'),
     url(r'^cmdb/', include('ralph.cmdb.urls')),
     url(r'^api/', include(v09_api.urls)),

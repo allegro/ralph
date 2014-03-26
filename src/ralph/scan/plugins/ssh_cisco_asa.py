@@ -140,6 +140,7 @@ def scan_address(ip_address, **kwargs):
             'processors': [{
                 'model_name': cpu_model,
                 'speed': int(cpu_speed),
+                'family': cpu_model,
             }],
         },
     })

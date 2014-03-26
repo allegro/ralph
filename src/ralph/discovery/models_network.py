@@ -211,7 +211,8 @@ class AbstractNetwork(db.Model):
             for i, sub in enumerate(subnets):
                 sub_addr = ipaddr.IPNetwork(sub.address)
                 if sub_addr != net_address and sub_addr in net_address:
-                    new_subnets.remove(sub)
+                    if sub in new_subnets:
+                        new_subnets.remove(sub)
         new_subnets = sorted(new_subnets, key=lambda net: net.min_ip)
         return new_subnets
 
@@ -502,6 +503,19 @@ class IPAddress(LastSeen, TimeTrackable, WithConcurrentGetOrCreate):
         null=True,
         blank=True,
     )
+    is_public = db.BooleanField(
+        _("This is a public address"),
+        default=False,
+        editable=False,
+    )
+    venture = db.ForeignKey(
+        'business.Venture',
+        verbose_name=_("venture"),
+        null=True,
+        blank=True,
+        default=None,
+        on_delete=db.SET_NULL,
+    )
 
     class Meta:
         verbose_name = _("IP address")
@@ -524,6 +538,8 @@ class IPAddress(LastSeen, TimeTrackable, WithConcurrentGetOrCreate):
             self.network = None
         if self.network and self.network.ignore_addresses:
             self.device = None
+        ip = ipaddr.IPAddress(self.address)
+        self.is_public = not ip.is_private
         super(IPAddress, self).save(*args, **kwargs)
 
     def assert_same_device(self):

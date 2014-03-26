@@ -13,8 +13,13 @@ from decimal import Decimal
 
 from django.db import models as db
 from django.utils.translation import ugettext_lazy as _
-from lck.django.common.models import (TimeTrackable, Named,
-    WithConcurrentGetOrCreate, MACAddressField, SavePrioritized)
+from lck.django.common.models import (
+    MACAddressField,
+    Named,
+    SavePrioritized,
+    TimeTrackable,
+    WithConcurrentGetOrCreate,
+)
 from lck.django.choices import Choices
 from django.utils.html import escape
 
@@ -86,6 +91,8 @@ def cores_from_model(model_name):
 def is_mac_valid(eth):
     try:
         mac = MACAddressField.normalize(eth.mac)
+        if not mac:
+            return False
         for black in MAC_PREFIX_BLACKLIST:
             if mac.startswith(black):
                 return False
@@ -133,39 +140,75 @@ class ComponentType(Choices):
 
 
 class ComponentModelGroup(Named, TimeTrackable, SavingUser):
-    price = db.PositiveIntegerField(verbose_name=_("purchase price"),
-        null=True, blank=True)
-    type = db.PositiveIntegerField(verbose_name=_("component type"),
-        choices=ComponentType(), default=ComponentType.unknown.id)
-    per_size = db.BooleanField(default=False,
-            verbose_name=_("This price is per unit of size"))
-    size_unit = db.CharField(verbose_name=_("unit of size"), blank=True,
-        default="", max_length=50)
-    size_modifier = db.PositiveIntegerField(verbose_name=_("size modifier"),
-        default=1)
+    price = db.PositiveIntegerField(
+        verbose_name=_("purchase price"),
+        null=True,
+        blank=True,
+    )
+    type = db.PositiveIntegerField(
+        verbose_name=_("component type"),
+        choices=ComponentType(),
+        default=ComponentType.unknown.id,
+    )
+    per_size = db.BooleanField(
+        default=False,
+        verbose_name=_("This price is per unit of size"),
+    )
+    size_unit = db.CharField(
+        verbose_name=_("unit of size"),
+        blank=True,
+        default="",
+        max_length=50,
+    )
+    size_modifier = db.PositiveIntegerField(
+        verbose_name=_("size modifier"),
+        default=1,
+    )
 
     class Meta:
         verbose_name = _("group of component models")
         verbose_name_plural = _("groups of component models")
 
     def get_count(self):
-        return sum(model.objects.filter(model__group=self).count()
-            for model in (Storage, Memory, Processor, DiskShare, FibreChannel,
-                GenericComponent, Software))
+        return sum(
+            model.objects.filter(model__group=self).count()
+            for model in (
+                Storage, Memory, Processor, DiskShare, FibreChannel,
+                GenericComponent, Software,
+            )
+        )
 
 
 class ComponentModel(SavePrioritized, WithConcurrentGetOrCreate, SavingUser):
     name = db.CharField(verbose_name=_("name"), max_length=255)
-    speed = db.PositiveIntegerField(verbose_name=_("speed (MHz)"),
-        default=0, blank=True)
-    cores = db.PositiveIntegerField(verbose_name=_("number of cores"),
-        default=0, blank=True)
-    size = db.PositiveIntegerField(verbose_name=_("size (MiB)"),
-        default=0, blank=True)
-    type = db.PositiveIntegerField(verbose_name=_("component type"),
-        choices=ComponentType(), default=ComponentType.unknown.id)
-    group = db.ForeignKey(ComponentModelGroup, verbose_name=_("group"),
-        null=True, blank=True, default=None, on_delete=db.SET_NULL)
+    speed = db.PositiveIntegerField(
+        verbose_name=_("speed (MHz)"),
+        default=0,
+        blank=True,
+    )
+    cores = db.PositiveIntegerField(
+        verbose_name=_("number of cores"),
+        default=0,
+        blank=True,
+    )
+    size = db.PositiveIntegerField(
+        verbose_name=_("size (MiB)"),
+        default=0,
+        blank=True,
+    )
+    type = db.PositiveIntegerField(
+        verbose_name=_("component type"),
+        choices=ComponentType(),
+        default=ComponentType.unknown.id,
+    )
+    group = db.ForeignKey(
+        ComponentModelGroup,
+        verbose_name=_("group"),
+        null=True,
+        blank=True,
+        default=None,
+        on_delete=db.SET_NULL,
+    )
     family = db.CharField(blank=True, default='', max_length=128)
 
     class Meta:
@@ -184,8 +227,8 @@ class ComponentModel(SavePrioritized, WithConcurrentGetOrCreate, SavingUser):
 
     @classmethod
     def create(cls, type, priority, **kwargs):
-        """More robust API for concurrent_get_or_create. All arguments should be
-        given flat.
+        """More robust API for concurrent_get_or_create. All arguments should
+        be given flat.
 
         Required arguments: type; priority; family (for processors and disks)
 
@@ -265,15 +308,15 @@ class ComponentModel(SavePrioritized, WithConcurrentGetOrCreate, SavingUser):
 
     def get_count(self):
         return sum([
-                self.storage_set.count(),
-                self.memory_set.count(),
-                self.processor_set.count(),
-                self.diskshare_set.count(),
-                self.fibrechannel_set.count(),
-                self.genericcomponent_set.count(),
-                self.software_set.count(),
-                self.operatingsystem_set.count(),
-            ])
+            self.storage_set.count(),
+            self.memory_set.count(),
+            self.processor_set.count(),
+            self.diskshare_set.count(),
+            self.fibrechannel_set.count(),
+            self.genericcomponent_set.count(),
+            self.software_set.count(),
+            self.operatingsystem_set.count(),
+        ])
 
     def get_json(self):
         return {
@@ -292,8 +335,14 @@ class ComponentModel(SavePrioritized, WithConcurrentGetOrCreate, SavingUser):
 
 class Component(SavePrioritized, WithConcurrentGetOrCreate):
     device = db.ForeignKey('Device', verbose_name=_("device"))
-    model = db.ForeignKey(ComponentModel, verbose_name=_("model"), null=True,
-        blank=True, default=None, on_delete=db.SET_NULL)
+    model = db.ForeignKey(
+        ComponentModel,
+        verbose_name=_("model"),
+        null=True,
+        blank=True,
+        default=None,
+        on_delete=db.SET_NULL,
+    )
 
     class Meta:
         abstract = True
@@ -326,38 +375,59 @@ class Component(SavePrioritized, WithConcurrentGetOrCreate):
 
 
 class GenericComponent(Component):
-    label = db.CharField(verbose_name=_("name"), max_length=255, blank=True,
-                         null=True, default=None)
-    sn = db.CharField(verbose_name=_("vendor SN"), max_length=255,
-        unique=True, null=True, blank=True, default=None)
-    boot_firmware = db.CharField(verbose_name=_("boot firmware"), null=True,
-            blank=True, max_length=255)
-    hard_firmware = db.CharField(verbose_name=_("hardware firmware"),
-            null=True, blank=True, max_length=255)
-    diag_firmware = db.CharField(verbose_name=_("diagnostics firmware"),
-            null=True, blank=True, max_length=255)
-    mgmt_firmware = db.CharField(verbose_name=_("management firmware"),
-            null=True, blank=True, max_length=255)
+    label = db.CharField(
+        verbose_name=_("name"), max_length=255, blank=True,
+        null=True, default=None,
+    )
+    sn = db.CharField(
+        verbose_name=_("vendor SN"), max_length=255, unique=True, null=True,
+        blank=True, default=None,
+    )
+    boot_firmware = db.CharField(
+        verbose_name=_("boot firmware"), null=True, blank=True, max_length=255,
+    )
+    hard_firmware = db.CharField(
+        verbose_name=_("hardware firmware"), null=True, blank=True,
+        max_length=255,
+    )
+    diag_firmware = db.CharField(
+        verbose_name=_("diagnostics firmware"), null=True, blank=True,
+        max_length=255,
+    )
+    mgmt_firmware = db.CharField(
+        verbose_name=_("management firmware"), null=True, blank=True,
+        max_length=255,
+    )
 
     class Meta:
         verbose_name = _("generic component")
         verbose_name_plural = _("generic components")
 
     def __unicode__(self):
-        return "{} ({}): {} {}".format(self.label, self.sn,
-            self.model, self.model.get_type_display())
+        if self.model:
+            return "{} ({}): {} {}".format(
+                self.label, self.sn, self.model, self.model.get_type_display(),
+            )
+        return "{} ({})".format(self.label, self.sn)
 
 
 class DiskShare(Component):
-    share_id = db.PositiveIntegerField(verbose_name=_("share identifier"),
-        null=True, blank=True)
-    label = db.CharField(verbose_name=_("name"), max_length=255, blank=True,
-                         null=True, default=None)
-    size = db.PositiveIntegerField(verbose_name=_("size (MiB)"),
-        null=True, blank=True)
+    share_id = db.PositiveIntegerField(
+        verbose_name=_("share identifier"), null=True, blank=True,
+    )
+    label = db.CharField(
+        verbose_name=_("name"), max_length=255, blank=True, null=True,
+        default=None,
+    )
+    size = db.PositiveIntegerField(
+        verbose_name=_("size (MiB)"), null=True, blank=True,
+    )
     snapshot_size = db.PositiveIntegerField(
-        verbose_name=_("size for snapshots (MiB)"), null=True, blank=True)
-    wwn = db.CharField(verbose_name=_("Volume serial"), max_length=33, unique=True)
+        verbose_name=_("size for snapshots (MiB)"), null=True, blank=True,
+    )
+    wwn = db.CharField(
+        verbose_name=_("Volume serial"), max_length=33, unique=True,
+    )
     full = db.BooleanField(default=True)
 
     class Meta:
@@ -400,13 +470,17 @@ class DiskShareMount(TimeTrackable, WithConcurrentGetOrCreate):
     volume = db.CharField(verbose_name=_("volume"),
                           max_length=255, blank=True,
                           null=True, default=None)
-    server = db.ForeignKey('Device', verbose_name=_("server"),
-        null=True, blank=True, default=None, related_name='servermount_set')
-    size = db.PositiveIntegerField(verbose_name=_("size (MiB)"),
-        null=True, blank=True)
+    server = db.ForeignKey(
+        'Device', verbose_name=_("server"), null=True, blank=True,
+        default=None, related_name='servermount_set',
+    )
+    size = db.PositiveIntegerField(
+        verbose_name=_("size (MiB)"), null=True, blank=True,
+    )
     address = db.ForeignKey("IPAddress", null=True, blank=True, default=None)
-    is_virtual = db.BooleanField(verbose_name=_("is that a virtual server mount?"),
-            default=False)
+    is_virtual = db.BooleanField(
+        verbose_name=_("is that a virtual server mount?"), default=False,
+    )
 
     class Meta:
         unique_together = ('share', 'device')
@@ -418,10 +492,10 @@ class DiskShareMount(TimeTrackable, WithConcurrentGetOrCreate):
 
     def get_total_mounts(self):
         return self.share.disksharemount_set.exclude(
-                device=None
-            ).filter(
-                is_virtual=False
-            ).count()
+            device=None
+        ).filter(
+            is_virtual=False
+        ).count()
 
     def get_size(self):
         return self.size or self.share.get_total_size()
@@ -443,12 +517,15 @@ class DiskShareMount(TimeTrackable, WithConcurrentGetOrCreate):
 
 class Processor(Component):
     label = db.CharField(verbose_name=_("name"), max_length=255)
-    speed = db.PositiveIntegerField(verbose_name=_("speed (MHz)"),
-        null=True, blank=True)
-    cores = db.PositiveIntegerField(verbose_name=_("number of cores"),
-        null=True, blank=True)
-    index = db.PositiveIntegerField(verbose_name=_("slot number"),
-        null=True, blank=True)
+    speed = db.PositiveIntegerField(
+        verbose_name=_("speed (MHz)"), null=True, blank=True,
+    )
+    cores = db.PositiveIntegerField(
+        verbose_name=_("number of cores"), null=True, blank=True,
+    )
+    index = db.PositiveIntegerField(
+        verbose_name=_("slot number"), null=True, blank=True,
+    )
 
     class Meta:
         verbose_name = _("processor")
@@ -494,12 +571,15 @@ class Processor(Component):
 
 class Memory(Component):
     label = db.CharField(verbose_name=_("name"), max_length=255)
-    size = db.PositiveIntegerField(verbose_name=_("size (MiB)"),
-        null=True, blank=True)
-    speed = db.PositiveIntegerField(verbose_name=_("speed (MHz)"),
-        null=True, blank=True)
-    index = db.PositiveIntegerField(verbose_name=_("slot number"),
-        null=True, blank=True)
+    size = db.PositiveIntegerField(
+        verbose_name=_("size (MiB)"), null=True, blank=True,
+    )
+    speed = db.PositiveIntegerField(
+        verbose_name=_("speed (MHz)"), null=True, blank=True,
+    )
+    index = db.PositiveIntegerField(
+        verbose_name=_("slot number"), null=True, blank=True,
+    )
 
     class Meta:
         verbose_name = _("memory")
@@ -512,13 +592,18 @@ class Memory(Component):
 
 
 class Storage(Component):
-    sn = db.CharField(verbose_name=_("vendor SN"), max_length=255,
-        unique=True, null=True, blank=True, default=None)
+    sn = db.CharField(
+        verbose_name=_("vendor SN"), max_length=255, unique=True, null=True,
+        blank=True, default=None,
+    )
     label = db.CharField(verbose_name=_("name"), max_length=255)
-    mount_point = db.CharField(verbose_name=_("mount point"), max_length=255,
-        null=True, blank=True, default=None)
-    size = db.PositiveIntegerField(verbose_name=_("size (MiB)"),
-        null=True, blank=True)
+    mount_point = db.CharField(
+        verbose_name=_("mount point"), max_length=255, null=True, blank=True,
+        default=None,
+    )
+    size = db.PositiveIntegerField(
+        verbose_name=_("size (MiB)"), null=True, blank=True,
+    )
 
     class Meta:
         verbose_name = _("storage")
@@ -554,8 +639,10 @@ class FibreChannel(Component):
 class Ethernet(Component):
     label = db.CharField(verbose_name=_("name"), max_length=255)
     mac = MACAddressField(verbose_name=_("MAC address"), unique=True)
-    speed = db.PositiveIntegerField(verbose_name=_("speed"),
-        choices=EthernetSpeed(), default=EthernetSpeed.unknown.id)
+    speed = db.PositiveIntegerField(
+        verbose_name=_("speed"), choices=EthernetSpeed(),
+        default=EthernetSpeed.unknown.id,
+    )
 
     class Meta:
         verbose_name = _("ethernet")
@@ -567,12 +654,16 @@ class Ethernet(Component):
 
 
 class Software(Component):
-    sn = db.CharField(verbose_name=_("vendor SN"), max_length=255,
-        unique=True, null=True, blank=True, default=None)
+    sn = db.CharField(
+        verbose_name=_("vendor SN"), max_length=255, unique=True, null=True,
+        blank=True, default=None,
+    )
     label = db.CharField(verbose_name=_("name"), max_length=255)
     # bash and widnows have a limit on the path length
-    path = db.CharField(verbose_name=_("path"), max_length=255,
-        null=True, blank=True, default=None)
+    path = db.CharField(
+        verbose_name=_("path"), max_length=255, null=True, blank=True,
+        default=None,
+    )
     version = db.CharField(verbose_name=_("version"), max_length=255,
                            null=True, blank=True, default=None)
 
@@ -621,8 +712,9 @@ class Software(Component):
 
 class SplunkUsage(Component):
     day = db.DateField(verbose_name=_("day"), auto_now_add=True)
-    size = db.PositiveIntegerField(verbose_name=_("size (MiB)"),
-        null=True, blank=True)
+    size = db.PositiveIntegerField(
+        verbose_name=_("size (MiB)"), null=True, blank=True,
+    )
 
     class Meta:
         verbose_name = _("Splunk usage")
@@ -652,9 +744,11 @@ class SplunkUsage(Component):
                     db.Q(device__venture__parent=venture) |
                     db.Q(device__venture__parent__parent=venture) |
                     db.Q(device__venture__parent__parent__parent=venture) |
-                    db.Q(device__venture__parent__parent__parent__parent=venture)
+                    db.Q(
+                        device__venture__parent__parent__parent__parent=venture
+                    )
                 )
-        elif not venture: # specifically "devices with no venture set"
+        elif not venture:  # specifically "devices with no venture set"
             splunk_usage = splunk_usage.filter(device__venture=None)
         if splunk_usage.count():
             splunk_size = splunk_usage.aggregate(
@@ -663,7 +757,8 @@ class SplunkUsage(Component):
             splunk_count = splunk_usage.values('device').distinct().count()
             yesterday = datetime.date.today() - datetime.timedelta(days=1)
             splunk_count_now = SplunkUsage.objects.filter(
-                    day=yesterday).values('device').distinct().count()
+                day=yesterday,
+            ).values('device').distinct().count()
             splunk_cost = splunk_usage[0].get_price(size=splunk_size)
             return splunk_cost, splunk_count, splunk_count_now, splunk_size
         return None, None, None, None
@@ -671,12 +766,16 @@ class SplunkUsage(Component):
 
 class OperatingSystem(Component):
     label = db.CharField(verbose_name=_("name"), max_length=255)
-    memory = db.PositiveIntegerField(verbose_name=_("memory"),
-        help_text=_("in MiB"), null=True, blank=True)
-    storage = db.PositiveIntegerField(verbose_name=_("storage"),
-        help_text=_("in MiB"), null=True, blank=True)
-    cores_count = db.PositiveIntegerField(verbose_name=_("cores count"),
-        null=True, blank=True)
+    memory = db.PositiveIntegerField(
+        verbose_name=_("memory"), help_text=_("in MiB"), null=True, blank=True,
+    )
+    storage = db.PositiveIntegerField(
+        verbose_name=_("storage"), help_text=_("in MiB"), null=True,
+        blank=True,
+    )
+    cores_count = db.PositiveIntegerField(
+        verbose_name=_("cores count"), null=True, blank=True,
+    )
 
     class Meta:
         verbose_name = _("operating system")

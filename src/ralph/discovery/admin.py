@@ -12,7 +12,6 @@ import logging
 from django import forms
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
-import ipaddr
 from lck.django.common.admin import (
     ForeignKeyAutocompleteTabularInline,
     ModelAdmin,
@@ -22,6 +21,7 @@ from django.contrib import messages
 
 from ralph.discovery import models as m
 from ralph.business.admin import RolePropertyValueInline
+from ralph.ui.forms.network import NetworkForm
 
 
 SAVE_PRIORITY = 200
@@ -54,39 +54,6 @@ def copy_network(modeladmin, request, queryset):
 copy_network.short_description = "Copy network"
 
 
-class NetworkAdminForm(forms.ModelForm):
-    class Meta:
-        model = m.Network
-
-    def clean_address(self):
-        address = self.cleaned_data['address'].strip()
-        if not re.search(r'/[0-9]{1,2}$', address):
-            raise forms.ValidationError(_("It's not a valid network address."))
-        try:
-            net = ipaddr.IPNetwork(address)
-        except ValueError:
-            raise forms.ValidationError(_("It's not a valid network address."))
-        given_network_addr = net.compressed.split('/', 1)[0]
-        real_network_addr = net.network.compressed
-        if given_network_addr != real_network_addr:
-            msg = "{} is invalid network address, valid network is {}".format(
-                given_network_addr,
-                real_network_addr,
-            )
-            raise forms.ValidationError(msg)
-        return address
-
-    def clean(self):
-        cleaned_data = super(NetworkAdminForm, self).clean()
-        if cleaned_data.get('dhcp_broadcast', False):
-            if not cleaned_data.get('gateway'):
-                raise forms.ValidationError(_(
-                    "To broadcast this network in DHCP config you must also "
-                    "complete the `Gateway` field.",
-                ))
-        return cleaned_data
-
-
 class NetworkAdmin(ModelAdmin):
     def terms(self):
         return ", ".join([n.name for n in self.terminators.order_by('name')])
@@ -105,7 +72,7 @@ class NetworkAdmin(ModelAdmin):
     search_fields = ('name', 'address', 'vlan')
     filter_horizontal = ('terminators', 'racks', 'custom_dns_servers')
     save_on_top = True
-    form = NetworkAdminForm
+    form = NetworkForm
     actions = [copy_network]
 
 admin.site.register(m.Network, NetworkAdmin)
@@ -365,15 +332,18 @@ class IPAddressAdmin(ModelAdmin):
     ip_address.short_description = _("IP address")
     ip_address.admin_order_field = 'number'
 
-    list_display = (ip_address, 'hostname', 'device', 'snmp_name', 'created',
-                    'modified')
-    list_filter = ('snmp_community',)
+    list_display = (
+        ip_address, 'hostname', 'device', 'snmp_name', 'is_public', 'created',
+        'modified',
+    )
+    list_filter = ('is_public', 'snmp_community')
     list_per_page = 250
     save_on_top = True
     search_fields = ('address', 'hostname', 'number', 'snmp_name')
     related_search_fields = {
         'device': ['^name'],
         'network': ['^name'],
+        'venture': ['^name'],
     }
 
 admin.site.register(m.IPAddress, IPAddressAdmin)

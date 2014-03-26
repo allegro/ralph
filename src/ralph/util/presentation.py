@@ -18,6 +18,7 @@ DEVICE_ICONS = {
     DeviceType.data_center.id: 'fugue-building',
 
     DeviceType.switch.id: 'fugue-network-hub',
+    DeviceType.switch_stack.id: 'fugue-network-hub',
     DeviceType.router.id: 'fugue-application-network',
     DeviceType.load_balancer.id: 'fugue-balance',
     DeviceType.firewall.id: 'fugue-network-firewall',

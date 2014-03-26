@@ -10,8 +10,9 @@ from powerdns.models import Domain, Record
 
 from ralph.dnsedit.models import DHCPEntry, DHCPServer, DNSServer
 from ralph.dnsedit.dhcp_conf import (
-    generate_dhcp_config,
+    generate_dhcp_config_entries,
     generate_dhcp_config_head,
+    generate_dhcp_config_networks,
 )
 from ralph.discovery.models import (
     DataCenter,
@@ -103,7 +104,7 @@ class DHCPConfTest(TestCase):
             domain=self.domain1,
         )
         config = _sanitize_dhcp_config(
-            generate_dhcp_config(server_address='127.0.1.1'),
+            generate_dhcp_config_entries(),
         )
         # sample2.dc don't have defined network
         self.assertEqual(
@@ -115,7 +116,7 @@ class DHCPConfTest(TestCase):
         self.network1.dhcp_broadcast = False
         self.network1.save()
         config = _sanitize_dhcp_config(
-            generate_dhcp_config(server_address='127.0.1.1'),
+            generate_dhcp_config_entries(),
         )
         self.assertEqual(config, '')
 
@@ -135,7 +136,7 @@ class DHCPConfTest(TestCase):
             domain=self.domain2,
         )
         config = _sanitize_dhcp_config(
-            generate_dhcp_config(server_address='127.0.1.1'),
+            generate_dhcp_config_entries(),
         )
         self.assertEqual(
             config,
@@ -145,7 +146,7 @@ class DHCPConfTest(TestCase):
             'hardware ethernet DE:AD:BE:EF:CA:F1; }',
         )
         config = _sanitize_dhcp_config(
-            generate_dhcp_config(server_address='127.0.1.1', env=self.env2),
+            generate_dhcp_config_entries(env=self.env2),
         )
         self.assertEqual(
             config,
@@ -168,7 +169,7 @@ class DHCPConfTest(TestCase):
             device=device,
         )
         config = _sanitize_dhcp_config(
-            generate_dhcp_config(server_address='127.0.1.1'),
+            generate_dhcp_config_entries(),
         )
         self.assertEqual(
             config,
@@ -189,7 +190,7 @@ class DHCPConfTest(TestCase):
             device=device,
         )
         config = _sanitize_dhcp_config(
-            generate_dhcp_config(server_address='127.0.1.1'),
+            generate_dhcp_config_entries(),
         )
         self.assertEqual(
             config,
@@ -199,7 +200,7 @@ class DHCPConfTest(TestCase):
 
     def test_networks_configs(self):
         config = _sanitize_dhcp_config(
-            generate_dhcp_config_head(server_address='127.0.1.1'),
+            generate_dhcp_config_networks(),
         )
         self.assertEqual(
             config,
@@ -226,7 +227,7 @@ shared-network "net1.dc2" {
         self.network2.dhcp_config = 'SAMPLE ADDITIONAL CONFIG'
         self.network2.save()
         config = _sanitize_dhcp_config(
-            generate_dhcp_config_head(server_address='127.0.1.1'),
+            generate_dhcp_config_networks(),
         )
         self.assertEqual(
             config,
@@ -241,44 +242,9 @@ SAMPLE ADDITIONAL CONFIG
 }"""
         )
 
-    def test_additional_dhcp_server_config(self):
-        DHCPServer.objects.create(
-            ip='127.0.1.1',
-            dhcp_config='SAMPLE DHCP CONFIG',
-        )
-        config = _sanitize_dhcp_config(
-            generate_dhcp_config_head(server_address='127.0.1.1'),
-        )
-        self.assertEqual(
-            config,
-            """SAMPLE DHCP CONFIG
-
-
-shared-network "net1.dc1" {
-    subnet 127.0.0.0 netmask 255.255.255.0 {
-        option routers 127.0.0.255;
-        option domain-name "dc1";
-        option domain-name-servers 10.20.30.1,10.20.30.2;
-        deny unknown-clients;
-    }
-}
-
-shared-network "net1.dc2" {
-    subnet 10.20.1.0 netmask 255.255.255.0 {
-        option routers 10.20.1.255;
-        option domain-name "dc2";
-        option domain-name-servers 10.20.30.3,10.20.30.4;
-        deny unknown-clients;
-    }
-}"""
-        )
-
     def test_env_networks_configs(self):
         config = _sanitize_dhcp_config(
-            generate_dhcp_config_head(
-                server_address='127.0.1.1',
-                env=self.env2,
-            ),
+            generate_dhcp_config_networks(env=self.env2),
         )
         self.assertEqual(
             config,
@@ -296,7 +262,7 @@ shared-network "net1.dc2" {
         self.env2.domain = None
         self.env2.save()
         config = _sanitize_dhcp_config(
-            generate_dhcp_config_head(server_address='127.0.1.1'),
+            generate_dhcp_config_networks(),
         )
         self.assertEqual(
             config,
@@ -308,4 +274,29 @@ shared-network "net1.dc2" {
         deny unknown-clients;
     }
 }"""
+        )
+
+    def test_dhcp_server_config(self):
+        dhcp_server = DHCPServer.objects.create(
+            ip='127.0.1.1',
+            dhcp_config='SAMPLE DHCP CONFIG',
+        )
+        config = _sanitize_dhcp_config(
+            generate_dhcp_config_head(dhcp_server=dhcp_server),
+        )
+        self.assertEqual(
+            config,
+            "SAMPLE DHCP CONFIG",
+        )
+
+    def test_dhcp_server_empty_config(self):
+        dhcp_server = DHCPServer.objects.create(
+            ip='127.0.1.2',
+        )
+        config = _sanitize_dhcp_config(
+            generate_dhcp_config_head(dhcp_server=dhcp_server),
+        )
+        self.assertEqual(
+            config,
+            "",
         )

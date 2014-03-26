@@ -257,11 +257,13 @@ def handle_lshw_storage(lshw):
             label += storage['description'].strip()
         else:
             label += 'Generic disk'
+        family = storage['vendor'].strip() or 'Generic disk'
         detected_storages.append({
             'mount_point': mount_point,
             'serial_number': sn,
             'size': storage_size,
             'label': label,
+            'family': family,
         })
     return detected_storages
 
@@ -294,4 +296,3 @@ def handle_lshw_fibrechannel_cards(lshw):
             'model_name': bus['product'],
         })
     return fc_cards
-

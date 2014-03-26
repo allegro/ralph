@@ -73,7 +73,7 @@ class DeviceType(Choices):
     firewall = _("firewall")
     smtp_gateway = _("SMTP gateway")
     appliance = _("Appliance")
-    switch_stack = _("Switch stack")
+    switch_stack = _("switch stack")
 
     SERVERS = Choices.Group(200)
     rack_server = _("rack server")
@@ -776,18 +776,21 @@ class Device(
         return super(Device, self).save(*args, **kwargs)
 
     def get_property_set(self):
-        props = dict(
-            [
-                (p.symbol, p.default) for p in
-                self.venture.roleproperty_set.all()
-            ]
-        )
-        props.update(dict(
-            [
-                (p.symbol, p.default) for p in
-                self.venture_role.roleproperty_set.all()
-            ]
-        ))
+        props = {}
+        if self.venture:
+            props.update(dict(
+                [
+                    (p.symbol, p.default)
+                    for p in self.venture.roleproperty_set.all()
+                ]
+            ))
+        if self.venture_role:
+            props.update(dict(
+                [
+                    (p.symbol, p.default)
+                    for p in self.venture_role.roleproperty_set.all()
+                ]
+            ))
         props.update(dict(
             [
                 (p.property.symbol, p.value) for p in

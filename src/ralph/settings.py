@@ -262,8 +262,9 @@ SSH_ONSTOR_PASSWORD = None
 AIX_USER = None
 AIX_PASSWORD = None
 AIX_KEY = None
-XEN_USER = None
-XEN_PASSWORD = None
+XEN_USER = None  # for compatibility with old discovery
+XEN_PASSWORD = None  # for compatibility with old discovery
+XEN_AUTHS = ()  # e.g. (('user1', 'pass1'), ('user2', 'pass2'))
 SNMP_PLUGIN_COMMUNITIES = ['public']
 SNMP_V3_USER = None
 SNMP_V3_AUTH_KEY = None
@@ -359,6 +360,7 @@ HAMSTER_API_URL = ""
 SCALEME_API_URL = ""
 DEFAULT_SOA_RECORD_CONTENT = ''
 DEAD_PING_COUNT = 2
+SCAN_AUTOMERGE_MODE = True
 # </template>
 
 #
@@ -476,6 +478,7 @@ SCAN_PLUGINS = {
             'parts': 5,
             'mac_addresses': 5,
             'management_ip_addresses': 5,
+            'subdevices': 5,
         },
     },
     'ralph.scan.plugins.ipmi': {
@@ -512,6 +515,7 @@ SCAN_PLUGINS = {
             'serial_number': 50,
             'model_name': 50,
             'type': 50,
+            'subdevices': 50,
         },
     },
     'ralph.scan.plugins.dns_hostname': {
@@ -554,6 +558,7 @@ SCAN_PLUGINS = {
             'mac_adresses': 7,
             'management_ip_addresses': 7,
             'parts': 7,
+            'subdevices': 20,
         },
     },
     'ralph.scan.plugins.ssh_proxmox': {
@@ -570,6 +575,7 @@ SCAN_PLUGINS = {
             'hostname': 10,
             'installed_software': 60,
             'system_ip_addresses': 10,
+            'subdevices': 50,
         },
     },
     'ralph.scan.plugins.ssh_3par': {
@@ -605,19 +611,20 @@ SCAN_PLUGINS = {
             'type': 50,
             'mac_addresses': 50,
             'management_ip_addresses': 50,
+            'subdevices': 50,
         },
     },
     'ralph.scan.plugins.ssh_xen': {
-        'xen_user': XEN_USER,
-        'xen_password': XEN_PASSWORD,
+        'xen_auths': XEN_AUTHS,
         'results_priority': {
-            'mac_addresses': 20,
-            'serial_number': 20,
+            'mac_addresses': 50,
+            'serial_number': 50,
             'hostname': 20,
-            'processors': 20,
-            'memory': 20,
+            'processors': 50,
+            'memory': 50,
             'disk_shares': 20,
-            'disks': 20,
+            'disks': 40,
+            'subdevices': 50,
         },
     },
     'ralph.scan.plugins.ssh_aix': {
@@ -704,4 +711,22 @@ SCAN_PLUGINS = {
             'system_label': 50,
         },
     },
+    'ralph.scan.plugins.ssh_juniper': {
+        'user': SSH_SSG_USER,
+        'password': SSH_SSG_PASSWORD,
+        'results_priority': {
+            'hostname': 20,
+            'management_ip_addresses': 40,
+            'model_name': 40,
+            'serial_number': 40,
+            'mac_addresses': 30,
+            'type': 50,
+            'subdevices': 60,
+        },
+    },
 }
+
+SCAN_POSTPROCESS_ENABLED_JOBS = [
+    'ralph.scan.postprocess.position',
+    'ralph.scan.postprocess.cache_price',
+]

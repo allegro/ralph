@@ -37,6 +37,7 @@ from ralph.ui.views.common import (
     Software,
     Scan,
 )
+from ralph.ui.views.devices import BaseDeviceList
 from ralph.ui.views.reports import Reports, ReportDeviceList
 from ralph.util import presentation
 from ralph.scan import autoscan
@@ -154,6 +155,8 @@ class SidebarNetworks(object):
 class NetworksMixin(SidebarNetworks, BaseMixin):
     def tab_href(self, name, obj=''):
         args = [self.kwargs.get('network'), name]
+        if obj:
+            args.append(obj)
         return '%s?%s' % (
             reverse("networks", args=args),
             self.request.GET.urlencode(),
@@ -169,10 +172,13 @@ class NetworksMixin(SidebarNetworks, BaseMixin):
                      href=self.tab_href('info')),
             MenuItem('Addresses', fugue_icon='fugue-network-ip',
                      href=self.tab_href('addresses')),
+            MenuItem('Autoscan', fugue_icon='fugue-radar',
+                     href=self.tab_href('autoscan')),
         ]
         show_tabs = [
             'info',
             'addresses',
+            'autoscan',
         ]
         context = {
             'show_tabs': show_tabs,
@@ -184,7 +190,6 @@ class NetworksMixin(SidebarNetworks, BaseMixin):
 
 
 class NetworksDeviceList(NetworksMixin, TemplateView):
-
     template_name = "ui/network_list.html"
 
     def user_allowed(self):
@@ -207,6 +212,8 @@ class NetworksInfo(NetworksMixin, UpdateView):
         next_free_ip = get_first_free_ip(self.network.name)
         ret['next_free_ip'] = next_free_ip
         ret['editable'] = True
+        for error in ret['form'].non_field_errors():
+            messages.error(self.request, error)
         return ret
 
     def get_object(self):
@@ -260,7 +267,7 @@ class ReportNetworksDeviceList(ReportDeviceList, NetworksDeviceList):
     pass
 
 
-class NetworksAutoscan(NetworksDeviceList):
+class NetworksAutoscan(NetworksMixin, BaseDeviceList):
     template_name = 'ui/address_list.html'
     section = 'networks'
 

@@ -26,7 +26,8 @@ def all(iterable):
 class SimpleDHCPManager(object):
     def __init__(
         self, api_url, api_username, api_key, mode, dhcp_config_entries,
-        dhcp_config_networks, restart, logger, env, **kwargs
+        dhcp_config_networks, dhcp_config_head, restart, dhcp_server_address,
+        logger, dc, env, **kwargs
     ):
         self.api_url = api_url.rstrip('/')
         self.api_username = api_username
@@ -34,12 +35,17 @@ class SimpleDHCPManager(object):
         self.mode = mode.upper()
         self.dhcp_entries_config_path = dhcp_config_entries
         self.dhcp_networks_config_path = dhcp_config_networks
+        self.dhcp_head_config_path = dhcp_config_head
         self.dhcp_service_name = restart
         self.logger = logger
+        self.dc = dc
         self.env = env
+        self.dhcp_server_address = dhcp_server_address
 
     def update_configuration(self):
         tasks = []
+        if self.mode == 'ALL' or self.mode == 'HEAD':
+            tasks.append('HEAD')
         if self.mode == 'ALL' or self.mode == 'NETWORKS':
             tasks.append('NETWORKS')
         if self.mode == 'ALL' or self.mode == 'ENTRIES':
@@ -55,16 +61,20 @@ class SimpleDHCPManager(object):
         return self._send_confirm()
 
     def _get_configuration(self, mode):
-        url = "{}/dhcp-config{}/?{}".format(
+        url = "{}/dhcp-config-{}/?{}".format(
             self.api_url,
-            '-head' if mode == 'NETWORKS' else '',
+            mode.lower(),
             urlencode({
                 'username': self.api_username,
                 'api_key': self.api_key,
             })
         )
+        if self.dc:
+            url += '&dc=' + self.dc
         if self.env:
             url += '&env=' + self.env
+        if mode == 'HEAD' and self.dhcp_server_address:
+            url += '&server=' + self.dhcp_server_address
         req = urllib2.Request(url)
         try:
             resp = urllib2.urlopen(req)
@@ -168,9 +178,10 @@ def _get_cmd_options():
         '-m',
         '--mode',
         type='choice',
-        choices=['all', 'entries', 'networks'],
+        choices=['all', 'entries', 'networks', 'head'],
         default='all',
-        help='Choose what part of config you want to upgrade. [Default: all]',
+        help='Choose what part of config you want to upgrade. '
+             '[Default: all; Options: all, entries, networks, head]',
     )
     opts_parser.add_option(
         '-l',
@@ -189,14 +200,28 @@ def _get_cmd_options():
         help='Path to the DHCP networks configuration file.',
     )
     opts_parser.add_option(
+        '-H',
+        '--dhcp-config-head',
+        help='Path to the DHCP head configuration file.',
+    )
+    opts_parser.add_option(
         '-e',
         '--env',
         help='Only get config for the specified environment.',
     )
     opts_parser.add_option(
+        '-d',
+        '--dc',
+        help='Only get config for the specified data center.',
+    )
+    opts_parser.add_option(
         '-r',
         '--restart',
         help='Name of the service to restart.',
+    )
+    opts_parser.add_option(
+        '--dhcp-server-address',
+        help='Get head config for specified DHCP Server ip address.',
     )
     opts_parser.add_option(
         '-v',
@@ -242,6 +267,10 @@ if __name__ == "__main__":
             'are required.\n' % ', '.join(['--%s' % opt for opt in require]),
         )
         sys.exit(2)
+    if opts['env'] and opts['dc']:
+        sys.stderr.write(
+            'ERROR: Only DC or ENV mode available.',
+        )
     lockfile = '/tmp/%s.lock' % os.path.split(sys.argv[0])[1]
     f = open(lockfile, 'w')
     try:
