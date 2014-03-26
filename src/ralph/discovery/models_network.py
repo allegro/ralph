@@ -211,7 +211,8 @@ class AbstractNetwork(db.Model):
             for i, sub in enumerate(subnets):
                 sub_addr = ipaddr.IPNetwork(sub.address)
                 if sub_addr != net_address and sub_addr in net_address:
-                    new_subnets.remove(sub)
+                    if sub in new_subnets:
+                        new_subnets.remove(sub)
         new_subnets = sorted(new_subnets, key=lambda net: net.min_ip)
         return new_subnets
 
