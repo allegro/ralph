@@ -5,6 +5,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import ipaddr
+
 from django.conf import settings
 from pysphere import VIServer, VIApiException
 
@@ -22,7 +24,13 @@ def _get_vm_info(vm_properties):
     for interface in vm_properties.get('net', []):
         if not interface['connected']:
             continue
-        ip_addresses.extend(interface['ip_addresses'])
+        ip_v4 = []
+        for ip in interface['ip_addresses']:
+            if type(
+                ipaddr.IPAddress(ip)
+            ) == ipaddr.IPv4Address:
+                ip_v4.append(ip)
+        ip_addresses.extend(ip_v4)
         mac_addresses.append(interface['mac_address'])
     return {
         'type': DeviceType.virtual_server.raw,
