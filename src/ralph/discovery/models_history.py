@@ -37,6 +37,7 @@ SPLUNK_HOST = settings.SPLUNK_LOGGER_HOST
 
 
 class HistoryChange(db.Model):
+
     """Represent a single change of a device or one of its components."""
 
     date = db.DateTimeField(verbose_name=_("date"), default=datetime.now)
@@ -92,7 +93,7 @@ def device_post_save(sender, instance, raw, using, **kwargs):
             plugin=instance.saving_plugin,
         ).save()
     if {'venture', 'venture_role', 'position', 'chassis_position',
-        'parent', 'model'} & dirty:
+            'parent', 'model'} & dirty:
         update_txt_records(instance)
 
 
@@ -164,7 +165,7 @@ def device_related_pre_save(sender, instance, raw, using, **kwargs):
         device = instance.device
     except Device.DoesNotExist:
         device = None
-    ignore={
+    ignore = {
         'dns_info',
         'hostname',
         'last_puppet',
@@ -226,6 +227,7 @@ def deprecationkind_pre_save(sender, instance, raw, using, **kwargs):
 
 
 class HistoryCost(db.Model):
+
     """
     A single time span for historical cost and venture ownership of a device
     or an extra cost. ``start`` and ``end`` determine the time span during
@@ -335,7 +337,6 @@ def cores_post_save(sender, instance, raw, using, **kwargs):
 
 @receiver(post_delete, sender=Processor, dispatch_uid='ralph.cores')
 def cores_post_delete(sender, instance, using, **kwargs):
-
     """
     A hook for updating the historical processor core count.
     """
@@ -376,6 +377,7 @@ def cost_pre_delete(sender, instance, using, **kwargs):
 
 
 class HistoryModelChange(db.Model):
+
     """
     Represent a single change in the device and component models.
     """
@@ -472,6 +474,7 @@ def component_model_pre_save(sender, instance, raw, using, **kwargs):
 
 
 class DiscoveryWarning(db.Model):
+
     """
     Created by the discovery plugins to signal a possible problem with the
     particular device or address.

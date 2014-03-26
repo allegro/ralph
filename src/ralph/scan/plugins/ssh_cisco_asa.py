@@ -39,6 +39,7 @@ if not SSH_USER or not SSH_PASS:
 
 
 class CiscoSSHClient(paramiko.SSHClient):
+
     """SSHClient modified for Cisco's broken SSH console."""
 
     def __init__(self, *args, **kwargs):
@@ -145,4 +146,3 @@ def scan_address(ip_address, **kwargs):
         },
     })
     return result
-

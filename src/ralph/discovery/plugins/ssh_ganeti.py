@@ -110,9 +110,9 @@ def run_ssh_ganeti(ip):
     for dev in Device.objects.filter(
             management=master_ip,
             model__name='Ganeti',
-        ).exclude(
+    ).exclude(
             ethernet__mac__in=existing_macs,
-        ):
+    ):
         dev.deleted = True
         dev.save(priority=SAVE_PRIORITY)
     return master_hostname

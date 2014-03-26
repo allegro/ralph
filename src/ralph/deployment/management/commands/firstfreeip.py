@@ -26,4 +26,3 @@ class Command(BaseCommand):
         if not ip:
             raise CommandError("Couldn't determine the first free IP.")
         self.stdout.write("First free IP: %s\n" % ip)
-

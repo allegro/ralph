@@ -31,4 +31,3 @@ def plugins_check(ip, **kwargs):
         ipaddr.last_plugins = plugins
         ipaddr.save()
     return True, plugins, kwargs
-

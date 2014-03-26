@@ -35,6 +35,7 @@ class OptionBag(object):
 
 
 class Command(BaseCommand):
+
     """Runs discovery of machines in the network. Accepts an optional list
     of network addresses, network names (as defined in the database) or
     host IP addresses. The addresses given do not have to be present in the

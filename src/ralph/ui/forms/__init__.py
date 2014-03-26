@@ -60,6 +60,7 @@ class VentureFilterForm(forms.Form):
 
 
 class RolePropertyForm(forms.ModelForm):
+
     class Meta:
         model = RoleProperty
         widgets = {
@@ -97,4 +98,3 @@ class ChooseAssetForm(forms.Form):
                     'This asset is assigned to other device.',
                 )
         return asset
-

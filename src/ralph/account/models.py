@@ -62,8 +62,10 @@ class Perm(Choices):
     create_configuration_item = _("create configuration items")
     edit_configuration_item_info_generic = _("edit configuration items")
     edit_configuration_item_relations = _("edit configuration item relations")
-    read_configuration_item_info_generic = _("read configuration item info generic")
-    read_configuration_item_info_puppet = _("read configuration item info Puppet reports")
+    read_configuration_item_info_generic = _(
+        "read configuration item info generic")
+    read_configuration_item_info_puppet = _(
+        "read configuration item info Puppet reports")
     read_configuration_item_info_git = _("read configuration item info GIT ")
     read_configuration_item_info_jira = _("read configuration item info jira")
     bulk_edit = _("edit all device info in bulk")
@@ -83,7 +85,7 @@ class Perm(Choices):
 
 
 class Profile(BasicInfo, ActivationSupport, GravatarSupport,
-        MonitoredActivity):
+              MonitoredActivity):
 
     class Meta:
         verbose_name = _("profile")
@@ -115,26 +117,26 @@ class Profile(BasicInfo, ActivationSupport, GravatarSupport,
             groups = self.groups.all()
             if obj:
                 return BoundPerm.objects.filter(
-                        db.Q(venture=None) |
-                            db.Q(venture=obj) |
-                            db.Q(venture__parent=obj) |
-                            db.Q(venture__parent__parent=obj) |
-                            db.Q(venture__parent__parent__parent=obj),
-                        db.Q(role=None) |
-                            db.Q(role=role) |
-                            db.Q(role__parent=role) |
-                            db.Q(role__parent__parent=role) |
-                            db.Q(role__parent__parent__parent=role),
-                        db.Q(profile=self) | db.Q(group__in=groups),
-                        perm=perm.id,
-                    ).exists()
+                    db.Q(venture=None) |
+                    db.Q(venture=obj) |
+                    db.Q(venture__parent=obj) |
+                    db.Q(venture__parent__parent=obj) |
+                    db.Q(venture__parent__parent__parent=obj),
+                    db.Q(role=None) |
+                    db.Q(role=role) |
+                    db.Q(role__parent=role) |
+                    db.Q(role__parent__parent=role) |
+                    db.Q(role__parent__parent__parent=role),
+                    db.Q(profile=self) | db.Q(group__in=groups),
+                    perm=perm.id,
+                ).exists()
             else:
                 return BoundPerm.objects.filter(
-                        db.Q(role=None) | db.Q(role=role),
-                        db.Q(profile=self) | db.Q(group__in=groups),
-                        venture=None,
-                        perm=perm.id,
-                    ).exists()
+                    db.Q(role=None) | db.Q(role=role),
+                    db.Q(profile=self) | db.Q(group__in=groups),
+                    venture=None,
+                    perm=perm.id,
+                ).exists()
         return super(Profile, self).has_perm(perm, obj)
 
     def perm_ventures(self, perm):
@@ -147,12 +149,12 @@ class Profile(BasicInfo, ActivationSupport, GravatarSupport,
                 db.Q(profile=self) | db.Q(group__in=groups),
                 perm=perm.id,
                 venture=None,
-            ).exists():
+        ).exists():
             return Venture.objects.all()
         return Venture.objects.filter(
-                db.Q(boundperm__profile=self) | db.Q(boundperm__group__in=groups),
-                boundperm__perm=perm.id,
-            )
+            db.Q(boundperm__profile=self) | db.Q(boundperm__group__in=groups),
+            boundperm__perm=perm.id,
+        )
 
     def filter_by_perm(self, query, perm):
         """Filters a device search query according to the permissions."""
@@ -164,23 +166,23 @@ class Profile(BasicInfo, ActivationSupport, GravatarSupport,
             return query
         groups = self.groups.all()
         return query.filter(
-                db.Q(venture__boundperm__profile=profile,
-                  venture__boundperm__perm=perm.id) |
-                db.Q(venture__parent__boundperm__profile=profile,
-                  venture__parent__boundperm__perm=perm.id) |
-                db.Q(venture__parent__parent__boundperm__profile=profile,
-                  venture__parent__parent__boundperm__perm=perm.id) |
-                db.Q(venture__parent__parent__parent__boundperm__profile=profile,
-                  venture__parent__parent__parent__boundperm__perm=perm.id) |
-                db.Q(venture__boundperm__group__in=groups,
-                  venture__boundperm__perm=perm.id) |
-                db.Q(venture__parent__boundperm__group__in=groups,
-                  venture__parent__boundperm__perm=perm.id) |
-                db.Q(venture__parent__parent__boundperm__group__in=groups,
-                  venture__parent__parent__boundperm__perm=perm.id) |
-                db.Q(venture__parent__parent__parent__boundperm__group__in=groups,
-                  venture__parent__parent__parent__boundperm__perm=perm.id)
-            ).distinct()
+            db.Q(venture__boundperm__profile=profile,
+                 venture__boundperm__perm=perm.id) |
+            db.Q(venture__parent__boundperm__profile=profile,
+                 venture__parent__boundperm__perm=perm.id) |
+            db.Q(venture__parent__parent__boundperm__profile=profile,
+                 venture__parent__parent__boundperm__perm=perm.id) |
+            db.Q(venture__parent__parent__parent__boundperm__profile=profile,
+                 venture__parent__parent__parent__boundperm__perm=perm.id) |
+            db.Q(venture__boundperm__group__in=groups,
+                 venture__boundperm__perm=perm.id) |
+            db.Q(venture__parent__boundperm__group__in=groups,
+                 venture__parent__boundperm__perm=perm.id) |
+            db.Q(venture__parent__parent__boundperm__group__in=groups,
+                 venture__parent__parent__boundperm__perm=perm.id) |
+            db.Q(venture__parent__parent__parent__boundperm__group__in=groups,
+                 venture__parent__parent__parent__boundperm__perm=perm.id)
+        ).distinct()
 
 
 class BoundPerm(TimeTrackable, EditorTrackable):
@@ -213,7 +215,7 @@ class BoundPerm(TimeTrackable, EditorTrackable):
         blank=True,
         default=None,
         help_text=_("if left empty, the permission applies to all roles "
-        "within the selected venture"),
+                    "within the selected venture"),
     )
 
     class Meta:

@@ -83,6 +83,7 @@ class AutocompleteVentureExtraCostInline(ForeignKeyAutocompleteTabularInline):
 
 
 class VentureRoleAdminForm(forms.ModelForm):
+
     def clean_name(self):
         data = self.cleaned_data['name']
         if not util_venture.slug_validation(data):
@@ -95,6 +96,7 @@ class VentureRoleAdminForm(forms.ModelForm):
 
 
 class VentureRoleAdmin(ModelAdmin):
+
     def members(self):
         from ralph.discovery.models import Device
         return unicode(Device.objects.filter(venture=self).count())
@@ -144,6 +146,7 @@ class SubVentureInline(admin.TabularInline):
 
 
 class VentureAdminForm(forms.ModelForm):
+
     class Meta:
         model = Venture
         fields = [
@@ -195,6 +198,7 @@ class VentureAdminForm(forms.ModelForm):
 
 
 class VentureAdminVerifiedForm(VentureAdminForm):
+
     class Meta(VentureAdminForm.Meta):
         fields = [field for field in
                   VentureAdminForm.Meta.fields if field != 'verified']

@@ -44,4 +44,3 @@ def scan_address(ip_address, **kwargs):
     if software:
         result['installed_software'] = software
     return result
-

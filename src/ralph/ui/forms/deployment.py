@@ -42,7 +42,9 @@ from ralph.util import Eth
 from bob.csvutil import UnicodeReader
 from ralph.ui.widgets import ReadOnlySelectWidget, ReadOnlyWidget
 
+
 class DeploymentForm(forms.ModelForm):
+
     class Meta:
         model = Deployment
         fields = [
@@ -335,9 +337,6 @@ class MassDeploymentForm(forms.Form):
             if not clean_hostname(hostname):
                 raise forms.ValidationError("Invalid hostname")
 
-
-
-
             parsed_hostnames.add(hostname)
             network_name = cols[5].strip()
             try:
@@ -471,7 +470,7 @@ def _check_move_address(address):
                 DeviceType.virtual_server,
                 DeviceType.unknown,
             }
-        ).filter(address=address).exists():
+    ).filter(address=address).exists():
         raise forms.ValidationError(
             "No server found for %s." % address,
         )
@@ -494,19 +493,20 @@ class ServerMoveStep2Form(forms.Form):
 
 
 class ServerMoveStep2FormSetBase(formsets.BaseFormSet):
+
     def add_fields(self, form, index):
         form.fields['network'].choices = [
             (n.id, n.name)
             for n in Network.objects.order_by('name')
         ]
-        form.fields['network'].widget.attrs={
+        form.fields['network'].widget.attrs = {
             'class': 'span12',
         }
         if self.initial:
             candidates = self.initial[index]['candidates']
         else:
             candidates = {form.data['%s-%d-address' % (self.prefix, index)]}
-        form.fields['address'].widget.attrs={
+        form.fields['address'].widget.attrs = {
             'class': 'span12',
         }
         if len(candidates) == 1:
@@ -540,8 +540,8 @@ class ServerMoveStep3Form(forms.Form):
         except ValueError:
             raise forms.ValidationError("Malformed IP address.")
         rdomain = '.'.join(
-                list(reversed(new_ip.split('.')))[1:]
-            ) + '.in-addr.arpa'
+            list(reversed(new_ip.split('.')))[1:]
+        ) + '.in-addr.arpa'
         if not Domain.objects.filter(name=rdomain).exists():
             raise forms.ValidationError("No RevDNS domain for address.")
         try:
@@ -591,7 +591,9 @@ class ServerMoveStep3Form(forms.Form):
                 raise forms.ValidationError("Hostname already in DNS.")
         return new_hostname
 
+
 class ServerMoveStep3FormSetBase(formsets.BaseFormSet):
+
     def clean(self):
         if any(self.errors):
             return
@@ -620,4 +622,3 @@ ServerMoveStep3FormSet = formsets.formset_factory(
     formset=ServerMoveStep3FormSetBase,
     extra=0,
 )
-

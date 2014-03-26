@@ -8,6 +8,7 @@ from django import template
 
 register = template.Library()
 
+
 @register.filter
 def query_page(query, page):
     query = query.copy()
@@ -19,6 +20,7 @@ def query_page(query, page):
         except KeyError:
             pass
     return query.urlencode()
+
 
 @register.filter
 def query_sort(query, sort):
@@ -32,11 +34,13 @@ def query_sort(query, sort):
             pass
     return query.urlencode()
 
+
 @register.filter
 def query_sort_desc(query, sort):
     query = query.copy()
     query['sort'] = '-' + sort
     return query.urlencode()
+
 
 @register.filter
 def query_export(query, export):

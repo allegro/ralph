@@ -29,6 +29,7 @@ SETTINGS = settings.SCAN_PLUGINS.get(__name__, {})
 
 
 class IPMITool(object):
+
     def __init__(self, host, user, password):
         self.host = host
         self.user = user
@@ -210,4 +211,3 @@ def scan_address(ip_address, **kwargs):
                 'device': device_info,
             })
     return result
-

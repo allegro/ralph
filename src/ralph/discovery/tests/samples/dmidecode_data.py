@@ -950,4 +950,3 @@ OEM-specific Type
 
 Handle 0x7F00, DMI type 127, 4 bytes
 End Of Table'''
-

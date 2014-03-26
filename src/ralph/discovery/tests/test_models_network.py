@@ -11,6 +11,7 @@ from ralph.discovery.models import Network, DataCenter, IPAddress
 
 
 class ModelsNetworkTest(TestCase):
+
     def setUp(self):
         self.dc = DataCenter(name="test_dc")
         self.dc.save()

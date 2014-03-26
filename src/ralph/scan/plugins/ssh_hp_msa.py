@@ -152,4 +152,3 @@ def scan_address(ip_address, **kwargs):
         'device': _ssh_hp_msa(ip_address, user, password),
     })
     return result
-

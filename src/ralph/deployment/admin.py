@@ -32,6 +32,7 @@ admin.site.register(
 
 
 class DeploymentAdminForm(forms.ModelForm):
+
     class Meta:
         model = Deployment
 
@@ -82,6 +83,7 @@ admin.site.register(ArchivedDeployment, ArchivedDeploymentAdmin)
 
 
 class PrebootAdmin(ModelAdmin):
+
     def file_list(self):
         result = ", ".join([f.name for f in self.files.all()])
         return result
@@ -96,6 +98,7 @@ admin.site.register(Preboot, PrebootAdmin)
 
 
 class PrebootFileAdmin(ModelAdmin):
+
     def config_slug(self):
         if self.file:
             return self.get_filesize_display()
@@ -111,7 +114,7 @@ class PrebootFileAdmin(ModelAdmin):
             'fields': ['file', 'raw_config'],
             'description': _("Fill either <b>file</b> or <b>raw config</b>."),
         }),
-        (None, {'fields': ['description',]}),
+        (None, {'fields': ['description', ]}),
     )
     list_display = ('name', 'ftype', config_slug)
     list_filter = ('ftype',)

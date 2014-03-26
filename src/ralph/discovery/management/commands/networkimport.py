@@ -26,30 +26,37 @@ class Error(Exception):
 
 
 class IncorrectLengthRowError(Error):
+
     """Trying to unpack row."""
 
 
 class EmptyRecordValueError(Error):
+
     """Trying to create network from empty values."""
 
 
 class TerminatorDoesNotExist(Error):
+
     """  """
 
 
 class DataCenterDoesNotExist(Error):
+
     """  """
 
 
 class EnvironmentDoesNotExist(Error):
+
     """  """
 
 
 class RackDoesNotExist(Error):
+
     """  """
 
 
 class Command(BaseCommand):
+
     """Append Networks from csv file, record should be in this format:
     network name;address;terminator name;data center name;environment;rack name
     """

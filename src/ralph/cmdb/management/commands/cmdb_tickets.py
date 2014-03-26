@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
+
     """This tool synchronize database with Jira tickets in case of errors."""
     help = textwrap.dedent(__doc__).strip()
     requires_model_validation = True

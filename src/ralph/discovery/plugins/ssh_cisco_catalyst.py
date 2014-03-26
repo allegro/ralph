@@ -31,6 +31,7 @@ class ConsoleError(Error):
 
 
 class CiscoSSHClient(paramiko.SSHClient):
+
     """SSHClient modified for Cisco's broken ssh console."""
 
     def __init__(self, *args, **kwargs):

@@ -112,4 +112,4 @@ def get_total_virtual_cores(query, start, end):
             start=start.strftime('%Y-%m-%d'),
             end=end.strftime('%Y-%m-%d'),
         ),
-    )['spansum'] or 0)/ days
+    )['spansum'] or 0) / days

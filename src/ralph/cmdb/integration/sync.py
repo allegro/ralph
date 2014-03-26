@@ -26,9 +26,11 @@ logger = logging.getLogger(__name__)
 
 
 class ZabbixImporter(BaseImporter):
+
     """
     Zabbix importer
     """
+
     def import_hosts(self):
         """
         Create/update zabbix IDn for all matched CI's
@@ -68,7 +70,7 @@ class ZabbixImporter(BaseImporter):
                 c = db.CIChange()
                 c.type = db.CI_CHANGE_TYPES.ZABBIX_TRIGGER.id
                 c.priority = db.CI_CHANGE_PRIORITY_TYPES.ERROR.id
-                #create zabbix type change as container
+                # create zabbix type change as container
                 ch = db.CIChangeZabbixTrigger()
             else:
                 ch = existing[0]
@@ -97,6 +99,7 @@ class ZabbixImporter(BaseImporter):
 
 
 class JiraEventsImporter(BaseImporter):
+
     """
     Jira integration  - Incidents/Problems importing as CI events.
     """

@@ -27,6 +27,7 @@ from ralph.scan.errors import (
 
 
 class Counts(object):
+
     def __init__(self):
         self.cpu = 0
         self.mem = 0
@@ -34,6 +35,7 @@ class Counts(object):
 
 
 class IBMSSHClient(paramiko.SSHClient):
+
     """SSHClient modified for IBM's broken ssh console."""
 
     def __init__(self, *args, **kwargs):
@@ -193,7 +195,8 @@ def _dev(model_type, pairs, parent, raw):
     mac = pairs.get('MAC Address 1', None)
     if mac:
         device['mac_addresses'] = [mac]
-    name = pairs.get('Name') or pairs.get('Product Name') or device['model_name']
+    name = pairs.get('Name') or pairs.get(
+        'Product Name') or device['model_name']
     device['name'] = name
     firmware = (pairs.get('AMM firmware') or pairs.get('FW/BIOS') or
                 pairs.get('Main Application 2'))
@@ -421,4 +424,3 @@ def scan_address(ip_address, **kwargs):
     result['device'] = device
     result['status'] = 'success'
     return result
-

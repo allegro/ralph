@@ -37,13 +37,14 @@ from ralph.util import presentation
 
 
 class BaseRacksMixin(object):
+
     def set_rack(self):
         rack_identifier = self.kwargs.get('rack')
         if rack_identifier is None:
             self.rack = None
             return
         if (rack_identifier and rack_identifier != 'rack none' and
-            rack_identifier != '-'):
+                rack_identifier != '-'):
             if rack_identifier.startswith('sn-'):
                 rack_identifier = rack_identifier[3:].replace('-', ' ')
                 self.rack = get_object_or_404(
@@ -192,6 +193,7 @@ class RacksScan(Racks, Scan):
 
 
 class RacksDeviceList(SidebarRacks, BaseMixin, BaseDeviceList):
+
     def user_allowed(self):
         has_perm = self.request.user.get_profile().has_perm
         return has_perm(Perm.read_dc_structure, None)

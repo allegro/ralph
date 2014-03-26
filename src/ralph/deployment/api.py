@@ -22,6 +22,7 @@ THROTTLE_AT = settings.API_THROTTLING['throttle_at']
 TIMEFRAME = settings.API_THROTTLING['timeframe']
 EXPIRATION = settings.API_THROTTLING['expiration']
 
+
 class DeploymentResource(MResource):
     venture = fields.ForeignKey(
         'ralph.business.api.VentureResource',

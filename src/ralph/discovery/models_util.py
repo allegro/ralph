@@ -16,7 +16,7 @@ from django.utils.translation import ugettext_lazy as _
 
 class LastSeen(db.Model):
     last_seen = db.DateTimeField(verbose_name=_("last seen"),
-        default=datetime.now)
+                                 default=datetime.now)
 
     class Meta:
         abstract = True
@@ -28,6 +28,7 @@ class LastSeen(db.Model):
 
 
 class SavingUser(db.Model):
+
     class Meta:
         abstract = True
 

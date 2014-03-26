@@ -106,26 +106,26 @@ def _save_device(ip, name, model_name, sn, mac):
 
 def _command(channel, command):
         #print('command', repr(command))
-        buffer = ''
-        channel.sendall('\r\n')
-        while not buffer.endswith('> '):
-            buffer += channel.recv(1024)
-            #print('waiting for prompt', repr(buffer))
-        channel.sendall(command)
-        buffer = ''
-        while command not in buffer:
-            buffer += channel.recv(1024)
-            #print('waiting for command', repr(buffer))
-        channel.sendall('\r\n')
-        buffer = ['']
-        while not buffer[-1].endswith('> '):
-            chunk = channel.recv(1024)
-            #print('chunk', repr(chunk))
-            lines = chunk.split('\n')
-            buffer[-1] += lines[0]
-            buffer.extend(lines[1:])
-        #print('command done')
-        return buffer[1:-1]
+    buffer = ''
+    channel.sendall('\r\n')
+    while not buffer.endswith('> '):
+        buffer += channel.recv(1024)
+        #print('waiting for prompt', repr(buffer))
+    channel.sendall(command)
+    buffer = ''
+    while command not in buffer:
+        buffer += channel.recv(1024)
+        #print('waiting for command', repr(buffer))
+    channel.sendall('\r\n')
+    buffer = ['']
+    while not buffer[-1].endswith('> '):
+        chunk = channel.recv(1024)
+        #print('chunk', repr(chunk))
+        lines = chunk.split('\n')
+        buffer[-1] += lines[0]
+        buffer.extend(lines[1:])
+    #print('command done')
+    return buffer[1:-1]
 
 
 def _run_ssh_onstor(ip):
@@ -231,4 +231,3 @@ def ssh_onstor(**kwargs):
         ).save()
         return False, str(e), kwargs
     return True, name, kwargs
-

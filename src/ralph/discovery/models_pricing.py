@@ -12,6 +12,7 @@ from lck.django.common import nested_commit_on_success
 
 
 class PricingAggregate(Choices):
+
     """The way to aggregate values of a variable."""
 
     _ = Choices.Choice
@@ -23,6 +24,7 @@ class PricingAggregate(Choices):
 
 
 class PricingGroup(db.Model):
+
     """
     A group of devices that are priced according to common rules for the
     given month.
@@ -70,6 +72,7 @@ class PricingGroup(db.Model):
 
 
 class PricingFormula(db.Model):
+
     """
     A formula for pricing a specific component in a specific pricing group.
     """
@@ -112,6 +115,7 @@ class PricingFormula(db.Model):
 
 
 class PricingVariable(db.Model):
+
     """A variable that is used in the pricing formulas."""
 
     name = db.CharField(max_length=64)
@@ -135,10 +139,11 @@ class PricingVariable(db.Model):
 
 
 class PricingValue(db.Model):
+
     """A value of a variable that is used in the pricing formulas. """
 
     device = db.ForeignKey('discovery.Device')
-    variable =  db.ForeignKey('discovery.PricingVariable')
+    variable = db.ForeignKey('discovery.PricingVariable')
     value = db.DecimalField(max_digits=8, decimal_places=2)
 
     class Meta:
@@ -147,4 +152,3 @@ class PricingValue(db.Model):
 
     def __unicode__(self):
         return unicode(self.value)
-

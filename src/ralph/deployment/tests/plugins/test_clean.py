@@ -25,6 +25,7 @@ from ralph.deployment.plugins.clean import clean
 
 
 class CleanPluginTest(TestCase):
+
     def setUp(self):
         device = Device.create(
             ethernets=[('', 'deadbeefcafe', 0)],
@@ -47,7 +48,7 @@ class CleanPluginTest(TestCase):
         IPAddress(address='127.0.0.2', device=device).save()
         share_model = ComponentModel(type=ComponentType.share, name="share")
         share_model.save()
-        share = DiskShare(wwn='x'*33, device=device, model=share_model)
+        share = DiskShare(wwn='x' * 33, device=device, model=share_model)
         share.save()
         DiskShareMount(share=share, device=device).save()
         OperatingSystem.create(os_name='GladOS', dev=device, family='',

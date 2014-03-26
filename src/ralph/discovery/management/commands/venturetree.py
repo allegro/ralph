@@ -13,8 +13,8 @@ from django.core.management.base import BaseCommand
 from ralph.business.models import Venture
 
 
-
 class Command(BaseCommand):
+
     """Generate a tree of all ventures in a dot format."""
 
     help = textwrap.dedent(__doc__).strip()

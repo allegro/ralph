@@ -28,6 +28,7 @@ RESERVED_VARIABLE_NAMES = {'size'}
 
 
 class ModelGroupForm(forms.ModelForm):
+
     class Meta:
         exclude = ['type', 'last_seen', 'created', 'modified']
 
@@ -54,7 +55,7 @@ class ComponentModelGroupForm(ModelGroupForm):
     class Meta(ModelGroupForm.Meta):
         model = ComponentModelGroup
         exclude = ModelGroupForm.Meta.exclude + [
-                'price', 'size_modifier', 'size_unit', 'per_size']
+            'price', 'size_modifier', 'size_unit', 'per_size']
 
     def __init__(self, *args, **kwargs):
         super(ComponentModelGroupForm, self).__init__(*args, **kwargs)
@@ -73,7 +74,7 @@ class ComponentModelGroupForm(ModelGroupForm):
             self.fields['human_price'].initial = price
 
     def save(self, *args, **kwargs):
-        unit =  self.cleaned_data['human_unit']
+        unit = self.cleaned_data['human_unit']
         price = self.cleaned_data['human_price']
         if unit == 'piece':
             self.instance.per_size = False
@@ -95,6 +96,7 @@ class ComponentModelGroupForm(ModelGroupForm):
 
 
 class DeviceModelGroupForm(ModelGroupForm):
+
     class Meta(ModelGroupForm.Meta):
         model = DeviceModelGroup
 
@@ -153,6 +155,7 @@ class PricingDeviceForm(forms.Form):
 
 
 class PricingVariableForm(forms.ModelForm):
+
     class Meta:
         model = PricingVariable
         fields = ('name', 'aggregate')
@@ -188,7 +191,9 @@ PricingVariableFormSet = forms.models.modelformset_factory(
     can_delete=True,
 )
 
+
 class PricingValueForm(forms.ModelForm):
+
     class Meta:
         model = PricingValue
         fields = ('value',)
@@ -210,6 +215,7 @@ PricingValueFormSet = forms.models.modelformset_factory(
 
 
 class PricingFormulaForm(forms.ModelForm):
+
     class Meta:
         model = PricingFormula
         fields = ('component_group', 'formula')
@@ -249,6 +255,7 @@ class PricingFormulaForm(forms.ModelForm):
 
 
 class PricingFormulaFormSetBase(forms.models.BaseModelFormSet):
+
     def __init__(self, group, *args, **kwargs):
         self.group = group
         super(PricingFormulaFormSetBase, self).__init__(*args, **kwargs)
@@ -271,4 +278,3 @@ PricingFormulaFormSet = forms.models.modelformset_factory(
     formset=PricingFormulaFormSetBase,
     can_delete=True,
 )
-

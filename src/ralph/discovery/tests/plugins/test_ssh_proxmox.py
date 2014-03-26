@@ -34,6 +34,7 @@ USAGE: pvecm <COMMAND> [ARGS] [OPTIONS]
 """),
     ])
 
+
 def _connect_ssh_notproxmox(ip):
     return MockSSH([
         ('cat /etc/pve/cluster.cfg', ''),
@@ -44,32 +45,33 @@ def _connect_ssh_notproxmox(ip):
 
 
 class MockMember():
+
     def __init__(self, *args, **kwargs):
         self.sn = 'test'
 
 
 class SshProxmoxTest(TestCase):
+
     @patch('ralph.discovery.plugins.ssh_proxmox._connect_ssh',
-            _connect_ssh_proxmox2)
+           _connect_ssh_proxmox2)
     @patch('ralph.discovery.plugins.ssh_proxmox._get_master',
-            MockMember)
+           MockMember)
     @patch('ralph.discovery.plugins.ssh_proxmox._add_cluster_member',
-            MockMember)
+           MockMember)
     @patch('ralph.discovery.plugins.ssh_proxmox._add_virtual_machines',
-            MockMember)
+           MockMember)
     def test_check_proxmox2(self):
         result = ssh_proxmox.run_ssh_proxmox('127.0.0.1')
         self.assertEqual(result, 'test')
 
     @patch('ralph.discovery.plugins.ssh_proxmox._connect_ssh',
-            _connect_ssh_notproxmox)
+           _connect_ssh_notproxmox)
     @patch('ralph.discovery.plugins.ssh_proxmox._get_master',
-            MockMember)
+           MockMember)
     @patch('ralph.discovery.plugins.ssh_proxmox._add_cluster_member',
-            MockMember)
+           MockMember)
     @patch('ralph.discovery.plugins.ssh_proxmox._add_virtual_machines',
-            MockMember)
+           MockMember)
     def test_check_notproxmox(self):
         with self.assertRaises(ssh_proxmox.NotProxmoxError):
             ssh_proxmox.run_ssh_proxmox('127.0.0.1')
-

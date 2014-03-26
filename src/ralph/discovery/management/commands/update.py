@@ -15,6 +15,7 @@ from ralph.discovery.management.commands import discover
 
 
 class Command(discover.Command):
+
     """Runs discovery update on existing machines in the network. Accepts an
     optional list of network names (as defined in the database). If run without
     arguments, performs full update based on the configuration from the

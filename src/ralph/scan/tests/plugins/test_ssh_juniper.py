@@ -23,6 +23,7 @@ from ralph.scan.tests.plugins.samples.ssh_juniper import (
 
 
 class SSHJuniperPluginTest(TestCase):
+
     def test_get_hostname(self):
         ssh = MockSSH([
             (

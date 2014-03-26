@@ -36,7 +36,9 @@ _PATCHED_TICKETS_ENABLE_NO = False
 
 
 class OPRegisterTest(TestCase):
+
     """Test creating OP changes and registering in the Issue Tracker"""
+
     def test_create_puppet_change(self):
         hostci = CI(name='s11401.dc2', uid='mm-1')
         hostci.type_id = CI_TYPES.DEVICE.id
@@ -47,7 +49,8 @@ class OPRegisterTest(TestCase):
         ).read()
         p.import_contents(changed_yaml)
         unchanged_yaml = open(
-            os.path.join(CURRENT_DIR, 'cmdb/tests/samples/canonical_unchanged.yaml'),
+            os.path.join(
+                CURRENT_DIR, 'cmdb/tests/samples/canonical_unchanged.yaml'),
         ).read()
         p.import_contents(unchanged_yaml)
         chg = CIChange.objects.get(type=CI_CHANGE_TYPES.CONF_AGENT.id)
@@ -133,7 +136,7 @@ class OPRegisterTest(TestCase):
             set([(u'None', u'Device', u'type', None,
                 CI_CHANGE_REGISTRATION_TYPES.NOT_REGISTERED.id),
                 (u'None', u'1', u'id', None,
-                CI_CHANGE_REGISTRATION_TYPES.NOT_REGISTERED.id)])
+                 CI_CHANGE_REGISTRATION_TYPES.NOT_REGISTERED.id)])
         )
         hostci.delete()
         # second case - manual change
@@ -181,6 +184,7 @@ class OPRegisterTest(TestCase):
 
 
 class MockFisheye(object):
+
     def __init__(self):
         pass
 
@@ -193,19 +197,20 @@ class MockFisheye(object):
     def get_changes(self, *args, **kwargs):
         xml = open(
             os.path.join(CURRENT_DIR, 'cmdb',
-            'tests', 'samples', 'fisheye_changesets.xml'),
+                         'tests', 'samples', 'fisheye_changesets.xml'),
         ).read()
         return objectify.fromstring(xml)
 
     def get_details(self, *args, **kwargs):
         xml = open(
             os.path.join(CURRENT_DIR,
-            'cmdb', 'tests', 'samples', 'fisheye_details.xml'),
+                         'cmdb', 'tests', 'samples', 'fisheye_details.xml'),
         ).read()
         return objectify.fromstring(xml)
 
 
 class CIChangeGitTest(TestCase):
+
     """Create Venture/Role and import as CI/CIRelations.
     Import fisheye xml from samples/* files and save into the
     CIChangeGit objects.
@@ -217,6 +222,7 @@ class CIChangeGitTest(TestCase):
     2. Regex
 
     """
+
     def setUp(self):
         v = Venture(symbol='test_venture')
         v.save()
@@ -232,7 +238,7 @@ class CIChangeGitTest(TestCase):
     def load_fisheye_data(self):
         # helper for importing xml data.
         with mock.patch(
-            'ralph.cmdb.integration.lib.fisheye.Fisheye') as Fisheye:
+                'ralph.cmdb.integration.lib.fisheye.Fisheye') as Fisheye:
             Fisheye.side_effect = MockFisheye
         x = pgi(fisheye_class=Fisheye)
         x.import_git()

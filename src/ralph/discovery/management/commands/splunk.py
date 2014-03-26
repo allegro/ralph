@@ -15,6 +15,7 @@ from ralph.discovery.tasks import run_chain
 
 
 class Command(BaseCommand):
+
     """Update billing data from Splunk"""
 
     help = textwrap.dedent(__doc__).strip()

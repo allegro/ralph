@@ -19,6 +19,7 @@ from ralph.scan.plugins.puppet import (
 
 
 class PuppetPluginTest(TestCase):
+
     def setUp(self):
         device = Device.create(
             sn='sn_qweasd_123_1',

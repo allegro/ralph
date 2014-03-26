@@ -98,6 +98,7 @@ class Search(SidebarSearch, BaseMixin):
 
 
 class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
+
     def __init__(self, *args, **kwargs):
         super(SearchDeviceList, self).__init__(*args, **kwargs)
         self.query = None

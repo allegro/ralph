@@ -32,6 +32,7 @@ from ralph.scan.util import find_network
 
 
 class Command(BaseCommand):
+
     """
     Runs an automatic pre-scan of an address, a network of addresses or all
     networks in an environment or data center.

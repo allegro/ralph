@@ -10,6 +10,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+
 def guessmodel(http_family='', snmp_name='', guessmodel=('', ''), *args, **kwargs):
     if guessmodel and guessmodel[0] or guessmodel[1]:
         return guessmodel

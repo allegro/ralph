@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
+
     """
     CMDB asset synchronization and  maintanance app.
     Should be run once per day, to update CI from Ralph assets DB

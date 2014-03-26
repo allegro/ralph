@@ -17,9 +17,9 @@ def check_snmp_port(ip, port=161, timeout=1):
     s.settimeout(timeout)
     try:
         s.connect((ip, port))
-        s.sendall(b'0:\x02\x01\x030\x0f\x02\x02Ji\x02\x03\x00\xff\xe3\x04\x01'\
-                  b'\x04\x02\x01\x03\x04\x100\x0e\x04\x00\x02\x01\x00\x02\x01'\
-                  b'\x00\x04\x00\x04\x00\x04\x000\x12\x04\x00\x04\x00\xa0\x0c'\
+        s.sendall(b'0:\x02\x01\x030\x0f\x02\x02Ji\x02\x03\x00\xff\xe3\x04\x01'
+                  b'\x04\x02\x01\x03\x04\x100\x0e\x04\x00\x02\x01\x00\x02\x01'
+                  b'\x00\x04\x00\x04\x00\x04\x000\x12\x04\x00\x04\x00\xa0\x0c'
                   b'\x02\x027\xf0\x02\x01\x00\x02\x01\x000\x00')
         reply = s.recv(255)
     except socket.error:
@@ -36,7 +36,7 @@ def user_data(auth, snmp_version):
     elif snmp_version in ('3', 3):
         # For snmpv3, auth is a tuple of user, password and encryption key
         snmp_v3_user, snmp_v3_auth, snmp_v3_priv = auth
-        data =  cmdgen.UsmUserData(
+        data = cmdgen.UsmUserData(
             snmp_v3_user,
             snmp_v3_auth,
             snmp_v3_priv,
@@ -75,8 +75,8 @@ def snmp_bulk(hostname, community, oid, snmp_version='2c', timeout=1, attempts=3
 
 def snmp_macs(hostname, community, oid, snmp_version='2c', timeout=1, attempts=3):
     for oid, value in snmp_bulk(hostname, community, oid, snmp_version,
-            timeout, attempts).iteritems():
+                                timeout, attempts).iteritems():
         if isinstance(value, OctetString):
-            mac = ''.join('%02x' % ord(c) for c in  value).upper()
+            mac = ''.join('%02x' % ord(c) for c in value).upper()
             if len(mac) == 12:
                 yield mac

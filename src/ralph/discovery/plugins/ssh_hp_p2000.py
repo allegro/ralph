@@ -20,9 +20,11 @@ def _connect_ssh(ip):
     return network.connect_ssh(ip, SSH_P2000_USER, SSH_P2000_PASSWORD,
                                client=storageworks.HPSSHClient)
 
+
 def _run_ssh_p2000(ip):
     ssh = _connect_ssh(ip)
     return storageworks.run(ssh, ip)
+
 
 @plugin.register(chain='discovery', requires=['ping', 'snmp'])
 def ssh_hp_p2000(**kwargs):
@@ -44,4 +46,3 @@ def ssh_hp_p2000(**kwargs):
     except paramiko.SSHException as e:
         return False, str(e), kwargs
     return True, name, kwargs
-

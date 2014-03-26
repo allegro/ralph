@@ -17,6 +17,7 @@ from optparse import make_option
 
 
 class Command(BaseCommand):
+
     """Create a default configuration file."""
 
     help = textwrap.dedent(__doc__).strip()
@@ -36,7 +37,7 @@ class Command(BaseCommand):
                     dest='user',
                     default=False,
                     help="User specified path for settings"),
-        )
+    )
 
     requires_model_validation = False
 

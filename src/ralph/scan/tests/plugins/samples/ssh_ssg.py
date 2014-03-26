@@ -81,4 +81,3 @@ vsys Root, zone HA, vr trust-vr, vsd 0\r
 bandwidth: physical 1000000kbps, configured egress [gbw 0kbps mbw 0kbps]\r
 configured ingress mbw 0kbps, current bw 0kbps\r
 total allocated gbw 0kbps\r"""
-

@@ -34,5 +34,3 @@ class DeviceLookup(LookupChannel):
             escape(obj.name),
             escape(obj.venture) + '/' + escape(obj.venture_role),
         )
-
-

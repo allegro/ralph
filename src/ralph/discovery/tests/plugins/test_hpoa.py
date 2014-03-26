@@ -2813,18 +2813,18 @@ class HpOaPluginTest(TestCase):
                     'vcmMode': 'false',
                     'vcmUrl': 'empty'},
             'VM': {'DVDDRIVE': 'ABSENT'}},
- 'MP': {'CIMOM': 'false',
-        'FWRI': 3.32,
-        'HWRI': 65.5,
-        'PN': 'BladeSystem c7000 DDR2 Onboard Administrator with KVM',
-        'PRIM': 'true',
-        'SN': 'OB93BP1773    ',
-        'SSO': 'false',
-        'ST': 1,
-        'STE': 'false',
-        'USESTE': 'false',
-        'UUID': '09OB93BP1773    '},
- 'RK_TPLGY': {'ICMB': {'LEFT': Null, 'RIGHT': Null}, 'RUID': '09GB8925V2C9'}}
+            'MP': {'CIMOM': 'false',
+                   'FWRI': 3.32,
+                   'HWRI': 65.5,
+                   'PN': 'BladeSystem c7000 DDR2 Onboard Administrator with KVM',
+                   'PRIM': 'true',
+                   'SN': 'OB93BP1773    ',
+                   'SSO': 'false',
+                   'ST': 1,
+                   'STE': 'false',
+                   'USESTE': 'false',
+                   'UUID': '09OB93BP1773    '},
+            'RK_TPLGY': {'ICMB': {'LEFT': Null, 'RIGHT': Null}, 'RUID': '09GB8925V2C9'}}
 
     def test_encl(self):
         encl = hp_oa.make_encl(self.DATA)
@@ -2833,16 +2833,15 @@ class HpOaPluginTest(TestCase):
         self.assertEquals(encl.model.type, DeviceType.blade_system.id)
         self.assertEquals(encl.model.name, 'HP BladeSystem c7000 Enclosure G2')
 
-
     def test_devices(self):
         encl = hp_oa.make_encl(self.DATA)
         data = nullify(self.DATA)
         hp_oa._add_hp_oa_devices(data['INFRA2']['MANAGERS']['MANAGER'],
-            DeviceType.management, parent=encl)
+                                 DeviceType.management, parent=encl)
         hp_oa._add_hp_oa_devices(data['INFRA2']['SWITCHES']['SWITCH'],
-            DeviceType.switch, parent=encl)
+                                 DeviceType.switch, parent=encl)
         hp_oa._add_hp_oa_devices(data['INFRA2']['BLADES']['BLADE'],
-            DeviceType.blade_server, parent=encl)
+                                 DeviceType.blade_server, parent=encl)
         models = [d.model.name for d in encl.child_set.all()]
         self.maxDiff = None
         self.assertEqual(models, [
@@ -2867,7 +2866,8 @@ class HpOaPluginTest(TestCase):
             'HP ProLiant BL460c G6',
             'HP ProLiant BL460c G6',
         ])
-        macs = [[e.mac for e in d.ethernet_set.all()] for d in encl.child_set.all()]
+        macs = [
+            [e.mac for e in d.ethernet_set.all()] for d in encl.child_set.all()]
         self.assertEqual(macs, [
             [],
             [],
@@ -2892,6 +2892,4 @@ class HpOaPluginTest(TestCase):
         ])
         positions = [d.position for d in encl.child_set.all()]
         self.assertEqual(positions, ['1', '2', '3', '4', '1', '2', '3', '4',
-            '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16'])
-
-
+                                     '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16'])

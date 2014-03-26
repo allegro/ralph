@@ -123,7 +123,7 @@ class AbstractCIChange(AbstractBaseCIChange):
     )
     content_type = models.ForeignKey(
         ContentType, verbose_name=_(
-        "content type"), null=True)
+            "content type"), null=True)
     object_id = models.PositiveIntegerField(
         verbose_name=_("object id"),
         null=True,
@@ -148,6 +148,7 @@ class AbstractCIChange(AbstractBaseCIChange):
 
 
 class CIChange(AbstractCIChange):
+
     @classmethod
     def get_by_content_object(cls, content_object):
         ct = ContentType.objects.get_for_model(content_object)
@@ -230,6 +231,7 @@ class ArchivedPuppetLog(AbstractPuppetLog):
 
 
 class CIEvent(TimeTrackable):
+
     ''' Abstract for CIProblem/CIIncident '''
     ci = models.ForeignKey('CI', null=True, blank=True)
     summary = models.CharField(max_length=1024)

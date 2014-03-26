@@ -140,4 +140,3 @@ def scan_address(ip, **kwargs):
     tpl = get_base_result_template('ssh_cisco_catalyst')
     tpl.update(ret)
     return tpl
-

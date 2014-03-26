@@ -68,6 +68,7 @@ class ApiKeyInline(admin.StackedInline):
 
 
 class ProfileAdmin(UserAdmin):
+
     def groups_show(self):
         return "<br> ".join([g.name for g in self.groups.order_by('name')])
     groups_show.allow_tags = True
