@@ -212,8 +212,8 @@ class DateWidget(forms.DateInput):
         if value == None:
             value = ''
         # TODO: make it generic and use self.build_attrs(attrs)
-        attr_id =  escape(attrs.get('id', "id_{}".format(name)))
-        attr_class =  escape(self.attrs.get('class', ''))
+        attr_id = escape(attrs.get('id', "id_{}".format(name)))
+        attr_class = escape(self.attrs.get('class', ''))
         attr_placeholder = escape(self.attrs.get('placeholder', ''))
         output = ('<input type="text" id="%s" name="%s" class="datepicker %s" '
                   'placeholder="%s" value="%s" data-date-format="yyyy-mm-dd">')
