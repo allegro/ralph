@@ -52,6 +52,10 @@ from django.conf import settings
 from django.contrib import admin
 from ajax_select import urls as ajax_select_urls
 
+
+DISCOVERY_DISABLED = getattr(settings, 'DISCOVERY_DISABLED', False)
+
+
 admin.autodiscover()
 
 v09_api = Api(api_name='v0.9')
@@ -69,6 +73,8 @@ for r in (IPAddressResource, NetworksResource, ModelGroupResource,
           BladeServerResource, VirtualServerResource, DevResource,
           WindowsDeviceResource, DeviceWithPricingResource,
           NetworkKindsResource):
+    if DISCOVERY_DISABLED and r == WindowsDeviceResource:
+        continue
     v09_api.register(r())
 
 # CMDB API
