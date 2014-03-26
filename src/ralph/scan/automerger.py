@@ -29,7 +29,7 @@ from ralph.scan.data import (
 from ralph.scan.util import update_scan_summary
 
 
-SAVE_PRIORITY = 150
+SAVE_PRIORITY = 205
 
 
 logger = logging.getLogger("SCAN")

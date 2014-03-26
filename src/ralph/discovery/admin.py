@@ -24,7 +24,7 @@ from ralph.business.admin import RolePropertyValueInline
 from ralph.ui.forms.network import NetworkForm
 
 
-SAVE_PRIORITY = 200
+SAVE_PRIORITY = 215
 HOSTS_NAMING_TEMPLATE_REGEX = re.compile(r'<[0-9]+,[0-9]+>.*\.[a-zA-Z0-9]+')
 
 
