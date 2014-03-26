@@ -73,8 +73,13 @@ def _connect(ip_address, user, password):
 
 
 def scan_address(ip_address, **kwargs):
-    http_family = kwargs.get('http_family', '')
-    if http_family and http_family.strip().lower() not in ('esx',):
+    http_family = (kwargs.get('http_family', '') or '').strip().lower()
+    snmp_name = (kwargs.get('snmp_name', '') or '').strip().lower()
+    if all((
+        'esx' not in http_family,
+        'esx' not in snmp_name,
+        'vmware' not in snmp_name,
+    )):
         raise NoMatchError('It is not VMWare.')
     user = SETTINGS.get('user')
     password = SETTINGS.get('password')
