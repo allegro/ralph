@@ -11,6 +11,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import ipaddr
 import itertools
 import datetime
 
@@ -49,8 +50,25 @@ def autoscan_environment(environment):
                 environment,
             ),
         )
-    for network in environment.network_set.all():
-        autoscan_network(network, environment.queue.name)
+    ip_numbers = set()
+    for network in environment.network_set.all().order_by(
+        '-min_ip', 'max_ip',
+    ):
+        ip_numbers |= set(range(network.min_ip, network.max_ip + 1))
+        network.last_scan = datetime.datetime.now()
+        network.save()
+    range_start = 0
+    for ip_number in sorted(ip_numbers):
+        if range_start == 0:
+            range_start = ip_number
+        if ip_number + 1 in ip_numbers:
+            continue
+        autoscan_ip_addresses_range(
+            range_start,
+            ip_number,
+            queue_name=environment.queue.name
+        )
+        range_start = 0
 
 
 def autoscan_network(network, queue_name=None):
@@ -71,11 +89,29 @@ def autoscan_network(network, queue_name=None):
         queue.enqueue_call(
             func=_autoscan_group,
             args=(group,),
-            timeout=120,
+            timeout=60,
             result_ttl=0,
         )
     network.last_scan = datetime.datetime.now()
     network.save()
+
+
+def autoscan_ip_addresses_range(min_ip_number, max_ip_number, queue_name):
+    ip_addresses = [
+        ipaddr.IPAddress(ip_number)
+        for ip_number in xrange(min_ip_number, max_ip_number + 1)
+    ]
+    queue = django_rq.get_queue(queue_name)
+    for group in _split_into_groups(
+        ip_addresses,
+        ADDRESS_GROUP_SIZE,
+    ):
+        queue.enqueue_call(
+            func=_autoscan_group,
+            args=(group,),
+            timeout=60,
+            result_ttl=0,
+        )
 
 
 def autoscan_address(address):
