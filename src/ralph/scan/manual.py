@@ -114,16 +114,25 @@ def scan_environment(environment, plugins, automerge=AUTOMERGE_MODE):
                 environment,
             ),
         )
+    ip_numbers = set()
     for min_ip_num, max_ip_num in environment.network_set.values_list(
         'min_ip', 'max_ip',
-    ):
+    ).order_by('-min_ip', 'max_ip'):
+        ip_numbers |= set(range(min_ip_num, max_ip_num + 1))
+    range_start = 0
+    for ip_number in sorted(ip_numbers):
+        if range_start == 0:
+            range_start = ip_number
+        if ip_number + 1 in ip_numbers:
+            continue
         scan_ip_addresses_range(
-            min_ip_num,
-            max_ip_num,
+            range_start,
+            ip_number,
             plugins,
             queue_name=environment.queue.name,
             automerge=automerge,
         )
+        range_start = 0
 
 
 def _run_plugins(address, plugins, job, **kwargs):
