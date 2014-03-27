@@ -20,7 +20,7 @@ def method_check(self, request, allowed=None):
         response['Allow'] = allows
         raise ImmediateHttpResponse(response=response)
 
-    if not request_method in allowed:
+    if request_method not in allowed:
         response = http.HttpMethodNotAllowed(allows)
         response['Allow'] = allows
         raise ImmediateHttpResponse(response=response)

@@ -86,7 +86,7 @@ class BaseUserPreferenceEdit(BaseUser):
     def get_context_data(self, *args, **kwargs):
         ret = super(BaseUserPreferenceEdit, self).get_context_data(**kwargs)
         ret.update({
-            'section': '%s - %s' % (_("User Preference"),  self.header),
+            'section': '%s - %s' % (_("User Preference"), self.header),
             'form': self.form,
             'action_url': reverse('user_home_page', args=[]),
             'header': self.header

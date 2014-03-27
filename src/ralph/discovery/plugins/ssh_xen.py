@@ -74,7 +74,6 @@ def get_disks(ssh):
     device = None
     type_ = None
     device = None
-    size = None
     uuid = None
     for line in stdout:
         if not line.strip():

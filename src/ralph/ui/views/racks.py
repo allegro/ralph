@@ -350,13 +350,11 @@ class RacksRack(Racks, Base):
         )
         if self.rack.model.type == DeviceType.rack.id:
             slots_set = [
-                (self.rack, self.get_slots(self.rack))
-            ]
+                (self.rack, self.get_slots(self.rack))]
         else:
             slots_set = [(rack, self.get_slots(rack)) for
                          rack in self.rack.child_set.filter(
-                             model__type=DeviceType.rack.id
-                         )]
+                         model__type=DeviceType.rack.id)]
         ret.update({
             'slots_set': slots_set,
         })

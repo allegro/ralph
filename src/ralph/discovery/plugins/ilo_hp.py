@@ -26,8 +26,11 @@ from ralph.discovery.models import (
 
 
 ILO_USER, ILO_PASSWORD = settings.ILO_USER, settings.ILO_PASSWORD
-SAVE_PRIORITY = 4   # FIXME: was 0. I'm not sure why, it's for sure better
-                    # than snmp.
+
+# FIXME: was 0. I'm not sure why, it's for sure better
+# than snmp.
+
+SAVE_PRIORITY = 4
 
 
 def make_device(ilo, ip):

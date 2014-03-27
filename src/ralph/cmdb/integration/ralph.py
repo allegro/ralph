@@ -54,5 +54,5 @@ class AssetChangeImporter(BaseImporter):
                     ch.registration_type = chdb.CI_CHANGE_REGISTRATION_TYPES.WAITING.id
                 ch.save()
                 register_issue_signal.send(sender=self, change_id=ch.id)
-            except IntegrityError, e:
+            except IntegrityError:
                 logger.debug('Skipping already imported: %s' % x)

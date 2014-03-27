@@ -9,10 +9,11 @@ from __future__ import unicode_literals
 import re
 
 from ralph.util import units, parse
-from ralph.discovery.models import (Memory, Processor, ComponentModel,
-                                    ComponentType, Storage, DISK_VENDOR_BLACKLIST, DISK_PRODUCT_BLACKLIST,
-                                    Device, DeviceType
-                                    )
+from ralph.discovery.models import (
+    Memory, Processor, ComponentModel,
+    ComponentType, Storage, DISK_VENDOR_BLACKLIST, DISK_PRODUCT_BLACKLIST,
+    Device, DeviceType
+)
 
 
 SMBIOS_BANNER = 'ID    SIZE TYPE'
@@ -318,8 +319,7 @@ def handle_megaraid(dev, disks, priority=0):
         disk['vendor'], disk['product'], disk['serial_number'] = \
             _handle_inquiry_data(
                 disk.get('inquiry_data', ''),
-                controller_handle, disk_handle
-            )
+                controller_handle, disk_handle)
 
         if not disk.get('serial_number') or disk.get('media_type') not in (
                 'Hard Disk Device', 'Solid State Device'):

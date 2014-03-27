@@ -1140,7 +1140,7 @@ class JiraChangesEdit(BaseCIDetails, DataTableMixin):
         super(JiraChangesEdit, self).initialize_vars()
         self.jira_changes = []
 
-    def get_context_data(self,  *args, **kwargs):
+    def get_context_data(self, *args, **kwargs):
         ret = super(JiraChangesEdit, self).get_context_data(**kwargs)
         ret.update(
             super(JiraChangesEdit, self).get_context_data_paginator(

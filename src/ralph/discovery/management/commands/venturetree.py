@@ -23,7 +23,7 @@ class Command(BaseCommand):
 
     def handle(self, **options):
         def norm(v):
-            return re.sub(r'[^a-zA-Z0-9]', '_',  v.symbol).lower()
+            return re.sub(r'[^a-zA-Z0-9]', '_', v.symbol).lower()
         print('digraph Ventures {')
         print(' overlap=prism;')
         print(' root [label="Ventures"];')

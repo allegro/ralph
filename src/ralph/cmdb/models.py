@@ -55,7 +55,6 @@ from ralph.cmdb.models_changes import (
     CIEvent,
     CIProblem,
     CIIncident,
-    JiraChanges,
 
     ArchivedCIChangeZabbixTrigger,
     ArchivedCIChangeCMDBHistory,
@@ -126,7 +125,7 @@ __all__ = [
 ]
 
 # hook signals, don't remove this.
-import ralph.cmdb.models_signals
+import ralph.cmdb.models_signals  # noqa
 
 
 class CILookup(LookupChannel):

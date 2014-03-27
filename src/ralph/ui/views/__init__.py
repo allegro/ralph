@@ -36,10 +36,10 @@ def unlock_field(request):
     device = get_object_or_404(Device, id=device_id)
     field_name = request.POST.get('field', '')
     try:
-        field = getattr(device, field_name + '_id')
+        getattr(device, field_name + '_id')
     except AttributeError:
         try:
-            field = getattr(device, field_name)
+            getattr(device, field_name)
         except AttributeError:
             raise Http404("Wrong field name.")
     else:

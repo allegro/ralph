@@ -97,7 +97,7 @@ class IPAddressResource(MResource):
             return bundle
         try:
             network = self.fields['network'].fk_resource.instance
-        except AttributeError as e:
+        except AttributeError:
             return bundle
         bundle.data['network_details'] = {
             'name': network.name if network else '',

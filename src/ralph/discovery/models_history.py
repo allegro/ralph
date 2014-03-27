@@ -440,7 +440,7 @@ def component_model_pre_save(sender, instance, raw, using, **kwargs):
 
 
 @receiver(pre_save, sender=DeviceModelGroup, dispatch_uid='ralph.history')
-def device_model_pre_save(sender, instance, raw, using, **kwargs):
+def device_modelgroup_pre_save(sender, instance, raw, using, **kwargs):
     """
     A hook for creating ``HistoryModelChange`` entries when a device
     model group changes.
@@ -457,7 +457,7 @@ def device_model_pre_save(sender, instance, raw, using, **kwargs):
 
 
 @receiver(pre_save, sender=ComponentModelGroup, dispatch_uid='ralph.history')
-def component_model_pre_save(sender, instance, raw, using, **kwargs):
+def component_modelgroup_pre_save(sender, instance, raw, using, **kwargs):
     """
     A hook for creating ``HistoryModelChange`` entries when a component
     model group changes.

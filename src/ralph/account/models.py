@@ -10,20 +10,15 @@ import functools
 
 
 from django.conf import settings
-from django.contrib.auth.models import User, Group
-from django.contrib.auth.signals import user_logged_in
+from django.contrib.auth.models import Group
 from django.core.urlresolvers import reverse, NoReverseMatch
 from django.db import models as db
-from django.db.utils import DatabaseError
-from django.dispatch import receiver
-from django.http import HttpResponseForbidden,  HttpResponseRedirect
+from django.http import HttpResponseForbidden
 from django.utils.translation import ugettext_lazy as _
-from django.shortcuts import redirect
 
 from dj.choices import Choices
 from dj.choices.fields import ChoiceField
 from lck.django.activitylog.models import MonitoredActivity
-from lck.django.choices import Choices
 from lck.django.common.models import TimeTrackable, EditorTrackable
 from lck.django.profile.models import (
     BasicInfo,

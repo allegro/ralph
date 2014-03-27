@@ -61,7 +61,7 @@ class CiscoSSHClient(paramiko.SSHClient):
         except socket.timeout:
             raise AuthError('Authentication failed.')
         else:
-            if not '> ' in chunk and not chunk.strip().startswith('asa'):
+            if '> ' not in chunk and not chunk.strip().startswith('asa'):
                 raise ConsoleError('Expected system prompt, got %r.' % chunk)
 
     def asa_command(self, command):

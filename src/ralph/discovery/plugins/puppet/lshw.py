@@ -20,8 +20,9 @@ SAVE_PRIORITY = 53
 @nested_commit_on_success
 def parse_lshw(data, facts, is_virtual):
     data = uncompress_base64_data(data)
-    sn = facts.get('serialnumber')  # use a Puppet fact because lshw gives
-                                    # wrong serial numbers
+    # use a Puppet fact because lshw gives
+    # wrong serial numbers
+    sn = facts.get('serialnumber')
     if sn in SERIAL_BLACKLIST:
         sn = None
     try:

@@ -239,7 +239,7 @@ class DeviceForm(forms.ModelForm):
 
 class ProcessorInline(ForeignKeyAutocompleteTabularInline):
     model = m.Processor
-    #readonly_fields = ('label', 'index', 'speed')
+    # readonly_fields = ('label', 'index', 'speed')
     exclude = ('created', 'modified')
     extra = 0
     related_search_fields = {
@@ -249,7 +249,6 @@ class ProcessorInline(ForeignKeyAutocompleteTabularInline):
 
 class MemoryInline(ForeignKeyAutocompleteTabularInline):
     model = m.Memory
-    #readonly_fields = ('label', 'index', 'size', 'speed')
     exclude = ('created', 'modified')
     extra = 0
     related_search_fields = {
@@ -259,7 +258,6 @@ class MemoryInline(ForeignKeyAutocompleteTabularInline):
 
 class EthernetInline(ForeignKeyAutocompleteTabularInline):
     model = m.Ethernet
-    #readonly_fields = ('label', 'index', 'mac', 'speed')
     exclude = ('created', 'modified')
     extra = 0
     related_search_fields = {
