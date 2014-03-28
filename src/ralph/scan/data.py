@@ -49,7 +49,7 @@ UNIQUE_FIELDS_FOR_MERGER = {
     'disk_shares': [('device', 'share')],
     'installed_software': [('device', 'path')],
 }
-SAVE_PRIORITY = 210
+SAVE_PRIORITY = 215
 
 
 def _update_addresses(device, address_data, is_management=False):

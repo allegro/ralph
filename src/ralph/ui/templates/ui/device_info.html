@@ -76,6 +76,14 @@
                   {{ device.parent.name }}</a></td>
         </tr>
         {% endif %}
+        {% if device.logical_parent %}
+        <tr>
+            <th>Logical parent device</th>
+            <td><a href="{{ device.logical_parent.id }}"
+                 >{{ device.logical_parent|device_icon }}
+                  {{ device.logical_parent.name }}</a></td>
+        </tr>
+        {% endif %}
         {% if device.model.type == dt.blade_server.id %}
         <tr>
             <th>Blade System</th>
