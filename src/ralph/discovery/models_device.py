@@ -289,12 +289,21 @@ class Device(
     )
     parent = db.ForeignKey(
         'self',
-        verbose_name=_("parent device"),
+        verbose_name=_("physical parent device"),
         on_delete=db.SET_NULL,
         null=True,
         blank=True,
         default=None,
         related_name="child_set",
+    )
+    logical_parent = db.ForeignKey(
+        'self',
+        verbose_name=_("logical parent device"),
+        on_delete=db.SET_NULL,
+        null=True,
+        blank=True,
+        default=None,
+        related_name="logicalchild_set",
     )
     model = db.ForeignKey(
         DeviceModel,
