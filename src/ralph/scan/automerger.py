@@ -172,19 +172,25 @@ def _save_job_results(job_id, start_ts):
         data = merge_data(garbage)
         selected_data = _select_data(data, external_priorities)
         if all((
-            any((
-                selected_data.get('serial_number'),
-                selected_data.get('mac_addresses', []),
-            )),
-            any((
-                selected_data.get('model_name'),
-                selected_data.get('type'),
-            )),
+            any(
+                (
+                    selected_data.get('serial_number'),
+                    selected_data.get('mac_addresses', []),
+                )
+            ),
+            any(
+                (
+                    selected_data.get('model_name'),
+                    selected_data.get('type'),
+                )
+            ),
         )):
             device_from_data(selected_data, save_priority=SAVE_PRIORITY)
     # mark this scan results
     update_scan_summary(job)
     # run postprocess plugins...
+    if not job.args:
+        return  # it's from API... ingnore postprocess
     for plugin_name in getattr(settings, 'SCAN_POSTPROCESS_ENABLED_JOBS', []):
         try:
             module = import_module(plugin_name)
