@@ -359,10 +359,16 @@ def get_device_data(device):
             ).raw if part.model else '',
         } for part in device.genericcomponent_set.order_by('sn')
     ]
-    data['subdevices'] = [
-        get_device_data(dev)
-        for dev in device.child_set.order_by('id')
-    ]
+    if device.model and device.model.type in (DeviceType.switch_stack,):
+        data['subdevices'] = [
+            get_device_data(dev)
+            for dev in device.logicalchild_set.order_by('id')
+        ]
+    else:
+        data['subdevices'] = [
+            get_device_data(dev)
+            for dev in device.child_set.order_by('id')
+        ]
     if device.operatingsystem_set.exists():
         system = device.operatingsystem_set.all()[0]
         data['system_label'] = system.label
@@ -400,7 +406,9 @@ def set_device_data(device, data, save_priority=SAVE_PRIORITY):
             setattr(device, field_name, data[key_name])
     if 'model_name' in data:
         try:
-            model_type = DeviceType.from_name(data.get('type', 'unknown'))
+            model_type = DeviceType.from_name(
+                data.get('type', 'unknown').replace(' ', '_').lower(),
+            )
         except ValueError:
             model_type = ComponentType.unknown
         try:
@@ -654,7 +662,13 @@ def set_device_data(device, data, save_priority=SAVE_PRIORITY):
                 subdevice_data,
                 save_priority=save_priority,
             )
-            subdevice.parent = device
+            if (
+                device.model and
+                device.model.type in (DeviceType.switch_stack,)
+            ):
+                subdevice.logical_parent = device
+            else:
+                subdevice.parent = device
             subdevice.save(priority=save_priority)
             subdevice_ids.append(subdevice.id)
         for subdevice in device.child_set.exclude(id__in=subdevice_ids):
@@ -715,7 +729,11 @@ def merge_data(*args, **kwargs):
         repeated = {}
         for source, value in values.iteritems():
             repeated.setdefault(unicode(value), []).append(source)
-        if only_multiple and len(repeated) <= 1:
+        if (
+            only_multiple and
+            len(repeated) <= 1 and
+            key not in ('model_name', 'type')
+        ):
             continue
         for value_str, sources in repeated.iteritems():
             sources.sort()

@@ -129,6 +129,17 @@
                 </tr>
             {% endif %}
         {% endfor %}
+
+        {% for child in device.logicalchild_set.all %}
+            {% if not child.deleted %}
+                <tr>
+                    <th>Logical child device</th>
+                    <td><a href="{{ child.id }}">
+                        {{ child|device_icon }}{{ child.name }}</a>
+                    </td>
+                </tr>
+            {% endif %}
+        {% endfor %}
     </tbody>
 </table>
 </div>
