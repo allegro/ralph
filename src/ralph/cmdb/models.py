@@ -112,6 +112,7 @@ __all__ = [
     'CIEvent',
     'CIProblem',
     'CIIncident',
+    'JiraChanges',
 
     # audits
     'Auditable',
@@ -126,7 +127,7 @@ __all__ = [
 ]
 
 # hook signals, don't remove this.
-import ralph.cmdb.models_signals
+import ralph.cmdb.models_signals  # noqa
 
 
 class CILookup(LookupChannel):

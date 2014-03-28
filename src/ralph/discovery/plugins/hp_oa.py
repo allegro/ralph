@@ -17,9 +17,8 @@ import lck.xml.converters
 from lxml import etree as ET
 
 from ralph.discovery.models import (IPAddress, Device, DeviceType,
-        SERIAL_BLACKLIST, ComponentType, GenericComponent, ComponentModel)
+                                    SERIAL_BLACKLIST, ComponentType, GenericComponent, ComponentModel)
 from ralph.util import network, plugin, Eth
-
 
 
 SAVE_PRIORITY = 5
@@ -30,10 +29,11 @@ def _nullify(value):
         raise ValueError
     return Null
 
+
 def hp_xmldata(hostname, timeout=10):
     try:
         url = urlopen("https://{}/xmldata?item=all".format(hostname),
-            timeout=timeout)
+                      timeout=timeout)
         try:
             data = url.read()
         finally:
@@ -81,7 +81,8 @@ def _add_hp_oa_devices(devices, device_type, parent=None):
     if devices and not isinstance(devices, list):
         devices = [devices]
     for i, device in enumerate(devices):
-        bay = device['BAY']['CONNECTION2']['BLADESYMBOLICNUMBER'] or str(device['BAY']['CONNECTION'])
+        bay = device['BAY']['CONNECTION2'][
+            'BLADESYMBOLICNUMBER'] or str(device['BAY']['CONNECTION'])
         name = device['PN'].strip() or device['SPN'].strip()
         if not name.startswith('HP'):
             name = 'HP ' + name
@@ -99,15 +100,17 @@ def _add_hp_oa_devices(devices, device_type, parent=None):
         except ValueError:
             continue
 
-        ip_address, created = IPAddress.concurrent_get_or_create(address=str(ip))
+        ip_address, created = IPAddress.concurrent_get_or_create(
+            address=str(ip))
         if created:
             ip_address.hostname = network.hostname(ip_address.address)
             ip_address.snmp_name = name
-            ip_address.save(update_last_seen=True) # no priorities for IP addresses
+            # no priorities for IP addresses
+            ip_address.save(update_last_seen=True)
 
         if device_type == DeviceType.management:
             ip_address.is_management = True
-            if  parent and not parent.management:
+            if parent and not parent.management:
                 parent.management = ip_address
                 parent.save(priority=SAVE_PRIORITY)
             model, mcreated = ComponentModel.create(
@@ -126,7 +129,7 @@ def _add_hp_oa_devices(devices, device_type, parent=None):
             if ip:
                 ip_address.is_management = True
                 ip_address.device = parent
-                ip_address.save() # no priorities for IP addresses
+                ip_address.save()  # no priorities for IP addresses
 
             continue
 
@@ -143,15 +146,16 @@ def _add_hp_oa_devices(devices, device_type, parent=None):
         if ip and device_type in (DeviceType.switch, DeviceType.fibre_channel_switch):
             # FIXME: isn't this IP address already created as `ip_address`
             # above?
-            ip_addr, ip_created = IPAddress.concurrent_get_or_create(address=ip)
+            ip_addr, ip_created = IPAddress.concurrent_get_or_create(
+                address=ip)
             if ip_addr.device:
                 dev = ip_addr.device
                 dev.parent = parent
 
         if dev is None:
             dev = Device.create(sn=sn, model_name=name, model_type=device_type,
-                            ethernets=ethernets, parent=parent,
-                            priority=SAVE_PRIORITY)
+                                ethernets=ethernets, parent=parent,
+                                priority=SAVE_PRIORITY)
 
         if firmware:
             dev.hard_firmware = firmware
@@ -171,7 +175,9 @@ def _add_hp_oa_devices(devices, device_type, parent=None):
             dev.chassis_position = i + 1
         dev.save(update_last_seen=True, priority=SAVE_PRIORITY)
         ip_address.device = dev
-        ip_address.save(update_last_seen=True) # no priorities for IP addresses
+        # no priorities for IP addresses
+        ip_address.save(update_last_seen=True)
+
 
 def make_encl(data):
     encl_name = data['INFRA2']['PN'].strip()
@@ -187,6 +193,7 @@ def make_encl(data):
     )
     encl.save(update_last_seen=True, priority=SAVE_PRIORITY)
     return encl
+
 
 @plugin.register(chain='discovery', requires=['ping', 'http'])
 def hp_oa_xml(**kwargs):
@@ -209,9 +216,9 @@ def hp_oa_xml(**kwargs):
         return False, 'incompatible answer.', kwargs
     encl = make_encl(data)
     _add_hp_oa_devices(data['INFRA2']['MANAGERS']['MANAGER'],
-        DeviceType.management, parent=encl)
+                       DeviceType.management, parent=encl)
     _add_hp_oa_devices(data['INFRA2']['SWITCHES']['SWITCH'],
-        DeviceType.switch, parent=encl)
+                       DeviceType.switch, parent=encl)
     _add_hp_oa_devices(data['INFRA2']['BLADES']['BLADE'],
-        DeviceType.blade_server, parent=encl)
+                       DeviceType.blade_server, parent=encl)
     return True, name, kwargs

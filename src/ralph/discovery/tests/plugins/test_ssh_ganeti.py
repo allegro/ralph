@@ -21,7 +21,9 @@ host3.dc1         gnt10.dc.local gnt20.dc       127.0.1.32   99:df:cc:90:33:09
 host4.dc1         gnt111222.dc   gnt222111.dc   -            99:df:cc:90:33:aa
 """
 
+
 class SshGanetiTest(TestCase):
+
     def setUp(self):
         self._create_cluster_master()
         self._create_hypervisors()
@@ -138,4 +140,3 @@ class SshGanetiTest(TestCase):
             dev_3.ipaddress_set.filter(address='127.0.1.32').exists(),
         )
         self.assertFalse(dev_4.parent_id)
-

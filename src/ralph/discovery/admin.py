@@ -55,6 +55,7 @@ copy_network.short_description = "Copy network"
 
 
 class NetworkAdmin(ModelAdmin):
+
     def terms(self):
         return ", ".join([n.name for n in self.terminators.order_by('name')])
     terms.short_description = _("network terminators")
@@ -100,6 +101,7 @@ admin.site.register(m.DataCenter, DataCenterAdmin)
 
 
 class EnvironmentAdminForm(forms.ModelForm):
+
     class Meta:
         model = m.Environment
 
@@ -144,6 +146,7 @@ admin.site.register(m.DiscoveryQueue, DiscoveryQueueAdmin)
 
 
 class IPAddressForm(forms.ModelForm):
+
     class Meta:
         model = m.IPAddress
 
@@ -184,6 +187,7 @@ class ChildDeviceInline(ForeignKeyAutocompleteTabularInline):
 
 
 class DeviceModelAdmin(ModelAdmin):
+
     def count(self):
         return m.Device.objects.filter(model=self).count()
 
@@ -201,6 +205,7 @@ class DeviceModelInline(admin.TabularInline):
 
 
 class DeviceModelGroupAdmin(ModelAdmin):
+
     def count(self):
         return m.Device.objects.filter(model__group=self).count()
 
@@ -211,6 +216,7 @@ admin.site.register(m.DeviceModelGroup, DeviceModelGroupAdmin)
 
 
 class DeviceForm(forms.ModelForm):
+
     class Meta:
         model = m.Device
 
@@ -233,7 +239,7 @@ class DeviceForm(forms.ModelForm):
 
 class ProcessorInline(ForeignKeyAutocompleteTabularInline):
     model = m.Processor
-    #readonly_fields = ('label', 'index', 'speed')
+    # readonly_fields = ('label', 'index', 'speed')
     exclude = ('created', 'modified')
     extra = 0
     related_search_fields = {
@@ -243,7 +249,6 @@ class ProcessorInline(ForeignKeyAutocompleteTabularInline):
 
 class MemoryInline(ForeignKeyAutocompleteTabularInline):
     model = m.Memory
-    #readonly_fields = ('label', 'index', 'size', 'speed')
     exclude = ('created', 'modified')
     extra = 0
     related_search_fields = {
@@ -253,7 +258,6 @@ class MemoryInline(ForeignKeyAutocompleteTabularInline):
 
 class EthernetInline(ForeignKeyAutocompleteTabularInline):
     model = m.Ethernet
-    #readonly_fields = ('label', 'index', 'mac', 'speed')
     exclude = ('created', 'modified')
     extra = 0
     related_search_fields = {
@@ -385,6 +389,7 @@ class ComponentModelInline(admin.TabularInline):
 
 
 class ComponentModelAdmin(ModelAdmin):
+
     def count(self):
         return self.get_count()
 
@@ -407,6 +412,7 @@ admin.site.register(m.GenericComponent, GenericComponentAdmin)
 
 
 class ComponentModelGroupAdmin(ModelAdmin):
+
     def count(self):
         return sum([
             m.Memory.objects.filter(model__group=self).count(),

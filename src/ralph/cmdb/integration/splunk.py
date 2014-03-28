@@ -16,6 +16,7 @@ SPLUNK_HOST = settings.SPLUNK_LOGGER_HOST
 
 
 class SplunkLogger(object):
+
     def __init__(self):
         if not SPLUNK_HOST:
             raise ImproperlyConfigured(

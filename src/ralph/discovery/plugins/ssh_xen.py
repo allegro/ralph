@@ -65,18 +65,17 @@ def get_disks(ssh):
     """Get a dict of lists of disks of virtual machines."""
 
     stdin, stdout, stderr = ssh.exec_command('sudo xe vm-disk-list '
-            'vdi-params=sr-uuid,uuid,virtual-size '
-            'vbd-params=vm-name-label,type,device '
-            '--multiple')
+                                             'vdi-params=sr-uuid,uuid,virtual-size '
+                                             'vbd-params=vm-name-label,type,device '
+                                             '--multiple')
     disks = collections.defaultdict(list)
     vm = None
     sr_uuid = None
     device = None
     type_ = None
     device = None
-    size = None
     uuid = None
-    for line in  stdout:
+    for line in stdout:
         if not line.strip():
             continue
         key, value = (x.strip() for x in line.split(':', 1))
@@ -92,7 +91,7 @@ def get_disks(ssh):
             uuid = value
         elif key.startswith('virtual-size '):
             if type_ in {'Disk'}:
-                disks[vm].append((uuid, sr_uuid, int(int(value)/1024/1024),
+                disks[vm].append((uuid, sr_uuid, int(int(value) / 1024 / 1024),
                                   device))
     return disks
 
@@ -101,7 +100,7 @@ def get_srs(ssh):
     """Get a dict of disk SRs on the hypervisor."""
 
     stdin, stdout, stderr = ssh.exec_command('sudo xe sr-list '
-            'params=uuid,physical-size,type')
+                                             'params=uuid,physical-size,type')
     srs = {}
     size = None
     uuid = None
@@ -112,7 +111,7 @@ def get_srs(ssh):
         if key.startswith('uuid '):
             uuid = value
         elif key.startswith('physical-size '):
-            size = int(int(value)/1024/1024)
+            size = int(int(value) / 1024 / 1024)
         elif key.startswith('type '):
             if value in {'lvm'} and size > 0:
                 srs[uuid] = size
@@ -123,21 +122,21 @@ def get_running_vms(ssh):
     """Get a set of virtual machines running on the host."""
 
     stdin, stdout, stderr = ssh.exec_command('sudo xe vm-list '
-            'params=uuid,name-label,power-state,VCPUs-number,memory-actual')
+                                             'params=uuid,name-label,power-state,VCPUs-number,memory-actual')
     data = stdout.read()
     vms = set()
     for vm_data in data.split('\n\n'):
         info = parse.pairs(lines=[
             line.replace('( RO)',
                          '').replace('( RW)',
-                         '').replace('(MRO)',
-                         '').strip()
+                                     '').replace('(MRO)',
+                                                 '').strip()
             for line in vm_data.splitlines()])
         if not info:
             continue
         label = info['name-label']
         if (label.startswith('Transfer VM for') or
-            label.startswith('Control domain on host:')):
+                label.startswith('Control domain on host:')):
             # Skip the helper virtual machines
             continue
         power = info['power-state']
@@ -145,7 +144,7 @@ def get_running_vms(ssh):
             # Only include the running virtual machines
             continue
         cores = int(info['VCPUs-number'])
-        memory = int(int(info['memory-actual'])/1024/1024)
+        memory = int(int(info['memory-actual']) / 1024 / 1024)
         uuid = info['uuid']
         vms.add((label, uuid, cores, memory))
     return vms
@@ -163,15 +162,15 @@ def run_ssh_xen(ipaddr, parent):
 
     for dev in parent.child_set.exclude(
             sn__in=[vm_uuid for (vm_name, vm_uuid, vm_cores, vm_memory) in vms]
-        ):
+    ):
         dev.deleted = True
         dev.save(priority=SAVE_PRIORITY)
     for vm_name, vm_uuid, vm_cores, vm_memory in vms:
         ethernets = [Eth('vif %d' % i, mac, 0) for
                      i, mac in enumerate(macs.get(vm_name, []))]
         dev = Device.create(ethernets=ethernets, parent=parent, sn=vm_uuid,
-                model_type=DeviceType.virtual_server,
-                model_name='XEN Virtual Server', priority=SAVE_PRIORITY)
+                            model_type=DeviceType.virtual_server,
+                            model_name='XEN Virtual Server', priority=SAVE_PRIORITY)
         dev.name = vm_name
         dev.save(priority=SAVE_PRIORITY)
         cpu_model, cpu_model_created = ComponentModel.create(
@@ -188,7 +187,7 @@ def run_ssh_xen(ipaddr, parent):
                 cpu.model = cpu_model
                 cpu.family = 'XEN Virtual'
                 cpu.save(priority=SAVE_PRIORITY)
-        for cpu in dev.processor_set.filter(index__gt=vm_cores+1):
+        for cpu in dev.processor_set.filter(index__gt=vm_cores + 1):
             cpu.delete()
         mem_model, mem_model_created = ComponentModel.create(
             ComponentType.memory,
@@ -217,7 +216,8 @@ def run_ssh_xen(ipaddr, parent):
                     share = DiskShare.objects.get(wwn=wwn)
                     wwns.append(wwn)
                 except DiskShare.DoesNotExist:
-                    logger.warning('A share with serial %r does not exist.' % wwn)
+                    logger.warning(
+                        'A share with serial %r does not exist.' % wwn)
                     DiscoveryWarning(
                         message="A share with serial %r does not exist." % wwn,
                         plugin=__name__,
@@ -226,7 +226,7 @@ def run_ssh_xen(ipaddr, parent):
                     ).save()
                     continue
                 mount, created = DiskShareMount.concurrent_get_or_create(
-                        share=share, device=dev)
+                    share=share, device=dev)
                 mount.is_virtual = True
                 mount.server = parent
                 mount.size = mount_size
@@ -245,7 +245,7 @@ def run_ssh_xen(ipaddr, parent):
                 storage.label = device
                 storage.save(priority=SAVE_PRIORITY)
         for disk in dev.storage_set.exclude(sn__in={
-            uuid for uuid, x , y , z in vm_disks
+            uuid for uuid, x, y, z in vm_disks
         }):
             disk.delete()
         for ds in dev.disksharemount_set.filter(
@@ -287,4 +287,3 @@ def ssh_xen(**kwargs):
         ).save()
         return False, str(e), kwargs
     return True, name, kwargs
-

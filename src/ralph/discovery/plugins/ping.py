@@ -20,7 +20,8 @@ def ping(**kwargs):
     else:
         is_up = True
         message = 'up!'
-        ip_address, created = IPAddress.concurrent_get_or_create(address=str(ip))
+        ip_address, created = IPAddress.concurrent_get_or_create(
+            address=str(ip))
         hostname = network.hostname(ip)
         if hostname:
             ip_address.hostname = hostname
@@ -28,4 +29,3 @@ def ping(**kwargs):
         kwargs['community'] = ip_address.snmp_community
         ip_address.save(update_last_seen=True)
     return is_up, message, kwargs
-

@@ -25,26 +25,32 @@ class Error(Exception):
 
 
 class DisallowedRecordTypeError(Error):
+
     """Trying to create a record which is not a of allowed types."""
 
 
 class IncorrectLengthRowError(Error):
+
     """Trying to unpack row."""
 
 
 class EmptyRecordValueError(Error):
+
     """Trying to create record from empty values."""
 
 
 class DomainDoesNotExistError(Error):
+
     """Trying to create record with domain that doesn't exist in Ralph."""
 
 
 class InvalidAddressError(Error):
+
     """Trying to create record from invalid IP address."""
 
 
 class Command(BaseCommand):
+
     """
     Append DNS records form csv file to existing Domain
     record should be in this format::
@@ -136,10 +142,10 @@ class Command(BaseCommand):
                         soa_domain.type = 'MASTER'
                         soa_domain.save()
                         print('Domain {} of type {} created (sn: {}).'.format(
-                                soa_domain.name,
-                                soa_domain.type,
-                                soa_domain.notified_serial,
-                            )
+                            soa_domain.name,
+                            soa_domain.type,
+                            soa_domain.notified_serial,
+                        )
                         )
                     type = 'SOA'
                     if options['soa_content']:
@@ -150,7 +156,6 @@ class Command(BaseCommand):
                     type = 'PTR'
                     content = name
                     self.create_record(soa_domain, revname, type, content)
-
 
     def create_record(self, domain, name, type, content):
         record, created = Record.objects.get_or_create(

@@ -13,6 +13,7 @@ from ralph.dnsedit.models import DHCPEntry, DNSHistory, DHCPServer, DNSServer
 
 
 class DHCPEntryAdmin(ModelAdmin):
+
     def ip_address(self):
         return self.ip
     ip_address.short_description = _("IP address")
@@ -51,4 +52,3 @@ class DNSServerAdmin(ModelAdmin):
     save_on_top = True
 
 admin.site.register(DNSServer, DNSServerAdmin)
-

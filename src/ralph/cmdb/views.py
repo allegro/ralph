@@ -761,6 +761,7 @@ class CIRelationsEdit(BaseCIDetails):
 
 
 class CIRelationsView(CIRelationsEdit):
+
     def get_context_data(self, **kwargs):
         ret = super(CIRelationsView, self).get_context_data(**kwargs)
         ret = _update_labels(ret, self.ci)
@@ -824,6 +825,7 @@ class CIGitEdit(BaseCIDetails):
 
 
 class CIGitView(CIGitEdit):
+
     def get_context_data(self, **kwargs):
         ret = super(CIGitView, self).get_context_data(**kwargs)
         return _update_labels(ret, self.ci)
@@ -883,6 +885,7 @@ class CIPuppetEdit(BaseCIDetails):
 
 
 class CIPuppetView(CIPuppetEdit):
+
     def get_context_data(self, **kwargs):
         ret = super(CIPuppetView, self).get_context_data(**kwargs)
         return _update_labels(ret, self.ci)
@@ -940,6 +943,7 @@ class CIRalphEdit(BaseCIDetails):
 
 
 class CIRalphView(CIRalphEdit):
+
     def get_context_data(self, **kwargs):
         ret = super(CIRalphView, self).get_context_data(**kwargs)
         return _update_labels(ret, self.ci)
@@ -997,6 +1001,7 @@ class CIChangesEdit(BaseCIDetails):
 
 
 class CIChangesView(CIChangesEdit):
+
     def get_context_data(self, **kwargs):
         ret = super(CIChangesView, self).get_context_data(**kwargs)
         return _update_labels(ret, self.ci)
@@ -1049,6 +1054,7 @@ class CIZabbixEdit(BaseCIDetails):
 
 
 class CIZabbixView(CIZabbixEdit):
+
     def get_context_data(self, **kwargs):
         ret = super(CIZabbixView, self).get_context_data(**kwargs)
         return _update_labels(ret, self.ci)
@@ -1111,6 +1117,7 @@ class CIProblemsEdit(BaseCIDetails, DataTableMixin):
 
 
 class CIProblemsView(CIProblemsEdit):
+
     def get_context_data(self, **kwargs):
         ret = super(CIProblemsView, self).get_context_data(**kwargs)
         return _update_labels(ret, self.ci)
@@ -1133,7 +1140,7 @@ class JiraChangesEdit(BaseCIDetails, DataTableMixin):
         super(JiraChangesEdit, self).initialize_vars()
         self.jira_changes = []
 
-    def get_context_data(self,  *args, **kwargs):
+    def get_context_data(self, *args, **kwargs):
         ret = super(JiraChangesEdit, self).get_context_data(**kwargs)
         ret.update(
             super(JiraChangesEdit, self).get_context_data_paginator(
@@ -1173,6 +1180,7 @@ class JiraChangesEdit(BaseCIDetails, DataTableMixin):
 
 
 class JiraChangesView(JiraChangesEdit):
+
     def get_context_data(self, **kwargs):
         ret = super(JiraChangesView, self).get_context_data(**kwargs)
         return _update_labels(ret, self.ci)
@@ -1236,6 +1244,7 @@ class CIIncidentsEdit(BaseCIDetails, DataTableMixin):
 
 
 class CIIncidentsView(CIIncidentsEdit):
+
     def get_context_data(self, **kwargs):
         ret = super(CIIncidentsView, self).get_context_data(**kwargs)
         return _update_labels(ret, self.ci)
@@ -1672,6 +1681,7 @@ class Graphs(BaseCMDBView):
 
 
 class Cleanup(Search):
+
     """The view containing various data useful for clean up tasks."""
 
     template_name = 'cmdb/cleanup.html'

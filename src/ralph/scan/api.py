@@ -97,4 +97,3 @@ class ExternalPluginResource(Resource):
             expiration=API_EXPIRATION,
         )
         allowed_methods = ['post']
-

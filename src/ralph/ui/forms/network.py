@@ -32,6 +32,7 @@ class NetworksFilterForm(forms.Form):
 
 
 class NetworkForm(forms.ModelForm):
+
     class Meta:
         model = Network
         exclude = [

@@ -86,7 +86,7 @@ def position(ip, **kwargs):
                 DeviceType.data_center.id,
                 DeviceType.rack.id,
             )
-        ):
+    ):
         return False, 'has parent.', kwargs
     name = _connect_dc(ip, dev)
     return True, name, kwargs

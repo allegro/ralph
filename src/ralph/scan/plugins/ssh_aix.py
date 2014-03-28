@@ -103,7 +103,7 @@ def run_ssh_aix(ip):
             sns.append(sn)
     device['disk_shares'] = [{'serial_number': wwn} for wwn in wwns]
     for disk, model_name, sn in stors:
-        if not 'disks' in device:
+        if 'disks' not in device:
             device['disks'] = []
         device['disks'].append({
             'serial_number': sn,
@@ -140,4 +140,3 @@ def scan_address(ip, **kwargs):
     tpl = get_base_result_template('ssh_cisco_catalyst')
     tpl.update(ret)
     return tpl
-

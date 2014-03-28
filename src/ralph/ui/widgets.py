@@ -17,13 +17,14 @@ from ralph.util import presentation
 
 
 class ReadOnlySelectWidget(forms.Select):
+
     def _has_changed(self, initial, data):
         return False
 
     def render(self, name, value, attrs=None, choices=()):
         labels = dict(self.choices)
         display = unicode(labels.get(value, ''))
-        attr_class =  self.attrs.get('class', '')
+        attr_class = self.attrs.get('class', '')
         return mark_safe(
             '<div class="input uneditable-input %s">'
             '<input type="hidden" name="%s" value="%s">'
@@ -38,6 +39,7 @@ class ReadOnlySelectWidget(forms.Select):
 
 
 class ReadOnlyPriceWidget(forms.Widget):
+
     def render(self, name, value, attrs=None, choices=()):
         try:
             value = int(round(value))
@@ -51,18 +53,20 @@ class ReadOnlyPriceWidget(forms.Widget):
 
 
 class ReadOnlyMultipleChoiceWidget(FilteredSelectMultiple):
+
     def render(self, name, value, attrs=None, choices=()):
         output_values = []
         choices = dict([x for x in self.choices])
         for v in value:
-            output_values.append(choices.get(v,''))
+            output_values.append(choices.get(v, ''))
         return mark_safe('<div class="input uneditable-input">%s</div>' %
                          escape(','.join(output_values)))
 
 
 class ReadOnlyWidget(forms.Widget):
+
     def render(self, name, value, attrs=None, choices=()):
-        attr_class =  escape(self.attrs.get('class', ''))
+        attr_class = escape(self.attrs.get('class', ''))
         return mark_safe('''
         <input type="hidden" name="%s" value="%s">
         <div class="input uneditable-input %s">%s</div></input>''' % (
@@ -70,6 +74,7 @@ class ReadOnlyWidget(forms.Widget):
 
 
 class ReadOnlyPreWidget(forms.Widget):
+
     def render(self, name, value, attrs=None, choices=()):
         return mark_safe('''
         <input type="hidden" name="%s" value="%s">
@@ -78,6 +83,7 @@ class ReadOnlyPreWidget(forms.Widget):
 
 
 class DeviceModelWidget(forms.Widget):
+
     def render(self, name, value, attrs=None, choices=()):
         dm = None
         if value:
@@ -100,13 +106,14 @@ class DeviceModelWidget(forms.Widget):
                 '<div class="input uneditable-input">',
                 '<a href="/admin/discovery/devicemodel/%s">'
                 '<i class="fugue-icon %s"></i>&nbsp;%s</a>' % (dm.id,
-                    presentation.get_device_model_icon(dm), escape(dm.name)),
+                                                               presentation.get_device_model_icon(dm), escape(dm.name)),
                 '</div>',
             ]
         return mark_safe('\n'.join(output))
 
 
 class DeviceWidget(forms.Widget):
+
     def render(self, name, value, attrs=None, choices=()):
         dev = None
         if value:
@@ -129,13 +136,14 @@ class DeviceWidget(forms.Widget):
                 '<div class="input uneditable-input">',
                 '<a href="%s">'
                 '<i class="fugue-icon %s"></i>&nbsp;%s</a>' % (dev.id,
-                    presentation.get_device_icon(dev), escape(dev.name)),
+                                                               presentation.get_device_icon(dev), escape(dev.name)),
                 '</div>',
             ]
         return mark_safe('\n'.join(output))
 
 
 class RackWidget(forms.Widget):
+
     def render(self, name, value, attrs=None, choices=()):
         dev = None
         if value:
@@ -168,6 +176,7 @@ class RackWidget(forms.Widget):
 
 
 class ComponentGroupWidget(forms.Widget):
+
     def render(self, name, value, attrs=None, choices=()):
         try:
             mg = ComponentModelGroup.objects.get(id=value)
@@ -188,6 +197,7 @@ class ComponentGroupWidget(forms.Widget):
 
 
 class DeviceGroupWidget(forms.Widget):
+
     def render(self, name, value, attrs=None, choices=()):
         try:
             mg = DeviceModelGroup.objects.get(id=value)
@@ -208,10 +218,11 @@ class DeviceGroupWidget(forms.Widget):
 
 
 class DateWidget(forms.DateInput):
+
     def render(self, name, value='', attrs=None, choices=()):
-        if value == None:
+        if value is None:
             value = ''
-        attr_class =  escape(self.attrs.get('class', ''))
+        attr_class = escape(self.attrs.get('class', ''))
         attr_placeholder = escape(self.attrs.get('placeholder', ''))
         output = ('<input type="text" name="%s" class="datepicker %s" '
                   'placeholder="%s" value="%s" data-date-format="yyyy-mm-dd">')
@@ -220,6 +231,7 @@ class DateWidget(forms.DateInput):
 
 
 class ReadOnlyDateWidget(forms.DateInput):
+
     def render(self, name, value, attrs=None, choices=()):
         formatted = escape(value) if value else ''
         return mark_safe('''
@@ -229,6 +241,7 @@ class ReadOnlyDateWidget(forms.DateInput):
 
 
 class CurrencyWidget(forms.TextInput):
+
     def render(self, name, value=0, attrs=None, *args, **kwargs):
         value = '{}'.format(value)
         attrs['class'] = attrs.get('class', '') + ' currency'
@@ -237,6 +250,7 @@ class CurrencyWidget(forms.TextInput):
 
 
 class ButtonWidget(forms.Widget):
+
     def render(self, name, value='', attrs=None, choices=()):
         attr_class = escape(self.attrs.get('class', ''))
         attr_value = escape(self.attrs.get('value', ''))

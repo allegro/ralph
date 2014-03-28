@@ -328,9 +328,8 @@ def merge(
         ranked_plugins.append(db_plugin_name)  # add db plugin on the end
     merged_data = []
     for plugin in ranked_plugins:
-        groups = usefull_data.get(plugin, {}).keys()  # get only usefull groups
-                                                      # of unique fields for
-                                                      # plugin
+        # get only usefull groups of unique fields for plugin
+        groups = usefull_data.get(plugin, {}).keys()
         for unique_group in groups:
             for new_row in usefull_data[plugin][unique_group]:
                 lookup = {}

@@ -18,6 +18,7 @@ from ralph.integration.models import IntegrationType
 
 
 class Command(BaseCommand):
+
     """Register devices in Zabbix and update their templates"""
 
     help = textwrap.dedent(__doc__).strip()

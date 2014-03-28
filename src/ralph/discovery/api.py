@@ -40,7 +40,7 @@ from ralph.ui.views.common import _get_details
 THROTTLE_AT = settings.API_THROTTLING['throttle_at']
 TIMEFRAME = settings.API_THROTTLING['timeframe']
 EXPIRATION = settings.API_THROTTLING['expiration']
-SAVE_PRIORITY=10
+SAVE_PRIORITY = 10
 
 
 class IPAddressResource(MResource):
@@ -97,7 +97,7 @@ class IPAddressResource(MResource):
             return bundle
         try:
             network = self.fields['network'].fk_resource.instance
-        except AttributeError as e:
+        except AttributeError:
             return bundle
         bundle.data['network_details'] = {
             'name': network.name if network else '',
@@ -110,6 +110,7 @@ class IPAddressResource(MResource):
 
 
 class ModelGroupResource(MResource):
+
     class Meta:
         queryset = DeviceModelGroup.objects.all()
         authentication = ApiKeyAuthentication()
@@ -274,7 +275,8 @@ class DeviceResource(MResource):
         from tastypie.resources import NOT_AVAILABLE, ObjectDoesNotExist, NotFound
         if not bundle.obj or not bundle.obj.pk:
             # Attempt to hydrate data from kwargs before doing a lookup for the object.
-            # This step is needed so certain values (like datetime) will pass model validation.
+            # This step is needed so certain values (like datetime) will pass
+            # model validation.
             try:
                 bundle.obj = self.get_object_list(request).model()
                 bundle.data.update(kwargs)
@@ -297,7 +299,8 @@ class DeviceResource(MResource):
             try:
                 bundle.obj = self.obj_get(request, **lookup_kwargs)
             except ObjectDoesNotExist:
-                raise NotFound("A model instance matching the provided arguments could not be found.")
+                raise NotFound(
+                    "A model instance matching the provided arguments could not be found.")
 
         bundle = self.full_hydrate(bundle)
 
@@ -396,6 +399,7 @@ class DeviceResource(MResource):
 
 
 class PhysicalServerResource(DeviceResource):
+
     class Meta(DeviceResource.Meta):
         queryset = Device.objects.filter(
             model__type__in={
@@ -411,6 +415,7 @@ class PhysicalServerResource(DeviceResource):
 
 
 class RackServerResource(DeviceResource):
+
     class Meta(DeviceResource.Meta):
         queryset = Device.objects.filter(
             model__type=DeviceType.rack_server.id,
@@ -423,6 +428,7 @@ class RackServerResource(DeviceResource):
 
 
 class BladeServerResource(DeviceResource):
+
     class Meta(DeviceResource.Meta):
         queryset = Device.objects.filter(
             model__type=DeviceType.blade_server.id,
@@ -435,6 +441,7 @@ class BladeServerResource(DeviceResource):
 
 
 class VirtualServerResource(DeviceResource):
+
     class Meta(DeviceResource.Meta):
         queryset = Device.objects.filter(
             model__type=DeviceType.virtual_server.id,
@@ -447,6 +454,7 @@ class VirtualServerResource(DeviceResource):
 
 
 class DevResource(DeviceResource):
+
     class Meta(DeviceResource.Meta):
         queryset = Device.objects.all()
         throttle = CacheThrottle(
@@ -457,6 +465,7 @@ class DevResource(DeviceResource):
 
 
 class DeviceWithPricingResource(DeviceResource):
+
     class Meta:
         queryset = Device.objects.all()
         resource_name = 'devicewithpricing'
@@ -523,7 +532,7 @@ class DeviceWithPricingResource(DeviceResource):
         else:
             last_month = datetime.date.today() - datetime.timedelta(days=30)
             splunk = device.splunkusage_set.filter(
-                    day__gte=last_month
+                day__gte=last_month
             ).order_by('-day')
         if splunk.count():
             splunk_size = splunk.aggregate(db.Sum('size'))['size__sum'] or 0
@@ -539,6 +548,7 @@ class DeviceWithPricingResource(DeviceResource):
 
 
 class NetworkKindsResource(MResource):
+
     class Meta:
         queryset = NetworkKind.objects.all()
         authentication = ApiKeyAuthentication()

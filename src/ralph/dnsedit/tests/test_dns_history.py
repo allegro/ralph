@@ -15,6 +15,7 @@ from ralph.dnsedit.models import DNSHistory
 
 
 class DNSHistoryTest(TestCase):
+
     def setUp(self):
         self.domain = Domain(name='example.com')
         self.domain.save()
@@ -50,7 +51,6 @@ class DNSHistoryTest(TestCase):
         self.assertEqual(history.old_value, '')
         self.assertEqual(history.new_value, '127.0.0.1')
 
-
     def test_record_modify(self):
         record = Record(
             name='hostname.example.com',
@@ -70,7 +70,6 @@ class DNSHistoryTest(TestCase):
         )
         self.assertEqual(history.old_value, '127.0.0.1')
         self.assertEqual(history.new_value, '127.0.1.1')
-
 
     @skip("Broken signals not being called")
     def test_record_delete(self):

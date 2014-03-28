@@ -13,6 +13,7 @@ from ralph.cmdb.integration.lib.jira import Jira
 
 
 class NullIssueTracker(object):
+
     def create_issue(self, *args, **kwargs):
         return dict(key='#123456')
 
@@ -38,7 +39,9 @@ class IntegrityError(Exception):
 
 
 class IssueTracker(object):
+
     """ Very simple fascade for bugtracker systems """
+
     def __init__(self):
         self.engine = settings.ISSUETRACKERS['default']['ENGINE']
         if self.engine == 'JIRA':
@@ -49,4 +52,4 @@ class IssueTracker(object):
             raise ImproperlyConfigured("Engine %s not known" % self.engine)
 
     def __getattr__(self, name):
-        return getattr(self.concrete, name )
+        return getattr(self.concrete, name)

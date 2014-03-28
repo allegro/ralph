@@ -153,6 +153,7 @@ class SidebarNetworks(object):
 
 
 class NetworksMixin(SidebarNetworks, BaseMixin):
+
     def tab_href(self, name, obj=''):
         args = [self.kwargs.get('network'), name]
         if obj:

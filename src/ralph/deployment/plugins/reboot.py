@@ -8,7 +8,6 @@ from __future__ import unicode_literals
 
 from django.conf import settings
 
-from ralph.util import plugin
 from ralph.discovery.plugins.ssh_ibm_bladecenter import ssh_ibm_reboot
 from ralph.discovery.plugins.ipmi import ipmi_reboot
 from ralph.discovery.hp_ilo import IloHost
@@ -16,9 +15,6 @@ from ralph.deployment.models import Deployment, DeploymentStatus
 
 
 # This plugin is temporarily disabled.
-#@plugin.register(chain='deployment',
-#                 requires=['dns', 'dhcp', 'role'],
-#                 priority=0)
 def reboot(deployment_id):
     deployment = Deployment.objects.get(id=deployment_id)
     if deployment.status == DeploymentStatus.done:

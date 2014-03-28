@@ -15,6 +15,7 @@ from ralph.scan.tests.plugins.samples.ssh_ssg import SSH_SSG_SAMPLE
 
 
 class SshSsgPluginTest(TestCase):
+
     def test_ssh_ssg(self):
         with mock.patch(
             'ralph.scan.plugins.ssh_ssg.check_tcp_port',
@@ -42,4 +43,3 @@ class SshSsgPluginTest(TestCase):
                     'type': 'firewall',
                 }
             )
-

@@ -8,10 +8,9 @@ from __future__ import unicode_literals
 
 from lck.django.common import nested_commit_on_success
 
-from ralph.util import plugin
 from ralph.discovery.models import (Device, Ethernet, IPAddress)
 
-SAVE_PRIORITY=0
+SAVE_PRIORITY = 0
 
 
 @nested_commit_on_success
@@ -32,6 +31,7 @@ def _merge_devs(dev, other_dev):
             child.save(priority=SAVE_PRIORITY)
     other_dev.delete()
 
+
 def _connect_macs(dev):
     macs = Ethernet.objects.filter(device=dev).values_list('mac')
     count = 0
@@ -44,7 +44,7 @@ def _connect_macs(dev):
             count += 1
     return count
 
-#@plugin.register(chain='postprocess', requires=['ping'])
+
 def own_mac(ip, **kwargs):
     ip = str(ip)
     try:
@@ -56,7 +56,7 @@ def own_mac(ip, **kwargs):
     count = _connect_macs(dev)
     return True, '%d own MACs connected.' % count, kwargs
 
-#@plugin.register(chain='postprocess', requires=['ping', 'ssh_proxmox'])
+
 def children_mac(ip, **kwargs):
     ip = str(ip)
     try:
@@ -66,7 +66,7 @@ def children_mac(ip, **kwargs):
     if dev is None:
         return False, 'no device.', kwargs
     count = 0
-    child_count =0
+    child_count = 0
     for child_dev in dev.child_set.all():
         count += _connect_macs(child_dev)
         child_count += 1

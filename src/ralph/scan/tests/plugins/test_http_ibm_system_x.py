@@ -32,6 +32,7 @@ def _patched_get_session_id(ip_address, user, password):
 
 
 class HttpIbmSystemXTest(TestCase):
+
     @patch(
         'ralph.scan.plugins.http_ibm_system_x._get_session_id',
         _patched_get_session_id,
@@ -77,4 +78,3 @@ class HttpIbmSystemXTest(TestCase):
                 'type': 'rack server',
             },
         )
-

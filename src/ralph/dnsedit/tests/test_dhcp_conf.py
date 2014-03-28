@@ -31,6 +31,7 @@ def _sanitize_dhcp_config(config):
 
 
 class DHCPConfTest(TestCase):
+
     def setUp(self):
         self.dc1 = DataCenter.objects.create(name='dc1')
         self.dc2 = DataCenter.objects.create(name='dc2')

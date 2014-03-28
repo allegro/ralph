@@ -17,6 +17,7 @@ def wait_for_results(autoreload=True, reload_frequency=60):
         'reload_frequency': reload_frequency * 1000,
     }
 
+
 @register.simple_tag
 def links(items):
     return ', '.join(

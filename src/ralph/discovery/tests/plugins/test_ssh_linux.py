@@ -16,6 +16,7 @@ from ralph.discovery.tests.samples.dmidecode_data import DATA
 
 
 class SshLinuxPluginTest(TestCase):
+
     def test_ethernets(self):
         ssh = MockSSH([
             ("/sbin/ip addr show | /bin/grep 'link/ether'", """\

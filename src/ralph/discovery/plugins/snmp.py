@@ -12,14 +12,14 @@ from django.conf import settings
 
 from ralph.util import plugin, Eth
 from ralph.discovery.models import (DeviceType, Device, IPAddress,
-    OperatingSystem)
+                                    OperatingSystem)
 from ralph.discovery.models import MAC_PREFIX_BLACKLIST
 from ralph.discovery.snmp import snmp_command, snmp_macs, check_snmp_port
 
 
 SAVE_PRIORITY = 1
 SNMP_PLUGIN_COMMUNITIES = getattr(settings, 'SNMP_PLUGIN_COMMUNITIES',
-    ['public'])
+                                  ['public'])
 
 SNMP_V3_AUTH = (
     settings.SNMP_V3_USER,
@@ -30,18 +30,18 @@ if not all(SNMP_V3_AUTH):
     SNMP_V3_AUTH = None
 
 _cisco_oids_std = (
-    (1,3,6,1,2,1,47,1,1,1,1,2,1001),  # model
-    (1,3,6,1,2,1,47,1,1,1,1,11,1001), # sn
+    (1, 3, 6, 1, 2, 1, 47, 1, 1, 1, 1, 2, 1001),  # model
+    (1, 3, 6, 1, 2, 1, 47, 1, 1, 1, 1, 11, 1001),  # sn
 )
 
 _cisco_oids_4500 = (
-    (1,3,6,1,2,1,47,1,1,1,1,13,1000), # model
-    (1,3,6,1,2,1,47,1,1,1,1,11,1000), # sn
+    (1, 3, 6, 1, 2, 1, 47, 1, 1, 1, 1, 13, 1000),  # model
+    (1, 3, 6, 1, 2, 1, 47, 1, 1, 1, 1, 11, 1000),  # sn
 )
 
 _cisco_oids_nexus = (
-    (1,3,6,1,2,1,47,1,1,1,1,13,149), # model
-    (1,3,6,1,2,1,47,1,1,1,1,11,149), # sn
+    (1, 3, 6, 1, 2, 1, 47, 1, 1, 1, 1, 13, 149),  # model
+    (1, 3, 6, 1, 2, 1, 47, 1, 1, 1, 1, 11, 149),  # sn
 )
 
 _cisco_oids = {
@@ -63,7 +63,7 @@ class Error(Exception):
 def _snmp(ip, community, oid, attempts=2, timeout=3, snmp_version='2c'):
     is_up = False
     result = snmp_command(str(ip), community, oid, attempts=attempts,
-        timeout=timeout, snmp_version=snmp_version)
+                          timeout=timeout, snmp_version=snmp_version)
     if result is None:
         message = 'silent.'
     else:
@@ -84,7 +84,7 @@ def _snmp(ip, community, oid, attempts=2, timeout=3, snmp_version='2c'):
 @plugin.register(chain='discovery', requires=['ping', 'http'])
 def snmp(**kwargs):
     http_family = kwargs.get('http_family')
-    if  http_family in ('Thomas-Krenn',):
+    if http_family in ('Thomas-Krenn',):
         return False, 'no match.', kwargs
     ip = str(kwargs['ip'])
     if http_family not in ('Microsoft-IIS', 'Unspecified', 'RomPager'):
@@ -94,13 +94,14 @@ def snmp(**kwargs):
     community = kwargs.get('community')
     version = kwargs.get('snmp_version')
     oids = [
-        ('2c', (1,3,6,1,2,1,1,1,0)), # sysDescr
+        ('2c', (1, 3, 6, 1, 2, 1, 1, 1, 0)),  # sysDescr
         # Blade centers answer only to their own OIDs and to SNMP version 1
         #  ('1', (1,3,6,1,4,1,2,3,51,2,2,21,1,1,5,0)),
         # bladeCenterManufacturingId
     ]
     if http_family in ('RomPager',):
-        oids.append(('1', (1,3,6,1,2,1,1,1,0))) # sysDescr, snmp version 1
+        # sysDescr, snmp version 1
+        oids.append(('1', (1, 3, 6, 1, 2, 1, 1, 1, 0)))
     if version != '3':
         # Don't try SNMP v2 if v3 worked on this host.
         communities = SNMP_PLUGIN_COMMUNITIES[:]
@@ -138,9 +139,9 @@ def snmp(**kwargs):
     if SNMP_V3_AUTH and version not in ('1', '2', '2c'):
         is_up, message = _snmp(
             ip, SNMP_V3_AUTH,
-            (1,3,6,1,2,1,1,1,0),
+            (1, 3, 6, 1, 2, 1, 1, 1, 0),
             attempts=2,
-            timeout=0.5, # SNMP v3 usually needs more time
+            timeout=0.5,  # SNMP v3 usually needs more time
             snmp_version='3',
         )
         if is_up:
@@ -169,7 +170,7 @@ def _snmp_modular(ip, community, parent):
                 continue
             unique_macs -= other_macs
         ethernets = [Eth('Intel Modular MAC', mac, speed=None) for mac in
-            unique_macs]
+                     unique_macs]
         if ethernets:
             dev = Device.create(
                 name='Intel Modular Blade',
@@ -188,18 +189,20 @@ def snmp_f5(**kwargs):
     ip = str(kwargs['ip'])
     community = str(kwargs['community'])
     model = str(snmp_command(ip, community,
-        [int(i) for i in '1.3.6.1.4.1.3375.2.1.3.5.2.0'.split('.')],
-        attempts=1, timeout=0.5)[0][1])
+                             [int(i)
+                              for i in '1.3.6.1.4.1.3375.2.1.3.5.2.0'.split('.')],
+                             attempts=1, timeout=0.5)[0][1])
     sn = str(snmp_command(ip, community,
-        [int(i) for i in '1.3.6.1.4.1.3375.2.1.3.3.3.0'.split('.')],
-        attempts=1, timeout=0.5)[0][1])
+                          [int(i)
+                           for i in '1.3.6.1.4.1.3375.2.1.3.3.3.0'.split('.')],
+                          attempts=1, timeout=0.5)[0][1])
     return 'F5 %s' % model, sn
 
 
 def snmp_vmware(parent, ipaddr, **kwargs):
     ip = str(kwargs['ip'])
     community = str(kwargs['community'])
-    oid = (1,3,6,1,4,1,6876,2,4,1,7)
+    oid = (1, 3, 6, 1, 4, 1, 6876, 2, 4, 1, 7)
     snmp_version = 1
     for mac in snmp_macs(ip, community, oid, attempts=2,
                          timeout=3, snmp_version=snmp_version):
@@ -331,9 +334,9 @@ def do_snmp_mac(snmp_name, community, snmp_version, ip, kwargs):
     ip_address.save()
     if model_name.startswith('IronPort'):
         pairs = dict((k.strip(), v.strip()) for (k, v) in
-                        (part.split(':') for part in parts if ':' in part))
+                     (part.split(':') for part in parts if ':' in part))
         dev.boot_firmware = 'AsyncOS %s %s' % (
-                pairs.get('AsyncOS Version'), pairs.get('Build Date'))
+            pairs.get('AsyncOS Version'), pairs.get('Build Date'))
         dev.sn = pairs.get('Serial #')
         dev.save(update_last_seen=True, priority=SAVE_PRIORITY)
     elif model_name == 'Intel Modular Blade System':
@@ -479,4 +482,3 @@ def nortel_snmp(**kwargs):
     kwargs['model'] = model
     kwargs['sn'] = sn
     return True, sn, kwargs
-

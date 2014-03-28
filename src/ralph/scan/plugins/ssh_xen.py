@@ -70,9 +70,10 @@ def _get_current_host_uuid(ssh, ip_address, sudo_mode=False):
         try:
             param_name, param_value = parts[0].strip(), parts[1].strip()
         except IndexError:
-            continue  # this line is not interesting for us...
-                      # we search something like this here:
-                      # some text : some text
+            # this line is not interesting for us...
+            # we search something like this here:
+            # some text : some text
+            continue
         if param_name == 'uuid':
             uuid = param_value
             continue
@@ -230,7 +231,7 @@ def _ssh_xen(ssh, ip_address):
                     'size': mount_size,
                     'volume': device,
                 }
-                if not 'disk_shares' in vm_device:
+                if 'disk_shares' not in vm_device:
                     vm_device['disk_shares'] = []
                 vm_device['disk_shares'].append(share)
             else:
@@ -239,7 +240,7 @@ def _ssh_xen(ssh, ip_address):
                     'label': device,
                     'family': 'XEN Virtual Disk',
                 }
-                if not 'disks' in vm_device:
+                if 'disks' not in vm_device:
                     vm_device['disks'] = []
                 vm_device['disks'].append(storage)
         device_info['subdevices'].append(vm_device)

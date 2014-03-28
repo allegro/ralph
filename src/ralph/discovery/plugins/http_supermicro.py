@@ -24,6 +24,7 @@ IPMI_PASSWORD = settings.IPMI_PASSWORD
 class Error(Exception):
     pass
 
+
 class ResponseError(Error):
     pass
 
@@ -42,6 +43,7 @@ def _get_code(response, regexp):
             regexp.pattern, response))
     return m.group(1)
 
+
 def _get_macs(ip):
     login_url = "https://%s/rpc/WEBSES/create.asp" % ip
     login_data = "WEBVAR_USERNAME=%s&WEBVAR_PASSWORD=%s" % (IPMI_USER,
@@ -50,7 +52,8 @@ def _get_macs(ip):
     mac_url = 'https://%s/rpc/getmbmac.asp' % ip
     mgmt_mac_url = 'https://%s/rpc/getnwconfig.asp' % ip
     mac_re = re.compile(r"WEBVAR_STRUCTNAME_GETMBMAC\s*:\s*\[({[^\}]*})")
-    mgmt_mac_re = re.compile(r"WEBVAR_STRUCTNAME_HL_GETLANCONFIG\s*:\s*\[({[^\}]*})")
+    mgmt_mac_re = re.compile(
+        r"WEBVAR_STRUCTNAME_HL_GETLANCONFIG\s*:\s*\[({[^\}]*})")
     opener = urllib2.build_opener()
     request = urllib2.Request(login_url, login_data)
     session = _get_code(opener.open(request, timeout=5), session_re)
@@ -74,11 +77,12 @@ def run_http(ip):
                  for (label, mac) in macs.iteritems()]
     ipaddr = IPAddress.objects.get(address=ip)
     dev = Device.create(ethernets=ethernets,
-                        model_name = 'Unknown Supermicro',
-                        model_type = DeviceType.unknown)
+                        model_name='Unknown Supermicro',
+                        model_type=DeviceType.unknown)
     ipaddr.device = dev
     ipaddr.save()
     return ', '.join(macs.values())
+
 
 @plugin.register(chain='discovery', requires=['http'], priority=201)
 def http_supermicro(**kwargs):
@@ -88,7 +92,8 @@ def http_supermicro(**kwargs):
     try:
         macs = run_http(ip)
     except urllib2.URLError as e:
-        message = 'Error %s: %s' % (getattr(e, 'code', ''), getattr(e, 'reason', ''))
+        message = 'Error %s: %s' % (
+            getattr(e, 'code', ''), getattr(e, 'reason', ''))
         return False, message, kwargs
     except (Error, ssl.SSLError) as e:
         return False, str(e), kwargs

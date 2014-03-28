@@ -36,6 +36,7 @@ JIRA_URL = urljoin(settings.ISSUETRACKERS['default']['URL'], 'browse')
 
 
 class ChangesBase(BaseCMDBView):
+
     def get_context_data(self, **kwargs):
         ret = super(ChangesBase, self).get_context_data(**kwargs)
         ret.update({
@@ -473,10 +474,12 @@ class DashboardDetails(ChangesBase):
 
 
 class DashSubReport(object):
+
     """
     Subreport for given report type. eg. Git Conf --> Critical or Error
     subreports.
     """
+
     def __init__(self, type, priority):
         self.report_type_int, self.report_type_str = type
         self.priority_int, self.priority_str = priority
@@ -516,9 +519,11 @@ class DashSubReport(object):
 
 
 class DashReport(object):
+
     """
     Main report e.g. Git Conf/Service reconf. report
     """
+
     def __init__(self, report_type):
         self.subreports = []
         self.report_type = report_type
@@ -684,13 +689,15 @@ class Reports(ChangesBase, DataTableMixin):
         return queryset
 
     def top_ci_problems(self):
-        queryset = db.CI.objects.annotate(num=Count('ciproblem')).order_by('-num')
+        queryset = db.CI.objects.annotate(
+            num=Count('ciproblem')).order_by('-num')
         queryset = self.handle_params(queryset)
         rows = [(x.num, x) for x in queryset]
         return rows
 
     def top_ci_incidents(self):
-        queryset = db.CI.objects.annotate(num=Count('ciincident')).order_by('-num')
+        queryset = db.CI.objects.annotate(
+            num=Count('ciincident')).order_by('-num')
         queryset = self.handle_params(queryset)
         rows = [(x.num, x) for x in queryset]
         return rows
@@ -703,7 +710,8 @@ class Reports(ChangesBase, DataTableMixin):
         return rows
 
     def top_ci_changes(self):
-        queryset = db.CI.objects.annotate(num=Count('cichange')).order_by('-num')
+        queryset = db.CI.objects.annotate(
+            num=Count('cichange')).order_by('-num')
         queryset = self.handle_params(queryset)
         rows = [(x.num, x) for x in queryset]
         return rows
@@ -741,7 +749,8 @@ class Reports(ChangesBase, DataTableMixin):
         if values.get('type'):
             changes = changes.filter(type__icontains=values.get('type'))
         if values.get('priority'):
-            changes = changes.filter(priority__icontains=values.get('priority'))
+            changes = changes.filter(
+                priority__icontains=values.get('priority'))
         if values.get('uid'):
             changes = changes.filter(ci__name=values.get('uid'))
         changes = changes.order_by('-time')
@@ -816,7 +825,7 @@ class TimeLine(BaseCMDBView):
         ).order_by('-time')
         manual = []
         for change in manual_changes:
-            #number of ci affected - error/success
+            # number of ci affected - error/success
             errors_count = db.CIChangePuppet.objects.filter(
                 configuration_version=change.content_object.changeset[0:7],
                 status='failed').aggregate(num_ci=Count('ci'))

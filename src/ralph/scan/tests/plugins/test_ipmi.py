@@ -29,8 +29,10 @@ SAMPLES_MAPPER = {
 
 
 class IpmiPluginTest(TestCase):
+
     def setUp(self):
         self.ipmitool = IPMITool('127.0.0.1', 'test', 'test')
+
         def side_effect(command, subcommand, *args):
             return SAMPLES_MAPPER[(command, subcommand)]
         self.ipmitool.command = Mock(side_effect=side_effect)
@@ -140,4 +142,3 @@ class IpmiPluginTest(TestCase):
                 {'index': 6, 'label': '4GB DDR3 SDRAM 666', 'size': 4096},
             ],
         )
-

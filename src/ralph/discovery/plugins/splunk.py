@@ -10,7 +10,7 @@ from datetime import date
 import time
 
 from ralph.discovery.models import (IPAddress, SplunkUsage,
-    ComponentModel, ComponentType)
+                                    ComponentModel, ComponentType)
 from ralph.discovery.splunk import Splunk
 from ralph.util import plugin
 
@@ -48,7 +48,7 @@ def splunk(**options):
         if not dev:
             if options['verbose']:
                 print('Warning: host', host, 'not tied to a device in the '
-                    'database.')
+                      'database.')
             continue
         name = 'Splunk Volume 100 GiB'
         symbol = 'splunkvolume'

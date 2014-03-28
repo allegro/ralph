@@ -37,6 +37,7 @@ if not SSH_USER or not SSH_PASSWORD:
 
 
 class CiscoSSHClient(paramiko.SSHClient):
+
     """SSHClient modified for Cisco's broken SSH console."""
 
     def __init__(self, *args, **kwargs):

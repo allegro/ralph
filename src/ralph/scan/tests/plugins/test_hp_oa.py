@@ -16,6 +16,7 @@ HP_OA_SAMPLE = nullify(HP_OA_SAMPLE)
 
 
 class HpOaPluginTest(TestCase):
+
     def test_get_parent_device(self):
         self.assertEqual(
             _get_parent_device(HP_OA_SAMPLE),
@@ -216,4 +217,3 @@ class HpOaPluginTest(TestCase):
                 ],
             }
         )
-

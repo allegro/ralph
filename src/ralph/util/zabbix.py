@@ -10,13 +10,14 @@ from pyzabbix import ZabbixAPI
 
 
 class Zabbix(object):
+
     def __init__(self, url, user, password):
         self.zapi = ZabbixAPI(url, log_level=0)
         self.zapi.login(user, password)
 
     def get_all_hosts(self):
         return self.zapi.host.get(select_profile='extend',
-                                        output='extend')
+                                  output='extend')
 
     def get_current_triggers(self):
         params = dict(output='extend', expandData='host', monitored='true',
@@ -45,22 +46,23 @@ class Zabbix(object):
             host = self.get_host_by_name(host_name)
         except KeyError:
             hostids = self.zapi.host.create(
-                    host=host_name,
-                    groups=[{
+                host=host_name,
+                groups=[{
                         'groupid': group_id,
-                    }],
-                    interfaces=[{
-                        'main': 1,
-                        'type': 1,
-                        'useip': 1,
-                        'dns': '',
-                        'port': 10050,
-                        'ip': ip,
-                    }],
-                    templates=[],
-                    inventory=[],
-                )
-            hosts = self.zapi.host.get(filter={"hostid": hostids['hostids'][0]})
+                        }],
+                interfaces=[{
+                    'main': 1,
+                    'type': 1,
+                    'useip': 1,
+                    'dns': '',
+                    'port': 10050,
+                    'ip': ip,
+                }],
+                templates=[],
+                inventory=[],
+            )
+            hosts = self.zapi.host.get(
+                filter={"hostid": hostids['hostids'][0]})
             host = hosts[0]
         return host
 
