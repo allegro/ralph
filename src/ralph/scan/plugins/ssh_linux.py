@@ -10,8 +10,9 @@ import paramiko
 from django.conf import settings
 
 from ralph.discovery.hardware import get_disk_shares
+from ralph.discovery.models_component import is_mac_valid
 from ralph.scan.plugins import get_base_result_template
-from ralph.util import network, parse
+from ralph.util import network, parse, Eth
 from ralph.scan.errors import NoMatchError
 
 
@@ -31,9 +32,11 @@ def _parse_dmidecode(data):
     serial_number = parsed_data['System Information']['Serial Number']
     if 'not specified' not in serial_number.lower():
         result['serial_number'] = serial_number
+
     def exclude(value, exceptions):
         if value not in exceptions:
             return value
+
     def num(value):
         if value is None or value.lower() == 'unknown':
             return None
@@ -42,6 +45,7 @@ def _parse_dmidecode(data):
         except ValueError:
             num = value
         return int(num)
+
     processors = []
     for cpu in parsed_data.getlist('Processor Information'):
         if not cpu:
@@ -82,13 +86,19 @@ def _parse_dmidecode(data):
         result['memory'] = memory
     return result
 
+
 def _get_mac_addresses(ssh):
     """Get the MAC addresses"""
 
     stdin, stdout, stderr = ssh.exec_command(
         "/sbin/ip addr show | /bin/grep 'link/ether'",
     )
-    return [line.split(None, 3)[1] for line in stdout]
+    mac_addresses = []
+    for line in stdout:
+        mac_address = line.split(None, 3)[1]
+        if is_mac_valid(Eth(label='', mac=mac_address, speed=0)):
+            mac_addresses.append(mac_address)
+    return mac_addresses
 
 
 def _get_base_device_info(ssh, messages=[]):
@@ -216,4 +226,3 @@ def scan_address(ip_address, **kwargs):
             'device': device_info,
         })
     return result
-
