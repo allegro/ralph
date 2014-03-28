@@ -55,6 +55,7 @@ from ralph.cmdb.models_changes import (
     CIEvent,
     CIProblem,
     CIIncident,
+    JiraChanges,
 
     ArchivedCIChangeZabbixTrigger,
     ArchivedCIChangeCMDBHistory,
@@ -111,6 +112,7 @@ __all__ = [
     'CIEvent',
     'CIProblem',
     'CIIncident',
+    'JiraChanges',
 
     # audits
     'Auditable',
