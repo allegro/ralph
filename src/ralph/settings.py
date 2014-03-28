@@ -434,10 +434,7 @@ SCAN_PLUGINS = {
         },
     },
     'ralph.scan.plugins.ssh_linux': {
-        'auths': [
-            (SSH_USER or 'root', SSH_PASSWORD),
-            (XEN_USER, XEN_PASSWORD),
-        ],
+        'auths': ((SSH_USER or 'root', SSH_PASSWORD),) + XEN_AUTHS,
         'results_priority': {
             'model_name': 15,
             'serial_number': 10,
