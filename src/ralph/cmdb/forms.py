@@ -126,7 +126,6 @@ class CIEditForm(DependencyForm, forms.ModelForm):
         super(CIEditForm, self).__init__(*args, **kwargs)
         self._add_customattribute_fields()
         if len(self.initial):
-            technical_owners, bussines_owners = [], []
             self['technical_owners'].field.initial =\
                 self.instance.technical_owners.all()
             self['business_owners'].field.initial =\
