@@ -609,7 +609,7 @@ class MainCIEdit(BaseCIDetails):
         ret.update({
             'show_in_ralph': self.show_in_ralph,
             'ralph_ci_link': self.ralph_ci_link,
-            'service_name': self.service_name,
+            'service_name': getattr(self, 'service_name', None),
             'editable': True,
             'form': self.form,
         })

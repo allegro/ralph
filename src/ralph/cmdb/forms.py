@@ -10,6 +10,7 @@ from ajax_select import make_ajax_field
 from ajax_select.fields import AutoCompleteSelectField
 
 from bob.forms.dependency import Dependency, DependencyForm, SHOW
+from bob.forms.dependency_conditions import MemberOf as MemberOfCondition
 from django import forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
 
@@ -115,9 +116,9 @@ class CIEditForm(DependencyForm, forms.ModelForm):
                 ]
             self.fields[field_name] = FieldType(**kwargs)
             self.dependencies.append(Dependency(
-                field_name,
-                'type',
-                list(attribute.ci_types.all()),
+                'base-%s' % field_name,
+                'base-type',
+                MemberOfCondition(list(attribute.ci_types.all())),
                 SHOW,
             ))
 
