@@ -18,6 +18,7 @@ from lck.django.common.admin import (
 )
 from django.core.exceptions import ValidationError
 from django.contrib import messages
+from django.template.defaultfilters import slugify
 
 from ralph.discovery import models as m
 from ralph.business.admin import RolePropertyValueInline
@@ -104,6 +105,14 @@ class EnvironmentAdminForm(forms.ModelForm):
 
     class Meta:
         model = m.Environment
+
+    def clean_name(self):
+        name = self.cleaned_data['name'].strip()
+        if slugify(name) != name.lower():
+            raise forms.ValidationError(
+                _('You can use only this characters: [a-zA-Z0-9_-]')
+            )
+        return name
 
     def clean_hosts_naming_template(self):
         template = self.cleaned_data['hosts_naming_template']
