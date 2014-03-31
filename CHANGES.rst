@@ -1,6 +1,14 @@
 Change Log
 ----------
 
+2.0.0
+~~~~~~~~~
+
+Optimizations:
+
+* NETWORKS: reduced unresponsive rendering of networks tree to ~ 1 sec
+
+
 2.0.0-rc2
 ~~~~~~~~~
 

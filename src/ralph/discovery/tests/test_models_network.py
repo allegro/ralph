@@ -8,6 +8,7 @@ from __future__ import unicode_literals
 from django.test import TestCase
 
 from ralph.discovery.models import Network, DataCenter, IPAddress
+from ralph.discovery.models_network import get_network_tree
 
 
 class ModelsNetworkTest(TestCase):
@@ -114,7 +115,7 @@ class ModelsNetworkTest(TestCase):
         self.assertEquals(ret, correct)
 
     def test_get_network_tree(self):
-        res = Network.get_network_tree()
+        res = get_network_tree()
         correct = [
             {
                 'network': self.net1,

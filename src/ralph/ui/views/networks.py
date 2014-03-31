@@ -22,7 +22,6 @@ from django.views.generic import (
     UpdateView,
     TemplateView,
 )
-from lck.cache import memoize
 
 from ralph.account.models import Perm
 from ralph.discovery.models import Network, IPAddress
@@ -42,9 +41,12 @@ from ralph.ui.views.reports import Reports, ReportDeviceList
 from ralph.util import presentation
 from ralph.scan import autoscan
 from ralph.deployment.util import get_first_free_ip
+from ralph.discovery.models_network import get_network_tree
 
 
-@memoize
+from django.core.cache import cache
+
+
 def network_tree_menu(networks, details, get_params, show_ip=False, status=''):
     icon = presentation.get_network_icon
     items = []
@@ -127,16 +129,23 @@ class SidebarNetworks(object):
                 kind__id=int(network_kind),
             )
         networks = networks.order_by('-min_ip', 'max_ip')
-        self.networks = Network.get_network_tree(qs=networks)
-        sidebar_items = []
-        sidebar_items.extend(
-            network_tree_menu(
-                self.networks,
-                ret['details'],
-                status=self.status,
-                get_params=self.request.GET.urlencode(),
-            ),
-        )
+
+        sidebar_items = cache.get('cache_network_sidebar_items')
+        if not sidebar_items:
+            self.networks = get_network_tree(
+                qs=networks
+            )
+            sidebar_items = []
+            sidebar_items.extend(
+                network_tree_menu(
+                    self.networks,
+                    ret['details'],
+                    status=self.status,
+                    get_params=self.request.GET.urlencode(),
+                ),
+            )
+            # 24 hours cache
+            cache.set('cache_network_sidebar_items', sidebar_items, 24 * 60)
 
         ret.update({
             'sidebar_items': sidebar_items,
