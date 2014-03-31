@@ -6,7 +6,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import datetime
 import ipaddr
 import logging
 
@@ -111,7 +110,7 @@ def generate_dhcp_config_entries(
 
     If given, `env` must be of type Environment.
     """
-    last_modified_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    last_modified_date = None
     if disable_networks_validation:
         networks_filter = tuple()
     else:
@@ -177,6 +176,8 @@ def generate_dhcp_config_entries(
     accept_all_ip_numbers = (
         dc is None and env is None and disable_networks_validation
     )
+    if last_modified_date is None:
+        last_modified_date = '???'
     c = Context({
         'entries': _generate_entries_configs(
             env=env,
@@ -185,7 +186,7 @@ def generate_dhcp_config_entries(
             deployed_macs=deployed_macs,
             accept_all_ip_numbers=accept_all_ip_numbers,
         ),
-        'last_modified_date': last_modified_date,
+        'last_modified_date': last_modified_date
     })
     return template.render(c)
 
@@ -212,7 +213,7 @@ def _generate_networks_configs(
 
 
 def generate_dhcp_config_networks(dc=None, env=None):
-    last_modified_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    last_modified_date = None
     networks_filter = (
         Q(dhcp_broadcast=True),
         Q(gateway__isnull=False),
@@ -244,14 +245,6 @@ def generate_dhcp_config_networks(dc=None, env=None):
         'environment__domain',
         'dhcp_config',
     ).order_by('name')
-    for modified in DHCPEntry.objects.values_list(
-        'modified', flat=True,
-    ).order_by('-modified')[:1]:
-        last_modified_date = max(
-            last_modified_date,
-            modified.strftime('%Y-%m-%d %H:%M:%S'),
-        )
-        break
     template = loader.get_template('dnsedit/dhcp_networks.conf')
     default_dns_servers = DNSServer.objects.filter(
         is_default=True,
@@ -266,6 +259,8 @@ def generate_dhcp_config_networks(dc=None, env=None):
         if network_id not in custom_dns_servers:
             custom_dns_servers[network_id] = set()
         custom_dns_servers[network_id].add(dns_server_ip)
+    if last_modified_date is None:
+        last_modified_date = '???'
     context = Context({
         'dns_servers': ','.join(default_dns_servers),
         'networks': _generate_networks_configs(
