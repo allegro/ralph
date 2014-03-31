@@ -41,7 +41,6 @@ from ralph.ui.views.reports import Reports, ReportDeviceList
 from ralph.util import presentation
 from ralph.scan import autoscan
 from ralph.deployment.util import get_first_free_ip
-from lck.cache import memoize
 
 from django.core.cache import cache
 
@@ -77,6 +76,7 @@ def network_tree_menu(networks, details, get_params, show_ip=False, status=''):
             collapsed=not getattr(n['network'], 'expanded', False),
         ))
     return items
+
 
 def get_network_tree(cls, qs=None):
     """
@@ -124,6 +124,7 @@ def get_network_tree(cls, qs=None):
             # will rise IndexError, therefore algorithm is finished
             break
     return tree
+
 
 class SidebarNetworks(object):
     section = 'networks'

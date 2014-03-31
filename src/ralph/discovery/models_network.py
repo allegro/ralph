@@ -25,7 +25,6 @@ from ralph.util import network
 from ralph.discovery.models_util import LastSeen
 
 
-
 class Environment(Named):
     data_center = db.ForeignKey("DataCenter", verbose_name=_("data center"))
     queue = db.ForeignKey(
@@ -239,7 +238,6 @@ class AbstractNetwork(db.Model):
     def network(self):
         return ipaddr.IPNetwork(self.address)
 
-
     def get_total_ips(self):
         """
         Get total amount of addresses in this network.
@@ -403,7 +401,7 @@ def validate_network_address(sender, instance, **kwargs):
 
     # clearing cache items for networks sidebar(24 hour cache)
     ns_items_key = 'cache_network_sidebar_items'
-    if cache.has_key(ns_items_key):
+    if ns_items_key in cache:
         cache.delete(ns_items_key)
 
 db.signals.pre_save.connect(validate_network_address, sender=Network)
