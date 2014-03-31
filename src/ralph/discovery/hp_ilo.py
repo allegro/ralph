@@ -225,6 +225,7 @@ class VersionError(Error):
 
 
 class IloHost(object):
+
     def __init__(self, host, user, password):
         self.host = host
         self.user = user
@@ -394,7 +395,7 @@ class IloHost(object):
             fields = collections.defaultdict(list)
             for field in record.iterfind('FIELD'):
                 fields[field.attrib['NAME']].append(field.attrib['VALUE'])
-            #fields['DATA'] = base64.b64decode(record.attrib['B64_DATA'])
+            # fields['DATA'] = base64.b64decode(record.attrib['B64_DATA'])
             records[int(record.attrib['TYPE'])].append(fields)
 
         return name, mac, firmware, records

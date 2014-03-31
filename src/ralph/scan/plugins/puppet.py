@@ -40,11 +40,13 @@ ENGINES = {}
 
 
 class PuppetBaseProvider(object):
+
     def get_facts(self, ip_addresses, hostnames, messages=[]):
         raise NotImplementedError()
 
 
 class PuppetAPIProvider(PuppetBaseProvider):
+
     def __init__(self, api_url):
         self.api_url = api_url
 
@@ -79,6 +81,7 @@ class PuppetAPIProvider(PuppetBaseProvider):
 
 
 class PuppetDBProvider(PuppetBaseProvider):
+
     def __init__(self, db_url):
         self.db_url = db_url
         self.conn = self._connect_db()

@@ -86,7 +86,7 @@ class DNSHistory(db.Model):
 @receiver(post_save, sender=Record, dispatch_uid='ralph.history.dns')
 def record_post_save(sender, instance, raw, using, **kwargs):
     for field, orig, new in field_changes(instance, ignore={
-        'last_seen', 'change_date', 'id'}):
+            'last_seen', 'change_date', 'id'}):
         DNSHistory(
             record_name=instance.name,
             record_type=instance.type,
@@ -109,4 +109,3 @@ def record_pre_delete(sender, instance, using, **kwargs):
         user=getattr(instance, 'saving_user', None),
         device=getattr(instance, 'saving_device', None),
     ).save()
-

@@ -36,6 +36,7 @@ from ralph.ui.forms.deployment import (
 
 
 class BulkDeploymentTest(TestCase):
+
     def test_validate_cols_count(self):
         with self.assertRaises(forms.ValidationError):
             _validate_cols_count(1, [1, 2], 0)

@@ -17,6 +17,7 @@ def run_http(ip):
     ip_address.save(update_last_seen=True)
     return family
 
+
 @plugin.register(chain='discovery', requires=['ping'], priority=201)
 def http(**kwargs):
     ip = str(kwargs['ip'])

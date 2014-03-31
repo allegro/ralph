@@ -23,6 +23,7 @@ FAMILIES = {
 
 
 class HTTPRedirectHandler(urllib2.HTTPRedirectHandler):
+
     def http_error_302(self, req, fp, code, msg, headers):
         return urllib2.HTTPRedirectHandler.http_error_302(self, req, fp,
                                                           code, msg, headers)

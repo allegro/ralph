@@ -11,6 +11,7 @@ from ralph.scan.diff import _find_database_key
 
 
 class DiffTest(TestCase):
+
     def test_find_database_key(self):
         db_key = _find_database_key({
             ('database',): 123,
@@ -27,4 +28,3 @@ class DiffTest(TestCase):
             ('some.other.plugin.name', 'db'): 321,
         })
         self.assertIsNone(db_key)
-

@@ -14,6 +14,7 @@ from ralph.discovery.tests.util import MockSSH
 
 
 class SshSsgPluginTest(TestCase):
+
     def test_ssg(self):
         with mock.patch('ralph.discovery.plugins.ssh_ssg.SSGSSHClient') as SSH:
             SSH.side_effect = MockSSH([
@@ -98,7 +99,7 @@ Interface ethernet0/3:\r
   bandwidth: physical 1000000kbps, configured egress [gbw 0kbps mbw 0kbps]\r
              configured ingress mbw 0kbps, current bw 0kbps\r
              total allocated gbw 0kbps\r"""),
-                ])
+            ])
             ssh_ssg.run_ssh_ssg('127.0.0.1')
         ip = IPAddress.objects.get(address='127.0.0.1')
         dev = ip.device
@@ -108,4 +109,3 @@ Interface ethernet0/3:\r
         self.assertEqual(dev.sn, 'JN118F889ADD')
         macs = [e.mac for e in dev.ethernet_set.all()]
         self.assertEqual(macs, ['B0C69A859780'])
-

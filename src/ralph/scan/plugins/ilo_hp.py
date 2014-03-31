@@ -100,4 +100,3 @@ def scan_address(ip_address, **kwargs):
         result['status'] = 'success'
         result['device'] = device_info
     return result
-

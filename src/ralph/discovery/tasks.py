@@ -32,10 +32,12 @@ SINGLE_DISCOVERY_TIMEOUT = settings.SINGLE_DISCOVERY_TIMEOUT
 
 
 class Error(Exception):
+
     """Errors during discovery tasks."""
 
 
 class NoQueueError(Error):
+
     """No discovery queue defined."""
 
 

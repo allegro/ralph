@@ -51,6 +51,7 @@ EXPIRATION = settings.API_THROTTLING['expiration']
 
 
 class BusinessLineResource(MResource):
+
     class Meta:
         # has only name, so skip content_object info
         queryset = CI.objects.filter(
@@ -89,6 +90,7 @@ class BusinessLineResource(MResource):
 
 
 class ServiceResource(MResource):
+
     class Meta:
         queryset = CI.objects.filter(type__id=db.CI_TYPES.SERVICE.id).all()
         authentication = ApiKeyAuthentication()
@@ -134,6 +136,7 @@ class ServiceResource(MResource):
 
 
 class CIRelationResource(MResource):
+
     class Meta:
         queryset = CIRelation.objects.all()
         authentication = ApiKeyAuthentication()
@@ -167,6 +170,7 @@ class CIRelationResource(MResource):
 
 
 class OwnershipField(tastypie.fields.RelatedField):
+
     """A field representing a single type of owner relationship."""
 
     is_m2m = True
@@ -208,6 +212,7 @@ class OwnershipField(tastypie.fields.RelatedField):
 
 
 class CustomAttributesField(tastypie.fields.ApiField):
+
     """The field that works on custom attributes of a CI."""
 
     is_m2m = True
@@ -243,14 +248,16 @@ class CustomAttributesField(tastypie.fields.ApiField):
     def hydrate(self, bundle):
         pass
 
+
 class LinkField(tastypie.fields.ApiField):
+
     """The field that provides some link based on the id of the resource."""
 
     readonly = True
 
     def __init__(self, view, as_qs, *args, **kwargs):
         self.view = view
-        
+
         super(LinkField, self).__init__(*args, **kwargs)
         self.as_qs = as_qs
 
@@ -323,6 +330,7 @@ class CIResource(MResource):
 
 
 class CILayersResource(MResource):
+
     class Meta:
         queryset = CILayer.objects.all()
         authentication = ApiKeyAuthentication()
@@ -348,6 +356,7 @@ class CILayersResource(MResource):
 
 
 class CIChangeResource(MResource):
+
     class Meta:
         queryset = CIChange.objects.all()
         authentication = ApiKeyAuthentication()
@@ -380,6 +389,7 @@ class CIChangeResource(MResource):
 
 
 class CIChangeZabbixTriggerResource(MResource):
+
     class Meta:
         queryset = CIChangeZabbixTrigger.objects.all()
         authentication = ApiKeyAuthentication()
@@ -413,6 +423,7 @@ class CIChangeZabbixTriggerResource(MResource):
 
 
 class CIChangeGitResource(MResource):
+
     class Meta:
         queryset = CIChangeGit.objects.all()
         authentication = ApiKeyAuthentication()
@@ -443,6 +454,7 @@ class CIChangeGitResource(MResource):
 
 
 class CIChangePuppetResource(MResource):
+
     class Meta:
         queryset = CIChangePuppet.objects.all()
         authentication = ApiKeyAuthentication()
@@ -506,6 +518,7 @@ class CIChangeCMDBHistoryResource(MResource):
 
 
 class CITypesResource(MResource):
+
     class Meta:
         queryset = CIType.objects.all()
         authentication = ApiKeyAuthentication()
@@ -530,6 +543,7 @@ class CITypesResource(MResource):
 
 
 class CIOwnersResource(MResource):
+
     class Meta:
         queryset = CIOwner.objects.all()
         authentication = ApiKeyAuthentication()

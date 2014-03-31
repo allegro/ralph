@@ -108,6 +108,7 @@ def _send_soap(post_url, login, password, message):
 
 
 class IDRAC(object):
+
     def __init__(self, host, user=IDRAC_USER, password=IDRAC_PASSWORD):
         self.host = host
         self.user = user
@@ -140,7 +141,8 @@ class IDRAC(object):
         )
         records = tree.findall(q)
         if not records:
-            raise IncorrectAnswerError("Incorrect answer in the get_base_info.")
+            raise IncorrectAnswerError(
+                "Incorrect answer in the get_base_info.")
         result = {
             'manufacturer': records[0].find(
                 "{}{}".format(xmlns_n1, 'Manufacturer')

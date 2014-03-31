@@ -22,6 +22,7 @@ SETTINGS = settings.SCAN_PLUGINS.get(__name__, {})
 
 
 class SSGSSHClient(paramiko.SSHClient):
+
     """SSHClient modified for SSG's broken ssh console."""
 
     def __init__(self, *args, **kwargs):
@@ -40,7 +41,7 @@ class SSGSSHClient(paramiko.SSHClient):
         self._ssg_chan.sendall('\r\n')
         time.sleep(0.125)
         chunk = self._ssg_chan.recv(1024)
-        if not '->' in chunk:
+        if '->' not in chunk:
             raise SSHConsoleError('Expected system prompt, got "%s".' % chunk)
 
     def ssg_command(self, command):
@@ -122,4 +123,3 @@ def scan_address(ip_address, **kwargs):
                 'device': device_info,
             })
     return result
-

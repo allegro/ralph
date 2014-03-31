@@ -25,6 +25,7 @@ logger = logging.getLogger(__name__)
 
 
 class PuppetAgentsImporter(BaseImporter):
+
     """Every Puppet host after applying configurations sends yaml textfile report to
     the puppet master server. We hook into this request on the puppet master server
     and parse requests. Only changed hosts are written into the database. """
@@ -53,7 +54,8 @@ class PuppetAgentsImporter(BaseImporter):
             configuration_version=yaml.configuration_version,
             host=yaml.host,
         ).exists():
-            # skip importing another copy report of the same host/config version
+            # skip importing another copy report of the same host/config
+            # version
             return
         report = db.CIChangePuppet()
         report.configuration_version = yaml.configuration_version or ''
@@ -87,10 +89,12 @@ time=%s''' % (title(), host, status, level, message, time))
 
 
 class PuppetGitImporter(BaseImporter):
+
     """ Fetch changesets from fisheye repo.
     CI's are recognized from changed repo directories. Eg:
     ./modules/venture/venture__role
     """
+
     def __init__(self, fisheye_class=Fisheye):
         self.fisheye = fisheye_class()
 
@@ -217,4 +221,3 @@ class PuppetGitImporter(BaseImporter):
                 ci = self.get_ci_by_path_mapping(path)
                 if ci:
                     return ci
-

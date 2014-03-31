@@ -23,6 +23,7 @@ def get_cmdb_plugins():
 
 
 class Command(BaseCommand):
+
     """Integration with 3rd party services."""
     help = textwrap.dedent(__doc__).strip()
     requires_model_validation = True

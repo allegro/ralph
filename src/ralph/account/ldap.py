@@ -56,6 +56,7 @@ else:
                 profile.manager = cn
 
     class MappedGroupOfNamesType(ActiveDirectoryGroupType):
+
         """Provide group mappings described in project settings."""
 
         def _group_cache_key(self, group_dn):

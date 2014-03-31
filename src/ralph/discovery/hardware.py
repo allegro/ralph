@@ -9,7 +9,8 @@ from __future__ import unicode_literals
 import re
 
 from ralph.util import units, parse
-from ralph.discovery.models import (Memory, Processor, ComponentModel,
+from ralph.discovery.models import (
+    Memory, Processor, ComponentModel,
     ComponentType, Storage, DISK_VENDOR_BLACKLIST, DISK_PRODUCT_BLACKLIST,
     Device, DeviceType
 )
@@ -18,18 +19,30 @@ from ralph.discovery.models import (Memory, Processor, ComponentModel,
 SMBIOS_BANNER = 'ID    SIZE TYPE'
 DENSE_SPEED_REGEX = re.compile(r'(\d+)\s*([GgHhKkMmZz]+)')
 INQUIRY_REGEXES = (
-    re.compile(r'^(?P<vendor>OCZ)-(?P<sn>[a-zA-Z0-9]{16})OCZ-(?P<product>\S+)\s+.*$'),
-    re.compile(r'^(?P<vendor>(FUJITSU|TOSHIBA))\s+(?P<product>[a-zA-Z0-9]+)\s+(?P<sn>[a-zA-Z0-9]{16})$'),
-    re.compile(r'^(?P<vendor>SEAGATE)\s+(?P<product>ST[^G]+G)(?P<sn>[a-zA-Z0-9]+)$'),
-    re.compile(r'^(?P<vendor>SEAGATE)\s+(?P<product>ST[0-9]+SS)\s+(?P<sn>[a-zA-Z0-9]+)$'),
-    re.compile(r'^(?P<vendor>SEAGATE)\s+(?P<product>ST[A-Z0-9]+)\s+(?P<sn>[a-zA-Z0-9]+)$'),
-    re.compile(r'^(?P<sn>[a-zA-Z0-9]{18})\s+(?P<vendor>INTEL)\s+(?P<product>[a-zA-Z0-9]+)\s+.*$'),
-    re.compile(r'^(?P<vendor>IBM)-(?P<product>[a-zA-Z0-9]+)\s+(?P<sn>[a-zA-Z0-9]+)$'),
-    re.compile(r'^(?P<vendor>HP)\s+(?P<product>[a-zA-Z0-9]{11})\s+(?P<sn>[a-zA-Z0-9]{12})$'),
-    re.compile(r'^(?P<vendor>HITACHI)\s+(?P<product>[a-zA-Z0-9]{15})(?P<sn>[a-zA-Z0-9]{15})$'),
-    re.compile(r'^(?P<vendor>HITACHI)\s+(?P<product>[a-zA-Z0-9]{15})\s+(?P<sn>[a-zA-Z0-9]{12})$'),
-    re.compile(r'^(?P<sn>[a-zA-Z0-9]{15})\s+(?P<vendor>Samsung)\s+(?P<product>[a-zA-Z0-9\s]+)\s+.*$'),
-    re.compile(r'^(?P<vendor>WD)\s+(?P<product>WD[A-Z0-9]{8})\s+(?P<sn>[a-zA-Z0-9]{16})$'),
+    re.compile(
+        r'^(?P<vendor>OCZ)-(?P<sn>[a-zA-Z0-9]{16})OCZ-(?P<product>\S+)\s+.*$'),
+    re.compile(
+        r'^(?P<vendor>(FUJITSU|TOSHIBA))\s+(?P<product>[a-zA-Z0-9]+)\s+(?P<sn>[a-zA-Z0-9]{16})$'),
+    re.compile(
+        r'^(?P<vendor>SEAGATE)\s+(?P<product>ST[^G]+G)(?P<sn>[a-zA-Z0-9]+)$'),
+    re.compile(
+        r'^(?P<vendor>SEAGATE)\s+(?P<product>ST[0-9]+SS)\s+(?P<sn>[a-zA-Z0-9]+)$'),
+    re.compile(
+        r'^(?P<vendor>SEAGATE)\s+(?P<product>ST[A-Z0-9]+)\s+(?P<sn>[a-zA-Z0-9]+)$'),
+    re.compile(
+        r'^(?P<sn>[a-zA-Z0-9]{18})\s+(?P<vendor>INTEL)\s+(?P<product>[a-zA-Z0-9]+)\s+.*$'),
+    re.compile(
+        r'^(?P<vendor>IBM)-(?P<product>[a-zA-Z0-9]+)\s+(?P<sn>[a-zA-Z0-9]+)$'),
+    re.compile(
+        r'^(?P<vendor>HP)\s+(?P<product>[a-zA-Z0-9]{11})\s+(?P<sn>[a-zA-Z0-9]{12})$'),
+    re.compile(
+        r'^(?P<vendor>HITACHI)\s+(?P<product>[a-zA-Z0-9]{15})(?P<sn>[a-zA-Z0-9]{15})$'),
+    re.compile(
+        r'^(?P<vendor>HITACHI)\s+(?P<product>[a-zA-Z0-9]{15})\s+(?P<sn>[a-zA-Z0-9]{12})$'),
+    re.compile(
+        r'^(?P<sn>[a-zA-Z0-9]{15})\s+(?P<vendor>Samsung)\s+(?P<product>[a-zA-Z0-9\s]+)\s+.*$'),
+    re.compile(
+        r'^(?P<vendor>WD)\s+(?P<product>WD[A-Z0-9]{8})\s+(?P<sn>[a-zA-Z0-9]{16})$'),
 )
 
 
@@ -61,7 +74,8 @@ def normalize_wwn(wwn):
     u'600144F01EF1490000004C08ED6F0008'
     """
 
-    wwn = wwn.replace(':', '').replace(' ', '').replace('.', '').strip().upper()
+    wwn = wwn.replace(':', '').replace(
+        ' ', '').replace('.', '').strip().upper()
     if len(wwn) == 16:
         # 3PAR
         pass
@@ -305,8 +319,7 @@ def handle_megaraid(dev, disks, priority=0):
         disk['vendor'], disk['product'], disk['serial_number'] = \
             _handle_inquiry_data(
                 disk.get('inquiry_data', ''),
-                controller_handle, disk_handle
-            )
+                controller_handle, disk_handle)
 
         if not disk.get('serial_number') or disk.get('media_type') not in (
                 'Hard Disk Device', 'Solid State Device'):
@@ -348,6 +361,7 @@ def handle_megaraid(dev, disks, priority=0):
         )
         stor.save(priority=priority)
 
+
 def handle_3ware(dev, disks, priority=0):
     for disk_handle, disk in disks.iteritems():
         if not disk.get('serial'):
@@ -375,6 +389,7 @@ def handle_3ware(dev, disks, priority=0):
             priority=priority,
         )
         stor.save(priority=priority)
+
 
 def handle_hpacu(dev, disks, priority=0):
     for disk_handle, disk in disks.iteritems():
@@ -461,7 +476,7 @@ def handle_dmidecode(info, ethernets=(), priority=0):
     # We will let other plugins determine that.
     dev = Device.create(
         ethernets=ethernets, sn=info['sn'], uuid=info['uuid'],
-        model_name='DMI '+info['model'], model_type=DeviceType.unknown,
+        model_name='DMI ' + info['model'], model_type=DeviceType.unknown,
         priority=priority,
     )
     for i, cpu_info in enumerate(info['cpu']):
@@ -470,7 +485,7 @@ def handle_dmidecode(info, ethernets=(), priority=0):
             speed=cpu_info['speed'] or 0,
             cores=cpu_info['cores'] or 0,
             family=cpu_info['family'],
-            name = cpu_info['model'],
+            name=cpu_info['model'],
             priority=priority,
         )
         cpu, created = Processor.concurrent_get_or_create(device=dev,

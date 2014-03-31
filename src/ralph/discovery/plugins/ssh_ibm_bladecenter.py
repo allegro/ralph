@@ -53,6 +53,7 @@ class DeviceError(Error):
 
 
 class Counts(object):
+
     def __init__(self):
         self.cpu = 0
         self.mem = 0
@@ -60,6 +61,7 @@ class Counts(object):
 
 
 class IBMSSHClient(paramiko.SSHClient):
+
     """SSHClient modified for IBM's broken ssh console."""
 
     def __init__(self, *args, **kwargs):

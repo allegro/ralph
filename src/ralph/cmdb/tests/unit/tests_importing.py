@@ -36,6 +36,7 @@ CURRENT_DIR = settings.CURRENT_DIR
 
 
 class CIImporterTest(TestCase):
+
     """Test creating CI's and relations between them
     from base ralph data types."""
     fixtures = ['invalid_cis', 'structure_for_import']
@@ -185,6 +186,7 @@ class CIImporterTest(TestCase):
 
 
 class AddOrUpdateCITest(TestCase):
+
     def setUp(self):
         # create Venture and CI
         self.venture = Venture.objects.create(name='TestVenture')
@@ -257,6 +259,7 @@ class AddOrUpdateCITest(TestCase):
 
 
 class AutoCIRemoveTest(TestCase):
+
     def setUp(self):
         # create Venture and CI
         self.venture = Venture.objects.create(name='TestVenture')

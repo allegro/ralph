@@ -81,7 +81,7 @@ def clean(deployment_id):
         return True
     do_clean(deployment.device, deployment.user)
     ip, created = IPAddress.concurrent_get_or_create(address=deployment.ip)
-    ip.device=deployment.device
-    ip.hostname=deployment.hostname
+    ip.device = deployment.device
+    ip.hostname = deployment.hostname
     ip.save()
     return True

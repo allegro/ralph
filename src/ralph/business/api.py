@@ -48,20 +48,20 @@ class VentureResource(MResource):
     department = fields.ForeignKey(
         'ralph.business.api.DepartmentResource',
         'department',
-         null=True,
-         full=True,
+        null=True,
+        full=True,
     )
     business_segment = fields.ForeignKey(
         'ralph.business.api.BusinessSegmentResource',
         'business_segment',
-         null=True,
-         full=True,
+        null=True,
+        full=True,
     )
     profit_center = fields.ForeignKey(
         'ralph.business.api.ProfitCenterResource',
         'profit_center',
-         null=True,
-         full=True,
+        null=True,
+        full=True,
     )
 
     class Meta:
@@ -147,7 +147,7 @@ class RoleResource(MResource):
     )
     devices = fields.ToManyField('ralph.discovery.api.DevResource', 'device')
     properties = fields.ToManyField('ralph.business.api.RolePropertyResource',
-        'roleproperty', full=True)
+                                    'roleproperty', full=True)
 
     class Meta:
         queryset = VentureRole.objects.all()
@@ -216,6 +216,7 @@ class RoleLightResource(MResource):
 
 
 class DepartmentResource(MResource):
+
     class Meta:
         queryset = Department.objects.all()
         authentication = ApiKeyAuthentication()
@@ -238,6 +239,7 @@ class DepartmentResource(MResource):
 
 
 class RolePropertyTypeResource(MResource):
+
     class Meta:
         queryset = RolePropertyType.objects.all()
         authentication = ApiKeyAuthentication()
@@ -361,6 +363,7 @@ class RolePropertyValueResource(MResource):
 
 
 class BusinessSegmentResource(MResource):
+
     class Meta:
         queryset = BusinessSegment.objects.all()
         authentication = ApiKeyAuthentication()
@@ -382,6 +385,7 @@ class BusinessSegmentResource(MResource):
 
 
 class ProfitCenterResource(MResource):
+
     class Meta:
         queryset = ProfitCenter.objects.all()
         authentication = ApiKeyAuthentication()

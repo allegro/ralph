@@ -11,21 +11,22 @@ from optparse import make_option
 import sys
 
 from django.core.management.base import BaseCommand
-from django.db.models import Q
 
 from bob.csvutil import UnicodeReader
 from ralph.discovery.models import Device
 
+
 class Command(BaseCommand):
+
     """Import a report"""
 
     help = textwrap.dedent(__doc__).strip()
     requires_model_validation = False
     option_list = BaseCommand.option_list + (
-            make_option('--fields', dest='fields', default=None,
-                help='List of fields in the imported file'),
-            make_option('--delimiter', dest='delimiter', default=b',',
-                help='Delimiter used in the imported file'),
+        make_option('--fields', dest='fields', default=None,
+                    help='List of fields in the imported file'),
+        make_option('--delimiter', dest='delimiter', default=b',',
+                    help='Delimiter used in the imported file'),
     )
 
     def handle(self, filename, fields='', delimiter=b',', **options):
@@ -42,7 +43,8 @@ class Command(BaseCommand):
                 try:
                     dev = Device.objects.get(id=dev_id)
                 except Device.DoesNotExist:
-                    sys.stderr.write("Device with id=%r doesn't exist!\n" % dev_id)
+                    sys.stderr.write(
+                        "Device with id=%r doesn't exist!\n" % dev_id)
                     continue
                 for field, value in data.iteritems():
                     if field in ('id', ''):
@@ -54,5 +56,3 @@ class Command(BaseCommand):
                     print('%r.%s = %r' % (dev, field, value))
                     setattr(dev, field, value)
                     dev.save(priority=50)
-
-

@@ -40,7 +40,9 @@ _patched_PASSWORD = 'test'
 
 
 class SystemXPluginTest(TestCase):
+
     """ IBM System X Test case """
+
     def setUp(self):
         self.ip = '10.10.10.10'
         self.session_id = '123'
@@ -110,5 +112,3 @@ class SystemXPluginTest(TestCase):
                 {'cores': '8', 'label': u'Intel Xeon CPU 2666 MHz, 8 cores 1 threads',
                     'speed': '2666', 'family': 'Intel Xeon', 'index': '2'}]
         )
-
-

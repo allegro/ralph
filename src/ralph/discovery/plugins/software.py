@@ -11,7 +11,8 @@ from lck.django.common import nested_commit_on_success
 from ralph.util import plugin, network
 from ralph.discovery.models import Software, IPAddress
 
-SAVE_PRIORITY=20
+SAVE_PRIORITY = 20
+
 
 @nested_commit_on_success
 def _detect_software(ip, dev, http_family):
@@ -41,15 +42,16 @@ def _detect_software(ip, dev, http_family):
     if network.check_tcp_port(ip, 80) or network.check_tcp_port(ip, 443):
         detected.append('WWW')
         Software.create(dev,
-            'www',
-            'WWW',
-            label=http_family,
-            family='WWW',
-            priority=SAVE_PRIORITY
-        )
+                        'www',
+                        'WWW',
+                        label=http_family,
+                        family='WWW',
+                        priority=SAVE_PRIORITY
+                        )
     else:
         dev.software_set.filter(path='www').all().delete()
     return ', '.join(detected)
+
 
 @plugin.register(chain='postprocess', requires=['ping'])
 def software(ip, **kwargs):

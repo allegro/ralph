@@ -128,7 +128,7 @@ def run_ssh_aix(ip):
             continue
         wwn = normalize_wwn(sn[-4:] + sn[:-4])
         mount, created = DiskShareMount.concurrent_get_or_create(
-            share=share, device=dev, defaults={'is_virtual':False})
+            share=share, device=dev, defaults={'is_virtual': False})
         mount.volume = disk
         mount.save(priority=SAVE_PRIORITY)
     for disk, model_name, sn in stors:
@@ -166,14 +166,14 @@ def run_ssh_aix(ip):
     )
     cpu.save(priority=SAVE_PRIORITY)
     OperatingSystem.create(dev=dev,
-        os_name='AIX',
-        version=os_version,
-        family='AIX',
-        memory=os_memory or None,
-        cores_count=os_corescount or None,
-        storage=os_storage_size or None,
-        priority=SAVE_PRIORITY
-    )
+                           os_name='AIX',
+                           version=os_version,
+                           family='AIX',
+                           memory=os_memory or None,
+                           cores_count=os_corescount or None,
+                           storage=os_storage_size or None,
+                           priority=SAVE_PRIORITY
+                           )
     return machine_model
 
 
@@ -201,4 +201,3 @@ def ssh_aix(**kwargs):
     except Error as e:
         return False, str(e), kwargs
     return True, name, kwargs
-

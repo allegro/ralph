@@ -5,5 +5,11 @@ python:
 install:
   - pip install git+https://github.com/allegro/django-bob
   - pip install . --use-mirrors --allow-all-external --allow-unverified ipaddr --allow-unverified postmarkup --allow-unverified python-graph-core --allow-unverified pysphere
+  - pip install flake8
+  
+  
 # command to run tests, e.g. python setup.py test
-script:  DJANGO_SETTINGS_PROFILE=test-ralph ralph test ralph
+script: DJANGO_SETTINGS_PROFILE=test-ralph ralph test ralph
+before_script:
+  make flake
+  

@@ -34,4 +34,3 @@ no_eth_data = """{"data":{"storage": [{"sn":"03da1030-f25b-48","mountpoint":"C:"
   {"volume":"3PARdata VV  Multi-Path Disk Device","sn":"80C804C2","label":"3PARdata VV  Multi-Path Disk Device"}]
 }}
 """
-

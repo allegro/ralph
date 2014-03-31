@@ -20,8 +20,8 @@ from lck.django.common import nested_commit_on_success
 from ralph.util import network
 from ralph.util import plugin, Eth
 from ralph.discovery.models import (DeviceType, Device, IPAddress, Software,
-        DiskShare, DiskShareMount, ComponentModel, Processor, ComponentType,
-        Storage)
+                                    DiskShare, DiskShareMount, ComponentModel, Processor, ComponentType,
+                                    Storage)
 from ralph.discovery.hardware import get_disk_shares
 from ralph.discovery.models_history import DiscoveryWarning
 
@@ -32,6 +32,7 @@ SAVE_PRIORITY = 10
 
 class Error(Exception):
     pass
+
 
 class NotProxmoxError(Error):
     pass
@@ -61,7 +62,7 @@ def _get_local_disk_size(ssh, disk, parent, hypervisor_ip):
 
 def _add_virtual_machine(ssh, vmid, parent, master, storages, hypervisor_ip):
     stdin, stdout, stderr = ssh.exec_command(
-            "cat /etc/qemu-server/%d.conf" % vmid)
+        "cat /etc/qemu-server/%d.conf" % vmid)
     lines = stdout.readlines()
     if not lines:
         # Proxmox 2 uses a different directory structure
@@ -97,13 +98,13 @@ def _add_virtual_machine(ssh, vmid, parent, master, storages, hypervisor_ip):
         ).save()
         return None
     dev = Device.create(
-            model_name='Proxmox qemu kvm',
-            model_type=DeviceType.virtual_server,
-            ethernets=[Eth(label=lan_model, mac=lan_mac, speed=0)],
-            parent=parent,
-            management=master,
-            name=name
-        )
+        model_name='Proxmox qemu kvm',
+        model_type=DeviceType.virtual_server,
+        ethernets=[Eth(label=lan_model, mac=lan_mac, speed=0)],
+        parent=parent,
+        management=master,
+        name=name
+    )
     wwns = []
     for slot, disk in disks.iteritems():
         params = {}
@@ -164,7 +165,7 @@ def _add_virtual_machine(ssh, vmid, parent, master, storages, hypervisor_ip):
             ).save()
             continue
         mount, created = DiskShareMount.concurrent_get_or_create(
-                share=share, device=dev)
+            share=share, device=dev)
         mount.is_virtual = True
         mount.server = parent
         mount.size = size
@@ -185,7 +186,7 @@ def _add_virtual_machine(ssh, vmid, parent, master, storages, hypervisor_ip):
     )
     for i in range(cpu_count):
         cpu, cpu_created = Processor.concurrent_get_or_create(device=dev,
-                                                              index=i+1)
+                                                              index=i + 1)
         if cpu_created:
             cpu.label = 'CPU {}'.format(i + 1)
             cpu.model = cpu_model
@@ -194,6 +195,7 @@ def _add_virtual_machine(ssh, vmid, parent, master, storages, hypervisor_ip):
 
     dev.save(update_last_seen=True, priority=SAVE_PRIORITY)
     return dev
+
 
 def _add_virtual_machines(ssh, parent, master, hypervisor_ip):
     storages = get_disk_shares(ssh)
@@ -204,7 +206,7 @@ def _add_virtual_machines(ssh, parent, master, hypervisor_ip):
         if line.startswith('VMID'):
             continue
         vmid, name, status, mem, bootdisk, pid = (v.strip() for
-                v in line.split())
+                                                  v in line.split())
         if status != 'running':
             continue
         vmid = int(vmid)
@@ -220,7 +222,8 @@ def _add_virtual_machines(ssh, parent, master, hypervisor_ip):
             continue
         dev_ids.append(dev.id)
     for child in parent.child_set.exclude(id__in=dev_ids):
-        logger.info('Deleting virtual server %r that no longer exists.' % child)
+        logger.info(
+            'Deleting virtual server %r that no longer exists.' % child)
         child.deleted = True
         child.save()
 
@@ -237,7 +240,7 @@ def _get_master(ssh, ip, data=None):
             for node in nodes:
                 node_name = node['node']
                 stdin, stdout, stderr = ssh.exec_command(
-                        'pvesh get "/nodes/%s/dns"' % node_name)
+                    'pvesh get "/nodes/%s/dns"' % node_name)
                 dns = json.loads(stdout.read())
                 ip = dns['dns1']
                 break
@@ -274,7 +277,7 @@ def _add_cluster_member(ssh, ip):
     mac = stdout.readline().split()[-1]
 
     dev = Device.create(ethernets=[Eth(label='eth0', mac=mac, speed=0)],
-            model_name='Proxmox', model_type=DeviceType.unknown)
+                        model_name='Proxmox', model_type=DeviceType.unknown)
 
     Software.create(
         dev,
@@ -295,7 +298,7 @@ def run_ssh_proxmox(ip):
     ssh = _connect_ssh(ip)
     try:
         for command in ('cat /etc/pve/cluster.cfg', 'cat /etc/pve/cluster.conf',
-                          'cat /etc/pve/storage.cfg', 'pvecm help'):
+                        'cat /etc/pve/storage.cfg', 'pvecm help'):
             stdin, stdout, stderr = ssh.exec_command(command)
             data = stdout.read()
             if data != '':
@@ -308,6 +311,7 @@ def run_ssh_proxmox(ip):
     finally:
         ssh.close()
     return member.sn or member.name
+
 
 @plugin.register(chain='discovery', requires=['ping', 'http'])
 def ssh_proxmox(**kwargs):
@@ -333,4 +337,3 @@ def ssh_proxmox(**kwargs):
         ).save()
         return False, str(e), kwargs
     return True, name, kwargs
-

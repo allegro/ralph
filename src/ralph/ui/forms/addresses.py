@@ -63,10 +63,10 @@ class DNSRecordForm(forms.ModelForm):
         self.fields['type'].choices = [(t, t) for t in limit_types]
         if self.instance.type in ('A', 'AAAA') and get_revdns_records(
                 self.instance.content
-            ).filter(
+        ).filter(
                 content=self.instance.name
-            ).exists():
-                self.fields['ptr'].initial = True
+        ).exists():
+            self.fields['ptr'].initial = True
         if not self.instance.name and self.hostnames:
             hostname = list(self.hostnames)[0]
             self.fields['name'].initial = hostname
@@ -87,7 +87,8 @@ class DNSRecordForm(forms.ModelForm):
         content = self.cleaned_data['content']
         if type == 'CNAME':
             if content not in self.hostnames:
-                raise forms.ValidationError("Invalid hostname for this device.")
+                raise forms.ValidationError(
+                    "Invalid hostname for this device.")
             return validate_domain_name(content)
         elif type == 'A':
             try:
@@ -137,6 +138,7 @@ class DNSRecordForm(forms.ModelForm):
 
 
 class DNSFormSetBase(forms.models.BaseModelFormSet):
+
     def __init__(self, *args, **kwargs):
         self.hostnames = kwargs.pop('hostnames')
         self.limit_types = kwargs.pop('limit_types')
@@ -177,6 +179,7 @@ DNSFormSet = forms.models.modelformset_factory(
 
 
 class DHCPEntryForm(forms.ModelForm):
+
     class Meta:
         model = DHCPEntry
         fields = 'ip', 'mac'
@@ -217,6 +220,7 @@ class DHCPEntryForm(forms.ModelForm):
 
 
 class DHCPFormSetBase(forms.models.BaseModelFormSet):
+
     def __init__(self, records, macs, ips, device, *args, **kwargs):
         kwargs['queryset'] = records.all()
         self.records = list(records)
@@ -257,6 +261,7 @@ DHCPFormSet = forms.models.modelformset_factory(
 
 
 class IPAddressForm(forms.ModelForm):
+
     class Meta:
         model = IPAddress
         fields = 'hostname', 'address'
@@ -297,8 +302,7 @@ class IPAddressForm(forms.ModelForm):
 
 
 IPAddressFormSet = forms.models.modelformset_factory(
-        IPAddress,
-        form=IPAddressForm,
-        can_delete=True,
+    IPAddress,
+    form=IPAddressForm,
+    can_delete=True,
 )
-

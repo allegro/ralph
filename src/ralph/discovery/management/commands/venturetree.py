@@ -13,8 +13,8 @@ from django.core.management.base import BaseCommand
 from ralph.business.models import Venture
 
 
-
 class Command(BaseCommand):
+
     """Generate a tree of all ventures in a dot format."""
 
     help = textwrap.dedent(__doc__).strip()
@@ -23,7 +23,7 @@ class Command(BaseCommand):
 
     def handle(self, **options):
         def norm(v):
-            return re.sub(r'[^a-zA-Z0-9]', '_',  v.symbol).lower()
+            return re.sub(r'[^a-zA-Z0-9]', '_', v.symbol).lower()
         print('digraph Ventures {')
         print(' overlap=prism;')
         print(' root [label="Ventures"];')

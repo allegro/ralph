@@ -50,7 +50,7 @@ def get_device_external_price(device):
         for d in device.child_set.filter(
                 model__type=DeviceType.blade_server.id,
                 deleted=False,
-            ):
+        ):
             price -= get_device_chassis_price(d)
     elif device.model and device.model.type == DeviceType.blade_server.id:
         # Add the price taken from the blade system
@@ -64,8 +64,7 @@ def get_device_external_price(device):
 
 def get_device_raw_price(device, ignore_deprecation=False):
     """Purchase price of this device, before anything interacts with it."""
-    if (device.deleted or (not ignore_deprecation and device.is_deprecated())
-    ):
+    if (device.deleted or (not ignore_deprecation and device.is_deprecated())):
         return 0
     return device.price or get_device_auto_price(device)
 
@@ -103,8 +102,8 @@ def get_device_chassis_price(device, ignore_deprecation=False):
     """
 
     if (device.model and device.model.group and device.model.group.slots and
-        device.parent and device.parent.model and device.parent.model.group and
-        device.parent.model.group.slots and not device.deleted):
+            device.parent and device.parent.model and device.parent.model.group and
+            device.parent.model.group.slots and not device.deleted):
         device_price = get_device_raw_price(
             device.parent,
             ignore_deprecation=ignore_deprecation,
@@ -139,7 +138,7 @@ def get_device_cpu_price(device):
     if not price and device.model and device.model.type in {
             DeviceType.rack_server.id,
             DeviceType.blade_server.id
-        }:
+    }:
         # Fall back to OperatingSystem-visible cores, and then to default
         try:
             os = OperatingSystem.objects.get(device=device)
@@ -269,7 +268,7 @@ def find_descendant(device):
         device_ids.append(device_id)
         for d_id, in Device.objects.filter(
                 parent_id=device_id
-            ).values_list('id'):
+        ).values_list('id'):
             if d_id in visited:
                 # Make sure we don't do the same device twice.
                 continue
@@ -381,8 +380,8 @@ def details_cpu(dev, purchase_only=False):
     if purchase_only:
         return
     if not has_cpu and dev.model and dev.model.type in (
-        DeviceType.blade_server.id, DeviceType.rack_server.id,
-        DeviceType.virtual_server.id):
+            DeviceType.blade_server.id, DeviceType.rack_server.id,
+            DeviceType.virtual_server.id):
         try:
             os = OperatingSystem.objects.get(device=dev)
             group = ComponentModelGroup.objects.get(name='OS Detected CPU')
@@ -421,8 +420,8 @@ def details_mem(dev, purchase_only=False):
     if purchase_only:
         return
     if not has_mem and dev.model and dev.model.type in (
-        DeviceType.blade_server.id, DeviceType.rack_server.id,
-        DeviceType.virtual_server.id):
+            DeviceType.blade_server.id, DeviceType.rack_server.id,
+            DeviceType.virtual_server.id):
         try:
             os = OperatingSystem.objects.get(device=dev)
             group = ComponentModelGroup.objects.get(name='OS Detected Memory')
@@ -546,14 +545,16 @@ def details_disk(dev, purchase_only=False):
             'href': '/admin/discovery/diskshare/%d/' % share.id,
         }
 
+
 def details_software(dev, purchase_only=False):
-   for soft in dev.software_set.order_by('path'):
+    for soft in dev.software_set.order_by('path'):
         yield {
             'label': soft.label,
             'model': soft.model,
             'serial': soft.sn,
             'version': soft.version,
         }
+
 
 def details_other(dev, purchase_only=False):
     for fc in dev.fibrechannel_set.all():

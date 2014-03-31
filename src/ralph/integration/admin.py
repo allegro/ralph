@@ -13,4 +13,3 @@ from ralph.integration.models import RoleIntegration
 
 class RoleIntegrationInline(admin.TabularInline):
     model = RoleIntegration
-

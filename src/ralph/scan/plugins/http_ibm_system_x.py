@@ -230,6 +230,7 @@ def _http_ibm_system_x(ip_address, user, password):
         device['processors'] = processors
     return device
 
+
 def scan_address(ip_address, **kwargs):
     user = SETTINGS.get('user')
     password = SETTINGS.get('password')
@@ -249,4 +250,3 @@ def scan_address(ip_address, **kwargs):
         'device': _http_ibm_system_x(ip_address, user, password),
     })
     return result
-

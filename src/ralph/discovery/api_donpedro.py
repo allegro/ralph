@@ -343,6 +343,7 @@ def save_device_data(data, remote_ip):
 
 
 class WindowsDeviceResource(MResource):
+
     def obj_create(self, bundle, **kwargs):
         if DISCOVERY_DISABLED:
             raise DiscoveryDisabledError(

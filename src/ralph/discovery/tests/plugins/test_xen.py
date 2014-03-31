@@ -14,9 +14,10 @@ from ralph.discovery.tests.util import MockSSH
 
 
 class SshXENPluginTest(TestCase):
+
     def test_xen_get_macs(self):
         ssh = MockSSH([
-                ('sudo xe vif-list params=vm-name-label,MAC', """\
+            ('sudo xe vif-list params=vm-name-label,MAC', """\
 vm-name-label ( RO)    : win2k8
               MAC ( RO): 9a:09:b5:66:31:a9
 
@@ -40,9 +41,9 @@ vm-name-label ( RO)    : Transfer VM for VDI 07f1cca1-056d-4694-879e-adcb2ed989e
 
     def test_xen_get_running_vms(self):
         ssh = MockSSH([
-                ('sudo xe vm-list '
-                 'params=uuid,name-label,power-state,'
-                 'VCPUs-number,memory-actual', """\
+            ('sudo xe vm-list '
+             'params=uuid,name-label,power-state,'
+             'VCPUs-number,memory-actual', """\
 uuid ( RO)             : 66844623-25b9-3d62-f9c9-5efcc35e213f
        name-label ( RW): Transfer VM for VDI 07f1cca1-056d-4694-879e-adcb2ed989e1
       power-state ( RO): halted
@@ -124,8 +125,7 @@ uuid ( RO)            : 2150d8e4-d359-4f8b-889d-8dc63668c045
 
     def test_xen_srs(self):
         ssh = MockSSH([
-            ('sudo xe sr-list params=uuid,physical-size,type'
-            , """\
+            ('sudo xe sr-list params=uuid,physical-size,type'             , """\
 uuid ( RO)             : 81297512-07a6-4642-715a-fae6500a6cae
     physical-size ( RO): -1
              type ( RO): iso
@@ -218,26 +218,26 @@ uuid ( RO)             : 9393c492-4311-4dde-9413-75150afdcd97
         shares = hardware.get_disk_shares(ssh)
         self.maxDiff = None
         self.assertEqual(shares, {
-    'MGT': ('600144F008BF8A000000500CFFF20003', 4),
-    'VHD-03da1032-f25b-4886-8038-5ba774432e37': (
-                                 '600144F008BF8A000000506429600005', 40),
-    'VHD-0623a1f2-24d8-42e3-bbaa-1d4c8ce24e6a': ('50002AC01ADD042F', 40),
-    'VHD-3db885b1-0d35-47d1-b6e8-a4fe067c0cd4': ('50002AC01ADD042F', 40),
-    'VHD-54b78a6b-d44c-4a6c-9fb4-d7d8d37dde19': ('50002AC01ADD042F', 50),
-    'VHD-5ad6d8d2-0e40-4bb7-8358-1cf5e9a971f3': ('50002AC01ADD042F', 24),
-    'VHD-662ce76e-294d-4a36-b658-8f2d6e7bbd03': ('50002AC01ADD042F', 10),
-    'VHD-776f8031-fce3-4f69-b89e-a00970e249df': ('50002AC01ADD042F', 24),
-    'VHD-8ada0d25-8d72-41a3-94ef-d6a68d829a9f': ('50002AC01ADD042F', 66),
-    'VHD-9557f2c2-7c00-40da-bfa4-5edc7ac4850b': ('50002AC01ADD042F', 29),
-    'VHD-99fe0180-4880-4101-b84d-b38592024128': ('50002AC01ADD042F', 48),
-    'VHD-a91d7e03-bcda-42e1-8d7a-8e9e90557f1b': ('50002AC01ADD042F', 50),
-    'VHD-a9bfce35-9529-43dc-b3b4-0b733f9b2969': ('50002AC01ADD042F', 40),
-    'VHD-c86ad50f-6be7-48ce-afb3-d656ce5a2b7f': ('50002AC01ADD042F', 48),
-    'VHD-cfa5d5e0-7f01-46ee-b3e5-5d78bd58305d': ('50002AC01ADD042F', 45),
-    'VHD-e257aeea-74cb-484d-a454-c4651434b3be': ('50002AC01ADD042F', 39),
-    'VHD-e4d621b5-a74d-4344-8079-c4d71235648d': (
-                                 '600144F008BF8A000000500CFFF20003', 199),
-    'VHD-e9d94ff8-8c0e-416c-9c1a-2c94111466f2': ('50002AC01ADD042F', 44),
-    'VHD-fabc14ba-e004-4481-a80c-efc11eb8cc00': ('50002AC01ADD042F', 250),
-    'VHD-fd45752c-342f-4de5-b11d-5da78716ba1a': ('50002AC01ADD042F', 40)
-})
+            'MGT': ('600144F008BF8A000000500CFFF20003', 4),
+            'VHD-03da1032-f25b-4886-8038-5ba774432e37': (
+                '600144F008BF8A000000506429600005', 40),
+            'VHD-0623a1f2-24d8-42e3-bbaa-1d4c8ce24e6a': ('50002AC01ADD042F', 40),
+            'VHD-3db885b1-0d35-47d1-b6e8-a4fe067c0cd4': ('50002AC01ADD042F', 40),
+            'VHD-54b78a6b-d44c-4a6c-9fb4-d7d8d37dde19': ('50002AC01ADD042F', 50),
+            'VHD-5ad6d8d2-0e40-4bb7-8358-1cf5e9a971f3': ('50002AC01ADD042F', 24),
+            'VHD-662ce76e-294d-4a36-b658-8f2d6e7bbd03': ('50002AC01ADD042F', 10),
+            'VHD-776f8031-fce3-4f69-b89e-a00970e249df': ('50002AC01ADD042F', 24),
+            'VHD-8ada0d25-8d72-41a3-94ef-d6a68d829a9f': ('50002AC01ADD042F', 66),
+            'VHD-9557f2c2-7c00-40da-bfa4-5edc7ac4850b': ('50002AC01ADD042F', 29),
+            'VHD-99fe0180-4880-4101-b84d-b38592024128': ('50002AC01ADD042F', 48),
+            'VHD-a91d7e03-bcda-42e1-8d7a-8e9e90557f1b': ('50002AC01ADD042F', 50),
+            'VHD-a9bfce35-9529-43dc-b3b4-0b733f9b2969': ('50002AC01ADD042F', 40),
+            'VHD-c86ad50f-6be7-48ce-afb3-d656ce5a2b7f': ('50002AC01ADD042F', 48),
+            'VHD-cfa5d5e0-7f01-46ee-b3e5-5d78bd58305d': ('50002AC01ADD042F', 45),
+            'VHD-e257aeea-74cb-484d-a454-c4651434b3be': ('50002AC01ADD042F', 39),
+            'VHD-e4d621b5-a74d-4344-8079-c4d71235648d': (
+                '600144F008BF8A000000500CFFF20003', 199),
+            'VHD-e9d94ff8-8c0e-416c-9c1a-2c94111466f2': ('50002AC01ADD042F', 44),
+            'VHD-fabc14ba-e004-4481-a80c-efc11eb8cc00': ('50002AC01ADD042F', 250),
+            'VHD-fd45752c-342f-4de5-b11d-5da78716ba1a': ('50002AC01ADD042F', 40)
+        })

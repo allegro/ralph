@@ -66,6 +66,7 @@ def get_layers_for_ci_type(ci_type_id):
 
 
 class UnknownCTException(Exception):
+
     def __init__(self, value):
         Exception.__init__(self, value)
         self.parameter = value
@@ -127,6 +128,7 @@ def _replace_relations(obj, ci, side, field, other_ct, relation_type):
 
 
 class CIImporter(object):
+
     @nested_commit_on_success
     def store_asset(self, asset, type_, layers, uid_prefix):
         """Store given asset as  CI"""
@@ -191,7 +193,7 @@ class CIImporter(object):
         if content_type:
             for x in cdb.CI.objects.filter(
                     content_type__in=content_type).all().iterator():
-                        x.delete()
+                x.delete()
         else:
             # very very slow.
             for x in cdb.CI.objects.all().iterator():

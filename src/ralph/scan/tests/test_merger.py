@@ -18,6 +18,7 @@ from ralph.scan.merger import (
 
 
 class UtilsTest(TestCase):
+
     def test_get_results_priority(self):
         self.assertEqual(
             _get_results_priority(
@@ -89,6 +90,7 @@ class UtilsTest(TestCase):
 
 
 class MergerTest(TestCase):
+
     def setUp(self):
         self.sample = {
             'database': [
@@ -230,4 +232,3 @@ class MergerTest(TestCase):
                     },
                 ],
             )
-

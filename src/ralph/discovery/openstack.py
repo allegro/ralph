@@ -16,6 +16,7 @@ class Error(Exception):
 
 
 class OpenStack(object):
+
     def __init__(self, url, user, password, region=''):
         self.auth_url = url
         self.user = user
@@ -61,9 +62,9 @@ class OpenStack(object):
             'X-Auth-Token': self.auth_token,
         }
         query_url = '/'.join([
-                url or self.public_url,
-                query,
-            ]) + '?' + query_args
+            url or self.public_url,
+            query,
+        ]) + '?' + query_args
         request = urllib2.Request(query_url, headers=query_headers)
         return json.loads(urllib2.urlopen(request).read())
 
@@ -73,9 +74,7 @@ class OpenStack(object):
         if start is None:
             start = end - datetime.timedelta(hours=24)
         return self.query(
-                'os-simple-tenant-usage',
-                start=start.strftime('%Y-%m-%dT%H:%M:%S'),
-                end=end.strftime('%Y-%m-%dT%H:%M:%S'),
-            )['tenant_usages']
-
-
+            'os-simple-tenant-usage',
+            start=start.strftime('%Y-%m-%dT%H:%M:%S'),
+            end=end.strftime('%Y-%m-%dT%H:%M:%S'),
+        )['tenant_usages']

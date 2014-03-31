@@ -18,6 +18,7 @@ from ralph.scan.tests.plugins.samples.ilo_hp import SAMPLE_RIBCL
 
 
 class IloHpPluginTest(TestCase):
+
     def setUp(self):
         self.ilo = IloHost('127.0.0.1', '', '')
         self.ilo.update(raw=SAMPLE_RIBCL)
@@ -67,7 +68,6 @@ class IloHpPluginTest(TestCase):
             ],
         )
 
-
     def test_get_memory(self):
         self.assertEqual(
             _get_memory(self.ilo),
@@ -98,4 +98,3 @@ class IloHpPluginTest(TestCase):
                 },
             ],
         )
-

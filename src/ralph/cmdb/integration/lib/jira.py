@@ -12,8 +12,10 @@ from ralph.cmdb.integration.exceptions import IssueTrackerException
 
 
 class Jira(object):
+
     def __init__(self):
-        self.accepted_transition = settings.ISSUETRACKERS['default']['OPA']['ACTIONS']['IN_PROGRESS']
+        self.accepted_transition = settings.ISSUETRACKERS[
+            'default']['OPA']['ACTIONS']['IN_PROGRESS']
         user = settings.ISSUETRACKERS['default']['USER']
         password = settings.ISSUETRACKERS['default']['PASSWORD']
         jira_url = settings.ISSUETRACKERS['default']['URL']
@@ -81,9 +83,9 @@ class Jira(object):
                             }]
                     },
                     'fields': {
-#                            'resolution': {
-#                                'name' : 'fixed'
-#                            }
+                        #                            'resolution': {
+                        #                                'name' : 'fixed'
+                        #                            }
                     },
                     'transition': {
                         'id': transition_id
@@ -95,9 +97,9 @@ class Jira(object):
         return call_result
 
     def create_issue(
-        self, summary, description, issue_type, ci, assignee,
-        start='', end='', business_assignee=None, technical_assignee=None,
-        template=None, service=None, profile=None):
+            self, summary, description, issue_type, ci, assignee,
+            start='', end='', business_assignee=None, technical_assignee=None,
+            template=None, service=None, profile=None):
         """ Create new issue.
 
         Jira Rest accepts following fields:

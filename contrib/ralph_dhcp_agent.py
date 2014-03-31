@@ -24,6 +24,7 @@ def all(iterable):
 
 
 class SimpleDHCPManager(object):
+
     def __init__(
         self, api_url, api_username, api_key, mode, dhcp_config_entries,
         dhcp_config_networks, dhcp_config_head, restart, dhcp_server_address,

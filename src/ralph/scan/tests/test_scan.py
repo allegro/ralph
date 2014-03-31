@@ -16,6 +16,7 @@ from ralph.scan.manual import (
 
 
 class TestScan(TestCase):
+
     def setUp(self):
         self.ip_2, _ = IPAddress.concurrent_get_or_create(address='127.0.0.2')
         self.ip_3, _ = IPAddress.concurrent_get_or_create(address='127.0.0.3')
@@ -129,4 +130,3 @@ class TestScan(TestCase):
                 data_2,
             ) == '124e70669d35effe35d338372e84bce6',
         )
-

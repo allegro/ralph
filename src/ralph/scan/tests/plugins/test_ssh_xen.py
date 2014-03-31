@@ -29,6 +29,7 @@ from ralph.scan.tests.plugins.samples.ssh_xen import (
 
 
 class SSHXenPluginTest(TestCase):
+
     def test_sanitize_line(self):
         self.assertEqual(
             _sanitize_line('   ala( RO)( RW) ma(MRO) kota '),

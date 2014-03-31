@@ -28,7 +28,9 @@ CURRENT_DIR = settings.CURRENT_DIR
 
 
 class PuppetAPIProviderTest(TestCase):
+
     """Try to provide facts from YAML"""
+
     def test_load(self):
         """Check if yaml is parsed correctly."""
         contents = None
@@ -40,14 +42,16 @@ class PuppetAPIProviderTest(TestCase):
         with mock.patch(
                 'ralph.discovery.plugins.puppet.PuppetAPIProvider'
                 '.get_data_for_hostname') as get_data_for_hostname:
-                get_data_for_hostname.return_value = contents
-                provider = PuppetAPIProvider()
-                facts = provider.get_facts([], ['', 's10132.dc2'])
-                self.assertItemsEqual(facts, facts_api_data['values'])
+            get_data_for_hostname.return_value = contents
+            provider = PuppetAPIProvider()
+            facts = provider.get_facts([], ['', 's10132.dc2'])
+            self.assertItemsEqual(facts, facts_api_data['values'])
 
 
 class PuppetPluginTest(TestCase):
+
     """Try to import puppet facter data, and make OperatingSystem component"""
+
     def setUp(self):
         self.dev = Device.create(
             sn='device', model_type=DeviceType.virtual_server,

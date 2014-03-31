@@ -27,6 +27,7 @@ from ralph.scan.errors import (
 
 
 class Counts(object):
+
     def __init__(self):
         self.cpu = 0
         self.mem = 0
@@ -34,6 +35,7 @@ class Counts(object):
 
 
 class IBMSSHClient(paramiko.SSHClient):
+
     """SSHClient modified for IBM's broken ssh console."""
 
     def __init__(self, *args, **kwargs):
@@ -193,7 +195,8 @@ def _dev(model_type, pairs, parent, raw):
     mac = pairs.get('MAC Address 1', None)
     if mac:
         device['mac_addresses'] = [mac]
-    name = pairs.get('Name') or pairs.get('Product Name') or device['model_name']
+    name = pairs.get('Name') or pairs.get(
+        'Product Name') or device['model_name']
     device['name'] = name
     firmware = (pairs.get('AMM firmware') or pairs.get('FW/BIOS') or
                 pairs.get('Main Application 2'))
@@ -269,7 +272,7 @@ def _add_dev_cpu(ip, pairs, parent, raw, counts, dev_id):
         'speed': speed,
         'cores': cores,
     })
-    if not 'processors' in parent:
+    if 'processors' not in parent:
         parent['processors'] = []
     parent['processors'].append(cpu)
 
@@ -290,7 +293,7 @@ def _add_dev_memory(ip, pairs, parent, raw, counts, dev_id):
         label=label,
         index=index,
     )
-    if not 'memory' in parent:
+    if 'memory' not in parent:
         parent['memory'] = []
     parent['memory'].append(mem)
 
@@ -387,9 +390,9 @@ def _prepare_devices(ssh, ip, dev_path, dev_id, components, parent=None,
             counts,
         )
         if subdev and subdev != dev:
-            if not 'subdevices' in dev:
+            if 'subdevices' not in dev:
                 dev['subdevices'] = []
-            if not subdev in dev['subdevices']:
+            if subdev not in dev['subdevices']:
                 dev['subdevices'].append(subdev)
     return dev
 
@@ -421,4 +424,3 @@ def scan_address(ip_address, **kwargs):
     result['device'] = device
     result['status'] = 'success'
     return result
-

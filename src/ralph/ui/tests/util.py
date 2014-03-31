@@ -38,23 +38,23 @@ def create_model(device, mdl, type):
         )
     elif type == ComponentType.processor:
         model, created = ComponentModel.objects.get_or_create(
-                name='M %s - %s' % (
-                    mdl.get('model_name'), mdl.get('price')
-                ),
-                group=group,
-                family=mdl.get('family'),
-                type=type,
-                speed=mdl.get('speed'),
+            name='M %s - %s' % (
+                mdl.get('model_name'), mdl.get('price')
+            ),
+            group=group,
+            family=mdl.get('family'),
+            type=type,
+            speed=mdl.get('speed'),
         )
     else:
         model, created = ComponentModel.objects.get_or_create(
-                name='M %s - %s' % (
-                    mdl.get('model_name'),
-                    mdl.get('price'),
-                ),
-                group=group,
-                family=mdl.get('family'),
-                type=type,
+            name='M %s - %s' % (
+                mdl.get('model_name'),
+                mdl.get('price'),
+            ),
+            group=group,
+            family=mdl.get('family'),
+            type=type,
         )
     return model
 

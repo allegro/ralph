@@ -23,4 +23,4 @@ def cache_price(ip, **kwargs):
         return False, 'no device.', kwargs
     pricing.device_update_cached(dev)
     return True, 'price=%.2f cost=%.2f, name=%s' % (dev.cached_price or 0,
-            dev.cached_cost or 0, dev.name), kwargs
+                                                    dev.cached_cost or 0, dev.name), kwargs

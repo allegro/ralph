@@ -21,6 +21,7 @@ from django.http import HttpResponse, HttpResponseBadRequest
 
 
 class PicklableRequest(object):
+
     """A class that mimics the django Request object, but only contains
     picklable data, so it can be put on rq."""
 
@@ -79,6 +80,7 @@ def enqueue(view, request):
 
 
 class Report(View):
+
     """Base class for asynchronous reports. It works as a view."""
     QUEUE_NAME = 'reports'
 

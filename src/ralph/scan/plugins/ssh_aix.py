@@ -57,7 +57,6 @@ def run_ssh_aix(ip):
         os_storage_size = 0
         for disk_line in _ssh_lines(ssh, 'lsdev -c disk'):
             disk, rest = disk_line.split(None, 1)
-            wwn = None
             model = None
             for line in _ssh_lines(ssh, 'lscfg -vl %s' % disk):
                 if 'hdisk' in line:
@@ -103,7 +102,7 @@ def run_ssh_aix(ip):
             sns.append(sn)
     device['disk_shares'] = [{'serial_number': wwn} for wwn in wwns]
     for disk, model_name, sn in stors:
-        if not 'disks' in device:
+        if 'disks' not in device:
             device['disks'] = []
         device['disks'].append({
             'serial_number': sn,
@@ -140,4 +139,3 @@ def scan_address(ip, **kwargs):
     tpl = get_base_result_template('ssh_cisco_catalyst')
     tpl.update(ret)
     return tpl
-

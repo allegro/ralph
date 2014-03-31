@@ -15,6 +15,7 @@ from ralph.discovery.tasks import run_chain
 
 
 class Command(BaseCommand):
+
     """Update the billing data from OpenStack"""
 
     help = textwrap.dedent(__doc__).strip()

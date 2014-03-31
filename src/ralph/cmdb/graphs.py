@@ -134,4 +134,3 @@ class ImpactCalculator(object):
             ci_service,
         ):
             self.add_edge(relation.type, relation.parent_id, relation.child_id)
-

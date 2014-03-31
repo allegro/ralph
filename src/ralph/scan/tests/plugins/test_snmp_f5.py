@@ -13,6 +13,7 @@ from ralph.scan.plugins.snmp_f5 import _snmp_f5, Error
 
 
 class SnmpF5PluginTest(TestCase):
+
     def test_snmp_f5(self):
         with mock.patch(
             'ralph.scan.plugins.snmp_f5.snmp_command',
@@ -68,4 +69,3 @@ class SnmpF5PluginTest(TestCase):
                     'public',
                 )
             self.assertEqual(context.exception.message, 'Incorrect answer.')
-

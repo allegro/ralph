@@ -330,8 +330,8 @@ class BaseMixin(object):
                 MenuItem('Reports', fugue_icon='fugue-report',
                          view_name='reports'))
         mainmenu_items.append(
-                MenuItem('Ralph CLI', fugue_icon='fugue-terminal',
-                         href='#beast'))
+            MenuItem('Ralph CLI', fugue_icon='fugue-terminal',
+                     href='#beast'))
         if ('ralph.cmdb' in settings.INSTALLED_APPS and
                 has_perm(Perm.read_configuration_item_info_generic)):
             mainmenu_items.append(
@@ -1412,7 +1412,7 @@ class BulkEdit(BaseMixin, TemplateView):
             elif self.form.is_valid and self.form.data['save_comment']:
                 self.form.fields = [
                     f for f in self.form.fields
-                    if not f in self.edit_fields or f != 'save_comment'
+                    if f not in self.edit_fields or f != 'save_comment'
                 ]
                 bulk_update(
                     self.devices,
@@ -1464,6 +1464,7 @@ class Software(DeviceDetailView):
 
 
 class VhostRedirectView(RedirectView):
+
     def get_redirect_url(self, **kwargs):
         host = self.request.META.get(
             'HTTP_X_FORWARDED_HOST', self.request.META['HTTP_HOST'])
@@ -1575,7 +1576,7 @@ class ScanStatus(BaseMixin, TemplateView):
             sort_results(data)
             diff = diff_results(data)
             if 'ralph_assets' in settings.INSTALLED_APPS:
-                if not 'asset' in data and not device_data['asset']:
+                if 'asset' not in data and not device_data['asset']:
                     data['asset'] = {
                         (u'database',): device_data['asset'],
                     }

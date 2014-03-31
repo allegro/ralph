@@ -2,6 +2,7 @@
 
 
 class BaseRouter(object):
+
     """Route all operations on models to the ralph database."""
 
     # specify db_name and app_name in the
@@ -36,4 +37,3 @@ class BaseRouter(object):
 class RalphRouter(BaseRouter):
     db_name = 'ralph'
     app_name = 'ralph'
-

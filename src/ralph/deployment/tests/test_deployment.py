@@ -30,6 +30,7 @@ from ralph.util import Eth
 
 
 class DeploymentTest(TestCase):
+
     def setUp(self):
         self.top_venture = Venture(name='top_venture')
         self.top_venture.save()
@@ -109,6 +110,7 @@ class DeploymentTest(TestCase):
 
 
 class DeploymentUtilTest(TestCase):
+
     def setUp(self):
         # create data centers
         self.dc_temp1 = DataCenter.objects.create(

@@ -64,6 +64,7 @@ def _clean(raw):
 
 
 class IPMI(object):
+
     def __init__(self, host, user=IPMI_USER, password=IPMI_PASSWORD):
         self.host = host
         self.user = user
@@ -195,7 +196,7 @@ def _get_base_device_info(fru_part):
         sn = None
     model_type = DeviceType.rack_server
     if name.lower().startswith('ipmi'):
-            model_type = DeviceType.unknown
+        model_type = DeviceType.unknown
     return name, sn, model_type
 
 

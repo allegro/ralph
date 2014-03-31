@@ -158,6 +158,7 @@ class CILayer(TimeTrackable):
 
 
 class CIRelation(TimeTrackable, WithConcurrentGetOrCreate):
+
     class Meta:
         unique_together = ('parent', 'child', 'type')
     readonly = models.BooleanField(default=False, null=False)
@@ -508,6 +509,7 @@ class CIOwnership(TimeTrackable):
 
 
 class CIOwnershipManager(models.Manager):
+
     """The manager of owners. The django manager interface is required by
     tastypie to correctly handle m2m relations."""
 
@@ -527,6 +529,7 @@ class CIOwnershipManager(models.Manager):
 
 
 class CIOwnershipDescriptor(object):
+
     """Descriptor simplifying the access to CI owners."""
 
     def __init__(self, own_type):

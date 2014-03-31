@@ -72,4 +72,3 @@ def scan_address(ip_address, **kwargs):
                 'device': device_info,
             })
     return result
-

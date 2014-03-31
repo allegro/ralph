@@ -15,6 +15,7 @@ def get_indent(line):
             return indent
     return len(line)
 
+
 def pairs(text='', lines=None):
     r"""
         Parse nested key-value pairs as returned by ipmitool.
@@ -50,6 +51,7 @@ def pairs(text='', lines=None):
         last_indent = indent
         last_key = key
     return root
+
 
 def multi_pairs(text='', lines=None):
     r"""
@@ -96,7 +98,7 @@ def tree(text='', lines=None):
     """
     if lines is None:
         lines = text.splitlines()
-    levels = { -1: {} }
+    levels = {-1: {}}
     for line in lines:
         if not line.strip():
             continue
