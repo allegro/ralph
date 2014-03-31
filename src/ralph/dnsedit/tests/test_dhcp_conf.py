@@ -35,6 +35,7 @@ class DHCPConfTest(TestCase):
     def setUp(self):
         self.dc1 = DataCenter.objects.create(name='dc1')
         self.dc2 = DataCenter.objects.create(name='dc2')
+        self.dc3 = DataCenter.objects.create(name='dc3')
         self.env1 = Environment.objects.create(
             name='dc1',
             data_center=self.dc1,
@@ -46,12 +47,26 @@ class DHCPConfTest(TestCase):
             data_center=self.dc2,
             domain='dc2',
         )
+        self.env3 = Environment.objects.create(
+            name='dc3',
+            data_center=self.dc3,
+            domain='dc3',
+        )
+        self.env4 = Environment.objects.create(
+            name='dc4',
+            data_center=self.dc3,
+            domain='dc3',
+        )
         self.domain1 = Domain.objects.create(
             name='dc1.local',
             type='MASTER',
         )
         self.domain2 = Domain.objects.create(
             name='dc2.local',
+            type='MASTER',
+        )
+        self.domain3 = Domain.objects.create(
+            name='dc3.local',
             type='MASTER',
         )
         self.network1 = Network.objects.create(
@@ -88,6 +103,24 @@ class DHCPConfTest(TestCase):
         )
         self.network2.custom_dns_servers.add(self.custom_dns_1)
         self.network2.custom_dns_servers.add(self.custom_dns_2)
+
+    def _setup_additional_networks(self):
+        self.network3 = Network.objects.create(
+            name='net3.dc2',
+            address='10.30.1.0/24',
+            data_center=self.dc3,
+            dhcp_broadcast=True,
+            gateway='10.30.1.255',
+            environment=self.env3,
+        )
+        self.network4 = Network.objects.create(
+            name='net4.dc2',
+            address='10.40.1.0/24',
+            data_center=self.dc3,
+            dhcp_broadcast=True,
+            gateway='10.40.1.255',
+            environment=self.env4,
+        )
 
     def test_basic_entry(self):
         DHCPEntry.objects.create(ip='127.0.0.1', mac='deadbeefcafe')
@@ -147,10 +180,114 @@ class DHCPConfTest(TestCase):
             'hardware ethernet DE:AD:BE:EF:CA:F1; }',
         )
         config = _sanitize_dhcp_config(
-            generate_dhcp_config_entries(env=self.env2),
+            generate_dhcp_config_entries(environments=[self.env2]),
         )
         self.assertEqual(
             config,
+            'host sample1.dc2 { fixed-address 10.20.1.1; '
+            'hardware ethernet DE:AD:BE:EF:CA:F1; }',
+        )
+        config = _sanitize_dhcp_config(
+            generate_dhcp_config_entries(environments=[self.env1, self.env2]),
+        )
+        self.assertEqual(
+            config,
+            'host sample1.dc1 { fixed-address 127.0.0.1; '
+            'hardware ethernet DE:AD:BE:EF:CA:FE; }\n'
+            'host sample1.dc2 { fixed-address 10.20.1.1; '
+            'hardware ethernet DE:AD:BE:EF:CA:F1; }',
+        )
+        self._setup_additional_networks()
+        # env3 and env4 networks are empty
+        config = _sanitize_dhcp_config(
+            generate_dhcp_config_entries(
+                environments=[self.env1, self.env3, self.env4]
+            ),
+        )
+        self.assertEqual(
+            config,
+            'host sample1.dc1 { fixed-address 127.0.0.1; '
+            'hardware ethernet DE:AD:BE:EF:CA:FE; }'
+        )
+        # add some entries
+        DHCPEntry.objects.create(ip='10.30.1.1', mac='deadbeefcaf2')
+        Record.objects.create(
+            name='1.1.30.10.in-addr.arpa',
+            type='PTR',
+            content='sample1.dc3',
+            domain=self.domain3,
+        )
+        DHCPEntry.objects.create(ip='10.40.1.1', mac='deadbeefcaf3')
+        Record.objects.create(
+            name='1.1.40.10.in-addr.arpa',
+            type='PTR',
+            content='sample2.dc3',
+            domain=self.domain3,
+        )
+        config = _sanitize_dhcp_config(
+            generate_dhcp_config_entries(
+                environments=[self.env1, self.env3, self.env4]
+            )
+        )
+        self.assertEqual(
+            config,
+            'host sample1.dc1 { fixed-address 127.0.0.1; '
+            'hardware ethernet DE:AD:BE:EF:CA:FE; }\n'
+            'host sample1.dc3 { fixed-address 10.30.1.1; '
+            'hardware ethernet DE:AD:BE:EF:CA:F2; }\n'
+            'host sample2.dc3 { fixed-address 10.40.1.1; '
+            'hardware ethernet DE:AD:BE:EF:CA:F3; }'
+        )
+
+    def test_dc_entry(self):
+        DHCPEntry.objects.create(ip='127.0.0.1', mac='deadbeefcafe')
+        Record.objects.create(
+            name='1.0.0.127.in-addr.arpa',
+            type='PTR',
+            content='sample1.dc1',
+            domain=self.domain1,
+        )
+        DHCPEntry.objects.create(ip='10.20.1.1', mac='deadbeefcaf1')
+        Record.objects.create(
+            name='1.1.20.10.in-addr.arpa',
+            type='PTR',
+            content='sample1.dc2',
+            domain=self.domain2,
+        )
+        config = _sanitize_dhcp_config(
+            generate_dhcp_config_entries(data_centers=[self.dc1]),
+        )
+        self.assertEqual(
+            config,
+            'host sample1.dc1 { fixed-address 127.0.0.1; '
+            'hardware ethernet DE:AD:BE:EF:CA:FE; }'
+        )
+        config = _sanitize_dhcp_config(
+            generate_dhcp_config_entries(data_centers=[self.dc2]),
+        )
+        self.assertEqual(
+            config,
+            'host sample1.dc2 { fixed-address 10.20.1.1; '
+            'hardware ethernet DE:AD:BE:EF:CA:F1; }',
+        )
+        config = _sanitize_dhcp_config(
+            generate_dhcp_config_entries(data_centers=[self.dc1, self.dc2]),
+        )
+        self.assertEqual(
+            config,
+            'host sample1.dc1 { fixed-address 127.0.0.1; '
+            'hardware ethernet DE:AD:BE:EF:CA:FE; }\n'
+            'host sample1.dc2 { fixed-address 10.20.1.1; '
+            'hardware ethernet DE:AD:BE:EF:CA:F1; }',
+        )
+        # other order
+        config = _sanitize_dhcp_config(
+            generate_dhcp_config_entries(data_centers=[self.dc2, self.dc1]),
+        )
+        self.assertEqual(
+            config,
+            'host sample1.dc1 { fixed-address 127.0.0.1; '
+            'hardware ethernet DE:AD:BE:EF:CA:FE; }\n'
             'host sample1.dc2 { fixed-address 10.20.1.1; '
             'hardware ethernet DE:AD:BE:EF:CA:F1; }',
         )
@@ -245,11 +382,115 @@ SAMPLE ADDITIONAL CONFIG
 
     def test_env_networks_configs(self):
         config = _sanitize_dhcp_config(
-            generate_dhcp_config_networks(env=self.env2),
+            generate_dhcp_config_networks(environments=[self.env2]),
         )
         self.assertEqual(
             config,
             """shared-network "net1.dc2" {
+    subnet 10.20.1.0 netmask 255.255.255.0 {
+        option routers 10.20.1.255;
+        option domain-name "dc2";
+        option domain-name-servers 10.20.30.3,10.20.30.4;
+        deny unknown-clients;
+    }
+}"""
+        )
+        config = _sanitize_dhcp_config(
+            generate_dhcp_config_networks(environments=[self.env1, self.env2]),
+        )
+        self.assertEqual(
+            config,
+            """shared-network "net1.dc1" {
+    subnet 127.0.0.0 netmask 255.255.255.0 {
+        option routers 127.0.0.255;
+        option domain-name "dc1";
+        option domain-name-servers 10.20.30.1,10.20.30.2;
+        deny unknown-clients;
+    }
+}
+
+shared-network "net1.dc2" {
+    subnet 10.20.1.0 netmask 255.255.255.0 {
+        option routers 10.20.1.255;
+        option domain-name "dc2";
+        option domain-name-servers 10.20.30.3,10.20.30.4;
+        deny unknown-clients;
+    }
+}"""
+        )
+
+    def test_dc_networks_configs(self):
+        config = _sanitize_dhcp_config(
+            generate_dhcp_config_networks(data_centers=[self.dc1]),
+        )
+        self.assertEqual(
+            config,
+            """shared-network "net1.dc1" {
+    subnet 127.0.0.0 netmask 255.255.255.0 {
+        option routers 127.0.0.255;
+        option domain-name "dc1";
+        option domain-name-servers 10.20.30.1,10.20.30.2;
+        deny unknown-clients;
+    }
+}"""
+        )
+        config = _sanitize_dhcp_config(
+            generate_dhcp_config_networks(data_centers=[self.dc2]),
+        )
+        self.assertEqual(
+            config,
+            """shared-network "net1.dc2" {
+    subnet 10.20.1.0 netmask 255.255.255.0 {
+        option routers 10.20.1.255;
+        option domain-name "dc2";
+        option domain-name-servers 10.20.30.3,10.20.30.4;
+        deny unknown-clients;
+    }
+}"""
+        )
+        config = _sanitize_dhcp_config(
+            generate_dhcp_config_networks(
+                data_centers=[self.dc1, self.dc2]
+            ),
+        )
+        self.assertEqual(
+            config,
+            """shared-network "net1.dc1" {
+    subnet 127.0.0.0 netmask 255.255.255.0 {
+        option routers 127.0.0.255;
+        option domain-name "dc1";
+        option domain-name-servers 10.20.30.1,10.20.30.2;
+        deny unknown-clients;
+    }
+}
+
+shared-network "net1.dc2" {
+    subnet 10.20.1.0 netmask 255.255.255.0 {
+        option routers 10.20.1.255;
+        option domain-name "dc2";
+        option domain-name-servers 10.20.30.3,10.20.30.4;
+        deny unknown-clients;
+    }
+}"""
+        )
+        # other order
+        config = _sanitize_dhcp_config(
+            generate_dhcp_config_networks(
+                data_centers=[self.dc2, self.dc1]
+            ),
+        )
+        self.assertEqual(
+            config,
+            """shared-network "net1.dc1" {
+    subnet 127.0.0.0 netmask 255.255.255.0 {
+        option routers 127.0.0.255;
+        option domain-name "dc1";
+        option domain-name-servers 10.20.30.1,10.20.30.2;
+        deny unknown-clients;
+    }
+}
+
+shared-network "net1.dc2" {
     subnet 10.20.1.0 netmask 255.255.255.0 {
         option routers 10.20.1.255;
         option domain-name "dc2";

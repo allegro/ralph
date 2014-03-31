@@ -14,7 +14,7 @@ from django.db.models import Q
 from powerdns.models import Record
 
 from ralph.dnsedit.models import DHCPEntry, DNSServer
-from ralph.discovery.models import Network, Ethernet, IPAddress
+from ralph.discovery.models import Network, Ethernet, IPAddress, Environment
 from ralph.deployment.models import Deployment
 
 
@@ -22,7 +22,6 @@ logger = logging.getLogger("DHCP")
 
 
 def _generate_entries_configs(
-    env=None,
     possible_ip_numbers=set(),
     ptr_records={},
     deployed_macs=set(),
@@ -81,20 +80,17 @@ def _generate_entries_configs(
         next_server = ''
         if mac in deployed_macs:
             # server with ePXE image address
-            if env and env.next_server:
-                next_server = env.next_server
-            else:
-                for env_next_server in Network.objects.filter(
-                    min_ip__lte=ip_number,
-                    max_ip__gte=ip_number,
-                    environment__isnull=False,
-                ).values_list(
-                    'environment__next_server',
-                    flat=True,
-                ).order_by('-min_ip', 'max_ip'):
-                    if env_next_server:
-                        next_server = env_next_server
-                        break
+            for env_next_server in Network.objects.filter(
+                min_ip__lte=ip_number,
+                max_ip__gte=ip_number,
+                environment__isnull=False,
+            ).values_list(
+                'environment__next_server',
+                flat=True,
+            ).order_by('-min_ip', 'max_ip'):
+                if env_next_server:
+                    next_server = env_next_server
+                    break
         parsed.add(ip_address)
         # 112233445566 -> 11:22:33:44:55:66
         mac = ':'.join('%s%s' % chunk for chunk in zip(mac[::2], mac[1::2]))
@@ -102,7 +98,7 @@ def _generate_entries_configs(
 
 
 def generate_dhcp_config_entries(
-    dc=None, env=None, disable_networks_validation=False,
+    data_centers=[], environments=[], disable_networks_validation=False,
 ):
     """
     Generate host DHCP configuration. If `env` is provided, only yield hosts
@@ -119,7 +115,7 @@ def generate_dhcp_config_entries(
             Q(gateway__isnull=False),
             ~Q(gateway__exact=''),
         )
-    if env:
+    if environments:
         networks_filter += (
             ~Q(environment=False),
         )
@@ -128,8 +124,11 @@ def generate_dhcp_config_entries(
                 Q(environment__domain__isnull=False),
                 ~Q(environment__domain__exact=''),
             )
-        networks = env.network_set.filter(*networks_filter)
-    elif dc:
+        networks = Network.objects.filter(
+            environment__in=environments,
+            *networks_filter
+        )
+    elif data_centers:
         if not disable_networks_validation:
             evironments_filter = (
                 Q(domain__isnull=False),
@@ -137,7 +136,8 @@ def generate_dhcp_config_entries(
             )
         else:
             evironments_filter = tuple()
-        environments_ids = dc.environment_set.filter(
+        environments_ids = Environment.objects.filter(
+            data_center__in=data_centers,
             *evironments_filter
         ).values_list('id', flat=True)
         networks_filter += (
@@ -152,7 +152,7 @@ def generate_dhcp_config_entries(
         last_modified_date = modified.strftime('%Y-%m-%d %H:%M:%S')
         break
     possible_ip_numbers = set()
-    if dc or env or not disable_networks_validation:
+    if data_centers or environments or not disable_networks_validation:
         for min_ip, max_ip in networks.values_list('min_ip', 'max_ip'):
             for ip_number in xrange(min_ip, max_ip + 1):
                 possible_ip_numbers.add(ip_number)
@@ -174,13 +174,12 @@ def generate_dhcp_config_entries(
         break
     template = loader.get_template('dnsedit/dhcp_entries.conf')
     accept_all_ip_numbers = (
-        dc is None and env is None and disable_networks_validation
+        not data_centers and not environments and disable_networks_validation
     )
     if last_modified_date is None:
         last_modified_date = '???'
     c = Context({
         'entries': _generate_entries_configs(
-            env=env,
             possible_ip_numbers=possible_ip_numbers,
             ptr_records=ptr_records,
             deployed_macs=deployed_macs,
@@ -212,7 +211,7 @@ def _generate_networks_configs(
         )
 
 
-def generate_dhcp_config_networks(dc=None, env=None):
+def generate_dhcp_config_networks(data_centers=[], environments=[]):
     last_modified_date = None
     networks_filter = (
         Q(dhcp_broadcast=True),
@@ -222,10 +221,14 @@ def generate_dhcp_config_networks(dc=None, env=None):
         Q(environment__domain__isnull=False),
         ~Q(environment__domain__exact=''),
     )
-    if env:
-        networks = env.network_set.filter(*networks_filter)
-    elif dc:
-        environments_ids = dc.environment_set.values_list('id', flat=True)
+    if environments:
+        networks = Network.objects.filter(
+            environment__in=environments, *networks_filter
+        )
+    elif data_centers:
+        environments_ids = Environment.objects.filter(
+            data_center__in=data_centers
+        ).values_list('id', flat=True)
         networks_filter += (
             Q(environment_id__in=environments_ids),
         )

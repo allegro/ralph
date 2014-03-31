@@ -49,33 +49,50 @@ def dhcp_synch(request):
     return HttpResponse('OK', content_type='text/plain')
 
 
+def _get_params(request):
+    dc_names = request.GET.get('dc', '')
+    if dc_names:
+        dc_names = dc_names.split(',')
+    else:
+        dc_names = []
+    env_names = request.GET.get('env', '')
+    if env_names:
+        env_names = env_names.split(',')
+    else:
+        env_names = []
+    return dc_names, env_names
+
+
 def dhcp_config_entries(request):
     if not api.is_authenticated(request):
         return HttpResponseForbidden('API key required.')
-    dc_name = request.GET.get('dc', '')
-    env_name = request.GET.get('env', '')
-    if dc_name and env_name:
+    dc_names, env_names = _get_params(request)
+    if dc_names and env_names:
         return HttpResponseForbidden('Only DC or ENV mode available.')
-    dc = None
-    if dc_name:
+    data_centers = []
+    for dc_name in dc_names:
         try:
             dc = DataCenter.objects.get(name__iexact=dc_name)
         except DataCenter.DoesNotExist:
             return HttpResponseNotFound(
                 "Data Center `%s` does not exist." % dc_name
             )
-    env = None
-    if env_name:
+        else:
+            data_centers.append(dc)
+    environments = []
+    for env_name in env_names:
         try:
             env = Environment.objects.get(name__iexact=env_name)
         except Environment.DoesNotExist:
             return HttpResponseNotFound(
                 "Environment `%s` does not exist." % env_name
             )
+        else:
+            environments.append(env)
     return HttpResponse(
         generate_dhcp_config_entries(
-            dc=dc,
-            env=env,
+            data_centers=data_centers,
+            environments=environments,
             disable_networks_validation=DHCP_DISABLE_NETWORKS_VALIDATION,
         ),
         content_type="text/plain",
@@ -85,30 +102,33 @@ def dhcp_config_entries(request):
 def dhcp_config_networks(request):
     if not api.is_authenticated(request):
         return HttpResponseForbidden('API key required.')
-    dc_name = request.GET.get('dc', '')
-    env_name = request.GET.get('env', '')
-    if dc_name and env_name:
+    dc_names, env_names = _get_params(request)
+    if dc_names and env_names:
         return HttpResponseForbidden('Only DC or ENV mode available.')
-    dc = None
-    if dc_name:
+    data_centers = []
+    for dc_name in dc_names:
         try:
             dc = DataCenter.objects.get(name__iexact=dc_name)
         except DataCenter.DoesNotExist:
             return HttpResponseNotFound(
                 "Data Center `%s` does not exist." % dc_name
             )
-    env = None
-    if env_name:
+        else:
+            data_centers.append(dc)
+    environments = []
+    for env_name in env_names:
         try:
             env = Environment.objects.get(name__iexact=env_name)
         except Environment.DoesNotExist:
             return HttpResponseNotFound(
                 "Environment `%s` does not exist." % env_name
             )
+        else:
+            environments.append(env)
     return HttpResponse(
         generate_dhcp_config_networks(
-            dc=dc,
-            env=env,
+            data_centers=data_centers,
+            environments=environments,
         ),
         content_type='text/plain',
     )
