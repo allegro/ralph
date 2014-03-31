@@ -57,7 +57,6 @@ def run_ssh_aix(ip):
         os_storage_size = 0
         for disk_line in _ssh_lines(ssh, 'lsdev -c disk'):
             disk, rest = disk_line.split(None, 1)
-            wwn = None
             model = None
             for line in _ssh_lines(ssh, 'lscfg -vl %s' % disk):
                 if 'hdisk' in line:
