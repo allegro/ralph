@@ -190,9 +190,16 @@ def generate_dhcp_config_entries(
     return template.render(c)
 
 
-def _generate_networks_configs(networks, custom_dns_servers):
+def _generate_networks_configs(
+    networks, custom_dns_servers, default_dns_servers=[]
+):
     for network_id, name, address, gateway, domain, dhcp_config in networks:
         ip_network = ipaddr.IPNetwork(address)
+        dns_servers = ','.join(
+            custom_dns_servers[network_id],
+        ) if network_id in custom_dns_servers else ''
+        if not dns_servers and not default_dns_servers:
+            continue
         yield (
             name.strip(),
             unicode(ip_network.network),
@@ -200,9 +207,7 @@ def _generate_networks_configs(networks, custom_dns_servers):
             gateway,
             domain,
             dhcp_config,
-            ','.join(
-                custom_dns_servers[network_id],
-            ) if network_id in custom_dns_servers else '',
+            dns_servers,
         )
 
 
@@ -263,7 +268,9 @@ def generate_dhcp_config_networks(dc=None, env=None):
         custom_dns_servers[network_id].add(dns_server_ip)
     context = Context({
         'dns_servers': ','.join(default_dns_servers),
-        'networks': _generate_networks_configs(networks, custom_dns_servers),
+        'networks': _generate_networks_configs(
+            networks, custom_dns_servers, default_dns_servers
+        ),
         'last_modified_date': last_modified_date,
     })
     return template.render(context)
