@@ -102,7 +102,9 @@ class CIEditForm(DependencyForm, forms.ModelForm):
 
     def _add_customattribute_fields(self):
         self.dependencies = self.dependencies or []
-        for attribute in CIAttribute.objects.filter(ci_types=self.initial.get('type')):
+        for attribute in CIAttribute.objects.filter(
+            ci_types=self.initial.get('type')
+        ):
             field_name = self._get_custom_attribute_field_name(attribute)
             FieldType = self.CUSTOM_ATTRIBUTE_FIELDS[attribute.attribute_type]
             kwargs = {
@@ -115,9 +117,15 @@ class CIEditForm(DependencyForm, forms.ModelForm):
                     for x in attribute.choices.split('|')
                 ]
             self.fields[field_name] = FieldType(**kwargs)
+
+            def add_prefix(field_name):
+                return "%s-%s" % (
+                    self.prefix, field_name
+                ) if self.prefix else field_name
+
             self.dependencies.append(Dependency(
-                'base-%s' % field_name,
-                'base-type',
+                add_prefix(field_name),
+                add_prefix('type'),
                 MemberOfCondition(list(attribute.ci_types.all())),
                 SHOW,
             ))
@@ -136,7 +144,9 @@ class CIEditForm(DependencyForm, forms.ModelForm):
             attribute_values = dict(
                 ((av.attribute.name, av) for av in attribute_values)
             )
-            for attribute in CIAttribute.objects.filter(ci_types=self.initial.get('type')):
+            for attribute in CIAttribute.objects.filter(
+                ci_types=self.initial.get('type')
+            ):
                 attribute_value = attribute_values.get(attribute.name)
                 if attribute_value is not None:
                     field_name = self._get_custom_attribute_field_name(
