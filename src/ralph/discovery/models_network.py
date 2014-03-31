@@ -25,6 +25,54 @@ from ralph.util import network
 from ralph.discovery.models_util import LastSeen
 
 
+def get_network_tree(qs=None):
+    """
+    Returns tree of networks based on L3 containment.
+    """
+    if not qs:
+        qs = Network.objects.all()
+    tree = []
+    all_networks = [
+        (net.max_ip, net.min_ip, net)
+        for net in qs.order_by("min_ip", "-max_ip")
+    ]
+
+    def get_subnetworks_qs(network):
+        for net in all_networks:
+            if net[0] == network.max_ip and net[1] == network.min_ip:
+                continue
+            if net[0] <= network.max_ip and net[1] >= network.min_ip:
+                yield net[2]
+
+    def recursive_tree(network):
+        subs = []
+        sub_qs = get_subnetworks_qs(network)
+        subnetworks = network.get_subnetworks(networks=sub_qs)
+        subs = [
+            {
+                'network': sub,
+                'subnetworks': recursive_tree(sub)
+            } for sub in subnetworks
+        ]
+        for i, net in enumerate(all_networks):
+            if net[0] == network.max_ip and net[1] == network.min_ip:
+                all_networks.pop(i)
+                break
+        return subs
+
+    while True:
+        try:
+            tree.append({
+                'network': all_networks[0][2],
+                'subnetworks': recursive_tree(all_networks[0][2])
+            })
+        except IndexError:
+            # recursive tree uses pop, so at some point all_networks[0]
+            # will rise IndexError, therefore algorithm is finished
+            break
+    return tree
+
+
 class Environment(Named):
     data_center = db.ForeignKey("DataCenter", verbose_name=_("data center"))
     queue = db.ForeignKey(
@@ -398,6 +446,7 @@ class DiscoveryQueue(Named):
 
 def validate_network_address(sender, instance, **kwargs):
     instance.full_clean()
+    return
 
     # clearing cache items for networks sidebar(24 hour cache)
     ns_items_key = 'cache_network_sidebar_items'
