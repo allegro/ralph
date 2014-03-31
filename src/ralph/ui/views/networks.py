@@ -22,7 +22,6 @@ from django.views.generic import (
     UpdateView,
     TemplateView,
 )
-from lck.cache import memoize
 
 from ralph.account.models import Perm
 from ralph.discovery.models import Network, IPAddress
@@ -42,9 +41,11 @@ from ralph.ui.views.reports import Reports, ReportDeviceList
 from ralph.util import presentation
 from ralph.scan import autoscan
 from ralph.deployment.util import get_first_free_ip
+from lck.cache import memoize
+
+from django.core.cache import cache
 
 
-@memoize
 def network_tree_menu(networks, details, get_params, show_ip=False, status=''):
     icon = presentation.get_network_icon
     items = []
@@ -77,6 +78,52 @@ def network_tree_menu(networks, details, get_params, show_ip=False, status=''):
         ))
     return items
 
+def get_network_tree(cls, qs=None):
+    """
+    Returns tree of networks based on L3 containment.
+    """
+    if not qs:
+        qs = cls.objects.all()
+    tree = []
+    all_networks = [
+        (net.max_ip, net.min_ip, net)
+        for net in qs.order_by("min_ip", "-max_ip")
+    ]
+
+    def get_subnetworks_qs(network):
+        for net in all_networks:
+            if net[0] == network.max_ip and net[1] == network.min_ip:
+                continue
+            if net[0] <= network.max_ip and net[1] >= network.min_ip:
+                yield net[2]
+
+    def recursive_tree(network):
+        subs = []
+        sub_qs = get_subnetworks_qs(network)
+        subnetworks = network.get_subnetworks(networks=sub_qs)
+        subs = [
+            {
+                'network': sub,
+                'subnetworks': recursive_tree(sub)
+            } for sub in subnetworks
+        ]
+        for i, net in enumerate(all_networks):
+            if net[0] == network.max_ip and net[1] == network.min_ip:
+                all_networks.pop(i)
+                break
+        return subs
+
+    while True:
+        try:
+            tree.append({
+                'network': all_networks[0][2],
+                'subnetworks': recursive_tree(all_networks[0][2])
+            })
+        except IndexError:
+            # recursive tree uses pop, so at some point all_networks[0]
+            # will rise IndexError, therefore algorithm is finished
+            break
+    return tree
 
 class SidebarNetworks(object):
     section = 'networks'
@@ -127,16 +174,23 @@ class SidebarNetworks(object):
                 kind__id=int(network_kind),
             )
         networks = networks.order_by('-min_ip', 'max_ip')
-        self.networks = Network.get_network_tree(qs=networks)
-        sidebar_items = []
-        sidebar_items.extend(
-            network_tree_menu(
-                self.networks,
-                ret['details'],
-                status=self.status,
-                get_params=self.request.GET.urlencode(),
-            ),
-        )
+
+        sidebar_items = cache.get('cache_network_sidebar_items')
+        if not sidebar_items:
+            self.networks = get_network_tree(
+                cls=Network, qs=networks
+            )
+            sidebar_items = []
+            sidebar_items.extend(
+                network_tree_menu(
+                    self.networks,
+                    ret['details'],
+                    status=self.status,
+                    get_params=self.request.GET.urlencode(),
+                ),
+            )
+            # 24 hours cache
+            cache.set('cache_network_sidebar_items', sidebar_items, 24 * 60)
 
         ret.update({
             'sidebar_items': sidebar_items,
