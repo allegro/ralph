@@ -184,6 +184,7 @@ class ChildDeviceInline(ForeignKeyAutocompleteTabularInline):
     related_search_fields = {
         'model': ['^name', '^type__name'],
     }
+    fk_name = 'parent'
 
 
 class DeviceModelAdmin(ModelAdmin):
@@ -302,6 +303,7 @@ class DeviceAdmin(ModelAdmin):
                      'model__name', 'ethernet__mac')
     related_search_fields = {
         'parent': ['^name'],
+        'logical_parent': ['^name'],
         'venture': ['^name'],
         'venture_role': ['^name'],
         'management': ['^address', '^hostname'],
