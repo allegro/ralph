@@ -13,6 +13,7 @@ import requests
 from django.conf import settings
 from xml.etree import cElementTree as ET
 
+from ralph.discovery.models import MAC_PREFIX_BLACKLIST
 from ralph.scan.errors import Error, NoMatchError
 from ralph.scan.plugins import get_base_result_template
 
@@ -149,10 +150,15 @@ def _get_mac_addresses(idrac_manager):
         XMLNS_WSMAN,
         xmlns_n1,
     )
-    return [
+    mac_addresses = [
         record.find(
             "{}{}".format(xmlns_n1, 'CurrentMACAddress'),
         ).text.strip() for record in tree.findall(q)
+    ]
+    return [
+        mac
+        for mac in mac_addresses
+        if mac.replace(':', '').upper()[:6] not in MAC_PREFIX_BLACKLIST
     ]
 
 
@@ -298,6 +304,9 @@ def _get_fibrechannel_cards(idrac_manager):
 
 def idrac_device_info(idrac_manager):
     device_info = _get_base_info(idrac_manager)
+    mac_addresses = _get_mac_addresses(idrac_manager)
+    if mac_addresses:
+        device_info['mac_addresses'] = mac_addresses
     processors = _get_processors(idrac_manager)
     if processors:
         device_info['processors'] = processors
