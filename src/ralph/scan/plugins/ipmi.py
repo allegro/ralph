@@ -14,6 +14,7 @@ from lck.lang import nullify
 
 from ralph.discovery.models import (
     DeviceType,
+    MAC_PREFIX_BLACKLIST,
     SERIAL_BLACKLIST,
 )
 from ralph.scan.errors import Error, AuthError, NoMatchError
@@ -101,7 +102,10 @@ def _get_mac_addresses(ipmitool, fru):
             break
         mac_addresses.add(ethernet['Product Serial'])
         index += 1
-    return list(mac_addresses)
+    return [
+        mac for mac in mac_addresses
+        if mac.replace(':', '').upper()[:6] not in MAC_PREFIX_BLACKLIST
+    ]
 
 
 def _get_components(fru):

@@ -15,7 +15,11 @@ from lck.lang import Null, nullify
 from lck.xml import etree_to_dict
 from lxml import etree as ET
 
-from ralph.discovery.models import DeviceType, SERIAL_BLACKLIST
+from ralph.discovery.models import (
+    DeviceType,
+    MAC_PREFIX_BLACKLIST,
+    SERIAL_BLACKLIST,
+)
 from ralph.scan.errors import (
     IncompatibleAnswerError,
     IncompleteAnswerError,
@@ -105,7 +109,8 @@ def _get_mac_addresses(data):
                 except ValueError:
                     continue
                 else:
-                    mac_addresses.append(mac)
+                    if mac[:6] not in MAC_PREFIX_BLACKLIST:
+                        mac_addresses.append(mac)
     return mac_addresses
 
 

@@ -17,7 +17,7 @@ import time
 from django.conf import settings
 
 from ralph.discovery import guessmodel
-from ralph.discovery.models import DeviceType
+from ralph.discovery.models import DeviceType, MAC_PREFIX_BLACKLIST
 from ralph.scan.errors import (
     AuthError,
     ConsoleError,
@@ -120,7 +120,8 @@ def scan_address(ip_address, **kwargs):
         mac = mac.replace('address is', '')
         mac = mac.replace('.', '').upper().strip()
         label = label.strip()
-        macs.append(mac)
+        if mac.replace(':', '').upper()[:6] not in MAC_PREFIX_BLACKLIST:
+            macs.append(mac)
     ram_size = re.search('[0-9]+', ram).group()
     cpu_match = re.search('[0-9]+ MHz', cpu)
     cpu_speed = cpu_match.group()[:-4]
