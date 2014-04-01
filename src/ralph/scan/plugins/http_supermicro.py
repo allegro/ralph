@@ -11,6 +11,7 @@ import urllib2
 
 from django.conf import settings
 
+from ralph.discovery.models import MAC_PREFIX_BLACKLIST
 from ralph.scan.errors import Error, NoMatchError
 from ralph.scan.plugins import get_base_result_template
 
@@ -66,7 +67,10 @@ def _get_mac_addresses(ip_address, user, password):
         re.compile(r"WEBVAR_STRUCTNAME_HL_GETLANCONFIG\s*:\s*\[({[^\}]*})"),
     ).replace("'", '"')
     macs.append(json.loads(json_data)['MAC'])
-    return macs
+    return [
+        mac for mac in macs
+        if mac.replace(':', '').upper()[:6] not in MAC_PREFIX_BLACKLIST
+    ]
 
 
 def _http_supermicro(ip_address, user, password):

@@ -431,6 +431,7 @@ SCAN_PLUGINS = {
             'memory': 53,
             'disks': 53,
             'fibrechannel_cards': 53,
+            'mac_addresses': 53,
         },
     },
     'ralph.scan.plugins.ssh_linux': {

@@ -18,6 +18,7 @@ from ralph.util import network, parse
 from ralph.discovery.models import (
     ComponentType,
     DeviceType,
+    MAC_PREFIX_BLACKLIST,
     SERIAL_BLACKLIST,
 )
 from ralph.scan.plugins import get_base_result_template
@@ -193,7 +194,7 @@ def _dev(model_type, pairs, parent, raw):
         sn = None
     device['serial_number'] = sn
     mac = pairs.get('MAC Address 1', None)
-    if mac:
+    if mac and mac.replace(':', '').upper()[:6] not in MAC_PREFIX_BLACKLIST:
         device['mac_addresses'] = [mac]
     name = pairs.get('Name') or pairs.get(
         'Product Name') or device['model_name']
@@ -313,7 +314,8 @@ def _add_dev_blade(ip, pairs, parent, raw, counts, dev_id):
             continue
         if 'mac_addresses' not in dev:
             dev['mac_addresses'] = []
-        dev['mac_addresses'].append(mac)
+        if mac.replace(':', '').upper()[:6] not in MAC_PREFIX_BLACKLIST:
+            dev['mac_addresses'].append(mac)
     if 'mac_addresses' in dev:
         dev['mac_addresses'] = list(set(dev['mac_addresses']))
     return dev
@@ -328,7 +330,8 @@ def _add_dev_switch(ip, pairs, parent, raw, counts, dev_id):
     if mac:
         if 'mac_addresses' not in dev:
             dev['mac_addresses'] = []
-        dev['mac_addresses'].append(mac)
+        if mac.replace(':', '').upper()[:6] not in MAC_PREFIX_BLACKLIST:
+            dev['mac_addresses'].append(mac)
         dev['mac_addresses'] = list(set(dev['mac_addresses']))
     return dev
 
