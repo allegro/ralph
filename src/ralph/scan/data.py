@@ -125,12 +125,6 @@ def _get_or_create_model_for_component(
         model_type,
         save_priority,
         **model_fields)
-    if not created:
-        for field, value in model_fields.items():
-            if field in forbidden_model_fields:
-                continue
-            setattr(model, field, value)
-        model.save(priority=save_priority)
     return model
 
 

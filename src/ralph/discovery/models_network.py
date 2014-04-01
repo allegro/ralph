@@ -101,9 +101,15 @@ class Environment(Named):
         blank=True,
         null=True,
     )
+    remarks = db.TextField(
+        verbose_name=_("remarks"),
+        help_text=_("Additional information."),
+        blank=True,
+        null=True,
+    )
 
     def __unicode__(self):
-        return "%s environment" % self.name
+        return self.name
 
     class Meta:
         ordering = ('name',)
@@ -161,6 +167,7 @@ class AbstractNetwork(db.Model):
         verbose_name=_("environment"),
         null=True,
         blank=True,
+        on_delete=db.SET_NULL,
     )
     min_ip = db.PositiveIntegerField(
         _("smallest IP number"), null=True, blank=True, default=None,
