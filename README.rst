@@ -1,4 +1,6 @@
-===== Ralph =====
+=====
+Ralph
+=====
 
 
 .. image:: https://pypip.in/v/ralph/badge.png     :target: https://crate.io/packages/ralph/     :alt: Latest PyPI version
@@ -22,4 +24,3 @@ with workflow and PDF documents outprints for your customers.
 
 Ralph Pricing - flexible billing and financial reporting subsystem which can
 show you how much your business services costs.
-
