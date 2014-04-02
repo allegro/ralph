@@ -1,12 +1,22 @@
 Change Log
 ----------
 
-2.0.0
+2.0.0-rc3
 ~~~~~~~~~
+
+New features:
+
+* CORE: added `logical parent` for stacked devices, when physical parent is not enough.
+
+* DHCP: configuration file for DHCP can be generated for multiple environments or data centers at once.
 
 Optimizations:
 
-* NETWORKS: reduced unresponsive rendering of networks tree to ~ 1 sec
+* NETWORKS: performance improvements: reduced unresponsive rendering of networks tree to ~ 1 sec
+
+* SCAN: performance improvements: reduced time of traversing through large number of intersecting networks
+
+* CORE: many cmdb, scan, deployment fixes.
 
 
 2.0.0-rc2
@@ -40,7 +50,7 @@ Optimizations:
 
 * New white theme.
 
-* Ralph CLI integrated into the UI. 
+* Ralph CLI integrated into the UI.
 
 Core changes:
 
