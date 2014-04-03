@@ -10,6 +10,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from django.db import IntegrityError
 from django.db import models as db
 from django.conf import settings
 
@@ -398,30 +399,46 @@ def set_device_data(device, data, save_priority=SAVE_PRIORITY):
     for field_name, key_name in keys.iteritems():
         if key_name in data:
             setattr(device, field_name, data[key_name])
-    if 'model_name' in data:
+    if 'model_name' in data and (data['model_name'] or '').strip():
         try:
             model_type = DeviceType.from_name(
                 data.get('type', 'unknown').replace(' ', '_').lower(),
             )
         except ValueError:
-            model_type = ComponentType.unknown
+            model_type = DeviceType.unknown
         try:
             # Don't use get_or_create, because we are in transaction
-            device.model = DeviceModel.objects.get(name=data['model_name'])
+            device.model = DeviceModel.objects.get(
+                name=data['model_name'],
+                type=model_type,
+            )
         except DeviceModel.DoesNotExist:
-            model = DeviceModel(
+            device.model = DeviceModel(
                 type=model_type,
                 name=data['model_name'],
             )
-            model.save()
-            device.model = model
-        else:
-            if all((
-                device.model.type != model_type,
-                model_type != ComponentType.unknown,
-            )):
-                device.model.type = model_type
-                device.model.save(priority=save_priority)
+            try:
+                device.model.save()
+            except IntegrityError:
+                if model_type != DeviceType.unknown:
+                    try:
+                        device.model = DeviceModel.objects.get(
+                            name='%s (%s)' % (
+                                data['model_name'], model_type.raw
+                            ),
+                            type=model_type,
+                        )
+                    except DeviceModel.DoesNotExist:
+                        device.model = DeviceModel(
+                            type=model_type,
+                            name='%s (%s)' % (
+                                data['model_name'], model_type.raw
+                            ),
+                        )
+                        try:
+                            device.model.save()
+                        except IntegrityError:
+                            pass
     if 'disks' in data:
         _update_component_data(
             device,
@@ -681,7 +698,7 @@ def set_device_data(device, data, save_priority=SAVE_PRIORITY):
                 assign_asset(device.id, asset_id)
 
 
-def device_from_data(data, save_priority=SAVE_PRIORITY):
+def device_from_data(data, save_priority=SAVE_PRIORITY, user=None):
     """
     Create or find a device based on the provided scan data.
     """
@@ -701,7 +718,7 @@ def device_from_data(data, save_priority=SAVE_PRIORITY):
         model_type=model_type,
     )
     set_device_data(device, data, save_priority=save_priority)
-    device.save(priority=save_priority)
+    device.save(priority=save_priority, user=user)
     return device
 
 

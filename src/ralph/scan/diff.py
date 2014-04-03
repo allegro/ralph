@@ -9,7 +9,15 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from ralph.discovery.models import DeviceType
+
 from ralph.scan.data import UNIQUE_FIELDS_FOR_MERGER
+
+
+RAW_DIVICE_TYPES = [
+    choice_name
+    for _, choice_name in DeviceType()
+]
 
 
 def _sort_dict_by_multiple_fields_values(keynames):
@@ -61,7 +69,11 @@ def _get_matched_row(rows, lookup):
     return None, None
 
 
-def _compare_dicts(ldict, rdict, ignored_fields=set(['device', 'index'])):
+def _compare_dicts(
+    ldict,
+    rdict,
+    ignored_fields=set(['device', 'index', 'model_name'])
+):
     """
     Compare two dicts and return comparison status (match), diff and set of
     keys that are available in compared dicts.
@@ -144,7 +156,17 @@ def _find_database_key(results):
             return sources
 
 
-def diff_results(data, ignored_fields=set(['device'])):
+def _sanitize_component_values(values=[]):
+    result = []
+    for value in values:
+        for device_type in RAW_DIVICE_TYPES:
+            if '(%s)' % device_type in value:
+                value = value.replace('(%s)' % device_type, '').strip()
+        result.append(value)
+    return result
+
+
+def diff_results(data, ignored_fields=set(['device', 'model_name'])):
     """
     Make diff from Scan results.
     """
@@ -154,6 +176,8 @@ def diff_results(data, ignored_fields=set(['device'])):
         if component == 'subdevices':
             continue  # skipped because this is not component...
         db_results_key = _find_database_key(results)
+        if not db_results_key:
+            continue  # uncomplete data
         diff_result = {
             'is_equal': False,
             'meta': {},
@@ -165,8 +189,13 @@ def diff_results(data, ignored_fields=set(['device'])):
                     'type': 'lists',
                 })
             else:
+                component_values = results.values()
+                if component == 'model_name':
+                    component_values = _sanitize_component_values(
+                        component_values
+                    )
                 diff_result.update({
-                    'is_equal': _compare_strings(*tuple(results.values())),
+                    'is_equal': _compare_strings(*tuple(component_values)),
                     'type': 'strings',
                 })
         else:
