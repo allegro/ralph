@@ -14,7 +14,7 @@ from ralph.discovery.models import DeviceType
 from ralph.scan.data import UNIQUE_FIELDS_FOR_MERGER
 
 
-RAW_DIVICE_TYPES = [
+RAW_DEVICE_TYPES = [
     choice_name
     for _, choice_name in DeviceType()
 ]
@@ -159,7 +159,7 @@ def _find_database_key(results):
 def _sanitize_component_values(values=[]):
     result = []
     for value in values:
-        for device_type in RAW_DIVICE_TYPES:
+        for device_type in RAW_DEVICE_TYPES:
             if '(%s)' % device_type in value:
                 value = value.replace('(%s)' % device_type, '').strip()
         result.append(value)
