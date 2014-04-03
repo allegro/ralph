@@ -413,12 +413,12 @@ def set_device_data(device, data, save_priority=SAVE_PRIORITY):
                 type=model_type,
             )
         except DeviceModel.DoesNotExist:
-            device.model = DeviceModel(
+            model = DeviceModel(
                 type=model_type,
                 name=data['model_name'],
             )
             try:
-                device.model.save()
+                model.save()
             except IntegrityError:
                 if model_type != DeviceType.unknown:
                     try:
@@ -429,16 +429,20 @@ def set_device_data(device, data, save_priority=SAVE_PRIORITY):
                             type=model_type,
                         )
                     except DeviceModel.DoesNotExist:
-                        device.model = DeviceModel(
+                        model = DeviceModel(
                             type=model_type,
                             name='%s (%s)' % (
                                 data['model_name'], model_type.raw
                             ),
                         )
                         try:
-                            device.model.save()
+                            model.save()
                         except IntegrityError:
                             pass
+                        else:
+                            device.model = model
+            else:
+                device.model = model
     if 'disks' in data:
         _update_component_data(
             device,
