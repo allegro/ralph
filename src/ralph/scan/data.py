@@ -661,6 +661,8 @@ def set_device_data(device, data, save_priority=SAVE_PRIORITY):
                 device.model.type in (DeviceType.switch_stack,)
             ):
                 subdevice.logical_parent = device
+                if subdevice.parent and subdevice.parent.id == device.id:
+                    subdevice.parent = None
             else:
                 subdevice.parent = device
             subdevice.save(priority=save_priority)
