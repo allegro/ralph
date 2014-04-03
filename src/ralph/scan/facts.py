@@ -376,7 +376,7 @@ def handle_facts_smartctl(facts):
         label_meta = [' '.join(disk['vendor'].split()), disk['product']]
         if 'transport_protocol' in disk:
             label_meta.append(disk['transport_protocol'])
-        family = disk['vendor'].split() or 'Generic disk'
+        family = disk['vendor'].strip() or 'Generic disk'
         detected_disks.append({
             'serial_number': disk['serial_number'],
             'size': int(int(size_value) / units.size_divisor[size_unit]),

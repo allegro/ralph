@@ -100,7 +100,7 @@ from ralph.ui.forms.deployment import (
 from ralph import VERSION
 
 
-SAVE_PRIORITY = 200
+SAVE_PRIORITY = 215
 HISTORY_PAGE_SIZE = 25
 MAX_PAGE_SIZE = 65535
 TEMPLATE_MENU_ITEMS = [
@@ -1728,10 +1728,16 @@ class ScanStatus(BaseMixin, TemplateView):
                     }
                     try:
                         if device is None:
-                            device = device_from_data(data)
+                            device = device_from_data(
+                                data=data,
+                                user=self.request.user,
+                            )
                         else:
                             set_device_data(device, data)
-                            device.save()
+                            device.save(
+                                priority=SAVE_PRIORITY,
+                                user=self.request.user,
+                            )
                     except ValueError as e:
                         messages.error(self.request, e)
                     else:

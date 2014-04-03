@@ -147,7 +147,7 @@ def _save_job_results(job_id, start_ts):
         append_merged_proposition(data, device, external_priorities)
         selected_data = _select_data(data, external_priorities)
         set_device_data(device, selected_data, save_priority=SAVE_PRIORITY)
-        device.save()
+        device.save(priority=SAVE_PRIORITY)
     # now... we create new devices from `garbage`
     garbage = {}
     for plugin_name, plugin_result in job.result.items():
