@@ -144,8 +144,10 @@ def _component(model_type, pairs, parent, raw):
         )
     else:
         if firmware:
-            firmware = (pairs.get('Boot ROM') or pairs.get('Main Application 1') or
-                        pairs.get('Blade Sys Mgmt Processor'))
+            firmware = (
+                pairs.get('Boot ROM') or pairs.get('Main Application 1') or
+                pairs.get('Blade Sys Mgmt Processor')
+            )
     if firmware:
         component['boot_firmware'] = '%s %s rev %s' % (
             firmware['Build ID'],
@@ -411,7 +413,7 @@ def _blade_scan(ip_address):
 
 
 def scan_address(ip_address, **kwargs):
-    if 'nx-os' in kwargs.get('snmp_name', '').lower():
+    if 'nx-os' in (kwargs.get('snmp_name', '') or '').lower():
         raise NoMatchError('Incompatible Nexus found.')
     if kwargs.get('http_family', '') not in ('IBM', 'Unspecified'):
         raise NoMatchError('It is not IBM.')

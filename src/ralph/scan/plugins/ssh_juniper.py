@@ -146,7 +146,7 @@ def _ssh_juniper(ssh, ip_address):
 
 
 def scan_address(ip_address, **kwargs):
-    http_family = kwargs.get('http_family', '')
+    http_family = (kwargs.get('http_family', '') or '')
     if http_family and http_family.strip().lower() not in ('juniper',):
         raise NoMatchError('It is not Juniper.')
     user = SETTINGS.get('user')

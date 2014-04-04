@@ -94,7 +94,7 @@ def _connect_ssh(ip, username='root', password=''):
 
 
 def scan_address(ip_address, **kwargs):
-    if 'nx-os' in kwargs.get('snmp_name', '').lower():
+    if 'nx-os' in (kwargs.get('snmp_name', '') or '').lower():
         raise NoMatchError('Incompatible Nexus found.')
     kwargs['guessmodel'] = gvendor, gmodel = guessmodel.guessmodel(**kwargs)
     if gvendor != 'Cisco' or gmodel not in ('',):

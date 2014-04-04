@@ -136,7 +136,7 @@ def _ssh_hp_msa(ip_address, user, password):
 def scan_address(ip_address, **kwargs):
     if kwargs.get('http_family') not in ('WindRiver-WebServer',):
         raise NoMatchError("It's not a HP MSA Storage.")
-    if 'nx-os' in kwargs.get('snmp_name', '').lower():
+    if 'nx-os' in (kwargs.get('snmp_name', '') or '').lower():
         raise NoMatchError("Incompatible Nexus found.")
     user = SETTINGS.get('user')
     password = SETTINGS.get('password')
