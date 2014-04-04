@@ -77,6 +77,8 @@ def get_snmp(ipaddress):
                     timeout=0.2,
                     snmp_version=version,
                 )
+            if message:
+                return message, community, version
     if SNMP_V3_AUTH and version not in ('1', '2', '2c'):
         version = '3'
         message = _snmp(
