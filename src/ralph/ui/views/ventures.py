@@ -627,8 +627,9 @@ class VenturesDeviceList(SidebarVentures, BaseMixin, BaseDeviceList):
                 db.Q(venture__parent__parent=self.venture) |
                 db.Q(venture__parent__parent__parent=self.venture) |
                 db.Q(venture__parent__parent__parent__parent=self.venture) |
-                db.Q(venture__parent__parent__parent__parent__parent=
-                     self.venture)
+                db.Q(
+                    venture__parent__parent__parent__parent__parent=self.venture
+                )
             ).select_related(depth=3)
         return self.sort_queryset(queryset)
 
