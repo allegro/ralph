@@ -31,13 +31,10 @@ class BaseImporter(object):
         mail_admins(
             'Integration statistics',
             '''
-                    Report:<br>
-                    <hr>
-                    statistics: items matched: %(matched)d | items not matched %(not_matched)d<br>
-                ''' % dict(
-            matched=self.matched,
-            not_matched=self.not_matched,
-        ),
+                Report:<br>
+                <hr>
+                statistics: items matched: %(matched)d | items not matched %(not_matched)d<br>
+            ''' % dict(matched=self.matched, not_matched=self.not_matched),
             fail_silently=True,
             html_message=True,
         )
@@ -53,15 +50,10 @@ class BaseImporter(object):
             mail_admins(
                 'Integration errors',
                 '''
-                            Errors in %(class_name).%(method_name)
-                            Error message: %(error_message)s <br>
-
-                        ''' % dict(
-                class_name=classname,
-                method_name=methodname,
-                error_message=unicode(e),
-
-            ),
+                    Errors in %(class_name).%(method_name)
+                    Error message: %(error_message)s <br>
+                ''' % dict(class_name=classname, method_name=methodname,
+                           error_message=unicode(e)),
                 fail_silently=True,
                 html_message=True,
             )
