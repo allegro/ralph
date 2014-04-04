@@ -154,7 +154,7 @@ def get_subswitches(switch_version, hostname):
 
 
 def scan_address(ip_address, **kwargs):
-    if 'nx-os' in kwargs.get('snmp_name', '').lower():
+    if 'nx-os' in (kwargs.get('snmp_name', '') or '').lower():
         raise NoMatchError('Incompatible Nexus found.')
     if kwargs.get('http_family') not in ('Unspecified', 'Cisco'):
         raise NoMatchError('It is not Cisco.')

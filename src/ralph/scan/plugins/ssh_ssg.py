@@ -99,7 +99,7 @@ def _ssh_ssg(ip_address, user, password):
 def scan_address(ip_address, **kwargs):
     if kwargs.get('http_family') not in ('SSG', 'Unspecified'):
         raise NoMatchError("It's not a Juniper SSG.")
-    if 'nx-os' in kwargs.get('snmp_name', '').lower():
+    if 'nx-os' in (kwargs.get('snmp_name', '') or '').lower():
         raise NoMatchError("Incompatible Nexus found.")
     user = SETTINGS.get('user')
     password = SETTINGS.get('password')

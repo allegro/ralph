@@ -323,7 +323,7 @@ def idrac_device_info(idrac_manager):
 
 
 def scan_address(ip_address, **kwargs):
-    http_family = kwargs.get('http_family', '').strip()
+    http_family = (kwargs.get('http_family', '') or '').strip()
     if http_family and http_family.lower() not in ('dell', 'embedthis-http'):
         raise NoMatchError('It is not Dell.')
     user = SETTINGS.get('user')

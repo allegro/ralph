@@ -222,7 +222,7 @@ def _snmp_mac(ip_address, snmp_name, snmp_community, snmp_version,
 
 
 def scan_address(ip_address, **kwargs):
-    snmp_name = kwargs.get('snmp_name', '')
+    snmp_name = kwargs.get('snmp_name', '') or ''
     snmp_version = kwargs.get('snmp_version', '2c') or '2c'
     if snmp_version == '3':
         snmp_community = SETTINGS['snmp_v3_auth']
