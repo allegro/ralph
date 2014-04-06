@@ -17,6 +17,8 @@ import datetime
 
 import django_rq
 
+from django.conf import settings
+
 from ralph.util.network import ping
 from ralph.discovery.http import get_http_family
 from ralph.discovery.models import IPAddress, Network
@@ -172,9 +174,11 @@ def _autoscan_address(address):
         ipaddress.save(update_last_seen=True)
     else:
         if ipaddress:
-            ipaddress.http_family = None
-            ipaddress.snmp_name = None
-            ipaddress.snmp_community = None
-            ipaddress.snmp_version = None
             ipaddress.dead_ping_count += 1
+            if ipaddress.dead_ping_count >= settings.DEAD_PING_COUNT:
+                # remove previous values only if this IP address already died
+                ipaddress.http_family = None
+                ipaddress.snmp_name = None
+                ipaddress.snmp_community = None
+                ipaddress.snmp_version = None
             ipaddress.save(update_last_seen=False)
