@@ -188,10 +188,11 @@ class ChildDeviceInline(ForeignKeyAutocompleteTabularInline):
                'hard_firmware', 'diag_firmware', 'mgmt_firmware', 'price',
                'purchase_date', 'warranty_expiration_date', 'role',
                'support_expiration_date', 'deprecation_kind', 'margin_kind',
-               'chassis_position', 'position', 'support_kind', 'management')
+               'chassis_position', 'position', 'support_kind', 'management',
+               'logical_parent')
     extra = 0
     related_search_fields = {
-        'model': ['^name', '^type__name'],
+        'model': ['^name'],
     }
     fk_name = 'parent'
 
