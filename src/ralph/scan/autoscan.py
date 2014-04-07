@@ -153,7 +153,7 @@ def _autoscan_address(address):
     """Autoscans a single address on the worker."""
 
     try:
-        ipaddress = IPAddress.objects.get(address=address)
+        ipaddress = IPAddress.objects.get(address=unicode(address))
     except IPAddress.DoesNotExist:
         ipaddress = None
     if ipaddress and ipaddress.is_buried:
@@ -162,7 +162,7 @@ def _autoscan_address(address):
     if pinged:
         if not ipaddress:
             ipaddress, created = IPAddress.objects.get_or_create(
-                address=address,
+                address=unicode(address),
             )
         ipaddress.http_family = get_http_family(ipaddress.address)
         (
