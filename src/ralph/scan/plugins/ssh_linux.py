@@ -93,12 +93,12 @@ def _get_mac_addresses(ssh):
     stdin, stdout, stderr = ssh.exec_command(
         "/sbin/ip addr show | /bin/grep 'link/ether'",
     )
-    mac_addresses = []
+    mac_addresses = set()
     for line in stdout:
         mac_address = line.split(None, 3)[1]
         if is_mac_valid(Eth(label='', mac=mac_address, speed=0)):
-            mac_addresses.append(mac_address)
-    return mac_addresses
+            mac_addresses.add(mac_address)
+    return list(mac_addresses)
 
 
 def _get_base_device_info(ssh, messages=[]):
