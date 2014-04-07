@@ -91,7 +91,7 @@ def autoscan_network(network, queue_name=None):
         queue.enqueue_call(
             func=_autoscan_group,
             args=(group,),
-            timeout=60,
+            timeout=90,
             result_ttl=0,
         )
     network.last_scan = datetime.datetime.now()
@@ -111,7 +111,7 @@ def autoscan_ip_addresses_range(min_ip_number, max_ip_number, queue_name):
         queue.enqueue_call(
             func=_autoscan_group,
             args=(group,),
-            timeout=60,
+            timeout=90,
             result_ttl=0,
         )
 
