@@ -9,6 +9,8 @@ import urllib2
 import threading
 import httplib
 
+from rq.timeouts import JobTimeoutException
+
 
 FAMILIES = {
     'GoAhead-Webs': 'Thomas-Krenn',
@@ -49,6 +51,8 @@ def get_http_info(ip):
     def closer():
         try:
             response.close()
+        except JobTimeoutException as e:
+            raise e
         except:
             pass
 
@@ -58,6 +62,8 @@ def get_http_info(ip):
     finally:
         try:
             response.close()
+        except JobTimeoutException as e:
+            raise e
         except:
             pass
     headers = response.headers
