@@ -5,11 +5,13 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import urllib2
-import threading
 import httplib
+import socket
+import threading
+import urllib2
 
 from rq.timeouts import JobTimeoutException
+from ssl import SSLError
 
 
 FAMILIES = {
@@ -39,13 +41,19 @@ def get_http_info(ip):
         response = opener.open(request, timeout=5)
     except urllib2.HTTPError as e:
         response = e
-    except (urllib2.URLError, httplib.BadStatusLine, httplib.InvalidURL):
+    except (
+        urllib2.URLError, httplib.BadStatusLine, httplib.InvalidURL,
+        socket.timeout, SSLError
+    ):
         request = urllib2.Request("https://{}".format(ip))
         try:
             response = opener.open(request, timeout=5)
         except urllib2.HTTPError as e:
             response = e
-        except (urllib2.URLError, httplib.BadStatusLine, httplib.InvalidURL):
+        except (
+            urllib2.URLError, httplib.BadStatusLine, httplib.InvalidURL,
+            socket.timeout, SSLError
+        ):
             return {}, ''
 
     def closer():

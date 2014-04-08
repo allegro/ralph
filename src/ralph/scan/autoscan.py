@@ -26,7 +26,7 @@ from ralph.scan.snmp import get_snmp
 from ralph.scan.errors import NoQueueError
 
 
-ADDRESS_GROUP_SIZE = 32
+ADDRESS_GROUP_SIZE = 24
 
 
 def _split_into_groups(iterable, group_size):
