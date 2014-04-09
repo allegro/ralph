@@ -43,7 +43,7 @@ def get_http_info(ip):
         response = e
     except (
         urllib2.URLError, httplib.BadStatusLine, httplib.InvalidURL,
-        socket.timeout, SSLError
+        socket.timeout, SSLError, socket.error,
     ):
         request = urllib2.Request("https://{}".format(ip))
         try:
@@ -52,7 +52,7 @@ def get_http_info(ip):
             response = e
         except (
             urllib2.URLError, httplib.BadStatusLine, httplib.InvalidURL,
-            socket.timeout, SSLError
+            socket.timeout, SSLError, socket.error,
         ):
             return {}, ''
 
