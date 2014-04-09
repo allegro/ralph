@@ -6,14 +6,14 @@
         <div class="alert alert-{% if diff.is_equal %}success{% else %}info{% endif %}">
             {% if not diff.is_equal %}
                 {% if diff.type == "dicts" %}
-                    <span class="badge badge-success">{{ diff.meta.add_items_count }}</span> items was added.&nbsp;
-                    <span class="badge badge-important">{{ diff.meta.remove_items_count }}</span> items was removed.&nbsp;
-                    <span class="badge badge-warning">{{ diff.meta.change_items_count }}</span> items was changed.&nbsp;
+                    <span class="badge badge-success">{{ diff.meta.add_items_count }}</span> item{% if diff.meta.add_items_count == 1 %} was{% else %}s were{% endif %} added.&nbsp;
+                    <span class="badge badge-important">{{ diff.meta.remove_items_count }}</span> item{% if diff.meta.remove_items_count == 1 %} was{% else %}s were{% endif %} removed.&nbsp;
+                    <span class="badge badge-warning">{{ diff.meta.change_items_count }}</span> item{% if diff.meta.change_items_count == 1 %} was{% else %}s were{% endif %} changed.&nbsp;
                 {% else %}
-                    Some changes was detected. If you want edit current value use advanced mode.
+                    Some changes were detected. To edit current value, use advanced mode.
                 {% endif %}
             {% else %}
-                No changes.
+                Without changes.
             {% endif %}
             <div class="btn-group pull-right" data-toggle="buttons-checkbox" style="display: inline-block;">
                 {% if not diff.is_equal and diff.type == "dicts" %}

@@ -31,6 +31,8 @@ from ralph.scan.models import ScanSummary
 
 
 AUTOMERGE_MODE = getattr(settings, 'SCAN_AUTOMERGE_MODE', True)
+UI_CALLS_QUEUE_PREFIX = getattr(settings, 'UI_CALLS_QUEUE_PREFIX', 'ui')
+RQ_QUEUES_LIST = getattr(settings, 'RQ_QUEUES', {}).keys()
 
 
 logger = logging.getLogger("SCAN")
@@ -38,6 +40,7 @@ logger = logging.getLogger("SCAN")
 
 def scan_address(
     ip_address, plugins, queue_name=None, automerge=AUTOMERGE_MODE,
+    called_from_ui=False,
 ):
     """Queue scan on the specified address."""
 
@@ -59,6 +62,11 @@ def scan_address(
                         ip_address,
                     ),
                 )
+    if all((
+        called_from_ui,
+        '%s_%s' % (UI_CALLS_QUEUE_PREFIX, queue_name) in RQ_QUEUES_LIST
+    )):
+        queue_name = '%s_%s' % (UI_CALLS_QUEUE_PREFIX, queue_name)
     queue = django_rq.get_queue(queue_name)
     job = queue.enqueue_call(
         func=scan_address_job,
