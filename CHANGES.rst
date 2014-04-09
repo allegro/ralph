@@ -1,6 +1,15 @@
 Change Log
 ----------
 
+
+2.0.0-rc4
+~~~~~~~~~
+
+* Scan - special queues for UI calls
+
+* many fixes
+
+
 2.0.0-rc3
 ~~~~~~~~~
 
