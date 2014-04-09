@@ -363,6 +363,11 @@ DEAD_PING_COUNT = 2
 SCAN_AUTOMERGE_MODE = True
 # </template>
 
+SCAN_POSTPROCESS_ENABLED_JOBS = [
+    'ralph.scan.postprocess.position',
+    'ralph.scan.postprocess.cache_price',
+]
+
 #
 # programmatic stuff that need to be at the end of the file
 #
@@ -723,8 +728,3 @@ SCAN_PLUGINS = {
         },
     },
 }
-
-SCAN_POSTPROCESS_ENABLED_JOBS = [
-    'ralph.scan.postprocess.position',
-    'ralph.scan.postprocess.cache_price',
-]
