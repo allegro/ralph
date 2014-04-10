@@ -9,7 +9,7 @@ install:
   
   
 # command to run tests, e.g. python setup.py test
-script: DJANGO_SETTINGS_PROFILE=test-ralph ralph test ralph
+script: make quicktest
 before_script:
   make flake
   
