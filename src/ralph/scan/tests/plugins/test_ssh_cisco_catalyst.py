@@ -252,6 +252,37 @@ class TestCiscoCatalyst(TestCase):
         ]
         self.assertEquals(
             ssh_cisco_catalyst.get_subswitches(
-                show_version_ret, 'hostname.dc2'),
+                show_version_ret, 'hostname.dc2', '10.20.30.40'),
+            correct_ret,
+        )
+        correct_ret = [
+            {
+                'serial_number': 'FFFFFFFFFFD',
+                'mac_addresses': ['deadbeafcafe'],
+                'hostname': '10.20.30.40-1',
+                'model_name': 'Cisco Catalyst WS-C3750X-24',
+                'installed_software': [
+                    {
+                        'version': '12.2(58)SE2',
+                    }
+                ],
+                'type': 'switch',
+            },
+            {
+                'serial_number': 'DDDDDDDDDDD',
+                'mac_addresses': ['deadbeafcaff'],
+                'model_name': 'Cisco Catalyst WS-C3750X-24',
+                'hostname': '10.20.30.40-2',
+                'installed_software': [
+                    {
+                        'version': '12.2(58)SE2',
+                    }
+                ],
+                'type': 'switch',
+            }
+        ]
+        self.assertEquals(
+            ssh_cisco_catalyst.get_subswitches(
+                show_version_ret, None, '10.20.30.40'),
             correct_ret,
         )
