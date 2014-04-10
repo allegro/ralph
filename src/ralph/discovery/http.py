@@ -83,7 +83,6 @@ def guess_family(headers, document):
     if '/' in server:
         server = server.split('/', 1)[0]
     family = FAMILIES.get(server, server)
-
     if family in ('Apache', 'Unspecified'):
         if '<div id="copyright">Copyright &copy; IBM Corporation' in document:
             family = 'IBM'
@@ -105,6 +104,8 @@ def guess_family(headers, document):
             'VMware ESXi' in document,
         )):
             family = 'ESX'
+        elif 'ATEN International Co Ltd.' in document:
+            family = 'Thomas-Krenn'
     elif family in ('lighttpd',):
         if 'Modular Server Control' in document:
             family = 'Modular'
