@@ -92,7 +92,7 @@ def _connect_ssh(ip):
     )
 
 
-def get_subswitches(switch_version, hostname):
+def get_subswitches(switch_version, hostname, ip_address):
     base_mac_addresses = [
         "".join(re.findall('[0-9a-fA-F]{2}', line[25:]))
         for line in switch_version
@@ -127,20 +127,23 @@ def get_subswitches(switch_version, hostname):
         software_versions,
     )
     subswitches = []
-    hostname_chunks = hostname.split('.', 1)
-    try:
-        hostname_base, hostname_domain = (
-            hostname_chunks[0], hostname_chunks[1],
-        )
-    except IndexError:
-        hostname_base, hostname_domain = None, None
+    if hostname:
+        hostname_chunks = hostname.split('.', 1)
+        try:
+            hostname_base, hostname_domain = (
+                hostname_chunks[0], '.%s' % hostname_chunks[1],
+            )
+        except IndexError:
+            hostname_base, hostname_domain = None, None
+    else:
+        hostname_base, hostname_domain = ip_address, ''
     for i, subs in enumerate(zippd):
         subswitches.append(
             {
                 'serial_number': subs[0],
                 'mac_addresses': [subs[1]],
                 'model_name': subs[2],
-                'hostname': '%s-%d.%s' % (
+                'hostname': '%s-%d%s' % (
                     hostname_base, i + 1, hostname_domain),
                 'installed_software': [
                     {
@@ -167,7 +170,8 @@ def scan_address(ip_address, **kwargs):
         ))
         raw = '\n'.join(ssh.cisco_command("show inventory"))
         subswitches = get_subswitches(
-            ssh.cisco_command("show version"), hostname)
+            ssh.cisco_command("show version"), hostname, ip_address
+        )
     finally:
         ssh.close()
     matches = re.match(
@@ -190,7 +194,7 @@ def scan_address(ip_address, **kwargs):
     result.update({
         'status': 'success',
         'device': {
-            'hostname': hostname,
+            'hostname': hostname if hostname else ip_address,
             'model_name': model_name,
             'type': model_type.raw,
             'serial_number': sn,
