@@ -283,14 +283,15 @@ def _scan_postprocessing(results, job, ip_address=None):
     # update exists results data
     if old_job:
         updated_results = old_job.result
-        for plugin_name, plugin_results in results.iteritems():
-            updated_results[plugin_name] = plugin_results
-            if plugin_name not in job.meta['finished']:
-                job.meta['finished'].append(plugin_name)
-            if plugin_name not in job.meta['status']:
-                job.meta['status'][plugin_name] = plugin_results['status']
-        job.save()
-        results.update(updated_results)
+        if updated_results is not None:
+            for plugin_name, plugin_results in results.iteritems():
+                updated_results[plugin_name] = plugin_results
+                if plugin_name not in job.meta['finished']:
+                    job.meta['finished'].append(plugin_name)
+                if plugin_name not in job.meta['status']:
+                    job.meta['status'][plugin_name] = plugin_results['status']
+            job.save()
+            results.update(updated_results)
     # calculate new checksum
     cleaned_results = _get_cleaned_results(results)
     checksum = _get_results_checksum(cleaned_results)
