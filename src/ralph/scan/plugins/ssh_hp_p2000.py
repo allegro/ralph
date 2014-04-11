@@ -13,6 +13,7 @@ from lxml import etree as ET
 from django.conf import settings
 
 from ralph.discovery.hardware import normalize_wwn
+from ralph.discovery.models import SERIAL_BLACKLIST
 from ralph.util import network
 from ralph.scan.errors import (
     SSHConsoleError,
@@ -166,10 +167,11 @@ def _device(ip, name, model_name, sn, macs, shares):
         'management_ip_addresses': [ip],
         'hostname': name,
         'model_name': model_name,
-        'serial_number': sn,
         'mac_addresses': macs,
         'disk_exports': shares,
     }
+    if sn not in SERIAL_BLACKLIST:
+        device['serial_number'] = sn
     return device
 
 

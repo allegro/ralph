@@ -11,7 +11,8 @@ from ralph.discovery import hp_ilo
 from ralph.discovery.models import (
     ComponentType,
     DeviceType,
-    MAC_PREFIX_BLACKLIST
+    MAC_PREFIX_BLACKLIST,
+    SERIAL_BLACKLIST
 )
 from ralph.scan.errors import NoMatchError
 from ralph.scan.plugins import get_base_result_template
@@ -25,15 +26,17 @@ def _get_base_device_info(ilo):
         model_type = DeviceType.blade_server.raw
     else:
         model_type = DeviceType.rack_server.raw
-    return {
+    result = {
         'type': model_type,
         'model_name': ilo.model,
-        'serial_number': ilo.sn,
         'parts': [{
             'mgmt_firmware': ilo.firmware,
             'type': ComponentType.management.raw,
         }],
     }
+    if ilo.sn not in SERIAL_BLACKLIST:
+        result['serial_number'] = ilo.sn
+    return result
 
 
 def _get_mac_addresses(ilo):

@@ -88,12 +88,14 @@ def _get_parent_device(data):
         )
     if not encl_name.startswith('HP'):
         encl_name = 'HP ' + encl_name
-    return {
+    result = {
         'type': DeviceType.blade_system.raw,
-        'serial_number': encl_sn,
         'model_name': encl_name,
         'rack': rack_name,
     }
+    if encl_sn not in SERIAL_BLACKLIST:
+        result['serial_number'] = encl_sn
+    return result
 
 
 def _get_mac_addresses(data):

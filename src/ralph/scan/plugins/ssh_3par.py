@@ -10,7 +10,7 @@ import re
 from django.conf import settings
 
 from ralph.discovery.hardware import normalize_wwn
-from ralph.discovery.models import DeviceType
+from ralph.discovery.models import DeviceType, SERIAL_BLACKLIST
 from ralph.scan.errors import ConnectionError, NoMatchError
 from ralph.scan.plugins import get_base_result_template
 from ralph.util import network
@@ -100,9 +100,10 @@ def _ssh_3par(ip_address, user, password):
         'type': DeviceType.storage.raw,
         'model_name': '3PAR %s' % model_name,
         'hostname': name,
-        'serial_number': sn,
         'management_ip_addresses': [ip_address],
     }
+    if sn not in SERIAL_BLACKLIST:
+        device_info['serial_number'] = sn
     shares = _handle_shares(shares)
     if shares:
         device_info['disk_exports'] = shares

@@ -11,7 +11,7 @@ from django.conf import settings
 from xml.etree import cElementTree as ET
 
 from ralph.discovery.http import guess_family, get_http_info
-from ralph.discovery.models import DeviceType
+from ralph.discovery.models import DeviceType, SERIAL_BLACKLIST
 from ralph.scan.errors import (
     AuthError,
     NoMatchError,
@@ -216,9 +216,10 @@ def _http_ibm_system_x(ip_address, user, password):
     device = {
         'type': DeviceType.rack_server.raw,
         'model_name': model_name,
-        'serial_number': sn,
         'management_ip_address': [ip_address],
     }
+    if sn not in SERIAL_BLACKLIST:
+        device['serial_number'] = sn
     macs = _get_mac_addresses(management_url, session_id)
     if macs:
         device['mac_addresses'] = macs
