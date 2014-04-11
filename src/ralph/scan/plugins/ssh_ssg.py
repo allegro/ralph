@@ -11,7 +11,7 @@ import paramiko
 
 from django.conf import settings
 
-from ralph.discovery.models import ComponentType, DeviceType
+from ralph.discovery.models import ComponentType, DeviceType, SERIAL_BLACKLIST
 from ralph.scan.errors import ConnectionError, NoMatchError, SSHConsoleError
 from ralph.scan.plugins import get_base_result_template
 from ralph.util import parse
@@ -82,11 +82,10 @@ def _ssh_ssg(ip_address, user, password):
     model = '%s %s' % (name, version)
     mac = pairs['Base Mac'].replace('.', '').upper()
     sn = pairs['Serial Number'].split(',', 1)[0]
-    return {
+    result = {
         'type': DeviceType.firewall.raw,
         'model_name': model,
         'mac_addresses': [mac],
-        'serial_number': sn,
         'hostname': name,
         'management_ip_addresses': [ip_address],
         'parts': [{
@@ -94,6 +93,9 @@ def _ssh_ssg(ip_address, user, password):
             'type': ComponentType.power.raw,
         }],
     }
+    if sn not in SERIAL_BLACKLIST:
+        result['serial_number'] = sn
+    return result
 
 
 def scan_address(ip_address, **kwargs):

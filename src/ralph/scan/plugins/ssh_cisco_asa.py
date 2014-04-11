@@ -17,7 +17,11 @@ import time
 from django.conf import settings
 
 from ralph.discovery import guessmodel
-from ralph.discovery.models import DeviceType, MAC_PREFIX_BLACKLIST
+from ralph.discovery.models import (
+    DeviceType,
+    MAC_PREFIX_BLACKLIST,
+    SERIAL_BLACKLIST
+)
 from ralph.scan.errors import (
     AuthError,
     ConsoleError,
@@ -132,7 +136,6 @@ def scan_address(ip_address, **kwargs):
         'device': {
             'model_name': 'Cisco ' + model,
             'type': str(DeviceType.firewall),
-            'serial_number': sn,
             'mac_adresses': macs,
             'boot_firmware': boot_firmware,
             'management_ip_addresses': [ip_address],
@@ -146,4 +149,6 @@ def scan_address(ip_address, **kwargs):
             }],
         },
     })
+    if sn not in SERIAL_BLACKLIST:
+        result['device']['serial_number'] = sn
     return result

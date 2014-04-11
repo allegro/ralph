@@ -13,7 +13,7 @@ import requests
 from django.conf import settings
 from xml.etree import cElementTree as ET
 
-from ralph.discovery.models import MAC_PREFIX_BLACKLIST
+from ralph.discovery.models import MAC_PREFIX_BLACKLIST, SERIAL_BLACKLIST
 from ralph.scan.errors import Error, NoMatchError
 from ralph.scan.plugins import get_base_result_template
 
@@ -126,7 +126,7 @@ def _get_base_info(idrac):
     records = tree.findall(q)
     if not records:
         raise Error("Incorrect answer in the _get_base_info.")
-    return {
+    result = {
         'model_name': "{} {}".format(
             records[0].find(
                 "{}{}".format(xmlns_n1, 'Manufacturer'),
@@ -135,10 +135,13 @@ def _get_base_info(idrac):
                 "{}{}".format(xmlns_n1, 'Model'),
             ).text.strip(),
         ),
-        'serial_number': records[0].find(
-            "{}{}".format(xmlns_n1, 'ChassisServiceTag'),
-        ).text.strip(),
     }
+    serial_number = records[0].find(
+        "{}{}".format(xmlns_n1, 'ChassisServiceTag'),
+    ).text.strip()
+    if serial_number not in SERIAL_BLACKLIST:
+        result['serial_number'] = serial_number
+    return result
 
 
 def _get_mac_addresses(idrac_manager):

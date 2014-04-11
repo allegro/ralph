@@ -10,6 +10,7 @@ import paramiko
 from django.conf import settings
 
 from ralph.discovery.hardware import get_disk_shares
+from ralph.discovery.models import SERIAL_BLACKLIST
 from ralph.discovery.models_component import is_mac_valid
 from ralph.scan.plugins import get_base_result_template
 from ralph.util import network, parse, Eth
@@ -31,7 +32,8 @@ def _parse_dmidecode(data):
     }
     serial_number = parsed_data['System Information']['Serial Number']
     if 'not specified' not in serial_number.lower():
-        result['serial_number'] = serial_number
+        if serial_number not in SERIAL_BLACKLIST:
+            result['serial_number'] = serial_number
 
     def exclude(value, exceptions):
         if value not in exceptions:
