@@ -161,6 +161,7 @@ def _update_component_data(
         model = None
         data['device'] = device
         data['index'] = index
+        component = None
         for group in unique_fields:
             # First try to find an existing component using unique fields
             fields = {
@@ -171,11 +172,16 @@ def _update_component_data(
             if len(group) != len(fields):
                 continue
             try:
-                component = Component.objects.get(**fields)
+                component_to_update = Component.objects.get(**fields)
             except Component.DoesNotExist:
                 continue
-            break
-        else:
+            else:
+                if not component:
+                    component = component_to_update
+                else:
+                    if component.id != component_to_update.id:
+                        component_to_update.delete()
+        if not component:
             # No matching component found, create a new one
             if model_type is not None or 'type' in data:
                 # If model_type is provided, create the model
