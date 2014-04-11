@@ -14,7 +14,7 @@ import time
 from django.conf import settings
 
 from ralph.discovery.cisco import cisco_inventory
-from ralph.discovery.models import DeviceType
+from ralph.discovery.models import DeviceType, SERIAL_BLACKLIST
 from ralph.scan.errors import (
     AuthError,
     ConnectionError,
@@ -197,7 +197,6 @@ def scan_address(ip_address, **kwargs):
             'hostname': hostname if hostname else ip_address,
             'model_name': model_name,
             'type': model_type.raw,
-            'serial_number': sn,
             'management_ip_addresses': [ip_address],
             'parts': [{
                 'serial_number': part['sn'],
@@ -206,6 +205,8 @@ def scan_address(ip_address, **kwargs):
             } for part in parts],
         },
     })
+    if sn not in SERIAL_BLACKLIST:
+        result['device']['serial_number'] = sn
     if subswitches:
         result['device']['subdevices'] = subswitches
     else:

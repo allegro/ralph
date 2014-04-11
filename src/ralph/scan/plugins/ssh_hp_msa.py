@@ -8,7 +8,7 @@ from __future__ import unicode_literals
 from django.conf import settings
 
 from ralph.discovery.hardware import normalize_wwn
-from ralph.discovery.models import DeviceType
+from ralph.discovery.models import DeviceType, SERIAL_BLACKLIST
 from ralph.discovery.storageworks import HPSSHClient
 from ralph.scan.errors import (
     ConnectionError,
@@ -118,15 +118,18 @@ def _ssh_hp_msa(ip_address, user, password):
             '/PROPERTY[@name="serial-number"]/text()')[0]
     except IndexError:
         sn = None
+    else:
+        sn = unicode(sn)
     macs = network_xml.xpath('OBJECT/PROPERTY[@name="mac-address"]/text()')
     device_info = {
         'type': DeviceType.storage.raw,
         'model_name': model_name,
-        'serial_number': sn,
         'management_ip_addresses': [ip_address],
     }
+    if sn not in SERIAL_BLACKLIST:
+        device_info['serial_number'] = sn
     if macs:
-        device_info['mac_addresses'] = macs
+        device_info['mac_addresses'] = [unicode(mac) for mac in macs]
     shares = _handle_shares(volumes)
     if shares:
         device_info['disk_exports'] = shares

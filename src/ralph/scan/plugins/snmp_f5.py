@@ -7,7 +7,7 @@ from __future__ import unicode_literals
 
 from django.conf import settings
 
-from ralph.discovery.models import DeviceType
+from ralph.discovery.models import DeviceType, SERIAL_BLACKLIST
 from ralph.discovery.snmp import snmp_command
 from ralph.scan.plugins import get_base_result_template
 
@@ -47,11 +47,13 @@ def _snmp_f5(ip_address, snmp_name, snmp_community):
         raise Error('No answer.')
     except IndexError:
         raise Error('Incorrect answer.')
-    return {
+    result = {
         'type': str(DeviceType.load_balancer),
         'model_name': 'F5 %s' % model,
-        'serial_number': sn,
     }
+    if sn not in SERIAL_BLACKLIST:
+        result['serial_number'] = sn
+    return result
 
 
 def scan_address(ip_address, **kwargs):

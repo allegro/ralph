@@ -470,6 +470,7 @@ SCAN_PLUGINS = {
             'disks': 51,
             'fibrechannel_cards': 51,
             'installed_software': 51,
+            'serial_number': 41,
         },
     },
     'ralph.scan.plugins.hp_oa': {
@@ -534,6 +535,7 @@ SCAN_PLUGINS = {
             'mac_addresses': 4,
             'processors': 4,
             'memory': 4,
+            'serial_number': 4,
         },
     },
     'ralph.scan.plugins.ssh_cisco_asa': {
@@ -677,7 +679,7 @@ SCAN_PLUGINS = {
             'management_ip_addresses': 6,
             'hostname': 6,
             'model_name': 6,
-            'serial_numbe': 6,
+            'serial_number': 6,
             'mac_addresses': 6,
             'disk_exports': 6,
         },
