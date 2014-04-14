@@ -86,6 +86,8 @@ def _get_best_plugin_for_component(
             top_priority = priority
             top_plugin = plugin
     if not top_plugin or (component == 'hostname' and is_management):
+        # hostname for management ip address must be ignored - it could
+        # overwrite real device hostname
         top_plugin = 'database'
     return top_plugin
 
