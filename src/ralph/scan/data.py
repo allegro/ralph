@@ -191,6 +191,10 @@ def _update_component_data(
                     except ValueError:
                         model_type = None
                 if model_type is not None:
+                    # family is required for disks
+                    if model_type == ComponentType.disk:
+                        if 'family' not in data or not data['family']:
+                            data['family'] = 'Generic disk'
                     model = _get_or_create_model_for_component(
                         model_type,
                         data,
