@@ -120,6 +120,10 @@ def _get_or_create_model_for_component(
         family = model_fields.get('family')
         if path and not family:
             model_fields['family'] = path
+    if model_type == ComponentType.disk:
+        family = model_fields.get('family')
+        if not family:
+            model_fields['family'] = 'Generic disk'
     if 'family' in model_fields:
         model_fields['family'] = model_fields.get('family', '')[:128]
     model, created = ComponentModel.create(
