@@ -92,10 +92,10 @@ def _ssh_hp_msa(ip_address, user, password):
                 )[0]
                 volume_size = user_size * vdisk_raw_size / vdisk_size
                 volumes.append((
-                    volume_name,
-                    serial,
+                    unicode(volume_name),
+                    unicode(serial),
                     volume_size,
-                    disk_type,
+                    unicode(disk_type),
                     disk_rpm,
                 ))
     finally:
