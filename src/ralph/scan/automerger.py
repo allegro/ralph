@@ -17,6 +17,7 @@ import time
 from django.conf import settings
 from django.utils.importlib import import_module
 
+from ralph.discovery.models_network import IPAddress
 from ralph.scan.data import (
     append_merged_proposition,
     device_from_data,
@@ -58,6 +59,7 @@ def _get_best_plugin_for_component(
     component,
     plugins,
     external_priorities={},
+    is_management=False
 ):
     if 'merged' in plugins:
         return 'merged'
@@ -83,7 +85,7 @@ def _get_best_plugin_for_component(
         if priority > top_priority:
             top_priority = priority
             top_plugin = plugin
-    if not top_plugin:
+    if not top_plugin or (component == 'hostname' and is_management):
         top_plugin = 'database'
     return top_plugin
 
@@ -94,7 +96,7 @@ def _find_data_by_plugin(data, plugin):
             return results
 
 
-def _select_data(data, external_priorities={}):
+def _select_data(data, external_priorities={}, is_management=False):
     selected_data = {}
     for component, result in data.iteritems():
         available_plugins = set()
@@ -104,6 +106,7 @@ def _select_data(data, external_priorities={}):
             component,
             available_plugins,
             external_priorities,
+            is_management
         )
         best_data_for_component = _find_data_by_plugin(result, best_plugin)
         if best_data_for_component is None:
@@ -127,6 +130,17 @@ def _save_job_results(job_id, start_ts):
         # nothing to do...
         return
     external_priorities = get_external_results_priorities(job.result)
+    # management?
+    is_management = False
+    if job.args:
+        try:
+            is_management = IPAddress.objects.filter(
+                address=job.args[0]
+            ).values_list(
+                'is_management', flat=True
+            )[0]
+        except IndexError:
+            pass
     # first... update devices
     devices = find_devices(job.result)
     used_serial_numbers = set()
@@ -145,7 +159,7 @@ def _save_job_results(job_id, start_ts):
             only_multiple=True,
         )
         append_merged_proposition(data, device, external_priorities)
-        selected_data = _select_data(data, external_priorities)
+        selected_data = _select_data(data, external_priorities, is_management)
         set_device_data(device, selected_data, save_priority=SAVE_PRIORITY)
         device.save(priority=SAVE_PRIORITY)
     # now... we create new devices from `garbage`
