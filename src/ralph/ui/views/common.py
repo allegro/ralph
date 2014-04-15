@@ -1670,7 +1670,7 @@ class ScanStatus(BaseMixin, TemplateView):
 
     def get(self, *args, **kwargs):
         self.job = self.get_job()
-        if self.job.is_finished and not self.ip_address:
+        if self.job and self.job.is_finished and not self.ip_address:
             try:
                 scan_summary = ScanSummary.objects.get(job_id=self.job.id)
             except ScanSummary.DoesNotExist:
