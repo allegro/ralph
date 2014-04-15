@@ -71,3 +71,7 @@ class IncompatibleAnswerError(Error):
 
 class IncompleteAnswerError(Error):
     pass
+
+
+class AutomergerError(Error):
+    pass

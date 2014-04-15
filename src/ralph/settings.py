@@ -412,8 +412,8 @@ SCAN_PLUGINS = {
         'snmp_v3_auth': (SNMP_V3_USER, SNMP_V3_AUTH_KEY, SNMP_V3_PRIV_KEY),
         'results_priority': {
             'mac_addresses': 50,
-            'type': 25,
-            'model_name': 15,
+            'type': 0,
+            'model_name': 0,
         },
     },
     'ralph.scan.plugins.snmp_f5': {
@@ -545,7 +545,7 @@ SCAN_PLUGINS = {
             'model_name': 7,
             'type': 7,
             'serial_number': 7,
-            'mac_adresses': 7,
+            'mac_addresses': 7,
             'boot_firmwar': 7,
             'management_ip_addresses': 7,
             'memory': 7,
@@ -560,7 +560,7 @@ SCAN_PLUGINS = {
             'model_name': 7,
             'type': 7,
             'serial_number': 7,
-            'mac_adresses': 7,
+            'mac_addresses': 7,
             'management_ip_addresses': 7,
             'parts': 7,
             'subdevices': 20,
