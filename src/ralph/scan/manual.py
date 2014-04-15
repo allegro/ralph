@@ -30,7 +30,7 @@ from ralph.scan.errors import NoQueueError
 from ralph.scan.models import ScanSummary
 
 
-AUTOMERGE_MODE = getattr(settings, 'SCAN_AUTOMERGE_MODE', True)
+AUTOMERGE_MODE = getattr(settings, 'SCAN_AUTOMERGE_MODE', False)
 UI_CALLS_QUEUE_PREFIX = getattr(settings, 'UI_CALLS_QUEUE_PREFIX', 'ui')
 RQ_QUEUES_LIST = getattr(settings, 'RQ_QUEUES', {}).keys()
 

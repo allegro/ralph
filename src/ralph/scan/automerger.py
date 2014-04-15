@@ -15,18 +15,20 @@ import rq
 import time
 
 from django.conf import settings
+from django.db import models as db
 from django.utils.importlib import import_module
 
+from ralph.discovery.models_device import Device
 from ralph.discovery.models_network import IPAddress
 from ralph.scan.data import (
     append_merged_proposition,
     device_from_data,
-    find_devices,
     get_device_data,
     get_external_results_priorities,
     merge_data,
     set_device_data,
 )
+from ralph.scan.errors import AutomergerError
 from ralph.scan.util import update_scan_summary
 
 
@@ -117,6 +119,25 @@ def _select_data(data, external_priorities={}, is_management=False):
     return selected_data
 
 
+def _find_devices(result):
+    ids = set(
+        r['device']['id']
+        for r in result.itervalues() if 'id' in r.get('device', {})
+    )
+    serials = set(
+        r['device']['serial_number']
+        for r in result.itervalues() if 'serial_number' in r.get('device', {})
+    )
+    macs = set()
+    for r in result.itervalues():
+        macs |= set(r.get('device', {}).get('mac_addresses', []))
+    return Device.admin_objects.filter(
+        db.Q(id__in=ids) |
+        db.Q(sn__in=serials) |
+        db.Q(ethernet__mac__in=macs)
+    ).distinct(), ids, serials, macs
+
+
 def _save_job_results(job_id, start_ts):
     if (int(time.time()) - start_ts) > 86100:  # 24h - 5min
         return
@@ -143,8 +164,14 @@ def _save_job_results(job_id, start_ts):
             )[0]
         except IndexError:
             pass
-    # first... update devices
-    devices = find_devices(job.result)
+    # first... update device
+    devices, ids_lookup, sn_lookup, macs_lookup = _find_devices(job.result)
+    if len(devices) > 1:
+        raise AutomergerError(
+            'Many devices found for: ids=%s, sn=%s, macs=%s' % (
+                ids_lookup, sn_lookup, macs_lookup
+            )
+        )
     used_serial_numbers = set()
     used_mac_addresses = set()
     for device in devices:
@@ -165,43 +192,46 @@ def _save_job_results(job_id, start_ts):
         set_device_data(device, selected_data, save_priority=SAVE_PRIORITY)
         device.save(priority=SAVE_PRIORITY)
     # now... we create new devices from `garbage`
-    garbage = {}
-    for plugin_name, plugin_result in job.result.items():
-        if 'device' not in plugin_result:
-            continue
-        if 'serial_number' in plugin_result['device']:
-            if plugin_result['device']['serial_number'] in used_serial_numbers:
+    if not devices:
+        garbage = {}
+        for plugin_name, plugin_result in job.result.items():
+            if 'device' not in plugin_result:
                 continue
-        if 'mac_addresses' in plugin_result['device']:
-            if set(
-                plugin_result['device']['mac_addresses'],
-            ) != set(
-                plugin_result['device']['mac_addresses'],
-            ) - used_mac_addresses:
-                continue
-        if any((
-            plugin_result['device'].get('serial_number'),
-            plugin_result['device'].get('mac_addresses'),
-        )):
-            garbage[plugin_name] = plugin_result
-    if garbage:
-        data = merge_data(garbage)
-        selected_data = _select_data(data, external_priorities)
-        if all((
-            any(
-                (
-                    selected_data.get('serial_number'),
-                    selected_data.get('mac_addresses', []),
-                )
-            ),
-            any(
-                (
-                    selected_data.get('model_name'),
-                    selected_data.get('type'),
-                )
-            ),
-        )):
-            device_from_data(selected_data, save_priority=SAVE_PRIORITY)
+            if 'serial_number' in plugin_result['device']:
+                if plugin_result['device'][
+                    'serial_number'
+                ] in used_serial_numbers:
+                    continue
+            if 'mac_addresses' in plugin_result['device']:
+                if set(
+                    plugin_result['device']['mac_addresses'],
+                ) != set(
+                    plugin_result['device']['mac_addresses'],
+                ) - used_mac_addresses:
+                    continue
+            if any((
+                plugin_result['device'].get('serial_number'),
+                plugin_result['device'].get('mac_addresses'),
+            )):
+                garbage[plugin_name] = plugin_result
+        if garbage:
+            data = merge_data(garbage)
+            selected_data = _select_data(data, external_priorities)
+            if all((
+                any(
+                    (
+                        selected_data.get('serial_number'),
+                        selected_data.get('mac_addresses', []),
+                    )
+                ),
+                any(
+                    (
+                        selected_data.get('model_name'),
+                        selected_data.get('type'),
+                    )
+                ),
+            )):
+                device_from_data(selected_data, save_priority=SAVE_PRIORITY)
     # mark this scan results
     update_scan_summary(job)
     # run postprocess plugins...
