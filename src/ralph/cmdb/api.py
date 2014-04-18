@@ -43,6 +43,7 @@ from ralph.cmdb.models import (
 )
 from ralph.cmdb import models as db
 from ralph.cmdb.models_ci import CIOwner, CIOwnershipType
+from ralph.cmdb.util import breadth_first_search_ci
 
 
 THROTTLE_AT = settings.API_THROTTLING['throttle_at']
@@ -175,10 +176,12 @@ class OwnershipField(tastypie.fields.RelatedField):
 
     is_m2m = True
 
-    def __init__(self, owner_type, **kwargs):
+    def __init__(self, owner_type, effective=False, **kwargs):
         # Choices have broken deepcopy logic, so we can't store them
         self.owner_type = owner_type.id
         self.owner_type_name = owner_type.name
+        self.effective = effective
+
         args = (
             'ralph.cmdb.api.CIOwnersResource',
             self.get_attribute_name(),
@@ -186,16 +189,22 @@ class OwnershipField(tastypie.fields.RelatedField):
         super(OwnershipField, self).__init__(*args, **kwargs)
 
     def dehydrate(self, bundle, **kwargs):
-        owners = CIOwner.objects.filter(
-            ciownership__type=self.owner_type,
-            ciownership__ci=bundle.obj,
-        )
-        result = []
-        for owner in owners:
-            result.append(self.dehydrate_related(
-                bundle, self.get_related_resource(owner)
-            ))
-        return result
+        def get_owners(ci):
+            owners = CIOwner.objects.filter(
+                ciownership__type=self.owner_type,
+                ciownership__ci=ci,
+            )
+            result = []
+            for owner in owners:
+                result.append(self.dehydrate_related(
+                    bundle, self.get_related_resource(owner)
+                ))
+            return result
+        if self.effective:
+            found, result = breadth_first_search_ci(bundle.obj, get_owners)
+            return result
+        else:
+            return get_owners(bundle.obj)
 
     def get_attribute_name(self):
         return '{0}_owners'.format(self.owner_type_name)
@@ -204,6 +213,8 @@ class OwnershipField(tastypie.fields.RelatedField):
         pass
 
     def hydrate_m2m(self, bundle):
+        if self.effective:
+            return []
         owners_data = bundle.data[self.attribute]
         owners = [
             self.build_related_resource(data) for data in owners_data
@@ -280,6 +291,12 @@ class CIResource(MResource):
     attributes = CustomAttributesField()
     business_owners = OwnershipField(CIOwnershipType.business, full=True)
     technical_owners = OwnershipField(CIOwnershipType.technical, full=True)
+    effective_business_owners = OwnershipField(
+        CIOwnershipType.business, full=True, effective=True
+    )
+    effective_technical_owners = OwnershipField(
+        CIOwnershipType.technical, full=True, effective=True
+    )
     layers = fields.ManyToManyField(
         'ralph.cmdb.api.CILayersResource', 'layers', full=True
     )
