@@ -6,3 +6,8 @@ flake:
 
 runserver:
 	ralph runserver
+
+install:
+	pip install -U pip
+	pip install -e . --use-mirrors --allow-all-external --allow-unverified ipaddr --allow-unverified postmarkup --allow-unverified python-graph-core --allow-unverified pysphere
+
