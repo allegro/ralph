@@ -19,6 +19,10 @@ SETTINGS = settings.SCAN_PLUGINS.get(__name__, {})
 
 
 def _get_vm_info(vm_properties):
+    if 'hostname' in vm_properties:
+        hostname = vm_properties['hostname']
+    else:
+        hostname = vm_properties['name']
     ip_addresses = []
     mac_addresses = []
     for interface in vm_properties.get('net', []):
@@ -37,7 +41,7 @@ def _get_vm_info(vm_properties):
         'model_name': 'VMWare Virtual Server',
         'mac_addresses': mac_addresses,
         'system_ip_addresses': ip_addresses,
-        'hostname': vm_properties['hostname'],
+        'hostname': hostname,
         'memory': [{
             'label': 'Virtual RAM',
             'size': vm_properties['memory_mb'],
