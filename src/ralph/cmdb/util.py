@@ -171,6 +171,7 @@ def breadth_first_search_ci(root, criterion, up=True):
         else:
             to_search = current.get_children()
         for ci in to_search:
-            queue.append(ci)
-            enqueued.add(ci)
+            if ci.id not in enqueued:
+                queue.append(ci)
+                enqueued.add(ci.id)
     return None, None
