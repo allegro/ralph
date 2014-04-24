@@ -408,6 +408,7 @@ def _report_ventures_get_totals(start, end, query, extra_types):
                 DeviceType.data_center,
                 DeviceType.rack,
                 DeviceType.management,
+                DeviceType.switch_stack,
             ),
         ).exclude(
             device_id__isnull=True

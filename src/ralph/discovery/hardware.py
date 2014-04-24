@@ -72,6 +72,8 @@ def normalize_wwn(wwn):
     u'600A0B8000119CA80000574F4CFC5084'
     >>> normalize_wwn('3600144f01ef1490000004c08ed6f0008') # SUN - multipath
     u'600144F01EF1490000004C08ED6F0008'
+    >>> normalize_wwn('36000402001d81b697962865b00000000') # NEXSAN
+    u'36000402001D81B697962865B'
     """
 
     wwn = wwn.replace(':', '').replace(
@@ -85,6 +87,11 @@ def normalize_wwn(wwn):
     elif len(wwn) == 33 and wwn[-6:] == '000000' and wwn[8:11] == '000':
         # MSA - multipath
         wwn = wwn[11:-6]
+    elif len(wwn) == 33 and wwn[-8:] == '00000000' and wwn.startswith(
+        '36000402'
+    ):
+        # NEXSAN
+        wwn = wwn[0:-8]
     elif len(wwn) == 32 and wwn[-6:] == '000000' and wwn[12:16] == '0000':
         # MSA
         wwn = wwn[6:12] + wwn[16:-6]
