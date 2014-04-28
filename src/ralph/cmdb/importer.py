@@ -48,7 +48,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import Q
 
 import ralph.discovery.models as db
 import ralph.discovery.models_network as ndb
@@ -67,6 +66,7 @@ def get_layers_for_ci_type(ci_type_id):
 
 
 class UnknownCTException(Exception):
+
     def __init__(self, value):
         Exception.__init__(self, value)
         self.parameter = value
@@ -90,7 +90,45 @@ def _create_or_update_relation(parent, child, relation_type):
     return ci_relation
 
 
+def _replace_relations(obj, ci, side, field, other_ct, relation_type):
+    """A generic function replacing relations.
+    :param obj: an object from ralph
+    :param ci: a CI that reflects the object
+    :param side: whether it should be a child or parent of relation
+    :param other_ct: the content-type from other side
+    :relateion_type: the type of CIRelations
+    """
+    used_relations = set()
+    if getattr(obj, field):
+        try:
+            other = cdb.CI.objects.get(
+                content_type=other_ct,
+                object_id=getattr(obj, field).id,
+            )
+            kwargs = {'relation_type': relation_type}
+            if side == 'child':
+                kwargs['child'] = ci
+                kwargs['parent'] = other
+            else:
+                kwargs['parent'] = ci
+                kwargs['child'] = other
+            used_relations.add(_create_or_update_relation(**kwargs).id)
+        except cdb.CI.DoesNotExist:
+            pass
+    kwargs = {'type': relation_type}
+    if side == 'child':
+        kwargs['child'] = ci
+        kwargs['parent__content_type'] = other_ct
+    else:
+        kwargs['parent'] = ci
+        kwargs['child__content_type'] = other_ct
+    cdb.CIRelation.objects.filter(**kwargs).exclude(
+        id__in=used_relations
+    ).delete()
+
+
 class CIImporter(object):
+
     @nested_commit_on_success
     def store_asset(self, asset, type_, layers, uid_prefix):
         """Store given asset as  CI"""
@@ -110,6 +148,14 @@ class CIImporter(object):
         ci.name = '%s' % asset.name or unicode(asset)
         if 'barcode' in asset.__dict__.keys():
             ci.barcode = asset.barcode
+        if isinstance(asset, db.Device):
+            active = not asset.deleted
+        else:
+            active = True
+        ci.state = (
+            cdb.CI_STATE_TYPES.ACTIVE if active
+            else cdb.CI_STATE_TYPES.INACTIVE
+        )
         ci.save()
         return ci
 
@@ -128,11 +174,15 @@ class CIImporter(object):
                 % asset_content_type.app_label + '.' + asset_content_type.model
             )
         uid_prefix = prefix[0].prefix
+        if issubclass(asset_class, db.Device):
+            attr = 'admin_objects'
+        else:
+            attr = 'objects'
         if asset_id:
-            all_devices = asset_class.objects.filter(
+            all_devices = getattr(asset_class, attr).filter(
                 id=asset_id).order_by('id').all()
         else:
-            all_devices = asset_class.objects.order_by('id').all()
+            all_devices = getattr(asset_class, attr).order_by('id').all()
         for d in all_devices:
             ret.append(self.store_asset(d, _type, layers, uid_prefix))
         logger.info('Finished.')
@@ -143,7 +193,7 @@ class CIImporter(object):
         if content_type:
             for x in cdb.CI.objects.filter(
                     content_type__in=content_type).all().iterator():
-                        x.delete()
+                x.delete()
         else:
             # very very slow.
             for x in cdb.CI.objects.all().iterator():
@@ -204,30 +254,25 @@ class CIImporter(object):
             content_type=content_type,
             **additional_params
         ).order_by('id'):
-            used_relations = []
             obj = ci.content_object
             if content_type == self.network_content_type:
                 self.import_network_relations(
                     network=ci,
-                    used_relations=used_relations,
                 )
             elif content_type == self.device_content_type:
                 self.import_device_relations(
                     obj=obj,
                     ci=ci,
-                    used_relations=used_relations,
                 )
             elif content_type == self.venture_content_type:
                 self.import_venture_relations(
                     obj=obj,
                     ci=ci,
-                    used_relations=used_relations,
                 )
             elif content_type == self.venture_role_content_type:
                 self.import_role_relations(
                     obj=obj,
                     ci=ci,
-                    used_relations=used_relations,
                 )
             elif content_type == self.business_line_content_type:
                 # top level Ci without parent relations.
@@ -239,139 +284,80 @@ class CIImporter(object):
                 self.import_service_relations(
                     obj=obj,
                     ci=ci,
-                    used_relations=used_relations,
                 )
             else:
                 raise UnknownCTException(content_type)
-            for relation in cdb.CIRelation.objects.exclude(
-                id__in=used_relations,
-            ).filter(Q(parent=ci) | Q(child=ci)):
-                relation.delete()
 
     @nested_commit_on_success
-    def import_service_relations(self, obj, ci, used_relations):
+    def import_service_relations(self, obj, ci):
+        # Special case because business lines are bound by name
+        used_relations = set()
         if obj.business_line:
             try:
                 bline = cdb.CI.objects.get(
                     content_type=self.business_line_content_type,
                     name=obj.business_line,
                 )
-                used_relations.append(_create_or_update_relation(
+                used_relations.add(_create_or_update_relation(
                     parent=bline,
                     child=ci,
                     relation_type=cdb.CI_RELATION_TYPES.CONTAINS,
                 ).id)
             except cdb.CI.DoesNotExist:
                 pass
+        cdb.CIRelation.objects.filter(
+            child=ci,
+            parent__content_type=self.business_line_content_type,
+            type=cdb.CI_RELATION_TYPES.CONTAINS,
+        ).exclude(id__in=used_relations).delete()
 
     @nested_commit_on_success
-    def import_venture_relations(self, obj, ci, used_relations):
+    def import_venture_relations(self, obj, ci):
         """ Must be called after datacenter """
-        if obj.data_center_id:
-            try:
-                datacenter_ci = cdb.CI.objects.filter(
-                    content_type=self.datacenter_content_type,
-                    object_id=obj.data_center_id,
-                )[0]
-                used_relations.append(_create_or_update_relation(
-                    parent=datacenter_ci,
-                    child=ci,
-                    relation_type=cdb.CI_RELATION_TYPES.REQUIRES,
-                ).id)
-            except IndexError:
-                pass
-        if obj.parent:
-            logger.info('Saving relation: %s' % obj)
-            try:
-                used_relations.append(_create_or_update_relation(
-                    parent=cdb.CI.objects.filter(
-                        content_type_id=self.venture_content_type,
-                        object_id=obj.parent.id,
-                    )[0],
-                    child=ci,
-                    relation_type=cdb.CI_RELATION_TYPES.CONTAINS,
-                ).id)
-            except IndexError:
-                pass
+        _replace_relations(
+            obj, ci, 'child', 'data_center',
+            self.datacenter_content_type, cdb.CI_RELATION_TYPES.REQUIRES,
+        )
+        _replace_relations(
+            obj, ci, 'child', 'parent',
+            self.venture_content_type, cdb.CI_RELATION_TYPES.CONTAINS,
+        )
 
     @nested_commit_on_success
-    def import_role_relations(self, obj, ci, used_relations):
-        if obj.venture_id:
-            # first venturerole in hierarchy, connect it to venture
-            try:
-                venture_ci = cdb.CI.objects.get(
-                    content_type=self.venture_content_type,
-                    object_id=obj.venture_id,
-                )
-                used_relations.append(_create_or_update_relation(
-                    parent=venture_ci,
-                    child=ci,
-                    relation_type=cdb.CI_RELATION_TYPES.HASROLE,
-                ).id)
-            except cdb.CI.DoesNotExist:
-                pass
-        if obj.parent:
-            try:
-                used_relations.append(_create_or_update_relation(
-                    parent=cdb.CI.objects.filter(
-                        content_type_id=self.venture_role_content_type,
-                        object_id=obj.parent.id,
-                    )[0],
-                    child=ci,
-                    relation_type=cdb.CI_RELATION_TYPES.CONTAINS,
-                ).id)
-            except IndexError:
-                pass
+    def import_role_relations(self, obj, ci):
+        pass
+        _replace_relations(
+            obj, ci, 'child', 'venture',
+            self.venture_content_type, cdb.CI_RELATION_TYPES.HASROLE,
+        )
+        _replace_relations(
+            obj, ci, 'child', 'parent',
+            self.venture_role_content_type, cdb.CI_RELATION_TYPES.CONTAINS,
+        )
 
     @nested_commit_on_success
-    def import_device_relations(self, obj, ci, used_relations):
+    def import_device_relations(self, obj, ci):
         """ Must be called after ventures """
-        if obj.venture_id:
-            try:
-                venture_ci = cdb.CI.objects.get(
-                    content_type=self.venture_content_type,
-                    object_id=obj.venture_id,
-                )
-                used_relations.append(_create_or_update_relation(
-                    parent=venture_ci,
-                    child=ci,
-                    relation_type=cdb.CI_RELATION_TYPES.CONTAINS,
-                ).id)
-            except cdb.CI.DoesNotExist:
-                pass
-        if obj.venture_role_id:
-            try:
-                venture_role_ci = cdb.CI.objects.get(
-                    content_type=self.venture_role_content_type,
-                    object_id=obj.venture_role_id,
-                )
-                used_relations.append(_create_or_update_relation(
-                    parent=venture_role_ci,
-                    child=ci,
-                    relation_type=cdb.CI_RELATION_TYPES.HASROLE,
-                ).id)
-            except cdb.CI.DoesNotExist:
-                pass
-        if obj.parent:
-            logger.info('Saving relation: %s' % obj)
-            try:
-                used_relations.append(_create_or_update_relation(
-                    parent=cdb.CI.objects.get(
-                        content_type=self.device_content_type,
-                        object_id=obj.parent.id,
-                    ),
-                    child=ci,
-                    relation_type=cdb.CI_RELATION_TYPES.CONTAINS,
-                ).id)
-            except cdb.CI.DoesNotExist:
-                pass
+        _replace_relations(
+            obj, ci, 'child', 'venture',
+            self.venture_content_type, cdb.CI_RELATION_TYPES.CONTAINS,
+        )
+        _replace_relations(
+            obj, ci, 'child', 'venture_role',
+            self.venture_role_content_type, cdb.CI_RELATION_TYPES.HASROLE
+        )
+        _replace_relations(
+            obj, ci, 'child', 'parent',
+            self.device_content_type, cdb.CI_RELATION_TYPES.CONTAINS
+        )
 
     @nested_commit_on_success
-    def import_network_relations(self, network, used_relations):
+    def import_network_relations(self, network):
         """
         Must be called after device_relations!
         Make relations using network->ipaddresses->device
         """
+        used_relations = set()
         for ip in ndb.IPAddress.objects.filter(
             device__isnull=False,
             network=network.content_object,
@@ -382,13 +368,18 @@ class CIImporter(object):
                     content_type=self.device_content_type,
                     object_id=ip.device.id,
                 )
-                used_relations.append(_create_or_update_relation(
+                used_relations.add(_create_or_update_relation(
                     parent=network,
                     child=ci_device,
                     relation_type=cdb.CI_RELATION_TYPES.CONTAINS,
                 ).id)
             except cdb.CI.DoesNotExist:
                 pass
+        cdb.CIRelation.objects.filter(
+            parent=network,
+            child__content_type=self.device_content_type,
+            type=cdb.CI_RELATION_TYPES.CONTAINS,
+        ).exclude(id__in=used_relations).delete()
 
     def import_single_object_relations(self, content_object):
         """Facade for single Asset"""

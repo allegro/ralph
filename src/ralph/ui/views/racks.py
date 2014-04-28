@@ -37,13 +37,14 @@ from ralph.util import presentation
 
 
 class BaseRacksMixin(object):
+
     def set_rack(self):
         rack_identifier = self.kwargs.get('rack')
         if rack_identifier is None:
             self.rack = None
             return
         if (rack_identifier and rack_identifier != 'rack none' and
-            rack_identifier != '-'):
+                rack_identifier != '-'):
             if rack_identifier.startswith('sn-'):
                 rack_identifier = rack_identifier[3:].replace('-', ' ')
                 self.rack = get_object_or_404(
@@ -192,6 +193,7 @@ class RacksScan(Racks, Scan):
 
 
 class RacksDeviceList(SidebarRacks, BaseMixin, BaseDeviceList):
+
     def user_allowed(self):
         has_perm = self.request.user.get_profile().has_perm
         return has_perm(Perm.read_dc_structure, None)
@@ -254,7 +256,7 @@ class RacksDeviceList(SidebarRacks, BaseMixin, BaseDeviceList):
         profile = self.request.user.get_profile()
         has_perm = profile.has_perm
         tab_items = ret['tab_items']
-        if ret['subsection'] is not '':
+        if ret['subsection']:
             tab_items.append(
                 MenuItem(
                     'Rack',
@@ -348,13 +350,11 @@ class RacksRack(Racks, Base):
         )
         if self.rack.model.type == DeviceType.rack.id:
             slots_set = [
-                (self.rack, self.get_slots(self.rack))
-            ]
+                (self.rack, self.get_slots(self.rack))]
         else:
             slots_set = [(rack, self.get_slots(rack)) for
                          rack in self.rack.child_set.filter(
-                             model__type=DeviceType.rack.id
-                         )]
+                         model__type=DeviceType.rack.id)]
         ret.update({
             'slots_set': slots_set,
         })
@@ -460,7 +460,7 @@ class RacksAddDevice(Racks, DeviceCreateView):
         tab_items = ret['tab_items']
         ret['template_menu_items'] = TEMPLATE_MENU_ITEMS
         ret['template_selected'] = 'device'
-        if ret['subsection'] is not '':
+        if ret['subsection']:
             tab_items.append(
                 MenuItem(
                     'Rack',

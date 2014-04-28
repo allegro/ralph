@@ -13,6 +13,7 @@ from ralph.deployment.models import Preboot
 
 
 class ModelsTest(TestCase):
+
     def test_venture_path(self):
         a = Venture(name='A', symbol='a')
         a.save()
@@ -41,9 +42,10 @@ class ModelsTest(TestCase):
     def test_get_preboot_none(self):
         a = Venture(name='test1', symbol='test1')
         a.save()
-        b = Venture(name='test1 parent', symbol='test1_parent', parent_id = a.id)
+        b = Venture(name='test1 parent', symbol='test1_parent', parent_id=a.id)
         b.save()
-        c = Venture(name='test1 parent parent', symbol='test1_parent_parent', parent_id = b.id)
+        c = Venture(
+            name='test1 parent parent', symbol='test1_parent_parent', parent_id=b.id)
         c.save()
 
         self.assertEqual(a.get_preboot(), None)
@@ -53,11 +55,12 @@ class ModelsTest(TestCase):
         preboot = Preboot(name='test preboot')
         preboot.save()
 
-        a = Venture(name='test1', symbol='test1', preboot = preboot)
+        a = Venture(name='test1', symbol='test1', preboot=preboot)
         a.save()
-        b = Venture(name='test1 parent', symbol='test1_parent', parent_id = a.id)
+        b = Venture(name='test1 parent', symbol='test1_parent', parent_id=a.id)
         b.save()
-        c = Venture(name='test1 parent parent', symbol='test1_parent_parent', parent_id = b.id)
+        c = Venture(
+            name='test1 parent parent', symbol='test1_parent_parent', parent_id=b.id)
         c.save()
 
         self.assertEqual(a.get_preboot(), preboot)
@@ -68,11 +71,12 @@ class ModelsTest(TestCase):
         ven = Venture(name='test1', symbol='test1')
         ven.save()
 
-        a = VentureRole(name='test1', venture_id = ven.id)
+        a = VentureRole(name='test1', venture_id=ven.id)
         a.save()
-        b = VentureRole(name='test1 parent', parent_id = a.id, venture_id = ven.id)
+        b = VentureRole(name='test1 parent', parent_id=a.id, venture_id=ven.id)
         b.save()
-        c = VentureRole(name='test1 parent parent', parent_id = b.id, venture_id = ven.id)
+        c = VentureRole(
+            name='test1 parent parent', parent_id=b.id, venture_id=ven.id)
         c.save()
 
         self.assertEqual(a.get_preboot(), None)
@@ -82,14 +86,15 @@ class ModelsTest(TestCase):
     def test_get_preboot_role(self):
         preboot = Preboot(name='test preboot')
         preboot.save()
-        ven = Venture(name='test1', symbol='test1', preboot = preboot)
+        ven = Venture(name='test1', symbol='test1', preboot=preboot)
         ven.save()
 
-        a = VentureRole(name='test1', preboot = preboot, venture_id = ven.id)
+        a = VentureRole(name='test1', preboot=preboot, venture_id=ven.id)
         a.save()
-        b = VentureRole(name='test1 parent', parent_id = a.id, venture_id = ven.id)
+        b = VentureRole(name='test1 parent', parent_id=a.id, venture_id=ven.id)
         b.save()
-        c = VentureRole(name='test1 parent parent', parent_id = b.id, venture_id = ven.id)
+        c = VentureRole(
+            name='test1 parent parent', parent_id=b.id, venture_id=ven.id)
         c.save()
         self.assertEqual(a.get_preboot(), preboot)
         self.assertEqual(b.get_preboot(), preboot)

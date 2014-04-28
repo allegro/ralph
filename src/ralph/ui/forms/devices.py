@@ -28,6 +28,7 @@ from ralph.ui.forms.util import all_ventures, all_roles
 
 
 class DeviceForm(forms.ModelForm):
+
     class Meta:
         model = Device
         widgets = {
@@ -192,6 +193,7 @@ class DeviceForm(forms.ModelForm):
 
 
 class DeviceCreateForm(DeviceForm):
+
     class Meta(DeviceForm.Meta):
         widgets = {
             'model': None,
@@ -262,6 +264,7 @@ class DeviceCreateForm(DeviceForm):
 
 
 class DeviceBulkForm(DeviceForm):
+
     class Meta(DeviceForm.Meta):
         fields = (
             'venture',
@@ -294,6 +297,7 @@ class DeviceBulkForm(DeviceForm):
 
 
 class DeviceInfoForm(DeviceForm):
+
     class Meta(DeviceForm.Meta):
         fields = (
             'name',
@@ -330,7 +334,9 @@ class DeviceInfoForm(DeviceForm):
                 reverse=True,
             )
             for network in rack_networks:
-                next_hostname = get_next_free_hostname(network.data_center)
+                if not network.environment:
+                    continue
+                next_hostname = get_next_free_hostname(network.environment)
                 if next_hostname:
                     help_text = 'Next available hostname in this DC: %s' % (
                         next_hostname
@@ -340,6 +346,7 @@ class DeviceInfoForm(DeviceForm):
 
 
 class DeviceInfoVerifiedForm(DeviceInfoForm):
+
     class Meta(DeviceInfoForm.Meta):
         fields = [field for field in
                   DeviceInfoForm.Meta.fields if field != 'verified']
@@ -366,6 +373,7 @@ class DeviceInfoVerifiedForm(DeviceInfoForm):
 
 
 class DevicePricesForm(DeviceForm):
+
     class Meta(DeviceForm.Meta):
         fields = (
             'margin_kind',
@@ -387,6 +395,7 @@ class DevicePricesForm(DeviceForm):
 
 
 class DevicePurchaseForm(DeviceForm):
+
     class Meta(DeviceForm.Meta):
         fields = (
             'model_name',
@@ -423,8 +432,12 @@ class PropertyForm(forms.Form):
             elif p.type.symbol == 'INTEGER':
                 field = forms.IntegerField(label=p.symbol, required=False)
             else:
-                choices = [('', '------')] + [
-                    (tv.value, tv.value) for tv in p.type.rolepropertytypevalue_set.all()
+                choices = [
+                    ('', '------'),
+                ] + [
+                    (
+                        tv.value, tv.value,
+                    ) for tv in p.type.rolepropertytypevalue_set.all()
                 ]
                 field = forms.ChoiceField(
                     label=p.symbol,

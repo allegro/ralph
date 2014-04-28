@@ -15,6 +15,7 @@ from django.core.paginator import Paginator
 from django.db import models as db
 from django.http import HttpResponseRedirect, HttpResponseForbidden, Http404
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import (
     DetailView,
@@ -25,18 +26,27 @@ from django.views.generic import (
 from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Language, TagStem
 from bob.menu import MenuItem
+import pluggableapp
 from powerdns.models import Record
+
+from ralph.discovery.models_component import Ethernet
+from ralph.app import RalphModule
 from ralph.discovery.models_device import DeprecationKind, MarginKind
 from ralph.scan.errors import Error as ScanError
 from ralph.scan.manual import scan_address
 from ralph.scan.forms import DiffForm
 from ralph.scan.data import (
+    append_merged_proposition,
     device_from_data,
     find_devices,
     get_device_data,
+    get_external_results_priorities,
     merge_data,
     set_device_data,
 )
+from ralph.scan.diff import diff_results, sort_results
+from ralph.scan.models import ScanSummary
+from ralph.scan.util import update_scan_summary
 from ralph.business.models import (
     RoleProperty,
     RolePropertyValue,
@@ -90,7 +100,7 @@ from ralph.ui.forms.deployment import (
 from ralph import VERSION
 
 
-SAVE_PRIORITY = 200
+SAVE_PRIORITY = 215
 HISTORY_PAGE_SIZE = 25
 MAX_PAGE_SIZE = 65535
 TEMPLATE_MENU_ITEMS = [
@@ -166,9 +176,11 @@ def _get_details(dev, purchase_only=False, with_price=False,
                 detail['price'] = None
         if with_price and not detail['price']:
             continue
-        if (detail['group'] != 'dev' and 'size' not in detail and
-                detail.get('model')
-            ):
+        if (
+            detail['group'] != 'dev' and
+            'size' not in detail and
+            detail.get('model')
+        ):
             detail['size'] = detail['model'].size
         if not detail.get('model'):
             detail['model'] = detail.get('model_name', '')
@@ -202,6 +214,99 @@ class BaseMixin(object):
             self.request.GET.urlencode(),
         )
 
+    def get_tab_items(self):
+        details = self.kwargs.get('details', 'info')
+        profile = self.request.user.get_profile()
+        has_perm = profile.has_perm
+        tab_items = []
+        venture = (
+            self.venture if self.venture and self.venture != '*' else None
+        ) or (
+            self.object.venture if self.object else None
+        )
+
+        if has_perm(Perm.read_device_info_generic, venture):
+            tab_items.extend([
+                MenuItem('Info', fugue_icon='fugue-wooden-box',
+                         href=self.tab_href('info')),
+                MenuItem('Components', fugue_icon='fugue-box',
+                         href=self.tab_href('components')),
+                MenuItem('Software', fugue_icon='fugue-disc',
+                         href=self.tab_href('software')),
+                MenuItem('Addresses', fugue_icon='fugue-network-ip',
+                         href=self.tab_href('addresses')),
+            ])
+        if has_perm(Perm.edit_device_info_financial, venture):
+            tab_items.extend([
+                MenuItem('Prices', fugue_icon='fugue-money-coin',
+                         href=self.tab_href('prices')),
+            ])
+        if has_perm(Perm.read_device_info_financial, venture):
+            tab_items.extend([
+                MenuItem('Costs', fugue_icon='fugue-wallet',
+                         href=self.tab_href('costs')),
+            ])
+        if has_perm(Perm.read_device_info_history, venture):
+            tab_items.extend([
+                MenuItem('History', fugue_icon='fugue-hourglass',
+                         href=self.tab_href('history')),
+            ])
+        if all((
+            'ralph_assets' in settings.INSTALLED_APPS,
+            has_perm(Perm.read_device_info_support, venture),
+        )):
+            tab_items.extend([
+                MenuItem(
+                    'Asset',
+                    fugue_icon='fugue-baggage-cart-box',
+                    href=self.tab_href('asset')),
+            ])
+        if ('ralph.scan' in settings.INSTALLED_APPS and
+                has_perm(Perm.edit_device_info_generic) and
+                self.kwargs.get('device')):
+            tab_items.extend([
+                MenuItem(
+                    'Scan',
+                    name='scan',
+                    fugue_icon='fugue-flashlight',
+                    href=self.tab_href('scan'),
+                ),
+            ])
+        if ('ralph.cmdb' in settings.INSTALLED_APPS and
+                has_perm(Perm.read_configuration_item_info_generic)):
+            ci = ''
+            device_id = self.kwargs.get('device')
+            if device_id:
+                deleted = False
+                if self.request.GET.get('deleted', '').lower() == 'on':
+                    deleted = True
+                try:
+                    if deleted:
+                        device = Device.admin_objects.get(pk=device_id)
+                    else:
+                        device = Device.objects.get(pk=device_id)
+                    ci = CI.get_by_content_object(device)
+                except Device.DoesNotExist:
+                    pass
+            if ci:
+                tab_items.extend([
+                    MenuItem(
+                        'CMDB', fugue_icon='fugue-thermometer',
+                        href='/cmdb/ci/view/%s' % ci.id
+                    ),
+                ])
+        if has_perm(Perm.read_device_info_reports, venture):
+            tab_items.extend([
+                MenuItem('Reports', fugue_icon='fugue-reports-stack',
+                         href=self.tab_href('reports')),
+            ])
+        if details == 'bulkedit':
+            tab_items.extend([
+                MenuItem('Bulk edit', fugue_icon='fugue-pencil-field',
+                         name='bulkedit'),
+            ])
+        return tab_items
+
     def get_context_data(self, **kwargs):
         ret = super(BaseMixin, self).get_context_data(**kwargs)
         details = self.kwargs.get('details', 'info')
@@ -224,26 +329,23 @@ class BaseMixin(object):
             mainmenu_items.append(
                 MenuItem('Reports', fugue_icon='fugue-report',
                          view_name='reports'))
-        if has_perm(Perm.edit_device_info_financial):
-            mainmenu_items.append(
-                MenuItem('Catalog', fugue_icon='fugue-paper-bag',
-                         view_name='catalog'))
+        mainmenu_items.append(
+            MenuItem('Ralph CLI', fugue_icon='fugue-terminal',
+                     href='#beast'))
         if ('ralph.cmdb' in settings.INSTALLED_APPS and
                 has_perm(Perm.read_configuration_item_info_generic)):
             mainmenu_items.append(
                 MenuItem('CMDB', fugue_icon='fugue-thermometer',
                          href='/cmdb/changes/timeline')
             )
-        if ('ralph_assets' in settings.INSTALLED_APPS):
-            mainmenu_items.append(
-                MenuItem('Assets', fugue_icon='fugue-box-label',
-                         href='/assets')
-            )
-        if ('ralph_pricing' in settings.INSTALLED_APPS):
-            mainmenu_items.append(
-                MenuItem('Pricing', fugue_icon='fugue-money-coin',
-                         href='/pricing')
-            )
+
+        for app in pluggableapp.app_dict.values():
+            if isinstance(app, RalphModule):
+                mainmenu_items.append(MenuItem(
+                    app.disp_name,
+                    fugue_icon=app.icon,
+                    href='/{}'.format(app.url_prefix)
+                ))
 
         if settings.BUGTRACKER_URL:
             mainmenu_items.append(
@@ -291,86 +393,7 @@ class BaseMixin(object):
                 pull_right=True,
             )
         )
-        tab_items = []
-        venture = (
-                self.venture if self.venture and self.venture != '*' else None
-            ) or (
-                self.object.venture if self.object else None
-            )
-
-        if has_perm(Perm.read_device_info_generic, venture):
-            tab_items.extend([
-                MenuItem('Info', fugue_icon='fugue-wooden-box',
-                         href=self.tab_href('info')),
-                MenuItem('Components', fugue_icon='fugue-box',
-                         href=self.tab_href('components')),
-                MenuItem('Software', fugue_icon='fugue-disc',
-                         href=self.tab_href('software')),
-                MenuItem('Addresses', fugue_icon='fugue-network-ip',
-                         href=self.tab_href('addresses')),
-            ])
-        if has_perm(Perm.edit_device_info_financial, venture):
-            tab_items.extend([
-                MenuItem('Prices', fugue_icon='fugue-money-coin',
-                         href=self.tab_href('prices')),
-            ])
-        if has_perm(Perm.read_device_info_financial, venture):
-            tab_items.extend([
-                MenuItem('Costs', fugue_icon='fugue-wallet',
-                         href=self.tab_href('costs')),
-            ])
-        if has_perm(Perm.read_device_info_history, venture):
-            tab_items.extend([
-                MenuItem('History', fugue_icon='fugue-hourglass',
-                         href=self.tab_href('history')),
-            ])
-        if all((
-            'ralph_assets' in settings.INSTALLED_APPS,
-            has_perm(Perm.read_device_info_support, venture),
-        )):
-            tab_items.extend([
-                MenuItem(
-                    'Asset',
-                    fugue_icon='fugue-baggage-cart-box',
-                    href=self.tab_href('asset')),
-            ])
-        if ('ralph.scan' in settings.INSTALLED_APPS and
-                has_perm(Perm.edit_device_info_generic)):
-            tab_items.extend([
-                MenuItem('Scan', name='scan', fugue_icon='fugue-flashlight',
-                         href=self.tab_href('scan')),
-            ])
-        if ('ralph.cmdb' in settings.INSTALLED_APPS and
-                has_perm(Perm.read_configuration_item_info_generic)):
-            ci = ''
-            device_id = self.kwargs.get('device')
-            if device_id:
-                deleted = False
-                if self.request.GET.get('deleted', '').lower() == 'on':
-                    deleted = True
-                try:
-                    if deleted:
-                        device = Device.admin_objects.get(pk=device_id)
-                    else:
-                        device = Device.objects.get(pk=device_id)
-                    ci = CI.get_by_content_object(device)
-                except Device.DoesNotExist:
-                    pass
-            if ci:
-                tab_items.extend([
-                    MenuItem('CMDB', fugue_icon='fugue-thermometer',
-                             href='/cmdb/ci/view/%s' % ci.id),
-                    ])
-        if has_perm(Perm.read_device_info_reports, venture):
-            tab_items.extend([
-                MenuItem('Reports', fugue_icon='fugue-reports-stack',
-                         href=self.tab_href('reports')),
-            ])
-        if details == 'bulkedit':
-            tab_items.extend([
-                MenuItem('Bulk edit', fugue_icon='fugue-pencil-field',
-                         name='bulkedit'),
-            ])
+        tab_items = self.get_tab_items()
         ret.update({
             'section': self.section,
             'details': details,
@@ -527,6 +550,24 @@ class Info(DeviceUpdateView):
             for plugin in deployment_plugins
         ]
 
+    def get_changed_addresses(self):
+        delta = timezone.now() - datetime.timedelta(days=1)
+        result = []
+        for ip_address in self.object.ipaddress.filter(
+            scan_summary__modified__gt=delta,
+        ):
+            try:
+                job = rq.job.Job.fetch(
+                    ip_address.scan_summary.job_id,
+                    django_rq.get_connection(),
+                )
+            except rq.exceptions.NoSuchJobError:
+                continue
+            else:
+                if job.meta.get('changed', False):
+                    result.append(ip_address)
+        return result
+
     def get_context_data(self, **kwargs):
         ret = super(Info, self).get_context_data(**kwargs)
         if self.object:
@@ -544,6 +585,7 @@ class Info(DeviceUpdateView):
             'dt': DeviceType,
             'deployment_status': deployment_status,
             'plugins': plugins,
+            'changed_addresses': self.get_changed_addresses(),
         })
         return ret
 
@@ -558,7 +600,7 @@ class Info(DeviceUpdateView):
                 p = device.venture_role.roleproperty_set.get(symbol=symbol)
             except RoleProperty.DoesNotExist:
                 p = device.venture.roleproperty_set.get(symbol=symbol)
-            if value != p.default and not {value,  p.default} == {None, ''}:
+            if value != p.default and not {value, p.default} == {None, ''}:
                 pv, created = RolePropertyValue.concurrent_get_or_create(
                     property=p,
                     device=device,
@@ -664,7 +706,7 @@ class Addresses(DeviceDetailView):
         ips = set(ip.address for ip in self.object.ipaddress_set.all())
         names = set(ip.hostname for ip in self.object.ipaddress_set.all()
                     if ip.hostname)
-        dotnames = set(name+'.' for name in names)
+        dotnames = set(name + '.' for name in names)
         revnames = set('.'.join(reversed(ip.split('.'))) + '.in-addr.arpa'
                        for ip in ips)
         starrevnames = set()
@@ -674,10 +716,10 @@ class Addresses(DeviceDetailView):
                 parts.pop(0)
                 starrevnames.add('.'.join(['*'] + parts))
         for entry in Record.objects.filter(
-                db.Q(content__in=ips) |
-                db.Q(name__in=names) |
-                db.Q(content__in=names | dotnames)
-                ).distinct():
+            db.Q(content__in=ips) |
+            db.Q(name__in=names) |
+            db.Q(content__in=names | dotnames)
+        ).distinct():
             names.add(entry.name)
             if entry.type == 'A':
                 ips.add(entry.content)
@@ -827,6 +869,12 @@ class Addresses(DeviceDetailView):
                 return HttpResponseRedirect(self.request.path)
             else:
                 messages.error(self.request, "Errors in the DNS form.")
+                for form_errors in self.dns_formset.errors:
+                    for error in form_errors.get('__all__', []):
+                        messages.error(self.request, error)
+                for error in self.dns_formset.non_form_errors():
+                    messages.error(self.request, error)
+
         elif 'dhcp' in self.request.POST:
             dhcp_records = self.get_dhcp()
             macs = {e.mac for e in self.object.ethernet_set.all()}
@@ -835,15 +883,26 @@ class Addresses(DeviceDetailView):
                 dhcp_records,
                 macs,
                 ips,
+                self.object,
                 self.request.POST,
                 prefix='dhcp',
             )
             if self.dhcp_formset.is_valid():
-                self.dhcp_formset.save()
+                instances = self.dhcp_formset.save(commit=False)
+                for instance in instances:
+                    if not Ethernet.objects.filter(mac=instance.mac).exists():
+                        Ethernet.objects.create(
+                            device=self.object,
+                            label=u'Ethernet',
+                            mac=instance.mac,
+                        )
+                    instance.save()
                 messages.success(self.request, "DHCP records updated.")
                 return HttpResponseRedirect(self.request.path)
             else:
                 messages.error(self.request, "Errors in the DHCP form.")
+                for error in self.dhcp_formset.non_form_errors():
+                    messages.error(self.request, error)
         elif 'ip' in self.request.POST:
             self.ip_formset = IPAddressFormSet(
                 self.request.POST,
@@ -886,6 +945,7 @@ class Addresses(DeviceDetailView):
                 dhcp_records,
                 macs,
                 ips,
+                self.object,
                 prefix='dhcp',
             )
         if self.ip_formset is None:
@@ -899,9 +959,11 @@ class Addresses(DeviceDetailView):
         first_free_ip_addresses = []
         rack = self.object.find_rack()
         if rack:
-            networks = rack.network_set.order_by('name')
+            networks = rack.network_set.filter(
+                environment__isnull=False,
+            ).order_by('name')
             for network in networks:
-                next_hostname = get_next_free_hostname(network.data_center)
+                next_hostname = get_next_free_hostname(network.environment)
                 if next_hostname:
                     break
             for network in networks:
@@ -978,7 +1040,9 @@ class History(DeviceDetailView):
     def get_context_data(self, **kwargs):
         query_variable_name = 'history_page'
         ret = super(History, self).get_context_data(**kwargs)
-        history = self.object.historychange_set.exclude(field_name='snmp_community').order_by('-date')
+        history = self.object.historychange_set.exclude(
+            field_name='snmp_community'
+        ).order_by('-date')
         show_all = bool(self.request.GET.get('all', ''))
         if not show_all:
             history = history.exclude(user=None)
@@ -1053,8 +1117,7 @@ class Asset(BaseMixin, TemplateView):
             self.asset = get_asset(self.object.id)
             self.form = ChooseAssetForm(
                 initial={
-                    'asset': self.asset['asset_id']
-                        if self.asset else None,
+                    'asset': self.asset['asset_id'] if self.asset else None,
                 },
                 device_id=self.object.id,
             )
@@ -1116,7 +1179,7 @@ class ServerMove(BaseMixin, TemplateView):
             network = Network.objects.get(id=f.cleaned_data['network'])
             ip = get_first_free_ip(network.name, ips)
             ips.add(ip)
-            name = get_next_free_hostname(network.data_center, names)
+            name = get_next_free_hostname(network.environment, names)
             names.add(name)
             yield {
                 'address': f.cleaned_data['address'],
@@ -1347,15 +1410,17 @@ class BulkEdit(BaseMixin, TemplateView):
             if not self.edit_fields:
                 messages.error(self.request, 'Mark changed fields')
             elif self.form.is_valid and self.form.data['save_comment']:
-                self.form.fields = [f for f in self.form.fields
-                        if not f in self.edit_fields or f != 'save_comment']
+                self.form.fields = [
+                    f for f in self.form.fields
+                    if f not in self.edit_fields or f != 'save_comment'
+                ]
                 bulk_update(
                     self.devices,
                     self.edit_fields,
                     self.form.data,
                     self.request.user
                 )
-                return HttpResponseRedirect(self.request.path+'../info/')
+                return HttpResponseRedirect(self.request.path + '../info/')
             else:
                 messages.error(self.request, 'Correct the errors.')
         elif 'bulk' in self.request.POST:
@@ -1399,6 +1464,7 @@ class Software(DeviceDetailView):
 
 
 class VhostRedirectView(RedirectView):
+
     def get_redirect_url(self, **kwargs):
         host = self.request.META.get(
             'HTTP_X_FORWARDED_HOST', self.request.META['HTTP_HOST'])
@@ -1427,13 +1493,15 @@ class Scan(BaseMixin, TemplateView):
         if not plugins:
             messages.error(self.request, "You have to select some plugins.")
             return self.get(*args, **kwargs)
-        address = self.kwargs.get('address')
+        ip_address = self.kwargs.get('address')
         try:
-            job = scan_address(address, plugins)
+            job = scan_address(
+                ip_address, plugins, automerge=False, called_from_ui=True
+            )
         except ScanError as e:
             messages.error(self.request, unicode(e))
             return self.get(*args, **kwargs)
-        return HttpResponseRedirect(reverse('scan', args=(job.id,)))
+        return HttpResponseRedirect(reverse('scan_results', args=(job.id,)))
 
     def get_context_data(self, **kwargs):
         ret = super(Scan, self).get_context_data(**kwargs)
@@ -1469,17 +1537,34 @@ class ScanStatus(BaseMixin, TemplateView):
         self.forms = []
         self.job = None
         self.device_id = None
+        self.ip_address = None
+
+    def set_ip_address(self):
+        address = self.kwargs.get('address')
+        if not address:
+            return
+        self.ip_address, created = IPAddress.concurrent_get_or_create(
+            address=address,
+        )
+
+    def get_job_id_from_address(self):
+        self.set_ip_address()
+        if self.ip_address and self.ip_address.scan_summary:
+            return self.ip_address.scan_summary.job_id
 
     def get_job(self):
         job_id = self.kwargs.get('job_id')
+        if not job_id:
+            job_id = self.get_job_id_from_address()
         try:
             return rq.job.Job.fetch(job_id, django_rq.get_connection())
         except rq.exceptions.NoSuchJobError:
-            return None
+            return
 
     def get_forms(self, result, device_id=None, post=None):
         forms = []
         devices = find_devices(result)
+        external_priorities = get_external_results_priorities(result)
         for device in devices:
             device_data = get_device_data(device)
             data = merge_data(
@@ -1489,15 +1574,24 @@ class ScanStatus(BaseMixin, TemplateView):
                 },
                 only_multiple=True,
             )
+            append_merged_proposition(data, device, external_priorities)
+            sort_results(data)
+            diff = diff_results(data)
             if 'ralph_assets' in settings.INSTALLED_APPS:
-                if not 'asset' in data and not device_data['asset']:
+                if 'asset' not in data and not device_data['asset']:
                     data['asset'] = {
                         (u'database',): device_data['asset'],
                     }
             if post and device.id == device_id:
-                form = DiffForm(data, post, default='database')
+                form = DiffForm(
+                    data, post, default='database', csv_default='merged',
+                    diff=diff,
+                )
             else:
-                form = DiffForm(data, default='database')
+                form = DiffForm(
+                    data, default='database', csv_default='merged',
+                    diff=diff,
+                )
             forms.append((device, form))
         data = merge_data(result)
         # Add required fields.
@@ -1505,10 +1599,6 @@ class ScanStatus(BaseMixin, TemplateView):
         data['type'] = data.get('type', {})
         data['mac_addresses'] = data.get('mac_addresses', {})
         data['serial_number'] = data.get('serial_number', {})
-        if 'ralph_assets' in settings.INSTALLED_APPS:
-            data['asset'] = {
-                (u'database',): device_data['asset'],
-            }
         if post and device_id == 'new':
             form = DiffForm(data, post, default='custom')
         else:
@@ -1526,7 +1616,20 @@ class ScanStatus(BaseMixin, TemplateView):
                 "This scan has timed out. Please run it again.",
             )
         else:
-            address, plugins = self.job.args
+            plugins = []
+            if self.job.args:
+                try:
+                    self.ip_address = IPAddress.objects.get(
+                        address=self.job.args[0],
+                    )
+                except IPAddress.DoesNotExist:
+                    self.set_ip_address()
+                if self.job.result is None:
+                    plugins = self.job.args[1]
+            else:
+                self.set_ip_address()
+            if self.job.result:
+                plugins = self.job.result.keys()
             icons = {
                 'success': 'fugue-puzzle',
                 'error': 'fugue-cross-button',
@@ -1539,7 +1642,7 @@ class ScanStatus(BaseMixin, TemplateView):
                 'warning': 'warning',
             }
             ret.update({
-                'address': address,
+                'address': self.ip_address.address,
                 'plugins': plugins,
                 'status': [
                     (
@@ -1565,43 +1668,97 @@ class ScanStatus(BaseMixin, TemplateView):
                 ret['device_id'] = self.device_id
         return ret
 
+    def get(self, *args, **kwargs):
+        self.job = self.get_job()
+        if self.job and self.job.is_finished and not self.ip_address:
+            try:
+                scan_summary = ScanSummary.objects.get(job_id=self.job.id)
+            except ScanSummary.DoesNotExist:
+                pass
+            else:
+                try:
+                    self.ip_address = scan_summary.ipaddress_set.all()[0]
+                except IndexError:
+                    pass
+                else:
+                    return HttpResponseRedirect(
+                        reverse(
+                            'scan_results',
+                            args=(self.ip_address.address,),
+                        ),
+                    )
+        return super(ScanStatus, self).get(*args, **kwargs)
+
+    def mark_scan_as_nochanges(self, job):
+        try:
+            scan_summary = ScanSummary.objects.get(job_id=job.id)
+        except ScanSummary.DoesNotExist:
+            return
+        else:
+            scan_summary.false_positive_checksum = job.meta.get(
+                'results_checksum',
+            )
+            scan_summary.save()
+            job.meta['changed'] = False
+            job.save()
+
     def post(self, *args, **kwargs):
         self.device_id = self.request.POST.get('save')
-        try:
-            self.device_id = int(self.device_id)
-        except ValueError:
-            pass
+        if self.device_id:
+            try:
+                self.device_id = int(self.device_id)
+            except ValueError:
+                pass
         if not self.job:
             self.job = self.get_job()
         if self.job:
-            self.forms = self.get_forms(
-                self.job.result,
-                self.device_id,
-                self.request.POST,
-            )
-            for device, form in self.forms:
-                if form.is_bound:
-                    break
-            else:
-                form = None
-            if form and form.is_valid():
-                data = {
-                    field_name: form.get_value(field_name)
-                    for field_name in form.result
-                }
-                try:
-                    if device is None:
-                        device = device_from_data(data)
-                    else:
-                        set_device_data(device, data)
-                        device.save()
-                except ValueError as e:
-                    messages.error(self.request, e)
+            if self.device_id:
+                self.forms = self.get_forms(
+                    self.job.result,
+                    self.device_id,
+                    self.request.POST,
+                )
+                for device, form in self.forms:
+                    if form.is_bound:
+                        break
                 else:
-                    messages.success(self.request, "Device %s saved." % device)
-                    return HttpResponseRedirect(self.request.path)
-            else:
-                messages.error(self.request, "Errors in the form.")
-                for error in form.non_field_errors():
-                    messages.error(self.request, error)
+                    form = None
+                if form and form.is_valid():
+                    data = {
+                        field_name: form.get_value(field_name)
+                        for field_name in form.result
+                    }
+                    try:
+                        if device is None:
+                            device = device_from_data(
+                                data=data,
+                                user=self.request.user,
+                            )
+                        else:
+                            set_device_data(device, data)
+                            device.save(
+                                priority=SAVE_PRIORITY,
+                                user=self.request.user,
+                            )
+                    except ValueError as e:
+                        messages.error(self.request, e)
+                    else:
+                        update_scan_summary(self.job)
+                        messages.success(
+                            self.request,
+                            "Device %s saved." % device,
+                        )
+                        return HttpResponseRedirect(self.request.path)
+                else:
+                    messages.error(self.request, "Errors in the form.")
+                    for error in form.non_field_errors():
+                        messages.error(self.request, error)
+            elif self.request.POST.get('no-changes') == 'no-changes':
+                self.mark_scan_as_nochanges(self.job)
+                messages.success(
+                    self.request,
+                    "Detected change in this scan was marked as false "
+                    "possitive.",
+                )
+                return HttpResponseRedirect(self.request.path)
         return self.get(*args, **kwargs)

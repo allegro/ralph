@@ -20,9 +20,11 @@ def _connect_ssh(ip):
     return network.connect_ssh(ip, SSH_MSA_USER, SSH_MSA_PASSWORD,
                                client=storageworks.HPSSHClient)
 
+
 def _run_ssh_msa(ip):
     ssh = _connect_ssh(ip)
     return storageworks.run(ssh, ip)
+
 
 @plugin.register(chain='discovery', requires=['ping', 'http'])
 def ssh_hp_msa(**kwargs):
@@ -44,4 +46,3 @@ def ssh_hp_msa(**kwargs):
     except paramiko.SSHException as e:
         return False, str(e), kwargs
     return True, name, kwargs
-

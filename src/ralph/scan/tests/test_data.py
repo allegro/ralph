@@ -34,8 +34,10 @@ from ralph.discovery.models import (
 
 
 class GetDeviceDataTest(TestCase):
+
     def setUp(self):
-        self.device_model = DeviceModel(type=DeviceType.rack_server, name="ziew-X")
+        self.device_model = DeviceModel(
+            type=DeviceType.rack_server, name="ziew-X")
         self.device_model.save()
         self.device = Device(
             model=self.device_model,
@@ -48,13 +50,13 @@ class GetDeviceDataTest(TestCase):
         data = get_device_data(Device.objects.get(sn='123456789'))
         self.assertEqual(data['serial_number'], '123456789')
         self.assertEqual(data['hostname'], 'ziew')
-        self.assertEqual(data['type'], 'rack_server')
+        self.assertEqual(data['type'], 'rack server')
         self.assertEqual(data['model_name'], 'ziew-X')
 
     def test_position(self):
         self.device.chassis_position = 3
         self.device.dc = 'dc3'
-        self.device.rack='232'
+        self.device.rack = '232'
         self.device.save()
         data = get_device_data(Device.objects.get(sn='123456789'))
         self.assertEqual(data['chassis_position'], 3)
@@ -95,7 +97,8 @@ class GetDeviceDataTest(TestCase):
         processors = data['processors']
         self.assertEqual(len(processors), 4)
         self.assertEqual(processors[0]['label'], "ziew")
-        self.assertEqual(processors[0]['model_name'], "CPU Xeon 2533MHz, 4-core")
+        self.assertEqual(
+            processors[0]['model_name'], "CPU Xeon 2533MHz, 4-core")
         self.assertEqual(processors[0]['cores'], 4)
         self.assertEqual(processors[3]['index'], 3)
 
@@ -251,6 +254,7 @@ class GetDeviceDataTest(TestCase):
 
 
 class SetDeviceDataTest(TestCase):
+
     def setUp(self):
         self.device_model = DeviceModel(
             type=DeviceType.rack_server,
@@ -655,6 +659,7 @@ class SetDeviceDataTest(TestCase):
 
 
 class DeviceFromDataTest(TestCase):
+
     def test_device_from_data(self):
         device = device_from_data({
             'serial_number': "12345",
@@ -666,11 +671,12 @@ class DeviceFromDataTest(TestCase):
 
 
 class DeviceMergeDataTest(TestCase):
+
     def test_basic_data(self):
         data = [
             {
                 'one': {
-                    'device':{
+                    'device': {
                         'key1': 'value1',
                         'key2': 'value2',
                     },

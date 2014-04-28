@@ -55,6 +55,7 @@ ERROR_MSG = {
 
 
 class BulkeditTest(TestCase):
+
     """ Tests edit form
 
     Scenario:
@@ -126,25 +127,25 @@ class BulkeditTest(TestCase):
             device_fields.extend(field_list)
 
         post_data = {
-             'select': [self.device.id],  # 1
-             'edit': device_fields,
-             'venture': self.venture.id,  # 1
-             'venture_role': self.role.id,  # 1
-             'verified': True,
-             'barcode': 'bc-2222-2222-2222-2222',
-             'position': '9',
-             'chassis_position': 10,
-             'remarks': 'Hello Ralph',
-             'margin_kind': self.margin.id,  # 1
-             'deprecation_kind': self.deprecation_kind.id,  # 1
-             'price': 100,
-             'sn': '2222-2222-2222-2222',
-             'purchase_date': datetime(2001, 1, 1, 0, 0),
-             'warranty_expiration_date': datetime(2001, 1, 2, 0, 0),
-             'support_expiration_date': datetime(2001, 1, 3, 0, 0),
-             'support_kind': datetime(2001, 1, 4, 0, 0),
-             'save_comment': 'Everything has changed',
-             'save': '',  # save form
+            'select': [self.device.id],  # 1
+            'edit': device_fields,
+            'venture': self.venture.id,  # 1
+            'venture_role': self.role.id,  # 1
+            'verified': True,
+            'barcode': 'bc-2222-2222-2222-2222',
+            'position': '9',
+            'chassis_position': 10,
+            'remarks': 'Hello Ralph',
+            'margin_kind': self.margin.id,  # 1
+            'deprecation_kind': self.deprecation_kind.id,  # 1
+            'price': 100,
+            'sn': '2222-2222-2222-2222',
+            'purchase_date': datetime(2001, 1, 1, 0, 0),
+            'warranty_expiration_date': datetime(2001, 1, 2, 0, 0),
+            'support_expiration_date': datetime(2001, 1, 3, 0, 0),
+            'support_kind': datetime(2001, 1, 4, 0, 0),
+            'save_comment': 'Everything has changed',
+            'save': '',  # save form
         }
         response = self.client.post(url, post_data)
 

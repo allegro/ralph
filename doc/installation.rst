@@ -1,8 +1,51 @@
-==============
-How to install
-==============
+============================
+Install / Upgrade Ralph
+============================
 
-.. note::  
+Upgrading existing installation
+===============================
+
+Before you start the upgrade, you need to stop any Ralph processes that are
+running -- otherwise you can get some unpredictable behavior when your files
+and database are half-way through the upgrade process.
+
+If you installed from pip, then you can simply do::
+
+    (ralph)$ pip install --upgrade ralph
+    [...]
+
+Now you need to upgrade the static files::
+
+    (ralph)$ ralph collectstatic
+    [...]
+
+
+Migrate the database
+--------------------
+
+Some versions of Ralph will change the database schema in order to add or change
+some of the models of the data that is stored in there. You need to migrate the
+database to the current version of Ralph::
+
+    (ralph)$ ralph syncdb
+    [...]
+    (ralph)$ ralph migrate
+    [...]
+
+Once your code is upgraded and the database is migrated, you can start all your Ralph processes back and enjoy the new version.
+
+Update the settings
+-------------------
+
+Some new features added to Ralph may require additional settings to work
+properly. In order to enable them in your settings, follow the instructions in
+the :doc:`change log <changes>` for the version you installed.
+
+
+Installing Ralph
+=================
+
+.. note::
 
    You can install Ralph on a variety of sensible operating systems. This guide
    assumes Ubuntu Server 12.04 LTS and presents shell command examples
@@ -10,7 +53,7 @@ How to install
    other databases supported by Django may be used as well. ``sqlite3`` is
    discouraged for larger deployments because it doesn't support concurrent
    writes which are very common on a distributed queue-based architecture.
-   
+
    **If you happen to use another setup**, please take a moment to write down
    what you were doing and send it over. This way we can add examples for your
    system as well.
@@ -118,7 +161,7 @@ We can check the status of the Redis server::
 
   Remember to configure redis in `settings.py <configuration.html#message-queue-broker>`_.
 
-Database 
+Database
 --------
 
 In theory, any database server supported by the Django ORM may be used with
@@ -222,10 +265,10 @@ To automate this it's very useful to add ``source /home/ralph/bin/activate`` to
 the virtual environment is activated and the user doesn't have to remember to do
 that.
 
-**Further setup assumes an activated virtual environment.** 
+**Further setup assumes an activated virtual environment.**
 
 .. note::
-  
+
   You also have to call ``setcap`` on the Python binary created in the
   virtualenv's ``bin`` directory::
 
@@ -398,7 +441,7 @@ binary has been ``setcap``'ed. Did the ``util`` unit tests succeed?
 If everything's alright, let's try to run the discovery remotely::
 
   $ ralph discover --remote 127.0.0.1
-  
+
 This won't return anything on stdout but on your rqworker console you should
 see::
 

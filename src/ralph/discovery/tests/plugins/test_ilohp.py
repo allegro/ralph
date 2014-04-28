@@ -247,6 +247,7 @@ class IloHpPluginTest(TestCase):
      />
 </RIBCL>
 """
+
     def test_device(self):
         ilo = ilo_hp.hp_ilo.IloHost('127.0.0.1', '', '')
         ilo.update(raw=self.RAW)
@@ -256,7 +257,8 @@ class IloHpPluginTest(TestCase):
         self.assertEqual(dev.model.type, DeviceType.blade_server.id)
         self.assertEqual(dev.model.name, 'HP ProLiant BL2x220c G5')
         macs = [e.mac for e in dev.ethernet_set.all()]
-        self.assertEqual(macs, ['00215AAFA3D8', '00215AAFC712', '00215AAFC713'])
+        self.assertEqual(
+            macs, ['00215AAFA3D8', '00215AAFC712', '00215AAFC713'])
 
     def test_components(self):
         ilo = ilo_hp.hp_ilo.IloHost('127.0.0.1', '', '')

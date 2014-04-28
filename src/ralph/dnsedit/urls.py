@@ -11,5 +11,6 @@ from ralph.dnsedit.views import Index
 
 
 urlpatterns = patterns('',
-    url(r'^$', login_required(Index.as_view()), {}, 'dnsedit'),
-)
+                       url(r'^$', login_required(
+                           Index.as_view()), {}, 'dnsedit'),
+                       )

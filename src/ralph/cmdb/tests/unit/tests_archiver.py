@@ -35,6 +35,7 @@ from ralph.discovery.models import Device, DeviceType
 
 
 class CMDBArchiverToolsTest(TestCase):
+
     def setUp(self):
         class Foo(models.Model):
             foo1 = models.CharField()
@@ -97,6 +98,7 @@ class CMDBArchiverToolsTest(TestCase):
 
 
 class CMDBArchiverTest(TestCase):
+
     def setUp(self):
         self._prepare_data_for_device_tests()
         self._prepare_data_for_git_tests()

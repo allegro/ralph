@@ -11,6 +11,8 @@ import urllib2
 
 from django.conf import settings
 
+from ralph.discovery.models import MAC_PREFIX_BLACKLIST
+from ralph.scan.errors import Error, NoMatchError
 from ralph.scan.plugins import get_base_result_template
 
 
@@ -18,10 +20,6 @@ SETTINGS = settings.SCAN_PLUGINS.get(__name__, {})
 LOGIN_URL_TEMPLATE = 'https://{ip_address}/rpc/WEBSES/create.asp'
 MAC_URL_TEMPLATE = 'https://{ip_address}/rpc/getmbmac.asp'
 MGMT_MAC_URL_TEMPLATE = 'https://{ip_address}/rpc/getnwconfig.asp'
-
-
-class Error(Exception):
-    pass
 
 
 def _get_code(response, regexp):
@@ -69,7 +67,10 @@ def _get_mac_addresses(ip_address, user, password):
         re.compile(r"WEBVAR_STRUCTNAME_HL_GETLANCONFIG\s*:\s*\[({[^\}]*})"),
     ).replace("'", '"')
     macs.append(json.loads(json_data)['MAC'])
-    return macs
+    return [
+        mac for mac in macs
+        if mac.replace(':', '').upper()[:6] not in MAC_PREFIX_BLACKLIST
+    ]
 
 
 def _http_supermicro(ip_address, user, password):
@@ -83,6 +84,8 @@ def _http_supermicro(ip_address, user, password):
 
 
 def scan_address(ip_address, **kwargs):
+    if kwargs.get('http_family', '') not in ('Thomas-Krenn',):
+        raise NoMatchError('It is not Thomas-Krenn.')
     user = SETTINGS.get('user')
     password = SETTINGS.get('password')
     messages = []
@@ -102,4 +105,3 @@ def scan_address(ip_address, **kwargs):
                 'device': device_info,
             })
     return result
-

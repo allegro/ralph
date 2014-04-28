@@ -138,6 +138,22 @@ def _snmp_modular_macs(ip_address, ip_address_is_management, snmp_community):
     return results
 
 
+def _snmp_mac_from_ipv6IfPhysicalAddress(
+    ip_address, snmp_name, snmp_community, snmp_version
+):
+    mac_addresses = set()
+    for mac in snmp_macs(
+        ip_address,
+        snmp_community,
+        (1, 3, 6, 1, 2, 1, 55, 1, 5, 1, 8),  # ipv6IfPhysicalAddress
+        attempts=2,
+        timeout=3,
+        snmp_version=snmp_version,
+    ):
+        mac_addresses.add(mac)
+    return mac_addresses
+
+
 def _snmp_mac(ip_address, snmp_name, snmp_community, snmp_version,
               messages=[]):
     oid = (1, 3, 6, 1, 2, 1, 2, 2, 1, 6)
@@ -164,6 +180,12 @@ def _snmp_mac(ip_address, snmp_name, snmp_community, snmp_version,
         if m:
             sn = m.group(1)
     mac_addresses = set()
+    ipv6if_mac_addresses = _snmp_mac_from_ipv6IfPhysicalAddress(
+        ip_address=ip_address,
+        snmp_name=snmp_name,
+        snmp_community=snmp_community,
+        snmp_version=snmp_version,
+    )
     for mac in snmp_macs(
         ip_address,
         snmp_community,
@@ -172,6 +194,9 @@ def _snmp_mac(ip_address, snmp_name, snmp_community, snmp_version,
         timeout=3,
         snmp_version=snmp_version,
     ):
+        # cloud hypervisor can return all VMs mac addresses...
+        if ipv6if_mac_addresses and mac not in ipv6if_mac_addresses:
+            continue
         # Skip virtual devices
         if mac[0:6] in MAC_PREFIX_BLACKLIST:
             continue
@@ -222,7 +247,7 @@ def _snmp_mac(ip_address, snmp_name, snmp_community, snmp_version,
 
 
 def scan_address(ip_address, **kwargs):
-    snmp_name = kwargs.get('snmp_name', '')
+    snmp_name = kwargs.get('snmp_name', '') or ''
     snmp_version = kwargs.get('snmp_version', '2c') or '2c'
     if snmp_version == '3':
         snmp_community = SETTINGS['snmp_v3_auth']
@@ -247,4 +272,3 @@ def scan_address(ip_address, **kwargs):
             'device': device_info,
         })
     return result
-

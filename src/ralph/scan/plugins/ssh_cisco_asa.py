@@ -10,53 +10,63 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import paramiko
-import time
 import re
+import socket
+import time
 
 from django.conf import settings
-from ralph.util import parse, network
-from ralph.discovery.models import DeviceType
+
+from ralph.discovery import guessmodel
+from ralph.discovery.models import (
+    DeviceType,
+    MAC_PREFIX_BLACKLIST,
+    SERIAL_BLACKLIST
+)
+from ralph.scan.errors import (
+    AuthError,
+    ConsoleError,
+    NoMatchError,
+    NotConfiguredError,
+)
 from ralph.scan.plugins import get_base_result_template
-
-
-class Error(Exception):
-    pass
-
-
-class ConsoleError(Error):
-    pass
-
-
-class NotConfiguredError(Error):
-    pass
+from ralph.util import parse, network
 
 
 SETTINGS = settings.SCAN_PLUGINS.get(__name__, {})
 SSH_USER, SSH_PASS = SETTINGS['ssh_user'], SETTINGS['ssh_pass']
 
+
 if not SSH_USER or not SSH_PASS:
     raise NotConfiguredError(
-        "ssh not configured in plugin {}".format(__name__),
+        "SSH not configured in plugin {}.".format(__name__),
     )
 
 
 class CiscoSSHClient(paramiko.SSHClient):
-    """SSHClient modified for Cisco's broken ssh console."""
+
+    """SSHClient modified for Cisco's broken SSH console."""
 
     def __init__(self, *args, **kwargs):
         super(CiscoSSHClient, self).__init__(*args, **kwargs)
         self.set_log_channel('critical_only')
 
-    def _auth(self, username, password, pkey, key_filenames, allow_agent,
-              look_for_keys):
+    def _auth(
+        self, username, password, pkey, key_filenames, allow_agent,
+        look_for_keys,
+    ):
         self._transport.auth_password(username, password)
         self._asa_chan = self._transport.open_session()
         self._asa_chan.invoke_shell()
         self._asa_chan.sendall('\r\n')
+        self._asa_chan.settimeout(15.0)
         time.sleep(0.125)
-        chunk = self._asa_chan.recv(1024)
-        if not '> ' in chunk and not chunk.strip().startswith('asa'):
-            raise ConsoleError('Expected system prompt, got %r.' % chunk)
+        try:
+            chunk = self._asa_chan.recv(1024)
+        except socket.timeout:
+            raise AuthError('Authentication failed.')
+        else:
+            if '> ' not in chunk and not chunk.strip().startswith('asa'):
+                raise ConsoleError('Expected system prompt, got %r.' % chunk)
 
     def asa_command(self, command):
         # XXX Work around random characters
@@ -88,21 +98,22 @@ def _connect_ssh(ip, username='root', password=''):
 
 
 def scan_address(ip_address, **kwargs):
+    if 'nx-os' in (kwargs.get('snmp_name', '') or '').lower():
+        raise NoMatchError('Incompatible Nexus found.')
+    kwargs['guessmodel'] = gvendor, gmodel = guessmodel.guessmodel(**kwargs)
+    if gvendor != 'Cisco' or gmodel not in ('',):
+        raise NoMatchError('It is not Cisco.')
     ssh = _connect_ssh(ip_address)
     try:
         lines = ssh.asa_command(
             "show version | grep (^Hardware|Boot microcode|^Serial|address is)"
         )
-        raw_inventory = '\n'.join(ssh.asa_command("show inventory"))
     finally:
         ssh.close()
-
     pairs = parse.pairs(lines=[line.strip() for line in lines])
     sn = pairs.get('Serial Number', None)
     model, ram, cpu = pairs['Hardware'].split(',')
     boot_firmware = pairs['Boot microcode']
-
-    ethernets = []
     macs = []
     for i in xrange(99):
         try:
@@ -113,17 +124,18 @@ def scan_address(ip_address, **kwargs):
         mac = mac.replace('address is', '')
         mac = mac.replace('.', '').upper().strip()
         label = label.strip()
-        macs.append(mac)
+        if mac.replace(':', '').upper()[:6] not in MAC_PREFIX_BLACKLIST:
+            macs.append(mac)
     ram_size = re.search('[0-9]+', ram).group()
     cpu_match = re.search('[0-9]+ MHz', cpu)
     cpu_speed = cpu_match.group()[:-4]
     cpu_model = cpu[:cpu_match.start()][4:].strip()
-    ret = {
+    result = get_base_result_template('ssh_cisco_asa')
+    result.update({
         'status': 'success',
         'device': {
             'model_name': 'Cisco ' + model,
             'type': str(DeviceType.firewall),
-            'serial_number': sn,
             'mac_adresses': macs,
             'boot_firmware': boot_firmware,
             'management_ip_addresses': [ip_address],
@@ -133,9 +145,10 @@ def scan_address(ip_address, **kwargs):
             'processors': [{
                 'model_name': cpu_model,
                 'speed': int(cpu_speed),
+                'family': cpu_model,
             }],
         },
-    }
-    tpl = get_base_result_template('ssh_cisco_asa')
-    tpl.update(ret)
-    return tpl
+    })
+    if sn not in SERIAL_BLACKLIST:
+        result['device']['serial_number'] = sn
+    return result

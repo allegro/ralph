@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 
+"""
+Set of usefull functions to retrieve data from SNMP.
+"""
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -22,7 +26,7 @@ if not all(SNMP_V3_AUTH):
 
 def _snmp(ip, community, oid, attempts=2, timeout=3, snmp_version='2c'):
     result = snmp_command(str(ip), community, oid, attempts=attempts,
-        timeout=timeout, snmp_version=snmp_version)
+                          timeout=timeout, snmp_version=snmp_version)
     if result is None:
         message = None
     else:
@@ -33,7 +37,7 @@ def _snmp(ip, community, oid, attempts=2, timeout=3, snmp_version='2c'):
 def get_snmp(ipaddress):
     community = ipaddress.snmp_community
     version = ipaddress.snmp_version or '2c'
-    oid =  (1, 3, 6, 1, 2, 1, 1, 1, 0) # sysDesc
+    oid = (1, 3, 6, 1, 2, 1, 1, 1, 0)  # sysDesc
     http_family = ipaddress.http_family
     message = None
     # Windows hosts always say that the port is closed, even when it's open
@@ -42,7 +46,7 @@ def get_snmp(ipaddress):
             return None, None, None
     if http_family == 'HP':
         version = '1'
-        oid = (1, 3, 6, 1, 4, 1, 2, 3, 51, 2 ,2 ,21, 1, 1, 5, 0)
+        oid = (1, 3, 6, 1, 4, 1, 2, 3, 51, 2, 2, 21, 1, 1, 5, 0)
         # bladeCenterManufacturingId
     if http_family == 'RomPager':
         version = '1'
@@ -73,6 +77,8 @@ def get_snmp(ipaddress):
                     timeout=0.2,
                     snmp_version=version,
                 )
+            if message:
+                return message, community, version
     if SNMP_V3_AUTH and version not in ('1', '2', '2c'):
         version = '3'
         message = _snmp(
@@ -80,7 +86,7 @@ def get_snmp(ipaddress):
             SNMP_V3_AUTH,
             oid,
             attempts=2,
-            timeout=0.5, # SNMP v3 usually needs more time
+            timeout=0.5,  # SNMP v3 usually needs more time
             snmp_version=version,
         )
     if not message:

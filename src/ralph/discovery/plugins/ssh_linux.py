@@ -20,14 +20,14 @@ from ralph.discovery.hardware import (get_disk_shares, parse_dmidecode,
 from ralph.discovery import guessmodel
 
 
-SAVE_PRIORITY=5
+SAVE_PRIORITY = 5
 
 
 def get_ethernets(ssh):
     """Get the MAC addresses"""
 
     stdin, stdout, stderr = ssh.exec_command(
-            "/sbin/ip addr show | /bin/grep 'link/ether'")
+        "/sbin/ip addr show | /bin/grep 'link/ether'")
     ethernets = [
         Eth(label='', mac=line.split(None, 3)[1], speed=0)
         for line in stdout
@@ -39,7 +39,7 @@ def run_dmidecode(ssh, ethernets):
     """Handle dmidecode data"""
 
     stdin, stdout, stderr = ssh.exec_command(
-            "/usr/bin/sudo /usr/sbin/dmidecode")
+        "/usr/bin/sudo /usr/sbin/dmidecode")
     try:
         info = parse_dmidecode(stdout.read())
     except (DMIDecodeError, IOError):
@@ -48,8 +48,8 @@ def run_dmidecode(ssh, ethernets):
             # No serial number and no macs -- no way to make a device
             return None
         dev = Device.create(ethernets=ethernets, model_name='Linux',
-                        model_type=DeviceType.unknown,
-                        priority=SAVE_PRIORITY)
+                            model_type=DeviceType.unknown,
+                            priority=SAVE_PRIORITY)
     else:
         dev = handle_dmidecode(info, ethernets, SAVE_PRIORITY)
     return dev
@@ -72,7 +72,7 @@ def update_shares(ssh, dev):
         share = DiskShare.objects.get(wwn=wwn)
         wwns.append(wwn)
         mount, created = DiskShareMount.concurrent_get_or_create(
-                share=share, device=dev)
+            share=share, device=dev)
         mount.size = size
         if not mount.volume:
             mount.volume = lv
@@ -86,16 +86,16 @@ def get_memory(ssh):
     """System-visible memory in MIB"""
 
     stdin, stdout, stderr = ssh.exec_command(
-            "/bin/grep 'MemTotal:' '/proc/meminfo'")
+        "/bin/grep 'MemTotal:' '/proc/meminfo'")
     label, memory, unit = stdout.read().strip().split(None, 2)
-    return int(int(memory)/1024)
+    return int(int(memory) / 1024)
 
 
 def get_cores(ssh):
     """System-visible core count"""
 
     stdin, stdout, stderr = ssh.exec_command(
-            "/bin/grep '^processor' '/proc/cpuinfo'")
+        "/bin/grep '^processor' '/proc/cpuinfo'")
     return len(stdout.readlines())
 
 
@@ -178,4 +178,3 @@ def ssh_linux(**kwargs):
     except (network.Error, paramiko.SSHException) as e:
         return False, str(e), kwargs
     return True, name, kwargs
-

@@ -167,4 +167,3 @@ def ssh_3par(**kwargs):
     except paramiko.SSHException as e:
         return False, str(e), kwargs
     return True, name, kwargs
-

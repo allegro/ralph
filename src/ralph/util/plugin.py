@@ -13,10 +13,12 @@ PRIORITIES = {}
 
 
 class PluginFailed(Exception):
+
     """Raised when a scan plugin is unsuccessful."""
 
 
 class Restart(Exception):
+
     """Raised when the plugin should be re-run."""
 
 

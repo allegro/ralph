@@ -11,7 +11,7 @@ from ralph.discovery.models import Device, DeviceType
 from ralph.discovery.models_component import (
     Ethernet, DiskShare, GenericComponent, Processor, Software, ComponentModel,
     DiskShareMount, Memory, FibreChannel, SplunkUsage, Storage, OperatingSystem
-    )
+)
 from ralph.discovery.models_history import HistoryChange
 from ralph.discovery.models_network import (
     IPAddress, NetworkTerminator, Network, DataCenter)
@@ -30,20 +30,20 @@ DEVICE = {
     'barcode': 'bc_dev',
     'sn': '0000000001',
     'mac': '00:00:00:00:00:00',
-    }
+}
 DISKSHARE = {
     'device': 'DiskShareSrv',
     'sn': '0000000002',
     'barcode': 'bc_share',
     'wwn': 'DiskShareWWN',
-    }
+}
 GENERIC = {
     'sn': '0000000003',
-    }
+}
 NETWORK = {
     'name': 'SimpleNetwork',
     'address': '10.0.0.1/26',
-    }
+}
 DATACENTER = 'dc1'
 
 COMPONENT = {
@@ -59,11 +59,13 @@ COMPONENT = {
 
 
 class SearchTest(TestCase):
+
     """
     TODO:
     1. when search return more than 1 result
     2. verification objects in html
     """
+
     def setUp(self):
         self.client = login_as_su()
         venture = Venture(
@@ -190,9 +192,22 @@ class SearchTest(TestCase):
             label=COMPONENT['OS'],
         )
         self.operatingsystem.save()
+        # device with strange name...
+        self.strange_device = Device.create(
+            sn='abcabc123123',
+            model_name=DEVICE['model_name'],
+            model_type=DeviceType.unknown,
+            venture=self.venture,
+            venture_role=self.venture_role,
+            rack=DEVICE['rack'],
+            position=DEVICE['position'],
+            dc=DATACENTER,
+        )
+        self.strange_device.name = 'śćź'
+        self.strange_device.save()
 
     def test_access_to_device(self):
-        #User has perm to device list and device details
+        # User has perm to device list and device details
         device_list = self.client.get('/ui/search/info/')
         self.assertEqual(device_list.status_code, 200)
         url = '/ui/search/info/%s' % self.device.id
@@ -200,7 +215,7 @@ class SearchTest(TestCase):
         self.assertEqual(device_details.status_code, 200)
 
     def test_name_field_old(self):
-        #Search objects in response.context
+        # Search objects in response.context
         url = '/ui/search/info/%s' % self.device.id
         device_search = self.client.get(url)
         context = device_search.context['object']
@@ -210,11 +225,11 @@ class SearchTest(TestCase):
         url = '/ui/search/info/%s' % self.device.id
         device_search = self.client.get(url)
         context = device_search.context['object']
-        #test ip
+        # test ip
         self.assertEqual(context.name, self.device.name)
         ip = context.ipaddress_set.filter(address=DEVICE['ip']).count()
         self.assertTrue(ip > 0)
-        #test network
+        # test network
         """
         FIXME - i can`t tests network, i need more info !
         """
@@ -300,3 +315,9 @@ class SearchTest(TestCase):
         context = device_search.context['object']
         self.assertEqual(self.device.model.type, DeviceType.unknown.id)
         self.assertEqual(context.model.type, DeviceType.unknown)
+
+    def test_device_name_with_strange_characters(self):
+        url = '/ui/search/info/?name=śćź'
+        device_search = self.client.get(url, follow=True)
+        context = device_search.context['object']
+        self.assertEqual(context.name, u'śćź')

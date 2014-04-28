@@ -11,6 +11,7 @@ from django.conf import settings
 from django.core.cache import cache
 from django.http import HttpRequest
 from django.test import TestCase
+from django.test.client import FakePayload
 from tastypie.bundle import Bundle
 
 from ralph.account. models import BoundPerm, Profile, Perm
@@ -24,7 +25,10 @@ from ralph.cmdb.models import (
     CIChangeCMDBHistory,
     CIChange,
     CILayer,
+    CIAttribute,
+    CIAttributeValue,
     CI_RELATION_TYPES,
+    CI_ATTRIBUTE_TYPES,
 )
 from ralph.cmdb.models_ci import (
     CIOwnershipType,
@@ -40,6 +44,7 @@ CURRENT_DIR = settings.CURRENT_DIR
 
 
 class CMDBApiTest(TestCase):
+
     def setUp(self):
         self.user = create_user('api_user', 'test@mail.local', 'password')
         self.layers = CILayer.objects.all()
@@ -47,11 +52,13 @@ class CMDBApiTest(TestCase):
         self.create_owners()
         self.create_cis()
         self.create_ownerships()
+        self.create_attributes()
         self.create_relations()
-        self.data = {
-            'format': 'json',
-            'username': self.user.username,
-            'api_key': self.user.api_key.key
+        self.headers = {
+            'HTTP_ACCEPT': 'application/json',
+            'HTTP_AUTHORIZATION': 'ApiKey {}:{}'.format(
+                self.user.username, self.user.api_key.key
+            ),
         }
         cache.delete("api_user_accesses")
 
@@ -132,59 +139,65 @@ class CMDBApiTest(TestCase):
         )
         self.relation2.save()
 
+    def create_attributes(self):
+        self.attribute1 = CIAttribute(
+            name='Attribute 1', attribute_type=CI_ATTRIBUTE_TYPES.INTEGER,
+            choices='',
+        )
+        self.attribute1.save()
+        self.attribute1.ci_types.add(self.types[0]),
+        self.attribute_value1 = CIAttributeValue(
+            ci=self.ci1, attribute=self.attribute1,
+        )
+        self.attribute_value1.value = 10
+        self.attribute_value1.save()
+
     def test_layers(self):
         path = "/api/v0.9/cilayers/"
-        response = self.client.get(path=path, data=self.data, format='json')
+        response = self.client.get(path=path, **self.headers)
         json_string = response.content
         json_data = json.loads(json_string)
-        resource_uris = [ci_layer['resource_uri'] for ci_layer in json_data['objects']]
+        resource_uris = [
+            ci_layer['resource_uri'] for ci_layer in json_data['objects']
+        ]
 
-        response = self.client.get(
-            path=resource_uris[0], data=self.data, format='json',
-        )
+        response = self.client.get(path=resource_uris[0], **self.headers)
         json_string = response.content
         json_data = json.loads(json_string)
         self.assertEqual(json_data['name'], self.layers[0].name)
 
-        response = self.client.get(
-            path=resource_uris[1], data=self.data, format='json',
-        )
+        response = self.client.get(resource_uris[1], **self.headers)
         json_string = response.content
         json_data = json.loads(json_string)
         self.assertEqual(json_data['name'], self.layers[1].name)
 
     def test_types(self):
         path = "/api/v0.9/citypes/"
-        response = self.client.get(path=path, data=self.data, format='json')
+        response = self.client.get(path=path, **self.headers)
         json_string = response.content
         json_data = json.loads(json_string)
-        resource_uris = [ci_type['resource_uri'] for ci_type in json_data['objects']]
-
-        response = self.client.get(
-            path=resource_uris[0], data=self.data, format='json',
-        )
+        resource_uris = [
+            ci_type['resource_uri'] for ci_type in json_data['objects']
+        ]
+        response = self.client.get(path=resource_uris[0], **self.headers)
         json_string = response.content
         json_data = json.loads(json_string)
 
         self.assertEqual(json_data['name'], self.types[0].name)
 
-        response = self.client.get(
-            path=resource_uris[1], data=self.data, format='json',
-        )
+        response = self.client.get(resource_uris[1], **self.headers)
         json_string = response.content
         json_data = json.loads(json_string)
         self.assertEqual(json_data['name'], self.types[1].name)
 
     def test_ci(self):
         path = "/api/v0.9/ci/"
-        response = self.client.get(path=path, data=self.data, format='json')
+        response = self.client.get(path, **self.headers)
         json_string = response.content
         json_data = json.loads(json_string)
         resource_uris = [ci['resource_uri'] for ci in json_data['objects']]
 
-        response = self.client.get(
-            path=resource_uris[0], data=self.data, format='json',
-        )
+        response = self.client.get(resource_uris[0], **self.headers)
         json_string = response.content
         json_data = json.loads(json_string)
         self.assertEqual(json_data['layers'][0]['name'], self.layers[0].name)
@@ -194,17 +207,15 @@ class CMDBApiTest(TestCase):
         self.assertEqual(json_data['type']['name'], self.ci1.type.name)
         self.assertEqual(json_data['uid'], self.ci1.uid)
         self.assertEqual(
-            json_data['technical_owners'][0]['username'],
-            '{}.{}'.format(self.owner1.first_name, self.owner1.last_name)
+            json_data['technical_owners'][0]['first_name'],
+            self.owner1.first_name,
         )
         self.assertEqual(
-            json_data['business_owners'][0]['username'],
-            '{}.{}'.format(self.owner2.first_name, self.owner2.last_name)
+            json_data['business_owners'][0]['first_name'],
+            self.owner2.first_name,
         )
 
-        response = self.client.get(
-            path=resource_uris[1], data=self.data, format='json',
-        )
+        response = self.client.get(resource_uris[1], **self.headers)
         json_string = response.content
         json_data = json.loads(json_string)
         self.assertEqual(json_data['layers'][0]['name'], self.layers[0].name)
@@ -214,29 +225,197 @@ class CMDBApiTest(TestCase):
         self.assertEqual(json_data['uid'], self.ci2.uid)
         self.assertFalse(json_data['technical_owners'])
         self.assertEqual(
-            json_data['business_owners'][0]['username'],
-            '{}.{}'.format(self.owner2.first_name, self.owner2.last_name)
+            json_data['business_owners'][0]['first_name'],
+            self.owner2.first_name,
         )
+
+    def test_ownership(self):
+        """Test the direct and effective ownerships."""
+        path1 = '/api/v0.9/ci/{}/'.format(self.ci1.id)
+        path3 = '/api/v0.9/ci/{}/'.format(self.ci3.id)
+        ci1_data = json.loads(self.client.get(path1, **self.headers).content)
+        ci3_data = json.loads(self.client.get(path3, **self.headers).content)
+        # CI1 has its own owners
+        self.assertListEqual(
+            ci1_data['business_owners'],
+            ci1_data['effective_business_owners']
+        )
+        # CI3 inherits owners from CI1
+        self.assertListEqual(ci3_data['business_owners'], [])
+        self.assertListEqual(
+            ci3_data['effective_business_owners'],
+            ci1_data['business_owners']
+        )
+
+    def test_post_ci(self):
+        """POST to ci collection should create a new CI"""
+        ci_count_before = CI.objects.count()
+        ci_data = json.dumps({
+            'uid': 'uid-ci-api-1',
+            'type': '/api/v0.9/citypes/{0}/'.format(self.types[0].id),
+            'barcode': 'barcodeapi1',
+            'name': 'ciname from api 1',
+            'layers': ['/api/v0.9/cilayers/5/'],
+            'business_owners': [
+                '/api/v0.9/ciowners/{0}/'.format(self.owner1.id)
+            ],
+            'technical_owners': [
+                '/api/v0.9/ciowners/{0}/'.format(self.owner2.id)
+            ],
+            'attributes': [
+                {
+                    'name': 'SLA value',
+                    'value': 0.7,
+                }, {
+                    'name': 'Documentation Link',
+                    'value': 'http://www.gutenberg.org/files/27827/'
+                    '27827-h/27827-h.htm',
+                },
+            ],
+        })
+        resp = self.client.post(
+            '/api/v0.9/ci/?',
+            ci_data,
+            content_type='application/json',
+            **self.headers
+        )
+        self.assertEqual(CI.objects.count(), ci_count_before + 1)
+        created_id = int(resp['Location'].split('/')[-2])
+        created = CI.objects.get(pk=created_id)
+        self.assertEqual(created.name, 'ciname from api 1')
+        self.assertSetEqual(
+            set(created.business_owners.all()),
+            {self.owner1},
+        )
+        self.assertSetEqual(
+            set(av.value for av in created.ciattributevalue_set.all()),
+            {
+                0.7,
+                'http://www.gutenberg.org/files/27827/27827-h/27827-h.htm',
+            },
+        )
+
+    def test_put_ci(self):
+        """PUT should edit existing CI"""
+        ci_count_before = CI.objects.count()
+        ci_data = json.dumps({
+            'uid': 'uid-ci-api-1',
+            'type': '/api/v0.9/citypes/{0}/'.format(self.types[0].id),
+            'barcode': 'barcodeapi1',
+            'name': 'ciname from api 1',
+            'layers': ['/api/v0.9/cilayers/5/'],
+            'business_owners': [
+                '/api/v0.9/ciowners/{0}/'.format(self.owner1.id)
+            ],
+            'technical_owners': [
+                '/api/v0.9/ciowners/{0}/'.format(self.owner2.id)
+            ],
+            'attributes': [
+                {
+                    'name': 'SLA value',
+                    'value': 0.7,
+                }, {
+                    'name': 'Documentation Link',
+                    'value': 'http://www.gutenberg.org/files/27827/'
+                    '27827-h/27827-h.htm',
+                },
+            ],
+        })
+        self.client.put(
+            '/api/v0.9/ci/{0}/'.format(
+                self.ci1.id,
+            ),
+            ci_data,
+            content_type='application/json',
+            **self.headers
+        )
+        self.assertEqual(CI.objects.count(), ci_count_before)
+        edited = CI.objects.get(pk=self.ci1.id)
+        self.assertEqual(edited.name, 'ciname from api 1')
+        self.assertSetEqual(
+            set(edited.business_owners.all()),
+            {self.owner1},
+        )
+        self.assertSetEqual(
+            set(av.value for av in edited.ciattributevalue_set.all()),
+            {
+                0.7,
+                'http://www.gutenberg.org/files/27827/27827-h/27827-h.htm',
+            },
+        )
+
+    def test_patch(self):
+        """PATCH should edit some attributes."""
+        ci_count_before = CI.objects.count()
+        ci_data = json.dumps({
+            'business_owners': [
+                '/api/v0.9/ciowners/{0}/'.format(self.owner1.id)
+            ],
+            'technical_owners': [
+                '/api/v0.9/ciowners/{0}/'.format(self.owner2.id)
+            ],
+            'attributes': [
+                {
+                    'name': 'SLA value',
+                    'value': 0.7,
+                }, {
+                    'name': 'Documentation Link',
+                    'value': 'http://www.gutenberg.org/files/27827/'
+                    '27827-h/27827-h.htm',
+                },
+            ],
+        })
+        req_data = {
+            'CONTENT_LENGTH': len(ci_data),
+            'CONTENT_TYPE': 'application/json',
+            'PATH_INFO': '/api/v0.9/ci/{0}/'.format(self.ci1.id),
+            'REQUEST_METHOD': 'PATCH',
+            'wsgi.input': FakePayload(ci_data),
+        }
+        req_data.update(self.headers)
+        self.client.request(**req_data)
+        self.assertEqual(CI.objects.count(), ci_count_before)
+        edited = CI.objects.get(pk=self.ci1.id)
+        self.assertEqual(edited.name, 'ciname1')
+        self.assertEqual(edited.uid, 'uid-ci1')
+        self.assertSetEqual(
+            set(edited.business_owners.all()),
+            {self.owner1},
+        )
+        self.assertSetEqual(
+            set(av.value for av in edited.ciattributevalue_set.all()),
+            {
+                0.7,
+                'http://www.gutenberg.org/files/27827/27827-h/27827-h.htm',
+            },
+        )
+
+    def test_get_attribute(self):
+        path = "/api/v0.9/ci/{0}/".format(self.ci1.id)
+        response = self.client.get(path, **self.headers)
+        json_string = response.content
+        json_data = json.loads(json_string)
+        self.assertListEqual(json_data['attributes'], [
+            {'name': 'Attribute 1', 'value': 10}
+        ])
 
     def test_relations(self):
         path = "/api/v0.9/cirelation/"
-        response = self.client.get(path=path, data=self.data, format='json')
+        response = self.client.get(path, **self.headers)
         json_string = response.content
         json_data = json.loads(json_string)
-        resource_uris = [ci_relation['resource_uri'] for ci_relation in json_data['objects']]
+        resource_uris = [
+            ci_relation['resource_uri'] for ci_relation in json_data['objects']
+        ]
 
-        response = self.client.get(
-            path=resource_uris[0], data=self.data, format='json',
-        )
+        response = self.client.get(resource_uris[0], **self.headers)
         json_string = response.content
         json_data = json.loads(json_string)
         self.assertEqual(json_data['parent'], self.ci1.id)
         self.assertEqual(json_data['child'], self.ci2.id)
         self.assertEqual(json_data['type'], CI_RELATION_TYPES.CONTAINS)
 
-        response = self.client.get(
-            path=resource_uris[1], data=self.data, format='json',
-        )
+        response = self.client.get(resource_uris[1], **self.headers)
         json_string = response.content
         json_data = json.loads(json_string)
         self.assertEqual(json_data['parent'], self.ci2.id)
@@ -245,16 +424,13 @@ class CMDBApiTest(TestCase):
 
     def test_ci_filter_exact(self):
         path = "/api/v0.9/ci/"
-        data = self.data.copy()
-        data['name__exact'] = 'otherci'
-        response = self.client.get(path=path, data=data, format='json')
+        data = {'name__exact': 'otherci'}
+        response = self.client.get(path, data=data, **self.headers)
         json_string = response.content
         json_data = json.loads(json_string)
         resource_uris = [ci['resource_uri'] for ci in json_data['objects']]
         self.assertEqual(len(resource_uris), 1)
-        response = self.client.get(
-            path=resource_uris[0], data=data, format='json',
-        )
+        response = self.client.get(resource_uris[0], data, **self.headers)
         json_string = response.content
         json_data = json.loads(json_string)
         self.assertEqual(json_data['layers'][0]['name'], self.layers[1].name)
@@ -264,17 +440,14 @@ class CMDBApiTest(TestCase):
         self.assertEqual(json_data['uid'], self.ci3.uid)
 
     def test_ci_filter_startswith(self):
-        data = self.data.copy()
         path = "/api/v0.9/ci/"
-        data['name__startswith'] = 'ciname'
-        response = self.client.get(path=path, data=data, format='json')
+        data = {'name__startswith': 'ciname'}
+        response = self.client.get(path=path, data=data, **self.headers)
         json_string = response.content
         json_data = json.loads(json_string)
         resource_uris = [ci['resource_uri'] for ci in json_data['objects']]
         self.assertEqual(len(resource_uris), 2)
-        response = self.client.get(
-            path=resource_uris[0], data=data, format='json',
-        )
+        response = self.client.get(resource_uris[0], data=data, **self.headers)
         json_string = response.content
         json_data = json.loads(json_string)
         self.assertEqual(json_data['layers'][0]['name'], self.layers[0].name)
@@ -283,9 +456,7 @@ class CMDBApiTest(TestCase):
         self.assertEqual(json_data['type']['name'], self.ci1.type.name)
         self.assertEqual(json_data['uid'], self.ci1.uid)
 
-        response = self.client.get(
-            path=resource_uris[1], data=data, format='json',
-        )
+        response = self.client.get(resource_uris[1], data=data, **self.headers)
         json_string = response.content
         json_data = json.loads(json_string)
         self.assertEqual(json_data['layers'][0]['name'], self.layers[0].name)
@@ -296,6 +467,7 @@ class CMDBApiTest(TestCase):
 
 
 class CIApiTest(TestCase):
+
     def setUp(self):
         self.user = create_user(
             'api_user',
@@ -397,7 +569,11 @@ class CIApiTest(TestCase):
 
     def test_ci_change_cmdbhistory_registration(self):
         request = HttpRequest()
+        request.path = self.post_data_cmdb_change['ci']
         request.user = self.user
+        request.META['SERVER_NAME'] = 'testserver'
+        request.META['SERVER_PORT'] = 80
+
         cmdb_bundle = Bundle(data=self.post_data_cmdb_change, request=request)
         cmdb_resource = CIChangeCMDBHistoryResource()
         cmdb_resource.obj_create(bundle=cmdb_bundle)
@@ -420,6 +596,7 @@ class CIApiTest(TestCase):
 
 
 class AccessToCMDBApiTest(TestCase):
+
     def setUp(self):
         self.user = create_user(
             'api_user',
@@ -434,7 +611,6 @@ class AccessToCMDBApiTest(TestCase):
             'api_key': self.user.api_key.key,
         }
         cache.delete("api_user_accesses")
-
 
     def get_response(self, resource):
         path = "/api/v0.9/%s/" % resource
@@ -452,7 +628,7 @@ class AccessToCMDBApiTest(TestCase):
 
     def test_businessline_resource(self):
         resource = 'businessline'
-        perms = [Perm.read_configuration_item_info_generic,]
+        perms = [Perm.read_configuration_item_info_generic]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)
@@ -468,7 +644,7 @@ class AccessToCMDBApiTest(TestCase):
 
     def test_service_resource(self):
         resource = 'service'
-        perms = [Perm.read_configuration_item_info_generic,]
+        perms = [Perm.read_configuration_item_info_generic]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)
@@ -484,7 +660,7 @@ class AccessToCMDBApiTest(TestCase):
 
     def test_cirelation_resource(self):
         resource = 'cirelation'
-        perms = [Perm.read_configuration_item_info_generic,]
+        perms = [Perm.read_configuration_item_info_generic]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)
@@ -500,7 +676,7 @@ class AccessToCMDBApiTest(TestCase):
 
     def test_ci_resource(self):
         resource = 'ci'
-        perms = [Perm.read_configuration_item_info_generic,]
+        perms = [Perm.read_configuration_item_info_generic]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)
@@ -516,7 +692,7 @@ class AccessToCMDBApiTest(TestCase):
 
     def test_cilayers_resource(self):
         resource = 'cilayers'
-        perms = [Perm.read_configuration_item_info_generic,]
+        perms = [Perm.read_configuration_item_info_generic]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)
@@ -532,7 +708,7 @@ class AccessToCMDBApiTest(TestCase):
 
     def test_cichange_resource(self):
         resource = 'cichange'
-        perms = [Perm.read_configuration_item_info_generic,]
+        perms = [Perm.read_configuration_item_info_generic]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)
@@ -548,7 +724,7 @@ class AccessToCMDBApiTest(TestCase):
 
     def test_cichangezabbixtrigger_resource(self):
         resource = 'cichangezabbixtrigger'
-        perms = [Perm.read_configuration_item_info_generic,]
+        perms = [Perm.read_configuration_item_info_generic]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)
@@ -564,7 +740,7 @@ class AccessToCMDBApiTest(TestCase):
 
     def test_cichangegit_resource(self):
         resource = 'cichangegit'
-        perms = [Perm.read_configuration_item_info_git,]
+        perms = [Perm.read_configuration_item_info_git]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)
@@ -580,7 +756,7 @@ class AccessToCMDBApiTest(TestCase):
 
     def test_cichangepuppet_resource(self):
         resource = 'cichangepuppet'
-        perms = [Perm.read_configuration_item_info_puppet,]
+        perms = [Perm.read_configuration_item_info_puppet]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)
@@ -596,7 +772,7 @@ class AccessToCMDBApiTest(TestCase):
 
     def test_cichangecmdbhistory_resource(self):
         resource = 'cichangecmdbhistory'
-        perms = [Perm.read_configuration_item_info_generic,]
+        perms = [Perm.read_configuration_item_info_generic]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)
@@ -612,7 +788,7 @@ class AccessToCMDBApiTest(TestCase):
 
     def test_citypes_resource(self):
         resource = 'citypes'
-        perms = [Perm.read_configuration_item_info_generic,]
+        perms = [Perm.read_configuration_item_info_generic]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)
@@ -628,7 +804,7 @@ class AccessToCMDBApiTest(TestCase):
 
     def test_ciowners_resource(self):
         resource = 'ciowners'
-        perms = [Perm.read_configuration_item_info_generic,]
+        perms = [Perm.read_configuration_item_info_generic]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)

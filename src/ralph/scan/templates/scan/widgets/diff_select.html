@@ -1,0 +1,77 @@
+{% load getvalue from formats %}
+{% load split from formats %}
+
+<div class="diff-select-widget" id="{{ name }}__diff_select_widget" data-role="diff_select_widget">
+    {% if diff %}
+        <div class="alert alert-{% if diff.is_equal %}success{% else %}info{% endif %}">
+            {% if not diff.is_equal %}
+                {% if diff.type == "dicts" %}
+                    <span class="badge badge-success">{{ diff.meta.add_items_count }}</span> item{% if diff.meta.add_items_count == 1 %} was{% else %}s were{% endif %} added.&nbsp;
+                    <span class="badge badge-important">{{ diff.meta.remove_items_count }}</span> item{% if diff.meta.remove_items_count == 1 %} was{% else %}s were{% endif %} removed.&nbsp;
+                    <span class="badge badge-warning">{{ diff.meta.change_items_count }}</span> item{% if diff.meta.change_items_count == 1 %} was{% else %}s were{% endif %} changed.&nbsp;
+                {% else %}
+                    Some changes were detected. To edit current value, use advanced mode.
+                {% endif %}
+            {% else %}
+                Without changes.
+            {% endif %}
+            <div class="btn-group pull-right" data-toggle="buttons-checkbox" style="display: inline-block;">
+                {% if not diff.is_equal and diff.type == "dicts" %}
+                    <button type="button" class="btn btn-mini" data-role="show_diff_btn">Display diff</button>
+                {% endif %}
+                <button type="button" class="btn btn-mini {% if open_advanced_mode %}active{% endif %}" data-role="show_advanced_mode_btn">Advanced mode</button>
+            </div>
+        </div>
+        <div class="diff-details" data-role="diff_details">
+            {% if not diff.is_equal and diff.type == "dicts" %}
+                <p><strong>Diff:</strong></p>
+                <table class="table table-condensed table-hover table-bordered" style="width: 100%;">
+                    <thead><tr>
+                        <th>&nbsp;</th>
+                        {% for header in diff.meta.headers %}<th>{{ header }}</th>{% endfor %}
+                    </tr></thead>
+                    <tbody>{% for row in diff.diff %}
+                        <tr class="{% if row.status == "?" %}warning{% elif row.status == "+" %}success{% elif row.status == "-" %}error{% endif %}">
+                            <td{% if row.status == "?" %} rowspan="2"{% endif %} style="vertical-align: middle;">{% if row.status == "?" %}M{% else %}{{ row.status }}{% endif %}</td>
+                            {% for header in diff.meta.headers %}
+                                {% if row.status == "?" %}
+                                    {% with row_diff=row.dict_diff|getvalue:header %}
+                                        <td class="{% if row_diff.status != "" %}diff-prev{% endif %}"><span>{{ row_diff.left_value|default:"&nbsp;" }}</span></td>
+                                    {% endwith %}
+                                {% else %}
+                                    <td>{{ row.items|getvalue:header|default:"&nbsp;" }}</td>
+                                {% endif %}
+                            {% endfor %}
+                            {% if row.status == "?" %}
+                                </tr><tr class="warning">
+                                {% for header in diff.meta.headers %}
+                                    {% with row_diff=row.dict_diff|getvalue:header %}
+                                        <td class="{% if row_diff.status != "" %}diff-next{% endif %}"><span>{{ row_diff.right_value|default:"&nbsp;" }}</span></td>
+                                    {% endwith %}
+                                {% endfor %}
+                            {% endif %}
+                        </tr>
+                    {% endfor %}</tbody>
+                </table>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <div class="advanced-mode"{% if diff and not open_advanced_mode %} style="display: none;"{% endif %} data-role="advanced_mode">
+        {% for option, label in choices %}
+            {% if option != "custom" %}
+                <label class="radio">
+                    <input type="radio" name="{{ name }}" value="{{ option }}" {% if value == option or value in option %}checked="on"{% endif %}>
+                    {{ label }}<br>
+                    <i>({% with option|split:", " as sources %}
+                        {% for source in sources %}
+                            {% if source == 'database' %}previous value{% else %}{{ source }}{% endif %}
+                            {% if not forloop.last %},&nbsp;{% endif %}
+                        {% endfor %}
+                    {% endwith %})</i>
+                </label>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+

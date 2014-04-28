@@ -20,6 +20,7 @@ from ralph.scan.plugins.snmp_macs import (
 
 
 class SnmpMacsPluginTest(TestCase):
+
     def test_get_model_info(self):
         self.assertRaises(Error, _get_model_info, 'bla bla bla')
         self.assertEqual(
@@ -199,7 +200,7 @@ class SnmpMacsPluginTest(TestCase):
         with mock.patch(
             'ralph.scan.plugins.snmp_macs.snmp_macs',
         ) as snmp_macs, mock.patch(
-             'ralph.scan.plugins.snmp_macs.snmp_command',
+            'ralph.scan.plugins.snmp_macs.snmp_command',
         ) as snmp_command:
             snmp_macs.side_effect = macs_side
             snmp_command.return_value = [[None, 6]]
@@ -254,4 +255,3 @@ class SnmpMacsPluginTest(TestCase):
                     },
                 ],
             )
-

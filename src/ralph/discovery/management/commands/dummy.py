@@ -18,6 +18,7 @@ from ralph.discovery.tasks import dummy_horde
 
 
 class Command(BaseCommand):
+
     """
     Runs a horde of dummy tasks for testing whether the scaffolding works.
     """

@@ -1,66 +1,149 @@
 # -*- coding: utf-8 -*-
 
+"""
+Scan all existing and not dead IP addresses from specified networks,
+environments or data centers. This Scan tries to extract all possible data
+from all available plugins. It also calculates checksum from plugins results.
+This checksum is usefull to detect possible changes on devices.
+"""
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import copy
 import datetime
-import logging
-from django.conf import settings
-from django.utils.importlib import import_module
-import django_rq
+import hashlib
 import json
-import os.path
+import logging
+
+import django_rq
 import rq
 
+from django.conf import settings
+from django.utils.importlib import import_module
+
 from ralph.discovery.models import IPAddress, Network
+from ralph.scan.automerger import save_job_results
 from ralph.scan.errors import NoQueueError
+from ralph.scan.models import ScanSummary
+
+
+AUTOMERGE_MODE = getattr(settings, 'SCAN_AUTOMERGE_MODE', False)
+UI_CALLS_QUEUE_PREFIX = getattr(settings, 'UI_CALLS_QUEUE_PREFIX', 'ui')
+RQ_QUEUES_LIST = getattr(settings, 'RQ_QUEUES', {}).keys()
 
 
 logger = logging.getLogger("SCAN")
-SCAN_LOG_DIRECTORY = getattr(settings, 'SCAN_LOG_DIRECTORY', None)
 
 
-def scan_address(address, plugins):
-    """Queue manual discovery on the specified address."""
+def scan_address(
+    ip_address, plugins, queue_name=None, automerge=AUTOMERGE_MODE,
+    called_from_ui=False,
+):
+    """Queue scan on the specified address."""
 
-    try:
-        network = Network.from_ip(address)
-    except IndexError:
-        raise NoQueueError(
-            "Address {0} doesn't belong to any configured "
-            "network.".format(address),
-        )
-    if not network.queue:
-        raise NoQueueError(
-            "The network {0} has no discovery queue.".format(network),
-        )
-    ipaddress, created = IPAddress.objects.get_or_create(address=address)
-    queue_name = network.queue.name
+    if not queue_name:
+        try:
+            network = Network.from_ip(ip_address)
+        except IndexError:
+            raise NoQueueError(
+                "Address {0} doesn't belong to any configured "
+                "network.".format(ip_address),
+            )
+        else:
+            if network.environment and network.environment.queue:
+                queue_name = network.environment.queue.name
+            else:
+                raise NoQueueError(
+                    "The IP address {0} has no discovery queue. "
+                    "Set the queue in the environments admin panel.".format(
+                        ip_address,
+                    ),
+                )
+    if all((
+        called_from_ui,
+        '%s_%s' % (UI_CALLS_QUEUE_PREFIX, queue_name) in RQ_QUEUES_LIST
+    )):
+        queue_name = '%s_%s' % (UI_CALLS_QUEUE_PREFIX, queue_name)
     queue = django_rq.get_queue(queue_name)
     job = queue.enqueue_call(
-        func=_scan_address,
+        func=scan_address_job,
         args=(
-            address,
+            ip_address,
             plugins,
         ),
         kwargs={
-            'snmp_community': ipaddress.snmp_community,
-            'snmp_version': ipaddress.snmp_version,
-            'http_family': ipaddress.http_family,
-            'snmp_name': ipaddress.snmp_name,
+            'automerge': automerge,
         },
-        timeout=60,
-        result_ttl=3600,
+        timeout=300,
+        result_ttl=86400,
     )
     return job
 
 
-def _scan_address(address, plugins, **kwargs):
-    """The function that is actually running on the worker."""
+def scan_ip_addresses_range(
+    min_ip_number, max_ip_number, plugins, queue_name=None,
+    automerge=AUTOMERGE_MODE,
+):
+    """Queue scan of a IP addresses (in numeric representation) range."""
 
-    job = rq.get_current_job()
+    for ip_address in IPAddress.objects.filter(
+        number__gte=min_ip_number,
+        number__lte=max_ip_number,
+        dead_ping_count__lte=settings.DEAD_PING_COUNT,
+        is_buried=False,
+    ).values_list('address', flat=True):
+        scan_address(ip_address, plugins, queue_name, automerge)
+
+
+def scan_network(network, plugins, queue=None, automerge=AUTOMERGE_MODE):
+    """Queue scan of a entire network on the right worker."""
+
+    if not queue:
+        if network.environment and network.environment.queue:
+            queue = network.environment.queue
+    scan_ip_addresses_range(
+        network.min_ip,
+        network.max_ip,
+        plugins,
+        queue_name=queue.name if queue else None,
+        automerge=automerge,
+    )
+
+
+def scan_environment(environment, plugins, automerge=AUTOMERGE_MODE):
+    """Queue scan of all scannable networks in the environment."""
+
+    if not environment.queue:
+        raise NoQueueError(
+            "Evironment {0} does not have configured queue.".format(
+                environment,
+            ),
+        )
+    ip_numbers = set()
+    for min_ip_num, max_ip_num in environment.network_set.values_list(
+        'min_ip', 'max_ip',
+    ).order_by('-min_ip', 'max_ip'):
+        ip_numbers |= set(range(min_ip_num, max_ip_num + 1))
+    range_start = 0
+    for ip_number in sorted(ip_numbers):
+        if range_start == 0:
+            range_start = ip_number
+        if ip_number + 1 in ip_numbers:
+            continue
+        scan_ip_addresses_range(
+            range_start,
+            ip_number,
+            plugins,
+            queue_name=environment.queue.name,
+            automerge=automerge,
+        )
+        range_start = 0
+
+
+def _run_plugins(address, plugins, job, **kwargs):
     results = {}
     job.meta['messages'] = []
     job.meta['finished'] = []
@@ -73,42 +156,196 @@ def _scan_address(address, plugins, **kwargs):
             module = import_module(plugin_name)
         except ImportError as e:
             message = 'Failed to import: %s.' % e
-            job.meta['messages'].append((address, plugin_name, 'error', message))
+            job.meta['messages'].append(
+                (address, plugin_name, 'error', message),
+            )
             job.meta['status'][plugin_name] = 'error'
         else:
             try:
                 result = module.scan_address(address, **kwargs)
+            except rq.timeouts.JobTimeoutException as e:
+                raise e
             except Exception as e:
                 name = plugin_name.split(".")[-1]
                 msg = "Exception occured in plugin {} and address {}".format(
-                    name, address,
+                    name,
+                    address,
                 )
                 logger.exception(msg)
                 result = {
                     'status': 'error',
-                    'date': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                    'date': datetime.datetime.now().strftime(
+                        '%Y-%m-%d %H:%M:%S',
+                    ),
                     'plugin': name,
                     'messages': [msg, unicode(e.message)],
                 }
             results[plugin_name] = result
             for message in result.get('messages', []):
-                job.meta['messages'].append((address, plugin_name, 'warning', message))
+                job.meta['messages'].append(
+                    (address, plugin_name, 'warning', message),
+                )
             job.meta['status'][plugin_name] = result.get('status', 'success')
         job.meta['finished'].append(plugin_name)
         job.save()
-    _log_results(address, results)
     return results
 
 
-def _log_results(address, results):
-    """If logging is configured, logs the results of the scan."""
+def _get_ip_addresses_from_results(results):
+    """
+    Returns list of IPAddress instances that are matched from inside scan
+    results source addresses.
+    """
 
-    if SCAN_LOG_DIRECTORY is None:
-        return
-    filename = '%s_%s.json' % (
-        address,
-        datetime.datetime.now().strftime("%Y-%m-%d_%H:%M"),
-    )
-    filepath = os.path.join(SCAN_LOG_DIRECTORY, filename)
-    with open(filepath, 'w') as f:
-        json.dump(results, f)
+    ip_addresses = set()
+    for plugin_name, plugin_results in results.iteritems():
+        # Only system ip addresses. This function will be used only with API
+        # and only system ip addresses will be possible.
+        device = plugin_results.get('device')
+        if not device:
+            continue
+        ip_addresses |= set(device.get('system_ip_addresses', []))
+    result = []
+    for address in ip_addresses:
+        ip_address, created = IPAddress.concurrent_get_or_create(
+            address=address,
+        )
+        result.append(ip_address)
+    return result
+
+
+def _get_cleaned_results(data):
+    UNNECESSARY_KEYS = set(['status', 'date', 'messages'])
+    data = copy.deepcopy(data)
+    for plugin_name, plugin_results in data.iteritems():
+        for key in UNNECESSARY_KEYS:
+            plugin_results.pop(key, None)
+    return data
+
+
+def _get_results_checksum(data):
+    return hashlib.md5(json.dumps(data, sort_keys=True)).hexdigest()
+
+
+def _scan_postprocessing(results, job, ip_address=None):
+    """
+    Postprocessing is an act of calculation checksums on scan results, and
+    maintenance RQ jobs.
+    """
+
+    if any((
+        'messages' not in job.meta,
+        'finished' not in job.meta,
+        'status' not in job.meta,
+    )):
+        job.meta['messages'] = []
+        job.meta['finished'] = []
+        job.meta['status'] = {}
+        job.save()
+    # get connected ip_address
+    if ip_address:
+        ip_address, created = IPAddress.concurrent_get_or_create(
+            address=ip_address,
+        )
+    else:
+        ip_addresses = _get_ip_addresses_from_results(results)
+        try:
+            ip_address = ip_addresses[0]
+        except IndexError:
+            return
+    # get (and update) or create scan_summary
+    old_job = None
+    if ip_address.scan_summary:
+        scan_summary = ip_address.scan_summary
+        try:
+            old_job = rq.job.Job.fetch(
+                scan_summary.job_id,
+                django_rq.get_connection(),
+            )
+        except rq.exceptions.NoSuchJobError:
+            pass
+        else:
+            if 'messages' in old_job.meta and not job.meta['messages']:
+                job.meta['messages'] = old_job.meta['messages']
+            for plugin in old_job.meta.get('finished', []):
+                if plugin not in job.meta['finished']:
+                    job.meta['finished'].append(plugin)
+            for plugin, status in old_job.meta.get('status', {}).iteritems():
+                if plugin not in job.meta['status']:
+                    job.meta['status'][plugin] = status
+            job.save()
+        scan_summary.job_id = job.id
+    else:
+        scan_summary, created = ScanSummary.concurrent_get_or_create(
+            job_id=job.id,
+        )
+        ip_address.scan_summary = scan_summary
+    # update exists results data
+    if old_job:
+        updated_results = old_job.result
+        if updated_results is not None:
+            for plugin_name, plugin_results in results.iteritems():
+                updated_results[plugin_name] = plugin_results
+                if plugin_name not in job.meta['finished']:
+                    job.meta['finished'].append(plugin_name)
+                if plugin_name not in job.meta['status']:
+                    job.meta['status'][plugin_name] = plugin_results['status']
+            job.save()
+            results.update(updated_results)
+    # calculate new checksum
+    cleaned_results = _get_cleaned_results(results)
+    checksum = _get_results_checksum(cleaned_results)
+    job.meta['results_checksum'] = checksum
+    job.save()
+    # calculate new status
+    if all((
+        checksum != scan_summary.previous_checksum,
+        checksum != scan_summary.false_positive_checksum,
+    )):
+        job.meta['changed'] = True
+    else:
+        job.meta['changed'] = False
+        scan_summary.false_positive_checksum = None
+    job.save()
+    scan_summary.save()
+    ip_address.save()
+    # cancel old job (if exists)
+    if old_job:
+        rq.cancel_job(old_job.id, django_rq.get_connection())
+
+
+def scan_address_job(
+    ip_address=None,
+    plugins=None,
+    results=None,
+    automerge=AUTOMERGE_MODE,
+    **kwargs
+):
+    """
+    The function that is actually running on the worker.
+    """
+
+    job = rq.get_current_job()
+    available_plugins = getattr(settings, 'SCAN_PLUGINS', {}).keys()
+    if not plugins:
+        plugins = available_plugins
+    run_postprocessing = not (set(available_plugins) - set(plugins))
+    if ip_address and plugins:
+        if not kwargs:
+            ip, created = IPAddress.concurrent_get_or_create(
+                address=ip_address,
+            )
+            kwargs = {
+                'snmp_community': ip.snmp_community,
+                'snmp_version': ip.snmp_version,
+                'http_family': ip.http_family,
+                'snmp_name': ip.snmp_name,
+            }
+        results = _run_plugins(ip_address, plugins, job, **kwargs)
+    if run_postprocessing:
+        _scan_postprocessing(results, job, ip_address)
+        # Run only when automerge mode is enabled and some change was detected.
+        # When `change` state is not available just run it...
+        if automerge and job.meta.get('changed', True):
+            save_job_results(job.id)
+    return results

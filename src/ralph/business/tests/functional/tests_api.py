@@ -10,7 +10,9 @@ from ralph.ui.tests.global_utils import create_user
 
 from django.test import TestCase
 
+
 class BusinessApiTest(TestCase):
+
     def setUp(self):
         self.user = create_user(
             'api_user',
@@ -42,7 +44,7 @@ class BusinessApiTest(TestCase):
 
     def test_venture_resource(self):
         resource = 'venture'
-        perms = [Perm.read_dc_structure,]
+        perms = [Perm.read_dc_structure, ]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)
@@ -59,7 +61,7 @@ class BusinessApiTest(TestCase):
 
     def test_venturelight_resource(self):
         resource = 'venturelight'
-        perms = [Perm.read_dc_structure,]
+        perms = [Perm.read_dc_structure, ]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)
@@ -76,7 +78,7 @@ class BusinessApiTest(TestCase):
 
     def test_role_resource(self):
         resource = 'role'
-        perms = [Perm.read_dc_structure,]
+        perms = [Perm.read_dc_structure, ]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)
@@ -93,7 +95,7 @@ class BusinessApiTest(TestCase):
 
     def test_rolelight_resource(self):
         resource = 'rolelight'
-        perms = [Perm.read_dc_structure,]
+        perms = [Perm.read_dc_structure, ]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)
@@ -110,7 +112,7 @@ class BusinessApiTest(TestCase):
 
     def test_department_resource(self):
         resource = 'department'
-        perms = [Perm.read_dc_structure,]
+        perms = [Perm.read_dc_structure, ]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)
@@ -127,7 +129,7 @@ class BusinessApiTest(TestCase):
 
     def test_rolepropertytype_resource(self):
         resource = 'rolepropertytype'
-        perms = [Perm.read_dc_structure,]
+        perms = [Perm.read_dc_structure, ]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)
@@ -144,7 +146,7 @@ class BusinessApiTest(TestCase):
 
     def test_rolepropertytypevalue_resource(self):
         resource = 'rolepropertytypevalue'
-        perms = [Perm.read_dc_structure,]
+        perms = [Perm.read_dc_structure, ]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)
@@ -161,7 +163,7 @@ class BusinessApiTest(TestCase):
 
     def test_roleproperty_resource(self):
         resource = 'roleproperty'
-        perms = [Perm.read_dc_structure,]
+        perms = [Perm.read_dc_structure, ]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)
@@ -178,7 +180,7 @@ class BusinessApiTest(TestCase):
 
     def test_rolepropertyvalue_resource(self):
         resource = 'rolepropertyvalue'
-        perms = [Perm.read_dc_structure,]
+        perms = [Perm.read_dc_structure, ]
 
         schema = '%s/schema' % resource
         response = self.get_response(schema)

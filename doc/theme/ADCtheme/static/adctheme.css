@@ -62,7 +62,7 @@ div.clearer {
 .headerButton a:hover {
     color: white;
     background-color: #787878;
-    
+
 }
 
 li#toc_button {
@@ -121,7 +121,7 @@ right:0;
     top: 84px;
     bottom: 19px;
     left: 0px;
-    width: 229px; 
+    width: 229px;
     background-color: #E4EBF7;
     border-right: 1px solid #ACACAC;
     border-top: 1px solid #2B334F;
@@ -362,7 +362,7 @@ p.topic-title {
     border:1px solid #111111;
     margin:30px;
 }
-.admonition p { 
+.admonition p {
     font: 12px 'Lucida Grande', Geneva, Helvetica, Arial, sans-serif;
     margin-top: 7px;
     margin-bottom: 0px;
@@ -411,7 +411,7 @@ table.docutils td, table.docutils th {
 table.docutils th {
     font-weight: bold;
 }
-/* This alternates colors in up to six table rows (light blue for odd, white for even)*/      
+/* This alternates colors in up to six table rows (light blue for odd, white for even)*/
 .docutils tr {
         background: #F0F5F9;
 }
@@ -630,7 +630,7 @@ dl.class dd dl.method dt {
    padding: 3px;
    background-color: #e9e9e9;
    border-top: none;
-   
+
 }
 
 dl.function dt {
@@ -646,7 +646,7 @@ margin:0 0 0 30px;
 padding:0 0 12px 6px;
 }
 #docstitle {
-    height: 36px; 
+    height: 36px;
     background-image: url(header_sm_mid.png);
     left: 0;
     top: 0;

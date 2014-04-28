@@ -9,7 +9,8 @@ from __future__ import unicode_literals
 import re
 
 from ralph.util import units, parse
-from ralph.discovery.models import (Memory, Processor, ComponentModel,
+from ralph.discovery.models import (
+    Memory, Processor, ComponentModel,
     ComponentType, Storage, DISK_VENDOR_BLACKLIST, DISK_PRODUCT_BLACKLIST,
     Device, DeviceType
 )
@@ -18,16 +19,30 @@ from ralph.discovery.models import (Memory, Processor, ComponentModel,
 SMBIOS_BANNER = 'ID    SIZE TYPE'
 DENSE_SPEED_REGEX = re.compile(r'(\d+)\s*([GgHhKkMmZz]+)')
 INQUIRY_REGEXES = (
-    re.compile(r'^(?P<vendor>OCZ)-(?P<sn>[a-zA-Z0-9]{16})OCZ-(?P<product>\S+)\s+.*$'),
-    re.compile(r'^(?P<vendor>(FUJITSU|TOSHIBA))\s+(?P<product>[a-zA-Z0-9]+)\s+(?P<sn>[a-zA-Z0-9]{16})$'),
-    re.compile(r'^(?P<vendor>SEAGATE)\s+(?P<product>ST[^G]+G)(?P<sn>[a-zA-Z0-9]+)$'),
-    re.compile(r'^(?P<vendor>SEAGATE)\s+(?P<product>ST[0-9]+SS)\s+(?P<sn>[a-zA-Z0-9]+)$'),
-    re.compile(r'^(?P<sn>[a-zA-Z0-9]{18})\s+(?P<vendor>INTEL)\s+(?P<product>[a-zA-Z0-9]+)\s+.*$'),
-    re.compile(r'^(?P<vendor>IBM)-(?P<product>[a-zA-Z0-9]+)\s+(?P<sn>[a-zA-Z0-9]+)$'),
-    re.compile(r'^(?P<vendor>HP)\s+(?P<product>[a-zA-Z0-9]{11})\s+(?P<sn>[a-zA-Z0-9]{12})$'),
-    re.compile(r'^(?P<vendor>HITACHI)\s+(?P<product>[a-zA-Z0-9]{15})(?P<sn>[a-zA-Z0-9]{15})$'),
-    re.compile(r'^(?P<vendor>HITACHI)\s+(?P<product>[a-zA-Z0-9]{15})\s+(?P<sn>[a-zA-Z0-9]{12})$'),
-    re.compile(r'^(?P<sn>[a-zA-Z0-9]{15})\s+(?P<vendor>Samsung)\s+(?P<product>[a-zA-Z0-9\s]+)\s+.*$'),
+    re.compile(
+        r'^(?P<vendor>OCZ)-(?P<sn>[a-zA-Z0-9]{16})OCZ-(?P<product>\S+)\s+.*$'),
+    re.compile(
+        r'^(?P<vendor>(FUJITSU|TOSHIBA))\s+(?P<product>[a-zA-Z0-9]+)\s+(?P<sn>[a-zA-Z0-9]{16})$'),
+    re.compile(
+        r'^(?P<vendor>SEAGATE)\s+(?P<product>ST[^G]+G)(?P<sn>[a-zA-Z0-9]+)$'),
+    re.compile(
+        r'^(?P<vendor>SEAGATE)\s+(?P<product>ST[0-9]+SS)\s+(?P<sn>[a-zA-Z0-9]+)$'),
+    re.compile(
+        r'^(?P<vendor>SEAGATE)\s+(?P<product>ST[A-Z0-9]+)\s+(?P<sn>[a-zA-Z0-9]+)$'),
+    re.compile(
+        r'^(?P<sn>[a-zA-Z0-9]{18})\s+(?P<vendor>INTEL)\s+(?P<product>[a-zA-Z0-9]+)\s+.*$'),
+    re.compile(
+        r'^(?P<vendor>IBM)-(?P<product>[a-zA-Z0-9]+)\s+(?P<sn>[a-zA-Z0-9]+)$'),
+    re.compile(
+        r'^(?P<vendor>HP)\s+(?P<product>[a-zA-Z0-9]{11})\s+(?P<sn>[a-zA-Z0-9]{12})$'),
+    re.compile(
+        r'^(?P<vendor>HITACHI)\s+(?P<product>[a-zA-Z0-9]{15})(?P<sn>[a-zA-Z0-9]{15})$'),
+    re.compile(
+        r'^(?P<vendor>HITACHI)\s+(?P<product>[a-zA-Z0-9]{15})\s+(?P<sn>[a-zA-Z0-9]{12})$'),
+    re.compile(
+        r'^(?P<sn>[a-zA-Z0-9]{15})\s+(?P<vendor>Samsung)\s+(?P<product>[a-zA-Z0-9\s]+)\s+.*$'),
+    re.compile(
+        r'^(?P<vendor>WD)\s+(?P<product>WD[A-Z0-9]{8})\s+(?P<sn>[a-zA-Z0-9]{16})$'),
 )
 
 
@@ -57,9 +72,12 @@ def normalize_wwn(wwn):
     u'600A0B8000119CA80000574F4CFC5084'
     >>> normalize_wwn('3600144f01ef1490000004c08ed6f0008') # SUN - multipath
     u'600144F01EF1490000004C08ED6F0008'
+    >>> normalize_wwn('36000402001d81b697962865b00000000') # NEXSAN
+    u'36000402001D81B697962865B'
     """
 
-    wwn = wwn.replace(':', '').replace(' ', '').replace('.', '').strip().upper()
+    wwn = wwn.replace(':', '').replace(
+        ' ', '').replace('.', '').strip().upper()
     if len(wwn) == 16:
         # 3PAR
         pass
@@ -69,6 +87,11 @@ def normalize_wwn(wwn):
     elif len(wwn) == 33 and wwn[-6:] == '000000' and wwn[8:11] == '000':
         # MSA - multipath
         wwn = wwn[11:-6]
+    elif len(wwn) == 33 and wwn[-8:] == '00000000' and wwn.startswith(
+        '36000402'
+    ):
+        # NEXSAN
+        wwn = wwn[0:-8]
     elif len(wwn) == 32 and wwn[-6:] == '000000' and wwn[12:16] == '0000':
         # MSA
         wwn = wwn[6:12] + wwn[16:-6]
@@ -203,7 +226,7 @@ def get_disk_shares(ssh):
             break
         if 'dm multipath kernel driver not loaded' in line.lower():
             break
-        if line.startswith((r'\_', r'[', r'`-', r'|')):
+        if line.startswith((r'\_', r'\[', r'`-', r'|')):
             continue
         if '=' in line:
             continue
@@ -285,6 +308,8 @@ def handle_smartctl(dev, disks, priority=0):
 
 
 def _handle_inquiry_data(raw, controller, disk):
+    if not raw:
+        return None, None, None
     for regex in INQUIRY_REGEXES:
         m = regex.match(raw)
         if m:
@@ -301,8 +326,7 @@ def handle_megaraid(dev, disks, priority=0):
         disk['vendor'], disk['product'], disk['serial_number'] = \
             _handle_inquiry_data(
                 disk.get('inquiry_data', ''),
-                controller_handle, disk_handle
-            )
+                controller_handle, disk_handle)
 
         if not disk.get('serial_number') or disk.get('media_type') not in (
                 'Hard Disk Device', 'Solid State Device'):
@@ -344,6 +368,7 @@ def handle_megaraid(dev, disks, priority=0):
         )
         stor.save(priority=priority)
 
+
 def handle_3ware(dev, disks, priority=0):
     for disk_handle, disk in disks.iteritems():
         if not disk.get('serial'):
@@ -371,6 +396,7 @@ def handle_3ware(dev, disks, priority=0):
             priority=priority,
         )
         stor.save(priority=priority)
+
 
 def handle_hpacu(dev, disks, priority=0):
     for disk_handle, disk in disks.iteritems():
@@ -457,7 +483,7 @@ def handle_dmidecode(info, ethernets=(), priority=0):
     # We will let other plugins determine that.
     dev = Device.create(
         ethernets=ethernets, sn=info['sn'], uuid=info['uuid'],
-        model_name='DMI '+info['model'], model_type=DeviceType.unknown,
+        model_name='DMI ' + info['model'], model_type=DeviceType.unknown,
         priority=priority,
     )
     for i, cpu_info in enumerate(info['cpu']):
@@ -466,7 +492,7 @@ def handle_dmidecode(info, ethernets=(), priority=0):
             speed=cpu_info['speed'] or 0,
             cores=cpu_info['cores'] or 0,
             family=cpu_info['family'],
-            name = cpu_info['model'],
+            name=cpu_info['model'],
             priority=priority,
         )
         cpu, created = Processor.concurrent_get_or_create(device=dev,

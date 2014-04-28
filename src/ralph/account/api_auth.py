@@ -17,6 +17,7 @@ NO_ACCESS_MSG = _('Access Denied')
 
 
 class RalphAuthorization(Authorization):
+
     def __init__(self, required_perms, *args, **kwargs):
         super(RalphAuthorization, self).__init__(*args, **kwargs)
         self.required_perms = required_perms

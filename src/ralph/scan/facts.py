@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 
+"""
+Set of usefull functions to retrieve data from Puppet facts.
+"""
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -7,6 +11,7 @@ from __future__ import unicode_literals
 
 import hashlib
 import re
+import logging
 
 from lck.django.common.models import MACAddressField
 
@@ -24,6 +29,9 @@ from ralph.scan.lshw import Error as LshwError
 from ralph.util import network, uncompress_base64_data, units
 
 
+logger = logging.getLogger("SCAN")
+
+
 SMBIOS_BANNER = 'ID    SIZE TYPE'
 DENSE_SPEED_REGEX = re.compile(r'(\d+)\s*([GgHhKkMmZz]+)')
 _3WARE_GENERAL_REGEX = re.compile(r'tw_([^_]+_[^_]+)_([^_]+)')
@@ -32,21 +40,39 @@ HPACU_GENERAL_REGEX = re.compile(r'hpacu_([^_]+)__(.+)')
 HPACU_LOGICAL_PHYSICAL_REGEX = re.compile(r'([^_]+)__(.+)')
 MEGARAID_REGEX = re.compile(r'megacli_([^_]+)_([^_]+)__(.+)')
 INQUIRY_REGEXES = (
-    re.compile(r'^(?P<vendor>OCZ)-(?P<sn>[a-zA-Z0-9]{16})OCZ-(?P<product>\S+)\s+.*$'),
-    re.compile(r'^(?P<vendor>(FUJITSU|TOSHIBA))\s+(?P<product>[a-zA-Z0-9]+)\s+(?P<sn>[a-zA-Z0-9]{16})$'),
-    re.compile(r'^(?P<vendor>SEAGATE)\s+(?P<product>ST[^G]+G)(?P<sn>[a-zA-Z0-9]+)$'),
-    re.compile(r'^(?P<vendor>SEAGATE)\s+(?P<product>ST[0-9]+SS)\s+(?P<sn>[a-zA-Z0-9]+)$'),
-    re.compile(r'^(?P<sn>[a-zA-Z0-9]{18})\s+(?P<vendor>INTEL)\s+(?P<product>[a-zA-Z0-9]+)\s+.*$'),
-    re.compile(r'^(?P<vendor>IBM)-(?P<product>[a-zA-Z0-9]+)\s+(?P<sn>[a-zA-Z0-9]+)$'),
-    re.compile(r'^(?P<vendor>HP)\s+(?P<product>[a-zA-Z0-9]{11})\s+(?P<sn>[a-zA-Z0-9]{12})$'),
-    re.compile(r'^(?P<vendor>HITACHI)\s+(?P<product>[a-zA-Z0-9]{15})(?P<sn>[a-zA-Z0-9]{15})$'),
-    re.compile(r'^(?P<vendor>HITACHI)\s+(?P<product>[a-zA-Z0-9]{15})\s+(?P<sn>[a-zA-Z0-9]{12})$'),
-    re.compile(r'^(?P<sn>[a-zA-Z0-9]{15})\s+(?P<vendor>Samsung)\s+(?P<product>[a-zA-Z0-9\s]+)\s+.*$'),
+    re.compile(
+        r'^(?P<vendor>OCZ)-(?P<sn>[a-zA-Z0-9]{16})OCZ-(?P<product>\S+)\s+.*$'),
+    re.compile(
+        r'^(?P<vendor>(FUJITSU|TOSHIBA))\s+(?P<product>[a-zA-Z0-9]+)\s+(?P<sn>[a-zA-Z0-9]{16})$'),
+    re.compile(
+        r'^(?P<vendor>SEAGATE)\s+(?P<product>ST[^G]+G)(?P<sn>[a-zA-Z0-9]+)$'),
+    re.compile(
+        r'^(?P<vendor>SEAGATE)\s+(?P<product>ST[0-9]+SS)\s+(?P<sn>[a-zA-Z0-9]+)$'),
+    re.compile(
+        r'^(?P<vendor>SEAGATE)\s+(?P<product>ST[A-Z0-9]+)\s+(?P<sn>[a-zA-Z0-9]+)$'),
+    re.compile(
+        r'^(?P<sn>[a-zA-Z0-9]{18})\s+(?P<vendor>INTEL)\s+(?P<product>[a-zA-Z0-9]+)\s+.*$'),
+    re.compile(
+        r'^(?P<vendor>IBM)-(?P<product>[a-zA-Z0-9]+)\s+(?P<sn>[a-zA-Z0-9]+)$'),
+    re.compile(
+        r'^(?P<vendor>HP)\s+(?P<product>[a-zA-Z0-9]{11})\s+(?P<sn>[a-zA-Z0-9]{12})$'),
+    re.compile(
+        r'^(?P<vendor>HITACHI)\s+(?P<product>[a-zA-Z0-9]{15})(?P<sn>[a-zA-Z0-9]{15})$'),
+    re.compile(
+        r'^(?P<vendor>HITACHI)\s+(?P<product>[a-zA-Z0-9]{15})\s+(?P<sn>[a-zA-Z0-9]{12})$'),
+    re.compile(
+        r'^(?P<sn>[a-zA-Z0-9]{15})\s+(?P<vendor>Samsung)\s+(?P<product>[a-zA-Z0-9\s]+)\s+.*$'),
+    re.compile(
+        r'^(?P<vendor>WD)\s+(?P<product>WD[A-Z0-9]{8})\s+(?P<sn>[a-zA-Z0-9]{16})$'),
 )
 SEPARATE_VERSION = re.compile('[~|+|\-]')
 
 
 def handle_facts(facts, is_virtual=False):
+    """
+    Handle all facts and return standardized device info.
+    """
+
     results = {}
     if is_virtual:
         results['model_name'] = " ".join(
@@ -317,6 +343,7 @@ def handle_facts_3ware_disks(facts):
             'serial_number': disk['serial'],
             'size': size,
             'label': disk['model'],
+            'family': disk['model'],
         }
         detected_disks.append(detected_disk)
     return detected_disks
@@ -349,10 +376,12 @@ def handle_facts_smartctl(facts):
         label_meta = [' '.join(disk['vendor'].split()), disk['product']]
         if 'transport_protocol' in disk:
             label_meta.append(disk['transport_protocol'])
+        family = disk['vendor'].strip() or 'Generic disk'
         detected_disks.append({
             'serial_number': disk['serial_number'],
             'size': int(int(size_value) / units.size_divisor[size_unit]),
             'label': ' '.join(label_meta),
+            'family': family,
         })
     return detected_disks
 
@@ -381,6 +410,7 @@ def handle_facts_hpacu(facts):
                 disk['interface_type'],
             ),
             'size': int(float(size_value) / units.size_divisor[size_unit]),
+            'family': ' '.join(disk['model'].split()),
         })
     return detected_disks
 
@@ -409,14 +439,16 @@ def handle_facts_megaraid(facts):
         disks.setdefault((controller, disk), {})[property] = value.strip()
     detected_disks = []
     for (controller_handle, disk_handle), disk in disks.iteritems():
-        inquiry_data = disk.get('inquiry_data', '')
-        if inquiry_data:
-            disk['vendor'], disk['product'], disk['serial_number'] = \
-                _handle_inquiry_data(
-                    inquiry_data,
-                    controller_handle,
-                    disk_handle,
-                )
+        try:
+            disc_data = _handle_inquiry_data(
+                disk.get('inquiry_data', ''),
+                controller_handle,
+                disk_handle,
+            )
+        except ValueError:
+            logger.warning("Unable to parse disk {}".format(disk))
+            continue
+        disk['vendor'], disk['product'], disk['serial_number'] = disc_data
         if not disk.get('serial_number') or disk.get('media_type') not in (
             'Hard Disk Device', 'Solid State Device',
         ):
@@ -439,6 +471,7 @@ def handle_facts_megaraid(facts):
             'serial_number': disk['serial_number'],
             'label': ' '.join(label_meta),
             'size': int(float(size_value) / units.size_divisor[size_unit]),
+            'family': ' '.join(disk['vendor'].split()),
         })
     return detected_disks
 

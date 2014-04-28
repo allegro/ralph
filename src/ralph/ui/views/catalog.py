@@ -87,7 +87,7 @@ def _prepare_query(request, query, tree=False, columns={}, default_sort=''):
 
 def _prepare_model_groups(request, query, tree=False):
     query, sort, page = _prepare_query(request, query, tree,
-            MODEL_GROUP_SORT_COLUMNS, default_sort='-count')
+                                       MODEL_GROUP_SORT_COLUMNS, default_sort='-count')
     for g in query:
         g.count = g.get_count()
     query = [g for g in query if g.count]
@@ -118,7 +118,6 @@ class Catalog(Base):
             return HttpResponseForbidden('You have no permission to view catalog')
         return super(Catalog, self).get(*args, **kwargs)
 
-
     def get_context_data(self, **kwargs):
         ret = super(Catalog, self).get_context_data(**kwargs)
         try:
@@ -133,7 +132,7 @@ class Catalog(Base):
                 MenuItem(
                     label=t.raw.title(),
                     name='component-%d' % t.id,
-                    fugue_icon = COMPONENT_ICONS.get(t.id),
+                    fugue_icon=COMPONENT_ICONS.get(t.id),
                     view_name='catalog',
                     view_args=('component', t.id),
                 ) for t in ComponentType(item=lambda t: t)
@@ -141,12 +140,12 @@ class Catalog(Base):
                 MenuHeader('Device groups'),
             ] + [
                 MenuItem(
-                        label=t.raw.title(),
-                        name='device-%d' % t.id,
-                        fugue_icon = DEVICE_ICONS.get(t.id),
-                        view_name='catalog',
-                        view_args=('device', t.id),
-                    ) for t in DeviceType(item=lambda t: t)
+                    label=t.raw.title(),
+                    name='device-%d' % t.id,
+                    fugue_icon=DEVICE_ICONS.get(t.id),
+                    view_name='catalog',
+                    view_args=('device', t.id),
+                ) for t in DeviceType(item=lambda t: t)
             ] + [
                 MenuHeader('Tools'),
                 MenuItem(
@@ -194,7 +193,7 @@ class CatalogDevice(Catalog):
         if not self.request.user.get_profile().has_perm(
                 Perm.edit_device_info_financial):
             raise HttpResponseForbidden(
-                    "You have no permission to edit catalog")
+                "You have no permission to edit catalog")
         if 'move' in self.request.POST:
             items = self.request.POST.getlist('items')
             if not items:
@@ -243,7 +242,7 @@ class CatalogDevice(Catalog):
                 self.group.delete()
                 messages.warning(self.request,
                                  "Group '%s' deleted." % self.group.name)
-            return HttpResponseRedirect(self.request.path+'..')
+            return HttpResponseRedirect(self.request.path + '..')
         else:
             try:
                 self.group_id = int(self.kwargs.get('group', ''))
@@ -281,7 +280,7 @@ class CatalogDevice(Catalog):
             self.query = self.group.devicemodel_set.all()
         else:
             self.query = DeviceModel.objects.filter(
-                    type=self.model_type_id).filter(group=None)
+                type=self.model_type_id).filter(group=None)
         unassigned_devices = DeviceModel.objects.filter(
             type=self.model_type_id
         ).filter(
@@ -311,6 +310,7 @@ class CatalogDevice(Catalog):
         ret.update(_prepare_model_groups(self.request, self.query))
         return ret
 
+
 class CatalogComponent(Catalog):
     template_name = 'ui/catalog/component.html'
 
@@ -331,7 +331,7 @@ class CatalogComponent(Catalog):
         if not self.request.user.get_profile().has_perm(
                 Perm.edit_device_info_financial):
             raise HttpResponseForbidden(
-                    "You have no permission to edit catalog")
+                "You have no permission to edit catalog")
         if 'move' in self.request.POST:
             items = self.request.POST.getlist('items')
             if not items:
@@ -380,7 +380,7 @@ class CatalogComponent(Catalog):
                 self.group.delete()
                 messages.warning(self.request,
                                  "Group '%s' deleted." % self.group.name)
-            return HttpResponseRedirect(self.request.path+'..')
+            return HttpResponseRedirect(self.request.path + '..')
         else:
             try:
                 self.group_id = int(self.kwargs.get('group', ''))
@@ -402,7 +402,6 @@ class CatalogComponent(Catalog):
                 messages.error(self.request, "Correct the errors.")
         return self.get(*args, **kwargs)
 
-
     def get(self, *args, **kwargs):
         try:
             self.model_type_id = int(self.kwargs.get('type', ''))
@@ -420,22 +419,22 @@ class CatalogComponent(Catalog):
             self.query = self.group.componentmodel_set.all()
         else:
             self.query = ComponentModel.objects.filter(
-                    type=self.model_type_id).filter(group=None)
+                type=self.model_type_id).filter(group=None)
         unassigned_componsents = ComponentModel.objects.filter(
-                type=self.model_type_id
-            ).filter(
-                group=None
-            )
+            type=self.model_type_id
+        ).filter(
+            group=None
+        )
         unassigned_count = 0
         for u in unassigned_componsents:
             unassigned_count = unassigned_count + u.get_count()
         self.unassigned_count = unassigned_count
         groups = list(ComponentModelGroup.objects.filter(
-                type=self.model_type_id))
+            type=self.model_type_id))
         for g in groups:
             g.count = g.get_count()
             g.modified_price = decimal.Decimal(
-                    g.price or 0) / (g.size_modifier or 1)
+                g.price or 0) / (g.size_modifier or 1)
         self.groups = groups
         if not self.form:
             self.form = ComponentModelGroupForm(instance=self.group)
@@ -537,7 +536,9 @@ class CatalogPricing(Catalog):
         })
         return ret
 
+
 class CatalogPricingNew(CatalogPricing):
+
     def __init__(self, *args, **kwargs):
         super(CatalogPricingNew, self).__init__(*args, **kwargs)
         self.form = None
@@ -557,7 +558,7 @@ class CatalogPricingNew(CatalogPricing):
                 sources = PricingGroup.objects.filter(
                     name=self.form.instance.name,
                     date__lt=self.form.instance.date,
-                    ).order_by('-date')[:1]
+                ).order_by('-date')[:1]
                 if sources.exists():
                     self.form.instance.clone_contents(sources[0])
             elif self.form.cleaned_data['upload']:
@@ -636,6 +637,7 @@ class CatalogPricingNew(CatalogPricing):
 
 
 class CatalogPricingGroup(CatalogPricing):
+
     def __init__(self, *args, **kwargs):
         super(CatalogPricingGroup, self).__init__(*args, **kwargs)
         self.variables_formset = None
@@ -801,4 +803,3 @@ class CatalogPricingGroup(CatalogPricing):
             'group': group,
         })
         return ret
-

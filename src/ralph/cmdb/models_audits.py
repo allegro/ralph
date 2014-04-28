@@ -54,6 +54,7 @@ class AuditStatus(Choices):
 
 
 class Auditable(TimeTrackable):
+
     """ Base abstract class for keeping track of acceptation of change.
     May be attribute change, or some custom workflow change.
     Object, old value and new value is not stored here, giving ability to set it
@@ -72,11 +73,11 @@ class Auditable(TimeTrackable):
 
     """
     user = models.ForeignKey('auth.User', verbose_name=_("user"), null=True,
-           blank=True, default=None, on_delete=models.SET_NULL)
+                             blank=True, default=None, on_delete=models.SET_NULL)
     status_lastchanged = models.DateTimeField(default=datetime.now,
-            verbose_name=_("date"))
+                                              verbose_name=_("date"))
     issue_key = models.CharField(verbose_name=_("external ticket key number"),
-            max_length=30, blank=True, null=True, default=None)
+                                 max_length=30, blank=True, null=True, default=None)
 
     class Meta:
         abstract = True
@@ -118,8 +119,8 @@ class Auditable(TimeTrackable):
         2) Create issue with back-link for acceptance
         """
         s = settings.ISSUETRACKERS['default']['OPA']
-        template=s['TEMPLATE']
-        issue_type=s['ISSUETYPE']
+        template = s['TEMPLATE']
+        issue_type = s['ISSUETYPE']
         tracker = IssueTracker()
         ci = None
         try:
@@ -136,16 +137,16 @@ class Auditable(TimeTrackable):
         else:
             buser = params.get('business_assignee')
         issue = tracker.create_issue(
-                issue_type=issue_type,
-                description=params.get('description'),
-                summary=params.get('summary'),
-                ci=ci,
-                assignee=default_assignee,
-                technical_assignee=tuser,
-                business_assignee=buser,
-                start=self.created.isoformat(),
-                end='',
-                template=template,
+            issue_type=issue_type,
+            description=params.get('description'),
+            summary=params.get('summary'),
+            ci=ci,
+            assignee=default_assignee,
+            technical_assignee=tuser,
+            business_assignee=buser,
+            start=self.created.isoformat(),
+            end='',
+            template=template,
         )
         self.issue_key = issue.get('key')
         self.save()

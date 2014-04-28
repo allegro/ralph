@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 
+"""
+Set of usefull functions to retrieve data from LSHW.
+"""
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -253,11 +257,13 @@ def handle_lshw_storage(lshw):
             label += storage['description'].strip()
         else:
             label += 'Generic disk'
+        family = storage['vendor'].strip() or 'Generic disk'
         detected_storages.append({
             'mount_point': mount_point,
             'serial_number': sn,
             'size': storage_size,
             'label': label,
+            'family': family,
         })
     return detected_storages
 
@@ -290,4 +296,3 @@ def handle_lshw_fibrechannel_cards(lshw):
             'model_name': bus['product'],
         })
     return fc_cards
-

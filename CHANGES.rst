@@ -1,14 +1,127 @@
 Change Log
 ----------
+
+2.0.0-rc6
+~~~~~~~~~
+
+Released on April 28, 2013
+
+* SCAN: Stability improvements and fixes.
+
+
+2.0.0-rc5
+~~~~~~~~~
+
+* many fixes
+
+
+2.0.0-rc4
+~~~~~~~~~
+
+* Scan - special queues for UI calls
+
+* many fixes
+
+
+2.0.0-rc3
+~~~~~~~~~
+
+New features:
+
+* CORE: added `logical parent` for stacked devices, when physical parent is not enough.
+
+* DHCP: configuration file for DHCP can be generated for multiple environments or data centers at once.
+
+Optimizations:
+
+* NETWORKS: performance improvements: reduced unresponsive rendering of networks tree to ~ 1 sec
+
+* SCAN: performance improvements: reduced time of traversing through large number of intersecting networks
+
+* CORE: many cmdb, scan, deployment fixes.
+
+
+2.0.0-rc2
+~~~~~~~~~
+
+New features:
+
+* SCAN: Much more advanced Scan module with great performance and *real* plugins architecture with JSON API.
+
+* SCAN: New vmware plugin for discovering virtual machines.
+
+* SCAN: Cisco Catalyst and Juniper switches detection with recognizing stacked subswitches added.
+
+* NETWORKS: Completely new Network panel which allows you to manage IP addresses and netmasks easily.
+
+* DNS: Added additional validation for DNS form (one PTR is required now).
+
+* DHCP: Added additional validation for DHCP form.
+
+* Environments - place where you can configure discovery queue or hosts naming temeplate.
+
+* LDAP group mapping allows you to more specific permissions setting directly via LDAP.
+
+Optimizations:
+
+* DHCP config - fixes for networks and entries.
+
+* DHCP config - large (10x) speed improvements while generating configs.
+
+* Updated ralph_dhcp_agent.
+
+* New white theme.
+
+* Ralph CLI integrated into the UI.
+
+Core changes:
+
+* CORE: Reworked Dependency Injection of Ralph submodules thanks to DjangoPluggableApp, giving more power and DRY-ness.
+
+* SCAN: Upgraded detection of newer Dell machines using IDRAC protocol.
+
+* SCAN: Fixed xen hypervisor discovery, where virtuals were incorrectly assigned to the master cluster.
+
+* Fixed bug where gateway was always required.
+
+* CMDB: Fixed compatibility with Zabbix where zabbix_id was out of range (#726)
+
+* CMDB: Fixed filtering Incidents/Problems using start date, end date.
+
+* CMDB: API: Added impact links to the CI's.
+
+* CMDB: Improved CMDB API documentation.
+
+* CMDB: Fixed Jira<->CMDB integration where only first 1000 issues were imported.
+
+* CMDB: Fixed CMDB bugs where customfields where not visible correctly on particular CITypes.
+
+* CMDB: Allowed CMDB to register own CITypes via Admin Panel.
+
+
+2.0.0-rc1
+~~~~~~~~~
+
+* Added completely new Scan module - new DC discovery mechanism which allows you to better maintain periodic scans, and much easier to write new discovery plugins using JSON API.
+
+* Custom fields defaults (from venture_role) now appears correctly in the API.
+
+* Added API for Scan module.
+
+* CMDB Api documentation refactored.
+
+* Tastypie API fixed.
+
+
 1.2.9
 ~~~~~
 Released on November 06, 2013
 
-This is semi-final :) hotfix release. 
+This is semi-final :) hotfix release.
 
-* fixed API problem.
+* Fixed API problem.
 
-* fixed incompatible inquiry problem.
+* Fixed incompatible inquiry problem.
 
 
 1.2.8

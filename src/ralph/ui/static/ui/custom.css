@@ -211,3 +211,29 @@ img.waiting
     font-family: Menlo, Consolas, "Courier New", monospace;
     max-height: 250px;
 }
+
+.diff-select-widget .diff-details {
+    display: none;
+    margin-bottom: 25px;
+}
+.diff-select-widget .diff-prev span {
+    background-color: #f2dede;
+}
+.diff-select-widget .diff-next span {
+    background-color: #dff0d8;
+}
+
+.scan-select-plugins .control-group label {
+    width: 260px;
+    margin-right: 10px;
+}
+
+.beast-info-modal {
+    font-size: 14px;
+    line-height: 26px;
+    width: 700px;
+}
+
+.menu-item-search {
+    margin-right: 10px;
+}

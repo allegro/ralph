@@ -10,20 +10,15 @@ import functools
 
 
 from django.conf import settings
-from django.contrib.auth.models import User, Group
-from django.contrib.auth.signals import user_logged_in
+from django.contrib.auth.models import Group
 from django.core.urlresolvers import reverse, NoReverseMatch
 from django.db import models as db
-from django.db.utils import DatabaseError
-from django.dispatch import receiver
-from django.http import HttpResponseForbidden,  HttpResponseRedirect
+from django.http import HttpResponseForbidden
 from django.utils.translation import ugettext_lazy as _
-from django.shortcuts import redirect
 
 from dj.choices import Choices
 from dj.choices.fields import ChoiceField
 from lck.django.activitylog.models import MonitoredActivity
-from lck.django.choices import Choices
 from lck.django.common.models import TimeTrackable, EditorTrackable
 from lck.django.profile.models import (
     BasicInfo,
@@ -48,7 +43,7 @@ class AvailableHomePage(Choices):
 class Perm(Choices):
     _ = Choices.Choice
 
-    GLOBAL = Choices.Group(0) << {'per_venture': False}
+    GLOBAL = Choices.Group(0).extra(per_venture=False)
     read_dc_structure = _("read data center structure")
     edit_ventures_roles = _("edit ventures and roles")
     create_devices = _("create devices")
@@ -62,8 +57,10 @@ class Perm(Choices):
     create_configuration_item = _("create configuration items")
     edit_configuration_item_info_generic = _("edit configuration items")
     edit_configuration_item_relations = _("edit configuration item relations")
-    read_configuration_item_info_generic = _("read configuration item info generic")
-    read_configuration_item_info_puppet = _("read configuration item info Puppet reports")
+    read_configuration_item_info_generic = _(
+        "read configuration item info generic")
+    read_configuration_item_info_puppet = _(
+        "read configuration item info Puppet reports")
     read_configuration_item_info_git = _("read configuration item info GIT ")
     read_configuration_item_info_jira = _("read configuration item info jira")
     bulk_edit = _("edit all device info in bulk")
@@ -83,7 +80,7 @@ class Perm(Choices):
 
 
 class Profile(BasicInfo, ActivationSupport, GravatarSupport,
-        MonitoredActivity):
+              MonitoredActivity):
 
     class Meta:
         verbose_name = _("profile")
@@ -93,6 +90,15 @@ class Profile(BasicInfo, ActivationSupport, GravatarSupport,
         choices=AvailableHomePage,
         default=AvailableHomePage.default,
     )
+
+    # TODO: define fields below and add AUTH_LDAP_PROFILE_ATTR_MAP mappings
+    company = db.CharField(max_length=64, blank=True)
+    employee_id = db.CharField(max_length=64, blank=True)
+    profit_center = db.CharField(max_length=1024, blank=True)
+    cost_center = db.CharField(max_length=1024, blank=True)
+    department = db.CharField(max_length=64, blank=True)
+    manager = db.CharField(max_length=1024, blank=True)
+    location = db.CharField(max_length=128, blank=True)
 
     def __unicode__(self):
         return self.nick
@@ -106,26 +112,26 @@ class Profile(BasicInfo, ActivationSupport, GravatarSupport,
             groups = self.groups.all()
             if obj:
                 return BoundPerm.objects.filter(
-                        db.Q(venture=None) |
-                            db.Q(venture=obj) |
-                            db.Q(venture__parent=obj) |
-                            db.Q(venture__parent__parent=obj) |
-                            db.Q(venture__parent__parent__parent=obj),
-                        db.Q(role=None) |
-                            db.Q(role=role) |
-                            db.Q(role__parent=role) |
-                            db.Q(role__parent__parent=role) |
-                            db.Q(role__parent__parent__parent=role),
-                        db.Q(profile=self) | db.Q(group__in=groups),
-                        perm=perm.id,
-                    ).exists()
+                    db.Q(venture=None) |
+                    db.Q(venture=obj) |
+                    db.Q(venture__parent=obj) |
+                    db.Q(venture__parent__parent=obj) |
+                    db.Q(venture__parent__parent__parent=obj),
+                    db.Q(role=None) |
+                    db.Q(role=role) |
+                    db.Q(role__parent=role) |
+                    db.Q(role__parent__parent=role) |
+                    db.Q(role__parent__parent__parent=role),
+                    db.Q(profile=self) | db.Q(group__in=groups),
+                    perm=perm.id,
+                ).exists()
             else:
                 return BoundPerm.objects.filter(
-                        db.Q(role=None) | db.Q(role=role),
-                        db.Q(profile=self) | db.Q(group__in=groups),
-                        venture=None,
-                        perm=perm.id,
-                    ).exists()
+                    db.Q(role=None) | db.Q(role=role),
+                    db.Q(profile=self) | db.Q(group__in=groups),
+                    venture=None,
+                    perm=perm.id,
+                ).exists()
         return super(Profile, self).has_perm(perm, obj)
 
     def perm_ventures(self, perm):
@@ -138,12 +144,12 @@ class Profile(BasicInfo, ActivationSupport, GravatarSupport,
                 db.Q(profile=self) | db.Q(group__in=groups),
                 perm=perm.id,
                 venture=None,
-            ).exists():
+        ).exists():
             return Venture.objects.all()
         return Venture.objects.filter(
-                db.Q(boundperm__profile=self) | db.Q(boundperm__group__in=groups),
-                boundperm__perm=perm.id,
-            )
+            db.Q(boundperm__profile=self) | db.Q(boundperm__group__in=groups),
+            boundperm__perm=perm.id,
+        )
 
     def filter_by_perm(self, query, perm):
         """Filters a device search query according to the permissions."""
@@ -155,23 +161,23 @@ class Profile(BasicInfo, ActivationSupport, GravatarSupport,
             return query
         groups = self.groups.all()
         return query.filter(
-                db.Q(venture__boundperm__profile=profile,
-                  venture__boundperm__perm=perm.id) |
-                db.Q(venture__parent__boundperm__profile=profile,
-                  venture__parent__boundperm__perm=perm.id) |
-                db.Q(venture__parent__parent__boundperm__profile=profile,
-                  venture__parent__parent__boundperm__perm=perm.id) |
-                db.Q(venture__parent__parent__parent__boundperm__profile=profile,
-                  venture__parent__parent__parent__boundperm__perm=perm.id) |
-                db.Q(venture__boundperm__group__in=groups,
-                  venture__boundperm__perm=perm.id) |
-                db.Q(venture__parent__boundperm__group__in=groups,
-                  venture__parent__boundperm__perm=perm.id) |
-                db.Q(venture__parent__parent__boundperm__group__in=groups,
-                  venture__parent__parent__boundperm__perm=perm.id) |
-                db.Q(venture__parent__parent__parent__boundperm__group__in=groups,
-                  venture__parent__parent__parent__boundperm__perm=perm.id)
-            ).distinct()
+            db.Q(venture__boundperm__profile=profile,
+                 venture__boundperm__perm=perm.id) |
+            db.Q(venture__parent__boundperm__profile=profile,
+                 venture__parent__boundperm__perm=perm.id) |
+            db.Q(venture__parent__parent__boundperm__profile=profile,
+                 venture__parent__parent__boundperm__perm=perm.id) |
+            db.Q(venture__parent__parent__parent__boundperm__profile=profile,
+                 venture__parent__parent__parent__boundperm__perm=perm.id) |
+            db.Q(venture__boundperm__group__in=groups,
+                 venture__boundperm__perm=perm.id) |
+            db.Q(venture__parent__boundperm__group__in=groups,
+                 venture__parent__boundperm__perm=perm.id) |
+            db.Q(venture__parent__parent__boundperm__group__in=groups,
+                 venture__parent__parent__boundperm__perm=perm.id) |
+            db.Q(venture__parent__parent__parent__boundperm__group__in=groups,
+                 venture__parent__parent__parent__boundperm__perm=perm.id)
+        ).distinct()
 
 
 class BoundPerm(TimeTrackable, EditorTrackable):
@@ -204,7 +210,7 @@ class BoundPerm(TimeTrackable, EditorTrackable):
         blank=True,
         default=None,
         help_text=_("if left empty, the permission applies to all roles "
-        "within the selected venture"),
+                    "within the selected venture"),
     )
 
     class Meta:

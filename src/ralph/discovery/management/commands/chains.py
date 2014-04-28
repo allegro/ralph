@@ -14,7 +14,9 @@ from django.core.management.base import BaseCommand
 
 from ralph.util import plugin
 
+
 class Command(BaseCommand):
+
     """Lists all plugin chains available."""
     help = textwrap.dedent(__doc__).strip()
     requires_model_validation = True
@@ -26,7 +28,7 @@ class Command(BaseCommand):
         for chain in chains:
             print(chain, "chain:")
             reqs = sorted("{} -> {}".format(", ".join(sorted(k)) or 'START',
-                ", ".join(sorted(v))) for k, v in
-                plugin.BY_REQUIREMENTS[chain].iteritems())
+                                            ", ".join(sorted(v))) for k, v in
+                          plugin.BY_REQUIREMENTS[chain].iteritems())
             for req in reqs:
                 print("-", req)

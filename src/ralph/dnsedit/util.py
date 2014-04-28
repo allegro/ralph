@@ -28,11 +28,15 @@ class Error(Exception):
 
 
 class RevDNSExists(Error):
+
     """Trying to create a Reverse DNS record for IP that already has one."""
 
 
 class RevDNSNoDomain(Error):
-    """Trying to create a Reverse DNS record for IP that has no in-addr-arpa."""
+
+    """
+    Trying to create a Reverse DNS record for IP that has no in-addr-arpa.
+    """
 
 
 def is_valid_hostname(hostname):
@@ -75,7 +79,7 @@ def add_dns_address(name, ip):
     ip = str(ip).strip().strip('.')
     host_name, domain_name = name.split('.', 1)
     domain = Domain.objects.get(name=domain_name)
-    record = Record.objects.get_or_create(
+    Record.objects.get_or_create(
         domain=domain,
         name=name,
         type='A',
@@ -238,13 +242,23 @@ def update_txt_records(device):
         db.Q(name__in=hostnames) | db.Q(content__in=addresses),
         type='A',
     ):
-        if get_revdns_records(record.content).filter(content=record.name).exists():
+        if get_revdns_records(record.content).filter(
+            content=record.name,
+        ).exists():
             # Only update those host names, that have both A and PTR records.
             record_names.add(record.name)
     for name in record_names:
-        set_txt_record(record.domain, name, 'VENTURE',
-                device.venture.name if device.venture else '')
-        set_txt_record(record.domain, name, 'ROLE',
-                device.venture_role.full_name if device.venture_role else '')
+        set_txt_record(
+            record.domain,
+            name,
+            'VENTURE',
+            device.venture.name if device.venture else ''
+        )
+        set_txt_record(
+            record.domain,
+            name,
+            'ROLE',
+            device.venture_role.full_name if device.venture_role else ''
+        )
         set_txt_record(record.domain, name, 'MODEL', get_model(device))
         set_txt_record(record.domain, name, 'LOCATION', get_location(device))

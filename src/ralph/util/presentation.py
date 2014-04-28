@@ -18,6 +18,7 @@ DEVICE_ICONS = {
     DeviceType.data_center.id: 'fugue-building',
 
     DeviceType.switch.id: 'fugue-network-hub',
+    DeviceType.switch_stack.id: 'fugue-network-hub',
     DeviceType.router.id: 'fugue-application-network',
     DeviceType.load_balancer.id: 'fugue-balance',
     DeviceType.firewall.id: 'fugue-network-firewall',
@@ -75,11 +76,11 @@ OWNER_ICONS = {
 }
 
 
-
 def get_device_model_icon(model):
     if model is None:
         return DEVICE_ICONS[None]
     return DEVICE_ICONS[model.type]
+
 
 def get_device_icon(device):
     if device is None or device.model is None:
@@ -90,15 +91,18 @@ def get_device_icon(device):
             DEVICE_ICONS.get(device.model.type) or
             DEVICE_ICONS[None])
 
+
 def get_component_model_icon(model):
     if model is None:
         return COMPONENT_ICONS[None]
     return COMPONENT_ICONS.get(model.family) or COMPONENT_ICONS[model.type]
 
+
 def get_component_icon(component):
     if component is None or component.model is None:
         return COMPONENT_ICONS[None]
     return get_component_model_icon(component.model)
+
 
 def get_venture_icon(venture):
     if venture and venture.department and venture.department.icon is not None:
@@ -109,10 +113,12 @@ def get_venture_icon(venture):
         return 'fugue-store-market-stall'
     return 'fugue-store'
 
+
 def get_owner_icon(owner):
     if owner is None:
         return OWNER_ICONS[None]
     return OWNER_ICONS.get(owner.type) or OWNER_ICONS[None]
+
 
 def get_network_icon(net):
     icon = 'fugue-network'

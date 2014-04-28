@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 class Fisheye(object):
+
     def __init__(self):
         user = settings.FISHEYE_USER
         password = settings.FISHEYE_PASSWORD
@@ -53,4 +54,3 @@ class Fisheye(object):
         resource_name = "revisionData-v1/changesetList/%s?media=json" % \
             self.project_name
         return self.call_resource(resource_name, params)
-

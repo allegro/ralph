@@ -6,6 +6,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import itertools as it
+
 from dj.choices.fields import ChoiceField
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
@@ -13,11 +15,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-from lck.django.common.models import (
-    Named,
-    TimeTrackable,
-    WithConcurrentGetOrCreate,
-)
+from lck.django.common.models import TimeTrackable, WithConcurrentGetOrCreate
 from lck.django.choices import Choices
 from pygraph.classes.digraph import digraph
 from pygraph.algorithms.cycles import find_cycle
@@ -160,6 +158,7 @@ class CILayer(TimeTrackable):
 
 
 class CIRelation(TimeTrackable, WithConcurrentGetOrCreate):
+
     class Meta:
         unique_together = ('parent', 'child', 'type')
     readonly = models.BooleanField(default=False, null=False)
@@ -212,8 +211,10 @@ class CIAttribute(TimeTrackable):
         return "%s (%s)" % (self.name, self.get_attribute_type_display())
 
     def clean(self):
-        validation_msg = \
-            'Options: Invalid format! Valid  example is: 1.Option one|2.Option two'
+        validation_msg = (
+            'Options: Invalid format! Valid  example is: 1.Option one|2.'
+            'Option two'
+        )
 
         def valid_chunk(chunk):
             try:
@@ -251,7 +252,7 @@ class CIValueFloat(TimeTrackable):
     )
 
     def __unicode__(self):
-        return "%s" %  self.value
+        return "%s" % self.value
 
 
 class CIValueString(TimeTrackable):
@@ -287,20 +288,22 @@ class CI(TimeTrackable):
     )
     # not required, since auto-save
     name = models.CharField(max_length=256, verbose_name=_("CI name"))
-    business_service = models.BooleanField(verbose_name=_("Business service"),
-        default=False)
-    technical_service = models.BooleanField(verbose_name=_("Technical service"),
-        default=True)
-    pci_scope = models.BooleanField(
-        default=False,
+    business_service = models.BooleanField(
+        verbose_name=_("Business service"), default=False,
     )
-    layers = models.ManyToManyField(CILayer,
-        verbose_name=_("layers containing given CI"))
+    technical_service = models.BooleanField(
+        verbose_name=_("Technical service"), default=True,
+    )
+    pci_scope = models.BooleanField(default=False)
+    layers = models.ManyToManyField(
+        CILayer, verbose_name=_("layers containing given CI")
+    )
     barcode = models.CharField(
         verbose_name=_("barcode"), max_length=255, unique=True, null=True,
-        default=None)
+        default=None,
+    )
     content_type = models.ForeignKey(
-        ContentType, verbose_name=_("content type"), null = True, blank = True,
+        ContentType, verbose_name=_("content type"), null=True, blank=True,
     )
     object_id = models.PositiveIntegerField(
         verbose_name=_("object id"),
@@ -310,10 +313,12 @@ class CI(TimeTrackable):
     content_object = generic.GenericForeignKey('content_type', 'object_id')
     state = models.IntegerField(
         max_length=11, choices=CI_STATE_TYPES(),
-        default=CI_STATE_TYPES.INACTIVE.id, verbose_name=_("state"))
+        default=CI_STATE_TYPES.INACTIVE.id, verbose_name=_("state"),
+    )
     status = models.IntegerField(
-        max_length=11, choices=CI_STATUS_TYPES(), default=CI_STATUS_TYPES.REFERENCE.id,
-        verbose_name=_("status"))
+        max_length=11, choices=CI_STATUS_TYPES(),
+        default=CI_STATUS_TYPES.REFERENCE.id, verbose_name=_("status"),
+    )
     type = models.ForeignKey(CIType)
     zabbix_id = models.CharField(
         null=True,
@@ -324,7 +329,25 @@ class CI(TimeTrackable):
         "self", symmetrical=False, through='CIRelation')
     added_manually = models.BooleanField(default=False)
     owners = models.ManyToManyField(
-        'CIOwner', through='CIOwnership', verbose_name=_("configuration item owners"))
+        'CIOwner', through='CIOwnership',
+        verbose_name=_("configuration item owners"),
+    )
+
+    @property
+    def url(self):
+        return '/cmdb/ci/view/{0}'.format(self.id)
+
+    @classmethod
+    def get_duplicate_names(cls):
+        dupes = cls.objects.values('name').distinct().annotate(
+            models.Count('id'),
+        ).filter(id__count__gt=1)
+        cis = cls.objects.filter(
+            name__in=[dupe['name'] for dupe in dupes],
+        ).order_by('name')
+        # If I try to return the groupby itself the groups are empty
+        for name, cis in it.groupby(cis, lambda x: x.name):
+            yield name, list(cis)
 
     class Meta:
         unique_together = ('content_type', 'object_id')
@@ -409,6 +432,20 @@ class CI(TimeTrackable):
         self.saving_user = user
         return super(CI, self).save(*args, **kwargs)
 
+    def _get_related(self, self_field, other_field):
+        """Iterate over the related objects.
+        :param first_field: The field on relation that points to this CI
+        :param second_field: The field on relation that points to other CI
+        """
+        for relation in getattr(self, self_field).all():
+            yield getattr(relation, other_field)
+
+    def get_parents(self):
+        return self._get_related(self_field='child', other_field='parent')
+
+    def get_children(self):
+        return self._get_related(self_field='parent', other_field='child')
+
 
 class CIAttributeValue(TimeTrackable):
     ci = models.ForeignKey('CI')
@@ -417,16 +454,51 @@ class CIAttributeValue(TimeTrackable):
     """ Only one of three fk's below can be used for storing
     data according to type used """
     value_integer = models.ForeignKey(
-        CIValueInteger, null=True, blank=True, verbose_name=_("integer value "))
+        CIValueInteger, null=True, blank=True,
+        verbose_name=_("integer value "),
+    )
     value_string = models.ForeignKey(
-        CIValueString, null=True, blank=True, verbose_name=_("string value"))
+        CIValueString, null=True, blank=True, verbose_name=_("string value"),
+    )
     value_date = models.ForeignKey(
-        CIValueDate, null=True, blank=True, verbose_name=_("date value"))
+        CIValueDate, null=True, blank=True, verbose_name=_("date value"),
+    )
     value_float = models.ForeignKey(
-        CIValueFloat, null=True, blank=True, verbose_name=_("float value"))
+        CIValueFloat, null=True, blank=True, verbose_name=_("float value")
+    )
 
     value_choice = models.ForeignKey(
-        CIValueChoice, null=True, blank=True, verbose_name=_("choice value"))
+        CIValueChoice, null=True, blank=True, verbose_name=_("choice value"),
+    )
+
+    TYPE_FIELDS_VALTYPES = {
+        CI_ATTRIBUTE_TYPES.INTEGER.id: ('value_integer', CIValueInteger),
+        CI_ATTRIBUTE_TYPES.STRING.id: ('value_string', CIValueString),
+        CI_ATTRIBUTE_TYPES.FLOAT.id: ('value_float', CIValueFloat),
+        CI_ATTRIBUTE_TYPES.DATE.id: ('value_date', CIValueDate),
+        CI_ATTRIBUTE_TYPES.CHOICE.id: ('value_choice', CIValueChoice),
+    }
+
+    @property
+    def value(self):
+        """The property that find the "right" CIValueX."""
+        value_field, _ = self.TYPE_FIELDS_VALTYPES[
+            self.attribute.attribute_type
+        ]
+        value_object = getattr(self, value_field)
+        if value_object is None:
+            return
+        return value_object.value
+
+    @value.setter
+    def value(self, value):
+        value_field, ValueType = self.TYPE_FIELDS_VALTYPES[
+            self.attribute.attribute_type
+        ]
+        val = ValueType(value=value)
+        val.save()
+        setattr(self, value_field, val)
+        self.save()
 
 
 class CIOwnershipType(Choices):
@@ -441,10 +513,62 @@ class CIOwnership(TimeTrackable):
     owner = models.ForeignKey('CIOwner')
     type = models.PositiveIntegerField(
         verbose_name=_("type of ownership"), choices=CIOwnershipType(),
-        default=CIOwnershipType.technical.id)
+        default=CIOwnershipType.technical.id,
+    )
 
     def __unicode__(self):
-        return '%s is %s of %s ' % (self.owner, self.get_type_display(), self.ci)
+        return '%s is %s of %s ' % (
+            self.owner, self.get_type_display(), self.ci,
+        )
+
+
+class CIOwnershipManager(models.Manager):
+
+    """The manager of owners. The django manager interface is required by
+    tastypie to correctly handle m2m relations."""
+
+    def __init__(self, descriptor, inst):
+        self.descriptor = descriptor
+        self.own_type = self.descriptor.own_type
+        self.inst = inst
+
+    def get_query_set(self):
+        return self.inst.owners.filter(ciownership__type=self.own_type)
+
+    def clear(self):
+        self.descriptor.__delete__(self.inst)
+
+    def add(self, *owners):
+        self.descriptor._add(self.inst, owners)
+
+
+class CIOwnershipDescriptor(object):
+
+    """Descriptor simplifying the access to CI owners."""
+
+    def __init__(self, own_type):
+        self.own_type = own_type
+
+    def __get__(self, inst, cls):
+        if inst is None:
+            return self
+        return CIOwnershipManager(self, inst)
+
+    def _add(self, inst, owners):
+        for owner in owners:
+            own = CIOwnership(ci=inst, owner=owner, type=self.own_type)
+            own.save()
+
+    def __set__(self, inst, owners):
+        self.__delete__(inst)
+        self._add(inst, owners)
+
+    def __delete__(self, inst):
+        CIOwnership.objects.filter(ci=inst, type=self.own_type).delete()
+
+
+CI.business_owners = CIOwnershipDescriptor(CIOwnershipType.business.id)
+CI.technical_owners = CIOwnershipDescriptor(CIOwnershipType.technical.id)
 
 
 class CIOwner(TimeTrackable, WithConcurrentGetOrCreate):

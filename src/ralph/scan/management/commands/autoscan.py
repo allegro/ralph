@@ -8,102 +8,123 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from optparse import make_option
 import textwrap
 
+from optparse import make_option
+
 import ipaddr
+
 from django.core.management.base import BaseCommand
 
+from ralph.discovery.models import (
+    DataCenter,
+    DiscoveryQueue,
+    Environment,
+    Network,
+)
 from ralph.scan.autoscan import (
     autoscan_address,
-    autoscan_data_center,
+    autoscan_environment,
     autoscan_network,
 )
 from ralph.scan.errors import Error
-from ralph.discovery.models import DiscoveryQueue, DataCenter, Network
-
-
-def find_network(network_spec):
-    try:
-        address = str(ipaddr.IPNetwork(network_spec))
-    except ValueError:
-        network = Network.objects.get(name=network_spec)
-    else:
-        network = Network.objects.get(address=address)
-    return network
+from ralph.scan.util import find_network
 
 
 class Command(BaseCommand):
+
     """
-    Runs an automatic scan of an address, a network of addresses or all
-    networks in a data center.
+    Runs an automatic pre-scan of an address, a network of addresses or all
+    networks in an environment or data center.
     """
 
     help = textwrap.dedent(__doc__).strip()
     option_list = BaseCommand.option_list + (
         make_option(
             '-n',
-            '--network',
+            '--networks',
             dest='network',
             action='store_true',
             default=False,
-            help='Scan the specified networks.',
+            help='Scan the specified networks (space delimited).',
         ),
         make_option(
             '-c',
-            '--data-center',
+            '--data-centers',
             dest='data_center',
             action='store_true',
             default=False,
-            help='Scan all networks in the specified data centers.',
+            help='Scan all networks in the specified data centers (space '
+                 'delimited).',
+        ),
+        make_option(
+            '-e',
+            '--environments',
+            dest='environment',
+            action='store_true',
+            default=False,
+            help='Scan all networks in the specified environment (space '
+                 'delimited).',
         ),
         make_option(
             '-q',
-            '--queue',
+            '--queues',
             dest='queue',
             action='store_true',
             default=False,
-            help='Scan all networks that use the specified worker queues.',
+            help='Scan all environments that use the specified worker queues ('
+                 'space delimited).',
         ),
     )
-
     requires_model_validation = False
 
     def handle(self, *args, **kwargs):
         if sum([
             kwargs['network'],
             kwargs['data_center'],
+            kwargs['environment'],
             kwargs['queue']
         ]) > 1:
-            raise SystemExit("You can't mix networks, data centers and queues.")
+            raise SystemExit(
+                "You can't mix networks, environments, data centers and "
+                "queues.",
+            )
         if not args:
             raise SystemExit("Please specify the addresses to scan.")
         if kwargs['network']:
             try:
-                networks = [
+                for network in [
                     find_network(network_spec) for network_spec in args
-                ]
-                for network in networks:
+                ]:
                     autoscan_network(network)
             except (Error, Network.DoesNotExist) as e:
                 raise SystemExit(e)
+        elif kwargs['environment']:
+            try:
+                for environment in [
+                    Environment.objects.get(name=name) for name in args
+                ]:
+                    autoscan_environment(environment)
+            except (Error, Environment.DoesNotExist) as e:
+                raise SystemExit(e)
         elif kwargs['data_center']:
             try:
-                data_centers = [
+                for data_center in [
                     DataCenter.objects.get(name=name) for name in args
-                ]
-                for data_center in data_centers:
-                    autoscan_data_center(data_center)
+                ]:
+                    for environment in data_center.environment_set.filter(
+                        queue__isnull=False,
+                    ):
+                        autoscan_environment(environment)
             except (Error, DataCenter.DoesNotExist) as e:
                 raise SystemExit(e)
         elif kwargs['queue']:
             try:
-                queues = [
+                for queue in [
                     DiscoveryQueue.objects.get(name=name) for name in args
-                ]
-                for queue in queues:
-                    for network in queue.network_set.all():
-                        autoscan_network(network)
+                ]:
+                    for environment in queue.environment_set.all():
+                        autoscan_environment(environment)
             except (Error, DiscoveryQueue.DoesNotExist) as e:
                 raise SystemExit(e)
         else:

@@ -6,15 +6,29 @@ from __future__ import unicode_literals
 
 import datetime
 
-from django.http import HttpResponse, HttpResponseForbidden
+from django.conf import settings
+from django.http import (
+    HttpResponse,
+    HttpResponseForbidden,
+    HttpResponseNotFound,
+)
 from lck.django.common import remote_addr
 from django.shortcuts import get_object_or_404
 
-from ralph.discovery.models import DataCenter
+from ralph.discovery.models import DataCenter, Environment
 from ralph.dnsedit.models import DHCPServer
-from ralph.dnsedit.dhcp_conf import generate_dhcp_config
+from ralph.dnsedit.dhcp_conf import (
+    generate_dhcp_config_entries,
+    generate_dhcp_config_head,
+    generate_dhcp_config_networks,
+)
 from ralph.ui.views.common import Base
 from ralph.util import api
+
+
+DHCP_DISABLE_NETWORKS_VALIDATION = getattr(
+    settings, 'DHCP_DISABLE_NETWORKS_VALIDATION', False,
+)
 
 
 class Index(Base):
@@ -35,20 +49,101 @@ def dhcp_synch(request):
     return HttpResponse('OK', content_type='text/plain')
 
 
-def dhcp_config(request):
+def _get_params(request):
+    dc_names = request.GET.get('dc', '')
+    if dc_names:
+        dc_names = dc_names.split(',')
+    else:
+        dc_names = []
+    env_names = request.GET.get('env', '')
+    if env_names:
+        env_names = env_names.split(',')
+    else:
+        env_names = []
+    return dc_names, env_names
+
+
+def dhcp_config_entries(request):
     if not api.is_authenticated(request):
         return HttpResponseForbidden('API key required.')
-    if request.GET.get('dc'):
-        dc = DataCenter.objects.get(name__iexact=request.GET['dc'])
-    else:
-        dc = None
-    with_networks = bool(request.GET.get('with_networks', False))
-    address = remote_addr(request)
+    dc_names, env_names = _get_params(request)
+    if dc_names and env_names:
+        return HttpResponseForbidden('Only DC or ENV mode available.')
+    data_centers = []
+    for dc_name in dc_names:
+        try:
+            dc = DataCenter.objects.get(name__iexact=dc_name)
+        except DataCenter.DoesNotExist:
+            return HttpResponseNotFound(
+                "Data Center `%s` does not exist." % dc_name
+            )
+        else:
+            data_centers.append(dc)
+    environments = []
+    for env_name in env_names:
+        try:
+            env = Environment.objects.get(name__iexact=env_name)
+        except Environment.DoesNotExist:
+            return HttpResponseNotFound(
+                "Environment `%s` does not exist." % env_name
+            )
+        else:
+            environments.append(env)
     return HttpResponse(
-        generate_dhcp_config(
-            dc=dc,
-            server_address=address,
-            with_networks=with_networks,
+        generate_dhcp_config_entries(
+            data_centers=data_centers,
+            environments=environments,
+            disable_networks_validation=DHCP_DISABLE_NETWORKS_VALIDATION,
         ),
         content_type="text/plain",
+    )
+
+
+def dhcp_config_networks(request):
+    if not api.is_authenticated(request):
+        return HttpResponseForbidden('API key required.')
+    dc_names, env_names = _get_params(request)
+    if dc_names and env_names:
+        return HttpResponseForbidden('Only DC or ENV mode available.')
+    data_centers = []
+    for dc_name in dc_names:
+        try:
+            dc = DataCenter.objects.get(name__iexact=dc_name)
+        except DataCenter.DoesNotExist:
+            return HttpResponseNotFound(
+                "Data Center `%s` does not exist." % dc_name
+            )
+        else:
+            data_centers.append(dc)
+    environments = []
+    for env_name in env_names:
+        try:
+            env = Environment.objects.get(name__iexact=env_name)
+        except Environment.DoesNotExist:
+            return HttpResponseNotFound(
+                "Environment `%s` does not exist." % env_name
+            )
+        else:
+            environments.append(env)
+    return HttpResponse(
+        generate_dhcp_config_networks(
+            data_centers=data_centers,
+            environments=environments,
+        ),
+        content_type='text/plain',
+    )
+
+
+def dhcp_config_head(request):
+    if not api.is_authenticated(request):
+        return HttpResponseForbidden('API key required.')
+    server_address = request.GET.get('server')
+    if not server_address:
+        server_address = remote_addr(request)
+    dhcp_server = get_object_or_404(DHCPServer, ip=server_address)
+    return HttpResponse(
+        generate_dhcp_config_head(
+            dhcp_server=dhcp_server,
+        ),
+        content_type='text/plain',
     )

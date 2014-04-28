@@ -8,6 +8,7 @@ import cStringIO as StringIO
 import datetime
 
 from bob import csvutil
+from rq import get_current_job
 
 from django.contrib import messages
 from django.core.paginator import InvalidPage
@@ -18,6 +19,7 @@ from django.views.generic import ListView
 
 from ralph.account.models import Perm
 from ralph.discovery.models_device import DeviceType
+from ralph.util.reports import set_progress, Report
 
 
 PAGE_SIZE = 25
@@ -71,13 +73,15 @@ def _get_show_tabs(request, venture, device):
     return tabs
 
 
-class BaseDeviceList(ListView):
+class BaseDeviceList(Report, ListView):
     template_name = 'ui/device_list.html'
     paginate_by = PAGE_SIZE
     details_columns = {
         'info': ['venture', 'model', 'position', 'remarks'],
         'components': ['model', 'barcode', 'sn'],
-        'prices': ['venture', 'margin', 'deprecation', 'price', 'cost', 'deprecation'],
+        'prices': [
+            'venture', 'margin', 'deprecation', 'price', 'cost', 'deprecation',
+        ],
         'addresses': ['ips', 'management'],
         'costs': ['venture', 'cost', 'deprecation'],
         'history': ['created', 'lastseen'],
@@ -94,9 +98,15 @@ class BaseDeviceList(ListView):
         self.venture = None
         self.sort = None
 
-    def export_csv(self, query=None):
-        if query is None:
-            query = self.get_queryset()
+    def get_result(self, request, *args, **kwargs):
+        self.kwargs = kwargs
+        if not self.user_allowed():
+            messages.error(
+                self.request,
+                _("You don't have permission to view this."),
+            )
+            return HttpResponseRedirect('..')
+        query = self.get_queryset()
         rows = [
             ['Id', 'Name', 'Venture', 'Role', 'Model', 'Data Center', 'Rack',
              'Position', 'Barcode', 'SN', 'Margin', 'Deprecation', 'Price',
@@ -104,13 +114,18 @@ class BaseDeviceList(ListView):
              'Last Seen', 'Purchased', 'Warranty Expiration',
              'Support Expiration', 'Support Kind', 'Remarks'],
         ]
+        job = get_current_job()
+        total = query.count()
+        processed = 0
         for dev in query.all():
             show_tabs = set(_get_show_tabs(self.request, None, dev))
             row = [
                 str(dev.id),
                 dev.name or '' if 'info' in show_tabs else '',
-                dev.venture.symbol if
-                    dev.venture and 'info' in show_tabs else '',
+                (
+                    dev.venture.symbol if
+                    dev.venture and 'info' in show_tabs else ''
+                ),
                 (dev.venture_role.full_name if dev.venture_role and
                     'info' in show_tabs else ''),
                 dev.get_model_name() or '' if 'info' in show_tabs else '',
@@ -124,20 +139,31 @@ class BaseDeviceList(ListView):
                     'prices' in show_tabs else ''),
                 str(dev.cached_price) if 'prices' in show_tabs else '',
                 str(dev.cached_cost) if 'costs' in show_tabs else '',
-                ' '.join(ip.address for ip in dev.ipaddress_set.all()
-                    ) if 'info' in show_tabs else '',
+                ' '.join(
+                    ip.address for ip in dev.ipaddress_set.all()
+                ) if 'info' in show_tabs else '',
                 dev.management or '' if 'info' in show_tabs else '',
                 dev.created or '' if 'history' in show_tabs else '',
                 dev.last_seen or '' if 'history' in show_tabs else '',
                 dev.purchase_date or '' if 'purchase' in show_tabs else '',
-                dev.warranty_expiration_date or
-                    '' if 'purchase' in show_tabs else '',
-                dev.support_expiration_date or '' if
-                    'purchase' in show_tabs else '',
+                (
+                    dev.warranty_expiration_date or
+                    '' if 'purchase' in show_tabs else ''
+                ),
+                (
+                    dev.support_expiration_date or '' if
+                    'purchase' in show_tabs else ''
+                ),
                 dev.support_kind or '' if 'purchase' in show_tabs else '',
                 dev.remarks or '' if 'info' in show_tabs else '',
             ]
             rows.append([unicode(r) for r in row])
+            processed += 1
+            set_progress(job, processed / total)
+        set_progress(job, 1)
+        return rows
+
+    def get_response(self, request, rows):
         f = StringIO.StringIO()
         csvutil.UnicodeWriter(f).writerows(rows)
         response = HttpResponse(f.getvalue(), content_type="application/csv")
@@ -154,9 +180,6 @@ class BaseDeviceList(ListView):
                 _("You don't have permission to view this.")
             )
             return HttpResponseRedirect('..')
-        export = self.request.GET.get('export')
-        if export == 'csv':
-            return self.export_csv()
         return super(BaseDeviceList, self).get(*args, **kwargs)
 
     def sort_queryset(self, queryset, columns=DEVICE_SORT_COLUMNS, sort=None):

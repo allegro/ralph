@@ -10,7 +10,7 @@ import datetime
 
 from django.conf import settings
 from django.contrib import messages
-from django.core.cache import DEFAULT_CACHE_ALIAS, get_cache
+from django.core.cache import get_cache
 from django.db import models as db
 from django.db.models import Q
 from django.http import HttpResponseRedirect
@@ -408,7 +408,10 @@ def _report_ventures_get_totals(start, end, query, extra_types):
                 DeviceType.data_center,
                 DeviceType.rack,
                 DeviceType.management,
+                DeviceType.switch_stack,
             ),
+        ).exclude(
+            device_id__isnull=True
         ),
         start,
         end,
@@ -616,8 +619,10 @@ class ReportVentures(SidebarReports, AsyncReportMixin, Base):
         else:
             self.ventures = Venture.objects.none()
             self.venture_data = []
-        if (self.request.GET.get('export') == 'csv' and
-            self.venture_data is not None):
+        if (
+            self.request.GET.get('export') == 'csv' and
+            self.venture_data is not None
+        ):
             return make_csv_response(
                 data=self.export_csv(self.venture_data, self.extra_types),
                 filename='ReportVentures.csv',
@@ -656,7 +661,7 @@ def _report_services_data_provider():
         invalid_relations.append(child)
     services_without_venture = []
     for service in services:
-        if CIRelation.objects.filter(
+        if not CIRelation.objects.filter(
             parent=service,
             type=CI_RELATION_TYPES.CONTAINS,
             child__type=CI_TYPES.VENTURE
@@ -885,22 +890,25 @@ class ReportDevices(SidebarReports, Base):
                 csv_conf = {
                     'title': 'All devices (active and deleted)',
                     'name': 'report_all_devices',
-                    'url': '?show_all_devices=on&show_all_deleted_devices=on&export=csv',
-                    }
+                    'url': (
+                        '?show_all_devices=on&'
+                        'show_all_deleted_devices=on&export=csv'
+                    ),
+                }
             elif all_devices:
                 show_devices = Device.objects.all()
                 csv_conf = {
                     'title': 'All active devices',
                     'name': 'report_all_active_devices',
                     'url': '?show_all_devices=on&export=csv',
-                    }
+                }
             elif all_deleted_devices:
                 show_devices = Device.admin_objects.filter(deleted=True)
                 csv_conf = {
                     'title': 'All deleted devices',
                     'name': 'report_deleted_devices',
                     'url': '?show_all_deleted_devices=on&export=csv',
-                    }
+                }
             headers = [
                 'Device', 'Model', 'SN', 'Barcode', 'Auto price', 'Venture',
                 'Role', 'Remarks', 'Verified', 'Deleted',

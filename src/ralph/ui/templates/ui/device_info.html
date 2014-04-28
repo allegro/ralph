@@ -12,6 +12,19 @@
     </div>
 {% endif %}
 
+{% if changed_addresses %}
+    <div class="alert alert-info">
+        <p><strong>Scan detected changes for the fallowing IP addresses (click to see the change):</strong></p>
+        <ul class="unstyled">
+            {% for ip in changed_addresses %}
+                <li><a href="/ui/scan/status/{{ ip.address }}/" class="btn btn-link">
+                    {{ ip|address_icon }}&nbsp;{{ ip.address }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}
+
 <div class="row-fluid">
 <div class="span6">
 {% include 'ui/device-form.html' with form=form %}
@@ -63,6 +76,14 @@
                   {{ device.parent.name }}</a></td>
         </tr>
         {% endif %}
+        {% if device.logical_parent %}
+        <tr>
+            <th>Logical parent device</th>
+            <td><a href="{{ device.logical_parent.id }}"
+                 >{{ device.logical_parent|device_icon }}
+                  {{ device.logical_parent.name }}</a></td>
+        </tr>
+        {% endif %}
         {% if device.model.type == dt.blade_server.id %}
         <tr>
             <th>Blade System</th>
@@ -110,6 +131,17 @@
             {% if not child.deleted %}
                 <tr>
                     <th>Child device</th>
+                    <td><a href="{{ child.id }}">
+                        {{ child|device_icon }}{{ child.name }}</a>
+                    </td>
+                </tr>
+            {% endif %}
+        {% endfor %}
+
+        {% for child in device.logicalchild_set.all %}
+            {% if not child.deleted %}
+                <tr>
+                    <th>Logical child device</th>
                     <td><a href="{{ child.id }}">
                         {{ child|device_icon }}{{ child.name }}</a>
                     </td>

@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 
 from django.test import TestCase
 from django.conf import settings
-from mock import Mock, patch, MagicMock
+from mock import patch, MagicMock
 
 settings.SCAN_PLUGINS.update({
     'ralph.scan.plugins.ssh_cisco_asa': {
@@ -52,6 +52,7 @@ def cisco_asa_ssh_mock(command):
 
 
 class TestCiscoASA(TestCase):
+
     @patch.object(plugins, 'get_base_result_template')
     @patch.object(ssh_cisco_asa, '_connect_ssh')
     def test_scan(self, connect_mock, tpl_mock):
@@ -78,14 +79,14 @@ class TestCiscoASA(TestCase):
                 'type': 'firewall',
                 'serial_number': 'SOME-SN',
                 'mac_adresses': [
-                     u'AB12BC235556',
-                     u'AB12BC235558',
-                     u'DEF113DE4567',
-                     u'DEF113DE4566',
-                     u'DEF113DE5677',
-                     u'DEF113DE5676',
-                     u'DEF113DE6785',
-                     u'DEF113DE6784',
+                    u'AB12BC235556',
+                    u'AB12BC235558',
+                    u'DEF113DE4567',
+                    u'DEF113DE4566',
+                    u'DEF113DE5677',
+                    u'DEF113DE5676',
+                    u'DEF113DE6785',
+                    u'DEF113DE6784',
                 ],
                 'boot_firmware': 'SOME-BOOT-FIRMWARE',
                 'management_ip_addresses': [ip, ],
@@ -93,16 +94,16 @@ class TestCiscoASA(TestCase):
                     'size': 12288,
                 }],
                 'processors': [{
+                    'family': 'AMD Opteron',
                     'model_name': 'AMD Opteron',
                     'speed': 2600,
                 }],
             },
         }
-        ret = ssh_cisco_asa.scan_address(ip)
+        ret = ssh_cisco_asa.scan_address(ip, snmp_name='Cisco Software:UCOS')
         correct_ret['date'] = ret['date']  # assuming datetime is working.
         self.assertEqual(ret, correct_ret)
         command_mock.assert_any_call(
             "show version | grep (^Hardware|Boot microcode|^Serial|address is)",
         )
-        command_mock.assert_any_call("show inventory")
-        self.assertEqual(command_mock.call_count, 2)
+        self.assertEqual(command_mock.call_count, 1)

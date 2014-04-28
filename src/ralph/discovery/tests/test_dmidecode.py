@@ -13,6 +13,7 @@ from ralph.discovery.tests.samples.dmidecode_data import DATA
 
 
 class DMIDecodeTest(TestCase):
+
     def test_parse(self):
         p = parse_dmidecode(DATA)
         self.maxDiff = None
@@ -66,4 +67,3 @@ class DMIDecodeTest(TestCase):
             'speed': 1333,
             'type': u'DDR3',
         })
-

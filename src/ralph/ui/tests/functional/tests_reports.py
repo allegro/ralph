@@ -33,6 +33,7 @@ CURRENT_DIR = settings.CURRENT_DIR
 
 
 class AccessToReportsTest(TestCase):
+
     def setUp(self):
         self.client = login_as_su(
             username='ralph_root',
@@ -65,6 +66,7 @@ class AccessToReportsTest(TestCase):
 
 
 class ReportsServicesTest(TestCase):
+
     def setUp(self):
         self.client = login_as_su()
         self.service = CI(
@@ -128,12 +130,14 @@ class ReportsServicesTest(TestCase):
         venture.save()
         reload_report = self.client.get(url, follow=True)
         re_invalid_relation = reload_report.context['invalid_relation']
-        re_services_without_venture = reload_report.context['services_without_venture']
+        re_services_without_venture = reload_report.context[
+            'services_without_venture']
         self.assertEqual(len(re_invalid_relation), 1)
         self.assertEqual(len(re_services_without_venture), 0)
 
 
 class ReportsDevicesTest(TestCase):
+
     def setUp(self):
         self.client = login_as_su()
         venture = Venture(name='venture', symbol='ventureSymbol')
@@ -198,7 +202,7 @@ class ReportsDevicesTest(TestCase):
         dev_id = self.device_after_deprecation.id
         name = u'<a href="/ui/search/info/%s">%s</a> (%s)' % (
             dev_id, dev_name, dev_id
-            )
+        )
         self.assertEqual(form[0][0], name)
         self.assertEqual(form[0][1], datetime.datetime(2002, 01, 01))
         self.assertEqual(len(form), 1)
@@ -212,7 +216,7 @@ class ReportsDevicesTest(TestCase):
         dev_name = self.device_with_blanks.name
         name = u'<a href="/ui/search/info/%s">%s</a> (%s)' % (
             dev_id, dev_name, dev_id
-            )
+        )
         self.assertEqual(form[0][0], name)
         self.assertEqual(form[0][1], None)
         self.assertEqual(len(form), 1)
@@ -226,7 +230,7 @@ class ReportsDevicesTest(TestCase):
         dev_name = self.device_with_blanks.name
         name = u'<a href="/ui/search/info/%s">%s</a> (%s)' % (
             dev_id, dev_name, dev_id
-            )
+        )
         self.assertEqual(form[0][0], name)
         self.assertEqual(form[0][1], None)
 
@@ -239,7 +243,7 @@ class ReportsDevicesTest(TestCase):
         dev_name = self.device_with_blanks.name
         name = u'<a href="/ui/search/info/%s">%s</a> (%s)' % (
             dev_id, dev_name, dev_id
-            )
+        )
         self.assertEqual(form[0][0], name)
         self.assertEqual(form[0][1], None)
         self.assertEqual(len(form), 1)
@@ -254,7 +258,7 @@ class ReportsDevicesTest(TestCase):
         dev_name = self.device_with_blanks.name
         name = u'<a href="/ui/search/info/%s">%s</a> (%s)' % (
             dev_id, dev_name, dev_id
-            )
+        )
         self.assertEqual(form[0][0], name)
         self.assertEqual(form[0][1], None)
         self.assertEqual(len(form), 1)
@@ -269,7 +273,7 @@ class ReportsDevicesTest(TestCase):
         dev_name = self.device_with_blanks.name
         name = u'<a href="/ui/search/info/%s">%s</a> (%s)' % (
             dev_id, dev_name, dev_id
-            )
+        )
         self.assertEqual(form[0][0], name)
         self.assertEqual(form[0][1], None)
         self.assertEqual(len(form), 1)
@@ -285,7 +289,7 @@ class ReportsDevicesTest(TestCase):
         self.assertEqual(len(form), 1)
         name = u'<a href="/ui/search/info/%s">%s</a> (%s)' % (
             dev_id, dev_name, dev_id
-            )
+        )
         self.assertEqual(form[0][0], name)
         self.assertEqual(form[0][1], None)
         self.assertNotEqual(form[0][1], self.venture_role)
@@ -300,7 +304,7 @@ class ReportsDevicesTest(TestCase):
         self.assertEqual(len(form), 1)
         name = u'<a href="/ui/search/info/%s">%s</a> (%s)' % (
             dev_id, dev_name, dev_id
-            )
+        )
         self.assertEqual(form[0][0], name)
         self.assertEqual(form[0][1], datetime.datetime(2003, 01, 02))
 
@@ -314,7 +318,7 @@ class ReportsDevicesTest(TestCase):
         self.assertEqual(len(form), 1)
         name = u'<a href="/ui/search/info/%s">%s</a> (%s)' % (
             dev_id, dev_name, dev_id
-            )
+        )
         self.assertEqual(form[0][0], name)
         self.assertEqual(form[0][1], datetime.datetime(2002, 01, 01))
 
@@ -328,12 +332,13 @@ class ReportsDevicesTest(TestCase):
         self.assertEqual(len(form), 1)
         name = u'<a href="/ui/search/info/%s">%s</a> (%s)' % (
             dev_id, dev_name, dev_id
-            )
+        )
         self.assertEqual(form[0][0], name)
         self.assertEqual(form[0][1], datetime.datetime(2005, 01, 02))
 
 
 class ReportsPriceDeviceVentureTest(TestCase):
+
     def setUp(self):
         self.client = login_as_su()
 
@@ -604,7 +609,7 @@ class ReportsPriceDeviceVentureTest(TestCase):
 
         venture = Venture.objects.get(name='Blade')
         url = ('/ui/reports/device_prices_per_venture/?venture=%s'
-                % self.venture_blade.id)
+               % self.venture_blade.id)
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         devices = response.context_data.get('rows')
@@ -618,7 +623,7 @@ class ReportsPriceDeviceVentureTest(TestCase):
 
         venture = Venture.objects.get(name='Blade')
         url = ('/ui/reports/device_prices_per_venture/?venture=%s'
-                % self.venture_blade.id)
+               % self.venture_blade.id)
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         devices = response.context_data.get('rows')
@@ -633,7 +638,7 @@ class ReportsPriceDeviceVentureTest(TestCase):
 
         venture = Venture.objects.get(name='Blade')
         url = ('/ui/reports/device_prices_per_venture/?venture=%s'
-                % self.venture_blade.id)
+               % self.venture_blade.id)
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         devices = response.context_data.get('rows')
@@ -641,6 +646,7 @@ class ReportsPriceDeviceVentureTest(TestCase):
 
 
 class ReportsVenturesTest(TestCase):
+
     """
     I need test!
     """
@@ -648,6 +654,7 @@ class ReportsVenturesTest(TestCase):
 
 
 class ReportsMarginsTest(TestCase):
+
     """
     I need test!
     """

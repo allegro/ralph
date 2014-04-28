@@ -31,10 +31,9 @@ def _get_used_db_backend_name():
     Return used database backend name or None.
     """
     cursor = connection.cursor()
-    backend_str = str(cursor.db).lower()  # `ENGINE` part of database
-                                          # configuration is substring
-                                          # of string representation
-                                          # for `cursor.db` object
+    backend_str = str(cursor.db).lower()
+    # `ENGINE` part of database configuration is substring
+    # of string representation for `cursor.db` object
     if 'mysql' in backend_str:
         return 'mysql'
     elif 'postgresql' in backend_str:

@@ -231,6 +231,8 @@ class Deployment(AbstractDeployment, TimeTrackable):
     def archive(self):
         data = {}
         for field in self._meta.fields:
+            if field.name == 'id':
+                continue
             data[field.name] = getattr(self, field.name)
         ArchivedDeployment.objects.create(**data)
         self.delete()

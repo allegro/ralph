@@ -15,6 +15,7 @@ from ralph.deployment.tasks import run_deployment
 
 
 class Command(BaseCommand):
+
     """Advance all active deployments if possible."""
 
     help = textwrap.dedent(__doc__).strip()

@@ -16,3 +16,10 @@ def wait_for_results(autoreload=True, reload_frequency=60):
         'autoreload': autoreload,
         'reload_frequency': reload_frequency * 1000,
     }
+
+
+@register.simple_tag
+def links(items):
+    return ', '.join(
+        ('<a href="{0}">{1}</a>'.format(item.url, item.id) for item in items)
+    )

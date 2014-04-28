@@ -1,0 +1,47 @@
+%YAML 1.2
+---
+# This fixture contains some services with valid, invalid and no venture
+# It is used by ralph/ui/tests/unit/test_reports:TestServices
+
+-
+    pk: 1
+    model: cmdb.ci
+    fields: 
+        type: 7
+        barcode: '00001'
+        name: 'Correct service'
+-
+    pk: 2
+    model: cmdb.ci
+    fields: 
+        type: 7
+        barcode: '00002'
+        name: 'Invalid service'
+-
+    pk: 3
+    model: cmdb.ci
+    fields: 
+        type: 7
+        barcode: '00003'
+        name: 'Service without venture'
+-
+    pk: 4
+    model: cmdb.ci
+    fields:
+        type: 4
+        barcode: '00004'
+        name: 'Example venture'
+- 
+    pk: 1
+    model: cmdb.cirelation
+    fields:
+        parent: 1
+        child: 4
+        type: 1
+- 
+    pk: 2
+    model: cmdb.cirelation
+    fields:
+        parent: 4
+        child: 2
+        type: 1

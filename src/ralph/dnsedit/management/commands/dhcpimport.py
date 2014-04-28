@@ -11,12 +11,13 @@ import textwrap
 import iscconf
 
 from django.core.management.base import BaseCommand
-from django.conf import settings
 
 from ralph.dnsedit.models import DHCPEntry
 from lck.django.common.models import MACAddressField
 
+
 class Command(BaseCommand):
+
     """Import DHCP config"""
 
     help = textwrap.dedent(__doc__).strip()
@@ -37,4 +38,3 @@ class Command(BaseCommand):
                 print('Importing %s = %s' % (address, mac))
                 entry = DHCPEntry(ip=address.strip(), mac=mac)
                 entry.save()
-

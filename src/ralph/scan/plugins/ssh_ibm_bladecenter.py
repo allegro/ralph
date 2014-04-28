@@ -18,13 +18,17 @@ from ralph.util import network, parse
 from ralph.discovery.models import (
     ComponentType,
     DeviceType,
+    MAC_PREFIX_BLACKLIST,
     SERIAL_BLACKLIST,
 )
 from ralph.scan.plugins import get_base_result_template
-from ralph.scan.errors import Error, TreeError, DeviceError, ConsoleError
+from ralph.scan.errors import (
+    TreeError, DeviceError, ConsoleError, NoMatchError, ConnectionError,
+)
 
 
 class Counts(object):
+
     def __init__(self):
         self.cpu = 0
         self.mem = 0
@@ -32,6 +36,7 @@ class Counts(object):
 
 
 class IBMSSHClient(paramiko.SSHClient):
+
     """SSHClient modified for IBM's broken ssh console."""
 
     def __init__(self, *args, **kwargs):
@@ -139,8 +144,10 @@ def _component(model_type, pairs, parent, raw):
         )
     else:
         if firmware:
-            firmware = (pairs.get('Boot ROM') or pairs.get('Main Application 1') or
-                        pairs.get('Blade Sys Mgmt Processor'))
+            firmware = (
+                pairs.get('Boot ROM') or pairs.get('Main Application 1') or
+                pairs.get('Blade Sys Mgmt Processor')
+            )
     if firmware:
         component['boot_firmware'] = '%s %s rev %s' % (
             firmware['Build ID'],
@@ -189,9 +196,10 @@ def _dev(model_type, pairs, parent, raw):
         sn = None
     device['serial_number'] = sn
     mac = pairs.get('MAC Address 1', None)
-    if mac:
+    if mac and mac.replace(':', '').upper()[:6] not in MAC_PREFIX_BLACKLIST:
         device['mac_addresses'] = [mac]
-    name = pairs.get('Name') or pairs.get('Product Name') or device['model_name']
+    name = pairs.get('Name') or pairs.get(
+        'Product Name') or device['model_name']
     device['name'] = name
     firmware = (pairs.get('AMM firmware') or pairs.get('FW/BIOS') or
                 pairs.get('Main Application 2'))
@@ -267,7 +275,7 @@ def _add_dev_cpu(ip, pairs, parent, raw, counts, dev_id):
         'speed': speed,
         'cores': cores,
     })
-    if not 'processors' in parent:
+    if 'processors' not in parent:
         parent['processors'] = []
     parent['processors'].append(cpu)
 
@@ -288,7 +296,7 @@ def _add_dev_memory(ip, pairs, parent, raw, counts, dev_id):
         label=label,
         index=index,
     )
-    if not 'memory' in parent:
+    if 'memory' not in parent:
         parent['memory'] = []
     parent['memory'].append(mem)
 
@@ -308,7 +316,8 @@ def _add_dev_blade(ip, pairs, parent, raw, counts, dev_id):
             continue
         if 'mac_addresses' not in dev:
             dev['mac_addresses'] = []
-        dev['mac_addresses'].append(mac)
+        if mac.replace(':', '').upper()[:6] not in MAC_PREFIX_BLACKLIST:
+            dev['mac_addresses'].append(mac)
     if 'mac_addresses' in dev:
         dev['mac_addresses'] = list(set(dev['mac_addresses']))
     return dev
@@ -323,7 +332,8 @@ def _add_dev_switch(ip, pairs, parent, raw, counts, dev_id):
     if mac:
         if 'mac_addresses' not in dev:
             dev['mac_addresses'] = []
-        dev['mac_addresses'].append(mac)
+        if mac.replace(':', '').upper()[:6] not in MAC_PREFIX_BLACKLIST:
+            dev['mac_addresses'].append(mac)
         dev['mac_addresses'] = list(set(dev['mac_addresses']))
     return dev
 
@@ -369,8 +379,8 @@ def _prepare_devices(ssh, ip, dev_path, dev_id, components, parent=None,
     pairs = parse.pairs(lines=lines)
     try:
         dev = add_func(ip, pairs, parent, raw, counts, dev_id)
-    except DeviceError as e:
-        return None
+    except DeviceError:
+        return
     for dev_info, components in components.iteritems():
         if counts is None:
             counts = Counts()
@@ -385,9 +395,9 @@ def _prepare_devices(ssh, ip, dev_path, dev_id, components, parent=None,
             counts,
         )
         if subdev and subdev != dev:
-            if not 'subdevices' in dev:
+            if 'subdevices' not in dev:
                 dev['subdevices'] = []
-            if not subdev in dev['subdevices']:
+            if subdev not in dev['subdevices']:
                 dev['subdevices'].append(subdev)
     return dev
 
@@ -403,6 +413,14 @@ def _blade_scan(ip_address):
 
 
 def scan_address(ip_address, **kwargs):
+    if 'nx-os' in (kwargs.get('snmp_name', '') or '').lower():
+        raise NoMatchError('Incompatible Nexus found.')
+    if kwargs.get('http_family', '') not in ('IBM', 'Unspecified'):
+        raise NoMatchError('It is not IBM.')
+    if not kwargs.get('snmp_name', 'IBM').startswith('IBM'):
+        raise NoMatchError('It is not IBM.')
+    if not network.check_tcp_port(ip_address, 22):
+        raise ConnectionError('Port 22 closed on an IBM BladeServer.')
     messages = []
     result = get_base_result_template('ssh_ibm_bladecenter', messages)
     device = _blade_scan(ip_address)

@@ -9,13 +9,17 @@ from __future__ import unicode_literals
 from ajax_select import make_ajax_field
 from ajax_select.fields import AutoCompleteSelectField
 
+from bob.forms.dependency import Dependency, DependencyForm, SHOW
+from bob.forms.dependency_conditions import MemberOf as MemberOfCondition
 from django import forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
 
 from ralph.cmdb import models
 from ralph.cmdb import models as db
 from ralph.cmdb.models import CIType
-from ralph.cmdb.models_ci import CIOwner
+from ralph.cmdb.models_ci import (
+    CIAttribute, CI_ATTRIBUTE_TYPES, CIAttributeValue,
+)
 from ralph.ui.widgets import (
     ReadOnlyWidget,
     ReadOnlyMultipleChoiceWidget,
@@ -49,7 +53,16 @@ class CIReportsParamsForm(forms.Form):
     kind = forms.CharField(label='', widget=forms.HiddenInput())
 
 
-class CIEditForm(forms.ModelForm):
+class CIEditForm(DependencyForm, forms.ModelForm):
+
+    CUSTOM_ATTRIBUTE_FIELDS = {
+        CI_ATTRIBUTE_TYPES.INTEGER.id: forms.IntegerField,
+        CI_ATTRIBUTE_TYPES.STRING.id: forms.CharField,
+        CI_ATTRIBUTE_TYPES.DATE.id: forms.DateField,
+        CI_ATTRIBUTE_TYPES.FLOAT.id: forms.FloatField,
+        CI_ATTRIBUTE_TYPES.CHOICE.id: forms.ChoiceField,
+    }
+
     class Meta:
         model = models.CI
         fields = (
@@ -83,30 +96,89 @@ class CIEditForm(forms.ModelForm):
         required=False
     )
 
+    def _get_custom_attribute_field_name(self, attribute):
+        """Returns the HTML field name for given attribute."""
+        return 'attribute_{0}'.format(attribute.id)
+
+    def _add_customattribute_fields(self):
+        self.dependencies = self.dependencies or []
+        for attribute in CIAttribute.objects.filter(
+            ci_types=self.initial.get('type')
+        ):
+            field_name = self._get_custom_attribute_field_name(attribute)
+            FieldType = self.CUSTOM_ATTRIBUTE_FIELDS[attribute.attribute_type]
+            kwargs = {
+                'label': attribute.name,
+                'required': False,
+            }
+            if attribute.attribute_type == CI_ATTRIBUTE_TYPES.CHOICE:
+                kwargs['choices'] = [
+                    (x.split('.')[0], x.split('.')[-1])
+                    for x in attribute.choices.split('|')
+                ]
+            self.fields[field_name] = FieldType(**kwargs)
+
+            def add_prefix(field_name):
+                return "%s-%s" % (
+                    self.prefix, field_name
+                ) if self.prefix else field_name
+
+            self.dependencies.append(Dependency(
+                add_prefix(field_name),
+                add_prefix('type'),
+                MemberOfCondition(list(attribute.ci_types.all())),
+                SHOW,
+            ))
+
     def __init__(self, *args, **kwargs):
         super(CIEditForm, self).__init__(*args, **kwargs)
+        self._add_customattribute_fields()
         if len(self.initial):
-            technical_owners, bussines_owners = [], []
-            owns = self.instance.ciownership_set.all()
-            for own in owns:
-                if own.type == 1:
-                    try:
-                        technical_owners.append(
-                            CIOwner.objects.get(id=own.owner_id))
-                    except CIOwner.DoesNotExist:
-                        pass
-                elif own.type == 2:
-                    try:
-                        bussines_owners.append(
-                            CIOwner.objects.get(id=own.owner_id)
-                        )
-                    except CIOwner.DoesNotExist:
-                        pass
-            self['technical_owners'].field.initial = technical_owners
-            self['business_owners'].field.initial = bussines_owners
+            self['technical_owners'].field.initial =\
+                self.instance.technical_owners.all()
+            self['business_owners'].field.initial =\
+                self.instance.business_owners.all()
+            attribute_values = CIAttributeValue.objects.filter(
+                ci=self.instance,
+            )
+            attribute_values = dict(
+                ((av.attribute.name, av) for av in attribute_values)
+            )
+            for attribute in CIAttribute.objects.filter(
+                ci_types=self.initial.get('type')
+            ):
+                attribute_value = attribute_values.get(attribute.name)
+                if attribute_value is not None:
+                    field_name = self._get_custom_attribute_field_name(
+                        attribute,
+                    )
+                    self[field_name].field.initial = attribute_value.value
+
+    def save(self, *args, **kwargs):
+        instance = super(CIEditForm, self).save(*args, **kwargs)
+        instance.owners.clear()
+        instance.business_owners = self.cleaned_data['business_owners']
+        instance.technical_owners = self.cleaned_data['technical_owners']
+
+        for attribute in CIAttribute.objects.all():
+            attribute_name = self._get_custom_attribute_field_name(attribute)
+            value = self.cleaned_data.get(attribute_name)
+            if value:
+                CIAttributeValue.objects.filter(
+                    ci=instance,
+                    attribute=attribute,
+                ).delete()
+                attribute_value = CIAttributeValue(
+                    ci=instance,
+                    attribute=attribute,
+                )
+                attribute_value.save()
+                attribute_value.value = value
+        return instance
 
 
 class CIViewForm(CIEditForm):
+
     class Meta:
         model = models.CI
         widgets = {
@@ -156,6 +228,7 @@ class CIViewForm(CIEditForm):
 
 
 class CIRelationEditForm(forms.ModelForm):
+
     class Meta:
         model = models.CIRelation
         fields = (
@@ -170,18 +243,18 @@ class CIRelationEditForm(forms.ModelForm):
 
     parent = make_ajax_field(
         models.CIRelation,
-         'parent',
-         ('ralph.cmdb.models', 'CILookup'),
-         help_text=None,
-         required=True,
+        'parent',
+        ('ralph.cmdb.models', 'CILookup'),
+        help_text=None,
+        required=True,
     )
     child = make_ajax_field(
         models.CIRelation,
-         'child',
-         ('ralph.cmdb.models', 'CILookup'),
-         help_text=None,
-         required=True,
-     )
+        'child',
+        ('ralph.cmdb.models', 'CILookup'),
+        help_text=None,
+        required=True,
+    )
 
     def __init__(self, *args, **kwargs):
         super(CIRelationEditForm, self).__init__(*args, **kwargs)

@@ -10,6 +10,7 @@ import StringIO
 
 
 class MockSSH(object):
+
     """Utility for mocking the SSHClient objects."""
 
     class Error(Exception):
@@ -33,4 +34,3 @@ class MockSSH(object):
 
     def __getattr__(self, name):
         return mock.Mock()
-

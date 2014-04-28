@@ -187,7 +187,7 @@ def get_mac_addresses(management_url, session_id):
     tree = ET.XML(soap_result)
     mac_addresses = tree.findall(
         '{0}Body/GetHostMacAddressesResponse/**'.format(
-        '{http://www.w3.org/2003/05/soap-envelope}')
+            '{http://www.w3.org/2003/05/soap-envelope}')
     )
     macs = []
     for mac in mac_addresses:
@@ -273,4 +273,3 @@ def http_ibm_system_x(**kwargs):
         return True, name, kwargs
     except (network.Error, Error) as e:
         return False, str(e), kwargs
-

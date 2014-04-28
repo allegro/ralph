@@ -11,7 +11,7 @@ import paramiko
 
 from django.conf import settings
 
-from ralph.discovery.models import ComponentType, DeviceType
+from ralph.discovery.models import ComponentType, DeviceType, SERIAL_BLACKLIST
 from ralph.scan.errors import ConnectionError, NoMatchError, SSHConsoleError
 from ralph.scan.plugins import get_base_result_template
 from ralph.util import parse
@@ -22,6 +22,7 @@ SETTINGS = settings.SCAN_PLUGINS.get(__name__, {})
 
 
 class SSGSSHClient(paramiko.SSHClient):
+
     """SSHClient modified for SSG's broken ssh console."""
 
     def __init__(self, *args, **kwargs):
@@ -40,7 +41,7 @@ class SSGSSHClient(paramiko.SSHClient):
         self._ssg_chan.sendall('\r\n')
         time.sleep(0.125)
         chunk = self._ssg_chan.recv(1024)
-        if not '->' in chunk:
+        if '->' not in chunk:
             raise SSHConsoleError('Expected system prompt, got "%s".' % chunk)
 
     def ssg_command(self, command):
@@ -81,11 +82,10 @@ def _ssh_ssg(ip_address, user, password):
     model = '%s %s' % (name, version)
     mac = pairs['Base Mac'].replace('.', '').upper()
     sn = pairs['Serial Number'].split(',', 1)[0]
-    return {
+    result = {
         'type': DeviceType.firewall.raw,
         'model_name': model,
         'mac_addresses': [mac],
-        'serial_number': sn,
         'hostname': name,
         'management_ip_addresses': [ip_address],
         'parts': [{
@@ -93,12 +93,15 @@ def _ssh_ssg(ip_address, user, password):
             'type': ComponentType.power.raw,
         }],
     }
+    if sn not in SERIAL_BLACKLIST:
+        result['serial_number'] = sn
+    return result
 
 
 def scan_address(ip_address, **kwargs):
     if kwargs.get('http_family') not in ('SSG', 'Unspecified'):
         raise NoMatchError("It's not a Juniper SSG.")
-    if 'nx-os' in kwargs.get('snmp_name', '').lower():
+    if 'nx-os' in (kwargs.get('snmp_name', '') or '').lower():
         raise NoMatchError("Incompatible Nexus found.")
     user = SETTINGS.get('user')
     password = SETTINGS.get('password')
@@ -122,4 +125,3 @@ def scan_address(ip_address, **kwargs):
                 'device': device_info,
             })
     return result
-

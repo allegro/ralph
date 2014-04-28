@@ -20,8 +20,9 @@ SAVE_PRIORITY = 53
 @nested_commit_on_success
 def parse_lshw(data, facts, is_virtual):
     data = uncompress_base64_data(data)
-    sn = facts.get('serialnumber')  # use a Puppet fact because lshw gives
-                                    # wrong serial numbers
+    # use a Puppet fact because lshw gives
+    # wrong serial numbers
+    sn = facts.get('serialnumber')
     if sn in SERIAL_BLACKLIST:
         sn = None
     try:
@@ -31,4 +32,3 @@ def parse_lshw(data, facts, is_virtual):
     ip_addresses, ethernets_facts = handle_facts_ethernets(facts)
     assign_ips(dev, ip_addresses)
     return dev, dev.model.name
-

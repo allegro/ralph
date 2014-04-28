@@ -13,10 +13,10 @@ from lxml import etree as ET
 from django.conf import settings
 
 from ralph.discovery.hardware import normalize_wwn
+from ralph.discovery.models import SERIAL_BLACKLIST
 from ralph.util import network
 from ralph.scan.errors import (
     SSHConsoleError,
-    Error,
     NoMatchError,
     ConnectionError,
 )
@@ -24,6 +24,7 @@ from ralph.scan.plugins import get_base_result_template
 
 
 class HPSSHClient(paramiko.SSHClient):
+
     """SSHClient modified for Cisco's broken ssh console."""
 
     def __init__(self, *args, **kwargs):
@@ -166,10 +167,11 @@ def _device(ip, name, model_name, sn, macs, shares):
         'management_ip_addresses': [ip],
         'hostname': name,
         'model_name': model_name,
-        'serial_number': sn,
         'mac_addresses': macs,
         'disk_exports': shares,
     }
+    if sn not in SERIAL_BLACKLIST:
+        device['serial_number'] = sn
     return device
 
 
@@ -188,9 +190,10 @@ def _run_ssh_p2000(ip):
 
 
 def scan_address(ip_address, **kwargs):
-    if 'nx-os' in kwargs.get('snmp_name', '').lower():
+    snmp_name = kwargs.get('snmp_name', '') or ''
+    if 'nx-os' in snmp_name.lower():
         raise NoMatchError("Incompatible Nexus found.")
-    if 'StorageWorks' not in kwargs.get('snmp_name'):
+    if 'StorageWorks' not in snmp_name:
         raise NoMatchError("No match")
     if not network.check_tcp_port(ip_address, 22):
         raise ConnectionError("Port 22 closed.")

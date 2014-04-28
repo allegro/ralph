@@ -18,9 +18,10 @@ execfile(namespace_package_support)
 #
 # common stuff for each install
 #
+
 SITE_ID = 1
 USE_I18N = True
-USE_L10N = True  # FIXME: breaks contents of localized date fields on form reload
+USE_L10N = True  # FIXME: breaks contents of l7d date fields on form reload
 MEDIA_URL = '/u/'
 STATIC_URL = '/static/'
 STATICFILES_DIRS = (
@@ -80,6 +81,7 @@ INSTALLED_APPS = [
     'ralph.dnsedit',
     'ralph.util',
     'ralph.deployment',
+    'ralph.scan',
     'ajax_select',
     'powerdns',
 ]
@@ -124,7 +126,9 @@ LOGGING = {
     'formatters': {
         'verbose': {
             'datefmt': '%H:%M:%S',
-            'format': '%(asctime)08s,%(msecs)03d %(levelname)-7s [%(processName)s %(process)d] %(module)s - %(message)s',
+            'format': (
+                '%(asctime)08s,%(msecs)03d %(levelname)-7s [%(processName)s'
+                ' %(process)d] %(module)s - %(message)s'),
         },
         'simple': {
             'format': '%(levelname)s %(message)s',
@@ -167,8 +171,8 @@ SANITY_CHECK_PING_ADDRESS = 'www.allegro.pl'
 SANITY_CHECK_IP2HOST_IP = '8.8.8.8'
 SANITY_CHECK_IP2HOST_HOSTNAME_REGEX = r'.*google.*'
 
-SINGLE_DISCOVERY_TIMEOUT = 43200 # 12 hours
-NETWORK_TASK_DELEGATION_TIMEOUT = 7200 # 2 hours
+SINGLE_DISCOVERY_TIMEOUT = 43200    # 12 hours
+NETWORK_TASK_DELEGATION_TIMEOUT = 7200  # 2 hours
 # django.contrib.messages settings
 MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
 # activity middleware settings
@@ -208,6 +212,7 @@ SERVER_EMAIL = DEFAULT_FROM_EMAIL
 TIME_ZONE = 'Europe/Warsaw'
 LANGUAGE_CODE = 'en-us'
 CURRENCY = 'PLN'
+VENTURE_FOR_VIRTUAL_USAGES_API = 'Systemy wirtualne'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -221,13 +226,13 @@ DATABASES = {
     },
 }
 CACHES = dict(
-    default = dict(
-        BACKEND = 'django.core.cache.backends.locmem.LocMemCache',
-        LOCATION = '',
-        TIMEOUT = 300,
-        OPTIONS = dict(
+    default=dict(
+        BACKEND='django.core.cache.backends.locmem.LocMemCache',
+        LOCATION='',
+        TIMEOUT=300,
+        OPTIONS=dict(
         ),
-        KEY_PREFIX = 'RALPH_',
+        KEY_PREFIX='RALPH_',
     )
 )
 LOGGING['handlers']['file']['filename'] = CURRENT_DIR + 'runtime.log'
@@ -257,8 +262,9 @@ SSH_ONSTOR_PASSWORD = None
 AIX_USER = None
 AIX_PASSWORD = None
 AIX_KEY = None
-XEN_USER = None
-XEN_PASSWORD = None
+XEN_USER = None  # for compatibility with old discovery
+XEN_PASSWORD = None  # for compatibility with old discovery
+XEN_AUTHS = ()  # e.g. (('user1', 'pass1'), ('user2', 'pass2'))
 SNMP_PLUGIN_COMMUNITIES = ['public']
 SNMP_V3_USER = None
 SNMP_V3_AUTH_KEY = None
@@ -292,6 +298,8 @@ IDRAC_PASSWORD = None
 OPENSTACK_EXTRA_QUERIES = []
 FISHEYE_URL = ""
 FISHEYE_PROJECT_NAME = ""
+VMWARE_USER = None
+VMWARE_PASSWORD = None
 
 ISSUETRACKERS = {
     'default': {
@@ -351,7 +359,14 @@ AUTOCI_SKIP_MSG = 'AUTOCI is disabled'
 HAMSTER_API_URL = ""
 SCALEME_API_URL = ""
 DEFAULT_SOA_RECORD_CONTENT = ''
+DEAD_PING_COUNT = 2
+SCAN_AUTOMERGE_MODE = True
 # </template>
+
+SCAN_POSTPROCESS_ENABLED_JOBS = [
+    'ralph.scan.postprocess.position',
+    'ralph.scan.postprocess.cache_price',
+]
 
 #
 # programmatic stuff that need to be at the end of the file
@@ -366,8 +381,9 @@ elif SETTINGS_PATH_MODE == 'nested':
     local_settings = '%s%s%s.py' % (SETTINGS_PATH_PREFIX, os.sep,
                                     local_profile)
 else:
-    raise ValueError, ("Unsupported settings path mode '%s'"
-                       "" % SETTINGS_PATH_MODE)
+    raise ValueError(
+        "Unsupported settings path mode '%s'" % SETTINGS_PATH_MODE
+    )
 
 for cfg_loc in [local_settings,
                 '{}/settings'.format(ralph_settings_path),
@@ -376,6 +392,9 @@ for cfg_loc in [local_settings,
     if os.path.exists(cfg_loc):
         execfile(cfg_loc)
         break
+
+import pluggableapp
+pluggableapp.initialize(locals())
 
 MEDIA_ROOT = os.path.expanduser(MEDIA_ROOT)
 STATIC_ROOT = os.path.expanduser(STATIC_ROOT)
@@ -391,92 +410,323 @@ SCAN_PLUGINS = {
     'ralph.scan.plugins.snmp_macs': {
         'communities': SNMP_PLUGIN_COMMUNITIES,
         'snmp_v3_auth': (SNMP_V3_USER, SNMP_V3_AUTH_KEY, SNMP_V3_PRIV_KEY),
+        'results_priority': {
+            'mac_addresses': 50,
+            'type': 0,
+            'model_name': 0,
+        },
     },
     'ralph.scan.plugins.snmp_f5': {
         'communities': SNMP_PLUGIN_COMMUNITIES,
         'snmp_v3_auth': (SNMP_V3_USER, SNMP_V3_AUTH_KEY, SNMP_V3_PRIV_KEY),
+        'results_priority': {
+            'type': 55,
+            'model_name': 55,
+            'serial_number': 20,
+        },
     },
     'ralph.scan.plugins.idrac': {
         'user': IDRAC_USER,
         'password': IDRAC_PASSWORD,
+        'results_priority': {
+            'model_name': 53,
+            'serial_number': 53,
+            'management_ip_addresses': 53,
+            'processors': 53,
+            'memory': 53,
+            'disks': 53,
+            'fibrechannel_cards': 53,
+            'mac_addresses': 53,
+        },
     },
     'ralph.scan.plugins.ssh_linux': {
-        'auths': [
-            (SSH_USER or 'root', SSH_PASSWORD),
-            (XEN_USER, XEN_PASSWORD),
-        ],
+        'auths': ((SSH_USER or 'root', SSH_PASSWORD),) + XEN_AUTHS,
+        'results_priority': {
+            'model_name': 15,
+            'serial_number': 10,
+            'mac_addresses': 15,
+            'system_ip_addresses': 15,
+            'hostname': 15,
+            'disk_shares': 15,
+            'system_label': 20,
+            'system_family': 20,
+            'system_memory': 20,
+            'system_storage': 20,
+            'system_cores_count': 20,
+            'processors': 15,
+            'memory': 15,
+        },
     },
     'ralph.scan.plugins.puppet': {
         'puppet_api_url': PUPPET_API_URL,
         'puppet_db_url': PUPPET_DB_URL,
+        'results_priority': {
+            'type': 51,
+            'model_name': 51,
+            'mac_addresses': 51,
+            'system_ip_addresses': 51,
+            'processors': 51,
+            'memory': 51,
+            'disks': 51,
+            'fibrechannel_cards': 51,
+            'installed_software': 51,
+            'serial_number': 41,
+        },
     },
-    'ralph.scan.plugins.hp_oa': {},
+    'ralph.scan.plugins.hp_oa': {
+        'results_priority': {
+            'type': 5,
+            'serial_number': 5,
+            'model_name': 5,
+            'rack': 5,
+            'parts': 5,
+            'mac_addresses': 5,
+            'management_ip_addresses': 5,
+            'subdevices': 5,
+        },
+    },
     'ralph.scan.plugins.ipmi': {
         'user': IPMI_USER,
         'password': IPMI_PASSWORD,
+        'results_priority': {
+            'serial_number': 52,
+            'type': 52,
+            'model_name': 52,
+            'mac_addresses': 52,
+            'processors': 52,
+            'memory': 52,
+            'management_ip_addresses': 52,
+        },
     },
     'ralph.scan.plugins.http_supermicro': {
         'user': IPMI_USER,
         'password': IPMI_PASSWORD,
+        'results_priority': {
+            'management_ip_addresses': 10,
+            'mac_addresses': 3,
+        },
     },
     'ralph.scan.plugins.ssh_ibm_bladecenter': {
-         'ssh_ibm_user': SSH_IBM_USER,
-         'ssh_ibm_password': SSH_IBM_PASSWORD,
+        'ssh_ibm_user': SSH_IBM_USER,
+        'ssh_ibm_password': SSH_IBM_PASSWORD,
+        'results_priority': {
+            'management_ip_addresses': 50,
+            'mac_addresses': 50,
+            'chassis_position': 50,
+            'memory': 50,
+            'processors': 50,
+            'parts': 50,
+            'serial_number': 50,
+            'model_name': 50,
+            'type': 50,
+            'subdevices': 50,
+        },
     },
-    'ralph.scan.plugins.dns_hostname': {},
+    'ralph.scan.plugins.dns_hostname': {
+        'results_priority': {
+            'hostname': 60,
+        },
+    },
     'ralph.scan.plugins.ilo_hp': {
         'user': ILO_USER,
         'password': ILO_PASSWORD,
+        'results_priority': {
+            'management_ip_addresses': 4,
+            'mac_addresses': 4,
+            'processors': 4,
+            'memory': 4,
+            'serial_number': 4,
+        },
     },
     'ralph.scan.plugins.ssh_cisco_asa': {
         'ssh_user': SSH_SSG_USER,
         'ssh_pass': SSH_SSG_PASSWORD,
+        'results_priority': {
+            'model_name': 7,
+            'type': 7,
+            'serial_number': 7,
+            'mac_addresses': 7,
+            'boot_firmwar': 7,
+            'management_ip_addresses': 7,
+            'memory': 7,
+            'processors': 7,
+        },
     },
     'ralph.scan.plugins.ssh_cisco_catalyst': {
         'ssh_user': SSH_SSG_USER,
         'ssh_pass': SSH_SSG_PASSWORD,
+        'results_priority': {
+            'hostname': 7,
+            'model_name': 7,
+            'type': 7,
+            'serial_number': 7,
+            'mac_addresses': 7,
+            'management_ip_addresses': 7,
+            'parts': 7,
+            'subdevices': 20,
+        },
     },
     'ralph.scan.plugins.ssh_proxmox': {
         'user': SSH_USER or 'root',
         'password': SSH_PASSWORD,
+        'results_priority': {
+            'processors': 10,
+            'disks': 10,
+            'disk_shares': 10,
+            'model_name': 10,
+            'type': 10,
+            'mac_addresses': 10,
+            'management': 10,
+            'hostname': 10,
+            'installed_software': 60,
+            'system_ip_addresses': 10,
+            'subdevices': 50,
+        },
     },
     'ralph.scan.plugins.ssh_3par': {
         'user': SSH_3PAR_USER,
         'password': SSH_3PAR_PASSWORD,
+        'results_priority': {
+            'type': 15,
+            'model_name': 15,
+            'hostname': 15,
+            'serial_number': 15,
+            'management_ip_addresses': 15,
+            'disk_exports': 15,
+        },
     },
     'ralph.scan.plugins.ssh_ssg': {
         'user': SSH_SSG_USER,
         'password': SSH_SSG_PASSWORD,
+        'results_priority': {
+            'type': 5,
+            'model_name': 5,
+            'mac_addresses': 5,
+            'serial_number': 5,
+            'hostname': 5,
+            'management_ip_addresse': 5,
+            'parts': 5,
+        },
     },
     'ralph.scan.plugins.ssh_ganeti': {
         'ssh_user': SSH_USER,
         'ssh_password': SSH_PASSWORD,
+        'results_priority': {
+            'hostname': 50,
+            'type': 50,
+            'mac_addresses': 50,
+            'management_ip_addresses': 50,
+            'subdevices': 50,
+        },
     },
     'ralph.scan.plugins.ssh_xen': {
-        'xen_user': XEN_USER,
-        'xen_password': XEN_PASSWORD,
+        'xen_auths': XEN_AUTHS,
+        'results_priority': {
+            'mac_addresses': 50,
+            'serial_number': 50,
+            'hostname': 20,
+            'processors': 50,
+            'memory': 50,
+            'disk_shares': 20,
+            'disks': 40,
+            'subdevices': 50,
+        },
     },
     'ralph.scan.plugins.ssh_aix': {
         'aix_user': AIX_USER,
         'aix_password': AIX_PASSWORD,
         'aix_key': AIX_KEY,
+        'results_priority': {
+            'mac_addresses': 10,
+            'model_name': 10,
+            'system_ip_addresses': 10,
+            'disk_shares': 10,
+            'system_label': 10,
+            'system_memory': 10,
+            'system_storage': 10,
+            'system_cores_count': 10,
+            'system_family': 10,
+        },
     },
     'ralph.scan.plugins.ssh_onstor': {
         'user': SSH_ONSTOR_USER,
         'password': SSH_ONSTOR_PASSWORD,
+        'results_priority': {
+            'model_name': 5,
+            'serial_number': 5,
+            'mac_addresses': 5,
+            'type': 5,
+            'management_ip_addresses': 5,
+        },
     },
     'ralph.scan.plugins.http_ibm_system_x': {
         'user': IBM_SYSTEM_X_USER,
         'password': IBM_SYSTEM_X_PASSWORD,
+        'results_priority': {
+            'type': 5,
+            'model_name': 5,
+            'serial_number': 5,
+            'management_ip_address': 5,
+            'mac_addresses': 5,
+            'memory': 5,
+            'processors': 5,
+        },
     },
     'ralph.scan.plugins.ssh_hp_p2000': {
         'ssh_user': SSH_P2000_USER,
         'ssh_password': SSH_P2000_PASSWORD,
+        'results_priority': {
+            'management_ip_addresses': 6,
+            'hostname': 6,
+            'model_name': 6,
+            'serial_number': 6,
+            'mac_addresses': 6,
+            'disk_exports': 6,
+        },
     },
     'ralph.scan.plugins.ssh_hp_msa': {
         'user': SSH_MSA_USER,
         'password': SSH_MSA_PASSWORD,
+        'results_priority': {
+            'type': 5,
+            'model_name': 5,
+            'serial_number': 5,
+            'management_ip_address': 5,
+            'mac_addresses': 5,
+            'disk_exports': 5,
+        },
     },
-    'ralph.scan.plugins.software': {},
+    'ralph.scan.plugins.software': {
+        'results_priority': {
+            'software': 10,
+        },
+    },
+    'ralph.scan.plugins.vmware': {
+        'user': VMWARE_USER,
+        'password': VMWARE_PASSWORD,
+        'results_priority': {
+            'type': 1,
+            'system_ip_addresses': 50,
+            'subdevices': 50,
+            'mac_addresses': 50,
+            'hostname': 50,
+            'memory': 50,
+            'processors': 50,
+            'disks': 50,
+            'system_label': 50,
+        },
+    },
+    'ralph.scan.plugins.ssh_juniper': {
+        'user': SSH_SSG_USER,
+        'password': SSH_SSG_PASSWORD,
+        'results_priority': {
+            'hostname': 20,
+            'management_ip_addresses': 40,
+            'model_name': 40,
+            'serial_number': 40,
+            'mac_addresses': 30,
+            'type': 50,
+            'subdevices': 60,
+        },
+    },
 }
-

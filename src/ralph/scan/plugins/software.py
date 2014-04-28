@@ -36,7 +36,7 @@ def _detect_software(ip_address, http_family):
 
 
 def scan_address(ip_address, **kwargs):
-    http_family = kwargs.get('http_family', '')
+    http_family = kwargs.get('http_family', '') or ''
     messages = []
     result = get_base_result_template('software', messages)
     result['status'] = 'success'
@@ -44,4 +44,3 @@ def scan_address(ip_address, **kwargs):
     if software:
         result['installed_software'] = software
     return result
-

@@ -13,20 +13,29 @@
 {% endblock %}
 
 {% block sidebar %}
-{% if status %}
-<div class="well">
-    <ul class="unstyled">
-        {% for name, bar, icon in status %}
-        <li style="white-space:nowrap">{% icon icon %}&nbsp;{{ name }}</li>
-        {% endfor %}
-    </ul>
-</div>
-<div class="form-actions">
-    <a href="../{{ address }}/" class="btn">
-        {% icon 'fugue-arrow-circle-double' %}&nbsp;Rescan
-    </a>
-</div>
-{% endif %}
+    {% if status %}
+        <div class="well">
+            <ul class="unstyled">
+                {% for name, bar, icon in status %}
+                <li style="white-space:nowrap">{% icon icon %}&nbsp;{{ name }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <form method="POST" class="form">
+            {% csrf_token %}
+            <div class="form-actions">
+                <a href="../../{{ address }}/" class="btn btn-small">
+                    {% icon 'fugue-arrow-circle-double' %}&nbsp;Rescan
+                </a>
+                {% if job.meta.changed %}
+                    <button type="submit" value="no-changes" class="btn btn-small" name="no-changes">
+                        {% icon 'fugue-flashlight--exclamation' %}&nbsp;No changes
+                    </button>
+                {% endif %}
+            </div>
+        </form>
+    {% endif %}
 {% endblock %}
 
 {% block contentarea %}
@@ -53,10 +62,6 @@
                 {% endif %}
             </div>
         </div>
-    {% else %}
-        <div class="alert alert-success">
-            <p>Scanning finished.</p>
-        </div>
     {% endif %}
     {% if job.is_failed %}
     <div class="alert alert-error">
@@ -64,17 +69,9 @@
         <pre>{{ job.exc_info }}</pre>
     </div>
     {% endif %}
-    <div class="alert alert-info">
-        <strong>Logs:</strong>
-        {% for addr, name, kind,  message in job.meta.messages %}
-        <div class="text-{{ kind }}">
-            <strong>{{ name }}</strong>: {{ message }}
-        </div>
-        {% endfor %}
-    </div>
     {% if job.is_finished %}
         <ul class="nav nav-tabs">
-            {%for device, form in forms %}
+            {% for device, form in forms %}
             <li {% if device_id == device.id|default:'new' %}class="active"{% endif %}>
                 <a
                     href="#device-{{ device.id|default:'new' }}"
@@ -90,9 +87,9 @@
             {% endfor %}
         </ul>
         <div class="tab-content">
-            {%for device, form in forms %}
+            {% for device, form in forms %}
             <div
-                class="tab-pane{%if device_id == device.id|default:'new' %} active{% endif %}"
+                class="tab-pane{% if device_id == device.id|default:'new' %} active{% endif %}"
                 id="device-{{ device.id|default:'new' }}"
             >
                 <form method="POST" class="form form-horizontal">
@@ -108,21 +105,23 @@
                         "
                     >
                         <label class="control-label">{{ f.label }}</label>
-                        <div class="controls">
+                        <div class="controls" data-role="controls_wrapper">
                             {{ f }}
-                            <label class="radio">
-                                <input
-                                    type="radio"
-                                    name="{{ f.name }}"
-                                    value="custom"
-                                    {% if f.value == 'custom' %}checked="on"{% endif %}
-                                > Custom:
-                            </label>
-                            <div class="custom-control">
-                                {{ form|getfield:f.field.subfield_name }}
-                                {% for error in form|getfielderrors:f.field.subfield_name %}
-                                <div class="help-block">{{ error }}</div>
-                                {% endfor %}
+                            <div class="custom-control-wrapper"{% if f.field.widget.diff and not f.field.widget.open_advanced_mode %} style="display: none;"{% endif %} data-role="custom_control_wrapper">
+                                <label class="radio">
+                                    <input
+                                        type="radio"
+                                        name="{{ f.name }}"
+                                        value="custom"
+                                        {% if f.value == 'custom' %}checked="on"{% endif %}
+                                    > Custom:
+                                </label>
+                                <div class="custom-control">
+                                    {{ form|getfield:f.field.subfield_name }}
+                                    {% for error in form|getfielderrors:f.field.subfield_name %}
+                                    <div class="help-block">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
                             </div>
                             {% for error in f.errors %}
                             <div class="help-block">{{ error }}</div>
@@ -150,5 +149,19 @@
             {% endfor %}
         </div>
     {% endif %}
+    <div class="alert alert-info">
+        <strong>Logs:</strong>
+        {% for addr, name, kind, message in job.meta.messages %}
+        <div class="text-{{ kind }}">
+            <strong>{{ name }}</strong>: {{ message }}
+        </div>
+        {% endfor %}
+    </div>
 {% endif %}
 {% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+    <script src="{{ STATIC_URL }}scan.js"></script>
+{% endblock scripts %}
+

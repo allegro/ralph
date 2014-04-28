@@ -23,7 +23,7 @@ def all_ventures():
 def all_roles():
     yield '', '---------'
     for r in VentureRole.objects.order_by(
-                '-venture__is_infrastructure', 'venture__name',
-                'parent__parent__name', 'parent__name', 'name'
-            ):
+        '-venture__is_infrastructure', 'venture__name',
+        'parent__parent__name', 'parent__name', 'name'
+    ):
         yield r.id, '{} / {}'.format(r.venture.name, r.full_name)

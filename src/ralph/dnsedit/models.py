@@ -35,10 +35,33 @@ class DHCPEntry(TimeTrackable):
         super(DHCPEntry, self).save(*args, **kwargs)
 
 
-class DHCPServer(db.Model):
+class DHCPServer(TimeTrackable):
     ip = db.IPAddressField(verbose_name=_("IP address"), unique=True)
     last_synchronized = db.DateTimeField(null=True)
     dhcp_config = db.TextField(blank=True, default='')
+
+    class Meta:
+        verbose_name = _('DHCP Server')
+        verbose_name_plural = _('DHCP Servers')
+
+
+class DNSServer(db.Model):
+    ip_address = db.IPAddressField(
+        verbose_name=_('IP address'),
+        unique=True,
+    )
+    is_default = db.BooleanField(
+        verbose_name=_('is default'),
+        db_index=True,
+        default=False,
+    )
+
+    class Meta:
+        verbose_name = _('DNS Server')
+        verbose_name_plural = _('DNS Servers')
+
+    def __unicode__(self):
+        return "DNS Server (%s)" % self.ip_address
 
 
 class DNSHistory(db.Model):
@@ -63,7 +86,7 @@ class DNSHistory(db.Model):
 @receiver(post_save, sender=Record, dispatch_uid='ralph.history.dns')
 def record_post_save(sender, instance, raw, using, **kwargs):
     for field, orig, new in field_changes(instance, ignore={
-        'last_seen', 'change_date', 'id'}):
+            'last_seen', 'change_date', 'id'}):
         DNSHistory(
             record_name=instance.name,
             record_type=instance.type,
@@ -86,4 +109,3 @@ def record_pre_delete(sender, instance, using, **kwargs):
         user=getattr(instance, 'saving_user', None),
         device=getattr(instance, 'saving_device', None),
     ).save()
-

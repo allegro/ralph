@@ -18,17 +18,19 @@ from ralph.cmdb.integration.lib.jira import Jira
 from ralph.cmdb.integration.util import strip_timezone
 from ralph.cmdb import models as db
 
-# hook git plugins
-from ralph.cmdb.integration.puppet import PuppetGitImporter
-from ralph.cmdb.integration.ralph import AssetChangeImporter
+# hook git plugins. Screw flake8. Do not delete
+from ralph.cmdb.integration.puppet import PuppetGitImporter  # noqa
+from ralph.cmdb.integration.ralph import AssetChangeImporter  # noqa
 
 logger = logging.getLogger(__name__)
 
 
 class ZabbixImporter(BaseImporter):
+
     """
     Zabbix importer
     """
+
     def import_hosts(self):
         """
         Create/update zabbix IDn for all matched CI's
@@ -40,7 +42,7 @@ class ZabbixImporter(BaseImporter):
             ci = self.get_ci_by_name(h.get('host'))
             if not ci:
                 continue
-            ci.zabbix_id=h.get('hostid')
+            ci.zabbix_id = h.get('hostid')
             ci.save()
         logger.debug('Finshed')
 
@@ -61,17 +63,20 @@ class ZabbixImporter(BaseImporter):
         triggers = zabbix.get_all_triggers()
         for h in triggers:
             existing = db.CIChangeZabbixTrigger.objects.filter(
-                    trigger_id=h.get('triggerid')).all()
+                trigger_id=h.get('triggerid')
+            ).all()
             if not existing:
                 logger.debug('Integrate %s' % h.get('triggerid'))
                 c = db.CIChange()
                 c.type = db.CI_CHANGE_TYPES.ZABBIX_TRIGGER.id
                 c.priority = db.CI_CHANGE_PRIORITY_TYPES.ERROR.id
-                #create zabbix type change as container
+                # create zabbix type change as container
                 ch = db.CIChangeZabbixTrigger()
             else:
                 ch = existing[0]
-                c = db.CIChange.objects.get(type=db.CI_CHANGE_TYPES.ZABBIX_TRIGGER.id,object_id=ch.id)
+                c = db.CIChange.objects.get(
+                    type=db.CI_CHANGE_TYPES.ZABBIX_TRIGGER.id, object_id=ch.id
+                )
             ch.ci = self.get_ci_by_name(h.get('host'))
             ch.trigger_id = h.get('triggerid')
             ch.host = h.get('host')
@@ -80,36 +85,43 @@ class ZabbixImporter(BaseImporter):
             ch.priority = h.get('priority')
             ch.description = h.get('description')
             ch.lastchange = datetime.datetime.fromtimestamp(
-                    float(h.get('lastchange')))
+                float(h.get('lastchange'))
+            )
             ch.comments = h.get('comments')
             ch.save()
             c.content_object = ch
             c.ci = ch.ci
-            c.time = datetime.datetime.fromtimestamp(float(h.get('lastchange')))
+            c.time = datetime.datetime.fromtimestamp(
+                float(h.get('lastchange'))
+            )
             c.message = ch.description
             c.save()
 
 
 class JiraEventsImporter(BaseImporter):
+
     """
     Jira integration  - Incidents/Problems importing as CI events.
     """
     @staticmethod
     @plugin.register(chain='cmdb_jira')
     def jira_problems(**kwargs):
-        JiraEventsImporter().import_problem()
+        cutoff_date = kwargs.get('cutoff_date')
+        JiraEventsImporter().import_problem(cutoff_date=cutoff_date)
         return True, 'Done', kwargs
 
     @staticmethod
     @plugin.register(chain='cmdb_jira')
     def jira_incidents(**kwargs):
-        JiraEventsImporter().import_incident()
+        cutoff_date = kwargs.get('cutoff_date')
+        JiraEventsImporter().import_incident(cutoff_date=cutoff_date)
         return True, 'Done', kwargs
 
     @staticmethod
     @plugin.register(chain='cmdb_jira')
     def jira_changes(**kwargs):
-        JiraEventsImporter().import_jirachange()
+        cutoff_date = kwargs.get('cutoff_date')
+        JiraEventsImporter().import_jirachange(cutoff_date=cutoff_date)
         return True, 'Done', kwargs
 
     def tz_time(self, field):
@@ -120,7 +132,10 @@ class JiraEventsImporter(BaseImporter):
         try:
             ci_obj = db.CI.objects.get(uid=issue.get('ci'))
         except:
-            logger.error('Issue : %s Can''t find ci: %s' % (issue.get('key'),issue.get('ci')))
+            logger.error(
+                'Issue : %s Can''t find ci: %s' %
+                (issue.get('key'), issue.get('ci'))
+            )
             ci_obj = None
         obj = classtype.objects.filter(jira_id=issue.get('key')).all()[:1]
         prob = obj[0] if obj else classtype()
@@ -141,41 +156,56 @@ class JiraEventsImporter(BaseImporter):
         prob.ci = ci_obj
         prob.save()
 
-    def import_problem(self):
+    def import_problem(self, cutoff_date=None):
         type = settings.ISSUETRACKERS['default']['PROBLEMS']['ISSUETYPE']
-        issues = self.fetch_all(type)
+        issues = self.fetch_all(type, cutoff_date)
         for issue in issues:
-            self.import_obj(issue,db.CIProblem)
+            self.import_obj(issue, db.CIProblem)
 
-    def import_incident(self):
+    def import_incident(self, cutoff_date=None):
         type = settings.ISSUETRACKERS['default']['INCIDENTS']['ISSUETYPE']
-        issues = self.fetch_all(type)
+        issues = self.fetch_all(type, cutoff_date)
         for issue in issues:
             self.import_obj(issue, db.CIIncident)
 
-    def import_jirachange(self):
+    def import_jirachange(self, cutoff_date=None):
         for type in settings.ISSUETRACKERS['default']['CHANGES']['ISSUETYPE']:
-            issues = self.fetch_all(type)
+            issues = self.fetch_all(type, cutoff_date)
             for issue in issues:
                 self.import_obj(issue, db.JiraChanges)
 
-    def fetch_all(self, type):
+    def fetch_all(self, type, cutoff_date=None):
         ci_fieldname = settings.ISSUETRACKERS['default']['CI_FIELD_NAME']
-        analysis = settings.ISSUETRACKERS['default']['IMPACT_ANALYSIS_FIELD_NAME']
-        problems_field = settings.ISSUETRACKERS['default']['PROBLEMS_FIELD_NAME']
-        params = dict(jql='type=%s' % type, maxResults=1024)
-        issues = Jira().find_issues(params)
-        items_list = []
-        for issue in issues.get('issues'):
-            field = issue.get('fields')
-            assignee = field.get('assignee')
-            problems = field.get(problems_field) or []
-            ret_problems = [problem.get('value') for problem in problems]
-            selected_problems = ', '.join(ret_problems) if ret_problems else None
-            priority = field.get('priority')
-            issuetype = field.get('issuetype')
-            items_list.append(
-                dict(
+        analysis = settings.ISSUETRACKERS['default'][
+            'IMPACT_ANALYSIS_FIELD_NAME'
+        ]
+        problems_field = settings.ISSUETRACKERS['default'][
+            'PROBLEMS_FIELD_NAME'
+        ]
+        jql = ('type={}'.format(type))
+        if cutoff_date is not None:
+            jql += " AND status CHANGED AFTER '{}'".format(
+                cutoff_date.strftime('%Y/%m/%d %H:%m')
+            )
+        params = dict(jql=jql)
+        offset = 0
+        total = None
+        while offset != total:
+            params['startAt'] = offset
+            issues = Jira().find_issues(params)
+            total = issues['total']
+            for issue in issues.get('issues'):
+                field = issue.get('fields')
+                assignee = field.get('assignee')
+                problems = field.get(problems_field) or []
+                ret_problems = [problem.get('value') for problem in problems]
+                selected_problems = (
+                    ', '.join(ret_problems)
+                    if ret_problems else None
+                )
+                priority = field.get('priority')
+                issuetype = field.get('issuetype')
+                yield dict(
                     ci=field.get(ci_fieldname),
                     key=issue.get('key'),
                     description=field.get('description', ''),
@@ -192,5 +222,5 @@ class JiraEventsImporter(BaseImporter):
                     planned_start_date=field.get('customfield_11602'),
                     planned_end_date=field.get('customfield_11601'),
                 )
-            )
-        return items_list
+            offset += len(issues['issues'])
+            print ("{} of {}".format(offset, total))

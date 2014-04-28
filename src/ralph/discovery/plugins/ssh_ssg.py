@@ -33,6 +33,7 @@ class ConsoleError(Error):
 
 
 class SSGSSHClient(paramiko.SSHClient):
+
     """SSHClient modified for SSG's broken ssh console."""
 
     def __init__(self, *args, **kwargs):
@@ -50,7 +51,7 @@ class SSGSSHClient(paramiko.SSHClient):
         self._ssg_chan.sendall('\r\n')
         time.sleep(0.125)
         chunk = self._ssg_chan.recv(1024)
-        if not '->' in chunk:
+        if '->' not in chunk:
             raise ConsoleError('Expected system prompt, got "%s".' % chunk)
 
     def ssg_command(self, command):
@@ -78,7 +79,8 @@ class SSGSSHClient(paramiko.SSHClient):
 
 def _connect_ssh(ip):
     return network.connect_ssh(ip, settings.SSH_SSG_USER,
-            settings.SSH_SSG_PASSWORD, client=SSGSSHClient)
+                               settings.SSH_SSG_PASSWORD, client=SSGSSHClient)
+
 
 @nested_commit_on_success
 def run_ssh_ssg(ip):
@@ -104,6 +106,7 @@ def run_ssh_ssg(ip):
     ipaddr.is_management = True
     ipaddr.save()
     return dev.name
+
 
 @plugin.register(chain='discovery', requires=['ping', 'http'])
 def ssh_ssg(**kwargs):

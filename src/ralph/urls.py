@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.conf.urls.defaults import patterns, include, url
 from django.views.generic import RedirectView
+import pluggableapp
 from tastypie.api import Api
 from ralph.business.api import (
     DepartmentResource,
@@ -44,16 +45,20 @@ from ralph.cmdb.api import (
     ServiceResource,
 )
 from ralph.discovery.api_donpedro import WindowsDeviceResource
+from ralph.scan.api import ExternalPluginResource
 from ralph.ui.views.common import VhostRedirectView
 
 from django.conf import settings
 from django.contrib import admin
 from ajax_select import urls as ajax_select_urls
 
+
+DISCOVERY_DISABLED = getattr(settings, 'DISCOVERY_DISABLED', False)
+
+
 admin.autodiscover()
 
 v09_api = Api(api_name='v0.9')
-OPTIONAL_APPS = ['ralph_assets', 'ralph_pricing', 'ralph_assets_imports']
 # business API
 for r in (VentureResource, VentureLightResource, RoleResource,
           RoleLightResource, DepartmentResource, RolePropertyTypeResource,
@@ -68,18 +73,24 @@ for r in (IPAddressResource, NetworksResource, ModelGroupResource,
           BladeServerResource, VirtualServerResource, DevResource,
           WindowsDeviceResource, DeviceWithPricingResource,
           NetworkKindsResource):
+    if DISCOVERY_DISABLED and r == WindowsDeviceResource:
+        continue
     v09_api.register(r())
 
 # CMDB API
 for r in (BusinessLineResource, ServiceResource, CIResource,
           CIRelationResource, CIChangeResource, CIChangeGitResource,
-          CIOwnersResource, CIChangePuppetResource, CIChangeZabbixTriggerResource,
-          CIChangeCMDBHistoryResource, CITypesResource, CILayersResource):
+          CIOwnersResource, CIChangePuppetResource,
+          CIChangeZabbixTriggerResource, CIChangeCMDBHistoryResource,
+          CITypesResource, CILayersResource):
     v09_api.register(r())
 
 # deployment API
 for r in (DeploymentResource,):
     v09_api.register(r())
+
+# scan API
+v09_api.register(ExternalPluginResource())
 
 urlpatterns = patterns(
     '',
@@ -95,7 +106,7 @@ urlpatterns = patterns(
      {'document_root': settings.MEDIA_ROOT, 'show_indexes': True}),
     url(r'^login/', 'django.contrib.auth.views.login',
         {'template_name': 'admin/login.html'}),
-    url(r'^logout/', 'django.contrib.auth.views.logout'),  # {'template_name': 'admin/logout.html'}),
+    url(r'^logout/', 'django.contrib.auth.views.logout'),
     url(r'^ventures/(?P<venture_id>.+)/$',
         'ralph.business.views.show_ventures',
         name='business-show-venture'),
@@ -111,7 +122,9 @@ urlpatterns = patterns(
     url(r'^ui/', include('ralph.ui.urls')),
     url(r'^dns/', include('ralph.dnsedit.urls')),
     url(r'^dhcp-synch/', 'ralph.dnsedit.views.dhcp_synch'),
-    url(r'^dhcp-config/', 'ralph.dnsedit.views.dhcp_config'),
+    url(r'^dhcp-config-entries/', 'ralph.dnsedit.views.dhcp_config_entries'),
+    url(r'^dhcp-config-networks/', 'ralph.dnsedit.views.dhcp_config_networks'),
+    url(r'^dhcp-config-head/', 'ralph.dnsedit.views.dhcp_config_head'),
     url(r'^cmdb/', include('ralph.cmdb.urls')),
     url(r'^api/', include(v09_api.urls)),
     url(r'^admin/', include(admin.site.urls)),
@@ -133,7 +146,4 @@ urlpatterns = patterns(
 
 )
 
-for app in settings.INSTALLED_APPS:
-    if app in OPTIONAL_APPS:
-        app_urls = url(r'^{}/'.format(app[6:]), include('{}.urls'.format(app)))
-        urlpatterns.append(app_urls)
+urlpatterns += pluggableapp.patterns()

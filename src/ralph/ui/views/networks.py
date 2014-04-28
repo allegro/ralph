@@ -4,25 +4,34 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import collections
+import datetime
+import urllib
+
+import django_rq
+import rq
 
 from bob.menu import MenuItem
+from django.conf import settings
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
 from django.http import HttpResponseRedirect
+from django.utils import timezone
+from django.core.urlresolvers import reverse
+from django.views.generic import (
+    UpdateView,
+    TemplateView,
+)
 
 from ralph.account.models import Perm
-from ralph.discovery.models import ReadOnlyDevice, Network, IPAddress
-from ralph.ui.forms import NetworksFilterForm
+from ralph.discovery.models import Network, IPAddress
+from ralph.ui.forms.network import NetworkForm, NetworksFilterForm
 from ralph.ui.views.common import (
-    Addresses,
     Asset,
     BaseMixin,
     Components,
     Costs,
     History,
-    Info,
     Prices,
     Software,
     Scan,
@@ -31,24 +40,42 @@ from ralph.ui.views.devices import BaseDeviceList
 from ralph.ui.views.reports import Reports, ReportDeviceList
 from ralph.util import presentation
 from ralph.scan import autoscan
+from ralph.deployment.util import get_first_free_ip
+from ralph.discovery.models_network import get_network_tree
 
 
-def network_tree_menu(networks, details, children, show_ip=False, status=''):
+from django.core.cache import cache
+
+
+def network_tree_menu(networks, details, get_params, show_ip=False, status=''):
     icon = presentation.get_network_icon
     items = []
+
+    def get_href(view_args):
+        view_args = map(
+            lambda arg: urllib.quote(arg.encode('utf-8'), ''),
+            view_args,
+        )
+        url = reverse("networks", args=view_args)
+        return '%s?%s' % (
+            url,
+            get_params,
+        )
     for n in networks:
         items.append(MenuItem(
-            n.address if show_ip else n.name,
-            fugue_icon=icon(n),
+            "{} ({})".format(
+                n['network'].name, n['network'].address,
+            ),
+            fugue_icon=icon(n['network']),
             view_name='networks',
-            indent=' ',
-            name=n.name,
-            view_args=[n.name, details, status],
-            subitems = network_tree_menu(
-                children[n.id], details, children, show_ip, status
+            indent='  ',
+            href=get_href(view_args=[n['network'].name, details, status]),
+            name=n['network'].name,
+            subitems=network_tree_menu(
+                n['subnetworks'], details, get_params, show_ip, status,
             ),
             collapsible=True,
-            collapsed=not getattr(n, 'expanded', False),
+            collapsed=not getattr(n['network'], 'expanded', False),
         ))
     return items
 
@@ -62,6 +89,8 @@ class SidebarNetworks(object):
         self.status = ''
 
     def set_network(self):
+        if self.network:
+            return self.network
         network_symbol = self.kwargs.get('network')
         if network_symbol == '-':
             self.network = ''
@@ -70,60 +99,53 @@ class SidebarNetworks(object):
                                              name__iexact=network_symbol)
         else:
             self.network = None
+        return self.network
 
     def get_context_data(self, **kwargs):
         ret = super(SidebarNetworks, self).get_context_data(**kwargs)
-        profile = self.request.user.get_profile()
-        has_perm = profile.has_perm
         self.set_network()
-        networks = Network.objects.all()
-        contains =  self.request.GET.get('contains')
+        networks = Network.objects.all().select_related("kind__icon")
+        contains = self.request.GET.get('contains')
         if contains:
-            networks = networks.filter(
-                    Q(name__contains=contains) |
-                    Q(address__contains=contains)
+            networks_filtered = Network.objects.filter(
+                Q(name__contains=contains) | Q(address__contains=contains)
+            )
+            minimax = [(n.min_ip, n.max_ip) for n in networks_filtered]
+            ids = []
+            for mini, maxi in minimax:
+                ids.extend(
+                    map(
+                        lambda net: net['id'],
+                        Network.objects.filter(
+                            min_ip__gte=mini,
+                            max_ip__lte=maxi,
+                        ).values('id')
+                    )
                 )
-        self.networks = list(networks.order_by('min_ip', '-max_ip'))
-        stack = []
-        children = collections.defaultdict(list)
-        for network in self.networks:
-            network.parent = None
-            while stack:
-                if network in stack[-1]:
-                    network.parent = stack[-1]
-                    children[stack[-1].id].append(network)
-                    break
-                else:
-                    stack.pop()
-            if network.parent:
-                network.depth = network.parent.depth + 1
-            else:
-                network.depth = 0
-            network.indent = ' ' * network.depth
-            stack.append(network)
-            if network == self.network:
-                parent = getattr(network, 'parent', None)
-                while parent:
-                    parent.expanded = True
-                    parent = getattr(parent, 'parent', None)
-        sidebar_items = [MenuItem(fugue_icon='fugue-prohibition',
-                                  label="None", name='',
-                                  view_name='networks',
-                                  view_args=['-', ret['details'], self.status])]
-        sidebar_items.extend(
-            network_tree_menu(
-                [n for n in self.networks if n.parent is None],
-                ret['details'],
-                children,
-                show_ip=self.request.GET.get('show_ip'),
-                status=self.status,
-            ),
-        )
-        if has_perm(Perm.edit_device_info_generic) and not self.object:
-            ret['tab_items'].extend([
-                MenuItem('Autoscan', fugue_icon='fugue-radar',
-                         href=self.tab_href('autoscan', 'new')),
-            ])
+            networks = networks.filter(id__in=ids)
+        network_kind = self.request.GET.get('kind')
+        if network_kind:
+            networks = networks.filter(
+                kind__id=int(network_kind),
+            )
+        networks = networks.order_by('-min_ip', 'max_ip')
+
+        sidebar_items = cache.get('cache_network_sidebar_items')
+        if not sidebar_items:
+            self.networks = get_network_tree(
+                qs=networks
+            )
+            sidebar_items = []
+            sidebar_items.extend(
+                network_tree_menu(
+                    self.networks,
+                    ret['details'],
+                    status=self.status,
+                    get_params=self.request.GET.urlencode(),
+                ),
+            )
+            # 24 hours cache
+            cache.set('cache_network_sidebar_items', sidebar_items, 24 * 60)
 
         ret.update({
             'sidebar_items': sidebar_items,
@@ -133,86 +155,121 @@ class SidebarNetworks(object):
             'subsection': self.network.name if self.network else self.network,
             'searchform': NetworksFilterForm(self.request.GET),
             'searchform_filter': True,
+            'sidebar_alternative_span': 'span3',
+            'content_alternative_span': 'span9',
         })
         return ret
 
 
-class Networks(SidebarNetworks, BaseMixin):
-    pass
+class NetworksMixin(SidebarNetworks, BaseMixin):
+
+    def tab_href(self, name, obj=''):
+        args = [self.kwargs.get('network'), name]
+        if obj:
+            args.append(obj)
+        return '%s?%s' % (
+            reverse("networks", args=args),
+            self.request.GET.urlencode(),
+        )
+
+    def get_tab_items(self):
+        return []
+
+    def get_context_data(self, **kwargs):
+        ret = super(NetworksMixin, self).get_context_data(**kwargs)
+        tab_menu = [
+            MenuItem('Info', fugue_icon='fugue-wooden-box',
+                     href=self.tab_href('info')),
+            MenuItem('Addresses', fugue_icon='fugue-network-ip',
+                     href=self.tab_href('addresses')),
+            MenuItem('Autoscan', fugue_icon='fugue-radar',
+                     href=self.tab_href('autoscan')),
+        ]
+        show_tabs = [
+            'info',
+            'addresses',
+            'autoscan',
+        ]
+        context = {
+            'show_tabs': show_tabs,
+            'tab_items': tab_menu,
+        }
+        context['network'] = self.set_network()
+        ret.update(context)
+        return ret
 
 
-class NetworksDeviceList(SidebarNetworks, BaseMixin, BaseDeviceList):
+class NetworksDeviceList(NetworksMixin, TemplateView):
+    template_name = "ui/network_list.html"
 
     def user_allowed(self):
         has_perm = self.request.user.get_profile().has_perm
         return has_perm(Perm.read_network_structure)
 
-    def get_queryset(self):
-        self.set_network()
-        if self.network is None:
-            return ReadOnlyDevice.objects.none()
-        if self.network == '':
-            return ReadOnlyDevice.objects.filter(
-                ipaddress=None
-            ).order_by(
-                'dc', 'rack', 'model__type', 'position'
-            )
-        addresses = IPAddress.objects.filter(
-                number__gte=self.network.min_ip,
-                number__lte=self.network.max_ip,
-            )
-        queryset = ReadOnlyDevice.objects.filter(
-                ipaddress__in=addresses
-            ).order_by(
-                'dc', 'rack', 'model__type', 'position'
-            )
-        return super(NetworksDeviceList, self).get_queryset(queryset)
+
+class NetworksInfo(NetworksMixin, UpdateView):
+    model = Network
+    slug_field = 'name'
+    slug_url_kwarg = 'network'
+    template_name = 'ui/network_info.html'
+    form_class = NetworkForm
+
+    def get_property_form(self):
+        return None
 
     def get_context_data(self, **kwargs):
-        ret = super(NetworksDeviceList, self).get_context_data(**kwargs)
-        ret.update({
-            'subsection': self.network.name if self.network else self.network,
-        })
+        ret = super(NetworksInfo, self).get_context_data(**kwargs)
+        next_free_ip = get_first_free_ip(self.network.name)
+        ret['next_free_ip'] = next_free_ip
+        ret['editable'] = True
+        for error in ret['form'].non_field_errors():
+            messages.error(self.request, error)
+        return ret
+
+    def get_object(self):
+        self.set_network()
+        return self.network
+
+
+class NetworksComponents(NetworksMixin, Components):
+    pass
+
+
+class NetworksSoftware(NetworksMixin, Software):
+    pass
+
+
+class NetworksPrices(NetworksMixin, Prices):
+    pass
+
+
+class NetworksAddresses(NetworksMixin, TemplateView):
+    template_name = "ui/network_addresses.html"
+
+    def get_context_data(self, **kwargs):
+        ret = super(NetworksAddresses, self).get_context_data(**kwargs)
+        aggregated = self.network.get_ip_usage_aggegated()
+        ret['ip_usage'] = aggregated
         return ret
 
 
-class NetworksInfo(Networks, Info):
+class NetworksCosts(NetworksMixin, Costs):
     pass
 
 
-class NetworksComponents(Networks, Components):
+class NetworksHistory(NetworksMixin, History):
     pass
 
 
-class NetworksSoftware(Networks, Software):
+class NetworksAsset(NetworksMixin, Asset):
     pass
 
 
-class NetworksPrices(Networks, Prices):
+class NetworksReports(NetworksMixin, Reports):
     pass
 
 
-class NetworksAddresses(Networks, Addresses):
-    pass
-
-
-class NetworksCosts(Networks, Costs):
-    pass
-
-
-class NetworksHistory(Networks, History):
-    pass
-
-
-class NetworksAsset(Networks, Asset):
-    pass
-
-
-class NetworksReports(Networks, Reports):
-    pass
-
-
-class NetworksScan(Networks, Scan):
+class NetworksScan(NetworksMixin, Scan):
     pass
 
 
@@ -220,7 +277,7 @@ class ReportNetworksDeviceList(ReportDeviceList, NetworksDeviceList):
     pass
 
 
-class NetworksAutoscan(SidebarNetworks, BaseMixin, BaseDeviceList):
+class NetworksAutoscan(NetworksMixin, BaseDeviceList):
     template_name = 'ui/address_list.html'
     section = 'networks'
 
@@ -250,7 +307,7 @@ class NetworksAutoscan(SidebarNetworks, BaseMixin, BaseDeviceList):
             query = query.filter(is_buried=False)
         elif self.status == 'dead':
             query = query.filter(
-                dead_ping_count__gt=2,
+                dead_ping_count__gt=settings.DEAD_PING_COUNT,
                 device__isnull=False,
             ).exclude(
                 device__deleted=True,
@@ -265,7 +322,7 @@ class NetworksAutoscan(SidebarNetworks, BaseMixin, BaseDeviceList):
         return self.sort_queryset(
             query,
             columns={
-                'address':  ('number',),
+                'address': ('number',),
                 'hostname': ('hostname',),
                 'last_seen': ('last_seen',),
                 'device': ('device__model__name',),
@@ -273,6 +330,28 @@ class NetworksAutoscan(SidebarNetworks, BaseMixin, BaseDeviceList):
                 'http_family': ('http_family'),
             },
         )
+
+    def append_scan_summary_info(self, ip_addresses):
+        if not ip_addresses:
+            return
+        delta = timezone.now() - datetime.timedelta(days=1)
+        for ip_address in ip_addresses:
+            if (
+                ip_address.scan_summary and
+                ip_address.scan_summary.modified > delta
+            ):
+                try:
+                    job = rq.job.Job.fetch(
+                        ip_address.scan_summary.job_id,
+                        django_rq.get_connection(),
+                    )
+                except rq.exceptions.NoSuchJobError:
+                    continue
+                else:
+                    ip_address.scan_summary.changed = job.meta.get(
+                        'changed',
+                        False,
+                    )
 
     def get_context_data(self, **kwargs):
         ret = super(NetworksAutoscan, self).get_context_data(**kwargs)
@@ -303,6 +382,7 @@ class NetworksAutoscan(SidebarNetworks, BaseMixin, BaseDeviceList):
                 href=self.tab_href('autoscan', 'all'),
             ),
         ]
+        self.append_scan_summary_info(ret['object_list'])
         ret.update({
             'status_menu_items': status_menu_items,
             'status_selected': self.status,

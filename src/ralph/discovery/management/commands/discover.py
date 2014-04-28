@@ -13,10 +13,11 @@ from functools import partial
 import sys
 import textwrap
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from ipaddr import IPNetwork
 
-from ralph.discovery.models import Network
+from ralph.discovery.models import Network, Environment
 from ralph.discovery.tasks import (
     discover_address,
     discover_all,
@@ -26,11 +27,15 @@ from ralph.discovery.tasks import (
 from ralph.util import network, plugin
 
 
+DISCOVERY_DISABLED = getattr(settings, 'DISCOVERY_DISABLED', False)
+
+
 class OptionBag(object):
     pass
 
 
 class Command(BaseCommand):
+
     """Runs discovery of machines in the network. Accepts an optional list
     of network addresses, network names (as defined in the database) or
     host IP addresses. The addresses given do not have to be present in the
@@ -59,6 +64,13 @@ class Command(BaseCommand):
             help='Run only the discovery on networks from selected data '
                  'center.'),
         make_option(
+            '--env',
+            dest='environments',
+            default=None,
+            help='Run only the discovery on networks from selected '
+                 'environment.',
+        ),
+        make_option(
             '--queues',
             dest='queues',
             default=None,
@@ -71,6 +83,12 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         """Dispatches the request to either direct, interactive execution
         or to asynchronous processing using the queue."""
+        if DISCOVERY_DISABLED:
+            print(
+                'Discovery command is deprecated since Ralph 2.0. '
+                'Use ralph scan [arguments] instead.',
+            )
+            sys.exit()
         interactive = not options['remote']
         discover = OptionBag()
         discover.all = partial(discover_all, interactive=interactive)
@@ -99,8 +117,34 @@ class Command(BaseCommand):
         if options['queues']:
             for queue in options['queues'].split(','):
                 queue = queue.strip()
-                new_networks.update(n.address for n in Network.objects.filter(
-                    queue__name__iexact=queue))
+                for environment in Environment.objects.filter(
+                    queue__name__iexact=queue,
+                ):
+                    new_networks.update(
+                        net.address
+                        for net in environment.network_set.all(),
+                    )
+        if options['environments']:
+            for environment_name in options['environments'].split(','):
+                environment_name = environment_name.strip()
+                try:
+                    environment = Environment.objects.get(
+                        name__iexact=environment_name,
+                        queue__isnull=False,
+                    )
+                except Environment.DoesNotExist:
+                    print(
+                        "Environment %s does not have configured queue." % (
+                            environment_name,
+                        ),
+                        file=sys.stderr,
+                    )
+                    sys.exit(2)
+                else:
+                    new_networks.update(
+                        net.address
+                        for net in environment.network_set.all(),
+                    )
         if new_networks:
             args.extend(new_networks)
         if not args:

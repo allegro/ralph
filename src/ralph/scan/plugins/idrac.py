@@ -13,6 +13,8 @@ import requests
 from django.conf import settings
 from xml.etree import cElementTree as ET
 
+from ralph.discovery.models import MAC_PREFIX_BLACKLIST, SERIAL_BLACKLIST
+from ralph.scan.errors import Error, NoMatchError
 from ralph.scan.plugins import get_base_result_template
 
 
@@ -49,10 +51,6 @@ SOAP_ENUM_WSMAN_TEMPLATE = '''<?xml version="1.0"?>
 '''
 
 FC_INFO_EXPRESSION = re.compile(r'([0-9]+)-[0-9]+')
-
-
-class Error(Exception):
-    pass
 
 
 def _send_soap(post_url, login, password, message):
@@ -92,6 +90,7 @@ def _send_soap(post_url, login, password, message):
 
 
 class IDRAC(object):
+
     def __init__(self, host, user, password):
         self.host = host
         self.user = user
@@ -127,7 +126,7 @@ def _get_base_info(idrac):
     records = tree.findall(q)
     if not records:
         raise Error("Incorrect answer in the _get_base_info.")
-    return {
+    result = {
         'model_name': "{} {}".format(
             records[0].find(
                 "{}{}".format(xmlns_n1, 'Manufacturer'),
@@ -136,10 +135,13 @@ def _get_base_info(idrac):
                 "{}{}".format(xmlns_n1, 'Model'),
             ).text.strip(),
         ),
-        'serial_number': records[0].find(
-            "{}{}".format(xmlns_n1, 'ChassisServiceTag'),
-        ).text.strip(),
     }
+    serial_number = records[0].find(
+        "{}{}".format(xmlns_n1, 'ChassisServiceTag'),
+    ).text.strip()
+    if serial_number not in SERIAL_BLACKLIST:
+        result['serial_number'] = serial_number
+    return result
 
 
 def _get_mac_addresses(idrac_manager):
@@ -151,10 +153,15 @@ def _get_mac_addresses(idrac_manager):
         XMLNS_WSMAN,
         xmlns_n1,
     )
-    return [
+    mac_addresses = [
         record.find(
             "{}{}".format(xmlns_n1, 'CurrentMACAddress'),
         ).text.strip() for record in tree.findall(q)
+    ]
+    return [
+        mac
+        for mac in mac_addresses
+        if mac.replace(':', '').upper()[:6] not in MAC_PREFIX_BLACKLIST
     ]
 
 
@@ -204,23 +211,25 @@ def _get_memory(idrac_manager):
         XMLNS_WSMAN,
         xmlns_n1,
     )
-    return [{
-        'label': '{} {}'.format(
-            record.find(
-                "{}{}".format(xmlns_n1, 'Manufacturer'),
+    return [
+        {
+            'label': '{} {}'.format(
+                record.find(
+                    "{}{}".format(xmlns_n1, 'Manufacturer'),
+                ).text.strip(),
+                record.find(
+                    "{}{}".format(xmlns_n1, 'Model'),
+                ).text.strip(),
+            ),
+            'size': record.find(
+                "{}{}".format(xmlns_n1, 'Size'),
             ).text.strip(),
-            record.find(
-                "{}{}".format(xmlns_n1, 'Model'),
+            'speed': record.find(
+                "{}{}".format(xmlns_n1, 'Speed'),
             ).text.strip(),
-        ),
-        'size': record.find(
-            "{}{}".format(xmlns_n1, 'Size'),
-        ).text.strip(),
-        'speed': record.find(
-            "{}{}".format(xmlns_n1, 'Speed'),
-        ).text.strip(),
-        'index': index,
-    } for index, record in enumerate(tree.findall(q), start=1)]
+            'index': index,
+        } for index, record in enumerate(tree.findall(q), start=1)
+    ]
 
 
 def _get_disks(idrac_manager):
@@ -279,7 +288,7 @@ def _get_fibrechannel_cards(idrac_manager):
         if 'fibre channel' not in label.lower():
             continue
         match = FC_INFO_EXPRESSION.search(
-             record.find(
+            record.find(
                 "{}{}".format(xmlns_n1, "FQDD"),
             ).text,
         )
@@ -298,6 +307,9 @@ def _get_fibrechannel_cards(idrac_manager):
 
 def idrac_device_info(idrac_manager):
     device_info = _get_base_info(idrac_manager)
+    mac_addresses = _get_mac_addresses(idrac_manager)
+    if mac_addresses:
+        device_info['mac_addresses'] = mac_addresses
     processors = _get_processors(idrac_manager)
     if processors:
         device_info['processors'] = processors
@@ -314,6 +326,9 @@ def idrac_device_info(idrac_manager):
 
 
 def scan_address(ip_address, **kwargs):
+    http_family = (kwargs.get('http_family', '') or '').strip()
+    if http_family and http_family.lower() not in ('dell', 'embedthis-http'):
+        raise NoMatchError('It is not Dell.')
     user = SETTINGS.get('user')
     password = SETTINGS.get('password')
     messages = []
@@ -335,4 +350,3 @@ def scan_address(ip_address, **kwargs):
                 'device': device_info,
             })
     return result
-

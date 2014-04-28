@@ -108,6 +108,7 @@ def _send_soap(post_url, login, password, message):
 
 
 class IDRAC(object):
+
     def __init__(self, host, user=IDRAC_USER, password=IDRAC_PASSWORD):
         self.host = host
         self.user = user
@@ -140,7 +141,8 @@ class IDRAC(object):
         )
         records = tree.findall(q)
         if not records:
-            raise IncorrectAnswerError("Incorrect answer in the get_base_info.")
+            raise IncorrectAnswerError(
+                "Incorrect answer in the get_base_info.")
         result = {
             'manufacturer': records[0].find(
                 "{}{}".format(xmlns_n1, 'Manufacturer')
@@ -328,7 +330,7 @@ def _save_cpu(dev, data):
             speed=cpu['speed'],
             family=cpu['family'],
             cores=cpu['cores_count'],
-            name = cpu['model'],
+            name=cpu['model'],
             priority=SAVE_PRIORITY,
         )
         processor, _ = Processor.concurrent_get_or_create(
@@ -444,8 +446,7 @@ def idrac(**kwargs):
         return False, "not configured", kwargs
     ip = str(kwargs['ip'])
     http_family = kwargs.get('http_family')
-    if http_family not in ('Dell', ):
+    if http_family.lower() not in ('dell', 'embedthis-http'):
         return False, 'no match', kwargs
     name = run_idrac(ip)
     return True, name, kwargs
-

@@ -9,7 +9,12 @@ import datetime
 import re
 
 from ralph.business.models import Venture, VentureExtraCost
-from ralph.discovery.models import Device, DeviceType, DiskShareMount
+from ralph.discovery.models import (
+    Device,
+    DeviceType,
+    DiskShareMount,
+    IPAddress,
+)
 
 from django.db import models as db
 
@@ -31,6 +36,7 @@ def get_ventures():
             venture.business_segment else "",
             'profit_center': venture.profit_center.name if
             venture.profit_center else "",
+            'show_in_ralph': venture.show_in_ralph,
         }
 
 
@@ -83,10 +89,16 @@ def get_physical_cores():
         }
 
 
-def get_virtual_usages():
+def get_virtual_usages(parent_venture_name=None):
     """Yields dicts reporting the number of virtual cores, memory and disk."""
-
-    for device in Device.objects.filter(model__type=DeviceType.virtual_server):
+    devices = Device.objects.filter(model__type=DeviceType.virtual_server)
+    if parent_venture_name:
+        devices = devices.filter(
+            parent__venture=Venture.objects.get(
+                name=parent_venture_name,
+            ),
+        )
+    for device in devices:
         cores = device.get_core_count()
         memory = device.memory_set.aggregate(db.Sum('size'))['size__sum']
         disk = device.storage_set.aggregate(db.Sum('size'))['size__sum']
@@ -207,3 +219,21 @@ def devices_history(start_date, end_date):
                 data['physical_cores'] = cost.cores
 
             yield data
+
+
+def get_device_by_name(device_name):
+    """Returns device information by device name"""
+    devices = Device.objects.filter(name=device_name)
+    if devices:
+        device = devices[0]
+        return {
+            'device_id': device.id,
+            'venture_id': device.venture.id if device.venture else None,
+        }
+    return {}
+
+
+def get_ip_addresses(only_public=False):
+    """Yileds available IP addresses"""
+    ips = IPAddress.objects.filter(is_public=only_public)
+    return {ip.address: ip.venture.id if ip.venture else None for ip in ips}

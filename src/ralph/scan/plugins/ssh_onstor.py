@@ -7,7 +7,7 @@ from __future__ import unicode_literals
 
 from django.conf import settings
 
-from ralph.discovery.models import DeviceType
+from ralph.discovery.models import DeviceType, SERIAL_BLACKLIST
 from ralph.scan.errors import ConnectionError, NoMatchError
 from ralph.scan.plugins import get_base_result_template
 from ralph.util import parse
@@ -37,9 +37,10 @@ def _ssh_onstor(ip_address, user, password):
         mac = pairs['--------']['MAC addr'].upper().replace(':', '')
         device_info.update({
             'model_name': 'Onstor %s' % model_name,
-            'serial_number': sn,
             'mac_addresses': [mac],
         })
+        if sn not in SERIAL_BLACKLIST:
+            device_info['serial_number'] = sn
     finally:
         ssh.close()
     return device_info
@@ -48,7 +49,7 @@ def _ssh_onstor(ip_address, user, password):
 def scan_address(ip_address, **kwargs):
     if kwargs.get('http_family') not in ('sscccc',):
         raise NoMatchError("It's not an ONStor.")
-    if 'nx-os' in kwargs.get('snmp_name', '').lower():
+    if 'nx-os' in (kwargs.get('snmp_name', '') or '').lower():
         raise NoMatchError("Incompatible Nexus found.")
     user = SETTINGS.get('user')
     password = SETTINGS.get('password')
@@ -72,4 +73,3 @@ def scan_address(ip_address, **kwargs):
                 'device': device_info,
             })
     return result
-

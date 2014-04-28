@@ -33,6 +33,7 @@ DATACENTER = 'dc1'
 
 
 class CIFormsTest(TestCase):
+
     def setUp(self):
         login = 'ralph'
         password = 'ralph'
@@ -322,7 +323,7 @@ class CIFormsTest(TestCase):
         ci_application = db.CI.objects.get(name='CI_application')
         response_ci_application_edit = self.edit_ci(
             ci_application, custom_attrs={
-                'attr-attribute_float_4': 12345
+                'base-attribute_4': 12345
             }
         )
         self.assertEqual(response_ci_application_edit.status_code, 302)
@@ -339,8 +340,8 @@ class CIFormsTest(TestCase):
         ci_device = db.CI.objects.get(name='CI_device')
         response_ci_device_edit = self.edit_ci(
             ci_device, custom_attrs={
-                'attr-attribute_date_3': time.strftime('%Y-%m-%d'),
-                'attr-attribute_float_4': 666,
+                'base-attribute_3': time.strftime('%Y-%m-%d'),
+                'base-attribute_4': 666,
             }
         )
         self.assertEqual(response_ci_device_edit.status_code, 302)
@@ -362,8 +363,8 @@ class CIFormsTest(TestCase):
         ci_device = db.CI.objects.get(name='CI_procedure')
         response_ci_device_edit = self.edit_ci(
             ci_device, custom_attrs={
-                'attr-attribute_string_1': 'http://doc.local',
-                'attr-attribute_string_2': 'name-test',
+                'base-attribute_1': 'http://doc.local',
+                'base-attribute_2': 'name-test',
             }
         )
         self.assertEqual(response_ci_device_edit.status_code, 302)

@@ -24,8 +24,10 @@ from ping import do_one
 class Error(Exception):
     pass
 
+
 class ConnectError(Error):
     pass
+
 
 class AuthError(Error):
     pass
@@ -43,6 +45,7 @@ def hostname(ip, reverse=False):
     except socket.error:
         return None
 
+
 def descriptions(host):
     """descriptions(host) -> ['descriptive text 1', 'descriptive text 2', ...]
 
@@ -55,9 +58,10 @@ def descriptions(host):
         try:
             for answer in dns.resolver.query(host, 'TXT'):
                 result.append(str(answer).strip('"'))
-        except DNSException: # dns.resolver.NXDOMAIN, dns.resolver.NoAnswer
+        except DNSException:  # dns.resolver.NXDOMAIN, dns.resolver.NoAnswer
             pass
     return result
+
 
 def ping(hostname, timeout=0.2, attempts=2, packet_size=64):
     """ping(hostname, [timeout, attempts, packet_size]) -> float
@@ -72,6 +76,7 @@ def ping(hostname, timeout=0.2, attempts=2, packet_size=64):
         except socket.error:
             result = None
     return result
+
 
 def ping_main(hostname=None, timeout=0.2, attempts=2):
     """ping as a command. Installed as pping by setuptools."""
@@ -91,7 +96,10 @@ def check_tcp_port(ip, port, timeout=1):
     return result == 0
 
 
-def connect_ssh(ip, username, password=None, client=paramiko.SSHClient, key=None):
+def connect_ssh(
+    ip, username, password=None, client=paramiko.SSHClient,
+    key=None, timeout=15.0,
+):
     ssh = client()
     ssh.set_log_channel('critical_only')
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -101,7 +109,10 @@ def connect_ssh(ip, username, password=None, client=paramiko.SSHClient, key=None
     else:
         pkey = None
     try:
-        ssh.connect(ip, username=username, password=password, pkey=pkey)
+        ssh.connect(
+            ip, username=username, password=password, pkey=pkey,
+            timeout=timeout,
+        )
     except (paramiko.AuthenticationException, EOFError) as e:
         raise AuthError(str(e))
     return ssh
@@ -111,5 +122,5 @@ def validate_ip(address):
     ip = ipaddr.IPAddress(address)
     if ip.is_unspecified or ip.is_loopback or ip.is_link_local:
         raise ValueError("Local, unspecified or loopback address: {}"
-            "".format(address))
+                         "".format(address))
     return unicode(ip)

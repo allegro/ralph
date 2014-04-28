@@ -1,0 +1,29 @@
+{% extends "ui/network_sidebar.html" %}
+{% load url from future %}
+{% load icons %}
+
+{% block content %}
+<div class="row-fluid">
+    <div class="span6">
+        {% include 'ui/network_form.html' with form=form %}
+    </div>
+    <div class="span6">
+        <table class="table table-striped table-bordered details-info-owners">
+            <tbody>
+                <tr>
+                    <td>Next free address</td>
+                    <td>{{ next_free_ip }}</td>
+                </tr>
+                <tr>
+                    <td>Free adresses</td>
+                    <td>{{ network.get_free_ips }}</td>
+                </tr>
+                <tr>
+                    <td>Total adresses</td>
+                    <td>{{ network.get_total_ips }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock content %}

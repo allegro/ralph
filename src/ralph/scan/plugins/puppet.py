@@ -40,11 +40,13 @@ ENGINES = {}
 
 
 class PuppetBaseProvider(object):
+
     def get_facts(self, ip_addresses, hostnames, messages=[]):
         raise NotImplementedError()
 
 
 class PuppetAPIProvider(PuppetBaseProvider):
+
     def __init__(self, api_url):
         self.api_url = api_url
 
@@ -79,6 +81,7 @@ class PuppetAPIProvider(PuppetBaseProvider):
 
 
 class PuppetDBProvider(PuppetBaseProvider):
+
     def __init__(self, db_url):
         self.db_url = db_url
         self.conn = self._connect_db()
@@ -145,7 +148,6 @@ class PuppetDBProvider(PuppetBaseProvider):
                         "this IP set: {}".format(', '.join(ip_addresses)),
                     )
         return facts
-
 
     def _get_facts_by_hostnames(self, hostnames):
         facts = None
@@ -307,4 +309,3 @@ def scan_address(ip_address, **kwargs):
             'device': device_info,
         })
     return result
-

@@ -24,7 +24,6 @@ from lck.django.choices import Choices
 from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Taggable
 from django.utils.html import escape
-from django.dispatch import receiver
 
 from ralph.discovery.models_component import is_mac_valid, Ethernet
 from ralph.discovery.models_util import LastSeen, SavingUser
@@ -36,17 +35,25 @@ BLADE_SERVERS = [
     r'^HP ProLiant BL',
 ]
 
+
 BLADE_SERVERS_RE = re.compile('|'.join(('(%s)' % r) for r in BLADE_SERVERS))
+
 
 SERIAL_BLACKLIST = set([
     None, '', 'Not Available', 'XxXxXxX', '-----', '[Unknown]', '0000000000',
     'Not Specified', 'YK10CD', '1234567890', 'None', 'To Be Filled By O.E.M.',
 ])
 
-DISK_VENDOR_BLACKLIST = set(['lsi', 'lsilogic', 'vmware', '3pardata'])
-DISK_PRODUCT_BLACKLIST = set(['mr9261-8i', '9750-4i', 'msa2324fc',
+DISK_VENDOR_BLACKLIST = set([
+    'lsi', 'lsilogic', 'vmware', '3pardata',
+])
+
+
+DISK_PRODUCT_BLACKLIST = set([
+    'mr9261-8i', '9750-4i', 'msa2324fc',
     'logical volume', 'virtualdisk', 'virtual-disk', 'multi-flex',
-    '1815      fastt', 'comstar'])
+    '1815      fastt', 'comstar',
+])
 
 
 class DeviceType(Choices):
@@ -66,10 +73,11 @@ class DeviceType(Choices):
     firewall = _("firewall")
     smtp_gateway = _("SMTP gateway")
     appliance = _("Appliance")
+    switch_stack = _("switch stack")
 
     SERVERS = Choices.Group(200)
     rack_server = _("rack server")
-    blade_server = _("blade server") << { 'matches': BLADE_SERVERS_RE.match }
+    blade_server = _("blade server") << {'matches': BLADE_SERVERS_RE.match}
     virtual_server = _("virtual server")
     cloud_server = _("cloud server")
 
@@ -83,11 +91,17 @@ class DeviceType(Choices):
 
 
 class DeprecationKind(TimeTrackable, Named):
-    months = db.PositiveIntegerField(verbose_name=_("deprecation time in months"),
-        blank=True, null=True)
-    remarks = db.TextField(verbose_name=_("remarks"),
+    months = db.PositiveIntegerField(
+        verbose_name=_("deprecation time in months"),
+        blank=True,
+        null=True,
+    )
+    remarks = db.TextField(
+        verbose_name=_("remarks"),
         help_text=_("additional information."),
-        blank=True, default="")
+        blank=True,
+        default="",
+    )
     default = db.BooleanField(default=False)
 
     class Meta:
@@ -96,22 +110,32 @@ class DeprecationKind(TimeTrackable, Named):
 
     def save(self, *args, **kwargs):
         if self.dirty_fields.get('months') is not None:
-            devices = Device.objects.filter(deprecation_kind_id = self.id)
+            devices = Device.objects.filter(deprecation_kind_id=self.id)
             for device in devices:
-                if (device.purchase_date is not None
-                    and device.deprecation_kind_id is not None):
-                    device.deprecation_date = (device.purchase_date +
-                                               relativedelta(months=self.months))
+                if (
+                    device.purchase_date is not None and
+                    device.deprecation_kind_id is not None
+                ):
+                    device.deprecation_date = (
+                        device.purchase_date +
+                        relativedelta(months=self.months)
+                    )
                     super(Device, device).save(*args, **kwargs)
         return super(DeprecationKind, self).save(*args, **kwargs)
 
 
 class MarginKind(Named):
-    margin = db.PositiveIntegerField(verbose_name=_("margin in percents"),
-        blank=True, null=True)
-    remarks = db.TextField(verbose_name=_("remarks"),
+    margin = db.PositiveIntegerField(
+        verbose_name=_("margin in percents"),
+        blank=True,
+        null=True,
+    )
+    remarks = db.TextField(
+        verbose_name=_("remarks"),
         help_text=_("additional information."),
-        blank=True, default="")
+        blank=True,
+        default="",
+    )
 
     class Meta:
         verbose_name = _("margin kind")
@@ -119,10 +143,16 @@ class MarginKind(Named):
 
 
 class DeviceModelGroup(Named, TimeTrackable, SavingUser):
-    price = db.PositiveIntegerField(verbose_name=_("purchase price"),
-        null=True, blank=True)
-    type = db.PositiveIntegerField(verbose_name=_("device type"),
-        choices=DeviceType(), default=DeviceType.unknown.id)
+    price = db.PositiveIntegerField(
+        verbose_name=_("purchase price"),
+        null=True,
+        blank=True,
+    )
+    type = db.PositiveIntegerField(
+        verbose_name=_("device type"),
+        choices=DeviceType(),
+        default=DeviceType.unknown.id,
+    )
     slots = db.FloatField(verbose_name=_("number of slots"), default=0)
 
     class Meta:
@@ -134,13 +164,29 @@ class DeviceModelGroup(Named, TimeTrackable, SavingUser):
 
 
 class DeviceModel(SavePrioritized, WithConcurrentGetOrCreate, SavingUser):
-    name = db.CharField(verbose_name=_("name"), max_length=255, unique=True)
-    type = db.PositiveIntegerField(verbose_name=_("device type"),
-        choices=DeviceType(), default=DeviceType.unknown.id)
-    group = db.ForeignKey(DeviceModelGroup, verbose_name=_("group"),
-        null=True, blank=True, default=None, on_delete=db.SET_NULL)
+    name = db.CharField(
+        verbose_name=_("name"),
+        max_length=255,
+        unique=True,
+    )
+    type = db.PositiveIntegerField(
+        verbose_name=_("device type"),
+        choices=DeviceType(),
+        default=DeviceType.unknown.id,
+    )
+    group = db.ForeignKey(
+        DeviceModelGroup,
+        verbose_name=_("group"),
+        null=True,
+        blank=True,
+        default=None,
+        on_delete=db.SET_NULL,
+    )
     chassis_size = db.PositiveIntegerField(
-            verbose_name=_("chassis size"), null=True, blank=True)
+        verbose_name=_("chassis size"),
+        null=True,
+        blank=True,
+    )
 
     class Meta:
         verbose_name = _("device model")
@@ -166,14 +212,21 @@ class DeviceModel(SavePrioritized, WithConcurrentGetOrCreate, SavingUser):
 
 
 class UptimeSupport(db.Model):
+
     """Adds an `uptime` attribute to the model. This attribute is shifted
     by the current time on each get. Returns a timedelta object, accepts
     None, timedelta and int values on set."""
 
     uptime_seconds = db.PositiveIntegerField(
-        verbose_name=_("uptime in seconds"), default=0)
-    uptime_timestamp = db.DateTimeField(verbose_name=_("uptime timestamp"),
-        null=True, blank=True, help_text=_("moment of the last uptime update"))
+        verbose_name=_("uptime in seconds"),
+        default=0,
+    )
+    uptime_timestamp = db.DateTimeField(
+        verbose_name=_("uptime timestamp"),
+        null=True,
+        blank=True,
+        help_text=_("moment of the last uptime update"),
+    )
 
     class Meta:
         abstract = True
@@ -214,72 +267,213 @@ class UptimeSupport(db.Model):
         return "%s, %02d:%02d:%02d" % (msg, hours, minutes, seconds)
 
 
-class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
-    WithConcurrentGetOrCreate, UptimeSupport, SoftDeletable, SavingUser):
-    name = db.CharField(verbose_name=_("name"), max_length=255)
-    name2 = db.CharField(verbose_name=_("extra name"), max_length=255,
-        null=True, blank=True, default=None)
-    parent = db.ForeignKey('self', verbose_name=_("parent device"),
+class Device(
+    LastSeen,
+    Taggable.NoDefaultTags,
+    SavePrioritized,
+    WithConcurrentGetOrCreate,
+    UptimeSupport,
+    SoftDeletable,
+    SavingUser,
+):
+    name = db.CharField(
+        verbose_name=_("name"),
+        max_length=255
+    )
+    name2 = db.CharField(
+        verbose_name=_("extra name"),
+        max_length=255,
+        null=True,
+        blank=True,
+        default=None,
+    )
+    parent = db.ForeignKey(
+        'self',
+        verbose_name=_("physical parent device"),
         on_delete=db.SET_NULL,
-        null=True, blank=True, default=None, related_name="child_set")
-    model = db.ForeignKey(DeviceModel, verbose_name=_("model"), null=True,
-        blank=True, default=None, related_name="device_set",
-        on_delete=db.SET_NULL)
-    sn = db.CharField(verbose_name=_("serial number"), max_length=255,
-        unique=True, null=True, blank=True, default=None)
-    barcode = db.CharField(verbose_name=_("barcode"), max_length=255,
-        unique=True, null=True, blank=True, default=None)
-    remarks = db.TextField(verbose_name=_("remarks"),
+        null=True,
+        blank=True,
+        default=None,
+        related_name="child_set",
+    )
+    logical_parent = db.ForeignKey(
+        'self',
+        verbose_name=_("logical parent device"),
+        on_delete=db.SET_NULL,
+        null=True,
+        blank=True,
+        default=None,
+        related_name="logicalchild_set",
+    )
+    model = db.ForeignKey(
+        DeviceModel,
+        verbose_name=_("model"),
+        null=True,
+        blank=True,
+        default=None,
+        related_name="device_set",
+        on_delete=db.SET_NULL,
+    )
+    sn = db.CharField(
+        verbose_name=_("serial number"),
+        max_length=255,
+        unique=True,
+        null=True,
+        blank=True,
+        default=None,
+    )
+    barcode = db.CharField(
+        verbose_name=_("barcode"),
+        max_length=255,
+        unique=True,
+        null=True,
+        blank=True,
+        default=None,
+    )
+    remarks = db.TextField(
+        verbose_name=_("remarks"),
         help_text=_("Additional information."),
-        blank=True, default="")
-    boot_firmware = db.CharField(verbose_name=_("boot firmware"), null=True,
-            blank=True, max_length=255)
-    hard_firmware = db.CharField(verbose_name=_("hardware firmware"),
-            null=True, blank=True, max_length=255)
-    diag_firmware = db.CharField(verbose_name=_("diagnostics firmware"),
-            null=True, blank=True, max_length=255)
-    mgmt_firmware = db.CharField(verbose_name=_("management firmware"),
-            null=True, blank=True, max_length=255)
-    price = db.PositiveIntegerField(verbose_name=_("manual price"),
-        null=True, blank=True)
-    purchase_date = db.DateTimeField(verbose_name=_("purchase date"),
-        null=True, blank=True)
-    deprecation_date = db.DateTimeField(verbose_name=_("deprecation date"),
-        null=True, blank=True)
-    cached_price = db.FloatField(verbose_name=_("quoted price"),
-        null=True, blank=True)
-    cached_cost = db.FloatField(verbose_name=_("monthly cost"),
-        null=True, blank=True)
+        blank=True,
+        default="",
+    )
+    boot_firmware = db.CharField(
+        verbose_name=_("boot firmware"),
+        null=True,
+        blank=True,
+        max_length=255,
+    )
+    hard_firmware = db.CharField(
+        verbose_name=_("hardware firmware"),
+        null=True,
+        blank=True,
+        max_length=255,
+    )
+    diag_firmware = db.CharField(
+        verbose_name=_("diagnostics firmware"),
+        null=True,
+        blank=True,
+        max_length=255,
+    )
+    mgmt_firmware = db.CharField(
+        verbose_name=_("management firmware"),
+        null=True,
+        blank=True,
+        max_length=255,
+    )
+    price = db.PositiveIntegerField(
+        verbose_name=_("manual price"),
+        null=True,
+        blank=True,
+    )
+    purchase_date = db.DateTimeField(
+        verbose_name=_("purchase date"),
+        null=True,
+        blank=True,
+    )
+    deprecation_date = db.DateTimeField(
+        verbose_name=_("deprecation date"),
+        null=True,
+        blank=True,
+    )
+    cached_price = db.FloatField(
+        verbose_name=_("quoted price"),
+        null=True,
+        blank=True,
+    )
+    cached_cost = db.FloatField(
+        verbose_name=_("monthly cost"),
+        null=True,
+        blank=True,
+    )
     warranty_expiration_date = db.DateTimeField(
-        verbose_name=_("warranty expiration"), null=True, blank=True)
+        verbose_name=_("warranty expiration"),
+        null=True,
+        blank=True,
+    )
     support_expiration_date = db.DateTimeField(
-        verbose_name=_("support expiration"), null=True, blank=True)
-    support_kind = db.CharField(verbose_name=_("support kind"),
-            null=True, blank=True, default=None, max_length=255)
-    deprecation_kind = db.ForeignKey(DeprecationKind,
-        verbose_name=_("deprecation"), on_delete=db.SET_NULL,
-        null=True, blank=True, default=None)
-    margin_kind = db.ForeignKey(MarginKind, verbose_name=_("margin"),
-        null=True, blank=True, default=None, on_delete=db.SET_NULL)
+        verbose_name=_("support expiration"),
+        null=True,
+        blank=True,
+    )
+    support_kind = db.CharField(
+        verbose_name=_("support kind"),
+        null=True,
+        blank=True,
+        default=None,
+        max_length=255,
+    )
+    deprecation_kind = db.ForeignKey(
+        DeprecationKind,
+        verbose_name=_("deprecation"),
+        on_delete=db.SET_NULL,
+        null=True,
+        blank=True,
+        default=None,
+    )
+    margin_kind = db.ForeignKey(
+        MarginKind,
+        verbose_name=_("margin"),
+        null=True,
+        blank=True,
+        default=None,
+        on_delete=db.SET_NULL,
+    )
     chassis_position = db.PositiveIntegerField(
-            verbose_name=_("numeric position"), null=True, blank=True)
-    position = db.CharField(verbose_name=_("position"),
-            null=True, blank=True, max_length=16)
-    venture = db.ForeignKey("business.Venture", verbose_name=_("venture"),
-                            null=True, blank=True, default=None,
-                            on_delete=db.SET_NULL)
-    management = db.ForeignKey("IPAddress", related_name="managed_set",
-                            verbose_name=_("management address"),
-                            null=True, blank=True, default=None,
-                            on_delete=db.SET_NULL)
-    role = db.CharField(verbose_name=_("old role"), null=True, blank=True,
-                        max_length=255)
-    venture_role = db.ForeignKey("business.VentureRole", on_delete=db.SET_NULL,
-        verbose_name=_("role"), null=True, blank=True, default=None)
-    dc = db.CharField(verbose_name=_("data center"), max_length=32,
-        null=True, blank=True, default=None)
-    rack = db.CharField(verbose_name=_("rack"), max_length=32,
-        null=True, blank=True, default=None)
+        verbose_name=_("numeric position"),
+        null=True,
+        blank=True,
+    )
+    position = db.CharField(
+        verbose_name=_("position"),
+        null=True,
+        blank=True,
+        max_length=16,
+    )
+    venture = db.ForeignKey(
+        "business.Venture",
+        verbose_name=_("venture"),
+        null=True,
+        blank=True,
+        default=None,
+        on_delete=db.SET_NULL,
+    )
+    management = db.ForeignKey(
+        "IPAddress",
+        related_name="managed_set",
+        verbose_name=_("management address"),
+        null=True,
+        blank=True,
+        default=None,
+        on_delete=db.SET_NULL,
+    )
+    role = db.CharField(
+        verbose_name=_("old role"),
+        null=True,
+        blank=True,
+        max_length=255,
+    )
+    venture_role = db.ForeignKey(
+        "business.VentureRole",
+        on_delete=db.SET_NULL,
+        verbose_name=_("role"),
+        null=True,
+        blank=True,
+        default=None,
+    )
+    dc = db.CharField(
+        verbose_name=_("data center"),
+        max_length=32,
+        null=True,
+        blank=True,
+        default=None
+    )
+    rack = db.CharField(
+        verbose_name=_("rack"),
+        max_length=32,
+        null=True,
+        blank=True,
+        default=None,
+    )
     verified = db.BooleanField(verbose_name=_("verified"), default=False)
 
     class Meta:
@@ -313,9 +507,11 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
 
     def __unicode__(self):
         if self.model and self.model.type == DeviceType.rack:
-            if (self.parent and
+            if (
+                self.parent and
                 self.parent.model and
-                self.parent.model.type == DeviceType.data_center):
+                self.parent.model.type == DeviceType.data_center
+            ):
                 return "{}::{} ({})".format(
                     self.parent.name, self.name, self.id,
                 )
@@ -448,12 +644,12 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
                 transaction.commit()
                 try:
                     obj = cls.objects.filter(ethernet__mac=mac).get(**kwargs)
-                except cls.DoesNotExist, e2:
-                    #there is an object with a partial argument match
+                except cls.DoesNotExist:
+                    # there is an object with a partial argument match
                     raise e1
                 created = False
             else:
-                eth = Ethernet.objects.create(
+                Ethernet.objects.create(
                     device=obj, mac=mac, label='Autocreated'
                 )
         return obj, created
@@ -480,7 +676,9 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
         return 'unknown'
 
     def find_management(self):
-        for ipaddr in self.ipaddress_set.filter(is_management=True).order_by('-address'):
+        for ipaddr in self.ipaddress_set.filter(is_management=True).order_by(
+            '-address'
+        ):
             return ipaddr
         if self.management:
             return self.management
@@ -513,7 +711,9 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
         if self.deprecation_kind:
             return self.deprecation_kind
         try:
-            default_deprecation_kind = DeprecationKind.objects.get(default=True)
+            default_deprecation_kind = DeprecationKind.objects.get(
+                default=True
+            )
         except DeprecationKind.DoesNotExist:
             return None
         else:
@@ -528,7 +728,6 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
             datetime.time(),
         )
         return self.deprecation_date < today_midnight
-
 
     def get_core_count(self):
         return sum(cpu.get_cores() for cpu in self.processor_set.all())
@@ -560,8 +759,9 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
         if self.purchase_date and self.deprecation_kind:
             if isinstance(self.purchase_date, basestring):
                 self.purchase_date = datetime.datetime.strptime(
-                        self.purchase_date, '%Y-%m-%d %H:%M:%S'
-                    )
+                    self.purchase_date,
+                    '%Y-%m-%d %H:%M:%S',
+                )
             self.deprecation_date = (
                 self.purchase_date + relativedelta(
                     months=self.deprecation_kind.months
@@ -585,21 +785,33 @@ class Device(LastSeen, Taggable.NoDefaultTags, SavePrioritized,
             self.saving_plugin = name
         return super(Device, self).save(*args, **kwargs)
 
-@receiver(
-    db.signals.post_delete, sender=Device,
-    dispatch_uid='discovery.device.post_delete'
-)
-def device_post_delete(sender, instance, **kwargs):
-    try:
-        from ralph_assets.models import DeviceInfo
-    except ImportError:
-        return # Assets not installed
-    for deviceinfo in DeviceInfo.objects.filter(ralph_device_id=instance.id):
-        deviceinfo.ralph_device_id = None
-        deviceinfo.save()
+    def get_property_set(self):
+        props = {}
+        if self.venture:
+            props.update(dict(
+                [
+                    (p.symbol, p.default)
+                    for p in self.venture.roleproperty_set.all()
+                ]
+            ))
+        if self.venture_role:
+            props.update(dict(
+                [
+                    (p.symbol, p.default)
+                    for p in self.venture_role.roleproperty_set.all()
+                ]
+            ))
+        props.update(dict(
+            [
+                (p.property.symbol, p.value) for p in
+                self.rolepropertyvalue_set.all()
+            ]
+        ))
+        return props
 
 
 class ReadOnlyDevice(Device):
+
     class Meta:
         proxy = True
 
@@ -611,6 +823,7 @@ class ReadOnlyDevice(Device):
 
 
 class LoadBalancerPool(Named, WithConcurrentGetOrCreate):
+
     class Meta:
         verbose_name = _("load balancer pool")
         verbose_name_plural = _("load balancer pools")

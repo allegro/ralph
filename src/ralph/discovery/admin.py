@@ -12,20 +12,22 @@ import logging
 from django import forms
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
-import ipaddr
 from lck.django.common.admin import (
-    ModelAdmin, ForeignKeyAutocompleteTabularInline
+    ForeignKeyAutocompleteTabularInline,
+    ModelAdmin,
 )
 from django.core.exceptions import ValidationError
 from django.contrib import messages
-
+from django.template.defaultfilters import slugify
 
 from ralph.discovery import models as m
 from ralph.business.admin import RolePropertyValueInline
+from ralph.ui.forms.network import NetworkForm
 
 
-SAVE_PRIORITY = 200
+SAVE_PRIORITY = 215
 HOSTS_NAMING_TEMPLATE_REGEX = re.compile(r'<[0-9]+,[0-9]+>.*\.[a-zA-Z0-9]+')
+
 
 def copy_network(modeladmin, request, queryset):
     for net in queryset:
@@ -53,42 +55,26 @@ def copy_network(modeladmin, request, queryset):
 copy_network.short_description = "Copy network"
 
 
-class NetworkAdminForm(forms.ModelForm):
-    class Meta:
-        model = m.Network
-
-    def clean_address(self):
-        address = self.cleaned_data['address'].strip()
-        if not re.search(r'/[0-9]{1,2}$', address):
-            raise forms.ValidationError(_("It's not a valid network address."))
-        try:
-            net = ipaddr.IPNetwork(address)
-        except ValueError:
-            raise forms.ValidationError(_("It's not a valid network address."))
-        given_network_addr = net.compressed.split('/',1)[0]
-        real_network_addr = net.network.compressed
-        if given_network_addr != real_network_addr:
-            msg = "{} is invalid network address, valid network is {}".format(
-                given_network_addr,
-                real_network_addr,
-            )
-            raise forms.ValidationError(msg)
-        return address
-
-
 class NetworkAdmin(ModelAdmin):
+
     def terms(self):
         return ", ".join([n.name for n in self.terminators.order_by('name')])
     terms.short_description = _("network terminators")
     list_display = ('name', 'vlan', 'address', 'gateway', terms,
-                    'data_center', 'kind', 'queue')
-    list_filter = ('data_center', 'terminators', 'queue', 'kind')
+                    'data_center', 'environment', 'kind')
+    list_filter = (
+        'data_center', 'terminators', 'environment', 'kind', 'dhcp_broadcast',
+    )
     list_per_page = 250
-    radio_fields = {'data_center': admin.HORIZONTAL, 'kind': admin.HORIZONTAL}
+    radio_fields = {
+        'data_center': admin.HORIZONTAL,
+        'environment': admin.HORIZONTAL,
+        'kind': admin.HORIZONTAL,
+    }
     search_fields = ('name', 'address', 'vlan')
-    filter_horizontal = ('terminators', 'racks')
+    filter_horizontal = ('terminators', 'racks', 'custom_dns_servers')
     save_on_top = True
-    form = NetworkAdminForm
+    form = NetworkForm
     actions = [copy_network]
 
 admin.site.register(m.Network, NetworkAdmin)
@@ -108,31 +94,57 @@ class NetworkTerminatorAdmin(ModelAdmin):
 admin.site.register(m.NetworkTerminator, NetworkTerminatorAdmin)
 
 
-class DataCenterAdminForm(forms.ModelForm):
+class DataCenterAdmin(ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)
+
+admin.site.register(m.DataCenter, DataCenterAdmin)
+
+
+class EnvironmentAdminForm(forms.ModelForm):
+
     class Meta:
-        model = m.DataCenter
+        model = m.Environment
+
+    def clean_name(self):
+        name = self.cleaned_data['name'].strip()
+        if slugify(name) != name.lower():
+            raise forms.ValidationError(
+                _('You can use only this characters: [a-zA-Z0-9_-]')
+            )
+        return name
 
     def clean_hosts_naming_template(self):
         template = self.cleaned_data['hosts_naming_template']
         if re.search("[^a-z0-9<>,\.|-]", template):
             raise forms.ValidationError(
-                _("Please remove disallowed characters.")
+                _("Please remove disallowed characters."),
             )
         for part in template.split("|"):
             if not HOSTS_NAMING_TEMPLATE_REGEX.search(part):
                 raise forms.ValidationError(
-                    _("Incorrect template structure. Please see example "
-                      "below.")
+                    _(
+                        "Incorrect template structure. Please see example "
+                        "below.",
+                    ),
                 )
         return template
 
 
-class DataCenterAdmin(ModelAdmin):
-    list_display = ('name', 'hosts_naming_template')
+class EnvironmentAdmin(ModelAdmin):
+    list_display = (
+        'name',
+        'data_center',
+        'queue',
+        'domain',
+        'hosts_naming_template',
+        'next_server'
+    )
     search_fields = ('name',)
-    form = DataCenterAdminForm
+    form = EnvironmentAdminForm
+    list_filter = ('data_center', 'queue')
 
-admin.site.register(m.DataCenter, DataCenterAdmin)
+admin.site.register(m.Environment, EnvironmentAdmin)
 
 
 class DiscoveryQueueAdmin(ModelAdmin):
@@ -143,6 +155,7 @@ admin.site.register(m.DiscoveryQueue, DiscoveryQueueAdmin)
 
 
 class IPAddressForm(forms.ModelForm):
+
     class Meta:
         model = m.IPAddress
 
@@ -175,14 +188,17 @@ class ChildDeviceInline(ForeignKeyAutocompleteTabularInline):
                'hard_firmware', 'diag_firmware', 'mgmt_firmware', 'price',
                'purchase_date', 'warranty_expiration_date', 'role',
                'support_expiration_date', 'deprecation_kind', 'margin_kind',
-               'chassis_position', 'position', 'support_kind', 'management')
+               'chassis_position', 'position', 'support_kind', 'management',
+               'logical_parent')
     extra = 0
     related_search_fields = {
-        'model': ['^name', '^type__name'],
+        'model': ['^name'],
     }
+    fk_name = 'parent'
 
 
 class DeviceModelAdmin(ModelAdmin):
+
     def count(self):
         return m.Device.objects.filter(model=self).count()
 
@@ -200,6 +216,7 @@ class DeviceModelInline(admin.TabularInline):
 
 
 class DeviceModelGroupAdmin(ModelAdmin):
+
     def count(self):
         return m.Device.objects.filter(model__group=self).count()
 
@@ -210,6 +227,7 @@ admin.site.register(m.DeviceModelGroup, DeviceModelGroupAdmin)
 
 
 class DeviceForm(forms.ModelForm):
+
     class Meta:
         model = m.Device
 
@@ -232,7 +250,7 @@ class DeviceForm(forms.ModelForm):
 
 class ProcessorInline(ForeignKeyAutocompleteTabularInline):
     model = m.Processor
-    #readonly_fields = ('label', 'index', 'speed')
+    # readonly_fields = ('label', 'index', 'speed')
     exclude = ('created', 'modified')
     extra = 0
     related_search_fields = {
@@ -242,7 +260,6 @@ class ProcessorInline(ForeignKeyAutocompleteTabularInline):
 
 class MemoryInline(ForeignKeyAutocompleteTabularInline):
     model = m.Memory
-    #readonly_fields = ('label', 'index', 'size', 'speed')
     exclude = ('created', 'modified')
     extra = 0
     related_search_fields = {
@@ -252,7 +269,6 @@ class MemoryInline(ForeignKeyAutocompleteTabularInline):
 
 class EthernetInline(ForeignKeyAutocompleteTabularInline):
     model = m.Ethernet
-    #readonly_fields = ('label', 'index', 'mac', 'speed')
     exclude = ('created', 'modified')
     extra = 0
     related_search_fields = {
@@ -297,10 +313,11 @@ class DeviceAdmin(ModelAdmin):
                      'model__name', 'ethernet__mac')
     related_search_fields = {
         'parent': ['^name'],
+        'logical_parent': ['^name'],
         'venture': ['^name'],
         'venture_role': ['^name'],
         'management': ['^address', '^hostname'],
-        'model': ['^name', '^type__name'],
+        'model': ['^name', ],
     }
 
     def save_model(self, request, obj, form, change):
@@ -331,15 +348,18 @@ class IPAddressAdmin(ModelAdmin):
     ip_address.short_description = _("IP address")
     ip_address.admin_order_field = 'number'
 
-    list_display = (ip_address, 'hostname', 'device', 'snmp_name', 'created',
-                    'modified')
-    list_filter = ('snmp_community',)
+    list_display = (
+        ip_address, 'hostname', 'device', 'snmp_name', 'is_public', 'created',
+        'modified',
+    )
+    list_filter = ('is_public', 'snmp_community')
     list_per_page = 250
     save_on_top = True
     search_fields = ('address', 'hostname', 'number', 'snmp_name')
     related_search_fields = {
         'device': ['^name'],
         'network': ['^name'],
+        'venture': ['^name'],
     }
 
 admin.site.register(m.IPAddress, IPAddressAdmin)
@@ -356,16 +376,22 @@ class MarginKindAdmin(ModelAdmin):
 admin.site.register(m.MarginKind, MarginKindAdmin)
 
 
-class LoadBalancerMemberInline(admin.TabularInline):
-    model = m.LoadBalancerMember
-    exclude = ('created', 'modified')
-    extra = 0
-
-
 class LoadBalancerVirtualServerAdmin(ModelAdmin):
-    inlines = [LoadBalancerMemberInline]
-admin.site.register(m.LoadBalancerVirtualServer,
-                    LoadBalancerVirtualServerAdmin)
+    pass
+
+admin.site.register(
+    m.LoadBalancerVirtualServer,
+    LoadBalancerVirtualServerAdmin,
+)
+
+
+class LoadBalancerMemberAdmin(ModelAdmin):
+    pass
+
+admin.site.register(
+    m.LoadBalancerMember,
+    LoadBalancerMemberAdmin,
+)
 
 
 class ComponentModelInline(admin.TabularInline):
@@ -375,6 +401,7 @@ class ComponentModelInline(admin.TabularInline):
 
 
 class ComponentModelAdmin(ModelAdmin):
+
     def count(self):
         return self.get_count()
 
@@ -397,6 +424,7 @@ admin.site.register(m.GenericComponent, GenericComponentAdmin)
 
 
 class ComponentModelGroupAdmin(ModelAdmin):
+
     def count(self):
         return sum([
             m.Memory.objects.filter(model__group=self).count(),
@@ -449,4 +477,3 @@ class DiscoveryWarningAdmin(ModelAdmin):
     search_fields = ('plugin', 'ip', 'message')
 
 admin.site.register(m.DiscoveryWarning, DiscoveryWarningAdmin)
-

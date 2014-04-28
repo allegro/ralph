@@ -12,6 +12,7 @@ from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):
+
     """Generate configuration for the DHCP server."""
 
     help = textwrap.dedent(__doc__).strip()
@@ -21,4 +22,3 @@ class Command(BaseCommand):
         # Avoid an import loop
         from ralph.dnsedit.dhcp_conf import generate_dhcp_config
         print(generate_dhcp_config(server_address=server_address))
-

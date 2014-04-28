@@ -45,6 +45,7 @@ from ralph.discovery.models import (
 )
 from ralph.util import pricing
 from ralph.util.pricing import get_device_raw_price
+from ralph.util import api_pricing
 
 
 EXISTING_DOMAIN = settings.SANITY_CHECK_PING_ADDRESS
@@ -58,6 +59,7 @@ THROTTLE_AT = settings.API_THROTTLING['throttle_at']
 
 
 class NetworkTest(TestCase):
+
     @skip('uses external resources')
     # @skipIf(sys.platform in ('darwin',), "Ping on MacOS X requires root.")
     def test_ping(self):
@@ -92,6 +94,7 @@ class NetworkTest(TestCase):
 
 
 class PricingTest(TestCase):
+
     def test_rack_server(self):
         dev = Device.create(sn='device', model_type=DeviceType.rack_server,
                             model_name='device')
@@ -218,6 +221,7 @@ class PricingTest(TestCase):
 
 
 class PricingGroupsTest(TestCase):
+
     def test_disk_share(self):
         storage_dev = Device.create(
             sn='device',
@@ -297,6 +301,7 @@ class PricingGroupsTest(TestCase):
 
 
 class ApiTest(TestCase):
+
     def setUp(self):
         cache.delete("api_user_accesses")
 
@@ -335,7 +340,44 @@ class ApiTest(TestCase):
         self.assertListEqual(gen_list, status_list)
 
 
+class ApiPricingTest(TestCase):
+
+    def setUp(self):
+        self.venture, created = Venture.objects.get_or_create(
+            name="Sample venture",
+        )
+        self.venture.save()
+
+        self.device, created = Device.objects.get_or_create(
+            name="Device1",
+            venture=self.venture,
+        )
+        self.device_without_venture, created = Device.objects.get_or_create(
+            name="Device2",
+        )
+        self.device.save()
+        self.device_without_venture.save()
+
+    def test_get_device_by_name_with_venture(self):
+        # device with venture
+        device1 = api_pricing.get_device_by_name("Device1")
+        self.assertEqual(device1['device_id'], self.device.id)
+        self.assertEqual(device1['venture_id'], self.venture.id)
+
+    def test_get_device_by_name_without_venture(self):
+        # device without venture
+        device2 = api_pricing.get_device_by_name("Device2")
+        self.assertEqual(device2['device_id'], self.device_without_venture.id)
+        self.assertIsNone(device2['venture_id'])
+
+    def test_get_device_by_name_wrong_name(self):
+        # device does not exist
+        device3 = api_pricing.get_device_by_name("Device3")
+        self.assertEqual(device3, {})
+
+
 class UncompressBase64DataTest(TestCase):
+
     def test_base64_encoded_data(self):
         import base64
         from ralph.util import uncompress_base64_data

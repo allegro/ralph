@@ -13,21 +13,26 @@ from ralph.util import presentation
 
 register = template.Library()
 
+
 @register.filter(name="icon")
 def icon_filter(name):
     return mark_safe('<i class="fugue-icon %s"></i>' % esc(name))
+
 
 @register.filter
 def device_icon(device):
     return icon_filter(presentation.get_device_icon(device))
 
+
 @register.filter
 def venture_icon(venture):
     return icon_filter(presentation.get_venture_icon(venture))
 
+
 @register.filter
 def owner_icon(owner):
     return icon_filter(presentation.get_owner_icon(owner))
+
 
 @register.filter
 def address_icon(ip):
@@ -41,10 +46,12 @@ def address_icon(ip):
         icon_name = 'fugue-network-ip'
     return icon_filter(icon_name)
 
+
 @register.filter
 def field_icon(field, form):
     icon_name = form.icons.get(field.name, 'fugue-property')
     return icon_filter(icon_name)
+
 
 @register.filter
 def alert_icon(alert_type):
@@ -56,19 +63,24 @@ def alert_icon(alert_type):
     }.get(alert_type, 'fugue-sticky-note')
     return icon_filter(icon_name)
 
+
 @register.filter
 def device_model_type_icon(model_type_id):
-    icon_name = presentation.DEVICE_ICONS.get(model_type_id, 'fugue-wooden-box')
+    icon_name = presentation.DEVICE_ICONS.get(
+        model_type_id, 'fugue-wooden-box')
     return icon_filter(icon_name)
+
 
 @register.filter
 def component_model_type_icon(model_type_id):
     icon_name = presentation.COMPONENT_ICONS.get(model_type_id, 'fugue-box')
     return icon_filter(icon_name)
 
+
 @register.filter
 def network_icon(network):
     return icon_filter(presentation.get_network_icon(network))
+
 
 @register.simple_tag
 def icon(icon_name):

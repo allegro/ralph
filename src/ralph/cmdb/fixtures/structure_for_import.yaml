@@ -1,0 +1,108 @@
+%YAML 1.2
+---
+# The sample structure for cmdb import tests
+
+-
+    model: business.venture
+    pk: 1
+    fields:
+        name: top_venture
+-
+    model: business.venture
+    pk: 2
+    fields:
+        name: child_venture
+        parent: 1
+-
+    model: business.venturerole
+    pk: 1
+    fields:
+        name: role
+        venture: 2
+-
+    model: business.venturerole
+    pk: 2
+    fields:
+        name: child_role
+        venture: 2
+        parent: 1
+-
+    model: discovery.devicemodel
+    pk: 1
+    fields:
+        name: DC model sample
+        type: 5 # data center
+
+-
+    model: discovery.devicemodel
+    pk: 2
+    fields:
+        name: Rack model sample
+        type: 201 # rack server
+-
+    model: discovery.devicemodel
+    pk: 3
+    fields:
+        name: Blade model sample
+        type: 202 # blade server
+-
+    model: discovery.device
+    pk: 1
+    fields:
+        sn: sn1
+        model: 1
+        name: dc
+-
+    model: discovery.device
+    pk: 2
+    fields:
+        venture: 2
+        sn: sn2
+        model: 2
+        name: rack
+        parent: 1
+-
+    model: discovery.device
+    pk: 3
+    fields:
+        venture: 2
+        sn: sn3
+        model: 3
+        name: blade
+        venture_role: 2
+        parent: 2
+-
+    model: discovery.device
+    pk: 4
+    fields:
+        venture: 2
+        sn: sn4
+        model: 3
+        name: deleted blade
+        venture_role: 2
+        parent: 2
+        deleted: true
+-
+    model: business.businessline
+    pk: 1
+    fields:
+        name: 'INT-1'
+-
+    model: business.businessline
+    pk: 2
+    fields:
+        name: 'INT-2'
+-
+    model: business.service
+    pk: 1
+    fields:
+        name: 'Service 1'
+        business_line: INT-1
+        external_key: INT-1
+
+-
+    model: business.service
+    pk: 2
+    fields:
+        name: 'Service 2'
+        external_key: INT-2

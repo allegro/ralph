@@ -45,7 +45,10 @@ def _get_master_ip_address(ssh, ip_address, cluster_cfg=None):
                 stdin, stdout, stderr = ssh.exec_command(
                     'pvesh get "/nodes/%s/dns"' % node['node'],
                 )
-                ip_address = json.loads(stdout.read())['dns1']
+                dns_data = stdout.read()
+                if not dns_data:
+                    return ip_address
+                ip_address = json.loads(dns_data)['dns1']
                 break
         else:
             return ip_address
@@ -69,6 +72,7 @@ def _get_master_ip_address(ssh, ip_address, cluster_cfg=None):
             continue
         if is_master:
             return ip_address
+    return ip_address
 
 
 def _get_cluster_member(ssh, ip_address):
@@ -278,6 +282,10 @@ def _ssh_proxmox(ip_address, user, password):
 
 
 def scan_address(ip_address, **kwargs):
+    if 'nx-os' in (kwargs.get('snmp_name') or '').lower():
+        raise NoMatchError('Incompatible Nexus found.')
+    if kwargs.get('http_family') not in ('Proxmox',):
+        raise NoMatchError('It is not Proxmox.')
     user = SETTINGS.get('user')
     password = SETTINGS.get('password')
     messages = []
@@ -300,4 +308,3 @@ def scan_address(ip_address, **kwargs):
                 'device': device_info,
             })
     return result
-

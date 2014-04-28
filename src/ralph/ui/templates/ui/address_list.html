@@ -1,4 +1,4 @@
-{% extends "ui/base-devices.html" %}
+{% extends "ui/network_sidebar.html" %}
 {% load url from future %}
 {% load icons %}
 {% load bob %}
@@ -7,7 +7,7 @@
   <div class="row-fluid">
     <div class="span10">
       <form method="POST" class="form form-inline">
-        {% if network and not network.queue %}
+        {% if network and not network.environment.queue %}
         <div class="alert alert-warning">
             <a
                 href="/admin/discovery/network/{{ network.id }}"
@@ -16,7 +16,7 @@
                 {% icon 'fugue-toolbox' %}
                 Edit network
             </a>
-            <p>This network has no discovery queue configured.</p>
+            <p>This network environment has no discovery queue configured.</p>
         </div>
         {% else %}
             {% if network %}
@@ -52,6 +52,7 @@
                 {% include 'ui/column-header.html' with label='Last seen' name='last_seen' always=1 type='date' %}
                 {% include 'ui/column-header.html' with label='SNMP' name='snmp_name' always=1 %}
                 {% include 'ui/column-header.html' with label='HTTP' name='http_family' always=1 %}
+                <th>Full Scan</th>
                 {% endspaceless %}
             </tr></thead>
             <tbody>
@@ -59,7 +60,7 @@
                     <tr>
                         <td class="column-checkbox"><input type="checkbox" name="select" value="{{ d.id }}"></td>
                         <td class="column-address" style="width:9em">
-                            <a 
+                            <a
                                 href="{% url 'networks' network_name 'scan' d.address %}"
                                 style="white-space:nowrap"
                             >
@@ -77,6 +78,9 @@
                         <td class="column-last-seen" style="width:8em">{{ d.last_seen|date:"Y-m-d H:i" }}</td>
                         <td class="column-snmp">{{ d.snmp_name|default:'' }}</td>
                         <td class="column-http">{{ d.http_family|default:'' }}</td>
+                        <td>{% if d.scan_summary.changed %}
+                            <a href="/ui/scan/status/{{ d.address }}/"><i class="fugue-icon fugue-flashlight"></i>&nbsp;Show full change</a>
+                        {% endif %}</td>
                     </tr>
                 {% endfor %}
             </tbody>

@@ -15,6 +15,7 @@ from ralph.discovery.management.commands import discover
 
 
 class Command(discover.Command):
+
     """Runs discovery update on existing machines in the network. Accepts an
     optional list of network names (as defined in the database). If run without
     arguments, performs full update based on the configuration from the
@@ -34,8 +35,12 @@ class Command(discover.Command):
         if options['queues']:
             for queue in options['queues'].split(','):
                 queue = queue.strip()
-                new_networks.update(n.address for n in Network.objects.filter(
-                    queue__name__iexact=queue))
+                new_networks.update(
+                    n.address
+                    for n in Network.objects.filter(
+                        environment__queue__name__iexact=queue,
+                    )
+                )
         if new_networks:
             args.extend(new_networks)
         if not args:

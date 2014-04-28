@@ -14,8 +14,10 @@ from lck.lang import nullify
 
 from ralph.discovery.models import (
     DeviceType,
+    MAC_PREFIX_BLACKLIST,
     SERIAL_BLACKLIST,
 )
+from ralph.scan.errors import Error, AuthError, NoMatchError
 from ralph.scan.plugins import get_base_result_template
 from ralph.util import parse
 
@@ -27,15 +29,8 @@ REMOVE_ID_REGEX = re.compile(r'\s*[(][^)]*[)]')
 SETTINGS = settings.SCAN_PLUGINS.get(__name__, {})
 
 
-class Error(Exception):
-    pass
-
-
-class AuthError(Error):
-    pass
-
-
 class IPMITool(object):
+
     def __init__(self, host, user, password):
         self.host = host
         self.user = user
@@ -107,7 +102,10 @@ def _get_mac_addresses(ipmitool, fru):
             break
         mac_addresses.add(ethernet['Product Serial'])
         index += 1
-    return list(mac_addresses)
+    return [
+        mac for mac in mac_addresses
+        if mac.replace(':', '').upper()[:6] not in MAC_PREFIX_BLACKLIST
+    ]
 
 
 def _get_components(fru):
@@ -192,6 +190,11 @@ def _ipmi(ipmitool):
 
 
 def scan_address(ip_address, **kwargs):
+    http_family = kwargs.get('http_family', '')
+    if http_family not in (
+        'Sun', 'Thomas-Krenn', 'Oracle-ILOM-Web-Server', 'IBM System X',
+    ):
+        raise NoMatchError('It is not compatible device for this plugin.')
     user = SETTINGS.get('user')
     password = SETTINGS.get('password')
     messages = []
@@ -212,4 +215,3 @@ def scan_address(ip_address, **kwargs):
                 'device': device_info,
             })
     return result
-

@@ -4,19 +4,23 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import datetime
 import ipaddr
 import re
-import datetime
 
-from urllib import quote
+import django_rq
+import rq
+
 from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.db.models import Q
 from django.http import HttpResponseRedirect
+from django.utils import timezone
 from powerdns.models import Record
 
 from ralph.account.models import Perm
 from ralph.discovery.models import ReadOnlyDevice, Device, ComponentModel
+from ralph.scan.models import ScanSummary
 from ralph.ui.forms.search import SearchForm
 from ralph.ui.views.common import (
     Addresses,
@@ -27,8 +31,8 @@ from ralph.ui.views.common import (
     History,
     Info,
     Prices,
-    Software,
     Scan,
+    Software,
 )
 from ralph.ui.views.devices import BaseDeviceList
 from ralph.ui.views.reports import Reports, ReportDeviceList
@@ -94,9 +98,31 @@ class Search(SidebarSearch, BaseMixin):
 
 
 class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
+
     def __init__(self, *args, **kwargs):
         super(SearchDeviceList, self).__init__(*args, **kwargs)
         self.query = None
+
+    def _get_changed_devices_ids(self):
+        delta = timezone.now() - datetime.timedelta(days=1)
+        ids = set()
+        for scan_summary in ScanSummary.objects.filter(modified__gt=delta):
+            try:
+                job = rq.job.Job.fetch(
+                    scan_summary.job_id,
+                    django_rq.get_connection(),
+                )
+            except rq.exceptions.NoSuchJobError:
+                continue
+            else:
+                if job.meta.get('changed', False):
+                    for device_id in scan_summary.ipaddress_set.values_list(
+                        'device__id',
+                        flat=True,
+                    ):
+                        if device_id:
+                            ids.add(device_id)
+        return sorted(list(ids))
 
     def user_allowed(self):
         return True
@@ -114,7 +140,7 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
             else:
                 self.query = Device.objects.all()
             if data['name']:
-                name = quote(data['name'].strip())
+                name = data['name'].strip()
                 names = set(n.strip('.') for (n,) in Record.objects.filter(
                     type='CNAME'
                 ).filter(
@@ -248,9 +274,9 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                             '<': '__lt',
                             '<=': '__lte',
                         }
-                        soft_q = Q(
-                            **{'software__version' + operators[operator]: version}
-                        )
+                        soft_q = Q(**{
+                            'software__version' + operators[operator]: version
+                        })
                         self.query = self.query.filter(
                             (Q(software__label__icontains=name) & soft_q) |
                             (Q(software__model__name__icontains=name) &
@@ -389,38 +415,49 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                     )
                 else:
                     self.query = self.query.filter(
-                        deprecation_kind__id__exact=data['deprecation_kind'][0],
+                        deprecation_kind__id__exact=data[
+                            'deprecation_kind'
+                        ][0],
                     )
             if data['no_warranty_expiration_date']:
                 self.query = self.query.filter(warranty_expiration_date=None)
             else:
                 if data['warranty_expiration_date_start']:
                     self.query = self.query.filter(
-                        warranty_expiration_date__gte=
-                            data['warranty_expiration_date_start']
+                        warranty_expiration_date__gte=data[
+                            'warranty_expiration_date_start'
+                        ]
                     )
                 if data['warranty_expiration_date_end']:
                     self.query = self.query.filter(
-                        warranty_expiration_date__lte=
-                            data['warranty_expiration_date_end']
+                        warranty_expiration_date__lte=data[
+                            'warranty_expiration_date_end'
+                        ]
                     )
             if data['no_support_expiration_date']:
                 self.query = self.query.filter(support_expiration_date=None)
             else:
                 if data['support_expiration_date_start']:
                     self.query = self.query.filter(
-                        support_expiration_date__gte=
-                            data['support_expiration_date_start']
+                        support_expiration_date__gte=data[
+                            'support_expiration_date_start'
+                        ]
                     )
                 if data['support_expiration_date_end']:
                     self.query = self.query.filter(
-                        support_expiration_date__lte=
-                            data['support_expiration_date_end']
+                        support_expiration_date__lte=data[
+                            'support_expiration_date_end'
+                        ]
                     )
+            if data['with_changes']:
+                changed_devices_ids = self._get_changed_devices_ids()
+                self.query = self.query.filter(id__in=changed_devices_ids)
         profile = self.request.user.get_profile()
         if not profile.has_perm(Perm.read_dc_structure):
-            self.query = profile.filter_by_perm(self.query,
-                Perm.list_devices_generic)
+            self.query = profile.filter_by_perm(
+                self.query,
+                Perm.list_devices_generic
+            )
         self.query = super(SearchDeviceList, self).get_queryset(self.query)
         self.query = self.query.distinct()
         return self.query

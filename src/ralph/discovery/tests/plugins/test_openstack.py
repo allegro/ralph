@@ -10,15 +10,17 @@ from django.test import TestCase
 from django.conf import settings
 
 from ralph.discovery.plugins.openstack import (openstack as openstack_runner,
-    make_tenant, make_components)
+                                               make_tenant, make_components)
 from ralph.discovery.tests.plugins.samples.openstack import simple_tenant_usage_data
 from ralph.discovery.models import (Device, ComponentModel, GenericComponent,
-        MarginKind, ComponentModelGroup)
+                                    MarginKind, ComponentModelGroup)
 from ralph.discovery.models_history import HistoryCost
 
 
 class MockOpenStack(object):
+
     """ Simple mock for OpenStack network library """
+
     def __init__(self, *args, **kwargs):
         pass
 
@@ -39,6 +41,7 @@ class MockOpenStack(object):
 
 
 class OpenStackPluginTest(TestCase):
+
     """ OpenStack costs Test Case """
 
     def setUp(self):
@@ -67,37 +70,40 @@ class OpenStackPluginTest(TestCase):
             # testdata has 47 entries.
             self.assertEqual(47, HistoryCost.objects.count())
             # if no group assigned, daily cost = 0 for all historycost
-            self.assertEqual(0, sum([x.daily_cost for x in HistoryCost.objects.all()]))
+            self.assertEqual(
+                0, sum([x.daily_cost for x in HistoryCost.objects.all()]))
             # if we assign them to the group ...
             for x in ComponentModel.objects.all():
-                x.group=self.cmg
+                x.group = self.cmg
                 x.save()
             # and run again openstack runner
             openstack_runner()
             # data couns will be the same (data overwritten)
             self.assertEqual(47, HistoryCost.objects.count())
             # costs will be calculated as below.
-            self.assertEqual(31733606.18055556, sum([x.daily_cost for x in HistoryCost.objects.all()]))
+            self.assertEqual(
+                31733606.18055556, sum([x.daily_cost for x in HistoryCost.objects.all()]))
             # now test with marginkind
             for x in Device.objects.filter(model__name='OpenStack Tenant'):
                 x.margin_kind = self.mk
                 x.save()
             openstack_runner()
             # margin kind = 200% = multiplies costs 3 times.
-            self.assertEqual(31733606.18055556*3, sum([x.daily_cost for x in HistoryCost.objects.all()]))
+            self.assertEqual(
+                31733606.18055556 * 3, sum([x.daily_cost for x in HistoryCost.objects.all()]))
 
     def test_make_tenant(self):
         """
         Detailed test for make_tenant plugin sub-function
         """
         tenant_params = dict(
-                tenant_id='3ff63bf0e1384a1d87b6eaba8dad1196',
-                total_volume_gb_usage=1,
-                total_memory_mb_usage=1024,
-                total_local_gb_usage=1,
-                total_hours=1,
-                total_vcpus_usage=1,
-                tenant_fake=999,
+            tenant_id='3ff63bf0e1384a1d87b6eaba8dad1196',
+            total_volume_gb_usage=1,
+            total_memory_mb_usage=1024,
+            total_local_gb_usage=1,
+            total_hours=1,
+            total_vcpus_usage=1,
+            tenant_fake=999,
         )
         with mock.patch('ralph.discovery.plugins.openstack.OpenStack') as OpenStack:
             OpenStack.side_effect = MockOpenStack
@@ -108,7 +114,8 @@ class OpenStackPluginTest(TestCase):
 
             d = Device.objects.get(model__name='OpenStack Tenant')
             self.assertEqual(d.model.get_type_display(), 'cloud server')
-            self.assertEqual(d.sn, 'openstack-3ff63bf0e1384a1d87b6eaba8dad1196')
+            self.assertEqual(
+                d.sn, 'openstack-3ff63bf0e1384a1d87b6eaba8dad1196')
             # only recognized component models auto-created.
             self.assertEqual(set([
                 u'OpenStack 10000 Memory GiB Hours',
@@ -126,13 +133,13 @@ class OpenStackPluginTest(TestCase):
             # and every component is binded to open stack tenant device
             for x in GenericComponent.objects.all():
                 self.assertEqual(x.device.model.name, 'OpenStack Tenant')
-            # if we assign 2 component model items into the specified group than...
+            # if we assign 2 component model items into the specified group
+            # than...
             for i in ComponentModel.objects.all()[0:2]:
-                i.group=self.cmg
+                i.group = self.cmg
                 i.save()
             # then the costs of half components appears when reimporting tenant. \
             # Rest of components are unassigned to the group, so not counted
             dev = make_tenant(tenant_params)
             cost = make_components(tenant_params, dev, '')
             self.assertEqual(cost, 200.0)
-

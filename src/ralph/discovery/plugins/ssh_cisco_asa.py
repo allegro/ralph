@@ -27,28 +27,35 @@ SSH_USER, SSH_PASS = settings.SSH_SSG_USER, settings.SSH_SSG_PASSWORD
 class Error(Exception):
     pass
 
+
 class ConsoleError(Error):
     pass
 
+
 class CiscoSSHClient(paramiko.SSHClient):
+
     """SSHClient modified for Cisco's broken ssh console."""
 
     def __init__(self, *args, **kwargs):
         super(CiscoSSHClient, self).__init__(*args, **kwargs)
         self.set_log_channel('critical_only')
 
-    def _auth(self, username, password, pkey, key_filenames, allow_agent, look_for_keys):
+    def _auth(
+        self, username, password, pkey, key_filenames, allow_agent,
+        look_for_keys,
+    ):
         self._transport.auth_password(username, password)
         self._asa_chan = self._transport.open_session()
         self._asa_chan.invoke_shell()
         self._asa_chan.sendall('\r\n')
         time.sleep(0.125)
         chunk = self._asa_chan.recv(1024)
-        if not '> ' in chunk and not chunk.strip().startswith('asa'):
+        if '> ' not in chunk and not chunk.strip().startswith('asa'):
             raise ConsoleError('Expected system prompt, got %r.' % chunk)
 
     def asa_command(self, command):
-        # XXX Work around random characters appearing at the beginning of the command.
+        # XXX Work around random characters appearing at the beginning of
+        # the command.
         self._asa_chan.sendall('\b')
         time.sleep(0.125)
         self._asa_chan.sendall(command)
@@ -73,6 +80,7 @@ class CiscoSSHClient(paramiko.SSHClient):
 
 def _connect_ssh(ip, username='root', password=''):
     return network.connect_ssh(ip, SSH_USER, SSH_PASS, client=CiscoSSHClient)
+
 
 @nested_commit_on_success
 def run_ssh_asa(ip):
@@ -109,7 +117,7 @@ def run_ssh_asa(ip):
 
     inventory = list(cisco_inventory(raw_inventory))
     for inv in inventory:
-        cisco_component(dev, inv)
+        cisco_component(dev, inv, ip)
 
     ipaddr, created = IPAddress.concurrent_get_or_create(address=ip)
     ipaddr.device = dev
@@ -126,6 +134,7 @@ def run_ssh_asa(ip):
         eth.save()
 
     return model
+
 
 @plugin.register(chain='discovery', requires=['ping', 'http'])
 def ssh_cisco_asa(**kwargs):
@@ -144,4 +153,3 @@ def ssh_cisco_asa(**kwargs):
     except paramiko.SSHException as e:
         return False, str(e), kwargs
     return True, name, kwargs
-
