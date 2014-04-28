@@ -1,0 +1,145 @@
+%YAML 1.2
+---
+
+# ----------------------------------------------------------------------------
+# | venture1                    | venture2                                   |
+# ----------------------------------------------------------------------------
+# | cloud1             | cloud2                    | cloud3                  |
+# ----------------------------------------------------------------------------
+# | a.example.com      | b.example.com             | c.example.com           |
+# | b.example.com      |                           |                         |
+# ----------------------------------------------------------------------------
+#
+
+# CIs
+
+-
+    model: cmdb.ci
+    pk: 1
+    fields:
+        uid: dd-1
+        name: a.example.com
+        type: 2
+
+-
+    model: cmdb.ci
+    pk: 2
+    fields:
+        uid: dd-2
+        name: b.example.com
+        type: 2
+
+-
+    model: cmdb.ci
+    pk: 3
+    fields:
+        uid: dd-3
+        name: c.example.com
+        type: 2
+
+-
+    model: cmdb.ci
+    pk: 4
+    fields:
+        uid: dn-1
+        name: cloud1
+        type: 8
+
+-
+    model: cmdb.ci
+    pk: 5
+    fields:
+        uid: dn-2
+        name: cloud2
+        type: 8
+
+-
+    model: cmdb.ci
+    pk: 6
+    fields:
+        uid: dn-3
+        name: cloud3
+        type: 8
+
+-
+    model: cmdb.ci
+    pk: 7
+    fields:
+        uid: br-1
+        name: venture1
+        type: 5
+
+-
+    model: cmdb.ci
+    pk: 8
+    fields:
+        uid: br-2
+        name: venture2
+        type: 5
+
+
+# CI relations
+
+-
+    model: cmdb.cirelation
+    pk: 1
+    fields:
+        parent: 4
+        child: 1
+        type: 1
+
+-
+    model: cmdb.cirelation
+    pk: 2
+    fields:
+        parent: 4
+        child: 2
+        type: 1
+
+-
+    model: cmdb.cirelation
+    pk: 3
+    fields:
+        parent: 5
+        child: 2
+        type: 1
+
+-
+    model: cmdb.cirelation
+    pk: 4
+    fields:
+        parent: 6
+        child: 3
+        type: 1
+
+
+-
+    model: cmdb.cirelation
+    pk: 5
+    fields:
+        parent: 7
+        child: 4
+        type: 1
+
+-
+    model: cmdb.cirelation
+    pk: 6
+    fields:
+        parent: 7
+        child: 5
+        type: 1
+
+-
+    model: cmdb.cirelation
+    pk: 7
+    fields:
+        parent: 8
+        child: 5
+        type: 1
+-
+    model: cmdb.cirelation
+    pk: 8
+    fields:
+        parent: 8
+        child: 6
+        type: 1

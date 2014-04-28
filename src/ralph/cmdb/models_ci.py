@@ -432,6 +432,20 @@ class CI(TimeTrackable):
         self.saving_user = user
         return super(CI, self).save(*args, **kwargs)
 
+    def _get_related(self, self_field, other_field):
+        """Iterate over the related objects.
+        :param first_field: The field on relation that points to this CI
+        :param second_field: The field on relation that points to other CI
+        """
+        for relation in getattr(self, self_field).all():
+            yield getattr(relation, other_field)
+
+    def get_parents(self):
+        return self._get_related(self_field='child', other_field='parent')
+
+    def get_children(self):
+        return self._get_related(self_field='parent', other_field='child')
+
 
 class CIAttributeValue(TimeTrackable):
     ci = models.ForeignKey('CI')

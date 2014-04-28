@@ -147,3 +147,31 @@ def table_colums():
         ),
     ]
     return columns
+
+
+def breadth_first_search_ci(root, criterion, up=True):
+    """Perform a breadth-first search on a CI and its parents/children.
+
+    :param root: The start of search
+    :param criterion: A callable that takes a CI and returns a value that
+        should evaluate to True if the search if succesful
+    :param up: If true, the search will move to parents. Otherwise - to
+        children.
+    :return: A tuple (CI, criterion(CI)) on success or (None, None) on failure
+    """
+    queue = [root]
+    enqueued = {root}
+    while queue:
+        current = queue.pop(0)
+        result = criterion(current)
+        if result:
+            return current, result
+        if up:
+            to_search = current.get_parents()
+        else:
+            to_search = current.get_children()
+        for ci in to_search:
+            if ci.id not in enqueued:
+                queue.append(ci)
+                enqueued.add(ci.id)
+    return None, None
