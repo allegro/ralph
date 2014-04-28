@@ -1,6 +1,13 @@
 Change Log
 ----------
 
+2.0.0-rc6
+~~~~~~~~~
+
+Released on April 28, 2013
+
+* SCAN: Stability improvements and fixes.
+
 
 2.0.0-rc5
 ~~~~~~~~~
