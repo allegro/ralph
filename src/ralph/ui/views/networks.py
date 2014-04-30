@@ -61,6 +61,7 @@ def network_tree_menu(networks, details, get_params, show_ip=False, status=''):
             url,
             get_params,
         )
+
     for n in networks:
         items.append(MenuItem(
             "{} ({})".format(
@@ -270,7 +271,7 @@ class NetworksReports(NetworksMixin, Reports):
 
 
 class NetworksScan(NetworksMixin, Scan):
-    pass
+    template_name = 'ui/scan_networks.html'
 
 
 class ReportNetworksDeviceList(ReportDeviceList, NetworksDeviceList):
