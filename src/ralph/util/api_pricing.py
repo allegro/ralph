@@ -8,15 +8,17 @@ from __future__ import unicode_literals
 import datetime
 import re
 
+from django.db import models as db
+
 from ralph.business.models import Venture, VentureExtraCost
 from ralph.discovery.models import (
     Device,
     DeviceType,
     DiskShareMount,
+    HistoryCost,
     IPAddress,
 )
 
-from django.db import models as db
 
 DEVICE_REPR_RE = re.compile(r'^(?P<name>.*)[(](?P<id>\d+)[)]$')
 
@@ -66,7 +68,6 @@ def get_devices():
 
 def get_physical_cores():
     """Yields dicts reporting the number of physical CPU cores on devices."""
-
     physical_servers = {
         DeviceType.blade_server,
         DeviceType.rack_server,
@@ -237,3 +238,20 @@ def get_ip_addresses(only_public=False):
     """Yileds available IP addresses"""
     ips = IPAddress.objects.filter(is_public=only_public)
     return {ip.address: ip.venture.id if ip.venture else None for ip in ips}
+
+
+def get_cloud_daily_costs(date=None):
+    """
+    Returns cloud daily costs, grouped by venture.
+    """
+    if date is None:
+        date = datetime.date.today()
+    daily_costs = HistoryCost.objects.filter(
+        device__model__type=DeviceType.cloud_server.id,
+        end=date,
+    ).values('venture__id').annotate(value=db.Sum('daily_cost'))
+    for daily_cost in daily_costs:
+        yield {
+            'venture_id': daily_cost['venture__id'],
+            'daily_cost': daily_cost['value']
+        }
