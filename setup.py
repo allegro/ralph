@@ -68,6 +68,7 @@ setup(
         'SQLAlchemy==0.7.8',
         'null==0.6.1',
         'xlwt==0.7.4',
+        'unidecode==0.04.14',
         'django-discover-runner>=0.4',
         'Pillow==2.0.0',
         'pysphere==0.1.8',
