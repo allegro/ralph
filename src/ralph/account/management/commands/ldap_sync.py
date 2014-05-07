@@ -7,6 +7,8 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from ldap.controls import SimplePagedResultsControl
 
+from ralph.util.ldap import get_ldap
+
 
 logger = logging.getLogger(__name__)
 LDAP_RESULTS_PAGE_SIZE = 100
@@ -32,19 +34,11 @@ class Command(BaseCommand):
         ldap_user._user_attrs = ldap_dict
         ldap_user.populate_user()
 
-    def _connect(self):
-        self.conn = ldap.initialize(settings.AUTH_LDAP_SERVER_URI)
-        self.conn.protocol_version = settings.AUTH_LDAP_PROTOCOL_VERSION
-        self.conn.simple_bind_s(
-            settings.AUTH_LDAP_BIND_DN,
-            settings.AUTH_LDAP_BIND_PASSWORD,
-        )
-
     def _disconnect(self):
         self.conn.unbind_s()
 
     def _run_ldap_query(self, query):
-        self._connect()
+        self.conn = get_ldap()
         lc = SimplePagedResultsControl(size=LDAP_RESULTS_PAGE_SIZE, cookie='')
         msgid = self.conn.search_ext(
             settings.AUTH_LDAP_USER_SEARCH_BASE,

@@ -575,6 +575,7 @@ class CIOwner(TimeTrackable, WithConcurrentGetOrCreate):
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=100)
     email = models.EmailField(unique=True, null=True)
+    sAMAccountName = models.CharField(max_length=256, blank=True)
 
     def __unicode__(self):
         return ' '.join([self.first_name, self.last_name])
