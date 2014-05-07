@@ -49,7 +49,7 @@ class Command(BaseCommand):
                     filter_,
                     attrlist=[d('sAMAccountName')],
                 )
-                if len(result) == 0:
+                if not result:
                     print('No LDAP data found for {}'.format(ci_owner))
                     continue
                 if len(result) > 1:
