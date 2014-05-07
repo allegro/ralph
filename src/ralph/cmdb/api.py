@@ -569,7 +569,7 @@ class CIOwnersResource(MResource):
                 Perm.read_configuration_item_info_generic,
             ]
         )
-        list_allowed_methods = ['get']
+        list_allowed_methods = ['get', 'post']
         filtering = {
             'cache_version': ALL,
             'created': ALL,
