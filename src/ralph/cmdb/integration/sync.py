@@ -129,14 +129,31 @@ class JiraEventsImporter(BaseImporter):
 
     def import_obj(self, issue, classtype):
         logger.debug(issue)
-        try:
-            ci_obj = db.CI.objects.get(uid=issue.get('ci'))
-        except:
-            logger.error(
-                'Issue : %s Can''t find ci: %s' %
-                (issue.get('key'), issue.get('ci'))
-            )
-            ci_obj = None
+
+        def get_ci(**kwargs):
+            if set(kwargs.values()) == {None}:
+                return None
+            try:
+                return db.CI.objects.get(**kwargs)
+            except db.CI.DoesNotExist:
+                logger.error(
+                    'Issue : %s Can''t find ci: %s' %
+                    (issue.get('key'), kwargs)
+                )
+
+        if settings.ISSUETRACKERS['default'].get('LEGACY_PLUGIN', True):
+            ci_obj = get_ci(uid=issue.get('ci'))
+            additional_cis = []
+        else:
+            if issue['cis'] is None:
+                ci_obj = None
+                additional_cis = []
+            else:
+                ci_obj = get_ci(id=issue['cis'][0] if issue['cis'] else None)
+                additional_cis = [ci for ci in [
+                    get_ci(id=id) for id in issue['cis'][1:]
+                ] if ci]
+
         obj = classtype.objects.filter(jira_id=issue.get('key')).all()[:1]
         prob = obj[0] if obj else classtype()
         prob.summary = force_unicode(issue.get('summary'))
@@ -154,6 +171,8 @@ class JiraEventsImporter(BaseImporter):
         prob.planned_start_date = self.tz_time(issue.get('planned_start_date'))
         prob.planned_end_date = self.tz_time(issue.get('planned_end_date'))
         prob.ci = ci_obj
+        prob.save()
+        prob.additional_cis = additional_cis
         prob.save()
 
     def import_problem(self, cutoff_date=None):
@@ -205,8 +224,7 @@ class JiraEventsImporter(BaseImporter):
                 )
                 priority = field.get('priority')
                 issuetype = field.get('issuetype')
-                yield dict(
-                    ci=field.get(ci_fieldname),
+                result = dict(
                     key=issue.get('key'),
                     description=field.get('description', ''),
                     summary=field.get('summary'),
@@ -222,5 +240,15 @@ class JiraEventsImporter(BaseImporter):
                     planned_start_date=field.get('customfield_11602'),
                     planned_end_date=field.get('customfield_11601'),
                 )
+                if settings.ISSUETRACKERS['default'].get(
+                    'LEGACY_PLUGIN',
+                    True,
+                ):
+                    result['ci'] = field.get(ci_fieldname)
+                    result['cis'] = []
+                else:
+                    result['ci'] = None
+                    result['cis'] = field.get(ci_fieldname)
+                yield result
             offset += len(issues['issues'])
             print ("{} of {}".format(offset, total))
