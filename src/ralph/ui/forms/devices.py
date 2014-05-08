@@ -278,7 +278,7 @@ class DeviceBulkForm(DeviceForm):
         if not self.data.get('select'):
             messages.error(
                 self.request,
-                _('You did not select any device.')
+                _("You haven't selected any devices.")
             )
 
 

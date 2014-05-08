@@ -48,8 +48,8 @@ DEVICE2 = {
     'mac': '00:00:00:00:00:01',
 }
 ERROR_MSG = {
-    'no_mark_fields': 'You have to mark which fields you changed',
-    'empty_save_comment': 'Correct the errors.',
+    'no_mark_fields': 'Please mark changed fields.',
+    'empty_save_comment': 'Please correct the errors.',
     'empty_save_comment_field': 'You must describe your change',
 }
 
@@ -110,44 +110,22 @@ class BulkeditTest(TestCase):
     def test_single_device_edit(self):
         url = '/ui/search/bulkedit/'
 
-        select_fields = (
-            'venture', 'venture_role', 'margin_kind', 'deprecation_kind',
-        )
-        date_fields = (
-            'purchase_date', 'warranty_expiration_date',
-            'support_expiration_date', 'support_kind',
-        )
-        text_fields = (
-            'barcode', 'position', 'chassis_position', 'remarks', 'price',
-            'sn', 'verified'
-        )
+        text_fields = ('position', 'chassis_position', 'remarks', 'verified')
         device_fields = []
+        device_fields.extend(text_fields)
 
-        for field_list in [select_fields, date_fields, text_fields]:
-            device_fields.extend(field_list)
 
         post_data = {
             'select': [self.device.id],  # 1
             'edit': device_fields,
-            'venture': self.venture.id,  # 1
-            'venture_role': self.role.id,  # 1
             'verified': True,
-            'barcode': 'bc-2222-2222-2222-2222',
             'position': '9',
             'chassis_position': 10,
             'remarks': 'Hello Ralph',
-            'margin_kind': self.margin.id,  # 1
-            'deprecation_kind': self.deprecation_kind.id,  # 1
-            'price': 100,
-            'sn': '2222-2222-2222-2222',
-            'purchase_date': datetime(2001, 1, 1, 0, 0),
-            'warranty_expiration_date': datetime(2001, 1, 2, 0, 0),
-            'support_expiration_date': datetime(2001, 1, 3, 0, 0),
-            'support_kind': datetime(2001, 1, 4, 0, 0),
             'save_comment': 'Everything has changed',
             'save': '',  # save form
         }
-        response = self.client.post(url, post_data)
+        self.client.post(url, post_data)
 
         # Check if data from form is the same that data in database
         device = Device.objects.get(id=self.device.id)
@@ -155,10 +133,7 @@ class BulkeditTest(TestCase):
             db_data = getattr(device, field)
             form_data = post_data[field]
             msg = 'FIELD: %s, DB: %s FORM: %s' % (field, db_data, form_data)
-            if field in select_fields:
-                self.assertEqual(db_data.id, form_data, msg)
-            else:
-                self.assertEqual(unicode(db_data), unicode(form_data), msg)
+            self.assertEqual(unicode(db_data), unicode(form_data), msg)
 
         # Check if change can see in History change
         history_device = HistoryChange.objects.filter(
@@ -174,32 +149,30 @@ class BulkeditTest(TestCase):
 
     def test_many_devices_edit(self):
         url = '/ui/search/bulkedit/'
-        remarks = 'change remakrs in 2 devices'
+        remarks = 'change remarks in 2 devices'
 
         post_data = {
             'select': [self.device.id, self.device2.id],
             'edit': ['remarks'],
             'remarks': remarks,
-            'save_comment': 'change remakrs',
+            'save_comment': 'change remarks',
             'save': '',  # save form
         }
-        response = self.client.post(url, post_data)
+        self.client.post(url, post_data)
 
         device, device2 = Device.objects.filter(remarks=remarks)
         self.assertEqual = (device.remarks, remarks)
         self.assertEqual = (device.remarks, device2.remarks)
 
-    def test_send_form_without_selected_edit_fields(self):
+    def test_send_form_without_marking_edited_fields(self):
         url = '/ui/search/bulkedit/'
         data_post = {
             'select': self.device.id,
-            'bulk': '',  # show form
+            'remarks': 'Here are some remarks without confirmation.',
+            'save': '',
         }
         response = self.client.post(url, data_post)
-
-        self.assertEqual(response.status_code, 200)  # form false
-
-        response = self.client.post(url, {'select': self.device.id})
+        self.assertEqual(response.status_code, 200)
         self.assertTrue(ERROR_MSG['no_mark_fields'] in response.content)
 
     def test_send_form_with_empty_save_comment_field(self):
@@ -213,50 +186,11 @@ class BulkeditTest(TestCase):
         }
         response = self.client.post(url, post_data)
 
-        self.assertEqual(response.status_code, 200)  # form false
+        self.assertEqual(response.status_code, 200)
         self.assertTrue(ERROR_MSG['empty_save_comment'] in response.content)
         self.assertFormError(
             response,
             'form',
             'save_comment',
             ERROR_MSG['empty_save_comment_field']
-        )
-
-    def test_calculation_depreciation_date(self):
-        device = Device.objects.get(id=self.device.id)
-        self.assertEqual(device.purchase_date, None)
-        self.assertEqual(device.deprecation_kind, None)
-
-        url = '/ui/search/bulkedit/?'
-        post_data = {
-            'select': [self.device.id],  # 1
-            'edit': ['purchase_date', 'deprecation_kind'],
-            'purchase_date': datetime(2001, 1, 4, 0, 0),
-            'deprecation_kind': self.deprecation_kind.id,  # 1
-            'save_comment': 'Updated: purchase date and  deprecation kind',
-            'save': '',  # save form
-        }
-        response = self.client.post(url, post_data)
-
-        updated_device = Device.objects.get(id=self.device.id)
-        self.assertEqual(
-            updated_device.purchase_date, datetime(2001, 1, 4, 0, 0)
-        )
-        self.assertEqual(updated_device.deprecation_kind.months, 24)
-        self.assertEqual(
-            updated_device.deprecation_date, datetime(2003, 1, 4, 0, 0)
-        )
-
-        # Check if purchase date,change deprecation date
-        post_data = {
-            'select': [self.device.id],  # 1
-            'edit': ['purchase_date'],
-            'purchase_date': datetime(2002, 1, 1, 0, 0),
-            'save_comment': 'Updated: purchase date',
-            'save': '',  # save form
-        }
-        response = self.client.post(url, post_data, follow=True)
-        updated_device2 = Device.objects.get(id=self.device.id)
-        self.assertEqual(
-            updated_device2.deprecation_date, datetime(2004, 1, 1, 0, 0)
         )
