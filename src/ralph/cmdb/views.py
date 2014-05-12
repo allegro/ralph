@@ -1173,7 +1173,11 @@ class JiraChangesEdit(BaseCIDetails, DataTableMixin):
             report_filters(
                 cls=db.JiraChanges,
                 order='-update_date',
-                filters=add_filter(self.request.GET, ci=self.ci),
+                filters=add_filter(
+                    self.request.GET,
+                    ci=self.ci,
+                    additional_cis=self.ci,
+                ),
             )
         )
         return super(JiraChangesEdit, self).get(*args, **kwargs)

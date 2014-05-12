@@ -7,6 +7,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from bob.data_table import DataTableColumn
+from django.db.models import Q
 
 from ralph.cmdb.models import CI
 
@@ -14,13 +15,10 @@ from ralph.cmdb.models import CI
 def report_filters(cls, order, filters=None):
     if filters is False:
         return cls.objects.none()
-    if filters:
-        filters_list = filters.pop()
-        return cls.objects.filter(**dict(filters_list)).order_by(order)
-    return cls.objects.order_by(order).all()
+    return cls.objects.filter(filters).order_by(order).all()
 
 
-def add_filter(request, ci=None):
+def add_filter(request, **kwargs):
     """Creates filters that can be used by report_filters method based on
     GET params from request.
 
@@ -29,53 +27,39 @@ def add_filter(request, ci=None):
     :return: the filters in a form of a [(field, value)] list or False if
         nothing should be found
     """
-    filters = []
-    if ci:
-        filters.append({'ci': ci})
+    filters = Q()
+    for k, v in kwargs.items():
+        filters |= Q(**{k: v})
     if request.get('ci'):
-        ci_id = CI.objects.select_related('id').filter(
+        ci = CI.objects.select_related('id').filter(
             name=request.get('ci')
         )
-        if ci_id:
-            filters.append({'ci_id': ci_id[0]})
+        if ci:
+            filters &= Q(ci=ci[0])
         else:   # CI not found
             return False
-
-    if request.get('assignee'):
-        filters.append({'assignee': request.get('assignee')})
-    if request.get('jira_id'):
-        filters.append({'jira_id': request.get('jira_id')})
-    if request.get('issue_type'):
-        filters.append({'issue_type': request.get('issue_type')})
-    if request.get('status'):
-        filters.append({'status': request.get('status')})
+    for key in ['assignee', 'jira_id', 'issue_type', 'status']:
+        if request.get(key):
+            filters &= Q(**{key: request.get(key)})
     if request.get('start_update') and request.get('end_update'):
-        filters.append(
-            {'update_date__lte': request.get('start_update')}
-        )
-        filters.append(
-            {'update_date__gte': request.get('end_update')}
+        filters &= Q(
+            update_date__lte=request.get('start_update'),
+            update_date__gte=request.get('end_update'),
         )
     if request.get('start_resolved') and request.get('end_resolved'):
-        filters.append(
-            {'resolvet_date__lte': request.get('start_resolved')}
-        )
-        filters.append(
-            {'resolvet_date__gte': request.get('end_resolved')}
+        filters &= Q(
+            resolvet_date__lte=request.get('start_update'),
+            resolvet_date__gte=request.get('end_update'),
         )
     if request.get('start_planned_start') and request.get('end_planned_start'):
-        filters.append(
-            {'planned_start_date__lte': request.get('start_planned_start')}
-        )
-        filters.append(
-            {'planned_start_date__gte': request.get('end_planned_start')}
+        filters &= Q(
+            planned_start_date__lte=request.get('start_planned_start'),
+            planned_start_date__gte=request.get('end_planned_start'),
         )
     if request.get('start_planned_end') and request.get('end_planned_end'):
-        filters.append(
-            {'planned_end_date__lte': request.get('start_planned_end')}
-        )
-        filters.append(
-            {'planned_end_date__gte': request.get('start_planned_end')}
+        filters &= Q(
+            planned_end_date__lte=request.get('start_planned_end'),
+            planned_end_date__gte=request.get('end_planned_end'),
         )
     return filters
 
