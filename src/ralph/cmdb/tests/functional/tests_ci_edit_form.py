@@ -114,10 +114,6 @@ class CIFormsTest(TestCase):
             ci = db.CI.objects.get(name='CI')
             ci.content_object = self.device
             ci.save()
-        self.assertEqual(
-            'columns content_type_id, object_id are not unique',
-            unicode(e.exception),
-        )
 
     def test_two_ci_without_content_object(self):
         response_ci1 = self.add_ci(name='CI1')
