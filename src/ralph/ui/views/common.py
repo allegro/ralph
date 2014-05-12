@@ -31,7 +31,6 @@ from powerdns.models import Record
 
 from ralph.discovery.models_component import Ethernet
 from ralph.app import RalphModule
-from ralph.discovery.models_device import DeprecationKind, MarginKind
 from ralph.scan.errors import Error as ScanError
 from ralph.scan.manual import scan_address
 from ralph.scan.forms import DiffForm
@@ -50,8 +49,6 @@ from ralph.scan.util import update_scan_summary
 from ralph.business.models import (
     RoleProperty,
     RolePropertyValue,
-    Venture,
-    VentureRole,
 )
 from ralph.account.models import get_user_home_page_url, Perm
 from ralph.cmdb.models import CI
@@ -1349,21 +1346,14 @@ class ServerMove(BaseMixin, TemplateView):
 
 @nested_commit_on_success
 def bulk_update(devices, fields, data, user):
-    field_classes = {
-        'deprecation_kind': DeprecationKind,
-        'venture': Venture,
-        'venture_role': VentureRole,
-        'margin_kind': MarginKind,
-    }
     values = {}
     for name in fields:
-        if name in field_classes:
-            values[name] = field_classes[name].objects.get(id=data[name])
+        if name == 'chassis_position' and data[name] == '':
+            values[name] = None
         else:
-            values[name] = data[name]
+            # for checkboxes un-checking
+            values[name] = data.get(name, False)
     for device in devices:
-        if 'venture' in fields:
-            device.venture_role = None
         for name in fields:
             setattr(device, name, values[name])
             device.save_comment = data.get('save_comment')
@@ -1392,6 +1382,12 @@ class BulkEdit(BaseMixin, TemplateView):
             return super(BulkEdit, self).get(*args, **kwargs)
         selected = self.request.POST.getlist('select')
         self.devices = Device.objects.filter(id__in=selected).select_related()
+        if not self.devices:
+            messages.error(
+                self.request,
+                "You haven't selected any existing (i.e. not deleted) devices.",
+            )
+            return HttpResponseRedirect(self.request.path + '../info/')
         self.edit_fields = self.request.POST.getlist('edit')
         initial = {}
         self.different_fields = []
@@ -1408,12 +1404,8 @@ class BulkEdit(BaseMixin, TemplateView):
         if 'save' in self.request.POST:
             self.form = self.Form(self.request.POST, initial=initial)
             if not self.edit_fields:
-                messages.error(self.request, 'Mark changed fields')
+                messages.error(self.request, 'Please mark changed fields.')
             elif self.form.is_valid and self.form.data['save_comment']:
-                self.form.fields = [
-                    f for f in self.form.fields
-                    if f not in self.edit_fields or f != 'save_comment'
-                ]
                 bulk_update(
                     self.devices,
                     self.edit_fields,
@@ -1422,20 +1414,17 @@ class BulkEdit(BaseMixin, TemplateView):
                 )
                 return HttpResponseRedirect(self.request.path + '../info/')
             else:
-                messages.error(self.request, 'Correct the errors.')
+                messages.error(self.request, 'Please correct the errors.')
         elif 'bulk' in self.request.POST:
             self.form = self.Form(initial=initial)
-        elif not self.edit_fields:
-            self.form = self.Form(initial=initial)
-            messages.error(
-                self.request,
-                _('You have to mark which fields you changed')
-            )
         return super(BulkEdit, self).get(*args, **kwargs)
 
     def get(self, *args, **kwargs):
-        messages.error(self.request, _('Did not select any device'))
-        return super(BulkEdit, self).get(*args, **kwargs)
+        messages.error(
+            self.request,
+            "You haven't selected any devices.",
+        )
+        return HttpResponseRedirect(self.request.path + '../info/')
 
     def get_context_data(self, **kwargs):
         ret = super(BulkEdit, self).get_context_data(**kwargs)

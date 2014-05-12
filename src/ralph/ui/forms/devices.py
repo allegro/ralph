@@ -267,32 +267,18 @@ class DeviceBulkForm(DeviceForm):
 
     class Meta(DeviceForm.Meta):
         fields = (
-            'venture',
-            'venture_role',
             'verified',
             'position',
             'chassis_position',
             'remarks',
-            'margin_kind',
-            'deprecation_kind',
-            'price',
-            'purchase_date',
-            'warranty_expiration_date',
-            'support_expiration_date',
-            'support_kind',
             'deleted',
         )
-
-    def __init__(self, *args, **kwargs):
-        super(DeviceBulkForm, self).__init__(*args, **kwargs)
-        self.fields['venture'].choices = all_ventures()
-        self.fields['venture_role'].choices = all_roles()
 
     def clean(self):
         if not self.data.get('select'):
             messages.error(
                 self.request,
-                _('Did not select any device')
+                _("You haven't selected any devices.")
             )
 
 
