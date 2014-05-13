@@ -420,13 +420,13 @@ class CatalogComponent(Catalog):
         else:
             self.query = ComponentModel.objects.filter(
                 type=self.model_type_id).filter(group=None)
-        unassigned_componsents = ComponentModel.objects.filter(
+        unassigned_components = ComponentModel.objects.filter(
             type=self.model_type_id
         ).filter(
             group=None
         )
         unassigned_count = 0
-        for u in unassigned_componsents:
+        for u in unassigned_components:
             unassigned_count = unassigned_count + u.get_count()
         self.unassigned_count = unassigned_count
         groups = list(ComponentModelGroup.objects.filter(
