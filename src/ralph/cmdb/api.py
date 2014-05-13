@@ -181,7 +181,7 @@ class OwnershipField(tastypie.fields.RelatedField):
         self.owner_type = owner_type.id
         self.owner_type_name = owner_type.name
         self.effective = effective
-
+        kwargs['readonly'] = self.effective
         args = (
             'ralph.cmdb.api.CIOwnersResource',
             self.get_attribute_name(),
