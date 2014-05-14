@@ -58,6 +58,7 @@ class Command(BaseCommand):
                 default=[],
             )
         ])
+        super(Command, self).__init__(*args, **kwargs)
 
     def handle(self, *args, **options):
         usage = "usage: %prog --action=[purge|import] \
