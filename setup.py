@@ -32,8 +32,8 @@ setup(
     package_dir={'': 'src'},
     zip_safe=False,  # because templates are loaded from file path
     install_requires=[
-        'bob-ajax-selects==1.3.3',
-        'django-bob==1.6.0',
+        'bob-ajax-selects==1.3.4',
+        'django-bob==1.7.0',
         'django-powerdns-dnssec==0.9.3',
         'django-tastypie==0.9.16',
         'django-rq==0.4.5',
