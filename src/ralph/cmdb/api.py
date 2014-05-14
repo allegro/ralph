@@ -130,7 +130,7 @@ class ServiceResource(MResource):
         attrs = ('external_key', 'location', 'state',
                  'it_person', 'it_person_mail', 'business_person',
                  'business_person_mail', 'business_line')
-        ci = CI.objects.get(uid=bundle.data.get('uid'))
+        ci = bundle.obj
         for attr in attrs:
             bundle.data[attr] = getattr(ci.content_object, attr, '')
         return bundle
