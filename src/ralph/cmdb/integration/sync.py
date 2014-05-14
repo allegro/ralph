@@ -240,6 +240,9 @@ class JiraEventsImporter(BaseImporter):
                     planned_start_date=field.get('customfield_11602'),
                     planned_end_date=field.get('customfield_11601'),
                 )
+                # For a legacy plugin we store the sole CI as result['ci']
+                # For the new plugin we store all the CIs (both main and
+                # additional) as result['cis']
                 if settings.ISSUETRACKERS['default'].get(
                     'LEGACY_PLUGIN',
                     True,
