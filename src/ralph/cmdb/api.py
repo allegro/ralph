@@ -579,7 +579,7 @@ class CIOwnersResource(MResource):
             'last_name': ALL,
             'modified': ALL,
             'resource_uri': ALL,
-
+            'sAMAccountName': ALL,
         }
         excludes = ('cache_version', )
         resource_name = 'ciowners'
