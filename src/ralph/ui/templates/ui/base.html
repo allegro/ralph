@@ -29,14 +29,32 @@
 <script type="text/javascript">
    $().ready(function() {
     $("li.menu-item-ralph-cli").click(function() {
-        $('.modal').modal();
+        $('.beast-info-modal').modal();
+    });
+    $("div.quickscan input.search-query").blur(function() {
+        $('.quickscan').hide();
+    });
+    $("li.menu-item-quick-scan").click(function() {
+        $('.quickscan')[0].style.left = $(this).offset().left+ "px";
+        $('.quickscan')[0].style.top = $(this).offset().top + 32 + "px";
+        $('.quickscan').show();
+        $('.quickscan input').focus();
     });
    });
+
 </script>
 {% endblock %}
 
 {% block extra_headers %}{% endblock %}
 </head><body>
+<div class="quickscan well" style="display:none; position: absolute; background-color: white; padding: 20px">
+    <form class="navbar-search pull-right" action="/ui/search/scan">
+    <div class="form-group">
+        <input class="search-query" placeholder="Enter IP Address to scan" name="q">
+    </form>
+  </div>
+</div>
+
 <div class="modal hide fade beast-info-modal">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
@@ -44,7 +62,7 @@
   </div>
   <div class="modal-body">
     <h4>Installation</h4>
-    <p>
+     <p>
      <a href="https://github.com/allegro/ralph_beast/blob/master/doc/install.rst">pip install ralph-beast</a>
      </p>
      <h4>Documentation</h4>

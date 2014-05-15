@@ -329,6 +329,10 @@ class BaseMixin(object):
         mainmenu_items.append(
             MenuItem('Ralph CLI', fugue_icon='fugue-terminal',
                      href='#beast'))
+        mainmenu_items.append(
+            MenuItem('Quick scan', fugue_icon='fugue-radar',
+                     href='#quickscan'))
+
         if ('ralph.cmdb' in settings.INSTALLED_APPS and
                 has_perm(Perm.read_configuration_item_info_generic)):
             mainmenu_items.append(
@@ -345,7 +349,7 @@ class BaseMixin(object):
                 ))
 
         if settings.BUGTRACKER_URL:
-            mainmenu_items.append(
+            footer_items.append(
                 MenuItem(
                     'Report a bug', fugue_icon='fugue-bug', pull_right=True,
                     href=settings.BUGTRACKER_URL)
@@ -1482,7 +1486,7 @@ class Scan(BaseMixin, TemplateView):
         if not plugins:
             messages.error(self.request, "You have to select some plugins.")
             return self.get(*args, **kwargs)
-        ip_address = self.kwargs.get('address')
+        ip_address = self.kwargs.get('address') or self.request.GET.get('address')
         try:
             job = scan_address(
                 ip_address, plugins, automerge=False, called_from_ui=True
@@ -1494,7 +1498,7 @@ class Scan(BaseMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         ret = super(Scan, self).get_context_data(**kwargs)
-        address = self.kwargs.get('address')
+        address = self.kwargs.get('address') or self.request.GET.get('address')
         if address and not self.object:
             try:
                 ipaddress = IPAddress.objects.get(address=address)
