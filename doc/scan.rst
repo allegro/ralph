@@ -53,7 +53,6 @@ version used, and http service available.
     :width: 600px
 
 
-
 Scanning new devices
 --------------------
 
