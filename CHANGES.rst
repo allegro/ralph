@@ -2,10 +2,18 @@ Change Log
 ----------
 
 2.0.0
-~~~~~~~~
+~~~~~
 
-* CMDB: Additional CIs for CMDB events
-* CMDB: sAMAccuntName can be synchronised from AD for CIOwners
+* CORE: Handling networks using IDs instead of their names.
+
+* CORE: Fixed and improved/cleaned 'Bulk edit' form.
+
+* CORE: Got rid of 'Model Group' and 'Model' columns in 'Software' tab.
+
+* CMDB: Additional CIs for CMDB events.
+
+* CMDB: sAMAccuntName can be synchronised from AD for CIOwners.
+
 
 2.0.0-rc6
 ~~~~~~~~~
