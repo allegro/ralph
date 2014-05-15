@@ -1,49 +1,22 @@
 `Scan` - Device discovery
-================
+==========================
 
 Scan is a new discovery mechanism for Ralph which is stable and fast.
 
 Ralph is able to periodically scan your all networks/environments and detect hardware information, software configuration and location.
 Currently we have 30 plugins for hundreds of common hardware, but it's very easy to write your own plugin for the specific king of hardware. It's possible to enter this information manually too.
 
-Running Scan 
------------------
+Preparing
+---------
 
 
-You need to have rqworker running on the environment you want to scan. 
+You need to have rqworker running on the environment you want to scan.
 You do that with the command::
 
 (ralph)$ ralph rqworker [your_worker_name]
 
 
-You can run :index:`scan` on a specified IP address or specified:
-    - networks
-    - data centers
-    - environments 
-    - discovery queues
-with command examples::
-
-    (ralph)$ ralph scan 127.0.0.1
-    (ralph)$ ralph scan -n 127.0.0.1/0
-    (ralph)$ ralph scan -c dc2 
-    (ralph)$ ralph scan -e office
-    (ralph)$ ralph scan -q [your_worker_name]
-
-more info with::
-
-    (ralph)$ ralph scan --help
-
-
-This will attempt to invoke each of the discovery plugins on all the specified
-addresses -- the plugins themselves will fill in all the information they can
-gather. 
-
-.. note::
-    It is also possible to invoke discovery using the web interface's
-    "Scan" tab, if you have the necessary permissions.
-
-
-It's possible to make some workers only process the addresses from certain
+It's possible to make some workers to only process the addresses from certain
 environments. The environment definitions have a ``queue`` parameter which
 tells to which worker queue the discovery requests should be sent. When
 starting a worker you can provide queue names as parameters to specify on
@@ -52,6 +25,54 @@ which queues the workers should listen on.
 It is advised to have the scan command called from a cron job on
 the server at least once a day, so that the information in the database is up
 to date.
+
+
+Scanning existing device
+------------------------
+
+The best way to use scan is using GUI.
+
+1. From any device view select 'Scan' tab.
+2. Choose IP Address for scan.
+
+.. image:: _static/scan_choose_ip_for_scan.png
+    :width: 600px
+
+3. Choose appriopriate plugins you want to use, or select 'all'. There is some
+information on the right side from pre-scan plugin which try to detect snmp
+version used, and http service available.
+
+.. image:: _static/scan_choose_plugins.png
+    :width: 600px
+
+
+4. Click 'Scan' and view and accept results on the next screen.
+
+
+.. image:: _static/scan_summary.png
+    :width: 600px
+
+
+
+Scanning new devices
+------------------------
+
+1. You have to add network, and discovery environment using admin panel.
+2. Go to 'Networks' module and find network you want to scan.
+3. Chose 'Autoscan' tab.
+4. If network was not scanned before you should click 'Scan now'. IP Addresses
+   will be shown to you.
+5. Click on given ip address to view scan results, or if 'Full scan' column is
+   filled in, you could immediately view scan results.
+
+.. image:: _static/scan_net_auto.png
+   :width: 600px
+
+6. Now you can view and accept scan results.
+
+.. image:: _static/scan_summary.png
+    :width: 600px
+
 
 Plugins configuration
 --------------------

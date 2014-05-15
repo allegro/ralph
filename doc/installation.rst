@@ -2,12 +2,20 @@
 Install / Upgrade Ralph
 ============================
 
+The easy way - prebuilt image
+==============================
+
+It is the easiest way to try out Ralph - download ready to use VirtualBox image.
+You can do everything(scan, reporting) you would do with normal Ralph installation.
+
+https://www.dropbox.com/sh/ga6vblh1p2gr79e/AAAwjRFMYaw4MYJqnh-i4C9ga
+
+
 Upgrading existing installation
 ===============================
 
 Before you start the upgrade, you need to stop any Ralph processes that are
-running -- otherwise you can get some unpredictable behavior when your files
-and database are half-way through the upgrade process.
+running.
 
 If you installed from pip, then you can simply do::
 
@@ -48,15 +56,12 @@ Installing Ralph
 .. note::
 
    You can install Ralph on a variety of sensible operating systems. This guide
-   assumes Ubuntu Server 12.04 LTS and presents shell command examples
+   assumes Ubuntu Server 12.04/14.04 LTS and presents shell command examples
    accordingly.  MySQL as the relational backend for Django is also assumed but
    other databases supported by Django may be used as well. ``sqlite3`` is
    discouraged for larger deployments because it doesn't support concurrent
    writes which are very common on a distributed queue-based architecture.
 
-   **If you happen to use another setup**, please take a moment to write down
-   what you were doing and send it over. This way we can add examples for your
-   system as well.
 
 Installing Python
 -----------------
@@ -191,9 +196,9 @@ Caching
 -------
 
 For small deployments the built-in in-memory cache provided by Django is enough.
-For larger setups we strongly recommend Memcached::
+For larger setups we strongly recommend Redis:
 
-  $ sudo apt-get install memcached
+  $ sudo apt-get install redis-server
 
 Apache
 ------
@@ -277,21 +282,29 @@ that.
 Installing from pip
 ~~~~~~~~~~~~~~~~~~~
 
-Simply invoke::
+Check your pip version::
+
+  (ralph)$ pip --version
+
+If you have pip 1.3.x or 1.4.x use this command::
 
   (ralph)$ pip install ralph
 
+In case you have newer pip (1.5.x or newer) use slightly longer command::
+
+  (ralph)$ pip install ralph --use-mirrors --allow-all-external --allow-unverified ipaddr --allow-unverified postmarkup --allow-unverified python-graph-core --allow-unverified pysphere
+
 That's it.
 
-Installing from sources
-~~~~~~~~~~~~~~~~~~~~~~~
+Installing from sources (bleeding edge version)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Alternatively, to live on the bleeding edge, you can clone the Ralph git
 repository to ``project`` and install it manually::
 
   (ralph)$ git clone git://github.com/allegro/ralph.git project
   (ralph)$ cd project
-  (ralph)$ pip install -e .
+  (ralph)$ make install
 
 The last command will install numerous dependencies to the virtual environment
 we just created. It's important that we used an activated virtual environment
@@ -371,11 +384,6 @@ simple::
 By default the ``collectstatic`` command copies the files. The ``-l`` option
 creates symlinks instead.
 
-Testing if it works
--------------------
-
-Finally, there's the most fun part where you have to see why it doesn't work. In
-theory it should all run fine, see for yourself.
 
 Python and setcap
 ~~~~~~~~~~~~~~~~~
@@ -426,32 +434,6 @@ From the project directory run::
 
 This runs a single worker process. Leave it open for now, in the next step
 we'll check if the communication works alright.
-
-Ralph tasks
-~~~~~~~~~~~
-
-First let's try interactively to discover a single host::
-
-  (ralph)$ ralph discover 127.0.0.1
-  127.0.0.1... up!
-
-Should the discovery show that 127.0.0.1 is down, check whether your Python
-binary has been ``setcap``'ed. Did the ``util`` unit tests succeed?
-
-If everything's alright, let's try to run the discovery remotely::
-
-  $ ralph discover --remote 127.0.0.1
-
-This won't return anything on stdout but on your rqworker console you should
-see::
-
-  16:44:44 default: ralph.discovery.tasks.run_plugin({u'queue': u'default',
-           u'ip': IPv4Address('127.0.0.1')}, (u'discovery', u'postprocess'),
-           'ping', set([]), False, set([]), None)
-           (48cd4afc-10c0-4ed0-9646-6db81c1e1ea5)
-  16:44:44 [ping] 127.0.0.1... up!
-  16:44:44 Job OK
-  16:44:44 Result discarded immediately.
 
 That's it!
 ----------
