@@ -2,7 +2,7 @@ Change Log
 ----------
 
 2.0.0-stable
-~~~~~~~~
+~~~~~~~~~~~~
 
 * CMDB: Additional CIs for CMDB events
 
