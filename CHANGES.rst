@@ -1,6 +1,12 @@
 Change Log
 ----------
 
+2.0.0
+~~~~~~~~
+
+* CMDB: Additional CIs for CMDB events
+* CMDB: sAMAccuntName can be synchronised from AD for CIOwners
+
 2.0.0-rc6
 ~~~~~~~~~
 
