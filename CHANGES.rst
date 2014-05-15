@@ -4,6 +4,8 @@ Change Log
 2.0.0-rc7
 ~~~~~~~~~
 
+Released on May 15, 2014
+
 * CORE: Fixed 'Bulk edit' button on 'Ventures' and 'Racks' views.
 
 * CORE: Handling networks using IDs instead of their names.
@@ -22,7 +24,7 @@ Change Log
 2.0.0-rc6
 ~~~~~~~~~
 
-Released on April 28, 2013
+Released on April 28, 2014
 
 * SCAN: Stability improvements and fixes.
 
