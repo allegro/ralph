@@ -9,7 +9,6 @@ Currently we have 30 plugins for hundreds of common hardware, but it's very easy
 Preparing
 ---------
 
-
 You need to have rqworker running on the environment you want to scan.
 You do that with the command::
 
@@ -45,14 +44,11 @@ version used, and http service available.
 .. image:: _static/scan_choose_plugins.png
     :width: 600px
 
-
 4. Click 'Scan' and view and accept results on the next screen.
-
 
 .. image:: _static/scan_summary.png
     :width: 600px
-
-
+    
 Scanning new devices
 --------------------
 
@@ -71,7 +67,6 @@ Scanning new devices
 
 .. image:: _static/scan_summary.png
     :width: 600px
-
 
 Plugins configuration
 ---------------------
