@@ -6,6 +6,8 @@ from __future__ import unicode_literals
 
 import datetime
 
+import ipaddr
+
 import django_rq
 import rq
 from django.conf import settings
@@ -23,6 +25,7 @@ from django.views.generic import (
     TemplateView,
     UpdateView,
 )
+
 from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Language, TagStem
 from bob.menu import MenuItem
@@ -1473,12 +1476,15 @@ class Scan(BaseMixin, TemplateView):
     template_name = 'ui/scan.html'
 
     def get(self, *args, **kwargs):
+        address = kwargs.get('address') or self.request.GET.get('address')
+
         try:
             device_id = int(self.kwargs.get('address'))
         except ValueError:
             self.object = None
         else:
             self.object = Device.objects.get(id=device_id)
+
         return super(Scan, self).get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
@@ -1487,6 +1493,11 @@ class Scan(BaseMixin, TemplateView):
             messages.error(self.request, "You have to select some plugins.")
             return self.get(*args, **kwargs)
         ip_address = self.kwargs.get('address') or self.request.GET.get('address')
+        if ip_address:
+            try:
+                ip = ipaddr.IPAddress(ip_address)
+            except ValueError:
+                return HttpResponseRedirect(reverse('search', args=()))
         try:
             job = scan_address(
                 ip_address, plugins, automerge=False, called_from_ui=True
@@ -1499,6 +1510,7 @@ class Scan(BaseMixin, TemplateView):
     def get_context_data(self, **kwargs):
         ret = super(Scan, self).get_context_data(**kwargs)
         address = self.kwargs.get('address') or self.request.GET.get('address')
+
         if address and not self.object:
             try:
                 ipaddress = IPAddress.objects.get(address=address)
@@ -1506,7 +1518,7 @@ class Scan(BaseMixin, TemplateView):
                 ipaddress = None
             try:
                 network = Network.from_ip(address)
-            except (Network.DoesNotExist, IndexError):
+            except (Network.DoesNotExist, IndexError, ValueError):
                 network = None
         else:
             ipaddress = None

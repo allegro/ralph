@@ -16,7 +16,7 @@
         {% endfor %}
         </ul>
     </div>
-{% else %}
+{% elif address %}
 <div class="row-fluid"><div class="span6 scan-select-plugins">
     <form method="post" class="form form-horizontal" data-role="select-plugins-form">
         {% csrf_token %}
@@ -83,6 +83,9 @@
             </tr>
     </table>
 </div></div>
+{% else %}
+
+<div class="alert alert-danger">Requested IP address is invalid.</div>
 {% endif %}
 {% endblock %}
 
