@@ -2,8 +2,8 @@ Additional modules
 ----------------
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 3
 
-    pricing
-    assets
-    cmdb
+    pricing/index
+    assets/index
+    cmdb/index
