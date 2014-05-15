@@ -127,9 +127,15 @@ class ServiceResource(MResource):
 
     def dehydrate(self, bundle, **kwargs):
         # CMDB base info completed with content_object info
-        attrs = ('external_key', 'location', 'state',
-                 'it_person', 'it_person_mail', 'business_person',
-                 'business_person_mail', 'business_line')
+        attrs = (
+            'external_key',
+            'location',
+            'it_person',
+            'it_person_mail',
+            'business_person',
+            'business_person_mail',
+            'business_line',
+        )
         ci = bundle.obj
         for attr in attrs:
             bundle.data[attr] = getattr(ci.content_object, attr, '')
