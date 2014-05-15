@@ -4,6 +4,8 @@ Change Log
 2.0.0
 ~~~~~
 
+* CORE: Fixed 'Bulk edit' button on 'Ventures' and 'Racks' views.
+
 * CORE: Handling networks using IDs instead of their names.
 
 * CORE: Fixed and improved/cleaned 'Bulk edit' form.
