@@ -63,13 +63,11 @@ def network_tree_menu(networks, details, get_params, show_ip=False, status=''):
         )
     for n in networks:
         items.append(MenuItem(
-            "{} ({})".format(
-                n['network'].name, n['network'].address,
-            ),
+            "{} ({})".format(n['network'].name, n['network'].address,),
             fugue_icon=icon(n['network']),
             view_name='networks',
             indent='  ',
-            href=get_href(view_args=[n['network'].name, details, status]),
+            href=get_href(view_args=[str(n['network'].id), details, status]),
             name=n['network'].name,
             subitems=network_tree_menu(
                 n['subnetworks'], details, get_params, show_ip, status,
@@ -91,12 +89,9 @@ class SidebarNetworks(object):
     def set_network(self):
         if self.network:
             return self.network
-        network_symbol = self.kwargs.get('network')
-        if network_symbol == '-':
-            self.network = ''
-        elif network_symbol:
-            self.network = get_object_or_404(Network,
-                                             name__iexact=network_symbol)
+        network_id = self.kwargs.get('network_id')
+        if network_id:
+            self.network = get_object_or_404(Network, id=network_id)
         else:
             self.network = None
         return self.network
@@ -164,7 +159,7 @@ class SidebarNetworks(object):
 class NetworksMixin(SidebarNetworks, BaseMixin):
 
     def tab_href(self, name, obj=''):
-        args = [self.kwargs.get('network'), name]
+        args = [self.kwargs.get('network_id'), name]
         if obj:
             args.append(obj)
         return '%s?%s' % (
@@ -270,7 +265,7 @@ class NetworksReports(NetworksMixin, Reports):
 
 
 class NetworksScan(NetworksMixin, Scan):
-    pass
+    template_name = 'ui/scan_networks.html'
 
 
 class ReportNetworksDeviceList(ReportDeviceList, NetworksDeviceList):
@@ -389,6 +384,7 @@ class NetworksAutoscan(NetworksMixin, BaseDeviceList):
             'network': self.network,
             'details': 'autoscan',
             'network_name': self.network.name if self.network else '-',
+            'network_id': self.network.id,
         })
         return ret
 

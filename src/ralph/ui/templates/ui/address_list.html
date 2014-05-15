@@ -61,7 +61,7 @@
                         <td class="column-checkbox"><input type="checkbox" name="select" value="{{ d.id }}"></td>
                         <td class="column-address" style="width:9em">
                             <a
-                                href="{% url 'networks' network_name 'scan' d.address %}"
+                                href="{% url 'networks' network_id 'scan' d.address %}"
                                 style="white-space:nowrap"
                             >
                                 {{ d|address_icon }}&nbsp;{{ d.address }}
