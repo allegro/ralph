@@ -1,8 +1,8 @@
 Change Log
 ----------
 
-2.0.0
-~~~~~
+2.0.0-rc7
+~~~~~~~~~
 
 * CORE: Fixed 'Bulk edit' button on 'Ventures' and 'Racks' views.
 
