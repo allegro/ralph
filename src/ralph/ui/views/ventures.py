@@ -177,6 +177,7 @@ class SidebarVentures(object):
                            self.venture and self.venture != '*' else self.venture),
             'searchform': VentureFilterForm(self.request.GET),
             'searchform_filter': True,
+            'show_bulk': True if self.venture else False,
         })
         return ret
 
