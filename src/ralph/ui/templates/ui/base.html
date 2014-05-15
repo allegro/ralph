@@ -35,10 +35,10 @@
         $('.quickscan').hide();
     });
     $("li.menu-item-quick-scan").click(function() {
-        $('.quickscan')[0].style.left = $(this).offset().left+ "px";
-        $('.quickscan')[0].style.top = $(this).offset().top + 32 + "px";
-        $('.quickscan').show();
-        $('.quickscan input').focus();
+        $('div.quickscan').css('left', $(this).offset().left + "px");
+        $('div.quickscan').css('top', $(this).offset().top + 32 + "px");
+        $('div.quickscan').show();
+        $('div.quickscan input').focus();
     });
    });
 
