@@ -144,6 +144,7 @@ class SidebarRacks(BaseRacksMixin):
             'sidebar_selected': _get_identifier(self.rack),
             'section': 'racks',
             'subsection': _get_identifier(self.rack),
+            'show_bulk': True if self.rack else False,
         })
         return ret
 
