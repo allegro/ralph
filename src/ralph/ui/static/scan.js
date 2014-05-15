@@ -69,6 +69,8 @@ require(['jquery'], function ($) {
 
     ScanSelectPluginsForm.prototype.run = function () {
         this.handleSelectAllButton();
+        $('[data-role="select-all-btn"]').click();
+        $('button[type=submit]#upper-submit').first().focus();
     };
 
     $(document).ready(function () {

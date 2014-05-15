@@ -1,8 +1,12 @@
 Change Log
 ----------
 
-2.0.0
-~~~~~
+2.0.0-stable
+~~~~~~~~~~~~
+
+* CMDB: Additional CIs for CMDB events
+
+* CMDB: sAMAccuntName can be synchronised from AD for CIOwners
 
 * CORE: Fixed 'Bulk edit' button on 'Ventures' and 'Racks' views.
 
@@ -16,6 +20,7 @@ Change Log
 
 * CMDB: sAMAccuntName can be synchronised from AD for CIOwners.
 
+* SCAN: "Quick scan" is the quickest way to scan given ip address.
 
 2.0.0-rc6
 ~~~~~~~~~

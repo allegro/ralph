@@ -6,6 +6,8 @@ from __future__ import unicode_literals
 
 import datetime
 
+import ipaddr
+
 import django_rq
 import rq
 from django.conf import settings
@@ -23,6 +25,7 @@ from django.views.generic import (
     TemplateView,
     UpdateView,
 )
+
 from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Language, TagStem
 from bob.menu import MenuItem
@@ -329,6 +332,10 @@ class BaseMixin(object):
         mainmenu_items.append(
             MenuItem('Ralph CLI', fugue_icon='fugue-terminal',
                      href='#beast'))
+        mainmenu_items.append(
+            MenuItem('Quick scan', fugue_icon='fugue-radar',
+                     href='#quickscan'))
+
         if ('ralph.cmdb' in settings.INSTALLED_APPS and
                 has_perm(Perm.read_configuration_item_info_generic)):
             mainmenu_items.append(
@@ -345,7 +352,7 @@ class BaseMixin(object):
                 ))
 
         if settings.BUGTRACKER_URL:
-            mainmenu_items.append(
+            footer_items.append(
                 MenuItem(
                     'Report a bug', fugue_icon='fugue-bug', pull_right=True,
                     href=settings.BUGTRACKER_URL)
@@ -1469,12 +1476,15 @@ class Scan(BaseMixin, TemplateView):
     template_name = 'ui/scan.html'
 
     def get(self, *args, **kwargs):
+        address = kwargs.get('address') or self.request.GET.get('address')
+
         try:
             device_id = int(self.kwargs.get('address'))
         except ValueError:
             self.object = None
         else:
             self.object = Device.objects.get(id=device_id)
+
         return super(Scan, self).get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
@@ -1482,7 +1492,12 @@ class Scan(BaseMixin, TemplateView):
         if not plugins:
             messages.error(self.request, "You have to select some plugins.")
             return self.get(*args, **kwargs)
-        ip_address = self.kwargs.get('address')
+        ip_address = self.kwargs.get('address') or self.request.GET.get('address')
+        if ip_address:
+            try:
+                ip = ipaddr.IPAddress(ip_address)
+            except ValueError:
+                return HttpResponseRedirect(reverse('search', args=()))
         try:
             job = scan_address(
                 ip_address, plugins, automerge=False, called_from_ui=True
@@ -1494,7 +1509,8 @@ class Scan(BaseMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         ret = super(Scan, self).get_context_data(**kwargs)
-        address = self.kwargs.get('address')
+        address = self.kwargs.get('address') or self.request.GET.get('address')
+
         if address and not self.object:
             try:
                 ipaddress = IPAddress.objects.get(address=address)
@@ -1502,7 +1518,7 @@ class Scan(BaseMixin, TemplateView):
                 ipaddress = None
             try:
                 network = Network.from_ip(address)
-            except (Network.DoesNotExist, IndexError):
+            except (Network.DoesNotExist, IndexError, ValueError):
                 network = None
         else:
             ipaddress = None

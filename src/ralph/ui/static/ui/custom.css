@@ -237,3 +237,10 @@ img.waiting
 .menu-item-search {
     margin-right: 10px;
 }
+
+.quickscan {
+    display:none;
+    position: absolute;
+    background-color:
+    white; padding: 20px;
+}
