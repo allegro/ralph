@@ -1,0 +1,53 @@
+<div class="quickscan well">
+    <form class="navbar-search pull-right" action="/ui/search/scan">
+    <div class="form-group">
+        <input class="search-query" placeholder="Enter IP Address to scan" name="q">
+    </form>
+  </div>
+</div>
+
+<div class="modal hide fade beast-info-modal">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>Ralph Command Line Interface</h3>
+  </div>
+  <div class="modal-body">
+    <h4>Installation</h4>
+     <p>
+     <a href="https://github.com/allegro/ralph_beast/blob/master/doc/install.rst">pip install ralph-beast</a>
+     </p>
+     <h4>Documentation</h4>
+     <p>
+     <a href="https://github.com/allegro/ralph_beast/blob/master/doc/howto.rst">Usage | </a>
+     <a href="https://github.com/allegro/ralph_beast/blob/master/doc/install.rst">Configuration</a>
+     </p>
+     <h4>Sample commands</h4>
+     <p>
+    Show available resources<br><code>beast show</code><br>
+    Show available fields for resource<br><code>beast show venture --schema</code><br>
+    CSV list of all ventures<br><code>beast show venture --fields=name,roles,symbol --limit 0 --csv >/tmp/ventures.csv</code><br>
+    Shows all cloud venture devices with barcodes and names<br>
+    <code>beast show dev --filter=venture__symbol=cloud --fields=barcode,id,name --csv</code><br>
+    Search for all HP models known<br>
+    <code>beast show model --fields=name,id --csv | grep "HP"</code><br>
+    Show model name of given id<br><code>beast show dev --filter=model=6701393</code><br>
+    Show all racks <code>beast show dev --fields=barcode,name --filter=model__type=1</code><br>
+    Show all cloud servers<code>beast show dev --fields=name,model --filter=model__type=204</code><br>
+    Show all switches<code>beast show dev --fields=name,model --filter=model__type=203</code><br>
+    Show all blades<pre>beast show dev --fields=name,model --filter=model__type=202</pre>
+    <h4>Networks</h4>
+    Show all management networks with advanced info<br>
+    <code>beast show networks --fields=last_scan,min_ip,max_ip,name,remarks | grep mgmt</code>
+    <h4>CMDB</h4>
+    Show all application CI's with technical owners<br>
+    <code>beast show ci --filter=layers=1 --fields=technical_owners,name</code><br>
+    Show all services for given business line<br>
+    <code>beast show service --filter=business_line=Retail</code>
+    <h4>Check out all 37 resources</h4>
+    Ralph beast has access to the all API resources in the easy way. You can make complex scripts using this API.<br>
+  </div>
+  <div class="modal-footer">
+    <p class="muted"><small>Scroll for more</small></p>
+    <a href="#" data-dismiss="modal" class="btn">Close</a>
+  </div>
+</div>
