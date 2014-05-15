@@ -55,7 +55,7 @@ version used, and http service available.
 
 
 Scanning new devices
-------------------------
+--------------------
 
 1. You have to add network, and discovery environment using admin panel.
 2. Go to 'Networks' module and find network you want to scan.
@@ -75,7 +75,7 @@ Scanning new devices
 
 
 Plugins configuration
---------------------
+---------------------
 
 Most plugins will require some configuration before they can be succesfully
 used by Ralph. This is usually the login and password that they need to use
