@@ -16,6 +16,8 @@ Change Log
 
 * CMDB: sAMAccuntName can be synchronised from AD for CIOwners.
 
+* SCAN: Whole new SCAN documentation prepared.
+
 
 2.0.0-rc6
 ~~~~~~~~~
