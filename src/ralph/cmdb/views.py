@@ -522,10 +522,10 @@ class BaseCIDetails(BaseCMDBView):
                 datetime.datetime.now(), datetime.datetime.now() - days)
         ).count()
         incidents = db.CIIncident.objects.filter(
-            ci=self.ci,
+            cis=self.ci,
         ).count()
         problems = db.CIProblem.objects.filter(
-            ci=self.ci,
+            cis=self.ci,
         ).count()
         messages = []
         if last_week_puppet_errors:
@@ -1110,7 +1110,7 @@ class CIProblemsEdit(BaseCIDetails, DataTableMixin):
             report_filters(
                 cls=db.CIProblem,
                 order='-update_date',
-                filters=add_filter(self.request.GET, ci=self.ci),
+                filters=add_filter(self.request.GET, cis=self.ci),
             )
         )
         return super(CIProblemsEdit, self).get(*args, **kwargs)
@@ -1175,8 +1175,7 @@ class JiraChangesEdit(BaseCIDetails, DataTableMixin):
                 order='-update_date',
                 filters=add_filter(
                     self.request.GET,
-                    ci=self.ci,
-                    additional_cis=self.ci,
+                    cis=self.ci,
                 ),
             )
         )
@@ -1241,7 +1240,7 @@ class CIIncidentsEdit(BaseCIDetails, DataTableMixin):
             report_filters(
                 cls=db.CIIncident,
                 order='-update_date',
-                filters=add_filter(self.request.GET, ci=self.ci),
+                filters=add_filter(self.request.GET, cis=self.ci),
             )
         )
         return super(CIIncidentsEdit, self).get(*args, **kwargs)

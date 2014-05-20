@@ -35,7 +35,7 @@ def add_filter(request, **kwargs):
             name=request.get('ci')
         )
         if ci:
-            filters &= Q(ci=ci[0])
+            filters &= Q(cis=ci[0])
         else:   # CI not found
             return False
     for key in ['assignee', 'jira_id', 'issue_type', 'status']:
