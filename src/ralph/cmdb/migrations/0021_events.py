@@ -15,7 +15,7 @@ class Migration(DataMigration):
             'cmdb.JiraChanges',
         ]]):
             object_.cis = (
-                [object_.ci] if object_.ci else [] +
+                ([object_.ci] if object_.ci else []) +
                 list(object_.additional_cis.all())
             ) 
             object_.save()
