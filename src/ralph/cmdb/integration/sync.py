@@ -170,9 +170,8 @@ class JiraEventsImporter(BaseImporter):
         prob.resolvet_date = self.tz_time(issue.get('resolvet_date'))
         prob.planned_start_date = self.tz_time(issue.get('planned_start_date'))
         prob.planned_end_date = self.tz_time(issue.get('planned_end_date'))
-        prob.ci = ci_obj
         prob.save()
-        prob.additional_cis = additional_cis
+        prob.ci.register_event(ci_obj)
         prob.save()
 
     def import_problem(self, cutoff_date=None):

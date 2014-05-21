@@ -144,7 +144,7 @@ def breadth_first_search_ci(root, criterion, up=True):
     :return: A tuple (CI, criterion(CI)) on success or (None, None) on failure
     """
     queue = [root]
-    enqueued = {root}
+    enqueued = {root.id}
     while queue:
         current = queue.pop(0)
         result = criterion(current)
@@ -159,3 +159,25 @@ def breadth_first_search_ci(root, criterion, up=True):
                 queue.append(ci)
                 enqueued.add(ci.id)
     return None, None
+
+def walk(root, function, up=True):
+    """Walk the CI and its children/parents recursively applying the function
+    to every CI in the tree. This function discovers cycles and never visits
+    the same CI twice.
+    :param root: The start of walk
+    :param function: function to be applied. It should accept one argument: CI
+    :param up: If true, the walk will move to parents. Otherwise - to children.
+    """
+    queue = [root]
+    enqueued = {root.id}
+    while queue:
+        current = queue.pop(0)
+        function(current)
+        if up:
+            to_search = current.get_parents()
+        else:
+            to_search = current.get_children()
+        for ci in to_search:
+            if ci.id not in enqueued:
+                queue.append(ci)
+                enqueued.add(ci.id)
