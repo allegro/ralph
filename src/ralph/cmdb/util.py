@@ -181,3 +181,14 @@ def walk(root, function, up=True):
             if ci.id not in enqueued:
                 queue.append(ci)
                 enqueued.add(ci.id)
+
+
+def register_event(ci, event):
+    """Registers an event on the given CI and all its descendants.
+    :param ci: The top CI.
+    :param event: The event to be registered."""
+
+    def set_event(current_ci):
+        event.cis.add(current_ci)
+    walk(ci, set_event, up=False)
+
