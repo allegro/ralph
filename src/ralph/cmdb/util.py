@@ -160,6 +160,7 @@ def breadth_first_search_ci(root, criterion, up=True):
                 enqueued.add(ci.id)
     return None, None
 
+
 def walk(root, function, up=True):
     """Walk the CI and its children/parents recursively applying the function
     to every CI in the tree. This function discovers cycles and never visits
@@ -191,4 +192,3 @@ def register_event(ci, event):
     def set_event(current_ci):
         event.cis.add(current_ci)
     walk(ci, set_event, up=False)
-
