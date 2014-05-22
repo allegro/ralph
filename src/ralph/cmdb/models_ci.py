@@ -12,6 +12,7 @@ from dj.choices.fields import ChoiceField
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from django.core.exceptions import ValidationError
+from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
@@ -424,9 +425,8 @@ class CI(TimeTrackable):
             ci = None
         return ci
 
-    @models.permalink
     def get_absolute_url(self):
-        return "/cmdb/ci/view/%i" % self.id
+        return reverse('ci_view', kwargs={'ci_id': self.id})
 
     def save(self, user=None, *args, **kwargs):
         self.saving_user = user
