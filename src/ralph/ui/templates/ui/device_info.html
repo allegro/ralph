@@ -14,7 +14,7 @@
 
 {% if changed_addresses %}
     <div class="alert alert-info">
-        <p><strong>Scan detected changes for the fallowing IP addresses (click to see the change):</strong></p>
+        <p><strong>Scan detected changes for the following IP addresses (click to see the change):</strong></p>
         <ul class="unstyled">
             {% for ip in changed_addresses %}
                 <li><a href="/ui/scan/status/{{ ip.address }}/" class="btn btn-link">
