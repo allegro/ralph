@@ -40,7 +40,14 @@ from ralph.cmdb.forms import (
     CIRelationEditForm,
     SearchImpactForm,
 )
-from ralph.cmdb.models_ci import CILayer, CI_TYPES, CI, CIRelation, CIType
+from ralph.cmdb.models_ci import (
+    CILayer,
+    CI_TYPES,
+    CI,
+    CIRelation,
+    CIType,
+    CI_STATE_TYPES,
+)
 import ralph.cmdb.models as db
 from ralph.cmdb.graphs import ImpactCalculator
 from ralph.ui.views.common import Base
@@ -1555,19 +1562,20 @@ class Search(BaseCMDBView):
         type_ = int(values.get('type', 0) or 0)
         layer = values.get('layer')
         parent_id = int(values.get('parent', 0) or 0)
-        if values:
-            if uid:
-                cis = cis.filter(Q(name__icontains=uid) | Q(uid=uid))
-            if state:
-                cis = cis.filter(state=state)
-            if status:
-                cis = cis.filter(status=status)
-            if type_:
-                cis = cis.filter(type=type_)
-            if layer:
-                cis = cis.filter(layers=layer)
-            if parent_id:
-                cis = cis.filter(child__parent__id=parent_id)
+        if uid:
+            cis = cis.filter(Q(name__icontains=uid) | Q(uid=uid))
+        if state:
+            cis = cis.filter(state=state)
+        if status:
+            cis = cis.filter(status=status)
+        if type_:
+            cis = cis.filter(type=type_)
+        if layer:
+            cis = cis.filter(layers=layer)
+        if parent_id:
+            cis = cis.filter(child__parent__id=parent_id)
+        if not values.get('show_inactive', False):
+            cis = cis.exclude(state=CI_STATE_TYPES.INACTIVE.id)
         sort = self.request.GET.get('sort', 'name')
         if sort:
             cis = cis.order_by(sort)
