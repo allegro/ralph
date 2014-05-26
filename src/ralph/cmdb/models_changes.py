@@ -233,11 +233,7 @@ class ArchivedPuppetLog(AbstractPuppetLog):
 class CIEvent(TimeTrackable):
 
     ''' Abstract for CIProblem/CIIncident '''
-    ci = models.ForeignKey('CI', null=True, blank=True)
-    additional_cis = models.ManyToManyField(
-        'CI',
-        related_name='additional_%(class)s',
-    )
+    cis = models.ManyToManyField('CI', related_name='%(class)s')
     summary = models.CharField(max_length=1024)
     description = models.CharField(max_length=1024)
     jira_id = models.CharField(max_length=100)
