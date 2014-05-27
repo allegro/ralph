@@ -13,6 +13,7 @@ from bob.forms.dependency import Dependency, DependencyForm, SHOW
 from bob.forms.dependency_conditions import MemberOf as MemberOfCondition
 from django import forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
+from django.utils.translation import ugettext_lazy as _
 
 from ralph.cmdb import models
 from ralph.cmdb import models as db
@@ -35,7 +36,8 @@ class CISearchForm(forms.Form):
         queryset=CIType.objects.all(),
         empty_label='----',
     )
-    top_level = forms.BooleanField(label='Top lev.')
+    top_level = forms.BooleanField(label=_('Top lev.'))
+    show_inactive = forms.BooleanField(label=_('Show inact.'))
     parent = forms.CharField(
         label='', widget=forms.HiddenInput()
     )
