@@ -11,9 +11,8 @@ Ralph
     :target: https://crate.io/packages/ralph/
     :alt: Number of PyPI downloads
 
-.. image:: https://api.travis-ci.org/allegro/ralph.png?branch=master
-    :alt: Build Status
-    :target: http://api.travis-ci.org/allegro/ralph
+.. image:: https://travis-ci.org/allegro/ralph.svg?branch=develop
+    :target: https://travis-ci.org/allegro/ralph
 
 Ralph is the complete *Asset Management*, *DCIM* and *CMDB* system for large Data Centers
 as well as smaller LAN networks.
