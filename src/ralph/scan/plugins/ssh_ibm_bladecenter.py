@@ -129,10 +129,12 @@ def _component(model_type, pairs, parent, raw):
         model_type = ComponentType.cooling
     elif 'Fan' in model_name:
         model_type = ComponentType.cooling
+    elif 'Power Module' in model_name:
+        model_type = ComponentType.power
     component = {}
     component['model_name'] = model_name
     component['serial_number'] = sn
-    component['type'] = model_type.id
+    component['type'] = model_type.raw
     component['label'] = name
     firmware = (pairs.get('AMM firmware') or pairs.get('FW/BIOS') or
                 pairs.get('Main Application 2'))
@@ -239,7 +241,11 @@ def _dev(model_type, pairs, parent, raw):
 
 
 def _add_dev_mm(ip, pairs, parent, raw, counts, dev_id):
-    parent['parts'] = [p for p in parent['parts'] if p['type'] != 9]
+    parent['parts'] = [
+        p for p in parent.get(
+            'parts', []
+        ) if p['type'] != ComponentType.management
+    ]
     dev = _component(ComponentType.management, pairs, parent, raw)
     return dev
 
@@ -417,7 +423,7 @@ def scan_address(ip_address, **kwargs):
         raise NoMatchError('Incompatible Nexus found.')
     if kwargs.get('http_family', '') not in ('IBM', 'Unspecified'):
         raise NoMatchError('It is not IBM.')
-    if not kwargs.get('snmp_name', 'IBM').startswith('IBM'):
+    if not (kwargs.get('snmp_name', 'IBM') or 'IBM').startswith('IBM'):
         raise NoMatchError('It is not IBM.')
     if not network.check_tcp_port(ip_address, 22):
         raise ConnectionError('Port 22 closed on an IBM BladeServer.')

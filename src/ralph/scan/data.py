@@ -53,6 +53,21 @@ UNIQUE_FIELDS_FOR_MERGER = {
 SAVE_PRIORITY = 215
 
 
+def _get_choice_by_name(choices, name):
+    """
+    Find choices by name (with spaces or without spaces) or by raw_name.
+    """
+
+    try:
+        return choices.from_name(name.replace(' ', '_').lower())
+    except ValueError:
+        for choice_id, choice_name in choices():
+            choice = choices.from_id(choice_id)
+            if choice.raw == name:
+                return choice
+        raise
+
+
 def _update_addresses(device, address_data, is_management=False):
     """
     Update management or system ip addresses of a device based on data.
@@ -187,7 +202,10 @@ def _update_component_data(
                 # If model_type is provided, create the model
                 if model_type is None:
                     try:
-                        model_type = ComponentType.from_name(data['type'])
+                        model_type = _get_choice_by_name(
+                            ComponentType,
+                            data['type']
+                        )
                     except ValueError:
                         model_type = None
                 if model_type is not None:
@@ -411,8 +429,9 @@ def set_device_data(device, data, save_priority=SAVE_PRIORITY):
             setattr(device, field_name, data[key_name])
     if 'model_name' in data and (data['model_name'] or '').strip():
         try:
-            model_type = DeviceType.from_name(
-                data.get('type', 'unknown').replace(' ', '_').lower(),
+            model_type = _get_choice_by_name(
+                DeviceType,
+                data.get('type', 'unknown')
             )
         except ValueError:
             model_type = DeviceType.unknown
@@ -720,10 +739,9 @@ def device_from_data(data, save_priority=SAVE_PRIORITY, user=None):
     sn = data.get('serial_number')
     ethernets = [('', mac, None) for mac in data.get('mac_addresses', [])]
     model_name = data.get('model_name')
-    model_type = DeviceType.from_name(
-        '_'.join(
-            data.get('type', 'unknown',).split(),
-        ).lower(),
+    model_type = _get_choice_by_name(
+        DeviceType,
+        data.get('type', 'unknown')
     )
     device = Device.create(
         sn=sn,
