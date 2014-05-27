@@ -4,6 +4,7 @@ python:
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install:
   - pip install git+https://github.com/allegro/django-bob
+  - pip install python-coveralls
   - make install
   - pip install flake8
   
@@ -12,4 +13,7 @@ install:
 script: make quicktest
 before_script:
   make flake
+  
+after_success:
+  - coveralls
   
