@@ -13,6 +13,7 @@ import json
 import rq
 import copy
 
+from django.conf import settings
 from django.contrib.auth.middleware import AuthenticationMiddleware
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.core.urlresolvers import resolve
@@ -76,7 +77,11 @@ def set_progress(job, progress):
 
 # This is removed as top-level function so rq can find it
 def enqueue(view, request):
-    return view.queue.enqueue(get_result, PicklableRequest(request))
+    return view.queue.enqueue_call(
+        func=get_result,
+        args=(PicklableRequest(request),),
+        timeout=settings.RQ_TIMEOUT,
+    )
 
 
 class Report(View):
