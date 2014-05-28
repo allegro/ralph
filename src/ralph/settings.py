@@ -730,3 +730,4 @@ SCAN_PLUGINS = {
         },
     },
 }
+RQ_TIMEOUT = 3000
