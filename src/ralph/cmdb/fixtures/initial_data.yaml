@@ -4,51 +4,62 @@
   pk: 1
   fields:
     name: Application
+    icon_class: fugue-applications-blue
 
 - model: cmdb.CIType
   pk: 2
   fields:
     name: Device
+    icon_class: fugue-server
 
 - model: cmdb.CIType
   pk: 3
   fields:
     name: Procedure
+    icon_class: fugue-script
 
 - model: cmdb.CIType
   pk: 4
   fields:
     name: Venture
+    icon_class: fugue-store
+
 
 - model: cmdb.CIType
   pk: 5
   fields:
     name: VentureRole
+    icon_class: fugue-store-arrow
 
 - model: cmdb.CIType
   pk: 6
   fields:
     name: BusinessLine
+    icon_class: fugue-tie
 
 - model: cmdb.CIType
   pk: 7
   fields:
     name: Service
+    icon_class: fugue-disc-share
 
 - model: cmdb.CIType
   pk: 8
   fields:
     name: Network
+    icon_class: fugue-network
 
 - model: cmdb.CIType
   pk: 9
   fields:
     name: Data Center
+    icon_class: fugue-building
 
 - model: cmdb.CIType
   pk: 10
   fields:
     name: NetworkTerminator
+    icon_class: fugue-globe-network
 
 # Attribute
 
