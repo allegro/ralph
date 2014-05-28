@@ -77,7 +77,6 @@ def set_progress(job, progress):
 
 # This is removed as top-level function so rq can find it
 def enqueue(view, request):
-    import ipdb; ipdb.set_trace()
     return view.queue.enqueue_call(
         func=get_result,
         args=(PicklableRequest(request),),
