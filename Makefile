@@ -11,4 +11,4 @@ install:
 	pip install -e . --use-mirrors --allow-all-external --allow-unverified ipaddr --allow-unverified postmarkup --allow-unverified python-graph-core --allow-unverified pysphere
 
 test-with-coveralls:
- 	DJANGO_SETTINGS_PROFILE=test-ralph coverage run --source=ralph --omit='*migrations*' '$(VIRTUAL_ENV)/bin/ralph' test ralph
+	DJANGO_SETTINGS_PROFILE=test-ralph coverage run --source=ralph --omit='*migrations*' '$(VIRTUAL_ENV)/bin/ralph' test ralph
