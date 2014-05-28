@@ -54,7 +54,18 @@ def get_http_info(ip):
             urllib2.URLError, httplib.BadStatusLine, httplib.InvalidURL,
             socket.timeout, SSLError, socket.error,
         ):
-            return {}, ''
+            request = urllib2.Request(
+                "https://{}".format(':'.join((ip, '8006')))  # for Proxmox
+            )
+            try:
+                response = opener.open(request, timeout=5)
+            except urllib2.HTTPError as e:
+                response = e
+            except (
+                urllib2.URLError, httplib.BadStatusLine, httplib.InvalidURL,
+                socket.timeout, SSLError, socket.error,
+            ):
+                return {}, ''
 
     def closer():
         try:
@@ -119,6 +130,8 @@ def guess_family(headers, document):
             family = 'Dell'
         elif 'Juniper' in document:
             family = 'Juniper'
+    elif family in ('pve-api-daemon',):
+        family = 'Proxmox'
     return family
 
 
