@@ -18,7 +18,7 @@ from ralph.scan.plugins import get_base_result_template
 SETTINGS = settings.SCAN_PLUGINS.get(__name__, {})
 
 
-def _get_vm_info(vm_properties):
+def _get_vm_info(vm_properties, messages):
     if 'hostname' in vm_properties:
         hostname = vm_properties['hostname']
     else:
@@ -36,6 +36,12 @@ def _get_vm_info(vm_properties):
                 ip_v4.append(ip)
         ip_addresses.extend(ip_v4)
         mac_addresses.append(interface['mac_address'])
+    if not mac_addresses:
+        messages.append(
+            "Subdevice '{}' doesn't have any MAC addresses "
+            "- removing it from scan results.".format(hostname)
+        )
+        return
     return {
         'type': DeviceType.virtual_server.raw,
         'model_name': 'VMWare Virtual Server',
@@ -65,12 +71,14 @@ def _get_vm_info(vm_properties):
     }
 
 
-def _vmware(server_conn, ip_address):
+def _vmware(server_conn, ip_address, messages):
     subdevices = []
     for vm_path in server_conn.get_registered_vms():
         vm = server_conn.get_vm_by_path(vm_path)
         vm_properties = vm.get_properties()
-        subdevices.append(_get_vm_info(vm_properties))
+        vm_info = _get_vm_info(vm_properties, messages)
+        if vm_info:
+            subdevices.append(vm_info)
     return {
         'type': DeviceType.unknown.raw,
         'system_ip_addresses': [ip_address],
@@ -117,7 +125,7 @@ def scan_address(ip_address, **kwargs):
                         "hypervisor - VM connecion you should scan only "
                         "VMware ESXi servers.",
                     )
-                device_info = _vmware(server_conn, ip_address)
+                device_info = _vmware(server_conn, ip_address, messages)
             finally:
                 server_conn.disconnect()
             result.update({

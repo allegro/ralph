@@ -1744,7 +1744,7 @@ class ScanStatus(BaseMixin, TemplateView):
                 messages.success(
                     self.request,
                     "Detected change in this scan was marked as false "
-                    "possitive.",
+                    "positive.",
                 )
                 return HttpResponseRedirect(self.request.path)
         return self.get(*args, **kwargs)

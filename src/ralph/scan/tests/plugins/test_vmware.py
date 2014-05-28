@@ -8,13 +8,16 @@ from __future__ import unicode_literals
 from django.test import TestCase
 
 from ralph.scan.plugins.vmware import _get_vm_info
-from ralph.scan.tests.plugins.samples.vmware import VMWARE_SAMPLE
+from ralph.scan.tests.plugins.samples.vmware import (
+    VMWARE_SAMPLE,
+    VMWARE_SAMPLE_SUBDEV_NO_MAC,
+)
 
 
 class VMWarePluginTest(TestCase):
 
     def test_get_vm_info(self):
-        result = _get_vm_info(VMWARE_SAMPLE)
+        result = _get_vm_info(VMWARE_SAMPLE, [])
         self.assertEqual(
             result,
             {
@@ -84,3 +87,8 @@ class VMWarePluginTest(TestCase):
                 u'type': u'virtual server'
             }
         )
+
+    def test_get_vm_info_subdev_no_mac(self):
+        """Subdevice without a MAC address should return None."""
+        result = _get_vm_info(VMWARE_SAMPLE_SUBDEV_NO_MAC, [])
+        self.assertEqual(result, None)
