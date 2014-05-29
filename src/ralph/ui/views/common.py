@@ -1476,15 +1476,12 @@ class Scan(BaseMixin, TemplateView):
     template_name = 'ui/scan.html'
 
     def get(self, *args, **kwargs):
-        address = kwargs.get('address') or self.request.GET.get('address')
-
         try:
             device_id = int(self.kwargs.get('address'))
         except ValueError:
             self.object = None
         else:
             self.object = Device.objects.get(id=device_id)
-
         return super(Scan, self).get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
@@ -1495,8 +1492,9 @@ class Scan(BaseMixin, TemplateView):
         ip_address = self.kwargs.get('address') or self.request.GET.get('address')
         if ip_address:
             try:
-                ip = ipaddr.IPAddress(ip_address)
+                ipaddr.IPAddress(ip_address)
             except ValueError:
+                # validation reporter by another view, so be silent here.
                 return HttpResponseRedirect(reverse('search', args=()))
         try:
             job = scan_address(
@@ -1516,6 +1514,7 @@ class Scan(BaseMixin, TemplateView):
                 ipaddress = IPAddress.objects.get(address=address)
             except IPAddress.DoesNotExist:
                 ipaddress = None
+                address = None
             try:
                 network = Network.from_ip(address)
             except (Network.DoesNotExist, IndexError, ValueError):
