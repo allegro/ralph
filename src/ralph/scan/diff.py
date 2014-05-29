@@ -9,8 +9,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from ralph.discovery.models import DeviceType
+from django.utils.encoding import force_unicode
 
+from ralph.discovery.models import DeviceType
 from ralph.scan.data import UNIQUE_FIELDS_FOR_MERGER
 
 
@@ -61,7 +62,7 @@ def _get_matched_row(rows, lookup):
     for index, row in enumerate(rows):
         matched = True
         for field, value in lookup.items():
-            if str(row.get(field, '')).strip() != value:
+            if force_unicode(row.get(field, '')).strip() != value:
                 matched = False
                 break
         if matched:
@@ -83,8 +84,8 @@ def _compare_dicts(
     diff = {}
     keys = (set(ldict.keys()) | set(rdict.keys())) - ignored_fields
     for key in keys:
-        lvalue = str(ldict.get(key, '')).strip()
-        rvalue = str(rdict.get(key, '')).strip()
+        lvalue = force_unicode(ldict.get(key, '')).strip()
+        rvalue = force_unicode(rdict.get(key, '')).strip()
         if lvalue and not rvalue:
             match = False
             diff[key] = {
@@ -137,9 +138,9 @@ def _compare_strings(*args):
 
     if not args:
         return True
-    compared_item = str(args[0]).strip()
+    compared_item = force_unicode(args[0]).strip()
     for item in args[1:]:
-        if compared_item != str(item).strip():
+        if compared_item != force_unicode(item).strip():
             return False
     return True
 
@@ -221,7 +222,9 @@ def diff_results(data, ignored_fields=set(['device', 'model_name'])):
                     for field in field_group:
                         if field in ignored_fields:
                             continue
-                        field_db_value = str(items.get(field, '')).strip()
+                        field_db_value = force_unicode(
+                            items.get(field, '')
+                        ).strip()
                         if not field_db_value:
                             continue
                         lookup[field] = field_db_value
