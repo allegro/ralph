@@ -1625,10 +1625,7 @@ class Graphs(BaseCMDBView):
             search_tree, pre = ic.find_affected_nodes(int(ci_id))
             affected_cis = CI.objects.select_related(
                 'content_type', 'type').filter(pk__in=pre)
-            nodes = [(
-                ci.id, ci.name,
-                ci.icon) for ci in affected_cis
-            ]
+            nodes = [(ci.id, ci.name, ci.icon) for ci in affected_cis]
             if len(search_tree) > MAX_RELATIONS_COUNT:
                 # in case of large relations count, skip generating json data
                 # for chart purposes

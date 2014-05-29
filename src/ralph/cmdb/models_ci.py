@@ -121,7 +121,7 @@ class CIType(TimeTrackable):
             <a href="http://p.yusukekamiyamane.com/icons/search/fugue/">
                 http://p.yusukekamiyamane.com/icons/search/fugue/
             </a>
-            If you need other icons, you keed to edit CSS files.
+            If you need other icons, you need to edit CSS files.
         """,
         null=False,
         blank=False,
