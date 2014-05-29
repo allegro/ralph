@@ -1512,10 +1512,12 @@ class Scan(BaseMixin, TemplateView):
             except IPAddress.DoesNotExist:
                 ipaddress = None
                 address = None
-            try:
-                network = Network.from_ip(address)
-            except (Network.DoesNotExist, IndexError, ValueError):
                 network = None
+            else:
+                try:
+                    network = Network.from_ip(address)
+                except (Network.DoesNotExist, IndexError, ValueError):
+                    network = None
         else:
             ipaddress = None
             network = None
