@@ -16,15 +16,19 @@
         {% endfor %}
         </ul>
     </div>
-{% else %}
+{% elif address %}
 <div class="row-fluid"><div class="span6 scan-select-plugins">
     <form method="post" class="form form-horizontal" data-role="select-plugins-form">
         {% csrf_token %}
         <fieldset>
             <legend>Scanning {{ address }}</legend>
+
             <p>
-                Select the plugins to run:
+                Select the plugins to run or <strong>press Enter</strong>:
                 <button style="float: right;" type="button" class="btn" data-toggle="button" data-role="select-all-btn">Select all</button>
+                 <button id='upper-submit' style="float: right;" type="submit" class="btn btn-primary" tabindex=1 value="scan">
+                {% icon 'fugue-flashlight' %}&nbsp;Scan
+            </button>
             </p>
             {% for plugin_name, plugin_settings in plugins.iteritems %}
             <div class="control-group">
@@ -79,6 +83,9 @@
             </tr>
     </table>
 </div></div>
+{% else %}
+
+<div class="alert alert-danger">Requested IP address is invalid or unknown.</div>
 {% endif %}
 {% endblock %}
 
