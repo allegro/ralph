@@ -17,6 +17,7 @@ from ralph.cmdb.integration.lib import zabbix
 from ralph.cmdb.integration.lib.jira import Jira
 from ralph.cmdb.integration.util import strip_timezone
 from ralph.cmdb import models as db
+from ralph.cmdb.util import register_event
 
 # hook git plugins. Screw flake8. Do not delete
 from ralph.cmdb.integration.puppet import PuppetGitImporter  # noqa
@@ -143,15 +144,13 @@ class JiraEventsImporter(BaseImporter):
 
         if settings.ISSUETRACKERS['default'].get('LEGACY_PLUGIN', True):
             ci_obj = get_ci(uid=issue.get('ci'))
-            additional_cis = []
+            cis = [ci_obj] if ci_obj else []
         else:
             if issue['cis'] is None:
-                ci_obj = None
-                additional_cis = []
+                cis = []
             else:
-                ci_obj = get_ci(id=issue['cis'][0] if issue['cis'] else None)
-                additional_cis = [ci for ci in [
-                    get_ci(id=id) for id in issue['cis'][1:]
+                cis = [ci for ci in [
+                    get_ci(id=id) for id in issue['cis']
                 ] if ci]
 
         obj = classtype.objects.filter(jira_id=issue.get('key')).all()[:1]
@@ -170,10 +169,9 @@ class JiraEventsImporter(BaseImporter):
         prob.resolvet_date = self.tz_time(issue.get('resolvet_date'))
         prob.planned_start_date = self.tz_time(issue.get('planned_start_date'))
         prob.planned_end_date = self.tz_time(issue.get('planned_end_date'))
-        prob.ci = ci_obj
         prob.save()
-        prob.additional_cis = additional_cis
-        prob.save()
+        for ci in cis:
+            register_event(ci, prob)
 
     def import_problem(self, cutoff_date=None):
         type = settings.ISSUETRACKERS['default']['PROBLEMS']['ISSUETYPE']

@@ -131,4 +131,4 @@ def scan_address(ip_address, **kwargs):
             'status': 'success',
             'device': device_info,
         })
-    return device_info
+    return result

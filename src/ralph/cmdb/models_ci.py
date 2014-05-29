@@ -12,6 +12,7 @@ from dj.choices.fields import ChoiceField
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from django.core.exceptions import ValidationError
+from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
@@ -113,6 +114,18 @@ class CIContentTypePrefix(TimeTrackable):
 
 class CIType(TimeTrackable):
     name = models.SlugField()
+    icon_class = models.CharField(
+        max_length=100,
+        help_text="""The 'fugue'
+            icons are installed and recommended. Search them at:
+            <a href="http://p.yusukekamiyamane.com/icons/search/fugue/">
+                http://p.yusukekamiyamane.com/icons/search/fugue/
+            </a>
+            If you need other icons, you need to edit CSS files.
+        """,
+        null=False,
+        blank=False,
+    )
 
     def __unicode__(self):
         return "%s" % self.name
@@ -424,9 +437,8 @@ class CI(TimeTrackable):
             ci = None
         return ci
 
-    @models.permalink
     def get_absolute_url(self):
-        return "/cmdb/ci/view/%i" % self.id
+        return reverse('ci_view', kwargs={'ci_id': self.id})
 
     def save(self, user=None, *args, **kwargs):
         self.saving_user = user
@@ -445,6 +457,10 @@ class CI(TimeTrackable):
 
     def get_children(self):
         return self._get_related(self_field='parent', other_field='child')
+
+    @property
+    def icon(self):
+        return self.type.icon_class
 
 
 class CIAttributeValue(TimeTrackable):

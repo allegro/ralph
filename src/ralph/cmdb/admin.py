@@ -79,6 +79,22 @@ class GitPathMappingAdmin(ModelAdmin):
 admin.site.register(db.GitPathMapping, GitPathMappingAdmin)
 
 
+class CIAdmin(ModelAdmin):
+
+    # Fix for django bug with 'View on Site'
+    def render_change_form(
+        self, request, context, add=False, change=False, form_url='', obj=None
+    ):
+        if hasattr(self.model, 'get_absolute_url') and obj is not None:
+            context['absolute_url'] = obj.get_absolute_url()
+        return super(CIAdmin, self).render_change_form(
+            request, context, add, change, form_url, obj
+        )
+
+
+admin.site.register(db.CI, CIAdmin)
+
+
 class CIOwnerAdmin(ModelAdmin):
     list_display = ('last_name', 'first_name', 'email')
     search_fields = ('last_name', 'first_name', 'email')
@@ -119,7 +135,6 @@ admin.site.register(db.CILayer, CILayerAdmin)
 
 # simple types
 admin.site.register([
-    db.CI,
     db.CIType,
     db.CIRelation,
     db.CIAttribute,

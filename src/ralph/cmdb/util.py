@@ -35,7 +35,7 @@ def add_filter(request, **kwargs):
             name=request.get('ci')
         )
         if ci:
-            filters &= Q(ci=ci[0])
+            filters &= Q(cis=ci[0])
         else:   # CI not found
             return False
     for key in ['assignee', 'jira_id', 'issue_type', 'status']:
@@ -144,7 +144,7 @@ def breadth_first_search_ci(root, criterion, up=True):
     :return: A tuple (CI, criterion(CI)) on success or (None, None) on failure
     """
     queue = [root]
-    enqueued = {root}
+    enqueued = {root.id}
     while queue:
         current = queue.pop(0)
         result = criterion(current)
@@ -159,3 +159,36 @@ def breadth_first_search_ci(root, criterion, up=True):
                 queue.append(ci)
                 enqueued.add(ci.id)
     return None, None
+
+
+def walk(root, function, up=True):
+    """Walk the CI and its children/parents recursively applying the function
+    to every CI in the tree. This function discovers cycles and never visits
+    the same CI twice.
+    :param root: The start of walk
+    :param function: function to be applied. It should accept one argument: CI
+    :param up: If true, the walk will move to parents. Otherwise - to children.
+    """
+    queue = [root]
+    enqueued = {root.id}
+    while queue:
+        current = queue.pop(0)
+        function(current)
+        if up:
+            to_search = current.get_parents()
+        else:
+            to_search = current.get_children()
+        for ci in to_search:
+            if ci.id not in enqueued:
+                queue.append(ci)
+                enqueued.add(ci.id)
+
+
+def register_event(ci, event):
+    """Registers an event on the given CI and all its descendants.
+    :param ci: The top CI.
+    :param event: The event to be registered."""
+
+    def set_event(current_ci):
+        event.cis.add(current_ci)
+    walk(ci, set_event, up=False)

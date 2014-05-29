@@ -225,7 +225,8 @@ class OwnershipField(tastypie.fields.RelatedField):
         owners = [
             self.build_related_resource(data) for data in owners_data
         ]
-        return owners
+        owner_dict = {owner.obj.pk: owner for owner in owners}
+        return owner_dict.values()
 
 
 class CustomAttributesField(tastypie.fields.ApiField):

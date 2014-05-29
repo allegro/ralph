@@ -35,12 +35,9 @@ else:
 
     @receiver(populate_user)
     def staff_superuser_populate(sender, user, ldap_user, **kwargs):
-        is_superuser = 'superuser' in ldap_user.group_names
-        is_staff = is_superuser or 'staff' in ldap_user.group_names
-        is_active = is_staff or 'active' in ldap_user.group_names
-        user.is_superuser = is_superuser
-        user.is_staff = is_staff
-        user.is_active = is_active
+        user.is_superuser = 'superuser' in ldap_user.group_names
+        user.is_staff = 'staff' in ldap_user.group_names
+        user.is_active = 'active' in ldap_user.group_names
 
     @receiver(populate_user_profile)
     def manager_attribute_populate(sender, profile, ldap_user, **kwargs):

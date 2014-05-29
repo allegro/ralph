@@ -166,6 +166,7 @@ from __future__ import unicode_literals
 import logging
 
 from django.conf import settings
+from django.utils.encoding import force_unicode
 
 
 logger = logging.getLogger("SCAN")
@@ -212,8 +213,10 @@ def _find_data(rows, lookup):
         for field, value in lookup.iteritems():
             if (
                 field not in row or
-                not str(row[field]) or
-                str(value).strip().lower() != str(row[field]).strip().lower()
+                not force_unicode(row[field]) or
+                force_unicode(
+                    value
+                ).strip().lower() != force_unicode(row[field]).strip().lower()
             ):
                 matched = False
                 break

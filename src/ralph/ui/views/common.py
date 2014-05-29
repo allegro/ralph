@@ -1392,7 +1392,7 @@ class BulkEdit(BaseMixin, TemplateView):
         if not self.devices:
             messages.error(
                 self.request,
-                "You haven't selected any existing (i.e. not deleted) devices.",
+                "You haven't selected any existing devices.",
             )
             return HttpResponseRedirect(self.request.path + '../info/')
         self.edit_fields = self.request.POST.getlist('edit')
@@ -1419,6 +1419,7 @@ class BulkEdit(BaseMixin, TemplateView):
                     self.form.data,
                     self.request.user
                 )
+                messages.success(self.request, 'Changes saved succesfully.')
                 return HttpResponseRedirect(self.request.path + '../info/')
             else:
                 messages.error(self.request, 'Please correct the errors.')
@@ -1427,10 +1428,6 @@ class BulkEdit(BaseMixin, TemplateView):
         return super(BulkEdit, self).get(*args, **kwargs)
 
     def get(self, *args, **kwargs):
-        messages.error(
-            self.request,
-            "You haven't selected any devices.",
-        )
         return HttpResponseRedirect(self.request.path + '../info/')
 
     def get_context_data(self, **kwargs):
@@ -1762,7 +1759,7 @@ class ScanStatus(BaseMixin, TemplateView):
                 messages.success(
                     self.request,
                     "Detected change in this scan was marked as false "
-                    "possitive.",
+                    "positive.",
                 )
                 return HttpResponseRedirect(self.request.path)
         return self.get(*args, **kwargs)

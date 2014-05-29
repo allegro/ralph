@@ -40,15 +40,17 @@ from ralph.cmdb.forms import (
     CIRelationEditForm,
     SearchImpactForm,
 )
-from ralph.cmdb.models_ci import CILayer, CI_TYPES, CI, CIRelation, CIType
+from ralph.cmdb.models_ci import (
+    CILayer,
+    CI_TYPES,
+    CI,
+    CIRelation,
+    CIType,
+    CI_STATE_TYPES,
+)
 import ralph.cmdb.models as db
 from ralph.cmdb.graphs import ImpactCalculator
 from ralph.ui.views.common import Base
-from ralph.util.presentation import (
-    get_device_icon,
-    get_venture_icon,
-    get_network_icon,
-)
 from ralph.cmdb.forms import (
     ReportFilters,
     ReportFiltersDateRange,
@@ -58,20 +60,6 @@ from ralph.cmdb.util import report_filters, add_filter, table_colums
 JIRA_URL = urljoin(settings.ISSUETRACKERS['default']['URL'], 'browse')
 ROWS_PER_PAGE = 20
 SAVE_PRIORITY = 200
-
-
-def get_icon_for(ci):
-    if not ci or not ci.content_type:
-        return ''
-    ctname = ci.content_type.name
-    if ctname == 'venture':
-        return get_venture_icon(ci.content_object)
-    elif ctname == 'device':
-        return get_device_icon(ci.content_object)
-    elif ctname == 'network':
-        return get_network_icon(ci.content_object)
-    else:
-        return 'wall'
 
 
 class BaseCMDBView(Base):
@@ -522,10 +510,10 @@ class BaseCIDetails(BaseCMDBView):
                 datetime.datetime.now(), datetime.datetime.now() - days)
         ).count()
         incidents = db.CIIncident.objects.filter(
-            ci=self.ci,
+            cis=self.ci,
         ).count()
         problems = db.CIProblem.objects.filter(
-            ci=self.ci,
+            cis=self.ci,
         ).count()
         messages = []
         if last_week_puppet_errors:
@@ -728,33 +716,33 @@ class CIRelationsEdit(BaseCIDetails):
 
     def calculate_relations(self, ci_id):
         self.relations_contains = [
-            (x, x.child, get_icon_for(x.child))
+            (x, x.child, x.child.icon)
             for x in db.CIRelation.objects.filter(
                 parent=ci_id, type=db.CI_RELATION_TYPES.CONTAINS.id)
         ]
         self.relations_parts = [
-            (x, x.parent, get_icon_for(x.parent))
+            (x, x.parent, x.parent.icon)
             for x in db.CIRelation.objects.filter(
                 child=ci_id,
                 type=db.CI_RELATION_TYPES.CONTAINS.id)
         ]
         self.relations_requires = [
-            (x, x.child, get_icon_for(x.parent))
+            (x, x.child, x.parent.icon)
             for x in db.CIRelation.objects.filter(
                 parent=ci_id, type=db.CI_RELATION_TYPES.REQUIRES.id)
         ]
         self.relations_isrequired = [
-            (x, x.parent, get_icon_for(x.parent))
+            (x, x.parent, x.parent.icon)
             for x in db.CIRelation.objects.filter(
                 child=ci_id, type=db.CI_RELATION_TYPES.REQUIRES.id)
         ]
         self.relations_hasrole = [
-            (x, x.child, get_icon_for(x.parent))
+            (x, x.child, x.parent.icon)
             for x in db.CIRelation.objects.filter(
                 parent=ci_id, type=db.CI_RELATION_TYPES.HASROLE.id)
         ]
         self.relations_isrole = [
-            (x, x.parent, get_icon_for(x.parent))
+            (x, x.parent, x.parent.icon)
             for x in db.CIRelation.objects.filter(
                 child=ci_id, type=db.CI_RELATION_TYPES.HASROLE.id)
         ]
@@ -1110,7 +1098,7 @@ class CIProblemsEdit(BaseCIDetails, DataTableMixin):
             report_filters(
                 cls=db.CIProblem,
                 order='-update_date',
-                filters=add_filter(self.request.GET, ci=self.ci),
+                filters=add_filter(self.request.GET, cis=self.ci),
             )
         )
         return super(CIProblemsEdit, self).get(*args, **kwargs)
@@ -1175,8 +1163,7 @@ class JiraChangesEdit(BaseCIDetails, DataTableMixin):
                 order='-update_date',
                 filters=add_filter(
                     self.request.GET,
-                    ci=self.ci,
-                    additional_cis=self.ci,
+                    cis=self.ci,
                 ),
             )
         )
@@ -1241,7 +1228,7 @@ class CIIncidentsEdit(BaseCIDetails, DataTableMixin):
             report_filters(
                 cls=db.CIIncident,
                 order='-update_date',
-                filters=add_filter(self.request.GET, ci=self.ci),
+                filters=add_filter(self.request.GET, cis=self.ci),
             )
         )
         return super(CIIncidentsEdit, self).get(*args, **kwargs)
@@ -1461,7 +1448,7 @@ class Search(BaseCMDBView):
         t_owners = 1
         b_owners = 2
         for i in cis:
-            icon = get_icon_for(i)
+            icon = i.icon
             venture = self.get_venture(relations, i)
             service = self.get_service(relations, i)
             DEFAULT_ROWS = [
@@ -1556,19 +1543,20 @@ class Search(BaseCMDBView):
         type_ = int(values.get('type', 0) or 0)
         layer = values.get('layer')
         parent_id = int(values.get('parent', 0) or 0)
-        if values:
-            if uid:
-                cis = cis.filter(Q(name__icontains=uid) | Q(uid=uid))
-            if state:
-                cis = cis.filter(state=state)
-            if status:
-                cis = cis.filter(status=status)
-            if type_:
-                cis = cis.filter(type=type_)
-            if layer:
-                cis = cis.filter(layers=layer)
-            if parent_id:
-                cis = cis.filter(child__parent__id=parent_id)
+        if uid:
+            cis = cis.filter(Q(name__icontains=uid) | Q(uid=uid))
+        if state:
+            cis = cis.filter(state=state)
+        if status:
+            cis = cis.filter(status=status)
+        if type_:
+            cis = cis.filter(type=type_)
+        if layer:
+            cis = cis.filter(layers=layer)
+        if parent_id:
+            cis = cis.filter(child__parent__id=parent_id)
+        if not values.get('show_inactive', False):
+            cis = cis.exclude(state=CI_STATE_TYPES.INACTIVE.id)
         sort = self.request.GET.get('sort', 'name')
         if sort:
             cis = cis.order_by(sort)
@@ -1645,10 +1633,7 @@ class Graphs(BaseCMDBView):
             search_tree, pre = ic.find_affected_nodes(int(ci_id))
             affected_cis = CI.objects.select_related(
                 'content_type', 'type').filter(pk__in=pre)
-            nodes = [(
-                ci.id, ci.name,
-                get_icon_for(ci)) for ci in affected_cis
-            ]
+            nodes = [(ci.id, ci.name, ci.icon) for ci in affected_cis]
             if len(search_tree) > MAX_RELATIONS_COUNT:
                 # in case of large relations count, skip generating json data
                 # for chart purposes
@@ -1675,7 +1660,7 @@ class Graphs(BaseCMDBView):
             for ci in affected_cis:
                 co = ci.content_object
                 self.rows.append(dict(
-                    icon=get_icon_for(ci),
+                    icon=ci.icon,
                     ci=ci,
                     venture=getattr(co, 'venture', ''),
                     role=getattr(co, 'role', ''),

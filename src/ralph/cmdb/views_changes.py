@@ -620,7 +620,7 @@ class Reports(ChangesBase, DataTableMixin):
     _ = DataTableColumn
     columns = [
         _(
-            'Problems count',
+            '',  # To be set in get_context_data
             field='ciname',
             sort_expression='ciname',
             bob_tag=True,
@@ -654,6 +654,13 @@ class Reports(ChangesBase, DataTableMixin):
             'top_incidents': 'top ci incidents',
             'usage': 'cis w/o changes',
         }
+        # Set the first column name
+        self.columns[0].header_name = {
+            'top_changes': _('Change count'),
+            'top_problems': _('Problem count'),
+            'top_incidents': _('Incident count'),
+            'usage': _('Change count'),
+        }[kind]
         ret = super(Reports, self).get_context_data(**kwargs)
         ret.update(
             super(Reports, self).get_context_data_paginator(

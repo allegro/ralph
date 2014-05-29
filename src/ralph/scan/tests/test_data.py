@@ -8,11 +8,13 @@ from __future__ import unicode_literals
 from django.test import TestCase
 
 from ralph.scan.data import (
-    get_device_data,
-    set_device_data,
+    _get_choice_by_name,
     device_from_data,
+    get_device_data,
     merge_data,
+    set_device_data,
 )
+from ralph.scan.tests.samples.choices import SampleChoices
 from ralph.discovery.models import (
     ComponentModel,
     ComponentType,
@@ -717,3 +719,36 @@ class DeviceMergeDataTest(TestCase):
                 ('three',): 'value2',
             },
         })
+
+
+class GetChoiceByNameTest(TestCase):
+
+    def test_find_item_by_name(self):
+        choice = _get_choice_by_name(SampleChoices, 'simple')
+        self.assertEqual(choice.id, 1)
+        self.assertEqual(choice.name, 'simple')
+        self.assertEqual(choice.raw, 'simple')
+        choice = _get_choice_by_name(SampleChoices, 'not_simple')
+        self.assertEqual(choice.id, 2)
+        self.assertEqual(choice.name, 'not_simple')
+        self.assertEqual(choice.raw, 'not simple')
+
+    def test_find_item_by_name_with_spaces(self):
+        choice = _get_choice_by_name(SampleChoices, 'Not Simple')
+        self.assertEqual(choice.id, 2)
+        self.assertEqual(choice.name, 'not_simple')
+        self.assertEqual(choice.raw, 'not simple')
+
+    def test_find_item_by_raw_name(self):
+        choice = _get_choice_by_name(SampleChoices, 'some difficult case')
+        self.assertEqual(choice.id, 3)
+        self.assertEqual(choice.name, 'difficult')
+        self.assertEqual(choice.raw, 'some difficult case')
+
+    def test_not_found(self):
+        self.assertRaises(
+            ValueError,
+            _get_choice_by_name,
+            SampleChoices,
+            'abc'
+        )
