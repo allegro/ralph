@@ -29,7 +29,7 @@
   pk: 5
   fields:
     name: VentureRole
-    icon_class: fugue-store-arrow
+    icon_class: fugue-store--arrow
 
 - model: cmdb.CIType
   pk: 6
