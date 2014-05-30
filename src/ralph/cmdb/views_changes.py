@@ -226,7 +226,10 @@ class Changes(ChangesBase, DataTableMixin):
                 priority__icontains=values.get('priority')
             )
         if values.get('uid'):
-            changes = changes.filter(Q(ci__name__icontains=values.get('uid')))
+            changes = changes.filter(
+                Q(ci__name__icontains=values.get('uid')) |
+                Q(ci__uid__icontains=values.get('uid'))
+            )
         changes = changes.order_by('-time')
         self.data_table_query(changes)
         return super(Changes, self).get(*args)

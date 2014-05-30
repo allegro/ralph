@@ -47,7 +47,7 @@ class CIChangeSearchForm(forms.Form):
     type = forms.ChoiceField(choices=[['', '------']] + db.CI_CHANGE_TYPES())
     priority = forms.ChoiceField(
         choices=[['', '------']] + db.CI_CHANGE_PRIORITY_TYPES())
-    uid = forms.CharField(label='CI name', max_length=100)
+    uid = forms.CharField(label='CI name or uid', max_length=100)
 
 
 class CIReportsParamsForm(forms.Form):
