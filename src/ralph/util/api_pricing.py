@@ -14,7 +14,7 @@ from ralph.business.models import Venture, VentureExtraCost
 from ralph.discovery.models import (
     Device,
     DeviceType,
-    DiskShareMount,
+    DiskShare,
     HistoryCost,
     IPAddress,
 )
@@ -126,20 +126,16 @@ def get_virtual_usages(parent_venture_name=None):
 def get_shares():
     """Yields dicts reporting the storage shares for all servers."""
 
-    for mount in DiskShareMount.objects.select_related(
-        'share',
-    ).filter(is_virtual=False):
+    for share in DiskShare.objects.all():
         yield {
-            'storage_device_id': mount.share.device_id,
-            'mount_device_id': mount.device_id,
+            'device_id': share.device_id,
             'model': (
-                mount.share.model.group.name
-                if mount.share.model.group
-                else mount.share.model.name
+                share.model.group.name
+                if share.model.group
+                else share.model.name
             ),
-            'label': mount.share.label,
-            'size': mount.get_size(),
-            'share_mount_count': mount.get_total_mounts(),
+            'label': share.label,
+            'size': share.size,
         }
 
 
