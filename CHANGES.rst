@@ -10,6 +10,13 @@ This is a major bugfix release.
 
 * SCAN: "Quick scan" is the quickest way to scan given ip address.
 
+2.0.0-rc8
+~~~~~~~~~
+
+* CMDB: Events are now bound many-to-many to CIs
+
+* Inactive CIs are not displayed by default
+
 
 2.0.0-rc7
 ~~~~~~~~~
