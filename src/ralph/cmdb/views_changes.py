@@ -619,7 +619,7 @@ class Reports(ChangesBase, DataTableMixin):
     ]
     _ = DataTableColumn
     columns = [
-        _(
+        (
             '',  # To be set in get_context_data
             field='ciname',
             sort_expression='ciname',
