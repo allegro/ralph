@@ -116,23 +116,24 @@ def autoscan_ip_addresses_range(min_ip_number, max_ip_number, queue_name):
         )
 
 
-def autoscan_address(address):
-    """Queues a scan of a single address on the right worker."""
+def autoscan_address(address, queue_name=None):
+    """Queues an autoscan of a single address on the right worker."""
 
-    try:
-        network = Network.from_ip(address)
-    except IndexError:
-        raise NoQueueError(
-            "Address {0} doesn't belong to any configured "
-            "network.".format(address),
-        )
-    if not network.environment or not network.environment.queue:
-        raise NoQueueError(
-            "The network environment {0} has no discovery queue.".format(
-                network,
-            ),
-        )
-    queue_name = network.environment.queue.name
+    if not queue_name:
+        try:
+            network = Network.from_ip(address)
+        except IndexError:
+            raise NoQueueError(
+                "Address {0} doesn't belong to any configured "
+                "network.".format(address),
+            )
+        if not network.environment or not network.environment.queue:
+            raise NoQueueError(
+                "The network environment {0} has no discovery queue.".format(
+                    network,
+                ),
+            )
+        queue_name = network.environment.queue.name
     queue = django_rq.get_queue(queue_name)
     queue.enqueue_call(
         func=_autoscan_group,
