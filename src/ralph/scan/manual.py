@@ -26,6 +26,7 @@ from django.utils.importlib import import_module
 
 from ralph.discovery.models import IPAddress, Network
 from ralph.scan.automerger import save_job_results
+from ralph.scan.autoscan import autoscan_address
 from ralph.scan.errors import NoQueueError
 from ralph.scan.models import ScanSummary
 
@@ -42,7 +43,7 @@ def scan_address(
     ip_address, plugins, queue_name=None, automerge=AUTOMERGE_MODE,
     called_from_ui=False,
 ):
-    """Queue scan on the specified address."""
+    """Queues a scan of the specified address."""
 
     if not queue_name:
         try:
@@ -62,6 +63,13 @@ def scan_address(
                         ip_address,
                     ),
                 )
+    try:
+        ip_address_from_db = IPAddress.objects.get(address=unicode(ip_address))
+    except IPAddress.DoesNotExist:
+        ip_address_from_db = None
+    if not ip_address_from_db or not (ip_address_from_db.snmp_name and
+                                      ip_address_from_db.snmp_community):
+        autoscan_address(ip_address, queue_name=queue_name)
     if all((
         called_from_ui,
         '%s_%s' % (UI_CALLS_QUEUE_PREFIX, queue_name) in RQ_QUEUES_LIST
@@ -70,13 +78,8 @@ def scan_address(
     queue = django_rq.get_queue(queue_name)
     job = queue.enqueue_call(
         func=scan_address_job,
-        args=(
-            ip_address,
-            plugins,
-        ),
-        kwargs={
-            'automerge': automerge,
-        },
+        args=(ip_address, plugins),
+        kwargs={'automerge': automerge},
         timeout=300,
         result_ttl=86400,
     )
