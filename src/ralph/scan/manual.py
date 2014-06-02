@@ -39,7 +39,7 @@ RQ_QUEUES_LIST = getattr(settings, 'RQ_QUEUES', {}).keys()
 logger = logging.getLogger("SCAN")
 
 
-def scan_address(
+def queue_scan_address(
     ip_address, plugins, queue_name=None, automerge=AUTOMERGE_MODE,
     called_from_ui=False,
 ):
@@ -63,13 +63,6 @@ def scan_address(
                         ip_address,
                     ),
                 )
-    try:
-        ip_address_from_db = IPAddress.objects.get(address=unicode(ip_address))
-    except IPAddress.DoesNotExist:
-        ip_address_from_db = None
-    if not ip_address_from_db or not (ip_address_from_db.snmp_name and
-                                      ip_address_from_db.snmp_community):
-        autoscan_address(ip_address, queue_name=queue_name)
     if all((
         called_from_ui,
         '%s_%s' % (UI_CALLS_QUEUE_PREFIX, queue_name) in RQ_QUEUES_LIST
@@ -86,7 +79,7 @@ def scan_address(
     return job
 
 
-def scan_ip_addresses_range(
+def queue_scan_ip_addresses_range(
     min_ip_number, max_ip_number, plugins, queue_name=None,
     automerge=AUTOMERGE_MODE,
 ):
@@ -98,16 +91,16 @@ def scan_ip_addresses_range(
         dead_ping_count__lte=settings.DEAD_PING_COUNT,
         is_buried=False,
     ).values_list('address', flat=True):
-        scan_address(ip_address, plugins, queue_name, automerge)
+        queue_scan_address(ip_address, plugins, queue_name, automerge)
 
 
-def scan_network(network, plugins, queue=None, automerge=AUTOMERGE_MODE):
+def queue_scan_network(network, plugins, queue=None, automerge=AUTOMERGE_MODE):
     """Queue scan of a entire network on the right worker."""
 
     if not queue:
         if network.environment and network.environment.queue:
             queue = network.environment.queue
-    scan_ip_addresses_range(
+    queue_scan_ip_addresses_range(
         network.min_ip,
         network.max_ip,
         plugins,
@@ -116,7 +109,7 @@ def scan_network(network, plugins, queue=None, automerge=AUTOMERGE_MODE):
     )
 
 
-def scan_environment(environment, plugins, automerge=AUTOMERGE_MODE):
+def queue_scan_environment(environment, plugins, automerge=AUTOMERGE_MODE):
     """Queue scan of all scannable networks in the environment."""
 
     if not environment.queue:
@@ -136,7 +129,7 @@ def scan_environment(environment, plugins, automerge=AUTOMERGE_MODE):
             range_start = ip_number
         if ip_number + 1 in ip_numbers:
             continue
-        scan_ip_addresses_range(
+        queue_scan_ip_addresses_range(
             range_start,
             ip_number,
             plugins,
@@ -148,7 +141,8 @@ def scan_environment(environment, plugins, automerge=AUTOMERGE_MODE):
 
 def _run_plugins(address, plugins, job, **kwargs):
     results = {}
-    job.meta['messages'] = []
+    if 'messages' not in job.meta:
+        job.meta['messages'] = []
     job.meta['finished'] = []
     job.meta['status'] = {}
     for plugin_name in plugins:
@@ -324,9 +318,7 @@ def scan_address_job(
     automerge=AUTOMERGE_MODE,
     **kwargs
 ):
-    """
-    The function that is actually running on the worker.
-    """
+    """The function that is actually running on the worker."""
 
     job = rq.get_current_job()
     available_plugins = getattr(settings, 'SCAN_PLUGINS', {}).keys()
@@ -338,6 +330,13 @@ def scan_address_job(
             ip, created = IPAddress.concurrent_get_or_create(
                 address=ip_address,
             )
+            if not (ip.snmp_name and ip.snmp_community):
+                message = "SNMP name/community is missing. Forcing autoscan."
+                job.meta['messages'] = [
+                    (ip_address, 'ralph.scan', 'info', message)
+                ]
+                job.save()
+                autoscan_address(ip_address)
             kwargs = {
                 'snmp_community': ip.snmp_community,
                 'snmp_version': ip.snmp_version,
