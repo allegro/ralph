@@ -203,7 +203,8 @@ def scan_address(ip_address, **kwargs):
     snmp_name = (kwargs.get('snmp_name', '') or '').lower()
     if snmp_name and "onboard administrator" not in snmp_name:
         raise NoMatchError('It is not HP OA.')
-    if kwargs.get('http_family', '') not in ('Unspecified', 'RomPager', 'HP'):
+    if kwargs.get('http_family', '') not in ('Unspecified', 'RomPager', 'HP',
+                                             'Apache'):
         raise NoMatchError('It is not HP OA.')
     messages = []
     result = get_base_result_template('hp_oa', messages)
