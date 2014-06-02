@@ -76,6 +76,7 @@ def scan_address(
         ),
         kwargs={
             'automerge': automerge,
+            'called_from_ui': called_from_ui,
         },
         timeout=300,
         result_ttl=86400,
@@ -319,6 +320,7 @@ def scan_address_job(
     plugins=None,
     results=None,
     automerge=AUTOMERGE_MODE,
+    called_from_ui=False,
     **kwargs
 ):
     """
@@ -344,8 +346,27 @@ def scan_address_job(
         results = _run_plugins(ip_address, plugins, job, **kwargs)
     if run_postprocessing:
         _scan_postprocessing(results, job, ip_address)
-        # Run only when automerge mode is enabled and some change was detected.
-        # When `change` state is not available just run it...
         if automerge and job.meta.get('changed', True):
+            # Run only when automerge mode is enabled and some change was
+            # detected. When `change` state is not available just run it...
             save_job_results(job.id)
+        elif not called_from_ui and job.args and job.meta.get('changed', True):
+            # Run only when some change was detected. When `change` state is
+            # not available just run it...
+            try:
+                ip_obj = IPAddress.objects.select_related().get(
+                    address=job.args[0]  # job.args[0] == ip_address
+                )
+            except IPAddress.DoesNotExist:
+                pass
+            else:
+                for plugin_name in getattr(
+                    settings, 'SCAN_POSTPROCESS_ENABLED_JOBS', []
+                ):
+                    try:
+                        module = import_module(plugin_name)
+                    except ImportError as e:
+                        logger.error(unicode(e))
+                    else:
+                        module.run_job(ip_obj)
     return results
