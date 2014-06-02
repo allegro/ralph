@@ -32,7 +32,7 @@ def add_filter(request, **kwargs):
         filters |= Q(**{k: v})
     if request.get('ci'):
         ci = CI.objects.select_related('id').filter(
-            name=request.get('ci')
+            Q(name=request.get('ci')) | Q(uid=request.get('ci'))
         )
         if ci:
             filters &= Q(cis=ci[0])
@@ -88,8 +88,8 @@ def table_colums():
         ),
         _(
             'Ci',
-            field='ci',
-            sort_expression='ci',
+            field='cis',
+            sort_expression='cis',
             bob_tag=True,
         ),
         _(
