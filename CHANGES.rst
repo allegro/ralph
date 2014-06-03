@@ -7,6 +7,9 @@ Change Log
 
 Released on June 3, 2014
 
+This is a bugfix and new features release candidate. It brings Quickscan feature and better API compatibility, as well as many scan, networks and ui stability improvements.
+
+
 * SCAN: Added "Quick scan" features which is the quickest way to scan given ip address.
 
 * SCAN: Now scan post processings plugins are running from main scan job.
