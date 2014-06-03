@@ -28,9 +28,9 @@ from ralph.discovery.models import (
 )
 from ralph.scan.errors import Error
 from ralph.scan.manual import (
-    scan_address,
-    scan_environment,
-    scan_network,
+    queue_scan_address,
+    queue_scan_environment,
+    queue_scan_network,
 )
 from ralph.scan.util import find_network
 
@@ -139,7 +139,7 @@ class Command(BaseCommand):
                 for network in [
                     find_network(network_spec) for network_spec in args
                 ]:
-                    scan_network(network, plugins)
+                    queue_scan_network(network, plugins)
             except (Error, Network.DoesNotExist) as e:
                 raise SystemExit(e)
         elif kwargs['environment']:
@@ -147,7 +147,7 @@ class Command(BaseCommand):
                 for environment in [
                     Environment.objects.get(name=name) for name in args
                 ]:
-                    scan_environment(environment, plugins)
+                    queue_scan_environment(environment, plugins)
             except (Error, Environment.DoesNotExist) as e:
                 raise SystemExit(e)
         elif kwargs['data_center']:
@@ -158,7 +158,7 @@ class Command(BaseCommand):
                     for environment in data_center.environment_set.filter(
                         queue__isnull=False,
                     ):
-                        scan_environment(environment, plugins)
+                        queue_scan_environment(environment, plugins)
             except (Error, DataCenter.DoesNotExist) as e:
                 raise SystemExit(e)
         elif kwargs['queue']:
@@ -167,7 +167,7 @@ class Command(BaseCommand):
                     DiscoveryQueue.objects.get(name=name) for name in args
                 ]:
                     for environment in queue.environment_set.all():
-                        scan_environment(environment, plugins)
+                        queue_scan_environment(environment, plugins)
             except (Error, DiscoveryQueue.DoesNotExist) as e:
                 raise SystemExit(e)
         else:
@@ -178,7 +178,7 @@ class Command(BaseCommand):
             else:
                 last_message = 0
                 for ip_address in ip_addresses:
-                    job = scan_address(ip_address, plugins)
+                    job = queue_scan_address(ip_address, plugins)
                     while not job.is_finished:
                         job.refresh()
                         last_message = print_job_messages(

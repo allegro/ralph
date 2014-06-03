@@ -35,7 +35,7 @@ from powerdns.models import Record
 from ralph.discovery.models_component import Ethernet
 from ralph.app import RalphModule
 from ralph.scan.errors import Error as ScanError
-from ralph.scan.manual import scan_address
+from ralph.scan.manual import queue_scan_address
 from ralph.scan.forms import DiffForm
 from ralph.scan.data import (
     append_merged_proposition,
@@ -1494,7 +1494,7 @@ class Scan(BaseMixin, TemplateView):
                 # validation reporter by another view, so be silent here.
                 return HttpResponseRedirect(reverse('search', args=()))
         try:
-            job = scan_address(
+            job = queue_scan_address(
                 ip_address, plugins, automerge=False, called_from_ui=True
             )
         except ScanError as e:

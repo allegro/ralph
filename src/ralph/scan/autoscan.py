@@ -43,7 +43,7 @@ def _split_into_groups(iterable, group_size):
         yield [item for (i, item) in group]
 
 
-def autoscan_environment(environment):
+def queue_autoscan_environment(environment):
     """Queues a pre-scan of all scannable networks in the environment."""
 
     if not environment.queue:
@@ -65,7 +65,7 @@ def autoscan_environment(environment):
             range_start = ip_number
         if ip_number + 1 in ip_numbers:
             continue
-        autoscan_ip_addresses_range(
+        queue_autoscan_ip_addresses_range(
             range_start,
             ip_number,
             queue_name=environment.queue.name
@@ -73,7 +73,7 @@ def autoscan_environment(environment):
         range_start = 0
 
 
-def autoscan_network(network, queue_name=None):
+def queue_autoscan_network(network, queue_name=None):
     """Queues a pre-scan of a whole network on the right worker."""
 
     if not queue_name:
@@ -98,7 +98,7 @@ def autoscan_network(network, queue_name=None):
     network.save()
 
 
-def autoscan_ip_addresses_range(min_ip_number, max_ip_number, queue_name):
+def queue_autoscan_ip_addresses_range(min_ip_number, max_ip_number, queue_name):  # noqa
     ip_addresses = [
         ipaddr.IPAddress(ip_number)
         for ip_number in xrange(min_ip_number, max_ip_number + 1)
@@ -116,24 +116,23 @@ def autoscan_ip_addresses_range(min_ip_number, max_ip_number, queue_name):
         )
 
 
-def autoscan_address(address, queue_name=None):
+def queue_autoscan_address(address):
     """Queues an autoscan of a single address on the right worker."""
 
-    if not queue_name:
-        try:
-            network = Network.from_ip(address)
-        except IndexError:
-            raise NoQueueError(
-                "Address {0} doesn't belong to any configured "
-                "network.".format(address),
-            )
-        if not network.environment or not network.environment.queue:
-            raise NoQueueError(
-                "The network environment {0} has no discovery queue.".format(
-                    network,
-                ),
-            )
-        queue_name = network.environment.queue.name
+    try:
+        network = Network.from_ip(address)
+    except IndexError:
+        raise NoQueueError(
+            "Address {0} doesn't belong to any configured "
+            "network.".format(address),
+        )
+    if not network.environment or not network.environment.queue:
+        raise NoQueueError(
+            "The network environment {0} has no discovery queue.".format(
+                network,
+            ),
+        )
+    queue_name = network.environment.queue.name
     queue = django_rq.get_queue(queue_name)
     queue.enqueue_call(
         func=_autoscan_group,
@@ -147,10 +146,10 @@ def _autoscan_group(addresses):
     """This is the function that actually gets queued during autoscanning."""
 
     for address in addresses:
-        _autoscan_address(address)
+        autoscan_address(address)
 
 
-def _autoscan_address(address):
+def autoscan_address(address):
     """Autoscans a single address on the worker."""
 
     try:

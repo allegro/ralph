@@ -23,9 +23,9 @@ from ralph.discovery.models import (
     Network,
 )
 from ralph.scan.autoscan import (
-    autoscan_address,
-    autoscan_environment,
-    autoscan_network,
+    queue_autoscan_address,
+    queue_autoscan_environment,
+    queue_autoscan_network,
 )
 from ralph.scan.errors import Error
 from ralph.scan.util import find_network
@@ -96,7 +96,7 @@ class Command(BaseCommand):
                 for network in [
                     find_network(network_spec) for network_spec in args
                 ]:
-                    autoscan_network(network)
+                    queue_autoscan_network(network)
             except (Error, Network.DoesNotExist) as e:
                 raise SystemExit(e)
         elif kwargs['environment']:
@@ -104,7 +104,7 @@ class Command(BaseCommand):
                 for environment in [
                     Environment.objects.get(name=name) for name in args
                 ]:
-                    autoscan_environment(environment)
+                    queue_autoscan_environment(environment)
             except (Error, Environment.DoesNotExist) as e:
                 raise SystemExit(e)
         elif kwargs['data_center']:
@@ -115,7 +115,7 @@ class Command(BaseCommand):
                     for environment in data_center.environment_set.filter(
                         queue__isnull=False,
                     ):
-                        autoscan_environment(environment)
+                        queue_autoscan_environment(environment)
             except (Error, DataCenter.DoesNotExist) as e:
                 raise SystemExit(e)
         elif kwargs['queue']:
@@ -124,13 +124,13 @@ class Command(BaseCommand):
                     DiscoveryQueue.objects.get(name=name) for name in args
                 ]:
                     for environment in queue.environment_set.all():
-                        autoscan_environment(environment)
+                        queue_autoscan_environment(environment)
             except (Error, DiscoveryQueue.DoesNotExist) as e:
                 raise SystemExit(e)
         else:
             try:
                 addresses = [str(ipaddr.IPAddress(ip)) for ip in args]
                 for address in addresses:
-                    autoscan_address(address)
+                    queue_autoscan_address(address)
             except (Error, ValueError) as e:
                 raise SystemExit(e)
