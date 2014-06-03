@@ -9,7 +9,6 @@ from ralph.discovery.models import (
     Device,
     DeviceModel,
     DeviceType,
-    IPAddress,
     Network,
 )
 
@@ -65,11 +64,7 @@ def _connect_dc(ip_address, device):
         device.save()
 
 
-def run_job(ip_address):
-    try:
-        ip = IPAddress.objects.select_related().get(address=ip_address)
-    except IPAddress.DoesNotExist:
-        return
+def run_job(ip):
     device = ip.device
     if not device:
         return  # no device...
@@ -81,4 +76,4 @@ def run_job(ip_address):
         )
     ):
         return  # has parent...
-    _connect_dc(ip_address, device)
+    _connect_dc(ip.address, device)

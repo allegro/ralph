@@ -16,7 +16,6 @@ import time
 
 from django.conf import settings
 from django.db import models as db
-from django.utils.importlib import import_module
 
 from ralph.discovery.models_device import Device
 from ralph.discovery.models_network import IPAddress
@@ -234,16 +233,6 @@ def _save_job_results(job_id, start_ts):
                 device_from_data(selected_data, save_priority=SAVE_PRIORITY)
     # mark this scan results
     update_scan_summary(job)
-    # run postprocess plugins...
-    if not job.args:
-        return  # it's from API... ingnore postprocess
-    for plugin_name in getattr(settings, 'SCAN_POSTPROCESS_ENABLED_JOBS', []):
-        try:
-            module = import_module(plugin_name)
-        except ImportError as e:
-            logger.error(unicode(e))
-        else:
-            module.run_job(job.args[0])  # job.args[0] == ip_address...
 
 
 def save_job_results(job_id):
