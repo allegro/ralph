@@ -1,26 +1,76 @@
 Change Log
 ----------
 
-2.0.0-stable
-~~~~~~~~~~~~
-
-Released on ...,
-
-This is a major bugfix release.
 
 2.0.0-rc8
 ~~~~~~~~~
 
-* SCAN: "Quick scan" is the quickest way to scan given ip address.
+Released on June 3, 2014
 
-* CMDB: Events are now bound many-to-many to CIs
+This is a final bugfix RC Release with new features. It brings Quickscan feature and better API compatibility, as well as many scan, networks and ui stability improvements.
 
-* Inactive CIs are not displayed by default
+* SCAN: Added "Quick scan" features which is the quickest way to scan given ip address.
+
+* SCAN: Now scan post processings plugins are running from main scan job.
+
+* SCAN: [hp_oa plugin] added 'Apache' to known HTTP family names.
+
+* SCAN: Manual prescan (autoscan) shouldn't be run as a separate job.
+
+* SCAN: Fix for UnicodeEncodeError. Sometimes plugins can return non ASCII characters...
+
+* SCAN: Timeout of rq_jobs is now configurable.
+
+* SCAN: Fix for Proxmox3 (family recognizing + listening port).
+
+* SCAN: ssh_ibm_bladecenter fixed better choices finding (for components or device types).
+
+* SCAN: Added autoscan (prescan) at the beginning of the manual scan.
+
+* SCAN: Added Quickstan feature for quickly scanning given IP Address.
+
+* SCAN: [vmware plugin] subdevices w/o MAC addresses shouldn't be included in scan results.
+
+* SCAN: 3par plugin now works correctly - return results instead device_info.
+
+* CMDB: Events are now bound many-to-many to CIs.
+
+* CMDB: Inactive CIs are not displayed by default.
+
+* CMDB: Unified the search of CIs in CMDB.
+
+* CMDB: Corrected icon class for venturerole.
+
+* CMDB: New ralph-independent way of setting icons for CIs.
+
+* CMDB: provided correcting ownership duplicates.
+
+* CMDB: Event is propagated from parent CI to its children.
+
+* API: fixed api for pricing.
+
+* API: State is no longer copied in Service API.
+
+* CORE: Fix test-with-coveralls make command - convert spaces to tab. Ommit test files in coverage.
+
+* CORE: Update Travis badge.
+
+* CORE: Override for a django bug with "View on site".
+
+* CORE: Improved mapping ad groups -> django groups.
+
+* CORE: Fixed 'Bulk edit' button on 'Ventures' and 'Racks' views.
+
+* CORE: Networks - Fixed Handling networks with gereric IDs instead of names.
+
+* NETWORKS: Networks performance improved - extended caching timeout.
 
 2.0.0-rc7
 ~~~~~~~~~
 
 Released on May 15, 2014
+
+This is a 7th Release Candidate release with bugfixes only.
 
 * CORE: Fixed 'Bulk edit' button on 'Ventures' and 'Racks' views.
 
@@ -41,6 +91,8 @@ Released on May 15, 2014
 
 Released on April 28, 2014
 
+This is a 6th Release Candidate release with more testing.
+
 * SCAN: Stability improvements and fixes.
 
 
@@ -49,12 +101,16 @@ Released on April 28, 2014
 
 Released on May 15, 2014
 
+This is a 5th Release Candidate release.
+
 * many fixes
 
 2.0.0-rc4
 ~~~~~~~~~
 
 Released on May 15, 2014
+
+This is a 4th Release Candidate release.
 
 * Scan - special queues for UI calls
 
@@ -142,6 +198,8 @@ Core changes:
 ~~~~~~~~~
 
 Released on May 15, 2014
+
+This is release with new features.
 
 * Added completely new Scan module - new DC discovery mechanism which allows you to better maintain periodic scans, and much easier to write new discovery plugins using JSON API.
 
