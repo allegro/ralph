@@ -139,8 +139,8 @@ class SidebarNetworks(object):
                     get_params=self.request.GET.urlencode(),
                 ),
             )
-            # 24 hours cache
-            cache.set('cache_network_sidebar_items', sidebar_items, 24 * 60)
+            # indef.
+            cache.set('cache_network_sidebar_items', sidebar_items, None)
 
         ret.update({
             'sidebar_items': sidebar_items,
