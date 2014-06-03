@@ -108,7 +108,10 @@ def guess_family(headers, document):
             family = 'F5'
         elif 'APC Management Web Server' in document:
             family = 'APC'
-        elif 'Hewlett-Packard Development Company' in document:
+        elif any((
+            'Hewlett-Packard Development Company' in document,
+            'HP BladeSystem Onboard Administrator' in document,
+        )):
             family = 'HP'
         elif any((
             'Welcome to VMware ESX Server' in document,
