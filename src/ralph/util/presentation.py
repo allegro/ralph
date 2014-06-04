@@ -69,12 +69,6 @@ COMPONENT_ICONS = {
     'Firmware': 'fugue-game',
 }
 
-OWNER_ICONS = {
-    CIOwnershipType.technical.id: 'fugue-user-worker',
-    CIOwnershipType.business.id: 'fugue-user-business',
-    None: 'fugue-user-nude',
-}
-
 
 def get_device_model_icon(model):
     if model is None:
@@ -112,12 +106,6 @@ def get_venture_icon(venture):
     if not venture.show_in_ralph:
         return 'fugue-store-market-stall'
     return 'fugue-store'
-
-
-def get_owner_icon(owner):
-    if owner is None:
-        return OWNER_ICONS[None]
-    return OWNER_ICONS.get(owner.type) or OWNER_ICONS[None]
 
 
 def get_network_icon(net):

@@ -78,6 +78,9 @@ setup(
             'pping = ralph.util.network:ping_main',
             'ralph = ralph.__main__:main',
         ],
+        'ralph_extra_data': [
+            'ralph_obj_owner_table = ralph.cmdb.extra:ralph_obj_owner_table'
+        ]
     },
     classifiers=[
         'Development Status :: 4 - Beta',
