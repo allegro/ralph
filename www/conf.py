@@ -212,20 +212,25 @@ latex_documents = [
 from docutils.core import publish_doctree
 
 doctree = publish_doctree(open("../CHANGES.rst").read())
-entries = doctree.children[2:]
+entries = doctree.children[1:]
 
 all_releases = []
 
 for entry in entries:
-    v = entry.children[0]
-    release = entry.children[1]
-    description_lines = entry.children[2]
-    all_releases.append(dict(
-        version=v.astext(),
-        release_date=release.astext(),
-        description_lines=[description_lines.astext()]
-    )
-    )
+    try:
+        v = entry.children[0]
+        release = entry.children[1]
+        description_lines = entry.children[2]
+        all_releases.append(dict(
+            version=v.astext(),
+            release_date=release.astext(),
+            description_lines=[description_lines.astext()]
+        )
+        )
+    except IndexError:
+        print('Error parsing Changelog rst file while reading: ')
+        print(entry)
+        raise
 
 html_context = dict(
     main_releases=all_releases[0:2],
