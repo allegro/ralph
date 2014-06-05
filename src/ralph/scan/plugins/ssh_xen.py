@@ -160,6 +160,7 @@ def _get_disks(ssh, sudo_mode=False):
     device = None
     uuid = None
     for line in stdout:
+        line = force_unicode(line)
         if not line.strip():
             continue
         key, value = (x.strip() for x in line.split(':', 1))
