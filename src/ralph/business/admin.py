@@ -8,7 +8,6 @@ from __future__ import unicode_literals
 
 from django import forms
 from django.contrib import admin
-from django.core.urlresolvers import reverse_lazy
 from django.utils.translation import ugettext_lazy as _
 from lck.django.common.admin import (ModelAdmin,
                                      ForeignKeyAutocompleteTabularInline)
