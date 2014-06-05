@@ -36,6 +36,7 @@ from ralph.discovery.models import (
     DeviceType,
     DiskShare,
     DiskShareMount,
+    IPAddress,
     MarginKind,
     PricingAggregate,
     PricingFormula,
@@ -355,6 +356,12 @@ class ApiPricingTest(TestCase):
         self.device_without_venture, created = Device.objects.get_or_create(
             name="Device2",
         )
+
+        self.ip1 = IPAddress(address='1.1.1.1', device=self.device)
+        self.ip2 = IPAddress(address='2.2.2.2', venture=self.venture)
+        self.ip1.save()
+        self.ip2.save()
+
         self.device.save()
         self.device_without_venture.save()
 
@@ -374,6 +381,23 @@ class ApiPricingTest(TestCase):
         # device does not exist
         device3 = api_pricing.get_device_by_name("Device3")
         self.assertEqual(device3, {})
+
+    def test_get_ip_info(self):
+        result = api_pricing.get_ip_info(ipaddress='1.1.1.1')
+        self.assertEquals(result, {
+            'device_id': self.device.id,
+            'venture_id': self.venture.id,
+        })
+
+    def test_get_ip_info_without_device(self):
+        result = api_pricing.get_ip_info(ipaddress='2.2.2.2')
+        self.assertEquals(result, {
+            'venture_id': self.venture.id,
+        })
+
+    def test_get_ip_info_empty(self):
+        result = api_pricing.get_ip_info(ipaddress='3.3.3.3')
+        self.assertEquals(result, {})
 
 
 class UncompressBase64DataTest(TestCase):

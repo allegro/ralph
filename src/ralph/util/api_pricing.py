@@ -234,6 +234,23 @@ def get_device_by_name(device_name):
     return {}
 
 
+def get_ip_info(ipaddress):
+    """Returns device information by IP address"""
+    result = {}
+    try:
+        ip = IPAddress.objects.select_related().get(address=ipaddress)
+    except IPAddress.DoesNotExist:
+        pass
+    else:
+        if ip.venture is not None:
+            result['venture_id'] = ip.venture.id
+        if ip.device is not None:
+            result['device_id'] = ip.device.id
+            if ip.device.venture is not None:
+                result['venture_id'] = ip.device.venture.id
+    return result
+
+
 def get_ip_addresses(only_public=False):
     """Yileds available IP addresses"""
     ips = IPAddress.objects.filter(is_public=only_public)
