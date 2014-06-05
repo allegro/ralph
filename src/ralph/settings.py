@@ -366,6 +366,7 @@ SCAN_AUTOMERGE_MODE = True
 SCAN_POSTPROCESS_ENABLED_JOBS = [
     'ralph.scan.postprocess.position',
     'ralph.scan.postprocess.cache_price',
+    'ralph.scan.postprocess.mount_shares',
 ]
 
 #
