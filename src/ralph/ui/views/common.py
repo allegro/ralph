@@ -54,7 +54,6 @@ from ralph.business.models import (
     RolePropertyValue,
 )
 from ralph.account.models import get_user_home_page_url, Perm
-from ralph.cmdb.models import CI
 from ralph.deployment.models import Deployment, DeploymentStatus
 from ralph.deployment.util import get_next_free_hostname, get_first_free_ip
 from ralph.dnsedit.models import DHCPEntry
@@ -272,29 +271,6 @@ class BaseMixin(object):
                     href=self.tab_href('scan'),
                 ),
             ])
-        if ('ralph.cmdb' in settings.INSTALLED_APPS and
-                has_perm(Perm.read_configuration_item_info_generic)):
-            ci = ''
-            device_id = self.kwargs.get('device')
-            if device_id:
-                deleted = False
-                if self.request.GET.get('deleted', '').lower() == 'on':
-                    deleted = True
-                try:
-                    if deleted:
-                        device = Device.admin_objects.get(pk=device_id)
-                    else:
-                        device = Device.objects.get(pk=device_id)
-                    ci = CI.get_by_content_object(device)
-                except Device.DoesNotExist:
-                    pass
-            if ci:
-                tab_items.extend([
-                    MenuItem(
-                        'CMDB', fugue_icon='fugue-thermometer',
-                        href='/cmdb/ci/view/%s' % ci.id
-                    ),
-                ])
         if has_perm(Perm.read_device_info_reports, venture):
             tab_items.extend([
                 MenuItem('Reports', fugue_icon='fugue-reports-stack',

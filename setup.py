@@ -79,7 +79,8 @@ setup(
             'ralph = ralph.__main__:main',
         ],
         'ralph_extra_data': [
-            'ralph_obj_owner_table = ralph.cmdb.extra:ralph_obj_owner_table'
+            'ralph_obj_owner_table = ralph.cmdb.extra:ralph_obj_owner_table',
+            'ralph_obj_owner_column_factory = ralph.cmdb.extra:ralph_obj_owner_column_factory',
         ]
     },
     classifiers=[

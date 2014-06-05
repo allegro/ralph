@@ -7,7 +7,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from ralph.discovery.models import DeviceType, ComponentType
-from ralph.cmdb.models import CIOwnershipType
 
 
 DEVICE_ICONS = {
