@@ -58,7 +58,7 @@ def ralph_obj_owner_column_factory(type_):
     return result_fn
 
 
-def ralph_obj_all_ownerships(obj)
+def ralph_obj_all_ownerships(obj):
     ci = CI.get_by_content_object(obj)
     if not ci:
         return []
