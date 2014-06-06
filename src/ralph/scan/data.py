@@ -47,7 +47,7 @@ UNIQUE_FIELDS_FOR_MERGER = {
     'fibrechannel_cards': [('physical_id', 'device')],
     'parts': [('serial_number',)],
     'disk_exports': [('serial_number',)],
-    'disk_shares': [('device', 'share')],
+    'disk_shares': [('device', 'serial_number')],
     'installed_software': [('device', 'path')],
 }
 SAVE_PRIORITY = 215
@@ -410,7 +410,7 @@ def get_device_data(device):
     return data
 
 
-def set_device_data(device, data, save_priority=SAVE_PRIORITY):
+def set_device_data(device, data, save_priority=SAVE_PRIORITY, warnings=[]):
     """
     Go through the submitted data, and update the Device object
     in accordance with the meaning of the particular fields.
@@ -612,6 +612,7 @@ def set_device_data(device, data, save_priority=SAVE_PRIORITY):
             save_priority=save_priority,
         )
     if 'disk_shares' in data:
+        shares = []
         for share in data['disk_shares']:
             if share.get('server'):
                 servers = find_devices({
@@ -628,16 +629,31 @@ def set_device_data(device, data, save_priority=SAVE_PRIORITY):
                 share['server'] = servers[0]
             else:
                 share['server'] = None
-            share['share'] = DiskShare.objects.get(wwn=share['serial_number'])
-            if share.get('address'):
-                share['address'] = IPAddress.objects.get(
-                    address=share['address'],
+            try:
+                share['share'] = DiskShare.objects.get(
+                    wwn=share['serial_number']
                 )
+            except DiskShare.DoesNotExist:
+                warnings.append(
+                    'No share found for share mount: %r' % share
+                )
+                continue
+            if share.get('address'):
+                try:
+                    share['address'] = IPAddress.objects.get(
+                        address=share['address'],
+                    )
+                except IPAddress.DoesNotExist:
+                    warnings.append(
+                        'No IP address found for share mount: %r' % share
+                    )
+                    continue
             elif 'address' in share:
                 del share['address']
+            shares.append(share)
         _update_component_data(
             device,
-            data['disk_shares'],
+            shares,
             DiskShareMount,
             {
                 'share': 'share',
@@ -705,6 +721,7 @@ def set_device_data(device, data, save_priority=SAVE_PRIORITY):
             subdevice = device_from_data(
                 subdevice_data,
                 save_priority=save_priority,
+                warnings=warnings
             )
             if (
                 device.model and
@@ -731,7 +748,9 @@ def set_device_data(device, data, save_priority=SAVE_PRIORITY):
                 assign_asset(device.id, asset_id)
 
 
-def device_from_data(data, save_priority=SAVE_PRIORITY, user=None):
+def device_from_data(
+    data, save_priority=SAVE_PRIORITY, user=None, warnings=[]
+):
     """
     Create or find a device based on the provided scan data.
     """
@@ -749,7 +768,9 @@ def device_from_data(data, save_priority=SAVE_PRIORITY, user=None):
         model_name=model_name,
         model_type=model_type,
     )
-    set_device_data(device, data, save_priority=save_priority)
+    set_device_data(
+        device, data, save_priority=save_priority, warnings=warnings
+    )
     device.save(priority=save_priority, user=user)
     return device
 

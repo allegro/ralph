@@ -218,7 +218,7 @@ def _get_virtual_machine_info(
 
 def _get_virtual_machines(ssh, master_ip_address, hypervisor_ip_address):
     detected_machines = []
-    storages = get_disk_shares(ssh)
+    storages = get_disk_shares(ssh, include_logical_volumes=True)
     stdin, stdout, stderr = ssh.exec_command("qm list")
     for line in stdout:
         line = line.strip()
