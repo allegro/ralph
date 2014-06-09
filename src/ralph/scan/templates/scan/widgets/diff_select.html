@@ -3,14 +3,16 @@
 
 <div class="diff-select-widget" id="{{ name }}__diff_select_widget" data-role="diff_select_widget">
     {% if diff %}
-        <div class="alert alert-{% if diff.is_equal %}success{% else %}info{% endif %}">
-            {% if not diff.is_equal %}
+    <div class="alert alert-{%if name in diff.meta.no_value %}warning{% elif diff.is_equal %}success{% else %}info{% endif %}">
+            {% if name in diff.meta.no_value %}
+              No sensible value can be determined for this component. To specify custom value, use "Advanced mode".
+            {% elif not diff.is_equal %}
                 {% if diff.type == "dicts" %}
                     <span class="badge badge-success">{{ diff.meta.add_items_count }}</span> item{% if diff.meta.add_items_count == 1 %} was{% else %}s were{% endif %} added.&nbsp;
                     <span class="badge badge-important">{{ diff.meta.remove_items_count }}</span> item{% if diff.meta.remove_items_count == 1 %} was{% else %}s were{% endif %} removed.&nbsp;
                     <span class="badge badge-warning">{{ diff.meta.change_items_count }}</span> item{% if diff.meta.change_items_count == 1 %} was{% else %}s were{% endif %} changed.&nbsp;
                 {% else %}
-                    Some changes were detected. To edit current value, use advanced mode.
+                    Some changes were detected. To edit current value, use "Advanced mode".
                 {% endif %}
             {% else %}
                 Without changes.
@@ -61,8 +63,8 @@
         {% for option, label in choices %}
             {% if option != "custom" %}
                 <label class="radio">
-                    <input type="radio" name="{{ name }}" value="{{ option }}" {% if value == option or value in option %}checked="on"{% endif %}>
-                    {{ label }}<br>
+                      <input type="radio" name="{{ name }}" value="{{ option }}" {% if value == option or value in option %}checked="on"{% endif %}>
+                    {% if not label %}None<br>{% else %}{{ label }}<br>{% endif %}
                     <i>({% with option|split:", " as sources %}
                         {% for source in sources %}
                             {% if source == 'database' %}previous value{% else %}{{ source }}{% endif %}
