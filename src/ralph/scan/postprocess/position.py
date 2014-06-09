@@ -64,7 +64,7 @@ def _connect_dc(ip_address, device):
         device.save()
 
 
-def run_job(ip):
+def run_job(ip, **kwargs):
     device = ip.device
     if not device:
         return  # no device...
