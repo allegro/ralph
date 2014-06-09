@@ -279,8 +279,7 @@ def get_device_data(device):
         data['hostname'] = device.name
     if device.model is not None:
         data['model_name'] = device.model.name
-        if device.model.type != DeviceType.unknown:
-            data['type'] = DeviceType.from_id(device.model.type).raw
+        data['type'] = DeviceType.from_id(device.model.type).raw
     if device.sn is not None:
         data['serial_number'] = device.sn
     if device.chassis_position:
@@ -443,8 +442,8 @@ def set_device_data(device, data, save_priority=SAVE_PRIORITY, warnings=[]):
             )
         except DeviceModel.DoesNotExist:
             model = DeviceModel(
-                type=model_type,
                 name=data['model_name'],
+                type=model_type,
             )
             try:
                 model.save()
