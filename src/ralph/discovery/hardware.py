@@ -217,7 +217,7 @@ def handle_smbios(dev, smbios, is_virtual=False, priority=0):
         cpu.save(priority=priority)
 
 
-def get_disk_shares(ssh):
+def get_disk_shares(ssh, include_logical_volumes=False):
     stdin, stdout, stderr = ssh.exec_command("multipath -l")
     pvs = {}
     for line in stdout.readlines():
@@ -238,27 +238,44 @@ def get_disk_shares(ssh):
         if '(' not in wwn:
             wwn, pv, model = line.strip().split(None, 2)
             path = None
-        wwn = normalize_wwn(wwn.strip('()'))
+        wwn = wwn.strip('()')
+        if not path:
+            path = wwn
+        wwn = normalize_wwn(wwn)
         pvs['/dev/%s' % pv] = wwn
         if path:
             pvs['/dev/mapper/%s' % path] = wwn
     stdin, stdout, stderr = ssh.exec_command(
-        "pvs --noheadings --units M --separator '|'")
+        "pvs --noheadings --units M --separator '|'"
+    )
     vgs = {}
     for line in stdout.readlines():
-        pv, vg, rest = line.split('|', 2)
+        pv, vg, fmt, attr, size, rest = line.split('|', 5)
         pv = pv.strip()
         vg = vg.strip()
+        mount_size = int(float(size.strip('M')))
         if not vg:
             continue
-        vgs[vg] = pv
-    stdin, stdout, stderr = ssh.exec_command("lvs --noheadings --units M")
+        try:
+            wwn = pvs[pv]
+        except KeyError:
+            continue
+        vgs[vg] = {
+            'wwn': wwn,
+            'mount_size': mount_size,
+            'pv': pv,
+        }
     storage = {}
+    if not include_logical_volumes:
+        for vg, mount_data in vgs.iteritems():
+            storage[vg] = (mount_data['wwn'], mount_data['mount_size'])
+        return storage
+    stdin, stdout, stderr = ssh.exec_command("lvs --noheadings --units M")
     for line in stdout.readlines():
         lv, vg, attr, size, rest = (line + ' x').strip().split(None, 4)
         size = int(float(size.strip('M')))
         try:
-            wwn = pvs[vgs[vg]]
+            wwn = pvs[vgs[vg]['pv']]
         except KeyError:
             continue
         storage[lv] = (wwn, size)

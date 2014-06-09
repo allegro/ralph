@@ -1731,14 +1731,16 @@ class ScanStatus(BaseMixin, TemplateView):
                         field_name: form.get_value(field_name)
                         for field_name in form.result
                     }
+                    warnings = []
                     try:
                         if device is None:
                             device = device_from_data(
                                 data=data,
                                 user=self.request.user,
+                                warnings=warnings
                             )
                         else:
-                            set_device_data(device, data)
+                            set_device_data(device, data, warnings=warnings)
                             device.save(
                                 priority=SAVE_PRIORITY,
                                 user=self.request.user,
@@ -1751,6 +1753,11 @@ class ScanStatus(BaseMixin, TemplateView):
                             self.request,
                             "Device %s saved." % device,
                         )
+                        for warning in warnings:
+                            messages.warning(
+                                self.request,
+                                warning
+                            )
                         return HttpResponseRedirect(self.request.path)
                 else:
                     messages.error(self.request, "Errors in the form.")

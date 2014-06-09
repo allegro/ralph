@@ -154,6 +154,5 @@ LogVol00 VolGroup00 -wi-ao 144552.49M
 LogVol01 VolGroup00 -wi-ao   2080.37M"""), ])
         storage = hardware.get_disk_shares(ssh)
         self.assertEqual(storage, {
-            'LogVol01': (u'50002AC000660910', 2080),
-            'LogVol00': (u'50002AC000660910', 144552)
+            'VolGroup00': (u'50002AC000660910', 146632)
         })

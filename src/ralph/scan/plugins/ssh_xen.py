@@ -190,7 +190,7 @@ def _ssh_xen(ssh, ip_address):
     vms = _get_running_vms(ssh, uuid, sudo_mode)
     macs = _get_macs(ssh, sudo_mode)
     disks = _get_disks(ssh, sudo_mode)
-    shares = get_disk_shares(ssh)
+    shares = get_disk_shares(ssh, include_logical_volumes=True)
     device_info = {
         'subdevices': [],
         'type': DeviceType.unknown.raw,
@@ -224,7 +224,7 @@ def _ssh_xen(ssh, ip_address):
         ]
         vm_disks = disks.get(vm_name, [])
         for uuid, sr_uuid, size, device in vm_disks:
-            wwn, mount_size = shares.get('VHD-%s' % sr_uuid, (None, None))
+            wwn, mount_size = shares.get('VHD-%s' % uuid, (None, None))
             if wwn:
                 share = {
                     'serial_number': wwn,
