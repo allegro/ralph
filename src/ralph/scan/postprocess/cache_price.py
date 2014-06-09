@@ -8,7 +8,7 @@ from __future__ import unicode_literals
 from ralph.util import pricing
 
 
-def run_job(ip):
+def run_job(ip, **kwargs):
     device = ip.device
     if not device:
         return  # no device...
