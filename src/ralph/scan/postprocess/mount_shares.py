@@ -128,7 +128,7 @@ def _create_or_update_share_mount(ip, device, share_mount):
     if share_address:
         mount.address = share_address
     mount.is_virtual = share_mount.get('is_virtual', False)
-    #mount.save()  # temporary
+    # mount.save()  # temporary
 
 
 def _append_shares_to_device(ip, device, data, external_priorities={}):
