@@ -294,7 +294,19 @@ def _scan_postprocessing(results, job, ip_address=None):
             results.update(updated_results)
     # calculate new checksum
     cleaned_results = _get_cleaned_results(results)
-    checksum = _get_results_checksum(cleaned_results)
+    # XXX temporary trap for a condition which is really hard to reproduce
+    try:
+        checksum = _get_results_checksum(cleaned_results)
+    except TypeError:
+        import pickle
+        dump = (results, cleaned_results)
+        filename = '__'.join((
+            '/home/ralph/.ralph/scan_results_dump',
+            datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+        ))
+        with open(filename, 'w') as f:
+            pickle(dump, f)
+        raise
     job.meta['results_checksum'] = checksum
     job.save()
     # calculate new status
