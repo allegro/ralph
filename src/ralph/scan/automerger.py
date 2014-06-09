@@ -99,7 +99,7 @@ def _find_data_by_plugin(data, plugin):
             return results
 
 
-def _select_data(data, external_priorities={}, is_management=False):
+def select_data(data, external_priorities={}, is_management=False):
     selected_data = {}
     for component, result in data.iteritems():
         available_plugins = set()
@@ -187,7 +187,7 @@ def _save_job_results(job_id, start_ts):
             only_multiple=True,
         )
         append_merged_proposition(data, device, external_priorities)
-        selected_data = _select_data(data, external_priorities, is_management)
+        selected_data = select_data(data, external_priorities, is_management)
         set_device_data(device, selected_data, save_priority=SAVE_PRIORITY)
         device.save(priority=SAVE_PRIORITY)
     # now... we create new devices from `garbage`
@@ -215,7 +215,7 @@ def _save_job_results(job_id, start_ts):
                 garbage[plugin_name] = plugin_result
         if garbage:
             data = merge_data(garbage)
-            selected_data = _select_data(data, external_priorities)
+            selected_data = select_data(data, external_priorities)
             if all((
                 any(
                     (
