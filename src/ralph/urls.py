@@ -44,6 +44,7 @@ from ralph.cmdb.api import (
     CITypesResource,
     ServiceResource,
 )
+from ralph.app import mount_api
 from ralph.discovery.api_donpedro import WindowsDeviceResource
 from ralph.scan.api import ExternalPluginResource
 from ralph.ui.views.common import VhostRedirectView
@@ -59,6 +60,7 @@ DISCOVERY_DISABLED = getattr(settings, 'DISCOVERY_DISABLED', False)
 admin.autodiscover()
 
 v09_api = Api(api_name='v0.9')
+mount_api(v09_api)
 # business API
 for r in (VentureResource, VentureLightResource, RoleResource,
           RoleLightResource, DepartmentResource, RolePropertyTypeResource,

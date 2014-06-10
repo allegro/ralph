@@ -73,7 +73,7 @@ INSTALLED_APPS = [
     'tastypie',
     'ralph.account',
     'ralph.business',
-    'ralph.cmdb',
+#    'ralph.cmdb',
     'ralph.discovery',
     'ralph.deployment',
     'ralph.integration',
