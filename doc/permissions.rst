@@ -161,7 +161,7 @@ List of bound permissions
 +----------------------+-------------------------------------+
 |virtualserver         |read_dc_structure                    |
 +----------------------+-------------------------------------+
-|global_module_access  |has_asset_access                     |
+|global_module_access  |has_assets_access                    |
 +----------------------+-------------------------------------+
 |global_module_access  |has_core_access                      |
 +----------------------+-------------------------------------+
