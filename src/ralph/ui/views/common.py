@@ -345,11 +345,14 @@ class BaseMixin(object):
 
         for app in pluggableapp.app_dict.values():
             if isinstance(app, RalphModule):
-                mainmenu_items.append(MenuItem(
-                    app.disp_name,
-                    fugue_icon=app.icon,
-                    href='/{}'.format(app.url_prefix)
-                ))
+                # check app required permissions
+                if (app.required_permission is None
+                        or has_perm(app.required_permission)):
+                    mainmenu_items.append(MenuItem(
+                        app.disp_name,
+                        fugue_icon=app.icon,
+                        href='/{}'.format(app.url_prefix)
+                    ))
 
         if settings.BUGTRACKER_URL:
             footer_items.append(
