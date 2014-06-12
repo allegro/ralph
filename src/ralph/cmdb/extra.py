@@ -38,6 +38,7 @@ def ralph_obj_owner_column_factory(type_):
         'technical': (CIOwnershipType.technical, _('technical owners')),
     }[type_]
     # We can't use partials, because they don't bind. So we use a closure
+
     def result_fn(self):
         ci = CI.get_by_content_object(self)
         if not ci:
@@ -53,6 +54,7 @@ def ralph_obj_owner_column_factory(type_):
             else '[add]'
         )
         return "<a href=\"{}\">{}</a>".format(part_url, link_text)
+
     result_fn.short_description = description
     result_fn.allow_tags = True
     return result_fn

@@ -42,6 +42,7 @@ class RalphModule(pluggableapp.PluggableApp):
             '{}.urls'.format(self.module_name),
         )
 
+
 def mount_api(api):
     """Searches the pluggable apps for resources to be mounted on API
     with a given version and adds them to a given API object."""
