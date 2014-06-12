@@ -346,8 +346,8 @@ class BaseMixin(object):
         for app in pluggableapp.app_dict.values():
             if isinstance(app, RalphModule):
                 # check app required permissions
-                if (app.required_permission is None
-                        or has_perm(app.required_permission)):
+                if (app.required_permission is None or
+                        has_perm(app.required_permission)):
                     mainmenu_items.append(MenuItem(
                         app.disp_name,
                         fugue_icon=app.icon,
