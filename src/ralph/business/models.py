@@ -23,6 +23,7 @@ from ralph.discovery.history import field_changes as _field_changes
 from ralph.discovery.models import DataCenter
 from ralph.discovery.models_history import HistoryCost, HistoryChange
 from ralph.discovery.models_util import SavingUser
+from ralph.util.di import get_extra_data
 
 SYNERGY_URL_BASE = settings.SYNERGY_URL_BASE
 

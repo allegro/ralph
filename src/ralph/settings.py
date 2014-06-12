@@ -19,6 +19,8 @@ execfile(namespace_package_support)
 # common stuff for each install
 #
 
+PLUGGABLE_APPS = ('cmdb',)
+
 SITE_ID = 1
 USE_I18N = True
 USE_L10N = True  # FIXME: breaks contents of l7d date fields on form reload
