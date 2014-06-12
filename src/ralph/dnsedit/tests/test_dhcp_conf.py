@@ -336,6 +336,48 @@ class DHCPConfTest(TestCase):
             'hardware ethernet DE:AD:BE:EF:CA:FE; }',
         )
 
+    def test_multiple_domain_occurrence_entry(self):
+        DHCPEntry.objects.create(ip='127.0.0.1', mac='deadbeefcafe')
+        DHCPEntry.objects.create(ip='127.0.0.2', mac='deadbeefcaff')
+        device = Device.objects.create(sn='sn123')
+        Ethernet.objects.create(
+            mac='deadbeefcafe', label="eth0", device=device,
+        )
+        Ethernet.objects.create(
+            mac='deadbeefcaff', label="eth1", device=device,
+        )
+        IPAddress.objects.create(
+            address='127.0.0.1',
+            hostname='sample-hostname-1.dc1',
+            device=device,
+        )
+        ip2 = IPAddress.objects.create(
+            address='127.0.0.2',
+            hostname='sample-hostname-1.dc1',
+            device=device,
+        )
+        config = _sanitize_dhcp_config(
+            generate_dhcp_config_entries(),
+        )
+        self.assertEqual(
+            config,
+            'host sample-hostname-1.dc1 '
+            '{ fixed-address 127.0.0.1; hardware ethernet DE:AD:BE:EF:CA:FE; }'
+        )
+        ip2.hostname = 'sample-hostname-2.dc1'
+        ip2.save()
+        config = _sanitize_dhcp_config(
+            generate_dhcp_config_entries(),
+        )
+        self.assertEqual(
+            config,
+            'host sample-hostname-1.dc1 '
+            '{ fixed-address 127.0.0.1; '
+            'hardware ethernet DE:AD:BE:EF:CA:FE; }\n'
+            'host sample-hostname-2.dc1 '
+            '{ fixed-address 127.0.0.2; hardware ethernet DE:AD:BE:EF:CA:FF; }'
+        )
+
     def test_networks_configs(self):
         config = _sanitize_dhcp_config(
             generate_dhcp_config_networks(),
