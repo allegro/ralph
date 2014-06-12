@@ -442,9 +442,14 @@ class ComponentModelGroupAdmin(ModelAdmin):
 admin.site.register(m.ComponentModelGroup, ComponentModelGroupAdmin)
 
 
-class DiskShareMountInline(admin.TabularInline):
+class DiskShareMountInline(ForeignKeyAutocompleteTabularInline):
     model = m.DiskShareMount
     exclude = ('created', 'modified')
+    related_search_fields = {
+        'device': ['^name'],
+        'server': ['^name'],
+        'address': ['^address'],
+    }
     extra = 0
 
 
