@@ -234,6 +234,18 @@ def get_device_by_name(device_name):
     return {}
 
 
+def get_device_by_remarks(remark):
+    """Returns device information by remark"""
+    devices = Device.objects.filter(remarks__icontains=remark)
+    if devices:
+        device = devices[0]
+        return {
+            'device_id': device.id,
+            'venture_id': device.venture.id if device.venture else None,
+        }
+    return {}
+
+
 def get_ip_info(ipaddress):
     """Returns device information by IP address"""
     result = {}
