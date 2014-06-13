@@ -150,7 +150,7 @@ class JiraEventsImporter(BaseImporter):
                 cis = []
             else:
                 cis = [ci for ci in [
-                    get_ci(id=id) for id in issue['cis']
+                    get_ci(uid=uid) for uid in issue['cis']
                 ] if ci]
 
         obj = classtype.objects.filter(jira_id=issue.get('key')).all()[:1]
