@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using DonPedro.DTO;
 using DonPedro.Utils;
+using DonPedro.Detectors;
 
 namespace DonPedro.Detectors
 {
@@ -390,11 +391,12 @@ namespace DonPedro.Detectors
 		public List<DiskShareMountDTOResponse> GetDiskShareMountInfo()
 		{
 			List<DiskShareMountDTOResponse> mounts = new List<DiskShareMountDTOResponse>();
+			FCInfoDetectorSource fcinfo = new FCInfoDetectorSource();
 
 			try
 			{
 				SelectQuery query = new SelectQuery(
-					@"select Model, DeviceID 
+					@"select Model, DeviceID, Size 
 					  from Win32_DiskDrive 
 					  where Model like '3PARdata%'"
 				);
@@ -410,9 +412,21 @@ namespace DonPedro.Detectors
 					
 					foreach (ManagementObject snObj in snSearcher.Get())
 					{
+						string serialNumber = fcinfo.GetShareWWN(
+							GetValueAsString(obj, "DeviceID"),
+							GetValueAsString(snObj, "SerialNumber")
+						);
+						if (serialNumber.Length == 0)
+						{
+						    break;
+						}
 						DiskShareMountDTOResponse share = new DiskShareMountDTOResponse();
 						share.Volume = GetValueAsString(obj, "Model");
-						share.SerialNumber = GetValueAsString(snObj, "SerialNumber");
+						share.SerialNumber = serialNumber;
+						share.Size = ConvertSizeToMiB(
+							Int64.Parse(GetValueAsString(obj, "Size")),
+							SizeUnits.B
+						).ToString();
 						
 						mounts.Add(share);
 						

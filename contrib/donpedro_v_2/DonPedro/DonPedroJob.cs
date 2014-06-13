@@ -38,7 +38,7 @@ namespace DonPedro
 			Detector d = new Detector();
 			string jsonData = d.GetAllComponentsJSON();
 
-			Logger.Instance.LogInformation("Sending to: " + ReportURL + " Data: " + jsonData);
+			Logger.Instance.LogInformation("Sending to: " + ReportURL);
 
 			int tries = 0;
 			while (tries < MaxTries)

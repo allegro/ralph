@@ -4,6 +4,7 @@ using System.Diagnostics;
 using DonPedro.DTO;
 using DonPedro.Detectors.Exceptions;
 using System.Text.RegularExpressions;
+using DonPedro.Utils;
 
 namespace DonPedro.Detectors
 {
@@ -16,10 +17,14 @@ namespace DonPedro.Detectors
 			
 			try
 			{
-				fcinfoResult = ExecuteFcinfoCommand();
+				fcinfoResult = ExecuteFcinfoCommand("details");
 			}
-			catch (ExternalCommandExecutionException)
+			catch (ExternalCommandExecutionException e)
 			{
+				Logger.Instance.LogWarning(
+					"[GetFCInfo] To get informations about FC cards or disk shares install fcinfo tool."
+				);
+				Logger.Instance.LogError(e.ToString());
 				return fc;
 			}
 			
@@ -93,10 +98,55 @@ namespace DonPedro.Detectors
 			return fc;
 		}
 		
-		protected string ExecuteFcinfoCommand()
+		public string GetShareWWN(string diskName, string serialNumber) {
+			string fcinfoResult = "";
+			try
+			{
+				fcinfoResult = ExecuteFcinfoCommand("mapping");
+			}
+			catch (ExternalCommandExecutionException e)
+			{
+				Logger.Instance.LogWarning(
+					"[GetShareWWN] To get informations about FC cards or disk shares install fcinfo tool."
+				);
+				Logger.Instance.LogError(e.ToString());
+				return fcinfoResult;
+			}
+			
+			string[] lines = Regex.Split(fcinfoResult, "\r\n");
+			bool inCorrectSection = false;
+			Regex rgx = new Regex( @"[a-zA-Z0-9]{16}");
+			for (int i = 0; i < lines.Length; i++)
+			{
+				string line = lines[i].Trim();
+				if (line.Length == 0)
+				{
+					continue;
+				}
+
+				if (line.ToLower().Contains(diskName.ToLower()))
+				{
+					inCorrectSection = true;
+					continue;
+				}
+				
+				if (inCorrectSection && line.ToLower().Contains(serialNumber))
+				{
+					Match m = rgx.Match(line);
+					if (m.Success)
+					{
+						return m.Value;
+					}
+				}
+			}
+			
+			return "";
+		}
+		
+		protected string ExecuteFcinfoCommand(string option)
 		{
 			Process proc = new Process();
-			proc.StartInfo = PrepareProcessStartInfo();
+			proc.StartInfo = PrepareProcessStartInfo(option);
 			try
 			{
 				proc.Start();
@@ -115,9 +165,12 @@ namespace DonPedro.Detectors
 			return proc.StandardOutput.ReadToEnd();
 		}
 		
-		protected ProcessStartInfo PrepareProcessStartInfo()
+		protected ProcessStartInfo PrepareProcessStartInfo(string option)
 		{
-			ProcessStartInfo psi = new ProcessStartInfo("cmd.exe", @"/C %windir%\\Sysnative\\fcinfo.exe /details");
+			//ProcessStartInfo psi = new ProcessStartInfo("cmd.exe", @"/C %windir%\\Sysnative\\fcinfo.exe /" + option);
+			ProcessStartInfo psi = new ProcessStartInfo();
+			psi.FileName = "fcinfo.exe";
+			psi.Arguments = "/" + option;
 			psi.RedirectStandardOutput = true;
 			psi.RedirectStandardError = true;
 			psi.UseShellExecute = false;
