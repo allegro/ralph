@@ -732,3 +732,6 @@ SCAN_PLUGINS = {
     },
 }
 RQ_TIMEOUT = 3000
+
+# url to page where user requests permission to module (eg. assets)
+# REQUEST_PERM_URL = 'http://tickets.office/request/ralph_module/permission'
