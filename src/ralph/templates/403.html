@@ -5,13 +5,13 @@
 <div class="row-fluid">
     <div class="span9">
         <div class="dashboard-form">
-            <i class="fugue-icon fugue-lock"></i>
+            <img src='{{ STATIC_URL }}images/200px-Ambox_padlock_gray.svg.png'>
             <p class='permission-msg'>
-              You do not have permission to view this resource.
+              {% trans "You do not have permission to view this resource." %}
             </p>
             <div>
               <button class="btn btn-link" onclick="window.history.back()">
-                go back
+                {% trans "go back" %}
               </button>
               {% if REQUEST_PERM_URL %}
                 <a href="{{REQUEST_PERM_URL}}" class="btn btn-link">
