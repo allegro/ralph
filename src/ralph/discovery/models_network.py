@@ -136,6 +136,10 @@ class AbstractNetwork(db.Model):
         _("gateway address"), help_text=_("Presented as string."), blank=True,
         null=True, default=None,
     )
+    gateway_as_int = db.PositiveIntegerField(
+        _("gateway as int"), null=True, blank=True, default=None,
+        editable=False,
+    )
     reserved = db.PositiveIntegerField(
         _("reserved"), default=10,
         help_text=_("Number of addresses to be omitted in the automatic "
@@ -228,6 +232,8 @@ class AbstractNetwork(db.Model):
         net = ipaddr.IPNetwork(self.address)
         self.min_ip = int(net.network)
         self.max_ip = int(net.broadcast)
+        if self.gateway:
+            self.gateway_as_int = int(ipaddr.IPv4Address(self.gateway))
         super(AbstractNetwork, self).save(*args, **kwargs)
 
     def __contains__(self, what):
