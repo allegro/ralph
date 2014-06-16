@@ -98,7 +98,7 @@ namespace DonPedro.Detectors
 			return fc;
 		}
 		
-		public string GetShareWWN(string diskName, string serialNumber) {
+		public string GetShareWWN(string serialNumber) {
 			string fcinfoResult = "";
 			try
 			{
@@ -110,11 +110,10 @@ namespace DonPedro.Detectors
 					"[GetShareWWN] To get informations about FC cards or disk shares install fcinfo tool."
 				);
 				Logger.Instance.LogError(e.ToString());
-				return fcinfoResult;
+				return "";
 			}
-			
+						
 			string[] lines = Regex.Split(fcinfoResult, "\r\n");
-			bool inCorrectSection = false;
 			Regex rgx = new Regex( @"[a-zA-Z0-9]{16}");
 			for (int i = 0; i < lines.Length; i++)
 			{
@@ -124,13 +123,7 @@ namespace DonPedro.Detectors
 					continue;
 				}
 
-				if (line.ToLower().Contains(diskName.ToLower()))
-				{
-					inCorrectSection = true;
-					continue;
-				}
-				
-				if (inCorrectSection && line.ToLower().Contains(serialNumber))
+				if (line.ToLower().Contains(serialNumber.ToLower()))
 				{
 					Match m = rgx.Match(line);
 					if (m.Success)
@@ -167,7 +160,6 @@ namespace DonPedro.Detectors
 		
 		protected ProcessStartInfo PrepareProcessStartInfo(string option)
 		{
-			//ProcessStartInfo psi = new ProcessStartInfo("cmd.exe", @"/C %windir%\\Sysnative\\fcinfo.exe /" + option);
 			ProcessStartInfo psi = new ProcessStartInfo();
 			psi.FileName = "fcinfo.exe";
 			psi.Arguments = "/" + option;

@@ -413,12 +413,11 @@ namespace DonPedro.Detectors
 					foreach (ManagementObject snObj in snSearcher.Get())
 					{
 						string serialNumber = fcinfo.GetShareWWN(
-							GetValueAsString(obj, "DeviceID"),
 							GetValueAsString(snObj, "SerialNumber")
 						);
 						if (serialNumber.Length == 0)
 						{
-						    break;
+						    continue;
 						}
 						DiskShareMountDTOResponse share = new DiskShareMountDTOResponse();
 						share.Volume = GetValueAsString(obj, "Model");
