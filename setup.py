@@ -70,7 +70,7 @@ setup(
         'xlwt==0.7.4',
         'unidecode==0.04.14',
         'django-discover-runner>=0.4',
-        'Pillow==2.0.0',
+        'Pillow==2.4.0',
         'pysphere==0.1.8',
     ],
     entry_points={
