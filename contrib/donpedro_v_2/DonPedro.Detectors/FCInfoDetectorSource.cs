@@ -51,9 +51,10 @@ namespace DonPedro.Detectors
 					{
 						if (modelName.Length > 0)
 						{
-							card.ModelName = modelName;
+							card.ModelName = SanitizeModelName(modelName);
 						}
 						fc.Add(card);
+						modelName = "";
 					}
 					card = new FibreChannelDTOResponse();
 					string[] adapterNameParts = lineParts[1].Trim().Split('-');
@@ -70,7 +71,7 @@ namespace DonPedro.Detectors
 						case "model":
 							if (modelName.Length > 0) 
 							{
-								modelName = " " + lineParts[1].Trim();
+								modelName = modelName + " " + lineParts[1].Trim();
 							} 
 							else 
 							{
@@ -92,6 +93,10 @@ namespace DonPedro.Detectors
 			}
 			if (card != null)
 			{
+				if (card.ModelName == null)
+				{
+					card.ModelName = SanitizeModelName(modelName);
+				}
 				fc.Add(card);
 			}
 			
@@ -134,6 +139,17 @@ namespace DonPedro.Detectors
 			}
 			
 			return "";
+		}
+		
+		protected string SanitizeModelName(string modelName)
+		{
+			modelName = Regex.Replace(
+				modelName, 
+				"corporation ", 
+				"", 
+				RegexOptions.IgnoreCase
+			);
+			return modelName;
 		}
 		
 		protected string ExecuteFcinfoCommand(string option)

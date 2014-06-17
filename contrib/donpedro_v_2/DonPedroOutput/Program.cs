@@ -9,7 +9,7 @@ namespace DonPedroOutput
 	class Program
 	{
 		public static void Main(string[] args)
-		{			
+		{						
 			Detector d = new Detector();
 			
 			Console.WriteLine("Detected CPUs:");
