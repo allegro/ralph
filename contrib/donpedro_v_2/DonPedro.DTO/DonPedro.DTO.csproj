@@ -68,11 +68,5 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StorageDTOResponse.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\DonPedro.Utils\DonPedro.Utils.csproj">
-      <Project>{66ED9F1D-C781-4EBB-BC39-3D7E600C89E9}</Project>
-      <Name>DonPedro.Utils</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
 </Project>

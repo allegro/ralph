@@ -2,8 +2,6 @@
 using System.Collections;
 using System.Text.RegularExpressions;
 
-using DonPedro.Utils;
-
 namespace DonPedro.DTO
 {
 	public abstract class BaseDTOResponse

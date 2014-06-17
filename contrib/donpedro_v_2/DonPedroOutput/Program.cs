@@ -2,8 +2,6 @@
 using DonPedro.Detectors;
 using DonPedro.DTO;
 
-using System.Text.RegularExpressions;
-
 namespace DonPedroOutput
 {
 	class Program
