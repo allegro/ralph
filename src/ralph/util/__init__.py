@@ -44,3 +44,8 @@ def uncompress_base64_data(data):
     except zlib.error:
         pass
     return data
+
+
+def clone_class(Cls):
+    """Inherits an identical class from a given one."""
+    return type(Cls)(Cls.__name__, (Cls,), {})
