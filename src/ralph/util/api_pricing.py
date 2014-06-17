@@ -15,6 +15,7 @@ from ralph.discovery.models import (
     Device,
     DeviceType,
     DiskShare,
+    FibreChannel,
     HistoryCost,
     IPAddress,
 )
@@ -279,4 +280,12 @@ def get_cloud_daily_costs(date=None):
         yield {
             'venture_id': daily_cost['venture__id'],
             'daily_cost': daily_cost['value']
+        }
+
+
+def get_fc_cards():
+    for fc in FibreChannel.objects.values('id', 'device__id'):
+        yield {
+            'id': fc['id'],
+            'device_id': fc['device__id'],
         }
