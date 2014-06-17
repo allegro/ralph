@@ -14,11 +14,13 @@ from __future__ import unicode_literals
 # fix in https://github.com/toastdriven/django-tastypie/pull/863
 from ralph.cmdb.monkey import method_check
 import tastypie
+import itertools as it
 from tastypie.resources import Resource
 Resource.method_check = method_check
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
+from django.db.models import Q
 from tastypie.authentication import ApiKeyAuthentication
 from tastypie.constants import ALL, ALL_WITH_RELATIONS
 from tastypie import fields
@@ -290,6 +292,37 @@ class LinkField(tastypie.fields.ApiField):
                 reverse(self.view, kwargs={'ci_id': value})
             )
 
+class RelationField(tastypie.fields.RelatedField):
+    """The field that describes all relations of a given CI."""
+
+    is_m2m = True
+
+    def __init__(self, *args, **kwargs):
+        super(RelationField, self).__init__(
+            to='ralph.cmdb.api.CIResource',
+            attribute='relations'
+        )
+
+    def dehydrate(self, bundle, **kwargs):
+        result = []
+        id_ = bundle.obj.id
+        for q, dir_name, other in (
+            (Q(parent_id = id_), 'OUTGOING', 'child'),
+            (Q(child_id = id_), 'INCOMING', 'parent'),
+        ):
+            for relation in CIRelation.objects.filter(q):
+                other_ci = getattr(relation, other)
+                result.append(
+                    {
+                        'type': relation.type,
+                        'dir': dir_name,
+                        'ci': self.get_related_resource(
+                            other_ci
+                        ).get_resource_uri(other_ci)
+                    }
+                )
+        return result
+
 
 class CIResource(MResource):
 
@@ -310,6 +343,7 @@ class CIResource(MResource):
     type = TastyForeignKey(
         'ralph.cmdb.api.CITypesResource', 'type', full=True
     )
+    relations = RelationField()
 
     class Meta:
         queryset = CI.objects.all()
