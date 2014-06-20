@@ -125,10 +125,10 @@ def get_virtual_usages(parent_venture_name=None):
 
 def get_shares(venture_symbol=None, include_virtual=True):
     """
-    Yields dicts reporting the storage shares for all servers.
+    Yields dicts reporting the storage shares mounts.
 
-    :param venture_symbol: if passed, only share mounth on shares with storage
-        device in this venture will be returned
+    :param venture_symbol: if passed, only share mounts from shares with
+        storage device in this venture will be returned
     :param include_virtual: if False, virtual share mounts will be excluded
         from result
     """
