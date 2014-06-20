@@ -12,6 +12,7 @@ import socket
 import time
 
 from django.conf import settings
+from lck.django.common.models import MACAddressField
 
 from ralph.discovery.cisco import cisco_inventory
 from ralph.discovery.models import DeviceType, SERIAL_BLACKLIST
@@ -94,7 +95,9 @@ def _connect_ssh(ip):
 
 def get_subswitches(switch_version, hostname, ip_address):
     base_mac_addresses = [
-        "".join(re.findall('[0-9a-fA-F]{2}', line[25:]))
+        MACAddressField.normalize(
+            "".join(re.findall('[0-9a-fA-F]{2}', line[25:]))
+        )
         for line in switch_version
         if 'Base ethernet MAC Address' in line
     ]
@@ -141,7 +144,7 @@ def get_subswitches(switch_version, hostname, ip_address):
         subswitches.append(
             {
                 'serial_number': subs[0],
-                'mac_addresses': [subs[1]],
+                'mac_addresses': [MACAddressField.normalize(subs[1])],
                 'model_name': subs[2],
                 'hostname': '%s-%d%s' % (
                     hostname_base, i + 1, hostname_domain),
@@ -210,5 +213,5 @@ def scan_address(ip_address, **kwargs):
     if subswitches:
         result['device']['subdevices'] = subswitches
     else:
-        result['device']['mac_addresses'] = [mac]
+        result['device']['mac_addresses'] = [MACAddressField.normalize(mac)]
     return result

@@ -10,6 +10,7 @@ import collections
 
 from django.conf import settings
 from django.utils.encoding import force_unicode
+from lck.django.common.models import MACAddressField
 
 from ralph.util import parse
 from ralph.util.network import check_tcp_port, connect_ssh, AuthError
@@ -201,7 +202,9 @@ def _ssh_xen(ssh, ip_address):
             'model_name': 'XEN Virtual Server',
         }
         vm_device['mac_addresses'] = [
-            mac for i, mac in enumerate(macs.get(vm_name, []))
+            MACAddressField.normalize(
+                mac
+            ) for i, mac in enumerate(macs.get(vm_name, []))
         ]
         vm_device['serial_number'] = vm_uuid
         vm_device['hostname'] = vm_name
