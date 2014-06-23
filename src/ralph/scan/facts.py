@@ -151,7 +151,7 @@ def handle_facts_mac_addresses(facts):
         mac_address = facts.get('macaddress_{}'.format(interface))
         if not mac_address:
             continue
-        mac_addresses.add(mac_address)
+        mac_addresses.add(MACAddressField.normalize(mac_address))
     return list(mac_addresses)
 
 

@@ -6,6 +6,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from django.conf import settings
+from lck.django.common.models import MACAddressField
 
 from ralph.discovery import hp_ilo
 from ralph.discovery.models import (
@@ -41,7 +42,8 @@ def _get_base_device_info(ilo):
 
 def _get_mac_addresses(ilo):
     return [
-        mac for _, mac in ilo.ethernets
+        MACAddressField.normalize(mac)
+        for _, mac in ilo.ethernets
         if mac.replace(':', '').upper()[:6] not in MAC_PREFIX_BLACKLIST
     ]
 

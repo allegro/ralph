@@ -53,10 +53,10 @@ class IdracPluginTest(TestCase):
         self.assertEquals(
             _get_mac_addresses(self.idrac_manager),
             [
-                'BC:30:FB:F1:33:02',
-                'BC:30:FB:F1:33:03',
-                'BC:30:FB:F1:33:00',
-                'BC:30:FB:F1:33:01',
+                'BC30FBF13302',
+                'BC30FBF13303',
+                'BC30FBF13300',
+                'BC30FBF13301',
             ],
         )
 
