@@ -29,7 +29,7 @@ def check_snmp_port(ip, port=161, timeout=1):
     return bool(reply)
 
 
-def user_data(auth, snmp_version):
+def user_data(auth, snmp_version, priv_protocol=cmdgen.usmDESPrivProtocol):
     if snmp_version == '2c':
         community = auth
         data = cmdgen.CommunityData('ralph', community, 1)
@@ -41,7 +41,7 @@ def user_data(auth, snmp_version):
             snmp_v3_auth,
             snmp_v3_priv,
             authProtocol=cmdgen.usmHMACSHAAuthProtocol,
-            privProtocol=cmdgen.usmDESPrivProtocol,
+            privProtocol=priv_protocol,
         )
     else:
         community = auth
@@ -49,9 +49,12 @@ def user_data(auth, snmp_version):
     return data
 
 
-def snmp_command(hostname, community, oid, snmp_version='2c', timeout=1, attempts=3):
+def snmp_command(
+    hostname, community, oid, snmp_version='2c', timeout=1, attempts=3,
+    priv_protocol=cmdgen.usmDESPrivProtocol
+):
     transport = cmdgen.UdpTransportTarget((hostname, 161), attempts, timeout)
-    data = user_data(community, snmp_version)
+    data = user_data(community, snmp_version, priv_protocol=priv_protocol)
     gen = cmdgen.CommandGenerator()
     error, status, index, vars = gen.getCmd(data, transport, oid)
     if error:
@@ -60,7 +63,9 @@ def snmp_command(hostname, community, oid, snmp_version='2c', timeout=1, attempt
         return vars
 
 
-def snmp_bulk(hostname, community, oid, snmp_version='2c', timeout=1, attempts=3):
+def snmp_bulk(
+    hostname, community, oid, snmp_version='2c', timeout=1, attempts=3
+):
     transport = cmdgen.UdpTransportTarget((hostname, 161), attempts, timeout)
     data = user_data(community, snmp_version)
     gen = cmdgen.CommandGenerator()
@@ -73,7 +78,9 @@ def snmp_bulk(hostname, community, oid, snmp_version='2c', timeout=1, attempts=3
     return dict(i for i, in vars)
 
 
-def snmp_macs(hostname, community, oid, snmp_version='2c', timeout=1, attempts=3):
+def snmp_macs(
+    hostname, community, oid, snmp_version='2c', timeout=1, attempts=3
+):
     for oid, value in snmp_bulk(hostname, community, oid, snmp_version,
                                 timeout, attempts).iteritems():
         if isinstance(value, OctetString):
