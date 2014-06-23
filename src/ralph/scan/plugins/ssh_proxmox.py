@@ -33,17 +33,23 @@ def _connect_ssh(ip_address, user, password):
 
 def _get_master_ip_address(ssh, ip_address, cluster_cfg=None):
     if not cluster_cfg:
-        stdin, stdout, stderr = ssh.exec_command("cat /etc/pve/cluster.cfg")
+        stdin, stdout, stderr = ssh.exec_command(
+            "sudo -u www-data /bin/cat /etc/pve/cluster.cfg"
+        )
         data = stdout.read()
     else:
         data = cluster_cfg
     if not data:
-        stdin, stdout, stderr = ssh.exec_command("pvesh get /nodes")
+        stdin, stdout, stderr = ssh.exec_command(
+            "sudo -u www-data /usr/bin/pvesh get /nodes"
+        )
         data = stdout.read()
         if data:
             for node in json.loads(data):
                 stdin, stdout, stderr = ssh.exec_command(
-                    'pvesh get "/nodes/%s/dns"' % node['node'],
+                    'sudo -u www-data /usr/bin/pvesh get "/nodes/%s/dns"' % (
+                        node['node']
+                    )
                 )
                 dns_data = stdout.read()
                 if not dns_data:
@@ -109,13 +115,16 @@ def _get_virtual_machine_info(
     hypervisor_ip_address,
 ):
     stdin, stdout, stderr = ssh.exec_command(
-        "cat /etc/qemu-server/%d.conf" % vmid,
+        "sudo -u www-data /bin/cat /etc/qemu-server/%d.conf" % vmid,
     )
     lines = stdout.readlines()
     if not lines:
         # Proxmox 2 uses a different directory structure
         stdin, stdout, stderr = ssh.exec_command(
-            "cat /etc/pve/nodes/*/qemu-server/%d.conf" % vmid,
+            "for i in `sudo -u www-data ls /etc/pve/nodes/`; do "
+            "if [ -f /etc/pve/nodes/$i/qemu-server/%d.conf ]; then "
+            "sudo -u www-data cat /etc/pve/nodes/$i/qemu-server/%d.conf; fi; "
+            "done" % (vmid, vmid)
         )
         lines = stdout.readlines()
     disks = {}
@@ -219,7 +228,9 @@ def _get_virtual_machine_info(
 def _get_virtual_machines(ssh, master_ip_address, hypervisor_ip_address):
     detected_machines = []
     storages = get_disk_shares(ssh, include_logical_volumes=True)
-    stdin, stdout, stderr = ssh.exec_command("qm list")
+    stdin, stdout, stderr = ssh.exec_command(
+        "sudo -u www-data /usr/sbin/qm list"
+    )
     for line in stdout:
         line = line.strip()
         if line.startswith('VMID'):
@@ -250,15 +261,15 @@ def _ssh_proxmox(ip_address, user, password):
     try:
         cluster_cfg = None
         for command in (
-            'cat /etc/pve/cluster.cfg',
-            'cat /etc/pve/cluster.conf',
-            'cat /etc/pve/storage.cfg',
-            'pvecm help',
+            'sudo -u www-data /bin/cat /etc/pve/cluster.cfg',
+            'sudo -u www-data /bin/cat /etc/pve/cluster.conf',
+            'sudo -u www-data /bin/cat /etc/pve/storage.cfg',
+            'sudo -u www-data /usr/bin/pvecm help',
         ):
             stdin, stdout, stderr = ssh.exec_command(command)
             data = stdout.read()
             if data != '':
-                if command == 'cat /etc/pve/cluster.cfg':
+                if command == 'sudo -u www-data /bin/cat /etc/pve/cluster.cfg':
                     cluster_cfg = data
                 break
         else:
