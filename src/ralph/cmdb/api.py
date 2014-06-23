@@ -40,6 +40,7 @@ from ralph.cmdb.models import (
     CIChangeZabbixTrigger,
     CILayer,
     CIRelation,
+    CI_RELATION_TYPES,
     CIAttribute,
     CIAttributeValue,
 )
@@ -292,16 +293,14 @@ class LinkField(tastypie.fields.ApiField):
                 reverse(self.view, kwargs={'ci_id': value})
             )
 
-class RelationField(tastypie.fields.RelatedField):
+class RelationField(tastypie.fields.ApiField):
     """The field that describes all relations of a given CI."""
 
     is_m2m = True
 
     def __init__(self, *args, **kwargs):
-        super(RelationField, self).__init__(
-            to='ralph.cmdb.api.CIResource',
-            attribute='relations'
-        )
+        super(RelationField, self).__init__(*args, **kwargs)
+        self.attribute = lambda _: None
 
     def dehydrate(self, bundle, **kwargs):
         result = []
@@ -314,14 +313,46 @@ class RelationField(tastypie.fields.RelatedField):
                 other_ci = getattr(relation, other)
                 result.append(
                     {
-                        'type': relation.type,
+                        'type': CI_RELATION_TYPES.name_from_id(relation.type),
                         'dir': dir_name,
-                        'ci': self.get_related_resource(
-                            other_ci
-                        ).get_resource_uri(other_ci)
+                        'ci': CIResource().get_resource_uri(other_ci)
                     }
                 )
         return result
+
+    def hydrate_m2m(self, bundle):
+        ci = bundle.obj
+        CIRelation.objects.filter(
+            Q(child_id=ci.id) | Q(parent_id=ci.id)
+        ).delete()
+        for relation_data in bundle.data.get('related'):
+            relation = CIRelation()
+            try:
+                type_id = CI_RELATION_TYPES.id_from_name(relation_data['type'])
+            except ValueError:
+                raise tastypie.exceptions.BadRequest(
+                    'No such relation type {}'.format(relation_data['type'])
+                )
+            relation.type = type_id
+            other_ci = CIResource().get_via_uri(
+                relation_data['ci'],
+                request=bundle.request,
+            )
+            if relation_data['dir'] == 'OUTGOING':
+                relation.parent = ci
+                relation.child = other_ci
+            elif relation_data['dir'] == 'INCOMING':
+                relation.parent = other_ci
+                relation.child = ci
+            else:
+                raise tastypie.exceptions.BadRequest(
+                    'dir should be OUTGOING or INCOMING'
+                )
+            relation.save()
+        return []
+
+    def hydrate(self, bundle):
+        pass
 
 
 class CIResource(MResource):
@@ -343,7 +374,7 @@ class CIResource(MResource):
     type = TastyForeignKey(
         'ralph.cmdb.api.CITypesResource', 'type', full=True
     )
-    relations = RelationField()
+    related = RelationField()
 
     class Meta:
         queryset = CI.objects.all()
