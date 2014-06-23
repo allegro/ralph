@@ -28,6 +28,10 @@ MODELS = {
 }
 
 
+def normalize_wwn(wwn):
+    return "5000{}".format(wwn[:-4])
+
+
 def _connect_ssh(ip):
     return network.connect_ssh(ip, AIX_USER, AIX_PASSWORD, key=AIX_KEY)
 
@@ -100,7 +104,9 @@ def run_ssh_aix(ip):
         else:
             stors.append((disk, model_name, sn))
             sns.append(sn)
-    device['disk_shares'] = [{'serial_number': wwn} for wwn in wwns]
+    device['disk_shares'] = [
+        {'serial_number': normalize_wwn(wwn)} for wwn in wwns
+    ]
     for disk, model_name, sn in stors:
         if 'disks' not in device:
             device['disks'] = []
