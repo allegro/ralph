@@ -16,7 +16,6 @@ import mock
 
 from ralph.business.models import Venture, VentureRole
 from ralph.cmdb.importer import CIImporter
-from ralph.cmdb.integration.puppet import PuppetAgentsImporter
 from ralph.cmdb.integration.puppet import PuppetGitImporter as pgi
 from ralph.cmdb.models import (
     CI, CIChange, CI_TYPES, CIChangePuppet,
@@ -24,7 +23,6 @@ from ralph.cmdb.models import (
     CI_CHANGE_TYPES, CI_CHANGE_REGISTRATION_TYPES,
     GitPathMapping
 )
-from ralph.cmdb.models_changes import PuppetLog
 
 
 CURRENT_DIR = settings.CURRENT_DIR
@@ -36,50 +34,7 @@ _PATCHED_TICKETS_ENABLE_NO = False
 
 
 class OPRegisterTest(TestCase):
-
-    """Test creating OP changes and registering in the Issue Tracker"""
-
-    def test_create_puppet_change(self):
-        hostci = CI(name='s11401.dc2', uid='mm-1')
-        hostci.type_id = CI_TYPES.DEVICE.id
-        hostci.save()
-        p = PuppetAgentsImporter()
-        changed_yaml = open(
-            os.path.join(CURRENT_DIR, 'cmdb/tests/samples/canonical.yaml'),
-        ).read()
-        p.import_contents(changed_yaml)
-        unchanged_yaml = open(
-            os.path.join(
-                CURRENT_DIR, 'cmdb/tests/samples/canonical_unchanged.yaml'),
-        ).read()
-        p.import_contents(unchanged_yaml)
-        chg = CIChange.objects.get(type=CI_CHANGE_TYPES.CONF_AGENT.id)
-        logs = PuppetLog.objects.filter(
-            cichange__host='s11401.dc2').order_by('id')
-        self.assertEqual(chg.content_object.host, u's11401.dc2')
-        self.assertEqual(chg.content_object.kind, u'apply')
-        self.assertEqual(chg.ci, hostci)
-        self.assertEqual(chg.type, 2)
-        # check parsed logs
-        self.assertEqual(len(logs), 16)
-        time_iso = logs[0].time.isoformat().split('.')[0]
-        self.assertEqual(time_iso, datetime.datetime(
-            2010, 12, 31, 0, 56, 37).isoformat())
-        # should not import puppet report which has 'unchanged' status
-        self.assertEqual(
-            CIChangePuppet.objects.filter(status='unchanged').count(), 0)
-        # should drop request, when the same configuration ver. + hostname
-        # is already present in the database.
-
-        # Now, feed importer with the same yaml the second time...
-        p.import_contents(changed_yaml)
-        # No change should be registered at this time.
-        self.assertEquals(
-            chg, CIChange.objects.get(type=CI_CHANGE_TYPES.CONF_AGENT.id)
-        )
-        self.assertEquals(
-            CIChangePuppet.objects.count(), 1
-        )
+    """Test creating OP changes and registering in the Issue Tracker."""
 
     @patch('ralph.cmdb.models_signals.OP_TEMPLATE', _PATCHED_OP_TEMPLATE)
     @patch('ralph.cmdb.models_signals.OP_START_DATE', _PATCHED_OP_START_DATE)

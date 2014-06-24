@@ -75,17 +75,11 @@ class Change(ChangesBase):
             self.ci = db.CI.objects.get(id=change.ci_id)
         except db.CI.DoesNotExist:
             self.ci = None
-        self.puppet_reports = []
         self.git_changes = []
         self.device_attributes_changes = []
         self.ci_attributes_changes = []
-        self.puppet_feedback_errors = 0
-        self.puppet_feedback_changes = 0
         report = change.content_object
-        if change.type == db.CI_CHANGE_TYPES.CONF_AGENT.id:
-            puppet_logs = db.PuppetLog.objects.filter(cichange=report)
-            self.puppet_reports.append(dict(report=report, logs=puppet_logs))
-        elif change.type == db.CI_CHANGE_TYPES.CONF_GIT.id:
+        if change.type == db.CI_CHANGE_TYPES.CONF_GIT.id:
             self.git_changes = [dict(
                 id=report.id,
                 file_paths=', '.join(report.file_paths.split('#')),

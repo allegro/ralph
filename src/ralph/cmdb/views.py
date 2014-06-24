@@ -819,66 +819,6 @@ class CIGitView(CIGitEdit):
         return _update_labels(ret, self.ci)
 
 
-class CIPuppetEdit(BaseCIDetails):
-    template_name = 'cmdb/ci_puppet.html'
-    active_tab = 'puppet'
-
-    def check_perm(self):
-        if not self.get_permissions_dict(self.request.user.id).get(
-            'read_configuration_item_info_puppet_perm',
-            False,
-        ):
-            return HttpResponseForbidden()
-
-    def initialize_vars(self):
-        super(CIPuppetEdit, self).initialize_vars()
-        self.puppet_reports = []
-
-    def get_context_data(self, **kwargs):
-        ret = super(CIPuppetEdit, self).get_context_data(**kwargs)
-        ret.update({
-            'puppet_reports': self.puppet_reports,
-        })
-        return ret
-
-    def get(self, *args, **kwargs):
-        perm = self.check_perm()
-        if perm:
-            return perm
-        self.initialize_vars()
-        try:
-            ci_id = self.get_ci_id()
-        except db.CI.DoesNotExist:
-            # CI doesn's exists.
-            return HttpResponseRedirect('/cmdb/ci/jira_ci_unknown')
-        if ci_id:
-            self.ci = get_object_or_404(db.CI, id=ci_id)
-            try:
-                page = int(self.request.GET.get('page', 1))
-            except ValueError:
-                page = 1
-            query = db.CIChangePuppet.objects.filter(ci=self.ci).all()
-            paginator = Paginator(query, 10)
-            self.puppet_reports = paginator.page(page)
-            object_list = []
-            for report in self.puppet_reports.object_list:
-                puppet_logs = db.PuppetLog.objects.filter(
-                    cichange=report
-                ).all()
-                object_list.append(
-                    dict(report=report, logs=puppet_logs)
-                )
-            self.puppet_reports.object_list = object_list
-        return super(CIPuppetEdit, self).get(*args, **kwargs)
-
-
-class CIPuppetView(CIPuppetEdit):
-
-    def get_context_data(self, **kwargs):
-        ret = super(CIPuppetView, self).get_context_data(**kwargs)
-        return _update_labels(ret, self.ci)
-
-
 class CIRalphEdit(BaseCIDetails):
     template_name = 'cmdb/ci_ralph.html'
     active_tab = 'ralph'

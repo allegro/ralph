@@ -15,14 +15,12 @@ from ralph.cmdb.models import (
     ArchivedCIChangeGit,
     ArchivedCIChangePuppet,
     ArchivedCIChangeZabbixTrigger,
-    ArchivedPuppetLog,
     CI_CHANGE_TYPES,
     CIChange,
     CIChangeCMDBHistory,
     CIChangeGit,
     CIChangePuppet,
     CIChangeZabbixTrigger,
-    PuppetLog,
 )
 
 
@@ -341,20 +339,6 @@ def run_cichange_puppet_archivization(older_than):
         parent_model=CIChange,
     )
     cursor = connection.cursor()
-    params = _get_query_params_list(older_than, CI_CHANGE_TYPES.CONF_AGENT)
-    sql = _make_advanced_insert_query(
-        PuppetLog,
-        ArchivedPuppetLog,
-        CIChange,
-        join_by=('cichange_id', 'object_id'),
-    )
-    cursor.execute(sql, params)
-    sql = _make_advanced_delete_query(
-        PuppetLog,
-        CIChange,
-        join_by=('cichange_id', 'object_id'),
-    )
-    cursor.execute(sql, params)
     _remove_old_data(
         CIChangePuppet,
         older_than,

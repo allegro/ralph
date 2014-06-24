@@ -234,54 +234,6 @@ and run::
 
 to create Zabbix relations and download trigger data.
 
-
-Puppet Agents integration
--------------------------
-
-The Puppet agent sends report in YAML format after every reconfiguration.  That
-report describes what has changed after host reconfiguration.  In order to use
-this mechanism, you should change configuration of Puppet Master to point
-the puppet reports URL to the CMDB URL::
-
-    #
-    #  /etc/puppet/puppet.conf
-    #
-
-    [agent]
-        report = true
-        reporturl = http://your_cmdb_url/cmdb/rest/notify_puppet_agent
-
-Every puppet report is saved into the database. You can see it from CI View tab
-called 'Agent events'.
-
-If you use Puppet Dashboard and have already specified ``reporturl``, there is
-a trick to allow multiple URLs to be given.  Since Puppet doesn't support
-specifying multiple URLs at the moment, you can use this example report script::
-
-    $ cat /usr/lib/ruby/1.8/puppet/reports/cmdb.rb
-
-    require 'puppet'
-    require 'net/http'
-    require 'uri'
-
-    Puppet::Reports.register_report(:cmdb) do
-
-      desc <<-DESC
-      CMDB Report example
-      DESC
-
-      def process
-        url = URI.parse("(your_ralph_url)/cmdb/rest/notify_puppet_agent/")
-        req = Net::HTTP::Post.new(url.path)
-        req.body = self.to_yaml
-        req.content_type = "application/x-yaml"
-        Net::HTTP.new(url.host, url.port).start {|http|
-          http.request(req)
-        }
-      end
-    end
-
-
 Jira Integration
 ----------------
 
