@@ -29,7 +29,9 @@ MODELS = {
 
 
 def normalize_wwn(wwn):
-    return "5000{}".format(wwn[:-4])
+    if wwn[-4:] == "5000" and wwn[:4] != "5000":
+        return "5000{}".format(wwn[:-4])
+    return wwn
 
 
 def _connect_ssh(ip):
