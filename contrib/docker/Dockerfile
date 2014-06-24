@@ -1,6 +1,6 @@
 # Ralph
 #
-# VERSION               2.0.0-2
+# VERSION               2.0.0-3
 
 FROM      ubuntu
 MAINTAINER Marcin Kliks marcin.kliks@allegro.pl
@@ -14,15 +14,13 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y redis-server mysql-server 
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y openssh-server apache2 supervisor
 RUN apt-get install -y git
 RUN /usr/bin/mysqld_safe & \
-    sleep 3s && \
+    sleep 10s && \
     echo "CREATE DATABASE ralph DEFAULT CHARACTER SET 'utf8'" | mysql && \
     echo "GRANT ALL ON ralph.* TO ralph@'%' IDENTIFIED BY 'ralph'; FLUSH PRIVILEGES" | mysql
 #RUN echo 'alter database ralph character set utf8 collate utf8_polish_ci' | mysql -u root 
 RUN pip install -U pip
 RUN pip install -U flake8
 RUN git clone http://github.com/allegro/ralph.git /root/ralph-git/ralph
-ADD __main__.py /root/ralph-git/ralph/src/ralph/__main__.py
-ADD setup.py /root/ralph-git/ralph/setup.py
 RUN cd /root/ralph-git/ralph; make install 
 RUN ralph makeconf
 ADD settings /.ralph/additional-settings
