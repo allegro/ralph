@@ -44,6 +44,7 @@ from ralph.cmdb.api import (
     CITypesResource,
     ServiceResource,
 )
+from ralph.app import mount_api
 from ralph.discovery.api_donpedro import WindowsDeviceResource
 from ralph.scan.api import ExternalPluginResource
 from ralph.ui.views.common import VhostRedirectView
@@ -59,6 +60,7 @@ DISCOVERY_DISABLED = getattr(settings, 'DISCOVERY_DISABLED', False)
 admin.autodiscover()
 
 v09_api = Api(api_name='v0.9')
+mount_api(v09_api)
 # business API
 for r in (VentureResource, VentureLightResource, RoleResource,
           RoleLightResource, DepartmentResource, RolePropertyTypeResource,
@@ -107,11 +109,6 @@ urlpatterns = patterns(
     url(r'^login/', 'django.contrib.auth.views.login',
         {'template_name': 'admin/login.html'}),
     url(r'^logout/', 'django.contrib.auth.views.logout'),
-    url(r'^ventures/(?P<venture_id>.+)/$',
-        'ralph.business.views.show_ventures',
-        name='business-show-venture'),
-    url(r'^ventures/$', 'ralph.business.views.show_ventures',
-        name='business-show-ventures'),
     url(r'^browse/$', RedirectView.as_view(url='/ui/racks/')),
     url(r'^business/$', RedirectView.as_view(url='/ui/ventures/-/venture/')),
     url(r'^business/ventures/$', RedirectView.as_view(url='/ventures/')),
