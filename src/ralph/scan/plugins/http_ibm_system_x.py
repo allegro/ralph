@@ -8,6 +8,7 @@ from __future__ import unicode_literals
 import urllib2
 
 from django.conf import settings
+from lck.django.common.models import MACAddressField
 from xml.etree import cElementTree as ET
 
 from ralph.discovery.http import guess_family, get_http_info
@@ -138,7 +139,11 @@ def _get_mac_addresses(management_url, session_id):
             '{http://www.w3.org/2003/05/soap-envelope}',
         ),
     )
-    return [mac.find('Address').text for mac in mac_addresses]
+    return [
+        MACAddressField.normalize(
+            mac.find('Address').text
+        ) for mac in mac_addresses
+    ]
 
 
 def _get_memory(management_url, session_id):

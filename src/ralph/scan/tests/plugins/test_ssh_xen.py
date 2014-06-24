@@ -187,8 +187,8 @@ class SSHXenPluginTest(TestCase):
                             ],
                             'hostname': 'app-1',
                             'mac_addresses': [
-                                '11:22:33:44:55:01',
-                                '11:22:33:44:55:02',
+                                '112233445501',
+                                '112233445502',
                             ],
                             'memory': [
                                 {
@@ -220,7 +220,7 @@ class SSHXenPluginTest(TestCase):
                         },
                         {
                             'hostname': 'app-3',
-                            'mac_addresses': ['11:22:33:44:55:04'],
+                            'mac_addresses': ['112233445504'],
                             'memory': [
                                 {
                                     'family': 'Virtual',
@@ -251,7 +251,7 @@ class SSHXenPluginTest(TestCase):
                         },
                         {
                             'hostname': 'app-6',
-                            'mac_addresses': ['11:22:33:44:55:07'],
+                            'mac_addresses': ['112233445507'],
                             'memory': [
                                 {
                                     'family': 'Virtual',
@@ -282,7 +282,7 @@ class SSHXenPluginTest(TestCase):
                         },
                         {
                             'hostname': 'app-2',
-                            'mac_addresses': ['11:22:33:44:55:03'],
+                            'mac_addresses': ['112233445503'],
                             'memory': [
                                 {
                                     'family': 'Virtual',
@@ -361,7 +361,7 @@ class SSHXenPluginTest(TestCase):
                         },
                         {
                             'hostname': 'app-5',
-                            'mac_addresses': ['11:22:33:44:55:06'],
+                            'mac_addresses': ['112233445506'],
                             'memory': [
                                 {
                                     'family': 'Virtual',
@@ -399,7 +399,7 @@ class SSHXenPluginTest(TestCase):
                                 },
                             ],
                             'hostname': 'app-4',
-                            'mac_addresses': ['11:22:33:44:55:05'],
+                            'mac_addresses': ['112233445505'],
                             'memory': [
                                 {
                                     'family': 'Virtual',

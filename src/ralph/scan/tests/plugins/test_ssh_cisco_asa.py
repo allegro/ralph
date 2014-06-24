@@ -78,7 +78,7 @@ class TestCiscoASA(TestCase):
                 'model_name': 'Cisco SOME_ASA_MODEL',
                 'type': 'firewall',
                 'serial_number': 'SOME-SN',
-                'mac_adresses': [
+                'mac_addresses': [
                     u'AB12BC235556',
                     u'AB12BC235558',
                     u'DEF113DE4567',

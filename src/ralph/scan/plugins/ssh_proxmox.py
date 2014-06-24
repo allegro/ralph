@@ -5,12 +5,12 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import json
 import logging
 import os
 
-import json
-
 from django.conf import settings
+from lck.django.common.models import MACAddressField
 
 from ralph.discovery.hardware import get_disk_shares
 from ralph.discovery.models import DeviceType
@@ -86,7 +86,7 @@ def _get_cluster_member(ssh, ip_address):
     mac = stdout.readline().split()[-1]
     return {
         'model_name': 'Proxmox',
-        'mac_addresses': [mac],
+        'mac_addresses': [MACAddressField.normalize(mac)],
         'installed_software': [{
             'model_name': 'Proxmox',
             'path': 'proxmox',
@@ -157,7 +157,7 @@ def _get_virtual_machine_info(
     device_info = {
         'model_name': 'Proxmox qemu kvm',
         'type': DeviceType.virtual_server.raw,
-        'mac_addresses': [lan_mac],
+        'mac_addresses': [MACAddressField.normalize(lan_mac)],
         'management': master_ip_address,  # ?
         'hostname': name,
     }

@@ -6,6 +6,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from django.conf import settings
+from lck.django.common.models import MACAddressField
 
 from ralph.discovery.hardware import normalize_wwn
 from ralph.discovery.models import DeviceType, SERIAL_BLACKLIST
@@ -129,7 +130,9 @@ def _ssh_hp_msa(ip_address, user, password):
     if sn not in SERIAL_BLACKLIST:
         device_info['serial_number'] = sn
     if macs:
-        device_info['mac_addresses'] = [unicode(mac) for mac in macs]
+        device_info['mac_addresses'] = [
+            MACAddressField.normalize(unicode(mac)) for mac in macs
+        ]
     shares = _handle_shares(volumes)
     if shares:
         device_info['disk_exports'] = shares

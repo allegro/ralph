@@ -10,6 +10,7 @@ import time
 import paramiko
 
 from django.conf import settings
+from lck.django.common.models import MACAddressField
 
 from ralph.discovery.models import ComponentType, DeviceType, SERIAL_BLACKLIST
 from ralph.scan.errors import ConnectionError, NoMatchError, SSHConsoleError
@@ -85,7 +86,7 @@ def _ssh_ssg(ip_address, user, password):
     result = {
         'type': DeviceType.firewall.raw,
         'model_name': model,
-        'mac_addresses': [mac],
+        'mac_addresses': [MACAddressField.normalize(mac)],
         'hostname': name,
         'management_ip_addresses': [ip_address],
         'parts': [{
