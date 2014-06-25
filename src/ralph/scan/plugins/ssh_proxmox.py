@@ -31,24 +31,35 @@ def _connect_ssh(ip_address, user, password):
     return network.connect_ssh(ip_address, user, password)
 
 
-def _get_master_ip_address(ssh, ip_address, cluster_cfg=None):
+def _add_prefix(command, proxmox_version):
+    if proxmox_version == 2:
+        return "sudo -u www-data %s" % command
+    return "sudo %s" % command
+
+
+def _get_master_ip_address(
+    ssh, ip_address, cluster_cfg=None, proxmox_version=1
+):
     if not cluster_cfg:
         stdin, stdout, stderr = ssh.exec_command(
-            "sudo -u www-data /bin/cat /etc/pve/cluster.cfg"
+            _add_prefix("/bin/cat /etc/pve/cluster.cfg", proxmox_version)
         )
         data = stdout.read()
     else:
         data = cluster_cfg
     if not data:
         stdin, stdout, stderr = ssh.exec_command(
-            "sudo -u www-data /usr/bin/pvesh get /nodes"
+            _add_prefix("/usr/bin/pvesh get /nodes", proxmox_version)
         )
         data = stdout.read()
         if data:
             for node in json.loads(data):
                 stdin, stdout, stderr = ssh.exec_command(
-                    'sudo -u www-data /usr/bin/pvesh get "/nodes/%s/dns"' % (
-                        node['node']
+                    _add_prefix(
+                        '/usr/bin/pvesh get "/nodes/%s/dns"' % (
+                            node['node']
+                        ),
+                        proxmox_version
                     )
                 )
                 dns_data = stdout.read()
@@ -113,9 +124,13 @@ def _get_virtual_machine_info(
     master_ip_address,
     storages,
     hypervisor_ip_address,
+    proxmox_version=1,
 ):
     stdin, stdout, stderr = ssh.exec_command(
-        "sudo -u www-data /bin/cat /etc/qemu-server/%d.conf" % vmid,
+        _add_prefix(
+            "/bin/cat /etc/qemu-server/%d.conf" % vmid,
+            proxmox_version
+        ),
     )
     lines = stdout.readlines()
     if not lines:
@@ -225,13 +240,13 @@ def _get_virtual_machine_info(
     return device_info
 
 
-def _get_virtual_machines(ssh, master_ip_address, hypervisor_ip_address):
+def _get_virtual_machines(
+    ssh, master_ip_address, hypervisor_ip_address, proxmox_version=1
+):
     detected_machines = []
     storages = get_disk_shares(ssh, include_logical_volumes=True)
-    stdin, stdout, stderr = ssh.exec_command(
-        "sudo -u www-data /usr/sbin/qm list"
-    )
-    for line in stdout:
+    stdin, stdout, stderr = ssh.exec_command("sudo /usr/sbin/qm list")
+    for line in stdout.readlines():
         line = line.strip()
         if line.startswith('VMID'):
             continue
@@ -248,6 +263,7 @@ def _get_virtual_machines(ssh, master_ip_address, hypervisor_ip_address):
                 master_ip_address,
                 storages,
                 hypervisor_ip_address,
+                proxmox_version=1,
             )
         except NoLanError as e:
             logger.warning(unicode(e))
@@ -256,20 +272,34 @@ def _get_virtual_machines(ssh, master_ip_address, hypervisor_ip_address):
     return detected_machines
 
 
+def _get_proxmox_version(ssh):
+    stdin, stdout, stderr = ssh.exec_command("lsb_release -a")
+    for line in stdout.readlines():
+        line = line.lower()
+        if "codename" in line and "lenny" in line:
+            return 1
+    return 2
+
+
 def _ssh_proxmox(ip_address, user, password):
     ssh = _connect_ssh(ip_address, user, password)
+    proxmox_version = _get_proxmox_version(ssh)
     try:
         cluster_cfg = None
         for command in (
-            'sudo -u www-data /bin/cat /etc/pve/cluster.cfg',
-            'sudo -u www-data /bin/cat /etc/pve/cluster.conf',
-            'sudo -u www-data /bin/cat /etc/pve/storage.cfg',
-            'sudo -u www-data /usr/bin/pvecm help',
+            '/bin/cat /etc/pve/cluster.cfg',
+            '/bin/cat /etc/pve/cluster.conf',
+            '/bin/cat /etc/pve/storage.cfg',
+            '/usr/bin/pvecm help',
         ):
-            stdin, stdout, stderr = ssh.exec_command(command)
+            stdin, stdout, stderr = ssh.exec_command(
+                _add_prefix(command, proxmox_version)
+                if 'pvecm help' not in command
+                else command
+            )
             data = stdout.read()
             if data != '':
-                if command == 'sudo -u www-data /bin/cat /etc/pve/cluster.cfg':
+                if command == '/bin/cat /etc/pve/cluster.cfg':
                     cluster_cfg = data
                 break
         else:
@@ -278,12 +308,14 @@ def _ssh_proxmox(ip_address, user, password):
             ssh,
             ip_address,
             cluster_cfg,
+            proxmox_version=proxmox_version
         )
         cluster_member = _get_cluster_member(ssh, ip_address)
         subdevices = _get_virtual_machines(
             ssh,
             master_ip_address,
             ip_address,
+            proxmox_version=proxmox_version
         )
         if subdevices:
             cluster_member['subdevices'] = subdevices
