@@ -14,7 +14,6 @@ from restkit.errors import Unauthorized
 from ralph.business.models import Venture
 from ralph.util import plugin
 from ralph.cmdb.integration.lib.fisheye import Fisheye
-from ralph.cmdb.integration.lib.puppet_yaml import load
 from ralph.cmdb import models as db
 from ralph.cmdb.integration.base import BaseImporter
 from ralph.cmdb.integration.util import strip_timezone

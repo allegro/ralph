@@ -119,6 +119,7 @@ __all__ = [
     'ArchivedCIChangeCMDBHistory',
     'ArchivedCIChange',
     'ArchivedCIChangeGit',
+    'ArchivedCIChangePuppet',
 ]
 
 # hook signals, don't remove this.

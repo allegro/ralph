@@ -338,7 +338,6 @@ def run_cichange_puppet_archivization(older_than):
         CI_CHANGE_TYPES.CONF_AGENT,
         parent_model=CIChange,
     )
-    cursor = connection.cursor()
     _remove_old_data(
         CIChangePuppet,
         older_than,
