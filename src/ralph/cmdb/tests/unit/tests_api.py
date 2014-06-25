@@ -262,6 +262,7 @@ class CMDBApiTest(TestCase):
             'technical_owners': [
                 '/api/v0.9/ciowners/{0}/'.format(self.owner2.id)
             ],
+            'related': [],
             'attributes': [
                 {
                     'name': 'SLA value',
@@ -310,6 +311,7 @@ class CMDBApiTest(TestCase):
             'technical_owners': [
                 '/api/v0.9/ciowners/{0}/'.format(self.owner2.id)
             ],
+            'related': [],
             'attributes': [
                 {
                     'name': 'SLA value',

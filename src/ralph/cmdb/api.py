@@ -14,7 +14,6 @@ from __future__ import unicode_literals
 # fix in https://github.com/toastdriven/django-tastypie/pull/863
 from ralph.cmdb.monkey import method_check
 import tastypie
-import itertools as it
 from tastypie.resources import Resource
 Resource.method_check = method_check
 
@@ -293,6 +292,7 @@ class LinkField(tastypie.fields.ApiField):
                 reverse(self.view, kwargs={'ci_id': value})
             )
 
+
 class RelationField(tastypie.fields.ApiField):
     """The field that describes all relations of a given CI."""
 
@@ -306,8 +306,8 @@ class RelationField(tastypie.fields.ApiField):
         result = []
         id_ = bundle.obj.id
         for q, dir_name, other in (
-            (Q(parent_id = id_), 'OUTGOING', 'child'),
-            (Q(child_id = id_), 'INCOMING', 'parent'),
+            (Q(parent_id=id_), 'OUTGOING', 'child'),
+            (Q(child_id=id_), 'INCOMING', 'parent'),
         ):
             for relation in CIRelation.objects.filter(q):
                 other_ci = getattr(relation, other)
