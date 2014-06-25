@@ -70,13 +70,20 @@ setup(
         'xlwt==0.7.4',
         'unidecode==0.04.14',
         'django-discover-runner>=0.4',
-        'Pillow==2.0.0',
+        'Pillow==2.4.0',
         'pysphere==0.1.8',
     ],
     entry_points={
         'console_scripts': [
             'pping = ralph.util.network:ping_main',
             'ralph = ralph.__main__:main',
+        ],
+        'ralph_extra_data': [
+            'ralph_obj_owner_table = ralph.cmdb.extra:ralph_obj_owner_table',
+            'ralph_obj_owner_column_factory = ralph.cmdb.extra:ralph_obj_owner_column_factory',
+        ],
+        'django.pluggable_app': [
+            'cmdb = ralph.cmdb.app:Cmdb',
         ],
     },
     classifiers=[

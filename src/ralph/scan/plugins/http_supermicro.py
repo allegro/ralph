@@ -10,6 +10,7 @@ import re
 import urllib2
 
 from django.conf import settings
+from lck.django.common.models import MACAddressField
 
 from ralph.discovery.models import MAC_PREFIX_BLACKLIST
 from ralph.scan.errors import Error, NoMatchError
@@ -68,7 +69,8 @@ def _get_mac_addresses(ip_address, user, password):
     ).replace("'", '"')
     macs.append(json.loads(json_data)['MAC'])
     return [
-        mac for mac in macs
+        MACAddressField.normalize(mac)
+        for mac in macs
         if mac.replace(':', '').upper()[:6] not in MAC_PREFIX_BLACKLIST
     ]
 

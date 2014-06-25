@@ -8,6 +8,7 @@ from __future__ import unicode_literals
 import re
 
 from django.conf import settings
+from lck.django.common.models import MACAddressField
 
 from ralph.discovery.models import DeviceType, MAC_PREFIX_BLACKLIST
 from ralph.discovery.snmp import snmp_command, snmp_macs
@@ -97,7 +98,7 @@ def _snmp_vmware_macs(ip_address, snmp_community):
         results.append({
             'type': unicode(DeviceType.virtual_server),
             'model_name': 'VMware ESX virtual server',
-            'mac_addresses': [mac],
+            'mac_addresses': [MACAddressField.normalize(mac)],
             'management_ip_addresses': [ip_address],
         })
     return results
@@ -131,7 +132,9 @@ def _snmp_modular_macs(ip_address, ip_address_is_management, snmp_community):
             results.append({
                 'type': unicode(DeviceType.blade_server),
                 'model_name': 'Intel Modular Blade',
-                'mac_addresses': list(unique_macs),
+                'mac_addresses': [
+                    MACAddressField.normalize(mac) for mac in unique_macs
+                ],
                 'management_ip_addresses': management_ip_addresses,
                 'chassis_position': i,
             })
@@ -150,7 +153,7 @@ def _snmp_mac_from_ipv6IfPhysicalAddress(
         timeout=3,
         snmp_version=snmp_version,
     ):
-        mac_addresses.add(mac)
+        mac_addresses.add(MACAddressField.normalize(mac))
     return mac_addresses
 
 
@@ -222,7 +225,9 @@ def _snmp_mac(ip_address, snmp_name, snmp_community, snmp_version,
     result = {
         'type': str(model_type),
         'model_name': model_name,
-        'mac_addresses': list(mac_addresses),
+        'mac_addresses': [
+            MACAddressField.normalize(mac) for mac in mac_addresses
+        ],
     }
     if sn:
         result.update(sn=sn)

@@ -2,6 +2,13 @@ Change Log
 ----------
 
 
+2.0.0-stable
+~~~~~~~~~~~~
+
+Released on June 20, 2014,
+
+This is a stable release.
+
 2.0.0-rc8
 ~~~~~~~~~
 

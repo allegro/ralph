@@ -104,7 +104,7 @@ class SSHJuniperPluginTest(TestCase):
         ])
         self.assertEqual(
             _get_mac_addresses(ssh),
-            ['aa:bb:cc:dd:00:01', 'aa:bb:cc:dd:00:02'],
+            ['AABBCCDD0001', 'AABBCCDD0002'],
         )
 
     def test_ssh_juniper_stacked(self):
@@ -132,14 +132,14 @@ class SSHJuniperPluginTest(TestCase):
                 'subdevices': [
                     {
                         'hostname': 'rack01-sw1-0.dc',
-                        'mac_addresses': ['aa:bb:cc:dd:00:01'],
+                        'mac_addresses': ['AABBCCDD0001'],
                         'model_name': 'ex4500-40f',
                         'serial_number': 'GX1122334401',
                         'type': 'switch',
                     },
                     {
                         'hostname': 'rack01-sw1-1.dc',
-                        'mac_addresses': ['aa:bb:cc:dd:00:02'],
+                        'mac_addresses': ['AABBCCDD0002'],
                         'model_name': 'ex4500-40f',
                         'serial_number': 'GX1122334402',
                         'type': 'switch',
@@ -168,7 +168,7 @@ class SSHJuniperPluginTest(TestCase):
             _ssh_juniper(ssh, '10.10.10.10'),
             {
                 'hostname': 'rack01-sw1.dc',
-                'mac_addresses': ['aa:bb:cc:dd:00:01'],
+                'mac_addresses': ['AABBCCDD0001'],
                 'management_ip_addresses': ['10.10.10.10'],
                 'model_name': 'ex4500-40f',
                 'serial_number': 'GX1122334403',

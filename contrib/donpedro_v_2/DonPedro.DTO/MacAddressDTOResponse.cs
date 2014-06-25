@@ -5,6 +5,18 @@ namespace DonPedro.DTO
 {
 	public class MacAddressDTOResponse : BaseDTOResponse
 	{
-		public string Mac { get; set; }
+		private string macAddress;
+		
+		public string Mac { 
+			get 
+			{
+				return macAddress;
+			}
+			
+			set
+			{
+				macAddress = value.Replace(":", "").Replace("-", "").ToUpper();
+			}
+		}
 	}
 }

@@ -11,6 +11,7 @@ import uuid
 import requests
 
 from django.conf import settings
+from lck.django.common.models import MACAddressField
 from xml.etree import cElementTree as ET
 
 from ralph.discovery.models import MAC_PREFIX_BLACKLIST, SERIAL_BLACKLIST
@@ -159,7 +160,7 @@ def _get_mac_addresses(idrac_manager):
         ).text.strip() for record in tree.findall(q)
     ]
     return [
-        mac
+        MACAddressField.normalize(mac)
         for mac in mac_addresses
         if mac.replace(':', '').upper()[:6] not in MAC_PREFIX_BLACKLIST
     ]

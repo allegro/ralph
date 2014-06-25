@@ -8,6 +8,7 @@ from __future__ import unicode_literals
 import ipaddr
 
 from django.conf import settings
+from lck.django.common.models import MACAddressField
 from pysphere import VIServer, VIApiException
 
 from ralph.discovery.models import DeviceType
@@ -35,7 +36,9 @@ def _get_vm_info(vm_properties, messages):
             ) == ipaddr.IPv4Address:
                 ip_v4.append(ip)
         ip_addresses.extend(ip_v4)
-        mac_addresses.append(interface['mac_address'])
+        mac_addresses.append(
+            MACAddressField.normalize(interface['mac_address'])
+        )
     if not mac_addresses:
         messages.append(
             "Subdevice '{}' doesn't have any MAC addresses "
