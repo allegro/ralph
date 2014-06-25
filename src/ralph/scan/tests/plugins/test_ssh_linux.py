@@ -78,7 +78,7 @@ class SshLinuxPluginTest(TestCase):
         ])
         self.assertEqual(
             _get_mac_addresses(ssh),
-            ['c8:2a:14:05:3d:53', 'e0:f8:47:24:c9:e6'],
+            ['C82A14053D53', 'E0F84724C9E6'],
         )
 
     def test_get_hostname(self):
@@ -197,13 +197,8 @@ class SshLinuxPluginTest(TestCase):
             [
                 {
                     'serial_number': '50002AC000660910',
-                    'size': 2080,
-                    'volume': 'LogVol01',
-                },
-                {
-                    'serial_number': '50002AC000660910',
-                    'size': 144552,
-                    'volume': 'LogVol00',
+                    'size': 146632,
+                    'volume': 'VolGroup00',
                 },
             ],
         )

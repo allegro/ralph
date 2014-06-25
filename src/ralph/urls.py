@@ -56,6 +56,7 @@ from ajax_select import urls as ajax_select_urls
 
 DISCOVERY_DISABLED = getattr(settings, 'DISCOVERY_DISABLED', False)
 
+handler403 = 'ralph.account.views.HTTP403'
 
 admin.autodiscover()
 

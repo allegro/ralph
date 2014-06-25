@@ -126,7 +126,7 @@ def _compare_lists(*args):
         return True
     compared_item = set(args[0])
     for item in args[1:]:
-        if compared_item - set(item):
+        if compared_item != set(item):
             return False
     return True
 
@@ -178,10 +178,10 @@ def diff_results(data, ignored_fields=set(['device', 'model_name'])):
             continue  # skipped because this is not component...
         db_results_key = _find_database_key(results)
         if not db_results_key:
-            continue  # uncomplete data
+            continue  # incomplete data
         diff_result = {
             'is_equal': False,
-            'meta': {},
+            'meta': {'no_value': []},
         }
         if component not in UNIQUE_FIELDS_FOR_MERGER:
             if isinstance(results[db_results_key], list):
@@ -195,6 +195,9 @@ def diff_results(data, ignored_fields=set(['device', 'model_name'])):
                     component_values = _sanitize_component_values(
                         component_values
                     )
+                elif (component == 'type' and
+                      set(component_values) == set(['unknown'])):
+                    diff_result['meta']['no_value'].append(component)
                 diff_result.update({
                     'is_equal': _compare_strings(*tuple(component_values)),
                     'type': 'strings',

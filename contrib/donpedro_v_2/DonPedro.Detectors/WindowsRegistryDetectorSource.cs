@@ -14,7 +14,14 @@ namespace DonPedro.Detectors
 			List<SoftwareDTOResponse> software = new List<SoftwareDTOResponse>();
 
 			software.AddRange(GetSoftwareFromLocalMachine32());
-			software = MergeSoftwareLists(software, GetSoftwareFromLocalMachine64());
+			try
+			{
+				software = MergeSoftwareLists(software, GetSoftwareFromLocalMachine64());
+			}
+			catch (NullReferenceException)
+			{
+				// It is a 32 bit machine...
+			}
 			
 			return software;
 		}

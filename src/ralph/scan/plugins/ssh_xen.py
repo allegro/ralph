@@ -10,6 +10,7 @@ import collections
 
 from django.conf import settings
 from django.utils.encoding import force_unicode
+from lck.django.common.models import MACAddressField
 
 from ralph.util import parse
 from ralph.util.network import check_tcp_port, connect_ssh, AuthError
@@ -160,6 +161,7 @@ def _get_disks(ssh, sudo_mode=False):
     device = None
     uuid = None
     for line in stdout:
+        line = force_unicode(line)
         if not line.strip():
             continue
         key, value = (x.strip() for x in line.split(':', 1))
@@ -189,7 +191,7 @@ def _ssh_xen(ssh, ip_address):
     vms = _get_running_vms(ssh, uuid, sudo_mode)
     macs = _get_macs(ssh, sudo_mode)
     disks = _get_disks(ssh, sudo_mode)
-    shares = get_disk_shares(ssh)
+    shares = get_disk_shares(ssh, include_logical_volumes=True)
     device_info = {
         'subdevices': [],
         'type': DeviceType.unknown.raw,
@@ -200,7 +202,9 @@ def _ssh_xen(ssh, ip_address):
             'model_name': 'XEN Virtual Server',
         }
         vm_device['mac_addresses'] = [
-            mac for i, mac in enumerate(macs.get(vm_name, []))
+            MACAddressField.normalize(
+                mac
+            ) for i, mac in enumerate(macs.get(vm_name, []))
         ]
         vm_device['serial_number'] = vm_uuid
         vm_device['hostname'] = vm_name
@@ -223,7 +227,7 @@ def _ssh_xen(ssh, ip_address):
         ]
         vm_disks = disks.get(vm_name, [])
         for uuid, sr_uuid, size, device in vm_disks:
-            wwn, mount_size = shares.get('VHD-%s' % sr_uuid, (None, None))
+            wwn, mount_size = shares.get('VHD-%s' % uuid, (None, None))
             if wwn:
                 share = {
                     'serial_number': wwn,

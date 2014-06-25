@@ -29,7 +29,7 @@ class VMWarePluginTest(TestCase):
                     },
                 ],
                 u'hostname': 'app-1.internal',
-                u'mac_addresses': ['00:22:33:cc:bb:aa'],
+                u'mac_addresses': ['002233CCBBAA'],
                 u'memory': [{u'label': u'Virtual RAM', u'size': 194560}],
                 u'model_name': 'VMWare Virtual Server',
                 u'processors': [

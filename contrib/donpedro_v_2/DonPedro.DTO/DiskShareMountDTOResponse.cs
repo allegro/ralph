@@ -6,5 +6,6 @@ namespace DonPedro.DTO
 	{
 		public string Volume { get; set; }
 		public string SerialNumber { get; set; }
+		public string Size { get; set; }
 	}
 }

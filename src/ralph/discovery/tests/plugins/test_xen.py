@@ -215,7 +215,7 @@ uuid ( RO)             : 9393c492-4311-4dde-9413-75150afdcd97
   060d5424-b9f1-ad56-629b-10c0c4e2cfa5     XSLocalEXT-060d5424-b9f1-ad56-629b-10c0c4e2cfa5    -wi-ao 128.68M
 """),
         ])
-        shares = hardware.get_disk_shares(ssh)
+        shares = hardware.get_disk_shares(ssh, include_logical_volumes=True)
         self.maxDiff = None
         self.assertEqual(shares, {
             'MGT': ('600144F008BF8A000000500CFFF20003', 4),

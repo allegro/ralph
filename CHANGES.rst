@@ -2,13 +2,19 @@ Change Log
 ----------
 
 
+2.0.0-stable
+~~~~~~~~~~~~
+
+Released on June 20, 2014,
+
+This is a stable release.
+
 2.0.0-rc8
 ~~~~~~~~~
 
 Released on June 3, 2014
 
-This is a bugfix and new features release candidate. It brings Quickscan feature and better API compatibility, as well as many scan, networks and ui stability improvements.
-
+This is a final bugfix RC Release with new features. It brings Quickscan feature and better API compatibility, as well as many scan, networks and ui stability improvements.
 
 * SCAN: Added "Quick scan" features which is the quickest way to scan given ip address.
 
@@ -66,11 +72,12 @@ This is a bugfix and new features release candidate. It brings Quickscan feature
 
 * NETWORKS: Networks performance improved - extended caching timeout.
 
-
 2.0.0-rc7
 ~~~~~~~~~
 
 Released on May 15, 2014
+
+This is a 7th Release Candidate release with bugfixes only.
 
 * CORE: Fixed 'Bulk edit' button on 'Ventures' and 'Racks' views.
 
@@ -86,11 +93,12 @@ Released on May 15, 2014
 
 * SCAN: Whole new SCAN documentation prepared.
 
-
 2.0.0-rc6
 ~~~~~~~~~
 
 Released on April 28, 2014
+
+This is a 6th Release Candidate release with more testing.
 
 * SCAN: Stability improvements and fixes.
 
@@ -98,19 +106,27 @@ Released on April 28, 2014
 2.0.0-rc5
 ~~~~~~~~~
 
-* many fixes
+Released on May 15, 2014
 
+This is a 5th Release Candidate release.
+
+* many fixes
 
 2.0.0-rc4
 ~~~~~~~~~
+
+Released on May 15, 2014
+
+This is a 4th Release Candidate release.
 
 * Scan - special queues for UI calls
 
 * many fixes
 
-
 2.0.0-rc3
 ~~~~~~~~~
+
+Released on May 15, 2014
 
 New features:
 
@@ -126,9 +142,10 @@ Optimizations:
 
 * CORE: many cmdb, scan, deployment fixes.
 
-
 2.0.0-rc2
 ~~~~~~~~~
+
+Released on May 15, 2014
 
 New features:
 
@@ -184,9 +201,12 @@ Core changes:
 
 * CMDB: Allowed CMDB to register own CITypes via Admin Panel.
 
-
 2.0.0-rc1
 ~~~~~~~~~
+
+Released on May 15, 2014
+
+This is release with new features.
 
 * Added completely new Scan module - new DC discovery mechanism which allows you to better maintain periodic scans, and much easier to write new discovery plugins using JSON API.
 
@@ -198,7 +218,6 @@ Core changes:
 
 * Tastypie API fixed.
 
-
 1.2.9
 ~~~~~
 Released on November 06, 2013
@@ -208,7 +227,6 @@ This is semi-final :) hotfix release.
 * Fixed API problem.
 
 * Fixed incompatible inquiry problem.
-
 
 1.2.8
 ~~~~~
@@ -249,7 +267,6 @@ This is as bugfix release.
 
 * Some changes in load balancer addresses view
 
-
 1.2.6
 ~~~~~
 Released on August 08, 2013
@@ -269,7 +286,6 @@ This is as bugfix release.
 * ``Barcode`` field (in admin) can be set to None for more than one devices.
 
 * Fixed owners links in admin/business/ventures; fixed admin history change.
-
 
 1.2.5
 ~~~~~
@@ -298,7 +314,6 @@ documentation enhancements.
 
 * Fixed OpenStack plugin - assigning costs to the wrong device
 
-
 1.2.4
 ~~~~~
 Released on June 18, 2013
@@ -308,7 +323,6 @@ This is a bugfix release.
 * Bugfixes in discovery module.
 
 * Extended APIs for assets and pricing.
-
 
 1.2.3
 ~~~~~
@@ -337,7 +351,6 @@ This is a bugfix release.
 
 * Fixed out of range error while discovering devices with unknown Networks.
 
-
 1.2.2
 ~~~~~
 
@@ -351,7 +364,6 @@ This is a bugfix release.
 
 * Fixed pagination, templates and filters in the CMDB.
 
-
 1.2.1
 ~~~~~
 
@@ -362,7 +374,6 @@ This is a bugfix release.
 * Fixed bug in the Catalog and Account areas.
 
 * API permissions fixed.
-
 
 1.2.0
 ~~~~~
@@ -405,7 +416,6 @@ New integrations with external systems. And much more.
 
 * Many Ralph UI bugs and discovery fixes.
 
-
 1.1.18
 ~~~~~~
 
@@ -431,7 +441,6 @@ Discovery of hardware fixed and improved.
 * Added ability to discover Windows software using don pedro plugin.
 
 * Discovery of hardware fixed and improved.
-
 
 1.1.17
 ~~~~~~
@@ -466,7 +475,6 @@ This is a major release with new features.
 
 * More bugfixes in the discovery plugins.
 
-
 1.1.15
 ~~~~~~
 
@@ -483,7 +491,6 @@ This is a major release with new features.
 
 * Bugfixes in discovery plugins.
 
-
 1.1.14
 ~~~~~~
 
@@ -497,7 +504,6 @@ This is a bugfix release.
 
 * Fix the clean deployment plugin to re-connect the ip address
 
-
 1.1.13
 ~~~~~~
 
@@ -510,7 +516,6 @@ This is a bugfix release.
 * Clean up the way in which the discovery plugins create components
 
 * Allow racks in different data centers to have the same name
-
 
 1.1.12
 ~~~~~~

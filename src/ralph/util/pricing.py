@@ -487,6 +487,8 @@ def details_disk(dev, purchase_only=False):
                 mount.share.label, total, mount.share.size)
         else:
             name = '%s (%d MiB)' % (mount.share.label, mount.share.size)
+        if mount.is_virtual:
+            name = '[Virtual Mount] %s' % name
         yield {
             'label': name,
             'model': mount.share.model,
