@@ -197,12 +197,12 @@ class SshLinuxPluginTest(TestCase):
             _get_disk_shares(ssh),
             [
                 {
-                    'serial_number': '350002ac000123457',
+                    'serial_number': '50002AC000123457',
                     'size': 10000,
                     'volume': 'VolGroup00'
                 },
                 {
-                    'serial_number': '350002ac000660910',
+                    'serial_number': '50002AC000660910',
                     'size': 146632,
                     'volume': 'VolGroup01'
                 },
