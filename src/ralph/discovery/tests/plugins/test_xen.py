@@ -171,10 +171,6 @@ uuid ( RO)             : 9393c492-4311-4dde-9413-75150afdcd97
 \_ 2:0:2:8 sdi 8:128 [active][undef]
 \_ round-robin 0 [prio=0][enabled]
 \_ 1:0:2:8 sdh 8:112 [active][undef]
-3600508b1001c7e8cccd13c7e7a61730f dm-0 HP,LOGICAL VOLUME
-[size=137G][features=0][hwhandler=0][rw]
-\_ round-robin 0 [prio=0][active]
-\_ 0:0:0:1 sda 8:0   [active][undef]
 350002ac01add042f dm-4 3PARdata,VV
 [size=1000G][features=1 queue_if_no_path][hwhandler=0][rw]
 \_ round-robin 0 [prio=0][active]

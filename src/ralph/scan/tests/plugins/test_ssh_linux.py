@@ -59,7 +59,8 @@ size=80G features='1 queue_if_no_path' hwhandler='0' wp=rw
 `- 8:0:1:100 sdm 8:192 active undef running
 """
 GET_DISK_SHARES_RESULT_PART_2 = """\
-/dev/mapper/mpath3|VolGroup00|lvm2|a-|146632.87M|0M
+/dev/mapper/mpath1|VolGroup00|lvm2|a-|10000.11M|0M
+/dev/mapper/mpath3|VolGroup01|lvm2|a-|146632.87M|0M
 """
 GET_DISK_SHARES_RESULT_PART_3 = """\
 LogVol00 VolGroup00 -wi-ao 144552.49M
@@ -196,9 +197,19 @@ class SshLinuxPluginTest(TestCase):
             _get_disk_shares(ssh),
             [
                 {
+                    'serial_number': '50002AC000123457',
+                    'size': 10000,
+                    'volume': 'VolGroup00'
+                },
+                {
                     'serial_number': '50002AC000660910',
                     'size': 146632,
-                    'volume': 'VolGroup00',
+                    'volume': 'VolGroup01'
                 },
-            ],
+                {
+                    'serial_number': '50002AC000123456',
+                    'size': 81920,
+                    'volume': 'dm-11'
+                }
+            ]
         )
