@@ -78,7 +78,7 @@ class SshLinuxPluginTest(TestCase):
         ])
         self.assertEqual(
             _get_mac_addresses(ssh),
-            ['c8:2a:14:05:3d:53', 'e0:f8:47:24:c9:e6'],
+            ['C82A14053D53', 'E0F84724C9E6'],
         )
 
     def test_get_hostname(self):

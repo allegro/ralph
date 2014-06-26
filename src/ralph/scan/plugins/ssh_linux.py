@@ -8,6 +8,7 @@ from __future__ import unicode_literals
 import paramiko
 
 from django.conf import settings
+from lck.django.common.models import MACAddressField
 
 from ralph.discovery.hardware import get_disk_shares
 from ralph.discovery.models import SERIAL_BLACKLIST
@@ -99,7 +100,7 @@ def _get_mac_addresses(ssh):
     for line in stdout:
         mac_address = line.split(None, 3)[1]
         if is_mac_valid(Eth(label='', mac=mac_address, speed=0)):
-            mac_addresses.add(mac_address)
+            mac_addresses.add(MACAddressField.normalize(mac_address))
     return list(mac_addresses)
 
 

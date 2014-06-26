@@ -7,8 +7,9 @@ from __future__ import unicode_literals
 
 import time
 import json
-
 import paramiko
+
+from lck.django.common.models import MACAddressField
 from lxml import etree as ET
 from django.conf import settings
 
@@ -167,7 +168,9 @@ def _device(ip, name, model_name, sn, macs, shares):
         'management_ip_addresses': [ip],
         'hostname': name,
         'model_name': model_name,
-        'mac_addresses': macs,
+        'mac_addresses': [
+            MACAddressField.normalize(mac) for mac in macs
+        ],
         'disk_exports': shares,
     }
     if sn not in SERIAL_BLACKLIST:

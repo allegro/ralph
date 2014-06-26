@@ -18,6 +18,8 @@ def ubuntu_1020872_workaround():
     os.close(2)
     try:
         import _imaging  # noqa
+    except ImportError:
+        pass
     finally:
         os.dup2(dup, 2)
         try:
