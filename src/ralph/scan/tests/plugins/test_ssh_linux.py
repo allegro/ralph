@@ -207,7 +207,7 @@ class SshLinuxPluginTest(TestCase):
                     'volume': 'VolGroup01'
                 },
                 {
-                    'serial_number': '350002ac000123456',
+                    'serial_number': '50002AC000123456',
                     'size': 81920,
                     'volume': 'dm-11'
                 }
