@@ -6,6 +6,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from django.conf import settings
+from lck.django.common.models import MACAddressField
 
 from ralph.discovery.models import DeviceType, SERIAL_BLACKLIST
 from ralph.scan.errors import ConnectionError, NoMatchError
@@ -37,7 +38,7 @@ def _ssh_onstor(ip_address, user, password):
         mac = pairs['--------']['MAC addr'].upper().replace(':', '')
         device_info.update({
             'model_name': 'Onstor %s' % model_name,
-            'mac_addresses': [mac],
+            'mac_addresses': [MACAddressField.normalize(mac)],
         })
         if sn not in SERIAL_BLACKLIST:
             device_info['serial_number'] = sn

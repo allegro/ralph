@@ -9,10 +9,11 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import paramiko
 import time
 
 from django.conf import settings
-import paramiko
+from lck.django.common.models import MACAddressField
 
 from ralph.util import network, parse
 from ralph.discovery.models import (
@@ -199,7 +200,7 @@ def _dev(model_type, pairs, parent, raw):
     device['serial_number'] = sn
     mac = pairs.get('MAC Address 1', None)
     if mac and mac.replace(':', '').upper()[:6] not in MAC_PREFIX_BLACKLIST:
-        device['mac_addresses'] = [mac]
+        device['mac_addresses'] = [MACAddressField.normalize(mac)]
     name = pairs.get('Name') or pairs.get(
         'Product Name') or device['model_name']
     device['name'] = name
@@ -323,7 +324,7 @@ def _add_dev_blade(ip, pairs, parent, raw, counts, dev_id):
         if 'mac_addresses' not in dev:
             dev['mac_addresses'] = []
         if mac.replace(':', '').upper()[:6] not in MAC_PREFIX_BLACKLIST:
-            dev['mac_addresses'].append(mac)
+            dev['mac_addresses'].append(MACAddressField.normalize(mac))
     if 'mac_addresses' in dev:
         dev['mac_addresses'] = list(set(dev['mac_addresses']))
     return dev
@@ -339,7 +340,7 @@ def _add_dev_switch(ip, pairs, parent, raw, counts, dev_id):
         if 'mac_addresses' not in dev:
             dev['mac_addresses'] = []
         if mac.replace(':', '').upper()[:6] not in MAC_PREFIX_BLACKLIST:
-            dev['mac_addresses'].append(mac)
+            dev['mac_addresses'].append(MACAddressField.normalize(mac))
         dev['mac_addresses'] = list(set(dev['mac_addresses']))
     return dev
 

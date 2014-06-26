@@ -28,6 +28,7 @@ def _generate_entries_configs(
     accept_all_ip_numbers=False,
 ):
     parsed = set()
+    used_names = set()
     for ip_address, mac, ip_number in DHCPEntry.objects.values_list(
         'ip', 'mac', 'number',
     ):
@@ -70,13 +71,24 @@ def _generate_entries_configs(
                         logger.warning(
                             'MAC: {}; No PTR record found; Connected IP '
                             'address has empty hostname. '
-                            '[IPaddress: {} DeviceID: {}]'.format(
+                            '[IPAddress: {} DeviceID: {}]'.format(
                                 mac,
                                 unicode(ipaddr.IPAddress(ip_number)),
                                 eth.device.id,
                             ),
                         )
                         continue
+        if name in used_names:
+            logger.warning(
+                'MAC: {}; Found multiple domain {} occurrence in config. '
+                '[IPAddress: {}]'.format(
+                    mac,
+                    name,
+                    ip_address
+                )
+            )
+            continue
+        used_names.add(name)
         next_server = ''
         if mac in deployed_macs:
             # server with ePXE image address

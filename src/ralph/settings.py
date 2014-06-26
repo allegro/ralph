@@ -364,11 +364,7 @@ DEAD_PING_COUNT = 2
 SCAN_AUTOMERGE_MODE = True
 # </template>
 
-SCAN_POSTPROCESS_ENABLED_JOBS = [
-    'ralph.scan.postprocess.position',
-    'ralph.scan.postprocess.cache_price',
-    'ralph.scan.postprocess.mount_shares',
-]
+SCAN_POSTPROCESS_ENABLED_JOBS = []
 
 #
 # programmatic stuff that need to be at the end of the file
@@ -733,3 +729,6 @@ SCAN_PLUGINS = {
     },
 }
 RQ_TIMEOUT = 3000
+
+# url to page where user requests permission to module (eg. assets)
+# REQUEST_PERM_URL = 'http://tickets.office/request/ralph_module/permission'

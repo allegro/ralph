@@ -11,6 +11,7 @@ class RalphModule(pluggableapp.PluggableApp):
     the ralph main application."""
 
     metaclass = abc.ABCMeta
+    required_permission = None
 
     @classmethod
     def api_resources(self, version):

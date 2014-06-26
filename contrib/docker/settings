@@ -1,0 +1,35 @@
+DEBUG = True
+TEMPLATE_DEBUG = True
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'ralph',
+        'USER': 'ralph',
+        'PASSWORD': 'ralph',
+        'HOST': '',
+        'PORT': '',
+        'OPTIONS': dict(
+        ),
+    },
+}
+CACHES = dict(
+    default=dict(
+        BACKEND='django.core.cache.backends.locmem.LocMemCache',
+        LOCATION='',
+        TIMEOUT=300,
+        OPTIONS=dict(
+        ),
+        KEY_PREFIX='RALPH_',
+    )
+)
+RQ_QUEUE_LIST = ('reports', 'reports_pricing', 'default')
+
+RQ_QUEUES = {
+    'default': {
+        'HOST': 'localhost',
+        'PORT': 6379,
+        'DB': 0,
+    },
+}
+for queue in RQ_QUEUE_LIST:
+    RQ_QUEUES[queue] = dict(RQ_QUEUES['default'])

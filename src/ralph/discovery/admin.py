@@ -57,11 +57,26 @@ copy_network.short_description = "Copy network"
 
 class NetworkAdmin(ModelAdmin):
 
+    def address(self):
+        return self.address
+
+    address.short_description = _("network address")
+    address.admin_order_field = 'min_ip'
+
+    def gateway(self):
+        return self.gateway
+
+    gateway.short_description = _("gateway address")
+    gateway.admin_order_field = 'gateway_as_int'
+
     def terms(self):
         return ", ".join([n.name for n in self.terminators.order_by('name')])
+
     terms.short_description = _("network terminators")
-    list_display = ('name', 'vlan', 'address', 'gateway', terms,
-                    'data_center', 'environment', 'kind')
+
+    list_display = ('name', 'vlan', address, gateway, terms, 'data_center',
+                    'environment', 'kind')
+
     list_filter = (
         'data_center', 'terminators', 'environment', 'kind', 'dhcp_broadcast',
     )

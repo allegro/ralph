@@ -227,7 +227,7 @@ class TestCiscoCatalyst(TestCase):
         correct_ret = [
             {
                 'serial_number': 'FFFFFFFFFFD',
-                'mac_addresses': ['deadbeafcafe'],
+                'mac_addresses': ['DEADBEAFCAFE'],
                 'hostname': 'hostname-1.dc2',
                 'model_name': 'Cisco Catalyst WS-C3750X-24',
                 'installed_software': [
@@ -239,7 +239,7 @@ class TestCiscoCatalyst(TestCase):
             },
             {
                 'serial_number': 'DDDDDDDDDDD',
-                'mac_addresses': ['deadbeafcaff'],
+                'mac_addresses': ['DEADBEAFCAFF'],
                 'model_name': 'Cisco Catalyst WS-C3750X-24',
                 'hostname': 'hostname-2.dc2',
                 'installed_software': [
@@ -258,7 +258,7 @@ class TestCiscoCatalyst(TestCase):
         correct_ret = [
             {
                 'serial_number': 'FFFFFFFFFFD',
-                'mac_addresses': ['deadbeafcafe'],
+                'mac_addresses': ['DEADBEAFCAFE'],
                 'hostname': '10.20.30.40-1',
                 'model_name': 'Cisco Catalyst WS-C3750X-24',
                 'installed_software': [
@@ -270,7 +270,7 @@ class TestCiscoCatalyst(TestCase):
             },
             {
                 'serial_number': 'DDDDDDDDDDD',
-                'mac_addresses': ['deadbeafcaff'],
+                'mac_addresses': ['DEADBEAFCAFF'],
                 'model_name': 'Cisco Catalyst WS-C3750X-24',
                 'hostname': '10.20.30.40-2',
                 'installed_software': [

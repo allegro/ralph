@@ -136,7 +136,7 @@ def scan_address(ip_address, **kwargs):
         'device': {
             'model_name': 'Cisco ' + model,
             'type': str(DeviceType.firewall),
-            'mac_adresses': macs,
+            'mac_addresses': macs,
             'boot_firmware': boot_firmware,
             'management_ip_addresses': [ip_address],
             'memory': [{

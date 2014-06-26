@@ -110,7 +110,7 @@ class IpmiPluginTest(TestCase):
         fru = _get_ipmi_fru(self.ipmitool)
         self.assertEqual(
             _get_mac_addresses(self.ipmitool, fru),
-            ['00:11:4F:E7:92:69', '33:22:11:0d:54:a3'],
+            ['00114FE79269', '3322110D54A3'],
         )
 
     def test_get_components(self):
