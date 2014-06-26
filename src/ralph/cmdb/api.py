@@ -297,6 +297,7 @@ class RelationField(tastypie.fields.ApiField):
     """The field that describes all relations of a given CI."""
 
     is_m2m = True
+    dehydrated_type = 'related'
 
     def __init__(self, *args, **kwargs):
         super(RelationField, self).__init__(*args, **kwargs)
@@ -315,7 +316,9 @@ class RelationField(tastypie.fields.ApiField):
                     {
                         'type': CI_RELATION_TYPES.name_from_id(relation.type),
                         'dir': dir_name,
-                        'ci': CIResource().get_resource_uri(other_ci)
+                        'ci': CIResourceV010(
+                            api_name=self.api_name
+                        ).get_resource_uri(other_ci)
                     }
                 )
         return result
@@ -374,7 +377,6 @@ class CIResource(MResource):
     type = TastyForeignKey(
         'ralph.cmdb.api.CITypesResource', 'type', full=True
     )
-    related = RelationField()
 
     class Meta:
         queryset = CI.objects.all()
@@ -416,6 +418,12 @@ class CIResource(MResource):
             timeframe=TIMEFRAME,
             expiration=EXPIRATION,
         )
+
+
+class CIResourceV010(CIResource):
+    """CIResource with related feature."""
+
+    related = RelationField()
 
 
 class CILayersResource(MResource):
