@@ -71,7 +71,7 @@ class SimpleReadOnlyWidget(forms.widgets.Input):
             self.input_type = attrs.pop('type', self.input_type)
         else:
             attrs = {}
-        attrs['readonly'] = '1'
+        attrs['readonly'] = ''
         super(SimpleReadOnlyWidget, self).__init__(attrs)
 
 
