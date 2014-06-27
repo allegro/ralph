@@ -73,13 +73,7 @@ body {
 }
 
 .footer {
-    background: #555;
-    padding: 9px;
-    color: #eee;
-  border: 1px solid #444;
-  -webkit-border-radius: 4px;
-  -moz-border-radius: 4px;
-  border-radius: 4px;
+    display: none;
 }
 
 #powered-by {
@@ -88,4 +82,24 @@ body {
 
 #powered-by td {
   padding-right: 4em;
+}
+
+h1,h2,h3,h4 {
+    font-family: "Apple Gothic",AppleGothic,"Century Gothic","URW Gothic L","Avant Garde",Futura,sans-serif;
+    padding-top: 20px;
+    padding-bottom: 10px;
+}
+
+div.hero-unit {
+    background-image: linear-gradient(rgb(241, 241, 241), white);
+}
+
+.vjs-default-skin .vjs-big-play-button
+{
+}
+
+.ralph-text-header {
+    width: 30%;
+    height: 30%;
+    opacity: 0.8>
 }

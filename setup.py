@@ -8,8 +8,10 @@ assert sys.version_info >= (2, 7), "Python 2.7+ required."
 
 current_dir = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(current_dir, 'README.rst')) as readme_file:
-    with open(os.path.join(current_dir, 'CHANGES.rst')) as changes_file:
-        long_description = readme_file.read() + '\n' + changes_file.read()
+    with open(os.path.join(current_dir, 'badges.rst')) as badges_file:
+        with open(os.path.join(current_dir, 'CHANGES.rst')) as changes_file:
+            long_description = readme_file.read() + '\n' + badges_file.read() + \
+                 '\n' + changes_file.read()
 
 sys.path.insert(0, current_dir + os.sep + 'src')
 from ralph import VERSION
@@ -19,9 +21,9 @@ setup(
     name='ralph',
     version=release,
     author='Grupa Allegro Sp. z o.o. and Contributors',
-    author_email='it-ralph-dev@allegro.pl',
-    description="Ralph, the responsible leader of the children in `Lord "
-                "of the Flies`.",
+    author_email='pylabs@allegro.pl',
+    description="Ralph is a full-featured Asset Management, "
+        "DCIM and CMDB system for data center nad backoffice areas."
     long_description=long_description,
     url='http://ralph.allegrogroup.com/',
     keywords='',
@@ -80,7 +82,7 @@ setup(
         ],
     },
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Framework :: Django',
         'Intended Audience :: System Administrators',
         'License :: OSI Approved :: Apache Software License',

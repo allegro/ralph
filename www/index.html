@@ -7,16 +7,28 @@
 {% set title = 'Home' %}
 
 {% block content %}
+<link href="http://vjs.zencdn.net/4.6/video-js.css" rel="stylesheet">
+<script src="http://vjs.zencdn.net/4.6/video.js"></script>
+
 <div class="container">
     <div class="document">
       <div class="hero-unit">
-            <p class="pull-right">
-                <a href="{{ pathto('_static/shot0-full.png', 1) }}">
-                    <img src="{{ pathto('_static/shot0-thumb.png', 1) }}" alt="Screenshot">
-                </a>
+            <p class="pull-right" style="magin-top: 60px;">
+            <img src="_static/"
             </p>
-        <h1>Ralph</h1>
-        <p>Ralph is an <strong>asset management system</strong> for your <strong>data&nbsp;center</strong>. <br>It lets you see <strong>what hardware</strong> and <strong>software</strong> is installed. It also lets you keep track of <strong>who is using</strong> every device, <strong>what is it used for</strong> and <strong>how much it costs</strong>.</p>
+        <h1><img class="ralph-text-header" src="_static/ralph-text-header.png"></h1>
+        <p>
+        Full-featured Asset Management, DCIM and CMDB system for data center and back office.
+        </p>
+          <ul>
+          <li>auto-discover existing hardware</li>
+          <li>keep track of assets purchases and their life cycle</li>
+          <li>generate flexible and accurate cost reports</li>
+          <li>integrate with change management process using JIRA integration </li>
+          </ul>
+        It is an Open Source project provided on Apache v2.0 License.
+        </p>
+
       </div>
       <div class="row">
         <div class="span4">
@@ -40,7 +52,6 @@
             <table id="powered-by">
               <tr>
                 <td>
-                  <h3>Powered by</h3>
                 </td>
                 <td>
                   <a href="http://python.org">
