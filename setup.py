@@ -23,7 +23,7 @@ setup(
     author='Grupa Allegro Sp. z o.o. and Contributors',
     author_email='pylabs@allegro.pl',
     description="Ralph is a full-featured Asset Management, "
-        "DCIM and CMDB system for data center nad backoffice areas."
+    "DCIM and CMDB system for data center nad backoffice areas.",
     long_description=long_description,
     url='http://ralph.allegrogroup.com/',
     keywords='',
