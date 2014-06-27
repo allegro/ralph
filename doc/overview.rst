@@ -15,12 +15,16 @@ specification and has Zabbix, Jira and Puppet integration.
 
 Ralph Assets
 ************
+`Documentation <optional_modules/assets/index.html>`_
+
 Asset management system which keep track of purchases
 of your hardware, and hardware ownership with workflow and PDF documents outprints
 for your customers.
 
 Ralph Pricing
 *************
+`Documentation <optional_modules/pricing/index.html>`_
+
 Flexible billing and financial reporting subsystem which can
 show you how much your business services costs. We provide OpenStack integration
 for billings.

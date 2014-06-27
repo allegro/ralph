@@ -9,7 +9,7 @@ This documentation
    overview
    installation
    configuration
-   optional_modules
+   optional_modules/index
    develop_plugins
    scan
    browser
@@ -21,6 +21,7 @@ This documentation
    permissions
    changes
    license
+
 
 Indices and tables
 ------------------
