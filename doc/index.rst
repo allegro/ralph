@@ -1,6 +1,4 @@
-.. include:: ../README.rst
-
-This documentation
+Ralph documentation
 ------------------
 
 .. toctree::
