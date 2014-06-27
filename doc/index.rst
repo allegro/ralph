@@ -10,6 +10,7 @@ This documentation
    installation
    configuration
    optional_modules
+   develop_plugins
    scan
    browser
    deployment
