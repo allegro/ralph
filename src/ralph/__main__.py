@@ -19,7 +19,7 @@ def ubuntu_1020872_workaround():
     try:
         import _imaging  # noqa
     except ImportError:
-        pass
+        from PIL import Image  # noqa
     finally:
         os.dup2(dup, 2)
         try:
