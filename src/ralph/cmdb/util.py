@@ -161,19 +161,22 @@ def breadth_first_search_ci(root, criterion, up=True):
     return None, None
 
 
-def walk(root, function, up=True):
+def walk(root, function, up=True, exclusive=False, *args):
     """Walk the CI and its children/parents recursively applying the function
     to every CI in the tree. This function discovers cycles and never visits
     the same CI twice.
     :param root: The start of walk
-    :param function: function to be applied. It should accept one argument: CI
+    :param function: function to be applied. It should accept CI as first arg
     :param up: If true, the walk will move to parents. Otherwise - to children.
+    :param exclusive: If true, the root CI itself will be skipped
+    :param args: Arguments that will be passed to the function
     """
     queue = [root]
     enqueued = {root.id}
     while queue:
         current = queue.pop(0)
-        function(current)
+        if not (exclusive and current == root):
+            function(current, *args)
         if up:
             to_search = current.get_parents()
         else:
@@ -182,6 +185,22 @@ def walk(root, function, up=True):
             if ci.id not in enqueued:
                 queue.append(ci)
                 enqueued.add(ci.id)
+
+
+def collect(root, function, up=True, exclusive=False):
+    """Walk the tree and collect objects returned by function.
+    :param root: The start of walk
+    :param function: function to be applied. It should accept one argument: CI
+        and return a list of objects.
+    :param up: If true, the walk will move to parents. Otherwise - to children.
+    """
+    result = []
+
+    def visit(ci, result):
+        result += function(ci)
+
+    walk(root, visit, up, exclusive, result)
+    return result
 
 
 def register_event(ci, event):

@@ -18,6 +18,7 @@ execfile(namespace_package_support)
 #
 # common stuff for each install
 #
+from datetime import timedelta
 
 SITE_ID = 1
 USE_I18N = True
@@ -152,6 +153,7 @@ LOGGING = {
         },
     },
 }
+POSSIBLE_EVENTS_TIMEDELTA = timedelta(days=30)
 FORCE_SCRIPT_NAME = ''
 # testing settings
 import os
