@@ -1,6 +1,8 @@
 Change Log
 ----------
 
+* Collecting events that can possibly affect a CI (events on children)
+
 
 2.0.0-stable
 ~~~~~~~~~~~~
