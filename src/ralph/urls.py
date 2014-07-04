@@ -44,6 +44,7 @@ from ralph.cmdb.api import (
     CITypesResource,
     ServiceResource,
 )
+from ralph.ui.views.deploy import AddVM
 from ralph.discovery.api_donpedro import WindowsDeviceResource
 from ralph.scan.api import ExternalPluginResource
 from ralph.ui.views.common import VhostRedirectView
@@ -92,6 +93,7 @@ for r in (DeploymentResource,):
 
 # scan API
 v09_api.register(ExternalPluginResource())
+LATEST_API = v09_api
 
 urlpatterns = patterns(
     '',
@@ -127,6 +129,7 @@ urlpatterns = patterns(
     url(r'^dhcp-config-networks/', 'ralph.dnsedit.views.dhcp_config_networks'),
     url(r'^dhcp-config-head/', 'ralph.dnsedit.views.dhcp_config_head'),
     url(r'^cmdb/', include('ralph.cmdb.urls')),
+    url(r'^api/add_vm', AddVM.as_view()),
     url(r'^api/', include(v09_api.urls)),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^pxe/_(?P<file_type>[^/]+)$',
