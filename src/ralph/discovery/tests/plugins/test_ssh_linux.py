@@ -150,3 +150,32 @@ LogVol01 VolGroup00 -wi-ao   2080.37M"""), ])
             'dm-11': ('50002AC000123456', 81920),
             'VolGroup00': (u'50002AC000660910', 146632)
         })
+
+    def test_os_disk_share_with_multipath_warning(self):
+        ssh = MockSSH([("multipath -l",
+                        """\
+Jan 01 10:00:00 | multipath.conf line 1, invalid keyword: abcde
+mpath2 (350002ac000123456) dm-11 3PARdata,VV
+size=80G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='round-robin 0' prio=-1 status=active
+|- 9:0:0:50  sdc 8:32  active undef running
+|- 9:0:1:50  sdf 8:80  active undef running
+|- 8:0:0:50  sdi 8:128 active undef running
+`- 8:0:1:50  sdl 8:176 active undef running
+mpath3 (350002ac000660910) dm-2 3PARdata,VV
+size=80G features='1 queue_if_no_path' hwhandler='0' wp=rw
+`-+- policy='round-robin 0' prio=-1 status=active
+|- 9:0:0:100 sdd 8:48  active undef running
+|- 9:0:1:100 sdg 8:96  active undef running
+|- 8:0:0:100 sdj 8:144 active undef running
+`- 8:0:1:100 sdm 8:192 active undef running"""),
+                       ("pvs --noheadings --units M --separator '|'", "\
+/dev/mapper/mpath3|VolGroup00|lvm2|a-|146632.87M|0M"),
+                       ("lvs --noheadings --units M", """\
+LogVol00 VolGroup00 -wi-ao 144552.49M
+LogVol01 VolGroup00 -wi-ao   2080.37M"""), ])
+        storage = hardware.get_disk_shares(ssh)
+        self.assertEqual(storage, {
+            'dm-11': ('50002AC000123456', 81920),
+            'VolGroup00': (u'50002AC000660910', 146632)
+        })

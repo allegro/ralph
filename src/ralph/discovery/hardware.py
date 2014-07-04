@@ -239,7 +239,12 @@ def _get_info_from_multipath(ssh):
             wwn = wwn.strip('()')
             if not path:
                 path = wwn
-            wwn = normalize_wwn(wwn)
+            try:
+                wwn = normalize_wwn(wwn)
+            except ValueError:
+                # continue when could not normalize wwn (ex. when there
+                # are multipath warnings at the beginning of the output)
+                continue
             current_share = {
                 'pv': pv,
                 'wwn': wwn
@@ -248,6 +253,10 @@ def _get_info_from_multipath(ssh):
             if path:
                 pvs['/dev/mapper/%s' % path] = wwn
         else:
+            if not current_share:
+                # if current share was not set because of ValueError during
+                # wwn normalization
+                continue
             line = line.replace('][', ' ')
             size_info = line.split(None, 1)[0].split('=')[1]
             size = None
