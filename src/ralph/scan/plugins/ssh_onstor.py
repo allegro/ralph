@@ -8,12 +8,11 @@ from __future__ import unicode_literals
 from django.conf import settings
 from lck.django.common.models import MACAddressField
 
-from ralph.discovery.models import DeviceType, SERIAL_BLACKLIST
+from ralph.discovery.models import DeviceType, SERIAL_BLACKLIST, DiskShare
 from ralph.scan.errors import ConnectionError, NoMatchError
 from ralph.scan.plugins import get_base_result_template
 from ralph.util import parse
 from ralph.util.network import connect_ssh, check_tcp_port
-from ralph.discovery.models import DiskShare
 
 
 SETTINGS = settings.SCAN_PLUGINS.get(__name__, {})
@@ -29,7 +28,7 @@ def _convert_unit(size_string):
     """
     Convert given string to size in megabytes
 
-    :param string query: Size with unit
+    :param string size_string: Size with unit
     :returns integer: Converted size from given unit
     :rtype integer:
     """
@@ -46,7 +45,7 @@ def _get_wwn(string):
     """
     Extract part of wwn from given string and try find full wwn
 
-    :param string query: Name contains part of wwn
+    :param string string: Name contains part of wwn
     :returns string: Full wwn or part
     :rtype string:
     """
@@ -102,18 +101,16 @@ def _ssh_onstor(ip_address, user, password):
         })
         if sn not in SERIAL_BLACKLIST:
             device_info['serial_number'] = sn
-
         disk_shares = _get_disk_share(ssh)
         if disk_shares:
             device_info['disk_shares'] = disk_shares
     finally:
         ssh.close()
-
     return device_info
 
 
 def scan_address(ip_address, **kwargs):
-    if kwargs.get('http_family') not in ('sscccc', None):
+    if kwargs.get('http_family') not in ('sscccc'):
         raise NoMatchError("It's not an ONStor.")
     if 'nx-os' in (kwargs.get('snmp_name', '') or '').lower():
         raise NoMatchError("Incompatible Nexus found.")
