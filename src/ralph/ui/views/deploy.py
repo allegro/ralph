@@ -14,9 +14,12 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.base import View
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib import messages
+from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
+from django.utils.translation import ugettext_lazy as _
 from lck.django.common import nested_commit_on_success
 from lck.django.common.models import MACAddressField
+from tastypie.authentication import ApiKeyAuthentication
 from tastypie.serializers import Serializer
 
 from ralph.deployment.models import MassDeployment as MassDeploymentModel
@@ -32,7 +35,6 @@ from ralph.discovery.models import (
     DeviceType,
     Network,
     IPAddress,
-    Ethernet,
     EthernetSpeed,
 )
 from ralph.ui.views.common import BaseMixin, Base, TEMPLATE_MENU_ITEMS
@@ -404,11 +406,14 @@ class AddVM(View):
         else:
             raise Http404('Cannot find a rack for the parent machine')
 
-
-
     @nested_commit_on_success
     def post(self, request, *args, **kwargs):
         from ralph.urls import LATEST_API
+        actor = User.objects.get(
+            username=ApiKeyAuthentication().get_identifier(request)
+        )
+        if not actor.has_perm('create_devices'):
+            raise HttpResponse(_('You cannot create new devices'), status=401)
         data = Serializer().deserialize(
             request.body,
             format=request.META.get('CONTENT_TYPE', 'application/json')
@@ -439,6 +444,8 @@ class AddVM(View):
         )
         device.name = hostname
         device.parent = parent
+        device.venture = venture
+        device.venture_role = role
         device.save()
         IPAddress.objects.create(
             address=ip_addr,
@@ -449,10 +456,9 @@ class AddVM(View):
         reset_dhcp(ip_addr, data['mac'])
         resp = HttpResponse('', status=201)
         resp['Location'] = LATEST_API.canonical_resource_for(
-            'virtualserver'
+            'dev'
         ).get_resource_uri(device)
         return resp
-
 
     @csrf_exempt
     def dispatch(self, *args, **kwargs):
