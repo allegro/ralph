@@ -38,7 +38,7 @@ def _convert_unit(size_string):
         return size
     elif 'G' in unit:
         return int(float(size)) * 1024
-    elif 'T' in size_info:
+    elif 'T' in unit:
         return int(float(size)) * 1024 * 1024
 
 
