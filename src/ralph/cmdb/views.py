@@ -55,7 +55,7 @@ from ralph.cmdb.forms import (
     ReportFilters,
     ReportFiltersDateRange,
 )
-from ralph.cmdb.util import report_filters, add_filter, table_colums
+from ralph.cmdb.util import report_filters, add_filter, table_colums, collect
 
 JIRA_URL = urljoin(settings.ISSUETRACKERS['default']['URL'], 'browse')
 ROWS_PER_PAGE = 20
@@ -1083,6 +1083,13 @@ class CIProblemsEdit(BaseCIDetails, DataTableMixin):
                 'filters': ReportFilters(self.request.GET),
                 'date_range': ReportFiltersDateRange(self.request.GET),
             },
+            'possible_title': _('Problems that could affect this CI'),
+            'possible_data': collect(
+                self.ci,
+                self.get_events,
+                up=False,
+                exclusive=True,
+            ),
         })
         return ret
 
@@ -1102,6 +1109,15 @@ class CIProblemsEdit(BaseCIDetails, DataTableMixin):
             )
         )
         return super(CIProblemsEdit, self).get(*args, **kwargs)
+
+    def get_events(self, ci):
+        return db.CIProblem.objects.filter(
+            cis=ci,
+            update_date__gte=(
+                datetime.datetime.now() -
+                settings.POSSIBLE_EVENTS_TIMEDELTA
+            ),
+        )
 
 
 class CIProblemsView(CIProblemsEdit):
@@ -1128,6 +1144,15 @@ class JiraChangesEdit(BaseCIDetails, DataTableMixin):
         super(JiraChangesEdit, self).initialize_vars()
         self.jira_changes = []
 
+    def get_events(self, ci):
+        return db.JiraChanges.objects.filter(
+            cis=ci,
+            update_date__gte=(
+                datetime.datetime.now() -
+                settings.POSSIBLE_EVENTS_TIMEDELTA
+            ),
+        )
+
     def get_context_data(self, *args, **kwargs):
         ret = super(JiraChangesEdit, self).get_context_data(**kwargs)
         ret.update(
@@ -1146,6 +1171,13 @@ class JiraChangesEdit(BaseCIDetails, DataTableMixin):
                 'filters': ReportFilters(self.request.GET),
                 'date_range': ReportFiltersDateRange(self.request.GET),
             },
+            'possible_title': _('Changes that could affect this CI'),
+            'possible_data': collect(
+                self.ci,
+                self.get_events,
+                up=False,
+                exclusive=True,
+            ),
         })
         return ret
 
@@ -1212,8 +1244,24 @@ class CIIncidentsEdit(BaseCIDetails, DataTableMixin):
                 'filters': ReportFilters(self.request.GET),
                 'date_range': ReportFiltersDateRange(self.request.GET),
             },
+            'possible_title': _('Incidents that could affect this CI'),
+            'possible_data': collect(
+                self.ci,
+                self.get_events,
+                up=False,
+                exclusive=True,
+            ),
         })
         return ret
+
+    def get_events(self, ci):
+        return db.CIProblem.objects.filter(
+            cis=ci,
+            update_date__gte=(
+                datetime.datetime.now() -
+                settings.POSSIBLE_EVENTS_TIMEDELTA
+            ),
+        )
 
     @ralph_permission(perms)
     def get(self, *args, **kwargs):

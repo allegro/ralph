@@ -9,7 +9,7 @@ from __future__ import unicode_literals
 from django.test import TestCase
 
 from ralph.cmdb.models_ci import CI, CI_STATE_TYPES
-from ralph.cmdb.util import breadth_first_search_ci, walk
+from ralph.cmdb.util import breadth_first_search_ci, walk, collect
 
 
 class TestCI(TestCase):
@@ -88,5 +88,18 @@ class TestCI(TestCase):
             ci = CI.objects.get(pk=ci.id)
             self.assertEqual(ci.state, CI_STATE_TYPES.INACTIVE.id)
 
+    def test_collect(self):
+        """Test the 'collect' utility"""
+
+        def get_name(ci):
+            return [ci.name]
+        names = set(collect(self.venture1, get_name, up=False))
+        self.assertSetEqual(names, {
+            'venture1',
+            'cloud1',
+            'cloud2',
+            'a.example.com',
+            'b.example.com'
+        })
 
 
