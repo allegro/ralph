@@ -35,7 +35,7 @@ def _convert_unit(size_string):
     """
     size, unit = size_string.split(' ')
     if 'M' in unit:
-        return size
+        return int(float(size))
     elif 'G' in unit:
         return int(float(size)) * 1024
     elif 'T' in unit:
@@ -52,7 +52,7 @@ def _get_wwn(string):
     """
     wwn_part = string.split('_')[-1]
     try:
-        return DiskShare.objects.get(wwn__contains=wwn_part)
+        return DiskShare.objects.get(wwn__contains=wwn_part).wwn
     except (DiskShare.DoesNotExist, DiskShare.MultipleObjectsReturned):
         return wwn_part
 
