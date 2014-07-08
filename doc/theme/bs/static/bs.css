@@ -90,9 +90,6 @@ h1,h2,h3,h4 {
     padding-bottom: 10px;
 }
 
-.vjs-default-skin .vjs-big-play-button {
-}
-
 .ralph-text-header {
     width: 30%;
     height: 30%;
@@ -112,9 +109,9 @@ h1,h2,h3,h4 {
 }
 
 .shadow {
--webkit-box-shadow: 4px 0px 30px 0px rgba(77, 61, 50, 0.56);
--moz-box-shadow:    4px 0px 30px 0px rgba(77, 61, 50, 0.56);
-box-shadow:         4px 0px 30px 0px rgba(77, 61, 50, 0.56);
+    -webkit-box-shadow: 4px 0px 30px 0px rgba(77, 61, 50, 0.56);
+    -moz-box-shadow:    4px 0px 30px 0px rgba(77, 61, 50, 0.56);
+    box-shadow:         4px 0px 30px 0px rgba(77, 61, 50, 0.56);
 }
 
 .promo-background-assets-search {
@@ -133,7 +130,7 @@ box-shadow:         4px 0px 30px 0px rgba(77, 61, 50, 0.56);
 	background-position: -250px -150px;
 	background-repeat: no-repeat;
 	box-shadow: #000 10px;
-	
+
 }
 
 .promo-background-core-scan {
@@ -143,7 +140,7 @@ box-shadow:         4px 0px 30px 0px rgba(77, 61, 50, 0.56);
 	background-repeat: no-repeat;
 	background-position: -150px -150px;
 	box-shadow: #000 10px;
-	
+
 }
 
 .promo-background-core-deploy {
@@ -153,7 +150,7 @@ box-shadow:         4px 0px 30px 0px rgba(77, 61, 50, 0.56);
 	background-position: 0px 0px;
 	background-repeat: no-repeat;
 	box-shadow: #000 10px;
-	
+
 }
 
 .promo-background-cmdb-jira {
@@ -161,10 +158,10 @@ box-shadow:         4px 0px 30px 0px rgba(77, 61, 50, 0.56);
     width: 930px;
     height: 377px;
 
-	
+
 	background-repeat: no-repeat;
 	box-shadow: #000 10px;
-	
+
 }
 
 .promo-background-scrooge-calculation {
@@ -175,7 +172,7 @@ box-shadow:         4px 0px 30px 0px rgba(77, 61, 50, 0.56);
 	background-repeat: no-repeat;
 	box-shadow: #000 10px;
 	margin-bottom: 30px;
-	
+
 }
 
 .center {
