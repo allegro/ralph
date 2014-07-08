@@ -126,13 +126,14 @@ LOGGING = {
     },
     'formatters': {
         'verbose': {
-            'datefmt': '%H:%M:%S',
+            'datefmt': '%d.%m.%Y %H:%M:%S',
             'format': (
-                '%(asctime)08s,%(msecs)03d %(levelname)-7s [%(processName)s'
+                '[%(asctime)08s,%(msecs)03d] %(levelname)-7s [%(processName)s'
                 ' %(process)d] %(module)s - %(message)s'),
         },
         'simple': {
-            'format': '%(levelname)s %(message)s',
+            'datefmt': '%H:%M:%S',
+            'format': '[%(asctime)08s] %(levelname)-7s %(message)s',
         },
     },
     'loggers': {
