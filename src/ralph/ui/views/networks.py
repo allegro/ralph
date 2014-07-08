@@ -391,7 +391,7 @@ class NetworksAutoscan(NetworksMixin, BaseDeviceList):
     def post(self, *args, **kwargs):
         self.set_network()
         if 'scan' in self.request.POST and self.network:
-            autoscan.autoscan_network(self.network)
+            autoscan.queue_autoscan_network(self.network)
             messages.success(self.request, "Network scan scheduled.")
         elif 'bury' in self.request.POST:
             selected = self.request.POST.getlist('select')
