@@ -6,7 +6,7 @@ Test drive - the easy way with docker
 =====================================
 
 It is the easiest way to try out Ralph for testing - using pre-built docker image with  worker, database, and server all together.
-You can do everything(scan, reporting) you would do with normal Ralph installation, but the data are not stored permanently.
+You can do everything(scan, reporting) you would do with normal Ralph installation, but the data by default are not stored permanently - see details below.
 
 1. Install docker using instruction https://docs.docker.com/installation/
 2. Downloading and running ralph test instance can be as easy as typing::
@@ -27,9 +27,6 @@ For example, for built-in mysql server:
 2. Ready. Now just run ralph on it::
 
   docker run -v /my/local/directory:/var/lib/mysql -t -i vi4m/ralph
-
-
-
 
 
 Upgrading existing installation
