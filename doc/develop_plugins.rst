@@ -113,7 +113,7 @@ For example file /tmp/data.json ::
 
     curl -XPOST https://ralph.office/api/v0.9/scanresult/ -d @/tmp/data.json -H "Authorization: ApiKey user.name:api_key" -H "Content-type: application/json"
 
-3. View & accept your data using GUI: you can use direct URL pasting your IP Address into the URL  `http://ralph.address/ui/scan/status/127.0.0.1/` - or just navigate to your IP Address using `Networks / Scan tab` - you will see 'Full Scan' link.
+3. View & accept your data using GUI: you can use direct URL pasting your IP Address into the URL  ``http://ralph.address/ui/scan/status/127.0.0.1/`` - or just navigate to your IP Address using `Networks / Scan tab` - you will see 'Full Scan' link.
 
 
 PULL - Generic SCAN plugins
@@ -122,12 +122,12 @@ Use this if your hardware is a generic one, and can be periodically scanned
 alongside other existing plugins like http, snmp, ping.
 
 First-class SCAN plugin allows you to reuse some features like:
-  - you don't have to reinvent ping scans, snmp scanning
-  - Python knowledge required
+  - you don't have to reinvent the ping scans, snmp scanning, http family discoering
+  - but - Python knowledge required :)
   - strictly integrated with existing codebase(we accept pull requests :))
   - see example plugin: https://github.com/allegro/ralph/blob/develop/src/ralph/scan/plugins/hp_oa.py
 
-Create file in src/ralph/scan/plugins which provide `scan_address` function, for example something like this ::
+Create file in src/ralph/scan/plugins which provide ``scan_address`` function, for example something like this ::
 
     def scan_address(ip_address, **kwargs):
         snmp_name = (kwargs.get('snmp_name', '') or '').lower()
@@ -148,8 +148,8 @@ Create file in src/ralph/scan/plugins which provide `scan_address` function, for
         return result
 
 Function should return dict object with keys:
-- `status`: string ("error", "success")
-- `device`: the same `data` subkey as in JSON PUSH interface, e.g { "serial_number" : "sn", "model_name": "test"}
+- ``status``: string ("error", "success")
+- ``device``: the same ``data`` subkey as in JSON PUSH interface, e.g { "serial_number" : "sn", "model_name": "test"}
 
 Raise NoMatchError if the plugin didn't match the device you scan.
 
