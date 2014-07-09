@@ -584,6 +584,20 @@ class IPAddress(LastSeen, TimeTrackable, WithConcurrentGetOrCreate):
             "already assigned.".format(self.device_id, self, dirty_devid),
         )
 
+    # We overwrite the following method. If the address is not bound to
+    # any device or venture, we can delete it and create new.
+    def _perform_unique_checks(self, *args, **kwargs):
+        try:
+            existing = type(self).objects.get(address=self.address)
+        except type(self).DoesNotExist:
+            return
+        if existing == self:
+            return
+        elif existing.device:
+            return {'address': [_('There exists a device with this address')]}
+        elif existing.venture:
+            return {'address': [_('This address is a public one')]}
+
 
 class IPAlias(SavePrioritized, WithConcurrentGetOrCreate):
     address = db.ForeignKey("IPAddress", related_name="+")
