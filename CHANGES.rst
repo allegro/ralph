@@ -1,7 +1,6 @@
 Change Log
 ----------
 
-* Collecting events that can possibly affect a CI (events on children)
 
 
 2.0.0-stable
@@ -40,6 +39,8 @@ This is a stable release.
 * CMDB: Inactive CI's are not displayed by default, use checkbox to include them optionally.
 
 * CMDB: Changes importing are now handled by searching by creation date.
+
+* CMDB: Collecting events that can possibly affect a CI (events on children).
 
 * DHCP: Fix protect against IP addresses with the same domain tests.
 
