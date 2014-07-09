@@ -10,6 +10,7 @@ import subprocess
 
 from django.conf import settings
 from django.utils.encoding import force_unicode
+from lck.django.common.models import MACAddressField
 from lck.lang import nullify
 
 from ralph.discovery.models import (
@@ -103,7 +104,8 @@ def _get_mac_addresses(ipmitool, fru):
         mac_addresses.add(ethernet['Product Serial'])
         index += 1
     return [
-        mac for mac in mac_addresses
+        MACAddressField.normalize(mac)
+        for mac in mac_addresses
         if mac.replace(':', '').upper()[:6] not in MAC_PREFIX_BLACKLIST
     ]
 

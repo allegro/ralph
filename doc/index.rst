@@ -1,6 +1,4 @@
-.. include:: ../README.rst
-
-This documentation
+Ralph documentation
 ------------------
 
 .. toctree::
@@ -8,8 +6,10 @@ This documentation
 
    overview
    installation
+   donpedro
    configuration
-   optional_modules
+   optional_modules/index
+   develop_plugins
    scan
    browser
    deployment
@@ -20,6 +20,7 @@ This documentation
    permissions
    changes
    license
+
 
 Indices and tables
 ------------------

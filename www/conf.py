@@ -101,7 +101,6 @@ html_theme_options = {
     # Add links to the main menu
     'main_menu': [
         ('Home', 'index'),
-        ('About', 'about'),
         ('Download', 'download'),
         ('Documentation', 'doc/index'),
         ('Development', 'devel'),
@@ -147,7 +146,6 @@ html_static_path = ['_static']
 # template names.
 html_additional_pages = {
     'index': 'index.html',
-    'about': 'about.html',
     'devel': 'devel.html',
     'download': 'download.html',
     'download_archive': 'download_archive.html',

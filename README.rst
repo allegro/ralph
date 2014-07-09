@@ -2,42 +2,13 @@
 Ralph
 =====
 
+Ralph is full-featured Asset Management, DCIM and CMDB system for data center and back office.
 
-.. image:: https://pypip.in/v/ralph/badge.png
-    :target: https://crate.io/packages/ralph/
-    :alt: Latest PyPI version
+Features:
 
-.. image:: https://pypip.in/d/ralph/badge.png
-    :target: https://crate.io/packages/ralph/
-    :alt: Number of PyPI downloads
+* auto-discover existing hardware
+* keep track of assets purchases and their life cycle
+* generate flexible and accurate cost reports
+* integrate with change management process using JIRA integration
 
-.. image:: https://travis-ci.org/allegro/ralph.svg?branch=develop
-    :target: https://travis-ci.org/allegro/ralph
-    
-.. image:: https://coveralls.io/repos/allegro/ralph/badge.png?branch=develop
-    :target: https://coveralls.io/r/allegro/ralph?branch=develop
-    :alt: Unit tests coverage
-
-Ralph is the complete *Asset Management*, *DCIM* and *CMDB* system for large Data Centers
-as well as smaller LAN networks.
-
-Ralph consists of 3 dedicated subsystems:
-
-Ralph Core
-**********
-(DCIM and CMDB) - allows you to discover/scan hardware automatically.
-Ralph Core can control configuration of IPAddresses, Networks, Racks.
-You can also generate DHCP and DNS entries for your hosts. It is compatible with CMDB
-specification and has Zabbix, Jira and Puppet integration.
-
-Ralph Assets
-************
-Asset management system which keep track of purchases
-of your hardware, and hardware ownership with workflow and PDF documents outprints
-for your customers.
-
-Ralph Pricing
-*************
-Flexible billing and financial reporting subsystem which can
-show you how much your business services costs. We provide OpenStack integration
-for billings.
+It is an Open Source project provided on Apache v2.0 License.

@@ -63,6 +63,18 @@ class ReadOnlyMultipleChoiceWidget(FilteredSelectMultiple):
                          escape(','.join(output_values)))
 
 
+class SimpleReadOnlyWidget(forms.widgets.Input):
+    input_type = 'text'
+
+    def __init__(self, attrs=None):
+        if attrs is not None:
+            self.input_type = attrs.pop('type', self.input_type)
+        else:
+            attrs = {}
+        attrs['readonly'] = ''
+        super(SimpleReadOnlyWidget, self).__init__(attrs)
+
+
 class ReadOnlyWidget(forms.Widget):
 
     def render(self, name, value, attrs=None, choices=()):

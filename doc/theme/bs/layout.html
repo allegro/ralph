@@ -100,7 +100,7 @@
         <div class="span3 sidebar">
             {%- block sidebar1 %}
                 <div class="well toctree sidebar-nav">
-                    {{ toctree(maxdepth=1) }} 
+                    {{ toctree(maxdepth=1) }}
                 </div>
                 {%- if toc %}
                 <div class="well localtoc">
@@ -122,5 +122,6 @@
 {%- block footer %}
 <script src="{{ pathto('_static/bootstrap/js/bootstrap.min.js', 1) }}"></script>
 <script src="{{ pathto('_static/restyle.js', 1) }}"></script>
+
 {%- endblock %}
 

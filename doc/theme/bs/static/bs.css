@@ -73,13 +73,7 @@ body {
 }
 
 .footer {
-    background: #555;
-    padding: 9px;
-    color: #eee;
-  border: 1px solid #444;
-  -webkit-border-radius: 4px;
-  -moz-border-radius: 4px;
-  border-radius: 4px;
+    display: none;
 }
 
 #powered-by {
@@ -89,3 +83,124 @@ body {
 #powered-by td {
   padding-right: 4em;
 }
+
+h1,h2,h3,h4 {
+    font-family: "Apple Gothic",AppleGothic,"Century Gothic","URW Gothic L","Avant Garde",Futura,sans-serif;
+    padding-top: 20px;
+    padding-bottom: 10px;
+}
+
+.ralph-text-header {
+    width: 30%;
+    height: 30%;
+    opacity: 0.8;
+}
+
+.hero-unit {
+    background: url(data-center-from-wiki.jpg);
+    background-repeat: repeat-x;
+}
+
+.hero-unit-inset {
+    background-color: white;
+    opacity: 0.88;
+    padding: 30px;
+    border-radius: 10px;
+}
+
+.shadow {
+    -webkit-box-shadow: 4px 0px 30px 0px rgba(77, 61, 50, 0.56);
+    -moz-box-shadow:    4px 0px 30px 0px rgba(77, 61, 50, 0.56);
+    box-shadow:         4px 0px 30px 0px rgba(77, 61, 50, 0.56);
+}
+
+.promo-background-assets-search {
+    background: url(ralph_assets_search.png);
+    width: 500px;
+    height: 230px;
+    background-position: -250px -150px;
+    background-repeat: no-repeat;
+}
+
+.promo-background-assets-add {
+    background: url(ralph_assets_edit.png);
+    width: 500px;
+    height: 300px;
+    background-position: -250px -150px;
+    background-repeat: no-repeat;
+    box-shadow: #000 10px;
+
+}
+
+.promo-background-core-scan {
+    background: url(ralph_core_scan_summary.png);
+    width: 800px;
+    height: 260px;
+    background-repeat: no-repeat;
+    background-position: -150px -150px;
+    box-shadow: #000 10px;
+}
+
+.promo-background-core-deploy {
+    background: url(ralph_core_dhcp_dns.png);
+    width: 500px;
+    height: 249px;
+    background-position: 0px 0px;
+    background-repeat: no-repeat;
+    box-shadow: #000 10px;
+}
+
+.promo-background-cmdb-jira {
+    background: url(ralph_core_cmdb.png);
+    width: 930px;
+    height: 377px;
+    background-repeat: no-repeat;
+    box-shadow: #000 10px;
+}
+
+.promo-background-scrooge-calculation {
+    background: url(ralph_scrooge_report.png);
+    width: 800px;
+    height: 300px;
+    background-position: -6px 0px ;
+    background-repeat: no-repeat;
+    box-shadow: #000 10px;
+    margin-bottom: 30px;
+}
+
+.center {
+    text-align: center;
+    margin-left: auto; margin-right: auto
+}
+
+.promo-distance {
+    padding-top: 100px;
+}
+
+.promo-story-1 h1 {
+    margin-bottom: 50px;
+    color: white;
+}
+
+.promo-story-2 h1 {
+    margin-bottom: 50px;
+    color: #666;
+}
+
+.promo-story-1 {
+    background: linear-gradient(to bottom, rgba(198, 110, 27, 0.47) 0%, #FFFFFF 100%);
+    padding-bottom: 100px;
+}
+
+.promo-story-2 {
+    background: #eee;
+}
+
+.promo-story-1 .img {
+    border: solid orange 5px;
+}
+
+.promo-story-2 .img {
+    border: solid #ccc 3px;
+}
+

@@ -11,9 +11,10 @@ import functools
 
 from django.conf import settings
 from django.contrib.auth.models import Group
+from django.core.handlers.wsgi import WSGIRequest
 from django.core.urlresolvers import reverse, NoReverseMatch
 from django.db import models as db
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, HttpResponseServerError
 from django.utils.translation import ugettext_lazy as _
 
 from dj.choices import Choices
@@ -77,6 +78,9 @@ class Perm(Choices):
     read_device_info_support = _("read device purchase info")
     read_device_info_history = _("read device history info")
     read_device_info_reports = _("read device reports")
+    has_assets_access = _("has_assets_access")
+    has_core_access = _("has_core_access")
+    has_scrooge_access = _("has_scrooge_access")
 
 
 class Profile(BasicInfo, ActivationSupport, GravatarSupport,
@@ -231,7 +235,14 @@ def ralph_permission(perms):
 
     def decorator(func):
         def inner_decorator(self, *args, **kwargs):
-            profile = self.request.user.get_profile()
+            # decorator on get/post/...
+            if hasattr(self, 'request'):
+                profile = self.request.user.get_profile()
+            # decorator on dispatch - request is first argument
+            elif args and isinstance(args[0], WSGIRequest):
+                profile = args[0].user.get_profile()
+            else:
+                raise HttpResponseServerError()
             has_perm = profile.has_perm
             for perm in perms:
                 if not has_perm(perm['perm']):

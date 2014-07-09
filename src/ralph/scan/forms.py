@@ -149,6 +149,14 @@ class DefaultInfo(object):
     clean = unicode
 
 
+class RequiredInfo(DefaultInfo):
+
+    def clean(self, value):
+        if not value:
+            raise ValueError('This field is required.')
+        return value
+
+
 class IntInfo(DefaultInfo):
     display = int
     Field = forms.IntegerField
@@ -258,25 +266,17 @@ class AssetInfo(DefaultInfo):
         return AutoCompleteSelectField(lookup, *args, **kwargs)
 
 
-class TypeInfo(DefaultInfo):
+class TypeInfo(RequiredInfo):
 
     def Field(self, *args, **kwargs):
         choices = [
             (t.raw, t.raw.title())
             for t in DeviceType(item=lambda t: t)
         ]
-        # Make "Unknown" the first choice
-        choices.insert(0, choices.pop())
+        choices.pop()  # remove "Unknown" from the list
+        choices.insert(0, ('', '-----'))
         kwargs['choices'] = choices
         return forms.ChoiceField(*args, **kwargs)
-
-
-class RequiredInfo(DefaultInfo):
-
-    def clean(self, value):
-        if not value:
-            raise ValueError('This field is required.')
-        return value
 
 
 class DiffForm(forms.Form):
@@ -389,6 +389,11 @@ class DiffForm(forms.Form):
                     value = info.clean(self.cleaned_data[name + '-custom'])
                 except (TypeError, ValueError, forms.ValidationError) as e:
                     self._errors[name + '-custom'] = self.error_class([e])
+            else:
+                if (name == 'type' and
+                        self.result['type'].get((value,)) == 'unknown'):
+                    msg = "Please specify custom value for this component."
+                    self._errors[name] = self.error_class([msg])
         return self.cleaned_data
 
     def get_value(self, name):

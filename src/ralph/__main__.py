@@ -18,6 +18,21 @@ def ubuntu_1020872_workaround():
     os.close(2)
     try:
         import _imaging  # noqa
+    except ImportError:
+        from PIL import Image  # noqa
+        """
+        Newer version of Pillow doesn't have _imaging module. Use PIL instead.
+        Basically, we need to initialize Pillow, which does internally ctypes.dlopen('libjpeg.so.0.8')
+        which further opens /dev/proc/auxv to optimize JPEG decoding.
+        Ralph setup needs currently setcap net_raw on python process, which doesn't works seamlesly
+        with libjpeg turbo optimization, which produces werid Permission denied error output problem
+        from actually library below, not python code at all.
+        What we are trying to do is a workaround to reset error stream
+        (duplicate error output descriptor, and clean-up).
+
+        The real solution is just to run rqworker processes as root process or higher level permissions
+        :-)
+        """
     finally:
         os.dup2(dup, 2)
         try:

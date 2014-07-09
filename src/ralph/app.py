@@ -10,6 +10,7 @@ class RalphModule(pluggableapp.PluggableApp):
     the ralph main application."""
 
     metaclass = abc.ABCMeta
+    required_permission = None
 
     @abc.abstractproperty
     def url_prefix(self):

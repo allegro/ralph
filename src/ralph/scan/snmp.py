@@ -10,6 +10,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from django.conf import settings
+from pysnmp.entity.rfc3413.oneliner import cmdgen
 
 from ralph.discovery.snmp import snmp_command, check_snmp_port
 
@@ -22,11 +23,22 @@ SNMP_V3_AUTH = (
 )
 if not all(SNMP_V3_AUTH):
     SNMP_V3_AUTH = None
+PRIV_PROTOCOLS = (
+    cmdgen.usmDESPrivProtocol,
+    cmdgen.usmAesCfb128Protocol,
+    cmdgen.usmAesCfb192Protocol,
+    cmdgen.usmAesCfb256Protocol,
+)
 
 
-def _snmp(ip, community, oid, attempts=2, timeout=3, snmp_version='2c'):
-    result = snmp_command(str(ip), community, oid, attempts=attempts,
-                          timeout=timeout, snmp_version=snmp_version)
+def _snmp(
+    ip, community, oid, attempts=2, timeout=3, snmp_version='2c',
+    priv_protocol=cmdgen.usmDESPrivProtocol
+):
+    result = snmp_command(
+        str(ip), community, oid, attempts=attempts, timeout=timeout,
+        snmp_version=snmp_version, priv_protocol=priv_protocol,
+    )
     if result is None:
         message = None
     else:
@@ -81,14 +93,18 @@ def get_snmp(ipaddress):
                 return message, community, version
     if SNMP_V3_AUTH:
         version = '3'
-        message = _snmp(
-            ipaddress.address,
-            SNMP_V3_AUTH,
-            oid,
-            attempts=2,
-            timeout=2,  # SNMP v3 usually needs more time
-            snmp_version=version,
-        )
+        for priv_protocol in PRIV_PROTOCOLS:
+            message = _snmp(
+                ipaddress.address,
+                SNMP_V3_AUTH,
+                oid,
+                attempts=2,
+                timeout=2,  # SNMP v3 usually needs more time
+                snmp_version=version,
+                priv_protocol=priv_protocol,
+            )
+            if message:
+                return message, community, version
     if not message:
         return None, None, None
     return message, community, version

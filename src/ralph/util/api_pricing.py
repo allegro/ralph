@@ -14,7 +14,8 @@ from ralph.business.models import Venture, VentureExtraCost
 from ralph.discovery.models import (
     Device,
     DeviceType,
-    DiskShare,
+    DiskShareMount,
+    FibreChannel,
     HistoryCost,
     IPAddress,
 )
@@ -123,19 +124,32 @@ def get_virtual_usages(parent_venture_name=None):
         }
 
 
-def get_shares():
-    """Yields dicts reporting the storage shares for all servers."""
+def get_shares(venture_symbol=None, include_virtual=True):
+    """
+    Yields dicts reporting the storage shares mounts.
 
-    for share in DiskShare.objects.all():
+    :param venture_symbol: if passed, only share mounts from shares with
+        storage device in this venture will be returned
+    :param include_virtual: if False, virtual share mounts will be excluded
+        from result
+    """
+    shares_mounts = DiskShareMount.objects.select_related(
+        'share',
+    )
+    if not include_virtual:
+        shares_mounts = shares_mounts.filter(is_virtual=False)
+    if venture_symbol:
+        shares_mounts = shares_mounts.filter(
+            share__device__venture=Venture.objects.get(
+                symbol=venture_symbol,
+            )
+        )
+    for mount in shares_mounts:
         yield {
-            'device_id': share.device_id,
-            'model': (
-                share.model.group.name
-                if share.model.group
-                else share.model.name
-            ),
-            'label': share.label,
-            'size': share.size,
+            'storage_device_id': mount.share.device_id,
+            'mount_device_id': mount.device_id,
+            'label': mount.share.label,
+            'size': mount.get_size(),
         }
 
 
@@ -230,6 +244,35 @@ def get_device_by_name(device_name):
     return {}
 
 
+def get_device_by_remarks(remark):
+    """Returns device information by remark"""
+    devices = Device.objects.filter(remarks__icontains=remark)
+    if devices:
+        device = devices[0]
+        return {
+            'device_id': device.id,
+            'venture_id': device.venture.id if device.venture else None,
+        }
+    return {}
+
+
+def get_ip_info(ipaddress):
+    """Returns device information by IP address"""
+    result = {}
+    try:
+        ip = IPAddress.objects.select_related().get(address=ipaddress)
+    except IPAddress.DoesNotExist:
+        pass
+    else:
+        if ip.venture is not None:
+            result['venture_id'] = ip.venture.id
+        if ip.device is not None:
+            result['device_id'] = ip.device.id
+            if ip.device.venture is not None:
+                result['venture_id'] = ip.device.venture.id
+    return result
+
+
 def get_ip_addresses(only_public=False):
     """Yileds available IP addresses"""
     ips = IPAddress.objects.filter(is_public=only_public)
@@ -250,4 +293,12 @@ def get_cloud_daily_costs(date=None):
         yield {
             'venture_id': daily_cost['venture__id'],
             'daily_cost': daily_cost['value']
+        }
+
+
+def get_fc_cards():
+    for fc in FibreChannel.objects.values('id', 'device__id'):
+        yield {
+            'id': fc['id'],
+            'device_id': fc['device__id'],
         }

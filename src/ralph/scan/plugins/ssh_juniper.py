@@ -6,6 +6,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from django.conf import settings
+from lck.django.common.models import MACAddressField
 
 from ralph.discovery.models import DeviceType
 from ralph.scan.errors import (
@@ -50,7 +51,9 @@ def _get_mac_addresses(ssh):
         line = line.lower()
         if line.startswith('public base address'):
             mac_addresses.append(
-                line.replace('public base address', '').strip(),
+                MACAddressField.normalize(
+                    line.replace('public base address', '').strip()
+                )
             )
     return mac_addresses
 

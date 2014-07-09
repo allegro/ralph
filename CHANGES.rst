@@ -2,6 +2,73 @@ Change Log
 ----------
 
 
+
+2.0.0-stable
+~~~~~~~~~~~~
+
+Released on July 9, 2014
+
+This is a stable release.
+
+* SCAN: Disk shares detection - disk shares without physical volume in OS are now detected, better merging of results.
+
+* SCAN: ssh_proxmox changes - root user is now not required.
+
+* SCAN: SNMP - AES priv protocol support.
+
+* SCAN: SSH AIX - added normalization for wwns from aix plugin.
+
+* SCAN: Scan postprocess is not disabled by default.
+
+* SCAN: MAC addresses normalization.
+
+* SCAN: [vmware plugin] subdevices w/o MAC addresses shouldn't be included in scan results.
+
+* SCAN: Fixed 3par plugin #892 return results instead device_info.
+
+* SCAN: Fixed ascii encoding problem in ssh_xen plugin.
+
+* SCAN: Onstor now collects diskshare mounts.
+
+* SCAN: Fixed getting info from multipath when there are multipath config warnings.
+
+* Feature/pricing api - shares - venture and virtual filters - pricing api: shares changed (back) to share mounts; added venture param and virtual mounts filter
+
+* CMDB: New semantics - used uid instead of id for JIRA.
+
+* CMDB: Inactive CI's are not displayed by default, use checkbox to include them optionally.
+
+* CMDB: Changes importing are now handled by searching by creation date.
+
+* CMDB: Collecting events that can possibly affect a CI (events on children).
+
+* DHCP: Fix protect against IP addresses with the same domain tests.
+
+* CORE: Pluggable apps permissions and ralph_permission decorator. Improved permissions to pluggable apps; ralph_permission decorator could now be applied to dispatch method (before only to post/get/etc methods);
+
+* CORE: Fixed sorting by network address/gateway in admin (incl. migration).
+Network model gets new field gateway_as_int, which is used for sorting by "Gateway address" column ("Network address" column now uses min_ip field for this).
+
+* CORE: Implemented 3 bound permissions per Ralph application (has_core_access, has_asset_access, has_scrooge_access).
+
+* CORE: Disk shares in admin are now loading faster.
+
+* CORE: Added getting device by ip address or remark to the pricing api.
+
+* CORE: Fixed sorting by network address/gateway in admin (incl. migration).
+
+* CORE: Pillow upgraded to 2.2.0.
+
+* CORE: Added FC cards to the pricing API.
+
+* CORE: Readonly widget has better appeareance.
+
+* CORE: Added Docker installation method.
+
+* DonPedro: Better FC and share mounts detection.
+
+* DonPedro: Additional logging and mac addresses normalization.
+
 2.0.0-rc8
 ~~~~~~~~~
 

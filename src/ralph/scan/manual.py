@@ -354,9 +354,7 @@ def scan_address_job(
             # Run only when automerge mode is enabled and some change was
             # detected. When `change` state is not available just run it...
             save_job_results(job.id)
-        elif not called_from_ui and job.args and job.meta.get('changed', True):
-            # Run only when some change was detected. When `change` state is
-            # not available just run it...
+        elif not called_from_ui and job.args:
             try:
                 ip_obj = IPAddress.objects.select_related().get(
                     address=job.args[0]  # job.args[0] == ip_address
@@ -372,5 +370,5 @@ def scan_address_job(
                     except ImportError as e:
                         logger.error(unicode(e))
                     else:
-                        module.run_job(ip_obj)
+                        module.run_job(ip_obj, plugins_results=results)
     return results

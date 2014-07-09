@@ -50,35 +50,12 @@ This tab shows everything that is related to network: the list of IP addresses
 assigned to the device, the relevant DHCP and DNS configuration entries, and
 the list of relevant :index:`loadbalancer` pools, together with their state.
 
-:index:`Prices`
----------------
-
-This tab is similar to the "components" tab, in that it displays the list of
-components of the machine, but here all the components have their price
-displayed. There is also all the relevant financial information such as the
-deprecation period and the margin.
-
-
-:index:`Costs`
---------------
-
-This tab is a simplified version of the "prices" tab, but with less details.
-It's for people who shouldn't see details of the pricing, but still want to
-know how much the device costs.  There is also a recent history of device's
-costs.
-
 :index:`History`
 ----------------
 
 In this tab you can see the history of all changes to the device in the
 database, together with dates, comments and people responsible for the change.
 It's useful when you need to track what happened with the device in the past.
-
-:index:`Purchase`
------------------
-
-This tab shows information relevant to the purchase of the device, such as
-its purchase date, support kind and period, warranty, etc.
 
 :index:`Discover`
 -----------------

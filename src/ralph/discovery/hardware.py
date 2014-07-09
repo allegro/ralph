@@ -217,9 +217,11 @@ def handle_smbios(dev, smbios, is_virtual=False, priority=0):
         cpu.save(priority=priority)
 
 
-def get_disk_shares(ssh):
+def _get_info_from_multipath(ssh):
     stdin, stdout, stderr = ssh.exec_command("multipath -l")
+    available_shares = []
     pvs = {}
+    current_share = {}
     for line in stdout.readlines():
         line = line.strip()
         if 'dm multipath kernel driver version too old' in line.lower():
@@ -228,37 +230,97 @@ def get_disk_shares(ssh):
             break
         if line.startswith((r'\_', r'\[', r'`-', r'|')):
             continue
-        if '=' in line:
-            continue
-        try:
-            path, wwn, pv, model = line.strip().split(None, 3)
-        except ValueError:
-            wwn, pv, model = line.strip().split(None, 2)
-            path = None
-        if '(' not in wwn:
-            wwn, pv, model = line.strip().split(None, 2)
-            path = None
-        wwn = normalize_wwn(wwn.strip('()'))
-        pvs['/dev/%s' % pv] = wwn
-        if path:
-            pvs['/dev/mapper/%s' % path] = wwn
+        if 'size=' not in line:
+            try:
+                path, wwn, pv, model = line.split(None, 3)
+            except ValueError:
+                wwn, pv, model = line.split(None, 2)
+                path = None
+            wwn = wwn.strip('()')
+            if not path:
+                path = wwn
+            try:
+                wwn = normalize_wwn(wwn)
+            except ValueError:
+                # continue when could not normalize wwn (ex. when there
+                # are multipath warnings at the beginning of the output)
+                continue
+            current_share = {
+                'pv': pv,
+                'wwn': wwn
+            }
+            pvs['/dev/%s' % pv] = wwn
+            if path:
+                pvs['/dev/mapper/%s' % path] = wwn
+        else:
+            if not current_share:
+                # if current share was not set because of ValueError during
+                # wwn normalization
+                continue
+            line = line.replace('][', ' ')
+            size_info = line.split(None, 1)[0].split('=')[1]
+            size = None
+            if 'M' in size_info:
+                size = int(float(size_info.strip('M')))
+            elif 'G' in size_info:
+                size = int(float(size_info.strip('G'))) * 1024
+            elif 'T' in size_info:
+                size = int(float(size_info.strip('T'))) * 1024 * 1024
+            if size:
+                current_share['size'] = size
+            available_shares.append(current_share)
+            current_share = {}
+    return pvs, available_shares
+
+
+def _get_info_from_pvs(ssh, pvs):
     stdin, stdout, stderr = ssh.exec_command(
-        "pvs --noheadings --units M --separator '|'")
+        "pvs --noheadings --units M --separator '|'"
+    )
     vgs = {}
     for line in stdout.readlines():
-        pv, vg, rest = line.split('|', 2)
+        pv, vg, fmt, attr, size, rest = line.split('|', 5)
         pv = pv.strip()
         vg = vg.strip()
+        mount_size = int(float(size.strip('M')))
         if not vg:
             continue
-        vgs[vg] = pv
-    stdin, stdout, stderr = ssh.exec_command("lvs --noheadings --units M")
+        try:
+            wwn = pvs[pv]
+        except KeyError:
+            continue
+        vgs[vg] = {
+            'wwn': wwn,
+            'mount_size': mount_size,
+            'pv': pv,
+        }
+    return vgs
+
+
+def get_disk_shares(ssh, include_logical_volumes=False):
+    pvs, available_shares = _get_info_from_multipath(ssh)
+    vgs = _get_info_from_pvs(ssh, pvs)
+
     storage = {}
+    if not include_logical_volumes:
+        parsed_wwns = set()
+        for vg, mount_data in vgs.iteritems():
+            storage[vg] = (mount_data['wwn'], mount_data['mount_size'])
+            parsed_wwns.add(mount_data['wwn'])
+        # somoetimes shares are not mounted as a physical devices...
+        for share in available_shares:
+            if share['wwn'] in parsed_wwns:
+                continue
+            storage[share['pv']] = (share['wwn'], share['size'])
+        return storage
+
+    # if include_logical_volumes == True then get addtional info from lvs
+    stdin, stdout, stderr = ssh.exec_command("lvs --noheadings --units M")
     for line in stdout.readlines():
         lv, vg, attr, size, rest = (line + ' x').strip().split(None, 4)
         size = int(float(size.strip('M')))
         try:
-            wwn = pvs[vgs[vg]]
+            wwn = pvs[vgs[vg]['pv']]
         except KeyError:
             continue
         storage[lv] = (wwn, size)

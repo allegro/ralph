@@ -150,7 +150,7 @@ class JiraEventsImporter(BaseImporter):
                 cis = []
             else:
                 cis = [ci for ci in [
-                    get_ci(id=id) for id in issue['cis']
+                    get_ci(uid=uid) for uid in issue['cis']
                 ] if ci]
 
         obj = classtype.objects.filter(jira_id=issue.get('key')).all()[:1]
@@ -201,9 +201,8 @@ class JiraEventsImporter(BaseImporter):
         ]
         jql = ('type={}'.format(type))
         if cutoff_date is not None:
-            jql += " AND status CHANGED AFTER '{}'".format(
-                cutoff_date.strftime('%Y/%m/%d %H:%m')
-            )
+            jql += " AND (status CHANGED AFTER '{c}' OR created > '{c}')".\
+                format(c=cutoff_date.strftime('%Y/%m/%d %H:%m'))
         params = dict(jql=jql)
         offset = 0
         total = None

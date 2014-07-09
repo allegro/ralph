@@ -45,7 +45,7 @@ class HttpIbmSystemXTest(TestCase):
         self.assertEqual(
             _http_ibm_system_x('127.0.0.1', '-', '-'),
             {
-                'mac_addresses': ['6E:F3:DD:E5:96:40', '6E:F3:DD:E5:96:42'],
+                'mac_addresses': ['6EF3DDE59640', '6EF3DDE59642'],
                 'management_ip_address': ['127.0.0.1'],
                 'memory': [
                     {'index': 2, 'label': 'DIMM 2', 'size': 4096},

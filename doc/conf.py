@@ -40,7 +40,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Ralph'
-copyright = u'2011-2013 Allegro Group'
+copyright = u'2011-2014 Allegro Group'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -102,7 +102,6 @@ html_theme_options = {
     # Add links to the main menu
     'main_menu': [
         ('Home', '../index'),
-        ('About', '../about'),
         ('Download', '../download'),
         ('Documentation', '../doc/index'),
         ('Development', '../devel'),

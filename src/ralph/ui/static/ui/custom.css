@@ -244,3 +244,9 @@ img.waiting
     background-color:
     white; padding: 20px;
 }
+
+.permission-msg {
+    font-size: 2.5rem;
+    line-height:2.5rem;
+}
+

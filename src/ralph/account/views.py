@@ -8,14 +8,42 @@ from __future__ import unicode_literals
 
 
 from bob.menu import MenuItem, MenuHeader
+from django import http
+from django.conf import settings
 from django.contrib import messages
 from django.core.urlresolvers import reverse
+from django.template import (
+    RequestContext,
+    TemplateDoesNotExist,
+    loader,
+)
 from django.utils.translation import ugettext_lazy as _
-
+from django.views.decorators.csrf import requires_csrf_token
 
 from ralph.account.forms import UserHomePageForm
 from ralph.account.models import Profile
 from ralph.ui.views.common import Base
+
+
+@requires_csrf_token
+def HTTP403(request, template_name='403.html'):
+    """
+    Permission denied (403) handler.
+
+    Templates: :template:`403.html`
+    Context: None
+
+    If the template does not exist, an Http403 response containing the text
+    "403 Forbidden" (as per RFC 2616) will be returned.
+    """
+    try:
+        template = loader.get_template(template_name)
+    except TemplateDoesNotExist:
+        return http.HttpResponseForbidden('<h1>403 Forbidden</h1>')
+    context = RequestContext(request, {
+        'REQUEST_PERM_URL': getattr(settings, 'REQUEST_PERM_URL', None)
+    })
+    return http.HttpResponseForbidden(template.render(context))
 
 
 class BaseUser(Base):
