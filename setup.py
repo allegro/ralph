@@ -34,8 +34,8 @@ setup(
     package_dir={'': 'src'},
     zip_safe=False,  # because templates are loaded from file path
     install_requires=[
-        'bob-ajax-selects==1.3.4',
-        'django-bob==1.7.0',
+        'bob-ajax-selects==1.4.0',
+        'django-bob==1.8.0',
         'django-powerdns-dnssec==0.9.3',
         'django-tastypie==0.9.16',
         'django-rq==0.4.5',
@@ -65,7 +65,7 @@ setup(
         'RestKit==4.2.0',
         'rq>=0.3.7',
         'rq-scheduler==0.3.6',
-        'setproctitle==1.1.6',
+        'setproctitle==1.1.8',
         'South==0.7.6',
         'splunk-sdk==0.8.0',
         'SQLAlchemy==0.7.8',

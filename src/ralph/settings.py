@@ -18,6 +18,7 @@ execfile(namespace_package_support)
 #
 # common stuff for each install
 #
+from datetime import timedelta
 
 SITE_ID = 1
 USE_I18N = True
@@ -125,13 +126,14 @@ LOGGING = {
     },
     'formatters': {
         'verbose': {
-            'datefmt': '%H:%M:%S',
+            'datefmt': '%d.%m.%Y %H:%M:%S',
             'format': (
-                '%(asctime)08s,%(msecs)03d %(levelname)-7s [%(processName)s'
+                '[%(asctime)08s,%(msecs)03d] %(levelname)-7s [%(processName)s'
                 ' %(process)d] %(module)s - %(message)s'),
         },
         'simple': {
-            'format': '%(levelname)s %(message)s',
+            'datefmt': '%H:%M:%S',
+            'format': '[%(asctime)08s] %(levelname)-7s %(message)s',
         },
     },
     'loggers': {
@@ -152,6 +154,7 @@ LOGGING = {
         },
     },
 }
+POSSIBLE_EVENTS_TIMEDELTA = timedelta(days=30)
 FORCE_SCRIPT_NAME = ''
 # testing settings
 import os

@@ -48,7 +48,6 @@ The deployment form that appears lets you pick the desired new venture, role,
 IP address and hostname for the server, as well as the MAC address that should
 be used for booting it, and the boot image to boot from.
 
-
 Bulk deployment
 ---------------
 
@@ -56,6 +55,26 @@ It is also possible to start deployments in bulk. The "add device" tab in the
 "racks" section has an option called "servers" that lets you specify a CSV file
 with all the required information, validates it and automatically fills in
 missing information, and then starts deployments in bulk from it.
+
+Programmatic Deployment of VMs
+------------------------------------
+
+The URL /api/add_vm/ can be used for a quick deployment of VMs. To perform it
+you need to send a POST request with JSON, YAML or XML data. This data should
+contain the following keys:
+
+    network:
+        The name of the network for the new machine
+    management-ip:
+        The IP of the container that will host the VM
+    mac:
+        The MAC address of VMs network interface
+    venture:
+        The symbol of the venture
+    venture-role:
+        The name of the venture role
+        
+Ralph will create a new VM and also configure powerdns and DHCP for it.
 
 
 Plugins
