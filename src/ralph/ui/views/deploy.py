@@ -8,11 +8,19 @@ from __future__ import unicode_literals
 
 import cStringIO
 
+from django.http import Http404
 from django.views.generic import CreateView
-from django.http import HttpResponseRedirect
+from django.views.decorators.csrf import csrf_exempt
+from django.views.generic.base import View
+from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib import messages
+from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
+from django.utils.translation import ugettext_lazy as _
+from lck.django.common import nested_commit_on_success
 from lck.django.common.models import MACAddressField
+from tastypie.authentication import ApiKeyAuthentication
+from tastypie.serializers import Serializer
 
 from ralph.deployment.models import MassDeployment as MassDeploymentModel
 from ralph.deployment.util import (
@@ -20,13 +28,22 @@ from ralph.deployment.util import (
     get_first_free_ip,
     get_next_free_hostname,
 )
-from ralph.discovery.models import Device, Network, IPAddress
+from ralph.business.models import Venture, VentureRole
+from ralph.dnsedit.util import reset_dns, reset_dhcp
+from ralph.discovery.models import (
+    Device,
+    DeviceType,
+    Network,
+    IPAddress,
+    EthernetSpeed,
+)
 from ralph.ui.views.common import BaseMixin, Base, TEMPLATE_MENU_ITEMS
 from ralph.ui.forms.deployment import (
     DeploymentForm,
     MassDeploymentForm,
     PrepareMassDeploymentForm,
 )
+from ralph.util import Eth
 from bob.csvutil import UnicodeReader, UnicodeWriter
 
 
@@ -366,3 +383,83 @@ class MassDeployment(Base):
             return HttpResponseRedirect('/')
         messages.error(self.request, "Please correct the errors.")
         return super(MassDeployment, self).get(*args, **kwargs)
+
+
+class AddVM(View):
+    """API entry-point for adding VMs"""
+
+    def get_parent_device(self, data):
+        addr = get_object_or_404(IPAddress, address=data['management-ip'])
+        return addr.device
+
+    def get_hostname(self, device):
+        rack = device.find_rack()
+        if rack:
+            networks = rack.network_set.filter(
+                environment__isnull=False,
+            ).order_by('name')
+            for network in networks:
+                next_hostname = get_next_free_hostname(network.environment)
+                if next_hostname:
+                    return next_hostname
+            raise Http404('Cannot find a hostname')
+        else:
+            raise Http404('Cannot find a rack for the parent machine')
+
+    @nested_commit_on_success
+    def post(self, request, *args, **kwargs):
+        from ralph.urls import LATEST_API
+        actor = User.objects.get(
+            username=ApiKeyAuthentication().get_identifier(request)
+        )
+        if not actor.has_perm('create_devices'):
+            raise HttpResponse(_('You cannot create new devices'), status=401)
+        data = Serializer().deserialize(
+            request.body,
+            format=request.META.get('CONTENT_TYPE', 'application/json')
+        )
+        mac = MACAddressField.normalize(data['mac'])
+        parent = self.get_parent_device(data)
+        ip_addr = get_first_free_ip(data['network'])
+        hostname = self.get_hostname(parent)
+        venture = get_object_or_404(
+            Venture,
+            symbol=data['venture']
+        )
+        role = get_object_or_404(
+            VentureRole,
+            venture=venture,
+            name=data['venture-role']
+        )
+        ethernets = [Eth(
+            'DEPLOYMENT MAC',
+            mac,
+            EthernetSpeed.unknown,
+        )]
+        device = Device.create(
+            ethernets=ethernets,
+            model_type=DeviceType.unknown,
+            model_name='Unknown',
+            verified=True,
+        )
+        device.name = hostname
+        device.parent = parent
+        device.venture = venture
+        device.venture_role = role
+        device.save()
+        IPAddress.objects.create(
+            address=ip_addr,
+            device=device,
+            hostname=hostname,
+        )
+        reset_dns(hostname, ip_addr)
+        reset_dhcp(ip_addr, data['mac'])
+        resp = HttpResponse('', status=201)
+        resp['Location'] = LATEST_API.canonical_resource_for(
+            'dev'
+        ).get_resource_uri(device)
+        return resp
+
+    @csrf_exempt
+    def dispatch(self, *args, **kwargs):
+        return super(AddVM, self).dispatch(*args, **kwargs)
