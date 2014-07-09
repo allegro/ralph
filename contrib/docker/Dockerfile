@@ -13,10 +13,8 @@ RUN apt-get install -y libcap2-bin
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y redis-server mysql-server libmysqlclient-dev libmysqld-dev
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y openssh-server apache2 supervisor
 RUN apt-get install -y git
-RUN /usr/bin/mysqld_safe & \
-    sleep 10s && \
-    echo "CREATE DATABASE ralph DEFAULT CHARACTER SET 'utf8'" | mysql && \
-    echo "GRANT ALL ON ralph.* TO ralph@'%' IDENTIFIED BY 'ralph'; FLUSH PRIVILEGES" | mysql
+ADD init_mysql.sh /root/init_mysql.sh
+RUN sh /root/init_mysql.sh
 #RUN echo 'alter database ralph character set utf8 collate utf8_polish_ci' | mysql -u root 
 RUN pip install -U pip
 RUN pip install -U flake8
