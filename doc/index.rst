@@ -6,6 +6,7 @@ Ralph documentation
 
    overview
    installation
+   donpedro
    configuration
    optional_modules/index
    develop_plugins
