@@ -1,4 +1,4 @@
-include README.rst badges.rst CHANGES.rst LICENSE NOTICE
+include README.rst badges.rst OVERVIEW.rst CHANGES.rst LICENSE NOTICE
 recursive-include doc *.py *.rst *.txt *.html *.css *.js *.png *.git *.jpg *.conf *.bat *.pdf *.docx Makefile
 recursive-include src/ralph/account/templates *
 recursive-include src/ralph/cmdb/fixtures *
