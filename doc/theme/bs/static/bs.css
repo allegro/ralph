@@ -179,7 +179,7 @@ h1,h2,h3,h4 {
 
 .promo-story-1 h1 {
     margin-bottom: 50px;
-    color: white;
+    color: #333;
 }
 
 .promo-story-2 h1 {
@@ -188,7 +188,7 @@ h1,h2,h3,h4 {
 }
 
 .promo-story-1 {
-    background: linear-gradient(to bottom, rgba(198, 110, 27, 0.47) 0%, #FFFFFF 100%);
+    background: linear-gradient(to bottom, rgba(244, 192, 143, 0.47) 0%, #FFFFFF 100%);
     padding-bottom: 100px;
 }
 
