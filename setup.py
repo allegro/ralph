@@ -41,6 +41,7 @@ setup(
         'django-rq==0.4.5',
         'django==1.4.13',
         'django-pluggable-apps==1.2',
+        'django-redis-cache==0.13.0',
         'dnspython==1.11.0',
         'feedparser==5.1.2',
         'fugue-icons==3.5.3',

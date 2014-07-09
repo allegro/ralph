@@ -2,17 +2,40 @@
 Install / Upgrade Ralph
 ============================
 
-The easy way - prebuilt image
-==============================
+Test drive - the easy way with docker
+=====================================
 
-It is the easiest way to try out Ralph - download ready to use VirtualBox image.
-You can do everything(scan, reporting) you would do with normal Ralph installation.
+It is the easiest way to try out Ralph for testing - using pre-built docker image with the worker, database, and server all together.
+You can do everything(scan, reporting) you would do with normal Ralph installation, but the data, by default, are not stored permanently - see details below.
 
-https://www.dropbox.com/sh/ga6vblh1p2gr79e/AAAwjRFMYaw4MYJqnh-i4C9ga
+1. Install docker using instruction https://docs.docker.com/installation/
+2. Downloading and running ralph test instance can be as easy as typing::
+
+    docker run vi4m/ralph
+
+3. Remember, that by default after stoping instance all your saved data will be erased, because mysql server is running inside the docker. If you don't like this - you can of course configure docker image to store data permanently:
+
+* configure /.ralph/settings ot use mysql server outside of docker container  or
+* as an alternative, you can mount /var/lib/mysql to the host persistent directory (read more: https://docs.docker.com/userguide/dockervolumes/)
+
+For example, for built-in mysql server:
+
+1. Mount local directory /my/local/directory as mysql storage and initialize it with database structure::
+
+  docker run -v /my/local/directory:/var/lib/mysql -t -i vi4m/ralph /root/init_mysql.sh
+
+2. Ready. Now just run ralph on it::
+
+  docker run -v /my/local/directory:/var/lib/mysql -t -i vi4m/ralph
 
 
 Upgrading existing installation
 ===============================
+
+.. note::
+
+    To upgrade docker image, just re-download docker instance, and type `ralph migrate` inside the container.
+
 
 Before you start the upgrade, you need to stop any Ralph processes that are
 running.
