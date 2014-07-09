@@ -9,9 +9,7 @@ assert sys.version_info >= (2, 7), "Python 2.7+ required."
 current_dir = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(current_dir, 'README.rst')) as readme_file:
     with open(os.path.join(current_dir, 'badges.rst')) as badges_file:
-        with open(os.path.join(current_dir, 'CHANGES.rst')) as changes_file:
-            long_description = readme_file.read() + '\n' + badges_file.read() + \
-                 '\n' + changes_file.read()
+        long_description = readme_file.read() + '\n' + badges_file.read()
 
 sys.path.insert(0, current_dir + os.sep + 'src')
 from ralph import VERSION
