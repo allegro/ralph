@@ -107,9 +107,7 @@ For example file /tmp/data.json ::
     }
 
 
-
 2. Send JSON data to the API interface using your script(REST call), or via commandline like this ::
-
 
     curl -XPOST https://ralph.office/api/v0.9/scanresult/ -d @/tmp/data.json -H "Authorization: ApiKey user.name:api_key" -H "Content-type: application/json"
 
