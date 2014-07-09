@@ -40,7 +40,7 @@ to ``makeconf``.
 You can also create your configuration in ``/etc`` by adding ``--global`` to
 ``makeconf``.
 
-.. warning::  
+.. warning::
 
    The ``settings`` file will contain passwords and other sensitive information.
    Therefore by default ``makeconf`` ensures your configuration directory as
@@ -59,11 +59,9 @@ longer the better.
 Database backend
 ----------------
 
-To change the default SQLite database backend to another one, you need to edit
-the :index:`DATABASES` dictionary. For the complete set of options check `the
-official Django docs
-<https://docs.djangoproject.com/en/1.4/ref/settings/#databases>`_. For example,
-setting up MySQL could look like this::
+We currently only support MySQL backend, though some functionality could work with sqlite backend as well.
+
+Setting up MySQL could look like this::
 
   DATABASES = {
     'default': {
@@ -86,8 +84,6 @@ There is a number of Redis queues you need to have. By default they are:
 
 * default - all control tasks go here
 
-* email - asynchronous e-mail sent from the application goes here
-
 * cmdb_* - CMDB related tasks go here
 
 * reports - asynchronous reports from the Web app go here
@@ -100,8 +96,20 @@ queues to ``RQ_QUEUES_LIST``.
 Cache
 -----
 
-To change the default in-memory cache to Memcached, change the default cache's
-backend from ``LocMemCache`` to ``MemcachedCache`` and specify its location,
-i.e. ``127.0.0.1:11211``. You can also use Unix sockets and share cache over
-multiple servers. Consult `the official Django docs
-<https://docs.djangoproject.com/en/dev/topics/cache/?from=olddocs/#memcached>`_.
+The required CACHE backend is currently `redis-cache` which requires running redis instance::
+
+  CACHES = dict(
+       default = dict(
+           BACKEND = 'redis_cache.cache.RedisCache',
+           LOCATION = 'ralph_redis_master:6379',
+           OPTIONS = dict(
+               DB=2,
+               PASSWORD='ralph666',
+               CLIENT_CLASS='redis_cache.client.DefaultClient',
+               PARSER_CLASS='redis.connection.HiredisParser',
+               PICKLE_VERSION=2,
+           ),
+           KEY_PREFIX = 'RALPH',
+       )
+   )
+

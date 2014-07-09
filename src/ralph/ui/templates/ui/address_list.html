@@ -78,7 +78,7 @@
                         <td class="column-last-seen" style="width:8em">{{ d.last_seen|date:"Y-m-d H:i" }}</td>
                         <td class="column-snmp">{{ d.snmp_name|default:'' }}</td>
                         <td class="column-http">{{ d.http_family|default:'' }}</td>
-                        <td>{% if d.scan_summary.changed %}
+                        <td>{% if d.scan_summary %}
                             <a href="/ui/scan/status/{{ d.address }}/"><i class="fugue-icon fugue-flashlight"></i>&nbsp;Show full change</a>
                         {% endif %}</td>
                     </tr>
