@@ -124,5 +124,35 @@ alongside other existing plugins like http, snmp, ping.
 First-class SCAN plugin allows you to reuse some features like:
   - you don't have to reinvent ping scans, snmp scanning
   - Python knowledge required
-  - strictly integrated with k
+  - strictly integrated with existing codebase(we accept pull requests :))
+  - see example plugin: https://github.com/allegro/ralph/blob/develop/src/ralph/scan/plugins/hp_oa.py
+
+Create file in src/ralph/scan/plugins which provide `scan_address` function, for example something like this ::
+
+    def scan_address(ip_address, **kwargs):
+        snmp_name = (kwargs.get('snmp_name', '') or '').lower()
+        if snmp_name and "onboard administrator" not in snmp_name:
+            raise NoMatchError('It is not HP OA.')
+        if kwargs.get('http_family', '') not in ('Unspecified', 'RomPager', 'HP'):
+            raise NoMatchError('It is not HP OA.')
+        messages = []
+        result = get_base_result_template('hp_oa', messages)
+        try:
+            device_info = _hp_oa(ip_address)
+        except (IncompatibleAnswerError, IncompleteAnswerError) as e:
+            messages.append(unicode(e))
+            result['status'] = 'error'
+        else:
+            result['status'] = 'success'
+            result['device'] = device_info
+        return result
+
+Function should return dict object with keys:
+- `status`: string ("error", "success")
+- `device`: the same `data` subkey as in JSON PUSH interface, e.g { "serial_number" : "sn", "model_name": "test"}
+
+Raise NoMatchError if the plugin didn't match the device you scan.
+
+
+
 

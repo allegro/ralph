@@ -5,7 +5,7 @@ Change Log
 2.0.0-stable
 ~~~~~~~~~~~~
 
-Released on July 1, 2014
+Released on July 9, 2014
 
 This is a stable release.
 
@@ -26,6 +26,10 @@ This is a stable release.
 * SCAN: Fixed 3par plugin #892 return results instead device_info.
 
 * SCAN: Fixed ascii encoding problem in ssh_xen plugin.
+
+* SCAN: Onstor now collects diskshare mounts.
+
+* SCAN: Fixed getting info from multipath when there are multipath config warnings.
 
 * Feature/pricing api - shares - venture and virtual filters - pricing api: shares changed (back) to share mounts; added venture param and virtual mounts filter
 
