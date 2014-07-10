@@ -19,7 +19,12 @@ RUN sh /root/init_mysql.sh
 RUN pip install -U pip
 RUN pip install -U flake8
 RUN git clone http://github.com/allegro/ralph.git /root/ralph-git/ralph
-RUN cd /root/ralph-git/ralph; make install 
+RUN git clone http://github.com/allegro/ralph_assets.git /root/ralph-git/ralph_assets
+RUN git clone http://github.com/allegro/ralph_pricing.git /root/ralph-git/ralph_pricing
+RUN cd /root/ralph-git/ralph; make install
+RUN cd /root/ralph-git/ralph_assets; pip install .
+RUN cd /root/ralph-git/ralph_pricing; pip install .
+
 RUN ralph makeconf
 ADD settings /.ralph/additional-settings
 ADD createsuperuser.py /root/createsuperuser.py
