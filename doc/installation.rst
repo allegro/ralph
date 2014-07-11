@@ -8,12 +8,17 @@ Test drive - the easy way with docker
 It is the easiest way to try out Ralph for testing - using pre-built docker image with the worker, database, and server all together.
 You can do everything(scan, reporting) you would do with normal Ralph installation, but the data, by default, are not stored permanently - see details below.
 
+
 1. Install docker using instruction https://docs.docker.com/installation/
 2. Downloading and running ralph test instance can be as easy as typing::
 
-    docker run vi4m/ralph
+    docker run -P -t -i vi4m/ralph:stable
 
-3. Remember, that by default after stoping instance all your saved data will be erased, because mysql server is running inside the docker. If you don't like this - you can of course configure docker image to store data permanently:
+3. Check your instance port by typing ``docker ps -l``, for example 53914, and point your browser to: ``http://YOUR_DOCKER_IP:53914``.
+Log in using username: ``ralph``: password: ``ralph``. 
+Enjoy! For more information read docker manuals.
+
+4. Remember, that by default after stoping instance all your saved data will be erased, because mysql server is running inside the docker. If you don't like this - you can of course configure docker image to store data permanently:
 
 * configure /.ralph/settings ot use mysql server outside of docker container  or
 * as an alternative, you can mount /var/lib/mysql to the host persistent directory (read more: https://docs.docker.com/userguide/dockervolumes/)
@@ -22,12 +27,15 @@ For example, for built-in mysql server:
 
 1. Mount local directory /my/local/directory as mysql storage and initialize it with database structure::
 
-  docker run -v /my/local/directory:/var/lib/mysql -t -i vi4m/ralph /root/init_mysql.sh
+  docker run -P -t -i -v /my/local/directory:/var/lib/mysql -t -i vi4m/ralph:stable /root/init_mysql.sh
 
 2. Ready. Now just run ralph on it::
 
-  docker run -v /my/local/directory:/var/lib/mysql -t -i vi4m/ralph
+  docker run -P -t -i -v /my/local/directory:/var/lib/mysql -t -i vi4m/ralph:stable
 
+
+.. note::
+   Every hour we build cutting-edge release called vi4m/ralph:latest too.
 
 Upgrading existing installation
 ===============================
