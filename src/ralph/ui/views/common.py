@@ -187,7 +187,11 @@ def _get_details(dev, purchase_only=False, with_price=False,
         yield detail
 
 
-class BaseMixin(object):
+class ACLGateway(object):
+    pass
+
+
+class BaseMixin(ACLGateway):
     section = 'home'
 
     def __init__(self, *args, **kwargs):
