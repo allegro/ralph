@@ -3,7 +3,7 @@
 Overview
 ========
 
-Ralph provides an early (experimental) version of Configuration Management
+Ralph provides an early (experimental) version of a Configuration Management
 Database module.
 
 CMDB module

@@ -1,19 +1,19 @@
-============================
+=======================
 Install / Upgrade Ralph
-============================
+=======================
 
 Test drive - the easy way with docker
 =====================================
 
 It is the easiest way to try out Ralph for testing - using pre-built docker image with the worker, database, and server all together.
-You can do everything(scan, reporting) you would do with normal Ralph installation, but the data, by default, are not stored permanently - see details below.
+You can do everything (scan, reporting) you would do with normal Ralph installation, but the data, by default, isn't stored permanently - see details below.
 
-1. Install docker using instruction https://docs.docker.com/installation/
+1. Install docker using instructions at https://docs.docker.com/installation/
 2. Downloading and running ralph test instance can be as easy as typing::
 
     docker run vi4m/ralph
 
-3. Remember, that by default after stoping instance all your saved data will be erased, because mysql server is running inside the docker. If you don't like this - you can of course configure docker image to store data permanently:
+3. Remember, that by default after stopping the instance all your saved data will be erased, because mysql server is running inside the docker. If you don't like this - you can of course configure docker image to store data permanently:
 
 * configure /.ralph/settings ot use mysql server outside of docker container  or
 * as an alternative, you can mount /var/lib/mysql to the host persistent directory (read more: https://docs.docker.com/userguide/dockervolumes/)
@@ -29,8 +29,8 @@ For example, for built-in mysql server:
   docker run -v /my/local/directory:/var/lib/mysql -t -i vi4m/ralph
 
 
-Upgrading existing installation
-===============================
+Upgrading an existing installation
+==================================
 
 .. note::
 

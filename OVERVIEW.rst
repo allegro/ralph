@@ -7,7 +7,7 @@ Ralph consists of 3 submodules:
 
 Ralph Core
 **********
-Ralph Core(DCIM and CMDB) acts as a base system for Ralph applications.
+Ralph Core (DCIM and CMDB) acts as a base system for Ralph applications.
 It is the database of Networks, IP Addresses, Racks, and discovered hardware.
 
 It allows you to:
@@ -20,9 +20,9 @@ Ralph Assets
 ************
 This submodule provides advanced Asset management system which has following features:
 	* manual inventory system
-	* can be using alongside Ralph Core discovery using reconciliation technique
-	* covers complete life cycle of asset from purchase to utilization
-	* gives ability to generating custom defined PDF documents (hardware assignments printouts for example)
+	* can be used alongside Ralph Core discovery using reconciliation technique
+	* covers complete life cycle of assets from purchase to decommissioning
+	* gives ability to generate custom defined PDF documents (hardware assignments printouts for example)
 	* integrated assets license management
 	* integrated basic hardware support/contracts management
 	* easy & usable module for generic inventory tasks
