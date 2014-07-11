@@ -30,15 +30,12 @@ class ACLInheritanceTest(TestCase):
         # such mechanisms in a different way.
         excluded_callbacks = [
             ('serve', 'django.views.static'),
-            ('serve', 'django.views.static'),
             ('login', 'django.contrib.auth.views'),
             ('logout', 'django.contrib.auth.views'),
             ('redirect_to', 'django.views.generic.simple'),
 
             ('show_ventures', 'ralph.business.views'),
-            ('show_ventures', 'ralph.business.views'),
 
-            ('servertree', 'ralph.integration.views'),
             ('servertree', 'ralph.integration.views'),
 
             ('logout', 'ralph.ui.views'),
