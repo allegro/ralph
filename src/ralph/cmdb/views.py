@@ -26,6 +26,7 @@ from django.utils.safestring import mark_safe
 from django.utils import simplejson
 from django.utils.html import escape
 from django.conf import settings
+from django.core.urlresolvers import reverse
 
 from lck.cache.memoization import memoize
 from lck.django.common import nested_commit_on_success
@@ -1446,8 +1447,9 @@ class Search(BaseCMDBView):
         )
         for bl in rel_bl:
             business_line = ('<a href="%s">%s</a>' % (
-                escape(bl.parent.id), escape(bl.parent.name))
-            )
+                escape(reverse('ci_view', kwargs={'ci_id': bl.parent.id})),
+                escape(bl.parent.name),
+            ))
         return mark_safe(business_line)
 
     def get_venture(self, relations, i, child=False):
