@@ -33,6 +33,7 @@ import pluggableapp
 from powerdns.models import Record
 
 from ralph.discovery.models_component import Ethernet
+from ralph.account.models import Perm, ralph_permission
 from ralph.app import RalphModule
 from ralph.scan.errors import Error as ScanError
 from ralph.scan.manual import queue_scan_address
@@ -187,7 +188,20 @@ def _get_details(dev, purchase_only=False, with_price=False,
         yield detail
 
 
-class BaseMixin(object):
+class ACLGateway(object):
+    perms = [
+        {
+            'perm': Perm.has_core_access,
+            'msg': _("You don't have permissions for the resource requested."),
+        },
+    ]
+
+    @ralph_permission(perms)
+    def dispatch(self, *args, **kwargs):
+        return super(ACLGateway, self).dispatch(*args, **kwargs)
+
+
+class BaseMixin(ACLGateway):
     section = 'home'
 
     def __init__(self, *args, **kwargs):

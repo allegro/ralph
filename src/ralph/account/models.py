@@ -223,8 +223,9 @@ class BoundPerm(TimeTrackable, EditorTrackable):
 
 
 def ralph_permission(perms):
-    """ Decorator checking permission to view
-        use example:
+    """
+    Decorator responsible for checking user's permissions to a given view.
+    Permissions to check should be specified in the following way:
         perms = [
             {
                 'perm': Perm.read_device_info_reports,
@@ -234,6 +235,7 @@ def ralph_permission(perms):
     """
 
     def decorator(func):
+        func.decorated_with = 'ralph_permission'  # for unit tests etc.
         def inner_decorator(self, *args, **kwargs):
             # decorator on get/post/...
             if hasattr(self, 'request'):
