@@ -235,7 +235,6 @@ def ralph_permission(perms):
     """
 
     def decorator(func):
-        func.decorated_with = 'ralph_permission'  # for unit tests etc.
         def inner_decorator(self, *args, **kwargs):
             # decorator on get/post/...
             if hasattr(self, 'request'):
@@ -250,6 +249,7 @@ def ralph_permission(perms):
                 if not has_perm(perm['perm']):
                     return HttpResponseForbidden(perm['msg'])
             return func(self, *args, **kwargs)
+        func.decorated_with = 'ralph_permission'  # for unit tests etc.
         return functools.wraps(func)(inner_decorator)
     return decorator
 
