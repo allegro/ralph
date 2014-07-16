@@ -18,6 +18,10 @@ from ralph.util import network
 
 SETTINGS = settings.SCAN_PLUGINS.get(__name__, {})
 _3PAR_RE = re.compile(r'^\s+ID\s+-+Name-+\s+-+Model-+')
+SYSINFO_RE_TMPL = "^([\w\s-]*?)([-]*{}[-]*)([\w\s-]*?)$"
+NAME_RE = re.compile(SYSINFO_RE_TMPL.format('Name'))
+MODEL_NAME_RE = re.compile(SYSINFO_RE_TMPL.format('Model'))
+SN_RE = re.compile(SYSINFO_RE_TMPL.format('Serial'))
 
 
 def _connect_ssh(ip_address, user, password):
@@ -41,6 +45,21 @@ def _handle_shares(shares):
     ]
 
 
+def _get_sys_info(lines):
+    """
+    Return info about name, model and serial number from showsys output.
+    """
+    headers = lines[-2]
+    values = lines[-1]
+    result = []
+
+    for regex in (NAME_RE, MODEL_NAME_RE, SN_RE):
+        header = re.search(regex, headers).groups()
+        value = values[len(header[0]):len(header[0])+len(header[1])].strip()
+        result.append(value)
+    return tuple(result)
+
+
 def _ssh_3par(ip_address, user, password):
     ssh = _connect_ssh(ip_address, user, password)
     try:
@@ -48,10 +67,8 @@ def _ssh_3par(ip_address, user, password):
         lines = list(stdout.readlines())
         if not _3PAR_RE.match(lines[1]):
             raise NoMatchError('Not a 3PAR.')
-        line = lines[-1]
-        name = line[5:15].strip()
-        model_name = line[16:28].strip()
-        sn = line[29:37].strip()
+        name, model_name, sn = _get_sys_info(lines)
+
         stdin, stdout, stderr = ssh.exec_command(
             "showvv -showcols "
             "Id,Name,VV_WWN,Snp_RawRsvd_MB,Usr_RawRsvd_MB,Prov",
