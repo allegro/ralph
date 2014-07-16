@@ -68,9 +68,9 @@ namespace DonPedro.DTO
 			)
 			{
 				// IBM - multipath
-            	// HP logical volume - multipath
-            	// SUN - multipath
-            	wwn = wwn.Substring(1);
+				// HP logical volume - multipath
+				// SUN - multipath
+				wwn = wwn.Substring(1);
 			}
 
 			return wwn;
