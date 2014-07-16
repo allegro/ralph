@@ -55,7 +55,7 @@ def _get_sys_info(lines):
 
     for regex in (NAME_RE, MODEL_NAME_RE, SN_RE):
         header = re.search(regex, headers).groups()
-        value = values[len(header[0]):len(header[0])+len(header[1])].strip()
+        value = values[len(header[0]):len(header[0]) + len(header[1])].strip()
         result.append(value)
     return tuple(result)
 
