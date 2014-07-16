@@ -49,6 +49,7 @@ else:
             if profile_map['manager'] in ldap_user.attrs:
                 manager_ref = ldap_user.attrs[profile_map['manager']][0]
                 # CN=John Smith,OU=TOR,OU=Corp-Users,DC=mydomain,DC=internal
+                manager_ref = manager_ref.decode('utf-8')
                 cn = manager_ref.split(',')[0][3:]
                 profile.manager = cn
 
