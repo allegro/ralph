@@ -78,7 +78,7 @@ def _create_or_update_share_mount(ip, device, share_mount):
                 ip.address
             )
         )
-        return
+        return False, None
     try:
         mount = DiskShareMount.objects.get(device=device, share=share)
     except DiskShareMount.DoesNotExist:
@@ -128,7 +128,8 @@ def _create_or_update_share_mount(ip, device, share_mount):
     if share_address:
         mount.address = share_address
     mount.is_virtual = share_mount.get('is_virtual', False)
-    # mount.save()  # temporary
+    mount.save()
+    return True, mount
 
 
 def _append_shares_to_device(ip, device, data, external_priorities={}):
@@ -142,13 +143,21 @@ def _append_shares_to_device(ip, device, data, external_priorities={}):
     )
     append_merged_proposition(full_data, device, external_priorities)
     selected_data = select_data(full_data, external_priorities)
+    parsed_mounts = set()
     for share_mount in selected_data.get('disk_shares', []):
-        _create_or_update_share_mount(ip, device, share_mount)
+        status, mount = _create_or_update_share_mount(ip, device, share_mount)
+        if mount:
+            parsed_mounts.add(mount.pk)
+    device.disksharemount_set.exclude(pk__in=parsed_mounts).delete()
 
 
 def _append_shares_to_subdevice(ip, device, shares_data):
+    parsed_mounts = set()
     for share_mount in shares_data:
-        _create_or_update_share_mount(ip, device, share_mount)
+        status, mount = _create_or_update_share_mount(ip, device, share_mount)
+        if mount:
+            parsed_mounts.add(mount.pk)
+    device.disksharemount_set.exclude(pk__in=parsed_mounts).delete()
 
 
 def _mount_shares(ip, data):
