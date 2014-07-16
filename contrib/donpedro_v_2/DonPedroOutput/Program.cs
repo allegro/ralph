@@ -37,9 +37,9 @@ namespace DonPedroOutput
 						);
         				writer = new StreamWriter(fstream);
 					}
-					catch (IOException e)
+					catch (Exception e)
 					{
-						Console.WriteLine (String.Format("Cannot open {0} for writing.", fileName));
+						Console.WriteLine (String.Format("Cannot open `{0}` for writing.", fileName));
         				Console.WriteLine (e.Message);
         				return;
 					}
