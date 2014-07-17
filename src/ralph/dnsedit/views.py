@@ -14,7 +14,9 @@ from django.http import (
 )
 from lck.django.common import remote_addr
 from django.shortcuts import get_object_or_404
+from django.utils.translation import ugettext_lazy as _
 
+from ralph.account.models import Perm, ralph_permission
 from ralph.discovery.models import DataCenter, Environment
 from ralph.dnsedit.models import DHCPServer
 from ralph.dnsedit.dhcp_conf import (
@@ -30,6 +32,13 @@ DHCP_DISABLE_NETWORKS_VALIDATION = getattr(
     settings, 'DHCP_DISABLE_NETWORKS_VALIDATION', False,
 )
 
+perms = [
+    {
+        'perm': Perm.has_core_access,
+        'msg': _("You don't have permissions for this resource."),
+    },
+]
+
 
 class Index(Base):
     template_name = 'dnsedit/index.html'
@@ -39,6 +48,7 @@ class Index(Base):
         super(Index, self).__init__(*args, **kwargs)
 
 
+@ralph_permission(perms)
 def dhcp_synch(request):
     if not api.is_authenticated(request):
         return HttpResponseForbidden('API key required.')
@@ -63,6 +73,7 @@ def _get_params(request):
     return dc_names, env_names
 
 
+@ralph_permission(perms)
 def dhcp_config_entries(request):
     if not api.is_authenticated(request):
         return HttpResponseForbidden('API key required.')
@@ -99,6 +110,7 @@ def dhcp_config_entries(request):
     )
 
 
+@ralph_permission(perms)
 def dhcp_config_networks(request):
     if not api.is_authenticated(request):
         return HttpResponseForbidden('API key required.')
@@ -134,6 +146,7 @@ def dhcp_config_networks(request):
     )
 
 
+@ralph_permission(perms)
 def dhcp_config_head(request):
     if not api.is_authenticated(request):
         return HttpResponseForbidden('API key required.')

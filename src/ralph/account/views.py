@@ -28,13 +28,8 @@ from ralph.ui.views.common import Base
 @requires_csrf_token
 def HTTP403(request, template_name='403.html'):
     """
-    Permission denied (403) handler.
-
-    Templates: :template:`403.html`
-    Context: None
-
-    If the template does not exist, an Http403 response containing the text
-    "403 Forbidden" (as per RFC 2616) will be returned.
+    A slightly customized version of 'permission_denied' handler taken from
+    'django.views.defaults' (added 'REQUEST_PERM_URL' etc.).
     """
     try:
         template = loader.get_template(template_name)
