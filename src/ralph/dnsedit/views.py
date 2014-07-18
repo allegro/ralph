@@ -40,14 +40,6 @@ perms = [
 ]
 
 
-class Index(Base):
-    template_name = 'dnsedit/index.html'
-    section = 'dns'
-
-    def __init__(self, *args, **kwargs):
-        super(Index, self).__init__(*args, **kwargs)
-
-
 @ralph_permission(perms)
 def dhcp_synch(request):
     if not api.is_authenticated(request):
