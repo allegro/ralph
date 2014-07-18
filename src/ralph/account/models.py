@@ -251,7 +251,7 @@ def ralph_permission(perms):
             has_perm = profile.has_perm
             for perm in perms:
                 if not has_perm(perm['perm']):
-                    return HttpResponseForbidden(perm['msg'].capitalize())
+                    return HttpResponseForbidden(unicode(perm['msg']))
             return func(self, *args, **kwargs)
         func.decorated_with = 'ralph_permission'  # for unit tests etc.
         return functools.wraps(func)(inner_decorator)
