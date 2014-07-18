@@ -31,12 +31,6 @@ SETTINGS = settings.SCAN_PLUGINS.get(__name__, {})
 SSH_USER, SSH_PASSWORD = SETTINGS['ssh_user'], SETTINGS['ssh_pass']
 
 
-if not SSH_USER or not SSH_PASSWORD:
-    raise NotConfiguredError(
-        "SSH not configured in plugin {}.".format(__name__),
-    )
-
-
 class CiscoSSHClient(paramiko.SSHClient):
 
     """SSHClient modified for Cisco's broken SSH console."""
@@ -85,11 +79,11 @@ class CiscoSSHClient(paramiko.SSHClient):
                 return buffer[1:-1]
 
 
-def _connect_ssh(ip):
+def _connect_ssh(ip, username, password):
     if not network.check_tcp_port(ip, 22):
         raise ConnectionError('Port 22 closed.')
     return network.connect_ssh(
-        ip, SSH_USER, SSH_PASSWORD, client=CiscoSSHClient,
+        ip, username, password, client=CiscoSSHClient,
     )
 
 
@@ -164,7 +158,11 @@ def scan_address(ip_address, **kwargs):
         raise NoMatchError('Incompatible Nexus found.')
     if kwargs.get('http_family') not in ('Unspecified', 'Cisco'):
         raise NoMatchError('It is not Cisco.')
-    ssh = _connect_ssh(ip_address)
+    if not SSH_USER or not SSH_PASSWORD:
+        raise NotConfiguredError(
+            "SSH not configured in plugin {}.".format(__name__),
+        )
+    ssh = _connect_ssh(ip_address, SSH_USER, SSH_PASSWORD)
     hostname = network.hostname(ip_address)
     try:
         ssh.cisco_command('terminal length 500')
