@@ -933,6 +933,9 @@ class Addresses(DeviceDetailView):
                 for form in self.ip_formset.extra_forms:
                     # Bind the newly created addresses to this device.
                     if form.has_changed():
+                        IPAddress.objects.filter(
+                            address=form.instance.address
+                        ).delete()
                         form.instance.device = self.object
                 self.ip_formset.save()
                 messages.success(self.request, "IP addresses updated.")

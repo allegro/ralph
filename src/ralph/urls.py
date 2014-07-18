@@ -123,7 +123,6 @@ urlpatterns = patterns(
     url(r'^warnings/$', RedirectView.as_view(url='/ui/catalog/')),
     url(r'^integration/', include('ralph.integration.urls')),
     url(r'^ui/', include('ralph.ui.urls')),
-    url(r'^dns/', include('ralph.dnsedit.urls')),
     url(r'^dhcp-synch/', 'ralph.dnsedit.views.dhcp_synch'),
     url(r'^dhcp-config-entries/', 'ralph.dnsedit.views.dhcp_config_entries'),
     url(r'^dhcp-config-networks/', 'ralph.dnsedit.views.dhcp_config_networks'),

@@ -108,7 +108,7 @@ def get_subswitches(switch_version, hostname, ip_address):
     ]
     num_switches = len(base_mac_addresses)
     software_versions = None
-    model_names = None
+    model_names = []
     for i, line in enumerate(switch_version):
         if re.match("Switch\W+Ports\W+Model", line):
             model_names = [
@@ -179,7 +179,7 @@ def scan_address(ip_address, **kwargs):
         ssh.close()
     matches = re.match(
         'Base ethernet MAC Address\s+:\s*([0-9aA-Z:]+)', mac)
-    if matches.groups():
+    if matches and matches.groups():
         mac = matches.groups()[0]
     inventory = list(cisco_inventory(raw))
     dev_inv, parts = inventory[0], inventory[1:]
@@ -213,5 +213,10 @@ def scan_address(ip_address, **kwargs):
     if subswitches:
         result['device']['subdevices'] = subswitches
     else:
-        result['device']['mac_addresses'] = [MACAddressField.normalize(mac)]
+        try:
+            normalized_mac = MACAddressField.normalize(mac)
+        except ValueError:
+            pass
+        else:
+            result['device']['mac_addresses'] = [normalized_mac]
     return result

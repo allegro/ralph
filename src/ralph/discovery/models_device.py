@@ -482,6 +482,7 @@ class Device(
 
     def clean(self):
         fields_list = [
+            self.sn,
             self.support_kind,
             self.name2,
             self.dc,

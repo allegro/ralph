@@ -24,7 +24,6 @@ from ralph.dnsedit.dhcp_conf import (
     generate_dhcp_config_head,
     generate_dhcp_config_networks,
 )
-from ralph.ui.views.common import Base
 from ralph.util import api
 
 
@@ -38,14 +37,6 @@ perms = [
         'msg': _("You don't have permissions for this resource."),
     },
 ]
-
-
-class Index(Base):
-    template_name = 'dnsedit/index.html'
-    section = 'dns'
-
-    def __init__(self, *args, **kwargs):
-        super(Index, self).__init__(*args, **kwargs)
 
 
 @ralph_permission(perms)
