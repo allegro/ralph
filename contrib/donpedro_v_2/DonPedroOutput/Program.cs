@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using DonPedro.Detectors;
 using DonPedro.DTO;
 
@@ -7,67 +8,54 @@ namespace DonPedroOutput
 	class Program
 	{
 		public static void Main(string[] args)
-		{						
-			Detector d = new Detector();
+		{
+			ArgsParser argsParser = new ArgsParser(args);
 			
-			Console.WriteLine("Detected CPUs:");
-			foreach(ProcessorDTOResponse item in d.GetProcessorsInfo())
+			if (argsParser.IsSet("help"))
 			{
-				PropertiesPrinter.Print(item);
+				HelpPrinter.Print();
 			}
-			
-			Console.WriteLine("\nDetected memory:");
-			foreach(MemoryDTOResponse item in d.GetMemoryInfo())
+			else
 			{
-				PropertiesPrinter.Print(item);
-			}
-			
-			Console.WriteLine("\nDetected OS:");
-			OperatingSystemDTOResponse os = d.GetOperatingSystemInfo();
-			PropertiesPrinter.Print(os);
-			
-			Console.WriteLine("\nDetected storage:");
-			foreach(StorageDTOResponse item in d.GetStorageInfo())
-			{
-				PropertiesPrinter.Print(item);
-			}
-			
-			Console.WriteLine("\nDetected IP addresses:");
-			foreach(IPAddressDTOResponse item in d.GetIPAddressInfo())
-			{
-				PropertiesPrinter.Print(item);
-			}
-			
-			Console.WriteLine("\nDetected MAC addresses:");
-			foreach(MacAddressDTOResponse item in d.GetMacAddressInfo())
-			{
-				PropertiesPrinter.Print(item);
-			}
-			
-			Console.WriteLine("\nDetected fc cards:");
-			foreach(FibreChannelDTOResponse item in d.GetFibreChannelInfo())
-			{
-				PropertiesPrinter.Print(item);
-			}
-			
-			Console.WriteLine("\nDetected shares:");
-			foreach(DiskShareMountDTOResponse item in d.GetDiskShareMountInfo())
-			{
-				PropertiesPrinter.Print(item);
-			}
-			
-			Console.WriteLine("\nDetected software:");
-			foreach(SoftwareDTOResponse item in d.GetSoftwareInfo())
-			{
-				PropertiesPrinter.Print(item);
-			}
-			
-			Console.WriteLine("\nDetected device:");
-			DeviceDTOResponse dev = d.GetDeviceInfo();
-			PropertiesPrinter.Print(dev);
+				Detector detector = new Detector();
+				TextPrinter printer = new TextPrinter();
+				
+				if (argsParser.IsSet("file"))
+				{
+					string fileName = argsParser.GetArgValue("file");
 
-			Console.Write("Press any key to continue . . . ");
-			Console.ReadKey(true);
+					TextWriter nativeConsoleOutput = Console.Out;
+					FileStream fstream;
+					StreamWriter writer;
+					
+					try
+					{
+						fstream = new FileStream(
+							fileName, 
+							FileMode.Create, 
+							FileAccess.Write
+						);
+        				writer = new StreamWriter(fstream);
+					}
+					catch (Exception e)
+					{
+						Console.WriteLine (String.Format("Cannot open `{0}` for writing.", fileName));
+        				Console.WriteLine (e.Message);
+        				return;
+					}
+					Console.SetOut(writer);
+					
+					printer.Print(detector, argsParser.IsSet("json"));
+					
+					Console.SetOut(nativeConsoleOutput);
+					writer.Close();
+					fstream.Close();
+				}
+				else
+				{
+					printer.Print(detector, argsParser.IsSet("json"));
+				}
+			}
 		}
 	}
 }
