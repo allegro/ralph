@@ -36,12 +36,6 @@ SETTINGS = settings.SCAN_PLUGINS.get(__name__, {})
 SSH_USER, SSH_PASS = SETTINGS['ssh_user'], SETTINGS['ssh_pass']
 
 
-if not SSH_USER or not SSH_PASS:
-    raise NotConfiguredError(
-        "SSH not configured in plugin {}.".format(__name__),
-    )
-
-
 class CiscoSSHClient(paramiko.SSHClient):
 
     """SSHClient modified for Cisco's broken SSH console."""
@@ -94,7 +88,7 @@ class CiscoSSHClient(paramiko.SSHClient):
 
 
 def _connect_ssh(ip, username='root', password=''):
-    return network.connect_ssh(ip, SSH_USER, SSH_PASS, client=CiscoSSHClient)
+    return network.connect_ssh(ip, username, password, client=CiscoSSHClient)
 
 
 def scan_address(ip_address, **kwargs):
@@ -103,7 +97,11 @@ def scan_address(ip_address, **kwargs):
     kwargs['guessmodel'] = gvendor, gmodel = guessmodel.guessmodel(**kwargs)
     if gvendor != 'Cisco' or gmodel not in ('',):
         raise NoMatchError('It is not Cisco.')
-    ssh = _connect_ssh(ip_address)
+    if not SSH_USER or not SSH_PASS:
+        raise NotConfiguredError(
+            "SSH not configured in plugin {}.".format(__name__),
+        )
+    ssh = _connect_ssh(ip_address, SSH_USER, SSH_PASS)
     try:
         lines = ssh.asa_command(
             "show version | grep (^Hardware|Boot microcode|^Serial|address is)"
