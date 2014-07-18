@@ -554,12 +554,6 @@ class DashReport(object):
 
 class Dashboard(ChangesBase):
     template_name = 'cmdb/dashboard_main.html'
-    perms = [
-        {
-            'perm': Perm.has_core_access,
-            'msg': _("You don't have permissions for this resource."),
-        },
-    ]
 
     def get_context_data(self, **kwargs):
         ret = super(Dashboard, self).get_context_data(**kwargs)
@@ -573,7 +567,7 @@ class Dashboard(ChangesBase):
         return ret
 
     @staticmethod
-    @ralph_permission(perms)
+    @ralph_permission()
     def get_ajax(*args, **kwargs):
         """Thin wrapper for Ajax subreports data"""
         data = {}
@@ -781,12 +775,6 @@ class Reports(ChangesBase, DataTableMixin):
 
 class TimeLine(BaseCMDBView):
     template_name = 'cmdb/timeline.html'
-    perms = [
-        {
-            'perm': Perm.has_core_access,
-            'msg': _("You don't have permissions for this resource."),
-        },
-    ]
 
     def get_context_data(self, **kwargs):
         ret = super(TimeLine, self).get_context_data(**kwargs)
@@ -797,7 +785,7 @@ class TimeLine(BaseCMDBView):
         return ret
 
     @staticmethod
-    @ralph_permission(perms)
+    @ralph_permission()
     def get_ajax(self):
         interval = self.GET.get('interval')
         get_start_date = self.GET.get('start', datetime.datetime.now())

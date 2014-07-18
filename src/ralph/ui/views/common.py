@@ -188,14 +188,8 @@ def _get_details(dev, purchase_only=False, with_price=False,
 
 
 class ACLGateway(object):
-    perms = [
-        {
-            'perm': Perm.has_core_access,
-            'msg': _("You don't have permissions for this resource."),
-        },
-    ]
 
-    @ralph_permission(perms)
+    @ralph_permission()  # 'Perm.has_core_access' are used by default
     def dispatch(self, *args, **kwargs):
         return super(ACLGateway, self).dispatch(*args, **kwargs)
 

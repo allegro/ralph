@@ -11,22 +11,13 @@ from django.views.decorators.csrf import csrf_exempt
 from ralph.util.views import jsonify
 from django.contrib import auth
 from django.http import HttpResponseRedirect
-from django.utils.translation import ugettext_lazy as _
 
-from ralph.account.models import Perm, ralph_permission
+from ralph.account.models import ralph_permission
 from ralph.business.models import Venture
 from ralph.discovery.models_device import Device
 
 
-perms = [
-    {
-        'perm': Perm.has_core_access,
-        'msg': _("You don't have permissions for this resource."),
-    },
-]
-
-
-@ralph_permission(perms)
+@ralph_permission()
 @csrf_exempt
 @jsonify
 def typeahead_roles(request):
@@ -40,7 +31,7 @@ def typeahead_roles(request):
     }
 
 
-@ralph_permission(perms)
+@ralph_permission()
 @csrf_exempt
 @jsonify
 def unlock_field(request):

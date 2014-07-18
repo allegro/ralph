@@ -6,21 +6,12 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from ralph.account.models import Perm, ralph_permission
+from ralph.account.models import ralph_permission
 from ralph.discovery.models import Device
 from ralph.util.views import jsonify
-from django.utils.translation import ugettext_lazy as _
 
 
-perms = [
-    {
-        'perm': Perm.has_core_access,
-        'msg': _("You don't have permissions for this resource."),
-    },
-]
-
-
-@ralph_permission(perms)
+@ralph_permission()
 @jsonify
 def servertree(request, hostname=None):
     response = []

@@ -222,7 +222,7 @@ class BoundPerm(TimeTrackable, EditorTrackable):
         verbose_name_plural = _("bound permissions")
 
 
-def ralph_permission(perms):
+def ralph_permission(perms=None):
     """
     Decorator responsible for checking user's permissions to a given view.
     Permissions to check should be specified in the following way:
@@ -232,7 +232,16 @@ def ralph_permission(perms):
                 'msg': _("You don't have permission to see reports.")
             }
         ]
+    If no permissions are specified, 'Perm.has_core_access' will be used.
     """
+
+    if not perms:
+        perms = [
+            {
+                'perm': Perm.has_core_access,
+                'msg': _("You don't have permissions for this resource."),
+            },
+        ]
 
     def decorator(func):
         def inner_decorator(self, *args, **kwargs):
@@ -245,8 +254,8 @@ def ralph_permission(perms):
             else:
                 return HttpResponseBadRequest()
             if user.is_anonymous():
-                msg = "You don't have permissions for this resource."
-                return HttpResponseForbidden(msg)
+                msg = _("You don't have permissions for this resource.")
+                return HttpResponseForbidden(unicode(msg))
             profile = user.get_profile()
             has_perm = profile.has_perm
             for perm in perms:

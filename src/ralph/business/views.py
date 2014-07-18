@@ -7,11 +7,10 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from django.conf import settings
-from django.utils.translation import ugettext_lazy as _
 from django.views.generic import TemplateView
 from lck.django.common import render, redirect
 
-from ralph.account.models import Perm, ralph_permission
+from ralph.account.models import ralph_permission
 from ralph.business.models import Venture
 
 
@@ -25,15 +24,7 @@ class Index(TemplateView):
         return {'CURRENCY': settings.CURRENCY}
 
 
-perms = [
-    {
-        'perm': Perm.has_core_access,
-        'msg': _("You don't have permissions for this resource."),
-    },
-]
-
-
-@ralph_permission(perms)
+@ralph_permission()
 def show_ventures(request, venture_id=None):
     if venture_id == 'search':
         if request.method != 'POST':
