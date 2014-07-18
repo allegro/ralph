@@ -14,7 +14,7 @@ from django.contrib.auth.models import Group
 from django.core.handlers.wsgi import WSGIRequest
 from django.core.urlresolvers import reverse, NoReverseMatch
 from django.db import models as db
-from django.http import HttpResponseForbidden, HttpResponseServerError
+from django.http import HttpResponseForbidden, HttpResponseBadRequest
 from django.utils.translation import ugettext_lazy as _
 
 from dj.choices import Choices
@@ -223,8 +223,9 @@ class BoundPerm(TimeTrackable, EditorTrackable):
 
 
 def ralph_permission(perms):
-    """ Decorator checking permission to view
-        use example:
+    """
+    Decorator responsible for checking user's permissions to a given view.
+    Permissions to check should be specified in the following way:
         perms = [
             {
                 'perm': Perm.read_device_info_reports,
@@ -235,19 +236,24 @@ def ralph_permission(perms):
 
     def decorator(func):
         def inner_decorator(self, *args, **kwargs):
-            # decorator on get/post/...
-            if hasattr(self, 'request'):
-                profile = self.request.user.get_profile()
-            # decorator on dispatch - request is first argument
+            if hasattr(self, 'user'):
+                user = self.user
+            elif hasattr(self, 'request'):
+                user = self.request.user
             elif args and isinstance(args[0], WSGIRequest):
-                profile = args[0].user.get_profile()
+                user = args[0].user
             else:
-                raise HttpResponseServerError()
+                return HttpResponseBadRequest()
+            if user.is_anonymous():
+                msg = "You don't have permissions for this resource."
+                return HttpResponseForbidden(msg)
+            profile = user.get_profile()
             has_perm = profile.has_perm
             for perm in perms:
                 if not has_perm(perm['perm']):
-                    return HttpResponseForbidden(perm['msg'])
+                    return HttpResponseForbidden(unicode(perm['msg']))
             return func(self, *args, **kwargs)
+        func.decorated_with = 'ralph_permission'  # for unit tests etc.
         return functools.wraps(func)(inner_decorator)
     return decorator
 
