@@ -39,7 +39,7 @@ perms = [
 ]
 
 
-@ralph_permissions(perms)
+@ralph_permission(perms)
 def dhcp_synch(request):
     if not api.is_authenticated(request):
         return HttpResponseForbidden('API key required.')
@@ -64,7 +64,7 @@ def _get_params(request):
     return dc_names, env_names
 
 
-@ralph_permissions(perms)
+@ralph_permission(perms)
 def dhcp_config_entries(request):
     if not api.is_authenticated(request):
         return HttpResponseForbidden('API key required.')
@@ -101,7 +101,7 @@ def dhcp_config_entries(request):
     )
 
 
-@ralph_permissions(perms)
+@ralph_permission(perms)
 def dhcp_config_networks(request):
     if not api.is_authenticated(request):
         return HttpResponseForbidden('API key required.')
@@ -137,7 +137,7 @@ def dhcp_config_networks(request):
     )
 
 
-@ralph_permissions(perms)
+@ralph_permission(perms)
 def dhcp_config_head(request):
     if not api.is_authenticated(request):
         return HttpResponseForbidden('API key required.')
