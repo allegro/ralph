@@ -11,11 +11,12 @@ import json
 
 from django.conf import settings
 from django.template import Template, Context
-from lck.django.common import remote_addr
 from django.http import (HttpResponse, HttpResponseNotFound,
                          HttpResponseForbidden, Http404)
 from django.db.models import Q
+from lck.django.common import remote_addr
 
+from ralph.account.models import ralph_permission
 from ralph.deployment.models import (
     Deployment,
     DeploymentStatus,
@@ -113,14 +114,17 @@ def _preboot_view(request, file_name=None, file_type=None):
     return HttpResponseNotFound(message)
 
 
+@ralph_permission()
 def preboot_raw_view(request, file_name):
     return _preboot_view(request, file_name=file_name)
 
 
+@ralph_permission()
 def preboot_type_view(request, file_type):
     return _preboot_view(request, file_type=file_type)
 
 
+@ralph_permission()
 def preboot_complete_view(request):
     deployment = get_current_deployment(request)
     if not deployment:
@@ -151,6 +155,7 @@ def preboot_complete_view(request):
     return HttpResponse()
 
 
+@ralph_permission()
 def puppet_classifier(request):
     if not api.is_authenticated(request):
         return HttpResponseForbidden('API key required.')

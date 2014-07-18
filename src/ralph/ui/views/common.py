@@ -33,6 +33,7 @@ import pluggableapp
 from powerdns.models import Record
 
 from ralph.discovery.models_component import Ethernet
+from ralph.account.models import Perm, get_user_home_page_url, ralph_permission
 from ralph.app import RalphModule
 from ralph.scan.errors import Error as ScanError
 from ralph.scan.manual import queue_scan_address
@@ -53,7 +54,6 @@ from ralph.business.models import (
     RoleProperty,
     RolePropertyValue,
 )
-from ralph.account.models import get_user_home_page_url, Perm
 from ralph.cmdb.models import CI
 from ralph.deployment.models import Deployment, DeploymentStatus
 from ralph.deployment.util import get_next_free_hostname, get_first_free_ip
@@ -187,7 +187,14 @@ def _get_details(dev, purchase_only=False, with_price=False,
         yield detail
 
 
-class BaseMixin(object):
+class ACLGateway(object):
+
+    @ralph_permission()  # 'Perm.has_core_access' are used by default
+    def dispatch(self, *args, **kwargs):
+        return super(ACLGateway, self).dispatch(*args, **kwargs)
+
+
+class BaseMixin(ACLGateway):
     section = 'home'
 
     def __init__(self, *args, **kwargs):

@@ -12,10 +12,12 @@ from ralph.util.views import jsonify
 from django.contrib import auth
 from django.http import HttpResponseRedirect
 
+from ralph.account.models import ralph_permission
 from ralph.business.models import Venture
 from ralph.discovery.models_device import Device
 
 
+@ralph_permission()
 @csrf_exempt
 @jsonify
 def typeahead_roles(request):
@@ -29,6 +31,7 @@ def typeahead_roles(request):
     }
 
 
+@ralph_permission()
 @csrf_exempt
 @jsonify
 def unlock_field(request):
