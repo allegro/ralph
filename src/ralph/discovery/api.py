@@ -54,6 +54,12 @@ class IPAddressResource(MResource):
         'network',
         null=True,
     )
+    venture = fields.ForeignKey(
+        'ralph.business.api.VentureLightResource',
+        'venture',
+        null=True,
+        full=True,
+    )
 
     class Meta:
         queryset = IPAddress.objects.all()
