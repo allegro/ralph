@@ -500,10 +500,10 @@ class DiscoveryWarningAdmin(ModelAdmin):
 admin.site.register(m.DiscoveryWarning, DiscoveryWarningAdmin)
 
 
-class AssetEnvTypeAdmin(ModelAdmin):
+class DeviceEnvironmentAdmin(ModelAdmin):
     save_on_top = True
     list_display = ('name',)
     search_fields = ('name',)
 
 
-admin.site.register(models_device.AssetEnvType, AssetEnvTypeAdmin)
+admin.site.register(models_device.DeviceEnvironment, DeviceEnvironmentAdmin)

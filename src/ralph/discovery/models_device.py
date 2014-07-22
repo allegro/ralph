@@ -273,15 +273,14 @@ class UptimeSupport(db.Model):
         return "%s, %02d:%02d:%02d" % (msg, hours, minutes, seconds)
 
 
-# TODO:: working-name, perhaps it should be changed
-class AssetEnvType(
+class DeviceEnvironment(
     TimeTrackable,
     EditorTrackable,
     Named,
     WithConcurrentGetOrCreate,
 ):
     """
-    Type of env where asset is used, like: prodution, testing, etc.
+    Type of env where device is used, like: prodution, testing, etc.
     """
     def __unicode__(self):
         return self.name
@@ -495,9 +494,10 @@ class Device(
         default=None,
     )
     verified = db.BooleanField(verbose_name=_("verified"), default=False)
-    env_type = db.ForeignKey(
-        AssetEnvType,
+    device_environment = db.ForeignKey(
+        DeviceEnvironment,
         default=None,
+        null=True,
         on_delete=db.PROTECT,
     )
 
