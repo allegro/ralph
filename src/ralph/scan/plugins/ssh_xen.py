@@ -272,6 +272,7 @@ def scan_address(ip_address, **kwargs):
             try:
                 ssh = _connect_ssh(ip_address, user, password)
             except AuthError:
+                ssh = None
                 continue
             else:
                 break
