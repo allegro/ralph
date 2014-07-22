@@ -273,6 +273,18 @@ class UptimeSupport(db.Model):
         return "%s, %02d:%02d:%02d" % (msg, hours, minutes, seconds)
 
 
+class ServiceCatalog(
+    TimeTrackable,
+    EditorTrackable,
+    Named,
+    WithConcurrentGetOrCreate,
+):
+    """
+    Catalog of services where device is used, like: allegro.pl
+    """
+    def __unicode__(self):
+        return self.name
+
 class DeviceEnvironment(
     TimeTrackable,
     EditorTrackable,
@@ -494,6 +506,12 @@ class Device(
         default=None,
     )
     verified = db.BooleanField(verbose_name=_("verified"), default=False)
+    service_owner = db.ForeignKey(
+        ServiceCatalog,
+        default=None,
+        null=True,
+        on_delete=db.PROTECT,
+    )
     device_environment = db.ForeignKey(
         DeviceEnvironment,
         default=None,

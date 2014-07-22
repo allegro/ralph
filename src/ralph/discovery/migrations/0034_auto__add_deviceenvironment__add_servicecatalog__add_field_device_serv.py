@@ -20,6 +20,23 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal('discovery', ['DeviceEnvironment'])
 
+        # Adding model 'ServiceCatalog'
+        db.create_table('discovery_servicecatalog', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('name', self.gf('django.db.models.fields.CharField')(unique=True, max_length=75, db_index=True)),
+            ('created', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
+            ('modified', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
+            ('cache_version', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
+            ('created_by', self.gf('django.db.models.fields.related.ForeignKey')(related_name=u'+', on_delete=models.SET_NULL, default=None, to=orm['account.Profile'], blank=True, null=True)),
+            ('modified_by', self.gf('django.db.models.fields.related.ForeignKey')(related_name=u'+', on_delete=models.SET_NULL, default=None, to=orm['account.Profile'], blank=True, null=True)),
+        ))
+        db.send_create_signal('discovery', ['ServiceCatalog'])
+
+        # Adding field 'Device.service_owner'
+        db.add_column('discovery_device', 'service_owner',
+                      self.gf('django.db.models.fields.related.ForeignKey')(default=None, to=orm['discovery.ServiceCatalog'], null=True, on_delete=models.PROTECT),
+                      keep_default=False)
+
         # Adding field 'Device.device_environment'
         db.add_column('discovery_device', 'device_environment',
                       self.gf('django.db.models.fields.related.ForeignKey')(default=None, to=orm['discovery.DeviceEnvironment'], null=True, on_delete=models.PROTECT),
@@ -29,6 +46,12 @@ class Migration(SchemaMigration):
     def backwards(self, orm):
         # Deleting model 'DeviceEnvironment'
         db.delete_table('discovery_deviceenvironment')
+
+        # Deleting model 'ServiceCatalog'
+        db.delete_table('discovery_servicecatalog')
+
+        # Deleting field 'Device.service_owner'
+        db.delete_column('discovery_device', 'service_owner_id')
 
         # Deleting field 'Device.device_environment'
         db.delete_column('discovery_device', 'device_environment_id')
@@ -259,6 +282,7 @@ class Migration(SchemaMigration):
             'remarks': ('django.db.models.fields.TextField', [], {'default': "u''", 'blank': 'True'}),
             'role': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
             'save_priorities': ('django.db.models.fields.TextField', [], {'default': "u''"}),
+            'service_owner': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'to': "orm['discovery.ServiceCatalog']", 'null': 'True', 'on_delete': 'models.PROTECT'}),
             'sn': ('django.db.models.fields.CharField', [], {'default': 'None', 'max_length': '255', 'unique': 'True', 'null': 'True', 'blank': 'True'}),
             'support_expiration_date': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'support_kind': ('django.db.models.fields.CharField', [], {'default': 'None', 'max_length': '255', 'null': 'True', 'blank': 'True'}),
@@ -638,6 +662,16 @@ class Migration(SchemaMigration):
             'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'save_priorities': ('django.db.models.fields.TextField', [], {'default': "u''"}),
             'speed': ('django.db.models.fields.PositiveIntegerField', [], {'null': 'True', 'blank': 'True'})
+        },
+        'discovery.servicecatalog': {
+            'Meta': {'object_name': 'ServiceCatalog'},
+            'cache_version': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
+            'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
+            'created_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "u'+'", 'on_delete': 'models.SET_NULL', 'default': 'None', 'to': "orm['account.Profile']", 'blank': 'True', 'null': 'True'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
+            'modified_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "u'+'", 'on_delete': 'models.SET_NULL', 'default': 'None', 'to': "orm['account.Profile']", 'blank': 'True', 'null': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '75', 'db_index': 'True'})
         },
         'discovery.software': {
             'Meta': {'ordering': "(u'device', u'sn', u'path')", 'unique_together': "((u'device', u'path'),)", 'object_name': 'Software'},
