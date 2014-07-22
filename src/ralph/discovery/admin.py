@@ -20,8 +20,9 @@ from django.core.exceptions import ValidationError
 from django.contrib import messages
 from django.template.defaultfilters import slugify
 
-from ralph.discovery import models as m
 from ralph.business.admin import RolePropertyValueInline
+from ralph.discovery import models as m
+from ralph.discovery import models_device
 from ralph.ui.forms.network import NetworkForm
 
 
@@ -497,3 +498,12 @@ class DiscoveryWarningAdmin(ModelAdmin):
     search_fields = ('plugin', 'ip', 'message')
 
 admin.site.register(m.DiscoveryWarning, DiscoveryWarningAdmin)
+
+
+class AssetEnvTypeAdmin(ModelAdmin):
+    save_on_top = True
+    list_display = ('name',)
+    search_fields = ('name',)
+
+
+admin.site.register(models_device.AssetEnvType, AssetEnvTypeAdmin)

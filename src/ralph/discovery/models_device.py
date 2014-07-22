@@ -17,9 +17,15 @@ import os
 from django.db import models as db
 from django.db import IntegrityError, transaction
 from django.utils.translation import ugettext_lazy as _
-from lck.django.common.models import (Named, WithConcurrentGetOrCreate,
-                                      MACAddressField, SavePrioritized,
-                                      SoftDeletable, TimeTrackable)
+from lck.django.common.models import (
+    EditorTrackable,
+    MACAddressField,
+    Named,
+    SavePrioritized,
+    SoftDeletable,
+    TimeTrackable,
+    WithConcurrentGetOrCreate,
+)
 from lck.django.choices import Choices
 from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Taggable
@@ -267,6 +273,20 @@ class UptimeSupport(db.Model):
         return "%s, %02d:%02d:%02d" % (msg, hours, minutes, seconds)
 
 
+# TODO:: working-name, perhaps it should be changed
+class AssetEnvType(
+    TimeTrackable,
+    EditorTrackable,
+    Named,
+    WithConcurrentGetOrCreate,
+):
+    """
+    Type of env where asset is used, like: prodution, testing, etc.
+    """
+    def __unicode__(self):
+        return self.name
+
+
 class Device(
     LastSeen,
     Taggable.NoDefaultTags,
@@ -475,6 +495,11 @@ class Device(
         default=None,
     )
     verified = db.BooleanField(verbose_name=_("verified"), default=False)
+    env_type = db.ForeignKey(
+        AssetEnvType,
+        default=None,
+        on_delete=db.PROTECT,
+    )
 
     class Meta:
         verbose_name = _("device")
