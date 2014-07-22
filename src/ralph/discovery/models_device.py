@@ -285,6 +285,7 @@ class ServiceCatalog(
     def __unicode__(self):
         return self.name
 
+
 class DeviceEnvironment(
     TimeTrackable,
     EditorTrackable,
