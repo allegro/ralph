@@ -31,6 +31,7 @@ from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Taggable
 from django.utils.html import escape
 
+from ralph.cmdb import models_ci
 from ralph.discovery.models_component import is_mac_valid, Ethernet
 from ralph.discovery.models_util import LastSeen, SavingUser
 from ralph.util import Eth
@@ -273,17 +274,21 @@ class UptimeSupport(db.Model):
         return "%s, %02d:%02d:%02d" % (msg, hours, minutes, seconds)
 
 
-class ServiceCatalog(
-    TimeTrackable,
-    EditorTrackable,
-    Named,
-    WithConcurrentGetOrCreate,
-):
+class ServiceCatalogManager(db.Manager):
+    def get_query_set(self):
+        return super(ServiceCatalogManager, self).get_query_set().filter(
+            type__name=models_ci.CI_TYPES.SERVICE,
+        )
+
+
+class ServiceCatalog(models_ci.CI):
     """
     Catalog of services where device is used, like: allegro.pl
     """
-    def __unicode__(self):
-        return self.name
+    objects = ServiceCatalogManager()
+
+    class Meta:
+        proxy = True
 
 
 class DeviceEnvironment(
@@ -507,7 +512,7 @@ class Device(
         default=None,
     )
     verified = db.BooleanField(verbose_name=_("verified"), default=False)
-    service_owner = db.ForeignKey(
+    service = db.ForeignKey(
         ServiceCatalog,
         default=None,
         null=True,
