@@ -8,5 +8,9 @@ from __future__ import unicode_literals
 from django.conf import settings
 
 
-MAX_ATTEMPTS = getattr(settings, 'NOTIFICATIONS_MAX_ATTEMPTS', 10)
-QUEUE_NAME = getattr(settings, 'NOTIFICATIONS_QUEUE_NAME', 'default')
+NOTIFICATIONS_MAX_ATTEMPTS = getattr(
+    settings, 'NOTIFICATIONS_MAX_ATTEMPTS', 10
+)
+NOTIFICATIONS_QUEUE_NAME = getattr(
+    settings, 'NOTIFICATIONS_QUEUE_NAME', 'default'
+)

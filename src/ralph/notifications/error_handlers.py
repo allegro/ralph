@@ -8,15 +8,18 @@ from __future__ import unicode_literals
 import django_rq
 
 from ralph.notifications import send_email_notification
-from ralph.notifications.conf import MAX_ATTEMPTS, QUEUE_NAME
+from ralph.notifications.conf import (
+    NOTIFICATIONS_MAX_ATTEMPTS,
+    NOTIFICATIONS_QUEUE_NAME,
+)
 
 
 def notifications_error_handler(job, exc_type, exc_value, traceback):
     attempt = job.meta.get('attempt', 1)
-    if attempt >= MAX_ATTEMPTS:
+    if attempt >= NOTIFICATIONS_MAX_ATTEMPTS:
         return True  # fall through to the next exception handler on the stack
     attempt += 1
-    queue = django_rq.get_queue(name=QUEUE_NAME)
+    queue = django_rq.get_queue(name=NOTIFICATIONS_QUEUE_NAME)
     new_job = queue.enqueue_call(
         func=send_email_notification,
         kwargs={

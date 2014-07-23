@@ -12,7 +12,7 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
 from ralph.notifications.models import Notification
-from ralph.notifications.conf import QUEUE_NAME
+from ralph.notifications.conf import NOTIFICATIONS_QUEUE_NAME
 
 
 class SendingError(Exception):
@@ -75,7 +75,7 @@ def send_email(
             content_html=html_content,
             remarks=remarks,
         )
-        queue = django_rq.get_queue(name=QUEUE_NAME)
+        queue = django_rq.get_queue(name=NOTIFICATIONS_QUEUE_NAME)
         job = queue.enqueue_call(
             func=send_email_notification,
             kwargs={
