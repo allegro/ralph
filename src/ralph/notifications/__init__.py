@@ -16,7 +16,7 @@ from ralph.notifications.conf import NOTIFICATIONS_QUEUE_NAME
 
 
 class SendingError(Exception):
-    pass
+    """Exception during send mail task."""
 
 
 def send_email_notification(notification_id):
