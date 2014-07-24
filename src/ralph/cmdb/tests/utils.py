@@ -30,18 +30,15 @@ class CIFactory(DjangoModelFactory):
     business_service = False
     technical_service = True
     pci_scope = False
-    # layers, m2m
     barcode = None
-    # content_type
     object_id = True
-    # content_object
     state = models_ci.CI_STATE_TYPES.INACTIVE.id
     status = models_ci.CI_STATUS_TYPES.REFERENCE.id
     type = factory.SubFactory(CITypeFactory)
     zabbix_id = None
-    # relations, m2m
     added_manually = False
-    # owners, m2m
+    # TODO: add below fields:
+    # content_object, content_type, layers, owners, relations
 
 
 class ServiceCatalogFactory(CIFactory):
