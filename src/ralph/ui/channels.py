@@ -17,7 +17,7 @@ from ralph.util import presentation
 
 class RestrictedLookupChannel(LookupChannel):
     """
-    Base lookup with authorization check.
+    Base lookup returning results only if request user is authenticated.
     """
     def check_auth(self, request):
         """
