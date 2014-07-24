@@ -17,14 +17,21 @@ import os
 from django.db import models as db
 from django.db import IntegrityError, transaction
 from django.utils.translation import ugettext_lazy as _
-from lck.django.common.models import (Named, WithConcurrentGetOrCreate,
-                                      MACAddressField, SavePrioritized,
-                                      SoftDeletable, TimeTrackable)
+from lck.django.common.models import (
+    EditorTrackable,
+    MACAddressField,
+    Named,
+    SavePrioritized,
+    SoftDeletable,
+    TimeTrackable,
+    WithConcurrentGetOrCreate,
+)
 from lck.django.choices import Choices
 from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Taggable
 from django.utils.html import escape
 
+from ralph.cmdb import models_ci
 from ralph.discovery.models_component import is_mac_valid, Ethernet
 from ralph.discovery.models_util import LastSeen, SavingUser
 from ralph.util import Eth
@@ -267,6 +274,36 @@ class UptimeSupport(db.Model):
         return "%s, %02d:%02d:%02d" % (msg, hours, minutes, seconds)
 
 
+class ServiceCatalogManager(db.Manager):
+    def get_query_set(self):
+        return super(ServiceCatalogManager, self).get_query_set().filter(
+            type__name=models_ci.CI_TYPES.SERVICE,
+        )
+
+
+class ServiceCatalog(models_ci.CI):
+    """
+    Catalog of services where device is used, like: allegro.pl
+    """
+    objects = ServiceCatalogManager()
+
+    class Meta:
+        proxy = True
+
+
+class DeviceEnvironment(
+    TimeTrackable,
+    EditorTrackable,
+    Named,
+    WithConcurrentGetOrCreate,
+):
+    """
+    Type of env where device is used, like: prodution, testing, etc.
+    """
+    def __unicode__(self):
+        return self.name
+
+
 class Device(
     LastSeen,
     Taggable.NoDefaultTags,
@@ -475,6 +512,18 @@ class Device(
         default=None,
     )
     verified = db.BooleanField(verbose_name=_("verified"), default=False)
+    service = db.ForeignKey(
+        ServiceCatalog,
+        default=None,
+        null=True,
+        on_delete=db.PROTECT,
+    )
+    device_environment = db.ForeignKey(
+        DeviceEnvironment,
+        default=None,
+        null=True,
+        on_delete=db.PROTECT,
+    )
 
     class Meta:
         verbose_name = _("device")
