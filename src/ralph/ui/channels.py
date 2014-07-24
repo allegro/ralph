@@ -47,6 +47,7 @@ class RestrictedLookupChannel(LookupChannel):
     def get_base_objects(self):
         return self.model.objects
 
+
 class DeviceLookup(LookupChannel):
     model = Device
 
