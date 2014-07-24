@@ -15,6 +15,7 @@ Ralph documentation
    deployment
    dns
    dhcp
+   notifications
    api
    faq
    permissions
