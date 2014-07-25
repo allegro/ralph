@@ -36,7 +36,7 @@ class RestrictedLookupChannel(LookupChannel):
         return obj.name
 
     def get_item_url(self, obj):
-        return obj.url
+        return getattr(obj, 'url', None)
 
     def format_match(self, obj):
         return self.format_item_display(obj)
