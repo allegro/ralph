@@ -56,3 +56,4 @@ class Command(BaseCommand):
                     ip_address = IPAddress.objects.get_or_create(address=line)[0]
                     if not ip_address.venture:
                         ip_address.venture = venture
+                    ip_address.save()
