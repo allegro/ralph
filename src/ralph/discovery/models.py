@@ -98,6 +98,7 @@ __all__ = [
     'DISK_VENDOR_BLACKLIST',
     'DeprecationKind',
     'Device',
+    'DeviceEnvironment',
     'DeviceModel',
     'DeviceModelGroup',
     'DeviceType',

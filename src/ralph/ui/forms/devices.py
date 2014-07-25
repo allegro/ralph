@@ -345,7 +345,6 @@ class DeviceInfoForm(DeviceForm):
     )
 
 
-
 class DeviceInfoVerifiedForm(DeviceInfoForm):
 
     class Meta(DeviceInfoForm.Meta):
