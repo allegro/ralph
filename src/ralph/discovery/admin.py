@@ -337,7 +337,7 @@ class DeviceAdmin(ModelAdmin):
     }
 
     def save_model(self, request, obj, form, change):
-        obj.save(user=request.user, priority=SAVE_PRIORITY)
+        obj.save(user=request.user, sync_fields=True, priority=SAVE_PRIORITY)
 
     def save_formset(self, request, form, formset, change):
         if formset.model.__name__ == 'RolePropertyValue':
