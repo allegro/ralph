@@ -9,12 +9,10 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import re
-
 from optparse import make_option
 import textwrap
 
 from django.core.management.base import CommandError
-
 from django.core.management.base import BaseCommand
 
 from ralph.discovery.models import IPAddress
