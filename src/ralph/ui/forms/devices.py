@@ -14,7 +14,7 @@ from lck.django.common.models import MACAddressField
 
 from ralph.deployment.util import get_next_free_hostname
 from ralph.discovery.models_component import is_mac_valid
-from ralph.discovery.models import Device, DeviceType
+from ralph.discovery.models import Device, DeviceType, DeviceEnvironment
 from ralph.util import Eth
 from ralph.ui.widgets import (
     DateWidget,
@@ -290,6 +290,8 @@ class DeviceInfoForm(DeviceForm):
             'model',
             'venture',
             'venture_role',
+            'service',
+            'device_environment',
             'verified',
             'barcode',
             'dc',
@@ -329,6 +331,19 @@ class DeviceInfoForm(DeviceForm):
                     )
                     self.fields['name'].help_text = help_text
                     break
+
+    service = AutoCompleteSelectField(
+        ('ralph.ui.channels', 'ServiceCatalogLookup'),
+        required=True,
+        label=_('Service catalog'),
+        help_text='',
+    )
+    device_environment = forms.ModelChoiceField(
+        required=True,
+        queryset=DeviceEnvironment.objects.all(),
+        label=_('Environment'),
+    )
+
 
 
 class DeviceInfoVerifiedForm(DeviceInfoForm):

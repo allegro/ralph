@@ -11,6 +11,7 @@ from __future__ import unicode_literals
 from ralph.discovery.models_device import (
     DeprecationKind,
     Device,
+    DeviceEnvironment,
     DeviceModel,
     DeviceModelGroup,
     DeviceType,
