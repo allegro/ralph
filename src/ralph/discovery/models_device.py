@@ -14,6 +14,7 @@ import re
 import sys
 import os
 
+from django.conf import settings
 from django.db import models as db
 from django.db import IntegrityError, transaction
 from django.utils.translation import ugettext_lazy as _
@@ -35,6 +36,7 @@ from ralph.cmdb import models_ci
 from ralph.discovery.models_component import is_mac_valid, Ethernet
 from ralph.discovery.models_util import LastSeen, SavingUser
 from ralph.util import Eth
+from ralph.util.models import SyncFieldMixin
 
 
 BLADE_SERVERS = [
@@ -312,6 +314,7 @@ class Device(
     UptimeSupport,
     SoftDeletable,
     SavingUser,
+    SyncFieldMixin,
 ):
     name = db.CharField(
         verbose_name=_("name"),
@@ -802,7 +805,7 @@ class Device(
         details['fibrechannels'] = self.fibrechannel_set.all()
         return details
 
-    def save(self, *args, **kwargs):
+    def save(self, sync_fields=True, *args, **kwargs):
         if self.model and self.model.type == DeviceType.blade_server.id:
             if not self.position:
                 self.position = self.get_position()
@@ -833,7 +836,28 @@ class Device(
             else:
                 name = filename
             self.saving_plugin = name
-        return super(Device, self).save(*args, **kwargs)
+
+        if sync_fields and 'ralph_assets' in settings.INSTALLED_APPS:
+            SyncFieldMixin.save(self, *args, **kwargs)
+        return super(Device, self).save(sync_fields=sync_fields, *args, **kwargs)
+
+    def get_asset(self):
+        asset = None
+        if self.id and 'ralph_assets' in settings.INSTALLED_APPS:
+            from ralph_assets.models import Asset
+            try:
+                asset = Asset.objects.get(
+                    device_info__ralph_device_id=self.id,
+                )
+            except Asset.DoesNotExist:
+                pass
+        return asset
+
+    def get_synced_objs_and_fields(self):
+        # Implementation of the abstract method from SyncFieldMixin.
+        obj = self.get_asset()
+        fields = ['service', 'device_environment']
+        return [(obj, fields)] if obj else []
 
     def get_property_set(self):
         props = {}
