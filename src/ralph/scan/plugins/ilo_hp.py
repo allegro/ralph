@@ -5,6 +5,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import logging
+
 from django.conf import settings
 from lck.django.common.models import MACAddressField
 
@@ -20,6 +22,9 @@ from ralph.scan.plugins import get_base_result_template
 
 
 SETTINGS = settings.SCAN_PLUGINS.get(__name__, {})
+
+
+logger = logging.getLogger(__name__)
 
 
 def _get_base_device_info(ilo):
@@ -79,7 +84,11 @@ def _get_memory(ilo):
 
 def _ilo_hp(ip_address, user, password):
     ilo = hp_ilo.IloHost(ip_address, user, password)
-    ilo.update()
+    try:
+        ilo.update()
+    except hp_ilo.AuthError as e:
+        logger.warning('%s\t\t%s' % (ip_address, e.message))
+        raise e
     device_info = _get_base_device_info(ilo)
     device_info['management_ip_addresses'] = [ip_address]
     mac_addresses = _get_mac_addresses(ilo)
