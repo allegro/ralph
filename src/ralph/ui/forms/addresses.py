@@ -120,8 +120,11 @@ class DNSRecordForm(forms.ModelForm):
         content = self.cleaned_data.get('content', '')
         ptr = self.cleaned_data.get('ptr', False)
         if not self.cleaned_data.get('id'):
-            r = Record.objects.get(name=name, type=type, content=content)
-            if r is not None:
+            if Record.objects.get(
+                name=name,
+                type=type,
+                content=content,
+            ).exists():
                 raise forms.ValidationError(
                     "Record with name '{}', type '{}' and content '{}' already "  # noqa
                     "exists in the database.".format(name, type, content)
