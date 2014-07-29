@@ -115,15 +115,25 @@ class DNSRecordForm(forms.ModelForm):
         return ptr
 
     def clean(self):
-        type = self.cleaned_data.get('type', '')
         name = self.cleaned_data.get('name', '')
+        type = self.cleaned_data.get('type', '')
+        content = self.cleaned_data.get('content', '')
         ptr = self.cleaned_data.get('ptr', False)
+        if not self.cleaned_data.get('id'):
+            if Record.objects.get(
+                name=name,
+                type=type,
+                content=content,
+            ).exists():
+                raise forms.ValidationError(
+                    "Record with name '{}', type '{}' and content '{}' already "  # noqa
+                    "exists in the database.".format(name, type, content)
+                )
         if type != 'CNAME' and name not in self.hostnames:
             self._errors.setdefault('name', []).append(
                 "Invalid hostname for this device."
             )
         if ptr:
-            content = self.cleaned_data.get('content', '')
             domain_name = '%s.in-addr.arpa' % '.'.join(
                 list(reversed(content.split('.')))[1:],
             )
@@ -156,10 +166,22 @@ class DNSFormSetBase(forms.models.BaseModelFormSet):
             return
         a_records_count = 0
         ptr_records_count = 0
+        records = []
         for form in self.forms:
             cleaned_data = getattr(form, 'cleaned_data')
             if not cleaned_data:
                 continue
+            record = (
+                cleaned_data.get('name'),
+                cleaned_data.get('type'),
+                cleaned_data.get('content'),
+            )
+            if record in records:
+                raise forms.ValidationError(
+                    "DNS form contains duplicated entries.",
+                )
+            else:
+                records.append(record)
             if cleaned_data.get('type') == 'A':
                 a_records_count += 1
                 if cleaned_data.get('ptr', False):
