@@ -1,3 +1,4 @@
+PLUGGABLE_APPS = ['scrooge', 'assets']
 DEBUG = True
 TEMPLATE_DEBUG = True
 DATABASES = {
