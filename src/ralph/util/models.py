@@ -37,22 +37,30 @@ fields_synced_signal = Signal(providing_args=['changes'])
 
 class SyncFieldMixin(object):
     """
-    Mixin responsible for syncing fields between linked objects.
-    In order to specify objects and fields that you want to keep in sync, you
-    need to implement 'get_synced_objs' and 'get_synced_fields' methods.
+    Mixin responsible for syncing fields between linked objects. In order to
+    specify objects and fields that you want to keep in sync, you need to
+    implement 'get_synced_objs_and_fields' method which should return a list of
+    tuples, where every such tuple should contain an object and a list of
+    fields you want to sync, e.g.:
+
+        [(obj1, [field1, field2]), (obj2, [field1, field3])]
+
+    After syncing your objects, this mixin sends 'fields_synced_signal' which
+    carries a list of changes that have been made.
     """
 
-    def get_synced_objs(self):
-        raise NotImplementedError()
-
-    def get_synced_fields(self):
+    def get_synced_objs_and_fields(self):
         raise NotImplementedError()
 
     def save(self, *args, **kwargs):
         from ralph.ui.views.common import SAVE_PRIORITY
+        # by default save with the same priority as in 'edit device' forms etc.
+        priority = kwargs.get('priority')
+        if priority is None:
+            priority = SAVE_PRIORITY
         changes = []
-        for obj in self.get_synced_objs():
-            for f in self.get_synced_fields():
+        for obj, fields in self.get_synced_objs_and_fields():
+            for f in fields:
                 source_old_value = self.dirty_fields.get(f)
                 target_old_value = getattr(obj, f)
                 new_value = getattr(self, f)
@@ -66,5 +74,5 @@ class SyncFieldMixin(object):
                         'new_value': new_value,
                     })
                 setattr(obj, f, new_value)
-            obj.save(sync_fields=False, priority=SAVE_PRIORITY)
+            obj.save(sync_fields=False, priority=priority)
             fields_synced_signal.send_robust(sender=self, changes=changes)

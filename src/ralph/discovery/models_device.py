@@ -853,12 +853,11 @@ class Device(
                 pass
         return asset
 
-    def get_synced_objs(self):
+    def get_synced_objs_and_fields(self):
+        # Implementation of the abstract method from SyncFieldMixin.
         obj = self.get_asset()
-        return [obj] if obj else []
-
-    def get_synced_fields(self):
-        return ['service', 'device_environment']
+        fields = ['service', 'device_environment']
+        return [(obj, fields)] if obj else []
 
     def get_property_set(self):
         props = {}
