@@ -169,9 +169,9 @@ class DNSFormSetBase(forms.models.BaseModelFormSet):
             if not cleaned_data:
                 continue
             record = (
-                    cleaned_data.get('name'),
-                    cleaned_data.get('type'),
-                    cleaned_data.get('content'),
+                cleaned_data.get('name'),
+                cleaned_data.get('type'),
+                cleaned_data.get('content'),
             )
             if record in records:
                 raise forms.ValidationError(
