@@ -205,6 +205,8 @@ class DeviceCreateForm(DeviceForm):
             'name',
             'venture',
             'venture_role',
+            'service',
+            'device_environment',
             'barcode',
             'position',
             'chassis_position',
@@ -222,6 +224,16 @@ class DeviceCreateForm(DeviceForm):
         )
 
     macs = forms.CharField(widget=forms.Textarea, required=False)
+    service = AutoCompleteSelectField(
+        ('ralph.ui.channels', 'ServiceCatalogLookup'),
+        required=True,
+        label=_('Service catalog'),
+    )
+    device_environment = forms.ModelChoiceField(
+        required=True,
+        queryset=DeviceEnvironment.objects.all(),
+        label=_('Device Environment'),
+    )
 
     def __init__(self, *args, **kwargs):
         super(DeviceCreateForm, self).__init__(*args, **kwargs)
@@ -336,12 +348,11 @@ class DeviceInfoForm(DeviceForm):
         ('ralph.ui.channels', 'ServiceCatalogLookup'),
         required=True,
         label=_('Service catalog'),
-        help_text='',
     )
     device_environment = forms.ModelChoiceField(
         required=True,
         queryset=DeviceEnvironment.objects.all(),
-        label=_('Environment'),
+        label=_('Device Environment'),
     )
 
 

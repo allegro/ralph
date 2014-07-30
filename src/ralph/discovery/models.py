@@ -23,6 +23,7 @@ from ralph.discovery.models_device import (
     MarginKind,
     ReadOnlyDevice,
     SERIAL_BLACKLIST,
+    ServiceCatalog,
     UptimeSupport,
 )
 from ralph.discovery.models_network import (
@@ -108,6 +109,7 @@ __all__ = [
     'MarginKind',
     'ReadOnlyDevice',
     'SERIAL_BLACKLIST',
+    'ServiceCatalog',
     'UptimeSupport',
 
     'HistoryChange',
