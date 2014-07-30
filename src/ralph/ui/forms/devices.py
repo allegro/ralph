@@ -232,7 +232,7 @@ class DeviceCreateForm(DeviceForm):
         if 'ralph_assets' in settings.INSTALLED_APPS:
             self.fields['asset'] = AutoCompleteSelectField(
                 ('ralph_assets.api_ralph', 'UnassignedDCDeviceLookup'),
-                required=True,
+                required=False,
             )
             self.fields['asset'].widget.help_text = (
                 'Enter asset sn, barcode or model'
@@ -261,6 +261,25 @@ class DeviceCreateForm(DeviceForm):
     def clean_model(self):
         model = self.cleaned_data['model']
         return model or None
+
+    def clean_asset(self):
+        cleaned_data = super(DeviceCreateForm, self).clean()
+        model = cleaned_data.get('model')
+        asset = cleaned_data.get('asset')
+        if model and model.type not in (
+            DeviceType.rack,
+            DeviceType.data_center,
+            DeviceType.switch_stack,
+            DeviceType.smtp_gateway,
+            DeviceType.virtual_server,
+            DeviceType.cloud_server,
+            DeviceType.unknown
+        ):
+            if not asset:
+                raise forms.ValidationError(
+                    "Asset is required for this kind of device."
+                )
+        return asset
 
 
 class DeviceBulkForm(DeviceForm):
