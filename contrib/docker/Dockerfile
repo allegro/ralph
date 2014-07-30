@@ -2,7 +2,7 @@
 #
 # VERSION               2.0.0-3
 
-FROM      ubuntu
+FROM      ubuntu:14.04
 MAINTAINER Marcin Kliks marcin.kliks@allegro.pl
 
 RUN apt-get update
