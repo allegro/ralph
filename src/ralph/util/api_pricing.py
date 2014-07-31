@@ -11,6 +11,7 @@ import re
 from django.db import models as db
 
 from ralph.business.models import Venture, VentureExtraCost
+from ralph.cmdb.models import CI, CIOwner, CIType
 from ralph.discovery.models import (
     Device,
     DeviceType,
@@ -301,4 +302,59 @@ def get_fc_cards():
         yield {
             'id': fc['id'],
             'device_id': fc['device__id'],
+        }
+
+
+# CMDB
+def get_business_lines():
+    """
+    Returns Business Lines from CMDB (CIs with type Business Line)
+    """
+    business_line_type = CIType.objects.get(name='BusinessLine')
+    for business_line in CI.objects.filter(type=business_line_type):
+        yield {
+            'ci_uid': business_line.uid,
+            'name': business_line.name,
+        }
+
+
+def get_owners():
+    """
+    Returns CIOwners from CMDB
+    """
+    for owner in CIOwner.objects.all():
+        yield {
+            'id': owner.id,
+            'first_name': owner.first_name,
+            'last_name': owner.last_name,
+            'email': owner.email,
+            'sAMAccountName': owner.sAMAccountName,
+        }
+
+
+def get_services():
+    """
+    Returns Services (CIs with type Service) with additional information like
+    owners, business line etc.
+    """
+    service_type = CIType.objects.get(name='Service')
+    business_line_type = CIType.objects.get(name='BusinessLine')
+    for service in CI.objects.filter(
+        type=service_type
+    ).select_related('owners'):
+        business_line = service.child.filter(
+            parent__type=business_line_type
+        ).values_list('parent__uid', flat=True)
+        yield {
+            'ci_uid': service.uid,
+            'name': service.name,
+            'business_line': business_line[0] if business_line else None,
+            'business_owners': service.business_owners.values_list(
+                'id',
+                flat=True,
+            ),
+            'technical_owners': service.technical_owners.values_list(
+                'id',
+                flat=True,
+            ),
         }
