@@ -13,6 +13,7 @@ from django.views.generic import CreateView
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.base import View
 from django.http import HttpResponse, HttpResponseRedirect
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
@@ -144,7 +145,7 @@ class PrepareMassDeployment(Base):
         ).get(*args, **kwargs)
 
 
-def _find_device(mac):
+def _find_device(mac, asset_identity=None):
     """Find the device to be re-used for this deployment. Return None if no
     matching device is found.
     """
@@ -152,7 +153,16 @@ def _find_device(mac):
     try:
         return Device.admin_objects.get(ethernet__mac=mac)
     except Device.DoesNotExist:
-        return None
+        if 'ralph_assets' not in settings.INSTALLED_APPS or not asset_identity:
+            return
+    from ralph_assets.api_ralph import get_asset_by_sn_or_barcode
+    asset = get_asset_by_sn_or_barcode(asset_identity)
+    if not asset or not asset['device_id']:
+        return
+    try:
+        return Device.objects.get(pk=asset['device_id'])
+    except Device.DoesNotExist:
+        return
 
 
 def _find_network_ip(network_name, reserved_ip_addresses, device=None):
@@ -224,6 +234,7 @@ def _find_hostname(network, reserved_hostnames, device=None, ip=None):
 
 class MassDeployment(Base):
     template_name = 'ui/mass_deploy.html'
+    assets_enabled = 'ralph_assets' in settings.INSTALLED_APPS
 
     def __init__(self, *args, **kwargs):
         super(MassDeployment, self).__init__(*args, **kwargs)
@@ -259,7 +270,10 @@ class MassDeployment(Base):
             hostname = ""
             ip = ""
             rack = None
-            device = _find_device(cols[0])
+            asset_identity = None
+            if self.assets_enabled and len(cols) == 7:
+                asset_identity = cols[6].strip()
+            device = _find_device(cols[0], asset_identity)
             try:
                 network, ip = _find_network_ip(
                     cols[2].strip(),

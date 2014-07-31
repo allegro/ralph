@@ -5,10 +5,11 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import ipaddr
 import re
 
+from django.conf import settings
 from django.db.models import Q
-import ipaddr
 from lck.django.common.models import MACAddressField
 from lck.django.common import nested_commit_on_success
 from powerdns.models import Record
@@ -250,9 +251,21 @@ def _create_device(data):
 def create_deployments(data, user, mass_deployment):
     for item in data:
         mac = MACAddressField.normalize(item['mac'])
+        dev = None
         try:
             dev = Device.objects.get(ethernet__mac=mac)
         except Device.DoesNotExist:
+            if 'ralph_assets' in settings.INSTALLED_APPS and item[
+                'asset_identity'
+            ]:
+                from ralph_assets.api_ralph import get_asset_by_sn_or_barcode
+                asset = get_asset_by_sn_or_barcode(item['asset_identity'])
+                if asset:
+                    try:
+                        dev = Device.objects.get(pk=asset['device_id'])
+                    except Device.DoesNotExist:
+                        pass
+        if not dev:
             dev = _create_device(item)
         Deployment.objects.create(
             user=user,
