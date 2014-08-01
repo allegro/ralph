@@ -83,6 +83,7 @@ INSTALLED_APPS = [
     'ralph.util',
     'ralph.deployment',
     'ralph.scan',
+    'ralph.notifications',
     'ajax_select',
     'powerdns',
 ]

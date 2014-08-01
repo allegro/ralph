@@ -1615,6 +1615,8 @@ class ScanStatus(BaseMixin, TemplateView):
         data['type'] = data.get('type', {})
         data['mac_addresses'] = data.get('mac_addresses', {})
         data['serial_number'] = data.get('serial_number', {})
+        if 'ralph_assets' in settings.INSTALLED_APPS:
+            data['asset'] = {}
         if post and device_id == 'new':
             form = DiffForm(data, post, default='custom')
         else:

@@ -10,6 +10,7 @@ import re
 import logging
 
 from django import forms
+from django.conf import settings
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 from lck.django.common.admin import (
@@ -263,6 +264,21 @@ class DeviceForm(forms.ModelForm):
         barcode = self.cleaned_data['barcode']
         return barcode or None
 
+    def clean(self):
+        cleaned_data = super(DeviceForm, self).clean()
+        model = self.cleaned_data.get('model')
+        if all((
+            'ralph_assets' in settings.INSTALLED_APPS,
+            not self.instance.id,  # only when we create new device
+            model
+        )):
+            if model and model.type not in models.ASSET_NOT_REQUIRED:
+                raise forms.ValidationError(
+                    "Adding this type of devices is allowed only via "
+                    "Assets module."
+                )
+        return cleaned_data
+
 
 class ProcessorInline(ForeignKeyAutocompleteTabularInline):
     model = models.Processor
@@ -449,7 +465,9 @@ class ComponentModelGroupAdmin(ModelAdmin):
             models.FibreChannel.objects.filter(model__group=self).count(),
             models.DiskShare.objects.filter(model__group=self).count(),
             models.Software.objects.filter(model__group=self).count(),
-            models.OperatingSystemodels.objects.filter(model__group=self).count(),
+            models.OperatingSystemodels.objects.filter(
+                model__group=self
+            ).count(),
             models.GenericComponent.objects.filter(model__group=self).count(),
         ])
     inlines = [ComponentModelInline]

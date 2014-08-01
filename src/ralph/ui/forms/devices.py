@@ -14,7 +14,12 @@ from lck.django.common.models import MACAddressField
 
 from ralph.deployment.util import get_next_free_hostname
 from ralph.discovery.models_component import is_mac_valid
-from ralph.discovery.models import Device, DeviceType, DeviceEnvironment
+from ralph.discovery.models import (
+    ASSET_NOT_REQUIRED,
+    Device,
+    DeviceEnvironment,
+    DeviceType,
+)
 from ralph.util import Eth
 from ralph.ui.widgets import (
     DateWidget,
@@ -244,7 +249,7 @@ class DeviceCreateForm(DeviceForm):
         if 'ralph_assets' in settings.INSTALLED_APPS:
             self.fields['asset'] = AutoCompleteSelectField(
                 ('ralph_assets.api_ralph', 'UnassignedDCDeviceLookup'),
-                required=True,
+                required=False,
             )
             self.fields['asset'].widget.help_text = (
                 'Enter asset sn, barcode or model'
@@ -273,6 +278,16 @@ class DeviceCreateForm(DeviceForm):
     def clean_model(self):
         model = self.cleaned_data['model']
         return model or None
+
+    def clean_asset(self):
+        model = self.cleaned_data.get('model')
+        asset = self.cleaned_data.get('asset')
+        if model and model.type not in ASSET_NOT_REQUIRED:
+            if not asset:
+                raise forms.ValidationError(
+                    "Asset is required for this kind of device."
+                )
+        return asset
 
 
 class DeviceBulkForm(DeviceForm):
