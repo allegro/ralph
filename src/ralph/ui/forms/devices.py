@@ -263,14 +263,15 @@ class DeviceCreateForm(DeviceForm):
         return model or None
 
     def clean_asset(self):
-        cleaned_data = super(DeviceCreateForm, self).clean()
-        model = cleaned_data.get('model')
-        asset = cleaned_data.get('asset')
+        model = self.cleaned_data.get('model')
+        asset = self.cleaned_data.get('asset')
         if model and model.type not in (
             DeviceType.rack,
+            DeviceType.blade_system,
+            DeviceType.management,
+            DeviceType.power_distribution_unit,
             DeviceType.data_center,
             DeviceType.switch_stack,
-            DeviceType.smtp_gateway,
             DeviceType.virtual_server,
             DeviceType.cloud_server,
             DeviceType.unknown
