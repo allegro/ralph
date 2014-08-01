@@ -14,7 +14,12 @@ from lck.django.common.models import MACAddressField
 
 from ralph.deployment.util import get_next_free_hostname
 from ralph.discovery.models_component import is_mac_valid
-from ralph.discovery.models import Device, DeviceType, DeviceEnvironment
+from ralph.discovery.models import (
+    ASSET_NOT_REQUIRED,
+    Device,
+    DeviceEnvironment,
+    DeviceType,
+)
 from ralph.util import Eth
 from ralph.ui.widgets import (
     DateWidget,
@@ -265,17 +270,7 @@ class DeviceCreateForm(DeviceForm):
     def clean_asset(self):
         model = self.cleaned_data.get('model')
         asset = self.cleaned_data.get('asset')
-        if model and model.type not in (
-            DeviceType.rack,
-            DeviceType.blade_system,
-            DeviceType.management,
-            DeviceType.power_distribution_unit,
-            DeviceType.data_center,
-            DeviceType.switch_stack,
-            DeviceType.virtual_server,
-            DeviceType.cloud_server,
-            DeviceType.unknown
-        ):
+        if model and model.type not in ASSET_NOT_REQUIRED:
             if not asset:
                 raise forms.ValidationError(
                     "Asset is required for this kind of device."

@@ -67,6 +67,20 @@ from ralph.discovery.models_pricing import (
     PricingValue,
 )
 
+
+ASSET_NOT_REQUIRED = (
+    DeviceType.rack,
+    DeviceType.blade_system,
+    DeviceType.management,
+    DeviceType.power_distribution_unit,
+    DeviceType.data_center,
+    DeviceType.switch_stack,
+    DeviceType.virtual_server,
+    DeviceType.cloud_server,
+    DeviceType.unknown
+)
+
+
 __all__ = [
     'DataCenter',
     'DiscoveryQueue',
@@ -120,6 +134,8 @@ __all__ = [
     'PricingFormula',
     'PricingVariable',
     'PricingValue',
+
+    'ASSET_NOT_REQUIRED',
 ]
 
 # Load the plugins code

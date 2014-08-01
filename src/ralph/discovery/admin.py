@@ -272,17 +272,7 @@ class DeviceForm(forms.ModelForm):
             not self.instance.id,  # only when we create new device
             model
         )):
-            if model and model.type not in (
-                models.DeviceType.rack,
-                models.DeviceType.blade_system,
-                models.DeviceType.management,
-                models.DeviceType.power_distribution_unit,
-                models.DeviceType.data_center,
-                models.DeviceType.switch_stack,
-                models.DeviceType.virtual_server,
-                models.DeviceType.cloud_server,
-                models.DeviceType.unknown
-            ):
+            if model and model.type not in models.ASSET_NOT_REQUIRED:
                 raise forms.ValidationError(
                     "Adding this type of devices is allowed only via "
                     "Assets module."

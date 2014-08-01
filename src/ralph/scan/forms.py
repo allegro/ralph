@@ -18,7 +18,7 @@ from django.template.loader import render_to_string
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
-from ralph.discovery.models import DeviceType
+from ralph.discovery.models import ASSET_NOT_REQUIRED, DeviceType
 from ralph.scan.data import get_choice_by_name
 
 
@@ -403,17 +403,7 @@ class DiffForm(forms.Form):
                     DeviceType,
                     selected_type
                 )
-                if selected_type not in (
-                    DeviceType.rack,
-                    DeviceType.blade_system,
-                    DeviceType.management,
-                    DeviceType.power_distribution_unit,
-                    DeviceType.data_center,
-                    DeviceType.switch_stack,
-                    DeviceType.virtual_server,
-                    DeviceType.cloud_server,
-                    DeviceType.unknown
-                ):
+                if selected_type not in ASSET_NOT_REQUIRED:
                     try:
                         asset = self.get_value('asset')
                     except (KeyError, ValueError):
