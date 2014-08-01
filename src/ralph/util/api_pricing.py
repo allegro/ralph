@@ -341,7 +341,7 @@ def get_services():
     business_line_type = CIType.objects.get(name='BusinessLine')
     for service in CI.objects.filter(
         type=service_type
-    ).select_related('owners'):
+    ).select_related('relations'):
         business_line = service.child.filter(
             parent__type=business_line_type
         ).values_list('parent__uid', flat=True)
@@ -349,12 +349,12 @@ def get_services():
             'ci_uid': service.uid,
             'name': service.name,
             'business_line': business_line[0] if business_line else None,
-            'business_owners': service.business_owners.values_list(
+            'business_owners': list(service.business_owners.values_list(
                 'id',
                 flat=True,
-            ),
-            'technical_owners': service.technical_owners.values_list(
+            )),
+            'technical_owners': list(service.technical_owners.values_list(
                 'id',
                 flat=True,
-            ),
+            )),
         }
