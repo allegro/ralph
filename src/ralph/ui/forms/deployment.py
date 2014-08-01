@@ -9,10 +9,12 @@ import cStringIO
 import re
 
 import ipaddr
+from ajax_select.fields import AutoCompleteSelectField
 from bob.forms import AutocompleteWidget
 from django import forms
 from django.forms import formsets
 from django.db.models import Q
+from django.utils.translation import ugettext_lazy as _
 from lck.django.common.models import MACAddressField
 from powerdns.models import Record, Domain
 
@@ -51,6 +53,8 @@ class DeploymentForm(forms.ModelForm):
             'device',
             'venture',
             'venture_role',
+            'service',
+            'device_environment',
             'mac',
             'ip',
             'hostname',
@@ -61,6 +65,11 @@ class DeploymentForm(forms.ModelForm):
             'mac': AutocompleteWidget,
             'ip': AutocompleteWidget,
         }
+    service = AutoCompleteSelectField(
+        ('ralph.ui.channels', 'ServiceCatalogLookup'),
+        required=True,
+        label=_('Service catalog'),
+    )
 
     def __init__(self, *args, **kwargs):
         super(DeploymentForm, self).__init__(*args, **kwargs)
