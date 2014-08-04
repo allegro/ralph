@@ -18,6 +18,7 @@ from django.core.management.base import BaseCommand
 from ralph.discovery.models import IPAddress
 from ralph.business.models import Venture
 
+
 class Command(BaseCommand):
     """
     Upload ip addresses data from file to database
@@ -53,7 +54,9 @@ class Command(BaseCommand):
                         venture = None
                         print ("{0} does not exist".format(venture_name))
                 elif venture:
-                    ip_address = IPAddress.objects.get_or_create(address=line)[0]
+                    ip_address = IPAddress.objects.get_or_create(
+                        address=line
+                    )[0]
                     if not ip_address.venture:
                         ip_address.venture = venture
                     ip_address.save()
