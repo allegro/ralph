@@ -29,6 +29,7 @@ def get_ventures():
 
     for venture in Venture.objects.select_related('department').all():
         department = venture.get_department()
+        profit_center = None
         if venture.profit_center:
             profit_center = "{0} - {1}".format(
                 venture.profit_center.name,
