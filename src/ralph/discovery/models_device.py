@@ -828,13 +828,13 @@ class Connection(db.Model):
         Device,
         verbose_name=_("connected to device"),
         on_delete=db.PROTECT,
-        related_name='outbound_connections',
+        related_name='inbound_connections',
     )
     inbound = db.ForeignKey(
         Device,
         verbose_name=_("connected device"),
         on_delete=db.PROTECT,
-        related_name='inbound_connections',
+        related_name='outbound_connections',
     )
     connection_type = db.PositiveIntegerField(
         verbose_name=_("connection type"),

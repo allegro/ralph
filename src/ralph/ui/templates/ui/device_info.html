@@ -150,5 +150,38 @@
         {% endfor %}
     </tbody>
 </table>
+
+{% if connections %}
+    <table class="table table-striped table-bordered details-info-virtual">
+        <thead>
+            <tr>
+                <th>&nbsp;</th>
+                <th>Device</th>
+                <th>Connection Type</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for connections_type, connections_items in connections %}
+                {% if connections_items %}
+                    {% for conn in connections_items %}
+                        <tr>
+                            {% if forloop.first %}
+                                <td rowspan="{{ connections_items|length }}"><strong>{{ connections_type|title }} Connections:</strong></td>
+                            {% endif %}
+                            <td>
+                                {% if connections_type == "inbound" %}
+                                    <a href="{{ conn.inbound.id }}">{{ conn.inbound|device_icon }}&nbsp;{{ conn.inbound.name }}</a>
+                                {% else %}
+                                    <a href="{{ conn.outbound.id }}">{{ conn.outbound|device_icon }}&nbsp;{{ conn.outbound.name }}</a>
+                                {% endif %}
+                            </td>
+                            <td>{{ conn.kind }}</td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
 </div>
 {% endblock content %}

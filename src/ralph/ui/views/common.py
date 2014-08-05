@@ -67,10 +67,11 @@ from ralph.dnsedit.util import (
 )
 from ralph.dnsedit.util import Error as DNSError
 from ralph.discovery.models import (
+    ConnectionType,
     Device,
     DeviceType,
-    Network,
     IPAddress,
+    Network,
 )
 from ralph.discovery.models_history import (
     FOREVER_DATE,
@@ -593,6 +594,23 @@ class Info(DeviceUpdateView):
             tags = []
         tags = ['"%s"' % t.name if ',' in t.name else t.name for t in tags]
         deployment_status, plugins = self.get_running_deployment_info()
+        inbound_connections = self.object.inbound_connections.select_related(
+            'inbound'
+        ).order_by('connection_type')
+        outbound_connections = self.object.outbound_connections.select_related(
+            'outbound'
+        ).order_by('connection_type')
+        connections = []
+        if inbound_connections or outbound_connections:
+            connections = [
+                ("inbound", inbound_connections),
+                ("outbound", outbound_connections),
+            ]
+            for conn_type, conn_items in connections:
+                for conn_item in conn_items:
+                    conn_item.kind = ConnectionType.name_from_id(
+                        conn_item.connection_type
+                    )
         ret.update({
             'property_form': self.property_form,
             'tags': ', '.join(tags),
@@ -600,6 +618,7 @@ class Info(DeviceUpdateView):
             'deployment_status': deployment_status,
             'plugins': plugins,
             'changed_addresses': self.get_changed_addresses(),
+            'connections': connections
         })
         return ret
 
@@ -1499,7 +1518,9 @@ class Scan(BaseMixin, TemplateView):
         if not plugins:
             messages.error(self.request, "You have to select some plugins.")
             return self.get(*args, **kwargs)
-        ip_address = self.kwargs.get('address') or self.request.GET.get('address')
+        ip_address = self.kwargs.get('address') or self.request.GET.get(
+            'address'
+        )
         if ip_address:
             try:
                 ipaddr.IPAddress(ip_address)
