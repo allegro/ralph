@@ -41,6 +41,7 @@ setup(
         'django-pluggable-apps==1.2',
         'django-redis-cache==0.13.0',
         'dnspython==1.11.0',
+        'factory-boy==2.3.1',
         'feedparser==5.1.2',
         'fugue-icons==3.5.3',
         'gunicorn==0.14.6',
