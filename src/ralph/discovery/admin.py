@@ -315,6 +315,8 @@ class InboundConnectionInline(ForeignKeyAutocompleteTabularInline):
         'inbound': ['^name']
     }
     fk_name = 'outbound'
+    verbose_name = _("Inbound Connection")
+    verbose_name_plural = _("Inbound Connections")
 
 
 class OutboundConnectionInline(ForeignKeyAutocompleteTabularInline):
@@ -324,6 +326,8 @@ class OutboundConnectionInline(ForeignKeyAutocompleteTabularInline):
         'outbound': ['^name'],
     }
     fk_name = 'inbound'
+    verbose_name = _("Outbound Connection")
+    verbose_name_plural = _("Outbound Connections")
 
 
 class DeviceAdmin(ModelAdmin):

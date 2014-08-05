@@ -826,13 +826,13 @@ class Connection(db.Model):
 
     outbound = db.ForeignKey(
         Device,
-        verbose_name=_("outbound connection"),
+        verbose_name=_("connected to device"),
         on_delete=db.PROTECT,
         related_name='outbound_connections',
     )
     inbound = db.ForeignKey(
         Device,
-        verbose_name=_("inbound connection"),
+        verbose_name=_("connected device"),
         on_delete=db.PROTECT,
         related_name='inbound_connections',
     )
