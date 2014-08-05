@@ -90,6 +90,12 @@ class DeviceType(Choices):
     unknown = _("unknown")
 
 
+class ConnectionType(Choices):
+    _ = Choices.Choice
+
+    network = _("network connection")
+
+
 class DeprecationKind(TimeTrackable, Named):
     months = db.PositiveIntegerField(
         verbose_name=_("deprecation time in months"),
@@ -304,6 +310,11 @@ class Device(
         blank=True,
         default=None,
         related_name="logicalchild_set",
+    )
+    connections = db.ManyToManyField(
+        'Device',
+        through='Connection',
+        symmetrical=False,
     )
     model = db.ForeignKey(
         DeviceModel,
@@ -809,6 +820,33 @@ class Device(
             ]
         ))
         return props
+
+
+class Connection(db.Model):
+
+    outbound = db.ForeignKey(
+        Device,
+        verbose_name=_("outbound connection"),
+        on_delete=db.PROTECT,
+        related_name='outbound_connections',
+    )
+    inbound = db.ForeignKey(
+        Device,
+        verbose_name=_("inbound connection"),
+        on_delete=db.PROTECT,
+        related_name='inbound_connections',
+    )
+    connection_type = db.PositiveIntegerField(
+        verbose_name=_("connection type"),
+        choices=ConnectionType()
+    )
+
+    def __unicode__(self):
+        return "%s -> %s (%s)" % (
+            self.outbound,
+            self.inbound,
+            self.connection_type
+        )
 
 
 class ReadOnlyDevice(Device):
