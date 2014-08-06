@@ -1,10 +1,10 @@
 Change Log
 ----------
 
-2.x.x.
+2.0.1.
 ~~~~~~
 
-Released on ...
+Released on August 7, 2014
 
 * CORE: Added missing permissions checks to the views.
 
