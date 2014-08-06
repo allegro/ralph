@@ -15,7 +15,7 @@ from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.core.paginator import Paginator
 from django.db import models as db
-from django.http import HttpResponseRedirect, HttpResponseForbidden, Http404
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden, Http404
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
@@ -53,6 +53,8 @@ from ralph.scan.util import update_scan_summary
 from ralph.business.models import (
     RoleProperty,
     RolePropertyValue,
+    Venture,
+    VentureRole,
 )
 from ralph.cmdb.models import CI
 from ralph.deployment.models import Deployment, DeploymentStatus
@@ -1366,14 +1368,26 @@ class ServerMove(BaseMixin, TemplateView):
 
 @nested_commit_on_success
 def bulk_update(devices, fields, data, user):
+    field_classes = {
+        'venture': Venture,
+        'venture_role': VentureRole,
+        'parent': Device,
+    }
     values = {}
     for name in fields:
-        if name == 'chassis_position' and data[name] == '':
+        if name in field_classes:
+            if data[name]:
+                values[name] = field_classes[name].objects.get(id=data[name])
+            else:
+                values[name] = None
+        elif name == 'chassis_position' and data[name] == '':
             values[name] = None
         else:
             # for checkboxes un-checking
             values[name] = data.get(name, False)
     for device in devices:
+        if 'venture' in fields:
+            device.venture_role = None
         for name in fields:
             setattr(device, name, values[name])
             device.save_comment = data.get('save_comment')
@@ -1393,6 +1407,7 @@ class BulkEdit(BaseMixin, TemplateView):
         self.different_fields = []
 
     def post(self, *args, **kwargs):
+        #import ipdb; ipdb.set_trace()
         profile = self.request.user.get_profile()
         if not profile.has_perm(Perm.bulk_edit):
             messages.error(
@@ -1401,13 +1416,26 @@ class BulkEdit(BaseMixin, TemplateView):
             )
             return super(BulkEdit, self).get(*args, **kwargs)
         selected = self.request.POST.getlist('select')
-        self.devices = Device.objects.filter(id__in=selected).select_related()
-        if not self.devices:
+        devices = Device.objects.filter(id__in=selected).select_related()
+        verified = devices.filter(verified=True)
+        self.devices = devices.filter(verified=False)
+        if not self.devices and not verified:
             messages.error(
                 self.request,
                 "You haven't selected any existing devices.",
             )
             return HttpResponseRedirect(self.request.path + '../info/')
+        elif verified:
+            messages.warning(
+                self.request,
+                "The following devices have been removed from your selection "
+                "because they are marked as 'verified' and thus cannot be "
+                "edited in bulk: {}. You can either edit them individually "
+                "or uncheck the 'verified' option in admin's panel."
+                .format(', '.join([d.name for d in verified]))
+            )
+            if not self.devices:
+                return HttpResponseRedirect(self.request.path + '../info/')
         self.edit_fields = self.request.POST.getlist('edit')
         initial = {}
         self.different_fields = []
