@@ -15,7 +15,7 @@ from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.core.paginator import Paginator
 from django.db import models as db
-from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden, Http404
+from django.http import HttpResponseRedirect, HttpResponseForbidden, Http404
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
@@ -1407,7 +1407,6 @@ class BulkEdit(BaseMixin, TemplateView):
         self.different_fields = []
 
     def post(self, *args, **kwargs):
-        #import ipdb; ipdb.set_trace()
         profile = self.request.user.get_profile()
         if not profile.has_perm(Perm.bulk_edit):
             messages.error(
