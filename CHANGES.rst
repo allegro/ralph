@@ -1,20 +1,40 @@
 Change Log
 ----------
 
-2.0.1.
+2.0.1
 ~~~~~~
 
 Released on August 7, 2014
 
-* CORE: Added missing permissions checks to the views.
-
-* CORE: Added 'venture' field to the 'IPAddress' resource in API.
-
-* CORE: Improved 'DNS Records' form validation (detection of duplicate records).
+This is mostly a bugfix release, but it contains also one new feature ('notifications' module).
 
 * CORE: Added possibility to bulk-edit 'name', 'venture', 'role' and 'physical parent device'.
 
+* CORE: Improved 'DNS Records' form validation (detection of duplicate records).
+
+* CORE: Some small improvements related to integration with 'ralph_assets' and 'ralph_pricing' (e.g. a script for uploading data re: venture/IPs ownership).
+
+* CORE: Added 'notifications' module (a simple app for sending and archiving e-mails when you want to be notified of certain events, e.g device's configuration change).
+
 * SCAN: Fix for 'ssh_xen' plugin (reference to a non-existing variable).
+
+* CORE: Added 'DeviceEnvironment' model along with adding 'service' and 'device_environment' fields on 'Device' model (needed for future features).
+
+* CORE: Added 'venture' field to the 'IPAddress' resource in API.
+
+* SCAN: Minor fixes for 'ssh_cisco_catalyst' and 'ssh_cisco_asa' plugins (e.g. NotConfiguredError could break all Scan processes).
+
+* SCAN: 'management' field on 'Device' model is no longer ignored ('ssh_proxmox' plugin mostly).
+
+* CORE: Fix for syncs with LDAP.
+
+* SCAN: Fix for sysinfo extraction in 'ssh_3par' plugin.
+
+* DonPedro: added normalization of WWNs and some additional command-line options for the output generation.
+
+* SCAN: Enabled saving of the results in 'mount_shares' postprocessing plugin.
+
+* CORE: Added missing permissions checks to the views.
 
 2.0.0-stable
 ~~~~~~~~~~~~
