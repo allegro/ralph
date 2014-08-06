@@ -1,7 +1,20 @@
 Change Log
 ----------
 
+2.x.x.
+~~~~~~
 
+Released on ...
+
+* CORE: Added missing permissions checks to the views.
+
+* CORE: Added 'venture' field to the 'IPAddress' resource in API.
+
+* CORE: Improved 'DNS Records' form validation (detection of duplicate records).
+
+* CORE: Added possibility to bulk-edit 'name', 'venture', 'role' and 'physical parent device'.
+
+* SCAN: Fix for 'ssh_xen' plugin (reference to a non-existing variable).
 
 2.0.0-stable
 ~~~~~~~~~~~~
