@@ -79,7 +79,7 @@ class SidebarSearch(object):
 
     @property
     def searchform_class(self):
-        if 'assets' in settings.INSTALLED_APPS:
+        if 'ralph_assets' in settings.INSTALLED_APPS:
             return SearchFormWithAssets
         return SearchForm
 
@@ -460,7 +460,7 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
                 changed_devices_ids = self._get_changed_devices_ids()
                 self.query = self.query.filter(id__in=changed_devices_ids)
             if (data.get('without_asset', False)
-               and 'assets' in settings.INSTALLED_APPS):
+               and 'ralph_assets' in settings.INSTALLED_APPS):
                 from ralph_assets.models_assets import DeviceInfo
                 device_info_ids = DeviceInfo.objects.exclude(
                     ralph_device_id=None
