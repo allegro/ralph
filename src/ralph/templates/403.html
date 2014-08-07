@@ -7,7 +7,7 @@
         <div class="dashboard-form">
             <img src='{{ STATIC_URL }}images/big_icon_padlock.png'>
             <p class='permission-msg'>
-              {% trans "You do not have permission to view this resource." %}
+              <h1>{{ msg }}</h1>
             </p>
             <div>
               <button class="btn btn-link" onclick="window.history.back()">
