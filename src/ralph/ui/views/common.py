@@ -594,19 +594,23 @@ class Info(DeviceUpdateView):
             tags = []
         tags = ['"%s"' % t.name if ',' in t.name else t.name for t in tags]
         deployment_status, plugins = self.get_running_deployment_info()
-        inbound_connections = self.object.inbound_connections.select_related(
-            'inbound'
+        inbound_connections = self.object.inbound_connections.filter(
+            connection_type=ConnectionType.network
+        ).select_related(
+            'inbound', 'networkconnection'
+        )
+        outbound_connections = self.object.outbound_connections.filter(
+            connection_type=ConnectionType.network
+        ).select_related(
+            'outbound', 'networkconnection'
         ).order_by('connection_type')
-        outbound_connections = self.object.outbound_connections.select_related(
-            'outbound'
-        ).order_by('connection_type')
-        connections = []
+        network_connections = []
         if inbound_connections or outbound_connections:
-            connections = [
+            network_connections = [
                 ("inbound", inbound_connections),
                 ("outbound", outbound_connections),
             ]
-            for conn_type, conn_items in connections:
+            for conn_type, conn_items in network_connections:
                 for conn_item in conn_items:
                     conn_item.kind = ConnectionType.name_from_id(
                         conn_item.connection_type
@@ -618,7 +622,7 @@ class Info(DeviceUpdateView):
             'deployment_status': deployment_status,
             'plugins': plugins,
             'changed_addresses': self.get_changed_addresses(),
-            'connections': connections
+            'network_connections': network_connections
         })
         return ret
 

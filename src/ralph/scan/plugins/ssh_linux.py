@@ -11,7 +11,7 @@ from django.conf import settings
 from lck.django.common.models import MACAddressField
 
 from ralph.discovery.hardware import get_disk_shares
-from ralph.discovery.models import SERIAL_BLACKLIST
+from ralph.discovery.models import SERIAL_BLACKLIST, ConnectionType
 from ralph.discovery.models_component import is_mac_valid
 from ralph.scan.plugins import get_base_result_template
 from ralph.util import network, parse, Eth
@@ -170,6 +170,39 @@ def _get_disk_shares(ssh):
     ]
 
 
+def _get_lldp_info(ssh, messages=[]):
+    """
+    Parse LLDPCTL output and return informations about connected devices.
+    """
+
+    stdin, stdout, stderr = ssh.exec_command(
+        "/usr/bin/sudo /usr/sbin/lldpctl",
+    )
+    network_connections = []
+    connection = {}
+    for line in stdout.readlines():
+        if not connection:
+            connection = {
+                'connection_type': ConnectionType.network.raw,
+                'details': {}
+            }
+        if "Interface:" in line:
+            connection['details']['outbound_port'] = line.strip().split(
+                ":"
+            )[1].split(",")[0].strip()
+        if "ChassisID:" in line:
+            connection['mac_address'] = MACAddressField.normalize(
+                line.strip().split(':', 1)[1].replace('mac', '').strip()
+            )
+        if "PortID:" in line:
+            connection['details']['inbound_port'] = line.strip().split(
+                ":"
+            )[1].strip()
+            network_connections.append(connection)
+            connection = {}
+    return network_connections
+
+
 def _ssh_linux(ssh, ip_address, messages=[]):
     device_info = _get_base_device_info(ssh)
     mac_addresses = _get_mac_addresses(ssh)
@@ -181,6 +214,9 @@ def _ssh_linux(ssh, ip_address, messages=[]):
     if disk_shares:
         device_info['disk_shares'] = disk_shares
     device_info.update(_get_os_info(ssh))
+    network_connections = _get_lldp_info(ssh)
+    if network_connections:
+        device_info['connections'] = network_connections
     return device_info
 
 

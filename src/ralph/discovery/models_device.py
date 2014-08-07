@@ -849,6 +849,30 @@ class Connection(db.Model):
         )
 
 
+class NetworkConnection(db.Model):
+
+    connection = db.OneToOneField(
+        Connection,
+        on_delete=db.CASCADE,
+    )
+    outbound_port = db.CharField(
+        verbose_name=_("outbound port"),
+        max_length=100
+    )
+    inbound_port = db.CharField(
+        verbose_name=_("inbound port"),
+        max_length=100
+    )
+
+    def __unicode__(self):
+        return "connection from %s on %s to %s on %s" % (
+            self.connection.outbound,
+            self.outbound_port,
+            self.connection.inbound,
+            self.inbound_port
+        )
+
+
 class ReadOnlyDevice(Device):
 
     class Meta:

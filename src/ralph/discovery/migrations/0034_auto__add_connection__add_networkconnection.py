@@ -11,16 +11,28 @@ class Migration(SchemaMigration):
         # Adding model 'Connection'
         db.create_table('discovery_connection', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('outbound', self.gf('django.db.models.fields.related.ForeignKey')(related_name=u'outbound_connections', on_delete=models.PROTECT, to=orm['discovery.Device'])),
-            ('inbound', self.gf('django.db.models.fields.related.ForeignKey')(related_name=u'inbound_connections', on_delete=models.PROTECT, to=orm['discovery.Device'])),
+            ('outbound', self.gf('django.db.models.fields.related.ForeignKey')(related_name=u'inbound_connections', on_delete=models.PROTECT, to=orm['discovery.Device'])),
+            ('inbound', self.gf('django.db.models.fields.related.ForeignKey')(related_name=u'outbound_connections', on_delete=models.PROTECT, to=orm['discovery.Device'])),
             ('connection_type', self.gf('django.db.models.fields.PositiveIntegerField')()),
         ))
         db.send_create_signal('discovery', ['Connection'])
+
+        # Adding model 'NetworkConnection'
+        db.create_table('discovery_networkconnection', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('connection', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['discovery.Connection'], unique=True)),
+            ('outbound_port', self.gf('django.db.models.fields.CharField')(max_length=100)),
+            ('inbound_port', self.gf('django.db.models.fields.CharField')(max_length=100)),
+        ))
+        db.send_create_signal('discovery', ['NetworkConnection'])
 
 
     def backwards(self, orm):
         # Deleting model 'Connection'
         db.delete_table('discovery_connection')
+
+        # Deleting model 'NetworkConnection'
+        db.delete_table('discovery_networkconnection')
 
 
     models = {
@@ -201,8 +213,8 @@ class Migration(SchemaMigration):
             'Meta': {'object_name': 'Connection'},
             'connection_type': ('django.db.models.fields.PositiveIntegerField', [], {}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'inbound': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "u'inbound_connections'", 'on_delete': 'models.PROTECT', 'to': "orm['discovery.Device']"}),
-            'outbound': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "u'outbound_connections'", 'on_delete': 'models.PROTECT', 'to': "orm['discovery.Device']"})
+            'inbound': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "u'outbound_connections'", 'on_delete': 'models.PROTECT', 'to': "orm['discovery.Device']"}),
+            'outbound': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "u'inbound_connections'", 'on_delete': 'models.PROTECT', 'to': "orm['discovery.Device']"})
         },
         'discovery.datacenter': {
             'Meta': {'ordering': "(u'name',)", 'object_name': 'DataCenter'},
@@ -555,6 +567,13 @@ class Migration(SchemaMigration):
             'reserved_top_margin': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
             'terminators': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['discovery.NetworkTerminator']", 'symmetrical': 'False'}),
             'vlan': ('django.db.models.fields.PositiveIntegerField', [], {'default': 'None', 'null': 'True', 'blank': 'True'})
+        },
+        'discovery.networkconnection': {
+            'Meta': {'object_name': 'NetworkConnection'},
+            'connection': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['discovery.Connection']", 'unique': 'True'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'inbound_port': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
+            'outbound_port': ('django.db.models.fields.CharField', [], {'max_length': '100'})
         },
         'discovery.networkkind': {
             'Meta': {'ordering': "(u'name',)", 'object_name': 'NetworkKind'},
