@@ -230,3 +230,10 @@ class SearchForm(forms.Form):
                 except ValueError:
                     raise forms.ValidationError("Invalid address")
         return data
+
+
+class SearchFormWithAssets(SearchForm):
+    without_asset = forms.BooleanField(
+        required=False,
+        label="Devices without linked asset",
+    )
