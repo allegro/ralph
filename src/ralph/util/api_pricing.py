@@ -14,6 +14,7 @@ from ralph.business.models import Venture, VentureExtraCost
 from ralph.cmdb.models import CI, CIOwner, CIType
 from ralph.discovery.models import (
     Device,
+    DeviceEnvironment,
     DeviceType,
     DiskShareMount,
     FibreChannel,
@@ -298,10 +299,21 @@ def get_cloud_daily_costs(date=None):
 
 
 def get_fc_cards():
-    for fc in FibreChannel.objects.values('id', 'device__id'):
+    for fc in FibreChannel.objects.filter(device__deleted=False).values(
+        'id',
+        'device__id'
+    ):
         yield {
             'id': fc['id'],
             'device_id': fc['device__id'],
+        }
+
+
+def get_environments():
+    for environment in DeviceEnvironment.objects.all():
+        yield {
+            'id': environment.id,
+            'name': environment.name,
         }
 
 
