@@ -6,6 +6,10 @@ FROM      ubuntu:14.04
 MAINTAINER Marcin Kliks marcin.kliks@allegro.pl
 
 RUN apt-get update
+#workaround for broken docker chfn pam authorization - see more details here: https://github.com/docker/docker/issues/6345
+
+RUN ln -s -f /bin/true /usr/bin/chfn
+
 RUN apt-get install -y python2.7 python-dev python-virtualenv build-essential libbz2-dev libfreetype6-dev libgdbm-dev libxft-dev
 RUN apt-get install -y libjpeg-dev libldap2-dev libltdl-dev libmysqlclient-dev libreadline-dev libsasl2-dev libsqlite3-dev
 RUN apt-get install -y libssl-dev libxslt1-dev ncurses-dev zlib1g-dev
