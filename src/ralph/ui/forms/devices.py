@@ -14,7 +14,12 @@ from lck.django.common.models import MACAddressField
 
 from ralph.deployment.util import get_next_free_hostname
 from ralph.discovery.models_component import is_mac_valid
-from ralph.discovery.models import Device, DeviceType
+from ralph.discovery.models import (
+    ASSET_NOT_REQUIRED,
+    Device,
+    DeviceEnvironment,
+    DeviceType,
+)
 from ralph.util import Eth
 from ralph.ui.widgets import (
     DateWidget,
@@ -205,6 +210,8 @@ class DeviceCreateForm(DeviceForm):
             'name',
             'venture',
             'venture_role',
+            'service',
+            'device_environment',
             'barcode',
             'position',
             'chassis_position',
@@ -222,6 +229,16 @@ class DeviceCreateForm(DeviceForm):
         )
 
     macs = forms.CharField(widget=forms.Textarea, required=False)
+    service = AutoCompleteSelectField(
+        ('ralph.ui.channels', 'ServiceCatalogLookup'),
+        required=True,
+        label=_('Service catalog'),
+    )
+    device_environment = forms.ModelChoiceField(
+        required=True,
+        queryset=DeviceEnvironment.objects.all(),
+        label=_('Device Environment'),
+    )
 
     def __init__(self, *args, **kwargs):
         super(DeviceCreateForm, self).__init__(*args, **kwargs)
@@ -232,7 +249,7 @@ class DeviceCreateForm(DeviceForm):
         if 'ralph_assets' in settings.INSTALLED_APPS:
             self.fields['asset'] = AutoCompleteSelectField(
                 ('ralph_assets.api_ralph', 'UnassignedDCDeviceLookup'),
-                required=True,
+                required=False,
             )
             self.fields['asset'].widget.help_text = (
                 'Enter asset sn, barcode or model'
@@ -261,6 +278,16 @@ class DeviceCreateForm(DeviceForm):
     def clean_model(self):
         model = self.cleaned_data['model']
         return model or None
+
+    def clean_asset(self):
+        model = self.cleaned_data.get('model')
+        asset = self.cleaned_data.get('asset')
+        if model and model.type not in ASSET_NOT_REQUIRED:
+            if not asset:
+                raise forms.ValidationError(
+                    "Asset is required for this kind of device."
+                )
+        return asset
 
 
 class DeviceBulkForm(DeviceForm):
@@ -298,6 +325,8 @@ class DeviceInfoForm(DeviceForm):
             'model',
             'venture',
             'venture_role',
+            'service',
+            'device_environment',
             'verified',
             'barcode',
             'dc',
@@ -337,6 +366,17 @@ class DeviceInfoForm(DeviceForm):
                     )
                     self.fields['name'].help_text = help_text
                     break
+
+    service = AutoCompleteSelectField(
+        ('ralph.ui.channels', 'ServiceCatalogLookup'),
+        required=True,
+        label=_('Service catalog'),
+    )
+    device_environment = forms.ModelChoiceField(
+        required=True,
+        queryset=DeviceEnvironment.objects.all(),
+        label=_('Device Environment'),
+    )
 
 
 class DeviceInfoVerifiedForm(DeviceInfoForm):

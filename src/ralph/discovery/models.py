@@ -11,6 +11,7 @@ from __future__ import unicode_literals
 from ralph.discovery.models_device import (
     DeprecationKind,
     Device,
+    DeviceEnvironment,
     DeviceModel,
     DeviceModelGroup,
     DeviceType,
@@ -22,6 +23,7 @@ from ralph.discovery.models_device import (
     MarginKind,
     ReadOnlyDevice,
     SERIAL_BLACKLIST,
+    ServiceCatalog,
     UptimeSupport,
 )
 from ralph.discovery.models_network import (
@@ -66,6 +68,20 @@ from ralph.discovery.models_pricing import (
     PricingValue,
 )
 
+
+ASSET_NOT_REQUIRED = (
+    DeviceType.rack,
+    DeviceType.blade_system,
+    DeviceType.management,
+    DeviceType.power_distribution_unit,
+    DeviceType.data_center,
+    DeviceType.switch_stack,
+    DeviceType.virtual_server,
+    DeviceType.cloud_server,
+    DeviceType.unknown
+)
+
+
 __all__ = [
     'DataCenter',
     'DiscoveryQueue',
@@ -97,6 +113,7 @@ __all__ = [
     'DISK_VENDOR_BLACKLIST',
     'DeprecationKind',
     'Device',
+    'DeviceEnvironment',
     'DeviceModel',
     'DeviceModelGroup',
     'DeviceType',
@@ -106,6 +123,7 @@ __all__ = [
     'MarginKind',
     'ReadOnlyDevice',
     'SERIAL_BLACKLIST',
+    'ServiceCatalog',
     'UptimeSupport',
 
     'HistoryChange',
@@ -118,6 +136,8 @@ __all__ = [
     'PricingFormula',
     'PricingVariable',
     'PricingValue',
+
+    'ASSET_NOT_REQUIRED',
 ]
 
 # Load the plugins code

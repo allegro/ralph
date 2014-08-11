@@ -1,12 +1,14 @@
 {% extends "ui/base-devices.html" %}
 
 {% load url from future %}
-{% load icons %}
-{% load bob %}
+{% load bob i18n icons %}
 
 {% block contentarea %}
   <div class="row-fluid">
     <div class="span10">
+        <div class="alert alert-warning">
+            {% trans "Make sure that the <b>Service</b> and <b>Device environment</b> are set to the correct value!" %}
+        </div>
         <form class="form form-horizontal device-create-form" method="POST">
             {% csrf_token %}
             {% for d in devices %}
