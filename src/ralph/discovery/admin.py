@@ -312,9 +312,9 @@ class InboundConnectionInline(ForeignKeyAutocompleteTabularInline):
     model = m.Connection
     extra = 1
     related_search_fields = {
-        'inbound': ['^name']
+        'outbound': ['^name']
     }
-    fk_name = 'outbound'
+    fk_name = 'inbound'
     verbose_name = _("Inbound Connection")
     verbose_name_plural = _("Inbound Connections")
 
@@ -323,9 +323,9 @@ class OutboundConnectionInline(ForeignKeyAutocompleteTabularInline):
     model = m.Connection
     extra = 1
     related_search_fields = {
-        'outbound': ['^name'],
+        'inbound': ['^name'],
     }
-    fk_name = 'inbound'
+    fk_name = 'outbound'
     verbose_name = _("Outbound Connection")
     verbose_name_plural = _("Outbound Connections")
 

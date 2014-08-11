@@ -9,6 +9,8 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from ralph.discovery.models_device import (
+    Connection,
+    ConnectionType,
     DeprecationKind,
     Device,
     DeviceModel,
@@ -16,12 +18,11 @@ from ralph.discovery.models_device import (
     DeviceType,
     DISK_PRODUCT_BLACKLIST,
     DISK_VENDOR_BLACKLIST,
-    Connection,
-    ConnectionType,
     LoadBalancerMember,
     LoadBalancerPool,
     LoadBalancerVirtualServer,
     MarginKind,
+    NetworkConnection,
     ReadOnlyDevice,
     SERIAL_BLACKLIST,
     UptimeSupport,
@@ -108,6 +109,7 @@ __all__ = [
     'LoadBalancerPool',
     'LoadBalancerVirtualServer',
     'MarginKind',
+    'NetworkConnection',
     'ReadOnlyDevice',
     'SERIAL_BLACKLIST',
     'UptimeSupport',

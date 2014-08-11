@@ -155,9 +155,9 @@
     <table class="table table-striped table-bordered details-info-virtual">
         <thead>
             <tr>
-                <th>Port</th>
-                <th>Device</th>
-                <th>Port</th>
+                <th>This Device Port</th>
+                <th>Connected Device</th>
+                <th>Connected Device Port</th>
             </tr>
         </thead>
         <tbody>
@@ -167,11 +167,11 @@
                         <tr>
                             {% if connections_type == "inbound" %}
                                 <td>{{ conn.networkconnection.inbound_port }}</td>
-                                <td><a href="{{ conn.inbound.id }}">{{ conn.inbound|device_icon }}&nbsp;{{ conn.inbound.name }}</a></td>
+                                <td><a href="{{ conn.outbound.id }}">{{ conn.outbound|device_icon }}&nbsp;{{ conn.outbound.name }}</a></td>
                                 <td>{{ conn.networkconnection.outbound_port }}</td>
                             {% else %}
                                 <td>{{ conn.networkconnection.outbound_port }}</td>
-                                <td><a href="{{ conn.outbound.id }}">{{ conn.outbound|device_icon }}&nbsp;{{ conn.outbound.name }}</a></td>
+                                <td><a href="{{ conn.inbound.id }}">{{ conn.inbound|device_icon }}&nbsp;{{ conn.inbound.name }}</a></td>
                                 <td>{{ conn.networkconnection.inbound_port }}</td>
                             {% endif %}
                         </tr>

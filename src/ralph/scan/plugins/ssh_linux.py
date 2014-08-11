@@ -183,7 +183,7 @@ def _get_lldp_info(ssh, messages=[]):
     for line in stdout.readlines():
         if not connection:
             connection = {
-                'connection_type': ConnectionType.network.raw,
+                'connection_type': ConnectionType.network.name,
                 'details': {}
             }
         if "Interface:" in line:
@@ -191,7 +191,9 @@ def _get_lldp_info(ssh, messages=[]):
                 ":"
             )[1].split(",")[0].strip()
         if "ChassisID:" in line:
-            connection['mac_address'] = MACAddressField.normalize(
+            connection[
+                'connected_device_mac_addresses'
+            ] = MACAddressField.normalize(
                 line.strip().split(':', 1)[1].replace('mac', '').strip()
             )
         if "PortID:" in line:

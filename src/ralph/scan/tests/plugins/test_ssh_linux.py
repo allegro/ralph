@@ -248,20 +248,25 @@ Interface:    eth1, via: LLDP, RID: 1, Time: 0 day, 00:07:49
             _get_lldp_info(ssh),
             [
                 {
-                    'connection_type': 'network connection',
+                    'connected_device_mac_addresses': 'AABBCC112233',
+                    'connection_type': 'network',
                     'details': {
                         'outbound_port': 'eth0',
                         'inbound_port': 'local Server bay 1'
-                    },
-                    'mac_address': 'AABBCC112233'
+                    }
                 },
                 {
-                    'connection_type': 'network connection',
+                    'connected_device_mac_addresses': 'AABBCC112244',
+                    'connection_type': 'network',
                     'details': {
                         'outbound_port': 'eth1',
                         'inbound_port': 'gr2'
-                    },
-                    'mac_address': 'AABBCC112244'
+                    }
                 }
             ]
         )
+        ssh = MockSSH([(
+            "/usr/bin/sudo /usr/sbin/lldpctl",
+            ""
+        )])
+        self.assertEqual(_get_lldp_info(ssh), [])
