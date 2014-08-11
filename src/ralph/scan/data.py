@@ -823,17 +823,17 @@ def connection_from_data(device, connection_data):
     if not query:
         raise ValueError(
             "Can not find connected device. Please specify connected device "
-            "mac address or serial number."
+            "MAC address or serial number."
         )
     connected_devices = Device.objects.filter(**query)
     if not connected_devices:
         raise ValueError(
             "Can not find connected device. Please specify connected device "
-            "mac address or serial number."
+            "MAC address or serial number."
         )
     if len(connected_devices) > 1:
         raise ValueError(
-            "Many devices found. Probably specified mac addresses are not "
+            "Many devices found. Probably specified MAC addresses are not "
             "connected with one device..."
         )
     connected_device = connected_devices[0]
