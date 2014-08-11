@@ -118,8 +118,11 @@ def get_virtual_usages(parent_venture_name=None):
             if not memory:
                 memory = system.memory
         yield {
+            'name': device.name,
             'device_id': device.id,
-            'venture_id': device.venture_id,
+            'service_ci_uid': device.service.uid if device.service else None,
+            'environment': device.device_environment,
+            'hypervisor_id': device.parent.id,
             'virtual_cores': cores or 0,
             'virtual_memory': memory or 0,
             'virtual_disk': disk or 0,
