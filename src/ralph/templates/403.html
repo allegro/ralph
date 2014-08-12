@@ -7,7 +7,7 @@
         <div class="dashboard-form">
             <img src='{{ STATIC_URL }}images/big_icon_padlock.png'>
             <p class='permission-msg'>
-              <h1>{{ msg }}</h1>
+              <h1>{% trans msg %}</h1>
             </p>
             <div>
               <button class="btn btn-link" onclick="window.history.back()">

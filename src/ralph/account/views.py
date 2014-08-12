@@ -32,7 +32,7 @@ def HTTP403(request, msg=None, template_name='403.html'):
     'django.views.defaults' (added 'REQUEST_PERM_URL' etc.).
     """
     if not msg:
-        msg = _("You don't have permission for this resource.")
+        msg = _("You don't have permission to this resource.")
     try:
         template = loader.get_template(template_name)
     except TemplateDoesNotExist:
