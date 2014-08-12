@@ -14,7 +14,7 @@ from django.contrib.auth.models import Group
 from django.core.handlers.wsgi import WSGIRequest
 from django.core.urlresolvers import reverse, NoReverseMatch
 from django.db import models as db
-from django.http import HttpResponseForbidden, HttpResponseBadRequest
+from django.http import HttpResponseBadRequest
 from django.utils.translation import ugettext_lazy as _
 
 
