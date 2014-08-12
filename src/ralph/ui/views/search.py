@@ -11,6 +11,7 @@ import re
 import django_rq
 import rq
 
+from django.conf import settings
 from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.db.models import Q
@@ -21,7 +22,7 @@ from powerdns.models import Record
 from ralph.account.models import Perm
 from ralph.discovery.models import ReadOnlyDevice, Device, ComponentModel
 from ralph.scan.models import ScanSummary
-from ralph.ui.forms.search import SearchForm
+from ralph.ui.forms.search import SearchForm, SearchFormWithAssets
 from ralph.ui.views.common import (
     Addresses,
     Asset,
@@ -76,10 +77,16 @@ class SidebarSearch(object):
         super(SidebarSearch, self).__init__(*args, **kwargs)
         self.searchform = None
 
+    @property
+    def searchform_class(self):
+        if 'ralph_assets' in settings.INSTALLED_APPS:
+            return SearchFormWithAssets
+        return SearchForm
+
     def set_searchform(self):
         if self.searchform:
             return
-        self.searchform = SearchForm(self.request.GET)
+        self.searchform = self.searchform_class(self.request.GET)
         if not self.searchform.is_valid():
             messages.error(self.request, "Invalid search query.")
 
@@ -452,6 +459,15 @@ class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
             if data['with_changes']:
                 changed_devices_ids = self._get_changed_devices_ids()
                 self.query = self.query.filter(id__in=changed_devices_ids)
+            if (data.get('without_asset', False)
+               and 'ralph_assets' in settings.INSTALLED_APPS):
+                from ralph_assets.models_assets import DeviceInfo
+                device_info_ids = DeviceInfo.objects.exclude(
+                    ralph_device_id=None
+                ).values_list(
+                    'ralph_device_id', flat=True
+                )
+                self.query = self.query.exclude(id__in=device_info_ids)
         profile = self.request.user.get_profile()
         if not profile.has_perm(Perm.read_dc_structure):
             self.query = profile.filter_by_perm(
