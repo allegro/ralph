@@ -14,7 +14,6 @@ from django.contrib.auth.models import Group
 from django.core.handlers.wsgi import WSGIRequest
 from django.core.urlresolvers import reverse, NoReverseMatch
 from django.db import models as db
-from django.http import HttpResponseBadRequest
 from django.utils.translation import ugettext_lazy as _
 
 
@@ -247,21 +246,23 @@ def ralph_permission(perms=None):
     def decorator(func):
         def inner_decorator(self, *args, **kwargs):
             from ralph.account.views import HTTP403
+            if args and isinstance(args[0], WSGIRequest):
+                request = args[0]
+            elif 'request' in kwargs:
+                request = kwargs['request']
             if hasattr(self, 'user'):
                 user = self.user
             elif hasattr(self, 'request'):
                 user = self.request.user
-            elif args and isinstance(args[0], WSGIRequest):
-                user = args[0].user
             else:
-                return HttpResponseBadRequest()
+                user = request.user
             if user.is_anonymous():
-                return HTTP403(self.request)
+                return HTTP403(request)
             profile = user.get_profile()
             has_perm = profile.has_perm
             for perm in perms:
                 if not has_perm(perm['perm']):
-                    return HTTP403(self.request, perm['msg'])
+                    return HTTP403(request, perm['msg'])
             return func(self, *args, **kwargs)
         func.decorated_with = 'ralph_permission'  # for unit tests etc.
         return functools.wraps(func)(inner_decorator)
