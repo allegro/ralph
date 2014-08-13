@@ -205,10 +205,6 @@ class BaseMixin(ACLGateway):
         self.object = None
         self.status = ''
 
-    def dispatch(self, request, *args, **kwargs):
-        self.request = request
-        return super(BaseMixin, self).dispatch(request, *args, **kwargs)
-
     def tab_href(self, name, obj=''):
         if not obj and self.object:
             obj = self.object.id
