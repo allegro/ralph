@@ -2,11 +2,15 @@ Change Log
 ----------
 
 2.0.1
-~~~~~~
+~~~~~
 
-Released on August 7, 2014
+Released on August 14, 2014
 
-This is mostly a bugfix release, but it contains also one new feature ('notifications' module).
+This is a bugfix release, with some small improvements here and there and one new feature ('notifications' module).
+
+* SCAN: Improved detection of Juniper switches.
+
+* CORE: Added new filter to the sidebar search ('Devices without linked asset').
 
 * CORE: Added possibility to bulk-edit 'name', 'venture', 'role' and 'physical parent device'.
 
