@@ -14,9 +14,12 @@ test-unittests:
 	DJANGO_SETTINGS_PROFILE=test-ralph coverage run --source=ralph --omit='*migrations*,*tests*' '$(VIRTUAL_ENV)/bin/ralph' test ralph
 
 test-doc:
+	ls -l src/ralph
+	tree .
 	# ignore warnings about missing subdirs - cloned from another repositories
 	echo "test\n=====" > doc/optional_modules/assets/index.rst
 	echo "test\n=====" > doc/optional_modules/pricing/index.rst
 	cd doc && make html
+
 
 test-with-coveralls: test-doc test-unittests
