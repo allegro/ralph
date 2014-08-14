@@ -1,5 +1,5 @@
 Ralph documentation
-------------------
+-------------------
 
 .. toctree::
    :maxdepth: 2

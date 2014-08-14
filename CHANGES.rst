@@ -80,7 +80,7 @@ This is a stable release.
 * CORE: Pluggable apps permissions and ralph_permission decorator. Improved permissions to pluggable apps; ralph_permission decorator could now be applied to dispatch method (before only to post/get/etc methods);
 
 * CORE: Fixed sorting by network address/gateway in admin (incl. migration).
-Network model gets new field gateway_as_int, which is used for sorting by "Gateway address" column ("Network address" column now uses min_ip field for this).
+  Network model gets new field gateway_as_int, which is used for sorting by "Gateway address" column ("Network address" column now uses min_ip field for this).
 
 * CORE: Implemented 3 bound permissions per Ralph application (has_core_access, has_asset_access, has_scrooge_access).
 
