@@ -20,7 +20,6 @@ from django.shortcuts import get_object_or_404
 from django.utils import simplejson
 
 import ralph.cmdb.models as db
-from ralph.cmdb.models_changes import CI_CHANGE_TYPES
 from ralph.cmdb.views import BaseCMDBView
 from ralph.cmdb.forms import (
     CIChangeSearchForm,
@@ -126,6 +125,7 @@ class Change(ChangesBase):
 class Changes(ChangesBase, DataTableMixin):
     template_name = 'cmdb/search_changes.html'
     sort_variable_name = 'sort'
+    submodule_name = 'events'
     export_variable_name = None  # fix in bob!
     rows_per_page = 20
     perms = [
@@ -180,6 +180,19 @@ class Changes(ChangesBase, DataTableMixin):
         ),
     ]
 
+    @property
+    def active_sidebar_item(self):
+        get_type = self.request.GET.get('type')
+        if get_type:
+            get_type = int(get_type)
+        select = {
+            1: 'repo changes',
+            2: 'agent events',
+            3: 'asset attr. changes',
+            4: 'monitoring events',
+        }
+        return select.get(get_type, 'all events')
+
     def get_context_data(self, *args, **kwargs):
         ret = super(Changes, self).get_context_data(**kwargs)
         ret.update(
@@ -188,28 +201,12 @@ class Changes(ChangesBase, DataTableMixin):
                 **kwargs
             )
         )
-        subsection = ''
-        get_type = self.request.GET.get('type')
-        if get_type:
-            get_type = int(get_type)
-            type = CI_CHANGE_TYPES.NameFromID(get_type)
-            subsection += '%s - ' % CI_CHANGE_TYPES.DescFromName(type)
-        subsection += 'Changes'
-        select = {
-            1: 'repo changes',
-            2: 'agent events',
-            3: 'asset attr. changes',
-            4: 'monitoring events',
-        }
-        sidebar_selected = select.get(get_type, 'all events')
         ret.update({
             'sort_variable_name': self.sort_variable_name,
             'url_query': self.request.GET,
             'sort': self.sort,
             'columns': self.columns,
             'form': self.form,
-            'subsection': subsection,
-            'sidebar_selected': sidebar_selected,
             'jira_url': JIRA_URL,
         })
         return ret
@@ -238,6 +235,8 @@ class Changes(ChangesBase, DataTableMixin):
 class Problems(ChangesBase, DataTableMixin):
     template_name = 'cmdb/report_changes.html'
     sort_variable_name = 'sort'
+    submodule_name = 'events'
+    sidebar_item_name = 'problems'
     export_variable_name = None  # fix in bob!
     columns = table_colums()
     perms = [
@@ -262,8 +261,6 @@ class Problems(ChangesBase, DataTableMixin):
             'sort': self.sort,
             'columns': self.columns,
             'jira_url': JIRA_URL,
-            'subsection': section,
-            'sidebar_selected': section,
             'title': section,
             'form': {
                 'filters': ReportFilters(self.request.GET),
@@ -287,6 +284,8 @@ class Problems(ChangesBase, DataTableMixin):
 class Incidents(ChangesBase, DataTableMixin):
     template_name = 'cmdb/report_changes.html'
     sort_variable_name = 'sort'
+    submodule_name = 'events'
+    sidebar_item_name = 'incidents'
     export_variable_name = None  # fix in bob!
     columns = table_colums()
     perms = [
@@ -311,8 +310,6 @@ class Incidents(ChangesBase, DataTableMixin):
             'sort': self.sort,
             'columns': self.columns,
             'jira_url': JIRA_URL,
-            'subsection': section,
-            'sidebar_selected': section,
             'title': section,
             'form': {
                 'filters': ReportFilters(self.request.GET),
@@ -336,6 +333,8 @@ class Incidents(ChangesBase, DataTableMixin):
 class JiraChanges(ChangesBase, DataTableMixin):
     template_name = 'cmdb/report_changes.html'
     sort_variable_name = 'sort'
+    submodule_name = 'events'
+    sidebar_item_name = 'jira changes'
     export_variable_name = None  # fix in bob!
     columns = table_colums()
     perms = [
@@ -360,8 +359,6 @@ class JiraChanges(ChangesBase, DataTableMixin):
             'sort': self.sort,
             'columns': self.columns,
             'jira_url': JIRA_URL,
-            'subsection': section,
-            'sidebar_selected': section,
             'title': section,
             'form': {
                 'filters': ReportFilters(self.request.GET),
@@ -384,6 +381,8 @@ class JiraChanges(ChangesBase, DataTableMixin):
 
 class DashboardDetails(ChangesBase):
     template_name = 'cmdb/dashboard_details_ci.html'
+    submodule_name = 'configuration_items'
+    sidebar_item_name = 'dashboard'
 
     def get_context_data(self, **kwargs):
         ret = super(DashboardDetails, self).get_context_data(**kwargs)
@@ -554,6 +553,8 @@ class DashReport(object):
 
 class Dashboard(ChangesBase):
     template_name = 'cmdb/dashboard_main.html'
+    submodule_name = 'configuration_items'
+    sidebar_item_name = 'dashboard'
 
     def get_context_data(self, **kwargs):
         ret = super(Dashboard, self).get_context_data(**kwargs)
@@ -561,8 +562,6 @@ class Dashboard(ChangesBase):
             'reports': self.reports,
             'db_supported': self.db_supported,
             'breadcrumb': 'test',
-            'subsection': 'Dashboard',
-            'sidebar_selected': 'dashboard',
         })
         return ret
 
@@ -614,6 +613,7 @@ class Dashboard(ChangesBase):
 class Reports(ChangesBase, DataTableMixin):
     template_name = 'cmdb/view_report.html'
     sort_variable_name = 'sort'
+    submodule_name = 'ci_reports'
     export_variable_name = None  # fix in bob!
     perms = [
         {
@@ -646,18 +646,19 @@ class Reports(ChangesBase, DataTableMixin):
         )
     ]
 
-    def get_context_data(self, *args, **kwargs):
-        subsection = ''
+    @property
+    def active_sidebar_item(self):
         kind = self.request.GET.get('kind')
-        if kind:
-            subsection += '%s - ' % self.report_name
-        subsection += 'Reports'
         select = {
             'top_changes': 'top ci changes',
             'top_problems': 'top ci problems',
             'top_incidents': 'top ci incidents',
             'usage': 'cis w/o changes',
         }
+        return select.get(kind, '')
+
+    def get_context_data(self, *args, **kwargs):
+        kind = self.request.GET.get('kind')
         # Set the first column name
         self.columns[0].header_name = {
             'top_changes': _('Change count'),
@@ -681,8 +682,6 @@ class Reports(ChangesBase, DataTableMixin):
                 'form': self.form,
                 'report_kind': self.request.GET.get('kind', 'top'),
                 'report_name': self.report_name,
-                'subsection': subsection,
-                'sidebar_selected': select.get(kind, ''),
             }
         )
         return ret
@@ -775,14 +774,8 @@ class Reports(ChangesBase, DataTableMixin):
 
 class TimeLine(BaseCMDBView):
     template_name = 'cmdb/timeline.html'
-
-    def get_context_data(self, **kwargs):
-        ret = super(TimeLine, self).get_context_data(**kwargs)
-        ret.update({
-            'sidebar_selected': 'timeline view',
-            'subsection': 'Time Line',
-        })
-        return ret
+    submodule_name = 'configuration_items'
+    sidebar_item_name = 'timeline view'
 
     @staticmethod
     @ralph_permission()

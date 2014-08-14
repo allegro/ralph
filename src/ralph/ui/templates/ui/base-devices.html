@@ -88,7 +88,7 @@
 {% block breadcrumbs %}
 {% if subsection or subsection == '' %}
 <ul class="breadcrumb">
-    <li><a href="../..">{{ section }}</a> <span class="divider">/</span></li>
+    <li><a href="../..">{{ active_submodule|title }}</a> <span class="divider">/</span></li>
     <li><a href="../{{ details }}?{{ url_query.urlencode }}">{{ subsection|default:'unknown' }}</a> <span class="divider">/</span></li>
   <li class="active">{{ device.name }}</li>
 </ul>

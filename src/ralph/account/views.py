@@ -43,6 +43,8 @@ def HTTP403(request, template_name='403.html'):
 
 class BaseUser(Base):
     template_name = 'base.html'
+    submodule_name = 'user_preference'
+    module_name = 'user_preference'
 
     def get_sidebar_items(self):
         preferences = (

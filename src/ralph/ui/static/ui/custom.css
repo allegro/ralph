@@ -1,6 +1,67 @@
 .main-body {
     min-height: 40em;
 }
+.main-body.without-submodules{margin-top: 50px;}
+.main-body.with-submodules{margin-top: 85px;}
+.submenu {
+    background-color: #e5e5e5;
+    border-bottom: 5px solid #fff;
+    left:0;
+    margin-top: 35px;
+    padding-top: 10px;
+    position: fixed;
+    right:0;
+    z-index: 1000;
+}
+.submenu .nav.nav-tabs {
+    margin: auto;
+    margin-left: 20px;
+}
+
+.navbar .nav .dropdown-toggle .caret {
+    margin-top: 5px;
+}
+
+.dropdown .caret {
+    margin-left: 4px;
+}
+
+.navbar .brand {
+    margin-left: 0;
+}
+
+.navbar-inner .container {
+    margin: 0;
+    width: 100%;
+}
+
+footer.base {
+    border-top: 1px solid #e5e5e5;
+    color: #777;
+    padding-top: 10px;
+}
+
+footer.base li {
+    list-style: none;
+    float: left;
+    border-right: 1px solid #ccc;
+    margin-right: 5px;
+    padding-right: 5px;
+}
+
+footer.base li:last-child {
+    border-right: 0;
+}
+
+.nav-tabs > .active > a,
+.nav-tabs > .active > a:hover{
+    cursor: pointer;
+}
+
+.navbar-fixed-top .navbar-inner {
+    box-shadow: none;
+}
+
 .browser-min-width{
     min-width: 1000px;
 }
