@@ -1,11 +1,14 @@
 .. _develop_plugins:
 
-===========================
+===============
+Extending Ralph
+===============
+
 Writing custom SCAN plugins
-===========================
+---------------------------
 
 PUSH - REST API interface
--------------------------
+*************************
 The easiest way is to push some data using your favorite tool/language through the API. Ralph Core will force you to accept the changes before saving.
 
 Benefits:
@@ -15,14 +18,12 @@ Benefits:
  - PUSH mode
 
 
-Quick start - PUSH
-------------------
 Let's write the easiest SCAN PUSH plugin. For example, you want to list hypervisor machines and register them with the Ralph interface.
 
 To do this you have to:
 
 1. Obtain an API Key from the Ralph interface - on the bottom part of the page you will see your login name (preference) click on it, and choose "Api key". You will see your api key there.
-2. Prepare your script which generates JSON data. You have to use following schema::
+2. Prepare your script which generates JSON data.
 
 Example file /tmp/data.json ::
 
@@ -151,6 +152,26 @@ Function should return a dict object with keys:
 
 Raise NoMatchError if the plugin didn't match the device you're scanning.
 
+Writing own module
+------------------
+
+All Ralph apps(CMDB, Assets, Scrooge) are based on the same engine. There's way to make new custom module extending Ralph functionality. They are pinned to the ralph bar with custom icon.
+
+.. image:: _static/custom_modules-module.png
 
 
+If you want to make complete new module from scratch, you need to subclass the ``Ralph Module`` class.
 
+.. autoclass:: ralph.app.RalphModule
+    :members:
+
+If you need any default settings for your app, you can manipulate
+``self.settings`` in ``__init__`` of your class.
+
+Then you need to point to your ``RalphModule`` subclass in entry points::
+
+    entry_points={
+        'django.pluggable_app': [
+            'assets = ralph_assets.app:Assets',
+        ],
+    ]
