@@ -4,9 +4,13 @@ Change Log
 2.0.1
 ~~~~~
 
-Released on August 14, 2014
+Released on August 19, 2014
 
 This is a bugfix release, with some small improvements here and there and one new feature ('notifications' module).
+
+* CORE: (CI/Travis/Coveralls) Added Sphinx checker.
+
+* SCAN: Small fix for the 'force autoscan' routine.
 
 * SCAN: Improved detection of Juniper switches.
 
