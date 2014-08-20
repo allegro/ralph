@@ -1,1 +1,1 @@
-VERSION = ('2', '0', '0-stable')
+VERSION = ('2', '0', '1')

@@ -4,7 +4,7 @@ Change Log
 2.0.1
 ~~~~~
 
-Released on August 19, 2014
+Released on August 20, 2014
 
 This is a bugfix release, with some small improvements here and there and one new feature ('notifications' module).
 
