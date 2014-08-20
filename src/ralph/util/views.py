@@ -9,7 +9,9 @@ from __future__ import unicode_literals
 import functools
 import cStringIO as StringIO
 
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import (
+    HttpResponse, HttpResponseRedirect, HttpResponseNotAllowed
+)
 from django.utils import simplejson as json
 
 from bob import csvutil
@@ -20,6 +22,8 @@ def jsonify(func):
     def wrapper(*args, **kwargs):
         reply = func(*args, **kwargs)
         if isinstance(reply, HttpResponseRedirect):
+            return reply
+        if isinstance(reply, HttpResponseNotAllowed):
             return reply
         return HttpResponse(json.dumps(reply),
                             mimetype="application/javascript")

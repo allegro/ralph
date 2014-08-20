@@ -173,7 +173,8 @@ def _get_virtual_machine_info(
         'model_name': 'Proxmox qemu kvm',
         'type': DeviceType.virtual_server.raw,
         'mac_addresses': [MACAddressField.normalize(lan_mac)],
-        'management': master_ip_address,  # ?
+        'management': master_ip_address,  # in this context (VM) it will be
+                                          # cluster master IP address
         'hostname': name,
     }
     detected_disks = []

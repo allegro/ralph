@@ -35,6 +35,18 @@ namespace DonPedro
 		
 		public void NotifyRalph(object stateObject)
 		{
+			if (
+				RalphURL.Trim().Length == 0 || 
+				ApiUser.Trim().Length == 0 || 
+				ApiKey.Trim().Length == 0
+			)
+			{
+				Logger.Instance.LogWarning(
+					"To send data to Ralph set up ralph_url, api_user and api_key in your config file."
+				);
+				return;
+			}
+			
 			Detector d = new Detector();
 			string jsonData = d.GetAllComponentsJSON();
 

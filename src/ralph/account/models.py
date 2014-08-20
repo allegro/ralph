@@ -14,8 +14,9 @@ from django.contrib.auth.models import Group
 from django.core.handlers.wsgi import WSGIRequest
 from django.core.urlresolvers import reverse, NoReverseMatch
 from django.db import models as db
-from django.http import HttpResponseForbidden, HttpResponseServerError
+from django.http import HttpResponseBadRequest
 from django.utils.translation import ugettext_lazy as _
+
 
 from dj.choices import Choices
 from dj.choices.fields import ChoiceField
@@ -222,32 +223,56 @@ class BoundPerm(TimeTrackable, EditorTrackable):
         verbose_name_plural = _("bound permissions")
 
 
-def ralph_permission(perms):
-    """ Decorator checking permission to view
-        use example:
+def ralph_permission(perms=None):
+    """
+    Decorator responsible for checking user's permissions to a given view.
+    Permissions to check should be specified in the following way:
         perms = [
             {
                 'perm': Perm.read_device_info_reports,
                 'msg': _("You don't have permission to see reports.")
             }
         ]
+    If no permissions are specified, 'Perm.has_core_access' will be used.
     """
+
+    if not perms:
+        perms = [
+            {
+                'perm': Perm.has_core_access,
+                'msg': _("You don't have permissions for this resource."),
+            },
+        ]
 
     def decorator(func):
         def inner_decorator(self, *args, **kwargs):
-            # decorator on get/post/...
-            if hasattr(self, 'request'):
-                profile = self.request.user.get_profile()
-            # decorator on dispatch - request is first argument
-            elif args and isinstance(args[0], WSGIRequest):
-                profile = args[0].user.get_profile()
+            from ralph.account.views import HTTP403
+            from ralph.util import api
+            # class-based views
+            if args and isinstance(args[0], WSGIRequest):
+                request = args[0]
+            # function-based views
+            elif self and isinstance(self, WSGIRequest):
+                request = self
+            # check for request in kwargs as well, just in case
+            elif 'request' in kwargs:
+                request = kwargs['request']
             else:
-                raise HttpResponseServerError()
+                return HttpResponseBadRequest()
+            user = request.user
+            # for API views not handled by Tastypie (e.g. puppet_classifier)
+            if user.is_anonymous():
+                user = api.get_user(request)
+                if not api.is_authenticated(user, request):
+                    return HTTP403(request)
+            profile = user.get_profile()
             has_perm = profile.has_perm
             for perm in perms:
                 if not has_perm(perm['perm']):
-                    return HttpResponseForbidden(perm['msg'])
+                    return HTTP403(request, perm['msg'])
             return func(self, *args, **kwargs)
+        # helper property for unit tests
+        func.decorated_with = 'ralph_permission'
         return functools.wraps(func)(inner_decorator)
     return decorator
 

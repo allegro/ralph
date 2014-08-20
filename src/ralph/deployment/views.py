@@ -11,11 +11,11 @@ import json
 
 from django.conf import settings
 from django.template import Template, Context
-from lck.django.common import remote_addr
-from django.http import (HttpResponse, HttpResponseNotFound,
-                         HttpResponseForbidden, Http404)
+from django.http import HttpResponse, HttpResponseNotFound, Http404
 from django.db.models import Q
+from lck.django.common import remote_addr
 
+from ralph.account.models import ralph_permission
 from ralph.deployment.models import (
     Deployment,
     DeploymentStatus,
@@ -24,7 +24,6 @@ from ralph.deployment.models import (
 )
 from ralph.discovery.models import IPAddress, Device
 from ralph.discovery.tasks import run_next_plugin
-from ralph.util import api
 
 
 def get_current_deployment(request):
@@ -151,9 +150,8 @@ def preboot_complete_view(request):
     return HttpResponse()
 
 
+@ralph_permission()
 def puppet_classifier(request):
-    if not api.is_authenticated(request):
-        return HttpResponseForbidden('API key required.')
     hostname = request.GET.get('hostname', '').strip()
     qs = Device.objects.filter(
         Q(name=hostname) |

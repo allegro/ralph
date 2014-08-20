@@ -1,5 +1,5 @@
 Ralph documentation
-------------------
+-------------------
 
 .. toctree::
    :maxdepth: 2
@@ -15,6 +15,7 @@ Ralph documentation
    deployment
    dns
    dhcp
+   notifications
    api
    faq
    permissions

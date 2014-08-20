@@ -15,6 +15,7 @@ from django.http import (
 from lck.django.common import remote_addr
 from django.shortcuts import get_object_or_404
 
+from ralph.account.models import ralph_permission
 from ralph.discovery.models import DataCenter, Environment
 from ralph.dnsedit.models import DHCPServer
 from ralph.dnsedit.dhcp_conf import (
@@ -22,8 +23,6 @@ from ralph.dnsedit.dhcp_conf import (
     generate_dhcp_config_head,
     generate_dhcp_config_networks,
 )
-from ralph.ui.views.common import Base
-from ralph.util import api
 
 
 DHCP_DISABLE_NETWORKS_VALIDATION = getattr(
@@ -31,17 +30,8 @@ DHCP_DISABLE_NETWORKS_VALIDATION = getattr(
 )
 
 
-class Index(Base):
-    template_name = 'dnsedit/index.html'
-    section = 'dns'
-
-    def __init__(self, *args, **kwargs):
-        super(Index, self).__init__(*args, **kwargs)
-
-
+@ralph_permission()
 def dhcp_synch(request):
-    if not api.is_authenticated(request):
-        return HttpResponseForbidden('API key required.')
     address = remote_addr(request)
     server = get_object_or_404(DHCPServer, ip=address)
     server.last_synchronized = datetime.datetime.now()
@@ -63,9 +53,8 @@ def _get_params(request):
     return dc_names, env_names
 
 
+@ralph_permission()
 def dhcp_config_entries(request):
-    if not api.is_authenticated(request):
-        return HttpResponseForbidden('API key required.')
     dc_names, env_names = _get_params(request)
     if dc_names and env_names:
         return HttpResponseForbidden('Only DC or ENV mode available.')
@@ -99,9 +88,8 @@ def dhcp_config_entries(request):
     )
 
 
+@ralph_permission()
 def dhcp_config_networks(request):
-    if not api.is_authenticated(request):
-        return HttpResponseForbidden('API key required.')
     dc_names, env_names = _get_params(request)
     if dc_names and env_names:
         return HttpResponseForbidden('Only DC or ENV mode available.')
@@ -134,9 +122,8 @@ def dhcp_config_networks(request):
     )
 
 
+@ralph_permission()
 def dhcp_config_head(request):
-    if not api.is_authenticated(request):
-        return HttpResponseForbidden('API key required.')
     server_address = request.GET.get('server')
     if not server_address:
         server_address = remote_addr(request)

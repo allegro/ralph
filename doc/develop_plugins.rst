@@ -1,12 +1,15 @@
 .. _develop_plugins:
 
-===========================
+===============
+Extending Ralph
+===============
+
 Writing custom SCAN plugins
-===========================
+---------------------------
 
 PUSH - REST API interface
--------------------------
-The easiest way is to push some data using your favorite tool/language throug the API. Ralph Core will force you to accept the changes before saving.
+*************************
+The easiest way is to push some data using your favorite tool/language through the API. Ralph Core will force you to accept the changes before saving.
 
 Benefits:
  - use any language you want
@@ -15,16 +18,14 @@ Benefits:
  - PUSH mode
 
 
-Quick start - PUSH
-------------------
-Let's write the easiest SCAN PUSH plugin. For example, you wan't to list hypervisor machines and register them with the Ralph interface.
+Let's write the easiest SCAN PUSH plugin. For example, you want to list hypervisor machines and register them with the Ralph interface.
 
 To do this you have to:
 
-1. Obtain API Key from the Ralph interface - on the bottom part of the page you will see your login name (preference) click on it, and choose "Api key". You will see your api key there.
-2. Prepare your script which generate JSON data. You have to use following schema::
+1. Obtain an API Key from the Ralph interface - on the bottom part of the page you will see your login name (preference) click on it, and choose "Api key". You will see your api key there.
+2. Prepare your script which generates JSON data.
 
-For example file /tmp/data.json ::
+Example file /tmp/data.json ::
 
     {
         "data": {
@@ -107,7 +108,7 @@ For example file /tmp/data.json ::
     }
 
 
-2. Send JSON data to the API interface using your script(REST call), or via commandline like this ::
+2. Send JSON data to the API interface using your script (REST call), or via commandline like this ::
 
     curl -XPOST https://ralph.office/api/v0.9/scanresult/ -d @/tmp/data.json -H "Authorization: ApiKey user.name:api_key" -H "Content-type: application/json"
 
@@ -125,7 +126,7 @@ First-class SCAN plugin allows you to reuse some features like:
   - strictly integrated with existing codebase(we accept pull requests :))
   - see example plugin: https://github.com/allegro/ralph/blob/develop/src/ralph/scan/plugins/hp_oa.py
 
-Create file in src/ralph/scan/plugins which provide ``scan_address`` function, for example something like this ::
+Create a file in src/ralph/scan/plugins which provides ``scan_address`` function, for example something like this ::
 
     def scan_address(ip_address, **kwargs):
         snmp_name = (kwargs.get('snmp_name', '') or '').lower()
@@ -145,12 +146,32 @@ Create file in src/ralph/scan/plugins which provide ``scan_address`` function, f
             result['device'] = device_info
         return result
 
-Function should return dict object with keys:
+Function should return a dict object with keys:
 - ``status``: string ("error", "success")
 - ``device``: the same ``data`` subkey as in JSON PUSH interface, e.g { "serial_number" : "sn", "model_name": "test"}
 
-Raise NoMatchError if the plugin didn't match the device you scan.
+Raise NoMatchError if the plugin didn't match the device you're scanning.
+
+Writing own module
+------------------
+
+All Ralph apps(CMDB, Assets, Scrooge) are based on the same engine. There's way to make new custom module extending Ralph functionality. They are pinned to the ralph bar with custom icon.
+
+.. image:: _static/custom_modules-module.png
 
 
+If you want to make complete new module from scratch, you need to subclass the ``Ralph Module`` class.
 
+.. autoclass:: ralph.app.RalphModule
+    :members:
 
+If you need any default settings for your app, you can manipulate
+``self.settings`` in ``__init__`` of your class.
+
+Then you need to point to your ``RalphModule`` subclass in entry points::
+
+    entry_points={
+        'django.pluggable_app': [
+            'assets = ralph_assets.app:Assets',
+        ],
+    ]

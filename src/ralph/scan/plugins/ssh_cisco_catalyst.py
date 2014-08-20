@@ -31,12 +31,6 @@ SETTINGS = settings.SCAN_PLUGINS.get(__name__, {})
 SSH_USER, SSH_PASSWORD = SETTINGS['ssh_user'], SETTINGS['ssh_pass']
 
 
-if not SSH_USER or not SSH_PASSWORD:
-    raise NotConfiguredError(
-        "SSH not configured in plugin {}.".format(__name__),
-    )
-
-
 class CiscoSSHClient(paramiko.SSHClient):
 
     """SSHClient modified for Cisco's broken SSH console."""
@@ -85,11 +79,11 @@ class CiscoSSHClient(paramiko.SSHClient):
                 return buffer[1:-1]
 
 
-def _connect_ssh(ip):
+def _connect_ssh(ip, username, password):
     if not network.check_tcp_port(ip, 22):
         raise ConnectionError('Port 22 closed.')
     return network.connect_ssh(
-        ip, SSH_USER, SSH_PASSWORD, client=CiscoSSHClient,
+        ip, username, password, client=CiscoSSHClient,
     )
 
 
@@ -108,7 +102,7 @@ def get_subswitches(switch_version, hostname, ip_address):
     ]
     num_switches = len(base_mac_addresses)
     software_versions = None
-    model_names = None
+    model_names = []
     for i, line in enumerate(switch_version):
         if re.match("Switch\W+Ports\W+Model", line):
             model_names = [
@@ -164,7 +158,11 @@ def scan_address(ip_address, **kwargs):
         raise NoMatchError('Incompatible Nexus found.')
     if kwargs.get('http_family') not in ('Unspecified', 'Cisco'):
         raise NoMatchError('It is not Cisco.')
-    ssh = _connect_ssh(ip_address)
+    if not SSH_USER or not SSH_PASSWORD:
+        raise NotConfiguredError(
+            "SSH not configured in plugin {}.".format(__name__),
+        )
+    ssh = _connect_ssh(ip_address, SSH_USER, SSH_PASSWORD)
     hostname = network.hostname(ip_address)
     try:
         ssh.cisco_command('terminal length 500')
@@ -179,7 +177,7 @@ def scan_address(ip_address, **kwargs):
         ssh.close()
     matches = re.match(
         'Base ethernet MAC Address\s+:\s*([0-9aA-Z:]+)', mac)
-    if matches.groups():
+    if matches and matches.groups():
         mac = matches.groups()[0]
     inventory = list(cisco_inventory(raw))
     dev_inv, parts = inventory[0], inventory[1:]
@@ -213,5 +211,10 @@ def scan_address(ip_address, **kwargs):
     if subswitches:
         result['device']['subdevices'] = subswitches
     else:
-        result['device']['mac_addresses'] = [MACAddressField.normalize(mac)]
+        try:
+            normalized_mac = MACAddressField.normalize(mac)
+        except ValueError:
+            pass
+        else:
+            result['device']['mac_addresses'] = [normalized_mac]
     return result

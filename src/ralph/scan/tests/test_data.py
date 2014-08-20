@@ -254,6 +254,12 @@ class GetDeviceDataTest(TestCase):
         sub = data['subdevices']
         self.assertEqual(len(sub), 3)
 
+    def test_management(self):
+        self.device.management = IPAddress.objects.create(address='10.10.10.1')
+        self.device.save()
+        data = get_device_data(Device.objects.get(sn='123456789'))
+        self.assertEqual(data['management'], '10.10.10.1')
+
 
 class SetDeviceDataTest(TestCase):
 
@@ -278,6 +284,7 @@ class SetDeviceDataTest(TestCase):
             'barcode': '00000',
             'rack': 'i31',
             'chassis_position': '4',
+            'management': '10.10.10.2'
         }
         set_device_data(self.device, data)
         self.device.save()
@@ -288,6 +295,7 @@ class SetDeviceDataTest(TestCase):
         self.assertEqual(device.barcode, '00000')
         self.assertEqual(device.rack, 'i31')
         self.assertEqual(device.chassis_position, 4)
+        self.assertEqual(device.management.address, '10.10.10.2')
 
     def test_model_name(self):
         data = {

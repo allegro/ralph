@@ -6,10 +6,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-
 from django.conf import settings
-from lck.django.common import render, redirect
 from django.views.generic import TemplateView
+from lck.django.common import render, redirect
 
 from ralph.business.models import Venture
 

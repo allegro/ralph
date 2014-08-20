@@ -224,6 +224,10 @@ class VersionError(Error):
     pass
 
 
+class AuthError(Error):
+    pass
+
+
 class IloHost(object):
 
     def __init__(self, host, user, password):
@@ -238,6 +242,9 @@ class IloHost(object):
 
     def update(self, raw=None):
         tree, raw = self._get_tree(raw)
+        for response in tree.findall('RIBCL/RESPONSE'):
+            if response.attrib['STATUS'] == '0x005F':
+                raise AuthError(response.attrib['MESSAGE'])
         (
             self.name,
             self.mac,

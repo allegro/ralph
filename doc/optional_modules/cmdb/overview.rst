@@ -3,7 +3,7 @@
 Overview
 ========
 
-Ralph provides an early (experimental) version of Configuration Management
+Ralph provides an early (experimental) version of a Configuration Management
 Database module.
 
 CMDB module
@@ -135,9 +135,8 @@ set of layers:
 
 All layers can be customized in admin panel. Administrator can modify:
 * name - name of the layer
-* connected types - set of connected CIType objects.
-  By these relationships ``cmdb`` can assign CI to the appropriate
-  layer.
+* connected types - set of connected CIType objects.By these relationships ``cmdb`` 
+can assign CI to the appropriate layer.
 * icon
 
 Adding new layers is also possible.

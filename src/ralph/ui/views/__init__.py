@@ -5,7 +5,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from django.shortcuts import get_object_or_404
-from django.http import Http404
+from django.http import Http404, HttpResponseNotAllowed
 
 from django.views.decorators.csrf import csrf_exempt
 from ralph.util.views import jsonify
@@ -32,6 +32,8 @@ def typeahead_roles(request):
 @csrf_exempt
 @jsonify
 def unlock_field(request):
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
     device_id = request.POST.get('device', '')
     device = get_object_or_404(Device, id=device_id)
     field_name = request.POST.get('field', '')

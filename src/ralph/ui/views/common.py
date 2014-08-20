@@ -33,6 +33,7 @@ import pluggableapp
 from powerdns.models import Record
 
 from ralph.discovery.models_component import Ethernet
+from ralph.account.models import Perm, get_user_home_page_url, ralph_permission
 from ralph.app import RalphModule
 from ralph.scan.errors import Error as ScanError
 from ralph.scan.manual import queue_scan_address
@@ -52,8 +53,9 @@ from ralph.scan.util import update_scan_summary
 from ralph.business.models import (
     RoleProperty,
     RolePropertyValue,
+    Venture,
+    VentureRole,
 )
-from ralph.account.models import get_user_home_page_url, Perm
 from ralph.cmdb.models import CI
 from ralph.deployment.models import Deployment, DeploymentStatus
 from ralph.deployment.util import get_next_free_hostname, get_first_free_ip
@@ -187,7 +189,14 @@ def _get_details(dev, purchase_only=False, with_price=False,
         yield detail
 
 
-class BaseMixin(object):
+class ACLGateway(object):
+
+    @ralph_permission()  # 'Perm.has_core_access' are used by default
+    def dispatch(self, *args, **kwargs):
+        return super(ACLGateway, self).dispatch(*args, **kwargs)
+
+
+class BaseMixin(ACLGateway):
     section = 'home'
 
     def __init__(self, *args, **kwargs):
@@ -920,6 +929,9 @@ class Addresses(DeviceDetailView):
                 for form in self.ip_formset.extra_forms:
                     # Bind the newly created addresses to this device.
                     if form.has_changed():
+                        IPAddress.objects.filter(
+                            address=form.instance.address
+                        ).delete()
                         form.instance.device = self.object
                 self.ip_formset.save()
                 messages.success(self.request, "IP addresses updated.")
@@ -1356,14 +1368,26 @@ class ServerMove(BaseMixin, TemplateView):
 
 @nested_commit_on_success
 def bulk_update(devices, fields, data, user):
+    field_classes = {
+        'venture': Venture,
+        'venture_role': VentureRole,
+        'parent': Device,
+    }
     values = {}
     for name in fields:
-        if name == 'chassis_position' and data[name] == '':
+        if name in field_classes:
+            if data[name]:
+                values[name] = field_classes[name].objects.get(id=data[name])
+            else:
+                values[name] = None
+        elif name == 'chassis_position' and data[name] == '':
             values[name] = None
         else:
             # for checkboxes un-checking
             values[name] = data.get(name, False)
     for device in devices:
+        if 'venture' in fields:
+            device.venture_role = None
         for name in fields:
             setattr(device, name, values[name])
             device.save_comment = data.get('save_comment')
@@ -1391,13 +1415,26 @@ class BulkEdit(BaseMixin, TemplateView):
             )
             return super(BulkEdit, self).get(*args, **kwargs)
         selected = self.request.POST.getlist('select')
-        self.devices = Device.objects.filter(id__in=selected).select_related()
-        if not self.devices:
+        devices = Device.objects.filter(id__in=selected).select_related()
+        verified = devices.filter(verified=True)
+        self.devices = devices.filter(verified=False)
+        if not self.devices and not verified:
             messages.error(
                 self.request,
                 "You haven't selected any existing devices.",
             )
             return HttpResponseRedirect(self.request.path + '../info/')
+        elif verified:
+            messages.warning(
+                self.request,
+                "The following devices have been removed from your selection "
+                "because they are marked as 'verified' and thus cannot be "
+                "edited in bulk: {}. You can either edit them individually "
+                "or uncheck the 'verified' option in admin's panel."
+                .format(', '.join([d.name for d in verified]))
+            )
+            if not self.devices:
+                return HttpResponseRedirect(self.request.path + '../info/')
         self.edit_fields = self.request.POST.getlist('edit')
         initial = {}
         self.different_fields = []

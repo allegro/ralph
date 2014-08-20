@@ -288,6 +288,8 @@ def get_device_data(device):
         data['data_center'] = device.dc
     if device.rack:
         data['rack'] = device.rack
+    if device.management:
+        data['management'] = device.management.address
     data['memory'] = [
         {
             'label': m.label,
@@ -555,6 +557,10 @@ def set_device_data(device, data, save_priority=SAVE_PRIORITY, warnings=[]):
         _update_addresses(device, data['management_ip_addresses'], True)
     if 'system_ip_addresses' in data:
         _update_addresses(device, data['system_ip_addresses'], False)
+    if 'management' in data:
+        device.management, created = IPAddress.concurrent_get_or_create(
+            address=data['management']
+        )
     if 'fibrechannel_cards' in data:
         _update_component_data(
             device,
