@@ -8,13 +8,11 @@ from __future__ import unicode_literals
 
 from django.views.decorators.csrf import csrf_exempt
 
-from ralph.account.models import ralph_permission
 from ralph.cmdb.integration.puppet import PuppetAgentsImporter
 from ralph.discovery.tasks import run_chain
 from ralph.util.views import jsonify
 
 
-@ralph_permission()
 @csrf_exempt
 @jsonify
 def notify_puppet_agent(request):
@@ -24,7 +22,6 @@ def notify_puppet_agent(request):
     return {'ok': True}
 
 
-@ralph_permission()
 @csrf_exempt
 @jsonify
 def commit_hook(request):

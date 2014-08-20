@@ -10,7 +10,6 @@ from django.conf import settings
 from django.views.generic import TemplateView
 from lck.django.common import render, redirect
 
-from ralph.account.models import ralph_permission
 from ralph.business.models import Venture
 
 
@@ -24,7 +23,6 @@ class Index(TemplateView):
         return {'CURRENCY': settings.CURRENCY}
 
 
-@ralph_permission()
 def show_ventures(request, venture_id=None):
     if venture_id == 'search':
         if request.method != 'POST':
