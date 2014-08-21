@@ -49,8 +49,8 @@ def get_pending_scans():
     delta = timezone.now() - datetime.timedelta(days=1)
     all_scans = ScanSummary.objects.filter(modified__gt=delta)
     new, changed = (
-            all_scans.filter(ipaddress__device=None).count(),
-            all_scans.exclude(ipaddress__device=None).count(),
+        all_scans.filter(ipaddress__device=None).count(),
+        all_scans.exclude(ipaddress__device=None).count(),
     )
     if new + changed:
         return PendingScans(new, changed)

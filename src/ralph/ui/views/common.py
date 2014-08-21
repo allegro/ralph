@@ -354,12 +354,12 @@ class BaseMixin(ACLGateway):
                     pending_scans.changed_devices,
                 ),
                 href=reverse(
-                    'scan_list', kwargs={'scan_type':(
+                    'scan_list', kwargs={'scan_type': (
                         'new' if pending_scans.new_devices else 'existing'
                     )}
                 ),
                 fugue_icon='fugue-light-bulb--exclamation',
-            )) 
+            ))
         if ('ralph.cmdb' in settings.INSTALLED_APPS and
                 has_perm(Perm.read_configuration_item_info_generic)):
             mainmenu_items.append(
@@ -1589,7 +1589,7 @@ class Scan(BaseMixin, TemplateView):
 
 class ScanList(BaseMixin, DataTableMixin, TemplateView):
     template_name = 'ui/scan-list.html'
-    sort_variable_name='sort'
+    sort_variable_name = 'sort'
     columns = [
         DataTableColumn(
             _('IP'),
