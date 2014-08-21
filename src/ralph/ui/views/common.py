@@ -28,6 +28,7 @@ from django.views.generic import (
 
 from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Language, TagStem
+from bob.data_table import DataTableColumn, DataTableMixin
 from bob.menu import MenuItem
 import pluggableapp
 from powerdns.models import Record
@@ -49,7 +50,7 @@ from ralph.scan.data import (
 )
 from ralph.scan.diff import diff_results, sort_results
 from ralph.scan.models import ScanSummary
-from ralph.scan.util import update_scan_summary
+from ralph.scan.util import update_scan_summary, get_pending_scans
 from ralph.business.models import (
     RoleProperty,
     RolePropertyValue,
@@ -345,6 +346,20 @@ class BaseMixin(ACLGateway):
             MenuItem('Quick scan', fugue_icon='fugue-radar',
                      href='#quickscan'))
 
+        pending_scans = get_pending_scans()
+        if pending_scans:
+            mainmenu_items.append(MenuItem(
+                _('Pending scans {}/{}').format(
+                    pending_scans.new_devices,
+                    pending_scans.changed_devices,
+                ),
+                href=reverse(
+                    'scan_list', kwargs={'scan_type': (
+                        'new' if pending_scans.new_devices else 'existing'
+                    )}
+                ),
+                fugue_icon='fugue-light-bulb--exclamation',
+            ))
         if ('ralph.cmdb' in settings.INSTALLED_APPS and
                 has_perm(Perm.read_configuration_item_info_generic)):
             mainmenu_items.append(
@@ -1570,6 +1585,56 @@ class Scan(BaseMixin, TemplateView):
             'plugins': getattr(settings, 'SCAN_PLUGINS', {}),
         })
         return ret
+
+
+class ScanList(BaseMixin, DataTableMixin, TemplateView):
+    template_name = 'ui/scan-list.html'
+    sort_variable_name = 'sort'
+    columns = [
+        DataTableColumn(
+            _('IP'),
+            field='ipaddress',
+            sort_expression='ipaddress',
+            bob_tag=True,
+        ),
+        DataTableColumn(
+            _('Scan time'),
+            field='created',
+            sort_expression='created',
+            bob_tag=True,
+        ),
+        DataTableColumn(
+            _('Device'),
+            bob_tag=True,
+        ),
+    ]
+
+    def get_context_data(self, **kwargs):
+        result = super(ScanList, self).get_context_data(**kwargs)
+        result.update(
+            super(ScanList, self).get_context_data_paginator(**kwargs)
+        )
+        result.update({
+            'sort_variable_name': self.sort_variable_name,
+            'url_query': self.request.GET,
+            'sort': self.sort,
+            'columns': self.columns,
+            'scan_type': kwargs['scan_type']
+        })
+        return result
+
+    def get(self, *args, **kwargs):
+        scans = self.handle_search_data(*args, **kwargs)
+        self.data_table_query(scans)
+        return super(ScanList, self).get(*args, **kwargs)
+
+    def handle_search_data(self, *args, **kwargs):
+        delta = timezone.now() - datetime.timedelta(days=1)
+        all_scans = ScanSummary.objects.filter(modified__gt=delta)
+        if kwargs['scan_type'] == 'new':
+            return all_scans.filter(ipaddress__device=None)
+        else:
+            return all_scans.exclude(ipaddress__device=None)
 
 
 class ScanStatus(BaseMixin, TemplateView):

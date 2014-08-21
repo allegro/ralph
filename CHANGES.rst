@@ -1,6 +1,8 @@
 Change Log
 ----------
 
+* Scan status view
+
 2.0.1
 ~~~~~
 

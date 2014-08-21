@@ -6,6 +6,10 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import ipaddr
+from collections import namedtuple
+
+import datetime
+from django.utils import timezone
 
 from ralph.discovery.models import Network
 from ralph.scan.models import ScanSummary
@@ -35,3 +39,18 @@ def update_scan_summary(job):
         scan_summary.save()
         job.meta['changed'] = False
         job.save()
+
+
+PendingScans = namedtuple('PendingScans', ['new_devices', 'changed_devices'])
+
+
+def get_pending_scans():
+    """Return a tuple of new/edited IPs that are pending from a scan."""
+    delta = timezone.now() - datetime.timedelta(days=1)
+    all_scans = ScanSummary.objects.filter(modified__gt=delta)
+    new, changed = (
+        all_scans.filter(ipaddress__device=None).count(),
+        all_scans.exclude(ipaddress__device=None).count(),
+    )
+    if new + changed:
+        return PendingScans(new, changed)
