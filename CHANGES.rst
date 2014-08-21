@@ -4,11 +4,19 @@ Change Log
 * Scan status view
 
 2.0.1
-~~~~~~
+~~~~~
 
-Released on August 7, 2014
+Released on August 20, 2014
 
-This is mostly a bugfix release, but it contains also one new feature ('notifications' module).
+This is a bugfix release, with some small improvements here and there and one new feature ('notifications' module).
+
+* CORE: (CI/Travis/Coveralls) Added Sphinx checker.
+
+* SCAN: Small fix for the 'force autoscan' routine.
+
+* SCAN: Improved detection of Juniper switches.
+
+* CORE: Added new filter to the sidebar search ('Devices without linked asset').
 
 * CORE: Added possibility to bulk-edit 'name', 'venture', 'role' and 'physical parent device'.
 
@@ -82,7 +90,7 @@ This is a stable release.
 * CORE: Pluggable apps permissions and ralph_permission decorator. Improved permissions to pluggable apps; ralph_permission decorator could now be applied to dispatch method (before only to post/get/etc methods);
 
 * CORE: Fixed sorting by network address/gateway in admin (incl. migration).
-Network model gets new field gateway_as_int, which is used for sorting by "Gateway address" column ("Network address" column now uses min_ip field for this).
+  Network model gets new field gateway_as_int, which is used for sorting by "Gateway address" column ("Network address" column now uses min_ip field for this).
 
 * CORE: Implemented 3 bound permissions per Ralph application (has_core_access, has_asset_access, has_scrooge_access).
 
