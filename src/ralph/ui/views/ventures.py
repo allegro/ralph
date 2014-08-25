@@ -105,7 +105,7 @@ def venture_tree_menu(ventures, details, show_all=False):
 
 
 class SidebarVentures(object):
-    section = 'ventures'
+    submodule_name = 'ventures'
 
     def __init__(self, *args, **kwargs):
         super(SidebarVentures, self).__init__(*args, **kwargs)
@@ -183,7 +183,7 @@ class SidebarVentures(object):
 
 
 class Ventures(SidebarVentures, BaseMixin):
-    pass
+    submodule_name = 'ventures'
 
 
 class VenturesInfo(Ventures, Info):
@@ -605,6 +605,7 @@ class VenturesVenture(SidebarVentures, Base):
 
 
 class VenturesDeviceList(SidebarVentures, BaseMixin, BaseDeviceList):
+    submodule_name = 'ventures'
 
     def user_allowed(self):
         self.set_venture()

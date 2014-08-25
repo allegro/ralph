@@ -209,6 +209,7 @@ class Reports(DeviceDetailView):
 
 
 class SidebarReports(object):
+    submodule_name = 'reports'
     section = 'reports'
     subsection = ''
 
