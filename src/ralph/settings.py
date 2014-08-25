@@ -292,6 +292,7 @@ ZABBIX_USER = None
 ZABBIX_PASSWORD = None
 ZABBIX_DEFAULT_GROUP = 'test'
 BUGTRACKER_URL = 'https://github.com/allegro/ralph/issues/new'
+CHANGELOG_URL = 'http://ralph.allegrogroup.com/doc/changes.html'
 SO_URL = None
 OPENSTACK_URL = None
 OPENSTACK_USER = None

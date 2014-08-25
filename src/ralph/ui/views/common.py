@@ -5,7 +5,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import datetime
-import importlib
 import ipaddr
 
 import django_rq
@@ -18,7 +17,7 @@ from django.core.urlresolvers import reverse
 from django.db import models as db
 from django.http import HttpResponseRedirect, HttpResponseForbidden, Http404
 from django.shortcuts import get_object_or_404
-from django.utils import timezone
+from django.utils import importlib, timezone
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import (
     DetailView,
@@ -251,14 +250,15 @@ class MenuMixin(object):
             self.menus.append(AdminMenu(request))
         self.menus.append(UserMenu(request))
         for app in pluggableapp.app_dict.values():
+            print(has_perm(app.required_permission))
             if not isinstance(app, RalphModule):
                 continue
-            if (app.required_permission or
-                    not has_perm(app.required_permission)):
+            if not has_perm(app.required_permission):
                 continue
             menu_module = importlib.import_module(
-                '.menu', app.module_name
+                '.'.join([app.module_name, 'menu'])
             )
+            print(menu_module)
             if menu_module:
                 menu_class = getattr(
                     menu_module, 'menu_class', None

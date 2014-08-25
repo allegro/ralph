@@ -8,12 +8,10 @@ from django.conf import settings
 
 from ralph import VERSION
 
-CHANGELOG_URL = 'http://ralph.allegrogroup.com/doc/changes.html'
-
 
 def info(request):
     return {
         'VERSION': '.'.join(VERSION),
         'BUGTRACKER_URL': settings.BUGTRACKER_URL,
-        'CHANGELOG_URL': CHANGELOG_URL,
+        'CHANGELOG_URL': settings.CHANGELOG_URL,
     }
