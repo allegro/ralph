@@ -49,7 +49,7 @@ from ralph.cmdb.models_ci import (
 )
 import ralph.cmdb.models as db
 from ralph.cmdb.graphs import ImpactCalculator
-from ralph.ui.views.common import MenuMixin
+from ralph.ui.views.common import ACLGateway, MenuMixin
 from ralph.cmdb.forms import (
     ReportFilters,
     ReportFiltersDateRange,
@@ -61,7 +61,7 @@ ROWS_PER_PAGE = 20
 SAVE_PRIORITY = 200
 
 
-class BaseCMDBView(MenuMixin, TemplateView):
+class BaseCMDBView(MenuMixin, ACLGateway, TemplateView):
     template_name = 'nope.html'
     Form = CIRelationEditForm
     module_name = 'module_cmdb'

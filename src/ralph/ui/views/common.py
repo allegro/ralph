@@ -251,22 +251,23 @@ class MenuMixin(object):
             self.menus.append(AdminMenu(request))
         self.menus.append(UserMenu(request))
         for app in pluggableapp.app_dict.values():
-            if isinstance(app, RalphModule):
-                # check app required permissions
-                if (app.required_permission is None or
-                        has_perm(app.required_permission)):
-                    menu_module = importlib.import_module(
-                        '.menu', app.module_name
+            if not isinstance(app, RalphModule):
+                continue
+            if (app.required_permission or
+                    not has_perm(app.required_permission)):
+                continue
+            menu_module = importlib.import_module(
+                '.menu', app.module_name
+            )
+            if menu_module:
+                menu_class = getattr(
+                    menu_module, 'menu_class', None
+                )
+                if not menu_class:
+                    raise Exception(
+                        'Please provide menu_class.'
                     )
-                    if menu_module:
-                        menu_class = getattr(
-                            menu_module, 'menu_class', None
-                        )
-                        if not menu_class:
-                            raise Exception(
-                                'Please provide menu_class.'
-                            )
-                        self.menus.append(menu_class(request))
+                self.menus.append(menu_class(request))
         return super(MenuMixin, self).dispatch(request, *args, **kwargs)
 
     @property
@@ -458,7 +459,7 @@ class BaseMixin(MenuMixin, ACLGateway):
         return ret
 
 
-class Base(TemplateView):
+class Base(BaseMixin, TemplateView):
     columns = []
 
     def get_context_data(self, **kwargs):
