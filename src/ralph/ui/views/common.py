@@ -250,7 +250,6 @@ class MenuMixin(object):
             self.menus.append(AdminMenu(request))
         self.menus.append(UserMenu(request))
         for app in pluggableapp.app_dict.values():
-            print(has_perm(app.required_permission))
             if not isinstance(app, RalphModule):
                 continue
             if not has_perm(app.required_permission):
@@ -258,7 +257,6 @@ class MenuMixin(object):
             menu_module = importlib.import_module(
                 '.'.join([app.module_name, 'menu'])
             )
-            print(menu_module)
             if menu_module:
                 menu_class = getattr(
                     menu_module, 'menu_class', None
