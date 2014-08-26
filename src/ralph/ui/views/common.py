@@ -4,6 +4,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import copy
 import datetime
 
 import ipaddr
@@ -1541,7 +1542,9 @@ class Scan(BaseMixin, TemplateView):
         if not plugins:
             messages.error(self.request, "You have to select some plugins.")
             return self.get(*args, **kwargs)
-        ip_address = self.kwargs.get('address') or self.request.GET.get('address')
+        ip_address = self.kwargs.get(
+            'address'
+        ) or self.request.GET.get('address')
         if ip_address:
             try:
                 ipaddr.IPAddress(ip_address)
@@ -1822,7 +1825,7 @@ class ScanStatus(BaseMixin, TemplateView):
         if self.job:
             if self.device_id:
                 self.forms = self.get_forms(
-                    self.job.result,
+                    copy.deepcopy(self.job.result),
                     self.device_id,
                     self.request.POST,
                 )
