@@ -79,7 +79,6 @@ from ralph.discovery.models_history import (
     FOREVER_DATE,
     ALWAYS_DATE,
 )
-from ralph.util import presentation, pricing
 from ralph.util.plugin import BY_NAME as AVAILABLE_PLUGINS
 from ralph.ui.forms import ChooseAssetForm
 from ralph.ui.forms.devices import (
@@ -157,37 +156,8 @@ def _get_balancers(dev):
 
 def _get_details(dev, purchase_only=False, with_price=False,
                  ignore_deprecation=False, exclude=[]):
-    for detail in pricing.details_all(
-        dev,
-        purchase_only,
-        ignore_deprecation=ignore_deprecation,
-        exclude=exclude,
-    ):
-        if 'icon' not in detail:
-            if detail['group'] == 'dev':
-                detail['icon'] = presentation.get_device_model_icon(
-                    detail.get('model'),
-                )
-            else:
-                detail['icon'] = presentation.get_component_model_icon(
-                    detail.get('model'),
-                )
-        if 'price' not in detail:
-            if detail.get('model'):
-                detail['price'] = detail['model'].get_price()
-            else:
-                detail['price'] = None
-        if with_price and not detail['price']:
-            continue
-        if (
-            detail['group'] != 'dev' and
-            'size' not in detail and
-            detail.get('model')
-        ):
-            detail['size'] = detail['model'].size
-        if not detail.get('model'):
-            detail['model'] = detail.get('model_name', '')
-        yield detail
+    # a leftover from ralph.util.pricing
+    pass
 
 
 class ACLGateway(object):
@@ -491,7 +461,6 @@ class DeviceUpdateView(UpdateView):
         model = form.save(commit=False)
         model.save_comment = form.cleaned_data.get('save_comment')
         model.save(priority=SAVE_PRIORITY, user=self.request.user)
-        pricing.device_update_cached(model)
         messages.success(self.request, "Changes saved.")
         return HttpResponseRedirect(self.request.path)
 
@@ -693,9 +662,7 @@ class Components(DeviceDetailView):
 
     def get_context_data(self, **kwargs):
         ret = super(Components, self).get_context_data(**kwargs)
-        ret.update({
-            'components': _get_details(self.object, purchase_only=False),
-        })
+        ret.update({'components': None})  # a leftover from ralph.util.pricing
         return ret
 
 
@@ -706,9 +673,8 @@ class Prices(DeviceUpdateView):
     edit_perm = Perm.edit_device_info_financial
 
     def get_initial(self):
-        return {
-            'auto_price': pricing.get_device_raw_price(self.object)
-        }
+        # a leftover from ralph.util.pricing
+        return {'auto_price': 0}
 
     def get_context_data(self, **kwargs):
         ret = super(Prices, self).get_context_data(**kwargs)
@@ -1316,7 +1282,6 @@ class ServerMove(BaseMixin, TemplateView):
         if mac:
             entry = DHCPEntry(ip=new_ip, mac=mac)
             entry.save()
-        pricing.device_update_cached(device)
 
     def post(self, *args, **kwargs):
         if 'move' in self.request.POST:
@@ -1407,7 +1372,6 @@ def bulk_update(devices, fields, data, user):
             setattr(device, name, values[name])
             device.save_comment = data.get('save_comment')
             device.save(priority=SAVE_PRIORITY, user=user)
-            pricing.device_update_cached(device)
 
 
 class BulkEdit(BaseMixin, TemplateView):
