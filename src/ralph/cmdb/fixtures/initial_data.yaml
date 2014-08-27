@@ -61,6 +61,12 @@
     name: NetworkTerminator
     icon_class: fugue-globe-network
 
+- model: cmdb.CIType
+  pk: 11
+  fields:
+    name: Environment
+    icon_class: fugue-tree
+
 # Attribute
 
 - model: cmdb.CIAttribute
