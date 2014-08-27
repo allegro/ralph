@@ -19,7 +19,6 @@ from django.db import models as db
 from django.db import IntegrityError, transaction
 from django.utils.translation import ugettext_lazy as _
 from lck.django.common.models import (
-    EditorTrackable,
     MACAddressField,
     Named,
     SavePrioritized,
