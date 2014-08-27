@@ -94,10 +94,11 @@ class SidebarSearch(object):
 
 
 class Search(SidebarSearch, BaseMixin):
-    pass
+    submodule_name = 'search'
 
 
 class SearchDeviceList(SidebarSearch, BaseMixin, BaseDeviceList):
+    submodule_name = 'search'
 
     def __init__(self, *args, **kwargs):
         super(SearchDeviceList, self).__init__(*args, **kwargs)
