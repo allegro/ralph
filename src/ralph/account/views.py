@@ -19,9 +19,14 @@ from django.template import (
 )
 from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.csrf import requires_csrf_token
+from django.views.generic import TemplateView
 
 from ralph.account.forms import UserHomePageForm
-from ralph.account.models import Profile
+from ralph.account.models import (
+    Perm,
+    Profile,
+    ralph_permission,
+)
 from ralph.ui.views.common import Base
 
 
@@ -47,18 +52,26 @@ def HTTP403(request, msg=None, template_name='403.html'):
 class BaseUser(Base):
     template_name = 'base.html'
 
+    @ralph_permission([])
+    def dispatch(self, *args, **kwargs):
+        return super(TemplateView, self).dispatch(*args, **kwargs)
+
     def get_sidebar_items(self):
-        preferences = (
-            (
-                reverse('user_home_page', args=[]),
-                _('Home Page'),
-                'fugue-home'
-            ), (
-                reverse('user_api_key', args=[]),
-                _('API Key'),
-                'fugue-key'
-            ),
-        )
+        has_perm = self.request.user.get_profile().has_perm
+        preferences = [(
+            reverse('user_api_key', args=[]),
+            _('API Key'),
+            'fugue-key'
+        )]
+        if has_perm(Perm.has_core_access):
+            preferences.insert(
+                0,
+                (
+                    reverse('user_home_page', args=[]),
+                    _('Home Page'),
+                    'fugue-home'
+                )
+            )
         sidebar_items = (
             [MenuHeader('Preferences')] +
             [MenuItem(
@@ -91,6 +104,13 @@ class BaseUserPreferenceEdit(BaseUser):
     template_name = 'preference.html'
     Form = None
     header = None
+
+    @ralph_permission([{
+        'perm': Perm.has_core_access,
+        'msg': _("You don't have permissions for this resource.")
+    }])
+    def dispatch(self, *args, **kwargs):
+        return super(TemplateView, self).dispatch(*args, **kwargs)
 
     def get(self, *args, **kwargs):
         instance = Profile.objects.get(
