@@ -25,11 +25,11 @@ For example, for built-in mysql server:
 
 1. Mount local directory /my/local/directory as mysql storage and initialize it with database structure::
 
-  docker run -P -t -i -v /my/local/directory:/var/lib/mysql -t -i vi4m/ralph:stable /root/init_mysql.sh
+    docker run -P -t -i -v /my/local/directory:/var/lib/mysql -t -i vi4m/ralph:stable /root/init_mysql.sh
 
 2. Ready. Now just run ralph on it::
 
-  docker run -P -t -i -v /my/local/directory:/var/lib/mysql -t -i vi4m/ralph:stable
+    docker run -P -t -i -v /my/local/directory:/var/lib/mysql -t -i vi4m/ralph:stable
 
 
 .. note::

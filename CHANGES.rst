@@ -1,7 +1,50 @@
 Change Log
 ----------
 
+* Scan status view
 
+2.0.1
+~~~~~
+
+Released on August 20, 2014
+
+This is a bugfix release, with some small improvements here and there and one new feature ('notifications' module).
+
+* CORE: (CI/Travis/Coveralls) Added Sphinx checker.
+
+* SCAN: Small fix for the 'force autoscan' routine.
+
+* SCAN: Improved detection of Juniper switches.
+
+* CORE: Added new filter to the sidebar search ('Devices without linked asset').
+
+* CORE: Added possibility to bulk-edit 'name', 'venture', 'role' and 'physical parent device'.
+
+* CORE: Improved 'DNS Records' form validation (detection of duplicate records).
+
+* CORE: Some small improvements related to integration with 'ralph_assets' and 'ralph_pricing' (e.g. a script for uploading data re: venture/IPs ownership).
+
+* CORE: Added 'notifications' module (a simple app for sending and archiving e-mails when you want to be notified of certain events, e.g device's configuration change).
+
+* SCAN: Fix for 'ssh_xen' plugin (reference to a non-existing variable).
+
+* CORE: Added 'DeviceEnvironment' model along with adding 'service' and 'device_environment' fields on 'Device' model (needed for future features).
+
+* CORE: Added 'venture' field to the 'IPAddress' resource in API.
+
+* SCAN: Minor fixes for 'ssh_cisco_catalyst' and 'ssh_cisco_asa' plugins (e.g. NotConfiguredError could break all Scan processes).
+
+* SCAN: 'management' field on 'Device' model is no longer ignored ('ssh_proxmox' plugin mostly).
+
+* CORE: Fix for syncs with LDAP.
+
+* SCAN: Fix for sysinfo extraction in 'ssh_3par' plugin.
+
+* DonPedro: added normalization of WWNs and some additional command-line options for the output generation.
+
+* SCAN: Enabled saving of the results in 'mount_shares' postprocessing plugin.
+
+* CORE: Added missing permissions checks to the views.
 
 2.0.0-stable
 ~~~~~~~~~~~~
@@ -47,7 +90,7 @@ This is a stable release.
 * CORE: Pluggable apps permissions and ralph_permission decorator. Improved permissions to pluggable apps; ralph_permission decorator could now be applied to dispatch method (before only to post/get/etc methods);
 
 * CORE: Fixed sorting by network address/gateway in admin (incl. migration).
-Network model gets new field gateway_as_int, which is used for sorting by "Gateway address" column ("Network address" column now uses min_ip field for this).
+  Network model gets new field gateway_as_int, which is used for sorting by "Gateway address" column ("Network address" column now uses min_ip field for this).
 
 * CORE: Implemented 3 bound permissions per Ralph application (has_core_access, has_asset_access, has_scrooge_access).
 

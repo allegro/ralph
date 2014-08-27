@@ -4,6 +4,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import copy
 import datetime
 
 import ipaddr
@@ -28,6 +29,7 @@ from django.views.generic import (
 
 from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Language, TagStem
+from bob.data_table import DataTableColumn, DataTableMixin
 from bob.menu import MenuItem
 import pluggableapp
 from powerdns.models import Record
@@ -49,10 +51,12 @@ from ralph.scan.data import (
 )
 from ralph.scan.diff import diff_results, sort_results
 from ralph.scan.models import ScanSummary
-from ralph.scan.util import update_scan_summary
+from ralph.scan.util import update_scan_summary, get_pending_scans
 from ralph.business.models import (
     RoleProperty,
     RolePropertyValue,
+    Venture,
+    VentureRole,
 )
 from ralph.cmdb.models import CI
 from ralph.deployment.models import Deployment, DeploymentStatus
@@ -344,6 +348,20 @@ class BaseMixin(ACLGateway):
             MenuItem('Quick scan', fugue_icon='fugue-radar',
                      href='#quickscan'))
 
+        pending_scans = get_pending_scans()
+        if pending_scans:
+            mainmenu_items.append(MenuItem(
+                _('Pending scans {}/{}').format(
+                    pending_scans.new_devices,
+                    pending_scans.changed_devices,
+                ),
+                href=reverse(
+                    'scan_list', kwargs={'scan_type': (
+                        'new' if pending_scans.new_devices else 'existing'
+                    )}
+                ),
+                fugue_icon='fugue-light-bulb--exclamation',
+            ))
         if ('ralph.cmdb' in settings.INSTALLED_APPS and
                 has_perm(Perm.read_configuration_item_info_generic)):
             mainmenu_items.append(
@@ -1389,14 +1407,26 @@ class ServerMove(BaseMixin, TemplateView):
 
 @nested_commit_on_success
 def bulk_update(devices, fields, data, user):
+    field_classes = {
+        'venture': Venture,
+        'venture_role': VentureRole,
+        'parent': Device,
+    }
     values = {}
     for name in fields:
-        if name == 'chassis_position' and data[name] == '':
+        if name in field_classes:
+            if data[name]:
+                values[name] = field_classes[name].objects.get(id=data[name])
+            else:
+                values[name] = None
+        elif name == 'chassis_position' and data[name] == '':
             values[name] = None
         else:
             # for checkboxes un-checking
             values[name] = data.get(name, False)
     for device in devices:
+        if 'venture' in fields:
+            device.venture_role = None
         for name in fields:
             setattr(device, name, values[name])
             device.save_comment = data.get('save_comment')
@@ -1424,13 +1454,26 @@ class BulkEdit(BaseMixin, TemplateView):
             )
             return super(BulkEdit, self).get(*args, **kwargs)
         selected = self.request.POST.getlist('select')
-        self.devices = Device.objects.filter(id__in=selected).select_related()
-        if not self.devices:
+        devices = Device.objects.filter(id__in=selected).select_related()
+        verified = devices.filter(verified=True)
+        self.devices = devices.filter(verified=False)
+        if not self.devices and not verified:
             messages.error(
                 self.request,
                 "You haven't selected any existing devices.",
             )
             return HttpResponseRedirect(self.request.path + '../info/')
+        elif verified:
+            messages.warning(
+                self.request,
+                "The following devices have been removed from your selection "
+                "because they are marked as 'verified' and thus cannot be "
+                "edited in bulk: {}. You can either edit them individually "
+                "or uncheck the 'verified' option in admin's panel."
+                .format(', '.join([d.name for d in verified]))
+            )
+            if not self.devices:
+                return HttpResponseRedirect(self.request.path + '../info/')
         self.edit_fields = self.request.POST.getlist('edit')
         initial = {}
         self.different_fields = []
@@ -1568,6 +1611,56 @@ class Scan(BaseMixin, TemplateView):
             'plugins': getattr(settings, 'SCAN_PLUGINS', {}),
         })
         return ret
+
+
+class ScanList(BaseMixin, DataTableMixin, TemplateView):
+    template_name = 'ui/scan-list.html'
+    sort_variable_name = 'sort'
+    columns = [
+        DataTableColumn(
+            _('IP'),
+            field='ipaddress',
+            sort_expression='ipaddress',
+            bob_tag=True,
+        ),
+        DataTableColumn(
+            _('Scan time'),
+            field='created',
+            sort_expression='created',
+            bob_tag=True,
+        ),
+        DataTableColumn(
+            _('Device'),
+            bob_tag=True,
+        ),
+    ]
+
+    def get_context_data(self, **kwargs):
+        result = super(ScanList, self).get_context_data(**kwargs)
+        result.update(
+            super(ScanList, self).get_context_data_paginator(**kwargs)
+        )
+        result.update({
+            'sort_variable_name': self.sort_variable_name,
+            'url_query': self.request.GET,
+            'sort': self.sort,
+            'columns': self.columns,
+            'scan_type': kwargs['scan_type']
+        })
+        return result
+
+    def get(self, *args, **kwargs):
+        scans = self.handle_search_data(*args, **kwargs)
+        self.data_table_query(scans)
+        return super(ScanList, self).get(*args, **kwargs)
+
+    def handle_search_data(self, *args, **kwargs):
+        delta = timezone.now() - datetime.timedelta(days=1)
+        all_scans = ScanSummary.objects.filter(modified__gt=delta)
+        if kwargs['scan_type'] == 'new':
+            return all_scans.filter(ipaddress__device=None)
+        else:
+            return all_scans.exclude(ipaddress__device=None)
 
 
 class ScanStatus(BaseMixin, TemplateView):
@@ -1755,7 +1848,7 @@ class ScanStatus(BaseMixin, TemplateView):
         if self.job:
             if self.device_id:
                 self.forms = self.get_forms(
-                    self.job.result,
+                    copy.deepcopy(self.job.result),
                     self.device_id,
                     self.request.POST,
                 )
