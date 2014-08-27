@@ -1,7 +1,11 @@
 """Ralph extension for DjangoPluggableApp."""
 
 import abc
+
+from django.core.urlresolvers import reverse
+
 import pluggableapp
+
 
 
 class RalphModule(pluggableapp.PluggableApp):
@@ -27,6 +31,11 @@ class RalphModule(pluggableapp.PluggableApp):
     @abc.abstractproperty
     def disp_name(self):
         """Name displayed in menu."""
+
+    @property
+    def home_url(self):
+        home_url = reverse('home')
+        return home_url
 
     def __init__(self, *args, **kwargs):
         super(RalphModule, self).__init__(*args, **kwargs)

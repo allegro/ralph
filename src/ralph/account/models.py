@@ -9,7 +9,6 @@ from __future__ import unicode_literals
 import functools
 
 
-from django.conf import settings
 from django.contrib.auth.models import Group
 from django.core.handlers.wsgi import WSGIRequest
 from django.core.urlresolvers import reverse, NoReverseMatch
@@ -27,7 +26,9 @@ from lck.django.profile.models import (
     ActivationSupport,
     GravatarSupport,
 )
+from pluggableapp import PluggableApp
 
+from ralph.app import RalphModule
 from ralph.business.models import Venture, VentureRole
 
 
@@ -279,11 +280,17 @@ def ralph_permission(perms=None):
 
 def get_user_home_page_url(user):
     profile = user.get_profile()
-    if profile.home_page == AvailableHomePage.default:
-        try:
-            home_page = reverse(settings.HOME_PAGE_URL_NAME, args=[])
-        except NoReverseMatch:
-            home_page = reverse('search')
+    redirect_hierarchy = [
+        (Perm.has_scrooge_access, 'ralph_pricing'),
+        (Perm.has_assets_access, 'ralph_assets'),
+    ]
+    for perm_to_module, app_name in redirect_hierarchy:
+        if profile.has_perm(perm_to_module):
+            try:
+                page_url = PluggableApp.apps[app_name].home_url
+                break
+            except KeyError:
+                pass
     else:
-        home_page = reverse(profile.home_page.name)
-    return home_page
+        page_url = '/ui/search/info/'
+    return page_url

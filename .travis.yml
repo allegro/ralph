@@ -16,3 +16,7 @@ before_script:
   
 after_success:
   - coveralls
+
+#TODO:: add all apps
+#TODO:: use it as integration
+#DJANGO_SETTINGS_PROFILE=test-integration ralph test ralph.tests.integration.tests.IntegratedLoginRedirectTest
