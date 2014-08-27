@@ -324,10 +324,15 @@ class BaseMixin(ACLGateway):
         profile = self.request.user.get_profile()
         has_perm = profile.has_perm
         footer_items = []
-        mainmenu_items = [
-            MenuItem('Ventures', fugue_icon='fugue-store',
-                     view_name='ventures')
-        ]
+        mainmenu_items = []
+        if has_perm(Perm.has_core_access):
+            mainmenu_items.append(
+                MenuItem(
+                    'Ventures',
+                    fugue_icon='fugue-store',
+                    view_name='ventures'
+                )
+            )
         if has_perm(Perm.read_dc_structure):
             mainmenu_items.append(
                 MenuItem('Racks', fugue_icon='fugue-building',
