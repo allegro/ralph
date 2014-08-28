@@ -7,12 +7,9 @@ from django.core.urlresolvers import reverse
 import pluggableapp
 
 
-
 class RalphModule(pluggableapp.PluggableApp):
-
     """A pluggable application that depends of ralph and is accessible from
     the ralph main application."""
-
     metaclass = abc.ABCMeta
     required_permission = None
 

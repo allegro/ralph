@@ -11,7 +11,6 @@ import functools
 
 from django.contrib.auth.models import Group
 from django.core.handlers.wsgi import WSGIRequest
-from django.core.urlresolvers import reverse, NoReverseMatch
 from django.db import models as db
 from django.http import HttpResponseBadRequest
 from django.utils.translation import ugettext_lazy as _
@@ -28,7 +27,6 @@ from lck.django.profile.models import (
 )
 from pluggableapp import PluggableApp
 
-from ralph.app import RalphModule
 from ralph.business.models import Venture, VentureRole
 
 

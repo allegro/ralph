@@ -59,7 +59,7 @@ class LoginRedirectTest(TestCase):
 
     def test_hierarchy(self):
         """
-        Because there is no installed core or assets, always show core
+        Because there is no installed scrooge or assets, always show core
         user with scrooge perms -> show core
         user with asset perms -> show core
         user with core perms -> show core
