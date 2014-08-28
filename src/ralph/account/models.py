@@ -237,7 +237,7 @@ def ralph_permission(perms=None):
     If no permissions are specified, 'Perm.has_core_access' will be used.
     """
 
-    if not perms:
+    if perms is None:
         perms = [
             {
                 'perm': Perm.has_core_access,
@@ -249,6 +249,7 @@ def ralph_permission(perms=None):
         def inner_decorator(self, *args, **kwargs):
             from ralph.account.views import HTTP403
             from ralph.util import api
+
             # class-based views
             if args and isinstance(args[0], WSGIRequest):
                 request = args[0]
