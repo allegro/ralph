@@ -13,14 +13,14 @@ from django.core.urlresolvers import reverse
 from pluggableapp import PluggableApp
 from ralph.account.models import Perm
 from ralph.ui.tests.global_utils import login_as_user
-from ralph.ui.tests.functional.tests_search import LoginRedirectTest
+from ralph.ui.tests.functional import tests_search
 
 
 @unittest.skipUnless(
     getattr(settings, 'INTEGRATION_TESTS', False),
     "Passed settings are not for integration tests",
 )
-class IntegratedLoginRedirectTest(LoginRedirectTest):
+class IntegratedLoginRedirectTest(tests_search.LoginRedirectTest):
 
     def test_hierarchy(self):
         """
@@ -43,6 +43,4 @@ class IntegratedLoginRedirectTest(LoginRedirectTest):
                 follow=True,
                 **self.request_headers
             )
-            #msg = 'failed redirct to {}'.format(home_url)
-            #self.assertEqual(response.status_code, 200, msg)
             self.assertEqual(response.request['PATH_INFO'], home_url)

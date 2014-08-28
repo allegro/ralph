@@ -11,7 +11,15 @@ install:
 	pip install -e . --use-mirrors --allow-all-external --allow-unverified ipaddr --allow-unverified postmarkup --allow-unverified python-graph-core --allow-unverified pysphere
 
 test-unittests:
-	DJANGO_SETTINGS_PROFILE=test-ralph coverage run --source=ralph --omit='*migrations*,*tests*' '$(VIRTUAL_ENV)/bin/ralph' test ralph
+	DJANGO_SETTINGS_PROFILE=test-ralph coverage run -p --source=ralph --omit='*migrations*,*tests*' '$(VIRTUAL_ENV)/bin/ralph' test ralph
+
+test-integration:
+	DJANGO_SETTINGS_PROFILE=test-integration coverage run -p --source=ralph --omit='*migrations*,*tests*' '$(VIRTUAL_ENV)/bin/ralph' test ralph.tests.integration
+
+tests:
+	test-unittests
+	test-integration
+	coverage combaine
 
 test-doc:
 	# ignore warnings about missing subdirs - cloned from another repositories
@@ -23,4 +31,4 @@ test-doc:
 	cd ./doc && make html
 
 
-test-with-coveralls: test-doc test-unittests
+test-with-coveralls: test-doc tests
