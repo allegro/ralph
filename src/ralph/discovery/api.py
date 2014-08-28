@@ -213,6 +213,16 @@ class DeviceResource(MResource):
         related_name='device',
         full=True,
     )
+    service = fields.ForeignKey(
+        'ralph.cmdb.api.CIResource',
+        'service',
+        null=True,
+    )
+    device_environment = fields.ForeignKey(
+        'ralph.cmdb.api.CIResource',
+        'device_environment',
+        null=True,
+    )
 
     def dehydrate(self, bundle):
         properties = bundle.obj.get_property_set()
@@ -248,6 +258,8 @@ class DeviceResource(MResource):
             'rack': ALL,
             'remarks': ALL,
             'role': ALL_WITH_RELATIONS,
+            'service': ALL_WITH_RELATIONS,
+            'device_environment': ALL_WITH_RELATIONS,
             'sn': ALL,
             'support_expiration_date': ALL,
             'support_kind': ALL,
