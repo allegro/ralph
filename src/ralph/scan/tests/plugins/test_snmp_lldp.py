@@ -12,6 +12,7 @@ from django.test import TestCase
 from ralph.scan.plugins.snmp_lldp import (
     _get_device_interfaces_map,
     _get_remote_connected_ports_map,
+    _get_remote_ip_addresses_map,
     _get_remote_mac_addresses_map,
     _snmp_lldp,
 )
@@ -61,6 +62,33 @@ class SnmpLldpPluginTest(TestCase):
                 {"6": "FFFEFDFCFB02"}
             )
 
+    def test_get_remote_ip_addresses_map(self):
+        with mock.patch(
+            'ralph.scan.plugins.snmp_lldp.snmp_walk',
+        ) as snmp_walk:
+            snmp_walk.side_effect = [
+                [
+                    (
+                        (
+                            "1.0.8802.1.1.2.1.4.2.1.3.0.8.19.1.4.10.10.10.11",
+                            0
+                        ),
+                        None
+                    ),
+                    (
+                        (
+                            "1.0.8802.1.1.2.1.4.2.1.3.0.33.19.1.4.10.10.10.12",
+                            0
+                        ),
+                        None
+                    ),
+                ]
+            ]
+            self.assertEqual(
+                _get_remote_ip_addresses_map("10.10.10.10", "public", "2c"),
+                {"8": "10.10.10.11", "33": "10.10.10.12"}
+            )
+
     def test_get_remote_connected_ports_map(self):
         with mock.patch(
             'ralph.scan.plugins.snmp_lldp.snmp_walk',
@@ -69,14 +97,14 @@ class SnmpLldpPluginTest(TestCase):
                 [
                     (
                         (
-                            "1.0.8802.1.1.2.1.4.1.1.7.0.33.1",
+                            "1.0.8802.1.1.2.1.4.1.1.8.0.33.1",
                             "Eth0"
                         ),
                         None
                     ),
                     (
                         (
-                            "1.0.8802.1.1.2.1.4.1.1.7.0.42.2",
+                            "1.0.8802.1.1.2.1.4.1.1.8.0.42.2",
                             "Eth1"
                         ),
                         None
@@ -94,6 +122,8 @@ class SnmpLldpPluginTest(TestCase):
         ) as get_device_interfaces_map_mock, mock.patch(
             'ralph.scan.plugins.snmp_lldp._get_remote_mac_addresses_map',
         ) as get_remote_mac_addresses_map_mock, mock.patch(
+            'ralph.scan.plugins.snmp_lldp._get_remote_ip_addresses_map',
+        ) as get_remote_ip_addresses_map_mock, mock.patch(
             'ralph.scan.plugins.snmp_lldp._get_remote_connected_ports_map',
         ) as get_remote_connected_ports_map_mock:
             get_device_interfaces_map_mock.return_value = {
@@ -111,6 +141,11 @@ class SnmpLldpPluginTest(TestCase):
                 "3": "FFFEFDFCFB04",
                 "9": "FFFEFDFCFBFF",
             }
+            get_remote_ip_addresses_map_mock.return_value = {
+                "2": "10.0.10.10",
+                "3": "10.0.10.11",
+                "9": "10.0.10.12",
+            }
             get_remote_connected_ports_map_mock.return_value = {
                 '2': 'Eth0',
                 '3': 'Eth1',
@@ -120,10 +155,12 @@ class SnmpLldpPluginTest(TestCase):
                 {
                     'connections': [
                         {
+                            'connected_device_ip_addresses': "10.0.10.12",
                             'connected_device_mac_addresses': 'FFFEFDFCFBFF',
                             'connection_type': 'network',
                         },
                         {
+                            'connected_device_ip_addresses': "10.0.10.11",
                             'connected_device_mac_addresses': 'FFFEFDFCFB04',
                             'connection_type': 'network',
                             'details': {
@@ -132,6 +169,7 @@ class SnmpLldpPluginTest(TestCase):
                             }
                         },
                         {
+                            'connected_device_ip_addresses': "10.0.10.10",
                             'connected_device_mac_addresses': 'FFFEFDFCFB03',
                             'connection_type': 'network',
                             'details': {

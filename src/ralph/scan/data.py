@@ -431,6 +431,9 @@ def get_device_data(device):
             'connected_device_mac_addresses': ",".join([
                 mac.mac for mac in conn.inbound.ethernet_set.all()
             ]),
+            'connected_device_ip_addresses': ",".join([
+                ip.address for ip in conn.inbound.ipaddress_set.all()
+            ]),
             'connected_device_serial_number': connected_device_sn,
             'connection_details': connection_details
         })
@@ -820,21 +823,25 @@ def connection_from_data(device, connection_data):
     if mac_addresses:
         mac_addresses = [mac.strip() for mac in mac_addresses.split(",")]
         query['ethernet__mac__in'] = mac_addresses
+    ip_addresses = connection_data.get('connected_device_ip_addresses')
+    if ip_addresses:
+        ip_addresses = [ip.strip() for ip in ip_addresses.split(",")]
+        query['ipaddress__address__in'] = ip_addresses
     if not query:
         raise ValueError(
             "Can not find connected device. Please specify connected device "
-            "MAC address or serial number."
+            "MAC address or IP address or serial number."
         )
-    connected_devices = Device.objects.filter(**query)
+    connected_devices = Device.objects.filter(**query).distinct()
     if not connected_devices:
         raise ValueError(
             "Can not find connected device. Please specify connected device "
-            "MAC address or serial number."
+            "MAC address or IP address or serial number."
         )
     if len(connected_devices) > 1:
         raise ValueError(
-            "Many devices found. Probably specified MAC addresses are not "
-            "connected with one device..."
+            "Many devices found. Probably specified MAC addresses or "
+            "IP addresses are not connected with one device..."
         )
     connected_device = connected_devices[0]
     connection_type = _get_choice_by_name(

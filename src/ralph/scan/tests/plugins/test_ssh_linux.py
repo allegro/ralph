@@ -248,6 +248,7 @@ Interface:    eth1, via: LLDP, RID: 1, Time: 0 day, 00:07:49
             _get_lldp_info(ssh),
             [
                 {
+                    'connected_device_ip_addresses': '10.10.10.10',
                     'connected_device_mac_addresses': 'AABBCC112233',
                     'connection_type': 'network',
                     'details': {
@@ -256,6 +257,7 @@ Interface:    eth1, via: LLDP, RID: 1, Time: 0 day, 00:07:49
                     }
                 },
                 {
+                    'connected_device_ip_addresses': '10.10.10.11',
                     'connected_device_mac_addresses': 'AABBCC112244',
                     'connection_type': 'network',
                     'details': {

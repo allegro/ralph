@@ -279,6 +279,10 @@ class GetDeviceDataTest(TestCase):
             sn='sn_2',
             name='dev2.dc1'
         )
+        IPAddress.objects.create(
+            address="10.0.22.1",
+            device=connected_device_1
+        )
         connection = Connection.objects.create(
             connection_type=ConnectionType.network,
             outbound=master_device,
@@ -288,6 +292,14 @@ class GetDeviceDataTest(TestCase):
             model=model,
             sn='sn_3',
             name='dev3.dc1'
+        )
+        IPAddress.objects.create(
+            address="10.0.22.2",
+            device=connected_device_2
+        )
+        IPAddress.objects.create(
+            address="10.0.22.3",
+            device=connected_device_2
         )
         connection = Connection.objects.create(
             connection_type=ConnectionType.network,
@@ -304,12 +316,14 @@ class GetDeviceDataTest(TestCase):
             data['connections'],
             [
                 {
+                    'connected_device_ip_addresses': '10.0.22.1',
                     'connected_device_mac_addresses': '',
                     'connected_device_serial_number': 'sn_2',
                     'connection_details': {},
                     'connection_type': 'network'
                 },
                 {
+                    'connected_device_ip_addresses': '10.0.22.2,10.0.22.3',
                     'connected_device_mac_addresses': '',
                     'connected_device_serial_number': 'sn_3',
                     'connection_details': {
@@ -898,7 +912,26 @@ class ConnectionFromData(TestCase):
             sn='sn_3',
             name='dev3.dc1'
         )
+        connected_device_3 = Device.objects.create(
+            model=model,
+            sn='sn_4',
+            name='dev4.dc1'
+        )
+        connected_device_4 = Device.objects.create(
+            model=model,
+            sn='sn_5',
+            name='dev5.dc1'
+        )
         Ethernet.objects.create(mac='112233AABBCC', device=connected_device_2)
+        Ethernet.objects.create(mac='112233AABBDD', device=connected_device_4)
+        IPAddress.objects.create(
+            address='10.20.30.1',
+            device=connected_device_3
+        )
+        IPAddress.objects.create(
+            address='10.20.30.2',
+            device=connected_device_4
+        )
         connection_1 = Connection.objects.create(
             connection_type=ConnectionType.network,
             outbound=master_device,
@@ -908,6 +941,16 @@ class ConnectionFromData(TestCase):
             connection_type=ConnectionType.network,
             outbound=master_device,
             inbound=connected_device_2
+        )
+        connection_3 = Connection.objects.create(
+            connection_type=ConnectionType.network,
+            outbound=master_device,
+            inbound=connected_device_3
+        )
+        connection_4 = Connection.objects.create(
+            connection_type=ConnectionType.network,
+            outbound=master_device,
+            inbound=connected_device_4
         )
         connection = connection_from_data(
             master_device,
@@ -931,6 +974,29 @@ class ConnectionFromData(TestCase):
         self.assertEqual(connection.id, connection_2.id)
         self.assertEqual(connection.outbound.id, master_device.id)
         self.assertEqual(connection.inbound.id, connected_device_2.id)
+        connection = connection_from_data(
+            master_device,
+            {
+                'connected_device_serial_number': '',
+                'connected_device_ip_addresses': '10.20.30.1',
+                'connection_type': 'network connection'
+            }
+        )
+        self.assertEqual(connection.id, connection_3.id)
+        self.assertEqual(connection.outbound.id, master_device.id)
+        self.assertEqual(connection.inbound.id, connected_device_3.id)
+        connection = connection_from_data(
+            master_device,
+            {
+                'connected_device_serial_number': 'sn_5',
+                'connected_device_mac_addresses': '112233AABBDD',
+                'connected_device_ip_addresses': '10.20.30.2',
+                'connection_type': 'network connection'
+            }
+        )
+        self.assertEqual(connection.id, connection_4.id)
+        self.assertEqual(connection.outbound.id, master_device.id)
+        self.assertEqual(connection.inbound.id, connected_device_4.id)
 
     def test_return_new_connection(self):
         model = DeviceModel.objects.create(
@@ -953,6 +1019,14 @@ class ConnectionFromData(TestCase):
             name='dev3.dc1'
         )
         Ethernet.objects.create(mac='112233AABBCC', device=connected_device_2)
+        IPAddress.objects.create(
+            address='10.20.30.2',
+            device=connected_device_2
+        )
+        IPAddress.objects.create(
+            address='10.20.30.3',
+            device=connected_device_2
+        )
         connection = connection_from_data(
             master_device,
             {
@@ -968,6 +1042,7 @@ class ConnectionFromData(TestCase):
             {
                 'connected_device_serial_number': '',
                 'connected_device_mac_addresses': '112233AABBCC',
+                'connected_device_ip_addresses': '10.20.30.2,10.20.30.3',
                 'connection_type': 'network connection'
             }
         )
@@ -1061,12 +1136,31 @@ class ConnectionFromData(TestCase):
             name='dev3.dc1'
         )
         Ethernet.objects.create(mac='112233AABBEE', device=connected_device_2)
+        connected_device_3 = Device.objects.create(
+            model=model,
+            sn='sn_4',
+            name='dev4.dc1'
+        )
+        IPAddress.objects.create(
+            address='10.10.0.10',
+            device=connected_device_3
+        )
         self.assertRaises(
             ValueError,
             connection_from_data,
             master_device,
             {
                 'connected_device_mac_addresses': '112233AABBDD,112233AABBEE',
+                'connection_type': 'network connection'
+            }
+        )
+        self.assertRaises(
+            ValueError,
+            connection_from_data,
+            master_device,
+            {
+                'connected_device_mac_addresses': '112233AABBDD',
+                'connected_device_ip_addresses': '10.10.0.10',
                 'connection_type': 'network connection'
             }
         )

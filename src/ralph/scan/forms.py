@@ -340,6 +340,7 @@ class DiffForm(forms.Form):
         'connections': CSVInfo([
             'connection_type',
             'connected_device_mac_addresses',
+            'connected_device_ip_addresses',
             'connected_device_serial_number',
         ]),
     }

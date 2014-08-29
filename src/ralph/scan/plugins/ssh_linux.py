@@ -196,6 +196,10 @@ def _get_lldp_info(ssh, messages=[]):
             ] = MACAddressField.normalize(
                 line.strip().split(':', 1)[1].replace('mac', '').strip()
             )
+        if "MgmtIP:" in line:
+            connection[
+                'connected_device_ip_addresses'
+            ] = line.strip().split(":")[1].strip()
         if "PortID:" in line:
             connection['details']['inbound_port'] = line.strip().split(
                 ":"

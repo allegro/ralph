@@ -46,11 +46,26 @@ def _get_remote_mac_addresses_map(ip_address, snmp_community, snmp_version):
     return mac_addresses_map
 
 
+def _get_remote_ip_addresses_map(ip_address, snmp_community, snmp_version):
+    items = snmp_walk(
+        ip_address,
+        snmp_community,
+        [int(chunk) for chunk in "1.0.8802.1.1.2.1.4.2.1.3".split(".")],
+        snmp_version
+    )
+    ip_addresses_map = {}
+    for item in items:
+        ip_addresses_map[
+            unicode(item[0][0]).split('.')[-8]
+        ] = ".".join(unicode(item[0][0]).split('.')[-4:])
+    return ip_addresses_map
+
+
 def _get_remote_connected_ports_map(ip_address, snmp_community, snmp_version):
     items = snmp_walk(
         ip_address,
         snmp_community,
-        [int(chunk) for chunk in "1.0.8802.1.1.2.1.4.1.1.7".split(".")],
+        [int(chunk) for chunk in "1.0.8802.1.1.2.1.4.1.1.8".split(".")],
         snmp_version
     )
     ports_map = {}
@@ -69,6 +84,9 @@ def _snmp_lldp(
         mac_addresses_map = _get_remote_mac_addresses_map(
             ip_address, snmp_community, snmp_version
         )
+        ip_addresses_map = _get_remote_ip_addresses_map(
+            ip_address, snmp_community, snmp_version
+        )
         ports_map = _get_remote_connected_ports_map(
             ip_address, snmp_community, snmp_version
         )
@@ -78,15 +96,20 @@ def _snmp_lldp(
         raise Error("Incorrect answer.")
     connections = []
     for item_id, mac_address in mac_addresses_map.iteritems():
-        details = {}
-        if interfaces_map.get(item_id):
-            details['outbound_port'] = interfaces_map.get(item_id)
-        if ports_map.get(item_id):
-            details['inbound_port'] = ports_map.get(item_id)
         connection = {
             'connection_type': ConnectionType.network.name,
             'connected_device_mac_addresses': mac_address
         }
+        connected_ip = ip_addresses_map.get(item_id)
+        if connected_ip:
+            connection['connected_device_ip_addresses'] = connected_ip
+        details = {}
+        outbound_port = interfaces_map.get(item_id)
+        if outbound_port:
+            details['outbound_port'] = outbound_port
+        inbound_port = ports_map.get(item_id)
+        if inbound_port:
+            details['inbound_port'] = inbound_port
         if details:
             connection['details'] = details
         connections.append(connection)

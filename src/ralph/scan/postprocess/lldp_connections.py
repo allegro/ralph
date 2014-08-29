@@ -44,7 +44,24 @@ def _network_connections_in_results(data):
 def _create_or_update_connection(device, connection_data):
     if connection_data['connection_type'] != 'network':
         return
-    connection = connection_from_data(device, connection_data)
+    try:
+        connection = connection_from_data(device, connection_data)
+    except ValueError as e:
+        sn = ''
+        if 'connected_device_serial_number' in connection_data:
+            sn = connection_data['connected_device_serial_number']
+        mac_addresses = ''
+        if 'connected_device_mac_addresses' in connection_data:
+            mac_addresses = connection_data['connected_device_mac_addresses']
+        ip_addresses = ''
+        if 'connected_device_ip_addresses' in connection_data:
+            mac_addresses = connection_data['connected_device_ip_addresses']
+        msg = """
+            Connection creating failed.
+            Connection params: sn={}; mac_addresses={}; ip_addresses={};
+            Exception message: {}.
+        """.format(sn, mac_addresses, ip_addresses, unicode(e))
+        logger.exception(msg)
     connetion_details = connection_data.get('details', {})
     if connetion_details:
         outbound_port = connetion_details.get('outbound_port')
