@@ -11,6 +11,7 @@ import functools
 
 from django.contrib.auth.models import Group
 from django.core.handlers.wsgi import WSGIRequest
+from django.core.urlresolvers import reverse
 from django.db import models as db
 from django.http import HttpResponseBadRequest
 from django.utils.translation import ugettext_lazy as _
@@ -291,5 +292,5 @@ def get_user_home_page_url(user):
             except KeyError:
                 pass
     else:
-        page_url = '/ui/search/info/'
+        page_url = reverse('search', args=('info', ''))
     return page_url

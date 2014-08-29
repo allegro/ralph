@@ -5,13 +5,14 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from django.core.urlresolvers import reverse
 from django.test import TestCase
 
 from ralph.account.models import Perm, BoundPerm
 from ralph.ui.tests.global_utils import (
+    login_as_user,
     GroupFactory,
     UserFactory,
-    login_as_user,
 )
 
 
@@ -79,5 +80,5 @@ class LoginRedirectTest(TestCase):
             )
             self.assertEqual(
                 response.request['PATH_INFO'],
-                '/ui/search/info/',
+                reverse('search', args=('info', '')),
             )

@@ -2,8 +2,6 @@
 
 import abc
 
-from django.core.urlresolvers import reverse
-
 import pluggableapp
 
 
@@ -29,10 +27,9 @@ class RalphModule(pluggableapp.PluggableApp):
     def disp_name(self):
         """Name displayed in menu."""
 
-    @property
+    @abc.abstractproperty
     def home_url(self):
-        home_url = reverse('home')
-        return home_url
+        """Url to homepage"""
 
     def __init__(self, *args, **kwargs):
         super(RalphModule, self).__init__(*args, **kwargs)

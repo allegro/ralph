@@ -55,7 +55,6 @@ class GroupFactory(DjangoModelFactory):
         if not create:
             # Simple build, do nothing.
             return
-
         if extracted:
             # A list of boundperm_set were passed in, use them
             for group in extracted:
@@ -80,7 +79,6 @@ class UserFactory(DjangoModelFactory):
         if not create:
             # Simple build, do nothing.
             return
-
         if extracted:
             # A list of groups were passed in, use them
             for group in extracted:

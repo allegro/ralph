@@ -1,6 +1,8 @@
 Change Log
 ----------
 
+* After sign in, redirect to home of user-accessible module
+
 * Scan status view
 
 2.0.1
