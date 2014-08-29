@@ -1,14 +1,13 @@
 """Ralph extension for DjangoPluggableApp."""
 
 import abc
+
 import pluggableapp
 
 
 class RalphModule(pluggableapp.PluggableApp):
-
     """A pluggable application that depends of ralph and is accessible from
     the ralph main application."""
-
     metaclass = abc.ABCMeta
     required_permission = None
 
@@ -27,6 +26,10 @@ class RalphModule(pluggableapp.PluggableApp):
     @abc.abstractproperty
     def disp_name(self):
         """Name displayed in menu."""
+
+    @abc.abstractproperty
+    def home_url(self):
+        """Url to homepage"""
 
     def __init__(self, *args, **kwargs):
         super(RalphModule, self).__init__(*args, **kwargs)
