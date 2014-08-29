@@ -11,7 +11,14 @@ from django.views.generic.simple import redirect_to
 from ralph.cmdb.views import Search as SearchCmdb
 
 from ralph.ui.views import typeahead_roles, unlock_field, logout
-from ralph.ui.views.common import Home, BulkEdit, ServerMove, ScanStatus, Scan
+from ralph.ui.views.common import (
+    BulkEdit,
+    Home,
+    Scan,
+    ScanList,
+    ScanStatus,
+    ServerMove,
+)
 from ralph.ui.views.ventures import (
     ReportVenturesDeviceList,
     VenturesAddresses,
@@ -276,6 +283,10 @@ urlpatterns = patterns('',
                        url(r'^deployment/mass/define/(?P<deployment>[0-9]+)/$',
                            login_required(MassDeployment.as_view())),
 
+                       url(r'^scan/list/(?P<scan_type>new|existing)/$',
+                           login_required(
+                               ScanList.as_view()), {}, 'scan_list',
+                           ),
                        url(r'^scan/status/(?P<job_id>[a-z0-9-]+)/$',
                            login_required(
                                ScanStatus.as_view()), {}, 'scan_results',

@@ -6,12 +6,10 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from ralph.account.models import ralph_permission
 from ralph.discovery.models import Device
 from ralph.util.views import jsonify
 
 
-@ralph_permission()
 @jsonify
 def servertree(request, hostname=None):
     response = []

@@ -567,7 +567,6 @@ class Dashboard(ChangesBase):
         return ret
 
     @staticmethod
-    @ralph_permission()
     def get_ajax(*args, **kwargs):
         """Thin wrapper for Ajax subreports data"""
         data = {}
@@ -785,7 +784,6 @@ class TimeLine(BaseCMDBView):
         return ret
 
     @staticmethod
-    @ralph_permission()
     def get_ajax(self):
         interval = self.GET.get('interval')
         get_start_date = self.GET.get('start', datetime.datetime.now())

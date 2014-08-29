@@ -4,6 +4,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import copy
 import datetime
 
 import ipaddr
@@ -28,6 +29,7 @@ from django.views.generic import (
 
 from lck.django.common import nested_commit_on_success
 from lck.django.tags.models import Language, TagStem
+from bob.data_table import DataTableColumn, DataTableMixin
 from bob.menu import MenuItem
 import pluggableapp
 from powerdns.models import Record
@@ -49,7 +51,7 @@ from ralph.scan.data import (
 )
 from ralph.scan.diff import diff_results, sort_results
 from ralph.scan.models import ScanSummary
-from ralph.scan.util import update_scan_summary
+from ralph.scan.util import update_scan_summary, get_pending_scans
 from ralph.business.models import (
     RoleProperty,
     RolePropertyValue,
@@ -78,7 +80,6 @@ from ralph.discovery.models_history import (
     FOREVER_DATE,
     ALWAYS_DATE,
 )
-from ralph.util import presentation, pricing
 from ralph.util.plugin import BY_NAME as AVAILABLE_PLUGINS
 from ralph.ui.forms import ChooseAssetForm
 from ralph.ui.forms.devices import (
@@ -156,37 +157,8 @@ def _get_balancers(dev):
 
 def _get_details(dev, purchase_only=False, with_price=False,
                  ignore_deprecation=False, exclude=[]):
-    for detail in pricing.details_all(
-        dev,
-        purchase_only,
-        ignore_deprecation=ignore_deprecation,
-        exclude=exclude,
-    ):
-        if 'icon' not in detail:
-            if detail['group'] == 'dev':
-                detail['icon'] = presentation.get_device_model_icon(
-                    detail.get('model'),
-                )
-            else:
-                detail['icon'] = presentation.get_component_model_icon(
-                    detail.get('model'),
-                )
-        if 'price' not in detail:
-            if detail.get('model'):
-                detail['price'] = detail['model'].get_price()
-            else:
-                detail['price'] = None
-        if with_price and not detail['price']:
-            continue
-        if (
-            detail['group'] != 'dev' and
-            'size' not in detail and
-            detail.get('model')
-        ):
-            detail['size'] = detail['model'].size
-        if not detail.get('model'):
-            detail['model'] = detail.get('model_name', '')
-        yield detail
+    # a leftover from ralph.util.pricing
+    pass
 
 
 class ACLGateway(object):
@@ -322,10 +294,15 @@ class BaseMixin(ACLGateway):
         profile = self.request.user.get_profile()
         has_perm = profile.has_perm
         footer_items = []
-        mainmenu_items = [
-            MenuItem('Ventures', fugue_icon='fugue-store',
-                     view_name='ventures')
-        ]
+        mainmenu_items = []
+        if has_perm(Perm.has_core_access):
+            mainmenu_items.append(
+                MenuItem(
+                    'Ventures',
+                    fugue_icon='fugue-store',
+                    view_name='ventures'
+                )
+            )
         if has_perm(Perm.read_dc_structure):
             mainmenu_items.append(
                 MenuItem('Racks', fugue_icon='fugue-building',
@@ -345,6 +322,20 @@ class BaseMixin(ACLGateway):
             MenuItem('Quick scan', fugue_icon='fugue-radar',
                      href='#quickscan'))
 
+        pending_scans = get_pending_scans()
+        if pending_scans:
+            mainmenu_items.append(MenuItem(
+                _('Pending scans {}/{}').format(
+                    pending_scans.new_devices,
+                    pending_scans.changed_devices,
+                ),
+                href=reverse(
+                    'scan_list', kwargs={'scan_type': (
+                        'new' if pending_scans.new_devices else 'existing'
+                    )}
+                ),
+                fugue_icon='fugue-light-bulb--exclamation',
+            ))
         if ('ralph.cmdb' in settings.INSTALLED_APPS and
                 has_perm(Perm.read_configuration_item_info_generic)):
             mainmenu_items.append(
@@ -476,7 +467,6 @@ class DeviceUpdateView(UpdateView):
         model = form.save(commit=False)
         model.save_comment = form.cleaned_data.get('save_comment')
         model.save(priority=SAVE_PRIORITY, user=self.request.user)
-        pricing.device_update_cached(model)
         messages.success(self.request, "Changes saved.")
         return HttpResponseRedirect(self.request.path)
 
@@ -678,9 +668,7 @@ class Components(DeviceDetailView):
 
     def get_context_data(self, **kwargs):
         ret = super(Components, self).get_context_data(**kwargs)
-        ret.update({
-            'components': _get_details(self.object, purchase_only=False),
-        })
+        ret.update({'components': None})  # a leftover from ralph.util.pricing
         return ret
 
 
@@ -691,9 +679,8 @@ class Prices(DeviceUpdateView):
     edit_perm = Perm.edit_device_info_financial
 
     def get_initial(self):
-        return {
-            'auto_price': pricing.get_device_raw_price(self.object)
-        }
+        # a leftover from ralph.util.pricing
+        return {'auto_price': 0}
 
     def get_context_data(self, **kwargs):
         ret = super(Prices, self).get_context_data(**kwargs)
@@ -1301,7 +1288,6 @@ class ServerMove(BaseMixin, TemplateView):
         if mac:
             entry = DHCPEntry(ip=new_ip, mac=mac)
             entry.save()
-        pricing.device_update_cached(device)
 
     def post(self, *args, **kwargs):
         if 'move' in self.request.POST:
@@ -1392,7 +1378,6 @@ def bulk_update(devices, fields, data, user):
             setattr(device, name, values[name])
             device.save_comment = data.get('save_comment')
             device.save(priority=SAVE_PRIORITY, user=user)
-            pricing.device_update_cached(device)
 
 
 class BulkEdit(BaseMixin, TemplateView):
@@ -1526,7 +1511,9 @@ class Scan(BaseMixin, TemplateView):
         if not plugins:
             messages.error(self.request, "You have to select some plugins.")
             return self.get(*args, **kwargs)
-        ip_address = self.kwargs.get('address') or self.request.GET.get('address')
+        ip_address = self.kwargs.get(
+            'address'
+        ) or self.request.GET.get('address')
         if ip_address:
             try:
                 ipaddr.IPAddress(ip_address)
@@ -1570,6 +1557,56 @@ class Scan(BaseMixin, TemplateView):
             'plugins': getattr(settings, 'SCAN_PLUGINS', {}),
         })
         return ret
+
+
+class ScanList(BaseMixin, DataTableMixin, TemplateView):
+    template_name = 'ui/scan-list.html'
+    sort_variable_name = 'sort'
+    columns = [
+        DataTableColumn(
+            _('IP'),
+            field='ipaddress',
+            sort_expression='ipaddress',
+            bob_tag=True,
+        ),
+        DataTableColumn(
+            _('Scan time'),
+            field='created',
+            sort_expression='created',
+            bob_tag=True,
+        ),
+        DataTableColumn(
+            _('Device'),
+            bob_tag=True,
+        ),
+    ]
+
+    def get_context_data(self, **kwargs):
+        result = super(ScanList, self).get_context_data(**kwargs)
+        result.update(
+            super(ScanList, self).get_context_data_paginator(**kwargs)
+        )
+        result.update({
+            'sort_variable_name': self.sort_variable_name,
+            'url_query': self.request.GET,
+            'sort': self.sort,
+            'columns': self.columns,
+            'scan_type': kwargs['scan_type']
+        })
+        return result
+
+    def get(self, *args, **kwargs):
+        scans = self.handle_search_data(*args, **kwargs)
+        self.data_table_query(scans)
+        return super(ScanList, self).get(*args, **kwargs)
+
+    def handle_search_data(self, *args, **kwargs):
+        delta = timezone.now() - datetime.timedelta(days=1)
+        all_scans = ScanSummary.objects.filter(modified__gt=delta)
+        if kwargs['scan_type'] == 'new':
+            return all_scans.filter(ipaddress__device=None)
+        else:
+            return all_scans.exclude(ipaddress__device=None)
 
 
 class ScanStatus(BaseMixin, TemplateView):
@@ -1757,7 +1794,7 @@ class ScanStatus(BaseMixin, TemplateView):
         if self.job:
             if self.device_id:
                 self.forms = self.get_forms(
-                    self.job.result,
+                    copy.deepcopy(self.job.result),
                     self.device_id,
                     self.request.POST,
                 )
