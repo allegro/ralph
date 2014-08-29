@@ -4,11 +4,13 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import json
+
 from ralph.account.models import BoundPerm, Profile, Perm
 from django.core.cache import cache
-from ralph.ui.tests.global_utils import create_user
-
 from django.test import TestCase
+from ralph.ui.tests.global_utils import create_user, UserTestCase
+
 
 
 class AccessToDeploymentApiTest(TestCase):
@@ -58,3 +60,148 @@ class AccessToDeploymentApiTest(TestCase):
 
         response = self.get_response(resource)
         self.assertEqual(response.status_code, 200)
+
+
+class TestVMCreation(UserTestCase):
+
+    fixtures=['vm_creation_setup']
+
+    def test_correct(self): 
+        """Correctly setup the new VM"""
+        response = self.post(
+            '/api/add_vm', json.dumps({
+                'mac':'82:3c:cf:94:9d:f2',
+                'management-ip':'10.1.1.2',
+                'network':'test_network',
+                'venture':'test_venture',
+                'venture-role':'test_role',
+            }),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 201)
+
+    def test_missing_data(self):
+        """Missing venture_role."""
+        response = self.post(
+            '/api/add_vm', json.dumps({
+                'mac':'82:3c:cf:94:9d:f2',
+                'management-ip':'10.1.1.2',
+                'network':'test_network',
+                'venture':'test_venture',
+            }),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_nonexistent_machine(self):
+        """Providing a parent machine that doesn't exist"""
+        response = self.post(
+            '/api/add_vm', json.dumps({
+                'mac':'82:3c:cf:94:9d:f2',
+                'management-ip':'10.1.1.3',
+                'network':'test_network',
+                'venture':'test_venture',
+                'venture-role':'test_role',
+            }),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_nonexistent_network(self): 
+        """Providing a network that doesn't exist"""
+        response = self.post(
+            '/api/add_vm', json.dumps({
+                'mac':'82:3c:cf:94:9d:f2',
+                'management-ip':'10.1.1.2',
+                'network':'nonexisting_network',
+                'venture':'test_venture',
+                'venture-role':'test_role',
+            }),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_nonexistent_venture(self): 
+        """Providing a venture that doesn't exist"""
+        response = self.post(
+            '/api/add_vm', json.dumps({
+                'mac':'82:3c:cf:94:9d:f2',
+                'management-ip':'10.1.1.2',
+                'network':'test_network',
+                'venture':'wrong_venture',
+                'venture-role':'test_role',
+            }),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_nonexistent_role(self): 
+        """Providing a venturerole that doesn't exist"""
+        response = self.post(
+            '/api/add_vm', json.dumps({
+                'mac':'82:3c:cf:94:9d:f2',
+                'management-ip':'10.1.1.2',
+                'network':'test_network',
+                'venture':'test_venture',
+                'venture-role':'wrong_role',
+            }),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_unauthorized(self):
+        """Only authorized users."""
+        response = self.client.post(  # Using client.post not self.post
+            '/api/add_vm', json.dumps({
+                'mac':'82:3c:cf:94:9d:f2',
+                'management-ip':'10.1.1.2',
+                'network':'test_network',
+                'venture':'test_venture',
+                'venture-role':'test_role',
+            }),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 401)
+
+    def test_existing_mac(self):
+        """Trying to use existing mac"""
+        response = self.post(
+            '/api/add_vm', json.dumps({
+                'mac':'11.11.11.11.11.11',
+                'management-ip':'10.1.1.2',
+                'network':'test_network',
+                'venture':'test_venture',
+                'venture-role':'test_role',
+            }),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_rackless_parent(self): 
+        """Trying to use a parent without a rack"""
+        response = self.post(
+            '/api/add_vm', json.dumps({
+                'mac':'82:3c:cf:94:9d:f2',
+                'management-ip':'10.1.1.3',
+                'network':'test_network',
+                'venture':'test_venture',
+                'venture-role':'test_role',
+            }),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 404)
+
+
+    def test_wrong_environment(self): 
+        """Trying to use an environment without template configuration"""
+        response = self.post(
+            '/api/add_vm', json.dumps({
+                'mac':'82:3c:cf:94:9d:f2',
+                'management-ip':'10.1.2.1',
+                'network':'test_network',
+                'venture':'test_venture',
+                'venture-role':'test_role',
+            }),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 404)
