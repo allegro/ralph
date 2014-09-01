@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
-from south.db import db
+from south.db import db, engine
 from south.v2 import SchemaMigration
 from django.db import models
 
@@ -16,17 +16,23 @@ class Migration(SchemaMigration):
         db.execute('UPDATE cmdb_citype SET id = id + 1000 WHERE id > 10')
 
     def bumped_auto_increment(self):
-        db.execute('ALTER TABLE cmdb_citype AUTO_INCREMENT = 1000')
+        """For sqlite3 bumped is not needed"""
+        if engine == 'south.db.mysql':
+            db.execute('ALTER TABLE cmdb_citype AUTO_INCREMENT = 1000')
 
     def set_foreign_key_checks(self, value):
-        db.execute('SET FOREIGN_KEY_CHECKS={};'.format(value))
+        if engine == 'south.db.mysql':
+            db.execute('SET FOREIGN_KEY_CHECKS={};'.format(int(value)))
+        elif engine == 'south.db.sqlite3':
+            value = 'ON' if value else 'OFF'
+            db.execute('PRAGMA foreign_keys = {};'.format(value))
 
     def forwards(self, orm):
         """Migration moves ci_types ids added by the user. Migration reserves
         ids from 1 to 1000 ci_type for added by fixtures.
         """
         db.start_transaction()
-        self.set_foreign_key_checks(0)
+        self.set_foreign_key_checks(False)
 
         for ci_type_id in db.execute(
             'SELECT id FROM cmdb_citype WHERE id > 10;'
@@ -39,7 +45,7 @@ class Migration(SchemaMigration):
         self.bumped_auto_increment()
         self.change_citype_ids()
 
-        self.set_foreign_key_checks(1)
+        self.set_foreign_key_checks(True)
         db.commit_transaction()
 
     def backwards(self, orm):
