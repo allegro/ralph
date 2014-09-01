@@ -120,7 +120,7 @@ class DNSRecordForm(forms.ModelForm):
         content = self.cleaned_data.get('content', '')
         ptr = self.cleaned_data.get('ptr', False)
         if not self.cleaned_data.get('id'):
-            if Record.objects.get(
+            if Record.objects.filter(
                 name=name,
                 type=type,
                 content=content,

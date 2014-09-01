@@ -135,9 +135,8 @@ set of layers:
 
 All layers can be customized in admin panel. Administrator can modify:
 * name - name of the layer
-* connected types - set of connected CIType objects.
-  By these relationships ``cmdb`` can assign CI to the appropriate
-  layer.
+* connected types - set of connected CIType objects.By these relationships ``cmdb`` 
+can assign CI to the appropriate layer.
 * icon
 
 Adding new layers is also possible.
@@ -191,17 +190,29 @@ cmdb_integration
 
 Federating data from third party services (choose one or all)::
 
-    $ ralph cmdb_integration --git --jira --zabbix_hosts --zabbix_triggers --ralph
+    $ ralph cmdb_integration --cmdb_git --cmdb_jira --cmdb_zabbix
 
-    Usage: cmdb_integration --so --git --jira --zabbix_hosts --zabbix_triggers --ralph
-    Options:
-     -h, --help         show this help message and exit
-     --ralph            Ralph.
-     --git              Git.
-     --jira             Jira.
-     --zabbix_hosts     Zabbix.
-     --zabbix_triggers  Zabbix.
-
+Options:
+  -v VERBOSITY, --verbosity=VERBOSITY
+                        Verbosity level; 0=minimal output, 1=normal output,
+                        2=verbose output, 3=very verbose output
+  --settings=SETTINGS   The Python path to a settings module, e.g.
+                        "myproject.settings.main". If this isn't provided, the
+                        DJANGO_SETTINGS_MODULE environment variable will be
+                        used.
+  --pythonpath=PYTHONPATH
+                        A directory to add to the Python path, e.g.
+                        "/home/djangoprojects/myproject".
+  --traceback           Print traceback on exception
+  --cmdb_zabbix         Trigger cmdb_zabbix plugin
+  --cmdb_git            Trigger cmdb_git plugin
+  --cmdb_assets         Trigger cmdb_assets plugin
+  --cmdb_jira           Trigger cmdb_jira plugin
+  --remote              Runs on remote worker
+  -d DAYS, --days=DAYS  Number of days from now back to be checked
+  --version             show program's version number and exit
+  -h, --help            show this help message and exit
+  
 
 Zabbix integration
 ------------------

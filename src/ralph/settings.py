@@ -428,6 +428,14 @@ SCAN_PLUGINS = {
             'serial_number': 20,
         },
     },
+    'ralph.scan.plugins.snmp_lldp': {
+        'communities': SNMP_PLUGIN_COMMUNITIES,
+        'snmp_v3_auth': (SNMP_V3_USER, SNMP_V3_AUTH_KEY, SNMP_V3_PRIV_KEY),
+        'results_priority': {
+            'connections': 55,
+            'system_ip_addresses': 50,
+        },
+    },
     'ralph.scan.plugins.idrac': {
         'user': IDRAC_USER,
         'password': IDRAC_PASSWORD,
@@ -458,6 +466,7 @@ SCAN_PLUGINS = {
             'system_cores_count': 20,
             'processors': 15,
             'memory': 15,
+            'connections': 25,
         },
     },
     'ralph.scan.plugins.puppet': {
