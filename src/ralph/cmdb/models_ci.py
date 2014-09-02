@@ -70,6 +70,7 @@ class CI_TYPES(Choices):
     NETWORK = _('Network')
     DATACENTER = _('Data Center')
     NETWORKTERMINATOR = _('Network Terminator')
+    ENVIRONMENT = _('Environment')
 
 
 contenttype_mappings = {
