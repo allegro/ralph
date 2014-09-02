@@ -8,7 +8,7 @@ from __future__ import unicode_literals
 from django.test import TestCase
 
 from ralph.scan.data import (
-    _get_choice_by_name,
+    get_choice_by_name,
     connection_from_data,
     device_from_data,
     get_device_data,
