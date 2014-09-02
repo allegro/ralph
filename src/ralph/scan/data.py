@@ -844,7 +844,7 @@ def connection_from_data(device, connection_data):
             "IP addresses are not connected with one device..."
         )
     connected_device = connected_devices[0]
-    connection_type = _get_choice_by_name(
+    connection_type = get_choice_by_name(
         ConnectionType,
         connection_data.get('connection_type', '')
     )

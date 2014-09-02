@@ -84,7 +84,6 @@ from ralph.discovery.models_history import (
     ALWAYS_DATE,
 )
 from ralph.menu import menu_class as ralph_menu
-from ralph.util import presentation, pricing
 from ralph.util.plugin import BY_NAME as AVAILABLE_PLUGINS
 from ralph.ui.forms import ChooseAssetForm
 from ralph.ui.forms.devices import (
