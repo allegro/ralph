@@ -12,6 +12,7 @@ from django import http
 from django.conf import settings
 from django.contrib import messages
 from django.core.urlresolvers import reverse
+from django.http import HttpResponseRedirect
 from django.template import (
     RequestContext,
     TemplateDoesNotExist,
@@ -20,7 +21,9 @@ from django.template import (
 from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.csrf import requires_csrf_token
 from django.views.generic import TemplateView
+from django.views.generic.base import RedirectView
 
+from pluggableapp import PluggableApp
 from ralph.account.forms import UserHomePageForm
 from ralph.account.models import (
     Perm,
@@ -143,3 +146,23 @@ class BaseUserPreferenceEdit(BaseUser):
 class UserHomePageEdit(BaseUserPreferenceEdit):
     Form = UserHomePageForm
     header = _('Home Page')
+
+
+class UserHomePage(RedirectView):
+
+    def get(self, request, *args, **kwargs):
+        redirect_hierarchy = [
+            (Perm.has_scrooge_access, 'ralph_pricing'),
+            (Perm.has_assets_access, 'ralph_assets'),
+        ]
+        profile = request.user.get_profile()
+        for perm_to_module, app_name in redirect_hierarchy:
+            if profile.has_perm(perm_to_module):
+                try:
+                    page_url = PluggableApp.apps[app_name].home_url
+                    break
+                except KeyError:
+                    pass
+        else:
+            page_url = reverse('search', args=('info', ''))
+        return HttpResponseRedirect(page_url)
