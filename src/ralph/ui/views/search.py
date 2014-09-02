@@ -28,7 +28,6 @@ from ralph.ui.views.common import (
     Asset,
     BaseMixin,
     Components,
-    Costs,
     History,
     Info,
     Prices,
@@ -525,10 +524,6 @@ class SearchComponents(Search, Components):
 
 
 class SearchPrices(Search, Prices):
-    pass
-
-
-class SearchCosts(Search, Costs):
     pass
 
 

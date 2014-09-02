@@ -77,10 +77,6 @@ from ralph.discovery.models import (
     IPAddress,
     Network,
 )
-from ralph.discovery.models_history import (
-    FOREVER_DATE,
-    ALWAYS_DATE,
-)
 from ralph.util.plugin import BY_NAME as AVAILABLE_PLUGINS
 from ralph.ui.forms import ChooseAssetForm
 from ralph.ui.forms.devices import (
@@ -222,11 +218,6 @@ class BaseMixin(ACLGateway):
             tab_items.extend([
                 MenuItem('Prices', fugue_icon='fugue-money-coin',
                          href=self.tab_href('prices')),
-            ])
-        if has_perm(Perm.read_device_info_financial, venture):
-            tab_items.extend([
-                MenuItem('Costs', fugue_icon='fugue-wallet',
-                         href=self.tab_href('costs')),
             ])
         if has_perm(Perm.read_device_info_history, venture):
             tab_items.extend([
@@ -1012,53 +1003,6 @@ class Addresses(DeviceDetailView):
             'next_hostname': next_hostname,
             'first_free_ip_addresses': first_free_ip_addresses,
         })
-        return ret
-
-
-class Costs(DeviceDetailView):
-    template_name = 'ui/device_costs.html'
-    read_perm = Perm.list_devices_financial
-
-    def get_context_data(self, **kwargs):
-        query_variable_name = 'cost_page'
-        ret = super(Costs, self).get_context_data(**kwargs)
-        history = self.object.historycost_set.order_by('-end', '-start').all()
-        has_perm = self.request.user.get_profile().has_perm
-        for h in history:
-            if not has_perm(Perm.list_devices_financial, h.venture):
-                h.daily_cost = None
-            if h.end < FOREVER_DATE and h.start:
-                h.span = (h.end - h.start).days
-            elif h.start:
-                h.span = (datetime.date.today() - h.start).days
-        try:
-            page = max(1, int(self.request.GET.get(query_variable_name, 1)))
-        except ValueError:
-            page = 1
-        history_page = Paginator(history, HISTORY_PAGE_SIZE).page(page)
-        ret.update({
-            'history': history,
-            'history_page': history_page,
-            'query_variable_name': query_variable_name,
-            'ALWAYS_DATE': ALWAYS_DATE,
-            'FOREVER_DATE': FOREVER_DATE,
-            'deprecated': self.object.is_deprecated(),
-        })
-        last_month = datetime.date.today() - datetime.timedelta(days=31)
-        splunk = self.object.splunkusage_set.filter(
-            day__gte=last_month
-        ).order_by('-day')
-        if splunk.count():
-            size = splunk.aggregate(db.Sum('size'))['size__sum'] or 0
-            cost = (
-                splunk[0].get_price(size=size) /
-                splunk[0].model.group.size_modifier
-            )
-            ret.update({
-                'splunk_size': size,
-                'splunk_monthly_cost': cost,
-                'splunk_daily_cost': cost / splunk.count(),
-            })
         return ret
 
 

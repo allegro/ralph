@@ -22,7 +22,6 @@ from ralph.ui.views.common import (
     Prices,
     Addresses,
     Asset,
-    Costs,
     Components,
     History,
     BaseMixin,
@@ -170,10 +169,6 @@ class RacksSoftware(Racks, Software):
 
 
 class RacksPrices(Racks, Prices):
-    pass
-
-
-class RacksCosts(Racks, Costs):
     pass
 
 

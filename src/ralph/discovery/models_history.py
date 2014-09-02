@@ -31,8 +31,6 @@ from ralph.discovery.history import field_changes as _field_changes
 
 FOREVER = '2199-1-1'  # not all DB backends will accept '9999-1-1'
 ALWAYS = '0001-1-1'  # not all DB backends will accept '0000-0-0'
-ALWAYS_DATE = date(1, 1, 1)
-FOREVER_DATE = date(2199, 1, 1)
 SPLUNK_HOST = settings.SPLUNK_LOGGER_HOST
 
 

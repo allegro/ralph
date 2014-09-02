@@ -30,7 +30,6 @@ from ralph.ui.views.common import (
     Asset,
     BaseMixin,
     Components,
-    Costs,
     History,
     Prices,
     Software,
@@ -246,10 +245,6 @@ class NetworksAddresses(NetworksMixin, TemplateView):
         aggregated = self.network.get_ip_usage_aggegated()
         ret['ip_usage'] = aggregated
         return ret
-
-
-class NetworksCosts(NetworksMixin, Costs):
-    pass
 
 
 class NetworksHistory(NetworksMixin, History):
