@@ -63,6 +63,18 @@ def snmp_command(
         return vars
 
 
+def snmp_walk(
+    hostname, community, oid, snmp_version='2c', timeout=1, attempts=3,
+    priv_protocol=cmdgen.usmDESPrivProtocol
+):
+    transport = cmdgen.UdpTransportTarget((hostname, 161), attempts, timeout)
+    data = user_data(community, snmp_version, priv_protocol=priv_protocol)
+    gen = cmdgen.CommandGenerator()
+    error, status, index, values = gen.nextCmd(data, transport, oid)
+    if not error:
+        return values
+
+
 def snmp_bulk(
     hostname, community, oid, snmp_version='2c', timeout=1, attempts=3
 ):

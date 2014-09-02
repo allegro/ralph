@@ -18,6 +18,7 @@ from ralph.scan.plugins.ssh_linux import (
     _get_os_visible_cores_count,
     _get_os_visible_memory,
     _get_os_visible_storage,
+    _get_lldp_info,
 )
 
 
@@ -213,3 +214,61 @@ class SshLinuxPluginTest(TestCase):
                 }
             ]
         )
+
+    def test_get_lldp_info(self):
+        ssh = MockSSH([(
+            "/usr/bin/sudo /usr/sbin/lldpctl",
+            """
+-------------------------------------------------------------------------------
+LLDP neighbors:
+-------------------------------------------------------------------------------
+Interface:    eth0, via: LLDP, RID: 2, Time: 0 day, 00:07:49
+  Chassis:
+    ChassisID:    mac aa:bb:cc:11:22:33
+    SysName:      VcD_XXX
+    SysDescr:     HP 1/10Gb VC-Enet Module 3.60 2012-03-21T21:34:58Z
+    MgmtIP:       10.10.10.10
+  Port:
+    PortID:       local Server bay 1
+    PortDescr:    Not received
+-------------------------------------------------------------------------------
+Interface:    eth1, via: LLDP, RID: 1, Time: 0 day, 00:07:49
+  Chassis:
+    ChassisID:    mac aa:bb:cc:11:22:44
+    SysName:      VcD_XXX
+    SysDescr:     HP 1/10Gb VC-Enet Module 3.60 2012-03-21T21:34:58Z
+    MgmtIP:       10.10.10.11
+  Port:
+    PortID:       gr2
+    PortDescr:    Not received
+-------------------------------------------------------------------------------
+            """
+        )])
+        self.assertEqual(
+            _get_lldp_info(ssh),
+            [
+                {
+                    'connected_device_ip_addresses': '10.10.10.10',
+                    'connected_device_mac_addresses': 'AABBCC112233',
+                    'connection_type': 'network',
+                    'details': {
+                        'outbound_port': 'eth0',
+                        'inbound_port': 'local Server bay 1'
+                    }
+                },
+                {
+                    'connected_device_ip_addresses': '10.10.10.11',
+                    'connected_device_mac_addresses': 'AABBCC112244',
+                    'connection_type': 'network',
+                    'details': {
+                        'outbound_port': 'eth1',
+                        'inbound_port': 'gr2'
+                    }
+                }
+            ]
+        )
+        ssh = MockSSH([(
+            "/usr/bin/sudo /usr/sbin/lldpctl",
+            ""
+        )])
+        self.assertEqual(_get_lldp_info(ssh), [])

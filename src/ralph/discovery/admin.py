@@ -308,6 +308,28 @@ class StorageInline(ForeignKeyAutocompleteTabularInline):
     }
 
 
+class InboundConnectionInline(ForeignKeyAutocompleteTabularInline):
+    model = m.Connection
+    extra = 1
+    related_search_fields = {
+        'outbound': ['^name']
+    }
+    fk_name = 'inbound'
+    verbose_name = _("Inbound Connection")
+    verbose_name_plural = _("Inbound Connections")
+
+
+class OutboundConnectionInline(ForeignKeyAutocompleteTabularInline):
+    model = m.Connection
+    extra = 1
+    related_search_fields = {
+        'inbound': ['^name'],
+    }
+    fk_name = 'outbound'
+    verbose_name = _("Outbound Connection")
+    verbose_name_plural = _("Outbound Connections")
+
+
 class DeviceAdmin(ModelAdmin):
     form = DeviceForm
     inlines = [
@@ -318,6 +340,8 @@ class DeviceAdmin(ModelAdmin):
         IPAddressInline,
         ChildDeviceInline,
         RolePropertyValueInline,
+        InboundConnectionInline,
+        OutboundConnectionInline,
     ]
     list_display = ('name', 'sn', 'created', 'modified')
     list_filter = ('model__type',)
