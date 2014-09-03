@@ -8,6 +8,17 @@ from __future__ import unicode_literals
 import mock
 import StringIO
 
+from factory import Sequence
+from factory.django import DjangoModelFactory
+
+from ralph.discovery.models_device import Device
+
+
+class DeviceFactory(DjangoModelFactory):
+    FACTORY_FOR = Device
+
+    name = Sequence(lambda n: 'Device#{}'.format(n))
+
 
 class MockSSH(object):
 

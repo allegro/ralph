@@ -9,6 +9,7 @@ from django.test import TestCase
 
 from ralph.scan.data import (
     get_choice_by_name,
+    connection_from_data,
     device_from_data,
     get_device_data,
     merge_data,
@@ -18,6 +19,8 @@ from ralph.scan.tests.samples.choices import SampleChoices
 from ralph.discovery.models import (
     ComponentModel,
     ComponentType,
+    Connection,
+    ConnectionType,
     Device,
     DeviceModel,
     DeviceType,
@@ -28,10 +31,11 @@ from ralph.discovery.models import (
     GenericComponent,
     IPAddress,
     Memory,
+    NetworkConnection,
+    OperatingSystem,
     Processor,
     Software,
     Storage,
-    OperatingSystem,
 )
 
 
@@ -259,6 +263,77 @@ class GetDeviceDataTest(TestCase):
         self.device.save()
         data = get_device_data(Device.objects.get(sn='123456789'))
         self.assertEqual(data['management'], '10.10.10.1')
+
+    def test_connections(self):
+        model = DeviceModel.objects.create(
+            type=DeviceType.rack_server,
+            name="DevModel F1"
+        )
+        master_device = Device.objects.create(
+            model=model,
+            sn='sn_1',
+            name='dev1.dc1'
+        )
+        connected_device_1 = Device.objects.create(
+            model=model,
+            sn='sn_2',
+            name='dev2.dc1'
+        )
+        IPAddress.objects.create(
+            address="10.0.22.1",
+            device=connected_device_1
+        )
+        connection = Connection.objects.create(
+            connection_type=ConnectionType.network,
+            outbound=master_device,
+            inbound=connected_device_1
+        )
+        connected_device_2 = Device.objects.create(
+            model=model,
+            sn='sn_3',
+            name='dev3.dc1'
+        )
+        IPAddress.objects.create(
+            address="10.0.22.2",
+            device=connected_device_2
+        )
+        IPAddress.objects.create(
+            address="10.0.22.3",
+            device=connected_device_2
+        )
+        connection = Connection.objects.create(
+            connection_type=ConnectionType.network,
+            outbound=master_device,
+            inbound=connected_device_2
+        )
+        NetworkConnection.objects.create(
+            connection=connection,
+            outbound_port="eth0",
+            inbound_port="eth1"
+        )
+        data = get_device_data(Device.objects.get(sn='sn_1'))
+        self.assertEqual(
+            data['connections'],
+            [
+                {
+                    'connected_device_ip_addresses': '10.0.22.1',
+                    'connected_device_mac_addresses': '',
+                    'connected_device_serial_number': 'sn_2',
+                    'connection_details': {},
+                    'connection_type': 'network'
+                },
+                {
+                    'connected_device_ip_addresses': '10.0.22.2,10.0.22.3',
+                    'connected_device_mac_addresses': '',
+                    'connected_device_serial_number': 'sn_3',
+                    'connection_details': {
+                        'inbound_port': 'eth1',
+                        'outbound_port': 'eth0'
+                    },
+                    'connection_type': 'network'
+                }
+            ]
+        )
 
 
 class SetDeviceDataTest(TestCase):
@@ -667,6 +742,59 @@ class SetDeviceDataTest(TestCase):
         self.assertEqual(subdevices[0].name, 'ziew1')
         self.assertEqual(subdevices[1].name, 'ziew2')
 
+    def test_connections(self):
+        model = DeviceModel.objects.create(
+            type=DeviceType.rack_server,
+            name="DevModel F1"
+        )
+        master_device = Device.objects.create(
+            model=model,
+            sn='sn_1',
+            name='dev1.dc1'
+        )
+        connected_device_1 = Device.objects.create(
+            model=model,
+            sn='sn_2',
+            name='dev2.dc1'
+        )
+        Ethernet.objects.create(mac='112233AABBDD', device=connected_device_1)
+        connected_device_2 = Device.objects.create(
+            model=model,
+            sn='sn_3',
+            name='dev3.dc1'
+        )
+        Ethernet.objects.create(mac='112233AABBEE', device=connected_device_2)
+        data = {
+            'connections': [
+                {
+                    'connected_device_mac_addresses': '112233AABBDD',
+                    'connection_type': 'network'
+                },
+                {
+                    'connected_device_mac_addresses': '112233AABBEE',
+                    'connection_type': 'network',
+                    'details': {
+                        'outbound_port': 'eth1',
+                        'inbound_port': 'gr2'
+                    }
+                }
+            ]
+        }
+        set_device_data(master_device, data)
+        master_device.save()
+        device = Device.objects.get(sn='sn_1')
+        connections = device.outbound_connections.all()
+        self.assertEqual(connections[0].inbound.id, connected_device_1.id)
+        self.assertEqual(connections[1].inbound.id, connected_device_2.id)
+        self.assertEqual(
+            connections[1].networkconnection.outbound_port,
+            "eth1"
+        )
+        self.assertEqual(
+            connections[1].networkconnection.inbound_port,
+            "gr2"
+        )
+
 
 class DeviceFromDataTest(TestCase):
 
@@ -759,4 +887,280 @@ class GetChoiceByNameTest(TestCase):
             get_choice_by_name,
             SampleChoices,
             'abc'
+        )
+
+
+class ConnectionFromData(TestCase):
+
+    def test_return_existing_connection(self):
+        model = DeviceModel.objects.create(
+            type=DeviceType.rack_server,
+            name="DevModel F1"
+        )
+        master_device = Device.objects.create(
+            model=model,
+            sn='sn_1',
+            name='dev1.dc1'
+        )
+        connected_device_1 = Device.objects.create(
+            model=model,
+            sn='sn_2',
+            name='dev2.dc1'
+        )
+        connected_device_2 = Device.objects.create(
+            model=model,
+            sn='sn_3',
+            name='dev3.dc1'
+        )
+        connected_device_3 = Device.objects.create(
+            model=model,
+            sn='sn_4',
+            name='dev4.dc1'
+        )
+        connected_device_4 = Device.objects.create(
+            model=model,
+            sn='sn_5',
+            name='dev5.dc1'
+        )
+        Ethernet.objects.create(mac='112233AABBCC', device=connected_device_2)
+        Ethernet.objects.create(mac='112233AABBDD', device=connected_device_4)
+        IPAddress.objects.create(
+            address='10.20.30.1',
+            device=connected_device_3
+        )
+        IPAddress.objects.create(
+            address='10.20.30.2',
+            device=connected_device_4
+        )
+        connection_1 = Connection.objects.create(
+            connection_type=ConnectionType.network,
+            outbound=master_device,
+            inbound=connected_device_1
+        )
+        connection_2 = Connection.objects.create(
+            connection_type=ConnectionType.network,
+            outbound=master_device,
+            inbound=connected_device_2
+        )
+        connection_3 = Connection.objects.create(
+            connection_type=ConnectionType.network,
+            outbound=master_device,
+            inbound=connected_device_3
+        )
+        connection_4 = Connection.objects.create(
+            connection_type=ConnectionType.network,
+            outbound=master_device,
+            inbound=connected_device_4
+        )
+        connection = connection_from_data(
+            master_device,
+            {
+                'connected_device_serial_number': 'sn_2',
+                'connected_device_mac_addresses': '',
+                'connection_type': 'network connection'
+            }
+        )
+        self.assertEqual(connection.id, connection_1.id)
+        self.assertEqual(connection.outbound.id, master_device.id)
+        self.assertEqual(connection.inbound.id, connected_device_1.id)
+        connection = connection_from_data(
+            master_device,
+            {
+                'connected_device_serial_number': '',
+                'connected_device_mac_addresses': '112233AABBCC',
+                'connection_type': 'network connection'
+            }
+        )
+        self.assertEqual(connection.id, connection_2.id)
+        self.assertEqual(connection.outbound.id, master_device.id)
+        self.assertEqual(connection.inbound.id, connected_device_2.id)
+        connection = connection_from_data(
+            master_device,
+            {
+                'connected_device_serial_number': '',
+                'connected_device_ip_addresses': '10.20.30.1',
+                'connection_type': 'network connection'
+            }
+        )
+        self.assertEqual(connection.id, connection_3.id)
+        self.assertEqual(connection.outbound.id, master_device.id)
+        self.assertEqual(connection.inbound.id, connected_device_3.id)
+        connection = connection_from_data(
+            master_device,
+            {
+                'connected_device_serial_number': 'sn_5',
+                'connected_device_mac_addresses': '112233AABBDD',
+                'connected_device_ip_addresses': '10.20.30.2',
+                'connection_type': 'network connection'
+            }
+        )
+        self.assertEqual(connection.id, connection_4.id)
+        self.assertEqual(connection.outbound.id, master_device.id)
+        self.assertEqual(connection.inbound.id, connected_device_4.id)
+
+    def test_return_new_connection(self):
+        model = DeviceModel.objects.create(
+            type=DeviceType.rack_server,
+            name="DevModel F1"
+        )
+        master_device = Device.objects.create(
+            model=model,
+            sn='sn_1',
+            name='dev1.dc1'
+        )
+        connected_device_1 = Device.objects.create(
+            model=model,
+            sn='sn_2',
+            name='dev2.dc1'
+        )
+        connected_device_2 = Device.objects.create(
+            model=model,
+            sn='sn_3',
+            name='dev3.dc1'
+        )
+        Ethernet.objects.create(mac='112233AABBCC', device=connected_device_2)
+        IPAddress.objects.create(
+            address='10.20.30.2',
+            device=connected_device_2
+        )
+        IPAddress.objects.create(
+            address='10.20.30.3',
+            device=connected_device_2
+        )
+        connection = connection_from_data(
+            master_device,
+            {
+                'connected_device_serial_number': 'sn_2',
+                'connected_device_mac_addresses': '',
+                'connection_type': 'network connection'
+            }
+        )
+        self.assertEqual(connection.outbound.id, master_device.id)
+        self.assertEqual(connection.inbound.id, connected_device_1.id)
+        connection = connection_from_data(
+            master_device,
+            {
+                'connected_device_serial_number': '',
+                'connected_device_mac_addresses': '112233AABBCC',
+                'connected_device_ip_addresses': '10.20.30.2,10.20.30.3',
+                'connection_type': 'network connection'
+            }
+        )
+        self.assertEqual(connection.outbound.id, master_device.id)
+        self.assertEqual(connection.inbound.id, connected_device_2.id)
+
+    def test_connection_details(self):
+        model = DeviceModel.objects.create(
+            type=DeviceType.rack_server,
+            name="DevModel F1"
+        )
+        master_device = Device.objects.create(
+            model=model,
+            sn='sn_1',
+            name='dev1.dc1'
+        )
+        connected_device = Device.objects.create(
+            model=model,
+            sn='sn_2',
+            name='dev2.dc1'
+        )
+        Ethernet.objects.create(mac='112233AABBDD', device=connected_device)
+        connection = Connection.objects.create(
+            connection_type=ConnectionType.network,
+            outbound=master_device,
+            inbound=connected_device
+        )
+        NetworkConnection.objects.create(
+            connection=connection,
+            outbound_port="eth0",
+            inbound_port="eth1"
+        )
+        connection = connection_from_data(
+            master_device,
+            {
+                'connected_device_serial_number': 'sn_2',
+                'connected_device_mac_addresses': '112233AABBDD',
+                'connection_type': 'network connection'
+            }
+        )
+        self.assertEqual(connection.networkconnection.outbound_port, "eth0")
+        self.assertEqual(connection.networkconnection.inbound_port, "eth1")
+
+    def test_incorrect_input(self):
+        model = DeviceModel.objects.create(
+            type=DeviceType.rack_server,
+            name="DevModel F1"
+        )
+        master_device = Device.objects.create(
+            model=model,
+            sn='sn_1',
+            name='dev1.dc1'
+        )
+        self.assertRaises(
+            ValueError,
+            connection_from_data,
+            master_device,
+            {
+                'connection_type': 'network connection'
+            }
+        )
+        self.assertRaises(
+            ValueError,
+            connection_from_data,
+            master_device,
+            {
+                'connected_device_mac_addresses': '112233AABBDD',
+                'connection_type': 'network connection'
+            }
+        )
+
+    def test_incorrect_data_in_db(self):
+        model = DeviceModel.objects.create(
+            type=DeviceType.rack_server,
+            name="DevModel F1"
+        )
+        master_device = Device.objects.create(
+            model=model,
+            sn='sn_1',
+            name='dev1.dc1'
+        )
+        connected_device_1 = Device.objects.create(
+            model=model,
+            sn='sn_2',
+            name='dev2.dc1'
+        )
+        Ethernet.objects.create(mac='112233AABBDD', device=connected_device_1)
+        connected_device_2 = Device.objects.create(
+            model=model,
+            sn='sn_3',
+            name='dev3.dc1'
+        )
+        Ethernet.objects.create(mac='112233AABBEE', device=connected_device_2)
+        connected_device_3 = Device.objects.create(
+            model=model,
+            sn='sn_4',
+            name='dev4.dc1'
+        )
+        IPAddress.objects.create(
+            address='10.10.0.10',
+            device=connected_device_3
+        )
+        self.assertRaises(
+            ValueError,
+            connection_from_data,
+            master_device,
+            {
+                'connected_device_mac_addresses': '112233AABBDD,112233AABBEE',
+                'connection_type': 'network connection'
+            }
+        )
+        self.assertRaises(
+            ValueError,
+            connection_from_data,
+            master_device,
+            {
+                'connected_device_mac_addresses': '112233AABBDD',
+                'connected_device_ip_addresses': '10.10.0.10',
+                'connection_type': 'network connection'
+            }
         )

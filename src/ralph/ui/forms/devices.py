@@ -294,12 +294,20 @@ class DeviceBulkForm(DeviceForm):
 
     class Meta(DeviceForm.Meta):
         fields = (
-            'verified',
+            'name',
+            'venture',
+            'venture_role',
             'position',
             'chassis_position',
+            'parent',
             'remarks',
             'deleted',
         )
+
+    def __init__(self, *args, **kwargs):
+        super(DeviceBulkForm, self).__init__(*args, **kwargs)
+        self.fields['venture'].choices = all_ventures()
+        self.fields['venture_role'].choices = all_roles()
 
     def clean(self):
         if not self.data.get('select'):

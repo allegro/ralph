@@ -14,7 +14,11 @@ from django.conf import settings
 from lck.django.common.models import MACAddressField
 from xml.etree import cElementTree as ET
 
-from ralph.discovery.models import MAC_PREFIX_BLACKLIST, SERIAL_BLACKLIST
+from ralph.discovery.models import (
+    DeviceType,
+    MAC_PREFIX_BLACKLIST,
+    SERIAL_BLACKLIST,
+)
 from ralph.scan.errors import Error, NoMatchError
 from ralph.scan.plugins import get_base_result_template
 
@@ -136,6 +140,7 @@ def _get_base_info(idrac):
                 "{}{}".format(xmlns_n1, 'Model'),
             ).text.strip(),
         ),
+        'type': DeviceType.rack_server.raw
     }
     serial_number = records[0].find(
         "{}{}".format(xmlns_n1, 'ChassisServiceTag'),

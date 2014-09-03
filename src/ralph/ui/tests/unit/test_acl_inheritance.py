@@ -38,28 +38,28 @@ class ACLInheritanceTest(TestCase):
             ('delete_job', 'django_rq.views'),
             ('requeue_job_view', 'django_rq.views'),
 
-            #('show_ventures', 'ralph.business.views'),
+            ('show_ventures', 'ralph.business.views'),
 
-            #('servertree', 'ralph.integration.views'),
+            ('servertree', 'ralph.integration.views'),
 
             ('logout', 'ralph.ui.views'),
             ('AddVM', 'ralph.ui.views.deploy'),  # checks permissions on its own
-            # ('typeahead_roles', 'ralph.ui.views'),
-            # ('unlock_field', 'ralph.ui.views'),
+            ('typeahead_roles', 'ralph.ui.views'),
+            ('unlock_field', 'ralph.ui.views'),
 
-            # ('dhcp_synch', 'ralph.dnsedit.views'),  # api key required
-            # ('dhcp_config_entries', 'ralph.dnsedit.views'),  # api key required
-            # ('dhcp_config_networks', 'ralph.dnsedit.views'),  # api key required
-            # ('dhcp_config_head', 'ralph.dnsedit.views'),  # api key required
+            # ('dhcp_synch', 'ralph.dnsedit.views'),
+            # ('dhcp_config_entries', 'ralph.dnsedit.views'),
+            # ('dhcp_config_networks', 'ralph.dnsedit.views'),
+            # ('dhcp_config_head', 'ralph.dnsedit.views'),
 
             ('get_ajax', 'ralph.cmdb.views_changes'),  # static methods in Dashboard / TimeLine
-            # ('commit_hook', 'ralph.cmdb.rest.rest'),
-            # ('notify_puppet_agent', 'ralph.cmdb.rest.rest'),
+            ('commit_hook', 'ralph.cmdb.rest.rest'),
+            ('notify_puppet_agent', 'ralph.cmdb.rest.rest'),
 
-            # ('preboot_type_view', 'ralph.deployment.views'),
-            # ('preboot_raw_view', 'ralph.deployment.views'),
-            # ('preboot_complete_view', 'ralph.deployment.views'),
-            # ('puppet_classifier', 'ralph.deployment.views'),  # api key required
+            ('preboot_type_view', 'ralph.deployment.views'),
+            ('preboot_raw_view', 'ralph.deployment.views'),
+            ('preboot_complete_view', 'ralph.deployment.views'),
+            # ('puppet_classifier', 'ralph.deployment.views'),
         ]
 
         # constructing a list of URL patterns for testing

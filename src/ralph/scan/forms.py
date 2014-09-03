@@ -336,6 +336,12 @@ class DiffForm(forms.Form):
             'mgmt_firmware',
         ]),
         'subdevices': CSVInfo(['hostname', 'serial_number', 'id']),
+        'connections': CSVInfo([
+            'connection_type',
+            'connected_device_mac_addresses',
+            'connected_device_ip_addresses',
+            'connected_device_serial_number',
+        ]),
     }
 
     def __init__(self, data, *args, **kwargs):

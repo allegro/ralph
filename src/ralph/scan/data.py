@@ -32,9 +32,12 @@ from ralph.discovery.models_network import (
     IPAddress,
 )
 from ralph.discovery.models_device import (
+    Connection,
+    ConnectionType,
     Device,
-    DeviceType,
     DeviceModel,
+    DeviceType,
+    NetworkConnection,
 )
 from ralph.scan.merger import merge as merge_component
 
@@ -401,6 +404,40 @@ def get_device_data(device):
         data['system_cores_count'] = system.cores_count
         if system.model:
             data['system_family'] = system.model.family
+    connections = []
+    for conn in device.outbound_connections.all():
+        connected_device_sn = ''
+        if conn.inbound.sn is not None:
+            connected_device_sn = conn.inbound.sn
+        connection_details = {}
+        if conn.connection_type == ConnectionType.network:
+            try:
+                network_connection_details = NetworkConnection.objects.get(
+                    connection=conn
+                )
+            except NetworkConnection.DoesNotExist:
+                pass
+            else:
+                connection_details[
+                    'outbound_port'
+                ] = network_connection_details.outbound_port
+                connection_details[
+                    'inbound_port'
+                ] = network_connection_details.inbound_port
+        connections.append({
+            'connection_type': ConnectionType.name_from_id(
+                conn.connection_type
+            ),
+            'connected_device_mac_addresses': ",".join([
+                mac.mac for mac in conn.inbound.ethernet_set.all()
+            ]),
+            'connected_device_ip_addresses': ",".join([
+                ip.address for ip in conn.inbound.ipaddress_set.all()
+            ]),
+            'connected_device_serial_number': connected_device_sn,
+            'connection_details': connection_details
+        })
+    data['connections'] = connections
     if 'ralph_assets' in settings.INSTALLED_APPS:
         from ralph_assets.api_ralph import get_asset
         asset = get_asset(device.id)
@@ -742,6 +779,30 @@ def set_device_data(device, data, save_priority=SAVE_PRIORITY, warnings=[]):
         for subdevice in device.child_set.exclude(id__in=subdevice_ids):
             subdevice.parent = None
             subdevice.save(priority=save_priority)
+    if 'connections' in data:
+        parsed_connections = set()
+        for connection_data in data['connections']:
+            connection = connection_from_data(device, connection_data)
+            if connection.connection_type == ConnectionType.network:
+                connetion_details = connection_data.get('details', {})
+                if connetion_details:
+                    outbound_port = connetion_details.get('outbound_port')
+                    inbound_port = connetion_details.get('inbound_port')
+                    try:
+                        details = NetworkConnection.objects.get(
+                            connection=connection
+                        )
+                    except NetworkConnection.DoesNotExist:
+                        details = NetworkConnection(connection=connection)
+                    if outbound_port:
+                        details.outbound_port = outbound_port
+                    if inbound_port:
+                        details.inbound_port = inbound_port
+                    details.save()
+            parsed_connections.add(connection.pk)
+        device.outbound_connections.exclude(
+            pk__in=parsed_connections
+        ).delete()
     if 'asset' in data and 'ralph_assets' in settings.INSTALLED_APPS:
         from ralph_assets.api_ralph import assign_asset
         if data['asset']:
@@ -751,6 +812,53 @@ def set_device_data(device, data, save_priority=SAVE_PRIORITY, warnings=[]):
                 pass
             else:
                 assign_asset(device.id, asset_id)
+
+
+def connection_from_data(device, connection_data):
+    query = {}
+    serial_number = connection_data.get('connected_device_serial_number')
+    if serial_number:
+        query['sn'] = serial_number
+    mac_addresses = connection_data.get('connected_device_mac_addresses')
+    if mac_addresses:
+        mac_addresses = [mac.strip() for mac in mac_addresses.split(",")]
+        query['ethernet__mac__in'] = mac_addresses
+    ip_addresses = connection_data.get('connected_device_ip_addresses')
+    if ip_addresses:
+        ip_addresses = [ip.strip() for ip in ip_addresses.split(",")]
+        query['ipaddress__address__in'] = ip_addresses
+    if not query:
+        raise ValueError(
+            "Can not find connected device. Please specify connected device "
+            "MAC address or IP address or serial number."
+        )
+    connected_devices = Device.objects.filter(**query).distinct()
+    if not connected_devices:
+        raise ValueError(
+            "Can not find connected device. Please specify connected device "
+            "MAC address or IP address or serial number."
+        )
+    if len(connected_devices) > 1:
+        raise ValueError(
+            "Many devices found. Probably specified MAC addresses or "
+            "IP addresses are not connected with one device..."
+        )
+    connected_device = connected_devices[0]
+    connection_type = get_choice_by_name(
+        ConnectionType,
+        connection_data.get('connection_type', '')
+    )
+    try:
+        return device.outbound_connections.get(
+            inbound=connected_device,
+            connection_type=connection_type
+        )
+    except Connection.DoesNotExist:
+        return Connection.objects.create(
+            outbound=device,
+            inbound=connected_device,
+            connection_type=connection_type
+        )
 
 
 def device_from_data(
