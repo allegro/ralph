@@ -14,8 +14,8 @@ from ralph.cmdb.models_ci import (
 from ralph.cmdb.integration.sync import ZabbixImporter
 
 
-zabbix_api_response = [
-   {'available': '1', 'maintenance_type': '0',
+zabbix_api_response = [{
+    'available': '1', 'maintenance_type': '0',
     'maintenances': [], 'ipmi_username': '', 'snmp_disable_until': '0',
     'ipmi_authtype': '-1', 'ipmi_disable_until': '0', 'lastaccess': '0',
     'snmp_error': '', 'ipmi_privilege': '2', 'jmx_error': '',
@@ -26,8 +26,7 @@ zabbix_api_response = [
     'proxy_hostid': '18699', 'hostid': '10891', 'name': 'hostname.dc2'
     '(venture/devops) [someinfo]', 'jmx_errors_from': '0', 'jmx_disable_until':
     '0', 'error': '', 'maintenance_from': '0', 'errors_from': '0'
-    }
-]
+}]
 
 
 class PatchedZabbix(object):
